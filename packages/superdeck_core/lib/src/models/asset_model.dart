@@ -16,7 +16,7 @@ enum AssetExtension {
   webp,
   svg;
 
-  static final schema = Schema.enumValue(values);
+  static final schema = Ok.enumValues(values);
 
   static AssetExtension? tryParse(String value) {
     final extension = value.toLowerCase();
@@ -43,11 +43,11 @@ class GeneratedAsset with GeneratedAssetMappable {
 
   static String buildKey(String valueToHash) => generateValueHash(valueToHash);
 
-  static final schema = Schema.object(
+  static final schema = Ok.object(
     {
-      "name": Schema.string(),
-      "extension": AssetExtension.schema,
-      "type": Schema.string(),
+      "name": Ok.string(),
+      "extension": AssetExtension.schema(),
+      "type": Ok.string(),
     },
     required: [
       "name",

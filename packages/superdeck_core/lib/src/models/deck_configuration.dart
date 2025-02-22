@@ -33,9 +33,9 @@ class DeckConfiguration with DeckConfigurationMappable {
     return DeckConfigurationMapper.fromMap(map);
   }
 
-  static final schema = Schema.object(
+  static final schema = Ok.object(
     {
-      'slidesMarkdown': Schema.string(),
+      'slidesMarkdown': Ok.string(),
     },
   );
 

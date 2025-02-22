@@ -11,23 +11,25 @@ class CommentsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Style(
-      $box.margin(10, 10, 0, 10),
+    final boxStyle = Style(
       $box.color(const Color.fromARGB(255, 35, 35, 35)),
-      $box.padding(10),
+      $box.margin.only(top: 10, left: 10, right: 10, bottom: 0),
       $box.borderRadius(10),
-      $flex.crossAxisAlignment.stretch(),
     );
-    return VBox(
-      style: style,
-      children: [
-        SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: comments.map(Text.new).toList(),
-          ),
+
+    final flexStyle = Style(
+      $flex.crossAxisAlignment.stretch(),
+      $flex.gap(10),
+      $box.padding(10),
+    );
+    return Box(
+      style: boxStyle,
+      child: SingleChildScrollView(
+        child: VBox(
+          style: flexStyle,
+          children: comments.map(Text.new).toList(),
         ),
-      ],
+      ),
     );
   }
 }

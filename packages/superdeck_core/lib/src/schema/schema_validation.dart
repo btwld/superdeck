@@ -1,134 +1,138 @@
 part of 'schema.dart';
 
-class ValidationResult {
-  final String schemaName;
-  final List<String> path;
-  final List<ValidationError> errors;
-  final Object? value;
+enum ValidationErrorCode {
+  discriminatorKeyError('Discriminator key error'),
+  unallowedAdditionalProperty('Unallowed additional property'),
+  requiredPropMissing('Missing required property'),
+  constraints('Validation constraints not met'),
+  invalidType('Invalid type'),
+  nonNullableValue('Non nullable value is null'),
+  unknown('Unknown error'),
+  propertyError('Property validation error');
 
-  const ValidationResult(
-    this.schemaName,
-    this.path, {
-    required this.errors,
-    required this.value,
-  });
+  const ValidationErrorCode(this.message);
 
-  bool get isValid => errors.isEmpty;
+  final String message;
+}
 
-  const ValidationResult.valid(this.schemaName, this.path, this.value)
-      : errors = const [];
+enum DiscriminatorKeyError {
+  missing('Missing discriminator key'),
+  noSchema('No schema found for discriminator key'),
+  isRequiredInSchema('Discriminator key is required in schema');
+
+  const DiscriminatorKeyError(this.message);
+
+  final String message;
+}
+
+class ValidationContext {
+  final Map<String, Object?> _context;
+
+  const ValidationContext({required Map<String, Object?> context})
+      : _context = context;
+
+  String get message => _context.isEmpty
+      ? ''
+      : _context.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+}
+
+class ValidationError {
+  final ValidationErrorCode code;
+  final ValidationContext context;
+
+  ValidationError._({
+    required Map<String, Object?>? context,
+    required this.code,
+  }) : context = ValidationContext(context: context ?? {});
+
+  ValidationError.discriminatorKey(
+    String discriminatorKey,
+    Set<DiscriminatorKeyError> errors,
+  )   : code = ValidationErrorCode.discriminatorKeyError,
+        context = ValidationContext(
+          context: {
+            'discriminatorKey': discriminatorKey,
+            'errors': errors.map((e) => '${e.message}\n').toList(),
+          },
+        );
+
+  ValidationError.unallowedAdditionalProperty(String propertyKey)
+      : code = ValidationErrorCode.unallowedAdditionalProperty,
+        context = ValidationContext(context: {'propertyKey': propertyKey});
+
+  ValidationError.requiredPropertyMissing(String propertyKey)
+      : code = ValidationErrorCode.requiredPropMissing,
+        context = ValidationContext(context: {'property': propertyKey});
+
+  ValidationError.propertyError(
+    String propertyKey,
+    List<ValidationError> errors,
+  )   : code = ValidationErrorCode.propertyError,
+        context = ValidationContext(context: {'property': propertyKey});
+
+  ValidationError.invalidType(
+      {required Type invalidType, required Type expectedType})
+      : code = ValidationErrorCode.invalidType,
+        context = ValidationContext(context: {
+          'invalidType': invalidType,
+          'expectedType': expectedType
+        });
+
+  ValidationError.nonNullableValue()
+      : code = ValidationErrorCode.nonNullableValue,
+        context = ValidationContext(context: {});
+
+  ValidationError.unknown(
+      {required String message, Map<String, Object?>? context})
+      : code = ValidationErrorCode.unknown,
+        context = ValidationContext(context: context ?? {});
+
+  ValidationError.constraints(List<ConstraintsValidationError> constraintErrors)
+      : code = ValidationErrorCode.constraints,
+        context = ValidationContext(
+          context: {
+            'constraints':
+                constraintErrors.map((e) => '${e.message}\n\n').toList(),
+          },
+        );
 
   @override
-  String toString() {
-    return 'ValidationResult(schemaName: $schemaName, path: $path, errors: $errors, value: $value)';
-  }
+  String get message => '${code.message}\n\n${context.message}';
 }
 
-sealed class ValidationError {
-  String get message;
-
-  const ValidationError();
-}
-
-class DiscriminatorMissingValidationError extends ValidationError {
-  final String propertyKey;
-
-  const DiscriminatorMissingValidationError({
-    required this.propertyKey,
-  });
-
-  @override
-  String get message => 'Missing discriminator key: [$propertyKey]';
-}
-
-class UnalowedAdditionalPropertyValidationError extends ValidationError {
-  final String propertyKey;
-
-  const UnalowedAdditionalPropertyValidationError({
-    required this.propertyKey,
-  });
-
-  @override
-  String get message => 'Unallowed property: [$propertyKey]';
-}
-
-class EnumViolatedValidationError extends ValidationError {
-  final String value;
-  final List<String> possibleValues;
-
-  const EnumViolatedValidationError({
-    required this.value,
-    required this.possibleValues,
-  });
-
-  @override
-  String get message =>
-      'Wrong value: [$value] \n\n Possible values: $possibleValues';
-}
-
-class RequiredPropMissingValidationError extends ValidationError {
-  final String property;
-
-  const RequiredPropMissingValidationError({
-    required this.property,
-  });
-
-  @override
-  String get message => 'Missing prop: [$property]';
-}
-
-class InvalidTypeValidationError extends ValidationError {
-  final Type value;
-  final Type expectedType;
-
-  const InvalidTypeValidationError({
-    required this.value,
-    required this.expectedType,
-  });
-
-  @override
-  String get message => 'Invalid type: expected [$expectedType] got [$value]';
-}
-
-class ConstraintsValidationError extends ValidationError {
+final class ConstraintsValidationError {
   final String _message;
-  const ConstraintsValidationError(this._message);
+  final ValidationContext _context;
+  ConstraintsValidationError({
+    required String message,
+    Map<String, Object?>? context,
+  })  : _message = message,
+        _context = ValidationContext(context: context ?? {});
 
-  @override
-  String get message => 'Constraints: $_message';
+  String get message => '$_message\n\n${_context.message}';
+
+  // ValidationContext get context => _context;
 }
 
-class UnknownValidationError extends ValidationError {
-  const UnknownValidationError();
-
-  @override
-  String get message => 'Unknown Validation error';
-}
-
-/// An exception thrown when schema validation fails.
 class SchemaValidationException implements Exception {
-  final ValidationResult result;
+  final List<ValidationError> errors;
+  final StackTrace? stackTrace;
 
-  const SchemaValidationException(this.result);
+  const SchemaValidationException(this.errors, {this.stackTrace});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'errors': errors
+          .map((e) => {
+                'type': e.code.message,
+                'message': e.message,
+              })
+          .toList(),
+    };
+  }
 
   @override
   String toString() {
-    final errorMessages =
-        result.errors.map((e) => '${e.runtimeType}: ${e.message}').join('\n');
-    final location = result.path.isNotEmpty
-        ? 'Location: ${result.path.join('.')}'
-        : 'No specific location in schema.';
-    // return 'SchemaValidationException:\nSchema: ${result.schemaName}\n$errorMessages\n$location';
-    return '''
-Validation Failed:
-
-Schema: ${result.schemaName}
-Value: ${result.value}
-
-Errors:
-$errorMessages
-
-Location: $location
-''';
+    return 'SchemaValidationException: $toJson()';
   }
 }

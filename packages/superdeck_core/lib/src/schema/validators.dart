@@ -1,23 +1,24 @@
 part of 'schema.dart';
 
-abstract class Validator<T> {
-  const Validator();
+sealed class ConstraintsValidator<T> {
+  const ConstraintsValidator();
 
-  ValidationError? validate(T value);
+  ConstraintsValidationError? validate(T value);
 }
 
-class ArrayValidator extends Validator<String> {
-  final List<String> values;
-  const ArrayValidator(this.values);
+class EnumValidator extends ConstraintsValidator<String> {
+  final List<String> enumValues;
+  const EnumValidator(this.enumValues);
 
   @override
-  ValidationError? validate(Object? value) {
-    if (value is String) {
-      if (values.contains(value)) {
-        return null;
-      }
+  ConstraintsValidationError? validate(String value) {
+    if (enumValues.contains(value)) {
+      return null;
     }
-    return EnumViolatedValidationError(value: '$value', possibleValues: values);
+    return ConstraintsValidationError(
+      message: 'Value is not a valid enum value',
+      context: {'value': value, 'possibleValues': enumValues},
+    );
   }
 }
 
@@ -58,7 +59,50 @@ class HexColorValidator extends RegexValidator {
         );
 }
 
-class RegexValidator extends Validator<String> {
+class OneOfValidator extends ConstraintsValidator<String> {
+  final List<String> values;
+  const OneOfValidator(this.values);
+
+  @override
+  ConstraintsValidationError? validate(String value) {
+    if (values.contains(value)) {
+      return null;
+    }
+    return ConstraintsValidationError(
+      message: 'Value is not one of the allowed values',
+    );
+  }
+}
+
+class NotOneOfValidator extends ConstraintsValidator<String> {
+  final List<String> values;
+  const NotOneOfValidator(this.values);
+
+  @override
+  ConstraintsValidationError? validate(String value) {
+    if (values.contains(value)) {
+      return ConstraintsValidationError(
+        message: 'Value is one of the allowed values',
+      );
+    }
+    return null;
+  }
+}
+
+class NotEmptyValidator extends ConstraintsValidator<String> {
+  const NotEmptyValidator();
+
+  @override
+  ConstraintsValidationError? validate(String value) {
+    return value.isEmpty
+        ? ConstraintsValidationError(
+            message: 'String is empty',
+          )
+        : null;
+  }
+}
+
+class RegexValidator extends ConstraintsValidator<String> {
   final String name;
   final String pattern;
   final String example;
@@ -69,10 +113,10 @@ class RegexValidator extends Validator<String> {
   });
 
   @override
-  ValidationError? validate(String value) {
+  ConstraintsValidationError? validate(String value) {
     if (!RegExp(pattern).hasMatch(value)) {
       return ConstraintsValidationError(
-        'String does is not $name. Example: $example',
+        message: 'String does is not $name. Example: $example',
       );
     }
 
@@ -80,138 +124,148 @@ class RegexValidator extends Validator<String> {
   }
 }
 
-class IsEmptyValidator extends Validator<String> {
+class IsEmptyValidator extends ConstraintsValidator<String> {
   const IsEmptyValidator();
 
   @override
-  ValidationError? validate(String value) {
+  ConstraintsValidationError? validate(String value) {
     return value.isEmpty
         ? null
-        : const ConstraintsValidationError('String is not empty');
+        : ConstraintsValidationError(
+            message: 'String is not empty',
+          );
   }
 }
 
-class MinLengthValidator extends Validator<String> {
+class MinLengthValidator extends ConstraintsValidator<String> {
   final int min;
   const MinLengthValidator(this.min);
 
   @override
-  ValidationError? validate(String value) {
+  ConstraintsValidationError? validate(String value) {
     return value.length >= min
         ? null
         : ConstraintsValidationError(
-            'String length is less than the minimum required length: $min',
+            message:
+                'String length is less than the minimum required length: $min',
           );
   }
 }
 
-class MaxLengthValidator extends Validator<String> {
+class MaxLengthValidator extends ConstraintsValidator<String> {
   final int max;
   const MaxLengthValidator(this.max);
 
   @override
-  ValidationError? validate(String value) {
+  ConstraintsValidationError? validate(String value) {
     return value.length <= max
         ? null
         : ConstraintsValidationError(
-            'String length is greater than the maximum required length: $max',
+            message:
+                'String length is greater than the maximum required length: $max',
           );
   }
 }
 
-class MinValueValidator extends Validator<num> {
+class MinValueValidator extends ConstraintsValidator<num> {
   final num min;
   const MinValueValidator(this.min);
 
   @override
-  ValidationError? validate(num value) {
+  ConstraintsValidationError? validate(num value) {
     return value >= min
         ? null
         : ConstraintsValidationError(
-            'Value is less than the minimum required value: $min',
+            message: 'Value is less than the minimum required value: $min',
           );
   }
 }
 
-class MaxValueValidator extends Validator<num> {
+class MaxValueValidator extends ConstraintsValidator<num> {
   final num max;
   const MaxValueValidator(this.max);
 
   @override
-  ValidationError? validate(num value) {
+  ConstraintsValidationError? validate(num value) {
     return value <= max
         ? null
         : ConstraintsValidationError(
-            'Value is greater than the maximum required value: $max',
+            message: 'Value is greater than the maximum required value: $max',
           );
   }
 }
 
-class RangeValidator extends Validator<num> {
+class RangeValidator extends ConstraintsValidator<num> {
   final num min;
   final num max;
   const RangeValidator(this.min, this.max);
 
   @override
-  ValidationError? validate(num value) {
+  ConstraintsValidationError? validate(num value) {
     return value >= min && value <= max
         ? null
         : ConstraintsValidationError(
-            'Value is not within the required range: $min - $max',
+            message: 'Value is not within the required range: $min - $max',
           );
   }
 }
 
-class RequiredValidator<T> extends Validator<T> {
+class RequiredValidator<T> extends ConstraintsValidator<T> {
   const RequiredValidator();
 
   @override
-  ValidationError? validate(value) {
+  ConstraintsValidationError? validate(T value) {
     return value != null
         ? null
-        : const ConstraintsValidationError('is required');
+        : ConstraintsValidationError(
+            message: 'is required',
+          );
   }
 }
 
 // unique item list validator
-class UniqueItemsValidator<T> extends Validator<List<T>> {
+class UniqueItemsValidator<T> extends ConstraintsValidator<List<T>> {
   const UniqueItemsValidator();
 
   @override
-  ValidationError? validate(List<T> value) {
+  ConstraintsValidationError? validate(List<T> value) {
     final unique = value.toSet().toList();
     return unique.length == value.length
         ? null
-        : const ConstraintsValidationError('List items are not unique');
+        : ConstraintsValidationError(
+            message: 'List items are not unique',
+          );
   }
 }
 
 // min length of list validator
-class MinItemsValidator<T> extends Validator<List<T>> {
+class MinItemsValidator<T> extends ConstraintsValidator<List<T>> {
   final int min;
   const MinItemsValidator(this.min);
 
   @override
-  ValidationError? validate(List<T> value) {
+  ConstraintsValidationError? validate(List<T> value) {
     return value.length >= min
         ? null
         : ConstraintsValidationError(
-            'List length is less than the minimum required length: $min',
+            message:
+                'List length is less than the minimum required length: $min',
           );
   }
 }
 
 // max length of list validator
-class MaxItemsValidator<T> extends Validator<List<T>> {
+class MaxItemsValidator<T> extends ConstraintsValidator<List<T>> {
   final int max;
   const MaxItemsValidator(this.max);
 
   @override
-  ValidationError? validate(List<T> value) {
+  ConstraintsValidationError? validate(List<T> value) {
     return value.length <= max
         ? null
         : ConstraintsValidationError(
-            'List length is greater than the maximum required length: $max',
+            message:
+                'List length is greater than the maximum required length: $max',
           );
   }
 }

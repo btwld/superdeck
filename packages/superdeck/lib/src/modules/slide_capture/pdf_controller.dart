@@ -113,9 +113,8 @@ class PdfController extends ChangeNotifier {
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await slideCaptureService.captureFromKey(
-          quality: kIsWeb
-              ? SlideCaptureQuality.thumbnail
-              : SlideCaptureQuality.better,
+          quality:
+              kIsWeb ? SlideCaptureQuality.thumbnail : SlideCaptureQuality.good,
           key: key,
         );
       } catch (error) {
@@ -136,7 +135,7 @@ class PdfController extends ChangeNotifier {
 
       await _pageController.animateToPage(
         i,
-        duration: const Duration(milliseconds: 1),
+        duration: const Duration(milliseconds: 50),
         curve: Curves.linear,
       );
 
@@ -198,9 +197,13 @@ class PdfController extends ChangeNotifier {
     } on _ExportCancelledException catch (e) {
       // Handle cancellation: update status and notify listeners.
       _exportStatus = PdfExportStatus.idle;
-      notifyListeners();
+
       // Optionally, log the cancellation.
       log(e.toString());
+    } finally {
+      if (!_disposed) {
+        notifyListeners();
+      }
     }
   }
 

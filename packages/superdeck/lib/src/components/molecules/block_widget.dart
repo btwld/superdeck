@@ -14,101 +14,8 @@ import '../atoms/cache_image_widget.dart';
 import '../atoms/markdown_viewer.dart';
 import '../organisms/webview_wrapper.dart';
 
-class SectionBlockWidget extends StatelessWidget {
-  const SectionBlockWidget({
-    super.key,
-    required this.section,
-    required this.size,
-  });
-
-  final SectionBlock section;
-  final Size size;
-
-  Positioned _renderDebugInfo(Block block, Size size) {
-    const textStyle = TextStyle(
-      color: Colors.black,
-      fontSize: 12,
-    );
-    final label = '''
-@${block.type}
-${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
-
-    return Positioned(
-      top: 0,
-      right: 0,
-      child: Container(
-        color: Colors.cyan,
-        padding: const EdgeInsets.all(8),
-        child: Text(label, style: textStyle),
-      ),
-    );
-  }
-
-  @override
-  Widget build(context) {
-    final blockLeftOffset = List.filled(section.blocks.length, 0.0);
-    double cumulativeLeftOffset = 0;
-    final widthPerFlex = size.width / section.totalBlockFlex;
-    // get index
-    for (var index = 0; index < section.blocks.length; index++) {
-      final block = section.blocks[index];
-      final blockWidth = widthPerFlex * block.flex;
-      blockLeftOffset[index] = cumulativeLeftOffset;
-      cumulativeLeftOffset = cumulativeLeftOffset + blockWidth;
-    }
-
-    final configuration = SlideConfiguration.of(context);
-
-    return Stack(
-      children: section.blocks.mapIndexed((index, block) {
-        final widthPercentage = block.flex / section.totalBlockFlex;
-
-        final blockSize = Size(
-          size.width * widthPercentage,
-          size.height,
-        );
-
-        return Positioned(
-          left: blockLeftOffset[index],
-          top: 0,
-          width: blockSize.width,
-          height: blockSize.height,
-          child: Stack(
-            children: [
-              switch (block) {
-                ImageBlock b => _ImageBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
-                WidgetBlock b => _WidgetBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
-                DartPadBlock b => _DartPadBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
-                ColumnBlock b => ColumnBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
-                _ => const SizedBox.shrink(),
-              },
-              if (configuration.debug) _renderDebugInfo(block, blockSize),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-abstract class _BlockWidget<T extends Block> extends StatefulWidget {
-  const _BlockWidget({
+sealed class BlockWidget<T extends Block> extends StatefulWidget {
+  const BlockWidget({
     super.key,
     required this.block,
     required this.size,
@@ -121,10 +28,10 @@ abstract class _BlockWidget<T extends Block> extends StatefulWidget {
   final Size size;
   final SlideConfiguration configuration;
   @override
-  State<_BlockWidget<T>> createState() => _BlockWidgetState<T>();
+  State<BlockWidget<T>> createState() => _BlockWidgetState<T>();
 }
 
-class _BlockWidgetState<T extends Block> extends State<_BlockWidget<T>> {
+class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
   @override
   Widget build(context) {
     final style = widget.configuration.style.applyVariant(
@@ -194,7 +101,7 @@ class _BlockWidgetState<T extends Block> extends State<_BlockWidget<T>> {
   }
 }
 
-class ColumnBlockWidget extends _BlockWidget<ColumnBlock> {
+class ColumnBlockWidget extends BlockWidget<ColumnBlock> {
   const ColumnBlockWidget({
     super.key,
     required super.block,
@@ -211,8 +118,9 @@ class ColumnBlockWidget extends _BlockWidget<ColumnBlock> {
   }
 }
 
-class _ImageBlockWidget extends _BlockWidget<ImageBlock> {
-  const _ImageBlockWidget({
+class ImageBlockWidget extends BlockWidget<ImageBlock> {
+  const ImageBlockWidget({
+    super.key,
     required super.block,
     required super.size,
     required super.configuration,
@@ -234,8 +142,9 @@ class _ImageBlockWidget extends _BlockWidget<ImageBlock> {
   }
 }
 
-class _WidgetBlockWidget extends _BlockWidget<WidgetBlock> {
-  const _WidgetBlockWidget({
+class WidgetBlockWidget extends BlockWidget<WidgetBlock> {
+  const WidgetBlockWidget({
+    super.key,
     required super.block,
     required super.size,
     required super.configuration,
@@ -287,8 +196,9 @@ ${e.toString()}'''),
   }
 }
 
-class _DartPadBlockWidget extends _BlockWidget<DartPadBlock> {
-  const _DartPadBlockWidget({
+class DartPadBlockWidget extends BlockWidget<DartPadBlock> {
+  const DartPadBlockWidget({
+    super.key,
     required super.block,
     required super.size,
     required super.configuration,
@@ -296,24 +206,115 @@ class _DartPadBlockWidget extends _BlockWidget<DartPadBlock> {
 
   @override
   Widget build(context, data) {
-    final DartPadBlock(:id, :theme, :embed) = data.block;
-
-    final themeName = theme?.name ?? DartPadTheme.dark.name;
-
     if (kDebugMode) {
       return SizedBox(
         height: data.size.height,
         width: data.size.width,
-        child: const Text('DartPadBlockWidget'),
+        child: Container(
+          color: Colors.blue,
+          child: const Center(
+            child: Text('DartPad not available in debug mode'),
+          ),
+        ),
       );
     }
 
-    return SizedBox(
-      height: data.size.height,
-      width: data.size.width,
-      child: WebViewWrapper(
-        url: 'https://dartpad.dev/?id=$id&theme=$themeName&embed=$embed',
+    return WebViewWrapper(
+      size: data.size,
+      url: data.block.getDartPadUrl(),
+    );
+  }
+}
+
+class SectionBlockWidget extends StatelessWidget {
+  const SectionBlockWidget({
+    super.key,
+    required this.section,
+    required this.size,
+  });
+
+  final SectionBlock section;
+  final Size size;
+
+  Positioned _renderDebugInfo(Block block, Size size) {
+    const textStyle = TextStyle(
+      color: Colors.black,
+      fontSize: 12,
+    );
+    final label = '''
+@${block.type}
+${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
+
+    return Positioned(
+      top: 0,
+      right: 0,
+      child: Container(
+        color: Colors.cyan,
+        padding: const EdgeInsets.all(8),
+        child: Text(label, style: textStyle),
       ),
+    );
+  }
+
+  @override
+  Widget build(context) {
+    final blockLeftOffset = List.filled(section.blocks.length, 0.0);
+    double cumulativeLeftOffset = 0;
+    final widthPerFlex = size.width / section.totalBlockFlex;
+    // get index
+    for (var index = 0; index < section.blocks.length; index++) {
+      final block = section.blocks[index];
+      final blockWidth = widthPerFlex * block.flex;
+      blockLeftOffset[index] = cumulativeLeftOffset;
+      cumulativeLeftOffset = cumulativeLeftOffset + blockWidth;
+    }
+
+    final configuration = SlideConfiguration.of(context);
+
+    return Stack(
+      children: section.blocks.mapIndexed((index, block) {
+        final widthPercentage = block.flex / section.totalBlockFlex;
+
+        final blockSize = Size(
+          size.width * widthPercentage,
+          size.height,
+        );
+
+        return Positioned(
+          left: blockLeftOffset[index],
+          top: 0,
+          width: blockSize.width,
+          height: blockSize.height,
+          child: Stack(
+            children: [
+              switch (block) {
+                ImageBlock b => ImageBlockWidget(
+                    block: b,
+                    size: blockSize,
+                    configuration: configuration,
+                  ),
+                WidgetBlock b => WidgetBlockWidget(
+                    block: b,
+                    size: blockSize,
+                    configuration: configuration,
+                  ),
+                DartPadBlock b => DartPadBlockWidget(
+                    block: b,
+                    size: blockSize,
+                    configuration: configuration,
+                  ),
+                ColumnBlock b => ColumnBlockWidget(
+                    block: b,
+                    size: blockSize,
+                    configuration: configuration,
+                  ),
+                _ => const SizedBox.shrink(),
+              },
+              if (configuration.debug) _renderDebugInfo(block, blockSize),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }

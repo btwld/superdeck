@@ -590,11 +590,12 @@ class DartPadBlockMapper extends SubClassMapperBase<DartPadBlock> {
   static DartPadTheme? _$theme(DartPadBlock v) => v.theme;
   static const Field<DartPadBlock, DartPadTheme> _f$theme =
       Field('theme', _$theme, opt: true);
-  static String _$code(DartPadBlock v) => v.code;
-  static const Field<DartPadBlock, String> _f$code = Field('code', _$code);
   static bool _$embed(DartPadBlock v) => v.embed;
   static const Field<DartPadBlock, bool> _f$embed =
       Field('embed', _$embed, opt: true, def: true);
+  static bool _$run(DartPadBlock v) => v.run;
+  static const Field<DartPadBlock, bool> _f$run =
+      Field('run', _$run, opt: true, def: true);
   static ContentAlignment? _$align(DartPadBlock v) => v.align;
   static const Field<DartPadBlock, ContentAlignment> _f$align =
       Field('align', _$align, opt: true);
@@ -612,8 +613,8 @@ class DartPadBlockMapper extends SubClassMapperBase<DartPadBlock> {
   final MappableFields<DartPadBlock> fields = const {
     #id: _f$id,
     #theme: _f$theme,
-    #code: _f$code,
     #embed: _f$embed,
+    #run: _f$run,
     #align: _f$align,
     #flex: _f$flex,
     #scrollable: _f$scrollable,
@@ -633,8 +634,8 @@ class DartPadBlockMapper extends SubClassMapperBase<DartPadBlock> {
     return DartPadBlock(
         id: data.dec(_f$id),
         theme: data.dec(_f$theme),
-        code: data.dec(_f$code),
         embed: data.dec(_f$embed),
+        run: data.dec(_f$run),
         align: data.dec(_f$align),
         flex: data.dec(_f$flex),
         scrollable: data.dec(_f$scrollable));
@@ -696,8 +697,8 @@ abstract class DartPadBlockCopyWith<$R, $In extends DartPadBlock, $Out>
   $R call(
       {String? id,
       DartPadTheme? theme,
-      String? code,
       bool? embed,
+      bool? run,
       ContentAlignment? align,
       int? flex,
       bool? scrollable});
@@ -716,16 +717,16 @@ class _DartPadBlockCopyWithImpl<$R, $Out>
   $R call(
           {String? id,
           Object? theme = $none,
-          String? code,
           bool? embed,
+          bool? run,
           Object? align = $none,
           int? flex,
           bool? scrollable}) =>
       $apply(FieldCopyWithData({
         if (id != null) #id: id,
         if (theme != $none) #theme: theme,
-        if (code != null) #code: code,
         if (embed != null) #embed: embed,
+        if (run != null) #run: run,
         if (align != $none) #align: align,
         if (flex != null) #flex: flex,
         if (scrollable != null) #scrollable: scrollable
@@ -734,8 +735,8 @@ class _DartPadBlockCopyWithImpl<$R, $Out>
   DartPadBlock $make(CopyWithData data) => DartPadBlock(
       id: data.get(#id, or: $value.id),
       theme: data.get(#theme, or: $value.theme),
-      code: data.get(#code, or: $value.code),
       embed: data.get(#embed, or: $value.embed),
+      run: data.get(#run, or: $value.run),
       align: data.get(#align, or: $value.align),
       flex: data.get(#flex, or: $value.flex),
       scrollable: data.get(#scrollable, or: $value.scrollable));

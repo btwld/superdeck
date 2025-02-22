@@ -17,13 +17,13 @@ class Slide with SlideMappable {
     this.comments = const [],
   });
 
-  static final schema = Schema.object(
+  static final schema = Ok.object(
     {
-      "key": Schema.string(),
-      "title": Schema.string(),
+      "key": Ok.string(),
+      "title": Ok.string(),
       'options': SlideOptions.schema,
-      'sections': Schema.list(SectionBlock.schema),
-      'comments': Schema.list(Schema.string()),
+      'sections': Ok.list(SectionBlock.schema),
+      'comments': Ok.list(Ok.string()),
     },
     required: ['key'],
     additionalProperties: true,
@@ -54,10 +54,10 @@ class SlideOptions with SlideOptionsMappable {
     return SlideOptionsMapper.fromMap(map);
   }
 
-  static final schema = Schema.object(
+  static final schema = Ok.object(
     {
-      "title": Schema.string(),
-      "style": Schema.string(),
+      "title": Ok.string.nullable(),
+      "style": Ok.string.nullable(),
     },
     additionalProperties: true,
   );

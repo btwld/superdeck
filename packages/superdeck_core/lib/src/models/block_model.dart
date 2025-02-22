@@ -20,31 +20,29 @@ sealed class Block with BlockMappable {
     this.scrollable = false,
   });
 
-  static final schema = Schema.object(
-    name: 'Block',
+  static final schema = Ok.object(
     {
-      'type': Schema.string(),
-      'align': Schema.enumValue(ContentAlignment.values),
-      'flex': Schema.int(),
-      'scrollable': Schema.boolean(),
+      'type': Ok.string(),
+      'align': ContentAlignment.schema.nullable(),
+      'flex': Ok.int(),
+      'scrollable': Ok.boolean(),
     },
     required: ['type'],
     additionalProperties: true,
   );
 
   static Block parse(Map<String, dynamic> map) {
-    schema.validateOrThrow(map);
+    discriminatedSchema.validateOrThrow(map);
     return BlockMapper.fromMap(map);
   }
 
-  static final typeSchema = DiscriminatedObjectSchema(
-    name: 'BlockDiscriminator',
+  static final discriminatedSchema = Ok.discriminated(
     discriminatorKey: 'type',
     schemas: {
-      ColumnBlock.key: ColumnBlock.schema,
-      DartPadBlock.key: DartPadBlock.schema,
-      WidgetBlock.key: WidgetBlock.schema,
-      ImageBlock.key: ImageBlock.schema,
+      ColumnBlock.key: ColumnBlock.schema(),
+      DartPadBlock.key: DartPadBlock.schema(),
+      WidgetBlock.key: WidgetBlock.schema(),
+      ImageBlock.key: ImageBlock.schema(),
     },
   );
 }
@@ -76,9 +74,8 @@ class SectionBlock extends Block with SectionBlockMappable {
   }
 
   static final schema = Block.schema.extend(
-    name: 'SectionBlock',
     {
-      'blocks': Schema.list(Block.typeSchema),
+      'blocks': Ok.list(Block.discriminatedSchema),
     },
   );
 }
@@ -97,9 +94,8 @@ class ColumnBlock extends Block with ColumnBlockMappable {
   }
 
   static final schema = Block.schema.extend(
-    name: 'ColumnBlock',
     {
-      'content': Schema.string(),
+      'content': Ok.string(),
     },
   );
 }
@@ -108,6 +104,8 @@ class ColumnBlock extends Block with ColumnBlockMappable {
 enum DartPadTheme {
   dark,
   light;
+
+  static final schema = Ok.enumValues(values);
 }
 
 @MappableClass(discriminatorValue: DartPadBlock.key)
@@ -115,27 +113,30 @@ class DartPadBlock extends Block with DartPadBlockMappable {
   final String id;
   final DartPadTheme? theme;
   final bool embed;
-  final String code;
+  final bool run;
 
   static const key = 'dartpad';
 
   DartPadBlock({
     required this.id,
     this.theme,
-    required this.code,
     this.embed = true,
+    this.run = true,
     super.align,
     super.flex,
     super.scrollable,
   }) : super(type: key);
 
+  String getDartPadUrl() {
+    return 'https://dartpad.dev/?id=$id&theme=$theme&embed=$embed&run=$run';
+  }
+
   static final schema = Block.schema.extend(
-    name: 'DartPadBlock',
     {
-      'id': Schema.string(),
-      'theme': Schema.enumValue(DartPadTheme.values),
-      'embed': Schema.boolean(),
-      'code': Schema.string(),
+      'id': Ok.string(),
+      'theme': DartPadTheme.schema._nullable(),
+      'embed': Ok.boolean(),
+      'run': Ok.boolean(),
     },
     required: [
       "id",
@@ -161,12 +162,11 @@ class ImageBlock extends Block with ImageBlockMappable {
   }) : super(type: key);
 
   static final schema = Block.schema.extend(
-    name: 'ImageBlock',
     {
-      "fit": Schema.enumValue(ImageFit.values),
-      "asset": GeneratedAsset.schema,
-      "width": Schema.double(),
-      "height": Schema.double(),
+      "fit": ImageFit.schema.nullable(),
+      "asset": GeneratedAsset.schema(),
+      "width": Ok.double.nullable(),
+      "height": Ok.double._nullable(),
     },
     required: [
       "asset",
@@ -183,6 +183,8 @@ enum ImageFit {
   fitHeight,
   none,
   scaleDown;
+
+  static final schema = Ok.enumValues(values);
 }
 
 @MappableClass(
@@ -203,9 +205,8 @@ class WidgetBlock extends Block with WidgetBlockMappable {
   }) : super(type: key);
 
   static final schema = Block.schema.extend(
-    name: 'WidgetBlock',
     {
-      "name": Schema.string(),
+      "name": Ok.string(),
     },
     required: [
       "name",
@@ -225,6 +226,8 @@ enum ContentAlignment {
   bottomLeft,
   bottomCenter,
   bottomRight;
+
+  static final schema = Ok.enumValues(values);
 }
 
 extension StringColumnExt on String {

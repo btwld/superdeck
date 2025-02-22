@@ -146,8 +146,8 @@ class _PdfExportBar extends StatelessWidget {
         horizontal: 16.0,
         vertical: 16.0,
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           exportController.exportStatus == PdfExportStatus.complete
               ? Icon(
@@ -166,12 +166,24 @@ class _PdfExportBar extends StatelessWidget {
                         : exportController.progress,
                   ),
                 ),
-          const SizedBox(width: 16.0),
+          const SizedBox(height: 16.0),
           Text(
             _progressText,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Colors.white,
                 ),
+          ),
+          const SizedBox(height: 16.0),
+          TextButton.icon(
+            onPressed: () {
+              exportController.cancel();
+              Navigator.of(context).pop();
+            },
+            icon: const Icon(Icons.cancel, color: Colors.white),
+            label: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

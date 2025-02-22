@@ -3,8 +3,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewWrapper extends StatefulWidget {
   final String url;
+  final Size size;
 
-  WebViewWrapper({super.key, required this.url});
+  WebViewWrapper({
+    super.key,
+    required this.url,
+    required this.size,
+  });
 
   final _uniqueKey = GlobalKey();
 
@@ -15,7 +20,7 @@ class WebViewWrapper extends StatefulWidget {
 class _WebViewWrapperState extends State<WebViewWrapper>
     with AutomaticKeepAliveClientMixin {
   late WebViewController _controller;
-  bool _hide = false;
+  bool _hide = true;
 
   @override
   bool get wantKeepAlive => true;
@@ -23,14 +28,16 @@ class _WebViewWrapperState extends State<WebViewWrapper>
   @override
   void initState() {
     super.initState();
-    (widget._uniqueKey).currentState?.dispose();
+    // (widget._uniqueKey).currentState?.dispose();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {},
           onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
+          onPageFinished: (String url) {
+            _showDartPad();
+          },
           onHttpError: (HttpResponseError error) {},
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
@@ -39,7 +46,26 @@ class _WebViewWrapperState extends State<WebViewWrapper>
         ),
       );
 
-    _controller.loadRequest(Uri.parse(widget.url));
+    _loadDartPad();
+  }
+
+  Future<void> _loadDartPad() async {
+    await _controller.loadRequest(Uri.parse(widget.url));
+  }
+
+  Future<void> _showDartPad() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() {
+      _hide = false;
+    });
+  }
+
+  Future<void> _reloadDartPad() async {
+    setState(() {
+      _hide = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 150));
+    await _controller.reload();
   }
 
   Future<void> executeInIframe(String code) {
@@ -75,27 +101,32 @@ class _WebViewWrapperState extends State<WebViewWrapper>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Stack(
-      children: [
-        WebViewWidget(key: ValueKey(_hide), controller: _controller),
-        Row(
-          children: [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _hide = !_hide;
-                });
-              },
-              icon: const Icon(Icons.refresh),
-            ),
-            // add button that clears the webview by running javascript
-            IconButton(
-              onPressed: clearDartPadEditor,
-              icon: const Icon(Icons.clear),
-            ),
-          ],
-        )
-      ],
+
+    return SizedBox(
+      width: widget.size.width,
+      height: widget.size.height,
+      child: Stack(
+        children: [
+          AnimatedOpacity(
+            opacity: _hide ? 0 : 1,
+            duration: const Duration(milliseconds: 150),
+            child: WebViewWidget(controller: _controller),
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: _reloadDartPad,
+                icon: const Icon(Icons.refresh),
+              ),
+              // add button that clears the webview by running javascript
+              IconButton(
+                onPressed: clearDartPadEditor,
+                icon: const Icon(Icons.clear),
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
 }

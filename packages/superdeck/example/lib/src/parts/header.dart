@@ -19,7 +19,7 @@ class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(slide.options.title ?? 'Generative UI with Flutter'),
+          Text(slide.options.title ?? 'Flame Game'),
           const SizedBox(width: 20),
           Text('${index + 1}'),
         ],

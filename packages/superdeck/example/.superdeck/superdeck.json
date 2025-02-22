@@ -7,7 +7,7 @@
         {
           "blocks": [
             {
-              "content": "\n\n## Another image Another image Another image Another image Another image Another image Another image Another image Another image Another image {.here}\n\n",
+              "content": "\n\n## Another image Another image Another image Another image Another image Another image Another image Another image Another image Another image {.here}\n",
               "flex": 1,
               "scrollable": false,
               "type": "column"
@@ -81,7 +81,7 @@
         {
           "blocks": [
             {
-              "content": "\n\n\n```dart\nColumn(\n  crossAxisAlignment: CrossAxisAlignment.start,\n  children: spans.map((span) {\n    return RichText(\n      text: TextSpan(\n        style: interpolatedSpec.textStyle,\n        children: [span],\n      ),\n    );\n  }).toList(),\n)\n```{.code}\n\n",
+              "content": "\n\n\n```dart\nColumn(\n  crossAxisAlignment: CrossAxisAlignment.start,\n  children: spans.map((span) {\n    return RichText(\n      text: TextSpan(\n        style: interpolatedSpec.textStyle,\n        children: [span],\n      ),\n    );\n  }).toList(),\n)\n```{.code}\n",
               "align": "center",
               "flex": 2,
               "scrollable": false,
@@ -108,7 +108,7 @@
         {
           "blocks": [
             {
-              "content": "\n\n![mermaid_graph](.superdeck/assets/mermaid_srHRIuii.png) {.code}\n\n## Another image{.here}\n\n",
+              "content": "\n\n![mermaid_graph](.superdeck/assets/mermaid_srHRIuii.png) {.code}\n\n## Another image{.here}\n",
               "flex": 1,
               "scrollable": false,
               "type": "column"
@@ -174,14 +174,13 @@
         {
           "blocks": [
             {
-              "content": "\n\n![structured_output](https://picsum.photos/800/1400) {.cover}\n\n",
+              "content": "\n\n![structured_output](https://picsum.photos/800/1400) {.cover}\n",
               "flex": 1,
               "scrollable": false,
               "type": "column"
             },
             {
               "id": "idhere",
-              "code": "",
               "embed": true,
               "flex": 1,
               "scrollable": false,
@@ -208,7 +207,7 @@
         {
           "blocks": [
             {
-              "content": "\n\n#### Leo Farias\nleoafarias{.here}\n\n\n",
+              "content": "\n\n#### Leo Farias\nleoafarias{.here}\n",
               "align": "center_right",
               "flex": 1,
               "scrollable": false,
@@ -242,7 +241,7 @@
               "type": "column"
             },
             {
-              "content": "\n> [!WARNING]  \n> This presentation contains live AI-generated content. Unexpected things may occur during the demonstration. \n\n",
+              "content": "\n> [!WARNING]  \n> This presentation contains live AI-generated content. Unexpected things may occur during the demonstration. \n",
               "align": "center_left",
               "flex": 2,
               "scrollable": false,
@@ -302,7 +301,7 @@
         {
           "blocks": [
             {
-              "content": "### What is Generative UI?{.animate}\n\n",
+              "content": "### What is Generative UI?{.animate}\n",
               "flex": 1,
               "scrollable": false,
               "type": "column"
@@ -354,7 +353,7 @@
               "type": "column"
             },
             {
-              "content": "\nCreates dynamic, context-aware UIs by interpreting actions and maintaining state with LLMs for fluid, interactive responses.{.animate}\n\n",
+              "content": "\nCreates dynamic, context-aware UIs by interpreting actions and maintaining state with LLMs for fluid, interactive responses.{.animate}\n",
               "align": "center",
               "flex": 2,
               "scrollable": false,
@@ -428,7 +427,7 @@
         {
           "blocks": [
             {
-              "content": "## How can LLMs Understtand Your UI?\n\n",
+              "content": "## How can LLMs Understtand Your UI?\n",
               "flex": 1,
               "scrollable": false,
               "type": "column"
@@ -454,7 +453,7 @@
         {
           "blocks": [
             {
-              "content": "\n\n### Structured Output\n\n",
+              "content": "\n\n### Structured Output\n",
               "flex": 1,
               "scrollable": false,
               "type": "column"
