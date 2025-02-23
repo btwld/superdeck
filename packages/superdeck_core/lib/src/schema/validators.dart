@@ -6,6 +6,74 @@ sealed class ConstraintsValidator<T> {
   ConstraintsValidationError? validate(T value);
 }
 
+extension SchemaExt<S extends Schema<T>, T extends Object> on S {
+  S _constraint(ConstraintsValidator<T> validator) {
+    return copyWith(
+      constraints: [..._constraints, validator],
+    ) as S;
+  }
+}
+
+extension StringSchemaExt<S extends Schema<String>> on S {
+  S isEmail() => _constraint(const EmailValidator());
+
+  S isPosixPath() => _constraint(const PosixPathValidator());
+
+  S isHexColor() => _constraint(const HexColorValidator());
+
+  S isEmpty() => _constraint(const IsEmptyValidator());
+
+  S minLength(int min) => _constraint(MinLengthValidator(min));
+
+  S maxLength(int max) => _constraint(MaxLengthValidator(max));
+
+  S oneOf(List<String> values) => _constraint(OneOfValidator(values));
+
+  S notOneOf(List<String> values) => _constraint(NotOneOfValidator(values));
+
+  S isEnum(List<String> values) => _constraint(EnumValidator(values));
+
+  S isUrl() => _constraint(const UrlValidator());
+
+  S isNotEmpty() => _constraint(const NotEmptyValidator());
+
+  S isDateTime() => _constraint(const DateTimeValidator());
+}
+
+extension NumberSchemaExt<S extends Schema<num>> on S {
+  S minValue(num min) => _constraint(MinValueValidator(min));
+
+  S maxValue(num max) => _constraint(MaxValueValidator(max));
+
+  S range(num min, num max) => _constraint(RangeValidator(min, max));
+}
+
+extension ListSchemaExt<S extends Schema<List<T>>, T extends Object> on S {
+  S uniqueItems() => _constraint(const UniqueItemsValidator());
+
+  S minItems(int min) => _constraint(MinItemsValidator(min));
+
+  S maxItems(int max) => _constraint(MaxItemsValidator(max));
+}
+
+/// Validates that the input string can be parsed into a [DateTime] object.
+class DateTimeValidator extends ConstraintsValidator<String> {
+  const DateTimeValidator();
+
+  /// Validates the input string and returns null if valid, or an error message if invalid.
+  @override
+  ConstraintsValidationError? validate(String value) {
+    final dateTime = DateTime.tryParse(value);
+    if (dateTime != null) {
+      return null;
+    }
+    return ConstraintsValidationError(
+      message: 'Invalid date format. Expected a valid date string.',
+      context: {'value': value},
+    );
+  }
+}
+
 class EnumValidator extends ConstraintsValidator<String> {
   final List<String> enumValues;
   const EnumValidator(this.enumValues);
@@ -82,7 +150,11 @@ class NotOneOfValidator extends ConstraintsValidator<String> {
   ConstraintsValidationError? validate(String value) {
     if (values.contains(value)) {
       return ConstraintsValidationError(
-        message: 'Value is one of the allowed values',
+        message: 'Value is not allowed',
+        context: {
+          'value': value,
+          'disallowedValues': values,
+        },
       );
     }
     return null;
@@ -116,7 +188,8 @@ class RegexValidator extends ConstraintsValidator<String> {
   ConstraintsValidationError? validate(String value) {
     if (!RegExp(pattern).hasMatch(value)) {
       return ConstraintsValidationError(
-        message: 'String does is not $name. Example: $example',
+        message:
+            'String does not match the required $name format. Example: $example',
       );
     }
 
@@ -210,26 +283,13 @@ class RangeValidator extends ConstraintsValidator<num> {
   }
 }
 
-class RequiredValidator<T> extends ConstraintsValidator<T> {
-  const RequiredValidator();
-
-  @override
-  ConstraintsValidationError? validate(T value) {
-    return value != null
-        ? null
-        : ConstraintsValidationError(
-            message: 'is required',
-          );
-  }
-}
-
 // unique item list validator
 class UniqueItemsValidator<T> extends ConstraintsValidator<List<T>> {
   const UniqueItemsValidator();
 
   @override
   ConstraintsValidationError? validate(List<T> value) {
-    final unique = value.toSet().toList();
+    final unique = value.toSet();
     return unique.length == value.length
         ? null
         : ConstraintsValidationError(

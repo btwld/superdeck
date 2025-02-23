@@ -1,41 +1,28 @@
 part of 'schema.dart';
 
-@protected
-T? _tryParse<T extends Object>(Object value) {
-  if (value is T) return value;
-  if (value is! String) return null;
-  if (T == bool) return bool.tryParse(value) as T?;
-  if (T == int) return int.tryParse(value) as T?;
-  if (T == double) return double.tryParse(value) as T?;
-  if (T == num) return num.tryParse(value) as T?;
-  return null;
-}
-
 typedef _DoubleSchema = Schema<double>;
 typedef _IntSchema = Schema<int>;
 typedef _BooleanSchema = Schema<bool>;
 typedef _StringSchema = Schema<String>;
 
-mixin SchemaType<S extends Schema> {
-  @protected
-  S getSchema();
-}
-
-final class Ok<S extends Schema<T>, T extends Object> with SchemaType<S> {
+final class Ok<S extends Schema<T>, T extends Object> {
   final S _schema;
   const Ok(this._schema);
 
-  @override
   S nullable() => _schema.copyWith(nullable: true) as S;
 
   S constraints(List<ConstraintsValidator<T>> constraints) {
     return _schema.copyWith(constraints: constraints) as S;
   }
 
-  S call() => _schema;
+  S constraint(ConstraintsValidator<T> constraint) {
+    return _schema.copyWith(constraints: [
+      ..._schema._constraints,
+      constraint,
+    ]) as S;
+  }
 
-  @override
-  S getSchema() => _schema;
+  S call() => _schema;
 
   void validateOrThrow(Object value) {
     final errors = validate(value);
@@ -44,7 +31,6 @@ final class Ok<S extends Schema<T>, T extends Object> with SchemaType<S> {
     }
   }
 
-  @override
   List<ValidationError> validate(Object? value) {
     try {
       return _schema.validate(value);
@@ -63,20 +49,16 @@ final class Ok<S extends Schema<T>, T extends Object> with SchemaType<S> {
     }
   }
 
-  @override
-  S _getSchema() => _schema;
+  Ok<ListSchema<S, T>, List<T>> get list => Ok(ListSchema(_schema));
 
-  static Ok<MapSchema, MapValue> _object(
-    Map<String, SchemaType> properties, {
+  static Ok<ObjectSchema, MapValue> _object(
+    Map<String, Schema> properties, {
     bool additionalProperties = false,
     List<String> required = const [],
   }) {
     return Ok(
-      MapSchema(
-        {
-          for (final entry in properties.entries)
-            entry.key: entry.value.getSchema()
-        },
+      ObjectSchema(
+        properties,
         additionalProperties: additionalProperties,
         required: required,
       ),
@@ -85,32 +67,29 @@ final class Ok<S extends Schema<T>, T extends Object> with SchemaType<S> {
 
   static Ok<DiscriminatedMapSchema, MapValue> _discriminated({
     required String discriminatorKey,
-    required Map<String, SchemaType<MapSchema>> schemas,
+    required Map<String, ObjectSchema> schemas,
   }) {
     return Ok(
       DiscriminatedMapSchema(
         discriminatorKey: discriminatorKey,
-        schemas: {
-          for (final entry in schemas.entries)
-            entry.key: entry.value.getSchema()
-        },
+        schemas: schemas,
       ),
     );
   }
 
-  static Ok<ListSchema<T, V>, List<V>>
-      _list<T extends Schema<V>, V extends Object>(
-    SchemaType<T> itemSchema,
-  ) {
-    return Ok(ListSchema(itemSchema.getSchema()));
+  // static Ok<ListSchema<T, V>, List<V>>
+  //     _list<T extends Schema<V>, V extends Object>(
+  //   T itemSchema,
+  // ) {
+  //   return Ok(ListSchema(itemSchema));
+  // }
+
+  static Ok<Schema<String>, String> _enum(List<String> values) {
+    return Ok(Ok.string.constraint(EnumValidator(values)));
   }
 
-  static Ok<EnumSchema, String> _enum(List<String> values) {
-    return Ok(EnumSchema(values));
-  }
-
-  static Ok<EnumSchema, String> _enumFromEnum(List<Enum> values) {
-    return Ok(EnumSchema(values.map((e) => e.name).toList()));
+  static Ok<Schema<String>, String> _enumFromEnum(List<Enum> values) {
+    return _enum(values.map((e) => e.name).toList());
   }
 
   static const string = Ok(_StringSchema());
@@ -120,12 +99,12 @@ final class Ok<S extends Schema<T>, T extends Object> with SchemaType<S> {
 
   static const int = Ok(_IntSchema());
   static const double = Ok(_DoubleSchema());
-  static const list = _list;
+  // static const list = _list;
   static final enumValues = _enumFromEnum;
   static final enumString = _enum;
 }
 
-final class Schema<T extends Object> with SchemaType<Schema<T>> {
+final class Schema<T extends Object> {
   final bool _nullable;
 
   @protected
@@ -146,16 +125,14 @@ final class Schema<T extends Object> with SchemaType<Schema<T>> {
     );
   }
 
-  @override
-  Schema<T> getSchema() => this;
-
-  T? tryParse(Object value) => _tryParse<T>(value);
-
-  Schema<T> withValidator(ConstraintsValidator<T> validator) {
-    return copyWith(constraints: [
-      ..._constraints,
-      validator,
-    ]);
+  T? tryParse(Object value) {
+    if (value is T) return value;
+    if (value is! String) return null;
+    if (T == bool) return bool.tryParse(value) as T?;
+    if (T == int) return int.tryParse(value) as T?;
+    if (T == double) return double.tryParse(value) as T?;
+    if (T == num) return num.tryParse(value) as T?;
+    return null;
   }
 
   @protected
@@ -195,12 +172,12 @@ final class Schema<T extends Object> with SchemaType<Schema<T>> {
 
 final class DiscriminatedMapSchema extends Schema<MapValue> {
   final String _discriminatorKey;
-  final Map<String, MapSchema> _schemas;
+  final Map<String, ObjectSchema> _schemas;
 
   const DiscriminatedMapSchema({
     super.nullable,
     required String discriminatorKey,
-    required Map<String, MapSchema> schemas,
+    required Map<String, ObjectSchema> schemas,
     super.constraints,
   })  : _discriminatorKey = discriminatorKey,
         _schemas = schemas;
@@ -209,7 +186,7 @@ final class DiscriminatedMapSchema extends Schema<MapValue> {
   DiscriminatedMapSchema copyWith({
     List<ConstraintsValidator<MapValue>>? constraints,
     String? discriminatorKey,
-    Map<String, MapSchema>? schemas,
+    Map<String, ObjectSchema>? schemas,
     bool? nullable,
   }) {
     return DiscriminatedMapSchema(
@@ -225,7 +202,7 @@ final class DiscriminatedMapSchema extends Schema<MapValue> {
     return value is MapValue ? value : null;
   }
 
-  MapSchema? _getDiscriminatedKeyValue(MapValue value) {
+  ObjectSchema? _getDiscriminatedKeyValue(MapValue value) {
     final discriminatorValue = value[_discriminatorKey];
     return discriminatorValue != null ? _schemas[discriminatorValue] : null;
   }
@@ -263,17 +240,12 @@ final class DiscriminatedMapSchema extends Schema<MapValue> {
 
 typedef MapValue = Map<String, Object?>;
 
-final class EnumSchema extends Schema<String> {
-  EnumSchema(List<String> values, {super.nullable})
-      : super(constraints: [EnumValidator(values)]);
-}
-
-final class MapSchema extends Schema<MapValue> {
+final class ObjectSchema extends Schema<MapValue> {
   final Map<String, Schema> _properties;
   final bool additionalProperties;
   final List<String> required;
 
-  const MapSchema(
+  const ObjectSchema(
     this._properties, {
     this.additionalProperties = false,
     super.constraints = const [],
@@ -282,14 +254,14 @@ final class MapSchema extends Schema<MapValue> {
   });
 
   @override
-  MapSchema copyWith({
+  ObjectSchema copyWith({
     bool? additionalProperties,
     List<String>? required,
     Map<String, Schema>? properties,
     List<ConstraintsValidator<MapValue>>? constraints,
     bool? nullable,
   }) {
-    return MapSchema(
+    return ObjectSchema(
       properties ?? _properties,
       additionalProperties: additionalProperties ?? this.additionalProperties,
       required: required ?? this.required,
@@ -303,7 +275,7 @@ final class MapSchema extends Schema<MapValue> {
     return value is MapValue ? value : null;
   }
 
-  MapSchema extend(
+  ObjectSchema extend(
     Map<String, Schema> properties, {
     bool? additionalProperties,
     List<String>? required,
@@ -318,7 +290,7 @@ final class MapSchema extends Schema<MapValue> {
 
       final existingProp = mergedProperties[key];
 
-      if (existingProp is MapSchema) {
+      if (existingProp is ObjectSchema) {
         mergedProperties[key] = existingProp.extend(
           properties,
           additionalProperties: additionalProperties,
@@ -418,22 +390,8 @@ final class ListSchema<T extends Schema<V>, V extends Object>
   }
 }
 
-extension StringSchemaExt on Schema<String> {
-  Schema<String> isPosixPath() => withValidator(const PosixPathValidator());
-
-  Schema<String> isEmail() => withValidator(const EmailValidator());
-
-  Schema<String> isHexColor() => withValidator(const HexColorValidator());
-
-  Schema<String> isEmpty() => withValidator(const IsEmptyValidator());
-
-  Schema<String> minLength(int min) => withValidator(MinLengthValidator(min));
-
-  Schema<String> maxLength(int max) => withValidator(MaxLengthValidator(max));
-}
-
-extension OkMapExt on Ok<MapSchema, MapValue> {
-  Ok<MapSchema, MapValue> extend(
+extension OkMapExt on Ok<ObjectSchema, MapValue> {
+  Ok<ObjectSchema, MapValue> extend(
     Map<String, Schema> properties, {
     bool? additionalProperties,
     List<String>? required,
@@ -441,10 +399,7 @@ extension OkMapExt on Ok<MapSchema, MapValue> {
   }) {
     return Ok(
       _schema.extend(
-        {
-          for (final entry in properties.entries)
-            entry.key: entry.value.getSchema()
-        },
+        properties,
         additionalProperties: additionalProperties,
         required: required,
         constraints: constraints,

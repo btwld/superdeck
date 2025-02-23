@@ -75,7 +75,7 @@ class SectionBlock extends Block with SectionBlockMappable {
 
   static final schema = Block.schema.extend(
     {
-      'blocks': Ok.list(Block.discriminatedSchema),
+      'blocks': Block.discriminatedSchema.list(),
     },
   );
 }
@@ -134,7 +134,7 @@ class DartPadBlock extends Block with DartPadBlockMappable {
   static final schema = Block.schema.extend(
     {
       'id': Ok.string(),
-      'theme': DartPadTheme.schema._nullable(),
+      'theme': DartPadTheme.schema.nullable(),
       'embed': Ok.boolean(),
       'run': Ok.boolean(),
     },
@@ -166,7 +166,7 @@ class ImageBlock extends Block with ImageBlockMappable {
       "fit": ImageFit.schema.nullable(),
       "asset": GeneratedAsset.schema(),
       "width": Ok.double.nullable(),
-      "height": Ok.double._nullable(),
+      "height": Ok.double.nullable(),
     },
     required: [
       "asset",

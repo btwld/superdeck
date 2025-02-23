@@ -20,10 +20,9 @@ class Slide with SlideMappable {
   static final schema = Ok.object(
     {
       "key": Ok.string(),
-      "title": Ok.string(),
-      'options': SlideOptions.schema,
-      'sections': Ok.list(SectionBlock.schema),
-      'comments': Ok.list(Ok.string()),
+      'options': SlideOptions.schema.nullable(),
+      'sections': SectionBlock.schema.list(),
+      'comments': Ok.string.list(),
     },
     required: ['key'],
     additionalProperties: true,
