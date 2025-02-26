@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 void main() {
   final sectionParser = SectionParser();
-  // 1. Basic Parsing Tests - Start with fundamental functionality
+
   group('Basic Parsing', () {
     test('Empty markdown returns no sections', () {
       final sections = sectionParser.parse('');
@@ -31,7 +31,6 @@ void main() {
     });
   });
 
-  // 3. Section Structure Tests
   group('Section Structure', () {
     test('Section with columns', () {
       const markdown = '''
@@ -392,7 +391,7 @@ Header content.
 ''';
         expect(
           () => sectionParser.parse(markdown),
-          throwsA(isA<SchemaValidationException>()),
+          throwsA(isA<AckException>()),
           reason: 'Invalid flex value should throw FormatException.',
         );
       });
@@ -409,7 +408,7 @@ Header content.
 
         expect(
           () => sectionParser.parse(markdown),
-          throwsA(isA<SchemaValidationException>()),
+          throwsA(isA<AckException>()),
           reason: 'Invalid alignment value should throw FormatException.',
         );
       });

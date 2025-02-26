@@ -20,29 +20,29 @@ sealed class Block with BlockMappable {
     this.scrollable = false,
   });
 
-  static final schema = Ok.object(
+  static final schema = Ack.object(
     {
-      'type': Ok.string(),
+      'type': Ack.string,
       'align': ContentAlignment.schema.nullable(),
-      'flex': Ok.int(),
-      'scrollable': Ok.boolean(),
+      'flex': Ack.int,
+      'scrollable': Ack.boolean,
     },
     required: ['type'],
     additionalProperties: true,
   );
 
   static Block parse(Map<String, dynamic> map) {
-    discriminatedSchema.validateOrThrow(map);
+    typeSchema.validateOrThrow(map);
     return BlockMapper.fromMap(map);
   }
 
-  static final discriminatedSchema = Ok.discriminated(
+  static final typeSchema = Ack.discriminated(
     discriminatorKey: 'type',
     schemas: {
-      ColumnBlock.key: ColumnBlock.schema(),
-      DartPadBlock.key: DartPadBlock.schema(),
-      WidgetBlock.key: WidgetBlock.schema(),
-      ImageBlock.key: ImageBlock.schema(),
+      ColumnBlock.key: ColumnBlock.schema,
+      DartPadBlock.key: DartPadBlock.schema,
+      WidgetBlock.key: WidgetBlock.schema,
+      ImageBlock.key: ImageBlock.schema,
     },
   );
 }
@@ -75,7 +75,7 @@ class SectionBlock extends Block with SectionBlockMappable {
 
   static final schema = Block.schema.extend(
     {
-      'blocks': Block.discriminatedSchema.list(),
+      'blocks': Block.typeSchema.list,
     },
   );
 }
@@ -95,7 +95,7 @@ class ColumnBlock extends Block with ColumnBlockMappable {
 
   static final schema = Block.schema.extend(
     {
-      'content': Ok.string(),
+      'content': Ack.string,
     },
   );
 }
@@ -105,7 +105,7 @@ enum DartPadTheme {
   dark,
   light;
 
-  static final schema = Ok.enumValues(values);
+  static final schema = Ack.enumValues(DartPadTheme.values);
 }
 
 @MappableClass(discriminatorValue: DartPadBlock.key)
@@ -133,10 +133,10 @@ class DartPadBlock extends Block with DartPadBlockMappable {
 
   static final schema = Block.schema.extend(
     {
-      'id': Ok.string(),
+      'id': Ack.string,
       'theme': DartPadTheme.schema.nullable(),
-      'embed': Ok.boolean(),
-      'run': Ok.boolean(),
+      'embed': Ack.boolean,
+      'code': Ack.string,
     },
     required: [
       "id",
@@ -165,8 +165,8 @@ class ImageBlock extends Block with ImageBlockMappable {
     {
       "fit": ImageFit.schema.nullable(),
       "asset": GeneratedAsset.schema(),
-      "width": Ok.double.nullable(),
-      "height": Ok.double.nullable(),
+      "width": Ack.double.nullable(),
+      "height": Ack.double.nullable(),
     },
     required: [
       "asset",
@@ -184,7 +184,7 @@ enum ImageFit {
   none,
   scaleDown;
 
-  static final schema = Ok.enumValues(values);
+  static final schema = Ack.enumValues(ImageFit.values);
 }
 
 @MappableClass(
@@ -206,7 +206,7 @@ class WidgetBlock extends Block with WidgetBlockMappable {
 
   static final schema = Block.schema.extend(
     {
-      "name": Ok.string(),
+      "name": Ack.string,
     },
     required: [
       "name",
@@ -227,7 +227,7 @@ enum ContentAlignment {
   bottomCenter,
   bottomRight;
 
-  static final schema = Ok.enumValues(values);
+  static final schema = Ack.enumValues(ContentAlignment.values);
 }
 
 extension StringColumnExt on String {

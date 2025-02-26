@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:path/path.dart' as p;
 
+import '../../superdeck_core.dart';
 import '../helpers/mappers.dart';
-import '../schema/schema.dart';
 
 part 'deck_configuration.mapper.dart';
 
@@ -33,9 +33,9 @@ class DeckConfiguration with DeckConfigurationMappable {
     return DeckConfigurationMapper.fromMap(map);
   }
 
-  static final schema = Ok.object(
+  static final schema = Ack.object(
     {
-      'slidesMarkdown': Ok.string(),
+      'slidesMarkdown': Ack.string,
     },
   );
 

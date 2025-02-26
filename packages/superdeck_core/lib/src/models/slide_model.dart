@@ -17,12 +17,12 @@ class Slide with SlideMappable {
     this.comments = const [],
   });
 
-  static final schema = Ok.object(
+  static final schema = Ack.object(
     {
-      "key": Ok.string(),
+      "key": Ack.string,
       'options': SlideOptions.schema.nullable(),
-      'sections': SectionBlock.schema.list(),
-      'comments': Ok.string.list(),
+      'sections': SectionBlock.schema.list,
+      'comments': Ack.string.list,
     },
     required: ['key'],
     additionalProperties: true,
@@ -53,10 +53,10 @@ class SlideOptions with SlideOptionsMappable {
     return SlideOptionsMapper.fromMap(map);
   }
 
-  static final schema = Ok.object(
+  static final schema = Ack.object(
     {
-      "title": Ok.string.nullable(),
-      "style": Ok.string.nullable(),
+      "title": Ack.string.nullable(),
+      "style": Ack.string.nullable(),
     },
     additionalProperties: true,
   );
