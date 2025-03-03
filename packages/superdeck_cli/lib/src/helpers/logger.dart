@@ -1,6 +1,7 @@
 import 'package:mason_logger/mason_logger.dart';
 import 'package:source_span/source_span.dart';
-import 'package:superdeck_cli/src/helpers/exceptions.dart';
+
+import 'exceptions.dart';
 
 final logger = Logger(
   // Optionally, specify a custom `LogTheme` to override log styles.

@@ -34,7 +34,9 @@ graph TD
 ---
 
 @section
-@section {flex: 2}
+@section {
+  flex: 2
+}
 @column {
   align: center
   flex: 2

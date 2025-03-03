@@ -1,3 +1,5 @@
+import 'package:ack/ack.dart';
+
 extension StringX on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1)}";
@@ -26,4 +28,6 @@ extension ListX<T> on List<T> {
   }
 }
 
-/// Formats [json]
+StringSchema ackEnum(List<Enum> values) {
+  return Ack.enumString(values.map((e) => e.name.snakeCase()).toList());
+}

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:superdeck_cli/src/generator_pipeline.dart';
-import 'package:superdeck_cli/src/helpers/dart_process.dart';
+import '../generator_pipeline.dart';
+import '../helpers/dart_process.dart';
 
 import '../parsers/parsers/fenced_code_parser.dart';
 

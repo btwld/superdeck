@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:superdeck_cli/src/helpers/exceptions.dart';
+import 'exceptions.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 class DartProcess {
@@ -16,7 +16,7 @@ class DartProcess {
     final tempFile = File(
       p.join(
         Directory.systemTemp.path,
-        'temp_${DateTime.now().microsecondsSinceEpoch}_${hash}.dart',
+        'temp_${DateTime.now().microsecondsSinceEpoch}_$hash.dart',
       ),
     );
     try {

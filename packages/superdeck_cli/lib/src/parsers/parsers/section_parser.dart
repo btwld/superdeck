@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:superdeck_cli/src/parsers/parsers/base_parser.dart';
-import 'package:superdeck_cli/src/parsers/parsers/block_parser.dart';
+import 'base_parser.dart';
+import 'block_parser.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 class SectionParser extends BaseParser<List<SectionBlock>> {
@@ -42,7 +42,9 @@ class SectionParser extends BaseParser<List<SectionBlock>> {
         );
       }
 
-      final block = Block.parse(parsedBlock.data);
+      final block = parsedBlock.type == 'section'
+          ? SectionBlock.parse(parsedBlock.data)
+          : Block.parse(parsedBlock.data);
 
       aggregator
         ..addBlock(block)

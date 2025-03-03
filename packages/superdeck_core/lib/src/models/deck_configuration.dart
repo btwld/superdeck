@@ -35,7 +35,7 @@ class DeckConfiguration with DeckConfigurationMappable {
 
   static final schema = Ack.object(
     {
-      'slidesMarkdown': Ack.string,
+      'slidesMarkdown': Ack.string.nullable(),
     },
   );
 

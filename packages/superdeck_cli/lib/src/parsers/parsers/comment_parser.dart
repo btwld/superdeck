@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:petitparser/petitparser.dart';
-import 'package:superdeck_cli/src/parsers/parsers/base_parser.dart';
-import 'package:superdeck_cli/src/parsers/parsers/grammar_definitions.dart';
+import 'base_parser.dart';
+import 'grammar_definitions.dart';
 
 class CommentParser extends BaseParser<List<String>> {
   const CommentParser();

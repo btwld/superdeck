@@ -2,16 +2,10 @@
 
 import 'dart:io';
 
-import 'package:scope/scope.dart';
-import 'package:superdeck_cli/src/helpers/context.dart';
 import 'package:superdeck_cli/src/runner.dart';
 
 Future<void> main(List<String> args) async {
-  final scope = Scope()..value(contextKey, SDCliContext());
-
-  await _flushThenExit(
-    await scope.run(() async => SuperDeckRunner().run((args))),
-  );
+  await _flushThenExit(await SuperDeckRunner().run((args)));
 }
 
 /// Flushes the stdout and stderr streams, then exits the program with the given

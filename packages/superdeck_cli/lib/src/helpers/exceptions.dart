@@ -1,7 +1,8 @@
 // ignore_for_file: avoid-duplicate-cascades
 
 import 'package:source_span/source_span.dart';
-import 'package:superdeck_cli/src/helpers/logger.dart';
+
+import 'logger.dart';
 
 class DeckTaskException implements Exception {
   final int slideIndex;

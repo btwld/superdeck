@@ -24,19 +24,19 @@ sealed class Block with BlockMappable {
     {
       'type': Ack.string,
       'align': ContentAlignment.schema.nullable(),
-      'flex': Ack.int,
-      'scrollable': Ack.boolean,
+      'flex': Ack.int.nullable().minValue(1),
+      'scrollable': Ack.boolean.nullable(),
     },
     required: ['type'],
     additionalProperties: true,
   );
 
   static Block parse(Map<String, dynamic> map) {
-    typeSchema.validateOrThrow(map);
+    discriminatedSchema.validateOrThrow(map);
     return BlockMapper.fromMap(map);
   }
 
-  static final typeSchema = Ack.discriminated(
+  static final discriminatedSchema = Ack.discriminated(
     discriminatorKey: 'type',
     schemas: {
       ColumnBlock.key: ColumnBlock.schema,
@@ -69,13 +69,18 @@ class SectionBlock extends Block with SectionBlockMappable {
     return blocks.fold(0, (total, block) => total + block.flex);
   }
 
+  static SectionBlock parse(Map<String, dynamic> map) {
+    schema.validateOrThrow(map);
+    return SectionBlockMapper.fromMap(map);
+  }
+
   static SectionBlock text(String content) {
     return SectionBlock([ColumnBlock(content)]);
   }
 
   static final schema = Block.schema.extend(
     {
-      'blocks': Block.typeSchema.list,
+      'blocks': Block.discriminatedSchema.list.nullable(),
     },
   );
 }
@@ -95,7 +100,7 @@ class ColumnBlock extends Block with ColumnBlockMappable {
 
   static final schema = Block.schema.extend(
     {
-      'content': Ack.string,
+      'content': Ack.string.nullable(),
     },
   );
 }
@@ -105,7 +110,7 @@ enum DartPadTheme {
   dark,
   light;
 
-  static final schema = Ack.enumValues(DartPadTheme.values);
+  static final schema = ackEnum(values);
 }
 
 @MappableClass(discriminatorValue: DartPadBlock.key)
@@ -135,8 +140,8 @@ class DartPadBlock extends Block with DartPadBlockMappable {
     {
       'id': Ack.string,
       'theme': DartPadTheme.schema.nullable(),
-      'embed': Ack.boolean,
-      'code': Ack.string,
+      'embed': Ack.boolean.nullable(),
+      'run': Ack.boolean.nullable(),
     },
     required: [
       "id",
@@ -184,7 +189,7 @@ enum ImageFit {
   none,
   scaleDown;
 
-  static final schema = Ack.enumValues(ImageFit.values);
+  static final schema = ackEnum(values);
 }
 
 @MappableClass(
@@ -227,7 +232,7 @@ enum ContentAlignment {
   bottomCenter,
   bottomRight;
 
-  static final schema = Ack.enumValues(ContentAlignment.values);
+  static final schema = ackEnum(values);
 }
 
 extension StringColumnExt on String {

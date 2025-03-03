@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck_cli/src/generator_pipeline.dart';
-import 'package:superdeck_cli/src/helpers/exceptions.dart';
-import 'package:superdeck_cli/src/helpers/extensions.dart';
-import 'package:superdeck_cli/src/helpers/logger.dart';
-import 'package:superdeck_cli/src/helpers/update_pubspec.dart';
-import 'package:superdeck_cli/src/tasks/dart_formatter_task.dart';
-import 'package:superdeck_cli/src/tasks/mermaid_task.dart';
+import '../generator_pipeline.dart';
+import '../helpers/exceptions.dart';
+import '../helpers/extensions.dart';
+import '../helpers/logger.dart';
+import '../helpers/update_pubspec.dart';
+import '../tasks/dart_formatter_task.dart';
+import '../tasks/mermaid_task.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 class BuildCommand extends Command<int> {
@@ -104,7 +104,7 @@ class BuildCommand extends Command<int> {
 Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
   final pubspecContents = await configuration.pubspecFile.readAsString();
   final updatedPubspecContents =
-      await updatePubspecAssets(configuration, pubspecContents);
+      updatePubspecAssets(configuration, pubspecContents);
   if (updatedPubspecContents != pubspecContents) {
     await configuration.pubspecFile.writeAsString(updatedPubspecContents);
     logger.info('Pubspec assets updated.');

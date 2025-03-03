@@ -6,8 +6,7 @@ ThemeData get theme => ThemeData.dark().copyWith(
         seedColor: Colors.indigo,
         brightness: Brightness.dark,
       ),
-      dialogBackgroundColor: Colors.black,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
+      visualDensity: VisualDensity.adaptivePlatformDensity, dialogTheme: const DialogThemeData(backgroundColor: Colors.black),
     );
 
 

@@ -182,6 +182,7 @@
             {
               "id": "idhere",
               "embed": true,
+              "run": true,
               "flex": 1,
               "scrollable": false,
               "type": "dartpad"

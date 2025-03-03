@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
-import 'package:superdeck_cli/src/parsers/markdown_parser.dart';
-import 'package:superdeck_cli/src/parsers/parsers/section_parser.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+import 'parsers/markdown_parser.dart';
 import 'parsers/parsers/comment_parser.dart';
+import 'parsers/parsers/section_parser.dart';
 
 /// Represents the context in which a slide is processed.
 /// It holds the raw slide data and manages associated assets.
@@ -62,7 +62,7 @@ class TaskPipeline {
     final markdownParser = MarkdownParser();
 
     // Parse the raw markdown into individual raw slides.
-    final rawSlides = await markdownParser.parse(markdownRaw);
+    final rawSlides = markdownParser.parse(markdownRaw);
 
     // Prepare a list of futures to process each slide concurrently.
     final futures = <Future<TaskContext>>[];

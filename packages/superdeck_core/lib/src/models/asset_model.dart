@@ -16,7 +16,7 @@ enum AssetExtension {
   webp,
   svg;
 
-  static final schema = Ack.enumValues(values);
+  static final schema = ackEnum(values);
 
   static AssetExtension? tryParse(String value) {
     final extension = value.toLowerCase();

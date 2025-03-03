@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck_cli/src/commands/build_command.dart';
-import 'package:superdeck_cli/src/helpers/exceptions.dart';
+import 'commands/build_command.dart';
+import 'helpers/exceptions.dart';
 
 class SuperDeckRunner extends CommandRunner<int> {
   SuperDeckRunner() : super('superdeck', 'Superdeck CLI');

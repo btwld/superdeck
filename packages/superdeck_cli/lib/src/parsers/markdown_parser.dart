@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:superdeck_cli/src/parsers/parsers/front_matter_parser.dart';
+import 'parsers/front_matter_parser.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 class RawSlideMarkdown {
@@ -72,10 +72,10 @@ class MarkdownParser {
 
     final slides = <RawSlideMarkdown>[];
 
-    final _frontMatterExtractor = FrontmatterParser();
+    final frontMatterExtractor = FrontmatterParser();
 
     for (final rawSlide in rawSlides) {
-      final frontmatter = _frontMatterExtractor.parse(rawSlide);
+      final frontmatter = frontMatterExtractor.parse(rawSlide);
 
       slides.add(
         RawSlideMarkdown(

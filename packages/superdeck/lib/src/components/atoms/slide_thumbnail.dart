@@ -50,7 +50,6 @@ class _PreviewContainer extends StatelessWidget {
   final bool selected;
 
   const _PreviewContainer({
-    super.key,
     required this.selected,
     required this.child,
   });

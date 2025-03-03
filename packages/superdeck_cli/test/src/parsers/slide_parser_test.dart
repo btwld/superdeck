@@ -23,7 +23,7 @@ Content for slide 2
 Content for slide 3
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(3));
       expect(slides[0].frontmatter['title'], equals('Slide 1'));
@@ -49,7 +49,7 @@ title: Slide 2
 Content for slide 2
 ''';
 
-        final slides = await markdownParser.parse(markdown);
+        final slides = markdownParser.parse(markdown);
 
         expect(slides.length, equals(2));
         expect(slides[0].frontmatter['title'], equals('Slide 1'));
@@ -72,7 +72,7 @@ Content for slide 1
 Content for slide 2
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(2));
       expect(slides[0].frontmatter, {});
@@ -94,7 +94,7 @@ title:
 Content for slide 2
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(2));
       expect(slides[0].frontmatter, {'title': null});
@@ -106,7 +106,7 @@ Content for slide 2
     test('handles empty markdown string', () async {
       const markdown = '';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides, isEmpty);
     });
@@ -122,7 +122,7 @@ Content for slide 1
 This last content is also outside slides
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(2));
       expect(slides[0].frontmatter, {});
@@ -142,7 +142,7 @@ title: Slide 1
 ---
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(1));
       expect(slides[0].frontmatter['title'], equals('Slide 1'));
@@ -167,7 +167,7 @@ title: Slide 3
 Content for slide 3
 ''';
 
-        final slides = await markdownParser.parse(markdown);
+        final slides = markdownParser.parse(markdown);
 
         expect(slides.length, equals(3));
         expect(slides[0].frontmatter['title'], equals('Slide 1'));
@@ -201,7 +201,7 @@ Content for slide 2
 
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(2));
       expect(slides[0].frontmatter['title'], equals('Slide 1'));
@@ -236,7 +236,7 @@ Content for slide 2
 
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(2));
       expect(slides[0].frontmatter['title'], equals('Slide 1'));
@@ -268,7 +268,7 @@ Content for slide 1
 Content for the second slide
 ''';
 
-      final slides = await markdownParser.parse(markdown);
+      final slides = markdownParser.parse(markdown);
 
       expect(slides.length, equals(2));
 
