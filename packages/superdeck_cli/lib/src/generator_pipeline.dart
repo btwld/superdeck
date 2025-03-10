@@ -3,10 +3,6 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'parsers/markdown_parser.dart';
-import 'parsers/parsers/comment_parser.dart';
-import 'parsers/parsers/section_parser.dart';
-
 /// Represents the context in which a slide is processed.
 /// It holds the raw slide data and manages associated assets.
 class TaskContext {

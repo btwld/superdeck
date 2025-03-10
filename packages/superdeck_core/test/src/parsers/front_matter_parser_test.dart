@@ -1,4 +1,4 @@
-import 'package:superdeck_cli/src/parsers/parsers/front_matter_parser.dart';
+import 'package:superdeck_core/src/parsers/front_matter_parser.dart';
 import 'package:test/test.dart';
 
 void main() {

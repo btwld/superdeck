@@ -1,3 +1,0 @@
-class SDCliContext {
-  const SDCliContext();
-}

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'parsers/front_matter_parser.dart';
+import 'front_matter_parser.dart';
 
 class RawSlideMarkdown {
   final String key;

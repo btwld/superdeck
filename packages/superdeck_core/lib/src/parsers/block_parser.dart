@@ -1,7 +1,6 @@
-import 'package:source_span/source_span.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../helpers/exceptions.dart';
+import '../helpers/exceptions.dart';
 import 'base_parser.dart';
 
 class ParsedBlock {
@@ -56,31 +55,21 @@ class BlockParser extends BaseParser<List<ParsedBlock>> {
       final typeString = match.group(1) ?? '';
       final optionsString = match.group(2) ?? '';
 
-      Map<String, dynamic> optiuons;
+      Map<String, dynamic> options;
 
       try {
-        optiuons = YamlUtils.convertYamlToMap(optionsString);
+        options = YamlUtils.convertYamlToMap(optionsString);
       } on Exception catch (e, stackTrace) {
-        // Create a SourceSpan for the options content.
-
-        final sourceSpan = SourceSpan(
-          SourceLocation(match.start),
-          SourceLocation(match.end),
+        throw DeckFormatException(
+          'Failed to parse tag blocks: $e',
           optionsString,
-        );
-        Error.throwWithStackTrace(
-          DeckFormatException(
-            'Failed to parse tag blocks: $e',
-            sourceSpan,
-            text,
-          ),
-          stackTrace,
+          match.start,
         );
       }
 
       return ParsedBlock(
         type: typeString,
-        data: optiuons,
+        data: options,
         startIndex: match.start,
         endIndex: match.end,
       );

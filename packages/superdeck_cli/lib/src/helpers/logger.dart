@@ -1,7 +1,5 @@
 import 'package:mason_logger/mason_logger.dart';
-import 'package:source_span/source_span.dart';
-
-import 'exceptions.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 final logger = Logger(
   // Optionally, specify a custom `LogTheme` to override log styles.
@@ -13,7 +11,7 @@ final logger = Logger(
 extension LoggerX on Logger {
   void formatError(DeckFormatException exception) {
     final message = exception.message;
-    final sourceSpan = exception.source as SourceSpan;
+    final sourceSpan = exception.source as dynamic;
     final source = sourceSpan.text;
     final start = sourceSpan.start;
 

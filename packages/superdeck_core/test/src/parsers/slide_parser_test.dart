@@ -1,4 +1,4 @@
-import 'package:superdeck_cli/src/parsers/markdown_parser.dart';
+import 'package:superdeck_core/src/parsers/markdown_parser.dart';
 import 'package:test/test.dart';
 
 void main() {

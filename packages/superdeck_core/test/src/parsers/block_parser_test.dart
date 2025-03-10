@@ -1,5 +1,5 @@
-import 'package:superdeck_cli/src/parsers/parsers/block_parser.dart';
-import 'package:superdeck_cli/src/parsers/parsers/fenced_code_parser.dart';
+import 'package:superdeck_core/src/parsers/block_parser.dart';
+import 'package:superdeck_core/src/parsers/fenced_code_parser.dart';
 import 'package:test/test.dart';
 
 final List<Map<String, dynamic>> testCaseCodeBlock = [

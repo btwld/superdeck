@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:superdeck_core/superdeck_core.dart';
+
 import '../generator_pipeline.dart';
 import '../helpers/dart_process.dart';
-
-import '../parsers/parsers/fenced_code_parser.dart';
 
 class DartFormatterTask extends Task {
   DartFormatterTask() : super('dart_formatter');

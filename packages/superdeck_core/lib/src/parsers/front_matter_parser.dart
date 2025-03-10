@@ -1,6 +1,7 @@
+import 'dart:developer';
+
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../helpers/logger.dart';
 import 'base_parser.dart';
 
 typedef ExtractedFrontmatter = ({
@@ -70,7 +71,7 @@ class FrontmatterParser extends BaseParser<ExtractedFrontmatter> {
     try {
       yamlMap = YamlUtils.convertYamlToMap(yamlString);
     } catch (e) {
-      logger.err('Cannot parse yaml frontmatter: $e');
+      log('Error parsing yaml: $e');
       yamlMap = {};
     }
 

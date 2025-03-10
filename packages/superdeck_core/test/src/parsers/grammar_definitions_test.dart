@@ -1,4 +1,4 @@
-import 'package:superdeck_cli/src/parsers/parsers/grammar_definitions.dart';
+import 'package:superdeck_core/src/parsers/grammar_definitions.dart';
 import 'package:test/test.dart';
 
 void main() {

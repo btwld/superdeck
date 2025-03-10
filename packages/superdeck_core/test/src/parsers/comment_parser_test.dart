@@ -1,4 +1,4 @@
-import 'package:superdeck_cli/src/parsers/parsers/comment_parser.dart';
+import 'package:superdeck_core/src/parsers/comment_parser.dart';
 import 'package:test/test.dart';
 
 void main() {

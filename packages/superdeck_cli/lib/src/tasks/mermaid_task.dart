@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:puppeteer/puppeteer.dart';
-import '../generator_pipeline.dart';
-import '../helpers/logger.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../parsers/parsers/fenced_code_parser.dart';
+import '../generator_pipeline.dart';
+import '../helpers/logger.dart';
 
 class MermaidConverterTask extends Task {
   Browser? _browser;
@@ -162,8 +161,7 @@ class MermaidConverterTask extends Task {
     for (final mermaidBlock in mermaidBlocks) {
       final mermaidAsset = GeneratedAsset.mermaid(mermaidBlock.content);
 
-      final assetPath =
-          context.dataStore.getGeneratedAssetPath(mermaidAsset);
+      final assetPath = context.dataStore.getGeneratedAssetPath(mermaidAsset);
 
       final assetFile = File(assetPath);
 

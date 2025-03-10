@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:source_span/source_span.dart';
-import 'exceptions.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+
+import 'exceptions.dart';
 
 class DartProcess {
   static Future<ProcessResult> _run(List<String> args) {
@@ -48,27 +48,32 @@ DeckFormatException _handleFormattingError(String stderr, String source) {
     final column = int.parse(match.group(2)!);
     final message = match.group(3)!;
 
-    // Create a SourceFile from the source code
-    final sourceFile = SourceFile.fromString(source);
+    // Calculate the offset manually
+    final lines = source.split('\n');
+    int offset = 0;
 
-    // Get the location using line and column (converting to 0-based indices)
-    final location = sourceFile.location(
-      sourceFile.getOffset(line - 1, column - 1),
-    );
+    // Add the length of each line plus 1 for the newline character
+    for (int i = 0; i < line - 1; i++) {
+      if (i < lines.length) {
+        offset += lines[i].length + 1; // +1 for the newline character
+      }
+    }
 
-    // Create a point span at the error location
-    final span = location.pointSpan();
+    // Add the column position (converting to 0-based index)
+    if (line - 1 < lines.length) {
+      offset += column - 1;
+    }
 
     return DeckFormatException(
       'Dart code formatting error: $message',
-      span,
       source,
+      offset,
     );
   }
 
   return DeckFormatException(
     'Error formatting dart code: $stderr',
-    null,
     source,
+    null,
   );
 }

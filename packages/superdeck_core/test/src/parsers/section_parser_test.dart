@@ -1,4 +1,4 @@
-import 'package:superdeck_cli/src/parsers/parsers/section_parser.dart';
+import 'package:superdeck_core/src/parsers/section_parser.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
