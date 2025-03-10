@@ -38,8 +38,8 @@ graph TD
   flex: 2
 }
 @column {
-  align: center
-  flex: 2
+  align: cenfter
+  flex: -1
 }
 
 

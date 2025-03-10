@@ -29,7 +29,7 @@ class DeckConfiguration with DeckConfigurationMappable {
   File get pubspecFile => File('pubspec.yaml');
 
   static DeckConfiguration parse(Map<String, dynamic> map) {
-    schema.validateOrThrow(map);
+    schema.validateOrThrow(map, debugName: 'DeckConfiguration');
     return DeckConfigurationMapper.fromMap(map);
   }
 

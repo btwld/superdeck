@@ -24,7 +24,7 @@ sealed class Block with BlockMappable {
     {
       'type': Ack.string,
       'align': ContentAlignment.schema.nullable(),
-      'flex': Ack.int.nullable().minValue(1),
+      'flex': Ack.int.nullable().min(1),
       'scrollable': Ack.boolean.nullable(),
     },
     required: ['type'],

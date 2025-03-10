@@ -13,7 +13,7 @@ command:
     dependencies:
       collection: ^1.18.0 
       mix: ^1.5.4
-      ack: ^0.0.2
+      ack: ^0.1.1
   # publish:
     # hooks:
     #   pre: melos run gen:build

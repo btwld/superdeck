@@ -1,49 +1,9 @@
-import 'package:petitparser/petitparser.dart';
 import 'package:superdeck_cli/src/parsers/parsers/grammar_definitions.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('HtmlCommentDefinition', () {
-    final parser = const HtmlCommentDefinition().build();
-
-    test('parses simple HTML comment', () {
-      expect(parser.parse('<!-- Simple comment -->').value, 'Simple comment');
-    });
-
-    test('parses empty HTML comment', () {
-      expect(parser.parse('<!---->').value, '');
-    });
-
-    // Trst if you can have -- in the comment
-    test('parses HTML comment with --', () {
-      final result = parser.parse('<!-- This is a -- comment -->');
-
-      expect(result is Failure, isTrue);
-      expect(
-        result.message,
-        'Invalid HTML comment (contains `--` before closing).',
-      );
-      expect(result.position, 4);
-      expect(() => result.value, throwsA(isA<ParserException>()));
-    });
-
-    // check if acomment has spaces in front or in teh end
-    test('parses HTML comment with spaces in front or in the end', () {
-      expect(
-          parser.parse('   <!-- Simple comment -->').value, 'Simple comment');
-      expect(parser.parse('<!-- Simple comment -->  ').value, 'Simple comment');
-    });
-
-    test('parses multiline HTML comment', () {
-      const comment = '''<!-- This is a
-      multiline comment -->''';
-      expect(parser.parse(comment).value.trim(),
-          'This is a\n      multiline comment');
-    });
-  });
-
-  group('StringOptionsDefinition', () {
-    final parser = StringOptionsDefinition().build();
+  group('$StringOptionsParser', () {
+    final parser = const StringOptionsParser();
     test('Parses single boolean option without value', () {
       expect(parser.parse('showLineNumbers=true').value,
           {'showLineNumbers': true});
@@ -180,66 +140,6 @@ void main() {
       expect(parser.parse('booleans=[true, false]').value, {
         'booleans': [true, false]
       });
-    });
-  });
-
-  group('FrontmatterDefinition', () {
-    final parser = const FrontMatterGrammarDefinition().build();
-
-    test('parses frontmatter', () {
-      const content = '''---
-title: "Sample Document"
-author: "John Doe"
-tags:
-  - example
-  - test
----
-# Heading
-Content goes here.
-''';
-      final result = parser.parse(content).value;
-      expect(result.yaml, '''title: "Sample Document"
-author: "John Doe"
-tags:
-  - example
-  - test''');
-      expect(result.markdown, '# Heading\nContent goes here.');
-    });
-
-    test('parses frontmatter with no content', () {
-      const content = '''---
-title: "Empty Document"
-author: "Jane Smith"
-tags:
-  - empty
-  - test
----
-''';
-      final result = parser.parse(content).value;
-      expect(result.yaml, '''title: "Empty Document"
-author: "Jane Smith"
-tags:
-  - empty
-  - test''');
-      expect(result.markdown, '');
-    });
-
-    test('parses frontmatter with single delimiter', () {
-      const content = '---';
-      final result = parser.parse(content).value;
-      expect(result.yaml, '');
-      expect(result.markdown, '');
-    });
-
-    test('parses frontmatter with single delimiter and content', () {
-      const content = '''
----
-# Heading
-Content goes here.
-''';
-      final result = parser.parse(content).value;
-      expect(result.yaml, '');
-      expect(result.markdown, '# Heading\nContent goes here.');
     });
   });
 }

@@ -1,158 +1,177 @@
-import 'package:petitparser/petitparser.dart';
+import 'dart:math' as math;
 
-extension ParserExtension<R> on Parser<R> {
-  Parser between(Parser start, Parser end) =>
-      (start & this & end).map((values) => values[1]);
-}
+import 'base_parser.dart';
 
-class StringOptionsDefinition extends GrammarDefinition {
-  const StringOptionsDefinition();
+/// Parser for string options with improved structure and error handling
+class StringOptionsParser extends BaseParser {
+  const StringOptionsParser();
 
-  Parser _quote() => char('"') | char("'");
+  /// Parse the input string into a map of options
+  Map<String, dynamic> _parseInput(String input) {
+    final trimmedInput = input.trim();
+    if (trimmedInput.isEmpty) {
+      return {};
+    }
 
-  Parser quotedString() =>
-      pattern('^"').star().flatten().between(ref(_quote), ref(_quote));
+    final Map<String, dynamic> result = {};
+    final List<String> expressions = _splitByDelimiter(trimmedInput, ' ');
 
-  /// An expression is a key-value pair or a key only.
-  Parser expression() =>
-      (ref(key) & char('=').trim().optional() & ref(value).optional())
-          .map((values) {
-        String key = (values[0] as String).trim();
-        final secondValue = values[2];
-        if (secondValue != null) {
-          return switch (secondValue) {
-            SeparatedList list => MapEntry(key, list.elements),
-            String string => MapEntry(key, string.trim()),
-            _ => MapEntry(key, secondValue),
-          };
-        }
+    for (final expression in expressions) {
+      try {
+        final MapEntry<String, dynamic> entry = _parseExpression(expression);
+        result[entry.key] = entry.value;
+      } catch (e) {
+        // Skip invalid expressions
+        continue;
+      }
+    }
 
-        return MapEntry(key, true); // Default to true if value is missing
-      });
+    return result;
+  }
 
-  /// Defines the key with allowed characters: letters, numbers, underscores, hyphens, dots.
-  Parser key() => (word() | char('_') | char('-') | char('.')).plus().flatten();
+  /// Parse a single expression like "key=value" or "key"
+  MapEntry<String, dynamic> _parseExpression(String expression) {
+    final equalIndex = expression.indexOf('=');
 
-  /// Defines possible value types.
-  Parser value() => ref(quotedString) | ref(list) | ref(boolean) | ref(number);
+    if (equalIndex == -1) {
+      // No value provided, default to true
+      return MapEntry(expression.trim(), true);
+    }
 
-  /// Parses lists enclosed in square brackets.
-  ///
-  /// Example: [1, 2, 3]
-  /// Example: ["1", "2", "3"]
+    final key = expression.substring(0, equalIndex).trim();
+    final valueStr = expression.substring(equalIndex + 1).trim();
 
-  Parser list() =>
-      (ref(numberList) | listItem().plusSeparated(char(',').trim()))
-          .optional()
-          .between(char('['), char(']'));
+    // Validate key is not empty
+    if (key.isEmpty) {
+      throw FormatException('Empty key in expression: $expression');
+    }
 
-  /// Parses individual list items.
-  Parser listItem() =>
-      ref(numberRange) | ref(number) | ref(quotedString) | ref(boolean);
+    return MapEntry(key, _parseValue(valueStr));
+  }
 
-  /// Parses boolean values (case-insensitive).
-  Parser boolean() => (stringIgnoreCase('true').map((_) => true) |
-      stringIgnoreCase('false').map((_) => false));
+  /// Parse a value which could be a string, number, boolean, or list
+  Object _parseValue(String value) {
+    // Handle empty value
+    if (value.isEmpty) return '';
 
-  /// Parses numbers (integers and floating-point).
-  Parser number() => (char('-').optional() &
-          digit().plus() &
-          (char('.') & digit().plus()).optional())
-      .flatten()
-      .map((value) => num.parse(value));
+    // Check if it's a quoted string
+    if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
+      return value.substring(1, value.length - 1);
+    }
 
-  /// Parses a list of numbers and ranges, separated by commas.
-  Parser numberList() =>
-      (ref(numberRange) | ref(number).map((value) => [value]))
-          .plusSeparated(char(',').trim())
-          .map((values) {
-        // Flatten the list of lists
-        return values.elements
-            .expand((element) => element as List)
-            .toSet()
-            .toList();
-      });
+    // Check if it's a list
+    if (value.startsWith('[') && value.endsWith(']')) {
+      return _parseList(value);
+    }
 
-  Parser numberRange() => (ref(number) & char('-') & ref(number)).map((values) {
-        final start = values[0] as int;
-        final end = values[2] as int;
+    // Check if it's a boolean
+    if (value.toLowerCase() == 'true') return true;
+    if (value.toLowerCase() == 'false') return false;
+
+    // Check if it's a number
+    if (_isNumeric(value)) {
+      return value.contains('.') ? double.parse(value) : int.parse(value);
+    }
+
+    // Default to string
+    return value;
+  }
+
+  /// Parse a list value like [1, 2, 3] or ["a", "b", "c"]
+  List<Object> _parseList(String value) {
+    // Remove brackets
+    final listContent = value.substring(1, value.length - 1).trim();
+    if (listContent.isEmpty) return [];
+
+    // Split into list items
+    final items = _splitByDelimiter(listContent, ',');
+    final Set<Object> uniqueItems = {}; // Track unique items
+
+    for (final item in items) {
+      final trimmedItem = item.trim();
+      if (trimmedItem.isEmpty) continue;
+
+      // Check for number range (e.g., "2-5")
+      final rangeMatch = RegExp(r'^(\d+)-(\d+)$').firstMatch(trimmedItem);
+      if (rangeMatch != null) {
+        final start = int.parse(rangeMatch.group(1)!);
+        final end = int.parse(rangeMatch.group(2)!);
+
         if (start > end) {
           throw FormatException('Invalid range: $start-$end');
         }
 
-        return List.generate(end - start + 1, (index) => start + index);
-      });
+        for (int i = start; i <= end; i++) {
+          uniqueItems.add(i);
+        }
+        continue;
+      }
 
-  /// Defines space separators (one or more spaces).
-  Parser space() => whitespace().plus();
+      // Parse as regular value
+      uniqueItems.add(_parseValue(trimmedItem));
+    }
 
-  /// The start rule parses multiple expressions separated by spaces
-  /// and converts them into a Map<String, dynamic>.
+    return uniqueItems.toList();
+  }
+
+  /// Split a string by delimiter, respecting quotes and brackets
+  /// This unified method replaces both _splitExpressions and _splitListItems
+  List<String> _splitByDelimiter(String input, String delimiter) {
+    final List<String> result = [];
+
+    bool inQuotes = false;
+    int bracketDepth = 0;
+    String quoteChar = '';
+    int start = 0;
+
+    for (int i = 0; i < input.length; i++) {
+      final char = input[i];
+
+      // Handle quotes (both single and double)
+      if ((char == '"' || char == "'") &&
+          (inQuotes == false || quoteChar == char)) {
+        inQuotes = !inQuotes;
+        quoteChar = inQuotes ? char : '';
+      }
+      // Handle nested brackets
+      else if (char == '[' && !inQuotes) {
+        bracketDepth++;
+      } else if (char == ']' && !inQuotes) {
+        bracketDepth = math.max(0, bracketDepth - 1); // Avoid negative depth
+      }
+      // Split on delimiter only when not in quotes or brackets
+      else if (char == delimiter && !inQuotes && bracketDepth == 0) {
+        if (i > start) {
+          result.add(input.substring(start, i));
+        }
+        start = i + 1;
+      }
+    }
+
+    // Add the last segment
+    if (start < input.length) {
+      result.add(input.substring(start));
+    }
+
+    return result;
+  }
+
+  /// Check if a string is a valid number
+  bool _isNumeric(String value) {
+    return RegExp(r'^-?\d+(\.\d+)?$').hasMatch(value);
+  }
+
+  /// Parse a string of options into a ParseResult
   @override
-  Parser start() => ref(expression)
-      .starSeparated(ref(space))
-      .map((entries) => Map.fromEntries(
-            entries.elements.cast<MapEntry<String, dynamic>>(),
-          ))
-      .end();
+  ParseResult parse(String input) {
+    return ParseResult(_parseInput(input));
+  }
 }
 
-typedef FrontMatterGrammarDefinitionResult = ({String yaml, String markdown});
+/// Result of parsing string options
+class ParseResult {
+  final Map<String, dynamic> value;
 
-class FrontMatterGrammarDefinition
-    extends GrammarDefinition<FrontMatterGrammarDefinitionResult> {
-  const FrontMatterGrammarDefinition();
-
-  Parser _delimiter() => string('---');
-
-  Parser<FrontMatterGrammarDefinitionResult> _doubleDelimiter() =>
-      (ref(_delimiter) &
-              ref(yamlString) &
-              ref(_delimiter) &
-              ref(markdownContent))
-          .map((values) => (yaml: values[1], markdown: values[3]));
-
-  Parser<FrontMatterGrammarDefinitionResult> _singleDelimiter() =>
-      (ref(_delimiter) & ref(markdownContent).optional())
-          .map((values) => (yaml: '', markdown: values[1]));
-
-  Parser<FrontMatterGrammarDefinitionResult> _noDelimiter() =>
-      ref(markdownContent).map((values) => (yaml: '', markdown: values[0]));
-
-  Parser yamlString() => any().starLazy(ref(_delimiter)).flatten();
-
-  Parser markdownContent() => any().star().flatten();
-
-  @override
-  Parser<FrontMatterGrammarDefinitionResult> start() =>
-      (ref(_doubleDelimiter) | ref(_singleDelimiter) | ref(_noDelimiter))
-          .map((values) => (
-                yaml: (values.yaml ?? '').trim(),
-                markdown: (values.markdown ?? '').trim(),
-              ));
-}
-
-class HtmlCommentDefinition extends GrammarDefinition<String> {
-  const HtmlCommentDefinition();
-
-  Parser _open() => string('<!--');
-
-  Parser _close() => string('-->');
-
-  /// Matches the full HTML comment: `<!-- comment-body -->`
-  Parser htmlComment() => ref(commentBody).between(ref(_open), ref(_close));
-
-  /// Matches the comment body:
-  /// - Consumes any character unless it forms `--`
-  /// - Stops lazily before the closing `-->`.
-  ///
-  /// This ensures we don't allow `--` anywhere **inside** the comment content,
-  /// which is the strict rule for valid HTML comments.
-  Parser commentBody() => (string('--').not() & any())
-      .starLazy(ref(_close))
-      .flatten('Invalid HTML comment (contains `--` before closing).');
-
-  @override
-  Parser<String> start() =>
-      ref(htmlComment).trim().end().map((value) => (value as String).trim());
+  const ParseResult(this.value);
 }
