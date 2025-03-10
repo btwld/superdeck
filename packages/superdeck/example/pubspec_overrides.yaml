@@ -6,3 +6,5 @@ dependency_overrides:
     path: ../../superdeck_cli
   superdeck_core:
     path: ../../superdeck_core
+  ack:
+    path: ../../../../ack
