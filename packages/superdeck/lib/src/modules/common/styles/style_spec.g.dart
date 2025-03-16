@@ -6,6 +6,7 @@ part of 'style_spec.dart';
 // MixableSpecGenerator
 // **************************************************************************
 
+/// A mixin that provides spec functionality for [MarkdownTextSpec].
 mixin _$MarkdownTextSpec on Spec<MarkdownTextSpec> {
   static MarkdownTextSpec from(MixData mix) {
     return mix.attributeOf<MarkdownTextSpecAttribute>()?.resolve(mix) ??
@@ -54,10 +55,8 @@ mixin _$MarkdownTextSpec on Spec<MarkdownTextSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownTextSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [MixHelpers.lerpTextStyle] for [textStyle].
   /// - [EdgeInsets.lerp] for [padding].
-
   /// For [alignment], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [MarkdownTextSpec] is used. Otherwise, the value
   /// from the [other] [MarkdownTextSpec] is used.
@@ -96,7 +95,7 @@ mixin _$MarkdownTextSpec on Spec<MarkdownTextSpec> {
 ///
 /// Use this class to configure the attributes of a [MarkdownTextSpec] and pass it to
 /// the [MarkdownTextSpec] constructor.
-final class MarkdownTextSpecAttribute extends SpecAttribute<MarkdownTextSpec> {
+class MarkdownTextSpecAttribute extends SpecAttribute<MarkdownTextSpec> {
   final TextStyleDto? textStyle;
   final EdgeInsetsDto? padding;
   final WrapAlignment? alignment;
@@ -217,6 +216,7 @@ class MarkdownTextSpecTween extends Tween<MarkdownTextSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [MarkdownListSpec].
 mixin _$MarkdownListSpec on Spec<MarkdownListSpec> {
   static MarkdownListSpec from(MixData mix) {
     return mix.attributeOf<MarkdownListSpecAttribute>()?.resolve(mix) ??
@@ -312,7 +312,7 @@ mixin _$MarkdownListSpec on Spec<MarkdownListSpec> {
 ///
 /// Use this class to configure the attributes of a [MarkdownListSpec] and pass it to
 /// the [MarkdownListSpec] constructor.
-final class MarkdownListSpecAttribute extends SpecAttribute<MarkdownListSpec> {
+class MarkdownListSpecAttribute extends SpecAttribute<MarkdownListSpec> {
   final TextSpecAttribute? bullet;
   final TextSpecAttribute? text;
   final WrapAlignment? orderedAlignment;
@@ -445,6 +445,7 @@ class MarkdownListSpecTween extends Tween<MarkdownListSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [MarkdownAlertSpec].
 mixin _$MarkdownAlertSpec on Spec<MarkdownAlertSpec> {
   static MarkdownAlertSpec from(MixData mix) {
     return mix.attributeOf<MarkdownAlertSpecAttribute>()?.resolve(mix) ??
@@ -497,8 +498,6 @@ mixin _$MarkdownAlertSpec on Spec<MarkdownAlertSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownAlertSpec] using the appropriate
   /// interpolation method:
-  ///
-
   /// For [note] and [tip] and [important] and [warning] and [caution], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [MarkdownAlertSpec] is used. Otherwise, the value
   /// from the [other] [MarkdownAlertSpec] is used.
@@ -541,8 +540,7 @@ mixin _$MarkdownAlertSpec on Spec<MarkdownAlertSpec> {
 ///
 /// Use this class to configure the attributes of a [MarkdownAlertSpec] and pass it to
 /// the [MarkdownAlertSpec] constructor.
-final class MarkdownAlertSpecAttribute
-    extends SpecAttribute<MarkdownAlertSpec> {
+class MarkdownAlertSpecAttribute extends SpecAttribute<MarkdownAlertSpec> {
   final MarkdownAlertTypeSpecAttribute? note;
   final MarkdownAlertTypeSpecAttribute? tip;
   final MarkdownAlertTypeSpecAttribute? important;
@@ -684,6 +682,7 @@ class MarkdownAlertSpecTween extends Tween<MarkdownAlertSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [MarkdownAlertTypeSpec].
 mixin _$MarkdownAlertTypeSpec on Spec<MarkdownAlertTypeSpec> {
   static MarkdownAlertTypeSpec from(MixData mix) {
     return mix.attributeOf<MarkdownAlertTypeSpecAttribute>()?.resolve(mix) ??
@@ -788,7 +787,7 @@ mixin _$MarkdownAlertTypeSpec on Spec<MarkdownAlertTypeSpec> {
 ///
 /// Use this class to configure the attributes of a [MarkdownAlertTypeSpec] and pass it to
 /// the [MarkdownAlertTypeSpec] constructor.
-final class MarkdownAlertTypeSpecAttribute
+class MarkdownAlertTypeSpecAttribute
     extends SpecAttribute<MarkdownAlertTypeSpec> {
   final TextSpecAttribute? heading;
   final TextSpecAttribute? description;
@@ -941,6 +940,7 @@ class MarkdownAlertTypeSpecTween extends Tween<MarkdownAlertTypeSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [MarkdownTableSpec].
 mixin _$MarkdownTableSpec on Spec<MarkdownTableSpec> {
   static MarkdownTableSpec from(MixData mix) {
     return mix.attributeOf<MarkdownTableSpecAttribute>()?.resolve(mix) ??
@@ -1005,12 +1005,10 @@ mixin _$MarkdownTableSpec on Spec<MarkdownTableSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownTableSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [MixHelpers.lerpTextStyle] for [headStyle] and [bodyStyle].
   /// - [EdgeInsets.lerp] for [padding] and [cellPadding].
   /// - [TableBorder.lerp] for [border].
   /// - [BoxDecoration.lerp] for [cellDecoration].
-
   /// For [headAlignment] and [columnWidth] and [verticalAlignment] and [modifiers] and [animated], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [MarkdownTableSpec] is used. Otherwise, the value
   /// from the [other] [MarkdownTableSpec] is used.
@@ -1067,8 +1065,7 @@ mixin _$MarkdownTableSpec on Spec<MarkdownTableSpec> {
 ///
 /// Use this class to configure the attributes of a [MarkdownTableSpec] and pass it to
 /// the [MarkdownTableSpec] constructor.
-final class MarkdownTableSpecAttribute
-    extends SpecAttribute<MarkdownTableSpec> {
+class MarkdownTableSpecAttribute extends SpecAttribute<MarkdownTableSpec> {
   final TextStyleDto? headStyle;
   final TextStyleDto? bodyStyle;
   final TextAlign? headAlignment;
@@ -1270,6 +1267,7 @@ class MarkdownTableSpecTween extends Tween<MarkdownTableSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [MarkdownBlockquoteSpec].
 mixin _$MarkdownBlockquoteSpec on Spec<MarkdownBlockquoteSpec> {
   static MarkdownBlockquoteSpec from(MixData mix) {
     return mix.attributeOf<MarkdownBlockquoteSpecAttribute>()?.resolve(mix) ??
@@ -1324,11 +1322,9 @@ mixin _$MarkdownBlockquoteSpec on Spec<MarkdownBlockquoteSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownBlockquoteSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [MixHelpers.lerpTextStyle] for [textStyle].
   /// - [EdgeInsets.lerp] for [padding].
   /// - [BoxDecoration.lerp] for [decoration].
-
   /// For [alignment] and [modifiers] and [animated], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [MarkdownBlockquoteSpec] is used. Otherwise, the value
   /// from the [other] [MarkdownBlockquoteSpec] is used.
@@ -1373,7 +1369,7 @@ mixin _$MarkdownBlockquoteSpec on Spec<MarkdownBlockquoteSpec> {
 ///
 /// Use this class to configure the attributes of a [MarkdownBlockquoteSpec] and pass it to
 /// the [MarkdownBlockquoteSpec] constructor.
-final class MarkdownBlockquoteSpecAttribute
+class MarkdownBlockquoteSpecAttribute
     extends SpecAttribute<MarkdownBlockquoteSpec> {
   final TextStyleDto? textStyle;
   final EdgeInsetsDto? padding;
@@ -1524,6 +1520,7 @@ class MarkdownBlockquoteSpecTween extends Tween<MarkdownBlockquoteSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [MarkdownCodeblockSpec].
 mixin _$MarkdownCodeblockSpec on Spec<MarkdownCodeblockSpec> {
   static MarkdownCodeblockSpec from(MixData mix) {
     return mix.attributeOf<MarkdownCodeblockSpecAttribute>()?.resolve(mix) ??
@@ -1622,7 +1619,7 @@ mixin _$MarkdownCodeblockSpec on Spec<MarkdownCodeblockSpec> {
 ///
 /// Use this class to configure the attributes of a [MarkdownCodeblockSpec] and pass it to
 /// the [MarkdownCodeblockSpec] constructor.
-final class MarkdownCodeblockSpecAttribute
+class MarkdownCodeblockSpecAttribute
     extends SpecAttribute<MarkdownCodeblockSpec> {
   final TextStyleDto? textStyle;
   final BoxSpecAttribute? container;
@@ -1762,6 +1759,7 @@ class MarkdownCodeblockSpecTween extends Tween<MarkdownCodeblockSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [MarkdownCheckboxSpec].
 mixin _$MarkdownCheckboxSpec on Spec<MarkdownCheckboxSpec> {
   static MarkdownCheckboxSpec from(MixData mix) {
     return mix.attributeOf<MarkdownCheckboxSpecAttribute>()?.resolve(mix) ??
@@ -1895,8 +1893,7 @@ class MarkdownCheckboxSpecAttribute
   /// Properties from [other] that are null will fall back
   /// to the values from this instance.
   @override
-  MarkdownCheckboxSpecAttribute merge(
-      covariant MarkdownCheckboxSpecAttribute? other) {
+  MarkdownCheckboxSpecAttribute merge(MarkdownCheckboxSpecAttribute? other) {
     if (other == null) return this;
 
     return MarkdownCheckboxSpecAttribute(
@@ -1987,6 +1984,7 @@ class MarkdownCheckboxSpecTween extends Tween<MarkdownCheckboxSpec?> {
   }
 }
 
+/// A mixin that provides spec functionality for [SlideSpec].
 mixin _$SlideSpec on Spec<SlideSpec> {
   static SlideSpec from(MixData mix) {
     return mix.attributeOf<SlideSpecAttribute>()?.resolve(mix) ??
@@ -2171,7 +2169,7 @@ mixin _$SlideSpec on Spec<SlideSpec> {
 ///
 /// Use this class to configure the attributes of a [SlideSpec] and pass it to
 /// the [SlideSpec] constructor.
-final class SlideSpecAttribute extends SpecAttribute<SlideSpec> {
+class SlideSpecAttribute extends SpecAttribute<SlideSpec> {
   final TextSpecAttribute? h1;
   final TextSpecAttribute? h2;
   final TextSpecAttribute? h3;

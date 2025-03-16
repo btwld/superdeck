@@ -49,19 +49,19 @@ final class MarkdownListSpec extends Spec<MarkdownListSpec>
 @MixableSpec()
 final class MarkdownAlertSpec extends Spec<MarkdownAlertSpec>
     with _$MarkdownAlertSpec {
-  @MixableProperty(dto: _mdAlertItem)
+  @MixableField(dto: _mdAlertItem)
   final MarkdownAlertTypeSpec note;
 
-  @MixableProperty(dto: _mdAlertItem)
+  @MixableField(dto: _mdAlertItem)
   final MarkdownAlertTypeSpec tip;
 
-  @MixableProperty(dto: _mdAlertItem)
+  @MixableField(dto: _mdAlertItem)
   final MarkdownAlertTypeSpec important;
 
-  @MixableProperty(dto: _mdAlertItem)
+  @MixableField(dto: _mdAlertItem)
   final MarkdownAlertTypeSpec warning;
 
-  @MixableProperty(dto: _mdAlertItem)
+  @MixableField(dto: _mdAlertItem)
   final MarkdownAlertTypeSpec caution;
 
   const MarkdownAlertSpec({
@@ -230,27 +230,27 @@ final class SlideSpec extends Spec<SlideSpec> with _$SlideSpec {
 
   final TextStyle? link;
 
-  @MixableProperty(dto: _mdAlert)
+  @MixableField(dto: _mdAlert)
   final MarkdownAlertSpec alert;
 
-  @MixableProperty(utilities: [MixableUtility(alias: 'divider')])
+  @MixableField(utilities: [MixableFieldUtility(alias: 'divider')])
   final BoxDecoration? horizontalRuleDecoration;
-  @MixableProperty(dto: _mdBlockQuote)
+  @MixableField(dto: _mdBlockQuote)
   final MarkdownBlockquoteSpec? blockquote;
 
-  @MixableProperty(dto: _mdList)
+  @MixableField(dto: _mdList)
   final MarkdownListSpec? list;
 
-  @MixableProperty(dto: _mdTable)
+  @MixableField(dto: _mdTable)
   final MarkdownTableSpec? table;
 
-  @MixableProperty(dto: _mdCode)
+  @MixableField(dto: _mdCode)
   final MarkdownCodeblockSpec? code;
 
   final BoxSpec blockContainer;
   final ImageSpec image;
 
-  @MixableProperty(dto: _mdCheckbox)
+  @MixableField(dto: _mdCheckbox)
   final MarkdownCheckboxSpec? checkbox;
 
   static const of = _$SlideSpec.of;
