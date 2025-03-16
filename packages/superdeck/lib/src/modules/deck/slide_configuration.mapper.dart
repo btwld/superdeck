@@ -29,7 +29,7 @@ class SlideConfigurationMapper extends ClassMapperBase<SlideConfiguration> {
       Field('style', _$style);
   static Slide _$_slide(SlideConfiguration v) => v._slide;
   static const Field<SlideConfiguration, Slide> _f$_slide =
-      Field('_slide', _$_slide, key: 'slide');
+      Field('_slide', _$_slide, key: r'slide');
   static bool _$debug(SlideConfiguration v) => v.debug;
   static const Field<SlideConfiguration, bool> _f$debug =
       Field('debug', _$debug, opt: true, def: false);
@@ -44,7 +44,7 @@ class SlideConfigurationMapper extends ClassMapperBase<SlideConfiguration> {
       v._widgets;
   static const Field<SlideConfiguration,
           Map<String, Widget Function(Map<String, dynamic>)>> _f$_widgets =
-      Field('_widgets', _$_widgets, key: 'widgets', opt: true, def: const {});
+      Field('_widgets', _$_widgets, key: r'widgets', opt: true, def: const {});
   static bool _$isExporting(SlideConfiguration v) => v.isExporting;
   static const Field<SlideConfiguration, bool> _f$isExporting =
       Field('isExporting', _$isExporting, opt: true, def: false);

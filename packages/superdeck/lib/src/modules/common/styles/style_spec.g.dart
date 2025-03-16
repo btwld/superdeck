@@ -267,9 +267,7 @@ mixin _$MarkdownListSpec on Spec<MarkdownListSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownListSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [TextSpec.lerp] for [bullet] and [text].
-
   /// For [orderedAlignment] and [unorderedAlignment], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [MarkdownListSpec] is used. Otherwise, the value
   /// from the [other] [MarkdownListSpec] is used.
@@ -498,10 +496,8 @@ mixin _$MarkdownAlertSpec on Spec<MarkdownAlertSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownAlertSpec] using the appropriate
   /// interpolation method:
-  /// For [note] and [tip] and [important] and [warning] and [caution], the interpolation is performed using a step function.
-  /// If [t] is less than 0.5, the value from the current [MarkdownAlertSpec] is used. Otherwise, the value
-  /// from the [other] [MarkdownAlertSpec] is used.
-  ///
+  /// - [MarkdownAlertTypeSpec.lerp] for [note] and [tip] and [important] and [warning] and [caution].
+
   /// This method is typically used in animations to smoothly transition between
   /// different [MarkdownAlertSpec] configurations.
   @override
@@ -737,16 +733,11 @@ mixin _$MarkdownAlertTypeSpec on Spec<MarkdownAlertTypeSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownAlertTypeSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [TextSpec.lerp] for [heading] and [description].
   /// - [IconSpec.lerp] for [icon].
   /// - [BoxSpec.lerp] for [container].
   /// - [FlexSpec.lerp] for [headingFlex] and [containerFlex].
 
-  /// For , the interpolation is performed using a step function.
-  /// If [t] is less than 0.5, the value from the current [MarkdownAlertTypeSpec] is used. Otherwise, the value
-  /// from the [other] [MarkdownAlertTypeSpec] is used.
-  ///
   /// This method is typically used in animations to smoothly transition between
   /// different [MarkdownAlertTypeSpec] configurations.
   @override
@@ -1573,10 +1564,8 @@ mixin _$MarkdownCodeblockSpec on Spec<MarkdownCodeblockSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownCodeblockSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [MixHelpers.lerpTextStyle] for [textStyle].
   /// - [BoxSpec.lerp] for [container].
-
   /// For [alignment] and [modifiers] and [animated], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [MarkdownCodeblockSpec] is used. Otherwise, the value
   /// from the [other] [MarkdownCodeblockSpec] is used.
@@ -1810,10 +1799,8 @@ mixin _$MarkdownCheckboxSpec on Spec<MarkdownCheckboxSpec> {
   ///
   /// The interpolation is performed on each property of the [MarkdownCheckboxSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [MixHelpers.lerpTextStyle] for [textStyle].
   /// - [IconSpec.lerp] for [icon].
-
   /// For [modifiers] and [animated], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [MarkdownCheckboxSpec] is used. Otherwise, the value
   /// from the [other] [MarkdownCheckboxSpec] is used.
@@ -2078,14 +2065,18 @@ mixin _$SlideSpec on Spec<SlideSpec> {
   ///
   /// The interpolation is performed on each property of the [SlideSpec] using the appropriate
   /// interpolation method:
-  ///
   /// - [TextSpec.lerp] for [h1] and [h2] and [h3] and [h4] and [h5] and [h6] and [p].
   /// - [MixHelpers.lerpTextStyle] for [link] and [a] and [em] and [strong] and [del] and [img].
+  /// - [MarkdownBlockquoteSpec.lerp] for [blockquote].
+  /// - [MarkdownListSpec.lerp] for [list].
+  /// - [MarkdownTableSpec.lerp] for [table].
+  /// - [MarkdownCheckboxSpec.lerp] for [checkbox].
+  /// - [MarkdownCodeblockSpec.lerp] for [code].
   /// - [BoxDecoration.lerp] for [horizontalRuleDecoration].
   /// - [BoxSpec.lerp] for [blockContainer].
   /// - [ImageSpec.lerp] for [image].
-
-  /// For [blockquote] and [list] and [table] and [checkbox] and [code] and [textScaleFactor] and [alert] and [modifiers] and [animated], the interpolation is performed using a step function.
+  /// - [MarkdownAlertSpec.lerp] for [alert].
+  /// For [textScaleFactor] and [modifiers] and [animated], the interpolation is performed using a step function.
   /// If [t] is less than 0.5, the value from the current [SlideSpec] is used. Otherwise, the value
   /// from the [other] [SlideSpec] is used.
   ///
