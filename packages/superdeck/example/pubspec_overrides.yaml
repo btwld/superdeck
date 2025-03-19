@@ -8,3 +8,7 @@ dependency_overrides:
     path: ../../superdeck_core
   ack:
     path: ../../../../ack
+  mix_generator:
+    path: ../../../../mix/packages/mix_generator
+  mix:
+    path: ../../../../mix/packages/mix

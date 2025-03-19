@@ -3,8 +3,10 @@
 part of 'style_spec.dart';
 
 // **************************************************************************
-// MixableSpecGenerator
+// MixGenerator
 // **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
 
 /// A mixin that provides spec functionality for [MarkdownTextSpec].
 mixin _$MarkdownTextSpec on Spec<MarkdownTextSpec> {

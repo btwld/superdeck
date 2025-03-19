@@ -2,10 +2,28 @@
 
 import 'dart:io';
 
+import 'package:mason_logger/mason_logger.dart';
+import 'package:superdeck_cli/src/helpers/constants.dart';
 import 'package:superdeck_cli/src/runner.dart';
 
+/// Main entry point for the SuperDeck CLI when run as a global command
 Future<void> main(List<String> args) async {
-  await _flushThenExit(await SuperDeckRunner().run((args)));
+  final logger = Logger();
+
+  // Show a welcome message for direct invocations (no args)
+  if (args.isEmpty) {
+    logger.info('SuperDeck CLI version $packageVersion');
+    logger.info('');
+    logger.info('Available commands:');
+    logger.info('  build    - Build SuperDeck presentations from markdown');
+    logger.info('  setup    - Set up SuperDeck in your Flutter project');
+    logger.info('  version  - Print the current version of SuperDeck CLI');
+    logger.info('');
+    logger.info('Run "superdeck --help" for usage information.');
+    await _flushThenExit(ExitCode.success.code);
+  } else {
+    await _flushThenExit(await SuperDeckRunner().run(args));
+  }
 }
 
 /// Flushes the stdout and stderr streams, then exits the program with the given
