@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/helpers/generate_hash.dart';
+
+import 'front_matter_parser.dart';
 
 class RawSlideMarkdown {
   final String key;

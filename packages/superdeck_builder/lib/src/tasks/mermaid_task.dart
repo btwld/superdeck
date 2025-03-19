@@ -3,11 +3,14 @@ import 'dart:io';
 
 import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
 
-import '../generator_pipeline.dart';
+import '../core/task.dart';
+import '../core/task_context.dart';
+import '../services/browser_service.dart';
 
 class MermaidConverterTask extends Task {
-  Browser? _browser;
+  final BrowserService _browserService;
 
   /// Extract large HTML templates to constants for better readability.
   static final _mermaidHtmlTemplate = '''
@@ -18,29 +21,9 @@ class MermaidConverterTask extends Task {
       import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
       mermaid.initialize({
         startOnLoad: true,
-        // Using 'base' gives you a clean slate
-        theme: 'base',
-        themeVariables: {
-          // Background settings
-          background: '#000000',
-          primaryColor: '#000000',
-          secondaryColor: '#000000',
-          tertiaryColor: '#000000',
-
-          // Text colors
-          primaryTextColor: '#FFFF00',
-          secondaryTextColor: '#FFFF00',
-          tertiaryTextColor: '#FFFF00',
-          defaultFontColor: '#FFFF00',
-
-          // Border and line colors
-          primaryBorderColor: '#FFFF00',
-          secondaryBorderColor: '#FFFF00',
-          tertiaryBorderColor: '#FFFF00',
-          lineColor: '#FFFF00'
-        },
+        theme: '__THEME__',
+        themeVariables: __THEME_VARIABLES__,
         flowchart: {
-          // Enable HTML labels (if needed) so you can style them via CSS as well
           htmlLabels: true,
         }
       });
@@ -49,58 +32,94 @@ class MermaidConverterTask extends Task {
   </body>
 </html>
 ''';
-  MermaidConverterTask() : super('mermaid');
 
-  Future<Browser> _getBrowser() async {
-    _browser ??= await puppeteer.launch();
+  MermaidConverterTask({
+    required BrowserService browserService,
+    Map<String, dynamic> configuration = const {
+      'theme': 'base',
+      'themeVariables': {
+        'background': '#000000',
+        'primaryColor': '#000000',
+        'secondaryColor': '#000000',
+        'tertiaryColor': '#000000',
+        'primaryTextColor': '#FFFF00',
+        'secondaryTextColor': '#FFFF00',
+        'tertiaryTextColor': '#FFFF00',
+        'defaultFontColor': '#FFFF00',
+        'primaryBorderColor': '#FFFF00',
+        'secondaryBorderColor': '#FFFF00',
+        'tertiaryBorderColor': '#FFFF00',
+        'lineColor': '#FFFF00'
+      },
+      'viewportWidth': 1280,
+      'viewportHeight': 780,
+      'deviceScaleFactor': 2,
+      'timeout': 5
+    },
+  })  : _browserService = browserService,
+        super('mermaid', configuration: configuration, canRunInParallel: false);
 
-    return _browser!;
-  }
-
-  /// A helper function that automates page creation, content setup, and cleanup.
-  Future<T> _withPage<T>(
-    Browser browser,
-    Future<T> Function(Page page) action,
-  ) async {
-    final page = await browser.newPage();
-    try {
-      return await action(page);
-    } finally {
-      await page.close();
-    }
-  }
-
-  Future<String> _generateMermaidGraph(
-    Browser browser,
-    String graphDefinition,
-  ) {
+  Future<String> _generateMermaidGraph(String graphDefinition) {
     logger.fine('Generating mermaid graph:');
     logger.fine(graphDefinition);
 
-    final htmlContent = _mermaidHtmlTemplate.replaceAll(
-      '__GRAPH_DEFINITION__',
-      graphDefinition,
-    );
+    final theme = configuration['theme'] as String? ?? 'base';
+    final themeVariables = configuration['themeVariables'] ?? {};
 
-    return _withPage(browser, (page) async {
+    final themeVariablesJson = _convertThemeVariablesToJson(themeVariables);
+
+    final htmlContent = _mermaidHtmlTemplate
+        .replaceAll('__GRAPH_DEFINITION__', graphDefinition)
+        .replaceAll('__THEME__', theme)
+        .replaceAll('__THEME_VARIABLES__', themeVariablesJson);
+
+    final timeout = Duration(seconds: configuration['timeout'] as int? ?? 5);
+
+    return _browserService.withPage((page) async {
       await page.setContent(htmlContent);
       await page.waitForSelector(
         'pre.mermaid > svg',
-        timeout: const Duration(seconds: 5),
+        timeout: timeout,
       );
 
       final element = await page.$('pre.mermaid > svg');
-
       return await element.evaluate('el => el.outerHTML');
     });
   }
 
-  Future<List<int>> _convertSvgToImage(Browser browser, String svgContent) {
-    return _withPage(browser, (page) async {
+  String _convertThemeVariablesToJson(Map<String, dynamic> themeVariables) {
+    final buffer = StringBuffer();
+    buffer.write('{');
+
+    var first = true;
+    for (var entry in themeVariables.entries) {
+      if (!first) buffer.write(',');
+      first = false;
+
+      buffer.write('"${entry.key}": ');
+      if (entry.value is String) {
+        buffer.write('"${entry.value}"');
+      } else if (entry.value is num || entry.value is bool) {
+        buffer.write('${entry.value}');
+      } else {
+        buffer.write('null');
+      }
+    }
+
+    buffer.write('}');
+    return buffer.toString();
+  }
+
+  Future<List<int>> _convertSvgToImage(String svgContent) {
+    final width = configuration['viewportWidth'] as int? ?? 1280;
+    final height = configuration['viewportHeight'] as int? ?? 780;
+    final deviceScaleFactor = configuration['deviceScaleFactor'] as num? ?? 2;
+
+    return _browserService.withPage((page) async {
       await page.setViewport(DeviceViewport(
-        width: 1280,
-        height: 780,
-        deviceScaleFactor: 2,
+        width: width,
+        height: height,
+        deviceScaleFactor: deviceScaleFactor,
       ));
 
       await page.setContent('''
@@ -120,14 +139,10 @@ class MermaidConverterTask extends Task {
     });
   }
 
-  Future<List<int>> _generateMermaidGraphImage(
-    Browser browser,
-    String graphDefinition,
-  ) async {
+  Future<List<int>> _generateMermaidGraphImage(String graphDefinition) async {
     try {
-      final svgContent = await _generateMermaidGraph(browser, graphDefinition);
-
-      return await _convertSvgToImage(browser, svgContent);
+      final svgContent = await _generateMermaidGraph(graphDefinition);
+      return await _convertSvgToImage(svgContent);
     } catch (e, stackTrace) {
       logger.severe('Failed to generate Mermaid graph image: $e');
       Error.throwWithStackTrace(
@@ -140,17 +155,10 @@ class MermaidConverterTask extends Task {
   }
 
   @override
-  void dispose() {
-    _browser?.close();
-    _browser = null;
-  }
-
-  @override
   Future<void> run(TaskContext context) async {
     final stopwatch = Stopwatch()..start();
 
     final fencedCodeParser = const FencedCodeParser();
-
     final codeBlocks = fencedCodeParser.parse(context.slide.content);
     final mermaidBlocks = codeBlocks.where((e) => e.language == 'mermaid');
 
@@ -160,9 +168,7 @@ class MermaidConverterTask extends Task {
 
     for (final mermaidBlock in mermaidBlocks) {
       final mermaidAsset = GeneratedAsset.mermaid(mermaidBlock.content);
-
       final assetPath = context.dataStore.getGeneratedAssetPath(mermaidAsset);
-
       final assetFile = File(assetPath);
 
       if (await assetFile.exists()) {
@@ -170,14 +176,11 @@ class MermaidConverterTask extends Task {
           'Mermaid asset already exists for slide index: ${context.slideIndex}',
         );
       } else {
-        final browser = await _getBrowser();
-
         logger.info(
           'Generating mermaid graph image for slide index: ${context.slideIndex}',
         );
         final imageData =
-            await _generateMermaidGraphImage(browser, mermaidBlock.content);
-
+            await _generateMermaidGraphImage(mermaidBlock.content);
         await assetFile.writeAsBytes(imageData);
       }
 

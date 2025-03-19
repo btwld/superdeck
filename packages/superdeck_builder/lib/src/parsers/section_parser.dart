@@ -1,8 +1,9 @@
 import 'dart:convert';
 
+import 'package:superdeck/src/models/block_model.dart';
+
 import 'base_parser.dart';
 import 'block_parser.dart';
-import 'package:superdeck/superdeck.dart';
 
 class SectionParser extends BaseParser<List<SectionBlock>> {
   const SectionParser();

@@ -3,12 +3,30 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:superdeck/superdeck.dart';
 
-class DartProcess {
-  static Future<ProcessResult> _run(List<String> args) {
-    return Process.run('dart', args);
+import 'disposable.dart';
+
+/// Service for interacting with Dart processes
+class DartProcessService implements Disposable {
+  final Map<String, String> _environmentOverrides;
+
+  DartProcessService({Map<String, String>? environmentOverrides})
+      : _environmentOverrides = environmentOverrides ?? {};
+
+  /// Run a Dart command with arguments
+  Future<ProcessResult> run(List<String> args) {
+    return Process.run(
+      'dart',
+      args,
+      environment: _environmentOverrides.isEmpty ? null : _environmentOverrides,
+    );
   }
 
-  static Future<String> format(String code) async {
+  /// Format Dart code using dart format
+  Future<String> format(
+    String code, {
+    int? lineLength,
+    bool fix = true,
+  }) async {
     final hash = generateValueHash(code);
     // create a temp file with the code
     final tempFile = File(
@@ -19,10 +37,15 @@ class DartProcess {
     );
     try {
       await tempFile.create(recursive: true);
-
       await tempFile.writeAsString(code);
 
-      final result = await _run(['format', '--fix', tempFile.path]);
+      final args = ['format'];
+      if (fix) args.add('--fix');
+      if (lineLength != null)
+        args.addAll(['--line-length', lineLength.toString()]);
+      args.add(tempFile.path);
+
+      final result = await run(args);
 
       if (result.exitCode != 0) {
         throw _handleFormattingError(result.stderr as String, code);
@@ -35,8 +58,15 @@ class DartProcess {
       }
     }
   }
+
+  @override
+  Future<void> dispose() async {
+    // Nothing to dispose in this service
+    return Future.value();
+  }
 }
 
+/// Helper function for handling formatting errors
 DeckFormatException _handleFormattingError(String stderr, String source) {
   final match =
       RegExp(r'line (\d+), column (\d+) of .*: (.+)').firstMatch(stderr);

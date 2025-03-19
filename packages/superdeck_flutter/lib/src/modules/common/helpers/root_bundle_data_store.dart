@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:superdeck/superdeck.dart';
 
-class AssetBundleDataStore extends LocalDataStore {
+class AssetBundleDataStore extends LocalPresentationRepository {
   AssetBundleDataStore(super.configuration);
 
   @override

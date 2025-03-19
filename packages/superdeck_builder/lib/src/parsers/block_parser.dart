@@ -1,6 +1,7 @@
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/helpers/exceptions.dart';
+import 'package:superdeck/src/models/block_model.dart';
 
-import '../helpers/exceptions.dart';
+import '../utils/yaml_utils.dart';
 import 'base_parser.dart';
 
 class ParsedBlock {

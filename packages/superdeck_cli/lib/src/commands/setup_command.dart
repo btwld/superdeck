@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck/superdeck.dart';
+import 'package:yaml/yaml.dart';
 
 import '../helpers/logger.dart';
 import '../helpers/update_pubspec.dart';
@@ -225,7 +227,8 @@ Built with SuperDeck
           deckConfig = DeckConfiguration();
         } else {
           progress.update('Loading configuration from ${configFile.path}');
-          final yamlConfig = await YamlUtils.loadYamlFile(configFile);
+          final yamlString = await configFile.readAsString();
+          final yamlConfig = jsonDecode(jsonEncode(loadYaml(yamlString)));
           deckConfig = DeckConfiguration.parse(yamlConfig);
         }
         progress.complete('Configuration loaded.');

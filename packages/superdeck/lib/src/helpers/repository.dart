@@ -8,10 +8,10 @@ import 'package:superdeck/superdeck.dart';
 
 import 'pretty_json.dart';
 
-abstract interface class IDataStore {
+abstract interface class PresentationRepository {
   final DeckConfiguration configuration;
 
-  IDataStore(this.configuration);
+  PresentationRepository(this.configuration);
 
   Future<void> initialize();
 
@@ -26,8 +26,8 @@ abstract interface class IDataStore {
   Future<String> readAssetByPath(String path);
 }
 
-class LocalDataStore extends IDataStore {
-  LocalDataStore(super.configuration);
+class LocalPresentationRepository extends PresentationRepository {
+  LocalPresentationRepository(super.configuration);
 
   Future<String> fileReader(String path) async {
     return File(path).readAsString();
@@ -69,8 +69,8 @@ class LocalDataStore extends IDataStore {
   }
 }
 
-class FileSystemDataStore extends LocalDataStore {
-  FileSystemDataStore(super.configuration);
+class FileSystemPresentationRepository extends LocalPresentationRepository {
+  FileSystemPresentationRepository(super.configuration);
 
   final List<GeneratedAsset> _generatedAssets = [];
 

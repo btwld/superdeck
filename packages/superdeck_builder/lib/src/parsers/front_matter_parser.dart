@@ -1,7 +1,6 @@
 import 'dart:developer';
 
-import 'package:superdeck/superdeck.dart';
-
+import '../utils/yaml_utils.dart';
 import 'base_parser.dart';
 
 typedef ExtractedFrontmatter = ({

@@ -1,10 +1,17 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/superdeck.dart' hide generateValueHash;
 
-class DartProcess {
-  static Future<ProcessResult> _run(List<String> args) {
+import 'string_utils.dart';
+
+/// Utilities for working with processes
+class ProcessUtils {
+  /// Private constructor to prevent instantiation
+  ProcessUtils._();
+
+  /// Run a Dart command with arguments
+  static Future<ProcessResult> runDartCommand(List<String> args) {
     return Process.run('dart', args);
   }
 
@@ -28,15 +35,12 @@ class DartProcess {
       await tempFile.writeAsString(code);
 
       final args = ['format'];
-      if (fix) {
-        args.add('--fix');
-      }
-      if (lineLength != null) {
+      if (fix) args.add('--fix');
+      if (lineLength != null)
         args.addAll(['--line-length', lineLength.toString()]);
-      }
       args.add(tempFile.path);
 
-      final result = await _run(args);
+      final result = await runDartCommand(args);
 
       if (result.exitCode != 0) {
         throw _handleFormattingError(result.stderr as String, code);
@@ -52,9 +56,7 @@ class DartProcess {
 
   /// Helper function for handling formatting errors
   static DeckFormatException _handleFormattingError(
-    String stderr,
-    String source,
-  ) {
+      String stderr, String source) {
     final match =
         RegExp(r'line (\d+), column (\d+) of .*: (.+)').firstMatch(stderr);
 

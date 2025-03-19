@@ -9,12 +9,12 @@ import 'slide_configuration.dart';
 class DeckController with ChangeNotifier {
   DeckOptions options;
   List<SlideConfiguration> slides;
-  IDataStore _dataStore;
+  PresentationRepository _dataStore;
 
   DeckController({
     required this.options,
     required this.slides,
-    required IDataStore dataStore,
+    required PresentationRepository dataStore,
   }) : _dataStore = dataStore;
 
   void update({
@@ -38,7 +38,7 @@ class DeckController with ChangeNotifier {
   factory DeckController.build({
     required List<Slide> slides,
     required DeckOptions options,
-    required IDataStore dataStore,
+    required PresentationRepository dataStore,
   }) {
     return DeckController(
       options: options,
@@ -59,7 +59,7 @@ class DeckController with ChangeNotifier {
 List<SlideConfiguration> _buildSlides({
   required List<Slide> slides,
   required DeckOptions options,
-  required IDataStore dataStore,
+  required PresentationRepository dataStore,
 }) {
   if (slides.isEmpty) {
     return [
@@ -85,7 +85,7 @@ SlideConfiguration _convertSlide({
   required int slideIndex,
   required Slide slide,
   required DeckOptions options,
-  required IDataStore dataStore,
+  required PresentationRepository dataStore,
 }) {
   final widgetBlocks = slide.sections
       .expand((section) => section.blocks)

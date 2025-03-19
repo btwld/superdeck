@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_flutter/src/components/atoms/async_snapshot_widget.dart';
 import 'package:superdeck_flutter/src/modules/common/helpers/root_bundle_data_store.dart';
-import 'package:superdeck/superdeck.dart';
 
 import '../common/helpers/constants.dart';
 import '../common/helpers/provider.dart';
@@ -24,7 +24,7 @@ class DeckControllerBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     final configuration = DeckConfiguration();
     final dataStore = kCanRunProcess
-        ? FileSystemDataStore(configuration)
+        ? FileSystemPresentationRepository(configuration)
         : AssetBundleDataStore(configuration);
     return AsyncStreamWidget(
       stream: dataStore.loadDeckReferenceStream(),
@@ -51,7 +51,7 @@ class _DeckControllerProvider extends StatefulWidget {
   final DeckOptions options;
   final DeckReference reference;
   final Widget Function(DeckController controller) builder;
-  final IDataStore dataStore;
+  final PresentationRepository dataStore;
   @override
   State<_DeckControllerProvider> createState() =>
       _DeckControllerProviderState();

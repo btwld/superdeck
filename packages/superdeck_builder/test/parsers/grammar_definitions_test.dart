@@ -1,4 +1,4 @@
-import 'package:superdeck/src/parsers/string_option_parser.dart';
+import 'package:superdeck_builder/src/parsers/string_option_parser.dart';
 import 'package:test/test.dart';
 
 void main() {

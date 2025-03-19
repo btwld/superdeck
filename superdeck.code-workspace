@@ -9,6 +9,10 @@
 			"path": "packages/superdeck_cli"
 		},
 		{
+			"name": "superdeck_builder",
+			"path": "packages/superdeck_builder"
+		},
+		{
 			"path": "."
 		}
 	],

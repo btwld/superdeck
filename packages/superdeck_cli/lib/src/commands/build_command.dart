@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
+import 'package:yaml/yaml.dart';
 
 import '../helpers/logger.dart';
 import '../helpers/update_pubspec.dart';
@@ -39,7 +41,10 @@ class BuildCommand extends Command<int> {
   }
 
   /// Runs the build pipeline with proper error handling and progress reporting
-  Future<bool> _runPipeline(TaskPipeline pipeline) async {
+  Future<bool> _runPipeline(
+    FileSystemPresentationRepository store,
+    DeckConfiguration config,
+  ) async {
     // Wait while a build is already running
     while (_isRunning) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -49,7 +54,24 @@ class BuildCommand extends Command<int> {
     final progress = logger.progress('Generating slides...');
 
     try {
-      final slides = await pipeline.run();
+      // Just process the markdown directly
+      final markdownRaw = await store.readDeckMarkdown();
+      final markdownParser = MarkdownParser();
+      final rawSlides = markdownParser.parse(markdownRaw);
+
+      final slides = rawSlides
+          .map((raw) => Slide(
+                key: raw.key,
+                options: SlideOptions.parse(raw.frontmatter),
+                sections: SectionParser().parse(raw.content),
+                comments: CommentParser().parse(raw.content),
+              ))
+          .toList();
+
+      // Save the references
+      await store.saveReferences(
+        DeckReference(slides: slides, config: config),
+      );
 
       if (slides.isEmpty) {
         progress.update('No slides found.');
@@ -104,7 +126,8 @@ class BuildCommand extends Command<int> {
           deckConfig = DeckConfiguration();
         } else {
           progress.update('Loading configuration from ${configFile.path}');
-          final yamlConfig = await YamlUtils.loadYamlFile(configFile);
+          final yamlString = await configFile.readAsString();
+          final yamlConfig = jsonDecode(jsonEncode(loadYaml(yamlString)));
           deckConfig = DeckConfiguration.parse(yamlConfig);
         }
         progress.complete('Configuration loaded.');
@@ -125,18 +148,18 @@ class BuildCommand extends Command<int> {
         return ExitCode.unavailable.code;
       }
 
-      // Create the pipeline with tasks
-      final pipeline = TaskPipeline(
-        tasks: [MermaidConverterTask(), DartFormatterTask()],
-        configuration: deckConfig,
-        store: FileSystemDataStore(deckConfig),
-      );
+      // Create the data store
+      final store = FileSystemPresentationRepository(deckConfig);
+      await store.initialize();
 
       // Log if force rebuild is enabled
       if (boolArg('force-rebuild')) {
         logger.info('Force rebuild enabled. All assets will be regenerated.');
-        // Note: TaskPipeline doesn't support force rebuild directly. We could clean
-        // the asset directory first if needed in a future implementation.
+        // Clean assets directory
+        if (await deckConfig.assetsDir.exists()) {
+          await deckConfig.assetsDir.delete(recursive: true);
+          await deckConfig.assetsDir.create(recursive: true);
+        }
       }
 
       // Update pubspec assets unless skipped
@@ -149,7 +172,7 @@ class BuildCommand extends Command<int> {
       }
 
       // Run the pipeline initially
-      final success = await _runPipeline(pipeline);
+      final success = await _runPipeline(store, deckConfig);
 
       if (!success && !boolArg('watch')) {
         return ExitCode.software.code;
@@ -167,7 +190,7 @@ class BuildCommand extends Command<int> {
           await for (final event
               in deckConfig.slidesFile.watch(events: FileSystemEvent.modify)) {
             logger.info('Detected change in: ${event.path}');
-            await _runPipeline(pipeline);
+            await _runPipeline(store, deckConfig);
           }
         } on FileSystemException catch (e) {
           logger.err('Watch error: ${e.message}');
