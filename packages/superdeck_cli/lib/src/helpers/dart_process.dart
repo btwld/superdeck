@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 
 import 'exceptions.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 
 import '../generator_pipeline.dart';
 import '../helpers/dart_process.dart';

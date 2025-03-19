@@ -1,15 +1,22 @@
-library superdeck;
+library superdeck_core;
 
-export 'package:superdeck/src/components/molecules/block_widget.dart';
-export 'package:superdeck/src/components/parts/slide_parts.dart';
-export 'package:superdeck/src/components/superdeck_app.dart';
-export 'package:superdeck/src/modules/common/helpers/extensions.dart';
-export 'package:superdeck/src/modules/common/helpers/provider.dart';
-export 'package:superdeck/src/modules/common/styles/style.dart';
-export 'package:superdeck/src/modules/common/styles/style_spec.dart';
-export 'package:superdeck/src/modules/deck/deck_options.dart';
-export 'package:superdeck/src/modules/deck/deck_provider.dart';
-export 'package:superdeck/src/modules/deck/slide_configuration.dart';
-export 'package:superdeck_core/superdeck_core.dart';
+export 'package:ack/ack.dart';
 
-export 'src/components/organisms/app_shell.dart';
+export 'src/helpers/data_store.dart';
+export 'src/helpers/exceptions.dart';
+export 'src/helpers/extensions.dart';
+export 'src/helpers/generate_hash.dart';
+export 'src/helpers/watcher.dart';
+export 'src/helpers/yaml_utils.dart';
+export 'src/models/asset_model.dart';
+export 'src/models/block_model.dart';
+export 'src/models/deck_configuration.dart';
+export 'src/models/deck_reference.dart';
+export 'src/models/slide_model.dart';
+export 'src/parsers/block_parser.dart';
+export 'src/parsers/comment_parser.dart';
+export 'src/parsers/fenced_code_parser.dart';
+export 'src/parsers/front_matter_parser.dart';
+export 'src/parsers/grammar_definitions.dart';
+export 'src/parsers/markdown_parser.dart';
+export 'src/parsers/section_parser.dart';

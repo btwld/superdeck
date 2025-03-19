@@ -1,5 +1,5 @@
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 
 final logger = Logger(
   // Optionally, specify a custom `LogTheme` to override log styles.

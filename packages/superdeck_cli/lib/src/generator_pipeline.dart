@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 
 /// Represents the context in which a slide is processed.
 /// It holds the raw slide data and manages associated assets.

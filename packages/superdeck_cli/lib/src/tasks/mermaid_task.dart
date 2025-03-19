@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:puppeteer/puppeteer.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 
 import '../generator_pipeline.dart';
 import '../helpers/logger.dart';

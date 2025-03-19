@@ -1,6 +1,6 @@
 // ignore_for_file: avoid-duplicate-cascades
 
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 
 import 'logger.dart';
 

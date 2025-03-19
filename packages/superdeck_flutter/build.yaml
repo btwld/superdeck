@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      dart_mappable_builder:
+        generate_for:
+          - lib/**/*.dart
+      mix_generator|spec:
+        generate_for:
+          - lib/**/*.dart
+      mix_generator|dto:
+        generate_for:
+          - lib/**/*.dart
+      mix_generator|utility:
+        generate_for:
+          - lib/**/*.dart

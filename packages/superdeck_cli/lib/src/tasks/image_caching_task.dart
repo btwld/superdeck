@@ -4,7 +4,7 @@
 // import 'package:http/http.dart' as http;
 // import 'package:superdeck_cli/src/generator_pipeline.dart';
 // import 'package:superdeck_cli/src/parsers/markdown_parser.dart';
-// import 'package:superdeck_core/superdeck_core.dart';
+// import 'package:superdeck/superdeck.dart';
 
 // /// A task responsible for caching images referenced in markdown slides.
 // class ImageCachingTask extends Task {

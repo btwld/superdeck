@@ -1,5 +1,5 @@
 import 'package:superdeck_cli/src/helpers/update_pubspec.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:test/test.dart';
 
 void main() {
