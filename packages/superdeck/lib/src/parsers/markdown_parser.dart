@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck/superdeck.dart';
 
 class RawSlideMarkdown {

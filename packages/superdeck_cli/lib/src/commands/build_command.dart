@@ -3,12 +3,10 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_builder/superdeck_builder.dart';
 
-import '../generator_pipeline.dart';
 import '../helpers/logger.dart';
 import '../helpers/update_pubspec.dart';
-import '../tasks/dart_formatter_task.dart';
-import '../tasks/mermaid_task.dart';
 
 /// Command to build SuperDeck presentations
 ///

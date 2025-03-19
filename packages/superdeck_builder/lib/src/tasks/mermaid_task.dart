@@ -5,7 +5,6 @@ import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck/superdeck.dart';
 
 import '../generator_pipeline.dart';
-import '../helpers/logger.dart';
 
 class MermaidConverterTask extends Task {
   Browser? _browser;
@@ -51,6 +50,7 @@ class MermaidConverterTask extends Task {
 </html>
 ''';
   MermaidConverterTask() : super('mermaid');
+
   Future<Browser> _getBrowser() async {
     _browser ??= await puppeteer.launch();
 
@@ -74,8 +74,8 @@ class MermaidConverterTask extends Task {
     Browser browser,
     String graphDefinition,
   ) {
-    logger.detail('Generating mermaid graph:');
-    logger.detail(graphDefinition);
+    logger.fine('Generating mermaid graph:');
+    logger.fine(graphDefinition);
 
     final htmlContent = _mermaidHtmlTemplate.replaceAll(
       '__GRAPH_DEFINITION__',
@@ -129,7 +129,7 @@ class MermaidConverterTask extends Task {
 
       return await _convertSvgToImage(browser, svgContent);
     } catch (e, stackTrace) {
-      logger.err('Failed to generate Mermaid graph image: $e');
+      logger.severe('Failed to generate Mermaid graph image: $e');
       Error.throwWithStackTrace(
         Exception(
           'Mermaid generation timed out or failed. Original error: $e',

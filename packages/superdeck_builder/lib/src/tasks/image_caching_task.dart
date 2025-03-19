@@ -1,10 +1,12 @@
+// This task is currently disabled but kept for reference
 // import 'dart:io';
 // import 'dart:typed_data';
 
 // import 'package:http/http.dart' as http;
-// import 'package:superdeck_cli/src/generator_pipeline.dart';
-// import 'package:superdeck_cli/src/parsers/markdown_parser.dart';
 // import 'package:superdeck/superdeck.dart';
+// import 'package:logging/logging.dart';
+
+// import '../generator_pipeline.dart';
 
 // /// A task responsible for caching images referenced in markdown slides.
 // class ImageCachingTask extends Task {
@@ -71,9 +73,8 @@
 //   }
 
 //   @override
-//   Future<TaskContext> run(TaskContext context) async {
-  
-
-//     return context;
+//   Future<void> run(TaskContext context) async {
+//     // Implementation to be added later
+//     return;
 //   }
 // }

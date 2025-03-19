@@ -9,13 +9,8 @@
 			"path": "packages/superdeck_cli"
 		},
 		{
-			"name": "superdeck_core",
-			"path": "packages/superdeck_core"
-		},
-		{
 			"path": "."
 		}
-	
 	],
 	"settings": {
 		"workbench.colorCustomizations": {
