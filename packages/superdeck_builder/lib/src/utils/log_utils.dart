@@ -153,12 +153,8 @@ class _AnsiColor {
   const _AnsiColor(this.code);
 
   static const reset = _AnsiColor('\x1B[0m');
-  static const black = _AnsiColor('\x1B[30m');
   static const red = _AnsiColor('\x1B[31m');
   static const green = _AnsiColor('\x1B[32m');
   static const yellow = _AnsiColor('\x1B[33m');
-  static const blue = _AnsiColor('\x1B[34m');
-  static const magenta = _AnsiColor('\x1B[35m');
   static const cyan = _AnsiColor('\x1B[36m');
-  static const white = _AnsiColor('\x1B[37m');
 }

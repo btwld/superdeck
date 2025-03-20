@@ -60,7 +60,7 @@ class BlockParser extends BaseParser<List<ParsedBlock>> {
 
       try {
         options = YamlUtils.convertYamlToMap(optionsString);
-      } on Exception catch (e, stackTrace) {
+      } on Exception catch (e) {
         throw DeckFormatException(
           'Failed to parse tag blocks: $e',
           optionsString,
