@@ -75,37 +75,3 @@ class _PreviewContainer extends StatelessWidget {
     );
   }
 }
-
-void _showOverlayMenu(
-  BuildContext context,
-  TapDownDetails details,
-  void Function(_PopMenuAction) handleAction,
-) {
-  final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-
-  menuItem(_PopMenuAction action) => PopupMenuItem(
-        value: action,
-        onTap: () => handleAction(action),
-        mouseCursor: SystemMouseCursors.click,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(action.icon),
-            const SizedBox(width: 8),
-            Text(action.label),
-          ],
-        ),
-      );
-
-  showMenu(
-    context: context,
-    menuPadding: EdgeInsets.zero,
-    items: [
-      menuItem(_PopMenuAction.refreshThumbnail),
-    ],
-    position: RelativeRect.fromSize(
-      details.globalPosition & Size.zero,
-      overlay.size,
-    ),
-  );
-}

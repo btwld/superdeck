@@ -11,11 +11,11 @@ final logger = Logger(
 extension LoggerX on Logger {
   void formatError(DeckFormatException exception) {
     final message = exception.message;
-    final sourceSpan = exception.source as dynamic;
-    final source = sourceSpan.text;
-    final start = sourceSpan.start;
+    final sourceSpan = exception.source;
+    final source = sourceSpan?.text ?? '';
+    final start = sourceSpan?.start;
 
-    final arrow = _createArrow(start.column);
+    final arrow = start != null ? _createArrow(start.column) : '';
 
     final splitLines = source.split('\n');
 
@@ -34,14 +34,16 @@ extension LoggerX on Logger {
     newLine();
     err('Formatting Error:');
     newLine();
-    info('$message on line ${start.line + 1}, column ${start.column + 1}');
+    info(
+      '$message on line ${(start?.line ?? 0) + 1}, column ${(start?.column ?? 0) + 1}',
+    );
     newLine();
 
-    final exceptionLineNumber = start.line;
+    final exceptionLineNumber = start?.line ?? 0;
 
     // Calculate only 4 lines before and after the error line
     final startLine = (exceptionLineNumber - 5).clamp(0, splitLines.length);
-    final endLine = (exceptionLineNumber + 5).clamp(0, splitLines.length);
+    final endLine = (exceptionLineNumber + 5).clamp(0, splitLines.length - 1);
 
     for (int i = startLine; i <= endLine; i++) {
       final currentLineContent = splitLines[i];

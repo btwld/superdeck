@@ -87,8 +87,9 @@ class BuildCommand extends Command<int> {
         subscription.cancel();
       }
     } on FileSystemException catch (e) {
-      progress.fail('File error: ${e.message}');
-      logger.err('Path: ${e.path}');
+      progress.fail('Build failed');
+      logger.err('File system error: ${e.message}');
+      logger.err('Path: ${e.path ?? 'Unknown'}');
 
       return false;
     } on FormatException catch (e) {

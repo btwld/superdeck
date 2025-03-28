@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:superdeck/src/modules/deck/slide_configuration.dart';
 
 // Color _colorFromHex(String hexString) {
 //   hexString = hexString.trim();
@@ -21,8 +20,6 @@ class BackgroundPart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final configuration = SlideConfiguration.of(context);
-
     return const SizedBox.shrink();
   }
 }

@@ -109,7 +109,7 @@ class SuperDeckRunner extends CommandRunner<int> {
       // Handle file system errors
       _logger
         ..err('File system error: ${e.message}')
-        ..err('Path: ${e.path}');
+        ..err('Path: ${e.path ?? 'Unknown'}');
 
       return ExitCode.ioError.code;
     } on FormatException catch (e) {

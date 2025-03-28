@@ -8,10 +8,9 @@ import 'package:superdeck_cli/src/runner.dart';
 
 /// Main entry point for the SuperDeck CLI when run as a global command
 Future<void> main(List<String> args) async {
-  final logger = Logger();
-
   // Show a welcome message for direct invocations (no args)
   if (args.isEmpty) {
+    final logger = Logger();
     logger.info('SuperDeck CLI version $packageVersion');
     logger.info('');
     logger.info('Available commands:');
