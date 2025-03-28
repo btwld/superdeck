@@ -1,14 +1,15 @@
-library superdeck_core;
+library superdeck_flutter;
 
-export 'package:ack/ack.dart';
+export 'package:superdeck/src/components/molecules/block_widget.dart';
+export 'package:superdeck/src/components/parts/slide_parts.dart';
+export 'package:superdeck/src/components/superdeck_app.dart';
+export 'package:superdeck/src/modules/common/helpers/extensions.dart';
+export 'package:superdeck/src/modules/common/helpers/provider.dart';
+export 'package:superdeck/src/modules/common/styles/style.dart';
+export 'package:superdeck/src/modules/common/styles/style_spec.dart';
+export 'package:superdeck/src/modules/deck/deck_options.dart';
+export 'package:superdeck/src/modules/deck/deck_provider.dart';
+export 'package:superdeck/src/modules/deck/slide_configuration.dart';
+export 'package:superdeck_core/superdeck_core.dart';
 
-export 'src/helpers/exceptions.dart';
-export 'src/helpers/extensions.dart';
-export 'src/helpers/generate_hash.dart';
-export 'src/helpers/repository.dart';
-export 'src/helpers/watcher.dart';
-export 'src/models/asset_model.dart';
-export 'src/models/block_model.dart';
-export 'src/models/deck_configuration.dart';
-export 'src/models/deck_reference.dart';
-export 'src/models/slide_model.dart';
+export 'src/components/organisms/app_shell.dart';

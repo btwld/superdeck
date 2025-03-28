@@ -1,0 +1,4 @@
+# melos_managed_dependency_overrides: superdeck_core
+dependency_overrides:
+  ack:
+    path: ../../../ack/packages/ack

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
 import 'commands/build_command.dart';

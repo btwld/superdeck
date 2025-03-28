@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:superdeck/src/models/block_model.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import 'base_parser.dart';
 import 'block_parser.dart';

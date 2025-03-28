@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:puppeteer/puppeteer.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../core/task.dart';
 import '../core/task_context.dart';

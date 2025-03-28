@@ -5,6 +5,10 @@
 			"path": "packages/superdeck"
 		},
 		{
+			"name": "superdeck_core",
+			"path": "packages/superdeck_core"
+		},
+		{
 			"name": "superdeck_cli",
 			"path": "packages/superdeck_cli"
 		},

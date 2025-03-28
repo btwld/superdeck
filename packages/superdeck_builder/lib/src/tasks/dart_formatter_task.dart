@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
+import 'package:superdeck_builder/src/utils/process_utils.dart';
 
 import '../core/task.dart';
 import '../core/task_context.dart';
-import '../services/dart_process_service.dart';
 
 class DartFormatterTask extends Task {
-  final DartProcessService _processService;
+  final Map<String, String>? _environmentOverrides;
 
   DartFormatterTask({
-    required DartProcessService processService,
+    Map<String, String>? environmentOverrides,
     Map<String, dynamic> configuration = const {},
-  })  : _processService = processService,
+  })  : _environmentOverrides = environmentOverrides,
         super('dart_formatter',
             configuration: configuration, canRunInParallel: true);
 
@@ -27,10 +27,11 @@ class DartFormatterTask extends Task {
 
     for (final dartBlock in dartBlocks) {
       try {
-        final formattedCode = await _processService.format(
+        final formattedCode = await ProcessUtils.formatDartCode(
           dartBlock.content,
           lineLength: lineLength,
           fix: fix,
+          environmentOverrides: _environmentOverrides,
         );
 
         final updatedMarkdown = context.slide.content.replaceRange(

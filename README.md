@@ -23,7 +23,7 @@ Follow these steps to integrate SuperDeck into your Flutter project:
 2. Import the `superdeck` package in your Dart code:
 
    ```dart
-   import 'package:superdeck/superdeck.dart';
+   import 'package:superdeck_core/superdeck_core.dart';
    ```
 
 3. Initialize SuperDeck and run the app.

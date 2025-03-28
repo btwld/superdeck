@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:superdeck/superdeck.dart' hide generateValueHash;
 
+import '../core/deck_format_exception.dart';
 import 'string_utils.dart';
 
 /// Utilities for working with processes
@@ -11,8 +11,15 @@ class ProcessUtils {
   ProcessUtils._();
 
   /// Run a Dart command with arguments
-  static Future<ProcessResult> runDartCommand(List<String> args) {
-    return Process.run('dart', args);
+  static Future<ProcessResult> runDartCommand(List<String> args,
+      {Map<String, String>? environmentOverrides}) {
+    return Process.run(
+      'dart',
+      args,
+      environment: environmentOverrides?.isNotEmpty == true
+          ? environmentOverrides
+          : null,
+    );
   }
 
   /// Format Dart code using dart format
@@ -20,6 +27,7 @@ class ProcessUtils {
     String code, {
     int? lineLength,
     bool fix = true,
+    Map<String, String>? environmentOverrides,
   }) async {
     final hash = generateValueHash(code);
     // Create a temp file with the code
@@ -40,7 +48,8 @@ class ProcessUtils {
         args.addAll(['--line-length', lineLength.toString()]);
       args.add(tempFile.path);
 
-      final result = await runDartCommand(args);
+      final result = await runDartCommand(args,
+          environmentOverrides: environmentOverrides);
 
       if (result.exitCode != 0) {
         throw _handleFormattingError(result.stderr as String, code);

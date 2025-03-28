@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:superdeck/src/helpers/generate_hash.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import 'front_matter_parser.dart';
 

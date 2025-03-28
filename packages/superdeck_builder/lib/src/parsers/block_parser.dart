@@ -1,6 +1,6 @@
-import 'package:superdeck/src/helpers/exceptions.dart';
-import 'package:superdeck/src/models/block_model.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
+import '../core/deck_format_exception.dart';
 import '../utils/yaml_utils.dart';
 import 'base_parser.dart';
 

@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml/yaml.dart';
 
 import '../helpers/logger.dart';
@@ -54,38 +55,37 @@ class BuildCommand extends Command<int> {
     final progress = logger.progress('Generating slides...');
 
     try {
-      // Just process the markdown directly
-      final markdownRaw = await store.readDeckMarkdown();
-      final markdownParser = MarkdownParser();
-      final rawSlides = markdownParser.parse(markdownRaw);
+      // Use the default pipeline from superdeck_builder instead of custom implementation
+      final pipeline = getDefaultPipeline(config, store);
 
-      final slides = rawSlides
-          .map((raw) => Slide(
-                key: raw.key,
-                options: SlideOptions.parse(raw.frontmatter),
-                sections: SectionParser().parse(raw.content),
-                comments: CommentParser().parse(raw.content),
-              ))
-          .toList();
-
-      // Save the references
-      await store.saveReferences(
-        DeckReference(slides: slides, config: config),
-      );
-
-      if (slides.isEmpty) {
-        progress.update('No slides found.');
-        logger.warn(
-          'No slides found in your slides.md file. Make sure it exists and has proper content.',
+      // Listen for metrics to provide more detailed progress information
+      final subscription = pipeline.metrics.listen((metrics) {
+        progress.update(
+          'Processing slide ${metrics.slideIndex + 1}: ${metrics.taskName}',
         );
-        progress.complete('Build completed with warnings.');
+      });
 
-        return false;
+      try {
+        // Run the pipeline
+        final slides = await pipeline.run();
+
+        if (slides.isEmpty) {
+          progress.update('No slides found.');
+          logger.warn(
+            'No slides found in your slides.md file. Make sure it exists and has proper content.',
+          );
+          progress.complete('Build completed with warnings.');
+
+          return false;
+        }
+
+        progress.complete('Generated ${slides.length} slides.');
+
+        return true;
+      } finally {
+        // Cancel the subscription to prevent memory leaks
+        subscription.cancel();
       }
-
-      progress.complete('Generated ${slides.length} slides.');
-
-      return true;
     } on FileSystemException catch (e) {
       progress.fail('File error: ${e.message}');
       logger.err('Path: ${e.path}');
@@ -186,18 +186,20 @@ class BuildCommand extends Command<int> {
         logger.info('Press Ctrl+C to stop watching.');
         logger.info('');
 
-        try {
-          await for (final event
-              in deckConfig.slidesFile.watch(events: FileSystemEvent.modify)) {
-            logger.info('Detected change in: ${event.path}');
-            await _runPipeline(store, deckConfig);
-          }
-        } on FileSystemException catch (e) {
-          logger.err('Watch error: ${e.message}');
-          logger.err('Path: ${e.path}');
+        // Create a pipeline that will handle watching and rebuilding
+        final pipeline = getDefaultPipeline(deckConfig, store);
 
-          return ExitCode.ioError.code;
-        }
+        // Start watching for changes and rebuilding when needed
+        await pipeline.runAndWatch(
+          onLog: (message) => logger.info(message),
+          onSlidesProcessed: (slides) {
+            if (slides.isEmpty) {
+              logger.warn('No slides found in the deck.');
+            } else {
+              logger.success('Generated ${slides.length} slides.');
+            }
+          },
+        );
       }
 
       return ExitCode.success.code;

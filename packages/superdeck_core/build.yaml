@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      dart_mappable_builder:
+        generate_for:
+          - lib/**/*.dart
+
+global_options:
+  dart_mappable_builder:
+    options:
+      caseStyle: snakeCase
+      enumCaseStyle: snakeCase
+      ignoreNull: true
+      generateMethods: [decode, encode, copy, stringify, equals]

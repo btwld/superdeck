@@ -1,4 +1,4 @@
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 

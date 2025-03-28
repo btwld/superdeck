@@ -1,5 +1,5 @@
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/src/parsers/markdown_parser.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 /// Represents the context in which a slide is processed.
 /// It holds the raw slide data and manages associated assets.

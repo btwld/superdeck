@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:logging/logging.dart';
-import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/src/parsers/markdown_parser.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../cache/slide_cache.dart';
 import '../parsers/comment_parser.dart' show CommentParser;
@@ -42,6 +43,44 @@ class TaskPipeline {
   })  : _cache = cache,
         _parallelTasks = parallelTasks,
         _concurrentSlides = concurrentSlides;
+
+  /// Runs the pipeline and then watches for changes to the slides file,
+  /// automatically re-running the pipeline when changes are detected.
+  /// Returns a Future that completes when watching is stopped.
+  Future<void> runAndWatch({
+    void Function(String message)? onLog,
+    void Function(Iterable<Slide> slides)? onSlidesProcessed,
+  }) async {
+    // Run the pipeline initially
+    final slides = await run();
+    onSlidesProcessed?.call(slides);
+
+    // Create a completer to track when watching should stop
+    final completer = Completer<void>();
+
+    // Watch for changes to the slides file
+    final fileWatcher = FileWatcher(configuration.slidesFile);
+    onLog?.call('Watching for changes to ${configuration.slidesFile.path}');
+
+    fileWatcher.startWatching(() async {
+      onLog?.call('File change detected. Re-running pipeline...');
+      try {
+        final updatedSlides = await run();
+        onSlidesProcessed?.call(updatedSlides);
+      } catch (e) {
+        onLog?.call('Error processing slides: $e');
+      }
+    });
+
+    // Handle process termination
+    ProcessSignal.sigint.watch().listen((signal) {
+      onLog?.call('Stopping file watcher...');
+      fileWatcher.stopWatching();
+      completer.complete();
+    });
+
+    return completer.future;
+  }
 
   /// Processes an individual slide by executing all tasks sequentially or in parallel.
   Future<TaskContext> _processSlide(TaskContext context) async {
