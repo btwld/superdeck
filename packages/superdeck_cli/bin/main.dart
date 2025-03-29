@@ -15,6 +15,7 @@ Future<void> main(List<String> args) async {
     logger.info('');
     logger.info('Available commands:');
     logger.info('  build    - Build SuperDeck presentations from markdown');
+    logger.info('  publish  - Publish Superdeck app to GitHub Pages');
     logger.info('  setup    - Set up SuperDeck in your Flutter project');
     logger.info('  version  - Print the current version of SuperDeck CLI');
     logger.info('');

@@ -20,6 +20,7 @@ Command line interface for SuperDeck - Create beautiful and interactive presenta
 - **Setup** - Configure your Flutter project for SuperDeck
 - **Build** - Generate required assets from your slides
 - **Watch** - Automatically rebuild when slides are modified
+- **Publish** - Publish your SuperDeck app to GitHub Pages
 
 ## Installation
 
@@ -63,6 +64,36 @@ superdeck build
 Options:
 - `--watch` (`-w`): Watch for changes in the slides file and rebuild automatically
 
+### Publish
+
+Publish your SuperDeck app to GitHub Pages.
+
+```bash
+superdeck publish
+```
+
+Options:
+- `--branch` (`-b`): The git branch where the built content will be published (default: `gh-pages`)
+- `--message` (`-m`): The commit message for the publication (default: `Publish Superdeck app to GitHub Pages`)
+- `--[no-]push`: Push the changes to remote after publication (default: `true`)
+- `--[no-]build`: Build the web app before publishing with the correct base-href for GitHub Pages (default: `true`)
+- `--build-dir`: Directory containing the built web assets to publish (default: `build/web`)
+- `--dry-run`: Run through the publication process without making actual changes
+
+This command will:
+1. Build your app for web with the correct base-href for GitHub Pages (unless `--no-build` is specified)
+2. Create or update the target Git branch (default: `gh-pages`)
+3. Copy the build output to the target branch
+4. Commit the changes
+5. Push to remote (unless `--no-push` is specified)
+
+#### Reverting a Publication
+
+To revert a publication:
+```bash
+superdeck publish --revert
+```
+
 ## Usage Examples
 
 ### Setting up a new project
@@ -94,10 +125,33 @@ superdeck build --watch
 flutter run
 ```
 
+### Publishing to GitHub Pages
+
+```bash
+# Build and publish your SuperDeck app to GitHub Pages (simplest usage)
+superdeck publish
+
+# Publish without building (if you've already built the web app)
+superdeck publish --no-build
+
+# Commit to gh-pages branch but don't push to remote
+superdeck publish --no-push
+
+# Specify a custom branch
+superdeck publish --branch my-pages
+
+# Use a custom commit message
+superdeck publish --message "Deploy my awesome presentation"
+
+# Test the publishing process without making changes
+superdeck publish --dry-run
+```
+
 ## Requirements
 
 - Flutter SDK
 - Dart SDK version 3.0.0 or higher
+- Git (for publish command)
 
 ## Additional information
 

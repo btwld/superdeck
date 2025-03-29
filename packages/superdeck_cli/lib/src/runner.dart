@@ -7,6 +7,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
 import 'commands/build_command.dart';
+import 'commands/publish_command.dart';
 import 'commands/setup_command.dart';
 import 'commands/version_command.dart';
 import 'helpers/constants.dart';
@@ -46,6 +47,7 @@ class SuperDeckRunner extends CommandRunner<int> {
 
     // Add commands
     addCommand(BuildCommand());
+    addCommand(PublishCommand());
     addCommand(SetupCommand());
     addCommand(VersionCommand());
   }

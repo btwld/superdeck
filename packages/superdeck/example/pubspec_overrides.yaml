@@ -14,3 +14,5 @@ dependency_overrides:
     path: ../../superdeck_builder
   superdeck_core:
     path: ../../superdeck_core
+  mix_annotations:
+    path: ../../../../mix/packages/mix_annotations
