@@ -1,0 +1,568 @@
+{
+  "slides": [
+    {
+      "key": "cS8UY7ii",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n\n## Another image Another image Another image Another image Another image Another image Another image Another image Another image Another image {.here}\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "name": "twitter",
+              "flex": 1,
+              "scrollable": false,
+              "type": "widget",
+              "username": "faafasdf",
+              "tweetId": 1746481414112256000
+            },
+            {
+              "content": "![mermaid_graph](.superdeck/assets/mermaid_srHRIuii.png) {.code}\n\n<!-- Test of notes -->",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": [
+        "Test of notes"
+      ]
+    },
+    {
+      "key": "nPPBLQ6k",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "\n# Hi\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "mUUhzDVx",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
+              "content": "\n\n\n```dart\nColumn(\n  crossAxisAlignment: CrossAxisAlignment.start,\n  children: spans.map((span) {\n    return RichText(\n      text: TextSpan(\n        style: interpolatedSpec.textStyle,\n        children: [span],\n      ),\n    );\n  }).toList(),\n)\n```{.code}\n",
+              "align": "center",
+              "flex": 2,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "![structured_output](https://picsum.photos/800/1400) {.cover}",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 2,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "F2fTbXOG",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n\n![mermaid_graph](.superdeck/assets/mermaid_srHRIuii.png) {.code}\n\n## Another image{.here}\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "![structured_output](https://picsum.photos/800/1400) {.cover}",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "0zqy1l5c",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "```dart\nColumn(\n  crossAxisAlignment: CrossAxisAlignment.start,\n  children: spans.map((span) {\n    return RichText(\n      text: TextSpan(\n        style: interpolatedSpec.textStyle,\n        children: [span],\n      ),\n    );\n  }).toList(),\n)\n```{.code}",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "RiDZbaFZ",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "```dart\nColumn(\n  children: []).toList(),\n);\n```{.code}",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "z34aal1W",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n\n![structured_output](https://picsum.photos/800/1400) {.cover}\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "id": "idhere",
+              "embed": true,
+              "run": true,
+              "flex": 1,
+              "scrollable": false,
+              "type": "dartpad"
+            },
+            {
+              "content": "## Yes different image{.here}",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "H2GzZVSx",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n\n#### Leo Farias\nleoafarias{.here}\n",
+              "align": "center_right",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "- Founder/CEO/CTO\n- Open Source Contributor\n- Flutter & Dart GDE\n- Passionate about UI/UX/DX",
+              "align": "center_left",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "SJncL4H2",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "\n> [!WARNING]  \n> This presentation contains live AI-generated content. Unexpected things may occur during the demonstration. \n",
+              "align": "center_left",
+              "flex": 2,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "ybLDY8oi",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n### Generative UI\n",
+              "align": "center_right",
+              "flex": 2,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "\n## VS\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "### AI Assisted Code Generation",
+              "flex": 2,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "aTAXFyQ7",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### What is Generative UI?{.animate}\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "- LLMs are great at generating content based on context\n- GUIs are great at providing structured, interactive interfaces for user input and navigation",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "9mHDFwa9",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "# LLM ❤️ GUI{.animate}",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "9BmK4SPw",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "\nCreates dynamic, context-aware UIs by interpreting actions and maintaining state with LLMs for fluid, interactive responses.{.animate}\n",
+              "align": "center",
+              "flex": 2,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "3sLdrfsM",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Benefits of UI over Chat{.animate}\n\n- More intuitive and user-friendly, especially for complex tasks\n- Faster feedback loop between users and LLMs\n- Enhances efficiency and interaction",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "oglBIjM0",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n### Flutter is Well-Suited <br>for Generative UI\nBuilt for any screen: Ideal for generating<br>adaptive UIs across devices and platforms.\n",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "Z40wIUYP",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## How can LLMs Understtand Your UI?\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "![structured_output](assets/structured_output.png)",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "9y5hBeTm",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n\n### Structured Output\n",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            },
+            {
+              "content": "```dart \nfinal schema = Schema.array(\n  description: 'List of recipes',\n  items: Schema.object(\n    properties: {\n      'recipeName': Schema.string(\n        description: 'Name of the recipe.',\n        nullable: false,\n      ),\n    },\n    requiredProperties: ['recipeName'],\n  ),\n);\n```",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "CwxHOCpO",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "```dart\n\nfinal model = GenerativeModel(\n  model: 'gemini-1.5-pro',\n  apiKey: apiKey,\n  generationConfig: GenerationConfig(\n    responseMimeType: 'application/json',\n    responseSchema: schema,\n  ),\n);\n\nfinal prompt = 'List a few popular cookie recipes.';\nfinal response = await model.generateContent([Content.text(prompt)]);\n\n```",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "pukXIjvK",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Color Palette Generator\n\nGenerate a color palette based on a given text.\n\n- Name of the palette\n- Font family\n- Font color\n- Color for each corner of the palette",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "14RbmSW5",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "```dart\nfinal schema = Schema.object(properties: {\n  'name': Schema.string(\n    description:\n        'The text content to display on color palette. Format: #FF0000',\n    nullable: false,\n  ),\n  'font': Schema.enumString(\n    enumValues: ColorPaletteFontFamily.enumString,\n    description: 'The font to use for the poster text.',\n    nullable: false,\n  ),\n  'fontColor': Schema.string(\n    description: 'The hex color value of the poster text. Format: #FF0000',\n    nullable: false,\n  ),\n  'topLeftColor': Schema.string(\n    description:\n        'The hex color value top left corner of color palette. Format: #FF0000',\n    nullable: false,\n  ),\n  'topRightColor': Schema.string(\n    description:\n        'The hex color value top right corner of color palette. Format: #FF0000',\n    nullable: false,\n  ),\n  'bottomLeftColor': Schema.string(\n    description:\n        'The hex color value bottom left corner of color palette. Format: #FF0000',\n    nullable: false,\n  ),\n  'bottomRightColor': Schema.string(\n    description:\n        'The hex color value bottom right corner of color palette. Format: #FF0000',\n    nullable: false,\n  )\n}, requiredProperties: [\n  'name',\n  'font',\n  'fontColor',\n  'topLeftColor',\n  'topRightColor',\n  'bottomLeftColor',\n  'bottomRightColor',\n]);\n\n```",
+              "flex": 1,
+              "scrollable": false,
+              "type": "column"
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "XeDZiCNk",
+      "options": {
+        "style": "demo"
+      },
+      "sections": [
+        {
+          "blocks": [
+            {
+              "name": "colorPalette",
+              "flex": 1,
+              "scrollable": false,
+              "type": "widget",
+              "schema": true,
+              "prompts": [
+                "tropical",
+                "vibrant",
+                "pastel",
+                "chocolatey pink unicorn",
+                "cyberpunk"
+              ]
+            }
+          ],
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "comments": []
+    }
+  ],
+  "config": {}
+}

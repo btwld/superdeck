@@ -18,18 +18,18 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="A SuperDeck presentation.">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="example">
+  <meta name="apple-mobile-web-app-title" content="SuperDeck">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>Superdeck</title>
+  <title>SuperDeck</title>
   <link rel="manifest" href="manifest.json">
 
   <style>
@@ -56,6 +56,7 @@
       top: 0;
       left: 0;
       z-index: 9999;
+      background-color: rgba(20, 18, 24, 0.95);
     }
     
     .loading-text {
@@ -66,94 +67,69 @@
       letter-spacing: 1px;
     }
     
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
+    @keyframes fade {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    
+    .isometric-container {
+      width: 200px;
+      height: 200px;
       position: relative;
+      transform: scale(0.5);
     }
     
-    .loading-spinner:before,
-    .loading-spinner:after {
-      content: "";
-      display: block;
-      position: absolute;
-      border-radius: 50%;
-      border: 3px solid transparent;
-      border-top-color: #00c4cc;
+    .isometric-loader svg {
+      width: 200px;
+      height: 200px;
     }
     
-    .loading-spinner:before {
-      top: 5px;
-      left: 5px;
-      right: 5px;
-      bottom: 5px;
-      animation: spin 1s linear infinite;
+    #path1, #path2, #path3, #path4 {
+      fill: #ffffff;
     }
     
-    .loading-spinner:after {
-      top: 0px;
-      left: 0px;
-      right: 0px;
-      bottom: 0px;
-      animation: spin 2s linear infinite;
-      border-top-color: #ffffff;
+    #path1 {
+      animation: fade 1.5s infinite;
+      opacity: 1;
     }
     
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
+    #path2 {
+      animation: fade 1.5s infinite;
+      animation-delay: 0.3s;
+      opacity: 0.7;
     }
     
-    .dots {
-      display: inline-flex;
-      margin-left: 8px;
+    #path3 {
+      animation: fade 1.5s infinite;
+      animation-delay: 0.6s;
+      opacity: 0.4;
     }
     
-    .dots div {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ffffff;
-      margin: 0 4px;
-      animation: bounce 1.5s infinite;
-      opacity: 0.6;
-    }
-    
-    .dots div:nth-child(1) {
-      animation-delay: 0s;
-    }
-    
-    .dots div:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .dots div:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
+    #path4 {
+      animation: fade 1.5s infinite;
+      animation-delay: 0.9s;
+      opacity: 0.2;
     }
   </style>
 </head>
 <body>
-  <!-- Loading indicator that will be displayed while Flutter loads -->
+  <!-- Isometric loading animation for SuperDeck -->
   <div id="loading-container" class="loading-container">
-    <div class="loading-text">Loading Superdeck<span class="dots"><div></div><div></div><div></div></span></div>
-    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading SuperDeck</div>
+    <div class="isometric-container">
+      <div class="isometric-loader">
+        <svg viewBox="0 0 200 226.45" xmlns="http://www.w3.org/2000/svg">
+          <path id="path1" d="M92.2116,119.9706 L0,66.7358 L0,132.1824 L71.075,173.2154 L71.075,189.8452 L0,148.812 L0,173.2154 L92.2116,226.45 L92.2116,161.0138 L21.1366,119.9706 L21.1366,103.341 L92.2116,144.384 Z" />
+          <path id="path2" d="M28.9178,41.045 L7.78124,53.2566 L107.7764,110.9884 L107.7764,202.038 L128.9128,214.25 L128.9128,98.7868 Z" />
+          <path id="path3" d="M64.4646,20.5274 L43.3282,32.7388 L143.3232,90.4706 L143.3232,181.521 L164.4598,193.7328 L164.4598,78.269 Z" />
+          <path id="path4" d="M78.875,12.21148 L178.87,69.9434 L178.87,160.994 L200.006,173.2054 L200.006,57.7318 L169.2662,39.99 L100.0116,0 Z" />
+        </svg>
+      </div>
+    </div>
   </div>
 
   <!-- Flutter initialization script -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter.js" defer></script>
   
   <script>
     // Hide the loading screen once Flutter app is initialized
