@@ -1,0 +1,223 @@
+{
+  "name": "Mermaid",
+  "scopeName": "source.mermaid",
+  "fileTypes": ["mmd", "mermaid"],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#graph"
+    },
+    {
+      "include": "#flowchart"
+    },
+    {
+      "include": "#sequence"
+    },
+    {
+      "include": "#class"
+    },
+    {
+      "include": "#state"
+    },
+    {
+      "include": "#pie"
+    },
+    {
+      "include": "#journey"
+    },
+    {
+      "include": "#gantt"
+    },
+    {
+      "include": "#entity-relationship"
+    },
+    {
+      "include": "#directives"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "%%(.*)",
+          "name": "comment.line.percentage.mermaid"
+        }
+      ]
+    },
+    "graph": {
+      "patterns": [
+        {
+          "match": "\\b(graph|subgraph|end)\\b",
+          "name": "keyword.control.mermaid"
+        },
+        {
+          "match": "\\b(TB|BT|RL|LR|TD)\\b",
+          "name": "constant.language.direction.mermaid"
+        }
+      ]
+    },
+
+    "flowchart": {
+      "patterns": [
+        {
+          "match": "\\b(flowchart|subgraph|end)\\b",
+          "name": "keyword.control.mermaid"
+        },
+        {
+          "match": "\\b(TB|BT|RL|LR|TD)\\b",
+          "name": "constant.language.direction.mermaid"
+        },
+        {
+          "match": "[|<>^v/]{2}",
+          "name": "keyword.operator.arrow.mermaid"
+        },
+        {
+          "match": "\\b(start|end|operation|condition|inputoutput|subroutine)\\b",
+          "name": "support.class.flowchart.mermaid"
+        },
+        {
+          "match": "\\b(\\w+)\\s*\\[",
+          "captures": {
+            "1": {
+              "name": "variable.other.flowchart.mermaid"
+            }
+          }
+        },
+        {
+          "match": "\\b(\\w+)\\s*\\(",
+          "captures": {
+            "1": {
+              "name": "variable.other.flowchart.mermaid"
+            }
+          }
+        },
+        {
+          "match": "\\b(\\w+)\\s*\\{",
+          "captures": {
+            "1": {
+              "name": "variable.other.flowchart.mermaid"
+            }
+          }
+        },
+        {
+          "match": "\\[(.+?)\\]",
+          "captures": {
+            "1": {
+              "name": "string.other.flowchart.mermaid"
+            }
+          }
+        },
+        {
+          "match": "\\((.+?)\\)",
+          "captures": {
+            "1": {
+              "name": "string.other.flowchart.mermaid"
+            }
+          }
+        },
+        {
+          "match": "\\{(.+?)\\}",
+          "captures": {
+            "1": {
+              "name": "string.other.flowchart.mermaid"
+            }
+          }
+        },
+        {
+          "match": "fa:fa-\\w+",
+          "name": "entity.name.function.flowchart.mermaid"
+        }
+      ]
+    },
+    "sequence": {
+      "patterns": [
+        {
+          "match": "\\b(sequenceDiagram|participant|actor|loop|alt|opt|par|and|end)\\b",
+          "name": "keyword.control.mermaid"
+        },
+        {
+          "match": "->|-->|->|-->>|->|-->|<-|<--|<-|<<--|<-|<--",
+          "name": "keyword.operator.arrow.mermaid"
+        },
+        {
+          "match": "\\b(Note left of|Note right of|Note over)\\b",
+          "name": "support.function.note.mermaid"
+        }
+      ]
+    },
+    "class": {
+      "patterns": [
+        {
+          "match": "\\b(classDiagram|class|<<|>>|--|..|:)\\b",
+          "name": "keyword.control.mermaid"
+        }
+      ]
+    },
+    "state": {
+      "patterns": [
+        {
+          "match": "\\b(stateDiagram|state|<<|>>|--|..|:)\\b",
+          "name": "keyword.control.mermaid"
+        }
+      ]
+    },
+    "pie": {
+      "patterns": [
+        {
+          "match": "\\b(pie|title)\\b",
+          "name": "keyword.control.mermaid"
+        },
+        {
+          "match": "\\b(\"[^\"]*\")\\b",
+          "name": "string.quoted.double.mermaid"
+        }
+      ]
+    },
+    "journey": {
+      "patterns": [
+        {
+          "match": "\\b(journey|title|section)\\b",
+          "name": "keyword.control.mermaid"
+        }
+      ]
+    },
+    "gantt": {
+      "patterns": [
+        {
+          "match": "\\b(gantt|dateFormat|title|section|Completed|Active|Future|crit|after|excludes)\\b",
+          "name": "keyword.control.mermaid"
+        },
+        {
+          "match": "\\b(YYYY-MM-DD)\\b",
+          "name": "constant.numeric.date.mermaid"
+        }
+      ]
+    },
+    "entity-relationship": {
+      "patterns": [
+        {
+          "match": "\\b(erDiagram|entity|relationship)\\b",
+          "name": "keyword.control.mermaid"
+        },
+        {
+          "match": "\\|o|o\\||\\|\\|",
+          "name": "keyword.operator.cardinality.mermaid"
+        },
+        {
+          "match": "\\{|\\}",
+          "name": "punctuation.section.entity.mermaid"
+        }
+      ]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "match": "\\b(%%(?:init|config|style|include|csv|json|callback|args))\\b",
+          "name": "keyword.other.directive.mermaid"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "name": "Markdown",
+  "scopeName": "source.markdown",
+  "fileTypes": ["md", "markdown"],
+  "patterns": [
+    {
+      "include": "#headers"
+    },
+    {
+      "include": "#emphasis"
+    },
+    {
+      "include": "#lists"
+    },
+    {
+      "include": "#links"
+    },
+    {
+      "include": "#images"
+    },
+    {
+      "include": "#code-blocks"
+    },
+    {
+      "include": "#inline-code"
+    },
+    {
+      "include": "#blockquotes"
+    },
+    {
+      "include": "#horizontal-rule"
+    },
+    {
+      "include": "#strikethrough"
+    },
+    {
+      "include": "#task-lists"
+    },
+    {
+      "include": "#footnotes"
+    },
+    {
+      "include": "#tables"
+    },
+    {
+      "include": "#emoji"
+    }
+  ],
+  "repository": {
+    "headers": {
+      "patterns": [
+        {
+          "match": "^(#{1,6})\\s+(.+)$",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.heading.markdown"
+            },
+            "2": {
+              "name": "markup.heading.${1}.markdown"
+            }
+          }
+        }
+      ]
+    },
+    "emphasis": {
+      "patterns": [
+        {
+          "match": "(\\*\\*|__)(?=\\S)(.+?)(?<=\\S)\\1",
+          "name": "markup.bold.markdown"
+        },
+        {
+          "match": "(\\*|_)(?=\\S)(.+?)(?<=\\S)\\1",
+          "name": "markup.italic.markdown"
+        }
+      ]
+    },
+    "lists": {
+      "patterns": [
+        {
+          "match": "^\\s*([*+-]|\\d+\\.)\\s+",
+          "name": "punctuation.definition.list.begin.markdown"
+        }
+      ]
+    },
+    "links": {
+      "patterns": [
+        {
+          "match": "!?\\[([^\\[]+)\\]\\((https?://[^\\)]+)\\)",
+          "captures": {
+            "1": {
+              "name": "string.other.link.title.markdown"
+            },
+            "2": {
+              "name": "markup.underline.link.markdown"
+            }
+          }
+        }
+      ]
+    },
+    "images": {
+      "patterns": [
+        {
+          "match": "!\\[([^\\[]+)\\]\\((https?://[^\\)]+)\\)",
+          "captures": {
+            "1": {
+              "name": "string.other.link.title.markdown"
+            },
+            "2": {
+              "name": "markup.underline.link.image.markdown"
+            }
+          }
+        }
+      ]
+    },
+    "code-blocks": {
+      "patterns": [
+        {
+          "begin": "^\\s*```\\s*(\\w+)?\\s*$",
+          "end": "^\\s*```\\s*$",
+          "beginCaptures": {
+            "1": {
+              "name": "entity.name.function.markdown"
+            }
+          },
+          "name": "markup.raw.code-block.markdown"
+        }
+      ]
+    },
+    "inline-code": {
+      "patterns": [
+        {
+          "match": "`(.+?)`",
+          "name": "markup.raw.inline-code.markdown"
+        }
+      ]
+    },
+    "blockquotes": {
+      "patterns": [
+        {
+          "begin": "^\\s*>\\s*",
+          "end": "$",
+          "name": "markup.quote.markdown"
+        }
+      ]
+    },
+    "horizontal-rule": {
+      "patterns": [
+        {
+          "match": "^[-*_]{3,}$",
+          "name": "punctuation.definition.thematic-break.markdown"
+        }
+      ]
+    },
+    "strikethrough": {
+      "patterns": [
+        {
+          "match": "~~(.+?)~~",
+          "name": "markup.strikethrough.markdown"
+        }
+      ]
+    },
+    "task-lists": {
+      "patterns": [
+        {
+          "match": "^\\s*[-*] \\[[xX ]\\]",
+          "name": "punctuation.definition.task.completed.markdown"
+        },
+        {
+          "match": "^\\s*[-*] \\[ \\]",
+          "name": "punctuation.definition.task.incomplete.markdown"
+        }
+      ]
+    },
+    "footnotes": {
+      "patterns": [
+        {
+          "match": "\\[\\^(\\d+)\\]",
+          "name": "entity.name.footnote.markdown"
+        },
+        {
+          "match": "^\\[\\^(\\d+)\\]:",
+          "name": "entity.name.footnote.definition.markdown"
+        }
+      ]
+    },
+    "tables": {
+      "patterns": [
+        {
+          "match": "\\|",
+          "name": "punctuation.separator.table-cell.markdown"
+        },
+        {
+          "match": "^\\|?[-:][-| :]*[-:]\\|?$",
+          "name": "punctuation.separator.table-header.markdown"
+        }
+      ]
+    },
+    "emoji": {
+      "patterns": [
+        {
+          "match": ":(\\w+):",
+          "name": "constant.character.emoji.markdown"
+        }
+      ]
+    }
+  }
+}

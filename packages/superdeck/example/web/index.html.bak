@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="example">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Superdeck</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      background-color: #141218;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: fixed;
+    }
+    
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      transition: opacity 0.7s ease-out;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+    }
+    
+    .loading-text {
+      color: #ffffff;
+      font-size: 24px;
+      margin-bottom: 30px;
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      position: relative;
+    }
+    
+    .loading-spinner:before,
+    .loading-spinner:after {
+      content: "";
+      display: block;
+      position: absolute;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #00c4cc;
+    }
+    
+    .loading-spinner:before {
+      top: 5px;
+      left: 5px;
+      right: 5px;
+      bottom: 5px;
+      animation: spin 1s linear infinite;
+    }
+    
+    .loading-spinner:after {
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      bottom: 0px;
+      animation: spin 2s linear infinite;
+      border-top-color: #ffffff;
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .dots {
+      display: inline-flex;
+      margin-left: 8px;
+    }
+    
+    .dots div {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ffffff;
+      margin: 0 4px;
+      animation: bounce 1.5s infinite;
+      opacity: 0.6;
+    }
+    
+    .dots div:nth-child(1) {
+      animation-delay: 0s;
+    }
+    
+    .dots div:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .dots div:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading indicator that will be displayed while Flutter loads -->
+  <div id="loading-container" class="loading-container">
+    <div class="loading-text">Loading Superdeck<span class="dots"><div></div><div></div><div></div></span></div>
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Flutter initialization script -->
+  <script src="flutter_bootstrap.js" async></script>
+  
+  <script>
+    // Hide the loading screen once Flutter app is initialized
+    window.addEventListener('flutter-first-frame', function() {
+      const loadingContainer = document.getElementById('loading-container');
+      loadingContainer.style.opacity = '0';
+      
+      // Remove the loading container after the fade out animation completes
+      setTimeout(function() {
+        loadingContainer.style.display = 'none';
+      }, 700);
+    });
+  </script>
+</body>
+</html>
