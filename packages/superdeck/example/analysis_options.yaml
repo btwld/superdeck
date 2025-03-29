@@ -1,0 +1,19 @@
+include: package:flutter_lints/flutter.yaml
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+analyzer:
+  errors:
+    invalid_annotation_target: ignore
+  exclude:
+    - '**.freezed.dart'
+    - '**.g.dart'
+    - '**.gr.dart'
+    - '**.mapper.dart'
+    - '**/generated_plugin_registrant.dart'
+linter:
+  rules:
+    public_member_api_docs: false
+    prefer_relative_imports: true
+    library_private_types_in_public_api: false
+
