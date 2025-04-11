@@ -16,6 +16,7 @@ import '../helpers/update_pubspec.dart';
 /// 1. The pubspec.yaml has the necessary assets configuration
 /// 2. If macOS is present, the entitlements files are properly configured
 /// 3. A basic slides.md file is created if none exists
+/// 4. Custom index.html is set up with a loading indicator for web
 class SetupCommand extends Command<int> {
   /// Creates a new [SetupCommand] instance
   SetupCommand() {
@@ -24,6 +25,11 @@ class SetupCommand extends Command<int> {
       abbr: 'f',
       help: 'Force setup without confirmation prompts',
       negatable: false,
+    );
+    argParser.addFlag(
+      'setup-web',
+      help: 'Set up custom index.html for web with loading indicator',
+      defaultsTo: true,
     );
   }
 
@@ -93,6 +99,177 @@ Built with SuperDeck
       progress.fail('Failed to create slides.md file');
       rethrow;
     }
+  }
+
+  /// Set up a custom index.html with loading indicator for web
+  Future<void> _setupCustomIndexHtml(Directory projectDir) async {
+    final progress = logger.progress('Setting up custom index.html for web...');
+
+    try {
+      // Look for web directory
+      final webDir = Directory(path.join(projectDir.path, 'web'));
+
+      if (!await webDir.exists()) {
+        progress.fail('Web directory not found');
+        logger.warn('Web directory not found at ${webDir.path}');
+
+        return;
+      }
+
+      final indexHtmlPath = path.join(webDir.path, 'index.html');
+      final indexHtmlFile = File(indexHtmlPath);
+
+      if (await indexHtmlFile.exists()) {
+        // Create a backup of the original index.html
+        final backupPath = path.join(webDir.path, 'index.html.bak');
+        await indexHtmlFile.copy(backupPath);
+        logger.detail('Created backup of original index.html at $backupPath');
+
+        // Replace with our custom template
+        await indexHtmlFile.writeAsString(_getCustomIndexHtml());
+        progress.complete('Custom index.html set up with loading indicator');
+      } else {
+        // Create new index.html if it doesn't exist
+        await indexHtmlFile.writeAsString(_getCustomIndexHtml());
+        progress.complete('Created custom index.html with loading indicator');
+      }
+    } catch (e) {
+      progress.fail('Failed to set up custom index.html');
+      logger.err('Error setting up custom index.html: $e');
+    }
+  }
+
+  /// Get the content for the custom index.html with loading indicator
+  String _getCustomIndexHtml() {
+    return '''<!DOCTYPE html>
+<html>
+<head>
+  <base href="\$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A Superdeck example app.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="example">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Superdeck Example</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      background-color: #0B0B0B;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    #loading-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      background-color: #000000;
+      transition: opacity 0.5s ease-out;
+    }
+    
+    #flutter-loader {
+      transform: scale(0.3);
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  
+  <script>
+    window.addEventListener('load', function() {
+      // This will be called when the page is fully loaded
+      let loadingElement = document.getElementById('loading-container');
+      
+      // Function to remove the loading element when Flutter is initialized
+      window.removeLoading = function() {
+        if (loadingElement) {
+          loadingElement.style.opacity = '0';
+          setTimeout(function() {
+            if (loadingElement && loadingElement.parentNode) {
+              loadingElement.parentNode.removeChild(loadingElement);
+            }
+          }, 500);
+        }
+      };
+    });
+  </script>
+</head>
+<body>
+  <div id="loading-container">
+    <div id="flutter-loader">
+      <!-- SVG for Isometric Loading Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="226.45" viewBox="0 0 200 226.45">
+        <style>
+          .path1 { fill: #FFFFFF; }
+          .path2 { fill: rgba(255, 255, 255, 0.7); }
+          .path3 { fill: rgba(255, 255, 255, 0.4); }
+          .path4 { fill: rgba(255, 255, 255, 0.2); }
+          
+          @keyframes pulse {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+          }
+          
+          .path1 { animation: pulse 1.5s infinite; animation-delay: 0s; }
+          .path2 { animation: pulse 1.5s infinite; animation-delay: 0.3s; }
+          .path3 { animation: pulse 1.5s infinite; animation-delay: 0.6s; }
+          .path4 { animation: pulse 1.5s infinite; animation-delay: 0.9s; }
+        </style>
+        <path class="path1" d="M92.2116 119.9706L0 66.7358L0 132.1824L71.075 173.2154L71.075 189.8452L0 148.812L0 173.2154L92.2116 226.45L92.2116 161.0138L21.1366 119.9706L21.1366 103.341L92.2116 144.384Z" />
+        <path class="path2" d="M28.9178 41.045L7.78124 53.2566L107.7764 110.9884L107.7764 202.038L128.9128 214.25L128.9128 98.7868Z" />
+        <path class="path3" d="M64.4646 20.5274L43.3282 32.7388L143.3232 90.4706L143.3232 181.521L164.4598 193.7328L164.4598 78.269Z" />
+        <path class="path4" d="M78.875 12.21148L178.87 69.9434L178.87 160.994L200.006 173.2054L200.006 57.7318L169.2662 39.99L100.0116 0Z" />
+      </svg>
+    </div>
+  </div>
+
+  <script src="flutter.js" defer></script>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: async function(engineInitializer) {
+          let appRunner = await engineInitializer.initializeEngine();
+          await appRunner.runApp();
+          
+          // Remove loading screen when Flutter app is ready
+          if (window.removeLoading) {
+            window.removeLoading();
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>''';
   }
 
   /// Configure macOS entitlements
@@ -252,24 +429,36 @@ Built with SuperDeck
         if (createSlides) {
           try {
             await _createEmptySlides(slidesFile);
-            logger.success('Created slides.md file');
             successCount++;
           } catch (e) {
             logger.err('Failed to create slides.md file: $e');
             errorCount++;
           }
         } else {
-          logger.warn('slides.md file not created');
+          logger.info('Skipped creating slides.md file');
           warningCount++;
         }
       } else {
         logger.info('slides.md file already exists');
       }
 
-      // Update pubspec assets
-      final pubspecFile = deckConfig.pubspecFile;
-      if (await pubspecFile.exists()) {
+      // Set up web support with custom index.html if requested
+      final setupWeb = argResults?['setup-web'] as bool? ?? true;
+      if (setupWeb) {
         try {
+          final projectDir = Directory.current;
+          await _setupCustomIndexHtml(projectDir);
+          successCount++;
+        } catch (e) {
+          logger.err('Failed to set up web support: $e');
+          errorCount++;
+        }
+      }
+
+      // Setup pubspec.yaml for SuperDeck
+      try {
+        final pubspecFile = deckConfig.pubspecFile;
+        if (await pubspecFile.exists()) {
           final pubspecContents = await pubspecFile.readAsString();
           final updatedPubspec =
               updatePubspecAssets(deckConfig, pubspecContents);
@@ -286,74 +475,54 @@ Built with SuperDeck
               logger.success('Updated pubspec.yaml with required assets');
               successCount++;
             } else {
-              logger.warn('pubspec.yaml not updated');
+              logger.info('Skipped updating pubspec.yaml');
               warningCount++;
             }
           } else {
             logger.info('pubspec.yaml already has required assets');
           }
+        } else {
+          logger.warn('pubspec.yaml not found');
+          warningCount++;
+        }
+      } catch (e) {
+        logger.err('Error updating pubspec.yaml: $e');
+        errorCount++;
+      }
+
+      // Check for macOS support and configure entitlements if needed
+      final macosDir = Directory('macos');
+      if (await macosDir.exists()) {
+        try {
+          await _setupMacOSEntitlements(macosDir);
+          successCount++;
         } catch (e) {
-          logger.err('Failed to update pubspec.yaml: $e');
+          logger.err('Failed to configure macOS entitlements: $e');
           errorCount++;
         }
       } else {
-        logger.warn('pubspec.yaml not found');
-        warningCount++;
+        logger.info('macOS directory not found, skipping entitlements setup');
       }
 
-      // Check for macOS folder and update entitlements if needed
-      final macosDir = Directory(path.join(Directory.current.path, 'macos'));
-      if (await macosDir.exists()) {
-        final shouldConfigureMacos = boolArg('force') ||
-            _confirmAction(
-              'Configure macOS entitlements?',
-              defaultValue: true,
-            );
-
-        if (shouldConfigureMacos) {
-          try {
-            await _setupMacOSEntitlements(macosDir);
-            logger.success('macOS entitlements configured');
-            successCount++;
-          } catch (e) {
-            logger.err('Failed to configure macOS entitlements: $e');
-            errorCount++;
-          }
-        } else {
-          logger.warn('macOS entitlements not configured');
-          warningCount++;
-        }
-      } else {
-        logger.info('macOS directory not found. Skipping entitlements setup.');
-      }
-
+      // Print summary
       logger.info('');
-      logger.info('Setup summary:');
-      logger.info('$successCount operations completed successfully');
-      if (warningCount > 0) {
-        logger.info('$warningCount operations skipped or with warnings');
-      }
-      if (errorCount > 0) {
-        logger.info('$errorCount operations failed');
-      }
-
-      logger.info('');
+      logger.info('Setup completed:');
+      logger.info(
+        '  ${successCount.toString().padLeft(2)} successful operations',
+      );
+      logger.info('  ${warningCount.toString().padLeft(2)} warnings');
+      logger.info('  ${errorCount.toString().padLeft(2)} errors');
 
       if (errorCount > 0) {
-        logger.warn('Setup completed with errors');
-      } else if (warningCount > 0) {
-        logger.info('Setup completed with warnings');
-      } else {
-        logger.success('SuperDeck setup completed successfully!');
+        logger.info('');
+        logger.warn(
+          'Some errors occurred during setup. Check the logs above for details.',
+        );
+
+        return ExitCode.software.code;
       }
 
-      logger.info('');
-      logger.info('Next steps:');
-      logger.info('  1. Edit your slides.md file');
-      logger.info('  2. Run `superdeck build` to generate assets');
-      logger.info('  3. Run your Flutter app');
-
-      return errorCount > 0 ? ExitCode.software.code : ExitCode.success.code;
+      return ExitCode.success.code;
     } catch (e, stackTrace) {
       logger.err('Setup failed: $e');
       logger.detail('$stackTrace');

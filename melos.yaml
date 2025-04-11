@@ -11,7 +11,7 @@ command:
       sdk: ">=3.3.0 <4.0.0"
       flutter: ">=3.19.0"
     dependencies:
-      collection: ^1.18.0 
+      collection: ^1.18.0
       mix: ^1.5.4
       ack: ^0.1.1
   # publish:
@@ -25,7 +25,7 @@ scripts:
     description: Run all static analysis checks.
     exec:
       failFast: true
-      
+
   analyze:dart:
     run: melos exec -c 10 -- dart analyze --fatal-infos
     description: Run Dart static analysis checks.
@@ -62,6 +62,11 @@ scripts:
     packageFilters:
       dependsOn: "build_runner"
 
+  gen:build:superdeck:
+    run: |
+      cd packages/superdeck && dart run build_runner build --delete-conflicting-outputs
+    description: Generate code for the superdeck package
+
   gen:clean:
     run: melos exec --order-dependents -- dart run build_runner clean
     description: Clean generated code for all packages
@@ -85,9 +90,9 @@ scripts:
     description: Clean all packages
 
   brb:
-    run: melos run gen:build
-    
-  brbc: 
+    run: melos run gen:build:superdeck
+
+  brbc:
     run: melos run gen:clean
   fix:
     run: melos run lint:fix:all

@@ -42,18 +42,18 @@ dependencies:
   dart_mappable: ^4.3.0
   meta: ^1.15.0
   universal_html: ^2.2.4
-  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
   mix_generator: ^0.3.2
-  custom_lint: ^0.6.8
+  custom_lint: ^0.7.5
   # mix_lint: ^0.1.1
   build_runner: ^2.4.13
   dart_mappable_builder: ^4.3.0
   dart_code_metrics_presets: ^2.19.0
-  
+
 flutter:
   assets:
     - assets/

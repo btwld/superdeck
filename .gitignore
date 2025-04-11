@@ -46,3 +46,5 @@ build/
 # Node file for website
 node_modules
 .local-chrome
+.orbit
+discovery

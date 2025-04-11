@@ -52,6 +52,11 @@ class PublishCommand extends Command<int> {
         'build',
         help: 'Build the web app before publishing',
         defaultsTo: true,
+      )
+      ..addOption(
+        'example-dir',
+        help: 'Directory containing the example app to build',
+        defaultsTo: '.',
       );
   }
 
@@ -108,6 +113,175 @@ class PublishCommand extends Command<int> {
     return null;
   }
 
+  /// Set up a custom index.html with loading indicator before build
+  Future<void> _setupCustomIndexHtml(String repoDir, bool isDryRun) async {
+    final progress = _logger.progress('Setting up custom index.html');
+    try {
+      final webDir = path.join(
+        repoDir,
+        argResults!['example-dir'] as String,
+        'web',
+      );
+      final indexHtmlPath = path.join(webDir, 'index.html');
+
+      if (!isDryRun) {
+        // Create a backup of the original index.html if it exists
+        if (File(indexHtmlPath).existsSync()) {
+          final backupPath = path.join(webDir, 'index.html.bak');
+          await File(indexHtmlPath).copy(backupPath);
+          _logger.detail('Created backup of original index.html');
+        }
+
+        // Write custom index.html with loading indicator
+        await File(indexHtmlPath).writeAsString(_getCustomIndexHtml());
+        _logger.info('Created custom index.html with loading indicator');
+      } else {
+        _logger.info('Would replace index.html with custom template');
+      }
+
+      progress.complete('Custom index.html setup complete');
+    } catch (e) {
+      progress.fail('Failed to set up custom index.html');
+      _logger.err('Error setting up custom index.html: $e');
+      rethrow;
+    }
+  }
+
+  /// Get the content for the custom index.html with loading indicator
+  String _getCustomIndexHtml() {
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="\$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A Superdeck example app.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="example">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Superdeck Example</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      background-color: #0B0B0B;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #loading-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      background-color: #000000;
+      transition: opacity 0.5s ease-out;
+    }
+
+    #flutter-loader {
+      transform: scale(0.3);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    window.addEventListener('load', function() {
+      // This will be called when the page is fully loaded
+      let loadingElement = document.getElementById('loading-container');
+
+      // Function to remove the loading element when Flutter is initialized
+      window.removeLoading = function() {
+        if (loadingElement) {
+          loadingElement.style.opacity = '0';
+          setTimeout(function() {
+            if (loadingElement && loadingElement.parentNode) {
+              loadingElement.parentNode.removeChild(loadingElement);
+            }
+          }, 500);
+        }
+      };
+    });
+  </script>
+</head>
+<body>
+  <div id="loading-container">
+    <div id="flutter-loader">
+      <!-- SVG for Isometric Loading Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="226.45" viewBox="0 0 200 226.45">
+        <style>
+          .path1 { fill: #FFFFFF; }
+          .path2 { fill: rgba(255, 255, 255, 0.7); }
+          .path3 { fill: rgba(255, 255, 255, 0.4); }
+          .path4 { fill: rgba(255, 255, 255, 0.2); }
+
+          @keyframes pulse {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+          }
+
+          .path1 { animation: pulse 1.5s infinite; animation-delay: 0s; }
+          .path2 { animation: pulse 1.5s infinite; animation-delay: 0.3s; }
+          .path3 { animation: pulse 1.5s infinite; animation-delay: 0.6s; }
+          .path4 { animation: pulse 1.5s infinite; animation-delay: 0.9s; }
+        </style>
+        <path class="path1" d="M92.2116 119.9706L0 66.7358L0 132.1824L71.075 173.2154L71.075 189.8452L0 148.812L0 173.2154L92.2116 226.45L92.2116 161.0138L21.1366 119.9706L21.1366 103.341L92.2116 144.384Z" />
+        <path class="path2" d="M28.9178 41.045L7.78124 53.2566L107.7764 110.9884L107.7764 202.038L128.9128 214.25L128.9128 98.7868Z" />
+        <path class="path3" d="M64.4646 20.5274L43.3282 32.7388L143.3232 90.4706L143.3232 181.521L164.4598 193.7328L164.4598 78.269Z" />
+        <path class="path4" d="M78.875 12.21148L178.87 69.9434L178.87 160.994L200.006 173.2054L200.006 57.7318L169.2662 39.99L100.0116 0Z" />
+      </svg>
+    </div>
+  </div>
+
+  <script src="flutter.js" defer></script>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: async function(engineInitializer) {
+          let appRunner = await engineInitializer.initializeEngine();
+          await appRunner.runApp();
+
+          // Remove loading screen when Flutter app is ready
+          if (window.removeLoading) {
+            window.removeLoading();
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+  ''';
+  }
+
   /// Builds the web app with appropriate base href
   Future<bool> _buildWebApp(
     String workingDirectory, {
@@ -127,6 +301,20 @@ class PublishCommand extends Command<int> {
     final progress = _logger.progress('Building Flutter web app');
 
     try {
+      // Use the example directory for building
+      final exampleDir = path.join(
+        workingDirectory,
+        argResults!['example-dir'] as String,
+      );
+
+      // Verify example directory exists
+      if (!Directory(exampleDir).existsSync()) {
+        progress.fail('Example directory not found: $exampleDir');
+        _logger.err('Example directory not found: $exampleDir');
+
+        return false;
+      }
+
       final List<String> buildArgs = ['build', 'web', '--release'];
 
       // Add base-href if provided
@@ -137,7 +325,7 @@ class PublishCommand extends Command<int> {
       final ProcessResult result = await Process.run(
         'flutter',
         buildArgs,
-        workingDirectory: workingDirectory,
+        workingDirectory: exampleDir,
       );
 
       if (result.exitCode == 0) {
@@ -314,7 +502,7 @@ class PublishCommand extends Command<int> {
     final String targetBranch = args['branch'] as String;
     final String commitMessage = args['message'] as String;
     final bool shouldPush = args['push'] as bool;
-    final String buildDirRelative = args['build-dir'] as String;
+    // final String buildDirRelative = args['build-dir'] as String; // Unused
     final bool dryRun = args['dry-run'] as bool;
     final bool shouldBuild = args['build'] as bool;
 
@@ -324,7 +512,11 @@ class PublishCommand extends Command<int> {
 
     // Get current directory
     final String currentDir = Directory.current.path;
-    final String buildDir = path.join(currentDir, buildDirRelative);
+    final String buildDir = path.join(
+      currentDir,
+      argResults!['example-dir'] as String,
+      'build/web',
+    );
 
     // Check if we're in a git repository
     if (!await _isGitRepository(currentDir)) {
@@ -351,6 +543,11 @@ class PublishCommand extends Command<int> {
         baseHref = '/$repoName/';
         _logger.info('Auto-detected base-href: $baseHref');
       }
+    }
+
+    // Setup custom index.html before building
+    if (shouldBuild) {
+      await _setupCustomIndexHtml(currentDir, dryRun);
     }
 
     // Build the web app if requested

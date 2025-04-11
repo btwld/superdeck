@@ -5,6 +5,14 @@ import 'package:mix_annotations/mix_annotations.dart';
 
 part 'style_spec.g.dart';
 
+/// A class used to define a mixable field property for code generation.
+///
+/// This class is used to specify the type of a field property in the generated code.
+class MixableFieldProperty extends MixableFieldType {
+  /// Creates a new instance of `MixableFieldProperty` with the specified type.
+  const MixableFieldProperty({required String type}) : super(type: type);
+}
+
 const _mdCode = MixableFieldProperty(type: 'MarkdownCodeblockSpecAttribute');
 const _mdList = MixableFieldProperty(type: 'MarkdownListSpecAttribute');
 const _mdTable = MixableFieldProperty(type: 'MarkdownTableSpecAttribute');
