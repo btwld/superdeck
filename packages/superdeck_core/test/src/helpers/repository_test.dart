@@ -5,28 +5,27 @@ import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
-import 'testing_utils.dart';
+Directory createTempDir() {
+  final dir = Directory.systemTemp.createTempSync('superdeck_test_');
+  return dir;
+}
 
-// Simple mock class for testing
-class MockDeckConfiguration implements DeckConfiguration {
-  final Directory _tempDir;
+class MockDeckConfiguration extends DeckConfiguration {
+  final Directory tempDir;
 
-  MockDeckConfiguration(this._tempDir);
-
-  @override
-  File get deckJson => File(p.join(_tempDir.path, 'deck.json'));
-
-  @override
-  File get slidesFile => File(p.join(_tempDir.path, 'slides.md'));
+  MockDeckConfiguration(this.tempDir);
 
   @override
-  Directory get assetsDir => Directory(p.join(_tempDir.path, 'assets'));
+  File get deckJson => File(p.join(tempDir.path, 'deck.json'));
 
   @override
-  File get assetsRefJson => File(p.join(_tempDir.path, 'assets_ref.json'));
+  File get slidesFile => File(p.join(tempDir.path, 'slides.md'));
 
   @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  Directory get assetsDir => Directory(p.join(tempDir.path, 'assets'));
+
+  @override
+  File get assetsRefJson => File(p.join(tempDir.path, 'assets_ref.json'));
 }
 
 void main() {
@@ -58,14 +57,14 @@ void main() {
       expect(content, equals('test content'));
     });
 
-    test('getGeneratedAssetPath returns the correct path', () {
-      final asset = GeneratedAsset(
-        name: 'test',
+    test('getAssetPath returns the correct path', () {
+      final asset = Asset(
+        id: 'test',
         extension: AssetExtension.png,
-        type: 'image',
+        type: AssetType.image,
       );
 
-      final path = repository.getGeneratedAssetPath(asset);
+      final path = repository.getAssetPath(asset);
 
       expect(path, equals(p.join(mockConfig.assetsDir.path, 'image_test.png')));
     });
@@ -125,17 +124,17 @@ void main() {
       expect(mockConfig.assetsDir.existsSync(), isTrue);
     });
 
-    test('getGeneratedAssetPath adds asset to internal list', () async {
+    test('getAssetPath adds asset to internal list', () async {
       // Create the asset directory first
       await mockConfig.assetsDir.create(recursive: true);
 
-      final asset = GeneratedAsset(
-        name: 'test',
+      final asset = Asset(
+        id: 'test',
         extension: AssetExtension.png,
-        type: 'image',
+        type: AssetType.image,
       );
 
-      final path = repository.getGeneratedAssetPath(asset);
+      final path = repository.getAssetPath(asset);
       expect(path, equals(p.join(mockConfig.assetsDir.path, 'image_test.png')));
 
       // Save references to ensure the asset is processed
@@ -164,7 +163,7 @@ void main() {
 
       expect(deckJson, contains('slides'));
       expect(assetsRefJson, contains('last_modified'));
-      expect(assetsRefJson, contains('files'));
+      expect(assetsRefJson, contains('assets'));
     });
 
     test('readDeckMarkdown reads the content of the slides file', () async {

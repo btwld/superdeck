@@ -38,7 +38,7 @@ class SlideConfiguration with SlideConfigurationMappable {
 
   Slide get data => _slide;
 
-  List<SectionBlock> get sections => _slide.sections;
+  List<SlideSection> get sections => _slide.sections;
 
   List<String> get comments => _slide.comments;
 

@@ -5,18 +5,18 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'base_parser.dart';
 import 'block_parser.dart';
 
-class SectionParser extends BaseParser<List<SectionBlock>> {
+class SectionParser extends BaseParser<List<SlideSection>> {
   const SectionParser();
 
   @override
-  List<SectionBlock> parse(String content) {
+  List<SlideSection> parse(String content) {
     final parsedBlocks = const BlockParser().parse(content);
 
     final updatedContent = _updateIgnoredTags(content);
 
     // If there are no tag blocks, we can just add the entire markdown as a single section.
     if (parsedBlocks.isEmpty) {
-      return [SectionBlock.text(updatedContent)];
+      return [SlideSection.text(updatedContent)];
     }
 
     final aggregator = _SectionAggregator();
@@ -44,8 +44,8 @@ class SectionParser extends BaseParser<List<SectionBlock>> {
       }
 
       final block = parsedBlock.type == 'section'
-          ? SectionBlock.parse(parsedBlock.data)
-          : Block.parse(parsedBlock.data);
+          ? SlideSection.parse(parsedBlock.data)
+          : SlideElement.parse(parsedBlock.data);
 
       aggregator
         ..addBlock(block)
@@ -76,13 +76,13 @@ String _updateIgnoredTags(String content) {
 }
 
 class _SectionAggregator {
-  List<SectionBlock> sections = [];
+  List<SlideSection> sections = [];
 
   _SectionAggregator();
 
-  SectionBlock _getSection() {
+  SlideSection _getSection() {
     if (sections.isEmpty) {
-      sections.add(SectionBlock([]));
+      sections.add(SlideSection([]));
     }
 
     return sections.last;
@@ -97,20 +97,20 @@ class _SectionAggregator {
       return;
     }
 
-    if (block is ColumnBlock) {
+    if (block is MarkdownElement) {
       final newContent =
           block.content.isEmpty ? content : '${block.content}\n$content';
 
       blocks.last = block.copyWith(content: newContent);
     } else {
-      blocks.add(ColumnBlock(content));
+      blocks.add(MarkdownElement(content));
     }
 
     sections.last = section.copyWith(blocks: blocks);
   }
 
-  void addBlock(Block block) {
-    if (block is SectionBlock) {
+  void addBlock(SlideElement block) {
+    if (block is SlideSection) {
       sections.add(block);
     } else {
       final lastSection = _getSection();

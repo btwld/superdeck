@@ -17,7 +17,7 @@ abstract interface class PresentationRepository {
 
   Stream<DeckReference> loadDeckReferenceStream();
 
-  String getGeneratedAssetPath(GeneratedAsset asset) {
+  String getAssetPath(Asset asset) {
     return p.join(configuration.assetsDir.path, asset.fileName);
   }
 
@@ -70,7 +70,7 @@ class LocalPresentationRepository extends PresentationRepository {
 class FileSystemPresentationRepository extends LocalPresentationRepository {
   FileSystemPresentationRepository(super.configuration);
 
-  final List<GeneratedAsset> _generatedAssets = [];
+  final List<Asset> _generatedAssets = [];
 
   @override
   Future<void> initialize() async {
@@ -90,9 +90,9 @@ class FileSystemPresentationRepository extends LocalPresentationRepository {
   }
 
   @override
-  String getGeneratedAssetPath(GeneratedAsset asset) {
+  String getAssetPath(Asset asset) {
     _generatedAssets.add(asset);
-    return super.getGeneratedAssetPath(asset);
+    return super.getAssetPath(asset);
   }
 
   Future<void> saveReferences(
@@ -104,7 +104,7 @@ class FileSystemPresentationRepository extends LocalPresentationRepository {
 
     // Generate the asset references for each slide thumbnail
     final thumbnails =
-        reference.slides.map((slide) => GeneratedAsset.thumbnail(slide.key));
+        reference.slides.map((slide) => Asset.thumbnail(slide.key));
 
     // Combine thumbnail and generated assets
     final allAssets = [
@@ -112,28 +112,40 @@ class FileSystemPresentationRepository extends LocalPresentationRepository {
       ..._generatedAssets,
     ];
 
-// Map asset references to their corresponding file paths
+    // Map asset references to their corresponding file paths
     final assetFiles = allAssets.map(
         (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)));
 
-    final assetsRef = GeneratedAssetsReference(
+    final assetPaths = assetFiles.map((file) => file.path).toList();
+
+    // Create asset references
+    final assetReferences = allAssets
+        .map((asset) => AssetReference(
+              lastModified: DateTime.now(),
+              assetId: asset.id,
+              type: asset.type,
+              path: p.join(configuration.assetsDir.path, asset.fileName),
+            ))
+        .toList();
+
+    final assetsManifest = AssetManifest(
       lastModified: DateTime.now(),
-      files: assetFiles.toList(),
+      assets: assetReferences,
     );
 
-    // Save the assets reference
-    final assetsJson = prettyJson(assetsRef.toMap());
+    // Save the assets manifest
+    final assetsJson = prettyJson(assetsManifest.toMap());
     await configuration.assetsRefJson.writeAsString(assetsJson);
 
-    await _cleanupGeneratedAssets(assetsRef);
+    await _cleanupAssets(assetPaths);
   }
 
   Future<String> readDeckMarkdown() async {
     return await configuration.slidesFile.readAsString();
   }
 
-  Future<void> _cleanupGeneratedAssets(
-    GeneratedAssetsReference assetsReference,
+  Future<void> _cleanupAssets(
+    List<String> referencedFilePaths,
   ) async {
     final existingFiles = await configuration.assetsDir
         .list(recursive: true)
@@ -141,8 +153,7 @@ class FileSystemPresentationRepository extends LocalPresentationRepository {
         .map((e) => e as File)
         .toList();
 
-    final referencedFiles =
-        assetsReference.files.map((file) => file.path).toSet();
+    final referencedFiles = referencedFilePaths.toSet();
 
     await Future.forEach(existingFiles, (File file) async {
       if (!referencedFiles.contains(file.path)) {

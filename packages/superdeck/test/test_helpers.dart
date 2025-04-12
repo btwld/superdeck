@@ -17,7 +17,7 @@ extension WidgetTesterX on WidgetTester {
     bool isSnapshot = false,
     DeckStyle? style,
     Map<String, WidgetBlockBuilder> widgets = const {},
-    List<GeneratedAsset> assets = const [],
+    List<Asset> assets = const [],
   }) async {
     return pumpWithScaffold(
       InheritedData(

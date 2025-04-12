@@ -3,7 +3,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../modules/common/helpers/constants.dart';
 import '../../modules/deck/slide_configuration.dart';
-import '../molecules/block_widget.dart';
+import '../molecules/slide_element_widget.dart';
 
 class SlideView extends StatelessWidget {
   final SlideConfiguration slide;
@@ -13,17 +13,15 @@ class SlideView extends StatelessWidget {
   });
 
   Widget _renderPreferredSize(PreferredSizeWidget? widget) {
-    return widget != null
-        ? SizedBox.fromSize(
-            size: widget.preferredSize,
-            child: widget,
-          )
-        : const SizedBox.shrink();
+    if (widget == null) {
+      return const SizedBox.shrink();
+    }
+    return widget;
   }
 
-  Positioned _renderDebugInfo(SectionBlock section, Size slideSize) {
+  Positioned _renderDebugInfo(SlideSection section, Size slideSize) {
     final label = '''
-@section | blocks: ${section.blocks.length} | ${slideSize.width.toStringAsFixed(2)} x ${slideSize.height.toStringAsFixed(2)} | align: ${section.align} | flex: ${section.flex}''';
+@section | blocks: ${section.blocks.length} | ${slideSize.width.toStringAsFixed(2)} x ${slideSize.height.toStringAsFixed(2)} | align: ${section.align} | flex: ${section.flex ?? 1}''';
 
     const textStyle = TextStyle(
       color: Colors.black,
@@ -46,12 +44,13 @@ class SlideView extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final totalSectionsFlex =
-        sections.fold(0, (previous, section) => previous + section.flex);
+        sections.fold(0, (previous, section) => previous + (section.flex ?? 1));
 
-    final sectionSizes = <SectionBlock, Size>{};
+    final sectionSizes = <SlideSection, Size>{};
 
     for (var section in sections) {
-      final heightPercentage = section.flex / totalSectionsFlex;
+      final sectionFlex = section.flex ?? 1;
+      final heightPercentage = sectionFlex / totalSectionsFlex;
       final sectionSize = Size(
         slideSize.width,
         slideSize.height * heightPercentage,
@@ -61,7 +60,7 @@ class SlideView extends StatelessWidget {
 
     Offset currentOffset = Offset.zero;
 
-    Map<SectionBlock, Offset> sectionOffsets = {};
+    Map<SlideSection, Offset> sectionOffsets = {};
 
     for (var section in sectionSizes.entries) {
       final sectionOffset = Offset(0, currentOffset.dy);
@@ -83,7 +82,7 @@ class SlideView extends StatelessWidget {
           height: sectionSize.height,
           child: Stack(
             children: [
-              SectionBlockWidget(
+              SlideSectionWidget(
                 section: section,
                 size: sectionSize,
               ),

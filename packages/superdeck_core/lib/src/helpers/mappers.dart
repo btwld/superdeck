@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dart_mappable/dart_mappable.dart';
 
-import '../models/block_model.dart';
+import '../models/slide_element.dart';
 
 class FileMapper extends SimpleMapper<File> {
   const FileMapper();
@@ -46,16 +46,16 @@ class DurationMapper extends SimpleMapper<Duration> {
   }
 }
 
-class NullIfEmptyBlock extends SimpleMapper<Block> {
+class NullIfEmptyBlock extends SimpleMapper<SlideElement> {
   const NullIfEmptyBlock();
 
   @override
-  Block decode(dynamic value) {
-    return BlockMapper.fromMap(value);
+  SlideElement decode(dynamic value) {
+    return SlideElementMapper.fromMap(value);
   }
 
   @override
-  dynamic encode(Block self) {
+  dynamic encode(SlideElement self) {
     final map = self.toMap();
     if (map.isEmpty) {
       return null;

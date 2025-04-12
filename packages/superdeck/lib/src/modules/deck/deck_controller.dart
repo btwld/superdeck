@@ -54,6 +54,36 @@ class DeckController with ChangeNotifier {
   static DeckController of(BuildContext context) {
     return InheritedNotifierData.of<DeckController>(context);
   }
+
+  Map<String, Widget Function(Map<String, dynamic> props)> getSlideWidgets(
+    BuildContext context,
+    DeckOptions options,
+  ) {
+    final slideWidgets = <String, Widget Function(Map<String, dynamic> props)>{
+      // Add default widgets here if any
+    };
+
+    // Use the slides from this controller, not from SlideConfiguration
+    final slideConfigs = slides;
+
+    // Find all CustomElement instances across all slides and sections
+    final customElements = slideConfigs
+        .expand((config) => config.sections)
+        .expand((s) => s.blocks)
+        .whereType<CustomElement>(); // Use the new type name
+
+    // Register the widget builders found in options for the specific element IDs
+    for (final element in customElements) {
+      final widgetBuilder = options.widgets[element.id]; // Access by element.id
+      if (widgetBuilder != null) {
+        slideWidgets[element.id] = widgetBuilder; // Register using element.id
+      }
+    }
+    // Add all widgets from options (potentially duplicates, but ensures all are included)
+    slideWidgets.addAll(options.widgets);
+
+    return slideWidgets;
+  }
 }
 
 List<SlideConfiguration> _buildSlides({
@@ -87,16 +117,16 @@ SlideConfiguration _convertSlide({
   required DeckOptions options,
   required PresentationRepository dataStore,
 }) {
-  final widgetBlocks = slide.sections
+  final customElements = slide.sections
       .expand((section) => section.blocks)
-      .whereType<WidgetBlock>();
+      .whereType<CustomElement>();
 
   final slideWidgets = <String, WidgetBlockBuilder>{};
 
-  for (final block in widgetBlocks) {
-    final widgetBuilder = options.widgets[block.name];
+  for (final element in customElements) {
+    final widgetBuilder = options.widgets[element.id];
     if (widgetBuilder != null) {
-      slideWidgets[block.name] = widgetBuilder;
+      slideWidgets[element.id] = widgetBuilder;
     }
   }
 
@@ -104,8 +134,8 @@ SlideConfiguration _convertSlide({
   final styleName = slide.options?.style;
   final baseStyle = options.baseStyle;
   final style = baseStyle.build().merge(styles[styleName]?.build());
-  final thumbnailFile = dataStore.getGeneratedAssetPath(
-    GeneratedAsset.thumbnail(slide.key),
+  final thumbnailFile = dataStore.getAssetPath(
+    Asset.thumbnail(slide.key),
   );
   return SlideConfiguration(
     slideIndex: slideIndex,
@@ -121,10 +151,10 @@ SlideConfiguration _convertSlide({
 final _emptySlide = Slide(
   key: 'empty',
   sections: [
-    SectionBlock([
-      '## No slides found'.column().alignCenter(),
+    SlideSection([
+      '## No slides found'.markdown().alignCenter(),
       'Update the slides.md file to add slides to your deck.'
-          .column()
+          .markdown()
           .alignBottomRight(),
     ]),
   ],

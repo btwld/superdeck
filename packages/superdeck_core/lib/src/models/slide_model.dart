@@ -7,7 +7,7 @@ part 'slide_model.mapper.dart';
 class Slide with SlideMappable {
   final String key;
   final SlideOptions? options;
-  final List<SectionBlock> sections;
+  final List<SlideSection> sections;
   final List<String> comments;
 
   const Slide({
@@ -21,7 +21,7 @@ class Slide with SlideMappable {
     {
       "key": Ack.string,
       'options': SlideOptions.schema.nullable(),
-      'sections': SectionBlock.schema.list,
+      'sections': SlideSection.schema.list,
       'comments': Ack.string.list,
     },
     required: ['key'],
@@ -70,8 +70,8 @@ class ErrorSlide extends Slide {
   }) : super(
           key: 'error',
           sections: [
-            SectionBlock([
-              ColumnBlock('''
+            SlideSection([
+              MarkdownElement('''
 > [!CAUTION]
 > $title
 > $message
@@ -81,7 +81,7 @@ class ErrorSlide extends Slide {
 ${error.toString()}
 ```
 '''),
-              ColumnBlock('')
+              MarkdownElement('')
             ]),
           ],
         );

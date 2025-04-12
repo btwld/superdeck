@@ -19,15 +19,15 @@ class ParsedBlock {
 
   Map<String, dynamic> get data {
     final keys = [
-      SectionBlock.key,
-      ColumnBlock.key,
-      ImageBlock.key,
+      SlideSection.key,
+      MarkdownElement.key,
+      ImageElement.key,
       DartPadBlock.key,
-      WidgetBlock.key,
+      CustomElement.key,
     ];
 
     return !keys.contains(type)
-        ? {..._data, 'name': type, 'type': WidgetBlock.key}
+        ? {..._data, 'id': type, 'type': CustomElement.key}
         : {..._data, 'type': type};
   }
 }

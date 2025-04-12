@@ -4,20 +4,20 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../../modules/common/helpers/provider.dart';
 import '../../modules/common/styles/style_spec.dart';
 
-class BlockData<T extends Block> {
-  const BlockData({
+class ElementData<T extends SlideElement> {
+  const ElementData({
+    required this.block,
     required this.spec,
     required this.size,
-    required this.block,
   });
 
-  final SlideSpec spec;
-  final Size size;
   final T block;
+  final Size size;
+  final SlideSpec spec;
 
   @override
   bool operator ==(Object other) {
-    return other is BlockData &&
+    return other is ElementData &&
         other.spec == spec &&
         other.size == size &&
         other.block == block;
@@ -26,23 +26,13 @@ class BlockData<T extends Block> {
   @override
   int get hashCode => spec.hashCode ^ size.hashCode ^ block.hashCode;
 
-  static BlockData of(BuildContext context) {
-    final data = _tryAnyBlockData(context);
+  static ElementData<T> of<T extends SlideElement>(BuildContext context) {
+    final data = InheritedData.maybeOf<ElementData<T>>(context);
     if (data == null) {
-      throw FlutterError('BlockData not found');
+      throw FlutterError(
+          'ElementData<$T> not found in context. Make sure a SlideElementWidget is an ancestor.');
     }
     return data;
-  }
-
-  static BlockData<T>? inheritedData<T extends Block>(BuildContext context) {
-    return InheritedData.maybeOf<BlockData<T>>(context);
-  }
-
-  static BlockData? _tryAnyBlockData(BuildContext context) {
-    return inheritedData<ColumnBlock>(context) ??
-        inheritedData<WidgetBlock>(context) ??
-        inheritedData<ImageBlock>(context) ??
-        inheritedData<DartPadBlock>(context);
   }
 }
 

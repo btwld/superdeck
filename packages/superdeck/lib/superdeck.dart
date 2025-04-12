@@ -1,6 +1,6 @@
 library superdeck_flutter;
 
-export 'package:superdeck/src/components/molecules/block_widget.dart';
+export 'package:superdeck/src/components/molecules/slide_element_widget.dart';
 export 'package:superdeck/src/components/parts/slide_parts.dart';
 export 'package:superdeck/src/components/superdeck_app.dart';
 export 'package:superdeck/src/modules/common/helpers/extensions.dart';

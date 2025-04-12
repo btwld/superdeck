@@ -16,6 +16,7 @@ dependencies:
   puppeteer: ^3.17.0
   crypto: ^3.0.6
 
+  http: any
 dev_dependencies:
   lints: ^5.0.0
   test: ^1.25.8

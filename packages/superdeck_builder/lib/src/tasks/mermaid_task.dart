@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
+import 'package:superdeck_core/src/storage/asset_storage.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../core/task.dart';
@@ -11,6 +12,16 @@ import '../services/browser_service.dart';
 
 class MermaidConverterTask extends Task {
   final BrowserService _browserService;
+  final AssetStorage _assetStorage;
+
+  // Set to track generated assets for cleanup
+  final Set<String> _processedAssetIds = {};
+
+  // Map to track asset generation timestamps for potential cache invalidation
+  final Map<String, DateTime> _assetGenerationTimes = {};
+
+  // Cache invalidation time (default: 1 hour)
+  final Duration _cacheInvalidationTime;
 
   /// Extract large HTML templates to constants for better readability.
   static final _mermaidHtmlTemplate = '''
@@ -35,6 +46,7 @@ class MermaidConverterTask extends Task {
 
   MermaidConverterTask({
     required BrowserService browserService,
+    required AssetStorage assetStorage,
     Map<String, dynamic> configuration = const {
       'theme': 'base',
       'themeVariables': {
@@ -54,9 +66,14 @@ class MermaidConverterTask extends Task {
       'viewportWidth': 1280,
       'viewportHeight': 780,
       'deviceScaleFactor': 2,
-      'timeout': 5
+      'timeout': 5,
+      'cacheInvalidationMinutes': 60,
     },
   })  : _browserService = browserService,
+        _assetStorage = assetStorage,
+        _cacheInvalidationTime = Duration(
+          minutes: (configuration['cacheInvalidationMinutes'] as int?) ?? 60,
+        ),
         super('mermaid', configuration: configuration, canRunInParallel: false);
 
   Future<String> _generateMermaidGraph(String graphDefinition) {
@@ -154,6 +171,30 @@ class MermaidConverterTask extends Task {
     }
   }
 
+  /// Check if an asset needs to be regenerated based on cache invalidation rules
+  Future<bool> _shouldRegenerateAsset(Asset asset) async {
+    final assetId = '${asset.type.name}_${asset.id}';
+    final assetExists = await _assetStorage.assetExists(asset);
+
+    if (!assetExists) {
+      return true; // Regenerate if doesn't exist
+    }
+
+    // Check cache invalidation time if enabled
+    if (_cacheInvalidationTime > Duration.zero) {
+      final lastGenerated = _assetGenerationTimes[assetId];
+      if (lastGenerated != null) {
+        final age = DateTime.now().difference(lastGenerated);
+        if (age > _cacheInvalidationTime) {
+          logger.info('Asset $assetId cache expired (age: ${age.inMinutes}m)');
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   @override
   Future<void> run(TaskContext context) async {
     final stopwatch = Stopwatch()..start();
@@ -166,37 +207,99 @@ class MermaidConverterTask extends Task {
       return;
     }
 
+    int processedCount = 0;
+    int cachedCount = 0;
+
     for (final mermaidBlock in mermaidBlocks) {
-      final mermaidAsset = GeneratedAsset.mermaid(mermaidBlock.content);
-      final assetPath = context.dataStore.getGeneratedAssetPath(mermaidAsset);
-      final assetFile = File(assetPath);
+      try {
+        // Create asset using Asset model
+        final mermaidAsset = Asset(
+          id: generateValueHash(mermaidBlock.content),
+          extension: AssetExtension.png,
+          type: AssetType.mermaid,
+        );
 
-      if (await assetFile.exists()) {
-        logger.info(
-          'Mermaid asset already exists for slide index: ${context.slideIndex}',
+        // Track this asset to prevent cleanup
+        final assetId = '${mermaidAsset.type.name}_${mermaidAsset.id}';
+        _processedAssetIds.add(assetId);
+
+        // Check if we need to regenerate the asset
+        final shouldRegenerate = await _shouldRegenerateAsset(mermaidAsset);
+
+        if (shouldRegenerate) {
+          logger.info(
+            'Generating mermaid graph image for slide index: ${context.slideIndex}',
+          );
+          // Generate and save the image
+          final imageData =
+              await _generateMermaidGraphImage(mermaidBlock.content);
+          await _assetStorage.saveAsset(
+              mermaidAsset, Uint8List.fromList(imageData));
+
+          // Record asset generation time
+          _assetGenerationTimes[assetId] = DateTime.now();
+          processedCount++;
+        } else {
+          logger.info(
+            'Using cached mermaid asset for slide index: ${context.slideIndex}',
+          );
+          cachedCount++;
+        }
+
+        // Get the asset source path
+        final assetSource = await _assetStorage.getAssetSource(mermaidAsset);
+
+        // Replace mermaid code with image link
+        final mermaidImageSyntax = '![mermaid_graph](${assetSource.path})';
+        final updatedMarkdown = context.slide.content.replaceRange(
+          mermaidBlock.startIndex,
+          mermaidBlock.endIndex,
+          mermaidImageSyntax,
         );
-      } else {
-        logger.info(
-          'Generating mermaid graph image for slide index: ${context.slideIndex}',
+
+        context.slide.content = updatedMarkdown;
+      } catch (e, stackTrace) {
+        // Log error but continue processing other mermaid blocks
+        logger.severe(
+          'Error processing mermaid block in slide ${context.slideIndex}: $e',
+          stackTrace,
         );
-        final imageData =
-            await _generateMermaidGraphImage(mermaidBlock.content);
-        await assetFile.writeAsBytes(imageData);
+        // Continue with next mermaid block rather than failing the entire task
       }
-
-      final mermaidImageSyntax = '![mermaid_graph](${assetFile.path})';
-      final updatedMarkdown = context.slide.content.replaceRange(
-        mermaidBlock.startIndex,
-        mermaidBlock.endIndex,
-        mermaidImageSyntax,
-      );
-
-      context.slide.content = updatedMarkdown;
     }
 
     stopwatch.stop();
     logger.info(
-      'Completed MermaidConverterTask for slide index: ${context.slideIndex} in ${stopwatch.elapsedMicroseconds} microseconds',
+      'Completed MermaidConverterTask for slide ${context.slideIndex}: '
+      'Generated $processedCount new, used $cachedCount cached, '
+      'in ${stopwatch.elapsedMilliseconds}ms',
     );
+  }
+
+  /// Call this method after all slides have been processed
+  /// to cleanup unused assets
+  Future<void> cleanupUnusedAssets() async {
+    if (_processedAssetIds.isEmpty) {
+      logger.info('No mermaid assets to clean up');
+      return;
+    }
+
+    final beforeCount = _processedAssetIds.length;
+    logger.info(
+        'Cleaning up mermaid assets, tracking $beforeCount active assets');
+
+    try {
+      await _assetStorage.cleanupUnusedAssets(_processedAssetIds);
+      logger.info('Successfully cleaned up unused mermaid assets');
+    } catch (e, stackTrace) {
+      logger.severe('Error cleaning up mermaid assets: $e', stackTrace);
+    }
+  }
+
+  /// Reset all tracked assets - useful when reprocessing the entire deck
+  void resetAssetTracking() {
+    _processedAssetIds.clear();
+    _assetGenerationTimes.clear();
+    logger.info('Reset mermaid asset tracking');
   }
 }

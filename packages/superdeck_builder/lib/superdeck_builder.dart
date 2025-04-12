@@ -1,10 +1,13 @@
 /// Main export file for superdeck_builder library
 library superdeck_builder;
 
+import 'package:logging/logging.dart';
 import 'package:superdeck_builder/src/core/task_pipeline.dart';
 import 'package:superdeck_builder/src/services/browser_service.dart';
 import 'package:superdeck_builder/src/tasks/dart_formatter_task.dart';
 import 'package:superdeck_builder/src/tasks/mermaid_task.dart';
+import 'package:superdeck_core/src/storage/asset_storage.dart'
+    show DefaultAssetStorageFactory;
 import 'package:superdeck_core/superdeck_core.dart';
 
 // Export assets
@@ -45,10 +48,28 @@ TaskPipeline getDefaultPipeline(
   DeckConfiguration configuration,
   FileSystemPresentationRepository store,
 ) {
+  final logger = Logger('SuperdeckBuilder');
+
+  // Create asset storage using the factory
+  final assetStorage = DefaultAssetStorageFactory.create(
+    assetDirectory: configuration.assetsDir,
+    isDevelopment: true, // Always use development mode for builder
+    logger: (message) => logger.info(message),
+  );
+
+  // Create browser service with robust configuration
+  final browserService = BrowserService(
+    maxRetries: 3,
+    retryDelay: const Duration(seconds: 2),
+  );
+
   return TaskPipeline(
     tasks: [
       DartFormatterTask(),
-      MermaidConverterTask(browserService: BrowserService()),
+      MermaidConverterTask(
+        browserService: browserService,
+        assetStorage: assetStorage,
+      ),
     ],
     configuration: configuration,
     store: store,

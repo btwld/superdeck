@@ -4,7 +4,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
 import '../../../../../superdeck.dart';
-import '../../../../components/molecules/block_provider.dart';
+import '../../../../components/molecules/element_provider.dart';
 import '../../helpers/syntax_highlighter.dart';
 import '../../helpers/utils.dart';
 import '../markdown_helpers.dart';
@@ -60,7 +60,7 @@ class CodeElementBuilder extends MarkdownElementBuilder {
 
     // Provide _CodeElementData for Hero animations
     return Builder(builder: (context) {
-      final blockData = BlockData.of(context);
+      final blockData = ElementData.of(context);
       final slide = SlideConfiguration.of(context);
 
       final hasHero = heroTag != null && !slide.isExporting;

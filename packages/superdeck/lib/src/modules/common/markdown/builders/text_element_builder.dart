@@ -4,7 +4,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/modules/deck/slide_configuration.dart';
 
-import '../../../../components/molecules/block_provider.dart';
+import '../../../../components/molecules/element_provider.dart';
 import '../../helpers/utils.dart';
 import '../markdown_helpers.dart';
 import 'element_data_provider.dart';
@@ -19,7 +19,7 @@ class TextElementBuilder extends MarkdownElementBuilder {
     final (:tag, :content) = getTagAndContent(text.text);
 
     return Builder(builder: (context) {
-      final block = BlockData.of(context);
+      final block = ElementData.of(context);
       final slide = SlideConfiguration.of(context);
 
       final hasHero = tag != null && !slide.isExporting;

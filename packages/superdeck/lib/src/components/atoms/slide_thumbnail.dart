@@ -5,18 +5,6 @@ import '../../modules/common/helpers/constants.dart';
 import '../../modules/deck/slide_configuration.dart';
 import '../../modules/slide_capture/thumbnail_controller.dart';
 
-enum _PopMenuAction {
-  refreshThumbnail(
-    'Refresh Thumbnail',
-    Icons.refresh,
-  );
-
-  const _PopMenuAction(this.label, this.icon);
-
-  final String label;
-  final IconData icon;
-}
-
 class SlideThumbnail extends StatelessWidget {
   final bool selected;
   final SlideConfiguration slide;
