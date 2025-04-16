@@ -32,3 +32,10 @@ abstract class Task {
   /// Override if the task holds resources that need explicit disposal.
   FutureOr<void> dispose() => Future.value();
 }
+
+/// Interface for tasks that need to perform cleanup operations after all slides are processed.
+/// This is particularly useful for tasks that generate assets or temporary files.
+abstract class CleanupCapableTask implements Task {
+  /// Clean up any resources or unused assets after all slides have been processed.
+  FutureOr<void> cleanupUnusedAssets();
+}

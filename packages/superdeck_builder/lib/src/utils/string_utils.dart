@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:crypto/crypto.dart';
+import 'package:superdeck_core/src/helpers/generate_hash.dart'
+    show generateValueHash;
 
 /// Utility functions for string operations
 class StringUtils {
@@ -58,13 +59,6 @@ class StringUtils {
     final indentation = ' ' * spaces;
     return input.split('\n').map((line) => '$indentation$line').join('\n');
   }
-}
-
-/// Generates a hash for a string value
-String generateValueHash(String value) {
-  final bytes = utf8.encode(value);
-  final digest = sha256.convert(bytes);
-  return digest.toString();
 }
 
 /// Generate a unique ID using timestamp and hash

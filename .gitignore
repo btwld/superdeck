@@ -48,3 +48,4 @@ node_modules
 .local-chrome
 .orbit
 discovery
+.cursor

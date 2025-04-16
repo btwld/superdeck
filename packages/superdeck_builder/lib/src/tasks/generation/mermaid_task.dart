@@ -2,15 +2,14 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:puppeteer/puppeteer.dart';
+import 'package:superdeck_builder/src/core/task.dart';
+import 'package:superdeck_builder/src/core/task_context.dart';
 import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
+import 'package:superdeck_builder/src/services/browser_service.dart';
 import 'package:superdeck_core/src/storage/asset_storage.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../core/task.dart';
-import '../core/task_context.dart';
-import '../services/browser_service.dart';
-
-class MermaidConverterTask extends Task {
+class MermaidConverterTask extends Task implements CleanupCapableTask {
   final BrowserService _browserService;
   final AssetStorage _assetStorage;
 

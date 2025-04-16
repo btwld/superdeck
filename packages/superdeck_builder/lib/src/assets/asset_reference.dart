@@ -1,15 +1,6 @@
 import 'dart:convert';
 
-/// Asset types supported by Superdeck
-enum AssetType {
-  image,
-  video,
-  audio,
-  font,
-  code,
-  data,
-  other,
-}
+import 'package:superdeck_core/superdeck_core.dart';
 
 /// Reference to an asset in the project
 class AssetReference {
@@ -72,12 +63,32 @@ class AssetReference {
     return AssetReference(
       source: json['source'] as String,
       destination: json['destination'] as String,
-      type: AssetType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => AssetType.other,
-      ),
+      type: _parseAssetType(json['type'] as String),
       metadata: json['metadata'] as Map<String, dynamic>? ?? {},
     )..processed = json['processed'] as bool? ?? false;
+  }
+
+  /// Parse asset type from string, handling both old and new enum values
+  static AssetType _parseAssetType(String value) {
+    // Try to match with core AssetType
+    try {
+      return AssetType.values.firstWhere((e) => e.name == value);
+    } catch (_) {
+      // Handle legacy types from previous enum
+      switch (value) {
+        case 'image':
+          return AssetType.image;
+        case 'video':
+        case 'audio':
+        case 'font':
+        case 'code':
+        case 'data':
+        case 'other':
+          return AssetType.custom; // Map all other types to custom
+        default:
+          return AssetType.custom;
+      }
+    }
   }
 
   @override

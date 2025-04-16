@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:superdeck_core/src/helpers/generate_hash.dart'
+    show generateValueHash;
 
 import '../core/deck_format_exception.dart';
-import 'string_utils.dart';
 
 /// Utilities for working with processes
 class ProcessUtils {
