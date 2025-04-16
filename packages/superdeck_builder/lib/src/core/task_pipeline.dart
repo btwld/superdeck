@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:superdeck_builder/src/parsers/markdown_parser.dart';
-import 'package:superdeck_builder/src/tasks/mermaid_task.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../cache/slide_cache.dart';
@@ -219,7 +218,7 @@ class TaskPipeline {
     // Run asset cleanup on specialized tasks
     _logger.info('Running asset cleanup tasks...');
     for (var task in tasks) {
-      if (task is MermaidConverterTask) {
+      if (task is CleanupCapableTask) {
         await task.cleanupUnusedAssets();
       }
     }

@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:superdeck_core/src/helpers/generate_hash.dart'
+    show generateValueHash;
+import 'package:superdeck_core/superdeck_core.dart' as core;
 
 import '../utils/log_utils.dart';
-import '../utils/string_utils.dart';
 import 'asset_reference.dart';
 
 /// Manager for asset handling
@@ -28,7 +30,7 @@ class AssetManager {
   AssetReference registerAsset({
     required String source,
     String? destination,
-    AssetType? type,
+    core.AssetType? type,
     Map<String, dynamic>? metadata,
   }) {
     // Determine the asset type if not provided
@@ -59,7 +61,7 @@ class AssetManager {
   }
 
   /// Find assets by type
-  List<AssetReference> findAssetsByType(AssetType type) {
+  List<AssetReference> findAssetsByType(core.AssetType type) {
     return _assets.values.where((asset) => asset.type == type).toList();
   }
 
@@ -136,7 +138,7 @@ class AssetManager {
   }
 
   /// Generate a destination path for an asset
-  String _generateDestinationPath(String source, AssetType type) {
+  String _generateDestinationPath(String source, core.AssetType type) {
     // Extract filename from source
     final fileName = p.basename(source);
 
@@ -154,7 +156,7 @@ class AssetManager {
   }
 
   /// Detect the asset type based on file extension
-  AssetType _detectAssetType(String source) {
+  core.AssetType _detectAssetType(String source) {
     final ext = p.extension(source).toLowerCase();
 
     switch (ext) {
@@ -164,39 +166,9 @@ class AssetManager {
       case '.gif':
       case '.svg':
       case '.webp':
-        return AssetType.image;
-
-      case '.mp4':
-      case '.webm':
-      case '.mov':
-        return AssetType.video;
-
-      case '.mp3':
-      case '.wav':
-      case '.ogg':
-        return AssetType.audio;
-
-      case '.ttf':
-      case '.otf':
-      case '.woff':
-      case '.woff2':
-        return AssetType.font;
-
-      case '.dart':
-      case '.js':
-      case '.ts':
-      case '.html':
-      case '.css':
-        return AssetType.code;
-
-      case '.json':
-      case '.yaml':
-      case '.csv':
-      case '.xml':
-        return AssetType.data;
-
+        return core.AssetType.image;
       default:
-        return AssetType.other;
+        return core.AssetType.custom;
     }
   }
 

@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:superdeck_core/src/models/asset_source.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../modules/assets/asset_service.dart';
 import '../../modules/deck/slide_configuration.dart';
@@ -186,7 +188,7 @@ class ThumbnailWidget extends StatelessWidget {
   Widget _buildThumbnailFromSource(BuildContext context, AssetSource source) {
     ImageFrameBuilder? imageFrameBuilder;
     if (onTap != null) {
-      imageFrameBuilder = (context, child, frame, wasSynchronouslyLoaded) {
+      imageFrameBuilder = (context, child, frame, _) {
         return GestureDetector(
           onTap: onTap,
           child: child,

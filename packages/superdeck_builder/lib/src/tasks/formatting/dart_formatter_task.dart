@@ -1,10 +1,9 @@
 import 'dart:async';
 
+import 'package:superdeck_builder/src/core/task.dart';
+import 'package:superdeck_builder/src/core/task_context.dart';
 import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
 import 'package:superdeck_builder/src/utils/process_utils.dart';
-
-import '../core/task.dart';
-import '../core/task_context.dart';
 
 class DartFormatterTask extends Task {
   final Map<String, String>? _environmentOverrides;

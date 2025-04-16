@@ -2,10 +2,10 @@
 library superdeck_builder;
 
 import 'package:logging/logging.dart';
+import 'package:superdeck_builder/src/core/task.dart';
 import 'package:superdeck_builder/src/core/task_pipeline.dart';
 import 'package:superdeck_builder/src/services/browser_service.dart';
-import 'package:superdeck_builder/src/tasks/dart_formatter_task.dart';
-import 'package:superdeck_builder/src/tasks/mermaid_task.dart';
+import 'package:superdeck_builder/src/tasks/index.dart';
 import 'package:superdeck_core/src/storage/asset_storage.dart'
     show DefaultAssetStorageFactory;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -34,8 +34,7 @@ export 'src/services/dart_process_service.dart';
 export 'src/services/disposable.dart';
 export 'src/services/http_client_service.dart';
 // Export tasks
-export 'src/tasks/dart_formatter_task.dart';
-export 'src/tasks/mermaid_task.dart';
+export 'src/tasks/index.dart';
 // Export utilities
 export 'src/utils/file_utils.dart';
 export 'src/utils/log_utils.dart';
@@ -64,7 +63,7 @@ TaskPipeline getDefaultPipeline(
   );
 
   return TaskPipeline(
-    tasks: [
+    tasks: <Task>[
       DartFormatterTask(),
       MermaidConverterTask(
         browserService: browserService,
