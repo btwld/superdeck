@@ -4,6 +4,12 @@ targets:
       dart_mappable_builder:
         generate_for:
           - lib/**/*.dart
+        options:
+          skipFields: true
+          caseStyle: snakeCase
+          enumCaseStyle: snakeCase
+          ignoreNull: true
+          generateMethods: [decode, encode, stringify, equals]
 
 global_options:
   dart_mappable_builder:
@@ -11,3 +17,4 @@ global_options:
       caseStyle: snakeCase
       enumCaseStyle: snakeCase
       ignoreNull: true
+      generateMethods: [decode, encode, stringify, equals]

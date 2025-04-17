@@ -14,6 +14,7 @@ class SlideMapper extends ClassMapperBase<Slide> {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = SlideMapper._());
       SlideOptionsMapper.ensureInitialized();
+      SectionBlockMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -26,8 +27,8 @@ class SlideMapper extends ClassMapperBase<Slide> {
   static SlideOptions? _$options(Slide v) => v.options;
   static const Field<Slide, SlideOptions> _f$options =
       Field('options', _$options, opt: true);
-  static List<InvalidType> _$sections(Slide v) => v.sections;
-  static const Field<Slide, List<InvalidType>> _f$sections =
+  static List<SectionBlock> _$sections(Slide v) => v.sections;
+  static const Field<Slide, List<SectionBlock>> _f$sections =
       Field('sections', _$sections, opt: true, def: const []);
   static List<String> _$comments(Slide v) => v.comments;
   static const Field<Slide, List<String>> _f$comments =
@@ -72,8 +73,6 @@ mixin SlideMappable {
     return SlideMapper.ensureInitialized().encodeMap<Slide>(this as Slide);
   }
 
-  SlideCopyWith<Slide, Slide, Slide> get copyWith =>
-      _SlideCopyWithImpl(this as Slide, $identity, $identity);
   @override
   String toString() {
     return SlideMapper.ensureInitialized().stringifyValue(this as Slide);
@@ -88,66 +87,6 @@ mixin SlideMappable {
   int get hashCode {
     return SlideMapper.ensureInitialized().hashValue(this as Slide);
   }
-}
-
-extension SlideValueCopy<$R, $Out> on ObjectCopyWith<$R, Slide, $Out> {
-  SlideCopyWith<$R, Slide, $Out> get $asSlide =>
-      $base.as((v, t, t2) => _SlideCopyWithImpl(v, t, t2));
-}
-
-abstract class SlideCopyWith<$R, $In extends Slide, $Out>
-    implements ClassCopyWith<$R, $In, $Out> {
-  SlideOptionsCopyWith<$R, SlideOptions, SlideOptions>? get options;
-  ListCopyWith<$R, InvalidType, ObjectCopyWith<$R, InvalidType, InvalidType>>
-      get sections;
-  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get comments;
-  $R call(
-      {String? key,
-      SlideOptions? options,
-      List<InvalidType>? sections,
-      List<String>? comments});
-  SlideCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
-}
-
-class _SlideCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Slide, $Out>
-    implements SlideCopyWith<$R, Slide, $Out> {
-  _SlideCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<Slide> $mapper = SlideMapper.ensureInitialized();
-  @override
-  SlideOptionsCopyWith<$R, SlideOptions, SlideOptions>? get options =>
-      $value.options?.copyWith.$chain((v) => call(options: v));
-  @override
-  ListCopyWith<$R, InvalidType, ObjectCopyWith<$R, InvalidType, InvalidType>>
-      get sections => ListCopyWith($value.sections,
-          (v, t) => ObjectCopyWith(v, $identity, t), (v) => call(sections: v));
-  @override
-  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get comments =>
-      ListCopyWith($value.comments, (v, t) => ObjectCopyWith(v, $identity, t),
-          (v) => call(comments: v));
-  @override
-  $R call(
-          {String? key,
-          Object? options = $none,
-          List<InvalidType>? sections,
-          List<String>? comments}) =>
-      $apply(FieldCopyWithData({
-        if (key != null) #key: key,
-        if (options != $none) #options: options,
-        if (sections != null) #sections: sections,
-        if (comments != null) #comments: comments
-      }));
-  @override
-  Slide $make(CopyWithData data) => Slide(
-      key: data.get(#key, or: $value.key),
-      options: data.get(#options, or: $value.options),
-      sections: data.get(#sections, or: $value.sections),
-      comments: data.get(#comments, or: $value.comments));
-
-  @override
-  SlideCopyWith<$R2, Slide, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t) =>
-      _SlideCopyWithImpl($value, $cast, t);
 }
 
 class SlideOptionsMapper extends ClassMapperBase<SlideOptions> {
@@ -215,8 +154,6 @@ mixin SlideOptionsMappable {
         .encodeMap<SlideOptions>(this as SlideOptions);
   }
 
-  SlideOptionsCopyWith<SlideOptions, SlideOptions, SlideOptions> get copyWith =>
-      _SlideOptionsCopyWithImpl(this as SlideOptions, $identity, $identity);
   @override
   String toString() {
     return SlideOptionsMapper.ensureInitialized()
@@ -234,52 +171,4 @@ mixin SlideOptionsMappable {
     return SlideOptionsMapper.ensureInitialized()
         .hashValue(this as SlideOptions);
   }
-}
-
-extension SlideOptionsValueCopy<$R, $Out>
-    on ObjectCopyWith<$R, SlideOptions, $Out> {
-  SlideOptionsCopyWith<$R, SlideOptions, $Out> get $asSlideOptions =>
-      $base.as((v, t, t2) => _SlideOptionsCopyWithImpl(v, t, t2));
-}
-
-abstract class SlideOptionsCopyWith<$R, $In extends SlideOptions, $Out>
-    implements ClassCopyWith<$R, $In, $Out> {
-  MapCopyWith<$R, String, Object?, ObjectCopyWith<$R, Object?, Object?>?>
-      get args;
-  $R call({String? title, String? style, Map<String, Object?>? args});
-  SlideOptionsCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
-}
-
-class _SlideOptionsCopyWithImpl<$R, $Out>
-    extends ClassCopyWithBase<$R, SlideOptions, $Out>
-    implements SlideOptionsCopyWith<$R, SlideOptions, $Out> {
-  _SlideOptionsCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<SlideOptions> $mapper =
-      SlideOptionsMapper.ensureInitialized();
-  @override
-  MapCopyWith<$R, String, Object?, ObjectCopyWith<$R, Object?, Object?>?>
-      get args => MapCopyWith($value.args,
-          (v, t) => ObjectCopyWith(v, $identity, t), (v) => call(args: v));
-  @override
-  $R call(
-          {Object? title = $none,
-          Object? style = $none,
-          Map<String, Object?>? args}) =>
-      $apply(FieldCopyWithData({
-        if (title != $none) #title: title,
-        if (style != $none) #style: style,
-        if (args != null) #args: args
-      }));
-  @override
-  SlideOptions $make(CopyWithData data) => SlideOptions(
-      title: data.get(#title, or: $value.title),
-      style: data.get(#style, or: $value.style),
-      args: data.get(#args, or: $value.args));
-
-  @override
-  SlideOptionsCopyWith<$R2, SlideOptions, $Out2> $chain<$R2, $Out2>(
-          Then<$Out2, $R2> t) =>
-      _SlideOptionsCopyWithImpl($value, $cast, t);
 }

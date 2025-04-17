@@ -5,18 +5,17 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'base_parser.dart';
 import 'block_parser.dart';
 
-class SectionParser extends BaseParser<List<SlideSection>> {
+class SectionParser extends BaseParser<List<SectionBlock>> {
   const SectionParser();
 
   @override
-  List<SlideSection> parse(String content) {
+  List<SectionBlock> parse(String content) {
     final parsedBlocks = const BlockParser().parse(content);
 
     final updatedContent = _updateIgnoredTags(content);
 
-    // If there are no tag blocks, we can just add the entire markdown as a single section.
     if (parsedBlocks.isEmpty) {
-      return [SlideSection.text(updatedContent)];
+      return [SectionBlock.text(updatedContent)];
     }
 
     final aggregator = _SectionAggregator();
@@ -26,6 +25,14 @@ class SectionParser extends BaseParser<List<SlideSection>> {
     if (firstBlock.startIndex > 0) {
       aggregator.addContent(updatedContent.substring(0, firstBlock.startIndex));
     }
+
+    const knownBlockKeys = {
+      SectionBlock.key,
+      MarkdownBlock.key,
+      ImageBlock.key,
+      DartPadBlock.key,
+      WidgetBlock.key,
+    };
 
     for (var idx = 0; idx < parsedBlocks.length; idx++) {
       final parsedBlock = parsedBlocks[idx];
@@ -43,9 +50,20 @@ class SectionParser extends BaseParser<List<SlideSection>> {
         );
       }
 
-      final block = parsedBlock.type == 'section'
-          ? SlideSection.parse(parsedBlock.data)
-          : SlideElement.parse(parsedBlock.data);
+      Map<String, dynamic> blockData;
+      final originalData = parsedBlock._data;
+
+      if (knownBlockKeys.contains(parsedBlock.type)) {
+        blockData = {...originalData, 'type': parsedBlock.type};
+      } else {
+        blockData = {
+          ...originalData,
+          'id': parsedBlock.type,
+          'type': WidgetBlock.key
+        };
+      }
+
+      final BaseBlock block = BaseBlockMapper.fromMap(blockData);
 
       aggregator
         ..addBlock(block)
@@ -76,47 +94,63 @@ String _updateIgnoredTags(String content) {
 }
 
 class _SectionAggregator {
-  List<SlideSection> sections = [];
+  List<SectionBlock> sections = [];
 
   _SectionAggregator();
 
-  SlideSection _getSection() {
+  SectionBlock _getSection() {
     if (sections.isEmpty) {
-      sections.add(SlideSection([]));
+      sections.add(SectionBlock([]));
     }
 
     return sections.last;
   }
 
   void addContent(String content) {
-    final section = _getSection();
-    final block = section.blocks.lastOrNull;
-    final blocks = [...section.blocks];
+    final currentSection = _getSection();
+    final lastBlock = currentSection.blocks.lastOrNull;
+    final currentBlocks = [...currentSection.blocks];
 
     if (content.trim().isEmpty) {
       return;
     }
 
-    if (block is MarkdownElement) {
-      final newContent =
-          block.content.isEmpty ? content : '${block.content}\n$content';
+    if (lastBlock is MarkdownBlock) {
+      final newContent = lastBlock.content.isEmpty
+          ? content
+          : '${lastBlock.content}\n$content';
 
-      blocks.last = block.copyWith(content: newContent);
+      currentBlocks[currentBlocks.length - 1] = MarkdownBlock(
+        newContent,
+        align: lastBlock.align,
+        flex: lastBlock.flex,
+        scrollable: lastBlock.scrollable,
+      );
     } else {
-      blocks.add(MarkdownElement(content));
+      currentBlocks.add(MarkdownBlock(content));
     }
 
-    sections.last = section.copyWith(blocks: blocks);
+    sections[sections.length - 1] = SectionBlock(
+      currentBlocks,
+      align: currentSection.align,
+      flex: currentSection.flex,
+      scrollable: currentSection.scrollable,
+    );
   }
 
-  void addBlock(SlideElement block) {
-    if (block is SlideSection) {
+  void addBlock(BaseBlock block) {
+    if (block is SectionBlock) {
       sections.add(block);
     } else {
-      final lastSection = _getSection();
-      final blocks = [...lastSection.blocks, block];
+      final currentSection = _getSection();
+      final newBlocks = [...currentSection.blocks, block];
 
-      sections.last = lastSection.copyWith(blocks: blocks);
+      sections[sections.length - 1] = SectionBlock(
+        newBlocks,
+        align: currentSection.align,
+        flex: currentSection.flex,
+        scrollable: currentSection.scrollable,
+      );
     }
   }
 }

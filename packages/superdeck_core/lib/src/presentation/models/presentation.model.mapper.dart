@@ -65,8 +65,6 @@ mixin PresentationMappable {
         .encodeMap<Presentation>(this as Presentation);
   }
 
-  PresentationCopyWith<Presentation, Presentation, Presentation> get copyWith =>
-      _PresentationCopyWithImpl(this as Presentation, $identity, $identity);
   @override
   String toString() {
     return PresentationMapper.ensureInitialized()
@@ -84,52 +82,4 @@ mixin PresentationMappable {
     return PresentationMapper.ensureInitialized()
         .hashValue(this as Presentation);
   }
-}
-
-extension PresentationValueCopy<$R, $Out>
-    on ObjectCopyWith<$R, Presentation, $Out> {
-  PresentationCopyWith<$R, Presentation, $Out> get $asPresentation =>
-      $base.as((v, t, t2) => _PresentationCopyWithImpl(v, t, t2));
-}
-
-abstract class PresentationCopyWith<$R, $In extends Presentation, $Out>
-    implements ClassCopyWith<$R, $In, $Out> {
-  ListCopyWith<$R, Slide, SlideCopyWith<$R, Slide, Slide>> get slides;
-  PresentationConfigCopyWith<$R, PresentationConfig, PresentationConfig>
-      get configuration;
-  $R call({List<Slide>? slides, PresentationConfig? configuration});
-  PresentationCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
-}
-
-class _PresentationCopyWithImpl<$R, $Out>
-    extends ClassCopyWithBase<$R, Presentation, $Out>
-    implements PresentationCopyWith<$R, Presentation, $Out> {
-  _PresentationCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<Presentation> $mapper =
-      PresentationMapper.ensureInitialized();
-  @override
-  ListCopyWith<$R, Slide, SlideCopyWith<$R, Slide, Slide>> get slides =>
-      ListCopyWith($value.slides, (v, t) => v.copyWith.$chain(t),
-          (v) => call(slides: v));
-  @override
-  PresentationConfigCopyWith<$R, PresentationConfig, PresentationConfig>
-      get configuration =>
-          $value.configuration.copyWith.$chain((v) => call(configuration: v));
-  @override
-  $R call({List<Slide>? slides, PresentationConfig? configuration}) =>
-      $apply(FieldCopyWithData({
-        if (slides != null) #slides: slides,
-        if (configuration != null) #configuration: configuration
-      }));
-  @override
-  Presentation $make(CopyWithData data) => Presentation(
-      slides: data.get(#slides, or: $value.slides),
-      configuration: data.get(#configuration, or: $value.configuration));
-
-  @override
-  PresentationCopyWith<$R2, Presentation, $Out2> $chain<$R2, $Out2>(
-          Then<$Out2, $R2> t) =>
-      _PresentationCopyWithImpl($value, $cast, t);
 }

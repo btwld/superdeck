@@ -179,8 +179,6 @@ mixin AssetMappable {
     return AssetMapper.ensureInitialized().encodeMap<Asset>(this as Asset);
   }
 
-  AssetCopyWith<Asset, Asset, Asset> get copyWith =>
-      _AssetCopyWithImpl(this as Asset, $identity, $identity);
   @override
   String toString() {
     return AssetMapper.ensureInitialized().stringifyValue(this as Asset);
@@ -195,41 +193,6 @@ mixin AssetMappable {
   int get hashCode {
     return AssetMapper.ensureInitialized().hashValue(this as Asset);
   }
-}
-
-extension AssetValueCopy<$R, $Out> on ObjectCopyWith<$R, Asset, $Out> {
-  AssetCopyWith<$R, Asset, $Out> get $asAsset =>
-      $base.as((v, t, t2) => _AssetCopyWithImpl(v, t, t2));
-}
-
-abstract class AssetCopyWith<$R, $In extends Asset, $Out>
-    implements ClassCopyWith<$R, $In, $Out> {
-  $R call({String? id, AssetExtension? extension, AssetType? type});
-  AssetCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
-}
-
-class _AssetCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Asset, $Out>
-    implements AssetCopyWith<$R, Asset, $Out> {
-  _AssetCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<Asset> $mapper = AssetMapper.ensureInitialized();
-  @override
-  $R call({String? id, AssetExtension? extension, AssetType? type}) =>
-      $apply(FieldCopyWithData({
-        if (id != null) #id: id,
-        if (extension != null) #extension: extension,
-        if (type != null) #type: type
-      }));
-  @override
-  Asset $make(CopyWithData data) => Asset(
-      id: data.get(#id, or: $value.id),
-      extension: data.get(#extension, or: $value.extension),
-      type: data.get(#type, or: $value.type));
-
-  @override
-  AssetCopyWith<$R2, Asset, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t) =>
-      _AssetCopyWithImpl($value, $cast, t);
 }
 
 class AssetReferenceMapper extends ClassMapperBase<AssetReference> {
@@ -299,9 +262,6 @@ mixin AssetReferenceMappable {
         .encodeMap<AssetReference>(this as AssetReference);
   }
 
-  AssetReferenceCopyWith<AssetReference, AssetReference, AssetReference>
-      get copyWith => _AssetReferenceCopyWithImpl(
-          this as AssetReference, $identity, $identity);
   @override
   String toString() {
     return AssetReferenceMapper.ensureInitialized()
@@ -319,53 +279,6 @@ mixin AssetReferenceMappable {
     return AssetReferenceMapper.ensureInitialized()
         .hashValue(this as AssetReference);
   }
-}
-
-extension AssetReferenceValueCopy<$R, $Out>
-    on ObjectCopyWith<$R, AssetReference, $Out> {
-  AssetReferenceCopyWith<$R, AssetReference, $Out> get $asAssetReference =>
-      $base.as((v, t, t2) => _AssetReferenceCopyWithImpl(v, t, t2));
-}
-
-abstract class AssetReferenceCopyWith<$R, $In extends AssetReference, $Out>
-    implements ClassCopyWith<$R, $In, $Out> {
-  $R call(
-      {DateTime? lastModified, String? assetId, AssetType? type, String? path});
-  AssetReferenceCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
-      Then<$Out2, $R2> t);
-}
-
-class _AssetReferenceCopyWithImpl<$R, $Out>
-    extends ClassCopyWithBase<$R, AssetReference, $Out>
-    implements AssetReferenceCopyWith<$R, AssetReference, $Out> {
-  _AssetReferenceCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<AssetReference> $mapper =
-      AssetReferenceMapper.ensureInitialized();
-  @override
-  $R call(
-          {DateTime? lastModified,
-          String? assetId,
-          AssetType? type,
-          String? path}) =>
-      $apply(FieldCopyWithData({
-        if (lastModified != null) #lastModified: lastModified,
-        if (assetId != null) #assetId: assetId,
-        if (type != null) #type: type,
-        if (path != null) #path: path
-      }));
-  @override
-  AssetReference $make(CopyWithData data) => AssetReference(
-      lastModified: data.get(#lastModified, or: $value.lastModified),
-      assetId: data.get(#assetId, or: $value.assetId),
-      type: data.get(#type, or: $value.type),
-      path: data.get(#path, or: $value.path));
-
-  @override
-  AssetReferenceCopyWith<$R2, AssetReference, $Out2> $chain<$R2, $Out2>(
-          Then<$Out2, $R2> t) =>
-      _AssetReferenceCopyWithImpl($value, $cast, t);
 }
 
 class AssetManifestMapper extends ClassMapperBase<AssetManifest> {
@@ -426,9 +339,6 @@ mixin AssetManifestMappable {
         .encodeMap<AssetManifest>(this as AssetManifest);
   }
 
-  AssetManifestCopyWith<AssetManifest, AssetManifest, AssetManifest>
-      get copyWith => _AssetManifestCopyWithImpl(
-          this as AssetManifest, $identity, $identity);
   @override
   String toString() {
     return AssetManifestMapper.ensureInitialized()
@@ -446,48 +356,4 @@ mixin AssetManifestMappable {
     return AssetManifestMapper.ensureInitialized()
         .hashValue(this as AssetManifest);
   }
-}
-
-extension AssetManifestValueCopy<$R, $Out>
-    on ObjectCopyWith<$R, AssetManifest, $Out> {
-  AssetManifestCopyWith<$R, AssetManifest, $Out> get $asAssetManifest =>
-      $base.as((v, t, t2) => _AssetManifestCopyWithImpl(v, t, t2));
-}
-
-abstract class AssetManifestCopyWith<$R, $In extends AssetManifest, $Out>
-    implements ClassCopyWith<$R, $In, $Out> {
-  ListCopyWith<$R, AssetReference,
-      AssetReferenceCopyWith<$R, AssetReference, AssetReference>> get assets;
-  $R call({DateTime? lastModified, List<AssetReference>? assets});
-  AssetManifestCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
-}
-
-class _AssetManifestCopyWithImpl<$R, $Out>
-    extends ClassCopyWithBase<$R, AssetManifest, $Out>
-    implements AssetManifestCopyWith<$R, AssetManifest, $Out> {
-  _AssetManifestCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<AssetManifest> $mapper =
-      AssetManifestMapper.ensureInitialized();
-  @override
-  ListCopyWith<$R, AssetReference,
-          AssetReferenceCopyWith<$R, AssetReference, AssetReference>>
-      get assets => ListCopyWith($value.assets, (v, t) => v.copyWith.$chain(t),
-          (v) => call(assets: v));
-  @override
-  $R call({DateTime? lastModified, List<AssetReference>? assets}) =>
-      $apply(FieldCopyWithData({
-        if (lastModified != null) #lastModified: lastModified,
-        if (assets != null) #assets: assets
-      }));
-  @override
-  AssetManifest $make(CopyWithData data) => AssetManifest(
-      lastModified: data.get(#lastModified, or: $value.lastModified),
-      assets: data.get(#assets, or: $value.assets));
-
-  @override
-  AssetManifestCopyWith<$R2, AssetManifest, $Out2> $chain<$R2, $Out2>(
-          Then<$Out2, $R2> t) =>
-      _AssetManifestCopyWithImpl($value, $cast, t);
 }

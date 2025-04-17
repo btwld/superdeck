@@ -103,8 +103,6 @@ mixin ImageBlockMappable {
         .encodeMap<ImageBlock>(this as ImageBlock);
   }
 
-  ImageBlockCopyWith<ImageBlock, ImageBlock, ImageBlock> get copyWith =>
-      _ImageBlockCopyWithImpl(this as ImageBlock, $identity, $identity);
   @override
   String toString() {
     return ImageBlockMapper.ensureInitialized()
@@ -121,70 +119,4 @@ mixin ImageBlockMappable {
   int get hashCode {
     return ImageBlockMapper.ensureInitialized().hashValue(this as ImageBlock);
   }
-}
-
-extension ImageBlockValueCopy<$R, $Out>
-    on ObjectCopyWith<$R, ImageBlock, $Out> {
-  ImageBlockCopyWith<$R, ImageBlock, $Out> get $asImageBlock =>
-      $base.as((v, t, t2) => _ImageBlockCopyWithImpl(v, t, t2));
-}
-
-abstract class ImageBlockCopyWith<$R, $In extends ImageBlock, $Out>
-    implements BaseBlockCopyWith<$R, $In, $Out> {
-  AssetCopyWith<$R, Asset, Asset> get asset;
-  @override
-  $R call(
-      {Asset? asset,
-      ImageFit? fit,
-      double? width,
-      double? height,
-      ContentAlignment? align,
-      int? flex,
-      bool? scrollable});
-  ImageBlockCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
-}
-
-class _ImageBlockCopyWithImpl<$R, $Out>
-    extends ClassCopyWithBase<$R, ImageBlock, $Out>
-    implements ImageBlockCopyWith<$R, ImageBlock, $Out> {
-  _ImageBlockCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<ImageBlock> $mapper =
-      ImageBlockMapper.ensureInitialized();
-  @override
-  AssetCopyWith<$R, Asset, Asset> get asset =>
-      $value.asset.copyWith.$chain((v) => call(asset: v));
-  @override
-  $R call(
-          {Asset? asset,
-          Object? fit = $none,
-          Object? width = $none,
-          Object? height = $none,
-          Object? align = $none,
-          Object? flex = $none,
-          Object? scrollable = $none}) =>
-      $apply(FieldCopyWithData({
-        if (asset != null) #asset: asset,
-        if (fit != $none) #fit: fit,
-        if (width != $none) #width: width,
-        if (height != $none) #height: height,
-        if (align != $none) #align: align,
-        if (flex != $none) #flex: flex,
-        if (scrollable != $none) #scrollable: scrollable
-      }));
-  @override
-  ImageBlock $make(CopyWithData data) => ImageBlock(
-      asset: data.get(#asset, or: $value.asset),
-      fit: data.get(#fit, or: $value.fit),
-      width: data.get(#width, or: $value.width),
-      height: data.get(#height, or: $value.height),
-      align: data.get(#align, or: $value.align),
-      flex: data.get(#flex, or: $value.flex),
-      scrollable: data.get(#scrollable, or: $value.scrollable));
-
-  @override
-  ImageBlockCopyWith<$R2, ImageBlock, $Out2> $chain<$R2, $Out2>(
-          Then<$Out2, $R2> t) =>
-      _ImageBlockCopyWithImpl($value, $cast, t);
 }

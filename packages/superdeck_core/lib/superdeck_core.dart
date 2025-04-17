@@ -8,7 +8,6 @@ export 'src/assets/models/asset.model.dart';
 export 'src/assets/models/source.model.dart';
 // Export individual block files instead of block.dart
 export 'src/blocks/base_block.dart';
-export 'src/blocks/block_extensions.dart';
 export 'src/blocks/dartpad_block.dart';
 export 'src/blocks/image_block.dart';
 export 'src/blocks/markdown_block.dart';

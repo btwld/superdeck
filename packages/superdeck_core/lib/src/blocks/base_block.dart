@@ -1,3 +1,6 @@
+// Base block library for all blocks
+library blocks;
+
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart'
     hide DartPadTheme, ImageFit, ContentAlignment;

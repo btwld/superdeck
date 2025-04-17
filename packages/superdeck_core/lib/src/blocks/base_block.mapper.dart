@@ -247,11 +247,4 @@ class BaseBlockMapper extends ClassMapperBase<BaseBlock> {
 mixin BaseBlockMappable {
   String toJson();
   Map<String, dynamic> toMap();
-  BaseBlockCopyWith<BaseBlock, BaseBlock, BaseBlock> get copyWith;
-}
-
-abstract class BaseBlockCopyWith<$R, $In extends BaseBlock, $Out>
-    implements ClassCopyWith<$R, $In, $Out> {
-  $R call({String? type, ContentAlignment? align, int? flex, bool? scrollable});
-  BaseBlockCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }

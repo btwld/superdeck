@@ -83,10 +83,6 @@ mixin PresentationConfigMappable {
         .encodeMap<PresentationConfig>(this as PresentationConfig);
   }
 
-  PresentationConfigCopyWith<PresentationConfig, PresentationConfig,
-          PresentationConfig>
-      get copyWith => _PresentationConfigCopyWithImpl(
-          this as PresentationConfig, $identity, $identity);
   @override
   String toString() {
     return PresentationConfigMapper.ensureInitialized()
@@ -104,39 +100,4 @@ mixin PresentationConfigMappable {
     return PresentationConfigMapper.ensureInitialized()
         .hashValue(this as PresentationConfig);
   }
-}
-
-extension PresentationConfigValueCopy<$R, $Out>
-    on ObjectCopyWith<$R, PresentationConfig, $Out> {
-  PresentationConfigCopyWith<$R, PresentationConfig, $Out>
-      get $asPresentationConfig =>
-          $base.as((v, t, t2) => _PresentationConfigCopyWithImpl(v, t, t2));
-}
-
-abstract class PresentationConfigCopyWith<$R, $In extends PresentationConfig,
-    $Out> implements ClassCopyWith<$R, $In, $Out> {
-  $R call({File? slidesMarkdown});
-  PresentationConfigCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
-      Then<$Out2, $R2> t);
-}
-
-class _PresentationConfigCopyWithImpl<$R, $Out>
-    extends ClassCopyWithBase<$R, PresentationConfig, $Out>
-    implements PresentationConfigCopyWith<$R, PresentationConfig, $Out> {
-  _PresentationConfigCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<PresentationConfig> $mapper =
-      PresentationConfigMapper.ensureInitialized();
-  @override
-  $R call({File? slidesMarkdown}) =>
-      $apply(FieldCopyWithData({#slidesMarkdown: slidesMarkdown}));
-  @override
-  PresentationConfig $make(CopyWithData data) =>
-      PresentationConfig(slidesMarkdown: data.get(#slidesMarkdown));
-
-  @override
-  PresentationConfigCopyWith<$R2, PresentationConfig, $Out2> $chain<$R2, $Out2>(
-          Then<$Out2, $R2> t) =>
-      _PresentationConfigCopyWithImpl($value, $cast, t);
 }

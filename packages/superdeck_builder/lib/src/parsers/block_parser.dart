@@ -1,5 +1,3 @@
-import 'package:superdeck_core/superdeck_core.dart';
-
 import '../core/deck_format_exception.dart';
 import '../utils/yaml_utils.dart';
 import 'base_parser.dart';
@@ -16,20 +14,6 @@ class ParsedBlock {
     required this.startIndex,
     required this.endIndex,
   }) : _data = data;
-
-  Map<String, dynamic> get data {
-    final keys = [
-      SlideSection.key,
-      MarkdownElement.key,
-      ImageElement.key,
-      DartPadBlock.key,
-      CustomElement.key,
-    ];
-
-    return !keys.contains(type)
-        ? {..._data, 'id': type, 'type': CustomElement.key}
-        : {..._data, 'type': type};
-  }
 }
 
 class BlockParser extends BaseParser<List<ParsedBlock>> {

@@ -80,19 +80,5 @@ void main() {
       expect(() => MarkdownBlock.schema.validateOrThrow(invalidMap),
           throwsException);
     });
-
-    test('should handle extensions properly', () {
-      const markdownText = '# Hello world';
-      final block = markdownText.toMarkdownBlock(
-        align: ContentAlignment.center,
-        flex: 2,
-        scrollable: true,
-      );
-
-      expect(block.content, '# Hello world');
-      expect(block.align, ContentAlignment.center);
-      expect(block.flex, 2);
-      expect(block.scrollable, true);
-    });
   });
 }

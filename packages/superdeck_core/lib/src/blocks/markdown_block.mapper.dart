@@ -86,9 +86,6 @@ mixin MarkdownBlockMappable {
         .encodeMap<MarkdownBlock>(this as MarkdownBlock);
   }
 
-  MarkdownBlockCopyWith<MarkdownBlock, MarkdownBlock, MarkdownBlock>
-      get copyWith => _MarkdownBlockCopyWithImpl(
-          this as MarkdownBlock, $identity, $identity);
   @override
   String toString() {
     return MarkdownBlockMapper.ensureInitialized()
@@ -106,51 +103,4 @@ mixin MarkdownBlockMappable {
     return MarkdownBlockMapper.ensureInitialized()
         .hashValue(this as MarkdownBlock);
   }
-}
-
-extension MarkdownBlockValueCopy<$R, $Out>
-    on ObjectCopyWith<$R, MarkdownBlock, $Out> {
-  MarkdownBlockCopyWith<$R, MarkdownBlock, $Out> get $asMarkdownBlock =>
-      $base.as((v, t, t2) => _MarkdownBlockCopyWithImpl(v, t, t2));
-}
-
-abstract class MarkdownBlockCopyWith<$R, $In extends MarkdownBlock, $Out>
-    implements BaseBlockCopyWith<$R, $In, $Out> {
-  @override
-  $R call(
-      {String? content, ContentAlignment? align, int? flex, bool? scrollable});
-  MarkdownBlockCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
-}
-
-class _MarkdownBlockCopyWithImpl<$R, $Out>
-    extends ClassCopyWithBase<$R, MarkdownBlock, $Out>
-    implements MarkdownBlockCopyWith<$R, MarkdownBlock, $Out> {
-  _MarkdownBlockCopyWithImpl(super.value, super.then, super.then2);
-
-  @override
-  late final ClassMapperBase<MarkdownBlock> $mapper =
-      MarkdownBlockMapper.ensureInitialized();
-  @override
-  $R call(
-          {Object? content = $none,
-          Object? align = $none,
-          Object? flex = $none,
-          Object? scrollable = $none}) =>
-      $apply(FieldCopyWithData({
-        if (content != $none) #content: content,
-        if (align != $none) #align: align,
-        if (flex != $none) #flex: flex,
-        if (scrollable != $none) #scrollable: scrollable
-      }));
-  @override
-  MarkdownBlock $make(CopyWithData data) =>
-      MarkdownBlock(data.get(#content, or: $value.content),
-          align: data.get(#align, or: $value.align),
-          flex: data.get(#flex, or: $value.flex),
-          scrollable: data.get(#scrollable, or: $value.scrollable));
-
-  @override
-  MarkdownBlockCopyWith<$R2, MarkdownBlock, $Out2> $chain<$R2, $Out2>(
-          Then<$Out2, $R2> t) =>
-      _MarkdownBlockCopyWithImpl($value, $cast, t);
 }
