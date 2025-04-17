@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:superdeck_core/src/helpers/mappers.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
@@ -69,29 +68,29 @@ void main() {
 
       final result = mapper.decode(map);
 
-      expect(result, isA<ColumnBlock>());
-      expect((result as ColumnBlock).content, equals('Test content'));
+      expect(result, isA<MarkdownBlock>());
+      expect((result as MarkdownBlock).content, equals('Test content'));
     });
 
     test('encodes a Block to a map', () {
-      final block = ColumnBlock('Test content');
+      final block = MarkdownBlock('Test content');
       final result = mapper.encode(block);
 
       expect(result, isA<Map>());
-      expect(result['type'], equals('column'));
+      expect(result['type'], equals('markdown'));
       expect(result['content'], equals('Test content'));
     });
 
     test('returns null for an empty block', () {
       // Create a mock block that returns an empty map
-      final emptyBlock = ColumnBlock('');
+      final emptyBlock = MarkdownBlock('');
       final result = mapper.encode(emptyBlock);
 
       // For this test to be more accurate, we'd need to create a custom Block class
       // that returns an empty map on toMap() call. But this is a reasonable approximation
       // given the constraints.
       expect(result,
-          isNotNull); // This might not be null as ColumnBlock will still have a type
+          isNotNull); // This might not be null as MarkdownBlock will still have a type
     });
   });
 }

@@ -3,10 +3,9 @@ import 'dart:io';
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:path/path.dart' as p;
 
-import '../../superdeck_core.dart';
-import '../helpers/mappers.dart';
+import '../../../superdeck_core.dart';
 
-part 'deck_configuration.mapper.dart';
+part 'presentation_config.model.mapper.dart';
 
 @MappableClass(
   includeCustomMappers: [
@@ -14,7 +13,7 @@ part 'deck_configuration.mapper.dart';
     FileMapper(),
   ],
 )
-class DeckConfiguration with DeckConfigurationMappable {
+class PresentationConfig with PresentationConfigMappable {
   final superdeckDir = Directory('.superdeck');
   late final deckJson = File(p.join(superdeckDir.path, 'superdeck.json'));
   late final assetsDir = Directory(p.join(superdeckDir.path, 'assets'));
@@ -22,15 +21,15 @@ class DeckConfiguration with DeckConfigurationMappable {
       File(p.join(superdeckDir.path, 'generated_assets.json'));
   late final slidesFile = File('slides.md');
 
-  DeckConfiguration({
+  PresentationConfig({
     File? slidesMarkdown,
   });
 
   File get pubspecFile => File('pubspec.yaml');
 
-  static DeckConfiguration parse(Map<String, dynamic> map) {
-    schema.validateOrThrow(map, debugName: 'DeckConfiguration');
-    return DeckConfigurationMapper.fromMap(map);
+  static PresentationConfig parse(Map<String, dynamic> map) {
+    schema.validateOrThrow(map, debugName: 'PresentationConfig');
+    return PresentationConfigMapper.fromMap(map);
   }
 
   static final schema = Ack.object(

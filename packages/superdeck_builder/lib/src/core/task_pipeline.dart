@@ -19,7 +19,7 @@ import 'task_metrics.dart';
 class TaskPipeline {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;
-  final DeckConfiguration configuration;
+  final PresentationConfig configuration;
   final FileSystemPresentationRepository store;
   final SlideCache? _cache;
 

@@ -4,18 +4,16 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'pretty_json.dart';
-
 abstract interface class PresentationRepository {
-  final DeckConfiguration configuration;
+  final PresentationConfig configuration;
 
   PresentationRepository(this.configuration);
 
   Future<void> initialize();
 
-  Future<DeckReference> loadDeckReference();
+  Future<Presentation> loadDeckReference();
 
-  Stream<DeckReference> loadDeckReferenceStream();
+  Stream<Presentation> loadDeckReferenceStream();
 
   String getAssetPath(Asset asset) {
     return p.join(configuration.assetsDir.path, asset.fileName);
@@ -40,15 +38,15 @@ class LocalPresentationRepository extends PresentationRepository {
   }
 
   @override
-  Future<DeckReference> loadDeckReference() async {
+  Future<Presentation> loadDeckReference() async {
     try {
       // if (!await configuration.deckJson.exists()) {
       //   throw Exception('Deck reference file not found');
       // }
       final content = await fileReader(configuration.deckJson.path);
-      return DeckReferenceMapper.fromJson(content);
+      return PresentationMapper.fromJson(content);
     } on Exception catch (e) {
-      return DeckReference(
+      return Presentation(
         slides: [
           ErrorSlide(
             title: 'Superdeck reference error',
@@ -56,13 +54,13 @@ class LocalPresentationRepository extends PresentationRepository {
             error: e,
           ),
         ],
-        config: configuration,
+        configuration: configuration,
       );
     }
   }
 
   @override
-  Stream<DeckReference> loadDeckReferenceStream() {
+  Stream<Presentation> loadDeckReferenceStream() {
     return Stream.fromFuture(loadDeckReference());
   }
 }
@@ -96,7 +94,7 @@ class FileSystemPresentationRepository extends LocalPresentationRepository {
   }
 
   Future<void> saveReferences(
-    DeckReference reference,
+    Presentation reference,
   ) async {
     // Save deck reference
     final deckJson = prettyJson(reference.toMap());
@@ -163,7 +161,7 @@ class FileSystemPresentationRepository extends LocalPresentationRepository {
   }
 
   @override
-  Stream<DeckReference> loadDeckReferenceStream() async* {
+  Stream<Presentation> loadDeckReferenceStream() async* {
     // Emit the current reference immediately.
     yield await loadDeckReference();
 

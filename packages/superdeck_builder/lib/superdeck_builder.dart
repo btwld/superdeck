@@ -6,8 +6,6 @@ import 'package:superdeck_builder/src/core/task.dart';
 import 'package:superdeck_builder/src/core/task_pipeline.dart';
 import 'package:superdeck_builder/src/services/browser_service.dart';
 import 'package:superdeck_builder/src/tasks/index.dart';
-import 'package:superdeck_core/src/storage/asset_storage.dart'
-    show DefaultAssetStorageFactory;
 import 'package:superdeck_core/superdeck_core.dart';
 
 // Export assets
@@ -44,7 +42,7 @@ export 'src/utils/yaml_utils.dart';
 
 /// Creates the default TaskPipeline with standard tasks
 TaskPipeline getDefaultPipeline(
-  DeckConfiguration configuration,
+  PresentationConfig configuration,
   FileSystemPresentationRepository store,
 ) {
   final logger = Logger('SuperdeckBuilder');

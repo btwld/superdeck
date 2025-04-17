@@ -11,7 +11,7 @@ import 'package:yaml_writer/yaml_writer.dart';
 ///
 /// Returns the updated pubspec YAML content as a string.
 String updatePubspecAssets(
-  DeckConfiguration configuration,
+  PresentationConfig configuration,
   String pubspecContents,
 ) {
   // Parse the YAML content into a map

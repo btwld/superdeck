@@ -1,13 +1,13 @@
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-part 'slide_model.mapper.dart';
+part 'slide.model.mapper.dart';
 
 @MappableClass()
 class Slide with SlideMappable {
   final String key;
   final SlideOptions? options;
-  final List<SlideSection> sections;
+  final List<SectionBlock> sections;
   final List<String> comments;
 
   const Slide({
@@ -21,7 +21,7 @@ class Slide with SlideMappable {
     {
       "key": Ack.string,
       'options': SlideOptions.schema.nullable(),
-      'sections': SlideSection.schema.list,
+      'sections': SectionBlock.schema.list,
       'comments': Ack.string.list,
     },
     required: ['key'],
@@ -70,8 +70,8 @@ class ErrorSlide extends Slide {
   }) : super(
           key: 'error',
           sections: [
-            SlideSection([
-              MarkdownElement('''
+            SectionBlock([
+              MarkdownBlock('''
 > [!CAUTION]
 > $title
 > $message
@@ -81,7 +81,7 @@ class ErrorSlide extends Slide {
 ${error.toString()}
 ```
 '''),
-              MarkdownElement('')
+              MarkdownBlock('')
             ]),
           ],
         );

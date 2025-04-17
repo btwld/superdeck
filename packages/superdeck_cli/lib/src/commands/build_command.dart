@@ -44,7 +44,7 @@ class BuildCommand extends Command<int> {
   /// Runs the build pipeline with proper error handling and progress reporting
   Future<bool> _runPipeline(
     FileSystemPresentationRepository store,
-    DeckConfiguration config,
+    PresentationConfig config,
   ) async {
     // Wait while a build is already running
     while (_isRunning) {
@@ -115,8 +115,8 @@ class BuildCommand extends Command<int> {
   Future<int> run() async {
     try {
       final progress = logger.progress('Loading configuration...');
-      DeckConfiguration deckConfig;
-      final configFile = DeckConfiguration.defaultFile;
+      PresentationConfig deckConfig;
+      final configFile = PresentationConfig.defaultFile;
 
       try {
         // Load the configuration file or use defaults if it doesn't exist.
@@ -124,19 +124,19 @@ class BuildCommand extends Command<int> {
           progress.update(
             'Configuration file not found. Using default configuration.',
           );
-          deckConfig = DeckConfiguration();
+          deckConfig = PresentationConfig();
         } else {
           progress.update('Loading configuration from ${configFile.path}');
           final yamlString = await configFile.readAsString();
           final yamlConfig = jsonDecode(jsonEncode(loadYaml(yamlString)));
-          deckConfig = DeckConfiguration.parse(yamlConfig);
+          deckConfig = PresentationConfig.parse(yamlConfig);
         }
         progress.complete('Configuration loaded.');
       } catch (e) {
         progress.fail('Failed to load configuration');
         logger.err('Error: $e');
         logger.info('Using default configuration.');
-        deckConfig = DeckConfiguration();
+        deckConfig = PresentationConfig();
       }
 
       // Check if slides file exists
@@ -220,7 +220,9 @@ class BuildCommand extends Command<int> {
 }
 
 /// Ensures the pubspec.yaml has the necessary assets configuration
-Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
+Future<void> _ensurePubspecAssets(
+  PresentationConfig configuration,
+) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 
   try {

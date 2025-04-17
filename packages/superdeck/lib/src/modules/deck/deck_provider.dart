@@ -22,7 +22,7 @@ class DeckControllerBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final configuration = DeckConfiguration();
+    final configuration = PresentationConfig();
     final dataStore = kCanRunProcess
         ? FileSystemPresentationRepository(configuration)
         : AssetBundleDataStore(configuration);

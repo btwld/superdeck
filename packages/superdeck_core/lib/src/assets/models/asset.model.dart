@@ -2,9 +2,9 @@ import 'package:ack/ack.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 
-import '../helpers/generate_hash.dart';
+import '../../common/hash.dart';
 
-part 'asset_model.mapper.dart';
+part 'asset.model.mapper.dart';
 
 @MappableEnum()
 enum AssetType {

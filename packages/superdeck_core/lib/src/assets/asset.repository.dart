@@ -3,11 +3,11 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 
-import '../models/asset_model.dart';
-import '../models/asset_source.dart';
+import 'models/asset.model.dart';
+import 'models/source.model.dart';
 
 /// Abstract class defining the interface for asset storage operations
-abstract class AssetStorage {
+abstract class AssetRepository {
   /// Get a source for the asset, which can be used to access it
   Future<AssetSource> getAssetSource(Asset asset);
 
@@ -32,11 +32,11 @@ class PlatformHelper {
 }
 
 /// Implementation for development environments with direct file system access
-class DevFileSystemAssetStorage implements AssetStorage {
+class DevFileSystemAssetRepository implements AssetRepository {
   final Directory assetDirectory;
   final void Function(String message)? logger;
 
-  DevFileSystemAssetStorage({
+  DevFileSystemAssetRepository({
     required this.assetDirectory,
     this.logger,
   });
@@ -117,12 +117,12 @@ abstract class AssetBundleAccessor {
 }
 
 /// Implementation for compiled native apps using asset bundles
-class BundledAssetStorage implements AssetStorage {
+class BundledAssetRepository implements AssetRepository {
   final AssetBundleAccessor bundleAccessor;
   final Directory cacheDirectory;
   final void Function(String message)? logger;
 
-  BundledAssetStorage({
+  BundledAssetRepository({
     required this.bundleAccessor,
     required this.cacheDirectory,
     this.logger,
@@ -216,12 +216,12 @@ class BundledAssetStorage implements AssetStorage {
 }
 
 /// Implementation for web platforms using in-memory storage
-class InMemoryAssetStorage implements AssetStorage {
+class InMemoryAssetRepository implements AssetRepository {
   final Map<String, Uint8List> _memoryAssets = {};
   final NetworkFetcher? networkFetcher;
   final void Function(String message)? logger;
 
-  InMemoryAssetStorage({
+  InMemoryAssetRepository({
     this.networkFetcher,
     this.logger,
   });
@@ -253,7 +253,7 @@ class InMemoryAssetStorage implements AssetStorage {
   @override
   Future<bool> assetExists(Asset asset) async {
     if (_memoryAssets.containsKey(asset.fileName)) {
-      return true;
+      return _memoryAssets[asset.fileName]!.isNotEmpty;
     }
 
     if (networkFetcher != null) {
@@ -261,7 +261,7 @@ class InMemoryAssetStorage implements AssetStorage {
         final assetPath = 'assets/${asset.fileName}';
         return await networkFetcher!.exists(assetPath);
       } catch (_) {
-        return false;
+        // Network check failed
       }
     }
 
@@ -275,11 +275,11 @@ class InMemoryAssetStorage implements AssetStorage {
 
   @override
   Future<void> cleanupUnusedAssets(Set<String> activeAssetIds) async {
-    // Clean up in-memory assets
-    final keysToRemove = <String>[];
+    // Get list of asset filenames
+    final assetFilenames = _memoryAssets.keys.toList();
 
-    for (final fileName in _memoryAssets.keys) {
-      // Extract type and id from filename
+    for (final fileName in assetFilenames) {
+      // Extract asset ID from filename (format is "{type}_{id}.{extension}")
       final parts = fileName.split('_');
       if (parts.length < 2) continue;
 
@@ -289,76 +289,20 @@ class InMemoryAssetStorage implements AssetStorage {
 
       final assetKey = '${type}_$id';
 
+      // If this asset is not in the active set, delete it
       if (!activeAssetIds.contains(assetKey)) {
-        keysToRemove.add(fileName);
+        _memoryAssets.remove(fileName);
+        logger?.call('Removed unused memory asset: $fileName');
       }
-    }
-
-    for (final key in keysToRemove) {
-      _memoryAssets.remove(key);
-      logger?.call('Removed unused in-memory asset: $key');
     }
   }
 }
 
-/// Interface for fetching assets from the network
+/// Helper for fetching network resources (implemented by platform)
 abstract class NetworkFetcher {
-  /// Check if an asset exists at the given URL
-  Future<bool> exists(String url);
+  /// Fetch bytes from a network path
+  Future<Uint8List?> fetchBytes(String path);
 
-  /// Fetch bytes from the given URL
-  Future<Uint8List?> fetchBytes(String url);
-}
-
-/// Factory for creating appropriate AssetStorage instances based on platform
-class DefaultAssetStorageFactory {
-  /// Creates the appropriate asset storage implementation based on platform
-  /// considerations.
-  ///
-  /// [assetDirectory] - Directory where assets are stored
-  /// [cacheDirectory] - Directory for caching assets (only used in bundled mode)
-  /// [bundleAccessor] - Accessor for bundled assets (only used in bundled mode)
-  /// [networkFetcher] - Fetcher for network assets (only used in web mode)
-  /// [isDevelopment] - Whether the app is running in development mode
-  /// [isWeb] - Whether the app is running on the web platform
-  /// [logger] - Optional logger function for debugging
-  static AssetStorage create({
-    required Directory assetDirectory,
-    Directory? cacheDirectory,
-    AssetBundleAccessor? bundleAccessor,
-    NetworkFetcher? networkFetcher,
-    bool isDevelopment = false,
-    bool isWeb = false,
-    void Function(String message)? logger,
-  }) {
-    if (isWeb) {
-      logger?.call('Creating InMemoryAssetStorage for web platform');
-      return InMemoryAssetStorage(
-        networkFetcher: networkFetcher,
-        logger: logger,
-      );
-    } else if (isDevelopment) {
-      logger?.call('Creating DevFileSystemAssetStorage for development');
-      return DevFileSystemAssetStorage(
-        assetDirectory: assetDirectory,
-        logger: logger,
-      );
-    } else {
-      if (bundleAccessor == null) {
-        throw ArgumentError(
-            'bundleAccessor is required for bundled asset storage');
-      }
-      if (cacheDirectory == null) {
-        throw ArgumentError(
-            'cacheDirectory is required for bundled asset storage');
-      }
-
-      logger?.call('Creating BundledAssetStorage for production');
-      return BundledAssetStorage(
-        bundleAccessor: bundleAccessor,
-        cacheDirectory: cacheDirectory,
-        logger: logger,
-      );
-    }
-  }
+  /// Check if a network path exists
+  Future<bool> exists(String path);
 }

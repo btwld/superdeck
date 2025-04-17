@@ -6,12 +6,11 @@ import 'package:superdeck_builder/src/core/task.dart';
 import 'package:superdeck_builder/src/core/task_context.dart';
 import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
 import 'package:superdeck_builder/src/services/browser_service.dart';
-import 'package:superdeck_core/src/storage/asset_storage.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 class MermaidConverterTask extends Task implements CleanupCapableTask {
   final BrowserService _browserService;
-  final AssetStorage _assetStorage;
+  final AssetRepository _assetRepository;
 
   // Set to track generated assets for cleanup
   final Set<String> _processedAssetIds = {};
@@ -45,7 +44,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
 
   MermaidConverterTask({
     required BrowserService browserService,
-    required AssetStorage assetStorage,
+    required AssetRepository assetRepository,
     Map<String, dynamic> configuration = const {
       'theme': 'base',
       'themeVariables': {
@@ -69,7 +68,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
       'cacheInvalidationMinutes': 60,
     },
   })  : _browserService = browserService,
-        _assetStorage = assetStorage,
+        _assetRepository = assetRepository,
         _cacheInvalidationTime = Duration(
           minutes: (configuration['cacheInvalidationMinutes'] as int?) ?? 60,
         ),
@@ -173,7 +172,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
   /// Check if an asset needs to be regenerated based on cache invalidation rules
   Future<bool> _shouldRegenerateAsset(Asset asset) async {
     final assetId = '${asset.type.name}_${asset.id}';
-    final assetExists = await _assetStorage.assetExists(asset);
+    final assetExists = await _assetRepository.assetExists(asset);
 
     if (!assetExists) {
       return true; // Regenerate if doesn't exist
@@ -232,7 +231,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
           // Generate and save the image
           final imageData =
               await _generateMermaidGraphImage(mermaidBlock.content);
-          await _assetStorage.saveAsset(
+          await _assetRepository.saveAsset(
               mermaidAsset, Uint8List.fromList(imageData));
 
           // Record asset generation time
@@ -246,7 +245,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
         }
 
         // Get the asset source path
-        final assetSource = await _assetStorage.getAssetSource(mermaidAsset);
+        final assetSource = await _assetRepository.getAssetSource(mermaidAsset);
 
         // Replace mermaid code with image link
         final mermaidImageSyntax = '![mermaid_graph](${assetSource.path})';
@@ -288,7 +287,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
         'Cleaning up mermaid assets, tracking $beforeCount active assets');
 
     try {
-      await _assetStorage.cleanupUnusedAssets(_processedAssetIds);
+      await _assetRepository.cleanupUnusedAssets(_processedAssetIds);
       logger.info('Successfully cleaned up unused mermaid assets');
     } catch (e, stackTrace) {
       logger.severe('Error cleaning up mermaid assets: $e', stackTrace);

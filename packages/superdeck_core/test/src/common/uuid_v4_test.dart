@@ -1,4 +1,4 @@
-import 'package:superdeck_core/src/helpers/uuid_v4.dart';
+import 'package:superdeck_core/src/common/uuid.dart';
 import 'package:test/test.dart';
 
 import 'testing_utils.dart';

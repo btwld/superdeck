@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_mappable/dart_mappable.dart';
-
-import '../models/slide_element.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 class FileMapper extends SimpleMapper<File> {
   const FileMapper();
@@ -46,20 +45,29 @@ class DurationMapper extends SimpleMapper<Duration> {
   }
 }
 
-class NullIfEmptyBlock extends SimpleMapper<SlideElement> {
+/// A custom mapper that handles null values for empty blocks
+///
+/// This is needed because the mapper will by default resolve null
+/// values to an empty list, but we want to keep null values
+/// for empty blocks
+class NullIfEmptyBlock extends SimpleMapper<BaseBlock> {
   const NullIfEmptyBlock();
 
   @override
-  SlideElement decode(dynamic value) {
-    return SlideElementMapper.fromMap(value);
+  BaseBlock decode(dynamic value) {
+    return BaseBlockMapper.fromMap(value);
   }
 
   @override
-  dynamic encode(SlideElement self) {
-    final map = self.toMap();
-    if (map.isEmpty) {
-      return null;
+  dynamic encode(BaseBlock self) {
+    if (self is SectionBlock) {
+      if (self.blocks.isEmpty) {
+        final Map<String, dynamic> data = self.toMap();
+        data.remove('blocks');
+        return data;
+      }
     }
-    return map;
+
+    return self.toMap();
   }
 }

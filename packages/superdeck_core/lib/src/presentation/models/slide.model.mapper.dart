@@ -4,7 +4,7 @@
 // ignore_for_file: unused_element, unnecessary_cast, override_on_non_overriding_member
 // ignore_for_file: strict_raw_type, inference_failure_on_untyped_parameter
 
-part of 'slide_model.dart';
+part of 'slide.model.dart';
 
 class SlideMapper extends ClassMapperBase<Slide> {
   SlideMapper._();
@@ -14,7 +14,6 @@ class SlideMapper extends ClassMapperBase<Slide> {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = SlideMapper._());
       SlideOptionsMapper.ensureInitialized();
-      SlideSectionMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -27,8 +26,8 @@ class SlideMapper extends ClassMapperBase<Slide> {
   static SlideOptions? _$options(Slide v) => v.options;
   static const Field<Slide, SlideOptions> _f$options =
       Field('options', _$options, opt: true);
-  static List<SlideSection> _$sections(Slide v) => v.sections;
-  static const Field<Slide, List<SlideSection>> _f$sections =
+  static List<InvalidType> _$sections(Slide v) => v.sections;
+  static const Field<Slide, List<InvalidType>> _f$sections =
       Field('sections', _$sections, opt: true, def: const []);
   static List<String> _$comments(Slide v) => v.comments;
   static const Field<Slide, List<String>> _f$comments =
@@ -99,13 +98,13 @@ extension SlideValueCopy<$R, $Out> on ObjectCopyWith<$R, Slide, $Out> {
 abstract class SlideCopyWith<$R, $In extends Slide, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
   SlideOptionsCopyWith<$R, SlideOptions, SlideOptions>? get options;
-  ListCopyWith<$R, SlideSection,
-      SlideSectionCopyWith<$R, SlideSection, SlideSection>> get sections;
+  ListCopyWith<$R, InvalidType, ObjectCopyWith<$R, InvalidType, InvalidType>>
+      get sections;
   ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get comments;
   $R call(
       {String? key,
       SlideOptions? options,
-      List<SlideSection>? sections,
+      List<InvalidType>? sections,
       List<String>? comments});
   SlideCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
@@ -120,10 +119,9 @@ class _SlideCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Slide, $Out>
   SlideOptionsCopyWith<$R, SlideOptions, SlideOptions>? get options =>
       $value.options?.copyWith.$chain((v) => call(options: v));
   @override
-  ListCopyWith<$R, SlideSection,
-          SlideSectionCopyWith<$R, SlideSection, SlideSection>>
+  ListCopyWith<$R, InvalidType, ObjectCopyWith<$R, InvalidType, InvalidType>>
       get sections => ListCopyWith($value.sections,
-          (v, t) => v.copyWith.$chain(t), (v) => call(sections: v));
+          (v, t) => ObjectCopyWith(v, $identity, t), (v) => call(sections: v));
   @override
   ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get comments =>
       ListCopyWith($value.comments, (v, t) => ObjectCopyWith(v, $identity, t),
@@ -132,7 +130,7 @@ class _SlideCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Slide, $Out>
   $R call(
           {String? key,
           Object? options = $none,
-          List<SlideSection>? sections,
+          List<InvalidType>? sections,
           List<String>? comments}) =>
       $apply(FieldCopyWithData({
         if (key != null) #key: key,

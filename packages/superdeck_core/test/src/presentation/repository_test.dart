@@ -10,7 +10,7 @@ Directory createTempDir() {
   return dir;
 }
 
-class MockDeckConfiguration extends DeckConfiguration {
+class MockDeckConfiguration extends PresentationConfig {
   final Directory tempDir;
 
   MockDeckConfiguration(this.tempDir);
@@ -31,7 +31,7 @@ class MockDeckConfiguration extends DeckConfiguration {
 void main() {
   group('LocalPresentationRepository', () {
     late Directory tempDir;
-    late DeckConfiguration mockConfig;
+    late PresentationConfig mockConfig;
     late LocalPresentationRepository repository;
 
     setUp(() {
@@ -75,7 +75,7 @@ void main() {
 
       final reference = await repository.loadDeckReference();
 
-      expect(reference, isA<DeckReference>());
+      expect(reference, isA<Presentation>());
       expect(reference.slides, isEmpty);
     });
 
@@ -86,7 +86,7 @@ void main() {
 
       final reference = await repository.loadDeckReference();
 
-      expect(reference, isA<DeckReference>());
+      expect(reference, isA<Presentation>());
       expect(reference.slides, hasLength(1));
       expect(reference.slides.first, isA<ErrorSlide>());
     });
@@ -99,14 +99,14 @@ void main() {
 
       await expectLater(
         stream,
-        emits(isA<DeckReference>()),
+        emits(isA<Presentation>()),
       );
     });
   });
 
   group('FileSystemPresentationRepository', () {
     late Directory tempDir;
-    late DeckConfiguration mockConfig;
+    late PresentationConfig mockConfig;
     late FileSystemPresentationRepository repository;
 
     setUp(() async {
@@ -139,7 +139,7 @@ void main() {
 
       // Save references to ensure the asset is processed
       await repository.saveReferences(
-        DeckReference(slides: [], config: mockConfig),
+        Presentation(slides: [], configuration: mockConfig),
       );
 
       // Now verify the assets_ref.json file exists
@@ -152,7 +152,7 @@ void main() {
 
     test('saveReferences saves deck reference and assets reference', () async {
       await repository.saveReferences(
-        DeckReference(slides: [], config: mockConfig),
+        Presentation(slides: [], configuration: mockConfig),
       );
 
       expect(mockConfig.deckJson.existsSync(), isTrue);
@@ -176,7 +176,7 @@ void main() {
 
     test('loadDeckReferenceStream emits a reference when file changes',
         () async {
-      final streamController = StreamController<DeckReference>();
+      final streamController = StreamController<Presentation>();
       final future = repository.loadDeckReferenceStream().take(2).toList();
 
       // Wait a bit to ensure the stream is listening

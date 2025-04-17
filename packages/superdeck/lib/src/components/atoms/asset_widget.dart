@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:superdeck_core/src/models/asset_source.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../modules/assets/asset_service.dart';

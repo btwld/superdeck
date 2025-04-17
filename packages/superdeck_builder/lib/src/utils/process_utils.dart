@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:superdeck_core/src/helpers/generate_hash.dart'
+import 'package:superdeck_core/src/common/hash.dart'
     show generateValueHash;
 
 import '../core/deck_format_exception.dart';

@@ -3,7 +3,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final deckConfig = DeckConfiguration();
+  final deckConfig = PresentationConfig();
   group('updatePubspecAssets', () {
     test('adds superdeck assets to empty pubspec', () {
       final input = '''

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:superdeck_core/src/helpers/generate_hash.dart'
+import 'package:superdeck_core/src/common/hash.dart'
     show generateValueHash;
 
 /// Utility functions for string operations

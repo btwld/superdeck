@@ -1,4 +1,4 @@
-import 'package:superdeck_core/src/helpers/pretty_json.dart';
+import 'package:superdeck_core/src/common/json_formatter.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -1,15 +1,15 @@
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-part 'deck_reference.mapper.dart';
+part 'presentation.model.mapper.dart';
 
 @MappableClass()
-class DeckReference with DeckReferenceMappable {
-  const DeckReference({
+class Presentation with PresentationMappable {
+  const Presentation({
     required this.slides,
-    required this.config,
+    required this.configuration,
   });
 
   final List<Slide> slides;
-  final DeckConfiguration config;
+  final PresentationConfig configuration;
 }

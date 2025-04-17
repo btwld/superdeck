@@ -390,8 +390,8 @@ Built with SuperDeck
   @override
   Future<int> run() async {
     try {
-      final configFile = DeckConfiguration.defaultFile;
-      DeckConfiguration deckConfig;
+      final configFile = PresentationConfig.defaultFile;
+      PresentationConfig deckConfig;
 
       final progress = logger.progress('Loading configuration...');
 
@@ -401,19 +401,19 @@ Built with SuperDeck
           progress.update(
             'Configuration file not found. Using default configuration.',
           );
-          deckConfig = DeckConfiguration();
+          deckConfig = PresentationConfig();
         } else {
           progress.update('Loading configuration from ${configFile.path}');
           final yamlString = await configFile.readAsString();
           final yamlConfig = jsonDecode(jsonEncode(loadYaml(yamlString)));
-          deckConfig = DeckConfiguration.parse(yamlConfig);
+          deckConfig = PresentationConfig.parse(yamlConfig);
         }
         progress.complete('Configuration loaded.');
       } catch (e) {
         progress.fail('Failed to load configuration: $e');
         logger
             .err('Unable to load configuration. Using default configuration.');
-        deckConfig = DeckConfiguration();
+        deckConfig = PresentationConfig();
       }
 
       int successCount = 0;
