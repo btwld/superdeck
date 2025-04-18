@@ -232,7 +232,7 @@ class TaskPipeline {
 
     // Save the processed slides
     await store.saveReferences(
-      DeckReference(slides: processedSlides, config: configuration),
+      Presentation(slides: processedSlides, configuration: configuration),
     );
 
     return processedSlides;

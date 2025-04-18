@@ -1,4 +1,4 @@
-# melos_managed_dependency_overrides: superdeck_builder,superdeck_core
+# melos_managed_dependency_overrides: superdeck_builder,superdeck_core,superdeck
 dependency_overrides:
   superdeck_builder:
     path: ../superdeck_builder
@@ -6,3 +6,5 @@ dependency_overrides:
     path: ../../../ack/packages/ack
   superdeck_core:
     path: ../superdeck_core
+  superdeck:
+    path: ../superdeck

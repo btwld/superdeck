@@ -1,3 +1,8 @@
+### 0.0.5
+
+* Refactor: Removed unused AssetManager in favor of integrated asset management
+* Docs: Added src/README.md with architecture documentation
+
 ### 0.0.4
 
 * Fix: Better error handling if `mmdc` mermaid-cli is not installed

@@ -5,14 +5,12 @@ import 'package:superdeck_builder/superdeck_builder.dart';
 import 'logger.dart';
 
 void printException(Exception e) {
-  if (e is TaskException) {
+  if (e is SDTaskException) {
     logger
       ..err('slide: ${e.slideIndex}')
       ..err('Task error: ${e.taskName}');
 
     printException(e.originalException);
-  } else if (e is DeckFormatException) {
-    logger.formatError(e);
   } else {
     logger.err(e.toString());
   }

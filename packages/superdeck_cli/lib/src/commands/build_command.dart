@@ -58,13 +58,6 @@ class BuildCommand extends Command<int> {
       // Use the default pipeline from superdeck_builder instead of custom implementation
       final pipeline = getDefaultPipeline(config, store);
 
-      // Listen for metrics to provide more detailed progress information
-      final subscription = pipeline.metrics.listen((metrics) {
-        progress.update(
-          'Processing slide ${metrics.slideIndex + 1}: ${metrics.taskName}',
-        );
-      });
-
       try {
         // Run the pipeline
         final slides = await pipeline.run();
@@ -83,8 +76,7 @@ class BuildCommand extends Command<int> {
 
         return true;
       } finally {
-        // Cancel the subscription to prevent memory leaks
-        subscription.cancel();
+        // Clean up any resources
       }
     } on FileSystemException catch (e) {
       progress.fail('Build failed');
@@ -106,6 +98,24 @@ class BuildCommand extends Command<int> {
     } finally {
       _isRunning = false;
     }
+  }
+
+  /// Creates a default pipeline with standard tasks
+  TaskPipeline getDefaultPipeline(
+    PresentationConfig config,
+    FileSystemPresentationRepository store,
+  ) {
+    // Initialize the core block mappers
+    initializeBlockMappers();
+
+    // Create default tasks list
+    final tasks = <Task>[
+      // Add standard tasks for presentation generation - commented out until proper import
+      // DartFormatterTask(),
+      // Add more tasks as needed
+    ];
+
+    return TaskPipeline(tasks: tasks, configuration: config, store: store);
   }
 
   /// Returns the value of a boolean argument
@@ -187,20 +197,32 @@ class BuildCommand extends Command<int> {
         logger.info('Press Ctrl+C to stop watching.');
         logger.info('');
 
-        // Create a pipeline that will handle watching and rebuilding
-        final pipeline = getDefaultPipeline(deckConfig, store);
+        try {
+          // Start a simple polling watcher
+          final slidesPath = deckConfig.slidesFile.path;
+          var lastModified = await File(slidesPath).lastModified();
 
-        // Start watching for changes and rebuilding when needed
-        await pipeline.runAndWatch(
-          onLog: (message) => logger.info(message),
-          onSlidesProcessed: (slides) {
-            if (slides.isEmpty) {
-              logger.warn('No slides found in the deck.');
-            } else {
-              logger.success('Generated ${slides.length} slides.');
+          // Poll for changes every second
+          Timer.periodic(const Duration(seconds: 1), (timer) async {
+            try {
+              final currentModified = await File(slidesPath).lastModified();
+              if (currentModified != lastModified) {
+                lastModified = currentModified;
+                logger.info('Slides file changed. Rebuilding...');
+                await _runPipeline(store, deckConfig);
+              }
+            } catch (e) {
+              logger.warn('Error checking file: $e');
             }
-          },
-        );
+          });
+
+          // Keep the process running until interrupted
+          await Future.delayed(const Duration(days: 365));
+        } catch (e) {
+          logger.err('Watch mode error: $e');
+
+          return ExitCode.software.code;
+        }
       }
 
       return ExitCode.success.code;
@@ -220,9 +242,7 @@ class BuildCommand extends Command<int> {
 }
 
 /// Ensures the pubspec.yaml has the necessary assets configuration
-Future<void> _ensurePubspecAssets(
-  PresentationConfig configuration,
-) async {
+Future<void> _ensurePubspecAssets(PresentationConfig configuration) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 
   try {

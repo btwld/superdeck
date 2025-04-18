@@ -175,7 +175,7 @@ final List<Map<String, dynamic>> testCaseTagBlock = [
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag',
-        data: {},
+        options: {},
         startIndex: 0,
         endIndex: 4,
       )
@@ -189,7 +189,7 @@ final List<Map<String, dynamic>> testCaseTagBlock = [
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag',
-        data: {'key': 'value'},
+        options: {'key': 'value'},
         startIndex: 0,
         endIndex: 17,
       )
@@ -207,7 +207,7 @@ Test content
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag',
-        data: {'key': 'value', 'key2': 'value2'},
+        options: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
         endIndex: 36,
       )
@@ -222,7 +222,7 @@ Test content
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag',
-        data: {'key': 'value'},
+        options: {'key': 'value'},
         startIndex: 0,
         endIndex: 16,
       )
@@ -242,10 +242,10 @@ Test content
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag',
-        data: {'key': 'value', 'key2': 'value2'},
+        options: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
         endIndex: 35,
-      ),
+      )
     ],
   },
   {
@@ -260,7 +260,7 @@ Test content
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag',
-        data: {'key': 'value', 'key2': 'value2'},
+        options: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
         endIndex: 36,
       )
@@ -279,7 +279,7 @@ Test content
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag',
-        data: {'key': 1, 'key2': 2.0, 'key3': true},
+        options: {'key': 1, 'key2': 2.0, 'key3': true},
         startIndex: 0,
         endIndex: 42,
       ),
@@ -299,13 +299,13 @@ Test content 2
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag1',
-        data: {'key': 'value'},
+        options: {'key': 'value'},
         startIndex: 0,
         endIndex: 18,
       ),
       ParsedBlock(
         type: 'tag2',
-        data: {'key2': 'value2'},
+        options: {'key2': 'value2'},
         startIndex: 35,
         endIndex: 55,
       )
@@ -321,13 +321,13 @@ Test content 2
     'expectedBlocks': [
       ParsedBlock(
         type: 'tag1',
-        data: {'key': 'value'},
+        options: {'key': 'value'},
         startIndex: 0,
         endIndex: 18,
       ),
       ParsedBlock(
         type: 'tag2',
-        data: {'key2': 'value2'},
+        options: {'key2': 'value2'},
         startIndex: 19,
         endIndex: 39,
       )
@@ -382,7 +382,7 @@ void main() {
 
           expect(actual.type, expected.type,
               reason: '$description - Block ${i + 1}: Tag mismatch.');
-          expect(actual.data, expected.data,
+          expect(actual.options, expected.options,
               reason: '$description - Block ${i + 1}: Options mismatch.');
           expect(actual.startIndex, expected.startIndex,
               reason: '$description - Block ${i + 1}: Start index mismatch.');

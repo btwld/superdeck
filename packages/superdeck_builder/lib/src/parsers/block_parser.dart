@@ -6,14 +6,14 @@ class ParsedBlock {
   final String type;
   final int startIndex;
   final int endIndex;
-  final Map<String, dynamic> _data;
+  final Map<String, dynamic> options;
 
   const ParsedBlock({
     required this.type,
-    required Map<String, dynamic> data,
+    required this.options,
     required this.startIndex,
     required this.endIndex,
-  }) : _data = data;
+  });
 }
 
 class BlockParser extends BaseParser<List<ParsedBlock>> {
@@ -54,7 +54,7 @@ class BlockParser extends BaseParser<List<ParsedBlock>> {
 
       return ParsedBlock(
         type: typeString,
-        data: options,
+        options: options,
         startIndex: match.start,
         endIndex: match.end,
       );
