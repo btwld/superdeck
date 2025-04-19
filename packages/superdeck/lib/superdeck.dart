@@ -7,6 +7,7 @@ export 'package:superdeck/src/modules/common/helpers/extensions.dart';
 export 'package:superdeck/src/modules/common/helpers/provider.dart';
 export 'package:superdeck/src/modules/common/styles/style.dart';
 export 'package:superdeck/src/modules/common/styles/style_spec.dart';
+export 'package:superdeck/src/modules/deck/deck_builder.dart';
 export 'package:superdeck/src/modules/deck/deck_options.dart';
 export 'package:superdeck/src/modules/deck/deck_provider.dart';
 export 'package:superdeck/src/modules/deck/slide_configuration.dart';

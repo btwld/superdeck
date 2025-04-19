@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+/// Mixin for services that need to be initialized
+mixin ProviderMixin {
+  /// Initialize the service
+  Future<void> initialize() async {}
+}
+
 class InheritedData<T> extends InheritedWidget {
   const InheritedData({
     super.key,

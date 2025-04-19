@@ -1,6 +1,70 @@
-# Superdeck Builder Architecture
+# SuperDeck Builder Package
 
-This document outlines the key components of the Superdeck Builder.
+This package is responsible for transforming markdown content into structured presentation slides.
+
+## Proposed Feature-Based Structure
+
+```
+lib/
+  ├── src/
+  │   ├── pipeline/              # Core pipeline functionality
+  │   │   ├── builder_pipeline.dart    # Main pipeline execution
+  │   │   ├── builder_context.dart     # Context for processing slides
+  │   │   ├── builder_exception.dart   # Builder-specific exceptions
+  │   │   └── builder_metrics.dart     # Metrics collection
+  │   │
+  │   ├── tasks/                 # Task execution modules
+  │   │   ├── base/              # Base task abstractions
+  │   │   │   ├── task.dart            # Task interface
+  │   │   │   └── task_result.dart     # Task execution results
+  │   │   │
+  │   │   ├── formatting/        # Code formatting tasks
+  │   │   │   └── dart_formatter_task.dart
+  │   │   │
+  │   │   ├── generation/        # Content generation tasks
+  │   │   │   └── mermaid_task.dart
+  │   │   │
+  │   │   └── caching/           # Asset caching tasks
+  │   │       └── image_caching_task.dart
+  │   │
+  │   ├── parsers/               # Content parsing modules
+  │   │   ├── base/              # Base parser abstractions
+  │   │   │   └── base_parser.dart
+  │   │   │
+  │   │   ├── block/             # Block-related parsers
+  │   │   │   ├── block_parser.dart
+  │   │   │   └── section_parser.dart
+  │   │   │
+  │   │   ├── content/           # Content-related parsers
+  │   │   │   ├── markdown_parser.dart
+  │   │   │   └── comment_parser.dart
+  │   │   │
+  │   │   └── metadata/          # Metadata parsing
+  │   │       └── front_matter_parser.dart
+  │   │
+  │   ├── services/              # Supporting services
+  │   │   └── filesystem_service.dart
+  │   │
+  │   └── utils/                 # Utility functions and helpers
+  │       ├── yaml_utils.dart
+  │       └── string_utils.dart
+  │
+  └── superdeck_builder.dart     # Main library exports
+```
+
+## Migration Strategy
+
+1. First refactor the directory structure while maintaining existing functionality
+2. Then update class names for consistency (TaskPipeline → BuilderPipeline)
+3. Add extension methods following the same pattern as the core package
+4. Update tests to match the new structure
+
+## Design Principles
+
+- Feature-based organization with clear module boundaries
+- Consistent naming conventions across packages
+- Strong typing with explicit relationships between models
+- Comprehensive testing of all components
 
 ## Core Components
 

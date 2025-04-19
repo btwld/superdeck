@@ -2,13 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/components/atoms/slide_view.dart';
 import 'package:superdeck/src/modules/deck/slide_configuration.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/src/modules/models/slide_model.dart';
 
 import '../test_helpers.dart';
 
 void main() {
   group('SimpleTemplate', () {
-    const slide = Slide(key: 'simple-slide');
+    const slide = Slide(
+      key: 'simple-slide',
+      sections: [],
+      comments: [],
+    );
     final config = SlideConfiguration(
       slide: slide,
       slideIndex: 0,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../modules/common/helpers/provider.dart';
 import '../../modules/common/styles/style_spec.dart';
+import '../../modules/models/model_adapters.dart';
 
 class ElementData<T extends SlideElement> {
   const ElementData({
@@ -42,7 +42,7 @@ class SectionData {
     required this.size,
   });
 
-  final SectionBlock section;
+  final SlideSection section;
   final Size size;
 
   @override

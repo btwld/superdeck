@@ -1,34 +1,17 @@
-// This file is deprecated. Use the new pipeline structure instead.
-// The classes in this file have been moved to:
-// - src/pipeline/builder_pipeline.dart
-// - src/pipeline/builder_context.dart
-// - src/pipeline/builder_exception.dart
-// - src/tasks/base/task.dart
-//
-// This file is kept for reference only and will be removed in a future release.
-
 import 'dart:async';
 
-import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'parsers/comment_parser.dart';
-import 'parsers/markdown_parser.dart';
-import 'parsers/section_parser.dart';
+import '../parsers/comment_parser.dart';
+import '../parsers/markdown_parser.dart';
+import '../parsers/section_parser.dart';
+import '../tasks/task.dart';
+import 'builder_context.dart';
+import 'builder_exception.dart';
 
-/// @deprecated Use BuilderContext from pipeline/builder_context.dart instead.
-class BuilderContext {
-  /// The index of the slide in the original list.
-  final int slideIndex;
-  final FileSystemPresentationRepository dataStore;
-
-  /// The raw slide being processed.
-  final RawSlideMarkdown slide;
-
-  BuilderContext(this.slideIndex, this.slide, this.dataStore);
-}
-
-/// @deprecated Use BuilderPipeline from pipeline/builder_pipeline.dart instead.
+/// Manages the execution of a series of [Task] instances to process slides.
+/// It handles loading markdown content, parsing slides, executing tasks,
+/// cleaning up assets, and saving the processed slides.
 class BuilderPipeline {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;
@@ -103,45 +86,5 @@ class BuilderPipeline {
     );
 
     return slides;
-  }
-}
-
-/// @deprecated Use BuilderTaskException from pipeline/builder_exception.dart instead.
-class BuilderTaskException implements Exception {
-  /// Name of the task where the error occurred.
-  final String taskName;
-
-  /// The original exception that was thrown.
-  final Exception originalException;
-
-  /// Index of the slide being processed when the error occurred.
-  final int slideIndex;
-
-  const BuilderTaskException(
-      this.taskName, this.originalException, this.slideIndex);
-
-  @override
-  String toString() {
-    return 'Error in task "$taskName" at slide index $slideIndex: $originalException';
-  }
-}
-
-/// @deprecated Use Task from tasks/base/task.dart instead.
-abstract class Task {
-  /// Name of the task, used for logging and identification.
-  final String name;
-
-  /// Logger instance for the task.
-  late final Logger logger = Logger('Task: $name');
-
-  Task(this.name);
-
-  /// Executes the task using the provided [BuilderContext].
-  FutureOr<void> run(BuilderContext context);
-
-  /// Disposes of any resources held by the task.
-  /// Override if the task holds resources that need explicit disposal.
-  FutureOr<void> dispose() {
-    return Future.value();
   }
 }

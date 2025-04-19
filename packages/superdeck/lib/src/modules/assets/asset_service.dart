@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../common/helpers/provider.dart';
 import '../common/platform_utils.dart';
+import '../deck/slide_configuration.dart';
 
 /// Service for handling asset operations
 ///
@@ -22,6 +24,9 @@ class AssetService with ProviderMixin {
     required this.assetsRootPath,
     required AssetRepository assetRepository,
   }) : _assetRepository = assetRepository;
+
+  /// Get the asset repository
+  AssetRepository get storage => _assetRepository;
 
   /// Initialize the asset service
   @override
@@ -74,6 +79,16 @@ class AssetService with ProviderMixin {
     return assetSource;
   }
 
+  /// Get the thumbnail for a slide
+  Future<AssetSource> getThumbnail({
+    required SlideConfiguration slide,
+    required BuildContext context,
+    bool force = false,
+  }) async {
+    final asset = Asset.thumbnail(slide.key);
+    return await getAssetSource(asset);
+  }
+
   /// Get the absolute file path for an asset
   String getAssetFilePath(Asset asset) {
     return p.join(assetsRootPath, asset.fileName);
@@ -101,5 +116,10 @@ class AssetService with ProviderMixin {
         logger: logger,
       );
     }
+  }
+
+  /// Get the AssetService from the widget tree
+  static AssetService of(BuildContext context) {
+    return InheritedData.of<AssetService>(context);
   }
 }

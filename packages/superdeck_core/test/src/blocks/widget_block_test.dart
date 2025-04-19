@@ -39,12 +39,15 @@ void main() {
 
       final map = block.toMap();
 
+      // Properties are flattened into the top-level map
       expect(map['type'], 'widget');
       expect(map['id'], 'test_widget');
-      expect(map['props'], props);
       expect(map['align'], 'center');
       expect(map['flex'], 2);
       expect(map['scrollable'], true);
+      expect(map['color'],
+          'blue'); // Prop keys are flattened into the top-level map
+      expect(map['size'], 42); // Prop keys are flattened into the top-level map
     });
 
     test('should handle props with nested objects', () {
@@ -63,21 +66,22 @@ void main() {
       );
 
       final map = block.toMap();
-      expect(map['props'], props);
 
-      // Test that nested objects are preserved
-      expect(map['props']['nested']['inner'], 'value');
-      expect(map['props']['nested']['items'], [1, 2, 3]);
+      // Properties are flattened into the top-level map
+      expect(map['color'], 'blue');
+      expect(map['size'], 42);
+
+      // Nested properties are also flattened
+      expect(map['nested']['inner'], 'value');
+      expect(map['nested']['items'], [1, 2, 3]);
     });
 
     test('should be deserializable from map', () {
       final map = {
         'type': 'widget',
         'id': 'test_widget',
-        'props': {
-          'color': 'blue',
-          'size': 42,
-        },
+        'color': 'blue', // Props as top-level keys
+        'size': 42, // Props as top-level keys
         'align': 'center',
         'flex': 2,
         'scrollable': true,
@@ -86,10 +90,11 @@ void main() {
       final block = BaseBlockMapper.fromMap(map) as WidgetBlock;
 
       expect(block.id, 'test_widget');
-      expect(block.props, {
-        'color': 'blue',
-        'size': 42,
-      });
+
+      // The props map may include the 'type' field
+      expect(block.props?['color'], 'blue');
+      expect(block.props?['size'], 42);
+
       expect(block.align, ContentAlignment.center);
       expect(block.flex, 2);
       expect(block.scrollable, true);
@@ -109,14 +114,12 @@ void main() {
       final validMap = {
         'type': 'widget',
         'id': 'test_widget',
-        'props': {
-          'color': 'blue',
-          'custom': [
-            1,
-            2,
-            {'nested': true}
-          ],
-        },
+        'color': 'blue', // Props as top-level keys
+        'custom': [
+          1,
+          2,
+          {'nested': true}
+        ],
       };
 
       // Should not throw

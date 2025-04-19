@@ -47,7 +47,7 @@ void main() {
 
       expect(map['type'], 'dartpad');
       expect(map['id'], 'test_id');
-      expect(map['theme'], 'darkMode');
+      expect(map['theme'], 'dark_mode');
       expect(map['embed'], true);
       expect(map['run'], true);
       expect(map['align'], 'center');
@@ -59,7 +59,7 @@ void main() {
       final map = {
         'type': 'dartpad',
         'id': 'test_id',
-        'theme': 'darkMode',
+        'theme': 'dark_mode',
         'embed': true,
         'run': true,
         'align': 'center',

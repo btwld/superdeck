@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../modules/common/helpers/constants.dart';
 import '../../modules/deck/slide_configuration.dart';
+import '../../modules/models/model_adapters.dart';
 import '../molecules/slide_element_widget.dart';
 
 class SlideView extends StatelessWidget {
@@ -43,8 +43,8 @@ class SlideView extends StatelessWidget {
     if (sections.isEmpty) {
       return const SizedBox.shrink();
     }
-    final totalSectionsFlex =
-        sections.fold(0, (previous, section) => previous + (section.flex ?? 1));
+    final totalSectionsFlex = sections.fold<double>(
+        0, (previous, section) => previous + (section.flex ?? 1));
 
     final sectionSizes = <SlideSection, Size>{};
 

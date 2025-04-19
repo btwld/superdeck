@@ -1,13 +1,16 @@
 library superdeck_builder;
 
-export 'src/core/deck_format_exception.dart';
-// Add exports for exception classes
-export 'src/core/task_exception.dart';
-export 'src/generator_pipeline.dart';
-export 'src/tasks/formatting/dart_formatter_task.dart';
-export 'src/tasks/generation/mermaid_task.dart';
-// Commented out task not exported
-// export 'src/tasks/image_caching_task.dart';
-
-// Add additional exports for clarity
-export 'src/tasks/index.dart'; // This already exports the tasks properly
+export 'src/common/constants.dart';
+// Export common components
+export 'src/common/exceptions.dart';
+// Export parser components
+export 'src/parsers/index.dart';
+export 'src/parsers/parser_extensions.dart';
+export 'src/pipeline/builder_context.dart';
+export 'src/pipeline/builder_exception.dart';
+// Renamed from builder_context_extensions.dart
+export 'src/pipeline/builder_extensions.dart';
+// Export pipeline components
+export 'src/pipeline/builder_pipeline.dart';
+// Export task components
+export 'src/tasks/index.dart';

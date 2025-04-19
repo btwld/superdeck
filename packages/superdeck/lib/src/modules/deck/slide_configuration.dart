@@ -1,10 +1,11 @@
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../components/parts/slide_parts.dart';
 import '../common/helpers/provider.dart';
+import '../models/model_adapters.dart' hide WidgetBlockBuilder;
+import '../models/slide_model.dart';
 import 'deck_options.dart';
 
 part 'slide_configuration.mapper.dart';

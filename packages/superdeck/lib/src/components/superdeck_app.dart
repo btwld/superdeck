@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../modules/common/helpers/theme.dart';
 import '../modules/common/initializer_provider.dart';
+import '../modules/deck/deck_builder.dart';
 import '../modules/deck/deck_options.dart';
-import '../modules/deck/deck_provider.dart';
 import '../modules/navigation/navigation_provider.dart';
 import 'organisms/app_shell.dart';
 

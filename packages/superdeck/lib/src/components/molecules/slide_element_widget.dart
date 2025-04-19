@@ -1,14 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/components/molecules/element_provider.dart';
 import 'package:superdeck/src/modules/common/helpers/utils.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck_core/superdeck_core.dart' as core;
 
 import '../../modules/common/helpers/converters.dart';
 import '../../modules/common/helpers/provider.dart';
 import '../../modules/common/styles/style_spec.dart';
 import '../../modules/deck/slide_configuration.dart';
+import '../../modules/models/model_adapters.dart';
 import '../atoms/cache_image_widget.dart';
 import '../atoms/markdown_viewer.dart';
 import '../organisms/webview_wrapper.dart';
@@ -129,8 +129,8 @@ class ImageElementWidget extends SlideElementWidget<ImageElement> {
 
   @override
   Widget build(context, data) {
-    final alignment = data.block.align ?? ContentAlignment.center;
-    final imageFit = data.block.fit ?? ImageFit.cover;
+    final alignment = data.block.align ?? core.ContentAlignment.center;
+    final imageFit = data.block.fit ?? core.ImageFit.cover;
     final spec = data.spec;
 
     return CachedImage(
@@ -197,7 +197,7 @@ ${e.toString()}'''),
   }
 }
 
-class DartPadBlockWidget extends SlideElementWidget<DartPadBlock> {
+class DartPadBlockWidget extends SlideElementWidget<DartPadElement> {
   const DartPadBlockWidget({
     super.key,
     required super.block,
@@ -207,22 +207,16 @@ class DartPadBlockWidget extends SlideElementWidget<DartPadBlock> {
 
   @override
   Widget build(context, data) {
-    if (kDebugMode) {
-      return SizedBox(
-        height: data.size.height,
-        width: data.size.width,
-        child: Container(
-          color: Colors.blue,
-          child: const Center(
-            child: Text('DartPad not available in debug mode'),
-          ),
-        ),
-      );
-    }
-
-    return WebViewWrapper(
-      size: data.size,
-      url: data.block.getDartPadUrl(),
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: WebViewWrapper(
+        url: data.block.getDartPadUrl(),
+        size: data.size,
+      ),
     );
   }
 }
@@ -237,80 +231,83 @@ class SlideSectionWidget extends StatelessWidget {
   final SlideSection section;
   final Size size;
 
-  Positioned _renderDebugInfo(SlideElement block, Size size) {
+  Positioned _renderDebugInfo(SlideElement block, Size childSize) {
+    final label = '''
+@${block.type} | ${childSize.width.toStringAsFixed(2)} x ${childSize.height.toStringAsFixed(2)} | align: ${block.align} | flex: ${block.flex ?? 1}''';
+
     const textStyle = TextStyle(
       color: Colors.black,
       fontSize: 12,
     );
-    final label = '''
-@${block.type}
-${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
-
     return Positioned(
-      top: 0,
+      bottom: 0,
       left: 0,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        color: Colors.cyan.withAlpha((255 * 0.7).round()),
-        child: Text(
-          label,
-          style: textStyle,
-        ),
+        color: Colors.amber,
+        padding: const EdgeInsets.all(8),
+        child: Text(label, style: textStyle),
       ),
     );
   }
 
   @override
-  Widget build(context) {
+  Widget build(BuildContext context) {
     final configuration = SlideConfiguration.of(context);
-    final totalFlex = section.totalBlockFlex;
+    final blocks = section.blocks.where((b) => b is! SlideSection).toList();
 
-    final availableSize = Size(
-      size.width,
-      size.height,
+    if (blocks.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final totalFlex = blocks.fold<double>(
+      0,
+      (previous, block) => previous + (block.flex ?? 1),
     );
 
-    final children = section.blocks.map((block) {
-      final flex = block.flex ?? 1;
-      final blockRatio = flex / totalFlex;
+    final availableSize = size;
+
+    final children = blocks.map<Widget>((block) {
+      final blockFlex = block.flex ?? 1;
+      final widthPercentage = blockFlex / totalFlex;
+
       final childSize = Size(
-        availableSize.width * blockRatio,
+        availableSize.width * widthPercentage,
         availableSize.height,
       );
 
       Widget childWidget;
 
       switch (block.type) {
-        case SlideSection.key:
+        case "section":
           childWidget = SlideSectionWidget(
             section: block as SlideSection,
             size: childSize,
           );
           break;
-        case MarkdownElement.key:
+        case "markdown":
           childWidget = MarkdownElementWidget(
             block: block as MarkdownElement,
             size: childSize,
             configuration: configuration,
           );
           break;
-        case ImageElement.key:
+        case "image":
           childWidget = ImageElementWidget(
             block: block as ImageElement,
             size: childSize,
             configuration: configuration,
           );
           break;
-        case CustomElement.key:
+        case "widget":
           childWidget = CustomElementWidget(
             block: block as CustomElement,
             size: childSize,
             configuration: configuration,
           );
           break;
-        case DartPadBlock.key:
+        case "dartpad":
           childWidget = DartPadBlockWidget(
-            block: block as DartPadBlock,
+            block: block as DartPadElement,
             size: childSize,
             configuration: configuration,
           );

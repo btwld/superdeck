@@ -23,7 +23,8 @@ class DartPadBlock extends BaseBlock with DartPadBlockMappable {
   }) : super(type: key);
 
   String getDartPadUrl() {
-    return 'https://dartpad.dev/?id=$id&theme=$theme&embed=$embed&run=$run';
+    String themeValue = theme != null ? theme.toString().split('.').last : '';
+    return 'https://dartpad.dev/?id=$id&theme=$themeValue&embed=$embed&run=$run';
   }
 
   static final schema = BaseBlock.schema.extend(

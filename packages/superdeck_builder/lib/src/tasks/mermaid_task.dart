@@ -2,15 +2,17 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:puppeteer/puppeteer.dart';
-import 'package:superdeck_builder/src/core/task.dart';
-import 'package:superdeck_builder/src/core/task_context.dart';
-import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
-import 'package:superdeck_builder/src/services/browser_service.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+
+import '../parsers/fenced_code_parser.dart';
+import '../pipeline/builder_context.dart';
+import '../services/browser_service.dart';
+import 'task.dart';
 
 class MermaidConverterTask extends Task implements CleanupCapableTask {
   final BrowserService _browserService;
   final AssetRepository _assetRepository;
+  final Map<String, dynamic> configuration;
 
   // Set to track generated assets for cleanup
   final Set<String> _processedAssetIds = {};
@@ -45,7 +47,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
   MermaidConverterTask({
     required BrowserService browserService,
     required AssetRepository assetRepository,
-    Map<String, dynamic> configuration = const {
+    this.configuration = const {
       'theme': 'base',
       'themeVariables': {
         'background': '#000000',
@@ -72,7 +74,7 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
         _cacheInvalidationTime = Duration(
           minutes: (configuration['cacheInvalidationMinutes'] as int?) ?? 60,
         ),
-        super('mermaid', configuration: configuration, canRunInParallel: false);
+        super('mermaid');
 
   Future<String> _generateMermaidGraph(String graphDefinition) {
     logger.fine('Generating mermaid graph:');
@@ -194,110 +196,106 @@ class MermaidConverterTask extends Task implements CleanupCapableTask {
   }
 
   @override
-  Future<void> run(TaskContext context) async {
+  Future<void> run(BuilderContext context) async {
     final stopwatch = Stopwatch()..start();
 
     final fencedCodeParser = const FencedCodeParser();
     final codeBlocks = fencedCodeParser.parse(context.slide.content);
-    final mermaidBlocks = codeBlocks.where((e) => e.language == 'mermaid');
+    final mermaidBlocks =
+        codeBlocks.where((block) => block.language == 'mermaid');
 
     if (mermaidBlocks.isEmpty) {
       return;
     }
 
-    int processedCount = 0;
-    int cachedCount = 0;
+    // Get browser ready
+    await _browserService.getBrowser();
 
-    for (final mermaidBlock in mermaidBlocks) {
+    var blockIndex = 0;
+    for (final block in mermaidBlocks) {
+      final uniqueId = _generateUniqueId(context.slideIndex, blockIndex++);
+
       try {
-        // Create asset using Asset model
-        final mermaidAsset = Asset(
-          id: generateValueHash(mermaidBlock.content),
-          extension: AssetExtension.png,
-          type: AssetType.mermaid,
-        );
-
-        // Track this asset to prevent cleanup
-        final assetId = '${mermaidAsset.type.name}_${mermaidAsset.id}';
-        _processedAssetIds.add(assetId);
-
-        // Check if we need to regenerate the asset
-        final shouldRegenerate = await _shouldRegenerateAsset(mermaidAsset);
-
-        if (shouldRegenerate) {
-          logger.info(
-            'Generating mermaid graph image for slide index: ${context.slideIndex}',
-          );
-          // Generate and save the image
-          final imageData =
-              await _generateMermaidGraphImage(mermaidBlock.content);
-          await _assetRepository.saveAsset(
-              mermaidAsset, Uint8List.fromList(imageData));
-
-          // Record asset generation time
-          _assetGenerationTimes[assetId] = DateTime.now();
-          processedCount++;
-        } else {
-          logger.info(
-            'Using cached mermaid asset for slide index: ${context.slideIndex}',
-          );
-          cachedCount++;
+        final graphDefinition = block.content.trim();
+        if (graphDefinition.isEmpty) {
+          logger.warning('Empty Mermaid graph definition, skipping');
+          continue;
         }
 
-        // Get the asset source path
-        final assetSource = await _assetRepository.getAssetSource(mermaidAsset);
+        final asset = Asset.mermaid(uniqueId);
 
-        // Replace mermaid code with image link
-        final mermaidImageSyntax = '![mermaid_graph](${assetSource.path})';
-        final updatedMarkdown = context.slide.content.replaceRange(
-          mermaidBlock.startIndex,
-          mermaidBlock.endIndex,
-          mermaidImageSyntax,
+        // Skip regeneration if asset exists and cache is valid
+        if (!await _shouldRegenerateAsset(asset)) {
+          logger.info('Using cached Mermaid asset: $uniqueId');
+          // Replace the mermaid code block with an image reference
+          _replaceMermaidCodeWithImage(context, block, asset.id);
+          _processedAssetIds.add('${asset.type.name}_${asset.id}');
+          continue;
+        }
+
+        // Generate the image
+        final imageData = await _generateMermaidGraphImage(graphDefinition);
+
+        // Save to asset repository
+        await _assetRepository.saveAsset(
+          asset,
+          Uint8List.fromList(imageData),
         );
 
-        context.slide.content = updatedMarkdown;
-      } catch (e, stackTrace) {
-        // Log error but continue processing other mermaid blocks
-        logger.severe(
-          'Error processing mermaid block in slide ${context.slideIndex}: $e',
-          stackTrace,
+        // Track for cleanup and cache invalidation
+        _processedAssetIds.add('${asset.type.name}_${asset.id}');
+        _assetGenerationTimes['${asset.type.name}_${asset.id}'] =
+            DateTime.now();
+
+        // Replace the mermaid code block with an image reference
+        _replaceMermaidCodeWithImage(context, block, asset.id);
+
+        logger.info(
+          'Generated Mermaid asset: $uniqueId (${imageData.length} bytes)',
         );
-        // Continue with next mermaid block rather than failing the entire task
+      } catch (e) {
+        logger.severe('Failed to process Mermaid block: $e');
       }
     }
 
-    stopwatch.stop();
     logger.info(
-      'Completed MermaidConverterTask for slide ${context.slideIndex}: '
-      'Generated $processedCount new, used $cachedCount cached, '
-      'in ${stopwatch.elapsedMilliseconds}ms',
+      'Processed ${mermaidBlocks.length} Mermaid blocks in ${stopwatch.elapsedMilliseconds}ms',
     );
   }
 
-  /// Call this method after all slides have been processed
-  /// to cleanup unused assets
-  Future<void> cleanupUnusedAssets() async {
-    if (_processedAssetIds.isEmpty) {
-      logger.info('No mermaid assets to clean up');
-      return;
-    }
-
-    final beforeCount = _processedAssetIds.length;
-    logger.info(
-        'Cleaning up mermaid assets, tracking $beforeCount active assets');
-
-    try {
-      await _assetRepository.cleanupUnusedAssets(_processedAssetIds);
-      logger.info('Successfully cleaned up unused mermaid assets');
-    } catch (e, stackTrace) {
-      logger.severe('Error cleaning up mermaid assets: $e', stackTrace);
-    }
+  String _generateUniqueId(int slideIndex, int blockIndex) {
+    return 'mermaid_slide${slideIndex}_block${blockIndex}';
   }
 
-  /// Reset all tracked assets - useful when reprocessing the entire deck
-  void resetAssetTracking() {
-    _processedAssetIds.clear();
-    _assetGenerationTimes.clear();
-    logger.info('Reset mermaid asset tracking');
+  void _replaceMermaidCodeWithImage(
+    BuilderContext context,
+    ParsedFencedCode block,
+    String assetId,
+  ) {
+    final imageMarkdown = '@image{asset: $assetId}';
+
+    final content = context.slide.content;
+    final updatedContent = content.replaceRange(
+      block.startIndex,
+      block.endIndex,
+      imageMarkdown,
+    );
+
+    context.slide.content = updatedContent;
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _browserService.dispose();
+  }
+
+  @override
+  Future<void> cleanup() async {
+    logger.info('Cleaning up unused Mermaid assets');
+
+    // Since we don't have listAssets and deleteAsset, we'll use cleanupUnusedAssets
+    await _assetRepository.cleanupUnusedAssets(_processedAssetIds);
+
+    logger.info('Mermaid cleanup complete');
   }
 }

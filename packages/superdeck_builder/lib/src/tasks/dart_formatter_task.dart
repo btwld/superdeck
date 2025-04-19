@@ -1,22 +1,22 @@
 import 'dart:async';
 
-import 'package:superdeck_builder/src/core/task.dart';
-import 'package:superdeck_builder/src/core/task_context.dart';
-import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
-import 'package:superdeck_builder/src/utils/process_utils.dart';
+import '../parsers/fenced_code_parser.dart';
+import '../pipeline/builder_context.dart';
+import '../utils/process_utils.dart';
+import 'task.dart';
 
 class DartFormatterTask extends Task {
+  final Map<String, dynamic> configuration;
   final Map<String, String>? _environmentOverrides;
 
   DartFormatterTask({
     Map<String, String>? environmentOverrides,
-    Map<String, dynamic> configuration = const {},
+    this.configuration = const {},
   })  : _environmentOverrides = environmentOverrides,
-        super('dart_formatter',
-            configuration: configuration, canRunInParallel: true);
+        super('dart_formatter');
 
   @override
-  Future<void> run(TaskContext context) async {
+  Future<void> run(BuilderContext context) async {
     final lineLength = configuration['lineLength'] as int?;
     final fix = configuration['fix'] as bool? ?? true;
 

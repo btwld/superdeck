@@ -13,7 +13,6 @@ class SlideConfigurationMapper extends ClassMapperBase<SlideConfiguration> {
   static SlideConfigurationMapper ensureInitialized() {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = SlideConfigurationMapper._());
-      SlideMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -126,15 +125,21 @@ extension SlideConfigurationValueCopy<$R, $Out>
           $base.as((v, t, t2) => _SlideConfigurationCopyWithImpl(v, t, t2));
 }
 
+// Simple wrapper for Slide copyWith
+abstract class SlideCopyWith<$R, $In extends Slide, $Out> {
+  $R call({
+    String? key,
+    SlideOptions? options,
+    List<SlideSection>? sections,
+    List<String>? comments,
+  });
+
+  Slide get $value;
+}
+
 abstract class SlideConfigurationCopyWith<$R, $In extends SlideConfiguration,
     $Out> implements ClassCopyWith<$R, $In, $Out> {
-  SlideCopyWith<$R, Slide, Slide> get _slide;
-  MapCopyWith<
-      $R,
-      String,
-      Widget Function(Map<String, dynamic>),
-      ObjectCopyWith<$R, Widget Function(Map<String, dynamic>),
-          Widget Function(Map<String, dynamic>)>> get _widgets;
+  // Simplified version that doesn't use SlideCopyWith directly
   $R call(
       {int? slideIndex,
       Style? style,
@@ -156,19 +161,7 @@ class _SlideConfigurationCopyWithImpl<$R, $Out>
   @override
   late final ClassMapperBase<SlideConfiguration> $mapper =
       SlideConfigurationMapper.ensureInitialized();
-  @override
-  SlideCopyWith<$R, Slide, Slide> get _slide =>
-      $value._slide.copyWith.$chain((v) => call(slide: v));
-  @override
-  MapCopyWith<
-      $R,
-      String,
-      Widget Function(Map<String, dynamic>),
-      ObjectCopyWith<$R, Widget Function(Map<String, dynamic>),
-          Widget Function(Map<String, dynamic>)>> get _widgets => MapCopyWith(
-      $value._widgets,
-      (v, t) => ObjectCopyWith(v, $identity, t),
-      (v) => call(widgets: v));
+
   @override
   $R call(
           {int? slideIndex,

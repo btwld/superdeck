@@ -70,6 +70,7 @@ abstract class BaseBlock with BaseBlockMappable {
     required: [
       "type",
     ],
+    additionalProperties: true,
   );
 
   // Keep the base parse method
