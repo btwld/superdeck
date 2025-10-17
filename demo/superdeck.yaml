@@ -1,0 +1,14 @@
+# Superdeck Configuration
+# This file allows you to customize paths and settings for your presentation
+
+# Optional: Set a custom project directory (defaults to current directory)
+# projectDir: "/path/to/your/project"
+
+# Optional: Set a custom slides file path (defaults to "slides.md")
+# slidesPath: "my-presentation.md"
+
+# Optional: Set a custom output directory (defaults to ".superdeck")
+# outputDir: ".my-superdeck"
+
+# Optional: Set a custom assets directory name within output dir (defaults to "assets")
+# assetsPath: "generated-assets"

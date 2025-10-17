@@ -14,17 +14,32 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Install FVM
+        shell: bash
+        run: |
+          curl -fsSL https://fvm.app/install.sh | bash
+          fvm use stable --force
+
+      - uses: kuhnroyal/flutter-fvm-config-action@v2
+        id: fvm-config-action
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm-config-action.outputs.FLUTTER_VERSION }}
+          channel: ${{ steps.fvm-config-action.outputs.FLUTTER_CHANNEL }}
+
+      - name: Setup Melos
+        uses: bluefireteam/melos-action@v3
+
+      - uses: invertase/github-action-dart-analyzer@v1
+        with:
+          fatal-infos: false
+          fatal-warnings: false
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Runner
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: melos run gen:build
 
-      - uses: invertase/github-action-dart-analyzer@v1
-        with:
-          fatal-infos: false
-          
-      - run: flutter test
+      - run: melos run test

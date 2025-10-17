@@ -1,37 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/components/atoms/slide_view.dart';
-import 'package:superdeck/providers/assets_provider.dart';
-import 'package:superdeck/providers/examples_provider.dart';
-import 'package:superdeck/providers/snapshot_provider.dart';
-import 'package:superdeck/providers/style_provider.dart';
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/rendering/slides/slide_view.dart';
+import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/src/styling/styles.dart';
+import 'package:superdeck/src/deck/deck_options.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 extension WidgetTesterX on WidgetTester {
   Future<void> pumpWithScaffold(Widget widget) async {
     await pumpWidget(MaterialApp(home: Scaffold(body: widget)));
   }
 
-  Future<void> pumpSlide<T extends Slide>(
-    T slide, {
+  Future<void> pumpSlide(
+    SlideConfiguration slide, {
     bool isSnapshot = false,
-    Style style = const Style.empty(),
-    Map<String, ExampleBuilder> examples = const {},
-    List<SlideAsset> assets = const [],
+    SlideStyle? style,
+    Map<String, WidgetBlockBuilder> widgets = const {},
+    List<GeneratedAsset> assets = const [],
   }) async {
     return pumpWithScaffold(
-      SnapshotProvider(
-        isCapturing: isSnapshot,
-        child: StyleProvider(
-          baseStyle: style,
-          child: AssetsProvider(
-            assets: assets,
-            child: ExamplesProvider(
-              examples: examples,
-              child: SlideView(slide),
-            ),
-          ),
-        ),
+      InheritedData(
+        data: slide,
+        child: SlideView(slide),
       ),
     );
   }

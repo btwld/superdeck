@@ -1,0 +1,278 @@
+---
+title: CLI Reference
+description: Complete reference for SuperDeck CLI commands and options
+---
+
+# CLI Reference
+
+The SuperDeck CLI provides tools for setting up, building, and publishing presentations. This reference covers all commands and options.
+
+## Installation
+
+```bash
+dart pub global activate superdeck_cli
+```
+
+## Global Options
+
+These options work with all commands:
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--verbose` | `-v` | Enable verbose logging |
+| `--quiet` | `-q` | Suppress output except errors |
+| `--help` | `-h` | Show help information |
+
+## Commands
+
+### `superdeck setup`
+
+Initialize SuperDeck in a Flutter project.
+
+```bash
+superdeck setup [options]
+```
+
+**What it does:**
+- Creates sample `slides.md` file if none exists
+- Updates `pubspec.yaml` with asset configuration
+- Sets up macOS entitlements for network access
+- Configures custom `index.html` for web with loading indicator
+
+**Example:**
+```bash
+cd my-flutter-project
+superdeck setup
+```
+
+### `superdeck build`
+
+Build presentations from markdown files.
+
+```bash
+superdeck build [options]
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `--watch`, `-w` | Watch for file changes and rebuild automatically |
+| `--skip-pubspec` | Skip updating pubspec.yaml |
+| `--force-rebuild` | Force rebuild all assets |
+
+**Examples:**
+```bash
+# Build once
+superdeck build
+
+# Build and watch for changes (recommended for development)
+superdeck build --watch
+
+# Force rebuild everything
+superdeck build --force-rebuild
+```
+
+**What it does:**
+- Parses `slides.md` markdown content
+- Generates `.superdeck/superdeck.json` presentation data
+- Creates optimized assets in `.superdeck/assets/`
+- Generates asset references in `.superdeck/generated_assets.json`
+
+### `superdeck publish`
+
+Publish presentation to GitHub Pages.
+
+```bash
+superdeck publish [options]
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `--branch <name>` | Target branch (default: gh-pages) |
+| `--message <msg>` | Commit message |
+| `--push` | Push changes to remote |
+| `--dry-run` | Show what would be done without making changes |
+
+**Examples:**
+```bash
+# Publish to gh-pages branch
+superdeck publish
+
+# Publish with custom message and push
+superdeck publish --message "Update presentation" --push
+
+# See what would happen without doing it
+superdeck publish --dry-run
+```
+
+**What it does:**
+- Builds web version with proper base-href for GitHub Pages
+- Uses git worktree for safe branch management
+- Commits built files to specified branch
+- Optionally pushes to remote repository
+
+### `superdeck version`
+
+Show version information.
+
+```bash
+superdeck version
+```
+
+**Output:**
+```
+SuperDeck CLI Version: 1.0.0
+Core Version: 1.0.0
+Builder Version: 1.0.0
+```
+
+## File Structure
+
+After running CLI commands, your project will have:
+
+```
+project/
+├── slides.md                    # Your presentation content
+├── pubspec.yaml                 # Updated with asset configuration
+├── .superdeck/
+│   ├── superdeck.json          # Generated presentation data
+│   ├── assets/                 # Generated assets
+│   │   ├── thumbnails/         # Slide thumbnails
+│   │   ├── mermaid/           # Mermaid diagram images
+│   │   └── cached/            # Cached external images
+│   └── generated_assets.json   # Asset references
+└── web/
+    └── index.html              # Custom index with loading indicator
+```
+
+## Configuration
+
+### pubspec.yaml Updates
+
+The CLI automatically adds this to your `pubspec.yaml`:
+
+```yaml
+flutter:
+  assets:
+    - .superdeck/assets/
+```
+
+### macOS Entitlements
+
+For network access (required for external images), adds to `macos/Runner/DebugProfile.entitlements`:
+
+```xml
+<key>com.apple.security.network.client</key>
+<true/>
+```
+
+## Common Workflows
+
+### Development Workflow
+
+```bash
+# Terminal 1: Start CLI in watch mode
+superdeck build --watch
+
+# Terminal 2: Run Flutter app
+flutter run
+```
+
+### Publishing Workflow
+
+```bash
+# Build and test locally
+superdeck build
+flutter run -d web
+
+# Publish to GitHub Pages
+superdeck publish --push
+```
+
+### Troubleshooting Workflow
+
+```bash
+# Verbose output for debugging
+superdeck build --verbose
+
+# Force rebuild if assets are corrupted  
+superdeck build --force-rebuild
+
+# Check what publish would do
+superdeck publish --dry-run
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `SUPERDECK_VERBOSE` | Enable verbose logging (same as --verbose) |
+| `SUPERDECK_QUIET` | Suppress output (same as --quiet) |
+
+## Exit Codes
+
+| Code | Description |
+|------|-------------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Invalid arguments |
+| 3 | File not found |
+| 4 | Build failed |
+| 5 | Publish failed |
+
+## Common Issues
+
+### Build Fails
+
+**Problem:** `Error: slides.md not found`
+**Solution:** Ensure `slides.md` exists in project root or run `superdeck setup`
+
+**Problem:** `Error: Invalid markdown syntax`  
+**Solution:** Check your markdown syntax, especially block definitions and frontmatter
+
+### Publish Fails
+
+**Problem:** `Error: Not a git repository`
+**Solution:** Initialize git repository: `git init && git add . && git commit -m "Initial commit"`
+
+**Problem:** `Error: No changes to commit`
+**Solution:** Make changes to your slides or use `--force-rebuild`
+
+### Watch Mode Issues
+
+**Problem:** Changes not detected
+**Solution:** Ensure you're editing `slides.md` in the project root
+
+**Problem:** Build errors in watch mode
+**Solution:** Fix the error and save again; watch mode will retry automatically
+
+## Performance Tips
+
+1. **Use watch mode** - `superdeck build --watch` is optimized for development
+2. **Cache external images** - External images are cached after first download
+3. **Skip pubspec updates** - Use `--skip-pubspec` if you manage assets manually
+4. **Incremental builds** - Only changed assets are rebuilt by default
+
+## Integration with CI/CD
+
+### GitHub Actions Example
+
+```yaml
+name: Deploy SuperDeck
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: subosito/flutter-action@v2
+    - run: dart pub global activate superdeck_cli
+    - run: superdeck build
+    - run: superdeck publish --push
+```

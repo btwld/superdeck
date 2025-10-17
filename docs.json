@@ -1,0 +1,89 @@
+{
+  "name": "SuperDeck",
+  "description": "Create beautiful presentations with Flutter and Markdown",
+  "logo": "/assets/logo.png",
+  "theme": {
+    "light": {
+      "primary": "#2563eb"
+    },
+    "dark": {
+      "primary": "#3b82f6"
+    }
+  },
+  "navigation": [
+    {
+      "title": "Home",
+      "path": "/"
+    },
+    {
+      "title": "Getting Started",
+      "path": "/docs/getting-started"
+    },
+    {
+      "title": "Tutorials",
+      "children": [
+        {
+          "title": "Block Layouts",
+          "path": "/docs/tutorials/block-layouts"
+        },
+        {
+          "title": "First Presentation",
+          "path": "/docs/tutorials/first-presentation"
+        }
+      ]
+    },
+    {
+      "title": "How-to Guides",
+      "children": [
+        {
+          "title": "CLI Reference",
+          "path": "/docs/guides/cli-reference"
+        },
+        {
+          "title": "Custom Widgets",
+          "path": "/docs/guides/custom-widgets"
+        },
+        {
+          "title": "Custom Slide Parts",
+          "path": "/docs/guides/slide-parts"
+        },
+        {
+          "title": "Mermaid Diagrams",
+          "path": "/docs/guides/mermaid-diagrams"
+        }
+      ]
+    },
+    {
+      "title": "Reference",
+      "children": [
+        {
+          "title": "Block Types",
+          "path": "/docs/reference/block-types"
+        },
+        {
+          "title": "PresentationOptions API",
+          "path": "/docs/reference/presentation-options"
+        }
+      ]
+    },
+    {
+      "title": "Examples",
+      "path": "/docs/examples"
+    }
+  ],
+  "footer": {
+    "links": [
+      {
+        "title": "GitHub",
+        "href": "https://github.com/leoafarias/superdeck"
+      },
+      {
+        "title": "Pub.dev",
+        "href": "https://pub.dev/packages/superdeck"
+      }
+    ]
+  },
+  "social": {
+    "github": "leoafarias/superdeck"
+  }
+}

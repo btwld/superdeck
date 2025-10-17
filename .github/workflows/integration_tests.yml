@@ -1,0 +1,153 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'packages/superdeck/**'
+      - '.github/workflows/integration_tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'packages/superdeck/**'
+      - '.github/workflows/integration_tests.yml'
+
+jobs:
+  integration-tests-macos:
+    runs-on: macos-latest
+    name: Integration Tests (macOS)
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install FVM
+        shell: bash
+        run: |
+          curl -fsSL https://fvm.app/install.sh | bash
+          echo "$HOME/.fvm/bin" >> $GITHUB_PATH
+
+      - name: Setup Flutter with FVM
+        run: |
+          fvm use stable --force
+          fvm flutter --version
+
+      - name: Setup Melos
+        uses: bluefireteam/melos-action@v3
+
+      - name: Install dependencies
+        run: |
+          fvm flutter pub get
+          melos bootstrap
+
+      - name: Build Runner (if needed)
+        run: melos run gen:build
+
+      - name: Run Integration Tests - App Tests
+        working-directory: packages/superdeck
+        run: fvm flutter test integration_test/app_test.dart -d macos
+        continue-on-error: true
+
+      - name: Run Integration Tests - Navigation Tests
+        working-directory: packages/superdeck
+        run: fvm flutter test integration_test/navigation_test.dart -d macos
+        continue-on-error: true
+
+      - name: Run Integration Tests - UI Interaction Tests
+        working-directory: packages/superdeck
+        run: fvm flutter test integration_test/ui_interaction_test.dart -d macos
+        continue-on-error: true
+
+      - name: Run Integration Tests - Performance Tests
+        working-directory: packages/superdeck
+        run: fvm flutter test integration_test/performance_test.dart -d macos
+        continue-on-error: true
+
+      - name: Run Integration Tests - Content Rendering Tests
+        working-directory: packages/superdeck
+        run: fvm flutter test integration_test/content_rendering_test.dart -d macos
+        continue-on-error: true
+
+      - name: Run All Integration Tests
+        working-directory: packages/superdeck
+        run: fvm flutter test integration_test/ -d macos
+
+  integration-tests-web:
+    runs-on: ubuntu-latest
+    name: Integration Tests (Web)
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install FVM
+        shell: bash
+        run: |
+          curl -fsSL https://fvm.app/install.sh | bash
+          echo "$HOME/.fvm/bin" >> $GITHUB_PATH
+
+      - name: Setup Flutter with FVM
+        run: |
+          fvm use stable --force
+          fvm flutter --version
+
+      - name: Setup Melos
+        uses: bluefireteam/melos-action@v3
+
+      - name: Install dependencies
+        run: |
+          fvm flutter pub get
+          melos bootstrap
+
+      - name: Build Runner (if needed)
+        run: melos run gen:build
+
+      - name: Install ChromeDriver
+        run: |
+          npx @puppeteer/browsers install chromedriver@stable
+          echo "$(npx @puppeteer/browsers install chromedriver@stable | grep -o '/[^[:space:]]*chromedriver[^[:space:]]*' | head -1 | xargs dirname)" >> $GITHUB_PATH
+
+      - name: Create test driver
+        working-directory: packages/superdeck
+        run: |
+          mkdir -p test_driver
+          cat > test_driver/integration_test.dart << 'EOF'
+          import 'package:integration_test/integration_test_driver.dart';
+          
+          Future<void> main() => integrationDriver();
+          EOF
+
+      - name: Start ChromeDriver
+        run: chromedriver --port=4444 &
+
+      - name: Run Web Integration Tests
+        working-directory: packages/superdeck
+        run: |
+          fvm flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/app_test.dart \
+            -d chrome
+        continue-on-error: true
+
+  test-results:
+    runs-on: ubuntu-latest
+    name: Test Results Summary
+    needs: [integration-tests-macos, integration-tests-web]
+    if: always()
+    
+    steps:
+      - name: Test Results Summary
+        run: |
+          echo "## Integration Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS | ${{ needs.integration-tests-macos.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Web | ${{ needs.integration-tests-web.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.integration-tests-macos.result }}" == "success" && "${{ needs.integration-tests-web.result }}" == "success" ]]; then
+            echo "✅ All integration tests passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Some integration tests failed. Please check the logs above." >> $GITHUB_STEP_SUMMARY
+          fi

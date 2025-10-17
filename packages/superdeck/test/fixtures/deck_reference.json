@@ -1,115 +1,205 @@
 {
-  "config": { "transition": { "type": "fade_in", "duration": 0 } },
+  "config": {
+    "transition": {
+      "type": "fade_in",
+      "duration": 0
+    }
+  },
   "slides": [
     {
-      "style": "quote",
-      "layout": "image",
+      "key": "jrySbty2",
       "options": {
-        "src": "https://picsum.photos/600/600.webp",
-        "fit": "cover"
+        "style": "custom"
       },
-      "content": "> Create your Flutter presentations faster and easier than ever.\n> You can quote me on that\n> ### Leo Farias",
-      "key": "DMiweBMq",
-      "content_options": { "alignment": "bottom_right" }
+      "markdown": "{@section}\n{@column}\n## This is an example of a widgets\n\n{@widget name: demo}\n\n{@column}\n\n```dart\nimport 'package:flutter/material.dart';\n\nvoid main() {\n  final style = Style(\n    $box.padding.all(),\n    $box.border.all(),\n  );\n}\n\n```",
+      "sections": [
+        {
+          "options": null,
+          "sub_sections": [
+            {
+              "content": "\n## This is an example of a widgets",
+              "options": null,
+              "type": "column"
+            },
+            {
+              "options": {
+                "name": "demo",
+                "type": "widget_options"
+              },
+              "content": "",
+              "type": "widget"
+            },
+            {
+              "content": "\n```dart\nimport 'package:flutter/material.dart';\nvoid main() {\n  final style = Style(\n    $box.padding.all(),\n    $box.border.all(),\n  );\n}\n```",
+              "options": null,
+              "type": "column"
+            }
+          ]
+        }
+      ]
     },
     {
-      "background": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGt1MnQ5N2k3cXVma24wb3V5cThlZ3ExY2NvY3czcmozang0bGQ1ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XzWd8acQ37byKR4tmd/giphy.gif",
-      "style": "cover",
-      "key": "bfnlriXq",
-      "content_options": null,
-      "content": "# Complex layout"
+      "key": "rHLJMgwc",
+      "markdown": "```mermaid\ngraph TD\n    A[Enter Chart Definition] --> B(Preview)\n    B --> C{decide}\n    C --> D[Keep]\n    C --> E[Edit Definition]\n    E --> B\n    D --> F[Save Image and Car]\n    F --> B  \n```\n\n{@column flex: 3}\n\n```mermaid\nsequenceDiagram\n    participant Customer as 🧑 Customer\n    participant Barista as ☕ Barista\n    participant CoffeeMachine as 🏭 Coffee Machine\n```\n\n\n<!-- Notes go here -->",
+      "sections": [
+        {
+          "sub_sections": [
+            {
+              "content": "![Mermaid Diagram](.superdeck/generated/mermaid_llAVsepR.png)",
+              "type": "column"
+            },
+            {
+              "content": "\n![Mermaid Diagram](.superdeck/generated/mermaid_BTVEzSEg.png)\n<!-- Notes go here -->",
+              "options": {
+                "flex": 3
+              },
+              "type": "column"
+            }
+          ]
+        }
+      ]
     },
     {
-      "layout": "image",
-      "content": "## Image Layout\n\nCreate beautiful slides with images that fit your content.\n\n##### Options\n```yaml\ncontent:\noptions:\n  src: https//www.url.com/image.jpg\n  fit: cover\n  position: left\n  flex: 1\n```\n\n> Define position fit and flex options for the image.",
-      "style": "show_sections",
+      "key": "u0rRynPM",
       "options": {
-        "src": "https://picsum.photos/900/700?waves",
-        "fit": "cover",
-        "position": "left",
-        "flex": 1
+        "style": "quote"
       },
-      "key": "9wPFDzIT",
-      "content_options": { "alignment": "bottom_right", "flex": 1 }
+      "markdown": "{@section}\n{@column align: bottom_right flex: 3}\n# This presentation will be great\n\n{@column}\n\n{@section}\n\n\n{@column }\n{@column flex: 2 align: top_right}\n> Create your Flutter presentations faster and easier than ever.\n> You can quote me on that\n> ### Leo",
+      "sections": [
+        {
+          "options": null,
+          "sub_sections": [
+            {
+              "content": "\n# This presentation will be great",
+              "options": {
+                "flex": 3,
+                "align": "bottom_right"
+              },
+              "type": "column"
+            },
+            {
+              "content": "",
+              "options": null,
+              "type": "column"
+            }
+          ]
+        },
+        {
+          "options": null,
+          "sub_sections": [
+            {
+              "content": "",
+              "options": null,
+              "type": "column"
+            },
+            {
+              "content": "\n> Create your Flutter presentations faster and easier than ever.\n> You can quote me on that\n> ### Leo",
+              "options": {
+                "flex": 2,
+                "align": "top_right"
+              },
+              "type": "column"
+            }
+          ]
+        }
+      ]
     },
     {
-      "layout": "two_column",
-      "style": "show_sections",
-      "sections": {
-        "left": { "flex": 2 },
-        "right": { "alignment": "bottom_left" }
-      },
-      "key": "zZ3F13ZY",
-      "content_options": null,
-      "content": "::left::\n\n# Two Column\n\nThis is a two-column layout. You can use it to compare two different concepts or ideas.\n\n::right::\n\n### Section Options\n\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section\n\n\n```yaml\nsections:\n  left:\n    flex: 2\n  right:\n    alignment: bottom_left\n```"
-    },
-    {
-      "layout": "two_column_header",
-      "content": "# Two Column + Header\n\n\n::left::\n\n### Left Section\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section\n::right::\n\n#### Section Options\n\n```yaml\nsections:\n  left:\n    alignment: bottom_right\n    flex: 2\n  right:\n    alignment: bottom_left\n  header:\n    alignment: bottom_left\n```",
-      "sections": {
-        "left": { "flex": 2 },
-        "right": { "alignment": "bottom_left" },
-        "header": { "alignment": "bottom_left" }
-      },
-      "style": "show_sections",
-      "key": "SHmGSyUB",
-      "content_options": { "alignment": "center", "flex": 2 }
-    },
-    {
-      "style": "rad",
-      "layout": "two_column",
-      "content": "# Mix\n\nIntegration with Mix gives you complete control over all styling elements in your slides with a simple and intuitive API.\n\n::right::\n\n```dart\nVariantAttribute get radStyle {\n  return const SlideVariant('rad')(\n    $.h1.textStyle.as(GoogleFonts.poppins()),\n    $.h1.textStyle.fontSize(140),\n    $.code.decoration.border.all(\n      color: Colors.red,\n      width: 3,\n    ),\n    $.code.decoration(\n      color: Colors.black54,\n    ),\n    $.code.padding.all(40),\n\n    $.outerContainer.margin.all(60),\n\n    $.innerContainer.borderRadius(25),\n    $.innerContainer.shadow(\n      blurRadius: 0,\n      spreadRadius: 10,\n      color: Colors.red.withOpacity(1),\n    ),\n    $.innerContainer.gradient.radial(\n      stops: [0.0, 1.0],\n      radius: 0.7,\n      colors: [Colors.purple, Colors.deepPurple],\n    ),\n\n    // Events\n    onMouseHover((event) {\n      final position = event.position;\n      final dx = position.x * 10;\n      final dy = position.y * 10;\n\n      return Style(\n        $.innerContainer.transform(_transformMatrix(position)),\n        $.innerContainer.shadow.offset(dx, dy),\n        $.innerContainer.gradient.radial(\n          center: position,\n        ),\n      );\n    }),\n\n    (onPressed | onLongPressed)(\n      $.innerContainer.shadow(\n        blurRadius: 5,\n        spreadRadius: 1,\n        offset: Offset.zero,\n        color: Colors.purpleAccent,\n      ),\n      $.innerContainer.border.all(color: Colors.white, width: 1),\n      $.innerContainer.gradient.radial\n          .colors([Colors.purpleAccent, Colors.purpleAccent]),\n    ),\n  );\n}\n```",
-      "sections": {
-        "left": null,
-        "right": { "alignment": "bottom_left", "flex": 2 }
-      },
-      "key": "Ad4sj9H3",
-      "content_options": { "alignment": "center" }
-    },
-    {
-      "style": "cover",
-      "background": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGswdWJvY2oxazJoY3g2Y2poNHBvZXlpYmd5YTg0Z2g0ODRrbng4MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/oB6KlAvOuaLtxYy8l4/giphy.gif",
-      "key": "J7Nbh0zk",
-      "content_options": null,
-      "content": "# Markdown support"
-    },
-    {
-      "style": "show_sections",
-      "layout": "two_column",
-      "sections": null,
-      "content": "::left::\n\n\n**Bold Text**\n\n*Italic Text*\n\n~~Strikethrough~~\n\n`Inline Code`\n\n[Link here](https://github.com/leoafarias/superdeck)\n\n::right::\n\nLists\n\n1. Ordered list item 1\n2. Ordered list item 2\n\n- Unordered list item 1\n- Unordered list item 2\n\nQuotes\n\n> If you want to go fast, go alone. \n> If you want to go far, go together.\n> ### African Proverb",
-      "key": "ZiBdgDuC",
-      "content_options": { "flex": 4 }
-    },
-    {
-      "layout": "two_column",
-      "key": "segi4wcj",
-      "content_options": null,
-      "content": "::left::\n\n\nCode\n```dart\nint factorial(int n) {\n   return n == 0 ? 1 : n * factorial(n - 1);\n}\n```\n\nTasks\n- [ ] Item 1\n- [x] Item 2\n\nSubtasks\n\n- [x] Item 1\n  - [ ] Subitem 1\n\n::right::\n\nImages\n![Unsplash Image](https://picsum.photos/300/200?landscape)\n\n\nTable\n\n| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1A  | Cell 1B  |\n| Cell 2A  | Cell 2B  |\n\nDivider\n\n___"
-    },
-    {
-      "title": "Mermaid example",
-      "layout": "two_column",
-      "key": "ElKv6elN",
-      "content_options": null,
-      "content": "::left::\n\n![Mermaid Diagram](superdeck/generated/sd_mermaid_s3Iic43G.png)\n  \n\n::right::\n\n## Mermaid Support\n\nSuperdeck allows you to use Mermaid diagrams in your slides. It automatically converts the code into a visual representation."
-    },
-    {
-      "layout": "widget",
+      "key": "huRpyhFQ",
       "options": {
-        "name": "demo",
-        "args": { "text": "Hello, Superdeck!", "height": 200.0, "width": 300.0 }
+        "style": "show_sections"
       },
-      "key": "7r83tgXu",
-      "content_options": null,
-      "content": "## Showcase your widgets"
+      "markdown": "{@section}\n{@image src: https://picsum.photos/1200/1200?waves align: top_left fit: cover}\n\n{@section flex: 2}\n{@column flex: 2}\n# Two Column HGoes here\n\nThis is a two-column layout. You can use it to compare two different concepts or ideas.\n\n\n{@column}\n\n### Section Options\n\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section",
+      "sections": [
+        {
+          "options": null,
+          "sub_sections": [
+            {
+              "options": {
+                "src": "https://picsum.photos/1200/1200?waves",
+                "fit": "cover",
+                "align": "top_left",
+                "type": "image"
+              },
+              "content": "",
+              "type": "image"
+            }
+          ]
+        },
+        {
+          "options": {
+            "flex": 2
+          },
+          "sub_sections": [
+            {
+              "content": "\n# Two Column HGoes here\nThis is a two-column layout. You can use it to compare two different concepts or ideas.",
+              "options": {
+                "flex": 2
+              },
+              "type": "column"
+            },
+            {
+              "content": "\n### Section Options\nEasily customize the content of each section to suit your needs.\nUse front matter to define the layout of each section",
+              "options": null,
+              "type": "column"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "twktEcis",
+      "options": {
+        "style": "show_sections"
+      },
+      "markdown": "{@section}\n{@column align: bottom_right}\n\n## First\n\n{@column}  \n\n\n## Header\n\n{@section flex: 2}\n\n### Left Section\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section\n\n{@column}\n\n#### Section Options\n\n```yaml\nsections:\n  left:\n    alignment: bottom_right\n    flex: 2\n  right:\n    alignment: bottom_left\n  header:\n    alignment: bottom_left\n```",
+      "sections": [
+        {
+          "options": null,
+          "sub_sections": [
+            {
+              "content": "\n## First",
+              "options": {
+                "align": "bottom_right"
+              },
+              "type": "column"
+            },
+            {
+              "content": "\n## Header",
+              "options": null,
+              "type": "column"
+            }
+          ]
+        },
+        {
+          "options": {
+            "flex": 2
+          },
+          "sub_sections": [
+            {
+              "content": "### Left Section\nEasily customize the content of each section to suit your needs.\nUse front matter to define the layout of each section",
+              "type": "column"
+            },
+            {
+              "content": "\n#### Section Options\n```yaml\nsections:\n  left:\n    alignment: bottom_right\n    flex: 2\n  right:\n    alignment: bottom_left\n  header:\n    alignment: bottom_left\n```",
+              "options": null,
+              "type": "column"
+            }
+          ]
+        }
+      ]
     }
   ],
   "assets": [
     {
-      "path": "superdeck/generated/sd_mermaid_s3Iic43G.png",
-      "width": 600,
-      "height": 866
+      "path": ".superdeck/generated/mermaid_llAVsepR.png",
+      "width": 313,
+      "height": 449
+    },
+    {
+      "path": ".superdeck/generated/mermaid_BTVEzSEg.png",
+      "width": 650,
+      "height": 171
     }
   ]
 }

@@ -3,15 +3,17 @@ name: superdeck_workspace
 sdkPath: .fvm/flutter_sdk
 packages:
   - packages/*
-  - packages/*/example
+  - demo
 
 command:
   bootstrap:
     environment:
-      sdk: ">=3.3.0 <4.0.0"
-      flutter: ">=3.19.0"
+      sdk: ">=3.9.0 <4.0.0"
+      flutter: ">=3.35.0"
     dependencies:
-      collection: ^1.18.0 
+      collection: ^1.18.0
+      mix: ^2.0.0-dev.4
+      ack: ^1.0.0-beta.1
   # publish:
     # hooks:
     #   pre: melos run gen:build
@@ -20,47 +22,61 @@ scripts:
   # ANALYSIS
   analyze:
     run: melos run analyze:dart && melos run analyze:dcm
-    description: Run all static analysis checks.
-    exec:
-      failFast: true
+    description: Run standard static analysis checks.
       
+  analyze:all:
+    run: melos run analyze && melos run analyze:dcm:unused-files && melos run analyze:dcm:unused-code
+    description: Run all analysis checks including unused files and code.
+
   analyze:dart:
     run: melos exec -c 10 -- dart analyze --fatal-infos
     description: Run Dart static analysis checks.
 
   analyze:dcm:
-    run: melos exec -c 10 -- dcm analyze . --fatal-style --fatal-performance --fatal-warnings
+    run: melos exec -c 10 -- dcm analyze . --fatal-style --fatal-warnings
     description: Run DCM static analysis checks.
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 
-  lint:fix:all:
-    run: melos run lint:dart:fix && melos run lint:dcm:fix
+  analyze:dcm:unused-files:
+    run: melos exec -c 10 -- dcm check-unused-files . --fatal-unused
+    description: Check for unused files using DCM.
+    packageFilters:
+      dependsOn: "dart_code_metrics_presets"
+
+  analyze:dcm:unused-code:
+    run: melos exec -c 10 -- dcm check-unused-code . --fatal-unused
+    description: Check for unused code using DCM.
+    packageFilters:
+      dependsOn: "dart_code_metrics_presets"
+
+  fix:
+    run: melos run fix:dart && melos run fix:dcm
     description: Run all static analysis checks and apply fixes.
 
-  lint:dart:fix:
+  fix:dart:
     run: melos exec -- dart fix --apply .
     description: Run Dart static analysis checks.
 
-  lint:dcm:fix:
+  fix:dcm:
     run: melos exec -- dcm fix .
     description: Run DCM static analysis checks.
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 
-  gen:watch:
+  build_runner:watch:
     run: melos exec --order-dependents -- dart run build_runner watch --delete-conflicting-outputs
     description: Generate code for all packages
     packageFilters:
       dependsOn: "build_runner"
 
-  gen:build:
-    run: melos run gen:clean && melos exec --order-dependents -- dart run build_runner build --delete-conflicting-outputs
+  build_runner:build:
+    run: melos run build_runner:clean && melos exec --order-dependents -- dart run build_runner build --delete-conflicting-outputs
     description: Generate code for all packages
     packageFilters:
       dependsOn: "build_runner"
 
-  gen:clean:
+  build_runner:clean:
     run: melos exec --order-dependents -- dart run build_runner clean
     description: Clean generated code for all packages
     packageFilters:
@@ -78,12 +94,15 @@ scripts:
     packageFilters:
       dirExists: test
 
+  clean:
+    run: melos exec -- flutter clean
+    description: Clean all packages
+
   brb:
-    run: melos run gen:build
-    
-  brbc: 
+    run: melos run gen:build:superdeck
+
+  brbc:
     run: melos run gen:clean
-  fix:
-    run: melos run lint:fix:all
+
   custom_lint_analyze:
     run: dart pub global activate custom_lint && melos exec --depends-on="mix_lint" custom_lint

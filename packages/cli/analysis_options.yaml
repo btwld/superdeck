@@ -1,0 +1,3 @@
+include:
+  - package:lints/recommended.yaml
+  - ../../shared_analysis_options.yaml

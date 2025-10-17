@@ -1,0 +1,367 @@
+---
+title: First Presentation
+description: Step-by-step tutorial to create your first complete SuperDeck presentation
+---
+
+# First Presentation Tutorial
+
+This tutorial walks you through creating a complete presentation from scratch, introducing SuperDeck's key features along the way.
+
+## What We'll Build
+
+A presentation about Flutter development with:
+- Title slide with centered content
+- Multi-column layouts  
+- Images and code examples
+- Interactive DartPad embed
+- Custom styling
+
+## Prerequisites
+
+- SuperDeck installed and set up ([Getting Started](/getting-started))
+- Basic understanding of Markdown
+
+## Step 1: Create the Title Slide
+
+Start with a simple title slide in your `slides.md`:
+
+```markdown
+---
+title: Flutter Development Essentials
+---
+
+@section
+
+@column {
+  align: "center"
+}
+
+# Flutter Development Essentials
+
+## Building Beautiful Apps with Ease
+
+**Your Name**  
+*Today's Date*
+
+---
+```
+
+**Build and test:**
+```bash
+superdeck build --watch
+flutter run
+```
+
+## Step 2: Add Content Slides
+
+Add slides introducing Flutter concepts:
+
+```markdown
+## What is Flutter?
+
+@section
+
+@column {
+  flex: 2
+}
+
+Flutter is Google's **UI toolkit** for building natively compiled applications for:
+
+- 📱 Mobile (iOS & Android)
+- 🌐 Web  
+- 🖥️ Desktop (Windows, macOS, Linux)
+- 📺 Embedded devices
+
+@column
+
+![Flutter Architecture](https://docs.flutter.dev/assets/images/docs/arch-overview/archdiagram.png)
+
+---
+```
+
+## Step 3: Multi-Column Layout
+
+Create a features comparison slide:
+
+```markdown
+## Why Choose Flutter?
+
+@section
+
+@column
+
+### ⚡ Performance
+- Native performance
+- 60fps animations
+- Direct GPU rendering
+
+### 🎨 Beautiful UI  
+- Material Design
+- Cupertino widgets
+- Custom styling
+
+@column
+
+### 🔥 Hot Reload
+- Instant updates
+- Preserve app state  
+- Fast iteration
+
+### 🌍 Single Codebase
+- Write once, run everywhere
+- Shared business logic
+- Consistent user experience
+
+---
+```
+
+## Step 4: Add Code Examples
+
+Include syntax-highlighted code:
+
+```markdown
+## Your First Flutter App
+
+@section
+
+@column
+
+Here's a simple Flutter app:
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Hello Flutter')),
+        body: Center(
+          child: Text('Hello, World!'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+@column
+
+### Key Concepts:
+- **Widgets** - Everything is a widget
+- **MaterialApp** - App structure
+- **Scaffold** - Page layout
+- **StatelessWidget** - Immutable widgets
+
+---
+```
+
+## Step 5: Interactive Content
+
+Add a DartPad for live coding:
+
+```markdown
+## Try It Yourself
+
+@section
+
+@column
+
+Experiment with this Flutter code:
+
+- Modify the text
+- Change colors
+- Add more widgets
+
+@column {
+  flex: 2
+}
+
+@dartpad {
+  id: "your_dartpad_id"
+  theme: "dark"
+  run: true
+}
+
+---
+```
+
+**Note:** Replace `your_dartpad_id` with an actual DartPad ID from [dartpad.dev](https://dartpad.dev).
+
+## Step 6: Image Showcase
+
+Create a visual slide:
+
+```markdown
+## Flutter in Action
+
+@section
+
+@column
+
+### Popular Apps Built with Flutter:
+
+- **Google Ads**
+- **Alibaba**  
+- **BMW**
+- **Nubank**
+- **Tencent**
+
+@image {
+  asset: "https://docs.flutter.dev/assets/images/docs/showcase/showcase-montage.jpg"
+  fit: "cover"
+  flex: 2
+}
+
+---
+```
+
+## Step 7: Call-to-Action Slide
+
+End with next steps:
+
+```markdown
+## Get Started Today!
+
+@section
+
+@column {
+  align: "center"
+}
+
+### Ready to build with Flutter?
+
+**Install Flutter:**
+```bash
+flutter create my_app
+cd my_app  
+flutter run
+```
+
+**Resources:**
+- [flutter.dev](https://flutter.dev)
+- [pub.dev](https://pub.dev) - Package repository
+- [Flutter documentation](https://docs.flutter.dev)
+
+---
+```
+
+## Complete Example
+
+Here's the full `slides.md` file:
+
+```markdown
+---
+title: Flutter Development Essentials
+---
+
+@section
+
+@column {
+  align: "center"
+}
+
+# Flutter Development Essentials
+## Building Beautiful Apps with Ease
+
+**Your Name**  
+*Today's Date*
+
+---
+
+## What is Flutter?
+
+@section
+
+@column {
+  flex: 2
+}
+
+Flutter is Google's **UI toolkit** for building natively compiled applications for:
+
+- 📱 Mobile (iOS & Android)
+- 🌐 Web  
+- 🖥️ Desktop (Windows, macOS, Linux)
+- 📺 Embedded devices
+
+@column
+
+![Flutter Architecture](https://docs.flutter.dev/assets/images/docs/arch-overview/archdiagram.png)
+
+---
+
+## Why Choose Flutter?
+
+@section
+
+@column
+
+### ⚡ Performance
+- Native performance
+- 60fps animations
+- Direct GPU rendering
+
+### 🎨 Beautiful UI  
+- Material Design
+- Cupertino widgets
+- Custom styling
+
+@column
+
+### 🔥 Hot Reload
+- Instant updates
+- Preserve app state  
+- Fast iteration
+
+### 🌍 Single Codebase
+- Write once, run everywhere
+- Shared business logic
+- Consistent user experience
+
+---
+
+## Get Started Today!
+
+@section
+
+@column {
+  align: "center"
+}
+
+### Ready to build with Flutter?
+
+**Install Flutter:**
+```bash
+flutter create my_app
+cd my_app  
+flutter run
+```
+
+**Resources:**
+- [flutter.dev](https://flutter.dev)
+- [Flutter documentation](https://docs.flutter.dev)
+
+---
+```
+
+## Next Steps
+
+Now that you've created your first presentation:
+
+- **[Block Types Reference](/docs/reference/block-types)** - Learn all block types
+- **[CLI Reference](/docs/guides/cli-reference)** - Master the CLI tools  
+- **[Styling Guide](/docs/guides/styling-guide)** - Customize appearance
+- **[Examples](/examples)** - See more real-world examples
+
+## Tips for Great Presentations
+
+1. **Keep slides focused** - One concept per slide
+2. **Use visuals** - Images and code examples enhance understanding  
+3. **Test early** - Use watch mode for rapid iteration
+4. **Practice navigation** - Test keyboard and touch controls
+5. **Consider your audience** - Adjust content complexity accordingly

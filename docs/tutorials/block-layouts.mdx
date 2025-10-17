@@ -1,0 +1,145 @@
+---
+title: Block Layouts
+description: Quick overview of SuperDeck's block-based layout system
+---
+
+# Block Layouts
+
+SuperDeck uses a **block-based layout system** that lets you arrange content flexibly across your slides. Think of blocks as containers that can hold different types of content.
+
+## Core Concept
+
+Instead of traditional "slides," SuperDeck uses **blocks** that automatically arrange themselves:
+
+- **Vertical stacking** - Multiple blocks stack vertically by default
+- **Horizontal sections** - Use `@section` to arrange blocks side-by-side  
+- **Flexible sizing** - Control space with the `flex` property
+
+## The 5 Block Types
+
+```markdown
+@column        # Markdown content (most common)
+@section       # Container for horizontal layouts
+@image         # Images with fit options
+@dartpad       # Interactive code examples
+@widget        # Custom Flutter widgets
+```
+
+## Layout Examples
+
+### Single Column (Default)
+```markdown
+# Title
+
+Regular markdown content flows vertically.
+
+More content below.
+```
+
+### Two Columns  
+```markdown
+@section
+
+@column
+Left side content
+
+@column  
+Right side content
+```
+
+### Flexible Sizing
+```markdown
+@section
+
+@column {
+  flex: 2
+}
+Takes 2/3 of the space
+
+@column {
+  flex: 1
+}
+Takes 1/3 of the space
+```
+
+### Mixed Content
+```markdown
+@section
+
+@column
+## Text Content
+- Point one
+- Point two
+
+@image {
+  asset: "screenshot.png"
+  fit: "contain"
+}
+```
+
+## Block Properties
+
+All blocks support these properties:
+
+- **`flex`** - Relative size (default: 1)
+- **`align`** - Content alignment (center, topLeft, etc.)
+- **`scrollable`** - Enable scrolling (default: false)
+
+```markdown
+@column {
+  flex: 2
+  align: "center"
+  scrollable: true
+}
+```
+
+## Layout Patterns
+
+### Hero Section
+```markdown
+@section
+
+@column {
+  align: "center"
+}
+# Big Title
+## Subtitle
+```
+
+### Content + Visual
+```markdown
+@section
+
+@column {
+  flex: 2
+}
+## Feature Description
+Detailed explanation...
+
+@column
+![Feature Screenshot](image.png)
+```
+
+### Three Columns
+```markdown
+@section
+
+@column
+### Option A
+
+@column  
+### Option B
+
+@column
+### Option C
+```
+
+## Key Insights
+
+- **Start simple** - Use basic `@column` blocks first
+- **Add sections** - Use `@section` for side-by-side layouts  
+- **Control sizing** - Use `flex` to adjust proportions
+- **Mix content types** - Combine text, images, and widgets
+- **Responsive** - Layouts adapt automatically to screen size
+
+Next: [First Presentation Tutorial](/docs/tutorials/first-presentation) to see these concepts in action.

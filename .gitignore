@@ -45,3 +45,12 @@ build/
 
 # Node file for website
 node_modules
+.local-chrome
+.orbit
+discovery
+
+**/.claude/settings.local.json
+CLAUDE.md
+
+# Local documentation artifacts
+*.local.md

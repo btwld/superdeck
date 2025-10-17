@@ -1,0 +1,9 @@
+{
+  "status": "failure",
+  "timestamp": "2025-10-17T14:19:08.219455",
+  "error": {
+    "type": "AckException",
+    "message": "Validation failed for \"when type=\"image\"\" with value \"{asset: assets/structured_output.png, fit: contain, type: image}\": One or more nested schemas failed validation.",
+    "stackTrace": "#0      SchemaResult.getOrThrow (package:ack/src/validation/schema_result.dart:63:31)\n#1      AckSchema.parse (package:ack/src/schemas/schema.dart:213:19)\n#2      Block.parse (package:superdeck_core/src/models/block_model.dart:43:25)\n#3      SectionParser.parse (package:superdeck_builder/src/parsers/section_parser.dart:53:19)\n#4      SlideProcessor._buildSlide (package:superdeck_builder/src/slide_processor.dart:106:33)\n#5      SlideProcessor.processAll.<anonymous closure> (package:superdeck_builder/src/slide_processor.dart:59:33)\n#6      MappedListIterable.elementAt (dart:_internal/iterable.dart:442:31)\n#7      ListIterator.moveNext (dart:_internal/iterable.dart:371:26)\n#8      Future.wait (dart:async/future.dart:523:26)\n#9      SlideProcessor.processAll (package:superdeck_builder/src/slide_processor.dart:58:40)\n<asynchronous suspension>\n#10     DeckBuilder.build (package:superdeck_builder/src/deck_builder.dart:99:29)\n<asynchronous suspension>\n#11     DeckBuilder.watchAndBuild (package:superdeck_builder/src/deck_builder.dart:44:22)\n<asynchronous suspension>\n#12     BuildCommand.run (package:superdeck_cli/src/commands/build_command.dart:268:11)\n<asynchronous suspension>\n#13     CommandRunner.runCommand (package:args/command_runner.dart:212:13)\n<asynchronous suspension>\n#14     SuperDeckRunner.run (package:superdeck_cli/runner.dart:80:24)\n<asynchronous suspension>\n#15     main (file:///Users/leofarias/Projects/superdeck/packages/cli/bin/main.dart:25:26)\n<asynchronous suspension>\n"
+  }
+}

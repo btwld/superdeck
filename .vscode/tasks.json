@@ -1,0 +1,84 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Flutter: Get Dependencies (Example)",
+            "type": "shell",
+            "command": "flutter",
+            "args": ["pub", "get"],
+            "options": {
+                "cwd": "packages/superdeck/example"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Flutter: Clean (Example)",
+            "type": "shell",
+            "command": "flutter",
+            "args": ["clean"],
+            "options": {
+                "cwd": "packages/superdeck/example"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Flutter: Run (Example)",
+            "type": "shell",
+            "command": "flutter",
+            "args": ["run"],
+            "options": {
+                "cwd": "packages/superdeck/example"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Melos: Bootstrap",
+            "type": "shell",
+            "command": "melos",
+            "args": ["bootstrap"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Melos: Test All",
+            "type": "shell",
+            "command": "melos",
+            "args": ["run", "test", "--no-select"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

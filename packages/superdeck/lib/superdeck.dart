@@ -1,11 +1,28 @@
-library superdeck;
+library;
 
-export 'package:mix/mix.dart';
-export 'package:superdeck/components/superdeck_app.dart';
-export 'package:superdeck/models/asset_model.dart';
-export 'package:superdeck/models/options_model.dart';
-export 'package:superdeck/models/slide_model.dart';
-export 'package:superdeck/providers/controller.dart';
-export 'package:superdeck/styles/style_spec.dart';
+// Rendering
+export 'package:superdeck/src/rendering/blocks/block_widget.dart';
+export 'package:superdeck/src/rendering/slides/slide_parts.dart';
 
-export 'components/organisms/app_shell.dart';
+// Utils
+export 'package:superdeck/src/utils/extensions.dart';
+export 'package:superdeck/src/ui/widgets/measure_size.dart';
+export 'package:superdeck/src/ui/widgets/provider.dart';
+
+// Styling
+export 'package:superdeck/src/styling/style.dart';
+export 'package:superdeck/src/styling/styles.dart';
+
+// UI
+export 'package:superdeck/src/ui/superdeck_app.dart';
+export 'package:superdeck/src/ui/app_shell.dart';
+
+// Deck
+export 'package:superdeck/src/deck/deck_controller.dart';
+export 'package:superdeck/src/deck/navigation_controller.dart';
+export 'package:superdeck/src/deck/deck_options.dart';
+export 'package:superdeck/src/deck/deck_provider.dart';
+export 'package:superdeck/src/deck/slide_configuration.dart';
+
+// Core
+export 'package:superdeck_core/superdeck_core.dart';

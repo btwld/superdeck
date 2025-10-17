@@ -1,0 +1,628 @@
+{
+  "slides": [
+    {
+      "key": "cSVAdrw6",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "# SuperDeck {.heading}\n\nBuild beautiful presentations with Flutter & Markdown"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "fzkbHoZJ",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Markdown-Powered\n\nWrite slides in plain Markdown with full GitHub-flavored syntax support\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```dart\nWidget build(BuildContext context) {\n  return const Text('Hello SuperDeck!');\n}\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "OKH5cPiL",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "## Layout System {.heading}"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "5AJiS0YY",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "### Three-Column Layout\n"
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n**Column 1**\n- Point one\n- Point two\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n**Column 2**\nMore content with **bold** text\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "**Column 3**\n```dart\nfinal x = 42;\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "nvTwbNPQ",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "### Two-Column with Flex\n"
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 2,
+              "scrollable": false,
+              "content": "\n\n**Left Side (flex: 2)**\n\nTakes up 2/3 of the space\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "**Right Side (flex: 1)**\n\nTakes up 1/3"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "ygcawl3O",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "### Alignment Grid\n"
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "align": "topLeft",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\nTop Left\n"
+            },
+            {
+              "type": "column",
+              "align": "topCenter",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\nTop Center\n"
+            },
+            {
+              "type": "column",
+              "align": "topRight",
+              "flex": 1,
+              "scrollable": false,
+              "content": "Top Right"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "MwjimAqR",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "align": "centerLeft",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\nCenter Left\n"
+            },
+            {
+              "type": "column",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n**Center**\n"
+            },
+            {
+              "type": "column",
+              "align": "centerRight",
+              "flex": 1,
+              "scrollable": false,
+              "content": "Center Right"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "zKdWa8BW",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "align": "bottomLeft",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\nBottom Left\n"
+            },
+            {
+              "type": "column",
+              "align": "bottomCenter",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\nBottom Center\n"
+            },
+            {
+              "type": "column",
+              "align": "bottomRight",
+              "flex": 1,
+              "scrollable": false,
+              "content": "Bottom Right"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "zEhQtF3X",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "## Features {.heading}"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "WOV4OTt7",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Code Highlighting\n\nMultiple languages with syntax highlighting\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```dart\nclass Demo extends StatelessWidget {\n  @override\n  Widget build(BuildContext context) {\n    return Text('Hello!');\n  }\n}\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "4Q46SDrE",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Mermaid Diagrams\n\nGenerate diagrams automatically with theme support\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "![mermaid_asset](.superdeck/assets/mermaid_9ftpmSO3.png)"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "xQbQxOke",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Alert Blocks\n\nGitHub-style alerts with icons\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "> [!NOTE]\n> Important information\n\n> [!TIP]\n> Pro tip here\n\n> [!WARNING]\n> Be careful!"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "wh1FBRZ2",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Hero Animations\n\nAdd CSS-like tags for smooth transitions\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```markdown\n# Title {.hero-title}\n\n## Subtitle {.hero-subtitle}\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "0OVi1fz9",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "## Hero Demo {.heading}"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "2z5m0QC4",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "# Hero Title {.hero-title}\n\n## Hero Subtitle {.hero-subtitle}\n\nThese will animate smoothly"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "Vp4MVh18",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "# Hero Title {.hero-title}\n\n## Different Content {.hero-subtitle}\n\nSame tags = smooth transitions!"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "qco7MklQ",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### DartPad Support\n\nInteractive code examples with live editing\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```markdown\n@dartpad {\n  id: \"sample-id\"\n}\n```\n\n- Edit in browser\n- Instant feedback\n- No setup needed"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "sXTJNMmo",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Image Blocks\n\nFlexible image display with fit options\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```markdown\n@image {\n  asset: \"logo.png\"\n  fit: \"cover\"\n  align: \"center\"\n}\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "L4zThcD0",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Custom Widgets\n\nRegister Flutter widgets and use in Markdown\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```dart\nSuperDeckApp(\n  options: DeckOptions(\n    widgets: {\n      'counter': (args) =>\n        CounterWidget(),\n    },\n  ),\n)\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "P9RYAqte",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "## Advanced Features {.heading}"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "CczWowFb",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Styling System\n\nComplete control over appearance\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```dart\nSlideStyle(\n  h1: TextStyle(\n    fontSize: 48,\n    color: Colors.purple,\n  ),\n  codeBlock: CodeStyle(\n    background: Colors.black,\n  ),\n)\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "UMKWIEvn",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "\n\n### Build & Deploy\n\nSimple commands for the full workflow\n"
+            },
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "```bash\n# Build\nsuperdeck build --watch\n\n# Export PDF\nsuperdeck export\n\n# Deploy\nsuperdeck publish\n```"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "SIFp72T6",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "content": "# That's SuperDeck {.heading}\n\n**Simple.** **Flexible.** **Powerful.**\n\nBuilt with Flutter & Markdown"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    }
+  ],
+  "configuration": {}
+}
