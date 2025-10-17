@@ -46,7 +46,7 @@ jobs:
           melos bootstrap
 
       - name: Build Runner (if needed)
-        run: melos run gen:build
+        run: melos run build_runner:build
 
       - name: Run Integration Tests - App Tests
         working-directory: demo
@@ -100,7 +100,7 @@ jobs:
           melos bootstrap
 
       - name: Build Runner (if needed)
-        run: melos run gen:build
+        run: melos run build_runner:build
 
       - name: Install ChromeDriver
         run: |

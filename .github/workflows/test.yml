@@ -40,6 +40,6 @@ jobs:
         run: flutter pub get
 
       - name: Build Runner
-        run: melos run gen:build
+        run: melos run build_runner:build
 
       - run: melos run test
