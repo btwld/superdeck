@@ -1,0 +1,359 @@
+---
+title: Block Types Reference
+description: Complete reference for all SuperDeck block types and their properties
+---
+
+# Block Types Reference
+
+SuperDeck supports 5 block types for different content and layout needs. All blocks share common properties and support specific additional properties.
+
+## Common Properties
+
+All blocks support these properties:
+
+### `align`
+Controls content alignment within the block.
+
+**Type:** String  
+**Default:** `"topLeft"`  
+**Options:** 
+- `"topLeft"`, `"topCenter"`, `"topRight"`
+- `"centerLeft"`, `"center"`, `"centerRight"`
+- `"bottomLeft"`, `"bottomCenter"`, `"bottomRight"`
+
+### `flex`
+Controls relative sizing in flexible layouts.
+
+**Type:** Number  
+**Default:** `1`  
+**Example:** `flex: 2` takes twice the space of `flex: 1`
+
+### `scrollable`
+Enables scrolling for overflow content.
+
+**Type:** Boolean  
+**Default:** `false`
+
+## @column
+
+The most common block type for markdown content.
+
+```markdown
+@column {
+  align: "center"
+  flex: 2
+  scrollable: true
+}
+
+# Your Content Here
+
+Any markdown content including:
+- Lists
+- Images  
+- Code blocks
+- Tables
+```
+
+**Use cases:**
+- Text content
+- Mixed markdown elements
+- Code examples
+- Lists and tables
+
+## @section
+
+Container block that arranges child blocks horizontally.
+
+```markdown
+@section {
+  align: "topCenter"
+  flex: 1
+}
+
+@column
+Left content
+
+@column
+Right content
+```
+
+**Properties:**
+- **`blocks`** - Array of child blocks (automatically populated)
+
+**Use cases:**
+- Multi-column layouts
+- Side-by-side content
+- Grouping related blocks
+
+**Example - Three columns:**
+```markdown
+@section
+
+@column
+Column 1
+
+@column
+Column 2
+
+@column  
+Column 3
+```
+
+## @image
+
+Dedicated block for displaying images with various fit options.
+
+```markdown
+@image {
+  asset: "path/to/image.png"
+  fit: "cover"
+  width: 400
+  height: 300
+  align: "center"
+}
+```
+
+**Properties:**
+
+### `asset` (required)
+Image path or URL.
+
+**Type:** String  
+**Examples:**
+- `"assets/logo.png"` (local asset)
+- `"https://example.com/image.png"` (external URL)
+
+### `fit`
+How the image should be resized to fit its container.
+
+**Type:** String  
+**Default:** `"contain"`  
+**Options:**
+- `"fill"` - Fill container, may distort image
+- `"contain"` - Fit entire image within container
+- `"cover"` - Cover entire container, may crop image
+- `"fitWidth"` - Fit to container width
+- `"fitHeight"` - Fit to container height
+- `"none"` - No scaling
+- `"scaleDown"` - Scale down only, never up
+
+### `width`
+Fixed width in pixels.
+
+**Type:** Number  
+**Optional:** If not specified, uses available space
+
+### `height`
+Fixed height in pixels.
+
+**Type:** Number  
+**Optional:** If not specified, maintains aspect ratio
+
+**Example - Hero image:**
+```markdown
+@section
+
+@image {
+  asset: "hero-banner.jpg"
+  fit: "cover"
+  height: 400
+  align: "center"
+}
+```
+
+## @dartpad
+
+Embeds interactive DartPad examples.
+
+```markdown
+@dartpad {
+  id: "your_dartpad_id"
+  theme: "dark"
+  embed: true
+  run: false
+}
+```
+
+**Properties:**
+
+### `id` (required)
+DartPad ID from dartpad.dev.
+
+**Type:** String  
+**Example:** `"d7b09149ffee07ec7c28"`
+
+### `theme`
+DartPad color theme.
+
+**Type:** String  
+**Default:** `"light"`  
+**Options:** `"light"`, `"dark"`
+
+### `embed`
+Whether to show DartPad in embed mode.
+
+**Type:** Boolean  
+**Default:** `true`
+
+### `run`
+Whether to auto-run the code.
+
+**Type:** Boolean  
+**Default:** `false`
+
+**Notes:**
+- Only works in release/profile mode
+- Shows placeholder widget in debug mode
+- Requires network access
+
+**Example - Auto-running dark theme:**
+```markdown
+@dartpad {
+  id: "d7b09149ffee07ec7c28"
+  theme: "dark"
+  run: true
+}
+```
+
+## @widget
+
+Embeds custom Flutter widgets defined in your app.
+
+```markdown
+@widget {
+  name: "customChart"
+  arg1: "value1"
+  arg2: 42
+  config: { nested: "object" }
+}
+```
+
+**Properties:**
+
+### `name` (required)
+Name of the widget as defined in `PresentationOptions.widgets`.
+
+**Type:** String
+
+### Custom Arguments
+Any additional properties become arguments passed to the widget builder.
+
+**Type:** Any JSON-serializable values
+
+**Setup in Flutter app:**
+```dart
+SuperDeckApp(
+  options: PresentationOptions(
+    widgets: {
+      'customChart': (args) {
+        return CustomChartWidget(
+          title: args.getString('title'),
+          data: args.getList('data'),
+          config: args.getMap('config'),
+        );
+      },
+    },
+  ),
+)
+```
+
+**Accessing arguments:**
+```dart
+// In your widget builder function
+WidgetBlockBuilder chartBuilder = (WidgetArgs args) {
+  final title = args.getString('title', defaultValue: 'Chart');
+  final data = args.getList('data');
+  final showLegend = args.getBool('showLegend', defaultValue: true);
+  
+  return CustomChart(
+    title: title,
+    data: data,
+    showLegend: showLegend,
+  );
+};
+```
+
+**Available argument methods:**
+- `getString(key, {defaultValue})`
+- `getInt(key, {defaultValue})`
+- `getDouble(key, {defaultValue})`
+- `getBool(key, {defaultValue})`
+- `getList(key, {defaultValue})`
+- `getMap(key, {defaultValue})`
+
+## Block Syntax
+
+### Basic Syntax
+```markdown
+@blocktype {
+  property1: value1
+  property2: "string value"
+  property3: 42
+  property4: true
+}
+```
+
+### Property Types
+- **String:** Use quotes for string values: `"hello world"`
+- **Number:** No quotes: `42`, `3.14`
+- **Boolean:** `true` or `false`
+- **Object:** Nested braces: `{ key: "value" }`
+- **Array:** Square brackets: `["item1", "item2"]`
+
+### Common Patterns
+
+**Centered content:**
+```markdown
+@column {
+  align: "center"
+}
+```
+
+**Two-column layout:**
+```markdown
+@section
+
+@column {
+  flex: 1
+}
+
+@column {
+  flex: 1
+}
+```
+
+**Hero image:**
+```markdown
+@image {
+  asset: "hero.jpg"
+  fit: "cover"
+  align: "center"
+}
+```
+
+**Interactive demo:**
+```markdown
+@dartpad {
+  id: "sample_id"
+  theme: "dark"
+  run: true
+}
+```
+
+**Custom widget:**
+```markdown
+@widget {
+  name: "twitterEmbed"
+  username: "flutter_dev"
+  tweetId: "1234567890"
+}
+```
+
+## Best Practices
+
+1. **Use @column for most content** - It's the most flexible block type
+2. **Combine blocks in @section** - Create rich layouts with mixed content
+3. **Set explicit dimensions for @image** - Prevents layout shifts
+4. **Test @dartpad IDs** - Verify DartPad examples work before presenting
+5. **Document custom @widget args** - Make widget APIs clear for team members
+6. **Use consistent alignment** - Stick to a few alignment patterns for visual consistency

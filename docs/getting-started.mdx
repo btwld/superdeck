@@ -1,0 +1,187 @@
+---
+title: Getting Started
+description: Set up SuperDeck in your Flutter project and create your first presentation
+---
+
+# Getting Started
+
+This guide walks you through setting up SuperDeck in your Flutter project and creating your first presentation.
+
+## Prerequisites
+
+- Flutter SDK installed
+- Dart SDK installed
+- A Flutter project (or create one with `flutter create my_presentation`)
+
+## Installation
+
+### 1. Install SuperDeck CLI
+
+```bash
+dart pub global activate superdeck_cli
+```
+
+### 2. Set up your Flutter project
+
+Navigate to your Flutter project and run:
+
+```bash
+cd your-flutter-project
+superdeck setup
+```
+
+This command:
+- Creates a sample `slides.md` file
+- Updates `pubspec.yaml` with asset configuration
+- Sets up macOS entitlements for network access
+- Configures custom `index.html` for web with loading indicator
+
+### 3. Add SuperDeck dependency
+
+```bash
+flutter pub add superdeck
+```
+
+### 4. Initialize SuperDeck in your app
+
+Update your `main.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:superdeck/superdeck.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SuperDeckApp.initialize();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'My SuperDeck Presentation',
+      debugShowCheckedModeBanner: false,
+      home: SuperDeckApp(
+        options: DeckOptions(
+          debug: true, // Enable debug mode during development
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Your First Presentation
+
+The `superdeck setup` command creates a basic `slides.md` file. Edit it to create your first presentation:
+
+```markdown
+---
+title: My First Presentation
+---
+
+# Welcome to SuperDeck!
+
+This is your first slide.
+
+---
+
+## What is SuperDeck?
+
+SuperDeck enables you to create beautiful presentations using:
+
+- Markdown for content  
+- Flutter for rendering
+- Block-based layouts for flexibility
+
+---
+
+## Two-Column Layout
+
+@section
+
+@column
+### Left Column
+- Point one
+- Point two  
+- Point three
+
+@column
+### Right Column
+![Flutter Logo](https://storage.googleapis.com/cms-storage-bucket/4fd5520fe28ebf839174.svg)
+
+---
+```
+
+## Building Your Presentation
+
+Build your slides using the CLI:
+
+```bash
+# Build once
+superdeck build
+
+# Build and watch for changes (recommended for development)
+superdeck build --watch
+```
+
+## Running Your App
+
+Now run your Flutter app:
+
+```bash
+flutter run
+```
+
+## Development Workflow
+
+For the best development experience, use two terminals:
+
+**Terminal 1** - CLI in watch mode:
+```bash
+superdeck build --watch
+```
+
+**Terminal 2** - Flutter app:
+```bash
+flutter run
+```
+
+Now when you edit `slides.md`, the CLI automatically rebuilds your presentation, and you can hot reload Flutter to see changes instantly.
+
+## File Structure
+
+After setup, your project will have:
+
+```
+your-flutter-project/
+├── slides.md                 # Your presentation content
+├── .superdeck/
+│   ├── superdeck.json        # Generated presentation data
+│   ├── assets/               # Generated assets
+│   └── generated_assets.json # Asset references
+├── pubspec.yaml              # Updated with asset configuration
+└── lib/
+    └── main.dart             # Your Flutter app
+```
+
+## Next Steps
+
+- **[Block Layouts Tutorial](/docs/tutorials/block-layouts)** - Learn SuperDeck's layout system
+- **[First Presentation Tutorial](/docs/tutorials/first-presentation)** - Create a complete presentation
+- **[CLI Reference](/docs/guides/cli-reference)** - All CLI commands and options
+
+## Common Issues
+
+**Build fails with asset errors?**
+- Ensure your `pubspec.yaml` includes `.superdeck/assets/` in the assets section
+- Run `superdeck setup` again to fix configuration
+
+**SuperDeckApp.initialize() fails?**
+- Make sure you call `WidgetsFlutterBinding.ensureInitialized()` first
+- Check that your `slides.md` file exists and is valid
+
+**Changes not showing?**
+- Ensure CLI watch mode is running (`superdeck build --watch`)
+- Hot reload Flutter after CLI rebuilds complete

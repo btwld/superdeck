@@ -1,0 +1,10 @@
+# melos_managed_dependency_overrides: superdeck,superdeck_builder,superdeck_cli,superdeck_core
+dependency_overrides:
+  superdeck:
+    path: ../packages/superdeck
+  superdeck_builder:
+    path: ../packages/builder
+  superdeck_cli:
+    path: ../packages/cli
+  superdeck_core:
+    path: ../packages/core

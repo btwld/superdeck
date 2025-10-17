@@ -1,0 +1,350 @@
+---
+title: PresentationOptions Reference
+description: Complete API reference for configuring SuperDeck presentations
+---
+
+# PresentationOptions Reference
+
+`PresentationOptions` is the main configuration class for customizing SuperDeck presentations. It controls styling, custom widgets, slide parts, and debugging features.
+
+## Constructor
+
+```dart
+PresentationOptions({
+  PresentationStyle? baseStyle,
+  Map<String, PresentationStyle> styles = const {},
+  Map<String, WidgetBlockBuilder> widgets = const {},
+  SlideParts? parts,
+  bool debug = false,
+})
+```
+
+## Properties
+
+### `baseStyle`
+
+Default styling applied to all slides.
+
+**Type:** `PresentationStyle?`  
+**Default:** `null` (uses default theme)
+
+```dart
+PresentationOptions(
+  baseStyle: PresentationStyle(
+    // Custom base styling
+  ),
+)
+```
+
+### `styles`
+
+Named style variants that can be applied to specific slides.
+
+**Type:** `Map<String, PresentationStyle>`  
+**Default:** `{}`
+
+```dart
+PresentationOptions(
+  styles: {
+    'title': TitleSlideStyle(),
+    'quote': QuoteSlideStyle(),
+    'code': CodeSlideStyle(),
+  },
+)
+```
+
+**Usage in slides:**
+```markdown
+---
+style: title
+---
+
+# This slide uses the 'title' style
+```
+
+### `widgets`
+
+Custom widget builders for `@widget` blocks.
+
+**Type:** `Map<String, WidgetBlockBuilder>`  
+**Default:** `{}`
+
+```dart
+PresentationOptions(
+  widgets: {
+    'twitter': (args) => TwitterWidget(
+      username: args.getString('username'),
+      tweetId: args.getString('tweetId'),
+    ),
+    'chart': (args) => CustomChart(
+      data: args.getList('data'),
+      title: args.getString('title'),
+    ),
+  },
+)
+```
+
+**Widget Builder Function:**
+```dart
+typedef WidgetBlockBuilder = Widget Function(WidgetArgs args);
+```
+
+### `parts`
+
+Customizable slide components (header, footer, background).
+
+**Type:** `SlideParts?`  
+**Default:** `null`
+
+```dart
+PresentationOptions(
+  parts: SlideParts(
+    header: CustomHeaderPart(),
+    footer: CustomFooterPart(),
+    background: CustomBackgroundPart(),
+  ),
+)
+```
+
+> **📚 Learn More:** See the [Custom Slide Parts Guide](/docs/guides/slide-parts) for comprehensive examples and advanced patterns.
+
+### `debug`
+
+Enables debug mode with visual debugging aids.
+
+**Type:** `bool`  
+**Default:** `false`
+
+```dart
+PresentationOptions(
+  debug: true, // Shows block boundaries and debug info
+)
+```
+
+## PresentationStyle
+
+Comprehensive styling configuration for presentations.
+
+### Example Usage
+
+```dart
+PresentationStyle(
+  // Background and colors
+  backgroundColor: Colors.white,
+  primaryColor: Colors.blue,
+  
+  // Typography
+  textStyle: TextStyle(
+    fontSize: 18,
+    color: Colors.black87,
+  ),
+  
+  // Layout
+  padding: EdgeInsets.all(40),
+  spacing: 20,
+)
+```
+
+## SlideParts
+
+Container for customizable slide components.
+
+### Constructor
+
+```dart
+SlideParts({
+  SlidePart? header,
+  SlidePart? footer,
+  SlidePart? background,
+})
+```
+
+### Custom Parts Example
+
+```dart
+class CustomHeaderPart extends SlidePart {
+  @override
+  Widget build(BuildContext context, SlideData slide) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Image.asset('assets/logo.png', height: 40),
+          Spacer(),
+          Text(slide.title ?? 'Presentation'),
+        ],
+      ),
+    );
+  }
+}
+
+class CustomFooterPart extends SlidePart {
+  @override
+  Widget build(BuildContext context, SlideData slide) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Text('© 2024 Company Name'),
+          Spacer(),
+          Text('${slide.index + 1} / ${slide.totalSlides}'),
+        ],
+      ),
+    );
+  }
+}
+```
+
+## WidgetArgs
+
+Type-safe argument container for custom widgets.
+
+### Available Methods
+
+```dart
+// String values
+String getString(String key, {String? defaultValue})
+
+// Numeric values
+int getInt(String key, {int? defaultValue})
+double getDouble(String key, {double? defaultValue})
+
+// Boolean values
+bool getBool(String key, {bool? defaultValue})
+
+// Collection values
+List<dynamic> getList(String key, {List<dynamic>? defaultValue})
+Map<String, dynamic> getMap(String key, {Map<String, dynamic>? defaultValue})
+
+// Check if key exists
+bool hasKey(String key)
+
+// Get raw value
+dynamic getValue(String key)
+```
+
+### Usage Example
+
+```dart
+WidgetBlockBuilder chartBuilder = (WidgetArgs args) {
+  final title = args.getString('title', defaultValue: 'Untitled Chart');
+  final data = args.getList('data', defaultValue: []);
+  final showLegend = args.getBool('showLegend', defaultValue: true);
+  final config = args.getMap('config', defaultValue: {});
+  
+  if (!args.hasKey('data')) {
+    return Text('No data provided');
+  }
+  
+  return CustomChart(
+    title: title,
+    data: data,
+    showLegend: showLegend,
+    configuration: ChartConfig.fromMap(config),
+  );
+};
+```
+
+## Complete Configuration Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:superdeck/superdeck.dart';
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: SuperDeckApp(
+        options: PresentationOptions(
+          // Base styling for all slides
+          baseStyle: PresentationStyle(
+            backgroundColor: Colors.white,
+            primaryColor: Color(0xFF2563EB),
+            textStyle: TextStyle(
+              fontSize: 18,
+              color: Colors.black87,
+              fontFamily: 'Inter',
+            ),
+            padding: EdgeInsets.all(60),
+          ),
+          
+          // Named style variants
+          styles: {
+            'title': PresentationStyle(
+              backgroundColor: Color(0xFF1E293B),
+              textStyle: TextStyle(
+                fontSize: 48,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              padding: EdgeInsets.all(80),
+            ),
+            'quote': PresentationStyle(
+              backgroundColor: Color(0xFFF8FAFC),
+              textStyle: TextStyle(
+                fontSize: 24,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF475569),
+              ),
+            ),
+          },
+          
+          // Custom widgets
+          widgets: {
+            'twitter': (args) => TwitterEmbed(
+              username: args.getString('username'),
+              tweetId: args.getString('tweetId'),
+            ),
+            'colorPalette': (args) => ColorPaletteGenerator(
+              prompts: args.getList('prompts'),
+              schema: args.getBool('schema', defaultValue: false),
+            ),
+            'chart': (args) => InteractiveChart(
+              data: args.getList('data'),
+              type: args.getString('type', defaultValue: 'bar'),
+              title: args.getString('title'),
+            ),
+          },
+          
+          // Slide parts
+          parts: SlideParts(
+            header: CustomHeaderPart(),
+            footer: CustomFooterPart(),
+            background: CustomBackgroundPart(),
+          ),
+          
+          // Debug mode for development
+          debug: kDebugMode,
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Best Practices
+
+### Styling
+1. **Start with baseStyle** - Define your default appearance first
+2. **Use named styles sparingly** - Create styles for distinct slide types only
+3. **Maintain consistency** - Use a cohesive color palette and typography
+4. **Test responsiveness** - Ensure styles work across different screen sizes
+
+### Custom Widgets
+1. **Document widget APIs** - Clearly define expected arguments
+2. **Provide defaults** - Use `defaultValue` parameters for optional arguments
+3. **Handle missing data** - Check for required arguments and show fallbacks
+4. **Keep widgets focused** - Each widget should have a single, clear purpose
+
+### Performance
+1. **Minimize widget rebuilds** - Use stateless widgets when possible
+2. **Cache expensive operations** - Store computed values in widget state
+3. **Optimize images** - Use appropriate image sizes and formats
+4. **Test with real content** - Use actual presentation content during development
+
+### Development
+1. **Enable debug mode** - Use `debug: true` during development
+2. **Use hot reload** - Combine with `superdeck build --watch` for fast iteration
+3. **Version control styles** - Commit style definitions for team collaboration
+4. **Document custom components** - Maintain clear documentation for custom widgets and styles

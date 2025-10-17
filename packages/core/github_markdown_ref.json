@@ -1,0 +1,1790 @@
+{
+  "metadata": {
+    "generated": "2025-10-17T13:39:49.399339",
+    "markdown_package_version": "7.3.0",
+    "extension_set": "gitHubWeb",
+    "source_file": "test/data/github_web_markdown_showcase.md",
+    "description": "AST reference generated from github_web_markdown_showcase.md"
+  },
+  "markdown": "# GitHub Web Markdown Showcase\n\nThis document exercises the Markdown features enabled by\n`md.ExtensionSet.gitHubWeb`, including tables, task lists, alerts, footnotes,\nand automatic heading IDs. It is intended for visual inspection and\nregression testing.\n\n## Headings\n\n# Level 1 Heading\n\n## Level 2 Heading\n\n### Level 3 Heading\n\n#### Level 4 Heading\n\n##### Level 5 Heading\n\n###### Level 6 Heading\n\nHeading with **strong** and *emphasis* inside\n================================================\n\nSetext level-two heading\n------------------------------------------------\n\n### Paragraphs & Inline Styling\n\nParagraph with **bold**, *italic*, ~~strikethrough~~, `inline code`, emoji\n:sparkles:, a color swatch `#FF7F50`, and an autolink <https://superdeck.dev>.\nWe also escape reserved\ncharacters like \\*\\_\\` to keep them literal.\n\nParagraph with a [reference link][superdeck-site] and inline HTML for\n<u>underline</u> support.\n\n### Lists\n\n- Bullet item one\n- Bullet item two\n  - Nested bullet\n  - Nested bullet with `code`\n- Bullet item three\n\n1. Ordered item one\n2. Ordered item two with **bold**\n3. Ordered item three\n\nStart numbering at 3:\n\n3. Custom start ordered list\n4. Continues counting\n\n- [ ] Unchecked task\n- [x] Completed task with :tada:\n- [ ] Task with nested steps\n  - [x] Step one\n  - [ ] Step two\n\n### Blockquotes & Alerts\n\n> Blockquote introducing a nested quote.\n>\n> > Nested blockquote with **strong** emphasis.\n\n> [!NOTE]\n> This is a note alert block.\n\n> [!TIP]\n> Tips can include lists:\n> - Keep content concise.\n> - Highlight key actions.\n\n> [!IMPORTANT]\n> Important alerts may include **bold**, *italic*, and links like\n> [documentation](https://docs.github.com).\n\n> [!WARNING]\n> Warning alerts help highlight risky operations.\n\n> [!CAUTION]\n> Caution alerts can mix **bold** text with nested lists:\n> 1. First cautionary step\n> 2. Second cautionary step with `code`\n\n### Horizontal Rule\n\n---\n\n### Inline & Block Code\n\nUse `InlineCodeWidget` for small snippets.\n\n```dart\n// Dart code sample\nvoid main() {\n  print('Hello, Markdown!');\n}\n```\n\n```json\n{\n  \"name\": \"superdeck\",\n  \"features\": [\"markdown\", \"slides\", \"widgets\"]\n}\n```\n\n### Tables\n\n| Feature        | Enabled | Notes                         |\n| :------------- | :-----: | ----------------------------: |\n| Tables         |   ✅    | Left-aligned header           |\n| Task Lists     |   ✅    | Checkbox support              |\n| Footnotes      |   ✅    | Appears in references section |\n\n### Links & Images\n\nInline link to [SuperDeck](https://superdeck.dev \"SuperDeck Homepage\").\n\nAutolink for issue tracking <https://github.com/superdeck>.\n\n![Sample slide thumbnail](https://placehold.co/400x200 \"Slide preview\")\n\nReference-style link to [SuperDeck Docs][superdeck-site].\n\n### Footnotes\n\nStatement referencing a footnote.[^intro]\n\nMultiple references can point to the same footnote.[^shared]\n\nAnother reference to the shared note.[^shared]\n\n### Complex Nesting\n\n- Parent item with blockquote\n  > Nested quote inside list item.\n- Parent item with table\n\n  | Column A | Column B |\n  | -------- | -------- |\n  | Value 1  | Value 2  |\n\n- Parent item with code block\n\n  ```bash\n  melos run analyze\n  ```\n\n### Footnote Definitions & References\n\n[^intro]: This footnote explains the introductory reference.\n[^shared]: Shared footnote definition supporting multiple references.\n\n[superdeck-site]: https://docs.superdeck.dev \"SuperDeck Documentation\"\n",
+  "ast": {
+    "type": "document",
+    "children": [
+      {
+        "type": "element",
+        "tag": "h1",
+        "children": [
+          {
+            "type": "text",
+            "text": "GitHub Web Markdown Showcase"
+          }
+        ],
+        "generatedId": "github-web-markdown-showcase"
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "This document exercises the Markdown features enabled by\n"
+          },
+          {
+            "type": "element",
+            "tag": "code",
+            "children": [
+              {
+                "type": "text",
+                "text": "md.ExtensionSet.gitHubWeb"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ", including tables, task lists, alerts, footnotes,\nand automatic heading IDs. It is intended for visual inspection and\nregression testing."
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Headings"
+          }
+        ],
+        "generatedId": "headings"
+      },
+      {
+        "type": "element",
+        "tag": "h1",
+        "children": [
+          {
+            "type": "text",
+            "text": "Level 1 Heading"
+          }
+        ],
+        "generatedId": "level-1-heading"
+      },
+      {
+        "type": "element",
+        "tag": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Level 2 Heading"
+          }
+        ],
+        "generatedId": "level-2-heading"
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Level 3 Heading"
+          }
+        ],
+        "generatedId": "level-3-heading"
+      },
+      {
+        "type": "element",
+        "tag": "h4",
+        "children": [
+          {
+            "type": "text",
+            "text": "Level 4 Heading"
+          }
+        ],
+        "generatedId": "level-4-heading"
+      },
+      {
+        "type": "element",
+        "tag": "h5",
+        "children": [
+          {
+            "type": "text",
+            "text": "Level 5 Heading"
+          }
+        ],
+        "generatedId": "level-5-heading"
+      },
+      {
+        "type": "element",
+        "tag": "h6",
+        "children": [
+          {
+            "type": "text",
+            "text": "Level 6 Heading"
+          }
+        ],
+        "generatedId": "level-6-heading"
+      },
+      {
+        "type": "element",
+        "tag": "h1",
+        "children": [
+          {
+            "type": "text",
+            "text": "Heading with "
+          },
+          {
+            "type": "element",
+            "tag": "strong",
+            "children": [
+              {
+                "type": "text",
+                "text": "strong"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " and "
+          },
+          {
+            "type": "element",
+            "tag": "em",
+            "children": [
+              {
+                "type": "text",
+                "text": "emphasis"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " inside"
+          }
+        ],
+        "generatedId": "heading-with-strong-and-emphasis-inside"
+      },
+      {
+        "type": "element",
+        "tag": "h2",
+        "children": [
+          {
+            "type": "text",
+            "text": "Setext level-two heading"
+          }
+        ],
+        "generatedId": "setext-level-two-heading"
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Paragraphs &amp; Inline Styling"
+          }
+        ],
+        "generatedId": "paragraphs--inline-styling"
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Paragraph with "
+          },
+          {
+            "type": "element",
+            "tag": "strong",
+            "children": [
+              {
+                "type": "text",
+                "text": "bold"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ", "
+          },
+          {
+            "type": "element",
+            "tag": "em",
+            "children": [
+              {
+                "type": "text",
+                "text": "italic"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ", "
+          },
+          {
+            "type": "element",
+            "tag": "del",
+            "children": [
+              {
+                "type": "text",
+                "text": "strikethrough"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ", "
+          },
+          {
+            "type": "element",
+            "tag": "code",
+            "children": [
+              {
+                "type": "text",
+                "text": "inline code"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ", emoji\n✨, a color swatch "
+          },
+          {
+            "type": "element",
+            "tag": "code",
+            "attributes": {
+              "class": "gfm-color_chip"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "#FF7F50"
+              },
+              {
+                "type": "element",
+                "tag": "span",
+                "attributes": {
+                  "style": "background-color:#FF7F50;"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ", and an autolink "
+          },
+          {
+            "type": "element",
+            "tag": "a",
+            "attributes": {
+              "href": "https://superdeck.dev"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "https://superdeck.dev"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": ".\nWe also escape reserved\ncharacters like *_` to keep them literal."
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Paragraph with a "
+          },
+          {
+            "type": "element",
+            "tag": "a",
+            "attributes": {
+              "href": "https://docs.superdeck.dev",
+              "title": "SuperDeck Documentation"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "reference link"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " and inline HTML for\n<u>underline</u> support."
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Lists"
+          }
+        ],
+        "generatedId": "lists"
+      },
+      {
+        "type": "element",
+        "tag": "ul",
+        "children": [
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Bullet item one"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Bullet item two"
+              },
+              {
+                "type": "element",
+                "tag": "ul",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "li",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nested bullet"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "li",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nested bullet with "
+                      },
+                      {
+                        "type": "element",
+                        "tag": "code",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "code"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Bullet item three"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "ol",
+        "children": [
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Ordered item one"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Ordered item two with "
+              },
+              {
+                "type": "element",
+                "tag": "strong",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "bold"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Ordered item three"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Start numbering at 3:"
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "ol",
+        "attributes": {
+          "start": "3"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Custom start ordered list"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "text",
+                "text": "Continues counting"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "ul",
+        "attributes": {
+          "class": "contains-task-list"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "li",
+            "attributes": {
+              "class": "task-list-item"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "input",
+                "attributes": {
+                  "type": "checkbox"
+                },
+                "children": []
+              },
+              {
+                "type": "text",
+                "text": "Unchecked task"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "attributes": {
+              "class": "task-list-item"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "input",
+                "attributes": {
+                  "type": "checkbox",
+                  "checked": "true"
+                },
+                "children": []
+              },
+              {
+                "type": "text",
+                "text": "Completed task with 🎉"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "attributes": {
+              "class": "task-list-item"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "input",
+                "attributes": {
+                  "type": "checkbox"
+                },
+                "children": []
+              },
+              {
+                "type": "text",
+                "text": "Task with nested steps"
+              },
+              {
+                "type": "element",
+                "tag": "ul",
+                "attributes": {
+                  "class": "contains-task-list"
+                },
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "li",
+                    "attributes": {
+                      "class": "task-list-item"
+                    },
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "input",
+                        "attributes": {
+                          "type": "checkbox",
+                          "checked": "true"
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "text",
+                        "text": "Step one"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "li",
+                    "attributes": {
+                      "class": "task-list-item"
+                    },
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "input",
+                        "attributes": {
+                          "type": "checkbox"
+                        },
+                        "children": []
+                      },
+                      {
+                        "type": "text",
+                        "text": "Step two"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Blockquotes &amp; Alerts"
+          }
+        ],
+        "generatedId": "blockquotes--alerts"
+      },
+      {
+        "type": "element",
+        "tag": "blockquote",
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Blockquote introducing a nested quote."
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "blockquote",
+            "children": [
+              {
+                "type": "element",
+                "tag": "p",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Nested blockquote with "
+                  },
+                  {
+                    "type": "element",
+                    "tag": "strong",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "strong"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "text": " emphasis."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "div",
+        "attributes": {
+          "class": "markdown-alert markdown-alert-note"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "attributes": {
+              "class": "markdown-alert-title"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "Note"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "This is a note alert block."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "div",
+        "attributes": {
+          "class": "markdown-alert markdown-alert-tip"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "attributes": {
+              "class": "markdown-alert-title"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "Tip"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Tips can include lists:"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "ul",
+            "children": [
+              {
+                "type": "element",
+                "tag": "li",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Keep content concise."
+                  }
+                ]
+              },
+              {
+                "type": "element",
+                "tag": "li",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Highlight key actions."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "div",
+        "attributes": {
+          "class": "markdown-alert markdown-alert-important"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "attributes": {
+              "class": "markdown-alert-title"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "Important"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Important alerts may include "
+              },
+              {
+                "type": "element",
+                "tag": "strong",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ", "
+              },
+              {
+                "type": "element",
+                "tag": "em",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "italic"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ", and links like\n"
+              },
+              {
+                "type": "element",
+                "tag": "a",
+                "attributes": {
+                  "href": "https://docs.github.com"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "documentation"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "div",
+        "attributes": {
+          "class": "markdown-alert markdown-alert-warning"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "attributes": {
+              "class": "markdown-alert-title"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "Warning"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Warning alerts help highlight risky operations."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "div",
+        "attributes": {
+          "class": "markdown-alert markdown-alert-caution"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "attributes": {
+              "class": "markdown-alert-title"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "Caution"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Caution alerts can mix "
+              },
+              {
+                "type": "element",
+                "tag": "strong",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " text with nested lists:"
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "ol",
+            "children": [
+              {
+                "type": "element",
+                "tag": "li",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "First cautionary step"
+                  }
+                ]
+              },
+              {
+                "type": "element",
+                "tag": "li",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Second cautionary step with "
+                  },
+                  {
+                    "type": "element",
+                    "tag": "code",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "code"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Horizontal Rule"
+          }
+        ],
+        "generatedId": "horizontal-rule"
+      },
+      {
+        "type": "element",
+        "tag": "hr",
+        "isEmpty": true
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Inline &amp; Block Code"
+          }
+        ],
+        "generatedId": "inline--block-code"
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Use "
+          },
+          {
+            "type": "element",
+            "tag": "code",
+            "children": [
+              {
+                "type": "text",
+                "text": "InlineCodeWidget"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " for small snippets."
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "pre",
+        "children": [
+          {
+            "type": "element",
+            "tag": "code",
+            "attributes": {
+              "class": "language-dart"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "// Dart code sample\nvoid main() {\n  print('Hello, Markdown!');\n}\n"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "pre",
+        "children": [
+          {
+            "type": "element",
+            "tag": "code",
+            "attributes": {
+              "class": "language-json"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "{\n  &quot;name&quot;: &quot;superdeck&quot;,\n  &quot;features&quot;: [&quot;markdown&quot;, &quot;slides&quot;, &quot;widgets&quot;]\n}\n"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Tables"
+          }
+        ],
+        "generatedId": "tables"
+      },
+      {
+        "type": "element",
+        "tag": "table",
+        "children": [
+          {
+            "type": "element",
+            "tag": "thead",
+            "children": [
+              {
+                "type": "element",
+                "tag": "tr",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "th",
+                    "attributes": {
+                      "align": "left"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Feature"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "th",
+                    "attributes": {
+                      "align": "center"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Enabled"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "th",
+                    "attributes": {
+                      "align": "right"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Notes"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "tbody",
+            "children": [
+              {
+                "type": "element",
+                "tag": "tr",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "left"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Tables"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "center"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "✅"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "right"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Left-aligned header"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "element",
+                "tag": "tr",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "left"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Task Lists"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "center"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "✅"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "right"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Checkbox support"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "element",
+                "tag": "tr",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "left"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Footnotes"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "center"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "✅"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "td",
+                    "attributes": {
+                      "align": "right"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Appears in references section"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Links &amp; Images"
+          }
+        ],
+        "generatedId": "links--images"
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Inline link to "
+          },
+          {
+            "type": "element",
+            "tag": "a",
+            "attributes": {
+              "href": "https://superdeck.dev",
+              "title": "SuperDeck Homepage"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "SuperDeck"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "."
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Autolink for issue tracking "
+          },
+          {
+            "type": "element",
+            "tag": "a",
+            "attributes": {
+              "href": "https://github.com/superdeck"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "https://github.com/superdeck"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "."
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "element",
+            "tag": "img",
+            "attributes": {
+              "src": "https://placehold.co/400x200",
+              "alt": "Sample slide thumbnail",
+              "title": "Slide preview"
+            },
+            "isEmpty": true
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Reference-style link to "
+          },
+          {
+            "type": "element",
+            "tag": "a",
+            "attributes": {
+              "href": "https://docs.superdeck.dev",
+              "title": "SuperDeck Documentation"
+            },
+            "children": [
+              {
+                "type": "text",
+                "text": "SuperDeck Docs"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "."
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Footnotes"
+          }
+        ],
+        "generatedId": "footnotes"
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Statement referencing a footnote."
+          },
+          {
+            "type": "element",
+            "tag": "sup",
+            "attributes": {
+              "class": "footnote-ref"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "a",
+                "attributes": {
+                  "href": "#fn-intro",
+                  "id": "fnref-intro"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Multiple references can point to the same footnote."
+          },
+          {
+            "type": "element",
+            "tag": "sup",
+            "attributes": {
+              "class": "footnote-ref"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "a",
+                "attributes": {
+                  "href": "#fn-shared",
+                  "id": "fnref-shared"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "2"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Another reference to the shared note."
+          },
+          {
+            "type": "element",
+            "tag": "sup",
+            "attributes": {
+              "class": "footnote-ref"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "a",
+                "attributes": {
+                  "href": "#fn-shared",
+                  "id": "fnref-shared-2"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "2"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Complex Nesting"
+          }
+        ],
+        "generatedId": "complex-nesting"
+      },
+      {
+        "type": "element",
+        "tag": "ul",
+        "children": [
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "element",
+                "tag": "p",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Parent item with blockquote"
+                  }
+                ]
+              },
+              {
+                "type": "element",
+                "tag": "blockquote",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Nested quote inside list item."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "element",
+                "tag": "p",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Parent item with table"
+                  }
+                ]
+              },
+              {
+                "type": "element",
+                "tag": "table",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "thead",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "tr",
+                        "children": [
+                          {
+                            "type": "element",
+                            "tag": "th",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Column A"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "element",
+                            "tag": "th",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Column B"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "tbody",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "tr",
+                        "children": [
+                          {
+                            "type": "element",
+                            "tag": "td",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Value 1"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "element",
+                            "tag": "td",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Value 2"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "li",
+            "children": [
+              {
+                "type": "element",
+                "tag": "p",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Parent item with code block"
+                  }
+                ]
+              },
+              {
+                "type": "element",
+                "tag": "pre",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "code",
+                    "attributes": {
+                      "class": "language-bash"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "melos run analyze\n"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "element",
+        "tag": "h3",
+        "children": [
+          {
+            "type": "text",
+            "text": "Footnote Definitions &amp; References"
+          }
+        ],
+        "generatedId": "footnote-definitions--references"
+      },
+      {
+        "type": "element",
+        "tag": "section",
+        "attributes": {
+          "class": "footnotes"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tag": "ol",
+            "children": [
+              {
+                "type": "element",
+                "tag": "li",
+                "attributes": {
+                  "id": "fn-intro"
+                },
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "This footnote explains the introductory reference."
+                      },
+                      {
+                        "type": "text",
+                        "text": " "
+                      },
+                      {
+                        "type": "element",
+                        "tag": "a",
+                        "attributes": {
+                          "href": "#fnref-intro",
+                          "class": "footnote-backref"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "↩"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "footnoteLabel": "intro"
+              },
+              {
+                "type": "element",
+                "tag": "li",
+                "attributes": {
+                  "id": "fn-shared"
+                },
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Shared footnote definition supporting multiple references."
+                      },
+                      {
+                        "type": "text",
+                        "text": " "
+                      },
+                      {
+                        "type": "element",
+                        "tag": "a",
+                        "attributes": {
+                          "href": "#fnref-shared",
+                          "class": "footnote-backref"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "↩"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": " "
+                      },
+                      {
+                        "type": "element",
+                        "tag": "a",
+                        "attributes": {
+                          "href": "#fnref-shared-2",
+                          "class": "footnote-backref"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "↩"
+                          },
+                          {
+                            "type": "element",
+                            "tag": "sup",
+                            "attributes": {
+                              "class": "footnote-ref"
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "2"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "footnoteLabel": "shared"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "linkReferences": {
+      "superdeck-site": {
+        "destination": "https://docs.superdeck.dev",
+        "title": "SuperDeck Documentation"
+      }
+    },
+    "footnoteLabels": [
+      "intro",
+      "shared"
+    ],
+    "footnoteReferences": {
+      "intro": 1,
+      "shared": 2
+    }
+  }
+}

@@ -1,0 +1,4801 @@
+{
+  "metadata": {
+    "generated": "2025-10-17T13:39:49.443499",
+    "markdown_package_version": "7.3.0",
+    "extension_set": "gitHubWeb",
+    "description": "Comprehensive reference of all markdown AST node types and structures"
+  },
+  "block_elements": {
+    "headings": {
+      "h1_atx": {
+        "description": "Level 1 heading using ATX syntax",
+        "markdown": "# Heading Level 1",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h1",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading Level 1"
+                }
+              ],
+              "generatedId": "heading-level-1"
+            }
+          ]
+        }
+      },
+      "h2_atx": {
+        "description": "Level 2 heading using ATX syntax",
+        "markdown": "## Heading Level 2",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h2",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading Level 2"
+                }
+              ],
+              "generatedId": "heading-level-2"
+            }
+          ]
+        }
+      },
+      "h3_atx": {
+        "description": "Level 3 heading using ATX syntax",
+        "markdown": "### Heading Level 3",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h3",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading Level 3"
+                }
+              ],
+              "generatedId": "heading-level-3"
+            }
+          ]
+        }
+      },
+      "h4_atx": {
+        "description": "Level 4 heading using ATX syntax",
+        "markdown": "#### Heading Level 4",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h4",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading Level 4"
+                }
+              ],
+              "generatedId": "heading-level-4"
+            }
+          ]
+        }
+      },
+      "h5_atx": {
+        "description": "Level 5 heading using ATX syntax",
+        "markdown": "##### Heading Level 5",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h5",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading Level 5"
+                }
+              ],
+              "generatedId": "heading-level-5"
+            }
+          ]
+        }
+      },
+      "h6_atx": {
+        "description": "Level 6 heading using ATX syntax",
+        "markdown": "###### Heading Level 6",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h6",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading Level 6"
+                }
+              ],
+              "generatedId": "heading-level-6"
+            }
+          ]
+        }
+      },
+      "heading_with_emphasis": {
+        "description": "Heading containing inline formatting elements",
+        "markdown": "# Heading with **bold** and *italic*",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h1",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading with "
+                },
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " and "
+                },
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "italic"
+                    }
+                  ]
+                }
+              ],
+              "generatedId": "heading-with-bold-and-italic"
+            }
+          ]
+        }
+      },
+      "heading_with_id": {
+        "description": "Heading that generates an automatic ID for linking",
+        "markdown": "# Custom Heading",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h1",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Custom Heading"
+                }
+              ],
+              "generatedId": "custom-heading"
+            }
+          ]
+        }
+      }
+    },
+    "paragraphs": {
+      "simple_paragraph": {
+        "description": "Basic paragraph element with text content",
+        "markdown": "This is a simple paragraph with plain text.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "This is a simple paragraph with plain text."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "multiple_paragraphs": {
+        "description": "Multiple paragraphs separated by blank lines",
+        "markdown": "First paragraph.\n\nSecond paragraph.\n\nThird paragraph.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "First paragraph."
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Second paragraph."
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Third paragraph."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "paragraph_with_inline": {
+        "description": "Paragraph containing various inline elements",
+        "markdown": "Paragraph with **bold**, *italic*, and `code`.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Paragraph with "
+                },
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", "
+                },
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "italic"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", and "
+                },
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "blockquotes": {
+      "simple_blockquote": {
+        "description": "Simple blockquote with single line",
+        "markdown": "> This is a blockquote.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "blockquote",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "This is a blockquote."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "multiline_blockquote": {
+        "description": "Blockquote spanning multiple lines",
+        "markdown": "> First line of quote.\n> Second line of quote.\n> Third line of quote.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "blockquote",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "First line of quote.\nSecond line of quote.\nThird line of quote."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "nested_blockquote": {
+        "description": "Blockquotes nested within blockquotes",
+        "markdown": "> Outer quote\n>> Nested quote\n>>> Deeply nested quote",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "blockquote",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Outer quote"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "blockquote",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Nested quote"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "blockquote",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Deeply nested quote"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "blockquote_with_formatting": {
+        "description": "Blockquote containing inline formatting and paragraphs",
+        "markdown": "> Quote with **bold** and *italic*\n>\n> And a second paragraph.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "blockquote",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Quote with "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " and "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "em",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "italic"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "And a second paragraph."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "lists": {
+      "unordered_list_dash": {
+        "description": "Unordered list using dash (-) markers",
+        "markdown": "- Item 1\n- Item 2\n- Item 3",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 1"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 2"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "unordered_list_asterisk": {
+        "description": "Unordered list using asterisk (*) markers",
+        "markdown": "* Item 1\n* Item 2\n* Item 3",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 1"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 2"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "unordered_list_plus": {
+        "description": "Unordered list using plus (+) markers",
+        "markdown": "+ Item 1\n+ Item 2\n+ Item 3",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 1"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 2"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Item 3"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "ordered_list": {
+        "description": "Ordered list with sequential numbers",
+        "markdown": "1. First item\n2. Second item\n3. Third item",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ol",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "First item"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Second item"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Third item"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "ordered_list_start_any": {
+        "description": "Ordered list starting at number 5",
+        "markdown": "5. Fifth item\n6. Sixth item\n7. Seventh item",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ol",
+              "attributes": {
+                "start": "5"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Fifth item"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Sixth item"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Seventh item"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "nested_list": {
+        "description": "Nested unordered list with parent and child items",
+        "markdown": "- Parent item 1\n  - Child item 1.1\n  - Child item 1.2\n- Parent item 2\n  - Child item 2.1",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Parent item 1"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "ul",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Child item 1.1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Child item 1.2"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Parent item 2"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "ul",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Child item 2.1"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "mixed_nested_list": {
+        "description": "Mixed ordered and unordered nested lists",
+        "markdown": "1. Ordered parent\n   - Unordered child\n   - Another child\n2. Second ordered",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ol",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Ordered parent"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "ul",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Unordered child"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Another child"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Second ordered"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "task_list": {
+        "description": "Task list with checked and unchecked items",
+        "markdown": "- [ ] Unchecked task\n- [x] Checked task\n- [ ] Another unchecked task",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "attributes": {
+                "class": "contains-task-list"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "attributes": {
+                    "class": "task-list-item"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "input",
+                      "attributes": {
+                        "type": "checkbox"
+                      },
+                      "children": []
+                    },
+                    {
+                      "type": "text",
+                      "text": "Unchecked task"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "attributes": {
+                    "class": "task-list-item"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "input",
+                      "attributes": {
+                        "type": "checkbox",
+                        "checked": "true"
+                      },
+                      "children": []
+                    },
+                    {
+                      "type": "text",
+                      "text": "Checked task"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "attributes": {
+                    "class": "task-list-item"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "input",
+                      "attributes": {
+                        "type": "checkbox"
+                      },
+                      "children": []
+                    },
+                    {
+                      "type": "text",
+                      "text": "Another unchecked task"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "list_with_paragraphs": {
+        "description": "List items containing multiple paragraphs",
+        "markdown": "- First item\n\n  Second paragraph in first item\n\n- Second item",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "First item"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Second paragraph in first item"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Second item"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "list_with_code": {
+        "description": "List items containing code blocks",
+        "markdown": "- Item with code:\n\n  ```\n  code block\n  ```\n\n- Next item",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item with code:"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "pre",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "code",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "code block\n"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Next item"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "code_blocks": {
+      "indented_code": {
+        "description": "Code block using 4-space indentation",
+        "markdown": "    code line 1\n    code line 2\n    code line 3",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "pre",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code line 1\ncode line 2\ncode line 3\n"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "fenced_code_backtick": {
+        "description": "Fenced code block using backticks",
+        "markdown": "```\ncode line 1\ncode line 2\n```",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "pre",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code line 1\ncode line 2\n"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "fenced_code_tilde": {
+        "description": "Fenced code block using tildes",
+        "markdown": "~~~\ncode line 1\ncode line 2\n~~~",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "pre",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code line 1\ncode line 2\n"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "fenced_code_dart": {
+        "description": "Fenced code block with Dart language identifier",
+        "markdown": "```dart\nvoid main() {\n  print(\"Hello\");\n}\n```",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "pre",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "attributes": {
+                    "class": "language-dart"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "void main() {\n  print(&quot;Hello&quot;);\n}\n"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "fenced_code_javascript": {
+        "description": "Fenced code block with JavaScript language identifier",
+        "markdown": "```javascript\nconst x = 42;\nconsole.log(x);\n```",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "pre",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "attributes": {
+                    "class": "language-javascript"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "const x = 42;\nconsole.log(x);\n"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "fenced_code_json": {
+        "description": "Fenced code block with JSON language identifier",
+        "markdown": "```json\n{\n  \"key\": \"value\",\n  \"number\": 123\n}\n```",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "pre",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "attributes": {
+                    "class": "language-json"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "{\n  &quot;key&quot;: &quot;value&quot;,\n  &quot;number&quot;: 123\n}\n"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "tables": {
+      "simple_table": {
+        "description": "Simple table with headers and two rows",
+        "markdown": "| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n| Cell 3   | Cell 4   |",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "table",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "thead",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Header 1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Header 2"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "tbody",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Cell 1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Cell 2"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Cell 3"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Cell 4"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "table_with_alignment": {
+        "description": "Table with left, center, and right alignment",
+        "markdown": "| Left | Center | Right |\n|:-----|:------:|------:|\n| L1   | C1     | R1    |\n| L2   | C2     | R2    |",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "table",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "thead",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "attributes": {
+                            "align": "left"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Left"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "attributes": {
+                            "align": "center"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Center"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "attributes": {
+                            "align": "right"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Right"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "tbody",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "left"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "L1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "center"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "C1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "right"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "R1"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "left"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "L2"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "center"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "C2"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "right"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "R2"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "table_with_formatting": {
+        "description": "Table cells containing inline formatting",
+        "markdown": "| **Bold** | *Italic* | `Code` |\n|----------|----------|--------|\n| **B1**   | *I1*     | `C1`   |",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "table",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "thead",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "strong",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Bold"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "em",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Italic"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "code",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Code"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "tbody",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "strong",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "B1"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "em",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "I1"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "code",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "C1"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "table_with_links": {
+        "description": "Table cells containing links and images",
+        "markdown": "| Link | Image |\n|------|-------|\n| [text](url) | ![alt](img.png) |",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "table",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "thead",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Link"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Image"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "tbody",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": {
+                                "href": "url"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "text"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "img",
+                              "attributes": {
+                                "src": "img.png",
+                                "alt": "alt"
+                              },
+                              "isEmpty": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "alerts": {
+      "alert_note": {
+        "description": "NOTE alert block (informational)",
+        "markdown": "> [!NOTE]\n> This is a note alert.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": {
+                "class": "markdown-alert markdown-alert-note"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": {
+                    "class": "markdown-alert-title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Note"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "This is a note alert."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "alert_tip": {
+        "description": "TIP alert block (helpful advice)",
+        "markdown": "> [!TIP]\n> This is a tip alert.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": {
+                "class": "markdown-alert markdown-alert-tip"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": {
+                    "class": "markdown-alert-title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Tip"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "This is a tip alert."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "alert_important": {
+        "description": "IMPORTANT alert block (critical information)",
+        "markdown": "> [!IMPORTANT]\n> This is an important alert.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": {
+                "class": "markdown-alert markdown-alert-important"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": {
+                    "class": "markdown-alert-title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Important"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "This is an important alert."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "alert_warning": {
+        "description": "WARNING alert block (caution)",
+        "markdown": "> [!WARNING]\n> This is a warning alert.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": {
+                "class": "markdown-alert markdown-alert-warning"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": {
+                    "class": "markdown-alert-title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Warning"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "This is a warning alert."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "alert_caution": {
+        "description": "CAUTION alert block (danger)",
+        "markdown": "> [!CAUTION]\n> This is a caution alert.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": {
+                "class": "markdown-alert markdown-alert-caution"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": {
+                    "class": "markdown-alert-title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Caution"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "This is a caution alert."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "alert_multiline": {
+        "description": "Multi-paragraph alert block",
+        "markdown": "> [!NOTE]\n> First line of alert.\n> Second line of alert.\n>\n> Paragraph in alert.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "div",
+              "attributes": {
+                "class": "markdown-alert markdown-alert-note"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "attributes": {
+                    "class": "markdown-alert-title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Note"
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "First line of alert.\nSecond line of alert."
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Paragraph in alert."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "horizontal_rules": {
+      "hr_dashes": {
+        "description": "Horizontal rule using three dashes",
+        "markdown": "---",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "hr",
+              "isEmpty": true
+            }
+          ]
+        }
+      },
+      "hr_asterisks": {
+        "description": "Horizontal rule using three asterisks",
+        "markdown": "***",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "hr",
+              "isEmpty": true
+            }
+          ]
+        }
+      },
+      "hr_underscores": {
+        "description": "Horizontal rule using three underscores",
+        "markdown": "___",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "hr",
+              "isEmpty": true
+            }
+          ]
+        }
+      },
+      "hr_many_dashes": {
+        "description": "Horizontal rule using many dashes",
+        "markdown": "----------",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "hr",
+              "isEmpty": true
+            }
+          ]
+        }
+      }
+    }
+  },
+  "inline_elements": {
+    "text_formatting": {
+      "plain_text": {
+        "description": "Plain text node without formatting",
+        "markdown": "Just plain text.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Just plain text."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "strong_asterisk": {
+        "description": "Strong/bold using double asterisks",
+        "markdown": "**bold text**",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "bold text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "strong_underscore": {
+        "description": "Strong/bold using double underscores",
+        "markdown": "__bold text__",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "bold text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "em_asterisk": {
+        "description": "Emphasis/italic using single asterisks",
+        "markdown": "*italic text*",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "italic text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "em_underscore": {
+        "description": "Emphasis/italic using single underscores",
+        "markdown": "_italic text_",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "italic text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "strong_and_em": {
+        "description": "Combined bold and italic using triple asterisks",
+        "markdown": "***bold and italic***",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "bold "
+                        },
+                        {
+                          "type": "text",
+                          "text": "and italic"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "nested_strong_em": {
+        "description": "Italic nested within bold",
+        "markdown": "**bold with *italic* inside**",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "bold "
+                    },
+                    {
+                      "type": "text",
+                      "text": "with "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "em",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "italic"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " inside"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "nested_em_strong": {
+        "description": "Bold nested within italic",
+        "markdown": "*italic with **bold** inside*",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "italic "
+                    },
+                    {
+                      "type": "text",
+                      "text": "with "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "bold"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " inside"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "strikethrough": {
+        "description": "Strikethrough/deleted text",
+        "markdown": "~~strikethrough text~~",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "del",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "strikethrough text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "all_formatting": {
+        "description": "Multiple formatting types in one paragraph",
+        "markdown": "Text with **bold**, *italic*, ***both***, and ~~strikethrough~~.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with "
+                },
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", "
+                },
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "italic"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", "
+                },
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "both"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", and "
+                },
+                {
+                  "type": "element",
+                  "tag": "del",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "strikethrough"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "links": {
+      "inline_link": {
+        "description": "Inline link with URL",
+        "markdown": "[link text](https://example.com)",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "link text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "inline_link_with_title": {
+        "description": "Inline link with URL and title attribute",
+        "markdown": "[link text](https://example.com \"Link Title\")",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com",
+                    "title": "Link Title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "link text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "reference_link": {
+        "description": "Reference-style link with definition",
+        "markdown": "[link text][ref]\n\n[ref]: https://example.com",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "link text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "linkReferences": {
+            "ref": {
+              "destination": "https://example.com"
+            }
+          },
+          "footnoteLabels": [],
+          "footnoteReferences": {}
+        }
+      },
+      "reference_link_with_title": {
+        "description": "Reference link with title in definition",
+        "markdown": "[link text][ref]\n\n[ref]: https://example.com \"Title\"",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com",
+                    "title": "Title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "link text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "linkReferences": {
+            "ref": {
+              "destination": "https://example.com",
+              "title": "Title"
+            }
+          },
+          "footnoteLabels": [],
+          "footnoteReferences": {}
+        }
+      },
+      "reference_link_implicit": {
+        "description": "Implicit reference link (text is reference)",
+        "markdown": "[Example]\n\n[example]: https://example.com",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Example"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "linkReferences": {
+            "example": {
+              "destination": "https://example.com"
+            }
+          },
+          "footnoteLabels": [],
+          "footnoteReferences": {}
+        }
+      },
+      "autolink": {
+        "description": "Autolink using angle brackets",
+        "markdown": "<https://example.com>",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "https://example.com"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "autolink_email": {
+        "description": "Email autolink",
+        "markdown": "<user@example.com>",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "mailto:user@example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "user@example.com"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "link_with_emphasis": {
+        "description": "Link text containing bold formatting",
+        "markdown": "[**bold link**](https://example.com)",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "bold link"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "naked_url": {
+        "description": "Bare URL automatically converted to link",
+        "markdown": "Visit https://example.com for more.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Visit "
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "https://example.com"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " for more."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "images": {
+      "inline_image": {
+        "description": "Inline image with alt text",
+        "markdown": "![alt text](image.png)",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": {
+                    "src": "image.png",
+                    "alt": "alt text"
+                  },
+                  "isEmpty": true
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "inline_image_with_title": {
+        "description": "Inline image with alt text and title",
+        "markdown": "![alt text](image.png \"Image Title\")",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": {
+                    "src": "image.png",
+                    "alt": "alt text",
+                    "title": "Image Title"
+                  },
+                  "isEmpty": true
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "reference_image": {
+        "description": "Reference-style image",
+        "markdown": "![alt text][img]\n\n[img]: image.png",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": {
+                    "src": "image.png",
+                    "alt": "alt text"
+                  },
+                  "isEmpty": true
+                }
+              ]
+            }
+          ],
+          "linkReferences": {
+            "img": {
+              "destination": "image.png"
+            }
+          },
+          "footnoteLabels": [],
+          "footnoteReferences": {}
+        }
+      },
+      "reference_image_with_title": {
+        "description": "Reference image with title",
+        "markdown": "![alt text][img]\n\n[img]: image.png \"Title\"",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": {
+                    "src": "image.png",
+                    "alt": "alt text",
+                    "title": "Title"
+                  },
+                  "isEmpty": true
+                }
+              ]
+            }
+          ],
+          "linkReferences": {
+            "img": {
+              "destination": "image.png",
+              "title": "Title"
+            }
+          },
+          "footnoteLabels": [],
+          "footnoteReferences": {}
+        }
+      },
+      "linked_image": {
+        "description": "Image wrapped in a link (clickable image)",
+        "markdown": "[![alt text](image.png)](https://example.com)",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "img",
+                      "attributes": {
+                        "src": "image.png",
+                        "alt": "alt text"
+                      },
+                      "isEmpty": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "inline_code": {
+      "simple_code": {
+        "description": "Inline code span using backticks",
+        "markdown": "Text with `code` inline.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with "
+                },
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " inline."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "code_with_backtick": {
+        "description": "Inline code containing a backtick character",
+        "markdown": "Code with `` ` `` backtick inside.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Code with "
+                },
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "`"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " backtick inside."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "code_multiple": {
+        "description": "Multiple inline code spans in one paragraph",
+        "markdown": "Multiple `code1` and `code2` spans.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Multiple "
+                },
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code1"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " and "
+                },
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code2"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " spans."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "line_breaks": {
+      "hard_break_spaces": {
+        "description": "Hard line break using two trailing spaces",
+        "markdown": "Line 1  \nLine 2",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Line 1"
+                },
+                {
+                  "type": "element",
+                  "tag": "br",
+                  "isEmpty": true
+                },
+                {
+                  "type": "text",
+                  "text": "Line 2"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "hard_break_backslash": {
+        "description": "Hard line break using backslash",
+        "markdown": "Line 1\\\nLine 2",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Line 1"
+                },
+                {
+                  "type": "element",
+                  "tag": "br",
+                  "isEmpty": true
+                },
+                {
+                  "type": "text",
+                  "text": "Line 2"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "soft_break": {
+        "description": "Soft line break (becomes space in output)",
+        "markdown": "Line 1\nLine 2",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Line 1\nLine 2"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "special_cases": {
+    "empty_elements": {
+      "horizontal_rule": {
+        "description": "Self-closing hr element",
+        "markdown": "---",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "hr",
+              "isEmpty": true
+            }
+          ]
+        }
+      },
+      "line_break": {
+        "description": "Self-closing br element",
+        "markdown": "Text  \nwith break",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text"
+                },
+                {
+                  "type": "element",
+                  "tag": "br",
+                  "isEmpty": true
+                },
+                {
+                  "type": "text",
+                  "text": "with break"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "image": {
+        "description": "Self-closing img element",
+        "markdown": "![alt](img.png)",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": {
+                    "src": "img.png",
+                    "alt": "alt"
+                  },
+                  "isEmpty": true
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "elements_with_attributes": {
+      "link_attributes": {
+        "description": "Link with href and title attributes",
+        "markdown": "[text](https://example.com \"Title\")",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com",
+                    "title": "Title"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "text"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "image_attributes": {
+        "description": "Image with src, alt, and title attributes",
+        "markdown": "![alt text](image.png \"Image title\")",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": {
+                    "src": "image.png",
+                    "alt": "alt text",
+                    "title": "Image title"
+                  },
+                  "isEmpty": true
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "heading_with_id": {
+        "description": "Heading with auto-generated ID attribute",
+        "markdown": "# Heading Text",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h1",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Heading Text"
+                }
+              ],
+              "generatedId": "heading-text"
+            }
+          ]
+        }
+      },
+      "table_alignment": {
+        "description": "Table cells with alignment attributes",
+        "markdown": "| Left | Center | Right |\n|:-----|:------:|------:|\n| L    | C      | R     |",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "table",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "thead",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "attributes": {
+                            "align": "left"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Left"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "attributes": {
+                            "align": "center"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Center"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "th",
+                          "attributes": {
+                            "align": "right"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Right"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "tbody",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "tr",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "left"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "L"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "center"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "C"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "td",
+                          "attributes": {
+                            "align": "right"
+                          },
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "R"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "task_list_checkbox": {
+        "description": "List item with checkbox input attributes",
+        "markdown": "- [x] Task",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "attributes": {
+                "class": "contains-task-list"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "attributes": {
+                    "class": "task-list-item"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "input",
+                      "attributes": {
+                        "type": "checkbox",
+                        "checked": "true"
+                      },
+                      "children": []
+                    },
+                    {
+                      "type": "text",
+                      "text": "Task"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "escaped_characters": {
+      "escaped_asterisk": {
+        "description": "Escaped asterisk (not emphasis)",
+        "markdown": "Text with \\* escaped asterisk.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with * escaped asterisk."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "escaped_underscore": {
+        "description": "Escaped underscore (not emphasis)",
+        "markdown": "Text with \\_ escaped underscore.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with _ escaped underscore."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "escaped_backtick": {
+        "description": "Escaped backtick (not code)",
+        "markdown": "Text with \\` escaped backtick.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with ` escaped backtick."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "escaped_brackets": {
+        "description": "Escaped square brackets (not link)",
+        "markdown": "Text with \\[brackets\\] escaped.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with [brackets] escaped."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "html_entities": {
+        "description": "HTML entities in text",
+        "markdown": "Text with &amp; &lt; &gt; entities.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with &amp; &lt; &gt; entities."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "complex_nested": {
+    "nested_structures": {
+      "list_in_blockquote": {
+        "description": "Unordered list nested within blockquote",
+        "markdown": "> - Item 1\n> - Item 2\n> - Item 3",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "blockquote",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "ul",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item 1"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item 2"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item 3"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "blockquote_in_list": {
+        "description": "Blockquote nested within list item",
+        "markdown": "- Item 1\n\n  > Quote in list\n\n- Item 2",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item 1"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "blockquote",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Quote in list"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item 2"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "code_in_list": {
+        "description": "Code block nested within list item",
+        "markdown": "- Item with code:\n\n  ```\n  code here\n  ```",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item with code:"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "pre",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "code",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "code here\n"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "table_in_list": {
+        "description": "Table nested within list item",
+        "markdown": "- Item\n\n  | Col 1 | Col 2 |\n  |-------|-------|\n  | A     | B     |",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Item"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "table",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "thead",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "tr",
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "th",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "Col 1"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "th",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "Col 2"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "tbody",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "tr",
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "td",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "A"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "element",
+                                  "tag": "td",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "B"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "deeply_nested_lists": {
+        "description": "Four levels of nested lists",
+        "markdown": "- Level 1\n  - Level 2\n    - Level 3\n      - Level 4",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "ul",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "li",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Level 1"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "ul",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "li",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Level 2"
+                            },
+                            {
+                              "type": "element",
+                              "tag": "ul",
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "li",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "Level 3"
+                                    },
+                                    {
+                                      "type": "element",
+                                      "tag": "ul",
+                                      "children": [
+                                        {
+                                          "type": "element",
+                                          "tag": "li",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "text": "Level 4"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "mixed_formatting": {
+        "description": "Multiple inline elements nested",
+        "markdown": "**Bold with *italic* and `code` inside**",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Bold "
+                    },
+                    {
+                      "type": "text",
+                      "text": "with "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "em",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "italic"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " "
+                    },
+                    {
+                      "type": "text",
+                      "text": "and "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "code"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " inside"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "link_with_emphasis": {
+        "description": "Link containing bold and italic text",
+        "markdown": "[**Bold link** with *italic*](https://example.com)",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Bold link"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " "
+                    },
+                    {
+                      "type": "text",
+                      "text": "with "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "em",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "italic"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "complex_paragraph": {
+        "description": "Paragraph with all inline element types",
+        "markdown": "Paragraph with **bold**, *italic*, `code`, [link](url), ![image](img.png), and ~~strikethrough~~.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Paragraph with "
+                },
+                {
+                  "type": "element",
+                  "tag": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", "
+                },
+                {
+                  "type": "element",
+                  "tag": "em",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "italic"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", "
+                },
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", "
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "url"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "link"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ", "
+                },
+                {
+                  "type": "element",
+                  "tag": "img",
+                  "attributes": {
+                    "src": "img.png",
+                    "alt": "image"
+                  },
+                  "isEmpty": true
+                },
+                {
+                  "type": "text",
+                  "text": ", and "
+                },
+                {
+                  "type": "element",
+                  "tag": "del",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "strikethrough"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "footnotes": {
+      "simple_footnote": {
+        "description": "Simple footnote reference and definition",
+        "markdown": "Text with footnote[^1].\n\n[^1]: Footnote content.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text with footnote"
+                },
+                {
+                  "type": "element",
+                  "tag": "sup",
+                  "attributes": {
+                    "class": "footnote-ref"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": {
+                        "href": "#fn-1",
+                        "id": "fnref-1"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "1"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "section",
+              "attributes": {
+                "class": "footnotes"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "ol",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "id": "fn-1"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Footnote content."
+                            },
+                            {
+                              "type": "text",
+                              "text": " "
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": {
+                                "href": "#fnref-1",
+                                "class": "footnote-backref"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "↩"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "footnoteLabel": "1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "linkReferences": {},
+          "footnoteLabels": [
+            "1"
+          ],
+          "footnoteReferences": {
+            "1": 1
+          }
+        }
+      },
+      "multiple_footnotes": {
+        "description": "Multiple footnote references",
+        "markdown": "First[^1] and second[^2].\n\n[^1]: First note.\n[^2]: Second note.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "First"
+                },
+                {
+                  "type": "element",
+                  "tag": "sup",
+                  "attributes": {
+                    "class": "footnote-ref"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": {
+                        "href": "#fn-1",
+                        "id": "fnref-1"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "1"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " and second"
+                },
+                {
+                  "type": "element",
+                  "tag": "sup",
+                  "attributes": {
+                    "class": "footnote-ref"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": {
+                        "href": "#fn-2",
+                        "id": "fnref-2"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "2"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "section",
+              "attributes": {
+                "class": "footnotes"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "ol",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "id": "fn-1"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "First note."
+                            },
+                            {
+                              "type": "text",
+                              "text": " "
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": {
+                                "href": "#fnref-1",
+                                "class": "footnote-backref"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "↩"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "footnoteLabel": "1"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "id": "fn-2"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Second note."
+                            },
+                            {
+                              "type": "text",
+                              "text": " "
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": {
+                                "href": "#fnref-2",
+                                "class": "footnote-backref"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "↩"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "footnoteLabel": "2"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "linkReferences": {},
+          "footnoteLabels": [
+            "1",
+            "2"
+          ],
+          "footnoteReferences": {
+            "1": 1,
+            "2": 1
+          }
+        }
+      },
+      "footnote_multiline": {
+        "description": "Footnote with multiple paragraphs",
+        "markdown": "Text[^note].\n\n[^note]: First paragraph.\n\n    Second paragraph.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Text"
+                },
+                {
+                  "type": "element",
+                  "tag": "sup",
+                  "attributes": {
+                    "class": "footnote-ref"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": {
+                        "href": "#fn-note",
+                        "id": "fnref-note"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "1"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "section",
+              "attributes": {
+                "class": "footnotes"
+              },
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "ol",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "id": "fn-note"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "First paragraph."
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "p",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Second paragraph."
+                            },
+                            {
+                              "type": "text",
+                              "text": " "
+                            },
+                            {
+                              "type": "element",
+                              "tag": "a",
+                              "attributes": {
+                                "href": "#fnref-note",
+                                "class": "footnote-backref"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "↩"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "footnoteLabel": "note"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "linkReferences": {},
+          "footnoteLabels": [
+            "note"
+          ],
+          "footnoteReferences": {
+            "note": 1
+          }
+        }
+      }
+    }
+  },
+  "metadata_examples": {
+    "link_references": {
+      "description": "Document with multiple link reference definitions",
+      "markdown": "See [example] and [test].\n\n[example]: https://example.com \"Example\"\n[test]: https://test.com",
+      "ast": {
+        "type": "document",
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "See "
+              },
+              {
+                "type": "element",
+                "tag": "a",
+                "attributes": {
+                  "href": "https://example.com",
+                  "title": "Example"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "example"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " and "
+              },
+              {
+                "type": "element",
+                "tag": "a",
+                "attributes": {
+                  "href": "https://test.com"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "test"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          }
+        ],
+        "linkReferences": {
+          "example": {
+            "destination": "https://example.com",
+            "title": "Example"
+          },
+          "test": {
+            "destination": "https://test.com"
+          }
+        },
+        "footnoteLabels": [],
+        "footnoteReferences": {}
+      }
+    },
+    "footnote_tracking": {
+      "description": "Footnote reference counting and label ordering",
+      "markdown": "First[^1], second[^2], first again[^1].\n\n[^1]: Note 1.\n[^2]: Note 2.",
+      "ast": {
+        "type": "document",
+        "children": [
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "First"
+              },
+              {
+                "type": "element",
+                "tag": "sup",
+                "attributes": {
+                  "class": "footnote-ref"
+                },
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "a",
+                    "attributes": {
+                      "href": "#fn-1",
+                      "id": "fnref-1"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ", second"
+              },
+              {
+                "type": "element",
+                "tag": "sup",
+                "attributes": {
+                  "class": "footnote-ref"
+                },
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "a",
+                    "attributes": {
+                      "href": "#fn-2",
+                      "id": "fnref-2"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "2"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": ", first again"
+              },
+              {
+                "type": "element",
+                "tag": "sup",
+                "attributes": {
+                  "class": "footnote-ref"
+                },
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "a",
+                    "attributes": {
+                      "href": "#fn-1",
+                      "id": "fnref-1-2"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "section",
+            "attributes": {
+              "class": "footnotes"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "ol",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "li",
+                    "attributes": {
+                      "id": "fn-1"
+                    },
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "p",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Note 1."
+                          },
+                          {
+                            "type": "text",
+                            "text": " "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "a",
+                            "attributes": {
+                              "href": "#fnref-1",
+                              "class": "footnote-backref"
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "↩"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "a",
+                            "attributes": {
+                              "href": "#fnref-1-2",
+                              "class": "footnote-backref"
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "↩"
+                              },
+                              {
+                                "type": "element",
+                                "tag": "sup",
+                                "attributes": {
+                                  "class": "footnote-ref"
+                                },
+                                "children": [
+                                  {
+                                    "type": "text",
+                                    "text": "2"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "footnoteLabel": "1"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "li",
+                    "attributes": {
+                      "id": "fn-2"
+                    },
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "p",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Note 2."
+                          },
+                          {
+                            "type": "text",
+                            "text": " "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "a",
+                            "attributes": {
+                              "href": "#fnref-2",
+                              "class": "footnote-backref"
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "↩"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "footnoteLabel": "2"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "linkReferences": {},
+        "footnoteLabels": [
+          "1",
+          "2"
+        ],
+        "footnoteReferences": {
+          "1": 2,
+          "2": 1
+        }
+      }
+    },
+    "comprehensive_metadata": {
+      "description": "Document with all metadata types",
+      "markdown": "# Heading\n\nText with [link][ref] and footnote[^note].\n\n[ref]: https://example.com\n[^note]: Footnote.",
+      "ast": {
+        "type": "document",
+        "children": [
+          {
+            "type": "element",
+            "tag": "h1",
+            "children": [
+              {
+                "type": "text",
+                "text": "Heading"
+              }
+            ],
+            "generatedId": "heading"
+          },
+          {
+            "type": "element",
+            "tag": "p",
+            "children": [
+              {
+                "type": "text",
+                "text": "Text with "
+              },
+              {
+                "type": "element",
+                "tag": "a",
+                "attributes": {
+                  "href": "https://example.com"
+                },
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "link"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " and footnote"
+              },
+              {
+                "type": "element",
+                "tag": "sup",
+                "attributes": {
+                  "class": "footnote-ref"
+                },
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "a",
+                    "attributes": {
+                      "href": "#fn-note",
+                      "id": "fnref-note"
+                    },
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "type": "element",
+            "tag": "section",
+            "attributes": {
+              "class": "footnotes"
+            },
+            "children": [
+              {
+                "type": "element",
+                "tag": "ol",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "li",
+                    "attributes": {
+                      "id": "fn-note"
+                    },
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "p",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Footnote."
+                          },
+                          {
+                            "type": "text",
+                            "text": " "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "a",
+                            "attributes": {
+                              "href": "#fnref-note",
+                              "class": "footnote-backref"
+                            },
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "↩"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "footnoteLabel": "note"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "linkReferences": {
+          "ref": {
+            "destination": "https://example.com"
+          }
+        },
+        "footnoteLabels": [
+          "note"
+        ],
+        "footnoteReferences": {
+          "note": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+name: superdeck_example
+description: An example presentation for SuperDeck
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.2.1
+  mesh: ^0.4.1
+  mix: ^2.0.0-dev.4
+  superdeck_core: ^0.0.1
+  superdeck: ^0.0.4
+  naked_ui: ^0.2.0-beta.5
+  remix: 
+    git:
+      url: https://github.com/btwld/remix.git
+      ref: main
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  superdeck_cli: ^0.0.1
+  integration_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - .superdeck/
+    - .superdeck/assets/
+    - ./.superdeck/
+    - ./.superdeck/assets/

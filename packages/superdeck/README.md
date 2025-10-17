@@ -21,14 +21,30 @@ Follow these steps to integrate SuperDeck into your Flutter project:
 2. Import the `superdeck` package in your Dart code:
 
    ```dart
-   import 'package:superdeck/superdeck.dart';
+   import 'package:superdeck/superdeck_flutter.dart';
    ```
 
-3. Initialize SuperDeck and run the app.
+3. Initialize SuperDeck and run the app:
 
    ```dart
-   void main() {
-     runApp(const SuperDeckApp());
+   void main() async {
+     await SuperDeckApp.initialize();
+     runApp(
+       MaterialApp(
+         home: SuperDeckApp(
+           options: DeckOptions(
+             baseStyle: BaseStyle(),
+             widgets: {
+               'myCustomWidget': (args) {
+                 return CustomWidget(
+                   property: args.getString('property'),
+                 );
+               },
+             },
+           ),
+         ),
+       ),
+     );
    }
    ```
 
@@ -40,12 +56,10 @@ Follow these steps to integrate SuperDeck into your Flutter project:
    flutter:
      assets:
        - assets/
-       - assets/images/
+       - slides.md
    ```
 
-   The `assets` directory is used to slide and asset references, while the `assets/images` directory is specifically used for storing images used in your presentations.
-
-6. Configure your app
+6. Configure your app (if needed):
 
    MacOS
 
@@ -75,241 +89,444 @@ Follow these steps to integrate SuperDeck into your Flutter project:
    </dict>
    ```
 
-7. Start building your slides in the `slides.md` file using Markdown syntax and SuperDeck's slide templates and configurations.
+7. Start building your slides using the new block-based syntax in your `slides.md` file.
 
-### SuperDeck Options
+## Core Concepts
 
-#### `style`
+SuperDeck has evolved into a block-based presentation system where each slide is composed of sections and blocks that can be arranged in various layouts.
 
-SuperDeck provides a robust styling system by leveraging [Mix](https://fluttermix.com), This allows a complete control by creating endless possibility of defining styling every element in teh slide, and also creating `style variants`.
+### Slides
 
-#### `examples`
+A slide is the basic unit of a presentation. Each slide is separated by `---` in your markdown file.
 
-These are widget examples that can be referenced in the slide. You can read more about how to reference these examples in the [Widget Template](#widget-template) section.
+### Blocks
+
+Blocks are the building components of a slide. There are several types of blocks:
+
+#### Section Block (`@section`)
+
+Sections are containers that hold other blocks. You can have multiple sections in a slide.
+
+```markdown
+@section {
+  flex: 2
+}
+```
+
+Options:
+- `flex`: Controls how much space the section takes relative to other sections (default: 1)
+- `align`: Controls the alignment of content within the section
+- `scrollable`: Whether the section should be scrollable (default: false)
+
+#### Column Block (`@column`)
+
+Columns are used to display markdown content. You can have multiple columns in a section.
+
+```markdown
+@column {
+  align: center
+  flex: 2
+}
+
+# My Content Here
+
+- Point 1
+- Point 2
+```
+
+Options:
+- `flex`: Controls how much space the column takes relative to other columns (default: 1)
+- `align`: Controls the alignment of content within the column
+- `scrollable`: Whether the column should be scrollable (default: false)
+
+#### Image Block (via Markdown syntax)
+
+Images can be included using standard markdown syntax with additional class annotations.
+
+```markdown
+![image_description](https://example.com/image.png) {.cover}
+```
+
+Available classes:
+- `.cover`: Image will cover the container
+- `.contain`: Image will be contained in the container
+- `.fill`: Image will fill the container
+- `.fitWidth`: Image will fit the width of the container
+- `.fitHeight`: Image will fit the height of the container
+
+#### DartPad Block (`@dartpad`)
+
+Embeds a DartPad instance in your slide.
+
+```markdown
+@dartpad {
+  id: dartpad-id-here
+  theme: dark
+  embed: true
+  run: true
+}
+```
+
+Options:
+- `id`: The ID of the DartPad snippet (required)
+- `theme`: The theme to use (dark or light)
+- `embed`: Whether to embed the DartPad (default: true)
+- `run`: Whether to run the code automatically (default: true)
+
+#### Widget Block (Custom Widgets)
+
+You can use custom widgets that you've registered with SuperDeck.
+
+```markdown
+@myCustomWidget {
+  property: value
+  anotherProperty: anotherValue
+}
+```
+
+### Content Alignment
+
+You can align content within sections and columns:
+
+```markdown
+@column {
+  align: center_right
+}
+```
+
+Available alignment options:
+- `topLeft`
+- `topCenter`
+- `topRight`
+- `centerLeft`
+- `center`
+- `centerRight`
+- `bottomLeft`
+- `bottomCenter`
+- `bottomRight`
+
+## Slide Examples
+
+### Simple Slide with a Single Column
+
+```markdown
+---
+
+@column
+
+# My Slide Title
+
+- Point 1
+- Point 2
+- Point 3
+
+---
+```
+
+### Multi-Column Layout
+
+```markdown
+---
+
+@column {
+  align: center_left
+  flex: 2
+}
+
+# Left Content
+
+- More content on the left side
+- With a larger flex value
+
+@column {
+  align: center_right
+}
+
+# Right Content
+
+This content takes up less space due to default flex value of 1.
+
+---
+```
+
+### Slide with Custom Widget
+
+```markdown
+---
+
+@column
+
+# Tweet Example
+
+@twitter {
+  username: username
+  tweetId: 1234567890
+}
+
+@column
+
+# More content
+
+---
+```
+
+### Slide with Mermaid Diagram
+
+```markdown
+---
+
+@column
+
+# Diagram Example
+
+```mermaid
+graph TD
+    A[Start] --> B[Input]
+    B --> C[Process]
+    C --> D[Output]
+    D --> E[End]
+``` {.code}
+
+---
+```
+
+### Slide with DartPad
+
+```markdown
+---
+
+@column
+
+# DartPad Example
+
+@dartpad {
+  id: example-dartpad-id
+  theme: dark
+}
+
+@column
+
+# Explanation
+
+This code demonstrates how to use Flutter widgets.
+
+---
+```
+
+### Slide with Image
+
+```markdown
+---
+
+@column
+
+# Image Example
+
+![Example Image](https://example.com/image.png) {.cover}
+
+@column
+
+# Text alongside the image
+
+---
+```
+
+### Advanced Layout with Nested Sections
+
+```markdown
+---
+
+@section
+
+@column {
+  align: center
+}
+
+# Main Header
+
+@section {
+  flex: 2
+}
+
+@column {
+  align: center_left
+}
+
+## Left Content
+
+@column {
+  align: center_right
+}
+
+## Right Content
+
+---
+```
+
+## SuperDeck App Options
+
+### `DeckOptions`
+
+When initializing SuperDeck, you can customize its behavior with various options:
 
 ```dart
 SuperDeckApp(
-   style: style,
-   examples: [
-      Example(
-         name: 'demo',
-         builder: (args) {
-            return CustomWidget();
-         },
-      ),
-   ],
-);
+  options: DeckOptions(
+    baseStyle: BaseStyle(),
+    widgets: {
+      'customWidget': (args) => CustomWidget(property: args.getString('property')),
+    },
+    styles: {
+      'accentStyle': AccentStyle(),
+      'specialStyle': SpecialStyle(),
+    },
+    parts: const SlideParts(
+      header: HeaderPart(),
+      footer: FooterPart(),
+      background: BackgroundPart(),
+    ),
+    debug: false,
+  ),
+)
 ```
 
-### Shared Slide Options
+Options include:
+- `baseStyle`: The base style for all slides
+- `widgets`: Custom widgets that can be referenced in slides
+- `styles`: Custom styles that can be applied to slides
+- `parts`: Parts that can be applied to all slides (header, footer, background)
+- `debug`: Whether to enable debug mode
 
-Some shared options can be applied by adding them to a `superdeck.yaml` file in the root of your project. These options will be applied to all slides unless overridden by slide-specific options.
+### Custom Widgets
 
-### Slide Options
+You can register custom widgets that can be referenced in your slides:
 
-The following options are available for configuring each slide. All options are optional.
+```dart
+widgets: {
+  'twitter': (args) {
+    return TwitterWidget(
+      username: args.getString('username'),
+      tweetId: args.getString('tweetId'),
+    );
+  },
+},
+```
 
-**Shared Options**
-Some shared options can be applied by adding them to a `superdeck.yaml` file in the root of your project. These options will be applied to all slides unless overridden by slide-specific options.
-
-#### `title`
-
-The title of the slide.
-
-#### `background`
-
-The background image that will be displayed on the slide. You can use a URL or a local asset path.
-
-#### `content`
-
-The markdown content of the slide. This is where you write the main content of the slide using Markdown syntax.
-
-- `alignment`: The alignment of the slide content.
-- `flex`: The flex value of the slide content. This determines how much space the content occupies relative to other content on the slide.
-
-#### `style`
-
-This is the style variants that will be applied to the slide. You can define style variants by using `Mix` and pass them to the `SuperDeck` constructor.
-
-#### `transition`
-
-The transition effect to be applied when navigating to the slide.
-
-- `type`: The type of transition effect.
-- `duration`: The duration of the transition effect in milliseconds.
-- `delay`: The delay before the transition effect starts in milliseconds.
-- `curve`: The curve of the transition effect.
-
-#### `layout`
-
-Selects a slide layout template. Available options include: `simple`, `two_column`, `two_column_header`, `image`, and `widget`.
-
-## Templates
-
-SuperDeck provides a diverse collection of templates, each designed to meet different presentation needs. From simple text slides to complex layouts with images and columns, you can easily find the right template for your content.
-
-### Simple Template (default)
-
-A straightforward template for your presentations.
+Then in your markdown:
 
 ```markdown
----
-background: https://source.unsplash.com/random/900×700/?landscape
----
-
-# Introduction to SuperDeck
-
-Create **engaging**, **customizable** presentations within your Flutter app.
+@twitter {
+  username: username
+  tweetId: 1234567890
+}
 ```
 
-### Two-Column Template
+### Generated Assets
 
-Ideal for presenting comparative or complementary information side by side.
+SuperDeck can handle various types of assets:
+
+- PNG, JPEG, GIF, WEBP, SVG image formats
+- Auto-generated thumbnails
+- Mermaid diagram renderings
+
+## Styles and Customization
+
+SuperDeck provides flexible styling options through its styling system:
+
+```dart
+baseStyle: BaseStyle(),
+styles: {
+  'announcement': AnnouncementStyle(),
+  'quote': QuoteStyle(),
+},
+```
+
+You can apply these styles to your slides or elements using class annotations:
 
 ```markdown
----
-layout: two_column
----
+# My Styled Title {.announcement}
 
-::left::
-
-# Product A
-- Feature 1
-- Feature 2
-
-::right::
-
-# Product B
-- Feature X
-- Feature Y
+> This is a quote {.quote}
 ```
 
-#### Sections
+## Slide Parts
 
-- `::left::`: The content that will be placed in the left column.
-- `::right::`: The content that will be placed in the right column.
+Slide parts allow you to add consistent elements to all slides:
 
-If the first tag that is found is `::right::` everything before this tag will be placed on the `::left::` section.
+```dart
+parts: const SlideParts(
+  header: HeaderPart(),
+  footer: FooterPart(),
+  background: BackgroundPart(),
+),
+```
 
-You can control the content options for each section on the front matter of the slide.
+Each part can be customized with your own widget implementation.
+
+## API Reference
+
+### Block Model
+
+The `Block` class is the base class for all block types:
+
+- `SectionBlock`: Container for other blocks
+- `ColumnBlock`: Displays markdown content
+- `ImageBlock`: Displays images
+- `DartPadBlock`: Embeds DartPad
+- `WidgetBlock`: Embeds custom widgets
+
+### Asset Model
+
+The `GeneratedAsset` class represents assets used in presentations:
+
+- Image assets (PNG, JPEG, GIF, WEBP, SVG)
+- Thumbnails
+- Mermaid diagrams
+
+### Slide Model
+
+The `Slide` class represents a single slide in the presentation:
+
+- `key`: Unique identifier for the slide
+- `options`: Options for the slide (title, style, etc.)
+- `sections`: List of section blocks in the slide
+- `comments`: List of comments in the slide
+
+## Advanced Features
+
+### Code Highlighting
+
+Code blocks are automatically highlighted based on the language:
 
 ```markdown
-sections:
-   left:
-      flex: 2
-      alignment: center_left
-   right:
-      flex: 1
-      alignment: center_right
+```dart
+void main() {
+  print('Hello, world!');
+}
+``` {.code}
 ```
 
-Read more about on the [content options](#content) section.
+The `.code` class ensures proper formatting and syntax highlighting.
 
-### Two-Column Header Template
+### Animations
 
-Similar to the two-column template, but with an additional header section at the top of the slide.
+You can add simple animations to elements:
 
 ```markdown
----
-layout: two_column_header
----
-
-::header::
-
-# Product Comparison
-
-::left::
-
-## Product A
-- Feature 1
-- Feature 2
-- Feature 3
-
-::right::
-
-## Product B
-- Feature X
-- Feature Y
-- Feature Z
+# This title will animate {.animate}
 ```
 
-#### Sections
+### Notes and Alerts
 
-- `::header::`: The content that will be placed in the header section.
-- `::left::`: The content that will be placed in the left column.
-- `::right::`: The content that will be placed in the right column.
-
-If the first tag that is found is `::left::`, everything before this tag will be placed in the `::header::` section.
-
-You can control the content options for each section in the front matter of the slide.
+SuperDeck supports note and alert syntax:
 
 ```markdown
-sections:
-   header:
-      flex: 2
-      alignment: top_right
-   left:
-      flex: 2
-      alignment: center_left
-   right:
-      flex: 1
-      alignment: center_right
+> [!NOTE]
+> This is a note.
+
+> [!WARNING]
+> This is a warning.
+
+> [!CAUTION]
+> This is a caution.
 ```
-
-Keep in mind that you can also control the flex of the `left` and `right` sections by using the `content` property.
-
-Read more about it in the [content options](#content) section.
-
-### Image Template
-
-Display an image alongside the slide content.
-
-```markdown
----
-layout: image
-options:
-  src: https://source.unsplash.com/random/900×700/?nature
-  fit: cover
-  position: left
----
-
-# Key Features
-
-- Innovative design
-- User-friendly
-- Energy-efficient
-```
-
-The `options` property specifies the image to be displayed. It has the following sub-options:
-
-- `src`: The URL or path to the image file.
-- `fit`: How the image should be fitted within the slide.
-- `position`: The position of the image relative to the slide content.
-
-### Widget Template
-
-Embed a custom widget within the slide.
-
-```markdown
----
-layout: widget
-options:
-   name: demo
-   position: center
-   flex: 1
-   args:
-      customArg: value
-      customArg2: value2
----
-
-# Custom Widget
-
-This slide contains a custom widget.
-```
-
-The `options` property specifies the widget to be embedded. It has the following sub-options:
-
-- `name`: The name of the widget.
-- `position`: The position of the widget relative to the slide content.
-- `flex`: The flex value of the widget.
-- `args`: Additional arguments to be passed to the widget.

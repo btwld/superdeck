@@ -1,0 +1,162 @@
+---
+title: Widget Size Measurement Guide
+description: Best practices for reading post-layout sizes in Flutter and the scenarios where measuring is unnecessary.
+---
+
+# Widget Size Measurement Guide
+
+Accurately reading a widget's rendered size in Flutter is sometimes necessary (anchoring overlays, coordinating external layouts), but it must be done without interrupting the render pipeline. This guide summarizes a resilient pattern for collecting post-layout sizes and outlines purpose-built APIs that eliminate the need to measure in many cases.
+
+## When Measuring Makes Sense
+
+- You need the actual `Size` after layout completes (for analytics, external integrations, or positioning content in another layer).
+- The widget tree producing the size is outside your control, so you cannot refactor layout flow directly.
+- A one-off query (for example, snapshotting a widget before an animation) cannot be served by existing layout delegates.
+
+If you instead own both parent and children, prefer a custom layout delegate or other built-in primitives described later in this guide.
+
+## A Hardened `MeasureSize`
+
+### Implementation
+
+```dart
+import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
+
+/// Notifies [onChange] with the child's laid-out size at the end of each frame
+/// where that size changed.
+class MeasureSize extends SingleChildRenderObjectWidget {
+  const MeasureSize({
+    required this.onChange,
+    super.child,
+    super.key,
+  });
+
+  final ValueChanged<Size> onChange;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderMeasureSize(onChange);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderMeasureSize renderObject) {
+    renderObject.onChange = onChange;
+  }
+}
+
+class _RenderMeasureSize extends RenderProxyBox {
+  _RenderMeasureSize(this.onChange);
+
+  ValueChanged<Size> onChange;
+
+  Size? _lastReported;
+  Size? _latest;
+  bool _callbackScheduled = false;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+
+    final newSize = size; // Safe even when child == null.
+    if (_latest != newSize) {
+      _latest = newSize;
+      _scheduleCallback();
+    }
+  }
+
+  void _scheduleCallback() {
+    if (_callbackScheduled || _latest == null) return;
+    _callbackScheduled = true;
+
+    // SchedulerBinding.instance is available after runApp/ensureInitialized.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _callbackScheduled = false;
+      if (!attached) return; // Avoid stale notifications after dispose.
+
+      final currentSize = _latest!;
+      if (_lastReported != currentSize) {
+        _lastReported = currentSize;
+        onChange(currentSize);
+      }
+    });
+  }
+
+  @override
+  void detach() {
+    _callbackScheduled = false;
+    super.detach();
+  }
+}
+```
+
+### Why This Version Is Safer
+
+- Reads the render object's own `size`, so it works even when the child is temporarily null.
+- Coalesces multiple layout passes into a single post-frame callback per frame, avoiding duplicate notifications.
+- Guards against notifications after the render object detaches, preventing updates to obsolete listeners.
+- Fires once on the first layout because `_lastReported` starts null—callers can treat the initial payload as the baseline.
+- Defers callbacks with `SchedulerBinding.instance.addPostFrameCallback`, keeping state changes out of the render pipeline and avoiding "setState() or markNeedsLayout() called during layout" errors.
+
+### Using the Widget
+
+```dart
+class ResizablePanel extends StatefulWidget {
+  const ResizablePanel({super.key});
+
+  @override
+  State<ResizablePanel> createState() => _ResizablePanelState();
+}
+
+class _ResizablePanelState extends State<ResizablePanel> {
+  Size? _size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Panel: ${_size ?? const Size.zero}'),
+        const SizedBox(height: 8),
+        MeasureSize(
+          onChange: (size) => setState(() => _size = size),
+          child: DecoratedBox(
+            decoration: const BoxDecoration(color: Color(0xFFE0E0E0)),
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Dynamic content goes here'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+Remember to call `WidgetsFlutterBinding.ensureInitialized()` (or `runApp`) before building any widget tree; that guarantees `SchedulerBinding.instance` is non-null when the render object schedules callbacks.
+
+## Prefer Not Measuring When Possible
+
+| Scenario | Preferred Tool | Why It Helps |
+| --- | --- | --- |
+| Anchoring overlays, menus, or tooltips | `CompositedTransformTarget` + `CompositedTransformFollower` (optionally with `Overlay`/`OverlayPortal`) | The compositor keeps layers aligned through transforms and scrolling without manual size math. |
+| You only need to know that the size changed | `SizeChangedLayoutNotifier` with `NotificationListener<SizeChangedLayoutNotification>` | The framework emits a notification whenever the child layout changes; you can read `context.size` inside the listener if needed. |
+| Smoothly respond to content changes | `AnimatedSize` | Lets Flutter animate between old/new sizes without manual measurements or tweens. |
+| You control parent and children layout | `CustomSingleChildLayout` / `CustomMultiChildLayout` delegates | Delegates receive constraints, lay out each child, then read child sizes synchronously for positioning. |
+
+## Additional Guidance
+
+- **GlobalKey trade-offs:** Measuring with a `GlobalKey` and `context.size` works for isolated cases, but global keys disable important tree optimizations. Avoid placing them inside large lists or grids.
+- **Text measurement:** When you only need text dimensions outside the widget pipeline, use `TextPainter` (`layout` then `size`) instead of building a widget just to measure it.
+- **Batching external work:** If the size triggers expensive operations (network calls, analytics), debounce changes at the listener level to avoid re-running work each frame during animations.
+- **Testing:** Unit-test listeners by providing fake callbacks and verifying they fire on first layout and when size changes. Widget tests can pump frames with different constraints to ensure coalescing works.
+
+## Checklist
+
+- [ ] Confirm measuring is required; otherwise prefer the specialized primitives above.
+- [ ] Wrap the target widget in `MeasureSize`, and ensure any state changes happen in the post-frame callback.
+- [ ] Keep listeners lightweight or debounce if external side effects are involved.
+- [ ] Document why measurement is used so future maintainers can evaluate alternate designs.
+
+Following these practices keeps measurements safe, prevents layout feedback loops, and leans on the Flutter framework's built-in tools wherever possible.

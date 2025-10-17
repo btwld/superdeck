@@ -1,0 +1,88 @@
+---
+title: SuperDeck Documentation
+description: Create beautiful presentations with Flutter and Markdown
+---
+
+# SuperDeck
+
+SuperDeck enables you to craft visually appealing and interactive presentations directly within your Flutter apps, using the simplicity and power of Markdown.
+
+<img src="https://github.com/leoafarias/superdeck/assets/435833/42ec88e9-d3d9-4c52-bbf9-5a2809cca257" alt="SuperDeck Screenshot" />
+
+## [View Live Demo](https://superdeck-dev.web.app)
+
+## Overview
+
+SuperDeck is a presentation framework for Flutter that combines the simplicity of Markdown with the power of Flutter's UI system. It uses a block-based architecture to create flexible, multi-column layouts with support for custom widgets and interactive content.
+
+### Key Components
+
+- **CLI Tool** - Setup, build, and publish presentations
+- **Flutter Package** - UI components and presentation runtime
+- **Block System** - Flexible content layout with 5 block types
+- **Mix Styling** - Comprehensive theming and styling system
+- **Asset Pipeline** - Automatic generation and optimization
+
+## Core Features
+
+- **5 Block Types**: `@column`, `@section`, `@image`, `@dartpad`, `@widget`
+- **CLI Commands**: `setup`, `build`, `publish`, `version`
+- **Markdown Support**: Full CommonMark with GitHub-style alerts
+- **Custom Widgets**: Extensible widget system for interactive content
+- **Multi-Platform**: All Flutter platforms supported
+- **Live Development**: Watch mode with hot reload
+- **GitHub Pages**: Built-in publishing support
+
+## Architecture
+
+SuperDeck follows a modular architecture:
+
+- **Core** (`packages/core/`) - Data models and domain logic
+- **Builder** (`packages/builder/`) - Markdown parsing and asset generation  
+- **CLI** (`packages/cli/`) - Command-line interface
+- **SuperDeck** (`packages/superdeck/`) - Flutter UI components and Mix styling
+
+## Quick Start
+
+1. **Install the CLI**
+   ```bash
+   dart pub global activate superdeck_cli
+   ```
+
+2. **Set up your Flutter project**
+   ```bash
+   cd your-flutter-project
+   superdeck setup
+   ```
+
+3. **Add SuperDeck dependency**
+   ```bash
+   flutter pub add superdeck
+   ```
+
+4. **Initialize in your app**
+   ```dart
+   import 'package:superdeck/superdeck.dart';
+
+   void main() async {
+     WidgetsFlutterBinding.ensureInitialized();
+     await SuperDeckApp.initialize();
+     runApp(MyApp());
+   }
+   ```
+
+## Documentation Structure
+
+- **[Getting Started](/getting-started)** - Complete setup guide
+- **[Tutorials](/docs/tutorials/)** - Step-by-step learning paths
+- **[How-to Guides](/docs/guides/)** - Task-focused instructions
+- **[Reference](/docs/reference/)** - Complete API documentation
+- **[Examples](/examples)** - Real-world use cases
+
+## What Makes SuperDeck Different
+
+- **Flutter-Native** - Built specifically for Flutter developers
+- **Block-Based** - Flexible layout system beyond traditional slides
+- **Developer-Friendly** - CLI tools, hot reload, and debugging support
+- **Extensible** - Custom widgets and comprehensive styling
+- **Production-Ready** - Asset optimization and deployment tools

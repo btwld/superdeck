@@ -1,0 +1,729 @@
+---
+title: Custom Slide Parts Guide
+description: Learn how to create custom headers, footers, and backgrounds for SuperDeck presentations
+---
+
+# Custom Slide Parts Guide
+
+SuperDeck allows you to customize the appearance of your presentations by creating custom slide parts: headers, footers, and backgrounds. These components are rendered consistently across all slides in your presentation.
+
+## Overview
+
+Slide parts are reusable UI components that appear on every slide:
+
+- **Header** - Appears at the top of each slide (implements `PreferredSizeWidget`)
+- **Footer** - Appears at the bottom of each slide (implements `PreferredSizeWidget`)
+- **Background** - Renders behind the slide content (regular `Widget`)
+
+Each part is optional and can be customized independently.
+
+## Basic Setup
+
+### 1. Define Custom Parts
+
+Create custom header and footer classes that implement `PreferredSizeWidget`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:superdeck/superdeck.dart';
+
+class CustomHeaderPart extends StatelessWidget implements PreferredSizeWidget {
+  const CustomHeaderPart({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
+
+  @override
+  Widget build(BuildContext context) {
+    // Access slide data through SlideConfiguration
+    final slide = SlideConfiguration.of(context);
+    
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Logo
+          Image.asset('assets/logo.png', height: 48),
+          Spacer(),
+          // Slide title or presentation title
+          Text(
+            slide.options.title ?? 'My Presentation',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CustomFooterPart extends StatelessWidget implements PreferredSizeWidget {
+  const CustomFooterPart({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(60);
+
+  @override
+  Widget build(BuildContext context) {
+    final slide = SlideConfiguration.of(context);
+    
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Copyright
+          Text(
+            '© 2024 Your Company',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          Spacer(),
+          // Slide counter
+          Text(
+            'Slide ${slide.slideIndex + 1}',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CustomBackgroundPart extends StatelessWidget {
+  const CustomBackgroundPart({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.blue.shade50,
+            Colors.white,
+            Colors.purple.shade50,
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 2. Register Parts in PresentationOptions
+
+Add your custom parts to your app configuration:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:superdeck/superdeck.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SuperDeckApp.initialize();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: SuperDeckApp(
+        options: PresentationOptions(
+          parts: SlideParts(
+            header: CustomHeaderPart(),
+            footer: CustomFooterPart(),
+            background: CustomBackgroundPart(),
+          ),
+          // ... other options
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Accessing Slide Data
+
+Use `SlideConfiguration.of(context)` to access current slide information:
+
+```dart
+class DataAwareHeaderPart extends StatelessWidget implements PreferredSizeWidget {
+  const DataAwareHeaderPart({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(100);
+
+  @override
+  Widget build(BuildContext context) {
+    final slide = SlideConfiguration.of(context);
+    
+    // Available slide data:
+    final slideIndex = slide.slideIndex;           // Current slide index (0-based)
+    final slideTitle = slide.options.title;       // Slide title from frontmatter
+    final slideStyle = slide.options.style;       // Style template name
+    final slideArgs = slide.options.args;         // Custom arguments
+    final slideKey = slide.key;                   // Unique slide identifier
+    final slideComments = slide.comments;         // Speaker notes
+    final isDebugMode = slide.debug;              // Debug mode flag
+    
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _getHeaderColor(slideStyle),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section breadcrumb
+          if (slideStyle != null)
+            Text(
+              slideStyle.toUpperCase(),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withOpacity(0.8),
+                letterSpacing: 1.2,
+              ),
+            ),
+          SizedBox(height: 8),
+          // Slide title
+          Text(
+            slideTitle ?? 'Slide ${slideIndex + 1}',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Color _getHeaderColor(String? style) {
+    switch (style) {
+      case 'intro':
+        return Colors.blue.shade600;
+      case 'content':
+        return Colors.green.shade600;
+      case 'conclusion':
+        return Colors.purple.shade600;
+      default:
+        return Colors.grey.shade600;
+    }
+  }
+}
+```
+
+## Advanced Examples
+
+### Interactive Footer with Navigation
+
+```dart
+class NavigationFooterPart extends StatelessWidget implements PreferredSizeWidget {
+  const NavigationFooterPart({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
+
+  @override
+  Widget build(BuildContext context) {
+    final slide = SlideConfiguration.of(context);
+    final navigation = NavigationController.of(context);
+    
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade900,
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade700, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Previous button
+          IconButton(
+            onPressed: navigation.canGoPrevious ? navigation.previousSlide : null,
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+            tooltip: 'Previous slide',
+          ),
+          SizedBox(width: 16),
+          
+          // Progress bar
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Slide ${slide.slideIndex + 1}',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                    Text(
+                      '${navigation.totalSlides} slides',
+                      style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 4),
+                LinearProgressIndicator(
+                  value: (slide.slideIndex + 1) / navigation.totalSlides,
+                  backgroundColor: Colors.grey.shade700,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade400),
+                ),
+              ],
+            ),
+          ),
+          
+          SizedBox(width: 16),
+          // Next button
+          IconButton(
+            onPressed: navigation.canGoNext ? navigation.nextSlide : null,
+            icon: Icon(Icons.arrow_forward, color: Colors.white),
+            tooltip: 'Next slide',
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### Conditional Header
+
+Create a header that only appears on certain slides:
+
+```dart
+class ConditionalHeaderPart extends StatelessWidget implements PreferredSizeWidget {
+  const ConditionalHeaderPart({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(60);
+
+  @override
+  Widget build(BuildContext context) {
+    final slide = SlideConfiguration.of(context);
+    
+    // Hide header on title slides
+    if (slide.options.style == 'title') {
+      return SizedBox(
+        height: 0,
+        width: double.infinity,
+      );
+    }
+    
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade300),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            slide.options.title ?? 'My Presentation',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Spacer(),
+          Text(
+            '${slide.slideIndex + 1}',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### Responsive Parts
+
+Create parts that adapt to different screen sizes:
+
+```dart
+class ResponsiveFooterPart extends StatelessWidget implements PreferredSizeWidget {
+  const ResponsiveFooterPart({super.key});
+
+  @override
+  Size get preferredSize {
+    // Return different heights based on screen size if needed
+    return const Size.fromHeight(70);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final slide = SlideConfiguration.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isCompact = screenWidth < 600;
+    
+    return Container(
+      height: isCompact ? 50 : preferredSize.height,
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 16 : 24,
+        vertical: isCompact ? 8 : 16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade300),
+        ),
+      ),
+      child: isCompact
+          ? _buildCompactLayout(slide)
+          : _buildFullLayout(slide),
+    );
+  }
+  
+  Widget _buildCompactLayout(SlideConfiguration slide) {
+    return Center(
+      child: Text(
+        '${slide.slideIndex + 1}',
+        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+      ),
+    );
+  }
+  
+  Widget _buildFullLayout(SlideConfiguration slide) {
+    return Row(
+      children: [
+        Text(
+          '© 2024 Your Company',
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+        ),
+        Spacer(),
+        Text(
+          'Slide ${slide.slideIndex + 1}',
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### Animated Background
+
+```dart
+class AnimatedBackgroundPart extends StatefulWidget {
+  const AnimatedBackgroundPart({super.key});
+
+  @override
+  State<AnimatedBackgroundPart> createState() => _AnimatedBackgroundPartState();
+}
+
+class _AnimatedBackgroundPartState extends State<AnimatedBackgroundPart>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 10),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: [0.0, _animation.value, 1.0],
+              colors: [
+                Colors.blue.shade50,
+                Colors.white,
+                Colors.purple.shade50,
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+## SlideConfiguration API Reference
+
+The `SlideConfiguration` class provides access to slide information:
+
+```dart
+class SlideConfiguration {
+  final int slideIndex;                    // Current slide index (0-based)
+  final Style style;                       // Mix styling for the slide
+  final bool debug;                        // Debug mode flag
+  final SlideParts? parts;                 // Current slide parts configuration
+  final String thumbnailFile;              // Thumbnail file path
+  final bool isExporting;                  // Whether currently exporting
+  
+  // Access to slide data
+  SlideOptions get options;                // Slide frontmatter options
+  String get key;                          // Unique slide identifier
+  Slide get data;                          // Raw slide data
+  List<SectionBlock> get sections;         // Slide content sections
+  List<String> get comments;               // Speaker notes
+  
+  // Access slide configuration
+  static SlideConfiguration of(BuildContext context);
+}
+```
+
+### SlideOptions Properties
+
+```dart
+class SlideOptions {
+  final String? title;                     // Slide title from frontmatter
+  final String? style;                     // Style template name
+  final Map<String, Object?> args;         // Custom arguments
+}
+```
+
+### Accessing Frontmatter Data
+
+When you have frontmatter in your slides like:
+
+```markdown
+---
+title: Introduction
+style: title
+author: John Doe
+---
+
+# Welcome to My Presentation
+```
+
+You can access this data in your slide parts:
+
+```dart
+class SmartHeaderPart extends StatelessWidget implements PreferredSizeWidget {
+  const SmartHeaderPart({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
+
+  @override
+  Widget build(BuildContext context) {
+    final slide = SlideConfiguration.of(context);
+    
+    // Access frontmatter
+    final title = slide.options.title;           // "Introduction"
+    final style = slide.options.style;           // "title"
+    final author = slide.options.args['author']; // "John Doe"
+    
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.all(20),
+      child: Row(
+        children: [
+          if (author != null)
+            Text(
+              'By $author',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+          Spacer(),
+          if (title != null)
+            Text(
+              title,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+## Best Practices
+
+### Performance
+1. **Keep parts lightweight** - Avoid expensive operations in build methods
+2. **Use const constructors** when possible
+3. **Cache expensive computations** in stateful widgets
+4. **Minimize rebuilds** by using proper keys
+
+### Design
+1. **Maintain consistency** - Use the same design language across all parts
+2. **Consider accessibility** - Ensure sufficient color contrast and text sizes
+3. **Test responsiveness** - Verify parts work on different screen sizes
+4. **Balance information** - Don't overcrowd headers and footers
+
+### Development
+1. **Use SlideConfiguration.of(context)** - The proper way to access slide data
+2. **Implement PreferredSizeWidget** - Required for headers and footers
+3. **Handle edge cases** - Account for missing titles, null values, etc.
+4. **Test with debug mode** - Use `debug: true` in PresentationOptions
+
+## Common Patterns
+
+### Corporate Branding
+```dart
+class CorporateHeaderPart extends StatelessWidget implements PreferredSizeWidget {
+  final String companyName;
+  final String logoAsset;
+  
+  const CorporateHeaderPart({
+    super.key,
+    required this.companyName,
+    required this.logoAsset,
+  });
+  
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Row(
+        children: [
+          Image.asset(logoAsset, height: 48),
+          SizedBox(width: 16),
+          Text(
+            companyName,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### Conference Presentation
+```dart
+class ConferenceFooterPart extends StatelessWidget implements PreferredSizeWidget {
+  final String eventName;
+  final String speakerName;
+  final String twitterHandle;
+  
+  const ConferenceFooterPart({
+    super.key,
+    required this.eventName,
+    required this.speakerName,
+    required this.twitterHandle,
+  });
+  
+  @override
+  Size get preferredSize => const Size.fromHeight(60);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: preferredSize.height,
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade900,
+      ),
+      child: Row(
+        children: [
+          Text(
+            eventName,
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          SizedBox(width: 16),
+          Text(
+            '•',
+            style: TextStyle(color: Colors.grey.shade500),
+          ),
+          SizedBox(width: 16),
+          Text(
+            speakerName,
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          Spacer(),
+          Text(
+            twitterHandle,
+            style: TextStyle(color: Colors.blue.shade300, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+## Debugging Parts
+
+Enable debug mode to visualize slide boundaries and data:
+
+```dart
+PresentationOptions(
+  debug: true, // Shows visual debugging aids
+  parts: SlideParts(
+    header: CustomHeaderPart(),
+    footer: CustomFooterPart(),
+    background: CustomBackgroundPart(),
+  ),
+)
+```
+
+This comprehensive guide covers the correct API for creating custom slide parts in SuperDeck, using the actual implementation patterns and data access methods.
