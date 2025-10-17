@@ -70,9 +70,7 @@ void main() {
     );
 
     // Write to file with pretty printing, only if content changed
-    final file = File(
-      '/Users/leofarias/Projects/superdeck/packages/core/markdown_ref.json',
-    );
+    final file = File('markdown_ref.json');
     final newContent = const JsonEncoder.withIndent('  ').convert(reference);
 
     // Check if file exists and content is different
