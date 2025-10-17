@@ -19,16 +19,8 @@ class ButtonExample extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 16,
         children: [
-          RemixButton(
-            onPressed: () {},
-            label: 'Solid',
-            style: solidStyle,
-          ),
-          RemixButton(
-            onPressed: () {},
-            label: 'Outline',
-            style: outlineStyle,
-          ),
+          RemixButton(onPressed: () {}, label: 'Solid', style: solidStyle),
+          RemixButton(onPressed: () {}, label: 'Outline', style: outlineStyle),
         ],
       ),
     );

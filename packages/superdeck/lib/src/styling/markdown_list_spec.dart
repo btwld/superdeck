@@ -42,8 +42,9 @@ final class MarkdownListSpec extends Spec<MarkdownListSpec>
       bullet: MixOps.lerp(bullet, other.bullet, t),
       text: MixOps.lerp(text, other.text, t),
       orderedAlignment: t < 0.5 ? orderedAlignment : other.orderedAlignment,
-      unorderedAlignment:
-          t < 0.5 ? unorderedAlignment : other.unorderedAlignment,
+      unorderedAlignment: t < 0.5
+          ? unorderedAlignment
+          : other.unorderedAlignment,
     );
   }
 
@@ -58,6 +59,10 @@ final class MarkdownListSpec extends Spec<MarkdownListSpec>
   }
 
   @override
-  List<Object?> get props =>
-      [bullet, text, orderedAlignment, unorderedAlignment];
+  List<Object?> get props => [
+    bullet,
+    text,
+    orderedAlignment,
+    unorderedAlignment,
+  ];
 }

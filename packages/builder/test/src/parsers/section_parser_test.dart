@@ -204,10 +204,7 @@ Body content column 2.
         expect(sections[0].blocks[0].content.trim(), 'Body content column 1.');
         expect(sections[0].blocks[1].content.trim(), 'Body content column 2.');
 
-        expect(
-          sections[0].blocks[0].align,
-          equals(ContentAlignment.center),
-        );
+        expect(sections[0].blocks[0].align, equals(ContentAlignment.center));
         expect(
           sections[0].blocks[1].align,
           equals(ContentAlignment.bottomRight),
@@ -244,10 +241,7 @@ Footer content column 2.
           );
 
           expect(sections[0].blocks[0].flex, equals(3));
-          expect(
-            sections[0].blocks[0].align,
-            equals(ContentAlignment.topLeft),
-          );
+          expect(sections[0].blocks[0].align, equals(ContentAlignment.topLeft));
 
           expect(sections[0].blocks[1].flex, equals(1));
           expect(
@@ -296,10 +290,7 @@ Footer content.
 
         expect(sections[0].blocks[0].content.trim(), 'Header content.');
         expect(sections[0].blocks[0].flex, equals(1));
-        expect(
-          sections[0].blocks[0].align,
-          equals(ContentAlignment.center),
-        );
+        expect(sections[0].blocks[0].align, equals(ContentAlignment.center));
 
         expect(sections[1].blocks[0].content.trim(), 'Body content column 1.');
         expect(sections[1].blocks[0].flex, equals(2));
@@ -353,12 +344,21 @@ Footer content.
 
         expect(sections.length, equals(3));
 
-        expect(sections[0].blocks.length, equals(1),
-            reason: 'First section should have one block.');
-        expect(sections[1].blocks.length, equals(1),
-            reason: 'Second section should have one block.');
-        expect(sections[2].blocks.length, equals(1),
-            reason: 'Third section should have one block.');
+        expect(
+          sections[0].blocks.length,
+          equals(1),
+          reason: 'First section should have one block.',
+        );
+        expect(
+          sections[1].blocks.length,
+          equals(1),
+          reason: 'Second section should have one block.',
+        );
+        expect(
+          sections[2].blocks.length,
+          equals(1),
+          reason: 'Third section should have one block.',
+        );
 
         expect(sections[0].blocks[0].content.trim(), 'Header content.');
         expect(

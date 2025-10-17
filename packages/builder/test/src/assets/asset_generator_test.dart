@@ -54,8 +54,10 @@ void main() {
     });
 
     test('generateAsset returns asset data', () async {
-      final result =
-          await generator.generateAsset('test content', '/path/to/asset');
+      final result = await generator.generateAsset(
+        'test content',
+        '/path/to/asset',
+      );
       expect(result, equals([1, 2, 3, 4, 5]));
     });
 

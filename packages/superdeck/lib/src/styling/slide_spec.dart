@@ -79,10 +79,9 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
     this.checkbox,
     StyleSpec<BoxSpec>? blockContainer,
     StyleSpec<ImageSpec>? image,
-  })  : alert = alert ?? const StyleSpec(spec: MarkdownAlertSpec()),
-        blockContainer =
-            blockContainer ?? const StyleSpec(spec: BoxSpec()),
-        image = image ?? const StyleSpec(spec: ImageSpec());
+  }) : alert = alert ?? const StyleSpec(spec: MarkdownAlertSpec()),
+       blockContainer = blockContainer ?? const StyleSpec(spec: BoxSpec()),
+       image = image ?? const StyleSpec(spec: ImageSpec());
 
   @override
   SlideSpec copyWith({
@@ -159,7 +158,10 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       textScaleFactor: t < 0.5 ? textScaleFactor : other.textScaleFactor,
       alert: MixOps.lerp(alert, other.alert, t)!,
       horizontalRuleDecoration: BoxDecoration.lerp(
-          horizontalRuleDecoration, other.horizontalRuleDecoration, t),
+        horizontalRuleDecoration,
+        other.horizontalRuleDecoration,
+        t,
+      ),
       blockquote: MixOps.lerp(blockquote, other.blockquote, t),
       list: MixOps.lerp(list, other.list, t),
       table: MixOps.lerp(table, other.table, t),
@@ -193,8 +195,7 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       // Lists
       listBullet: list?.spec.bullet?.spec.style,
       orderedListAlign: list?.spec.orderedAlignment ?? WrapAlignment.start,
-      unorderedListAlign:
-          list?.spec.unorderedAlignment ?? WrapAlignment.start,
+      unorderedListAlign: list?.spec.unorderedAlignment ?? WrapAlignment.start,
 
       // Blockquotes
       blockquote: blockquote?.spec.textStyle,
@@ -247,28 +248,28 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
 
   @override
   List<Object?> get props => [
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        p,
-        a,
-        em,
-        strong,
-        del,
-        img,
-        link,
-        textScaleFactor,
-        alert,
-        horizontalRuleDecoration,
-        blockquote,
-        list,
-        table,
-        code,
-        checkbox,
-        blockContainer,
-        image,
-      ];
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    a,
+    em,
+    strong,
+    del,
+    img,
+    link,
+    textScaleFactor,
+    alert,
+    horizontalRuleDecoration,
+    blockquote,
+    list,
+    table,
+    code,
+    checkbox,
+    blockContainer,
+    image,
+  ];
 }

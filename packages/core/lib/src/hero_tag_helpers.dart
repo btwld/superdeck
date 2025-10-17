@@ -35,10 +35,7 @@ import 'package:markdown/markdown.dart' as md;
 /// total [length] of the slice that should be consumed from the parser when a
 /// hero is found. The consumed length includes surrounding whitespace so no
 /// extra cleanup is required by callers.
-({String? hero, int length}) scanLeadingHeroMarker(
-  String source,
-  int start,
-) {
+({String? hero, int length}) scanLeadingHeroMarker(String source, int start) {
   final totalLength = source.length;
   var pos = start;
 
@@ -51,14 +48,14 @@ import 'package:markdown/markdown.dart' as md;
     break;
   }
 
-  if (pos >= totalLength || source.codeUnitAt(pos) != 0x7B /* { */) {
+  if (pos >= totalLength || source.codeUnitAt(pos) != 0x7B /* { */ ) {
     return (hero: null, length: 0);
   }
 
   final braceStart = pos;
   pos++; // Skip '{'
 
-  while (pos < totalLength && source.codeUnitAt(pos) != 0x7D /* } */) {
+  while (pos < totalLength && source.codeUnitAt(pos) != 0x7D /* } */ ) {
     pos++;
   }
 
@@ -125,7 +122,7 @@ String? consumeTrailingHeroForInlineNode(md.InlineParser parser) {
 
   if (parser.pos < parser.source.length) {
     final current = parser.source.codeUnitAt(parser.pos);
-    if (current == 0x29 /* ) */ || current == 0x5D /* ] */) {
+    if (current == 0x29 /* ) */ || current == 0x5D /* ] */ ) {
       parser.advanceBy(1);
     }
   }
@@ -235,12 +232,15 @@ final RegExp heroFenceInfoPattern = RegExp(r'^ {0,3}(`{3,}|~{3,})(.*)$');
 final RegExp heroBracesPattern = RegExp(r'\{([^}]*)\}');
 
 /// Matches `{.class}` anywhere in a string.
-final RegExp heroAnywherePattern =
-    RegExp(r'{\.([_a-zA-Z][_a-zA-Z0-9-]*)}', multiLine: true);
+final RegExp heroAnywherePattern = RegExp(
+  r'{\.([_a-zA-Z][_a-zA-Z0-9-]*)}',
+  multiLine: true,
+);
 
 /// Matches `{.anything}` for removal.
 final RegExp heroAnyBracePattern = RegExp(r'\{\.[^}]*\}', multiLine: true);
 
 /// Valid CSS identifier subset used for hero tags.
-final RegExp heroValidIdentifierPattern =
-    RegExp(r'^-?[_a-zA-Z][_a-zA-Z0-9-]*$');
+final RegExp heroValidIdentifierPattern = RegExp(
+  r'^-?[_a-zA-Z][_a-zA-Z0-9-]*$',
+);

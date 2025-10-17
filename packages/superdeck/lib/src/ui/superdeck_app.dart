@@ -7,10 +7,7 @@ import 'app_shell.dart';
 import '../styling/theme.dart';
 
 class SuperDeckApp extends StatelessWidget {
-  const SuperDeckApp({
-    super.key,
-    required this.options,
-  });
+  const SuperDeckApp({super.key, required this.options});
 
   final DeckOptions options;
 

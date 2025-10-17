@@ -32,11 +32,7 @@ class SuperDeckRunner extends CommandRunner<int> {
         help: 'Enable verbose logging',
         negatable: false,
       )
-      ..addFlag(
-        'version',
-        help: 'Print the current version',
-        negatable: false,
-      )
+      ..addFlag('version', help: 'Print the current version', negatable: false)
       ..addFlag(
         'quiet',
         abbr: 'q',

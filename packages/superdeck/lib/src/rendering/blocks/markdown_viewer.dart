@@ -41,20 +41,19 @@ class _MarkdownViewerState extends AnimatedWidgetBaseState<MarkdownViewer> {
 
   @override
   void forEachTween(TweenVisitor<dynamic> visitor) {
-    _styleTween = visitor(
-      _styleTween,
-      widget.spec,
-      (dynamic value) => SlideSpecTween(begin: value),
-    ) as SlideSpecTween?;
+    _styleTween =
+        visitor(
+              _styleTween,
+              widget.spec,
+              (dynamic value) => SlideSpecTween(begin: value),
+            )
+            as SlideSpecTween?;
   }
 
   @override
   Widget build(BuildContext context) {
     final spec = _styleTween!.evaluate(animation);
-    return _MarkdownBuilder(
-      content: widget.content,
-      spec: spec,
-    );
+    return _MarkdownBuilder(content: widget.content, spec: spec);
   }
 }
 
@@ -62,10 +61,7 @@ class _MarkdownBuilder extends StatelessWidget {
   final String content;
   final SlideSpec spec;
 
-  const _MarkdownBuilder({
-    required this.content,
-    required this.spec,
-  });
+  const _MarkdownBuilder({required this.content, required this.spec});
 
   @override
   Widget build(BuildContext context) {

@@ -75,10 +75,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
         // Transform line breaks once and reuse
         final transformedContent = _transformLineBreaks(textContent);
 
-        Widget result = StyledText(
-          transformedContent,
-          styleSpec: styleSpec,
-        );
+        Widget result = StyledText(transformedContent, styleSpec: styleSpec);
 
         return applyHeroIfNeeded<TextElement>(
           context: builderContext,
@@ -113,10 +110,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
         // Transform line breaks once and reuse
         final transformedContent = _transformLineBreaks(content);
 
-        Widget result = StyledText(
-          transformedContent,
-          styleSpec: styleSpec,
-        );
+        Widget result = StyledText(transformedContent, styleSpec: styleSpec);
 
         return applyHeroIfNeeded<TextElement>(
           context: context,

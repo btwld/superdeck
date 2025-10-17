@@ -47,10 +47,7 @@ class BlockData<T extends Block> {
 }
 
 class SectionData {
-  const SectionData({
-    required this.section,
-    required this.size,
-  });
+  const SectionData({required this.section, required this.size});
 
   final SectionBlock section;
   final Size size;

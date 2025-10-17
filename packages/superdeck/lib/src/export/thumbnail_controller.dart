@@ -20,7 +20,6 @@ enum AsyncFileStatus { idle, loading, done, error }
 class AsyncThumbnail extends ChangeNotifier {
   AsyncFileStatus _status = AsyncFileStatus.idle;
   File? _imageFile;
-  Object? _error;
   bool _disposed = false;
   Timer? _debounceTimer;
 
@@ -49,7 +48,6 @@ class AsyncThumbnail extends ChangeNotifier {
     if (_disposed) return;
 
     _status = AsyncFileStatus.loading;
-    _error = null;
     if (_imageFile != null) {
       FileImage(_imageFile!).evict();
     }
@@ -59,7 +57,6 @@ class AsyncThumbnail extends ChangeNotifier {
     try {
       _imageFile = await _generator(context, force);
     } catch (e) {
-      _error = e;
       _status = AsyncFileStatus.error;
       _imageFile = null;
     } finally {

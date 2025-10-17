@@ -17,9 +17,8 @@ class SlideProcessor {
   final int _concurrentSlides;
   final Logger _logger = Logger('SlideProcessor');
 
-  SlideProcessor({
-    int concurrentSlides = 4,
-  }) : _concurrentSlides = concurrentSlides;
+  SlideProcessor({int concurrentSlides = 4})
+    : _concurrentSlides = concurrentSlides;
 
   /// Processes all raw slides through the task pipeline with concurrency control.
   Future<List<Slide>> processAll(
@@ -28,7 +27,8 @@ class SlideProcessor {
     DeckRepository store,
   ) async {
     _logger.info(
-        'Processing ${rawSlides.length} slides with $_concurrentSlides concurrent workers');
+      'Processing ${rawSlides.length} slides with $_concurrentSlides concurrent workers',
+    );
 
     final processedSlides = <Slide>[];
 
@@ -46,7 +46,8 @@ class SlideProcessor {
         final rawSlide = batch[j];
 
         _logger.info(
-            'DeckBuilder: Processing slide $index (key: ${rawSlide.key})');
+          'DeckBuilder: Processing slide $index (key: ${rawSlide.key})',
+        );
 
         futures.add(_processSlide(SlideContext(index, rawSlide, store), tasks));
       }
@@ -67,7 +68,9 @@ class SlideProcessor {
 
   /// Processes an individual slide by executing all tasks sequentially.
   Future<SlideContext> _processSlide(
-      SlideContext context, List<Task> tasks) async {
+    SlideContext context,
+    List<Task> tasks,
+  ) async {
     for (var task in tasks) {
       await _runTask(task, context);
     }
@@ -78,16 +81,19 @@ class SlideProcessor {
   Future<void> _runTask(Task task, SlideContext context) async {
     final stopwatch = Stopwatch()..start();
     _logger.info(
-        'DeckBuilder: Running task "${task.name}" on slide ${context.slideIndex}');
+      'DeckBuilder: Running task "${task.name}" on slide ${context.slideIndex}',
+    );
     try {
       await task.run(context);
       stopwatch.stop();
       _logger.info(
-          'DeckBuilder: Task "${task.name}" completed for slide ${context.slideIndex} in ${stopwatch.elapsed}');
+        'DeckBuilder: Task "${task.name}" completed for slide ${context.slideIndex} in ${stopwatch.elapsed}',
+      );
     } on Exception catch (e, stackTrace) {
       stopwatch.stop();
       _logger.severe(
-          'DeckBuilder: Task "${task.name}" failed for slide ${context.slideIndex}: $e');
+        'DeckBuilder: Task "${task.name}" failed for slide ${context.slideIndex}: $e',
+      );
       _logger.severe('DeckBuilder: Stack trace: $stackTrace');
 
       // Wrap and rethrow the exception with additional context.

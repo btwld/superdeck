@@ -7,11 +7,7 @@ class SyntaxHighlight {
 
   static late HighlighterTheme _theme;
 
-  static final List<String> _mainSupportedLanguages = [
-    'dart',
-    'json',
-    'yaml',
-  ];
+  static final List<String> _mainSupportedLanguages = ['dart', 'json', 'yaml'];
 
   static final List<String> _secondarySupportedLangs = [
     'markdown',
@@ -47,7 +43,10 @@ class SyntaxHighlight {
     }
 
     try {
-      final highlighter = Highlighter(language: effectiveLanguage, theme: _theme);
+      final highlighter = Highlighter(
+        language: effectiveLanguage,
+        theme: _theme,
+      );
       final code = highlighter.highlight(source);
       return splitTextSpansByLines([code]);
     } catch (e) {
@@ -148,8 +147,10 @@ List<int> parseLineNumbers(String input) {
 }
 
 const vscodeDarkTheme = {
-  'root':
-      TextStyle(color: Color(0xffD4D4D4), backgroundColor: Color(0xff1E1E1E)),
+  'root': TextStyle(
+    color: Color(0xffD4D4D4),
+    backgroundColor: Color(0xff1E1E1E),
+  ),
   'emphasis': TextStyle(fontStyle: FontStyle.italic),
   'strong': TextStyle(fontWeight: FontWeight.bold),
   'section': TextStyle(color: Color(0xff569cd6), fontWeight: FontWeight.bold),

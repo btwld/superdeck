@@ -27,7 +27,11 @@ class TagTokenizer {
   const TagTokenizer();
 
   static final _tagPattern = RegExp(r'^\s*@([\w-]+)', multiLine: true);
-  static final _codeBlockPattern = RegExp(r'^```.*?^```', multiLine: true, dotAll: true);
+  static final _codeBlockPattern = RegExp(
+    r'^```.*?^```',
+    multiLine: true,
+    dotAll: true,
+  );
 
   List<TagToken> tokenize(String text) {
     // Find all code block ranges to exclude from tag matching
@@ -50,21 +54,12 @@ class TagTokenizer {
       final optionsStart = _skipWhitespace(text, match.end);
 
       if (optionsStart < text.length && text[optionsStart] == '{') {
-        final extraction = _extractBalancedBraces(
-          text,
-          optionsStart,
-          tagName,
-        );
+        final extraction = _extractBalancedBraces(text, optionsStart, tagName);
 
         final inner = extraction.body;
         final innerStart = extraction.openIndex + 1;
 
-        final optionsMap = _parseOptions(
-          inner,
-          tagName,
-          text,
-          innerStart,
-        );
+        final optionsMap = _parseOptions(inner, tagName, text, innerStart);
 
         tokens.add(
           TagToken(
@@ -163,8 +158,9 @@ class TagTokenizer {
       return convertYamlToMap(rawInner, strict: true);
     } on YamlException catch (e) {
       final span = e.span;
-      final offset =
-          span != null ? innerStartIndex + span.start.offset : innerStartIndex;
+      final offset = span != null
+          ? innerStartIndex + span.start.offset
+          : innerStartIndex;
       throw DeckFormatException(
         'Invalid options for @$tagName: ${e.message}',
         source,

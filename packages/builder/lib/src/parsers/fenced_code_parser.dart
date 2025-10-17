@@ -55,8 +55,9 @@ class FencedCodeParser {
       final startIndex = match.start;
       final endIndex = match.end;
 
-      final Map<String, dynamic> optionsMap =
-          options.isNotEmpty ? convertYamlToMap(options) : {};
+      final Map<String, dynamic> optionsMap = options.isNotEmpty
+          ? convertYamlToMap(options)
+          : {};
 
       parsedBlocks.add(
         ParsedFencedCode(

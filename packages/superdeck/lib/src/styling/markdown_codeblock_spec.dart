@@ -11,11 +11,7 @@ final class MarkdownCodeblockSpec extends Spec<MarkdownCodeblockSpec>
   final StyleSpec<BoxSpec>? container;
   final WrapAlignment? alignment;
 
-  const MarkdownCodeblockSpec({
-    this.textStyle,
-    this.container,
-    this.alignment,
-  });
+  const MarkdownCodeblockSpec({this.textStyle, this.container, this.alignment});
 
   @override
   MarkdownCodeblockSpec copyWith({

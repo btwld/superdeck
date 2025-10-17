@@ -8,8 +8,7 @@ import 'package:test/test.dart';
 /// Generates `github_markdown_ref.json` from the showcase markdown document.
 void main() {
   test('Generate GitHub Markdown showcase reference', () {
-    final sourceFile =
-        File('test/data/github_web_markdown_showcase.md');
+    final sourceFile = File('test/data/github_web_markdown_showcase.md');
     final markdown = sourceFile.readAsStringSync();
 
     final converter = MarkdownAstConverter(
@@ -26,10 +25,7 @@ void main() {
             'AST reference generated from github_web_markdown_showcase.md',
       },
       'markdown': markdown,
-      'ast': converter.toMap(
-        markdown,
-        includeMetadata: true,
-      ),
+      'ast': converter.toMap(markdown, includeMetadata: true),
     };
 
     final outputFile = File('github_markdown_ref.json');

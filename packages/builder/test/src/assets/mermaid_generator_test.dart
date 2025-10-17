@@ -29,8 +29,14 @@ void main() {
     test('has default configuration', () {
       expect(generator.configuration, isA<Map<String, dynamic>>());
       expect(generator.configuration['theme'], equals('base'));
-      expect(generator.configuration['themeVariables'], isA<Map<String, dynamic>>());
-      expect(generator.configuration['themeVariables']['darkMode'], equals(true));
+      expect(
+        generator.configuration['themeVariables'],
+        isA<Map<String, dynamic>>(),
+      );
+      expect(
+        generator.configuration['themeVariables']['darkMode'],
+        equals(true),
+      );
       expect(generator.configuration['themeCSS'], isA<String>());
       expect(generator.configuration['look'], equals('classic'));
       expect(generator.configuration['viewportWidth'], equals(1280));
@@ -51,7 +57,9 @@ void main() {
       expect(customProcessor.configuration['viewportWidth'], equals(800));
       expect(customProcessor.configuration['viewportHeight'], equals(600));
       expect(
-          customProcessor.configuration['backgroundColor'], equals('#000000'));
+        customProcessor.configuration['backgroundColor'],
+        equals('#000000'),
+      );
     });
 
     test('dispose completes without error', () async {
@@ -104,38 +112,46 @@ void main() {
           'customKey': 'customValue',
         };
 
-        final customProcessor = MermaidGenerator(
-          configuration: customConfig,
-        );
+        final customProcessor = MermaidGenerator(configuration: customConfig);
 
         expect(customProcessor.configuration['theme'], equals('forest'));
         expect(customProcessor.configuration['viewportWidth'], equals(1920));
         expect(customProcessor.configuration['viewportHeight'], equals(1080));
         expect(
-            customProcessor.configuration['customKey'], equals('customValue'));
+          customProcessor.configuration['customKey'],
+          equals('customValue'),
+        );
       });
     });
 
     group('theme integration', () {
       test('accepts MermaidTheme and converts to configuration', () {
-        final generator = MermaidGenerator(
-          theme: MermaidTheme.dark,
-        );
+        final generator = MermaidGenerator(theme: MermaidTheme.dark);
 
         expect(generator.configuration['theme'], equals('base'));
-        expect(generator.configuration['themeVariables'], isA<Map<String, dynamic>>());
-        expect(generator.configuration['themeVariables']['darkMode'], equals(true));
-        expect(generator.configuration['themeVariables']['primaryColor'], equals('#0ea5e9'));
+        expect(
+          generator.configuration['themeVariables'],
+          isA<Map<String, dynamic>>(),
+        );
+        expect(
+          generator.configuration['themeVariables']['darkMode'],
+          equals(true),
+        );
+        expect(
+          generator.configuration['themeVariables']['primaryColor'],
+          equals('#0ea5e9'),
+        );
       });
 
       test('theme parameter always sets theme to base', () {
-        final generator = MermaidGenerator(
-          theme: MermaidTheme.light,
-        );
+        final generator = MermaidGenerator(theme: MermaidTheme.light);
 
         // When using MermaidTheme, 'theme' is always 'base'
         expect(generator.configuration['theme'], equals('base'));
-        expect(generator.configuration['themeVariables']['darkMode'], equals(false));
+        expect(
+          generator.configuration['themeVariables']['darkMode'],
+          equals(false),
+        );
       });
 
       test('supports custom theme', () {
@@ -148,7 +164,8 @@ void main() {
 
         final generator = MermaidGenerator(theme: customTheme);
 
-        final vars = generator.configuration['themeVariables'] as Map<String, dynamic>;
+        final vars =
+            generator.configuration['themeVariables'] as Map<String, dynamic>;
         expect(vars['background'], equals('#1a1a2e'));
         expect(vars['primaryColor'], equals('#00ff88'));
         // textColor is now driven by canvasOnDarkSlide (defaults to false -> dark text)
@@ -160,7 +177,8 @@ void main() {
 
       test('theme includes all derived colors', () {
         final generator = MermaidGenerator(theme: MermaidTheme.dark);
-        final vars = generator.configuration['themeVariables'] as Map<String, dynamic>;
+        final vars =
+            generator.configuration['themeVariables'] as Map<String, dynamic>;
 
         // Check that color derivation happened
         expect(vars['mainBkg'], isNotNull);
@@ -173,10 +191,7 @@ void main() {
       test('configuration can override theme-generated values', () {
         final generator = MermaidGenerator(
           theme: MermaidTheme.dark,
-          configuration: const {
-            'viewportWidth': 1920,
-            'timeout': 20,
-          },
+          configuration: const {'viewportWidth': 1920, 'timeout': 20},
         );
 
         expect(generator.configuration['viewportWidth'], equals(1920));
@@ -214,9 +229,7 @@ flowchart TB
       });
 
       test('includes diagram content in error message for debugging', () async {
-        final generator = MermaidGenerator(
-          configuration: const {'timeout': 5},
-        );
+        final generator = MermaidGenerator(configuration: const {'timeout': 5});
 
         const brokenDiagram = 'invalid mermaid syntax here';
 
@@ -233,4 +246,3 @@ flowchart TB
     });
   });
 }
-

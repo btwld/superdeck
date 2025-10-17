@@ -11,9 +11,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 /// Provides functionality for loading, watching, and saving decks,
 /// as well as managing generated assets.
 class DeckRepository {
-  DeckRepository({
-    required this.configuration,
-  });
+  DeckRepository({required this.configuration});
 
   final DeckConfiguration configuration;
   final List<GeneratedAsset> _generatedAssets = [];
@@ -23,8 +21,9 @@ class DeckRepository {
   Future<void> initialize() async {
     await configuration.assetsDir.ensureExists();
     await configuration.deckJson.ensureExists(content: '{}');
-    await configuration.buildStatusJson
-        .ensureExists(content: prettyJson({'status': 'unknown'}));
+    await configuration.buildStatusJson.ensureExists(
+      content: prettyJson({'status': 'unknown'}),
+    );
     await configuration.slidesFile.ensureExists(content: '');
   }
 
@@ -74,8 +73,9 @@ class DeckRepository {
       // If the file doesn't exist yet, wait for it to be created
       if (!await configuration.deckJson.exists()) {
         _logger.info('Deck file does not exist, waiting for creation...');
-        await for (final event in configuration.deckJson.parent
-            .watch(events: FileSystemEvent.create)) {
+        await for (final event in configuration.deckJson.parent.watch(
+          events: FileSystemEvent.create,
+        )) {
           if (event.path == configuration.deckJson.path) {
             _logger.info('Deck file created, loading...');
             yield await loadDeck();
@@ -85,8 +85,9 @@ class DeckRepository {
       }
 
       // Now watch for modifications to the existing file
-      await for (final _
-          in configuration.deckJson.watch(events: FileSystemEvent.modify)) {
+      await for (final _ in configuration.deckJson.watch(
+        events: FileSystemEvent.modify,
+      )) {
         _logger.info('Deck updated, reloading...');
         yield await loadDeck();
       }
@@ -122,8 +123,9 @@ class DeckRepository {
     await configuration.deckJson.writeAsString(deckJson);
 
     // Generate the asset references for each slide thumbnail
-    final thumbnails =
-        reference.slides.map((slide) => GeneratedAsset.thumbnail(slide.key));
+    final thumbnails = reference.slides.map(
+      (slide) => GeneratedAsset.thumbnail(slide.key),
+    );
 
     // Combine thumbnail and generated assets, then deduplicate by fileName
     final allAssets = [...thumbnails, ..._generatedAssets];
@@ -134,7 +136,8 @@ class DeckRepository {
 
     // Map asset references to their corresponding file paths
     final assetFiles = uniqueAssets.values.map(
-        (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)));
+      (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)),
+    );
 
     final assetsRef = GeneratedAssetsReference(
       lastModified: DateTime.now(),
@@ -195,18 +198,21 @@ class DeckRepository {
 
   /// Removes generated assets that are no longer referenced.
   Future<void> _cleanupGeneratedAssets(
-      GeneratedAssetsReference assetsReference) async {
+    GeneratedAssetsReference assetsReference,
+  ) async {
     final existingFiles = await configuration.assetsDir
         .list(recursive: true)
         .where((e) => e is File)
         .map((e) => e as File)
         .toList();
 
-    final referencedFiles =
-        assetsReference.files.map((file) => file.path).toSet();
+    final referencedFiles = assetsReference.files
+        .map((file) => file.path)
+        .toSet();
 
-    final filesToDelete =
-        existingFiles.where((file) => !referencedFiles.contains(file.path));
+    final filesToDelete = existingFiles.where(
+      (file) => !referencedFiles.contains(file.path),
+    );
 
     await Future.wait(
       filesToDelete.map((file) async {

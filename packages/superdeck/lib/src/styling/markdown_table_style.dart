@@ -37,15 +37,15 @@ final class MarkdownTableStyle extends Style<MarkdownTableSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $headStyle = headStyle,
-        $bodyStyle = bodyStyle,
-        $headAlignment = headAlignment,
-        $padding = padding,
-        $border = border,
-        $columnWidth = columnWidth,
-        $cellPadding = cellPadding,
-        $cellDecoration = cellDecoration,
-        $verticalAlignment = verticalAlignment;
+  }) : $headStyle = headStyle,
+       $bodyStyle = bodyStyle,
+       $headAlignment = headAlignment,
+       $padding = padding,
+       $border = border,
+       $columnWidth = columnWidth,
+       $cellPadding = cellPadding,
+       $cellDecoration = cellDecoration,
+       $verticalAlignment = verticalAlignment;
 
   MarkdownTableStyle({
     TextStyle? headStyle,
@@ -61,19 +61,19 @@ final class MarkdownTableStyle extends Style<MarkdownTableSpec>
     List<VariantStyle<MarkdownTableSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          headStyle: Prop.maybe(headStyle),
-          bodyStyle: Prop.maybe(bodyStyle),
-          headAlignment: Prop.maybe(headAlignment),
-          padding: Prop.maybe(padding),
-          border: Prop.maybe(border),
-          columnWidth: Prop.maybe(columnWidth),
-          cellPadding: Prop.maybe(cellPadding),
-          cellDecoration: Prop.maybe(cellDecoration),
-          verticalAlignment: Prop.maybe(verticalAlignment),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         headStyle: Prop.maybe(headStyle),
+         bodyStyle: Prop.maybe(bodyStyle),
+         headAlignment: Prop.maybe(headAlignment),
+         padding: Prop.maybe(padding),
+         border: Prop.maybe(border),
+         columnWidth: Prop.maybe(columnWidth),
+         cellPadding: Prop.maybe(cellPadding),
+         cellDecoration: Prop.maybe(cellDecoration),
+         verticalAlignment: Prop.maybe(verticalAlignment),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   /// Applies variants to this style (required by VariantStyleMixin)
   @override
@@ -125,8 +125,10 @@ final class MarkdownTableStyle extends Style<MarkdownTableSpec>
       columnWidth: MixOps.merge($columnWidth, other.$columnWidth),
       cellPadding: MixOps.merge($cellPadding, other.$cellPadding),
       cellDecoration: MixOps.merge($cellDecoration, other.$cellDecoration),
-      verticalAlignment:
-          MixOps.merge($verticalAlignment, other.$verticalAlignment),
+      verticalAlignment: MixOps.merge(
+        $verticalAlignment,
+        other.$verticalAlignment,
+      ),
       animation: MixOps.mergeAnimation($animation, other.$animation),
       variants: MixOps.mergeVariants($variants, other.$variants),
       modifier: MixOps.mergeModifier($modifier, other.$modifier),
@@ -150,17 +152,17 @@ final class MarkdownTableStyle extends Style<MarkdownTableSpec>
 
   @override
   List<Object?> get props => [
-        $headStyle,
-        $bodyStyle,
-        $headAlignment,
-        $padding,
-        $border,
-        $columnWidth,
-        $cellPadding,
-        $cellDecoration,
-        $verticalAlignment,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $headStyle,
+    $bodyStyle,
+    $headAlignment,
+    $padding,
+    $border,
+    $columnWidth,
+    $cellPadding,
+    $cellDecoration,
+    $verticalAlignment,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

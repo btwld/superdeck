@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
-import 'package:superdeck_core/superdeck_core.dart' as core
+import 'package:superdeck_core/superdeck_core.dart'
+    as core
     show extractHeroAndContent, heroAnywherePattern, isValidHeroTag;
 
 /// Extracts CSS class tags from markdown text for Hero animations.
@@ -29,10 +30,7 @@ import 'package:superdeck_core/superdeck_core.dart' as core
 /// Returns a record with:
 /// - `tag`: The CSS class name (without the dot) if found, null otherwise
 /// - `content`: The text with CSS class tag removed and trimmed
-({
-  String? tag,
-  String content,
-}) getTagAndContent(String text) {
+({String? tag, String content}) getTagAndContent(String text) {
   final result = core.extractHeroAndContent(text);
 
   if (result.tag == null) {
@@ -42,9 +40,7 @@ import 'package:superdeck_core/superdeck_core.dart' as core
 
     if (extractedTag != null && !core.isValidHeroTag(extractedTag)) {
       assert(() {
-        debugPrint(
-          'Ignored invalid hero tag "$extractedTag" in "$trimmed"',
-        );
+        debugPrint('Ignored invalid hero tag "$extractedTag" in "$trimmed"');
         return true;
       }());
     }
@@ -130,12 +126,17 @@ List<TextSpan> lerpTextSpans(
       }
     }
 
-    final interpolatedText =
-        lerpString(startSpan.text ?? '', endSpan.text ?? '', t);
+    final interpolatedText = lerpString(
+      startSpan.text ?? '',
+      endSpan.text ?? '',
+      t,
+    );
     final interpolatedStyle = TextStyle.lerp(startSpan.style, endSpan.style, t);
 
-    final interpolatedSpan =
-        TextSpan(text: interpolatedText, style: interpolatedStyle);
+    final interpolatedSpan = TextSpan(
+      text: interpolatedText,
+      style: interpolatedStyle,
+    );
 
     interpolatedSpans.add(interpolatedSpan);
   }

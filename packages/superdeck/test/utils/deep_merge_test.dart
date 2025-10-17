@@ -20,16 +20,16 @@ void main() {
     test('merges nested maps', () {
       final map1 = {
         'a': 1,
-        'b': {'c': 2, 'd': 3}
+        'b': {'c': 2, 'd': 3},
       };
       final map2 = {
         'b': {'d': 4, 'e': 5},
-        'f': 6
+        'f': 6,
       };
       final expected = {
         'a': 1,
         'b': {'c': 2, 'd': 4, 'e': 5},
-        'f': 6
+        'f': 6,
       };
       expect(deepMerge(map1, map2), expected);
     });

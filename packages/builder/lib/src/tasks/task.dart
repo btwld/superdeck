@@ -16,10 +16,7 @@ abstract base class Task {
   /// Logger instance for the task.
   late final Logger logger = Logger('Task: $name');
 
-  Task(
-    this.name, {
-    this.configuration = const {},
-  });
+  Task(this.name, {this.configuration = const {}});
 
   /// Executes the task using the provided [SlideContext].
   FutureOr<void> run(SlideContext context);

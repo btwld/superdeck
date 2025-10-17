@@ -48,8 +48,9 @@ flutter:
       // First, get the actual paths that the configuration generates
       final superdeckPath = deckConfig.superdeckDir.path;
       final assetsPath = deckConfig.assetsDir.path;
-      
-      final input = '''
+
+      final input =
+          '''
 name: test_app
 flutter:
   assets:
@@ -57,7 +58,7 @@ flutter:
     - $assetsPath/
 ''';
       final result = updatePubspecAssets(deckConfig, input);
-      
+
       // Should not duplicate - still only 2 total occurrences
       expect(result.split('$superdeckPath/').length - 1, equals(2));
       expect(result.split('$assetsPath/').length - 1, equals(1));

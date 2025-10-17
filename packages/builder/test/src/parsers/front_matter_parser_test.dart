@@ -19,11 +19,9 @@ Some markdown content.
       final result = parser.parse(input);
 
       expect(
-          result.frontmatter,
-          equals({
-            'title': 'Test Title',
-            'description': 'A simple test',
-          }));
+        result.frontmatter,
+        equals({'title': 'Test Title', 'description': 'A simple test'}),
+      );
 
       expect(result.contents, equals('# Heading\n\nSome markdown content.'));
     });
@@ -34,7 +32,9 @@ Some markdown content.
 
       expect(result.frontmatter, isEmpty);
       expect(
-          result.contents, equals('# Just markdown\n\nNo frontmatter here.'));
+        result.contents,
+        equals('# Just markdown\n\nNo frontmatter here.'),
+      );
     });
 
     test('Handles empty frontmatter block correctly', () {
@@ -81,8 +81,10 @@ Content without proper closing delimiter.
       // With our current implementation, we handle missing delimiters gracefully
       // instead of throwing an exception
       expect(result.frontmatter, isEmpty);
-      expect(result.contents,
-          contains('Content without proper closing delimiter'));
+      expect(
+        result.contents,
+        contains('Content without proper closing delimiter'),
+      );
     });
 
     test('Handles YAML lists and nested structures', () {
@@ -102,14 +104,12 @@ Content after complex YAML.
       final result = parser.parse(input);
 
       expect(
-          result.frontmatter,
-          equals({
-            'tags': ['dart', 'parsing'],
-            'author': {
-              'name': 'John Doe',
-              'email': 'john@example.com',
-            }
-          }));
+        result.frontmatter,
+        equals({
+          'tags': ['dart', 'parsing'],
+          'author': {'name': 'John Doe', 'email': 'john@example.com'},
+        }),
+      );
 
       expect(result.contents, equals('Content after complex YAML.'));
     });
@@ -125,14 +125,12 @@ Content after complex YAML.
 
       final result = parser.parse(input);
 
-      expect(
-          result.frontmatter,
-          equals({
-            'title': 'Whitespace test',
-          }));
+      expect(result.frontmatter, equals({'title': 'Whitespace test'}));
 
-      expect(result.contents,
-          equals('Markdown with leading and trailing whitespace.'));
+      expect(
+        result.contents,
+        equals('Markdown with leading and trailing whitespace.'),
+      );
     });
   });
 
@@ -207,7 +205,10 @@ More content after horizontal rule.
 ''';
       final result = parseFrontMatter(content);
       expect(result.yaml, 'title: "Test Document"');
-      expect(result.markdown, '# Heading\n\nSome content here.\n\n---\n\nMore content after horizontal rule.');
+      expect(
+        result.markdown,
+        '# Heading\n\nSome content here.\n\n---\n\nMore content after horizontal rule.',
+      );
     });
 
     test('treats inline delimiter without newline as markdown content', () {

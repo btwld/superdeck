@@ -2,7 +2,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
-typedef OnMeasureChange = void Function(Size size, BoxConstraints parentConstraints);
+typedef OnMeasureChange =
+    void Function(Size size, BoxConstraints parentConstraints);
 
 /// RenderObject that measures size and constraints.
 ///
@@ -21,9 +22,7 @@ typedef OnMeasureChange = void Function(Size size, BoxConstraints parentConstrai
 /// - [SchedulerBinding.addPostFrameCallback] for callback timing
 /// - [RenderProxyBox.performLayout] for layout pass integration
 class _MeasureSizeRenderObject extends RenderProxyBox {
-  _MeasureSizeRenderObject({
-    required this.onChange,
-  });
+  _MeasureSizeRenderObject({required this.onChange});
 
   OnMeasureChange onChange;
 
@@ -106,17 +105,23 @@ class _MeasureSizeRenderObject extends RenderProxyBox {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<Size>('lastReportedSize', _lastReportedSize));
-    properties.add(DiagnosticsProperty<BoxConstraints>(
-      'lastReportedConstraints',
-      _lastReportedConstraints,
-    ));
-    properties.add(FlagProperty(
-      'callbackScheduled',
-      value: _callbackScheduled,
-      ifTrue: 'callback pending',
-      ifFalse: 'no callback pending',
-    ));
+    properties.add(
+      DiagnosticsProperty<Size>('lastReportedSize', _lastReportedSize),
+    );
+    properties.add(
+      DiagnosticsProperty<BoxConstraints>(
+        'lastReportedConstraints',
+        _lastReportedConstraints,
+      ),
+    );
+    properties.add(
+      FlagProperty(
+        'callbackScheduled',
+        value: _callbackScheduled,
+        ifTrue: 'callback pending',
+        ifFalse: 'no callback pending',
+      ),
+    );
   }
 }
 
@@ -224,9 +229,7 @@ class MeasureSize extends SingleChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _MeasureSizeRenderObject(
-      onChange: onChange,
-    );
+    return _MeasureSizeRenderObject(onChange: onChange);
   }
 
   @override

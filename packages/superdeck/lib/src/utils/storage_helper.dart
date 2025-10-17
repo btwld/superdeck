@@ -70,4 +70,3 @@ class StorageHelper {
     return prefs.containsKey(key);
   }
 }
-

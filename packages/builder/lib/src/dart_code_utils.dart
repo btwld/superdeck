@@ -30,8 +30,10 @@ Future<String> formatDartCode(
     }
     args.add(tempFile.path);
 
-    final result = await runDartCommand(args,
-        environmentOverrides: environmentOverrides);
+    final result = await runDartCommand(
+      args,
+      environmentOverrides: environmentOverrides,
+    );
 
     if (result.exitCode != 0) {
       throw FormatException(

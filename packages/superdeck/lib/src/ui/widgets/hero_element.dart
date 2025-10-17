@@ -67,11 +67,7 @@ class ImageElement {
 class HeroElement<T> extends InheritedWidget {
   final T data;
 
-  const HeroElement({
-    super.key,
-    required super.child,
-    required this.data,
-  });
+  const HeroElement({super.key, required super.child, required this.data});
 
   @override
   bool updateShouldNotify(HeroElement<T> oldWidget) {
@@ -91,7 +87,6 @@ class HeroElement<T> extends InheritedWidget {
     assert(result != null, 'No HeroElement<$T> found in context');
     return result!;
   }
-
 }
 
 /// Generic helper to build a Hero widget with custom flight animation.
@@ -116,25 +111,27 @@ Widget buildElementHero<T>({
   required String tag,
   required Widget child,
   required Widget Function(BuildContext context, T from, T to, double t)
-      buildFlight,
+  buildFlight,
 }) {
   return Hero(
     tag: tag,
     child: child,
-    flightShuttleBuilder: (
-      BuildContext flightContext,
-      Animation<double> animation,
-      HeroFlightDirection flightDirection,
-      BuildContext fromHeroContext,
-      BuildContext toHeroContext,
-    ) {
-      final to = HeroElement.of<T>(toHeroContext);
-      final from = HeroElement.maybeOf<T>(fromHeroContext) ?? to;
+    flightShuttleBuilder:
+        (
+          BuildContext flightContext,
+          Animation<double> animation,
+          HeroFlightDirection flightDirection,
+          BuildContext fromHeroContext,
+          BuildContext toHeroContext,
+        ) {
+          final to = HeroElement.of<T>(toHeroContext);
+          final from = HeroElement.maybeOf<T>(fromHeroContext) ?? to;
 
-      return AnimatedBuilder(
-        animation: animation,
-        builder: (context, _) => buildFlight(context, from, to, animation.value),
-      );
-    },
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) =>
+                buildFlight(context, from, to, animation.value),
+          );
+        },
   );
 }

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import '../../deck/slide_configuration.dart';
 
 class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
-  const HeaderPart({
-    super.key,
-  });
+  const HeaderPart({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(50);

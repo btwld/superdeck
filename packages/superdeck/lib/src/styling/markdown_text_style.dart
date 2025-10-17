@@ -25,9 +25,9 @@ final class MarkdownTextStyle extends Style<MarkdownTextSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $textStyle = textStyle,
-        $padding = padding,
-        $alignment = alignment;
+  }) : $textStyle = textStyle,
+       $padding = padding,
+       $alignment = alignment;
 
   MarkdownTextStyle({
     TextStyle? textStyle,
@@ -37,13 +37,13 @@ final class MarkdownTextStyle extends Style<MarkdownTextSpec>
     List<VariantStyle<MarkdownTextSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          textStyle: Prop.maybe(textStyle),
-          padding: Prop.maybe(padding),
-          alignment: Prop.maybe(alignment),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         textStyle: Prop.maybe(textStyle),
+         padding: Prop.maybe(padding),
+         alignment: Prop.maybe(alignment),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   /// Sets text style
   MarkdownTextStyle textStyle(TextStyle value) {
@@ -116,11 +116,11 @@ final class MarkdownTextStyle extends Style<MarkdownTextSpec>
 
   @override
   List<Object?> get props => [
-        $textStyle,
-        $padding,
-        $alignment,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $textStyle,
+    $padding,
+    $alignment,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

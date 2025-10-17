@@ -82,10 +82,10 @@ void main() {
     });
 
     group('Code Block Rendering', () {
-      testWidgets(
-        'code blocks access BlockData from StyleSpecBuilder context',
-        (tester) async {
-          const markdown = '''
+      testWidgets('code blocks access BlockData from StyleSpecBuilder context', (
+        tester,
+      ) async {
+        const markdown = '''
 ```dart
 void main() {
   print('test');
@@ -93,22 +93,21 @@ void main() {
 ```
 ''';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
-          await tester.pumpAndSettle();
+        await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+        await tester.pumpAndSettle();
 
-          // Verify code renders through CodeElementBuilder (uses RichText)
-          expect(find.byType(RichText), findsWidgets);
+        // Verify code renders through CodeElementBuilder (uses RichText)
+        expect(find.byType(RichText), findsWidgets);
 
-          // Verify StyleSpecBuilder is in widget tree (proves BlockData access succeeded)
-          final allWidgets = tester.allWidgets.toList();
-          final hasStyleSpecBuilder = allWidgets.any(
-            (widget) =>
-                widget.toString().contains('StyleSpecBuilder') &&
-                widget.toString().contains('MarkdownCodeblockSpec'),
-          );
-          expect(hasStyleSpecBuilder, isTrue);
-        },
-      );
+        // Verify StyleSpecBuilder is in widget tree (proves BlockData access succeeded)
+        final allWidgets = tester.allWidgets.toList();
+        final hasStyleSpecBuilder = allWidgets.any(
+          (widget) =>
+              widget.toString().contains('StyleSpecBuilder') &&
+              widget.toString().contains('MarkdownCodeblockSpec'),
+        );
+        expect(hasStyleSpecBuilder, isTrue);
+      });
 
       testWidgets(
         'code blocks with Hero tag access BlockData for size calculation',
@@ -134,44 +133,42 @@ void main() {}
     });
 
     group('visitText Method', () {
-      testWidgets(
-        'text nodes access BlockData from StyleSpecBuilder context',
-        (tester) async {
-          const markdown = 'Plain text content';
+      testWidgets('text nodes access BlockData from StyleSpecBuilder context', (
+        tester,
+      ) async {
+        const markdown = 'Plain text content';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
-          await tester.pumpAndSettle();
+        await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+        await tester.pumpAndSettle();
 
-          // Verify text is rendered via visitText method
-          expect(find.text('Plain text content'), findsOneWidget);
+        // Verify text is rendered via visitText method
+        expect(find.text('Plain text content'), findsOneWidget);
 
-          // Verify StyleSpecBuilder is in widget tree
-          final allWidgets = tester.allWidgets.toList();
-          final hasStyleSpecBuilder = allWidgets.any(
-            (widget) => widget.toString().contains('StyleSpecBuilder'),
-          );
-          expect(hasStyleSpecBuilder, isTrue);
-        },
-      );
+        // Verify StyleSpecBuilder is in widget tree
+        final allWidgets = tester.allWidgets.toList();
+        final hasStyleSpecBuilder = allWidgets.any(
+          (widget) => widget.toString().contains('StyleSpecBuilder'),
+        );
+        expect(hasStyleSpecBuilder, isTrue);
+      });
 
-      testWidgets(
-        'text nodes with Hero tag access BlockData correctly',
-        (tester) async {
-          const markdown = 'Text with tag {.text-hero}';
+      testWidgets('text nodes with Hero tag access BlockData correctly', (
+        tester,
+      ) async {
+        const markdown = 'Text with tag {.text-hero}';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
-          await tester.pumpAndSettle();
+        await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+        await tester.pumpAndSettle();
 
-          // Verify text is rendered (tag stripped, becomes part of paragraph)
-          // The CSS tag is removed by getTagAndContent in visitText
-          expect(find.textContaining('Text with tag'), findsOneWidget);
+        // Verify text is rendered (tag stripped, becomes part of paragraph)
+        // The CSS tag is removed by getTagAndContent in visitText
+        expect(find.textContaining('Text with tag'), findsOneWidget);
 
-          // Verify no BlockData access errors during Hero data creation
-          // If BlockData.of(context) in visitText failed, rendering would throw
-          final allWidgets = tester.allWidgets.toList();
-          expect(allWidgets, isNotEmpty);
-        },
-      );
+        // Verify no BlockData access errors during Hero data creation
+        // If BlockData.of(context) in visitText failed, rendering would throw
+        final allWidgets = tester.allWidgets.toList();
+        expect(allWidgets, isNotEmpty);
+      });
     });
   });
 }
@@ -180,7 +177,7 @@ void main() {}
 ///
 /// This harness sets up:
 /// - MaterialApp for Flutter widgets
-/// - InheritedData<SlideConfiguration> for slide config
+/// - `InheritedData<SlideConfiguration>` for slide config
 /// - BlockData with a known size (800x600) for layout
 /// - MarkdownRenderScope with registry, styleSheet, and extensionSet
 /// - MarkdownBody with all required syntaxes and builders

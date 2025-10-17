@@ -15,9 +15,12 @@ void main() {
       expect(token.options, {'foo': 'bar'});
       expect(token.rawOptions, 'foo: bar');
       expect(token.startIndex, 0);
-      expect(token.endIndex, text.indexOf('}') + 1,
-          reason:
-              'endIndex should include the closing brace even when the brace is on the next line.');
+      expect(
+        token.endIndex,
+        text.indexOf('}') + 1,
+        reason:
+            'endIndex should include the closing brace even when the brace is on the next line.',
+      );
       expect(token.optionsStartIndex, text.indexOf('{'));
       expect(token.optionsEndIndex, text.indexOf('}') + 1);
     });
@@ -34,8 +37,7 @@ void main() {
       expect(token.rawOptions, "label: '{value} text'");
     });
 
-    test('throws DeckFormatException with correct offset on unclosed braces',
-        () {
+    test('throws DeckFormatException with correct offset on unclosed braces', () {
       const text = 'intro line\n@tag {foo: bar';
 
       DeckFormatException? thrown;
@@ -45,14 +47,23 @@ void main() {
         thrown = e;
       }
 
-      expect(thrown, isNotNull,
-          reason: 'Expected a DeckFormatException to be thrown.');
+      expect(
+        thrown,
+        isNotNull,
+        reason: 'Expected a DeckFormatException to be thrown.',
+      );
       expect(thrown!.message, contains('Unclosed braces in @tag options'));
-      expect(thrown.source, text,
-          reason: 'Exception.source should refer to the original buffer.');
-      expect(thrown.offset, text.indexOf('{'),
-          reason:
-              'Offset should point to the opening brace that could not be closed.');
+      expect(
+        thrown.source,
+        text,
+        reason: 'Exception.source should refer to the original buffer.',
+      );
+      expect(
+        thrown.offset,
+        text.indexOf('{'),
+        reason:
+            'Offset should point to the opening brace that could not be closed.',
+      );
     });
 
     test('throws DeckFormatException with precise offset on YAML errors', () {
@@ -106,8 +117,11 @@ return {...data, 'age': age};
 
       final tokens = const TagTokenizer().tokenize(text);
 
-      expect(tokens, isEmpty,
-          reason: 'No @ tags should be detected inside code blocks');
+      expect(
+        tokens,
+        isEmpty,
+        reason: 'No @ tags should be detected inside code blocks',
+      );
     });
   });
 }

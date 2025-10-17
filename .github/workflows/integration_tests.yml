@@ -33,7 +33,9 @@ jobs:
           fvm flutter --version
 
       - name: Setup Melos
-        uses: bluefireteam/melos-action@v3
+        run: |
+          fvm dart pub global activate melos
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |
@@ -92,7 +94,9 @@ jobs:
           fvm flutter --version
 
       - name: Setup Melos
-        uses: bluefireteam/melos-action@v3
+        run: |
+          fvm dart pub global activate melos
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: |

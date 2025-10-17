@@ -7,17 +7,11 @@ import '../blocks/block_widget.dart';
 
 class SlideView extends StatelessWidget {
   final SlideConfiguration slide;
-  const SlideView(
-    this.slide, {
-    super.key,
-  });
+  const SlideView(this.slide, {super.key});
 
   Widget _renderPreferredSize(PreferredSizeWidget? widget) {
     return widget != null
-        ? SizedBox.fromSize(
-            size: widget.preferredSize,
-            child: widget,
-          )
+        ? SizedBox.fromSize(size: widget.preferredSize, child: widget)
         : const SizedBox.shrink();
   }
 
@@ -25,10 +19,7 @@ class SlideView extends StatelessWidget {
     final label = '''
 @section | blocks: ${section.blocks.length} | ${slideSize.width.toStringAsFixed(2)} x ${slideSize.height.toStringAsFixed(2)} | align: ${section.align} | flex: ${section.flex}''';
 
-    const textStyle = TextStyle(
-      color: Colors.black,
-      fontSize: 12,
-    );
+    const textStyle = TextStyle(color: Colors.black, fontSize: 12);
     return Positioned(
       bottom: 0,
       left: 0,
@@ -45,8 +36,10 @@ class SlideView extends StatelessWidget {
     if (sections.isEmpty) {
       return const SizedBox.shrink();
     }
-    final totalSectionsFlex =
-        sections.fold(0, (previous, section) => previous + section.flex);
+    final totalSectionsFlex = sections.fold(
+      0,
+      (previous, section) => previous + section.flex,
+    );
 
     final sectionSizes = <SectionBlock, Size>{};
 
@@ -83,10 +76,7 @@ class SlideView extends StatelessWidget {
           height: sectionSize.height,
           child: Stack(
             children: [
-              SectionBlockWidget(
-                section: section,
-                size: sectionSize,
-              ),
+              SectionBlockWidget(section: section, size: sectionSize),
               if (configuration.debug) _renderDebugInfo(section, sectionSize),
             ],
           ),
@@ -117,9 +107,7 @@ class SlideView extends StatelessWidget {
       size: kResolution,
       child: Stack(
         children: [
-          Positioned.fill(
-            child: backgroundWidget,
-          ),
+          Positioned.fill(child: backgroundWidget),
           Positioned(
             top: 0,
             left: 0,

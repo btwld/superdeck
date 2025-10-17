@@ -25,10 +25,7 @@ class ErrorWidgets {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.red,
-        border: Border.all(
-          color: Colors.red,
-          width: 2,
-        ),
+        border: Border.all(color: Colors.red, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
@@ -48,11 +45,7 @@ class ErrorWidgets {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error,
-            color: Colors.red,
-            size: 40,
-          ),
+          const Icon(Icons.error, color: Colors.red, size: 40),
           const SizedBox(height: 10),
           Text(
             message,

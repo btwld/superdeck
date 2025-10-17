@@ -19,8 +19,7 @@ class ParsedBlock {
       ColumnBlock.key ||
       ImageBlock.key ||
       DartPadBlock.key ||
-      WidgetBlock.key =>
-        {..._data, 'type': type},
+      WidgetBlock.key => {..._data, 'type': type},
       _ => {..._data, 'name': type, 'type': WidgetBlock.key},
     };
   }

@@ -67,10 +67,12 @@ final class MarkdownTableSpec extends Spec<MarkdownTableSpec>
       border: t < 0.5 ? border : other.border,
       columnWidth: t < 0.5 ? columnWidth : other.columnWidth,
       cellPadding: EdgeInsets.lerp(cellPadding, other.cellPadding, t),
-      cellDecoration:
-          BoxDecoration.lerp(cellDecoration, other.cellDecoration, t),
-      verticalAlignment:
-          t < 0.5 ? verticalAlignment : other.verticalAlignment,
+      cellDecoration: BoxDecoration.lerp(
+        cellDecoration,
+        other.cellDecoration,
+        t,
+      ),
+      verticalAlignment: t < 0.5 ? verticalAlignment : other.verticalAlignment,
     );
   }
 
@@ -91,14 +93,14 @@ final class MarkdownTableSpec extends Spec<MarkdownTableSpec>
 
   @override
   List<Object?> get props => [
-        headStyle,
-        bodyStyle,
-        headAlignment,
-        padding,
-        border,
-        columnWidth,
-        cellPadding,
-        cellDecoration,
-        verticalAlignment,
-      ];
+    headStyle,
+    bodyStyle,
+    headAlignment,
+    padding,
+    border,
+    columnWidth,
+    cellPadding,
+    cellDecoration,
+    verticalAlignment,
+  ];
 }

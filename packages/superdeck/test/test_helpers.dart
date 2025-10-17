@@ -20,10 +20,7 @@ extension WidgetTesterX on WidgetTester {
     List<GeneratedAsset> assets = const [],
   }) async {
     return pumpWithScaffold(
-      InheritedData(
-        data: slide,
-        child: SlideView(slide),
-      ),
+      InheritedData(data: slide, child: SlideView(slide)),
     );
   }
 }

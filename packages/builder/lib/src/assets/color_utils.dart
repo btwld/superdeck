@@ -95,10 +95,14 @@ class ColorUtils {
     // Normalize and apply sRGB gamma correction
     double normalize(int val) {
       final v = val / 255.0;
-      return v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4).toDouble();
+      return v <= 0.03928
+          ? v / 12.92
+          : pow((v + 0.055) / 1.055, 2.4).toDouble();
     }
 
-    return 0.2126 * normalize(r) + 0.7152 * normalize(g) + 0.0722 * normalize(b);
+    return 0.2126 * normalize(r) +
+        0.7152 * normalize(g) +
+        0.0722 * normalize(b);
   }
 
   /// Choose contrasting text color (light or dark) based on background.

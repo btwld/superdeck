@@ -29,15 +29,13 @@ import 'hero_tag_helpers.dart';
 /// Creates block-level syntaxes for hero tag support.
 /// Includes header and fenced code block parsing.
 List<md.BlockSyntax> createHeroBlockSyntaxes() => const [
-      HeaderTagSyntax(),
-      HeroFencedCodeBlockSyntax(),
-    ];
+  HeaderTagSyntax(),
+  HeroFencedCodeBlockSyntax(),
+];
 
 /// Creates inline-level syntaxes for hero tag support.
 /// Currently includes image parsing.
-List<md.InlineSyntax> createHeroInlineSyntaxes() => [
-      ImageHeroSyntax(),
-    ];
+List<md.InlineSyntax> createHeroInlineSyntaxes() => [ImageHeroSyntax()];
 
 // ============================================================================
 // Syntax Implementations

@@ -242,7 +242,6 @@ class CliWatcher extends ChangeNotifier {
     }
   }
 
-
   Future<void> _initializeBuildStatusMonitoring() async {
     if (_isWatchingBuildStatus) return;
 
@@ -311,7 +310,8 @@ class CliWatcher extends ChangeNotifier {
       // Update rebuilding state based on status
       _isRebuilding = (status == 'building');
 
-      var shouldNotify = previousStatus != status || wasRebuilding != _isRebuilding;
+      var shouldNotify =
+          previousStatus != status || wasRebuilding != _isRebuilding;
 
       if (shouldNotify) {
         if (_isRebuilding) {

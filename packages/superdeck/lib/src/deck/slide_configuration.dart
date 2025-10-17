@@ -26,8 +26,8 @@ class SlideConfiguration {
     required this.thumbnailFile,
     Map<String, WidgetBlockBuilder> widgets = const {},
     this.isExporting = false,
-  })  : _slide = slide,
-        _widgets = widgets;
+  }) : _slide = slide,
+       _widgets = widgets;
 
   SlideOptions get options => _slide.options ?? const SlideOptions();
 
@@ -83,13 +83,13 @@ class SlideConfiguration {
 
   @override
   int get hashCode => Object.hash(
-        slideIndex,
-        style,
-        _slide,
-        debug,
-        parts,
-        thumbnailFile,
-        _widgets,
-        isExporting,
-      );
+    slideIndex,
+    style,
+    _slide,
+    debug,
+    parts,
+    thumbnailFile,
+    _widgets,
+    isExporting,
+  );
 }

@@ -70,7 +70,10 @@ void main() {
       test('lightens blue color', () {
         final darker = '#0066ff';
         final lighter = ColorUtils.lighten(darker, 0.3);
-        expect(ColorUtils.luminance(lighter), greaterThan(ColorUtils.luminance(darker)));
+        expect(
+          ColorUtils.luminance(lighter),
+          greaterThan(ColorUtils.luminance(darker)),
+        );
       });
     });
 
@@ -93,7 +96,10 @@ void main() {
       test('darkens blue color', () {
         final lighter = '#0066ff';
         final darker = ColorUtils.darken(lighter, 0.3);
-        expect(ColorUtils.luminance(darker), lessThan(ColorUtils.luminance(lighter)));
+        expect(
+          ColorUtils.luminance(darker),
+          lessThan(ColorUtils.luminance(lighter)),
+        );
       });
     });
 
@@ -153,7 +159,13 @@ void main() {
 
     group('round-trip conversions', () {
       test('parseHex and toHex are inverse operations', () {
-        const testColors = ['#ff0000', '#00ff00', '#0000ff', '#808080', '#123456'];
+        const testColors = [
+          '#ff0000',
+          '#00ff00',
+          '#0000ff',
+          '#808080',
+          '#123456',
+        ];
 
         for (final color in testColors) {
           final (r, g, b) = ColorUtils.parseHex(color);

@@ -19,9 +19,7 @@ enum SlideCaptureQuality {
   better(2),
   best(3);
 
-  const SlideCaptureQuality(
-    this.pixelRatio,
-  );
+  const SlideCaptureQuality(this.pixelRatio);
 
   final double pixelRatio;
 }
@@ -45,10 +43,7 @@ class SlideCaptureService {
 
       _generationQueue.add(queueKey);
 
-      final exportingSlide = slide.copyWith(
-        debug: false,
-        isExporting: true,
-      );
+      final exportingSlide = slide.copyWith(debug: false, isExporting: true);
 
       // Check if the context is still mounted after the async gap
       if (!context.mounted) {
@@ -62,10 +57,7 @@ class SlideCaptureService {
       );
 
       final image = await _fromWidgetToImage(
-        InheritedData(
-          data: exportingSlide,
-          child: SlideView(exportingSlide),
-        ),
+        InheritedData(data: exportingSlide, child: SlideView(exportingSlide)),
         config,
       );
 
@@ -179,10 +171,7 @@ class SlideCaptureService {
 
       final rootElement = RenderObjectToWidgetAdapter<RenderBox>(
         container: repaintBoundary,
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: child,
-        ),
+        child: Directionality(textDirection: TextDirection.ltr, child: child),
       ).attachToRenderTree(buildOwner);
 
       while (retryCount > 0) {
@@ -208,8 +197,9 @@ class SlideCaptureService {
         retryCount--;
       }
 
-      final image =
-          await repaintBoundary.toImage(pixelRatio: config.pixelRatio);
+      final image = await repaintBoundary.toImage(
+        pixelRatio: config.pixelRatio,
+      );
 
       buildOwner.finalizeTree();
 

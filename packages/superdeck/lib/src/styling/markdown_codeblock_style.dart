@@ -8,8 +8,7 @@ import 'markdown_codeblock_spec.dart';
 final class MarkdownCodeblockStyle extends Style<MarkdownCodeblockSpec>
     with
         Diagnosticable,
-        WidgetModifierStyleMixin<MarkdownCodeblockStyle,
-            MarkdownCodeblockSpec>,
+        WidgetModifierStyleMixin<MarkdownCodeblockStyle, MarkdownCodeblockSpec>,
         VariantStyleMixin<MarkdownCodeblockStyle, MarkdownCodeblockSpec>,
         AnimationStyleMixin<MarkdownCodeblockStyle, MarkdownCodeblockSpec> {
   final Prop<TextStyle>? $textStyle;
@@ -23,9 +22,9 @@ final class MarkdownCodeblockStyle extends Style<MarkdownCodeblockSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $textStyle = textStyle,
-        $container = container,
-        $alignment = alignment;
+  }) : $textStyle = textStyle,
+       $container = container,
+       $alignment = alignment;
 
   MarkdownCodeblockStyle({
     TextStyle? textStyle,
@@ -35,17 +34,18 @@ final class MarkdownCodeblockStyle extends Style<MarkdownCodeblockSpec>
     List<VariantStyle<MarkdownCodeblockSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          textStyle: Prop.maybe(textStyle),
-          container: Prop.maybeMix(container),
-          alignment: Prop.maybe(alignment),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         textStyle: Prop.maybe(textStyle),
+         container: Prop.maybeMix(container),
+         alignment: Prop.maybe(alignment),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   @override
   MarkdownCodeblockStyle variants(
-      List<VariantStyle<MarkdownCodeblockSpec>> value) {
+    List<VariantStyle<MarkdownCodeblockSpec>> value,
+  ) {
     return merge(MarkdownCodeblockStyle(variants: value));
   }
 
@@ -97,11 +97,11 @@ final class MarkdownCodeblockStyle extends Style<MarkdownCodeblockSpec>
 
   @override
   List<Object?> get props => [
-        $textStyle,
-        $container,
-        $alignment,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $textStyle,
+    $container,
+    $alignment,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

@@ -14,8 +14,9 @@ import '../markdown_hero_mixin.dart';
 class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
   final StyleSpec<MarkdownCodeblockSpec> styleSpec;
 
-  CodeElementBuilder(
-      [this.styleSpec = const StyleSpec(spec: MarkdownCodeblockSpec())]);
+  CodeElementBuilder([
+    this.styleSpec = const StyleSpec(spec: MarkdownCodeblockSpec()),
+  ]);
 
   @override
   Widget? visitElementAfterWithContext(
@@ -62,10 +63,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: spans.map((span) {
                     return RichText(
-                      text: TextSpan(
-                        style: spec.textStyle,
-                        children: [span],
-                      ),
+                      text: TextSpan(style: spec.textStyle, children: [span]),
                     );
                   }).toList(),
                 ),
@@ -103,10 +101,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             final interpolatedSize = Size.lerp(fromSize, to.size, t)!;
             final interpolatedText = lerpString(fromText, to.text, t);
 
-            final spans = SyntaxHighlight.render(
-              interpolatedText,
-              to.language,
-            );
+            final spans = SyntaxHighlight.render(interpolatedText, to.language);
 
             /// IMPORTANT: Do not remove this, its needed for overflow on flight
             return Wrap(

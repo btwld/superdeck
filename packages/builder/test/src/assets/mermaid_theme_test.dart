@@ -120,7 +120,9 @@ void main() {
         final vars = theme.toThemeVariables();
 
         final primaryLum = ColorUtils.luminance(theme.primary);
-        final borderLum = ColorUtils.luminance(vars['primaryBorderColor'] as String);
+        final borderLum = ColorUtils.luminance(
+          vars['primaryBorderColor'] as String,
+        );
 
         expect(borderLum, lessThan(primaryLum));
       });

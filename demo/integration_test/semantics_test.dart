@@ -15,8 +15,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Wait for presentation to load
-      await waitForPresentationLoad(tester,
-          timeout: const Duration(seconds: 15));
+      await waitForPresentationLoad(
+        tester,
+        timeout: const Duration(seconds: 15),
+      );
 
       // Verify semantic label for first slide exists
       expect(find.bySemanticsLabel('Slide 1'), findsOneWidget);
@@ -40,8 +42,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Wait for presentation to load
-      await waitForPresentationLoad(tester,
-          timeout: const Duration(seconds: 15));
+      await waitForPresentationLoad(
+        tester,
+        timeout: const Duration(seconds: 15),
+      );
 
       // Check that semantic tree is built correctly
       final SemanticsHandle handle = tester.ensureSemantics();

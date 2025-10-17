@@ -12,8 +12,9 @@ void main() {
       });
 
       test('extracts CSS class from subheading', () {
-        final result =
-            getTagAndContent('## Beautiful presentations {.subheading}');
+        final result = getTagAndContent(
+          '## Beautiful presentations {.subheading}',
+        );
 
         expect(result.tag, equals('subheading'));
         expect(result.content, equals('## Beautiful presentations'));

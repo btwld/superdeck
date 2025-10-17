@@ -17,15 +17,12 @@ function greet() {
     'expectedBlocks': [
       {
         'language': 'js',
-        'options': {
-          'theme': 'dark',
-          'lineNumbers': true,
-        },
+        'options': {'theme': 'dark', 'lineNumbers': true},
         'content': '''console.log("Hello, world!");
 function greet() {
   return "Hi!";
 }''',
-      }
+      },
     ],
   },
   {
@@ -46,7 +43,7 @@ def greet():
 
 def greet():
     return "Hi!"''',
-      }
+      },
     ],
   },
   {
@@ -63,16 +60,13 @@ end
     'expectedBlocks': [
       {
         'language': 'ruby',
-        'options': {
-          'author': 'Jane Doe',
-          'version': 2.0,
-        },
+        'options': {'author': 'Jane Doe', 'version': 2.0},
         'content': '''puts "Hello, world!"
 
 def greet
   "Hi!"
 end''',
-      }
+      },
     ],
   },
   {
@@ -88,14 +82,12 @@ function greet() {
     'expectedBlocks': [
       {
         'language': 'js',
-        'options': {
-          'theme': 'light',
-        },
+        'options': {'theme': 'light'},
         'content': '''console.log("Starting code block...");
 function greet() {
   console.log("Hi!");
 }''',
-      }
+      },
     ],
   },
   {
@@ -112,15 +104,12 @@ function greet() {
     'expectedBlocks': [
       {
         'language': 'js',
-        'options': {
-          'theme': 'dark',
-          'lineNumbers': true,
-        },
+        'options': {'theme': 'dark', 'lineNumbers': true},
         'content': '''console.log("Hello, world!");
 function greet() {
   return "Hi!";
 }''',
-      }
+      },
     ],
   },
   {
@@ -135,15 +124,11 @@ void main() {
     'expectedBlocks': [
       {
         'language': 'dart',
-        'options': {
-          'theme': 'dark mode',
-          'showLineNumbers': true,
-          'indent': 2,
-        },
+        'options': {'theme': 'dark mode', 'showLineNumbers': true, 'indent': 2},
         'content': '''void main() {
   print("Hello, Dart!");
 }''',
-      }
+      },
     ],
   },
   {
@@ -162,9 +147,9 @@ void main() {
         'content': '''void main() {
   print("Hello, Dart!");
 }''',
-      }
+      },
     ],
-  }
+  },
 ];
 
 final List<Map<String, dynamic>> testCaseTagBlock = [
@@ -174,12 +159,7 @@ final List<Map<String, dynamic>> testCaseTagBlock = [
 @tag
 ''',
     'expectedBlocks': [
-      ParsedBlock(
-        type: 'tag',
-        data: {},
-        startIndex: 0,
-        endIndex: 4,
-      )
+      ParsedBlock(type: 'tag', data: {}, startIndex: 0, endIndex: 4),
     ],
   },
   {
@@ -193,7 +173,7 @@ final List<Map<String, dynamic>> testCaseTagBlock = [
         data: {'key': 'value'},
         startIndex: 0,
         endIndex: 17,
-      )
+      ),
     ],
   },
   {
@@ -211,7 +191,7 @@ Test content
         data: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
         endIndex: 36,
-      )
+      ),
     ],
   },
   {
@@ -226,7 +206,7 @@ Test content
         data: {'key': 'value'},
         startIndex: 0,
         endIndex: 16,
-      )
+      ),
     ],
   },
   {
@@ -264,7 +244,7 @@ Test content
         data: {'key': 'value', 'key2': 'value2'},
         startIndex: 0,
         endIndex: 36,
-      )
+      ),
     ],
   },
   {
@@ -340,7 +320,7 @@ Test content 2
         data: {'key2': 'value2'},
         startIndex: 35,
         endIndex: 55,
-      )
+      ),
     ],
   },
 
@@ -362,7 +342,7 @@ Test content 2
         data: {'key2': 'value2'},
         startIndex: 19,
         endIndex: 39,
-      )
+      ),
     ],
   },
   // does not match {@column}
@@ -372,7 +352,7 @@ Test content 2
 {@column}
 ''',
     'expectedBlocks': [],
-  }
+  },
 ];
 
 void main() {
@@ -381,19 +361,31 @@ void main() {
     for (final testCase in testCaseCodeBlock) {
       test(testCase['description'], () {
         final blocks = fencedCodeParser.parse(testCase['input']);
-        expect(blocks.length, testCase['expectedBlocks'].length,
-            reason: 'Number of parsed blocks does not match expected.');
+        expect(
+          blocks.length,
+          testCase['expectedBlocks'].length,
+          reason: 'Number of parsed blocks does not match expected.',
+        );
 
         for (int i = 0; i < testCase['expectedBlocks'].length; i++) {
           final expected = testCase['expectedBlocks'][i];
           final actual = blocks[i];
 
-          expect(actual.language, expected['language'],
-              reason: 'Block \${i + 1}: Language mismatch.');
-          expect(actual.options, expected['options'],
-              reason: 'Block \${i + 1}: Options mismatch.');
-          expect(actual.content.trim(), expected['content'].trim(),
-              reason: 'Block \${i + 1}: Content mismatch.');
+          expect(
+            actual.language,
+            expected['language'],
+            reason: 'Block \${i + 1}: Language mismatch.',
+          );
+          expect(
+            actual.options,
+            expected['options'],
+            reason: 'Block \${i + 1}: Options mismatch.',
+          );
+          expect(
+            actual.content.trim(),
+            expected['content'].trim(),
+            reason: 'Block \${i + 1}: Content mismatch.',
+          );
         }
       });
     }
@@ -404,22 +396,37 @@ void main() {
       final description = testCase['description'];
       test(description, () {
         final blocks = const BlockParser().parse(testCase['input']);
-        expect(blocks.length, testCase['expectedBlocks'].length,
-            reason:
-                '$description - Number of parsed blocks does not match expected.');
+        expect(
+          blocks.length,
+          testCase['expectedBlocks'].length,
+          reason:
+              '$description - Number of parsed blocks does not match expected.',
+        );
 
         for (int i = 0; i < testCase['expectedBlocks'].length; i++) {
           final expected = testCase['expectedBlocks'][i] as ParsedBlock;
           final actual = blocks[i];
 
-          expect(actual.type, expected.type,
-              reason: '$description - Block ${i + 1}: Tag mismatch.');
-          expect(actual.data, expected.data,
-              reason: '$description - Block ${i + 1}: Options mismatch.');
-          expect(actual.startIndex, expected.startIndex,
-              reason: '$description - Block ${i + 1}: Start index mismatch.');
-          expect(actual.endIndex, expected.endIndex,
-              reason: '$description - Block ${i + 1}: End index mismatch.');
+          expect(
+            actual.type,
+            expected.type,
+            reason: '$description - Block ${i + 1}: Tag mismatch.',
+          );
+          expect(
+            actual.data,
+            expected.data,
+            reason: '$description - Block ${i + 1}: Options mismatch.',
+          );
+          expect(
+            actual.startIndex,
+            expected.startIndex,
+            reason: '$description - Block ${i + 1}: Start index mismatch.',
+          );
+          expect(
+            actual.endIndex,
+            expected.endIndex,
+            reason: '$description - Block ${i + 1}: End index mismatch.',
+          );
         }
       });
     }
@@ -431,13 +438,12 @@ void main() {
         () => const BlockParser().parse(text),
         throwsA(
           isA<DeckFormatException>()
-              .having((e) => e.message, 'message',
-                  contains('Invalid options for @tag'))
               .having(
-                (e) => e.offset,
-                'offset',
-                text.indexOf('}'),
-              ),
+                (e) => e.message,
+                'message',
+                contains('Invalid options for @tag'),
+              )
+              .having((e) => e.offset, 'offset', text.indexOf('}')),
         ),
       );
     });

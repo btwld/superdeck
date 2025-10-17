@@ -29,10 +29,7 @@ void main() {
 
       final compact = converter.toJson(markdown);
       final pretty = converter.toJson(markdown, prettyPrint: true);
-      final withMetadata = converter.toJson(
-        markdown,
-        includeMetadata: true,
-      );
+      final withMetadata = converter.toJson(markdown, includeMetadata: true);
 
       expect(pretty.contains('\n'), isTrue);
       expect(compact.length, lessThan(pretty.length));
@@ -176,8 +173,8 @@ void main() {
         final children = parsed['children'] as List;
 
         // Should contain a table element
-        final hasTable = children.any((child) =>
-          child['type'] == 'element' && child['tag'] == 'table'
+        final hasTable = children.any(
+          (child) => child['type'] == 'element' && child['tag'] == 'table',
         );
         expect(hasTable, isTrue);
       });
@@ -325,7 +322,8 @@ void main() {
         // Items should contain input checkboxes if supported by markdown package
         final li1 = items[0] as Map;
         final li1Children = li1['children'] as List;
-        if (li1Children.isNotEmpty && (li1Children[0] as Map)['tag'] == 'input') {
+        if (li1Children.isNotEmpty &&
+            (li1Children[0] as Map)['tag'] == 'input') {
           final checkbox = li1Children[0] as Map;
           expect(checkbox['attributes']?['type'], equals('checkbox'));
         }
@@ -412,7 +410,10 @@ void main() {
         final alertDiv = (map['children'] as List)[0] as Map;
         expect(alertDiv['tag'], equals('div'));
         expect(alertDiv['attributes']?['class'], contains('markdown-alert'));
-        expect(alertDiv['attributes']?['class'], contains('markdown-alert-note'));
+        expect(
+          alertDiv['attributes']?['class'],
+          contains('markdown-alert-note'),
+        );
       });
 
       test('validates TIP alert structure', () {
@@ -428,7 +429,10 @@ void main() {
         final alertDiv = (map['children'] as List)[0] as Map;
         expect(alertDiv['tag'], equals('div'));
         expect(alertDiv['attributes']?['class'], contains('markdown-alert'));
-        expect(alertDiv['attributes']?['class'], contains('markdown-alert-tip'));
+        expect(
+          alertDiv['attributes']?['class'],
+          contains('markdown-alert-tip'),
+        );
       });
 
       test('validates IMPORTANT alert structure', () {
@@ -444,7 +448,10 @@ void main() {
         final alertDiv = (map['children'] as List)[0] as Map;
         expect(alertDiv['tag'], equals('div'));
         expect(alertDiv['attributes']?['class'], contains('markdown-alert'));
-        expect(alertDiv['attributes']?['class'], contains('markdown-alert-important'));
+        expect(
+          alertDiv['attributes']?['class'],
+          contains('markdown-alert-important'),
+        );
       });
 
       test('validates WARNING alert structure', () {
@@ -460,7 +467,10 @@ void main() {
         final alertDiv = (map['children'] as List)[0] as Map;
         expect(alertDiv['tag'], equals('div'));
         expect(alertDiv['attributes']?['class'], contains('markdown-alert'));
-        expect(alertDiv['attributes']?['class'], contains('markdown-alert-warning'));
+        expect(
+          alertDiv['attributes']?['class'],
+          contains('markdown-alert-warning'),
+        );
       });
 
       test('validates CAUTION alert structure', () {
@@ -476,7 +486,10 @@ void main() {
         final alertDiv = (map['children'] as List)[0] as Map;
         expect(alertDiv['tag'], equals('div'));
         expect(alertDiv['attributes']?['class'], contains('markdown-alert'));
-        expect(alertDiv['attributes']?['class'], contains('markdown-alert-caution'));
+        expect(
+          alertDiv['attributes']?['class'],
+          contains('markdown-alert-caution'),
+        );
       });
 
       test('converts fenced code blocks', () {
@@ -495,8 +508,8 @@ void main() {
         final children = parsed['children'] as List;
 
         // Should contain a code block element
-        final hasCodeBlock = children.any((child) =>
-          child['type'] == 'element' && child['tag'] == 'pre'
+        final hasCodeBlock = children.any(
+          (child) => child['type'] == 'element' && child['tag'] == 'pre',
         );
         expect(hasCodeBlock, isTrue);
       });
@@ -538,8 +551,11 @@ void main() {}
           final pre = (map['children'] as List)[0] as Map;
           final code = (pre['children'] as List)[0] as Map;
 
-          expect(code['attributes']?['class'], equals(entry.value),
-            reason: 'Language ${entry.key} should have class ${entry.value}');
+          expect(
+            code['attributes']?['class'],
+            equals(entry.value),
+            reason: 'Language ${entry.key} should have class ${entry.value}',
+          );
         }
       });
 
@@ -562,7 +578,7 @@ plain code
         // No language = no class attribute (or empty)
         expect(
           code['attributes']?.containsKey('class') != true ||
-          code['attributes']?['class'] == '',
+              code['attributes']?['class'] == '',
           isTrue,
         );
       });
@@ -575,9 +591,9 @@ plain code
         final children = p['children'] as List;
 
         // Find the code element
-        final code = children.firstWhere(
-          (child) => (child as Map)['tag'] == 'code',
-        ) as Map;
+        final code =
+            children.firstWhere((child) => (child as Map)['tag'] == 'code')
+                as Map;
 
         expect(code['tag'], equals('code'));
         expect(code['children'], isNotEmpty);
@@ -606,9 +622,9 @@ Text with footnote[^1].
 
         // Find the sup element containing footnote reference
         final pChildren = p['children'] as List;
-        final sup = pChildren.firstWhere(
-          (child) => (child as Map)['tag'] == 'sup',
-        ) as Map;
+        final sup =
+            pChildren.firstWhere((child) => (child as Map)['tag'] == 'sup')
+                as Map;
         expect(sup['tag'], equals('sup'));
 
         // Last element should be footnotes section
@@ -676,10 +692,7 @@ See footnote[^1] and another[^2].
 
 [link]: https://example.com
 ''';
-      final map = _converter.toMap(
-        markdown,
-        includeMetadata: true,
-      );
+      final map = _converter.toMap(markdown, includeMetadata: true);
 
       expect(map.containsKey('linkReferences'), isTrue);
       expect(map.containsKey('footnoteLabels'), isTrue);
@@ -700,10 +713,7 @@ See [example].
 
 [example]: https://example.com "Example Site"
 ''';
-      final map = _converter.toMap(
-        markdown,
-        includeMetadata: true,
-      );
+      final map = _converter.toMap(markdown, includeMetadata: true);
 
       final linkRefs = map['linkReferences'] as Map?;
       expect(linkRefs, isNotNull);
@@ -760,20 +770,25 @@ See [example].
       });
 
       test('validates image attributes from markdown', () {
-        final markdown = '![Alt text](https://example.com/image.png "Image Title")';
+        final markdown =
+            '![Alt text](https://example.com/image.png "Image Title")';
         final map = _converter.toMap(markdown);
 
         final p = (map['children'] as List)[0] as Map;
         final img = (p['children'] as List)[0] as Map;
 
         expect(img['tag'], equals('img'));
-        expect(img['attributes']?['src'], equals('https://example.com/image.png'));
+        expect(
+          img['attributes']?['src'],
+          equals('https://example.com/image.png'),
+        );
         expect(img['attributes']?['alt'], equals('Alt text'));
         expect(img['attributes']?['title'], equals('Image Title'));
       });
 
       test('validates image with special characters in alt text', () {
-        final markdown = '![Image with "quotes" & symbols](https://example.com/img.png)';
+        final markdown =
+            '![Image with "quotes" & symbols](https://example.com/img.png)';
         final map = _converter.toMap(markdown);
 
         final p = (map['children'] as List)[0] as Map;
@@ -781,7 +796,10 @@ See [example].
 
         expect(img['tag'], equals('img'));
         // Special chars are HTML-escaped in alt text
-        expect(img['attributes']?['alt'], equals('Image with &quot;quotes&quot; &amp; symbols'));
+        expect(
+          img['attributes']?['alt'],
+          equals('Image with &quot;quotes&quot; &amp; symbols'),
+        );
       });
 
       test('validates image without title', () {
@@ -792,7 +810,10 @@ See [example].
         final img = (p['children'] as List)[0] as Map;
 
         expect(img['tag'], equals('img'));
-        expect(img['attributes']?['src'], equals('https://example.com/image.png'));
+        expect(
+          img['attributes']?['src'],
+          equals('https://example.com/image.png'),
+        );
         expect(img['attributes']?['alt'], equals('Just alt'));
         expect(img['attributes'], isNot(contains('title')));
       });
@@ -822,7 +843,10 @@ See [example].
         final a = (p['children'] as List)[0] as Map;
 
         expect(a['tag'], equals('a'));
-        expect(a['attributes']?['href'], equals('https://example.com?q=test&lang=en'));
+        expect(
+          a['attributes']?['href'],
+          equals('https://example.com?q=test&lang=en'),
+        );
       });
 
       test('validates link without title', () {
@@ -1226,7 +1250,6 @@ First[^1] and second[^2] and third[^note].
       expect(blockquote['tag'], equals('blockquote'));
     });
   });
-
 
   group('integration tests', () {
     test('converts complex document with all features', () {

@@ -56,9 +56,7 @@ class SpecMarkdownBuilders {
   ///
   /// These extend standard markdown to support SuperDeck features:
   /// - [ImageHeroSyntax] - Adds hero tags to images
-  final List<md.InlineSyntax> inlineSyntaxes = [
-    ImageHeroSyntax(),
-  ];
+  final List<md.InlineSyntax> inlineSyntaxes = [ImageHeroSyntax()];
 
   /// Element builders for rendering markdown nodes to Flutter widgets.
   ///
@@ -105,8 +103,8 @@ class SpecMarkdownBuilders {
       final icon = checked ? Icons.check_box : Icons.check_box_outline_blank;
       final checkboxSpec =
           spec.checkbox != null && spec.checkbox!.spec.icon != null
-              ? spec.checkbox!.spec.icon!
-              : const StyleSpec(spec: IconSpec());
+          ? spec.checkbox!.spec.icon!
+          : const StyleSpec(spec: IconSpec());
       return StyledIcon(icon: icon, styleSpec: checkboxSpec);
     };
   }
@@ -137,7 +135,7 @@ final _kBlockTags = <String>[
   'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', //
   'ul', 'ol', 'li', 'blockquote', //
   'pre', 'ol', 'ul', 'hr', 'table', //
-  'thead', 'tbody', 'tr', 'section', 'alert'
+  'thead', 'tbody', 'tr', 'section', 'alert',
 ];
 
 /// Inline padding builder that returns zero padding.

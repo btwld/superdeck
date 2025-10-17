@@ -24,8 +24,10 @@ void main() {
     });
 
     test('Combination of single numbers and ranges', () {
-      expect(parseLineNumbers('lang {1, 3-6, 10, 21-23}'),
-          equals([1, 3, 4, 5, 6, 10, 21, 22, 23]));
+      expect(
+        parseLineNumbers('lang {1, 3-6, 10, 21-23}'),
+        equals([1, 3, 4, 5, 6, 10, 21, 22, 23]),
+      );
     });
 
     test('No braces returns empty list', () {
@@ -38,7 +40,9 @@ void main() {
 
     test('Spaces within braces', () {
       expect(
-          parseLineNumbers('lang { 1 , 2 , 3 - 5 }'), equals([1, 2, 3, 4, 5]));
+        parseLineNumbers('lang { 1 , 2 , 3 - 5 }'),
+        equals([1, 2, 3, 4, 5]),
+      );
     });
 
     test('Invalid range (start > end)', () {

@@ -62,11 +62,14 @@ class SectionParser {
 }
 
 String _updateIgnoredTags(String content) {
-  return content.split('\n').map((line) {
-    return line.trim().startsWith('_@')
-        ? line.replaceFirst('_@', '@')
-        : line;
-  }).join('\n');
+  return content
+      .split('\n')
+      .map((line) {
+        return line.trim().startsWith('_@')
+            ? line.replaceFirst('_@', '@')
+            : line;
+      })
+      .join('\n');
 }
 
 class _SectionAggregator {
@@ -90,13 +93,13 @@ class _SectionAggregator {
 
     final updatedBlocks = switch (lastBlock) {
       ColumnBlock(content: final existingContent) => [
-          ...section.blocks.take(section.blocks.length - 1),
-          lastBlock.copyWith(
-            content: existingContent.isEmpty
-                ? content
-                : '$existingContent\n$content',
-          ),
-        ],
+        ...section.blocks.take(section.blocks.length - 1),
+        lastBlock.copyWith(
+          content: existingContent.isEmpty
+              ? content
+              : '$existingContent\n$content',
+        ),
+      ],
       _ => [...section.blocks, ColumnBlock(content)],
     };
 

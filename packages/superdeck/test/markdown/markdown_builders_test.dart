@@ -20,10 +20,7 @@ void main() {
         extensionSet: md.ExtensionSet.gitHubWeb,
       );
 
-      final nodes = document.parseLines(const [
-        '> [!NOTE]',
-        '> **Bold** text',
-      ]);
+      final nodes = document.parseLines(const ['> [!NOTE]', '> **Bold** text']);
 
       final alert = nodes.first as md.Element;
       expect(alert.tag, 'alert');
@@ -69,9 +66,9 @@ void main() {
 
       final nodes = document.parseLines(const ['![alt](image.png){.hero}']);
       final paragraph = nodes.whereType<md.Element>().first;
-      final image = paragraph.children!
-          .whereType<md.Element>()
-          .firstWhere((element) => element.tag == 'img');
+      final image = paragraph.children!.whereType<md.Element>().firstWhere(
+        (element) => element.tag == 'img',
+      );
       expect(image.attributes['hero'], 'hero');
       expect(
         paragraph.children!.whereType<md.Text>().map((e) => e.text),
@@ -92,9 +89,9 @@ void main() {
       ]);
 
       final paragraph = nodes.whereType<md.Element>().first;
-      final image = paragraph.children!
-          .whereType<md.Element>()
-          .firstWhere((element) => element.tag == 'img');
+      final image = paragraph.children!.whereType<md.Element>().firstWhere(
+        (element) => element.tag == 'img',
+      );
       expect(image.attributes['hero'], 'figure');
       expect(
         paragraph.children!.whereType<md.Text>().map((e) => e.text.trim()),
@@ -113,9 +110,9 @@ void main() {
       ]);
 
       final paragraph = nodes.whereType<md.Element>().first;
-      final image = paragraph.children!
-          .whereType<md.Element>()
-          .firstWhere((element) => element.tag == 'img');
+      final image = paragraph.children!.whereType<md.Element>().firstWhere(
+        (element) => element.tag == 'img',
+      );
 
       expect(image.attributes['hero'], 'hero');
       expect(image.attributes['src'], 'https://example.com/img_(v1).png');
@@ -127,20 +124,20 @@ void main() {
         extensionSet: md.ExtensionSet.gitHubWeb,
       );
 
-      final nodes = document.parseLines(
-        const ['![alt](image.png) {.hero .secondary}'],
-      );
+      final nodes = document.parseLines(const [
+        '![alt](image.png) {.hero .secondary}',
+      ]);
 
       final paragraph = nodes.whereType<md.Element>().first;
-      final image = paragraph.children!
-          .whereType<md.Element>()
-          .firstWhere((element) => element.tag == 'img');
+      final image = paragraph.children!.whereType<md.Element>().firstWhere(
+        (element) => element.tag == 'img',
+      );
 
       expect(image.attributes['hero'], 'hero');
       expect(
-        paragraph.children!
-            .whereType<md.Text>()
-            .map((element) => element.text.trim()),
+        paragraph.children!.whereType<md.Text>().map(
+          (element) => element.text.trim(),
+        ),
         everyElement(isEmpty),
       );
     });
@@ -153,9 +150,9 @@ void main() {
 
       final nodes = document.parseLines(const ['![alt](image.png){.123bad}']);
       final paragraph = nodes.whereType<md.Element>().first;
-      final image = paragraph.children!
-          .whereType<md.Element>()
-          .firstWhere((element) => element.tag == 'img');
+      final image = paragraph.children!.whereType<md.Element>().firstWhere(
+        (element) => element.tag == 'img',
+      );
 
       expect(image.attributes['hero'], isNull);
       expect(
@@ -223,10 +220,7 @@ void main() {}
       await tester.pumpAndSettle();
 
       final heroes = tester.widgetList<Hero>(find.byType(Hero));
-      expect(
-        heroes.any((hero) => hero.tag == 'code-hero'),
-        isTrue,
-      );
+      expect(heroes.any((hero) => hero.tag == 'code-hero'), isTrue);
     });
   });
 }

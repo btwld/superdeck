@@ -20,15 +20,11 @@ final class MarkdownAlertSpec extends Spec<MarkdownAlertSpec>
     StyleSpec<MarkdownAlertTypeSpec>? important,
     StyleSpec<MarkdownAlertTypeSpec>? warning,
     StyleSpec<MarkdownAlertTypeSpec>? caution,
-  })  : note = note ??
-            const StyleSpec(spec: MarkdownAlertTypeSpec()),
-        tip = tip ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
-        important = important ??
-            const StyleSpec(spec: MarkdownAlertTypeSpec()),
-        warning = warning ??
-            const StyleSpec(spec: MarkdownAlertTypeSpec()),
-        caution = caution ??
-            const StyleSpec(spec: MarkdownAlertTypeSpec());
+  }) : note = note ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
+       tip = tip ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
+       important = important ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
+       warning = warning ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
+       caution = caution ?? const StyleSpec(spec: MarkdownAlertTypeSpec());
 
   @override
   MarkdownAlertSpec copyWith({

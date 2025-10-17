@@ -52,17 +52,19 @@ extension DirectoryExt on Directory {
 /// ACK (Schema Validation) helper function for enums
 StringSchema ackEnum(List<Enum> values) {
   return Ack.string().enumString(
-        values.map((e) {
-          // Convert enum name to snake_case
-          final name = e.name;
-          return name
-              .replaceAll(RegExp(r'\s+'), '_')
-              .replaceAllMapped(
-                  RegExp(
-                      r'[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+'),
-                  (match) => "${match.group(0)!.toLowerCase()}_")
-              .replaceAll(RegExp(r'(_)\1+'), '_')
-              .replaceAll(RegExp(r'^_|_$'), '');
-        }).toList(),
-      );
+    values.map((e) {
+      // Convert enum name to snake_case
+      final name = e.name;
+      return name
+          .replaceAll(RegExp(r'\s+'), '_')
+          .replaceAllMapped(
+            RegExp(
+              r'[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+',
+            ),
+            (match) => "${match.group(0)!.toLowerCase()}_",
+          )
+          .replaceAll(RegExp(r'(_)\1+'), '_')
+          .replaceAll(RegExp(r'^_|_$'), '');
+    }).toList(),
+  );
 }

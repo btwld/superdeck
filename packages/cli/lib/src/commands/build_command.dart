@@ -96,10 +96,7 @@ class BuildCommand extends SuperdeckCommand {
   }
 
   /// Runs the build process with proper error handling and progress reporting
-  Future<bool> _runBuild(
-    DeckRepository store,
-    DeckConfiguration config,
-  ) async {
+  Future<bool> _runBuild(DeckRepository store, DeckConfiguration config) async {
     // Wait while a build is already running
     while (_isRunning) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -184,9 +181,7 @@ class BuildCommand extends SuperdeckCommand {
       }
 
       // Create the data store using the consolidated repository
-      store = DeckRepository(
-        configuration: deckConfig,
-      );
+      store = DeckRepository(configuration: deckConfig);
       await store.initialize();
 
       // Log if force rebuild is enabled
@@ -219,8 +214,9 @@ class BuildCommand extends SuperdeckCommand {
       // Watch mode
       if (boolArg('watch')) {
         logger.info('');
-        logger
-            .info('Watch mode enabled. Listening for changes in slides file.');
+        logger.info(
+          'Watch mode enabled. Listening for changes in slides file.',
+        );
         logger.info('');
         logger.info('Commands:');
         logger.info('  r - Rebuild presentation');
@@ -237,26 +233,28 @@ class BuildCommand extends SuperdeckCommand {
               .transform(utf8.decoder)
               .transform(const LineSplitter())
               .listen((line) async {
-            final command = line.trim().toLowerCase();
-            switch (command) {
-              case 'r':
-              case 'rebuild':
-                logger.info('Manual rebuild triggered...');
-                await _runBuild(repository, deckConfig);
-              case 'f':
-              case 'force-rebuild':
-                logger.info('Force rebuild triggered...');
-                await _cleanAndRebuild(repository, deckConfig);
-              case 'q':
-              case 'quit':
-                logger.info('Exiting watch mode...');
-                await stdinSubscription?.cancel();
-                exit(ExitCode.success.code);
-              default:
-                logger.warn('Unknown command: "$command"');
-                logger.info('Available commands: r (rebuild), f (force-rebuild), q (quit)');
-            }
-          });
+                final command = line.trim().toLowerCase();
+                switch (command) {
+                  case 'r':
+                  case 'rebuild':
+                    logger.info('Manual rebuild triggered...');
+                    await _runBuild(repository, deckConfig);
+                  case 'f':
+                  case 'force-rebuild':
+                    logger.info('Force rebuild triggered...');
+                    await _cleanAndRebuild(repository, deckConfig);
+                  case 'q':
+                  case 'quit':
+                    logger.info('Exiting watch mode...');
+                    await stdinSubscription?.cancel();
+                    exit(ExitCode.success.code);
+                  default:
+                    logger.warn('Unknown command: "$command"');
+                    logger.info(
+                      'Available commands: r (rebuild), f (force-rebuild), q (quit)',
+                    );
+                }
+              });
 
           // Create a builder that will handle watching and rebuilding
           final builder = _createStandardBuilder(
@@ -307,9 +305,7 @@ class BuildCommand extends SuperdeckCommand {
 }
 
 /// Ensures the pubspec.yaml has the necessary assets configuration
-Future<void> _ensurePubspecAssets(
-  DeckConfiguration configuration,
-) async {
+Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 
   try {
@@ -323,8 +319,10 @@ Future<void> _ensurePubspecAssets(
     }
 
     final pubspecContents = await pubspecFile.readAsString();
-    final updatedPubspecContents =
-        updatePubspecAssets(configuration, pubspecContents);
+    final updatedPubspecContents = updatePubspecAssets(
+      configuration,
+      pubspecContents,
+    );
 
     if (updatedPubspecContents != pubspecContents) {
       await pubspecFile.writeAsString(updatedPubspecContents);

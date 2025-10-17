@@ -6,10 +6,8 @@ import 'package:superdeck/src/utils/extensions.dart';
 import 'styles.dart';
 
 // Base text style for the presentation
-TextStyle get _baseTextStyle => GoogleFonts.poppins().copyWith(
-      fontSize: 24,
-      color: Colors.white,
-    );
+TextStyle get _baseTextStyle =>
+    GoogleFonts.poppins().copyWith(fontSize: 24, color: Colors.white);
 
 // Custom variants for different block types
 const onGist = NamedVariant('gist');
@@ -31,19 +29,23 @@ SlideStyle _createDefaultSlideStyle() {
   MarkdownAlertTypeStyle createAlertType(Color color) {
     return MarkdownAlertTypeStyle(
       heading: TextStyler()
-          .style(TextStyleMix(
-            fontSize: _baseTextStyle.fontSize,
-            color: _baseTextStyle.color,
-            fontFamily: _baseTextStyle.fontFamily,
-            fontWeight: FontWeight.bold,
-          ))
+          .style(
+            TextStyleMix(
+              fontSize: _baseTextStyle.fontSize,
+              color: _baseTextStyle.color,
+              fontFamily: _baseTextStyle.fontFamily,
+              fontWeight: FontWeight.bold,
+            ),
+          )
           .textAlign(TextAlign.left),
       description: TextStyler()
-          .style(TextStyleMix(
-            fontSize: _baseTextStyle.fontSize,
-            color: _baseTextStyle.color,
-            fontFamily: _baseTextStyle.fontFamily,
-          ))
+          .style(
+            TextStyleMix(
+              fontSize: _baseTextStyle.fontSize,
+              color: _baseTextStyle.color,
+              fontFamily: _baseTextStyle.fontFamily,
+            ),
+          )
           .textAlign(TextAlign.left),
       icon: IconStyler(color: color),
       container: BoxStyler(
@@ -51,9 +53,7 @@ SlideStyle _createDefaultSlideStyle() {
         margin: EdgeInsetsGeometryMix.symmetric(vertical: 12),
         decoration: BoxDecorationMix(
           color: color.withValues(alpha: 0.05),
-          border: BorderMix(
-            left: BorderSideMix(color: color, width: 4),
-          ),
+          border: BorderMix(left: BorderSideMix(color: color, width: 4)),
         ),
       ),
       containerFlex: FlexBoxStyler()
@@ -66,79 +66,91 @@ SlideStyle _createDefaultSlideStyle() {
   return SlideStyle(
     // Typography - Headings
     h1: TextStyler()
-        .style(TextStyleMix(
-          fontSize: 96,
-          fontWeight: FontWeight.bold,
-          height: 1.1,
-          color: _baseTextStyle.color,
-          fontFamily: _baseTextStyle.fontFamily,
-        ))
+        .style(
+          TextStyleMix(
+            fontSize: 96,
+            fontWeight: FontWeight.bold,
+            height: 1.1,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
         .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 16)),
 
     h2: TextStyler()
-        .style(TextStyleMix(
-          fontSize: 72,
-          fontWeight: FontWeight.bold,
-          height: 1.2,
-          color: _baseTextStyle.color,
-          fontFamily: _baseTextStyle.fontFamily,
-        ))
+        .style(
+          TextStyleMix(
+            fontSize: 72,
+            fontWeight: FontWeight.bold,
+            height: 1.2,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
         .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 12)),
 
     h3: TextStyler()
-        .style(TextStyleMix(
-          fontSize: 48,
-          fontWeight: FontWeight.w600,
-          height: 1.3,
-          color: _baseTextStyle.color,
-          fontFamily: _baseTextStyle.fontFamily,
-        ))
+        .style(
+          TextStyleMix(
+            fontSize: 48,
+            fontWeight: FontWeight.w600,
+            height: 1.3,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
         .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 12)),
 
     h4: TextStyler()
-        .style(TextStyleMix(
-          fontSize: 36,
-          fontWeight: FontWeight.normal,
-          height: 1.3,
-          color: _baseTextStyle.color,
-          fontFamily: _baseTextStyle.fontFamily,
-        ))
+        .style(
+          TextStyleMix(
+            fontSize: 36,
+            fontWeight: FontWeight.normal,
+            height: 1.3,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
         .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 8)),
 
     h5: TextStyler()
-        .style(TextStyleMix(
-          fontSize: 24,
-          fontWeight: FontWeight.normal,
-          height: 1.4,
-          color: _baseTextStyle.color,
-          fontFamily: _baseTextStyle.fontFamily,
-        ))
+        .style(
+          TextStyleMix(
+            fontSize: 24,
+            fontWeight: FontWeight.normal,
+            height: 1.4,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
         .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 4)),
 
     h6: TextStyler()
-        .style(TextStyleMix(
-          fontSize: _baseTextStyle.fontSize,
-          height: 1.4,
-          fontWeight: FontWeight.normal,
-          color: _baseTextStyle.color,
-          fontFamily: _baseTextStyle.fontFamily,
-        ))
+        .style(
+          TextStyleMix(
+            fontSize: _baseTextStyle.fontSize,
+            height: 1.4,
+            fontWeight: FontWeight.normal,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
         .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 3)),
 
     // Paragraph
     p: TextStyler()
-        .style(TextStyleMix(
-          fontSize: _baseTextStyle.fontSize,
-          height: 1.6,
-          color: _baseTextStyle.color,
-          fontFamily: _baseTextStyle.fontFamily,
-        ))
+        .style(
+          TextStyleMix(
+            fontSize: _baseTextStyle.fontSize,
+            height: 1.6,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
         .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 12)),
 
     // Inline text styles
-    link: _baseTextStyle.copyWith(
-      color: const Color.fromARGB(255, 66, 82, 96),
-    ),
+    link: _baseTextStyle.copyWith(color: const Color.fromARGB(255, 66, 82, 96)),
 
     // Alerts - using helper function for each type
     alert: MarkdownAlertStyle(
@@ -167,9 +179,7 @@ SlideStyle _createDefaultSlideStyle() {
       bodyStyle: _baseTextStyle,
       cellPadding: const EdgeInsets.all(12),
       border: TableBorder.all(color: Colors.grey, width: 2),
-      cellDecoration: BoxDecoration(
-        color: Colors.grey.useOpacity(0.1),
-      ),
+      cellDecoration: BoxDecoration(color: Colors.grey.useOpacity(0.1)),
     ),
 
     // Blockquotes
@@ -177,43 +187,38 @@ SlideStyle _createDefaultSlideStyle() {
       textStyle: _baseTextStyle.copyWith(fontSize: 32),
       padding: const EdgeInsets.only(bottom: 12, left: 30),
       decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(color: Colors.grey, width: 4),
-        ),
+        border: Border(left: BorderSide(color: Colors.grey, width: 4)),
       ),
     ),
 
     // Lists
     list: MarkdownListStyle(
-      bullet: TextStyler().style(TextStyleMix(
-        fontSize: _baseTextStyle.fontSize,
-        color: _baseTextStyle.color,
-        fontFamily: _baseTextStyle.fontFamily,
-      )),
+      bullet: TextStyler().style(
+        TextStyleMix(
+          fontSize: _baseTextStyle.fontSize,
+          color: _baseTextStyle.color,
+          fontFamily: _baseTextStyle.fontFamily,
+        ),
+      ),
       text: TextStyler()
-          .style(TextStyleMix(
-            fontSize: _baseTextStyle.fontSize,
-            height: 1.6,
-            color: _baseTextStyle.color,
-            fontFamily: _baseTextStyle.fontFamily,
-          ))
+          .style(
+            TextStyleMix(
+              fontSize: _baseTextStyle.fontSize,
+              height: 1.6,
+              color: _baseTextStyle.color,
+              fontFamily: _baseTextStyle.fontFamily,
+            ),
+          )
           .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 8)),
     ),
 
     // Checkbox
-    checkbox: MarkdownCheckboxStyle(
-      textStyle: _baseTextStyle,
-    ),
+    checkbox: MarkdownCheckboxStyle(textStyle: _baseTextStyle),
 
     // Block container with variants for different block types
-    blockContainer: BoxStyler(
-      padding: EdgeInsetsGeometryMix.all(40),
-    ).variants([
+    blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
       // Image variant - no padding
-      VariantStyle(
-        onImage,
-        BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
-      ),
+      VariantStyle(onImage, BoxStyler(padding: EdgeInsetsGeometryMix.all(0))),
       // Gist variant - no padding or margin
       VariantStyle(
         onGist,
@@ -226,9 +231,7 @@ SlideStyle _createDefaultSlideStyle() {
 
     // Horizontal rule
     horizontalRuleDecoration: BoxDecoration(
-      border: Border(
-        bottom: BorderSide(color: Colors.grey, width: 2),
-      ),
+      border: Border(bottom: BorderSide(color: Colors.grey, width: 2)),
     ),
   );
 }

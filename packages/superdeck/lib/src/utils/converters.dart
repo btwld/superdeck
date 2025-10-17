@@ -32,24 +32,24 @@ class ConverterHelper {
   }
 
   static (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis)
-      toFlexAlignment(Axis axis, ContentAlignment alignment) {
+  toFlexAlignment(Axis axis, ContentAlignment alignment) {
     final isHorizontal = axis == Axis.horizontal;
     final (mainStart, mainCenter, mainEnd) = isHorizontal
         ? (
             MainAxisAlignment.start,
             MainAxisAlignment.center,
-            MainAxisAlignment.end
+            MainAxisAlignment.end,
           )
         : (
             MainAxisAlignment.end,
             MainAxisAlignment.center,
-            MainAxisAlignment.start
+            MainAxisAlignment.start,
           );
 
     final (crossStart, crossCenter, crossEnd) = (
       CrossAxisAlignment.start,
       CrossAxisAlignment.center,
-      CrossAxisAlignment.end
+      CrossAxisAlignment.end,
     );
 
     return switch (alignment) {
@@ -66,12 +66,12 @@ class ConverterHelper {
   }
 
   static (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis)
-      toRowAlignment(ContentAlignment alignment) {
+  toRowAlignment(ContentAlignment alignment) {
     return toFlexAlignment(Axis.horizontal, alignment);
   }
 
   static (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis)
-      toColumnAlignment(ContentAlignment alignment) {
+  toColumnAlignment(ContentAlignment alignment) {
     return toFlexAlignment(Axis.vertical, alignment);
   }
 }

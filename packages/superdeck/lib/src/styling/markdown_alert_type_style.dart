@@ -8,8 +8,7 @@ import 'markdown_alert_type_spec.dart';
 final class MarkdownAlertTypeStyle extends Style<MarkdownAlertTypeSpec>
     with
         Diagnosticable,
-        WidgetModifierStyleMixin<MarkdownAlertTypeStyle,
-            MarkdownAlertTypeSpec>,
+        WidgetModifierStyleMixin<MarkdownAlertTypeStyle, MarkdownAlertTypeSpec>,
         VariantStyleMixin<MarkdownAlertTypeStyle, MarkdownAlertTypeSpec>,
         AnimationStyleMixin<MarkdownAlertTypeStyle, MarkdownAlertTypeSpec> {
   final Prop<StyleSpec<TextSpec>>? $heading;
@@ -29,12 +28,12 @@ final class MarkdownAlertTypeStyle extends Style<MarkdownAlertTypeSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $heading = heading,
-        $description = description,
-        $icon = icon,
-        $container = container,
-        $containerFlex = containerFlex,
-        $headingFlex = headingFlex;
+  }) : $heading = heading,
+       $description = description,
+       $icon = icon,
+       $container = container,
+       $containerFlex = containerFlex,
+       $headingFlex = headingFlex;
 
   MarkdownAlertTypeStyle({
     TextStyler? heading,
@@ -47,20 +46,21 @@ final class MarkdownAlertTypeStyle extends Style<MarkdownAlertTypeSpec>
     List<VariantStyle<MarkdownAlertTypeSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          heading: Prop.maybeMix(heading),
-          description: Prop.maybeMix(description),
-          icon: Prop.maybeMix(icon),
-          container: Prop.maybeMix(container),
-          containerFlex: Prop.maybeMix(containerFlex),
-          headingFlex: Prop.maybeMix(headingFlex),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         heading: Prop.maybeMix(heading),
+         description: Prop.maybeMix(description),
+         icon: Prop.maybeMix(icon),
+         container: Prop.maybeMix(container),
+         containerFlex: Prop.maybeMix(containerFlex),
+         headingFlex: Prop.maybeMix(headingFlex),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   @override
   MarkdownAlertTypeStyle variants(
-      List<VariantStyle<MarkdownAlertTypeSpec>> value) {
+    List<VariantStyle<MarkdownAlertTypeSpec>> value,
+  ) {
     return merge(MarkdownAlertTypeStyle(variants: value));
   }
 
@@ -121,14 +121,14 @@ final class MarkdownAlertTypeStyle extends Style<MarkdownAlertTypeSpec>
 
   @override
   List<Object?> get props => [
-        $heading,
-        $description,
-        $icon,
-        $container,
-        $containerFlex,
-        $headingFlex,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $heading,
+    $description,
+    $icon,
+    $container,
+    $containerFlex,
+    $headingFlex,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

@@ -7,8 +7,9 @@ import '../test_helpers.dart';
 void main() {
   group('MeasureSize', () {
     group('Basic Functionality', () {
-      testWidgets('calls onChange with correct size when child size changes',
-          (WidgetTester tester) async {
+      testWidgets('calls onChange with correct size when child size changes', (
+        WidgetTester tester,
+      ) async {
         Size? size;
         await tester.pumpWithScaffold(
           MeasureSize(
@@ -29,8 +30,9 @@ void main() {
         expect(size, equals(const Size(200, 200)));
       });
 
-      testWidgets('does not call onChange when child size remains the same',
-          (WidgetTester tester) async {
+      testWidgets('does not call onChange when child size remains the same', (
+        WidgetTester tester,
+      ) async {
         int onChangeCalls = 0;
         await tester.pumpWithScaffold(
           MeasureSize(
@@ -51,8 +53,9 @@ void main() {
         expect(onChangeCalls, equals(1));
       });
 
-      testWidgets('calls onChange with Size.zero when child is null',
-          (WidgetTester tester) async {
+      testWidgets('calls onChange with Size.zero when child is null', (
+        WidgetTester tester,
+      ) async {
         Size? size;
         await tester.pumpWithScaffold(
           MeasureSize(
@@ -64,8 +67,9 @@ void main() {
         expect(size, equals(Size.zero));
       });
 
-      testWidgets('provides both size and parent constraints in onChange',
-          (WidgetTester tester) async {
+      testWidgets('provides both size and parent constraints in onChange', (
+        WidgetTester tester,
+      ) async {
         BoxConstraints? parentConstraints;
         Size? size;
 
@@ -85,8 +89,9 @@ void main() {
         expect(parentConstraints!.maxHeight, greaterThan(0));
       });
 
-      testWidgets('provides parent constraint utility methods',
-          (WidgetTester tester) async {
+      testWidgets('provides parent constraint utility methods', (
+        WidgetTester tester,
+      ) async {
         BoxConstraints? parentConstraints;
 
         await tester.pumpWithScaffold(
@@ -107,42 +112,48 @@ void main() {
 
     group('Callback Coalescing', () {
       testWidgets(
-          'coalesces multiple layout passes within a frame into single callback',
-          (WidgetTester tester) async {
-        int callCount = 0;
-        final sizes = <Size>[];
+        'coalesces multiple layout passes within a frame into single callback',
+        (WidgetTester tester) async {
+          int callCount = 0;
+          final sizes = <Size>[];
 
-        // Create a widget that triggers multiple layouts by using setState
-        await tester.pumpWidget(
-          StatefulBuilder(
-            builder: (context, setState) {
-              return Directionality(
-                textDirection: TextDirection.ltr,
-                child: Center(
-                  child: MeasureSize(
-                    onChange: (size, parentConstraints) {
-                      callCount++;
-                      sizes.add(size);
-                    },
-                    child: const SizedBox(width: 100, height: 100),
+          // Create a widget that triggers multiple layouts by using setState
+          await tester.pumpWidget(
+            StatefulBuilder(
+              builder: (context, setState) {
+                return Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Center(
+                    child: MeasureSize(
+                      onChange: (size, parentConstraints) {
+                        callCount++;
+                        sizes.add(size);
+                      },
+                      child: const SizedBox(width: 100, height: 100),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        );
+                );
+              },
+            ),
+          );
 
-        // Initial layout should trigger one callback
-        expect(callCount, equals(1));
-        expect(sizes.last, equals(const Size(100, 100)));
+          // Initial layout should trigger one callback
+          expect(callCount, equals(1));
+          expect(sizes.last, equals(const Size(100, 100)));
 
-        // Pump another frame with the same widget - should NOT trigger callback
-        await tester.pump();
-        expect(callCount, equals(1), reason: 'Same size should not trigger callback');
-      });
+          // Pump another frame with the same widget - should NOT trigger callback
+          await tester.pump();
+          expect(
+            callCount,
+            equals(1),
+            reason: 'Same size should not trigger callback',
+          );
+        },
+      );
 
-      testWidgets('detects constraint changes that affect final size',
-          (WidgetTester tester) async {
+      testWidgets('detects constraint changes that affect final size', (
+        WidgetTester tester,
+      ) async {
         final sizes = <Size>[];
 
         await tester.pumpWithScaffold(
@@ -185,8 +196,9 @@ void main() {
     });
 
     group('Detachment Guards', () {
-      testWidgets('does not fire callback after widget is disposed',
-          (WidgetTester tester) async {
+      testWidgets('does not fire callback after widget is disposed', (
+        WidgetTester tester,
+      ) async {
         int callCount = 0;
         bool widgetPresent = true;
 
@@ -217,9 +229,7 @@ void main() {
         await tester.pumpWidget(
           const Directionality(
             textDirection: TextDirection.ltr,
-            child: Center(
-              child: SizedBox.shrink(),
-            ),
+            child: Center(child: SizedBox.shrink()),
           ),
         );
 
@@ -227,12 +237,16 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(callCount, equals(1),
-            reason: 'No additional callbacks after disposal');
+        expect(
+          callCount,
+          equals(1),
+          reason: 'No additional callbacks after disposal',
+        );
       });
 
-      testWidgets('handles rapid mount/unmount cycles safely',
-          (WidgetTester tester) async {
+      testWidgets('handles rapid mount/unmount cycles safely', (
+        WidgetTester tester,
+      ) async {
         int callCount = 0;
 
         for (int i = 0; i < 5; i++) {
@@ -264,8 +278,9 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('handles zero-sized children correctly',
-          (WidgetTester tester) async {
+      testWidgets('handles zero-sized children correctly', (
+        WidgetTester tester,
+      ) async {
         Size? size;
         await tester.pumpWithScaffold(
           MeasureSize(
@@ -277,8 +292,7 @@ void main() {
         expect(size, equals(Size.zero));
       });
 
-      testWidgets('handles animated size changes',
-          (WidgetTester tester) async {
+      testWidgets('handles animated size changes', (WidgetTester tester) async {
         final sizes = <Size>[];
         double width = 100;
 
@@ -323,8 +337,9 @@ void main() {
         expect(sizes.last.width, equals(200));
       });
 
-      testWidgets('works correctly with LayoutBuilder parent',
-          (WidgetTester tester) async {
+      testWidgets('works correctly with LayoutBuilder parent', (
+        WidgetTester tester,
+      ) async {
         Size? measuredSize;
         BoxConstraints? measuredConstraints;
         BoxConstraints? parentConstraints;
@@ -358,8 +373,9 @@ void main() {
         expect(measuredConstraints, isNotNull);
       });
 
-      testWidgets('reports size changes during constraint changes',
-          (WidgetTester tester) async {
+      testWidgets('reports size changes during constraint changes', (
+        WidgetTester tester,
+      ) async {
         final events = <String>[];
 
         await tester.pumpWidget(
@@ -406,8 +422,9 @@ void main() {
     });
 
     group('RenderObject Integration', () {
-      testWidgets('updateRenderObject updates onChange callback',
-          (WidgetTester tester) async {
+      testWidgets('updateRenderObject updates onChange callback', (
+        WidgetTester tester,
+      ) async {
         int firstCallbackCount = 0;
         int secondCallbackCount = 0;
 

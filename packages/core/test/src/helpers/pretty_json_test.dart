@@ -18,8 +18,8 @@ void main() {
         'person': {
           'name': 'John',
           'age': 30,
-          'address': {'city': 'New York', 'zip': '10001'}
-        }
+          'address': {'city': 'New York', 'zip': '10001'},
+        },
       };
 
       final expected = '''{
@@ -53,9 +53,9 @@ void main() {
       final input = {
         'items': [
           {'id': 1, 'name': 'Item 1'},
-          {'id': 2, 'name': 'Item 2'}
+          {'id': 2, 'name': 'Item 2'},
         ],
-        'count': 2
+        'count': 2,
       };
 
       final expected = '''{

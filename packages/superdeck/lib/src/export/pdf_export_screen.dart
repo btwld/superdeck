@@ -77,52 +77,49 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
       child: SizedBox.fromSize(
         size: kResolution,
         child: ListenableBuilder(
-            listenable: _exportController,
-            builder: (context, _) {
-              return Stack(
-                children: [
-                  PageView.builder(
-                    controller: _exportController.pageController,
-                    itemCount: _exportController.slides.length,
-                    itemBuilder: (context, index) {
-                      // Set to exporting true
-                      final slide = _exportController.slides[index].copyWith(
-                        isExporting: true,
-                        debug: false,
-                      );
+          listenable: _exportController,
+          builder: (context, _) {
+            return Stack(
+              children: [
+                PageView.builder(
+                  controller: _exportController.pageController,
+                  itemCount: _exportController.slides.length,
+                  itemBuilder: (context, index) {
+                    // Set to exporting true
+                    final slide = _exportController.slides[index].copyWith(
+                      isExporting: true,
+                      debug: false,
+                    );
 
-                      return RepaintBoundary(
-                        key: _exportController.getSlideKey(slide),
-                        child: InheritedData(
-                          data: slide,
-                          child: SlideView(slide),
-                        ),
-                      );
-                    },
-                  ),
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black,
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: _PdfExportBar(
-                          exportController: _exportController,
-                        ),
+                    return RepaintBoundary(
+                      key: _exportController.getSlideKey(slide),
+                      child: InheritedData(
+                        data: slide,
+                        child: SlideView(slide),
                       ),
+                    );
+                  },
+                ),
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: _PdfExportBar(exportController: _exportController),
                     ),
-                  )
-                ],
-              );
-            }),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 }
 
 class _PdfExportBar extends StatelessWidget {
-  const _PdfExportBar({
-    required this.exportController,
-  });
+  const _PdfExportBar({required this.exportController});
 
   final PdfController exportController;
 
@@ -142,10 +139,7 @@ class _PdfExportBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 16.0,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -160,7 +154,8 @@ class _PdfExportBar extends StatelessWidget {
                   width: 32,
                   child: CircularProgressIndicator(
                     color: Theme.of(context).colorScheme.primary,
-                    value: exportController.exportStatus ==
+                    value:
+                        exportController.exportStatus ==
                             PdfExportStatus.building
                         ? null
                         : exportController.progress,
@@ -169,9 +164,9 @@ class _PdfExportBar extends StatelessWidget {
           const SizedBox(height: 16.0),
           Text(
             _progressText,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.white,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 16.0),
           TextButton.icon(
@@ -180,10 +175,7 @@ class _PdfExportBar extends StatelessWidget {
               Navigator.of(context).pop();
             },
             icon: const Icon(Icons.cancel, color: Colors.white),
-            label: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white),
-            ),
+            label: const Text('Cancel', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

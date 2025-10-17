@@ -34,10 +34,11 @@ class AssetGenerationPipeline {
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
     required DeckRepository store,
-    FencedCodeBlockTransformer blockTransformer = const FencedCodeBlockTransformer(),
-  })  : _generators = generators,
-        _store = store,
-        _blockTransformer = blockTransformer;
+    FencedCodeBlockTransformer blockTransformer =
+        const FencedCodeBlockTransformer(),
+  }) : _generators = generators,
+       _store = store,
+       _blockTransformer = blockTransformer;
 
   /// Processes all assets in the given slide content.
   ///
@@ -75,8 +76,7 @@ class AssetGenerationPipeline {
           _logger.severe(
             'Failed to process ${block.language} block for slide $slideIndex: $error',
           );
-          throw Exception(
-              'Failed to process ${block.language} block: $error');
+          throw Exception('Failed to process ${block.language} block: $error');
         }
       },
     );
@@ -131,9 +131,7 @@ class AssetGenerationPipeline {
         '${generator.type} asset already exists for slide $slideIndex',
       );
     } else {
-      _logger.info(
-        'Generating ${generator.type} asset for slide $slideIndex',
-      );
+      _logger.info('Generating ${generator.type} asset for slide $slideIndex');
 
       // Generate the asset
       final assetData = await generator.generateAsset(

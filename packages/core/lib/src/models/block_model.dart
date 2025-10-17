@@ -26,15 +26,12 @@ sealed class Block {
   });
 
   /// Base schema for all block types
-  static final schema = Ack.object(
-    {
-      'type': Ack.string(),
-      'align': ContentAlignment.schema.nullable().optional(),
-      'flex': Ack.string().nullable().optional(),
-      'scrollable': Ack.boolean().nullable().optional(),
-    },
-    additionalProperties: true,
-  );
+  static final schema = Ack.object({
+    'type': Ack.string(),
+    'align': ContentAlignment.schema.nullable().optional(),
+    'flex': Ack.string().nullable().optional(),
+    'scrollable': Ack.boolean().nullable().optional(),
+  }, additionalProperties: true);
 
   /// Parses a block from a JSON map.
   ///
@@ -56,11 +53,7 @@ sealed class Block {
   );
 
   Map<String, dynamic> toMap();
-  Block copyWith({
-    ContentAlignment? align,
-    int? flex,
-    bool? scrollable,
-  });
+  Block copyWith({ContentAlignment? align, int? flex, bool? scrollable});
 
   static Block fromMap(Map<String, dynamic> map) {
     final type = map['type'] as String;
@@ -91,13 +84,9 @@ class SectionBlock extends Block {
   /// The type identifier for section blocks.
   static const key = 'section';
 
-  SectionBlock(
-    List<Block>? blocks, {
-    super.align,
-    super.flex,
-    super.scrollable,
-  })  : blocks = blocks ?? [],
-        super(type: key);
+  SectionBlock(List<Block>? blocks, {super.align, super.flex, super.scrollable})
+    : blocks = blocks ?? [],
+      super(type: key);
 
   /// The total flex value of all child blocks.
   int get totalBlockFlex {
@@ -155,16 +144,13 @@ class SectionBlock extends Block {
   }
 
   /// Validation schema for section blocks.
-  static final schema = Ack.object(
-    {
-      'type': Ack.string(),
-      'align': ContentAlignment.schema.nullable().optional(),
-      'flex': Ack.string().nullable().optional(),
-      'scrollable': Ack.boolean().nullable().optional(),
-      'blocks': Ack.list(Ack.object({})).nullable().optional(),
-    },
-    additionalProperties: true,
-  );
+  static final schema = Ack.object({
+    'type': Ack.string(),
+    'align': ContentAlignment.schema.nullable().optional(),
+    'flex': Ack.string().nullable().optional(),
+    'scrollable': Ack.boolean().nullable().optional(),
+    'blocks': Ack.list(Ack.object({})).nullable().optional(),
+  }, additionalProperties: true);
 
   @override
   bool operator ==(Object other) =>
@@ -179,12 +165,12 @@ class SectionBlock extends Block {
 
   @override
   int get hashCode => Object.hash(
-        type,
-        align,
-        flex,
-        scrollable,
-        const DeepCollectionEquality().hash(blocks),
-      );
+    type,
+    align,
+    flex,
+    scrollable,
+    const DeepCollectionEquality().hash(blocks),
+  );
 }
 
 /// A block that displays markdown content in a column.
@@ -197,13 +183,9 @@ class ColumnBlock extends Block {
   /// The markdown content to display.
   final String content;
 
-  ColumnBlock(
-    String? content, {
-    super.align,
-    super.flex,
-    super.scrollable,
-  })  : content = content ?? '',
-        super(type: key);
+  ColumnBlock(String? content, {super.align, super.flex, super.scrollable})
+    : content = content ?? '',
+      super(type: key);
 
   @override
   ColumnBlock copyWith({
@@ -246,16 +228,13 @@ class ColumnBlock extends Block {
     }
   }
 
-  static final schema = Ack.object(
-    {
-      'type': Ack.string(),
-      'align': ContentAlignment.schema.nullable().optional(),
-      'flex': Ack.string().nullable().optional(),
-      'scrollable': Ack.boolean().nullable().optional(),
-      'content': Ack.string().nullable().optional(),
-    },
-    additionalProperties: true,
-  );
+  static final schema = Ack.object({
+    'type': Ack.string(),
+    'align': ContentAlignment.schema.nullable().optional(),
+    'flex': Ack.string().nullable().optional(),
+    'scrollable': Ack.boolean().nullable().optional(),
+    'content': Ack.string().nullable().optional(),
+  }, additionalProperties: true);
 
   @override
   bool operator ==(Object other) =>
@@ -363,19 +342,16 @@ class DartPadBlock extends Block {
     );
   }
 
-  static final schema = Ack.object(
-    {
-      'type': Ack.string(),
-      'align': ContentAlignment.schema.nullable().optional(),
-      'flex': Ack.string().nullable().optional(),
-      'scrollable': Ack.boolean().nullable().optional(),
-      'id': Ack.string(),
-      'theme': DartPadTheme.schema.nullable().optional(),
-      'embed': Ack.boolean().nullable().optional(),
-      'run': Ack.boolean().nullable().optional(),
-    },
-    additionalProperties: true,
-  );
+  static final schema = Ack.object({
+    'type': Ack.string(),
+    'align': ContentAlignment.schema.nullable().optional(),
+    'flex': Ack.string().nullable().optional(),
+    'scrollable': Ack.boolean().nullable().optional(),
+    'id': Ack.string(),
+    'theme': DartPadTheme.schema.nullable().optional(),
+    'embed': Ack.boolean().nullable().optional(),
+    'run': Ack.boolean().nullable().optional(),
+  }, additionalProperties: true);
 
   @override
   bool operator ==(Object other) =>
@@ -462,19 +438,16 @@ class ImageBlock extends Block {
     );
   }
 
-  static final schema = Ack.object(
-    {
-      'type': Ack.string(),
-      'align': ContentAlignment.schema.nullable().optional(),
-      'flex': Ack.string().nullable().optional(),
-      'scrollable': Ack.boolean().nullable().optional(),
-      "fit": ImageFit.schema.nullable().optional(),
-      "asset": GeneratedAsset.schema,
-      "width": Ack.double().nullable().optional(),
-      "height": Ack.double().nullable().optional(),
-    },
-    additionalProperties: true,
-  );
+  static final schema = Ack.object({
+    'type': Ack.string(),
+    'align': ContentAlignment.schema.nullable().optional(),
+    'flex': Ack.string().nullable().optional(),
+    'scrollable': Ack.boolean().nullable().optional(),
+    "fit": ImageFit.schema.nullable().optional(),
+    "asset": GeneratedAsset.schema,
+    "width": Ack.double().nullable().optional(),
+    "height": Ack.double().nullable().optional(),
+  }, additionalProperties: true);
 
   @override
   bool operator ==(Object other) =>
@@ -586,16 +559,13 @@ class WidgetBlock extends Block {
     );
   }
 
-  static final schema = Ack.object(
-    {
-      'type': Ack.string(),
-      'align': ContentAlignment.schema.nullable().optional(),
-      'flex': Ack.string().nullable().optional(),
-      'scrollable': Ack.boolean().nullable().optional(),
-      "name": Ack.string(),
-    },
-    additionalProperties: true,
-  );
+  static final schema = Ack.object({
+    'type': Ack.string(),
+    'align': ContentAlignment.schema.nullable().optional(),
+    'flex': Ack.string().nullable().optional(),
+    'scrollable': Ack.boolean().nullable().optional(),
+    "name": Ack.string(),
+  }, additionalProperties: true);
 
   @override
   bool operator ==(Object other) =>
@@ -611,13 +581,13 @@ class WidgetBlock extends Block {
 
   @override
   int get hashCode => Object.hash(
-        type,
-        align,
-        flex,
-        scrollable,
-        name,
-        const MapEquality().hash(args),
-      );
+    type,
+    align,
+    flex,
+    scrollable,
+    name,
+    const MapEquality().hash(args),
+  );
 }
 
 enum ContentAlignment {

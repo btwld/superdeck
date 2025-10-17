@@ -20,31 +20,43 @@ ImageProvider getImageProvider(Uri uri) {
   switch (uri.scheme) {
     case 'http':
     case 'https':
-      if (isMermaid) debugPrint('[CachedImage]   Using CachedNetworkImageProvider');
+      if (isMermaid) {
+        debugPrint('[CachedImage]   Using CachedNetworkImageProvider');
+      }
       return CachedNetworkImageProvider(uri.toString());
     default:
       if (kCanRunProcess) {
         final file = File.fromUri(uri);
         if (isMermaid) {
           debugPrint('[CachedImage]   Using FileImage with path: ${file.path}');
-          debugPrint('[CachedImage]   File absolute path: ${file.absolute.path}');
+          debugPrint(
+            '[CachedImage]   File absolute path: ${file.absolute.path}',
+          );
 
           // Check if file exists
           final exists = file.existsSync();
           debugPrint('[CachedImage]   File exists: $exists');
 
           if (!exists) {
-            debugPrint('[CachedImage]   ERROR: File does NOT exist at path: ${file.absolute.path}');
+            debugPrint(
+              '[CachedImage]   ERROR: File does NOT exist at path: ${file.absolute.path}',
+            );
             // Check if it exists with .superdeck prefix
-            final withPrefix = File('.superdeck/assets/${uri.pathSegments.last}');
+            final withPrefix = File(
+              '.superdeck/assets/${uri.pathSegments.last}',
+            );
             final prefixExists = withPrefix.existsSync();
-            debugPrint('[CachedImage]   Trying with .superdeck prefix: ${withPrefix.path}');
+            debugPrint(
+              '[CachedImage]   Trying with .superdeck prefix: ${withPrefix.path}',
+            );
             debugPrint('[CachedImage]   Prefix path exists: $prefixExists');
           }
         }
         return FileImage(file);
       } else {
-        if (isMermaid) debugPrint('[CachedImage]   Using AssetImage with path: ${uri.path}');
+        if (isMermaid) {
+          debugPrint('[CachedImage]   Using AssetImage with path: ${uri.path}');
+        }
         return AssetImage(uri.path);
       }
   }

@@ -19,14 +19,11 @@ final class AssetGenerationTask extends Task {
     required List<AssetGenerator> generators,
     required DeckRepository store,
     Map<String, dynamic> configuration = const {},
-  })  : _pipeline = AssetGenerationPipeline(
-          generators: generators,
-          store: store,
-        ),
-        super(
-          'asset_generation',
-          configuration: configuration,
-        );
+  }) : _pipeline = AssetGenerationPipeline(
+         generators: generators,
+         store: store,
+       ),
+       super('asset_generation', configuration: configuration);
 
   /// Factory constructor that creates a default asset pipeline with standard generators.
   factory AssetGenerationTask.withDefaults({
@@ -56,16 +53,16 @@ final class AssetGenerationTask extends Task {
       );
 
       // Update the slide content with asset references
-      context.slide =
-          context.slide.copyWith(content: result.updatedContent);
+      context.slide = context.slide.copyWith(content: result.updatedContent);
 
       logger.info(
         'Asset generation completed for slide ${context.slideIndex}. '
         'Generated ${result.generatedAssets.length} assets.',
       );
     } catch (e) {
-      logger
-          .severe('Asset generation failed for slide ${context.slideIndex}: $e');
+      logger.severe(
+        'Asset generation failed for slide ${context.slideIndex}: $e',
+      );
       rethrow;
     }
   }

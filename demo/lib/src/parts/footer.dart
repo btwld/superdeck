@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FooterPart extends StatelessWidget implements PreferredSizeWidget {
-  const FooterPart({
-    super.key,
-  });
+  const FooterPart({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(50);
@@ -14,9 +12,7 @@ class FooterPart extends StatelessWidget implements PreferredSizeWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Text('#superdeck'),
-        ],
+        children: [Text('#superdeck')],
       ),
     );
   }

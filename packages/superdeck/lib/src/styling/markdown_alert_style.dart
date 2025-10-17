@@ -28,11 +28,11 @@ final class MarkdownAlertStyle extends Style<MarkdownAlertSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $note = note,
-        $tip = tip,
-        $important = important,
-        $warning = warning,
-        $caution = caution;
+  }) : $note = note,
+       $tip = tip,
+       $important = important,
+       $warning = warning,
+       $caution = caution;
 
   MarkdownAlertStyle({
     MarkdownAlertTypeStyle? note,
@@ -44,15 +44,15 @@ final class MarkdownAlertStyle extends Style<MarkdownAlertSpec>
     List<VariantStyle<MarkdownAlertSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          note: Prop.maybeMix(note),
-          tip: Prop.maybeMix(tip),
-          important: Prop.maybeMix(important),
-          warning: Prop.maybeMix(warning),
-          caution: Prop.maybeMix(caution),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         note: Prop.maybeMix(note),
+         tip: Prop.maybeMix(tip),
+         important: Prop.maybeMix(important),
+         warning: Prop.maybeMix(warning),
+         caution: Prop.maybeMix(caution),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   @override
   MarkdownAlertStyle variants(List<VariantStyle<MarkdownAlertSpec>> value) {
@@ -113,13 +113,13 @@ final class MarkdownAlertStyle extends Style<MarkdownAlertSpec>
 
   @override
   List<Object?> get props => [
-        $note,
-        $tip,
-        $important,
-        $warning,
-        $caution,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $note,
+    $tip,
+    $important,
+    $warning,
+    $caution,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

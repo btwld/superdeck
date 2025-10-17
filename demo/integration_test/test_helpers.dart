@@ -108,13 +108,21 @@ Future<void> waitForAnimations(WidgetTester tester) async {
 extension SuperDeckTestExtensions on WidgetTester {
   /// Navigate to next slide using keyboard
   Future<void> navigateToNextSlide() async {
-    await simulateKeyboardShortcut(this, LogicalKeyboardKey.arrowRight, meta: true);
+    await simulateKeyboardShortcut(
+      this,
+      LogicalKeyboardKey.arrowRight,
+      meta: true,
+    );
     await waitForSlideTransition(this);
   }
 
   /// Navigate to previous slide using keyboard
   Future<void> navigateToPreviousSlide() async {
-    await simulateKeyboardShortcut(this, LogicalKeyboardKey.arrowLeft, meta: true);
+    await simulateKeyboardShortcut(
+      this,
+      LogicalKeyboardKey.arrowLeft,
+      meta: true,
+    );
     await waitForSlideTransition(this);
   }
 
@@ -126,7 +134,11 @@ extension SuperDeckTestExtensions on WidgetTester {
 
   /// Navigate using backspace key
   Future<void> navigateWithBackspace() async {
-    await simulateKeyboardShortcut(this, LogicalKeyboardKey.backspace, meta: true);
+    await simulateKeyboardShortcut(
+      this,
+      LogicalKeyboardKey.backspace,
+      meta: true,
+    );
     await waitForSlideTransition(this);
   }
 
@@ -212,8 +224,9 @@ extension SuperDeckTestExtensions on WidgetTester {
 
   /// Navigate to specific slide by number
   Future<void> navigateToSlide(int slideNumber) async {
-    final key =
-        LogicalKeyboardKey(0x00000030 + slideNumber); // Convert to digit key
+    final key = LogicalKeyboardKey(
+      0x00000030 + slideNumber,
+    ); // Convert to digit key
     await simulateKeyboardShortcut(this, key);
     await waitForSlideTransition(this);
   }

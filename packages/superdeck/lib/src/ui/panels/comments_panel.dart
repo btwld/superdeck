@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CommentsPanel extends StatelessWidget {
-  const CommentsPanel({
-    super.key,
-    required this.comments,
-  });
+  const CommentsPanel({super.key, required this.comments});
 
   final List<String> comments;
 

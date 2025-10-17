@@ -52,10 +52,9 @@ Map<String, dynamic> convertYamlToMap(
 dynamic _deepConvert(dynamic value) {
   if (value is Map) {
     return Map<String, dynamic>.fromEntries(
-      value.entries.map((e) => MapEntry(
-            e.key.toString(),
-            _deepConvert(e.value),
-          )),
+      value.entries.map(
+        (e) => MapEntry(e.key.toString(), _deepConvert(e.value)),
+      ),
     );
   } else if (value is List) {
     return value.map(_deepConvert).toList();
@@ -98,12 +97,14 @@ String normalizeYamlBlock(String text) {
 
   final dedent = indent ?? 0;
 
-  return trimmedLines.map((line) {
-    if (line.trim().isEmpty) return '';
-    if (dedent == 0) return line;
-    if (line.length <= dedent) {
-      return line.trimLeft();
-    }
-    return line.substring(dedent);
-  }).join('\n');
+  return trimmedLines
+      .map((line) {
+        if (line.trim().isEmpty) return '';
+        if (dedent == 0) return line;
+        if (line.length <= dedent) {
+          return line.trimLeft();
+        }
+        return line.substring(dedent);
+      })
+      .join('\n');
 }

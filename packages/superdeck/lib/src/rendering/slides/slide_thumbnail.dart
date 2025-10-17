@@ -51,9 +51,7 @@ class _SlideThumbnailState extends State<SlideThumbnail> {
           aspectRatio: kAspectRatio,
           child: Container(
             color: Colors.grey[300],
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
         ),
       );
@@ -77,10 +75,7 @@ class _PreviewContainer extends StatelessWidget {
   final Widget child;
   final bool selected;
 
-  const _PreviewContainer({
-    required this.selected,
-    required this.child,
-  });
+  const _PreviewContainer({required this.selected, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +94,7 @@ class _PreviewContainer extends StatelessWidget {
             width: 2,
             color: selected ? Colors.cyan : Colors.transparent,
           ),
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 4,
-              spreadRadius: 1,
-            ),
-          ],
+          boxShadow: const [BoxShadow(blurRadius: 4, spreadRadius: 1)],
         ),
         child: child,
       ),

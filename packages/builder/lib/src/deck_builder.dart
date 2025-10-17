@@ -26,9 +26,7 @@ class DeckBuilder {
     required this.store,
     int concurrentSlides = 4,
   }) {
-    _processor = SlideProcessor(
-      concurrentSlides: concurrentSlides,
-    );
+    _processor = SlideProcessor(concurrentSlides: concurrentSlides);
   }
 
   /// Builds the deck and watches for changes, emitting build events as a stream.
@@ -84,7 +82,8 @@ class DeckBuilder {
     _logger.info('DeckBuilder: Loading markdown content...');
     final markdownRaw = await store.readDeckMarkdown();
     _logger.info(
-        'DeckBuilder: Loaded ${markdownRaw.length} characters of markdown content');
+      'DeckBuilder: Loaded ${markdownRaw.length} characters of markdown content',
+    );
 
     // Initialize the markdown parser
     _logger.info('DeckBuilder: Initializing markdown parser...');
@@ -96,7 +95,11 @@ class DeckBuilder {
     _logger.info('DeckBuilder: Parsed ${rawSlides.length} raw slides');
 
     // Process all slides through the processor
-    final processedSlides = await _processor.processAll(rawSlides, tasks, store);
+    final processedSlides = await _processor.processAll(
+      rawSlides,
+      tasks,
+      store,
+    );
 
     // Dispose of all tasks
     for (var task in tasks) {

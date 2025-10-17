@@ -12,11 +12,7 @@ final class MarkdownTextSpec extends Spec<MarkdownTextSpec>
   final EdgeInsets? padding;
   final WrapAlignment? alignment;
 
-  const MarkdownTextSpec({
-    this.textStyle,
-    this.padding,
-    this.alignment,
-  });
+  const MarkdownTextSpec({this.textStyle, this.padding, this.alignment});
 
   @override
   MarkdownTextSpec copyWith({

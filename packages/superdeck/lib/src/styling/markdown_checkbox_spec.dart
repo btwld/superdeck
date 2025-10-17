@@ -10,10 +10,7 @@ final class MarkdownCheckboxSpec extends Spec<MarkdownCheckboxSpec>
   final TextStyle? textStyle;
   final StyleSpec<IconSpec>? icon;
 
-  const MarkdownCheckboxSpec({
-    this.textStyle,
-    this.icon,
-  });
+  const MarkdownCheckboxSpec({this.textStyle, this.icon});
 
   @override
   MarkdownCheckboxSpec copyWith({

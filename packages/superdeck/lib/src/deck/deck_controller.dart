@@ -9,12 +9,7 @@ import 'slide_configuration_builder.dart';
 import 'slide_configuration.dart';
 
 /// Loading state for the deck
-enum DeckLoadingState {
-  idle,
-  loading,
-  loaded,
-  error,
-}
+enum DeckLoadingState { idle, loading, loaded, error }
 
 /// Controller for deck data and state management
 ///
@@ -54,10 +49,7 @@ class DeckController extends ChangeNotifier {
   // Computed properties
   List<SlideConfiguration> get slides {
     if (_currentDeck == null) return [];
-    return _slideBuilder.buildConfigurations(
-      _currentDeck!.slides,
-      _options,
-    );
+    return _slideBuilder.buildConfigurations(_currentDeck!.slides, _options);
   }
 
   int get totalSlides => slides.length;
@@ -65,11 +57,11 @@ class DeckController extends ChangeNotifier {
   DeckController({
     required DeckRepository repository,
     required DeckOptions options,
-  })  : _repository = repository,
-        _options = options,
-        _slideBuilder = SlideConfigurationBuilder(
-          configuration: repository.configuration,
-        ) {
+  }) : _repository = repository,
+       _options = options,
+       _slideBuilder = SlideConfigurationBuilder(
+         configuration: repository.configuration,
+       ) {
     _startDeckStream();
   }
 
@@ -131,8 +123,7 @@ class DeckController extends ChangeNotifier {
 
   // Static accessor
   static DeckController of(BuildContext context) {
-    final provider =
-        context.dependOnInheritedWidgetOfExactType<DeckProvider>();
+    final provider = context.dependOnInheritedWidgetOfExactType<DeckProvider>();
     if (provider == null) {
       throw FlutterError('DeckProvider not found in widget tree');
     }

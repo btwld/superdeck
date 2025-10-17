@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:superdeck/src/utils/extensions.dart';
 
-class IsometricLoading extends StatefulWidget{
-  const IsometricLoading({
-    super.key,
-    this.color = Colors.white,
-  });
+class IsometricLoading extends StatefulWidget {
+  const IsometricLoading({super.key, this.color = Colors.white});
 
   final Color color;
 
@@ -32,10 +29,7 @@ class _IsometricLoadingState extends State<IsometricLoading>
       duration: const Duration(milliseconds: 500),
     )..repeat(reverse: true);
     _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
   }
 
@@ -54,22 +48,18 @@ class _IsometricLoadingState extends State<IsometricLoading>
           scale: 0.2,
           child: CustomPaint(
             painter: IsometricLoadingPainter(
-              colors: List.generate(
-                4,
-                (index) {
-                  final startColorIndex =
-                      ((_animation.value * _colors.length).floor() + index) %
-                          _colors.length;
-                  final endColorIndex = (startColorIndex == _colors.length - 1)
-                      ? 0
-                      : startColorIndex + 1;
-                  final startColor = _colors[startColorIndex];
-                  final endColor = _colors[endColorIndex];
-                  final colorProgress =
-                      (_animation.value * _colors.length) % 1.0;
-                  return Color.lerp(startColor, endColor, colorProgress)!;
-                },
-              ),
+              colors: List.generate(4, (index) {
+                final startColorIndex =
+                    ((_animation.value * _colors.length).floor() + index) %
+                    _colors.length;
+                final endColorIndex = (startColorIndex == _colors.length - 1)
+                    ? 0
+                    : startColorIndex + 1;
+                final startColor = _colors[startColorIndex];
+                final endColor = _colors[endColorIndex];
+                final colorProgress = (_animation.value * _colors.length) % 1.0;
+                return Color.lerp(startColor, endColor, colorProgress)!;
+              }),
             ),
             child: const SizedBox(width: 200, height: 200),
           ),

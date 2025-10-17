@@ -59,7 +59,7 @@ File createTestPubspec(Directory parent, {Map<String, dynamic>? content}) {
     'version': '1.0.0',
     'environment': {'sdk': '>=3.0.0 <4.0.0'},
     'dependencies': {
-      'flutter': {'sdk': 'flutter'}
+      'flutter': {'sdk': 'flutter'},
     },
   };
 

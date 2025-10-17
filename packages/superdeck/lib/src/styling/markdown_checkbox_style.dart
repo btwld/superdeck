@@ -20,8 +20,8 @@ final class MarkdownCheckboxStyle extends Style<MarkdownCheckboxSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $textStyle = textStyle,
-        $icon = icon;
+  }) : $textStyle = textStyle,
+       $icon = icon;
 
   MarkdownCheckboxStyle({
     TextStyle? textStyle,
@@ -30,16 +30,17 @@ final class MarkdownCheckboxStyle extends Style<MarkdownCheckboxSpec>
     List<VariantStyle<MarkdownCheckboxSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          textStyle: Prop.maybe(textStyle),
-          icon: Prop.maybeMix(icon),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         textStyle: Prop.maybe(textStyle),
+         icon: Prop.maybeMix(icon),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   @override
   MarkdownCheckboxStyle variants(
-      List<VariantStyle<MarkdownCheckboxSpec>> value) {
+    List<VariantStyle<MarkdownCheckboxSpec>> value,
+  ) {
     return merge(MarkdownCheckboxStyle(variants: value));
   }
 
@@ -88,10 +89,10 @@ final class MarkdownCheckboxStyle extends Style<MarkdownCheckboxSpec>
 
   @override
   List<Object?> get props => [
-        $textStyle,
-        $icon,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $textStyle,
+    $icon,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

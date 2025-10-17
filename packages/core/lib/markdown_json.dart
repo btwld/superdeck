@@ -49,17 +49,15 @@ class MarkdownAstConverter {
 
     if (includeMetadata) {
       result['linkReferences'] = document.linkReferences.map(
-        (key, value) => MapEntry(
-          key,
-          <String, Object?>{
-            'destination': value.destination,
-            if (value.title != null) 'title': value.title,
-          },
-        ),
+        (key, value) => MapEntry(key, <String, Object?>{
+          'destination': value.destination,
+          if (value.title != null) 'title': value.title,
+        }),
       );
       result['footnoteLabels'] = List<String>.of(document.footnoteLabels);
-      result['footnoteReferences'] =
-          Map<String, int>.of(document.footnoteReferences);
+      result['footnoteReferences'] = Map<String, int>.of(
+        document.footnoteReferences,
+      );
     }
 
     return result;
@@ -126,32 +124,21 @@ Map<String, Object?> nodeToMap(md.Node node) {
   }
 
   if (node is md.Text) {
-    return {
-      'type': 'text',
-      'text': node.text,
-    };
+    return {'type': 'text', 'text': node.text};
   }
 
   if (node is md.UnparsedContent) {
-    return {
-      'type': 'unparsed',
-      'text': node.textContent,
-    };
+    return {'type': 'unparsed', 'text': node.textContent};
   }
 
-  throw UnimplementedError(
-    'Unknown markdown node type: ${node.runtimeType}',
-  );
+  throw UnimplementedError('Unknown markdown node type: ${node.runtimeType}');
 }
 
 /// Converts an Element node to a Map.
 ///
 /// Internal helper function for [nodeToMap].
 Map<String, Object?> _elementToMap(md.Element element) {
-  final json = <String, Object?>{
-    'type': 'element',
-    'tag': element.tag,
-  };
+  final json = <String, Object?>{'type': 'element', 'tag': element.tag};
 
   final attrs = element.attributes;
   if (attrs.isNotEmpty) {

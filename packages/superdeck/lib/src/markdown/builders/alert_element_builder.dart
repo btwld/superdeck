@@ -39,8 +39,10 @@ class AlertBlockSyntax extends md.AlertBlockSyntax {
   @override
   md.Node parse(md.BlockParser parser) {
     // Extract type before advancing
-    final type =
-        pattern.firstMatch(parser.current.content)!.group(1)!.toLowerCase();
+    final type = pattern
+        .firstMatch(parser.current.content)!
+        .group(1)!
+        .toLowerCase();
     parser.advance();
 
     // Use base class to parse child lines (handles all edge cases)
@@ -53,10 +55,10 @@ class AlertBlockSyntax extends md.AlertBlockSyntax {
         childLines.isNotEmpty && childLines.last.content.trim().isNotEmpty;
 
     // Parse children
-    final children = md.BlockParser(childLines, parser.document).parseLines(
-      parentSyntax: this,
-      disabledSetextHeading: disableSetext,
-    );
+    final children = md.BlockParser(
+      childLines,
+      parser.document,
+    ).parseLines(parentSyntax: this, disabledSetextHeading: disableSetext);
 
     // Store raw markdown for re-parsing in builder
     final rawMarkdown = childLines.map((line) => line.content).join('\n');
@@ -71,8 +73,9 @@ class AlertBlockSyntax extends md.AlertBlockSyntax {
 class AlertElementBuilder extends MarkdownElementBuilder {
   final StyleSpec<MarkdownAlertSpec> styleSpec;
 
-  AlertElementBuilder(
-      [this.styleSpec = const StyleSpec(spec: MarkdownAlertSpec())]);
+  AlertElementBuilder([
+    this.styleSpec = const StyleSpec(spec: MarkdownAlertSpec()),
+  ]);
 
   @override
   bool isBlockElement() => true;
@@ -106,7 +109,7 @@ class AlertElementBuilder extends MarkdownElementBuilder {
 
     final rawMarkdown =
         element.attributes[AlertBlockSyntax.markdownSourceAttribute] ??
-            element.textContent.trim();
+        element.textContent.trim();
 
     return StyleSpecBuilder<MarkdownAlertSpec>(
       styleSpec: styleSpec,
@@ -139,7 +142,7 @@ class AlertElementBuilder extends MarkdownElementBuilder {
                       ),
                     ],
                   ),
-// Render the nested markdown content with its own scope
+                  // Render the nested markdown content with its own scope
                   MarkdownRenderScope(
                     registry: registry,
                     styleSheet:

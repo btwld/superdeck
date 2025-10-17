@@ -138,15 +138,15 @@ Built with SuperDeck
     }
   }
 
-
   /// Configure macOS entitlements
   Future<void> _setupMacOSEntitlements(Directory macosDir) async {
     final progress = logger.progress('Configuring macOS entitlements...');
 
     try {
       // Release.entitlements
-      final releaseEntitlements =
-          File(path.join(macosDir.path, 'Runner', 'Release.entitlements'));
+      final releaseEntitlements = File(
+        path.join(macosDir.path, 'Runner', 'Release.entitlements'),
+      );
       if (await releaseEntitlements.exists()) {
         await _updateEntitlements(
           releaseEntitlements,
@@ -161,8 +161,9 @@ Built with SuperDeck
       }
 
       // DebugProfile.entitlements
-      final debugEntitlements =
-          File(path.join(macosDir.path, 'Runner', 'DebugProfile.entitlements'));
+      final debugEntitlements = File(
+        path.join(macosDir.path, 'Runner', 'DebugProfile.entitlements'),
+      );
       if (await debugEntitlements.exists()) {
         await _updateEntitlements(
           debugEntitlements,
@@ -251,7 +252,6 @@ Built with SuperDeck
     return buffer.toString();
   }
 
-
   @override
   Future<int> run() async {
     try {
@@ -264,7 +264,8 @@ Built with SuperDeck
       // Check if slides.md exists, if not create it
       final slidesFile = deckConfig.slidesFile;
       if (!await slidesFile.exists()) {
-        final createSlides = boolArg('force') ||
+        final createSlides =
+            boolArg('force') ||
             _confirmAction('Create slides.md file?', defaultValue: true);
 
         if (createSlides) {
@@ -301,11 +302,14 @@ Built with SuperDeck
         final pubspecFile = deckConfig.pubspecFile;
         if (await pubspecFile.exists()) {
           final pubspecContents = await pubspecFile.readAsString();
-          final updatedPubspec =
-              updatePubspecAssets(deckConfig, pubspecContents);
+          final updatedPubspec = updatePubspecAssets(
+            deckConfig,
+            pubspecContents,
+          );
 
           if (updatedPubspec != pubspecContents) {
-            final updatePubspec = boolArg('force') ||
+            final updatePubspec =
+                boolArg('force') ||
                 _confirmAction(
                   'Update pubspec.yaml with required assets?',
                   defaultValue: true,

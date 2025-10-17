@@ -21,42 +21,30 @@ import '../examples/button.dart' as remix_button;
 /// @remix-button
 /// ```
 Map<String, WidgetBlockBuilder> get demoWidgets => {
-      // Mix examples
-      'mix-simple-box': (args) => _DemoWrapper(
-            child: Transform.scale(
-              scale: 3.0,
-              child: mix_simple_box.Example(),
-            ),
-          ),
-      'mix-variants': (args) => _DemoWrapper(
-            child: Transform.scale(
-              scale: 3.0,
-              child: mix_variants.Example(),
-            ),
-          ),
-      'mix-animation': (args) => _DemoWrapper(
-            child: Transform.scale(
-              scale: 3.0,
-              child: mix_animation.SwitchAnimation(),
-            ),
-          ),
+  // Mix examples
+  'mix-simple-box': (args) => _DemoWrapper(
+    child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),
+  ),
+  'mix-variants': (args) => _DemoWrapper(
+    child: Transform.scale(scale: 3.0, child: mix_variants.Example()),
+  ),
+  'mix-animation': (args) => _DemoWrapper(
+    child: Transform.scale(scale: 3.0, child: mix_animation.SwitchAnimation()),
+  ),
 
-      // Naked UI examples
-      'naked-select': (args) => _DemoWrapper(
-            child: Transform.scale(
-              scale: 2.0,
-              child: naked_select.SimpleSelectExample(),
-            ),
-          ),
+  // Naked UI examples
+  'naked-select': (args) => _DemoWrapper(
+    child: Transform.scale(
+      scale: 2.0,
+      child: naked_select.SimpleSelectExample(),
+    ),
+  ),
 
-      // Remix examples
-      'remix-button': (args) => _DemoWrapper(
-            child: Transform.scale(
-              scale: 1.2,
-              child: remix_button.ButtonExample(),
-            ),
-          ),
-    };
+  // Remix examples
+  'remix-button': (args) => _DemoWrapper(
+    child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
+  ),
+};
 
 /// Wrapper widget that constrains demo widgets to their intrinsic size.
 ///
@@ -65,18 +53,12 @@ Map<String, WidgetBlockBuilder> get demoWidgets => {
 class _DemoWrapper extends StatelessWidget {
   final Widget child;
 
-  const _DemoWrapper({
-    required this.child,
-  });
+  const _DemoWrapper({required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: IntrinsicWidth(
-        child: IntrinsicHeight(
-          child: child,
-        ),
-      ),
+      child: IntrinsicWidth(child: IntrinsicHeight(child: child)),
     );
   }
 }

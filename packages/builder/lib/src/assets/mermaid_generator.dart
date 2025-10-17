@@ -83,7 +83,7 @@ class MermaidGenerator implements AssetGenerator {
     MermaidTheme? theme,
     Map<String, dynamic>? configuration,
   }) : _launchOptions = launchOptions ?? {},
-        configuration = _buildConfiguration(theme, configuration);
+       configuration = _buildConfiguration(theme, configuration);
 
   /// Build configuration from theme or use provided/default configuration.
   static Map<String, dynamic> _buildConfiguration(
@@ -147,9 +147,9 @@ class MermaidGenerator implements AssetGenerator {
   /// Default dark theme configuration (using MermaidTheme.dark preset)
   static final _defaultConfiguration = {
     // Global look & theme
-    'theme': 'base',               // 'base' is the only theme you can customize
-    'look': 'classic',             // or 'handDrawn'
-    'securityLevel': 'strict',     // 'loose' only if you need clickable links/HTML
+    'theme': 'base', // 'base' is the only theme you can customize
+    'look': 'classic', // or 'handDrawn'
+    'securityLevel': 'strict', // 'loose' only if you need clickable links/HTML
     'handDrawnSeed': 17,
 
     // Your theme variables come from MermaidTheme.dark
@@ -159,19 +159,13 @@ class MermaidGenerator implements AssetGenerator {
     'themeCSS': _defaultThemeCSS,
 
     // Flowchart-specific config (v11)
-    'flowchart': {
-      'htmlLabels': true,
-    },
+    'flowchart': {'htmlLabels': true},
 
     // Sequence diagram knobs
-    'sequence': {
-      'mirrorActors': false,
-    },
+    'sequence': {'mirrorActors': false},
 
     // Class diagram (v11 supports htmlLabels here too)
-    'class': {
-      'htmlLabels': true,
-    },
+    'class': {'htmlLabels': true},
 
     // State diagrams
     'state': {},
@@ -288,10 +282,27 @@ class MermaidGenerator implements AssetGenerator {
     // Extract ALL diagram-specific configs for passing to mermaid.initialize
     final diagramConfigs = <String, dynamic>{};
     final diagramConfigKeys = [
-      'flowchart', 'sequence', 'class', 'state', 'gantt',
-      'pie', 'timeline', 'journey', 'quadrant', 'sankey',
-      'radar', 'kanban', 'mindmap', 'architecture', 'block',
-      'packet', 'treemap', 'c4', 'xyChart', 'gitGraph', 'er'
+      'flowchart',
+      'sequence',
+      'class',
+      'state',
+      'gantt',
+      'pie',
+      'timeline',
+      'journey',
+      'quadrant',
+      'sankey',
+      'radar',
+      'kanban',
+      'mindmap',
+      'architecture',
+      'block',
+      'packet',
+      'treemap',
+      'c4',
+      'xyChart',
+      'gitGraph',
+      'er',
     ];
 
     for (final key in diagramConfigKeys) {
@@ -300,7 +311,9 @@ class MermaidGenerator implements AssetGenerator {
       }
     }
 
-    _logger.fine('Using theme: $theme, viewport: ${width}x$height, timeout: ${timeout.inSeconds}s');
+    _logger.fine(
+      'Using theme: $theme, viewport: ${width}x$height, timeout: ${timeout.inSeconds}s',
+    );
 
     // Base64 encode for safe injection
     final graphB64 = base64Encode(utf8.encode(graphDefinition));
@@ -319,25 +332,36 @@ class MermaidGenerator implements AssetGenerator {
         .replaceAll('__DIAGRAM_CONFIGS__', jsonEncode(diagramConfigs));
 
     return _withPage((page) async {
-      _logger.fine('Setting viewport to ${width}x$height with scale factor $deviceScaleFactor');
+      _logger.fine(
+        'Setting viewport to ${width}x$height with scale factor $deviceScaleFactor',
+      );
 
       // Set viewport before loading content
-      await page.setViewport(DeviceViewport(
-        width: width,
-        height: height,
-        deviceScaleFactor: deviceScaleFactor,
-      ));
+      await page.setViewport(
+        DeviceViewport(
+          width: width,
+          height: height,
+          deviceScaleFactor: deviceScaleFactor,
+        ),
+      );
 
       _logger.fine('Loading HTML content into page');
       await page.setContent(htmlContent);
 
-      _logger.fine('Waiting for Mermaid to render (timeout: ${timeout.inSeconds}s)');
+      _logger.fine(
+        'Waiting for Mermaid to render (timeout: ${timeout.inSeconds}s)',
+      );
 
       // Wait for mermaid to finish rendering
       try {
-        await page.waitForFunction('window.mermaidReady === true', timeout: timeout);
+        await page.waitForFunction(
+          'window.mermaidReady === true',
+          timeout: timeout,
+        );
       } on TimeoutException {
-        _logger.severe('Mermaid rendering timed out after ${timeout.inSeconds}s');
+        _logger.severe(
+          'Mermaid rendering timed out after ${timeout.inSeconds}s',
+        );
         throw Exception(
           'Mermaid diagram failed to render within ${timeout.inSeconds} seconds. '
           'This may indicate invalid Mermaid syntax or a browser rendering issue. '
@@ -363,7 +387,9 @@ class MermaidGenerator implements AssetGenerator {
         omitBackground: true,
       );
 
-      _logger.info('Successfully generated Mermaid image (${screenshot.length} bytes)');
+      _logger.info(
+        'Successfully generated Mermaid image (${screenshot.length} bytes)',
+      );
       return screenshot;
     });
   }

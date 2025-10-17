@@ -4,18 +4,12 @@ import '../deck_configuration.dart';
 import 'slide_model.dart';
 
 class Deck {
-  const Deck({
-    required this.slides,
-    required this.configuration,
-  });
+  const Deck({required this.slides, required this.configuration});
 
   final List<Slide> slides;
   final DeckConfiguration configuration;
 
-  Deck copyWith({
-    List<Slide>? slides,
-    DeckConfiguration? configuration,
-  }) {
+  Deck copyWith({List<Slide>? slides, DeckConfiguration? configuration}) {
     return Deck(
       slides: slides ?? this.slides,
       configuration: configuration ?? this.configuration,
@@ -31,12 +25,14 @@ class Deck {
 
   static Deck fromMap(Map<String, dynamic> map) {
     return Deck(
-      slides: (map['slides'] as List<dynamic>?)
+      slides:
+          (map['slides'] as List<dynamic>?)
               ?.map((e) => Slide.fromMap(e as Map<String, dynamic>))
               .toList() ??
           [],
       configuration: DeckConfiguration.fromMap(
-          map['configuration'] as Map<String, dynamic>? ?? {}),
+        map['configuration'] as Map<String, dynamic>? ?? {},
+      ),
     );
   }
 

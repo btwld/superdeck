@@ -4,8 +4,11 @@ import 'package:test/test.dart';
 void main() {
   group('DeckFormatException', () {
     test('constructs properly with given values', () {
-      final exception =
-          DeckFormatException('Invalid format', 'source text', 10);
+      final exception = DeckFormatException(
+        'Invalid format',
+        'source text',
+        10,
+      );
 
       expect(exception.message, equals('Invalid format'));
       expect(exception.source, equals('source text'));
@@ -13,8 +16,11 @@ void main() {
     });
 
     test('extends FormatException', () {
-      final exception =
-          DeckFormatException('Invalid format', 'source text', 10);
+      final exception = DeckFormatException(
+        'Invalid format',
+        'source text',
+        10,
+      );
 
       expect(exception, isA<FormatException>());
     });

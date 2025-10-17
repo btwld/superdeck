@@ -24,10 +24,10 @@ final class MarkdownListStyle extends Style<MarkdownListSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $bullet = bullet,
-        $text = text,
-        $orderedAlignment = orderedAlignment,
-        $unorderedAlignment = unorderedAlignment;
+  }) : $bullet = bullet,
+       $text = text,
+       $orderedAlignment = orderedAlignment,
+       $unorderedAlignment = unorderedAlignment;
 
   MarkdownListStyle({
     TextStyler? bullet,
@@ -38,14 +38,14 @@ final class MarkdownListStyle extends Style<MarkdownListSpec>
     List<VariantStyle<MarkdownListSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          bullet: Prop.maybeMix(bullet),
-          text: Prop.maybeMix(text),
-          orderedAlignment: Prop.maybe(orderedAlignment),
-          unorderedAlignment: Prop.maybe(unorderedAlignment),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         bullet: Prop.maybeMix(bullet),
+         text: Prop.maybeMix(text),
+         orderedAlignment: Prop.maybe(orderedAlignment),
+         unorderedAlignment: Prop.maybe(unorderedAlignment),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   @override
   MarkdownListStyle variants(List<VariantStyle<MarkdownListSpec>> value) {
@@ -83,9 +83,14 @@ final class MarkdownListStyle extends Style<MarkdownListSpec>
     return MarkdownListStyle.create(
       bullet: MixOps.merge($bullet, other.$bullet),
       text: MixOps.merge($text, other.$text),
-      orderedAlignment: MixOps.merge($orderedAlignment, other.$orderedAlignment),
-      unorderedAlignment:
-          MixOps.merge($unorderedAlignment, other.$unorderedAlignment),
+      orderedAlignment: MixOps.merge(
+        $orderedAlignment,
+        other.$orderedAlignment,
+      ),
+      unorderedAlignment: MixOps.merge(
+        $unorderedAlignment,
+        other.$unorderedAlignment,
+      ),
       animation: MixOps.mergeAnimation($animation, other.$animation),
       variants: MixOps.mergeVariants($variants, other.$variants),
       modifier: MixOps.mergeModifier($modifier, other.$modifier),
@@ -104,12 +109,12 @@ final class MarkdownListStyle extends Style<MarkdownListSpec>
 
   @override
   List<Object?> get props => [
-        $bullet,
-        $text,
-        $orderedAlignment,
-        $unorderedAlignment,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $bullet,
+    $text,
+    $orderedAlignment,
+    $unorderedAlignment,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

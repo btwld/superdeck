@@ -8,9 +8,7 @@ void main() {
     int totalSlides = 10;
 
     setUp(() {
-      controller = NavigationController(
-        getTotalSlides: () => totalSlides,
-      );
+      controller = NavigationController(getTotalSlides: () => totalSlides);
     });
 
     tearDown(() {
@@ -26,8 +24,10 @@ void main() {
       });
 
       test('router is initialized with correct initial location', () {
-        expect(controller.router.routeInformationProvider.value.uri.path,
-            '/slides/0');
+        expect(
+          controller.router.routeInformationProvider.value.uri.path,
+          '/slides/0',
+        );
       });
     });
 
@@ -96,12 +96,18 @@ void main() {
 
       test('handleNavigationEvent accepts valid events', () {
         // Just verify events can be called without errors
-        expect(() => controller.handleNavigationEvent(NextSlideEvent()),
-            returnsNormally);
-        expect(() => controller.handleNavigationEvent(PreviousSlideEvent()),
-            returnsNormally);
-        expect(() => controller.handleNavigationEvent(GoToSlideEvent(5)),
-            returnsNormally);
+        expect(
+          () => controller.handleNavigationEvent(NextSlideEvent()),
+          returnsNormally,
+        );
+        expect(
+          () => controller.handleNavigationEvent(PreviousSlideEvent()),
+          returnsNormally,
+        );
+        expect(
+          () => controller.handleNavigationEvent(GoToSlideEvent(5)),
+          returnsNormally,
+        );
       });
     });
 
@@ -138,9 +144,7 @@ void main() {
 
     group('Edge Cases', () {
       test('handles zero slides gracefully', () {
-        final emptyController = NavigationController(
-          getTotalSlides: () => 0,
-        );
+        final emptyController = NavigationController(getTotalSlides: () => 0);
 
         expect(emptyController.totalSlides, 0);
         expect(emptyController.canGoNext, false);
@@ -150,9 +154,7 @@ void main() {
       });
 
       test('handles single slide deck', () {
-        final singleController = NavigationController(
-          getTotalSlides: () => 1,
-        );
+        final singleController = NavigationController(getTotalSlides: () => 1);
 
         singleController.updateCurrentIndex(0);
         expect(singleController.canGoNext, false);

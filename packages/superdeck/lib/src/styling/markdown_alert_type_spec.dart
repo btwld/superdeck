@@ -21,12 +21,12 @@ final class MarkdownAlertTypeSpec extends Spec<MarkdownAlertTypeSpec>
     StyleSpec<BoxSpec>? container,
     StyleSpec<FlexBoxSpec>? containerFlex,
     StyleSpec<FlexBoxSpec>? headingFlex,
-  })  : heading = heading ?? const StyleSpec(spec: TextSpec()),
-        description = description ?? const StyleSpec(spec: TextSpec()),
-        icon = icon ?? const StyleSpec(spec: IconSpec()),
-        container = container ?? const StyleSpec(spec: BoxSpec()),
-        containerFlex = containerFlex ?? const StyleSpec(spec: FlexBoxSpec()),
-        headingFlex = headingFlex ?? const StyleSpec(spec: FlexBoxSpec());
+  }) : heading = heading ?? const StyleSpec(spec: TextSpec()),
+       description = description ?? const StyleSpec(spec: TextSpec()),
+       icon = icon ?? const StyleSpec(spec: IconSpec()),
+       container = container ?? const StyleSpec(spec: BoxSpec()),
+       containerFlex = containerFlex ?? const StyleSpec(spec: FlexBoxSpec()),
+       headingFlex = headingFlex ?? const StyleSpec(spec: FlexBoxSpec());
 
   @override
   MarkdownAlertTypeSpec copyWith({
@@ -74,6 +74,12 @@ final class MarkdownAlertTypeSpec extends Spec<MarkdownAlertTypeSpec>
   }
 
   @override
-  List<Object?> get props =>
-      [heading, description, icon, container, containerFlex, headingFlex];
+  List<Object?> get props => [
+    heading,
+    description,
+    icon,
+    container,
+    containerFlex,
+    headingFlex,
+  ];
 }

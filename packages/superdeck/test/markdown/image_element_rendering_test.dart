@@ -27,8 +27,9 @@ void main() {
       expect(builder.isBlockElement(), isTrue);
     });
 
-    testWidgets('image builder callback executes with BlockData access',
-        (tester) async {
+    testWidgets('image builder callback executes with BlockData access', (
+      tester,
+    ) async {
       const markdown = '![test](assets/test.png)';
 
       await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
@@ -39,7 +40,8 @@ void main() {
       expect(
         find.byType(ConstrainedBox),
         findsWidgets,
-        reason: 'Image should render with ConstrainedBox from ImageElementBuilder',
+        reason:
+            'Image should render with ConstrainedBox from ImageElementBuilder',
       );
 
       // Verify StyleSpecBuilder was used (proves builder callback executed)
@@ -55,8 +57,9 @@ void main() {
       );
     });
 
-    testWidgets('image renders with block-level size constraints',
-        (tester) async {
+    testWidgets('image renders with block-level size constraints', (
+      tester,
+    ) async {
       const markdown = '![mermaid](assets/mermaid.png)';
 
       await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
@@ -68,7 +71,11 @@ void main() {
         find.byType(ConstrainedBox),
       );
 
-      expect(constrainedBoxes, isNotEmpty, reason: 'Should find ConstrainedBox widgets');
+      expect(
+        constrainedBoxes,
+        isNotEmpty,
+        reason: 'Should find ConstrainedBox widgets',
+      );
 
       // Find the image's ConstrainedBox (tight 800x600 from BlockData)
       final imageBox = constrainedBoxes.firstWhere(
@@ -103,10 +110,16 @@ void main() {
       final nodes = document.parseLines(markdown.split('\n'));
 
       // ASSERTION: Both images should be parsed as top-level block elements
-      final imageNodes = nodes.whereType<md.Element>().where((e) => e.tag == 'img').toList();
+      final imageNodes = nodes
+          .whereType<md.Element>()
+          .where((e) => e.tag == 'img')
+          .toList();
 
-      expect(imageNodes.length, equals(2),
-          reason: 'Should parse 2 standalone images as block elements');
+      expect(
+        imageNodes.length,
+        equals(2),
+        reason: 'Should parse 2 standalone images as block elements',
+      );
       expect(imageNodes[0].attributes['src'], equals('assets/img1.png'));
       expect(imageNodes[1].attributes['src'], equals('assets/img2.png'));
     });
@@ -126,12 +139,25 @@ void main() {
       final nodes = document.parseLines(markdown.split('\n'));
 
       // ASSERTION: Image is nested in paragraph, NOT a top-level element
-      final paragraphs = nodes.whereType<md.Element>().where((e) => e.tag == 'p').toList();
-      expect(paragraphs.length, equals(1), reason: 'Text with inline image becomes paragraph');
+      final paragraphs = nodes
+          .whereType<md.Element>()
+          .where((e) => e.tag == 'p')
+          .toList();
+      expect(
+        paragraphs.length,
+        equals(1),
+        reason: 'Text with inline image becomes paragraph',
+      );
 
-      final topLevelImages = nodes.whereType<md.Element>().where((e) => e.tag == 'img').toList();
-      expect(topLevelImages.length, equals(0),
-          reason: 'Inline images are NOT parsed as top-level block elements');
+      final topLevelImages = nodes
+          .whereType<md.Element>()
+          .where((e) => e.tag == 'img')
+          .toList();
+      expect(
+        topLevelImages.length,
+        equals(0),
+        reason: 'Inline images are NOT parsed as top-level block elements',
+      );
 
       // The image is nested inside the paragraph but will be flattened by
       // TextElementBuilder.element.textContent when rendered
@@ -141,8 +167,11 @@ void main() {
           .where((e) => e.tag == 'img')
           .toList();
 
-      expect(nestedImage?.length, equals(1),
-          reason: 'Image exists in AST as nested element');
+      expect(
+        nestedImage?.length,
+        equals(1),
+        reason: 'Image exists in AST as nested element',
+      );
       expect(nestedImage?.first.attributes['src'], equals('small.png'));
 
       // NOTE: When rendered, TextElementBuilder will call element.textContent

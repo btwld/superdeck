@@ -27,7 +27,7 @@ enum PdfExportStatus {
   complete,
 
   /// Preparing slides for export
-  preparing
+  preparing,
 }
 
 /// Controller for exporting slides to PDF
@@ -46,9 +46,7 @@ class PdfController extends ChangeNotifier {
     Duration waitDuration = const Duration(milliseconds: 100),
   }) : _waitDuration = waitDuration {
     _pageController = PageController(initialPage: 0);
-    _slideKeys = {
-      for (var slide in slides) slide.key: GlobalKey(),
-    };
+    _slideKeys = {for (var slide in slides) slide.key: GlobalKey()};
   }
 
   late final PageController _pageController;
@@ -113,8 +111,9 @@ class PdfController extends ChangeNotifier {
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await slideCaptureService.captureFromKey(
-          quality:
-              kIsWeb ? SlideCaptureQuality.thumbnail : SlideCaptureQuality.good,
+          quality: kIsWeb
+              ? SlideCaptureQuality.thumbnail
+              : SlideCaptureQuality.good,
           key: key,
         );
       } catch (error) {
@@ -265,14 +264,9 @@ Future<Uint8List> _buildPdf(List<Uint8List> images) async {
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat(
-          kResolution.width,
-          kResolution.height,
-        ),
+        pageFormat: PdfPageFormat(kResolution.width, kResolution.height),
         build: (pw.Context context) {
-          return pw.Center(
-            child: pdfImage,
-          );
+          return pw.Center(child: pdfImage);
         },
       ),
     );

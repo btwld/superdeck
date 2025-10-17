@@ -53,7 +53,7 @@ class ScaledWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),

@@ -5,11 +5,7 @@ class WebViewWrapper extends StatefulWidget {
   final String url;
   final Size size;
 
-  const WebViewWrapper({
-    super.key,
-    required this.url,
-    required this.size,
-  });
+  const WebViewWrapper({super.key, required this.url, required this.size});
 
   @override
   State<WebViewWrapper> createState() => _WebViewWrapperState();
@@ -122,7 +118,7 @@ class _WebViewWrapperState extends State<WebViewWrapper>
                 icon: const Icon(Icons.clear),
               ),
             ],
-          )
+          ),
         ],
       ),
     );

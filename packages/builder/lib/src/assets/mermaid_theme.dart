@@ -205,7 +205,9 @@ class MermaidTheme {
 
     // Pie slice fills (pie1-pie12)
     for (var i = 0; i < 12; i++) {
-      final sliceColor = i < 8 ? gitColors[i] : ColorUtils.lighten(primary, 0.1 * (i - 8));
+      final sliceColor = i < 8
+          ? gitColors[i]
+          : ColorUtils.lighten(primary, 0.1 * (i - 8));
       vars['pie${i + 1}'] = sliceColor;
     }
 
@@ -236,7 +238,9 @@ class MermaidTheme {
     // Timeline - categorical color scales
     for (var i = 0; i < 12; i++) {
       // Use git colors for scales 0-7, then derive more
-      final scaleColor = i < 8 ? gitColors[i] : ColorUtils.lighten(primary, 0.1 * i);
+      final scaleColor = i < 8
+          ? gitColors[i]
+          : ColorUtils.lighten(primary, 0.1 * i);
       vars['cScale$i'] = scaleColor;
       vars['cScaleLabel$i'] = ColorUtils.contrastColor(
         scaleColor,
@@ -254,7 +258,11 @@ class MermaidTheme {
       'quadrant1TextFill': canvasText,
       'quadrant2TextFill': canvasText,
       'quadrant3TextFill': canvasText,
-      'quadrant4TextFill': ColorUtils.contrastColor(primary, light: '#fff', dark: '#000'),
+      'quadrant4TextFill': ColorUtils.contrastColor(
+        primary,
+        light: '#fff',
+        dark: '#000',
+      ),
     });
 
     // XY Chart (nested config)

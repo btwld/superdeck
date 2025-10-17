@@ -40,10 +40,7 @@ class MockDeckRepository extends DeckRepository {
   final Directory _tempDir;
   final Map<String, String> _assetPaths = {};
 
-  MockDeckRepository(this._tempDir)
-      : super(
-          configuration: DeckConfiguration(),
-        );
+  MockDeckRepository(this._tempDir) : super(configuration: DeckConfiguration());
 
   @override
   String getGeneratedAssetPath(GeneratedAsset asset) {

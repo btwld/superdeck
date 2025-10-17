@@ -19,20 +19,20 @@ class FileWatcher {
     late final StreamController<void> controller;
     controller = StreamController<void>(
       onListen: () {
-        subscription = directory.watch(events: FileSystemEvent.modify).listen(
-          (event) {
-            final eventPath = event.path.replaceFirst('./', '');
-            final targetPath = file.path.replaceFirst('./', '');
+        subscription = directory.watch(events: FileSystemEvent.modify).listen((
+          event,
+        ) {
+          final eventPath = event.path.replaceFirst('./', '');
+          final targetPath = file.path.replaceFirst('./', '');
 
-            if (eventPath == targetPath && !_isProcessing) {
-              _isProcessing = true;
-              controller.add(null);
-              Future.delayed(const Duration(milliseconds: 100), () {
-                _isProcessing = false;
-              });
-            }
-          },
-        );
+          if (eventPath == targetPath && !_isProcessing) {
+            _isProcessing = true;
+            controller.add(null);
+            Future.delayed(const Duration(milliseconds: 100), () {
+              _isProcessing = false;
+            });
+          }
+        });
       },
       onCancel: () async {
         await subscription?.cancel();
@@ -51,8 +51,9 @@ class FileWatcher {
     // Watch the parent directory for changes to this specific file
     final directory = file.parent;
 
-    _subscription =
-        directory.watch(events: FileSystemEvent.modify).listen((event) async {
+    _subscription = directory.watch(events: FileSystemEvent.modify).listen((
+      event,
+    ) async {
       if (_isProcessing) return;
 
       // Check if this event is for our target file

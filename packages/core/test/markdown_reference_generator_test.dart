@@ -41,10 +41,12 @@ void main() {
     _generateTables(reference['block_elements'] as Map<String, dynamic>);
     _generateAlerts(reference['block_elements'] as Map<String, dynamic>);
     _generateHorizontalRules(
-        reference['block_elements'] as Map<String, dynamic>);
+      reference['block_elements'] as Map<String, dynamic>,
+    );
 
     _generateTextFormatting(
-        reference['inline_elements'] as Map<String, dynamic>);
+      reference['inline_elements'] as Map<String, dynamic>,
+    );
     _generateLinks(reference['inline_elements'] as Map<String, dynamic>);
     _generateImages(reference['inline_elements'] as Map<String, dynamic>);
     _generateInlineCode(reference['inline_elements'] as Map<String, dynamic>);
@@ -52,20 +54,25 @@ void main() {
 
     _generateEmptyElements(reference['special_cases'] as Map<String, dynamic>);
     _generateElementsWithAttributes(
-        reference['special_cases'] as Map<String, dynamic>);
+      reference['special_cases'] as Map<String, dynamic>,
+    );
     _generateEscapedCharacters(
-        reference['special_cases'] as Map<String, dynamic>);
+      reference['special_cases'] as Map<String, dynamic>,
+    );
 
     _generateNestedStructures(
-        reference['complex_nested'] as Map<String, dynamic>);
+      reference['complex_nested'] as Map<String, dynamic>,
+    );
     _generateFootnotes(reference['complex_nested'] as Map<String, dynamic>);
 
     _generateMetadataExamples(
-        reference['metadata_examples'] as Map<String, dynamic>);
+      reference['metadata_examples'] as Map<String, dynamic>,
+    );
 
     // Write to file with pretty printing, only if content changed
     final file = File(
-        '/Users/leofarias/Projects/superdeck/packages/core/markdown_ref.json');
+      '/Users/leofarias/Projects/superdeck/packages/core/markdown_ref.json',
+    );
     final newContent = const JsonEncoder.withIndent('  ').convert(reference);
 
     // Check if file exists and content is different
@@ -75,10 +82,12 @@ void main() {
     if (shouldWrite) {
       file.writeAsStringSync(newContent);
       print(
-          '✅ Generated markdown_ref.json with ${reference.length} categories');
+        '✅ Generated markdown_ref.json with ${reference.length} categories',
+      );
     } else {
       print(
-          '✓ markdown_ref.json is up to date (${reference.length} categories)');
+        '✓ markdown_ref.json is up to date (${reference.length} categories)',
+      );
     }
   });
 }
@@ -94,10 +103,7 @@ void _convertAndStore(
   category[key] = {
     'description': description ?? key,
     'markdown': markdown,
-    'ast': _converter.toMap(
-      markdown,
-      includeMetadata: includeMetadata,
-    ),
+    'ast': _converter.toMap(markdown, includeMetadata: includeMetadata),
   };
 }
 

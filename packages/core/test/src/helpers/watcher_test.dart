@@ -40,29 +40,32 @@ void main() {
     });
 
     // Skip the file change detection test since it's flaky in CI environments
-    test('detects file changes and triggers callback', () async {
-      int callbackCount = 0;
+    test(
+      'detects file changes and triggers callback',
+      () async {
+        int callbackCount = 0;
 
-      // Start watching and count callbacks
-      watcher.startWatching(() {
-        callbackCount++;
-      });
+        // Start watching and count callbacks
+        watcher.startWatching(() {
+          callbackCount++;
+        });
 
-      // Ensure initial baseline is set
-      await Future.delayed(Duration(seconds: 1));
+        // Ensure initial baseline is set
+        await Future.delayed(Duration(seconds: 1));
 
-      // Modify the file significantly
-      await testFile.writeAsString('new content ${DateTime.now()}');
+        // Modify the file significantly
+        await testFile.writeAsString('new content ${DateTime.now()}');
 
-      // Ensure we give enough time for the change to be detected
-      await Future.delayed(Duration(seconds: 2));
+        // Ensure we give enough time for the change to be detected
+        await Future.delayed(Duration(seconds: 2));
 
-      expect(callbackCount, equals(1));
+        expect(callbackCount, equals(1));
 
-      // Just verify the watcher is still active and test doesn't hang
-      expect(watcher.isWatching, isTrue);
-    },
-        skip:
-            "File watching tests are flaky in CI environments and can lead to test hangs");
+        // Just verify the watcher is still active and test doesn't hang
+        expect(watcher.isWatching, isTrue);
+      },
+      skip:
+          "File watching tests are flaky in CI environments and can lead to test hangs",
+    );
   });
 }

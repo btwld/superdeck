@@ -58,11 +58,7 @@ class GeneratedAsset {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'extension': extension.name,
-      'type': type,
-    };
+    return {'name': name, 'extension': extension.name, 'type': type};
   }
 
   static GeneratedAsset fromMap(Map<String, dynamic> map) {
@@ -73,13 +69,11 @@ class GeneratedAsset {
     );
   }
 
-  static final schema = Ack.object(
-    {
-      "name": Ack.string(),
-      "extension": AssetExtension.schema,
-      "type": Ack.string(),
-    },
-  );
+  static final schema = Ack.object({
+    "name": Ack.string(),
+    "extension": AssetExtension.schema,
+    "type": Ack.string(),
+  });
 
   static GeneratedAsset thumbnail(String slideKey) {
     return GeneratedAsset(
@@ -122,10 +116,7 @@ class GeneratedAssetsReference {
   final DateTime lastModified;
   final List<File> files;
 
-  GeneratedAssetsReference({
-    required this.lastModified,
-    required this.files,
-  });
+  GeneratedAssetsReference({required this.lastModified, required this.files});
 
   GeneratedAssetsReference copyWith({
     DateTime? lastModified,
@@ -166,7 +157,7 @@ class GeneratedAssetsReference {
 
   @override
   int get hashCode => Object.hash(
-        lastModified,
-        const ListEquality().hash(files.map((f) => f.path).toList()),
-      );
+    lastModified,
+    const ListEquality().hash(files.map((f) => f.path).toList()),
+  );
 }

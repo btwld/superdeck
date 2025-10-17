@@ -14,7 +14,7 @@ List<SlideConfiguration> createTestSlides(int count) {
       slide: Slide(
         key: 'slide-$index',
         sections: [
-          SectionBlock([ColumnBlock('Test slide $index content')])
+          SectionBlock([ColumnBlock('Test slide $index content')]),
         ],
       ),
       thumbnailFile: 'thumbnail-$index.png',
@@ -35,7 +35,7 @@ SlideConfiguration createTestSlide({
     slide: Slide(
       key: 'slide-$index',
       sections: [
-        SectionBlock([ColumnBlock(content ?? 'Test slide $index content')])
+        SectionBlock([ColumnBlock(content ?? 'Test slide $index content')]),
       ],
     ),
     thumbnailFile: thumbnailFile ?? 'thumbnail-$index.png',
@@ -43,24 +43,20 @@ SlideConfiguration createTestSlide({
 }
 
 /// Creates a test deck with the given slides
-Deck createTestDeck({
-  List<Slide>? slides,
-  DeckConfiguration? config,
-}) {
-  final testSlides = slides ??
+Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
+  final testSlides =
+      slides ??
       List.generate(
-          3,
-          (index) => Slide(
-                key: 'slide-$index',
-                sections: [
-                  SectionBlock([ColumnBlock('Test slide $index content')])
-                ],
-              ));
+        3,
+        (index) => Slide(
+          key: 'slide-$index',
+          sections: [
+            SectionBlock([ColumnBlock('Test slide $index content')]),
+          ],
+        ),
+      );
 
-  return Deck(
-    slides: testSlides,
-    configuration: config ?? createMockConfig(),
-  );
+  return Deck(slides: testSlides, configuration: config ?? createMockConfig());
 }
 
 /// Mock configuration for testing

@@ -131,8 +131,9 @@ class _SimpleSelectExampleState extends State<SimpleSelectExample> {
                   child: Text(
                     _selectedLabel ?? 'Choose fruit...',
                     style: TextStyle(
-                      color:
-                          _selectedValue != null ? Colors.black : Colors.grey,
+                      color: _selectedValue != null
+                          ? Colors.black
+                          : Colors.grey,
                     ),
                   ),
                 ),

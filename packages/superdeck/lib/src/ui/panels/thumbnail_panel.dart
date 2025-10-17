@@ -70,9 +70,7 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
 
     if (visibleItems.isEmpty) return;
 
-    final visibleItem = visibleItems.firstWhereOrNull(
-      (e) => e.index == index,
-    );
+    final visibleItem = visibleItems.firstWhereOrNull((e) => e.index == index);
 
     if (visibleItem == null) {
       final isBeginning = visibleItems.first.index > index;
@@ -111,23 +109,21 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
     return Container(
       color: Colors.black,
       child: ScrollablePositionedList.builder(
-          scrollDirection: widget.scrollDirection,
-          itemCount: widget.itemCount,
-          itemPositionsListener: _itemPositionsListener,
-          itemScrollController: _itemScrollController,
-          padding: const EdgeInsets.all(20),
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8,
-                horizontal: 10,
-              ),
-              child: GestureDetector(
-                onTap: () => widget.onItemTap(index),
-                child: widget.itemBuilder(index, index == widget.activeIndex),
-              ),
-            );
-          }),
+        scrollDirection: widget.scrollDirection,
+        itemCount: widget.itemCount,
+        itemPositionsListener: _itemPositionsListener,
+        itemScrollController: _itemScrollController,
+        padding: const EdgeInsets.all(20),
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+            child: GestureDetector(
+              onTap: () => widget.onItemTap(index),
+              child: widget.itemBuilder(index, index == widget.activeIndex),
+            ),
+          );
+        },
+      ),
     );
   }
 }

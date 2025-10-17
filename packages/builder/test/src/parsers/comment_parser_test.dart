@@ -21,11 +21,7 @@ void main() {
 <!-- Second comment -->
 <!-- Third comment -->''';
       final result = parser.parse(input);
-      expect(result, [
-        'First comment',
-        'Second comment',
-        'Third comment',
-      ]);
+      expect(result, ['First comment', 'Second comment', 'Third comment']);
     });
 
     test('handles comments with special characters', () {
@@ -50,10 +46,7 @@ void main() {
 Text without comments
 <!-- Another valid comment -->''';
       final result = parser.parse(input);
-      expect(result, [
-        'Valid comment',
-        'Another valid comment',
-      ]);
+      expect(result, ['Valid comment', 'Another valid comment']);
     });
 
     test('handles empty comments', () {
@@ -71,11 +64,7 @@ Text without comments
 <!--   Spaces around   -->
 <!--Spaces after    -->''';
       final result = parser.parse(input);
-      expect(result, [
-        'Spaces before',
-        'Spaces around',
-        'Spaces after',
-      ]);
+      expect(result, ['Spaces before', 'Spaces around', 'Spaces after']);
     });
 
     test('ignores comments without proper spacing', () {
@@ -99,10 +88,7 @@ More text
 <!-- Comment 2 -->
 Final text''';
       final result = parser.parse(input);
-      expect(result, [
-        'Comment 1',
-        'Comment 2',
-      ]);
+      expect(result, ['Comment 1', 'Comment 2']);
     });
 
     test('handles multiline comments correctly', () {

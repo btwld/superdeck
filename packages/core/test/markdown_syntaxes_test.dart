@@ -155,7 +155,9 @@ void main() {
         blockSyntaxes: createHeroBlockSyntaxes(),
       );
       expect(
-          html, contains('<h2 hero="hero"><strong>Bold</strong> Header</h2>'));
+        html,
+        contains('<h2 hero="hero"><strong>Bold</strong> Header</h2>'),
+      );
     });
 
     test('preserves inline code within header', () {
@@ -164,7 +166,9 @@ void main() {
         blockSyntaxes: createHeroBlockSyntaxes(),
       );
       expect(
-          html, contains('<h3 hero="hero">Header with <code>code</code></h3>'));
+        html,
+        contains('<h3 hero="hero">Header with <code>code</code></h3>'),
+      );
     });
 
     test('handles all heading levels (h1-h6)', () {
@@ -232,8 +236,10 @@ void main() {
       ];
 
       for (final test in tests) {
-        final html =
-            md.markdownToHtml(test, blockSyntaxes: createHeroBlockSyntaxes());
+        final html = md.markdownToHtml(
+          test,
+          blockSyntaxes: createHeroBlockSyntaxes(),
+        );
         expect(html, contains('hero="hero"'), reason: 'Failed for: $test');
       }
     });
@@ -566,10 +572,14 @@ print('Hello');
     test('multiple documents can reuse syntax instances', () {
       final syntaxes = createHeroBlockSyntaxes();
 
-      final doc1 =
-          md.markdownToHtml('# Doc 1 {.hero1}', blockSyntaxes: syntaxes);
-      final doc2 =
-          md.markdownToHtml('# Doc 2 {.hero2}', blockSyntaxes: syntaxes);
+      final doc1 = md.markdownToHtml(
+        '# Doc 1 {.hero1}',
+        blockSyntaxes: syntaxes,
+      );
+      final doc2 = md.markdownToHtml(
+        '# Doc 2 {.hero2}',
+        blockSyntaxes: syntaxes,
+      );
 
       expect(doc1, contains('hero="hero1"'));
       expect(doc2, contains('hero="hero2"'));

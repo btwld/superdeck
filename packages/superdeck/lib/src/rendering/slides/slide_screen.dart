@@ -6,10 +6,7 @@ import '../../ui/widgets/provider.dart';
 import 'slide_view.dart';
 
 class SlideScreen extends StatelessWidget {
-  const SlideScreen(
-    this.configuration, {
-    super.key,
-  });
+  const SlideScreen(this.configuration, {super.key});
 
   final SlideConfiguration configuration;
 

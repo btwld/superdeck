@@ -20,17 +20,13 @@ OMeshRect _meshBuilder(List<Color> colors) {
 }
 
 class BackgroundPart extends StatelessWidget {
-  const BackgroundPart({
-    super.key,
-  });
+  const BackgroundPart({super.key});
 
   @override
   Widget build(BuildContext context) {
     final configuration = SlideConfiguration.of(context);
 
-    return _AnimatedSwitcherOMesh(
-      slide: configuration,
-    );
+    return _AnimatedSwitcherOMesh(slide: configuration);
   }
 }
 
@@ -38,9 +34,7 @@ class BackgroundPart extends StatelessWidget {
 class _AnimatedSwitcherOMesh extends StatefulWidget {
   final SlideConfiguration slide;
 
-  const _AnimatedSwitcherOMesh({
-    required this.slide,
-  });
+  const _AnimatedSwitcherOMesh({required this.slide});
 
   @override
   _AnimatedSwitcherOMeshState createState() => _AnimatedSwitcherOMeshState();

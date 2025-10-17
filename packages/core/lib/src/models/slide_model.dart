@@ -55,11 +55,13 @@ class Slide {
       options: map['options'] != null
           ? SlideOptions.fromMap(map['options'] as Map<String, dynamic>)
           : null,
-      sections: (map['sections'] as List<dynamic>?)
+      sections:
+          (map['sections'] as List<dynamic>?)
               ?.map((e) => SectionBlock.fromMap(e as Map<String, dynamic>))
               .toList() ??
           [],
-      comments: (map['comments'] as List<dynamic>?)
+      comments:
+          (map['comments'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -67,18 +69,17 @@ class Slide {
   }
 
   /// Validation schema for slide data.
-  static final schema = Ack.object(
-    {
-      "key": Ack.string(),
-      'options': SlideOptions.schema.nullable().optional(),
-      'sections': Ack.list(Ack.object({
+  static final schema = Ack.object({
+    "key": Ack.string(),
+    'options': SlideOptions.schema.nullable().optional(),
+    'sections': Ack.list(
+      Ack.object({
         'type': Ack.string(),
         'blocks': Ack.list(Ack.object({})).nullable().optional(),
-      })).optional(),
-      'comments': Ack.list(Ack.string()).optional(),
-    },
-    additionalProperties: true,
-  );
+      }),
+    ).optional(),
+    'comments': Ack.list(Ack.string()).optional(),
+  }, additionalProperties: true);
 
   /// Parses a slide from a JSON map.
   ///
@@ -112,7 +113,7 @@ class Slide {
 ${error.toString()}
 ```
 '''),
-          ColumnBlock('')
+          ColumnBlock(''),
         ]),
       ],
     );
@@ -130,11 +131,11 @@ ${error.toString()}
 
   @override
   int get hashCode => Object.hash(
-        key,
-        options,
-        const DeepCollectionEquality().hash(sections),
-        const ListEquality().hash(comments),
-      );
+    key,
+    options,
+    const DeepCollectionEquality().hash(sections),
+    const ListEquality().hash(comments),
+  );
 }
 
 /// Configuration options for a slide.
@@ -150,11 +151,7 @@ class SlideOptions {
   /// Additional arguments passed to the slide template.
   final Map<String, Object?> args;
 
-  const SlideOptions({
-    this.title,
-    this.style,
-    this.args = const {},
-  });
+  const SlideOptions({this.title, this.style, this.args = const {}});
 
   SlideOptions copyWith({
     String? title,
@@ -184,21 +181,14 @@ class SlideOptions {
     args.remove('title');
     args.remove('style');
 
-    return SlideOptions(
-      title: title,
-      style: style,
-      args: args,
-    );
+    return SlideOptions(title: title, style: style, args: args);
   }
 
   /// Validation schema for slide options.
-  static final schema = Ack.object(
-    {
-      'title': Ack.string().nullable().optional(),
-      'style': Ack.string().nullable().optional(),
-    },
-    additionalProperties: true,
-  );
+  static final schema = Ack.object({
+    'title': Ack.string().nullable().optional(),
+    'style': Ack.string().nullable().optional(),
+  }, additionalProperties: true);
 
   /// Parses slide options from a JSON map.
   static SlideOptions parse(Map<String, dynamic> map) {
@@ -216,6 +206,5 @@ class SlideOptions {
           const MapEquality().equals(args, other.args);
 
   @override
-  int get hashCode =>
-      Object.hash(title, style, const MapEquality().hash(args));
+  int get hashCode => Object.hash(title, style, const MapEquality().hash(args));
 }

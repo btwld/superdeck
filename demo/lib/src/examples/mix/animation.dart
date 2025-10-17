@@ -74,21 +74,15 @@ class _SwitchAnimationState extends State<SwitchAnimation> {
         .keyframeAnimation(
           trigger: _trigger,
           timeline: [
-            KeyframeTrack<double>(
-                'scale',
-                [
-                  Keyframe.easeOutSine(1.25, 200.ms),
-                  Keyframe.elasticOut(0.85, 500.ms),
-                ],
-                initial: 0.85),
-            KeyframeTrack<double>(
-                'width',
-                [
-                  Keyframe.decelerate(50, 100.ms),
-                  Keyframe.linear(50, 100.ms),
-                  Keyframe.elasticOut(40, 500.ms),
-                ],
-                initial: 40),
+            KeyframeTrack<double>('scale', [
+              Keyframe.easeOutSine(1.25, 200.ms),
+              Keyframe.elasticOut(0.85, 500.ms),
+            ], initial: 0.85),
+            KeyframeTrack<double>('width', [
+              Keyframe.decelerate(50, 100.ms),
+              Keyframe.linear(50, 100.ms),
+              Keyframe.elasticOut(40, 500.ms),
+            ], initial: 40),
           ],
           styleBuilder: (values, style) =>
               style.scale(values.get('scale')).width(values.get('width')),

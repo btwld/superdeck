@@ -7,9 +7,7 @@ import '../../deck/deck_provider.dart';
 import '../../export/thumbnail_controller.dart';
 
 class DeckBottomBar extends StatelessWidget {
-  const DeckBottomBar({
-    super.key,
-  });
+  const DeckBottomBar({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -14,17 +14,16 @@ final class DartFormatterTask extends Task {
     Map<String, String>? environmentOverrides,
     Map<String, dynamic> configuration = const {},
     FencedCodeBlockTransformer transformer = const FencedCodeBlockTransformer(),
-  })  : _environmentOverrides = environmentOverrides,
-        _transformer = transformer,
-        super('dart_formatter', configuration: configuration);
+  }) : _environmentOverrides = environmentOverrides,
+       _transformer = transformer,
+       super('dart_formatter', configuration: configuration);
 
   @override
   Future<void> run(SlideContext context) async {
     final lineLength = configuration['lineLength'] as int?;
     final fix = configuration['fix'] as bool? ?? true;
 
-    logger.info(
-        'DartFormatterTask: Processing slide ${context.slideIndex}');
+    logger.info('DartFormatterTask: Processing slide ${context.slideIndex}');
 
     try {
       final updatedContent = await _transformer.processBlocks(
@@ -43,9 +42,7 @@ final class DartFormatterTask extends Task {
               environmentOverrides: _environmentOverrides,
             );
 
-            logger.info(
-              'Formatted dart block for slide ${context.slideIndex}',
-            );
+            logger.info('Formatted dart block for slide ${context.slideIndex}');
 
             return '```dart\n$formattedCode\n```';
           } catch (e) {
@@ -58,7 +55,9 @@ final class DartFormatterTask extends Task {
 
       context.slide = context.slide.copyWith(content: updatedContent);
     } catch (e) {
-      logger.severe('Failed to process Dart formatting for slide ${context.slideIndex}: $e');
+      logger.severe(
+        'Failed to process Dart formatting for slide ${context.slideIndex}: $e',
+      );
       rethrow;
     }
   }

@@ -9,8 +9,9 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('SuperDeck Demo App Integration Tests', () {
-    testWidgets('app launches and loads presentation with slides',
-        (tester) async {
+    testWidgets('app launches and loads presentation with slides', (
+      tester,
+    ) async {
       // Launch the actual demo app
       app.main();
       await tester.pumpAndSettle();
@@ -22,8 +23,10 @@ void main() {
       expect(find.byType(Scaffold), findsWidgets);
 
       // Wait for presentation to load (longer timeout for initial load)
-      await waitForPresentationLoad(tester,
-          timeout: const Duration(seconds: 15));
+      await waitForPresentationLoad(
+        tester,
+        timeout: const Duration(seconds: 15),
+      );
 
       // Verify we're not stuck in loading state
       expect(find.text('Loading presentation...'), findsNothing);
@@ -45,8 +48,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Wait for presentation to load
-      await waitForPresentationLoad(tester,
-          timeout: const Duration(seconds: 15));
+      await waitForPresentationLoad(
+        tester,
+        timeout: const Duration(seconds: 15),
+      );
 
       // Verify we have slide content
       expect(find.byType(Text), findsWidgets);
@@ -79,8 +84,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Wait for presentation to load
-      await waitForPresentationLoad(tester,
-          timeout: const Duration(seconds: 15));
+      await waitForPresentationLoad(
+        tester,
+        timeout: const Duration(seconds: 15),
+      );
 
       // Verify we have the expected number of slides (17 based on logs)
       // Navigate through all slides to validate content

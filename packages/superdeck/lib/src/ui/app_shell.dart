@@ -15,20 +15,14 @@ import 'panels/bottom_bar.dart';
 /// High-level app shell that toggles between
 /// small layout (bottom panel) or regular layout (side panel).
 class AppShell extends StatelessWidget {
-  const AppShell({
-    super.key,
-    required this.child,
-  });
+  const AppShell({super.key, required this.child});
 
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return NavigationManager(
-      child: SplitView(
-        isSmallLayout: context.isSmall,
-        child: child,
-      ),
+      child: SplitView(isSmallLayout: context.isSmall, child: child),
     );
   }
 }
@@ -36,11 +30,7 @@ class AppShell extends StatelessWidget {
 /// A widget that can lay out the "panel" (thumbnails and possibly notes)
 /// either at the bottom (vertical layout) or on the side (horizontal layout).
 class SplitView extends StatefulWidget {
-  const SplitView({
-    super.key,
-    required this.child,
-    this.isSmallLayout = false,
-  });
+  const SplitView({super.key, required this.child, this.isSmallLayout = false});
 
   final Widget child;
   final bool isSmallLayout;
@@ -94,10 +84,9 @@ class _SplitViewState extends State<SplitView>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           final deckController = DeckController.of(context);
-          ThumbnailController.of(context).generateThumbnails(
-            deckController.slides,
+          ThumbnailController.of(
             context,
-          );
+          ).generateThumbnails(deckController.slides, context);
         }
       });
     }
@@ -142,54 +131,46 @@ class _SplitViewState extends State<SplitView>
             ? slides[currentIndex]
             : null;
 
-      /// Common content for thumbnails
-      final thumbnailPanel = ThumbnailPanel(
-        scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
-        onItemTap: navigationController.goToSlide,
-        activeIndex: currentSlide?.slideIndex ?? 0,
-        itemBuilder: (index, selected) {
-          return SlideThumbnail(
-            selected: selected,
-            slide: slides[index],
+        /// Common content for thumbnails
+        final thumbnailPanel = ThumbnailPanel(
+          scrollDirection: widget.isSmallLayout
+              ? Axis.horizontal
+              : Axis.vertical,
+          onItemTap: navigationController.goToSlide,
+          activeIndex: currentSlide?.slideIndex ?? 0,
+          itemBuilder: (index, selected) {
+            return SlideThumbnail(selected: selected, slide: slides[index]);
+          },
+          itemCount: slides.length,
+        );
+
+        /// Comments panel (shown only if notes are open)
+        final commentsPanel = isNotesOpen
+            ? CommentsPanel(comments: currentSlide?.comments ?? [])
+            : const SizedBox();
+
+        // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
+        // or for a big layout, we might do a column if it's on the SIDE.
+        // This is somewhat reversed based on your preference, so adjust as needed.
+        if (widget.isSmallLayout) {
+          // Panel at bottom => put them side-by-side in a Row
+          return Row(
+            children: [
+              !isNotesOpen
+                  ? Expanded(child: thumbnailPanel)
+                  : Expanded(child: commentsPanel),
+            ],
           );
-        },
-        itemCount: slides.length,
-      );
-
-      /// Comments panel (shown only if notes are open)
-      final commentsPanel = isNotesOpen
-          ? CommentsPanel(comments: currentSlide?.comments ?? [])
-          : const SizedBox();
-
-      // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
-      // or for a big layout, we might do a column if it's on the SIDE.
-      // This is somewhat reversed based on your preference, so adjust as needed.
-      if (widget.isSmallLayout) {
-        // Panel at bottom => put them side-by-side in a Row
-        return Row(
-          children: [
-            !isNotesOpen
-                ? Expanded(child: thumbnailPanel)
-                : Expanded(child: commentsPanel),
-          ],
-        );
-      } else {
-        // Panel on the side => put them in a Column
-        return Column(
-          children: [
-            Expanded(
-              flex: 3,
-              child: thumbnailPanel,
-            ),
-            if (isNotesOpen)
-              Expanded(
-                flex: 1,
-                child: commentsPanel,
-              ),
-          ],
-        );
-      }
-    },
+        } else {
+          // Panel on the side => put them in a Column
+          return Column(
+            children: [
+              Expanded(flex: 3, child: thumbnailPanel),
+              if (isNotesOpen) Expanded(flex: 1, child: commentsPanel),
+            ],
+          );
+        }
+      },
     );
   }
 
@@ -208,7 +189,8 @@ class _SplitViewState extends State<SplitView>
 
         return Scaffold(
           backgroundColor: const Color.fromARGB(255, 9, 9, 9),
-          floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniEndFloat,
           floatingActionButton: !isMenuOpen
               ? IconButton(
                   icon: const Icon(Icons.menu),
@@ -284,10 +266,7 @@ class _SplitViewState extends State<SplitView>
                     decoration: BoxDecoration(
                       color: Colors.black87,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white24,
-                        width: 1,
-                      ),
+                      border: Border.all(color: Colors.white24, width: 1),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -297,17 +276,15 @@ class _SplitViewState extends State<SplitView>
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white70),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white70,
+                            ),
                           ),
                         ),
                         SizedBox(width: 8),
                         Text(
                           'Rebuilding...',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),

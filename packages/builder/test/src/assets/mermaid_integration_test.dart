@@ -13,7 +13,9 @@ void main() {
 
     setUp(() {
       // Create test output directory in /tmp
-      testOutputDir = Directory('/tmp/superdeck_mermaid_test_${DateTime.now().millisecondsSinceEpoch}');
+      testOutputDir = Directory(
+        '/tmp/superdeck_mermaid_test_${DateTime.now().millisecondsSinceEpoch}',
+      );
       testOutputDir.createSync(recursive: true);
 
       generator = MermaidGenerator(theme: MermaidTheme.dark);
@@ -45,7 +47,9 @@ flowchart LR
       await File(outputPath).writeAsBytes(pngBytes);
       expect(await File(outputPath).exists(), isTrue);
 
-      print('✓ Generated valid flowchart: $outputPath (${pngBytes.length} bytes)');
+      print(
+        '✓ Generated valid flowchart: $outputPath (${pngBytes.length} bytes)',
+      );
     });
 
     test('generates valid PNG for sequence diagram', () async {
@@ -64,7 +68,9 @@ sequenceDiagram
       await File(outputPath).writeAsBytes(pngBytes);
       expect(await File(outputPath).exists(), isTrue);
 
-      print('✓ Generated valid sequence diagram: $outputPath (${pngBytes.length} bytes)');
+      print(
+        '✓ Generated valid sequence diagram: $outputPath (${pngBytes.length} bytes)',
+      );
     });
 
     test('generates valid PNG for pie chart', () async {
@@ -84,7 +90,9 @@ pie title Test Distribution
       await File(outputPath).writeAsBytes(pngBytes);
       expect(await File(outputPath).exists(), isTrue);
 
-      print('✓ Generated valid pie chart: $outputPath (${pngBytes.length} bytes)');
+      print(
+        '✓ Generated valid pie chart: $outputPath (${pngBytes.length} bytes)',
+      );
     });
 
     test('throws clear error for invalid syntax', () async {
@@ -105,16 +113,23 @@ random text that will cause an error
       }
 
       // Verify an exception was thrown
-      expect(caughtException, isNotNull, reason: 'Should have thrown an exception for invalid syntax');
+      expect(
+        caughtException,
+        isNotNull,
+        reason: 'Should have thrown an exception for invalid syntax',
+      );
 
       // Verify error message is descriptive
       expect(caughtException.toString(), contains('Mermaid'));
-      expect(caughtException.toString(), anyOf([
-        contains('syntax'),
-        contains('Syntax'),
-        contains('error'),
-        contains('Diagram'),
-      ]));
+      expect(
+        caughtException.toString(),
+        anyOf([
+          contains('syntax'),
+          contains('Syntax'),
+          contains('error'),
+          contains('Diagram'),
+        ]),
+      );
 
       // Verify NO file was created for invalid diagram
       expect(await File(outputPath).exists(), isFalse);
@@ -137,7 +152,9 @@ stateDiagram-v2
       expect(pngBytes, isNotEmpty);
       await File(outputPath).writeAsBytes(pngBytes);
 
-      print('✓ Generated complex state diagram: $outputPath (${pngBytes.length} bytes)');
+      print(
+        '✓ Generated complex state diagram: $outputPath (${pngBytes.length} bytes)',
+      );
     });
 
     test('PNG files have valid PNG header', () async {
@@ -156,8 +173,8 @@ stateDiagram-v2
     });
   });
 
-  print('\n' + '='*80);
+  print('\n' + '=' * 80);
   print('Integration tests complete!');
   print('Check /tmp/superdeck_mermaid_test_* directories for generated images');
-  print('='*80 + '\n');
+  print('=' * 80 + '\n');
 }

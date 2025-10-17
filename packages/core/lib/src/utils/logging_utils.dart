@@ -11,7 +11,9 @@ void configureLogging({
   Logger.root.onRecord.listen((record) {
     final timestamp = includeTimestamp ? '[${record.time}] ' : '';
     final levelStr = _formatLevel(record.level, colorOutput);
-    final loggerName = record.loggerName.isNotEmpty ? '(${record.loggerName}) ' : '';
+    final loggerName = record.loggerName.isNotEmpty
+        ? '(${record.loggerName}) '
+        : '';
 
     print('$timestamp$levelStr: $loggerName${record.message}');
 
@@ -33,14 +35,14 @@ Logger getLogger(String name) {
 
 /// ANSI color codes for different log levels
 final _levelColors = {
-  Level.FINEST: '\x1B[36m',  // Cyan
-  Level.FINER: '\x1B[36m',   // Cyan
-  Level.FINE: '\x1B[36m',    // Cyan
-  Level.CONFIG: '\x1B[32m',  // Green
-  Level.INFO: '\x1B[32m',    // Green
+  Level.FINEST: '\x1B[36m', // Cyan
+  Level.FINER: '\x1B[36m', // Cyan
+  Level.FINE: '\x1B[36m', // Cyan
+  Level.CONFIG: '\x1B[32m', // Green
+  Level.INFO: '\x1B[32m', // Green
   Level.WARNING: '\x1B[33m', // Yellow
-  Level.SEVERE: '\x1B[31m',  // Red
-  Level.SHOUT: '\x1B[31m',   // Red
+  Level.SEVERE: '\x1B[31m', // Red
+  Level.SHOUT: '\x1B[31m', // Red
 };
 
 /// Format level with color if enabled

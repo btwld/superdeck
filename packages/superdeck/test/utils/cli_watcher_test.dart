@@ -12,9 +12,7 @@ void main() {
     setUp(() {
       // Create a temporary directory for testing
       tempDir = Directory.systemTemp.createTempSync('cli_watcher_test_');
-      configuration = DeckConfiguration(
-        projectDir: tempDir.path,
-      );
+      configuration = DeckConfiguration(projectDir: tempDir.path);
     });
 
     tearDown(() {
@@ -36,38 +34,45 @@ void main() {
       watcher.dispose();
     });
 
-    test('status transitions to starting then running on successful start', () async {
-      final watcher = CliWatcher(
-        projectRoot: tempDir,
-        configuration: configuration,
-      );
+    test(
+      'status transitions to starting then running on successful start',
+      () async {
+        final watcher = CliWatcher(
+          projectRoot: tempDir,
+          configuration: configuration,
+        );
 
-      // Start the watcher
-      final startFuture = watcher.start();
+        // Start the watcher
+        final startFuture = watcher.start();
 
-      // Wait a bit for the process to start
-      await Future.delayed(const Duration(milliseconds: 100));
+        // Wait a bit for the process to start
+        await Future.delayed(const Duration(milliseconds: 100));
 
-      // Status should be either starting, running, or failed (if CLI not available or project invalid)
-      // The process can fail very quickly if there's no valid pubspec.yaml in the temp directory
-      expect(
-        watcher.status,
-        isIn([CliWatcherStatus.starting, CliWatcherStatus.running, CliWatcherStatus.failed]),
-      );
+        // Status should be either starting, running, or failed (if CLI not available or project invalid)
+        // The process can fail very quickly if there's no valid pubspec.yaml in the temp directory
+        expect(
+          watcher.status,
+          isIn([
+            CliWatcherStatus.starting,
+            CliWatcherStatus.running,
+            CliWatcherStatus.failed,
+          ]),
+        );
 
-      await startFuture;
+        await startFuture;
 
-      // Give it time to transition
-      await Future.delayed(const Duration(milliseconds: 200));
+        // Give it time to transition
+        await Future.delayed(const Duration(milliseconds: 200));
 
-      // Eventually it should be running (or failed if CLI not available)
-      expect(
-        watcher.status,
-        isIn([CliWatcherStatus.running, CliWatcherStatus.failed]),
-      );
+        // Eventually it should be running (or failed if CLI not available)
+        expect(
+          watcher.status,
+          isIn([CliWatcherStatus.running, CliWatcherStatus.failed]),
+        );
 
-      watcher.dispose();
-    });
+        watcher.dispose();
+      },
+    );
 
     test('dispose sets status to stopped', () {
       final watcher = CliWatcher(
@@ -114,7 +119,9 @@ void main() {
       final fvmDir = Directory('${tempDir.path}/.fvm/flutter_sdk/bin');
       fvmDir.createSync(recursive: true);
 
-      final fvmDart = File('${fvmDir.path}/dart${Platform.isWindows ? '.exe' : ''}');
+      final fvmDart = File(
+        '${fvmDir.path}/dart${Platform.isWindows ? '.exe' : ''}',
+      );
       fvmDart.writeAsStringSync('#!/bin/bash\necho "FVM dart"');
 
       // Set executable permission on Unix systems

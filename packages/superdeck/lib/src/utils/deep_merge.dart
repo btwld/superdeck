@@ -1,5 +1,7 @@
 Map<String, dynamic> deepMerge(
-    Map<String, dynamic> map1, Map<String, dynamic> map2) {
+  Map<String, dynamic> map1,
+  Map<String, dynamic> map2,
+) {
   Map<String, dynamic> result = {};
 
   void merge(Map<String, dynamic> target, Map<String, dynamic> source) {

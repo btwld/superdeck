@@ -59,7 +59,6 @@ class ImageElementBuilder extends MarkdownElementBuilder
     return StyleSpecBuilder<ImageSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
-
         Widget imageWidget = ConstrainedBox(
           constraints: BoxConstraints.tight(totalSize),
           child: CachedImage(

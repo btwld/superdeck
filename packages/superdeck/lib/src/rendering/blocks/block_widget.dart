@@ -68,8 +68,9 @@ class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
     return StyleBuilder<SlideSpec>(
       style: style,
       builder: (context, spec) {
-        final blockOffset =
-            BlockWidget.calculateBlockOffset(spec.blockContainer.spec);
+        final blockOffset = BlockWidget.calculateBlockOffset(
+          spec.blockContainer.spec,
+        );
 
         final blockData = BlockData(
           block: widget.block,
@@ -89,23 +90,13 @@ class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
         );
 
         if (widget.block.scrollable && !widget.configuration.isExporting) {
-          current = SingleChildScrollView(
-            child: current,
-          );
+          current = SingleChildScrollView(child: current);
         } else {
-          current = Wrap(
-            clipBehavior: Clip.hardEdge,
-            children: [current],
-          );
+          current = Wrap(clipBehavior: Clip.hardEdge, children: [current]);
         }
 
         final decoration = widget.configuration.debug
-            ? BoxDecoration(
-                border: Border.all(
-                  color: Colors.cyan,
-                  width: 2,
-                ),
-              )
+            ? BoxDecoration(border: Border.all(color: Colors.cyan, width: 2))
             : null;
 
         return Container(
@@ -115,9 +106,7 @@ class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
             child: Stack(
               children: [
                 Align(
-                  alignment: ConverterHelper.toAlignment(
-                    blockData.block.align,
-                  ),
+                  alignment: ConverterHelper.toAlignment(blockData.block.align),
                   child: current,
                 ),
               ],
@@ -139,10 +128,7 @@ class ColumnBlockWidget extends BlockWidget<ColumnBlock> {
 
   @override
   Widget build(context, data) {
-    return MarkdownViewer(
-      content: data.block.content,
-      spec: data.spec,
-    );
+    return MarkdownViewer(content: data.block.content, spec: data.spec);
   }
 }
 
@@ -225,11 +211,7 @@ class DartPadBlockWidget extends BlockWidget<DartPadBlock> {
 
   @override
   Widget build(context, data) {
-
-    return WebViewWrapper(
-      size: data.size,
-      url: data.block.getDartPadUrl(),
-    );
+    return WebViewWrapper(size: data.size, url: data.block.getDartPadUrl());
   }
 }
 
@@ -244,11 +226,9 @@ class SectionBlockWidget extends StatelessWidget {
   final Size size;
 
   Positioned _renderDebugInfo(Block block, Size size) {
-    const textStyle = TextStyle(
-      color: Colors.black,
-      fontSize: 12,
-    );
-    final label = '''
+    const textStyle = TextStyle(color: Colors.black, fontSize: 12);
+    final label =
+        '''
 @${block.type}
 ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
 
@@ -282,10 +262,7 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
       children: section.blocks.mapIndexed((index, block) {
         final widthPercentage = block.flex / section.totalBlockFlex;
 
-        final blockSize = Size(
-          size.width * widthPercentage,
-          size.height,
-        );
+        final blockSize = Size(size.width * widthPercentage, size.height);
 
         return Positioned(
           left: blockLeftOffset[index],
@@ -296,25 +273,25 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
             children: [
               switch (block) {
                 ImageBlock b => ImageBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
+                  block: b,
+                  size: blockSize,
+                  configuration: configuration,
+                ),
                 WidgetBlock b => WidgetBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
+                  block: b,
+                  size: blockSize,
+                  configuration: configuration,
+                ),
                 DartPadBlock b => DartPadBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
+                  block: b,
+                  size: blockSize,
+                  configuration: configuration,
+                ),
                 ColumnBlock b => ColumnBlockWidget(
-                    block: b,
-                    size: blockSize,
-                    configuration: configuration,
-                  ),
+                  block: b,
+                  size: blockSize,
+                  configuration: configuration,
+                ),
                 _ => const SizedBox.shrink(),
               },
               if (configuration.debug) _renderDebugInfo(block, blockSize),

@@ -8,8 +8,10 @@ import 'markdown_blockquote_spec.dart';
 final class MarkdownBlockquoteStyle extends Style<MarkdownBlockquoteSpec>
     with
         Diagnosticable,
-        WidgetModifierStyleMixin<MarkdownBlockquoteStyle,
-            MarkdownBlockquoteSpec>,
+        WidgetModifierStyleMixin<
+          MarkdownBlockquoteStyle,
+          MarkdownBlockquoteSpec
+        >,
         VariantStyleMixin<MarkdownBlockquoteStyle, MarkdownBlockquoteSpec>,
         AnimationStyleMixin<MarkdownBlockquoteStyle, MarkdownBlockquoteSpec> {
   final Prop<TextStyle>? $textStyle;
@@ -25,10 +27,10 @@ final class MarkdownBlockquoteStyle extends Style<MarkdownBlockquoteSpec>
     required super.variants,
     required super.animation,
     required super.modifier,
-  })  : $textStyle = textStyle,
-        $padding = padding,
-        $decoration = decoration,
-        $alignment = alignment;
+  }) : $textStyle = textStyle,
+       $padding = padding,
+       $decoration = decoration,
+       $alignment = alignment;
 
   MarkdownBlockquoteStyle({
     TextStyle? textStyle,
@@ -39,18 +41,19 @@ final class MarkdownBlockquoteStyle extends Style<MarkdownBlockquoteSpec>
     List<VariantStyle<MarkdownBlockquoteSpec>>? variants,
     WidgetModifierConfig? modifier,
   }) : this.create(
-          textStyle: Prop.maybe(textStyle),
-          padding: Prop.maybe(padding),
-          decoration: Prop.maybe(decoration),
-          alignment: Prop.maybe(alignment),
-          animation: animation,
-          variants: variants,
-          modifier: modifier,
-        );
+         textStyle: Prop.maybe(textStyle),
+         padding: Prop.maybe(padding),
+         decoration: Prop.maybe(decoration),
+         alignment: Prop.maybe(alignment),
+         animation: animation,
+         variants: variants,
+         modifier: modifier,
+       );
 
   @override
   MarkdownBlockquoteStyle variants(
-      List<VariantStyle<MarkdownBlockquoteSpec>> value) {
+    List<VariantStyle<MarkdownBlockquoteSpec>> value,
+  ) {
     return merge(MarkdownBlockquoteStyle(variants: value));
   }
 
@@ -105,12 +108,12 @@ final class MarkdownBlockquoteStyle extends Style<MarkdownBlockquoteSpec>
 
   @override
   List<Object?> get props => [
-        $textStyle,
-        $padding,
-        $decoration,
-        $alignment,
-        $animation,
-        $variants,
-        $modifier,
-      ];
+    $textStyle,
+    $padding,
+    $decoration,
+    $alignment,
+    $animation,
+    $variants,
+    $modifier,
+  ];
 }

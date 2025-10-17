@@ -193,8 +193,8 @@ class WidgetArgs implements Map<String, dynamic> {
 
   @override
   Map<K2, V2> map<K2, V2>(
-          MapEntry<K2, V2> Function(String key, dynamic value) convert) =>
-      _data.map(convert);
+    MapEntry<K2, V2> Function(String key, dynamic value) convert,
+  ) => _data.map(convert);
 
   @override
   dynamic putIfAbsent(String key, dynamic Function() ifAbsent) =>
@@ -208,9 +208,11 @@ class WidgetArgs implements Map<String, dynamic> {
       _data.removeWhere(test);
 
   @override
-  dynamic update(String key, dynamic Function(dynamic value) update,
-          {dynamic Function()? ifAbsent}) =>
-      _data.update(key, update, ifAbsent: ifAbsent);
+  dynamic update(
+    String key,
+    dynamic Function(dynamic value) update, {
+    dynamic Function()? ifAbsent,
+  }) => _data.update(key, update, ifAbsent: ifAbsent);
 
   @override
   void updateAll(dynamic Function(String key, dynamic value) update) =>
@@ -252,7 +254,8 @@ class WidgetArgs implements Map<String, dynamic> {
     final value = _getMaybeAs<T>(key);
     if (value == null) {
       throw ArgumentError(
-          'Key "$key" not found or cannot be converted to ${T.toString()}.');
+        'Key "$key" not found or cannot be converted to ${T.toString()}.',
+      );
     }
     return value;
   }
