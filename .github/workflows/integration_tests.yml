@@ -32,47 +32,40 @@ jobs:
           fvm use stable --force
           fvm flutter --version
 
-      - name: Setup Melos
+      - name: Add FVM to PATH
         run: |
-          fvm dart pub global activate melos
+          echo "$(fvm flutter sdk-path)/bin" >> $GITHUB_PATH
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Setup Melos
+        run: dart pub global activate melos
 
       - name: Install dependencies
         run: |
-          fvm flutter pub get
+          flutter pub get
           melos bootstrap
 
       - name: Build Runner (if needed)
         run: melos run gen:build
 
       - name: Run Integration Tests - App Tests
-        working-directory: packages/superdeck
-        run: fvm flutter test integration_test/app_test.dart -d macos
+        working-directory: demo
+        run: flutter test integration_test/app_test.dart -d macos
         continue-on-error: true
 
       - name: Run Integration Tests - Navigation Tests
-        working-directory: packages/superdeck
-        run: fvm flutter test integration_test/navigation_test.dart -d macos
+        working-directory: demo
+        run: flutter test integration_test/navigation_test.dart -d macos
         continue-on-error: true
 
-      - name: Run Integration Tests - UI Interaction Tests
-        working-directory: packages/superdeck
-        run: fvm flutter test integration_test/ui_interaction_test.dart -d macos
-        continue-on-error: true
-
-      - name: Run Integration Tests - Performance Tests
-        working-directory: packages/superdeck
-        run: fvm flutter test integration_test/performance_test.dart -d macos
-        continue-on-error: true
-
-      - name: Run Integration Tests - Content Rendering Tests
-        working-directory: packages/superdeck
-        run: fvm flutter test integration_test/content_rendering_test.dart -d macos
+      - name: Run Integration Tests - Semantics Tests
+        working-directory: demo
+        run: flutter test integration_test/semantics_test.dart -d macos
         continue-on-error: true
 
       - name: Run All Integration Tests
-        working-directory: packages/superdeck
-        run: fvm flutter test integration_test/ -d macos
+        working-directory: demo
+        run: flutter test integration_test/ -d macos
 
   integration-tests-web:
     runs-on: ubuntu-latest
@@ -93,14 +86,17 @@ jobs:
           fvm use stable --force
           fvm flutter --version
 
-      - name: Setup Melos
+      - name: Add FVM to PATH
         run: |
-          fvm dart pub global activate melos
+          echo "$(fvm flutter sdk-path)/bin" >> $GITHUB_PATH
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Setup Melos
+        run: dart pub global activate melos
 
       - name: Install dependencies
         run: |
-          fvm flutter pub get
+          flutter pub get
           melos bootstrap
 
       - name: Build Runner (if needed)
@@ -112,7 +108,7 @@ jobs:
           echo "$(npx @puppeteer/browsers install chromedriver@stable | grep -o '/[^[:space:]]*chromedriver[^[:space:]]*' | head -1 | xargs dirname)" >> $GITHUB_PATH
 
       - name: Create test driver
-        working-directory: packages/superdeck
+        working-directory: demo
         run: |
           mkdir -p test_driver
           cat > test_driver/integration_test.dart << 'EOF'
@@ -125,9 +121,9 @@ jobs:
         run: chromedriver --port=4444 &
 
       - name: Run Web Integration Tests
-        working-directory: packages/superdeck
+        working-directory: demo
         run: |
-          fvm flutter drive \
+          flutter drive \
             --driver=test_driver/integration_test.dart \
             --target=integration_test/app_test.dart \
             -d chrome
