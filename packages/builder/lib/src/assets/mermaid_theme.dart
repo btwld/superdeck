@@ -43,7 +43,7 @@ class MermaidTheme {
     primary: '#0ea5e9',
     text: '#e2e8f0',
     darkMode: true,
-    canvasOnDarkSlide: false,
+    canvasOnDarkSlide: true,
   );
 
   /// Light theme preset
@@ -54,6 +54,8 @@ class MermaidTheme {
     darkMode: false,
     canvasOnDarkSlide: false,
   );
+
+  static const double _minContrastRatio = 4.5;
 
   MermaidTheme copyWith({
     String? background,
@@ -82,24 +84,46 @@ class MermaidTheme {
     final tertiary = ColorUtils.lighten(background, darkMode ? 0.20 : 0.05);
     final tertiaryBorder = ColorUtils.lighten(tertiary, darkMode ? 0.15 : 0.10);
 
-    // Canvas/label text rendered on transparent PNGs over slides.
-    final canvasText =
-        canvasTextOverride ??
-        (canvasOnDarkSlide
-            ? '#f5f5f5' /* light ink */
-            : '#1a1a1a' /* dark ink */ );
+    final canvasText = _resolveCanvasText(
+      surface: surface,
+      defaultPreference: canvasOnDarkSlide ? '#f5f5f5' : '#1a1a1a',
+      override: canvasTextOverride,
+    );
 
-    // Git/categorical color palette (used by multiple diagram types)
-    final gitColors = [
-      primary,
-      ColorUtils.lighten(primary, 0.2),
-      ColorUtils.darken(primary, 0.2),
-      ColorUtils.lighten(primary, 0.4),
-      ColorUtils.darken(primary, 0.4),
-      ColorUtils.lighten(primary, 0.6),
-      ColorUtils.darken(primary, 0.6),
-      ColorUtils.lighten(primary, 0.8),
-    ];
+    final basePalette = _buildBasePalette(
+      primary: primary,
+      secondary: secondary,
+      tertiary: tertiary,
+      background: background,
+      surface: surface,
+      darkMode: darkMode,
+    );
+
+    final paletteWithBlackText = _normalizePalette(basePalette, '#000000');
+    final minBlack = _minContrastAcrossPalette(
+      paletteWithBlackText,
+      '#000000',
+    );
+
+    final paletteWithWhiteText = _normalizePalette(basePalette, '#ffffff');
+    final minWhite = _minContrastAcrossPalette(
+      paletteWithWhiteText,
+      '#ffffff',
+    );
+
+    final categoryPalette =
+        minBlack >= minWhite ? paletteWithBlackText : paletteWithWhiteText;
+    final paletteTextColor = minBlack >= minWhite ? '#000000' : '#ffffff';
+
+    final nodeFill = surface;
+    final nodeTextColor = _ensureTextContrast(text, nodeFill);
+    final surfaceTextColor = _ensureTextContrast(text, surface);
+    final stateSurface = ColorUtils.lighten(surface, 0.08);
+    final stateLabelColor = _ensureTextContrast(text, stateSurface);
+    final signalColor = darkMode ? canvasText : '#1a1a1a';
+    final actorConnectorColor = darkMode
+        ? ColorUtils.lighten(surface, 0.12)
+        : ColorUtils.darken(surface, 0.35);
 
     final vars = <String, dynamic>{
       // Core global variables (v11.12.0)
@@ -151,27 +175,29 @@ class MermaidTheme {
 
     // Flowchart
     vars.addAll({
-      'nodeTextColor': text, // inside nodes
+      'nodeTextColor': nodeTextColor,
+      'labelColor': canvasText,
+      'edgeLabelColor': canvasText,
       'nodeBorder': primaryBorder,
       'clusterBkg': surface,
       'clusterBorder': ColorUtils.lighten(surface, 0.15),
       'defaultLinkColor': vars['lineColor'],
-      'edgeLabelBackground': canvasOnDarkSlide ? 'transparent' : '#ffffff',
+      'edgeLabelBackground': _edgeLabelBackground(canvasText, canvasOnDarkSlide),
     });
 
     // Sequence
     vars.addAll({
       'actorBkg': surface,
-      'actorBorder': ColorUtils.lighten(surface, 0.12),
-      'actorTextColor': text,
-      'actorLineColor': ColorUtils.lighten(surface, 0.12),
+      'actorBorder': actorConnectorColor,
+      'actorTextColor': surfaceTextColor,
+      'actorLineColor': actorConnectorColor,
 
-      'signalColor': canvasText,
-      'signalTextColor': canvasText,
+      'signalColor': signalColor,
+      'signalTextColor': _ensureTextContrast(signalColor, surface),
 
       'labelBoxBkgColor': surface,
       'labelBoxBorderColor': ColorUtils.lighten(surface, 0.15),
-      'labelTextColor': text,
+      'labelTextColor': surfaceTextColor,
 
       'loopTextColor': canvasText,
       'activationBkgColor': primary,
@@ -181,12 +207,12 @@ class MermaidTheme {
 
     // State
     vars.addAll({
-      'labelColor': text,
-      'altBackground': ColorUtils.lighten(surface, 0.08),
+      'labelColor': stateLabelColor,
+      'altBackground': stateSurface,
     });
 
     // Class
-    vars['classText'] = canvasText;
+    vars['classText'] = _ensureTextContrast(canvasText, surface);
 
     // Pie - complete v11.12.0 spec
     vars.addAll({
@@ -195,7 +221,7 @@ class MermaidTheme {
       'pieLegendTextSize': '16px',
       'pieLegendTextColor': canvasText,
       'pieSectionTextSize': '18px',
-      'pieSectionTextColor': '#ffffff',
+      'pieSectionTextColor': paletteTextColor,
       'pieStrokeColor': background,
       'pieStrokeWidth': '2px',
       'pieOuterStrokeColor': background,
@@ -205,18 +231,16 @@ class MermaidTheme {
 
     // Pie slice fills (pie1-pie12)
     for (var i = 0; i < 12; i++) {
-      final sliceColor = i < 8
-          ? gitColors[i]
-          : ColorUtils.lighten(primary, 0.1 * (i - 8));
-      vars['pie${i + 1}'] = sliceColor;
+      vars['pie${i + 1}'] = categoryPalette[i % categoryPalette.length];
     }
 
     // GitGraph branches 0..7 with inverted and label colors
     for (var i = 0; i < 8; i++) {
-      vars['git$i'] = gitColors[i];
+      final color = categoryPalette[i % categoryPalette.length];
+      vars['git$i'] = color;
       // Inverted colors for highlights
       vars['gitInv$i'] = ColorUtils.contrastColor(
-        gitColors[i],
+        color,
         light: '#ffffff',
         dark: '#000000',
       );
@@ -237,10 +261,7 @@ class MermaidTheme {
 
     // Timeline - categorical color scales
     for (var i = 0; i < 12; i++) {
-      // Use git colors for scales 0-7, then derive more
-      final scaleColor = i < 8
-          ? gitColors[i]
-          : ColorUtils.lighten(primary, 0.1 * i);
+      final scaleColor = categoryPalette[i % categoryPalette.length];
       vars['cScale$i'] = scaleColor;
       vars['cScaleLabel$i'] = ColorUtils.contrastColor(
         scaleColor,
@@ -277,7 +298,7 @@ class MermaidTheme {
       'yAxisTitleColor': canvasText,
       'yAxisTickColor': vars['lineColor'],
       'yAxisLineColor': vars['lineColor'],
-      'plotColorPalette': gitColors.take(4).join(','),
+      'plotColorPalette': categoryPalette.take(4).join(','),
     };
 
     // Radar Chart (nested config)
@@ -295,6 +316,143 @@ class MermaidTheme {
     };
 
     return vars;
+  }
+
+  static String _resolveCanvasText({
+    required String surface,
+    required String defaultPreference,
+    required String? override,
+  }) {
+    final candidate = override ?? defaultPreference;
+    if (ColorUtils.contrastRatio(candidate, surface) >= _minContrastRatio) {
+      return candidate;
+    }
+    return _bestInkForBackground(surface);
+  }
+
+  static String _ensureTextContrast(String desired, String backgroundColor) {
+    if (ColorUtils.contrastRatio(desired, backgroundColor) >=
+        _minContrastRatio) {
+      return desired;
+    }
+    return _bestInkForBackground(backgroundColor);
+  }
+
+  static List<String> _buildBasePalette({
+    required String primary,
+    required String secondary,
+    required String tertiary,
+    required String background,
+    required String surface,
+    required bool darkMode,
+  }) {
+    if (darkMode) {
+      return [
+        primary,
+        ColorUtils.lighten(primary, 0.18),
+        ColorUtils.lighten(primary, 0.36),
+        ColorUtils.lighten(primary, 0.54),
+        ColorUtils.lighten(primary, 0.72),
+        ColorUtils.lighten(primary, 0.9),
+        ColorUtils.lighten(secondary, 0.32),
+        ColorUtils.lighten(secondary, 0.5),
+        ColorUtils.lighten(tertiary, 0.65),
+        ColorUtils.lighten(tertiary, 0.8),
+        ColorUtils.lighten(surface, 0.6),
+        ColorUtils.lighten(background, 0.72),
+      ];
+    }
+
+    return [
+      primary,
+      ColorUtils.darken(primary, 0.18),
+      ColorUtils.darken(primary, 0.36),
+      ColorUtils.darken(primary, 0.54),
+      ColorUtils.darken(primary, 0.72),
+      ColorUtils.darken(primary, 0.84),
+      ColorUtils.darken(secondary, 0.3),
+      ColorUtils.darken(secondary, 0.45),
+      ColorUtils.darken(tertiary, 0.3),
+      ColorUtils.darken(tertiary, 0.45),
+      ColorUtils.darken(surface, 0.4),
+      ColorUtils.darken(background, 0.35),
+    ];
+  }
+
+  static List<String> _normalizePalette(
+    List<String> palette,
+    String textColor,
+  ) {
+    final textIsLight = ColorUtils.luminance(textColor) > 0.5;
+    final lighten = !textIsLight;
+    return [
+      for (final color in palette)
+        _adjustColorForContrast(color, textColor, lighten: lighten),
+    ];
+  }
+
+  static String _adjustColorForContrast(
+    String color,
+    String textColor, {
+    required bool lighten,
+  }) {
+    var candidate = color;
+    var iterations = 0;
+    while (
+      ColorUtils.contrastRatio(candidate, textColor) < _minContrastRatio &&
+      iterations < 10
+    ) {
+      candidate = lighten
+          ? ColorUtils.lighten(candidate, 0.1)
+          : ColorUtils.darken(candidate, 0.1);
+      iterations++;
+    }
+    return candidate;
+  }
+
+  static double _minContrastAcrossPalette(
+    List<String> palette,
+    String textColor,
+  ) {
+    var minRatio = double.infinity;
+    for (final color in palette) {
+      final ratio = ColorUtils.contrastRatio(color, textColor);
+      if (ratio < minRatio) {
+        minRatio = ratio;
+      }
+    }
+    return minRatio;
+  }
+
+  static String _edgeLabelBackground(String textColor, bool canvasOnDarkSlide) {
+    if (canvasOnDarkSlide) {
+      return 'transparent';
+    }
+    final options = ['#ffffff', '#1a1a1a'];
+    var best = options.first;
+    var bestRatio = -double.infinity;
+    for (final candidate in options) {
+      final ratio = ColorUtils.contrastRatio(candidate, textColor);
+      if (ratio > bestRatio) {
+        bestRatio = ratio;
+        best = candidate;
+      }
+    }
+    return best;
+  }
+
+  static String _bestInkForBackground(String backgroundColor) {
+    const inks = ['#000000', '#ffffff'];
+    var best = inks.first;
+    var bestRatio = -double.infinity;
+    for (final ink in inks) {
+      final ratio = ColorUtils.contrastRatio(ink, backgroundColor);
+      if (ratio > bestRatio) {
+        bestRatio = ratio;
+        best = ink;
+      }
+    }
+    return best;
   }
 
   static String _deriveSurface(String bg, bool dark) =>

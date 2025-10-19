@@ -121,4 +121,22 @@ class ColorUtils {
   }) {
     return luminance(bgHex) > 0.5 ? dark : light;
   }
+
+  /// Compute the WCAG contrast ratio between two colors.
+  ///
+  /// Returns a value >= 1.0 where values >= 4.5 meet the usual
+  /// accessibility guideline for normal text.
+  static double contrastRatio(String a, String b) {
+    final (lighter, darker) = _sortedByLuminance(a, b);
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+
+  static (double lighter, double darker) _sortedByLuminance(
+    String a,
+    String b,
+  ) {
+    final lumA = luminance(a);
+    final lumB = luminance(b);
+    return lumA >= lumB ? (lumA, lumB) : (lumB, lumA);
+  }
 }

@@ -10,6 +10,7 @@ void main() {
         expect(MermaidTheme.dark.background, equals('#0b0f14'));
         expect(MermaidTheme.dark.primary, equals('#0ea5e9'));
         expect(MermaidTheme.dark.text, equals('#e2e8f0'));
+        expect(MermaidTheme.dark.canvasOnDarkSlide, isTrue);
       });
 
       test('light preset has correct values', () {
@@ -114,6 +115,55 @@ void main() {
 
         // In dark mode, line should be lighter than background
         expect(lineLum, greaterThan(bgLum));
+      });
+    });
+
+    group('contrast safeguards', () {
+      test('canvas text maintains minimum contrast with main background', () {
+        final vars = MermaidTheme.dark.toThemeVariables();
+        final ratio = ColorUtils.contrastRatio(
+          vars['textColor'] as String,
+          vars['mainBkg'] as String,
+        );
+
+        expect(ratio, greaterThanOrEqualTo(4.5));
+        expect(vars['textColor'], equals('#f5f5f5'));
+      });
+
+      test('node text stays readable against primary fill', () {
+        final vars = MermaidTheme.dark.toThemeVariables();
+        final ratio = ColorUtils.contrastRatio(
+          vars['nodeTextColor'] as String,
+          vars['clusterBkg'] as String,
+        );
+
+        expect(ratio, greaterThanOrEqualTo(4.5));
+      });
+
+      test('pie labels contrast with every slice', () {
+        final vars = MermaidTheme.dark.toThemeVariables();
+        final labelColor = vars['pieSectionTextColor'] as String;
+
+        for (var i = 1; i <= 12; i++) {
+          final slice = vars['pie$i'] as String;
+          final ratio = ColorUtils.contrastRatio(slice, labelColor);
+          expect(
+            ratio,
+            greaterThanOrEqualTo(4.5),
+            reason: 'pie$i has insufficient contrast',
+          );
+        }
+      });
+
+      test('edge label background complements canvas text', () {
+        final vars = MermaidTheme.dark.toThemeVariables();
+        final background = vars['edgeLabelBackground'] as String;
+        final textColor = vars['textColor'] as String;
+
+        if (background != 'transparent') {
+          final ratio = ColorUtils.contrastRatio(background, textColor);
+          expect(ratio, greaterThanOrEqualTo(4.5));
+        }
       });
     });
 

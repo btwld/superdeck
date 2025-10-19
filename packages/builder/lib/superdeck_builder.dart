@@ -26,4 +26,4 @@ export 'src/tasks/dart_formatter_task.dart';
 export 'src/tasks/slide_context.dart';
 export 'src/tasks/task.dart';
 // Export utilities
-export 'src/fenced_code_block_transformer.dart';
+export 'src/markdown_utils.dart';
