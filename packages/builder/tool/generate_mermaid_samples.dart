@@ -79,11 +79,27 @@ timeline
 ''',
   };
 
-  final themes = {'dark': MermaidTheme.dark, 'light': MermaidTheme.light};
+  final themes = <String, Map<String, dynamic>>{
+    'dark': {
+      'theme': MermaidTheme.dark,
+      'extraCss':
+          'body { background: #171b20; margin: 0; padding: 40px; }\npre.mermaid { display: inline-block; }',
+    },
+    'light': {
+      'theme': MermaidTheme.light,
+      'extraCss':
+          'body { background: #ffffff; margin: 0; padding: 40px; }\npre.mermaid { display: inline-block; }',
+    },
+  };
 
   for (final entry in themes.entries) {
     final themeName = entry.key;
-    final generator = MermaidGenerator(theme: entry.value);
+    final theme = entry.value['theme'] as MermaidTheme;
+    final extraCss = entry.value['extraCss'] as String;
+    final generator = MermaidGenerator(
+      theme: theme,
+      configuration: {'extraCSS': extraCss},
+    );
 
     try {
       for (final sample in samples.entries) {

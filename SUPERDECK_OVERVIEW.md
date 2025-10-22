@@ -11,7 +11,7 @@ Superdeck transforms Markdown files into fully-rendered Flutter presentations wi
 - **Two-stage build pipeline** - Parse Markdown at build-time, render Flutter widgets at runtime
 - **Rich markdown extensions** - Block-based layouts, custom widgets, hero animations, and more
 - **Flexible styling system** - Complete control over typography, colors, spacing, and themes
-- **Asset management** - Automatic optimization and caching of images and diagrams
+- **Asset management** - Build-time Mermaid rendering with content-hash caching and hooks for custom generators
 - **Export & publishing** - PDF export and one-command deployment to GitHub Pages
 
 ---
@@ -23,13 +23,23 @@ Superdeck transforms Markdown files into fully-rendered Flutter presentations wi
 Superdeck uses a powerful **@block syntax** for organizing slide content into flexible layouts:
 
 ```markdown
-@section flex:2
-  @column align:center
-    # Welcome to Superdeck
-    Build presentations with Markdown and Flutter
+@section {
+  flex: 2
+}
 
-  @column align:center flex:1
-    ![Logo](assets/logo.png)
+@column {
+  align: center
+}
+
+# Welcome to Superdeck
+Build presentations with Markdown and Flutter
+
+@column {
+  align: center
+  flex: 1
+}
+
+![Logo](assets/logo.png)
 ```
 
 **Available Blocks:**
@@ -105,7 +115,7 @@ graph TD
 \```
 ```
 
-**Code Highlighting** - Syntax highlighting with language detection
+**Code Highlighting** - Syntax highlighting for supported grammars (Dart/JSON/YAML/Markdown) with a Dart fallback
 **Standard Markdown** - Full CommonMark + GitHub Flavored Markdown support
 
 ---
@@ -117,20 +127,25 @@ graph TD
 Control every aspect of your presentation through the **SlideStyle** system:
 
 ```dart
-SlideStyle(
-  h1: h1Style.copyWith(fontSize: 48, color: Colors.purple),
-  p: paragraphStyle.copyWith(fontSize: 18, lineHeight: 1.5),
-  codeBlock: codeStyle.copyWith(
-    background: Colors.grey[900],
-    textColor: Colors.white,
+final customStyle = SlideStyle(
+  h1: TextStyler()
+      .style(TextStyleMix(fontSize: 48, color: Colors.purple)),
+  p: TextStyler()
+      .style(TextStyleMix(fontSize: 18, height: 1.5)),
+  code: MarkdownCodeblockStyle(
+    textStyle: const TextStyle(fontFamily: 'Fira Code', color: Colors.white),
+    container: BoxStyler()
+        .color(const Color(0xFF1E1E1E))
+        .padding(EdgeInsetsGeometryMix.all(24))
+        .borderRadius(BorderRadiusMix.circular(16)),
   ),
-  blockContainer: BoxStyle(
-    padding: 24,
-    borderRadius: 16,
-    gradient: LinearGradient(...),
-  ),
-)
+  blockContainer: BoxStyler()
+      .padding(EdgeInsetsGeometryMix.all(24))
+      .borderRadius(BorderRadiusMix.circular(16)),
+);
 ```
+
+Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above, then reuse `customStyle` as a `DeckOptions.baseStyle` or as a named variant.
 
 **Styleable Elements:**
 - Typography: h1-h6, paragraphs, blockquotes
@@ -144,7 +159,7 @@ SlideStyle(
 - **Mix 2.0 integration** - Type-safe, composable styles
 - **Google Fonts support** - Custom typography with automatic loading
 - **Named style variants** - Define multiple styles and apply per-slide
-- **Dark/light modes** - Built-in theme switching support
+- **Material theme override** - Supply your own `ThemeData` (ships with a dark default)
 
 Apply custom styles per-slide:
 ```markdown
@@ -163,7 +178,7 @@ style: announcement
 ```dart
 SuperDeckApp(
   options: DeckOptions(
-    baseStyle: BaseStyle(),
+    baseStyle: customStyle,
     widgets: { /* custom widgets */ },
     styles: { /* named styles */ },
     parts: SlideParts(
@@ -186,7 +201,7 @@ Define consistent elements across all slides:
 ### Navigation API
 
 - **NavigationManager** - Keyboard and gesture input handling
-- **Keyboard support** - Arrow keys, Space, Enter
+- **Keyboard support** - Arrow keys and Space
 - **Gesture support** - Tap zones, swipe gestures
 - **Thumbnail panel** - Quick navigation overview
 
@@ -214,10 +229,10 @@ superdeck publish
 This separation enables type safety, custom markdown extensions, and efficient bundling.
 
 ### Asset Pipeline
-- Automatic image optimization and caching by content hash
-- Mermaid diagram rendering to PNG at build-time
+- Mermaid diagram rendering to PNG at build time via a headless browser
+- Content-hash filenames prevent unnecessary regeneration
+- Extensible generator pipeline (Mermaid included by default) for custom asset types
 - Thumbnail generation for slide navigation
-- Multi-format support: PNG, JPEG, GIF, WEBP, SVG
 
 ### Multi-Platform Support
 Run presentations on:
@@ -249,23 +264,31 @@ style: hero
 ---
 
 @section
-  @column align:center
-    # Superdeck {.hero-title}
 
-    Build presentations with **Markdown** and **Flutter**
+@column {
+  align: center
+}
 
-    - Simple syntax
-    - Custom widgets
-    - Beautiful themes
+# Superdeck {.hero-title}
 
-  @dartpad {
-    mode: flutter
-    run: true
-  }
-  void main() {
-    runApp(MyPresentation());
-  }
-  \```
+Build presentations with **Markdown** and **Flutter**
+
+- Simple syntax
+- Custom widgets
+- Beautiful themes
+
+@column
+
+@dartpad {
+  id: "d7b09149b0843f2b9d09e081e3cfd5a3"
+  theme: dark
+  run: true
+}
+```dart
+void main() {
+  runApp(MyPresentation());
+}
+\```
 ```
 
 ---

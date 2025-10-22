@@ -55,6 +55,7 @@ bool isValidHeroTag(String value) => core.isValidHeroTag(value);
 String lerpString(String start, String end, double t) {
   // Clamp t between 0 and 1
   t = t.clamp(0.0, 1.0);
+  const epsilon = 1e-6;
 
   final commonPrefixLen = start.commonPrefixLength(end);
   final startSuffix = start.substring(commonPrefixLen);
@@ -66,14 +67,24 @@ String lerpString(String start, String end, double t) {
   if (t <= 0.5) {
     final progress = t / 0.5;
     final startLength = startSuffix.length;
-    final numCharsToShow = ((1 - progress) * startLength).round();
+    var numCharsToShow = startLength -
+        ((progress * startLength).floor()); // remove characters monotonically
+    if ((1 - progress) <= epsilon) {
+      numCharsToShow = 0;
+    }
+    numCharsToShow = math.max(0, math.min(startLength, numCharsToShow));
     if (numCharsToShow > 0) {
       result.write(startSuffix.substring(0, numCharsToShow));
     }
   } else {
     final progress = (t - 0.5) / 0.5;
     final endLength = endSuffix.length;
-    final numCharsToShow = (progress * endLength).round();
+    var numCharsToShow =
+        (progress * endLength).floor(); // add characters monotonically
+    if (progress >= 1 - epsilon) {
+      numCharsToShow = endLength;
+    }
+    numCharsToShow = math.max(0, math.min(endLength, numCharsToShow));
     if (numCharsToShow > 0) {
       result.write(endSuffix.substring(0, numCharsToShow));
     }

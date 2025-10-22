@@ -75,13 +75,13 @@ class MermaidTheme {
 
   /// Expand the theme into Mermaid-compliant themeVariables.
   Map<String, dynamic> toThemeVariables() {
-    final surface = _deriveSurface(background, darkMode);
+    final surface = _deriveSurface(background, primary, darkMode);
     final primaryBorder = ColorUtils.darken(primary, 0.2);
 
     // Derive secondary and tertiary colors
     final secondary = ColorUtils.lighten(primary, 0.15);
     final secondaryBorder = ColorUtils.darken(secondary, 0.15);
-    final tertiary = ColorUtils.lighten(background, darkMode ? 0.20 : 0.05);
+    final tertiary = ColorUtils.lighten(background, darkMode ? 0.50 : 0.05);
     final tertiaryBorder = ColorUtils.lighten(tertiary, darkMode ? 0.15 : 0.10);
 
     final canvasText = _resolveCanvasText(
@@ -100,19 +100,14 @@ class MermaidTheme {
     );
 
     final paletteWithBlackText = _normalizePalette(basePalette, '#000000');
-    final minBlack = _minContrastAcrossPalette(
-      paletteWithBlackText,
-      '#000000',
-    );
+    final minBlack = _minContrastAcrossPalette(paletteWithBlackText, '#000000');
 
     final paletteWithWhiteText = _normalizePalette(basePalette, '#ffffff');
-    final minWhite = _minContrastAcrossPalette(
-      paletteWithWhiteText,
-      '#ffffff',
-    );
+    final minWhite = _minContrastAcrossPalette(paletteWithWhiteText, '#ffffff');
 
-    final categoryPalette =
-        minBlack >= minWhite ? paletteWithBlackText : paletteWithWhiteText;
+    final categoryPalette = minBlack >= minWhite
+        ? paletteWithBlackText
+        : paletteWithWhiteText;
     final paletteTextColor = minBlack >= minWhite ? '#000000' : '#ffffff';
 
     final nodeFill = surface;
@@ -124,6 +119,9 @@ class MermaidTheme {
     final actorConnectorColor = darkMode
         ? ColorUtils.lighten(surface, 0.12)
         : ColorUtils.darken(surface, 0.35);
+
+    final lineColor = _deriveLineColor(background, primary, darkMode);
+    final gridColor = lineColor; // Use same color for grid lines (timeline, gantt)
 
     final vars = <String, dynamic>{
       // Core global variables (v11.12.0)
@@ -166,7 +164,10 @@ class MermaidTheme {
 
       // Generic styling
       'mainBkg': surface,
-      'lineColor': _deriveLineColor(background, darkMode),
+      'lineColor': lineColor,
+      'gridColor': gridColor,
+      'border1': lineColor,  // Used by timeline for axis lines
+      'border2': lineColor,  // Used by timeline for connectors
 
       // Text outside nodes (titles, labels, many edge texts)
       'textColor': canvasText,
@@ -181,8 +182,11 @@ class MermaidTheme {
       'nodeBorder': primaryBorder,
       'clusterBkg': surface,
       'clusterBorder': ColorUtils.lighten(surface, 0.15),
-      'defaultLinkColor': vars['lineColor'],
-      'edgeLabelBackground': _edgeLabelBackground(canvasText, canvasOnDarkSlide),
+      'defaultLinkColor': lineColor,
+      'edgeLabelBackground': _edgeLabelBackground(
+        canvasText,
+        canvasOnDarkSlide,
+      ),
     });
 
     // Sequence
@@ -192,8 +196,10 @@ class MermaidTheme {
       'actorTextColor': surfaceTextColor,
       'actorLineColor': actorConnectorColor,
 
-      'signalColor': signalColor,
-      'signalTextColor': _ensureTextContrast(signalColor, surface),
+      'signalColor': darkMode ? signalColor : lineColor,
+      'signalTextColor': darkMode
+          ? _ensureTextContrast(signalColor, surface)
+          : _ensureTextContrast(lineColor, surface),
 
       'labelBoxBkgColor': surface,
       'labelBoxBorderColor': ColorUtils.lighten(surface, 0.15),
@@ -202,14 +208,11 @@ class MermaidTheme {
       'loopTextColor': canvasText,
       'activationBkgColor': primary,
       'activationBorderColor': primaryBorder,
-      'sequenceNumberColor': canvasText,
+      'sequenceNumberColor': darkMode ? canvasText : lineColor,
     });
 
     // State
-    vars.addAll({
-      'labelColor': stateLabelColor,
-      'altBackground': stateSurface,
-    });
+    vars.addAll({'labelColor': stateLabelColor, 'altBackground': stateSurface});
 
     // Class
     vars['classText'] = _ensureTextContrast(canvasText, surface);
@@ -261,13 +264,21 @@ class MermaidTheme {
 
     // Timeline - categorical color scales
     for (var i = 0; i < 12; i++) {
-      final scaleColor = categoryPalette[i % categoryPalette.length];
-      vars['cScale$i'] = scaleColor;
-      vars['cScaleLabel$i'] = ColorUtils.contrastColor(
-        scaleColor,
+      final baseColor = categoryPalette[i % categoryPalette.length];
+      final fillColor = darkMode
+          ? ColorUtils.mix(baseColor, '#ffffff', 0.35)
+          : ColorUtils.mix(baseColor, '#ffffff', 0.65);
+      final labelColor = ColorUtils.contrastColor(
+        fillColor,
         light: '#ffffff',
-        dark: '#000000',
+        dark: '#1a1a1a',
       );
+      final edgeColor = darkMode
+          ? ColorUtils.mix(baseColor, '#ffffff', 0.5)
+          : ColorUtils.mix(baseColor, '#1a1a1a', 0.25);
+      vars['cScale$i'] = fillColor;
+      vars['cScaleLabel$i'] = labelColor;
+      vars['cScaleInv$i'] = edgeColor;
     }
 
     // Quadrant Chart
@@ -364,18 +375,18 @@ class MermaidTheme {
     }
 
     return [
-      primary,
-      ColorUtils.darken(primary, 0.18),
-      ColorUtils.darken(primary, 0.36),
-      ColorUtils.darken(primary, 0.54),
-      ColorUtils.darken(primary, 0.72),
-      ColorUtils.darken(primary, 0.84),
-      ColorUtils.darken(secondary, 0.3),
-      ColorUtils.darken(secondary, 0.45),
-      ColorUtils.darken(tertiary, 0.3),
-      ColorUtils.darken(tertiary, 0.45),
-      ColorUtils.darken(surface, 0.4),
-      ColorUtils.darken(background, 0.35),
+      ColorUtils.mix(primary, '#ffffff', 0.15),
+      ColorUtils.mix(primary, '#ffffff', 0.3),
+      ColorUtils.mix(primary, '#ffffff', 0.45),
+      ColorUtils.mix(primary, '#ffffff', 0.6),
+      ColorUtils.mix(primary, '#ffffff', 0.75),
+      ColorUtils.mix(primary, '#ffffff', 0.88),
+      ColorUtils.mix(secondary, '#ffffff', 0.3),
+      ColorUtils.mix(secondary, '#ffffff', 0.5),
+      ColorUtils.mix(tertiary, '#ffffff', 0.25),
+      ColorUtils.mix(tertiary, '#ffffff', 0.45),
+      ColorUtils.mix(primary, '#ffffff', 0.05),
+      ColorUtils.mix('#1a1a1a', '#ffffff', 0.9),
     ];
   }
 
@@ -398,10 +409,8 @@ class MermaidTheme {
   }) {
     var candidate = color;
     var iterations = 0;
-    while (
-      ColorUtils.contrastRatio(candidate, textColor) < _minContrastRatio &&
-      iterations < 10
-    ) {
+    while (ColorUtils.contrastRatio(candidate, textColor) < _minContrastRatio &&
+        iterations < 10) {
       candidate = lighten
           ? ColorUtils.lighten(candidate, 0.1)
           : ColorUtils.darken(candidate, 0.1);
@@ -455,11 +464,20 @@ class MermaidTheme {
     return best;
   }
 
-  static String _deriveSurface(String bg, bool dark) =>
-      dark ? ColorUtils.lighten(bg, 0.10) : ColorUtils.darken(bg, 0.05);
+  static String _deriveSurface(String bg, String primary, bool dark) {
+    if (dark) {
+      return ColorUtils.lighten(bg, 0.10);
+    }
+    // Subtle tint toward primary while remaining slide-friendly on white.
+    return ColorUtils.mix(bg, primary, 0.08);
+  }
 
-  static String _deriveLineColor(String bg, bool dark) =>
-      dark ? ColorUtils.lighten(bg, 0.45) : ColorUtils.darken(bg, 0.25);
+  static String _deriveLineColor(String bg, String primary, bool dark) {
+    if (dark) {
+      return ColorUtils.lighten(bg, 0.6);
+    }
+    return ColorUtils.mix('#1a1a1a', primary, 0.3);
+  }
 
   @override
   String toString() =>

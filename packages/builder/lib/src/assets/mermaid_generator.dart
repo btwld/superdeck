@@ -263,13 +263,49 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
+  /// Check if diagram type should use fallback theme instead of custom theme.
+  ///
+  /// Some diagram types (timeline, gantt) have rendering issues with custom
+  /// dark themes where structural elements (axis, grid lines) become invisible.
+  /// For these diagrams, we fall back to Mermaid's default theme which has
+  /// better visibility for structural elements.
+  ///
+  /// Only applies to DARK mode - light mode custom theme works fine for timeline.
+  bool _shouldUseFallbackTheme(String graphDefinition) {
+    final trimmed = graphDefinition.trim().toLowerCase();
+
+    // Check if we're in dark mode
+    final themeVars = configuration['themeVariables'] as Map<String, dynamic>?;
+    final isDarkMode = themeVars?['darkMode'] as bool? ?? true;
+
+    // Timeline diagrams have axis visibility issues with custom DARK themes only
+    if (trimmed.startsWith('timeline') && isDarkMode) {
+      _logger.fine('Using fallback theme for timeline diagram in dark mode');
+      return true;
+    }
+
+    // Future: Add other problematic diagram types here as needed
+    // if (trimmed.startsWith('gantt')) return true;
+
+    return false;
+  }
+
   /// Generates PNG image from Mermaid diagram definition.
   Future<List<int>> _generateMermaidImage(String graphDefinition) {
     _logger.fine('Starting Mermaid image generation');
 
-    final theme = configuration['theme'] as String? ?? 'base';
-    final themeVariables = configuration['themeVariables'] ?? {};
-    final themeCSS = configuration['themeCSS'] as String? ?? '';
+    // Detect diagram type and use fallback theme for problematic diagrams
+    final useFallbackTheme = _shouldUseFallbackTheme(graphDefinition);
+
+    final theme = useFallbackTheme
+        ? 'default'  // Use Mermaid's default theme for timeline/gantt
+        : (configuration['theme'] as String? ?? 'base');
+    final themeVariables = useFallbackTheme
+        ? <String, dynamic>{}  // No custom variables for fallback
+        : (configuration['themeVariables'] ?? {});
+    final themeCSS = useFallbackTheme
+        ? ''  // No custom CSS for fallback
+        : (configuration['themeCSS'] as String? ?? '');
     final look = configuration['look'] as String? ?? 'classic';
     final securityLevel = configuration['securityLevel'] as String? ?? 'strict';
     final handDrawnSeed = configuration['handDrawnSeed'] as int? ?? 0;
