@@ -1,5 +1,4 @@
 import 'package:superdeck_builder/src/assets/mermaid_generator.dart';
-import 'package:superdeck_builder/src/assets/mermaid_theme.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -124,82 +123,6 @@ void main() {
       });
     });
 
-    group('theme integration', () {
-      test('accepts MermaidTheme and converts to configuration', () {
-        final generator = MermaidGenerator(theme: MermaidTheme.dark);
-
-        expect(generator.configuration['theme'], equals('base'));
-        expect(
-          generator.configuration['themeVariables'],
-          isA<Map<String, dynamic>>(),
-        );
-        expect(
-          generator.configuration['themeVariables']['darkMode'],
-          equals(true),
-        );
-        expect(
-          generator.configuration['themeVariables']['primaryColor'],
-          equals('#0ea5e9'),
-        );
-      });
-
-      test('theme parameter always sets theme to base', () {
-        final generator = MermaidGenerator(theme: MermaidTheme.light);
-
-        // When using MermaidTheme, 'theme' is always 'base'
-        expect(generator.configuration['theme'], equals('base'));
-        expect(
-          generator.configuration['themeVariables']['darkMode'],
-          equals(false),
-        );
-      });
-
-      test('supports custom theme', () {
-        final customTheme = MermaidTheme(
-          background: '#1a1a2e',
-          primary: '#00ff88',
-          text: '#ffffff',
-          darkMode: true,
-        );
-
-        final generator = MermaidGenerator(theme: customTheme);
-
-        final vars =
-            generator.configuration['themeVariables'] as Map<String, dynamic>;
-        expect(vars['background'], equals('#1a1a2e'));
-        expect(vars['primaryColor'], equals('#00ff88'));
-        // textColor is now driven by canvasOnDarkSlide (defaults to false -> dark text)
-        expect(vars['textColor'], equals('#1a1a1a'));
-        // The theme's text property is used for nodeTextColor (text inside nodes)
-        expect(vars['nodeTextColor'], equals('#ffffff'));
-        expect(vars['darkMode'], equals(true));
-      });
-
-      test('theme includes all derived colors', () {
-        final generator = MermaidGenerator(theme: MermaidTheme.dark);
-        final vars =
-            generator.configuration['themeVariables'] as Map<String, dynamic>;
-
-        // Check that color derivation happened
-        expect(vars['mainBkg'], isNotNull);
-        expect(vars['primaryBorderColor'], isNotNull);
-        expect(vars['lineColor'], isNotNull);
-        expect(vars['nodeBorder'], isNotNull);
-        expect(vars['actorBkg'], isNotNull);
-      });
-
-      test('configuration can override theme-generated values', () {
-        final generator = MermaidGenerator(
-          theme: MermaidTheme.dark,
-          configuration: const {'viewportWidth': 1920, 'timeout': 20},
-        );
-
-        expect(generator.configuration['viewportWidth'], equals(1920));
-        expect(generator.configuration['timeout'], equals(20));
-        // But theme values are still there
-        expect(generator.configuration['themeVariables'], isNotNull);
-      });
-    });
 
     // Note: Error handling tests that require browser (generateAsset calls)
     // have been removed. These should be run as integration tests separately.

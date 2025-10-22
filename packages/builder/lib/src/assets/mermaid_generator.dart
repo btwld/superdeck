@@ -6,7 +6,6 @@ import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'asset_generator.dart';
-import 'mermaid_theme.dart';
 
 /// Asset generator for Mermaid diagrams.
 ///
@@ -78,82 +77,142 @@ class MermaidGenerator implements AssetGenerator {
   @override
   final Map<String, dynamic> configuration;
 
+  /// Creates a Mermaid generator with dark theme (hardcoded).
+  ///
+  /// The dark theme is optimized for dark slide backgrounds.
+  /// Custom themes are no longer supported - dark theme is always used.
   MermaidGenerator({
     Map<String, dynamic>? launchOptions,
-    MermaidTheme? theme,
     Map<String, dynamic>? configuration,
   }) : _launchOptions = launchOptions ?? {},
-       configuration = _buildConfiguration(theme, configuration);
-
-  /// Build configuration from theme or use provided/default configuration.
-  static Map<String, dynamic> _buildConfiguration(
-    MermaidTheme? theme,
-    Map<String, dynamic>? configuration,
-  ) {
-    if (theme != null) {
-      return {
-        // Global look & theme
-        'theme': 'base',
-        'look': 'classic',
-        'securityLevel': 'strict',
-        'handDrawnSeed': 17,
-
-        // Theme
-        'themeVariables': theme.toThemeVariables(),
-        'themeCSS': _defaultThemeCSS,
-
-        // Diagram-specific configs
-        'flowchart': {'htmlLabels': true},
-        'sequence': {'mirrorActors': false},
-        'class': {'htmlLabels': true},
-        'state': {},
-        'gantt': {},
-        'pie': {},
-        'timeline': {},
-        'journey': {},
-
-        // Rendering settings
-        'viewportWidth': 1280,
-        'viewportHeight': 780,
-        'deviceScaleFactor': 2,
-        'timeout': 10,
-        'extraCSS': '',
-
-        // Allow overrides from configuration param
-        ...?configuration,
-      };
-    }
-
-    // Use provided configuration or defaults
-    return configuration ?? _defaultConfiguration;
-  }
+       configuration = configuration ?? _defaultConfiguration;
 
   /// Default CSS theme styling for all diagrams.
-  ///
-  /// Provides structural styling only - colors are handled by theme variables.
-  /// v11.12.0 theme variables now cover all text colors, so we only need
-  /// layout/structural CSS here.
+  /// Only sets the font family - all colors come from theme variables.
   static const _defaultThemeCSS = '''
-  .label { font-weight: 600; }
-  .edgeLabel rect { rx: 6; ry: 6; }
-  .node rect, .node circle, .node ellipse, .node polygon {
-    stroke-width: 2px;
-  }
   text {
     font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
   }
 ''';
 
-  /// Default dark theme configuration (using MermaidTheme.dark preset)
-  static final _defaultConfiguration = {
+  /// Hardcoded dark theme variables (pre-computed for optimal dark slide rendering)
+  /// Based on: background=#0b0f14, primary=#0ea5e9, text=#e2e8f0, darkMode=true
+  static const _darkThemeVariables = <String, dynamic>{
+    // Core global variables
+    'darkMode': true,
+    'background': '#0b0f14',
+    'fontFamily': 'Inter, ui-sans-serif, system-ui, sans-serif',
+    'fontSize': '18px',
+    'primaryColor': '#0ea5e9',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#0b84ba',
+    'secondaryColor': '#2fb5f6',
+    'secondaryTextColor': '#000000',
+    'secondaryBorderColor': '#279bd1',
+    'tertiaryColor': '#525c66',
+    'tertiaryTextColor': '#e2e8f0',
+    'tertiaryBorderColor': '#5f6b77',
+    'noteBkgColor': '#b3e0fa',
+    'noteTextColor': '#1a1a1a',
+    'noteBorderColor': '#0c93ce',
+    'errorBkgColor': '#525c66',
+    'errorTextColor': '#e2e8f0',
+    'mainBkg': '#0d1218',
+    'lineColor': '#919ba5',
+    'gridColor': '#919ba5',
+    'border1': '#919ba5',
+    'border2': '#919ba5',
+    'textColor': '#f5f5f5',
+    'titleColor': '#f5f5f5',
+    'nodeTextColor': '#e2e8f0',
+    'edgeLabelColor': '#f5f5f5',
+    'nodeBorder': '#0b84ba',
+    'clusterBkg': '#0d1218',
+    'clusterBorder': '#1e2832',
+    'defaultLinkColor': '#919ba5',
+    'edgeLabelBackground': 'transparent',
+    'actorBkg': '#0d1218',
+    'actorBorder': '#212b36',
+    'actorTextColor': '#e2e8f0',
+    'actorLineColor': '#212b36',
+    'signalColor': '#f5f5f5',
+    'signalTextColor': '#ffffff',
+    'labelBoxBkgColor': '#0d1218',
+    'labelBoxBorderColor': '#1e2832',
+    'labelTextColor': '#e2e8f0',
+    'loopTextColor': '#f5f5f5',
+    'activationBkgColor': '#0ea5e9',
+    'activationBorderColor': '#0b84ba',
+    'sequenceNumberColor': '#f5f5f5',
+    'labelColor': '#e2e8f0',
+    'altBackground': '#151c23',
+    'classText': '#f5f5f5',
+    'pieTitleTextSize': '24px',
+    'pieTitleTextColor': '#f5f5f5',
+    'pieLegendTextSize': '16px',
+    'pieLegendTextColor': '#f5f5f5',
+    'pieSectionTextSize': '18px',
+    'pieSectionTextColor': '#000000',
+    'pieStrokeColor': '#0b0f14',
+    'pieStrokeWidth': '2px',
+    'pieOuterStrokeColor': '#0b0f14',
+    'pieOuterStrokeWidth': '2px',
+    'pieOpacity': '0.7',
+    'pie1': '#0ea5e9',
+    'pie2': '#20b0ed',
+    'pie3': '#32bbf1',
+    'pie4': '#44c6f5',
+    'pie5': '#56d1f9',
+    'pie6': '#68dcfd',
+    'pie7': '#4ec2f2',
+    'pie8': '#65cdf4',
+    'pie9': '#b5d5df',
+    'pie10': '#cce2e8',
+    'pie11': '#8fd4e6',
+    'pie12': '#818f99',
+    'git0': '#0ea5e9',
+    'gitInv0': '#000000',
+    'gitBranchLabel0': '#f5f5f5',
+    'git1': '#20b0ed',
+    'gitInv1': '#000000',
+    'gitBranchLabel1': '#f5f5f5',
+    'git2': '#32bbf1',
+    'gitInv2': '#000000',
+    'gitBranchLabel2': '#f5f5f5',
+    'git3': '#44c6f5',
+    'gitInv3': '#000000',
+    'gitBranchLabel3': '#f5f5f5',
+    'git4': '#56d1f9',
+    'gitInv4': '#000000',
+    'gitBranchLabel4': '#f5f5f5',
+    'git5': '#68dcfd',
+    'gitInv5': '#000000',
+    'gitBranchLabel5': '#f5f5f5',
+    'git6': '#4ec2f2',
+    'gitInv6': '#000000',
+    'gitBranchLabel6': '#f5f5f5',
+    'git7': '#65cdf4',
+    'gitInv7': '#000000',
+    'gitBranchLabel7': '#f5f5f5',
+    'commitLabelColor': '#f5f5f5',
+    'commitLabelBackground': '#0d1218',
+    'commitLabelFontSize': '14px',
+    'tagLabelColor': '#f5f5f5',
+    'tagLabelBackground': '#0ea5e9',
+    'tagLabelBorder': '#0b84ba',
+    'tagLabelFontSize': '14px',
+  };
+
+  /// Default dark theme configuration with hardcoded theme variables
+  static final _defaultConfiguration = <String, dynamic>{
     // Global look & theme
     'theme': 'base', // 'base' is the only theme you can customize
     'look': 'classic', // or 'handDrawn'
     'securityLevel': 'strict', // 'loose' only if you need clickable links/HTML
     'handDrawnSeed': 17,
 
-    // Your theme variables come from MermaidTheme.dark
-    'themeVariables': MermaidTheme.dark.toThemeVariables(),
+    // Hardcoded dark theme variables (optimized for dark slide backgrounds)
+    'themeVariables': _darkThemeVariables,
 
     // CSS only for non-variable gaps (tick text, relationship labels, etc.)
     'themeCSS': _defaultThemeCSS,

@@ -52,8 +52,30 @@ import 'package:superdeck_core/superdeck_core.dart'
 /// Re-exported convenience wrapper so existing imports keep working.
 bool isValidHeroTag(String value) => core.isValidHeroTag(value);
 
-String lerpString(String start, String end, double t) {
-  // Clamp t between 0 and 1
+class LerpStringResult {
+  const LerpStringResult({
+    required this.text,
+    this.fadingChar,
+    this.fadeOpacity = 0.0,
+    this.isFadingOut = false,
+  });
+
+  /// Text that is fully visible at the given [t].
+  final String text;
+
+  /// Optional single character that is currently mid-transition.
+  final String? fadingChar;
+
+  /// Opacity to apply to [fadingChar]. Expected to be in the range [0, 1].
+  final double fadeOpacity;
+
+  /// Indicates whether the fading character belongs to the outgoing string.
+  final bool isFadingOut;
+
+  bool get hasFadingChar => fadingChar != null && fadeOpacity > 0.0;
+}
+
+LerpStringResult lerpStringWithFade(String start, String end, double t) {
   t = t.clamp(0.0, 1.0);
   const epsilon = 1e-6;
 
@@ -61,37 +83,86 @@ String lerpString(String start, String end, double t) {
   final startSuffix = start.substring(commonPrefixLen);
   final endSuffix = end.substring(commonPrefixLen);
 
-  final result = StringBuffer();
-  result.write(end.substring(0, commonPrefixLen));
+  final buffer = StringBuffer()..write(end.substring(0, commonPrefixLen));
+
+  String? fadingChar;
+  double fadeOpacity = 0.0;
+  bool isFadingOut = false;
 
   if (t <= 0.5) {
     final progress = t / 0.5;
     final startLength = startSuffix.length;
-    var numCharsToShow = startLength -
-        ((progress * startLength).floor()); // remove characters monotonically
-    if ((1 - progress) <= epsilon) {
-      numCharsToShow = 0;
-    }
-    numCharsToShow = math.max(0, math.min(startLength, numCharsToShow));
-    if (numCharsToShow > 0) {
-      result.write(startSuffix.substring(0, numCharsToShow));
+    if (startLength > 0) {
+      final scaled = (progress * startLength).clamp(
+        0.0,
+        startLength.toDouble(),
+      );
+      final removed = scaled.floor();
+      final fractional = scaled - removed;
+
+      final remaining = math.max(0, startLength - removed);
+
+      if (remaining > 0) {
+        final shouldTreatAsZero = fractional <= epsilon;
+        final shouldTreatAsOne = fractional >= 1 - epsilon;
+
+        if (shouldTreatAsZero || shouldTreatAsOne) {
+          final count = shouldTreatAsOne
+              ? math.max(0, remaining - 1)
+              : remaining;
+          if (count > 0) {
+            buffer.write(startSuffix.substring(0, count));
+          }
+        } else {
+          final committedCount = math.max(0, remaining - 1);
+          if (committedCount > 0) {
+            buffer.write(startSuffix.substring(0, committedCount));
+          }
+          fadingChar = startSuffix.substring(
+            committedCount,
+            committedCount + 1,
+          );
+          fadeOpacity = 1.0 - fractional;
+          isFadingOut = true;
+        }
+      }
     }
   } else {
     final progress = (t - 0.5) / 0.5;
     final endLength = endSuffix.length;
-    var numCharsToShow =
-        (progress * endLength).floor(); // add characters monotonically
-    if (progress >= 1 - epsilon) {
-      numCharsToShow = endLength;
-    }
-    numCharsToShow = math.max(0, math.min(endLength, numCharsToShow));
-    if (numCharsToShow > 0) {
-      result.write(endSuffix.substring(0, numCharsToShow));
+    if (endLength > 0) {
+      final scaled = (progress * endLength).clamp(0.0, endLength.toDouble());
+      var committedCount = math.min(scaled.floor(), endLength);
+      final fractional = scaled - committedCount;
+
+      if (fractional >= 1 - epsilon && committedCount < endLength) {
+        committedCount += 1;
+      }
+
+      if (committedCount > 0) {
+        buffer.write(endSuffix.substring(0, committedCount));
+      }
+
+      if (committedCount < endLength) {
+        final fadeFraction = fractional.clamp(0.0, 1.0);
+        if (fadeFraction > epsilon) {
+          fadingChar = endSuffix.substring(committedCount, committedCount + 1);
+          fadeOpacity = fadeFraction;
+        }
+      }
     }
   }
 
-  return result.toString();
+  return LerpStringResult(
+    text: buffer.toString(),
+    fadingChar: fadingChar,
+    fadeOpacity: fadeOpacity,
+    isFadingOut: isFadingOut,
+  );
 }
+
+String lerpString(String start, String end, double t) =>
+    lerpStringWithFade(start, end, t).text;
 
 extension on String {
   int commonPrefixLength(String other) {

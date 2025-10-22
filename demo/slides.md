@@ -116,6 +116,16 @@ flowchart LR
     A[Input] --> B[LLM]
     B --> C[Structured Response]
     C --> D[UI]
+
+    classDef inputStyle fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    classDef llmStyle fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
+    classDef outputStyle fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    classDef uiStyle fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px,color:#fff
+
+    class A inputStyle
+    class B llmStyle
+    class C outputStyle
+    class D uiStyle
 ```
 
 ---

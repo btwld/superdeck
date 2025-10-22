@@ -90,9 +90,52 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             size: blockData.size,
           ),
           buildFlight: (context, from, to, t) {
-            return StyledText(
-              lerpString(from.text, to.text, t),
-              styleSpec: StyleSpec(spec: from.spec.lerp(to.spec, t)),
+            final interpolatedSpec = from.spec.lerp(to.spec, t);
+            final lerpResult = lerpStringWithFade(from.text, to.text, t);
+
+            String applyDirectives(String value) {
+              return interpolatedSpec.textDirectives?.apply(value) ?? value;
+            }
+
+            final committedText = applyDirectives(lerpResult.text);
+            final fadingChar = lerpResult.fadingChar != null
+                ? applyDirectives(lerpResult.fadingChar!)
+                : null;
+
+            final baseStyle = interpolatedSpec.style ?? const TextStyle();
+            final spans = <InlineSpan>[];
+
+            if (committedText.isNotEmpty) {
+              spans.add(TextSpan(text: committedText));
+            }
+
+            if (lerpResult.hasFadingChar && fadingChar != null) {
+              final baseColor = baseStyle.color ?? const Color(0xFF000000);
+              final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
+              final fadeAlpha = (baseColor.a * fadeOpacity).clamp(0.0, 1.0);
+              final fadeColor = baseColor.withValues(alpha: fadeAlpha);
+              spans.add(
+                TextSpan(
+                  text: fadingChar,
+                  style: baseStyle.copyWith(color: fadeColor),
+                ),
+              );
+            }
+
+            return Text.rich(
+              TextSpan(style: baseStyle, children: spans),
+              strutStyle: interpolatedSpec.strutStyle,
+              textAlign: interpolatedSpec.textAlign,
+              textDirection: interpolatedSpec.textDirection,
+              locale: interpolatedSpec.locale,
+              softWrap: interpolatedSpec.softWrap,
+              overflow: interpolatedSpec.overflow,
+              textScaler: interpolatedSpec.textScaler,
+              maxLines: interpolatedSpec.maxLines,
+              textWidthBasis: interpolatedSpec.textWidthBasis,
+              textHeightBehavior: interpolatedSpec.textHeightBehavior,
+              selectionColor: interpolatedSpec.selectionColor,
+              semanticsLabel: interpolatedSpec.semanticsLabel,
             );
           },
         );
@@ -125,9 +168,52 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             size: BlockData.of(context).size,
           ),
           buildFlight: (context, from, to, t) {
-            return StyledText(
-              lerpString(from.text, to.text, t),
-              styleSpec: StyleSpec(spec: from.spec.lerp(to.spec, t)),
+            final interpolatedSpec = from.spec.lerp(to.spec, t);
+            final lerpResult = lerpStringWithFade(from.text, to.text, t);
+
+            String applyDirectives(String value) {
+              return interpolatedSpec.textDirectives?.apply(value) ?? value;
+            }
+
+            final committedText = applyDirectives(lerpResult.text);
+            final fadingChar = lerpResult.fadingChar != null
+                ? applyDirectives(lerpResult.fadingChar!)
+                : null;
+
+            final baseStyle = interpolatedSpec.style ?? const TextStyle();
+            final spans = <InlineSpan>[];
+
+            if (committedText.isNotEmpty) {
+              spans.add(TextSpan(text: committedText));
+            }
+
+            if (lerpResult.hasFadingChar && fadingChar != null) {
+              final baseColor = baseStyle.color ?? const Color(0xFF000000);
+              final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
+              final fadeAlpha = (baseColor.a * fadeOpacity).clamp(0.0, 1.0);
+              final fadeColor = baseColor.withValues(alpha: fadeAlpha);
+              spans.add(
+                TextSpan(
+                  text: fadingChar,
+                  style: baseStyle.copyWith(color: fadeColor),
+                ),
+              );
+            }
+
+            return Text.rich(
+              TextSpan(style: baseStyle, children: spans),
+              strutStyle: interpolatedSpec.strutStyle,
+              textAlign: interpolatedSpec.textAlign,
+              textDirection: interpolatedSpec.textDirection,
+              locale: interpolatedSpec.locale,
+              softWrap: interpolatedSpec.softWrap,
+              overflow: interpolatedSpec.overflow,
+              textScaler: interpolatedSpec.textScaler,
+              maxLines: interpolatedSpec.maxLines,
+              textWidthBasis: interpolatedSpec.textWidthBasis,
+              textHeightBehavior: interpolatedSpec.textHeightBehavior,
+              selectionColor: interpolatedSpec.selectionColor,
+              semanticsLabel: interpolatedSpec.semanticsLabel,
             );
           },
         );
