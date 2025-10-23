@@ -118,30 +118,33 @@ class SlideView extends StatelessWidget {
             child: StyleBuilder<SlideSpec>(
               style: slide.style,
               builder: (context, spec) {
-                return Stack(
-                  children: [
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: headerHeight,
-                      child: headerWidget,
-                    ),
-                    Positioned(
-                      top: headerHeight,
-                      left: 0,
-                      right: 0,
-                      height: slideSize.height,
-                      child: sectionsWidget,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: footerHeight,
-                      child: footerWidget,
-                    ),
-                  ],
+                return Box(
+                  styleSpec: spec.slideContainer,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: headerHeight,
+                        child: headerWidget,
+                      ),
+                      Positioned(
+                        top: headerHeight,
+                        left: 0,
+                        right: 0,
+                        height: slideSize.height,
+                        child: sectionsWidget,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: footerHeight,
+                        child: footerWidget,
+                      ),
+                    ],
+                  ),
                 );
               },
             ),

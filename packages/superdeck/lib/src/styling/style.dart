@@ -229,6 +229,9 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ]),
 
+    // Slide container - wraps entire slide content
+    slideContainer: BoxStyler(),
+
     // Horizontal rule
     horizontalRuleDecoration: BoxDecoration(
       border: Border(bottom: BorderSide(color: Colors.grey, width: 2)),

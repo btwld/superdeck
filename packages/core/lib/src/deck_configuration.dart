@@ -21,6 +21,7 @@ final class DeckConfiguration {
   Directory get superdeckDir =>
       Directory(p.normalize(p.join(_baseDir, outputDir ?? '.superdeck')));
   File get deckJson => File(p.join(superdeckDir.path, 'superdeck.json'));
+  File get deckFullJson => File(p.join(superdeckDir.path, 'superdeck_full.json'));
   Directory get assetsDir =>
       Directory(p.join(superdeckDir.path, assetsPath ?? 'assets'));
   File get assetsRefJson =>

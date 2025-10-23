@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_writer/yaml_writer.dart';
@@ -27,19 +28,23 @@ String updatePubspecAssets(
 
   bool needsUpdate = false;
 
-  final superDeckDirPath = configuration.superdeckDir.path;
+  // Normalize existing asset paths for comparison (e.g., .superdeck/ vs ./.superdeck/)
+  final normalizedAssets = assets.map((a) => p.normalize(a.toString())).toList();
 
-  // Add the '.superdeck/' path to the assets list if it's not already present
-  if (!assets.contains('$superDeckDirPath/')) {
-    assets.add('$superDeckDirPath/');
+  // Always use normalized paths without ./ prefix for consistency
+  final superDeckAssetPath = p.normalize(configuration.superdeckDir.path);
+  final superDeckAssetEntry = '$superDeckAssetPath/';
+
+  if (!normalizedAssets.contains(superDeckAssetPath)) {
+    assets.add(superDeckAssetEntry);
     needsUpdate = true;
   }
 
-  final assetsDirPath = configuration.assetsDir.path;
+  final assetsPath = p.normalize(configuration.assetsDir.path);
+  final assetsEntry = '$assetsPath/';
 
-  // Add the '.superdeck/generated/' path to the assets list if it's not already present
-  if (!assets.contains('$assetsDirPath/')) {
-    assets.add('$assetsDirPath/');
+  if (!normalizedAssets.contains(assetsPath)) {
+    assets.add(assetsEntry);
     needsUpdate = true;
   }
 

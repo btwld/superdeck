@@ -4,42 +4,20 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
 import '../../rendering/blocks/block_provider.dart';
-import '../markdown_helpers.dart';
 import '../../ui/widgets/hero_element.dart';
+import '../markdown_helpers.dart';
 import '../markdown_hero_mixin.dart';
 
-String _transformLineBreaks(String text) => text.replaceAll('<br>', '\n');
+/// Normalizes common <br> shapes to newlines.
+/// Handles <br>, <br/>, <br /> case-insensitively.
+String _transformLineBreaks(String text) =>
+    text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
 
-/// Builds text elements from markdown, handling CSS class tags for Hero animations.
-///
-/// This builder processes markdown text nodes and:
-/// - Filters out standalone CSS tag text nodes (e.g., " {.heading}")
-/// - Extracts CSS class tags for Hero animation identifiers
-/// - Transforms HTML line breaks (`<br>`) to newline characters
-/// - Applies Mix `StyleSpec<TextSpec>` styling to the text
-///
-/// **CSS Class Tag Behavior**:
-/// CSS class tags like `{.heading}`, `{.subheading}`, etc. are used ONLY for
-/// Hero animations during slide transitions. They do NOT apply custom Mix styles.
-/// The tags are removed from the displayed text in two ways:
-///
-/// 1. **Standalone tag nodes**: When markdown like `# Title {.heading}` is parsed,
-///    the `{.heading}` becomes a separate text node. This builder filters out such
-///    standalone tag nodes to prevent them from being rendered as visible text.
-///
-/// 2. **Inline tags**: Tags within text content are stripped by `getTagAndContent()`
-///    before rendering.
-///
-/// **Hero Animation Integration**:
-/// When a CSS class tag is present and the slide is NOT being exported:
-/// - The tag is extracted from the header element's `hero` attribute
-/// - A Hero widget wraps the text using the tag name as the identifier
-/// - This enables smooth animated transitions between slides with matching tags
-///
-/// See also:
-/// - [getTagAndContent] for CSS class tag extraction and content stripping
-/// - [MarkdownHeroMixin] for Hero animation implementation
-/// - [HeaderTagSyntax] for header-level tag extraction
+/// Builds text from markdown nodes and wraps it in a Hero (when a valid tag is present).
+/// - Filters standalone tag text nodes
+/// - Strips inline CSS class tags from rendered text
+/// - Transforms `<br>` to `\n`
+/// - Uses a layout-stable flight painter to avoid last-word flicker
 class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
   final StyleSpec<TextSpec> styleSpec;
 
@@ -52,92 +30,32 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     TextStyle? preferredStyle,
     TextStyle? parentStyle,
   ) {
-    // For header elements (h1-h6), extract hero tag from element attributes
+    // For header elements (h1–h6), the parser attaches 'hero' to attributes.
     final heroTag = element.attributes['hero'];
 
-    // Get the text content from the element
-    // NOTE: element.textContent flattens ALL child nodes (including <img>, <a>, etc.)
-    // to plain text, discarding element structure. This means inline images like
-    // "Text with ![icon](img.png) here" will have the <img> removed.
-    // For standalone images, we use ImageBlockSyntax to create top-level <img>
-    // elements that bypass this paragraph flattening. See REPORT.md for details.
+    // element.textContent flattens all inline elements by design.
     final textContent = element.textContent;
-
     return StyleSpecBuilder<TextSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
-        // Access BlockData from StyleSpecBuilder's builderContext (not the method's context parameter).
-        // StyleSpecBuilder wraps our widget in the Mix framework's context, ensuring BlockData
-        // InheritedWidget is available in the widget tree. The method parameter context comes
-        // from flutter_markdown_plus and may not have Mix framework ancestors yet.
         final blockData = BlockData.of(builderContext);
+        final transformed = _transformLineBreaks(textContent);
 
-        // Transform line breaks once and reuse
-        final transformedContent = _transformLineBreaks(textContent);
+        // Avoid empty Heroes (common source of duplicate in-flight painters).
+        if (transformed.trim().isEmpty) return const SizedBox.shrink();
 
-        Widget result = StyledText(transformedContent, styleSpec: styleSpec);
+        final child = StyledText(transformed, styleSpec: styleSpec);
 
         return applyHeroIfNeeded<TextElement>(
           context: builderContext,
-          child: result,
+          child: child,
           heroTag: heroTag,
           heroData: TextElement(
-            text: transformedContent,
+            text: transformed,
             spec: spec,
-            // In Mix 2.0, modifiers are handled differently than Mix 1.x
-            // Use full block size since offset calculation is not yet implemented
-            // TODO(Mix 2.0): Calculate offset from modifiers when API is available
             size: blockData.size,
           ),
-          buildFlight: (context, from, to, t) {
-            final interpolatedSpec = from.spec.lerp(to.spec, t);
-            final lerpResult = lerpStringWithFade(from.text, to.text, t);
-
-            String applyDirectives(String value) {
-              return interpolatedSpec.textDirectives?.apply(value) ?? value;
-            }
-
-            final committedText = applyDirectives(lerpResult.text);
-            final fadingChar = lerpResult.fadingChar != null
-                ? applyDirectives(lerpResult.fadingChar!)
-                : null;
-
-            final baseStyle = interpolatedSpec.style ?? const TextStyle();
-            final spans = <InlineSpan>[];
-
-            if (committedText.isNotEmpty) {
-              spans.add(TextSpan(text: committedText));
-            }
-
-            if (lerpResult.hasFadingChar && fadingChar != null) {
-              final baseColor = baseStyle.color ?? const Color(0xFF000000);
-              final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
-              final fadeAlpha = (baseColor.a * fadeOpacity).clamp(0.0, 1.0);
-              final fadeColor = baseColor.withValues(alpha: fadeAlpha);
-              spans.add(
-                TextSpan(
-                  text: fadingChar,
-                  style: baseStyle.copyWith(color: fadeColor),
-                ),
-              );
-            }
-
-            return Text.rich(
-              TextSpan(style: baseStyle, children: spans),
-              strutStyle: interpolatedSpec.strutStyle,
-              textAlign: interpolatedSpec.textAlign,
-              textDirection: interpolatedSpec.textDirection,
-              locale: interpolatedSpec.locale,
-              softWrap: interpolatedSpec.softWrap,
-              overflow: interpolatedSpec.overflow,
-              textScaler: interpolatedSpec.textScaler,
-              maxLines: interpolatedSpec.maxLines,
-              textWidthBasis: interpolatedSpec.textWidthBasis,
-              textHeightBehavior: interpolatedSpec.textHeightBehavior,
-              selectionColor: interpolatedSpec.selectionColor,
-              semanticsLabel: interpolatedSpec.semanticsLabel,
-            );
-          },
+          buildFlight: _buildStableFlight,
         );
       },
     );
@@ -145,79 +63,112 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
 
   @override
   Widget? visitText(md.Text text, TextStyle? preferredStyle) {
-    // For standalone text nodes (not in headers), try to extract tag from text
+    // Extract tag from inline text and strip it from content.
     final (:tag, :content) = getTagAndContent(text.text);
+
     return StyleSpecBuilder<TextSpec>(
       styleSpec: styleSpec,
       builder: (context, spec) {
-        // Transform line breaks once and reuse
-        final transformedContent = _transformLineBreaks(content);
+        final transformed = _transformLineBreaks(content);
 
-        Widget result = StyledText(transformedContent, styleSpec: styleSpec);
+        if (transformed.trim().isEmpty) return const SizedBox.shrink();
+
+        final child = StyledText(transformed, styleSpec: styleSpec);
 
         return applyHeroIfNeeded<TextElement>(
           context: context,
-          child: result,
+          child: child,
           heroTag: tag,
           heroData: TextElement(
-            text: transformedContent,
+            text: transformed,
             spec: spec,
-            // In Mix 2.0, modifiers are handled differently than Mix 1.x
-            // Use full block size since offset calculation is not yet implemented
-            // TODO(Mix 2.0): Calculate offset from modifiers when API is available
             size: BlockData.of(context).size,
           ),
-          buildFlight: (context, from, to, t) {
-            final interpolatedSpec = from.spec.lerp(to.spec, t);
-            final lerpResult = lerpStringWithFade(from.text, to.text, t);
-
-            String applyDirectives(String value) {
-              return interpolatedSpec.textDirectives?.apply(value) ?? value;
-            }
-
-            final committedText = applyDirectives(lerpResult.text);
-            final fadingChar = lerpResult.fadingChar != null
-                ? applyDirectives(lerpResult.fadingChar!)
-                : null;
-
-            final baseStyle = interpolatedSpec.style ?? const TextStyle();
-            final spans = <InlineSpan>[];
-
-            if (committedText.isNotEmpty) {
-              spans.add(TextSpan(text: committedText));
-            }
-
-            if (lerpResult.hasFadingChar && fadingChar != null) {
-              final baseColor = baseStyle.color ?? const Color(0xFF000000);
-              final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
-              final fadeAlpha = (baseColor.a * fadeOpacity).clamp(0.0, 1.0);
-              final fadeColor = baseColor.withValues(alpha: fadeAlpha);
-              spans.add(
-                TextSpan(
-                  text: fadingChar,
-                  style: baseStyle.copyWith(color: fadeColor),
-                ),
-              );
-            }
-
-            return Text.rich(
-              TextSpan(style: baseStyle, children: spans),
-              strutStyle: interpolatedSpec.strutStyle,
-              textAlign: interpolatedSpec.textAlign,
-              textDirection: interpolatedSpec.textDirection,
-              locale: interpolatedSpec.locale,
-              softWrap: interpolatedSpec.softWrap,
-              overflow: interpolatedSpec.overflow,
-              textScaler: interpolatedSpec.textScaler,
-              maxLines: interpolatedSpec.maxLines,
-              textWidthBasis: interpolatedSpec.textWidthBasis,
-              textHeightBehavior: interpolatedSpec.textHeightBehavior,
-              selectionColor: interpolatedSpec.selectionColor,
-              semanticsLabel: interpolatedSpec.semanticsLabel,
-            );
-          },
+          buildFlight: _buildStableFlight,
         );
       },
+    );
+  }
+
+  /// Shared flight painter for both headers and plain text.
+  ///
+  /// Strategy:
+  /// 1) Normalize text with directives *before* diffing.
+  /// 2) Paint exactly three spans:
+  ///    - committed prefix (opaque),
+  ///    - single fading grapheme (variable opacity),
+  ///    - ghost suffix (alpha=0) to pin wrapping and prevent flicker.
+  Widget _buildStableFlight(
+    BuildContext context,
+    TextElement from,
+    TextElement to,
+    double t,
+  ) {
+    final spec = from.spec.lerp(to.spec, t);
+
+    String applyDirectives(String v) => spec.textDirectives?.apply(v) ?? v;
+
+    // Normalize first, then interpolate.
+    final startN = applyDirectives(from.text);
+    final endN = applyDirectives(to.text);
+
+    final lerp = lerpStringWithFade(startN, endN, t);
+
+    final baseStyle = (spec.style ?? const TextStyle());
+    final baseColor = baseStyle.color ?? const Color(0xFF000000);
+
+    final children = <InlineSpan>[];
+
+    // 1) Committed prefix (fully visible)
+    final committed = lerp.text;
+    if (committed.isNotEmpty) {
+      children.add(TextSpan(text: committed));
+    }
+
+    // 2) Fading grapheme (single character; variable opacity)
+    final hasFade = lerp.fadingChar != null;
+    final fadeAlpha = lerp.fadeOpacity.clamp(0.0, 1.0);
+    if (hasFade) {
+      // Keep an epsilon > 0 to avoid a 1‑frame ghost when alpha jumps from 0.
+      final visibleAlpha = fadeAlpha > 0.01 ? fadeAlpha : 0.0;
+      children.add(
+        TextSpan(
+          text: lerp.fadingChar!,
+          style: baseStyle.copyWith(color: baseColor.withValues(alpha: visibleAlpha)),
+        ),
+      );
+    }
+
+    // 3) Ghost suffix (alpha=0) to stabilize shaping & wrapping.
+    //    Choose the active source based on phase: start (<0.5) vs end (>=0.5).
+    final committedG = committed.characters.length;
+    final visibleCountG = committedG + (hasFade ? 1 : 0);
+    final active = (t < 0.5) ? startN : endN;
+    final ghostSuffix = active.characters.skip(visibleCountG).toString();
+
+    if (ghostSuffix.isNotEmpty) {
+      children.add(
+        TextSpan(
+          text: ghostSuffix,
+          style: baseStyle.copyWith(color: baseColor.withValues(alpha: 0.0)),
+        ),
+      );
+    }
+
+    return Text.rich(
+      TextSpan(style: baseStyle, children: children),
+      strutStyle: spec.strutStyle,
+      textAlign: spec.textAlign,
+      textDirection: spec.textDirection,
+      locale: spec.locale,
+      softWrap: spec.softWrap,
+      overflow: spec.overflow,
+      textScaler: spec.textScaler,
+      maxLines: spec.maxLines,
+      textWidthBasis: spec.textWidthBasis,
+      textHeightBehavior: spec.textHeightBehavior,
+      selectionColor: spec.selectionColor,
+      semanticsLabel: spec.semanticsLabel,
     );
   }
 }

@@ -36,6 +36,14 @@
       "title": "How-to Guides",
       "children": [
         {
+          "title": "SuperDeck Overview",
+          "path": "/docs/guides/superdeck-overview"
+        },
+        {
+          "title": "Markdown Authoring",
+          "path": "/docs/guides/markdown-authoring"
+        },
+        {
           "title": "CLI Reference",
           "path": "/docs/guides/cli-reference"
         },
@@ -63,6 +71,10 @@
         {
           "title": "PresentationOptions API",
           "path": "/docs/reference/presentation-options"
+        },
+        {
+          "title": "Agent Workflow Contracts",
+          "path": "/docs/reference/agent-workflow"
         }
       ]
     },

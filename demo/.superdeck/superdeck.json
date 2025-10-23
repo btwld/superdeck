@@ -1,7 +1,7 @@
 {
   "slides": [
     {
-      "key": "y6odZRD8",
+      "key": "bw0VJgNK",
       "options": {},
       "sections": [
         {
@@ -14,7 +14,47 @@
               "align": "center",
               "flex": 1,
               "scrollable": false,
-              "content": "# Generative UI {.heading}\n# with Flutter {.subheading}"
+              "content": "# Generative UI {.heading}\n# with Flutter"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "zU5YjUue",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "![mermaid_asset](.superdeck/assets/mermaid_SMQErjlh.png)"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "q5W6mtFO",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "column",
+              "flex": 1,
+              "scrollable": false,
+              "content": "![mermaid_asset](.superdeck/assets/mermaid_Z5rbpr7k.png)"
             }
           ]
         }

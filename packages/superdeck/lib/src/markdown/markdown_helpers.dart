@@ -5,45 +5,27 @@ import 'package:superdeck_core/superdeck_core.dart'
     as core
     show extractHeroAndContent, heroAnywherePattern, isValidHeroTag;
 
-/// Extracts CSS class tags from markdown text for Hero animations.
-///
-/// CSS class tags like `{.heading}`, `{.subheading}`, `{.animate}` are:
-/// 1. Extracted and returned as the `tag` for use in Hero animations
-/// 2. Stripped from the `content` that gets rendered
-///
-/// **Important**: CSS class tags do NOT apply custom Mix styles to the text.
-/// They are used exclusively for Hero animation identifiers during slide
-/// transitions. To apply custom styling, use:
-/// - `SlideStyle` configurations in `DeckOptions`
-/// - Named slide styles via frontmatter (e.g., `style: hero`)
-/// - Direct Mix styling in widget configurations
-///
-/// Examples:
-/// ```dart
-/// getTagAndContent('# Title {.heading}')
-/// // Returns: (tag: 'heading', content: '# Title')
-///
-/// getTagAndContent('Regular text')
-/// // Returns: (tag: null, content: 'Regular text')
-/// ```
-///
-/// Returns a record with:
-/// - `tag`: The CSS class name (without the dot) if found, null otherwise
-/// - `content`: The text with CSS class tag removed and trimmed
+/// Extracts the first valid CSS class tag and returns (tag, contentWithoutTag).
+/// Skips creating a hero tag when the remaining content is empty.
 ({String? tag, String content}) getTagAndContent(String text) {
   final result = core.extractHeroAndContent(text);
 
+  // Best-effort warning on invalid tags found anywhere.
   if (result.tag == null) {
     final trimmed = text.trim();
     final match = core.heroAnywherePattern.firstMatch(trimmed);
     final extractedTag = match?.group(1)?.trim();
-
     if (extractedTag != null && !core.isValidHeroTag(extractedTag)) {
       assert(() {
         debugPrint('Ignored invalid hero tag "$extractedTag" in "$trimmed"');
         return true;
       }());
     }
+  }
+
+  // If content is empty after stripping, don't expose a hero tag to avoid duplicates.
+  if (result.content.trim().isEmpty) {
+    return (tag: null, content: '');
   }
 
   return result;
@@ -54,174 +36,121 @@ bool isValidHeroTag(String value) => core.isValidHeroTag(value);
 
 class LerpStringResult {
   const LerpStringResult({
-    required this.text,
-    this.fadingChar,
-    this.fadeOpacity = 0.0,
-    this.isFadingOut = false,
+    required this.text, // fully visible prefix
+    this.fadingChar, // single grapheme (may be null)
+    this.fadeOpacity = 0.0, // 0..1 opacity for fadingChar
+    this.isFadingOut = false, // phase flag
+    this.ghostSuffix = '', // zero-opacity suffix to pin layout
   });
 
-  /// Text that is fully visible at the given [t].
   final String text;
-
-  /// Optional single character that is currently mid-transition.
   final String? fadingChar;
-
-  /// Opacity to apply to [fadingChar]. Expected to be in the range [0, 1].
   final double fadeOpacity;
-
-  /// Indicates whether the fading character belongs to the outgoing string.
   final bool isFadingOut;
+
+  /// Remainder drawn with alpha=0 to keep wrapping stable.
+  final String ghostSuffix;
 
   bool get hasFadingChar => fadingChar != null && fadeOpacity > 0.0;
 }
 
+/// Grapheme-safe, layout-stable string interpolation with a ghost suffix.
+///
+/// - First half (t<0.5): fade out the start suffix (left→right)
+/// - Second half (t>0.5): fade in the end suffix (left→right)
+/// - Always returns:
+///   * `text` (committed prefix),
+///   * optional `fadingChar` + `fadeOpacity`,
+///   * `ghostSuffix` (alpha=0) so total width is stable per phase.
+///
 LerpStringResult lerpStringWithFade(String start, String end, double t) {
   t = t.clamp(0.0, 1.0);
-  const epsilon = 1e-6;
 
-  final commonPrefixLen = start.commonPrefixLength(end);
-  final startSuffix = start.substring(commonPrefixLen);
-  final endSuffix = end.substring(commonPrefixLen);
+  // Split by grapheme, not code-units.
+  final startG = start.characters.toList();
+  final endG = end.characters.toList();
 
-  final buffer = StringBuffer()..write(end.substring(0, commonPrefixLen));
+  // Common prefix length by grapheme.
+  int common = 0;
+  final minLen = math.min(startG.length, endG.length);
+  while (common < minLen && startG[common] == endG[common]) {
+    common++;
+  }
 
+  final startSuffix = startG.sublist(common);
+  final endSuffix = endG.sublist(common);
+
+  // Base prefix is always from the END string to avoid tiny font metric drifts.
+  final prefix = endG.take(common).join();
+
+  String committed = prefix;
   String? fadingChar;
   double fadeOpacity = 0.0;
   bool isFadingOut = false;
+  String ghostSuffix = '';
 
-  if (t <= 0.5) {
-    final progress = t / 0.5;
-    final startLength = startSuffix.length;
-    if (startLength > 0) {
-      final scaled = (progress * startLength).clamp(
-        0.0,
-        startLength.toDouble(),
-      );
-      final removed = scaled.floor();
-      final fractional = scaled - removed;
+  if (t < 0.5 && startSuffix.isNotEmpty) {
+    final p = t * 2.0; // 0..1 in fade-out
+    final remainingExact = startSuffix.length * (1.0 - p);
+    final remaining = remainingExact.floor();
+    final frac = remainingExact - remaining; // 0..1 (for the next char)
 
-      final remaining = math.max(0, startLength - removed);
-
-      if (remaining > 0) {
-        final shouldTreatAsZero = fractional <= epsilon;
-        final shouldTreatAsOne = fractional >= 1 - epsilon;
-
-        if (shouldTreatAsZero || shouldTreatAsOne) {
-          final count = shouldTreatAsOne
-              ? math.max(0, remaining - 1)
-              : remaining;
-          if (count > 0) {
-            buffer.write(startSuffix.substring(0, count));
-          }
-        } else {
-          final committedCount = math.max(0, remaining - 1);
-          if (committedCount > 0) {
-            buffer.write(startSuffix.substring(0, committedCount));
-          }
-          fadingChar = startSuffix.substring(
-            committedCount,
-            committedCount + 1,
-          );
-          fadeOpacity = 1.0 - fractional;
-          isFadingOut = true;
-        }
-      }
+    if (remaining > 0) {
+      committed += startSuffix.take(remaining).join();
     }
-  } else {
-    final progress = (t - 0.5) / 0.5;
-    final endLength = endSuffix.length;
-    if (endLength > 0) {
-      final scaled = (progress * endLength).clamp(0.0, endLength.toDouble());
-      var committedCount = math.min(scaled.floor(), endLength);
-      final fractional = scaled - committedCount;
-
-      if (fractional >= 1 - epsilon && committedCount < endLength) {
-        committedCount += 1;
-      }
-
-      if (committedCount > 0) {
-        buffer.write(endSuffix.substring(0, committedCount));
-      }
-
-      if (committedCount < endLength) {
-        final fadeFraction = fractional.clamp(0.0, 1.0);
-        if (fadeFraction > epsilon) {
-          fadingChar = endSuffix.substring(committedCount, committedCount + 1);
-          fadeOpacity = fadeFraction;
-        }
-      }
+    if (remaining < startSuffix.length) {
+      fadingChar = startSuffix[remaining];
+      fadeOpacity = frac; // 0..1
+      isFadingOut = true;
+      // Reserve width for the rest of the start string after the fading grapheme.
+      ghostSuffix = startSuffix.skip(remaining + 1).join();
+    } else {
+      // No fading; ghost the empty remainder.
+      ghostSuffix = '';
     }
+  } else if (t > 0.5 && endSuffix.isNotEmpty) {
+    final p = (t - 0.5) * 2.0; // 0..1 in fade-in
+    final addedExact = endSuffix.length * p;
+    final added = addedExact.floor();
+    final frac = addedExact - added;
+
+    if (added > 0) {
+      committed += endSuffix.take(added).join();
+    }
+    if (added < endSuffix.length && frac > 0.0) {
+      fadingChar = endSuffix[added];
+      fadeOpacity = frac; // 0..1
+      isFadingOut = false;
+      // Reserve width for what remains in the end string after the fading grapheme.
+      ghostSuffix = endSuffix.skip(added + 1).join();
+    } else {
+      ghostSuffix = endSuffix
+          .skip(added)
+          .join(); // alpha=0 keeps final width stable at the tail end
+    }
+  } else if (t == 0.5 && endSuffix.isNotEmpty) {
+    // Middle: nothing committed beyond prefix; show first end grapheme at 0 opacity.
+    fadingChar = endSuffix.first;
+    fadeOpacity = 0.0;
+    isFadingOut = false;
+    ghostSuffix = endSuffix.skip(1).join();
+  }
+
+  // If the fading char is whitespace, just commit it immediately and move on.
+  if (fadingChar != null && fadingChar.trim().isEmpty) {
+    committed += fadingChar;
+    fadingChar = null;
+    fadeOpacity = 0.0;
   }
 
   return LerpStringResult(
-    text: buffer.toString(),
+    text: committed,
     fadingChar: fadingChar,
-    fadeOpacity: fadeOpacity,
+    fadeOpacity: fadeOpacity.clamp(0.0, 1.0),
     isFadingOut: isFadingOut,
+    ghostSuffix: ghostSuffix,
   );
 }
 
 String lerpString(String start, String end, double t) =>
     lerpStringWithFade(start, end, t).text;
-
-extension on String {
-  int commonPrefixLength(String other) {
-    final len = math.min(length, other.length);
-    for (int i = 0; i < len; i++) {
-      if (this[i] != other[i]) {
-        return i;
-      }
-    }
-    return len;
-  }
-}
-
-List<TextSpan> lerpTextSpans(
-  List<TextSpan> start,
-  List<TextSpan> end,
-  double t,
-) {
-  final maxLines = math.max(start.length, end.length);
-  List<TextSpan> interpolatedSpans = [];
-
-  for (int i = 0; i < maxLines; i++) {
-    final startSpan = i < start.length ? start[i] : const TextSpan(text: '');
-    final endSpan = i < end.length ? end[i] : const TextSpan(text: '');
-
-    if (startSpan.text == null && endSpan.text == null) {
-      // if chilrens are not null recursive
-      if (startSpan.children != null && endSpan.children != null) {
-        if (startSpan.children!.isEmpty && endSpan.children!.isEmpty) {
-          continue;
-        }
-        final children = lerpTextSpans(
-          startSpan.children! as List<TextSpan>,
-          endSpan.children! as List<TextSpan>,
-          t,
-        );
-        final interpolatedSpan = TextSpan(
-          children: children,
-          style: TextStyle.lerp(startSpan.style, endSpan.style, t),
-        );
-        interpolatedSpans.add(interpolatedSpan);
-        continue;
-      }
-    }
-
-    final interpolatedText = lerpString(
-      startSpan.text ?? '',
-      endSpan.text ?? '',
-      t,
-    );
-    final interpolatedStyle = TextStyle.lerp(startSpan.style, endSpan.style, t);
-
-    final interpolatedSpan = TextSpan(
-      text: interpolatedText,
-      style: interpolatedStyle,
-    );
-
-    interpolatedSpans.add(interpolatedSpan);
-  }
-
-  return interpolatedSpans;
-}

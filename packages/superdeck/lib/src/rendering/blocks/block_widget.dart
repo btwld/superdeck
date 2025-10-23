@@ -61,9 +61,8 @@ sealed class BlockWidget<T extends Block> extends StatefulWidget {
 class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
   @override
   Widget build(context) {
-    // Get the resolved SlideSpec from StyleSpecProvider (provided by SlideView)
-    final styleSpec = StyleSpecProvider.of<SlideSpec>(context);
-    final spec = styleSpec!.spec;
+    // Get the resolved SlideSpec (provided by SlideView)
+    final spec = SlideSpec.of(context);
 
     final blockOffset = BlockWidget.calculateBlockOffset(
       spec.blockContainer.spec,

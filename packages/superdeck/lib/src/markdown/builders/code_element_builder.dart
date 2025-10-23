@@ -143,8 +143,10 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             final fadeBaseStyle = trailingStyle;
             final baseColor = fadeBaseStyle.color ?? const Color(0xFF000000);
             final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
-            final fadeAlpha = (baseColor.a * fadeOpacity).clamp(0.0, 1.0);
-            final fadeColor = baseColor.withValues(alpha: fadeAlpha);
+            // Use fadeOpacity directly (already 0.0-1.0 range)
+            // Apply minimum threshold to avoid rendering nearly-invisible characters
+            final adjustedOpacity = fadeOpacity > 0.001 ? fadeOpacity : 0.0;
+            final fadeColor = baseColor.withValues(alpha: adjustedOpacity);
             final fadeTextStyle = fadeBaseStyle.copyWith(color: fadeColor);
 
             /// IMPORTANT: Do not remove this, its needed for overflow on flight

@@ -51,6 +51,11 @@ void main() {
     _generateImages(reference['inline_elements'] as Map<String, dynamic>);
     _generateInlineCode(reference['inline_elements'] as Map<String, dynamic>);
     _generateLineBreaks(reference['inline_elements'] as Map<String, dynamic>);
+    _generateColorSwatches(
+      reference['inline_elements'] as Map<String, dynamic>,
+    );
+    _generateEmoji(reference['inline_elements'] as Map<String, dynamic>);
+    _generateInlineHtml(reference['inline_elements'] as Map<String, dynamic>);
 
     _generateEmptyElements(reference['special_cases'] as Map<String, dynamic>);
     _generateElementsWithAttributes(
@@ -170,6 +175,21 @@ void _generateHeadings(Map<String, dynamic> block) {
     'heading_with_id',
     '# Custom Heading',
     description: 'Heading that generates an automatic ID for linking',
+  );
+
+  // Setext headings
+  _convertAndStore(
+    headings,
+    'h1_setext',
+    'Setext Level 1\n===============',
+    description: 'Level 1 heading using setext syntax',
+  );
+
+  _convertAndStore(
+    headings,
+    'h2_setext',
+    'Setext Level 2\n---------------',
+    description: 'Level 2 heading using setext syntax',
   );
 }
 
@@ -639,6 +659,14 @@ void _generateLinks(Map<String, dynamic> inline) {
     'Visit https://example.com for more.',
     description: 'Bare URL automatically converted to link',
   );
+
+  _convertAndStore(
+    links,
+    'autolink_trailing_punctuation',
+    'Visit <https://example.com>. Or see https://example.org.',
+    description:
+        'Autolinks with trailing punctuation handled by the autolink extension',
+  );
 }
 
 void _generateImages(Map<String, dynamic> inline) {
@@ -735,6 +763,49 @@ void _generateLineBreaks(Map<String, dynamic> inline) {
     'soft_break',
     'Line 1\nLine 2',
     description: 'Soft line break (becomes space in output)',
+  );
+}
+
+void _generateColorSwatches(Map<String, dynamic> inline) {
+  inline['color_swatches'] = <String, dynamic>{};
+  final swatches = inline['color_swatches'] as Map<String, dynamic>;
+
+  _convertAndStore(
+    swatches,
+    'hex_color_swatch',
+    '`#FF0000`',
+    description: 'Inline color swatch with hex value',
+  );
+
+  _convertAndStore(
+    swatches,
+    'rgb_color_swatch',
+    '`rgb(0, 128, 255)`',
+    description: 'Inline color swatch with rgb() function',
+  );
+}
+
+void _generateEmoji(Map<String, dynamic> inline) {
+  inline['emoji'] = <String, dynamic>{};
+  final emoji = inline['emoji'] as Map<String, dynamic>;
+
+  _convertAndStore(
+    emoji,
+    'emoji_inline',
+    'I :heart: Dart',
+    description: 'Emoji shortcode converted by the emoji syntax',
+  );
+}
+
+void _generateInlineHtml(Map<String, dynamic> inline) {
+  inline['inline_html'] = <String, dynamic>{};
+  final html = inline['inline_html'] as Map<String, dynamic>;
+
+  _convertAndStore(
+    html,
+    'inline_html_span',
+    'Hello <span class="highlight">world</span>!',
+    description: 'Inline HTML preserved by the inline HTML syntax',
   );
 }
 

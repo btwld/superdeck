@@ -81,5 +81,43 @@ flutter:
       expect(result.contains('.superdeck/'), isTrue);
       expect(result.contains('.superdeck/assets/'), isTrue);
     });
+
+    test('adds correct normalized paths without duplicates', () {
+      final input = '''
+name: test_app
+flutter:
+  uses-material-design: true
+''';
+      final result = updatePubspecAssets(deckConfig, input);
+
+      // Should have exactly the paths we want
+      expect(result.contains('.superdeck/'), isTrue);
+      expect(result.contains('.superdeck/assets/'), isTrue);
+
+      // Should not have ./ prefix versions
+      expect(result.contains('./.superdeck/'), isFalse);
+      expect(result.contains('./.superdeck/assets/'), isFalse);
+    });
+
+    test('running setup multiple times does not create duplicates', () {
+      final input = '''
+name: test_app
+flutter:
+  assets:
+    - assets/
+''';
+      // Run setup first time
+      final firstRun = updatePubspecAssets(deckConfig, input);
+
+      // Verify correct paths were added
+      expect(firstRun.contains('.superdeck/'), isTrue);
+      expect(firstRun.contains('.superdeck/assets/'), isTrue);
+
+      // Run setup second time on the result
+      final secondRun = updatePubspecAssets(deckConfig, firstRun);
+
+      // Should be identical - no new duplicates added
+      expect(firstRun, equals(secondRun));
+    });
   });
 }

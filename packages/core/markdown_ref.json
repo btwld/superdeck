@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated": "2025-10-17T13:39:49.443499",
+    "generated": "2025-10-23T09:35:40.894441",
     "markdown_package_version": "7.3.0",
     "extension_set": "gitHubWeb",
     "description": "Comprehensive reference of all markdown AST node types and structures"
@@ -187,6 +187,46 @@
                 }
               ],
               "generatedId": "custom-heading"
+            }
+          ]
+        }
+      },
+      "h1_setext": {
+        "description": "Level 1 heading using setext syntax",
+        "markdown": "Setext Level 1\n===============",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h1",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Setext Level 1"
+                }
+              ],
+              "generatedId": "setext-level-1"
+            }
+          ]
+        }
+      },
+      "h2_setext": {
+        "description": "Level 2 heading using setext syntax",
+        "markdown": "Setext Level 2\n---------------",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h2",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Setext Level 2"
+                }
+              ],
+              "generatedId": "setext-level-2"
             }
           ]
         }
@@ -2665,6 +2705,59 @@
             }
           ]
         }
+      },
+      "autolink_trailing_punctuation": {
+        "description": "Autolinks with trailing punctuation handled by the autolink extension",
+        "markdown": "Visit <https://example.com>. Or see https://example.org.",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Visit "
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.com"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "https://example.com"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": ". Or see "
+                },
+                {
+                  "type": "element",
+                  "tag": "a",
+                  "attributes": {
+                    "href": "https://example.org"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "https://example.org"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            }
+          ]
+        }
       }
     },
     "images": {
@@ -3000,6 +3093,111 @@
                 {
                   "type": "text",
                   "text": "Line 1\nLine 2"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "color_swatches": {
+      "hex_color_swatch": {
+        "description": "Inline color swatch with hex value",
+        "markdown": "`#FF0000`",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "attributes": {
+                    "class": "gfm-color_chip"
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "#FF0000"
+                    },
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attributes": {
+                        "style": "background-color:#FF0000;"
+                      },
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "rgb_color_swatch": {
+        "description": "Inline color swatch with rgb() function",
+        "markdown": "`rgb(0, 128, 255)`",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "code",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "rgb(0, 128, 255)"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "emoji": {
+      "emoji_inline": {
+        "description": "Emoji shortcode converted by the emoji syntax",
+        "markdown": "I :heart: Dart",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "I ❤️ Dart"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "inline_html": {
+      "inline_html_span": {
+        "description": "Inline HTML preserved by the inline HTML syntax",
+        "markdown": "Hello <span class=\"highlight\">world</span>!",
+        "ast": {
+          "type": "document",
+          "children": [
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Hello <span class=\"highlight\">world</span>!"
                 }
               ]
             }

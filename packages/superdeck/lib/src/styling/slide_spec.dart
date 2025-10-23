@@ -46,13 +46,13 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
 
   // Layout
   final StyleSpec<BoxSpec> blockContainer;
+  final StyleSpec<BoxSpec> slideContainer;
   final StyleSpec<ImageSpec> image;
 
   /// Static helper for context access
-  /// TODO: Implement proper Mix 2.0 context resolution
   static SlideSpec of(BuildContext context) {
-    // Will be implemented with proper StyleSpec resolution
-    return const SlideSpec();
+    final styleSpec = StyleSpecProvider.of<SlideSpec>(context);
+    return styleSpec!.spec;
   }
 
   const SlideSpec({
@@ -78,9 +78,11 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
     this.code,
     this.checkbox,
     StyleSpec<BoxSpec>? blockContainer,
+    StyleSpec<BoxSpec>? slideContainer,
     StyleSpec<ImageSpec>? image,
   }) : alert = alert ?? const StyleSpec(spec: MarkdownAlertSpec()),
        blockContainer = blockContainer ?? const StyleSpec(spec: BoxSpec()),
+       slideContainer = slideContainer ?? const StyleSpec(spec: BoxSpec()),
        image = image ?? const StyleSpec(spec: ImageSpec());
 
   @override
@@ -107,6 +109,7 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
     StyleSpec<MarkdownCodeblockSpec>? code,
     StyleSpec<MarkdownCheckboxSpec>? checkbox,
     StyleSpec<BoxSpec>? blockContainer,
+    StyleSpec<BoxSpec>? slideContainer,
     StyleSpec<ImageSpec>? image,
   }) {
     return SlideSpec(
@@ -133,6 +136,7 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       code: code ?? this.code,
       checkbox: checkbox ?? this.checkbox,
       blockContainer: blockContainer ?? this.blockContainer,
+      slideContainer: slideContainer ?? this.slideContainer,
       image: image ?? this.image,
     );
   }
@@ -168,6 +172,7 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       code: MixOps.lerp(code, other.code, t),
       checkbox: MixOps.lerp(checkbox, other.checkbox, t),
       blockContainer: MixOps.lerp(blockContainer, other.blockContainer, t)!,
+      slideContainer: MixOps.lerp(slideContainer, other.slideContainer, t)!,
       image: MixOps.lerp(image, other.image, t)!,
     );
   }
@@ -243,6 +248,7 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       ..add(DiagnosticsProperty('code', code))
       ..add(DiagnosticsProperty('checkbox', checkbox))
       ..add(DiagnosticsProperty('blockContainer', blockContainer))
+      ..add(DiagnosticsProperty('slideContainer', slideContainer))
       ..add(DiagnosticsProperty('image', image));
   }
 
@@ -270,6 +276,7 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
     code,
     checkbox,
     blockContainer,
+    slideContainer,
     image,
   ];
 }

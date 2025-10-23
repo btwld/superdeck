@@ -57,6 +57,7 @@ final class SlideStyle extends Style<SlideSpec>
 
   // Layout Props
   final Prop<StyleSpec<BoxSpec>>? $blockContainer;
+  final Prop<StyleSpec<BoxSpec>>? $slideContainer;
   final Prop<StyleSpec<ImageSpec>>? $image;
 
   const SlideStyle.create({
@@ -82,6 +83,7 @@ final class SlideStyle extends Style<SlideSpec>
     Prop<StyleSpec<MarkdownCodeblockSpec>>? code,
     Prop<StyleSpec<MarkdownCheckboxSpec>>? checkbox,
     Prop<StyleSpec<BoxSpec>>? blockContainer,
+    Prop<StyleSpec<BoxSpec>>? slideContainer,
     Prop<StyleSpec<ImageSpec>>? image,
     required super.variants,
     required super.animation,
@@ -108,6 +110,7 @@ final class SlideStyle extends Style<SlideSpec>
        $code = code,
        $checkbox = checkbox,
        $blockContainer = blockContainer,
+       $slideContainer = slideContainer,
        $image = image;
 
   SlideStyle({
@@ -133,6 +136,7 @@ final class SlideStyle extends Style<SlideSpec>
     MarkdownCodeblockStyle? code,
     MarkdownCheckboxStyle? checkbox,
     BoxStyler? blockContainer,
+    BoxStyler? slideContainer,
     ImageStyler? image,
     AnimationConfig? animation,
     List<VariantStyle<SlideSpec>>? variants,
@@ -160,6 +164,7 @@ final class SlideStyle extends Style<SlideSpec>
          code: Prop.maybeMix(code),
          checkbox: Prop.maybeMix(checkbox),
          blockContainer: Prop.maybeMix(blockContainer),
+         slideContainer: Prop.maybeMix(slideContainer),
          image: Prop.maybeMix(image),
          animation: animation,
          variants: variants,
@@ -183,6 +188,17 @@ final class SlideStyle extends Style<SlideSpec>
 
   @override
   StyleSpec<SlideSpec> resolve(BuildContext context) {
+    // Resolve required StyleSpec fields with fallback defaults
+    // These fields are non-nullable in SlideSpec and must always have a value
+    final resolvedAlert = MixOps.resolve(context, $alert) ??
+        const StyleSpec(spec: MarkdownAlertSpec());
+    final resolvedBlockContainer = MixOps.resolve(context, $blockContainer) ??
+        const StyleSpec(spec: BoxSpec());
+    final resolvedSlideContainer = MixOps.resolve(context, $slideContainer) ??
+        const StyleSpec(spec: BoxSpec());
+    final resolvedImage = MixOps.resolve(context, $image) ??
+        const StyleSpec(spec: ImageSpec());
+
     return StyleSpec(
       spec: SlideSpec(
         h1: MixOps.resolve(context, $h1),
@@ -199,7 +215,7 @@ final class SlideStyle extends Style<SlideSpec>
         img: MixOps.resolve(context, $img),
         link: MixOps.resolve(context, $link),
         textScaleFactor: MixOps.resolve(context, $textScaleFactor),
-        alert: MixOps.resolve(context, $alert),
+        alert: resolvedAlert,
         horizontalRuleDecoration: MixOps.resolve(
           context,
           $horizontalRuleDecoration,
@@ -209,8 +225,9 @@ final class SlideStyle extends Style<SlideSpec>
         table: MixOps.resolve(context, $table),
         code: MixOps.resolve(context, $code),
         checkbox: MixOps.resolve(context, $checkbox),
-        blockContainer: MixOps.resolve(context, $blockContainer),
-        image: MixOps.resolve(context, $image),
+        blockContainer: resolvedBlockContainer,
+        slideContainer: resolvedSlideContainer,
+        image: resolvedImage,
       ),
       animation: $animation,
       widgetModifiers: $modifier?.resolve(context),
@@ -247,6 +264,7 @@ final class SlideStyle extends Style<SlideSpec>
       code: MixOps.merge($code, other.$code),
       checkbox: MixOps.merge($checkbox, other.$checkbox),
       blockContainer: MixOps.merge($blockContainer, other.$blockContainer),
+      slideContainer: MixOps.merge($slideContainer, other.$slideContainer),
       image: MixOps.merge($image, other.$image),
       animation: MixOps.mergeAnimation($animation, other.$animation),
       variants: MixOps.mergeVariants($variants, other.$variants),
@@ -285,6 +303,7 @@ final class SlideStyle extends Style<SlideSpec>
       ..add(DiagnosticsProperty('code', $code))
       ..add(DiagnosticsProperty('checkbox', $checkbox))
       ..add(DiagnosticsProperty('blockContainer', $blockContainer))
+      ..add(DiagnosticsProperty('slideContainer', $slideContainer))
       ..add(DiagnosticsProperty('image', $image));
   }
 
@@ -312,6 +331,7 @@ final class SlideStyle extends Style<SlideSpec>
     $code,
     $checkbox,
     $blockContainer,
+    $slideContainer,
     $image,
     $animation,
     $variants,
