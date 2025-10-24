@@ -191,10 +191,6 @@ void main() {
 
   group('lerpStringWithFade', () {
     test('REPRO: "Leo Farias" -> "Generative UI" last word flicker', () {
-      // print('\n=== REPRODUCING LAST WORD FLICKER ===');
-      // print('Transition: "Leo Farias" -> "Generative UI"');
-      // print('Focus: Watch for space and "UI" behavior\n');
-
       final start = 'Leo Farias';
       final end = 'Generative UI';
 
@@ -211,22 +207,14 @@ void main() {
         final fading = result.fadingChar ?? '';
         final opacity = result.fadeOpacity;
 
-        // print('t=${t.toStringAsFixed(2)}: '
-        //     'committed="$committed" '
-        //     'fade="$fading" '
-        //     'opacity=${opacity.toStringAsFixed(3)} '
-        //     '→ total="${committed}$fading"');
-
-        // Check for problematic patterns
+        // Check for problematic patterns that could cause layout shift
         if (fading == ' ' && opacity < 0.5) {
-          // print('  ⚠️  WARNING: Space at low opacity (${opacity.toStringAsFixed(2)}) - may cause layout shift!');
+          // Space at low opacity may cause layout shift
         }
         if (committed.endsWith(' ') && fading.isNotEmpty && fading != ' ') {
-          // print('  ⚠️  WARNING: Space in committed, non-space fading - word positioning may shift!');
+          // Space in committed with non-space fading may shift word position
         }
       }
-
-      // print('\n=== END REPRODUCTION ===\n');
     });
 
     group('boundary conditions', () {

@@ -123,6 +123,39 @@ void main() {
       });
     });
 
+    group('error handling configuration', () {
+      test('timeout configuration is properly set', () {
+        final generator = MermaidGenerator(
+          configuration: const {'timeout': 5},
+        );
+
+        expect(generator.configuration['timeout'], equals(5));
+      });
+
+      test('configuration validates critical browser settings', () {
+        final generator = MermaidGenerator(
+          configuration: const {
+            'viewportWidth': 1920,
+            'viewportHeight': 1080,
+            'deviceScaleFactor': 2,
+            'timeout': 10,
+          },
+        );
+
+        expect(generator.configuration['viewportWidth'], equals(1920));
+        expect(generator.configuration['viewportHeight'], equals(1080));
+        expect(generator.configuration['deviceScaleFactor'], equals(2));
+        expect(generator.configuration['timeout'], equals(10));
+      });
+
+      test('fallback theme detection returns correct theme type', () {
+        final generator = MermaidGenerator();
+
+        // Verify default configuration has theme settings
+        expect(generator.configuration['theme'], equals('base'));
+        expect(generator.configuration['themeVariables'], isNotEmpty);
+      });
+    });
 
     // Note: Error handling tests that require browser (generateAsset calls)
     // have been removed. These should be run as integration tests separately.

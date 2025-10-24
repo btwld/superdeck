@@ -8,8 +8,7 @@ import '../../ui/widgets/hero_element.dart';
 import '../markdown_helpers.dart';
 import '../markdown_hero_mixin.dart';
 
-/// Normalizes common <br> shapes to newlines.
-/// Handles <br>, <br/>, <br /> case-insensitively.
+/// Normalizes <br> variants to newlines (case-insensitive).
 String _transformLineBreaks(String text) =>
     text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
 
@@ -129,7 +128,11 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     final hasFade = lerp.fadingChar != null;
     final fadeAlpha = lerp.fadeOpacity.clamp(0.0, 1.0);
     if (hasFade) {
-      // Keep an epsilon > 0 to avoid a 1‑frame ghost when alpha jumps from 0.
+      // Keep an epsilon > 0 to avoid a 1-frame visual artifact when alpha jumps from 0.
+      // When opacity transitions from exactly 0.0 to a small value, Flutter may render
+      // the character for one frame before the opacity change takes effect, creating a
+      // brief "flash". This threshold prevents that by ensuring near-zero values are
+      // treated as fully transparent.
       final visibleAlpha = fadeAlpha > 0.01 ? fadeAlpha : 0.0;
       children.add(
         TextSpan(

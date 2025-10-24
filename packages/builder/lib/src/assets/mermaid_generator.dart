@@ -77,18 +77,19 @@ class MermaidGenerator implements AssetGenerator {
   @override
   final Map<String, dynamic> configuration;
 
-  /// Creates a Mermaid generator with dark theme (hardcoded).
+  /// Creates a Mermaid generator with hardcoded dark theme as default.
   ///
-  /// The dark theme is optimized for dark slide backgrounds.
-  /// Custom themes are no longer supported - dark theme is always used.
+  /// The dark theme is optimized for dark slide backgrounds. For certain
+  /// diagram types (timeline in dark mode), the generator automatically falls
+  /// back to Mermaid's default theme to ensure structural elements (axis, grid
+  /// lines) remain visible. See _shouldUseFallbackTheme() for fallback logic.
   MermaidGenerator({
     Map<String, dynamic>? launchOptions,
     Map<String, dynamic>? configuration,
   }) : _launchOptions = launchOptions ?? {},
        configuration = configuration ?? _defaultConfiguration;
 
-  /// Default CSS theme styling for all diagrams.
-  /// Only sets the font family - all colors come from theme variables.
+  /// Default CSS theme styling - colors come from theme variables.
   static const _defaultThemeCSS = '''
   text {
     font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
@@ -339,7 +340,12 @@ class MermaidGenerator implements AssetGenerator {
 
     // Timeline diagrams have axis visibility issues with custom DARK themes only
     if (trimmed.startsWith('timeline') && isDarkMode) {
-      _logger.fine('Using fallback theme for timeline diagram in dark mode');
+      _logger.warning(
+        'Timeline diagram detected in dark mode. Using Mermaid default theme '
+        'instead of custom dark theme due to visibility issues with axis and grid lines. '
+        'Your custom theme will be ignored for this diagram. '
+        'To use your custom theme, set darkMode: false in your configuration.',
+      );
       return true;
     }
 

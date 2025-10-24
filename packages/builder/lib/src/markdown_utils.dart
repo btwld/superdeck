@@ -41,12 +41,25 @@ Future<String> processFencedCodeBlocks(
   // Process each block and replace in content
   String result = content;
   for (final block in sortedBlocks) {
-    final replacement = await transform(block);
-    if (replacement != null) {
-      result = result.replaceRange(
-        block.startIndex,
-        block.endIndex,
-        replacement,
+    try {
+      final replacement = await transform(block);
+      if (replacement != null) {
+        result = result.replaceRange(
+          block.startIndex,
+          block.endIndex,
+          replacement,
+        );
+      }
+    } catch (e) {
+      final contentPreview = block.content.length > 200
+          ? '${block.content.substring(0, 200)}...'
+          : block.content;
+
+      throw Exception(
+        'Failed to transform fenced code block at position ${block.startIndex}-${block.endIndex}. '
+        'Language: ${block.language}, Content length: ${block.content.length} chars. '
+        'Content preview: "$contentPreview". '
+        'Original error: $e',
       );
     }
   }

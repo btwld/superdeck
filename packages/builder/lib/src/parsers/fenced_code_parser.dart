@@ -55,9 +55,19 @@ class FencedCodeParser {
       final startIndex = match.start;
       final endIndex = match.end;
 
-      final Map<String, dynamic> optionsMap = options.isNotEmpty
-          ? convertYamlToMap(options)
-          : {};
+      final Map<String, dynamic> optionsMap;
+      if (options.isNotEmpty) {
+        try {
+          optionsMap = convertYamlToMap(options, strict: true);
+        } catch (e) {
+          throw Exception(
+            'Failed to parse options for code block at position $startIndex-$endIndex. '
+            'Language: $language. Options: "$options". Error: $e',
+          );
+        }
+      } else {
+        optionsMap = {};
+      }
 
       parsedBlocks.add(
         ParsedFencedCode(

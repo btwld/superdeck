@@ -144,12 +144,14 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             final baseColor = fadeBaseStyle.color ?? const Color(0xFF000000);
             final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
             // Use fadeOpacity directly (already 0.0-1.0 range)
-            // Apply minimum threshold to avoid rendering nearly-invisible characters
+            // Apply minimum threshold (0.001) to avoid rendering nearly-invisible characters
+            // which can cause rendering artifacts or performance issues in Flutter's text engine.
             final adjustedOpacity = fadeOpacity > 0.001 ? fadeOpacity : 0.0;
             final fadeColor = baseColor.withValues(alpha: adjustedOpacity);
             final fadeTextStyle = fadeBaseStyle.copyWith(color: fadeColor);
 
-            /// IMPORTANT: Do not remove this, its needed for overflow on flight
+            // Wrap prevents overflow during hero flight when code block size changes between slides.
+            // SizedBox alone can cause RenderFlex overflow errors during interpolation.
             return Wrap(
               clipBehavior: Clip.hardEdge,
               children: [

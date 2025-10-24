@@ -137,6 +137,31 @@ code
       );
     });
 
+    test('provides detailed context on transformation errors', () async {
+      const content = '''
+```dart
+print('problematic code');
+```
+''';
+
+      try {
+        await processFencedCodeBlocks(
+          content,
+          filter: (block) => block.language == 'dart',
+          transform: (block) async => throw Exception('Transform failed'),
+        );
+        fail('Should have thrown exception');
+      } catch (e) {
+        final errorMessage = e.toString();
+        expect(errorMessage, contains('Failed to transform fenced code block'));
+        expect(errorMessage, contains('position'));
+        expect(errorMessage, contains('Language: dart'));
+        expect(errorMessage, contains('Content length'));
+        expect(errorMessage, contains('Content preview'));
+        expect(errorMessage, contains('Transform failed'));
+      }
+    });
+
     test('preserves content structure during replacement', () async {
       const content = '''
 # Header

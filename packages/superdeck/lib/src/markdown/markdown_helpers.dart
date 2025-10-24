@@ -49,6 +49,9 @@ class LerpStringResult {
   final bool isFadingOut;
 
   /// Remainder drawn with alpha=0 to keep wrapping stable.
+  /// By rendering the full final string with invisible characters, we reserve
+  /// the correct line-wrapping layout even during transitions, preventing the
+  /// "last word flicker" bug where text position shifts as characters fade in.
   final String ghostSuffix;
 
   bool get hasFadingChar => fadingChar != null && fadeOpacity > 0.0;
@@ -81,6 +84,9 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
   final endSuffix = endG.sublist(common);
 
   // Base prefix is always from the END string to avoid tiny font metric drifts.
+  // Using the end string ensures the final rendered layout matches what will be
+  // displayed when t=1.0, preventing subtle positioning shifts during the final
+  // frames of the transition animation.
   final prefix = endG.take(common).join();
 
   String committed = prefix;

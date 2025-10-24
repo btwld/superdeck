@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
+
+final _logger = Logger('YamlUtils');
 
 /// Loads a YAML file and returns the parsed content
 Future<dynamic> loadYamlFile(String path) async {
@@ -38,10 +41,20 @@ Map<String, dynamic> convertYamlToMap(
 
     final converted = _deepConvert(yamlDoc);
     return converted is Map ? converted as Map<String, dynamic> : {};
-  } on YamlException {
+  } on YamlException catch (e) {
+    _logger.warning(
+      'Invalid YAML syntax in options: "$yamlString". '
+      'Error: $e. Using empty options map. '
+      'Check your fenced code block syntax for typos.',
+    );
     if (strict) rethrow;
     return {};
-  } catch (e) {
+  } catch (e, stackTrace) {
+    _logger.severe(
+      'Unexpected error parsing YAML options: "$yamlString"',
+      e,
+      stackTrace,
+    );
     if (strict) rethrow;
     // Return empty map on parse error
     return {};

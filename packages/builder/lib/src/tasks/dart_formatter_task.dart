@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import '../dart_code_utils.dart';
 import '../markdown_utils.dart';
@@ -42,8 +43,23 @@ final class DartFormatterTask extends Task {
             logger.info('Formatted dart block for slide ${context.slideIndex}');
 
             return '```dart\n$formattedCode\n```';
-          } catch (e) {
-            logger.severe('Failed to format Dart code: $e');
+          } catch (e, stackTrace) {
+            final codePreview = block.content.length > 100
+                ? '${block.content.substring(0, math.min(100, block.content.length))}...'
+                : block.content;
+
+            logger.severe(
+              'Failed to format Dart code block for slide ${context.slideIndex}. '
+              'Code preview: "$codePreview". '
+              'Error: $e',
+              e,
+              stackTrace,
+            );
+
+            logger.warning(
+              '⚠️  SKIPPING unformatted Dart code block on slide ${context.slideIndex}. '
+              'Your presentation will contain UNFORMATTED code! Fix syntax errors and rebuild.',
+            );
             // Return null to skip this block on error
             return null;
           }
