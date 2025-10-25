@@ -10,7 +10,7 @@ import 'deck_provider.dart';
 /// processed by the NavigationController.
 ///
 /// Supported inputs:
-/// - Keyboard: Arrow keys, Space
+/// - Keyboard: Arrow keys
 /// - Gestures: Tap left/right, Swipe left/right
 class NavigationManager extends StatefulWidget {
   const NavigationManager({super.key, required this.child});

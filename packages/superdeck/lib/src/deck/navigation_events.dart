@@ -45,7 +45,6 @@ class KeyboardNavigationHandler {
     return switch (event.logicalKey) {
       LogicalKeyboardKey.arrowRight => NextSlideEvent(),
       LogicalKeyboardKey.arrowDown => NextSlideEvent(),
-      LogicalKeyboardKey.space => NextSlideEvent(),
       LogicalKeyboardKey.arrowLeft => PreviousSlideEvent(),
       LogicalKeyboardKey.arrowUp => PreviousSlideEvent(),
       _ => null,
