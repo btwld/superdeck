@@ -99,11 +99,59 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
 
             final interpolatedSpec = fromSpec.lerp(to.spec, t);
             final interpolatedSize = Size.lerp(fromSize, to.size, t)!;
-            final interpolatedText = lerpString(fromText, to.text, t);
+            final lerpResult = lerpStringWithFade(fromText, to.text, t);
+            final committedText = lerpResult.text;
+            final fadeChar = lerpResult.hasFadingChar
+                ? lerpResult.fadingChar
+                : null;
 
-            final spans = SyntaxHighlight.render(interpolatedText, to.language);
+            final highlightedLines = SyntaxHighlight.render(
+              committedText,
+              to.language,
+            );
 
-            /// IMPORTANT: Do not remove this, its needed for overflow on flight
+            TextStyle resolveTrailingStyle(List<TextSpan> lines) {
+              TextStyle? resolveFromSpan(TextSpan span) {
+                if ((span.text?.isNotEmpty ?? false) && span.style != null) {
+                  return span.style;
+                }
+                if (span.children != null && span.children!.isNotEmpty) {
+                  for (var i = span.children!.length - 1; i >= 0; i--) {
+                    final child = span.children![i];
+                    if (child is TextSpan) {
+                      final candidate = resolveFromSpan(child);
+                      if (candidate != null) {
+                        return candidate;
+                      }
+                    }
+                  }
+                }
+                return span.style;
+              }
+
+              for (var i = lines.length - 1; i >= 0; i--) {
+                final candidate = resolveFromSpan(lines[i]);
+                if (candidate != null) {
+                  return candidate;
+                }
+              }
+
+              return interpolatedSpec.textStyle ?? const TextStyle();
+            }
+
+            final trailingStyle = resolveTrailingStyle(highlightedLines);
+            final fadeBaseStyle = trailingStyle;
+            final baseColor = fadeBaseStyle.color ?? const Color(0xFF000000);
+            final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
+            // Use fadeOpacity directly (already 0.0-1.0 range)
+            // Apply minimum threshold (0.001) to avoid rendering nearly-invisible characters
+            // which can cause rendering artifacts or performance issues in Flutter's text engine.
+            final adjustedOpacity = fadeOpacity > 0.001 ? fadeOpacity : 0.0;
+            final fadeColor = baseColor.withValues(alpha: adjustedOpacity);
+            final fadeTextStyle = fadeBaseStyle.copyWith(color: fadeColor);
+
+            // Wrap prevents overflow during hero flight when code block size changes between slides.
+            // SizedBox alone can cause RenderFlex overflow errors during interpolation.
             return Wrap(
               clipBehavior: Clip.hardEdge,
               children: [
@@ -113,14 +161,81 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
                     styleSpec: interpolatedSpec.container,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: spans.map((span) {
-                        return RichText(
-                          text: TextSpan(
-                            style: interpolatedSpec.textStyle,
-                            children: [span],
-                          ),
-                        );
-                      }).toList(),
+                      children: () {
+                        if (highlightedLines.isEmpty) {
+                          if (fadeChar != null && fadeChar != '\n') {
+                            return [
+                              RichText(
+                                text: TextSpan(
+                                  style: interpolatedSpec.textStyle,
+                                  children: [
+                                    TextSpan(
+                                      text: fadeChar,
+                                      style: fadeTextStyle,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ];
+                          }
+
+                          return <Widget>[];
+                        }
+
+                        return List.generate(highlightedLines.length, (index) {
+                          final lineSpan = highlightedLines[index];
+                          final isLastLine =
+                              index == highlightedLines.length - 1;
+                          InlineSpan richLine;
+
+                          if (lineSpan.children != null &&
+                              lineSpan.children!.isNotEmpty) {
+                            final children = List<InlineSpan>.from(
+                              lineSpan.children!,
+                            );
+
+                            if (isLastLine &&
+                                fadeChar != null &&
+                                fadeChar != '\n') {
+                              children.add(
+                                TextSpan(text: fadeChar, style: fadeTextStyle),
+                              );
+                            }
+
+                            richLine = TextSpan(
+                              style: lineSpan.style,
+                              children: children,
+                            );
+                          } else {
+                            final children = <InlineSpan>[];
+                            if (lineSpan.text != null &&
+                                lineSpan.text!.isNotEmpty) {
+                              children.add(
+                                TextSpan(
+                                  text: lineSpan.text,
+                                  style: lineSpan.style,
+                                ),
+                              );
+                            }
+                            if (isLastLine &&
+                                fadeChar != null &&
+                                fadeChar != '\n') {
+                              children.add(
+                                TextSpan(text: fadeChar, style: fadeTextStyle),
+                              );
+                            }
+
+                            richLine = TextSpan(children: children);
+                          }
+
+                          return RichText(
+                            text: TextSpan(
+                              style: interpolatedSpec.textStyle,
+                              children: [richLine],
+                            ),
+                          );
+                        });
+                      }(),
                     ),
                   ),
                 ),

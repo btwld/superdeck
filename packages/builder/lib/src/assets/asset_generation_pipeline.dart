@@ -28,17 +28,13 @@ class AssetGenerationResult {
 class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
   final DeckRepository _store;
-  final FencedCodeBlockTransformer _blockTransformer;
   final Logger _logger = Logger('AssetGenerationPipeline');
 
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
     required DeckRepository store,
-    FencedCodeBlockTransformer blockTransformer =
-        const FencedCodeBlockTransformer(),
   }) : _generators = generators,
-       _store = store,
-       _blockTransformer = blockTransformer;
+       _store = store;
 
   /// Processes all assets in the given slide content.
   ///
@@ -52,7 +48,7 @@ class AssetGenerationPipeline {
     final generatedAssets = <GeneratedAsset>[];
 
     // Process fenced code blocks (mermaid, etc.) using the utility
-    final updatedContent = await _blockTransformer.processBlocks(
+    final updatedContent = await processFencedCodeBlocks(
       content,
       filter: (block) => _findGenerator(block.language) != null,
       transform: (block) async {

@@ -32,20 +32,24 @@ class GoToSlideEvent extends NavigationEvent {
 /// Handles keyboard input and converts it to navigation events
 ///
 /// This handler is responsible for mapping keyboard keys to navigation events.
+/// Requires Meta key (Command on macOS) to be pressed with arrow keys.
 /// It returns null for keys that don't trigger navigation, allowing other
 /// handlers to process them.
 class KeyboardNavigationHandler {
   /// Processes a keyboard event and returns the corresponding navigation event
   ///
+  /// Requires Meta key + arrow keys for navigation.
   /// Returns null if the key doesn't correspond to a navigation action.
   NavigationEvent? handleKey(KeyEvent event) {
     // Only handle key down events to avoid double-triggering
     if (event is! KeyDownEvent) return null;
 
+    // Require meta key to be pressed for navigation
+    if (!HardwareKeyboard.instance.isMetaPressed) return null;
+
     return switch (event.logicalKey) {
       LogicalKeyboardKey.arrowRight => NextSlideEvent(),
       LogicalKeyboardKey.arrowDown => NextSlideEvent(),
-      LogicalKeyboardKey.space => NextSlideEvent(),
       LogicalKeyboardKey.arrowLeft => PreviousSlideEvent(),
       LogicalKeyboardKey.arrowUp => PreviousSlideEvent(),
       _ => null,

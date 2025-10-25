@@ -23,7 +23,7 @@ void main() async {
           showSemanticsDebugger: false,
           home: SuperDeckApp(
             options: DeckOptions(
-              // baseStyle: SlideStyle(h1: TextStyler().color(Colors.green)),
+              baseStyle: borderedStyle(),
               widgets: {
                 ...demoWidgets,
                 'twitter': (args) {
@@ -37,6 +37,7 @@ void main() async {
               styles: {
                 'announcement': announcementStyle(),
                 'quote': quoteStyle(),
+                // 'bordered': borderedStyle(),
               },
               parts: const SlideParts(
                 header: HeaderPart(),

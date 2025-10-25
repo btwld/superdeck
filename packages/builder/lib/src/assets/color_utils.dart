@@ -121,4 +121,36 @@ class ColorUtils {
   }) {
     return luminance(bgHex) > 0.5 ? dark : light;
   }
+
+  /// Compute the WCAG contrast ratio between two colors.
+  ///
+  /// Returns a value >= 1.0 where values >= 4.5 meet the usual
+  /// accessibility guideline for normal text.
+  static double contrastRatio(String a, String b) {
+    final (lighter, darker) = _sortedByLuminance(a, b);
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+
+  /// Linearly interpolate between two colors.
+  ///
+  /// [amount] of 0.0 returns [a], 1.0 returns [b]. Values outside 0-1 are
+  /// clamped.
+  static String mix(String a, String b, double amount) {
+    amount = amount.clamp(0.0, 1.0);
+    final (ar, ag, ab) = parseHex(a);
+    final (br, bg, bb) = parseHex(b);
+    final r = (ar + (br - ar) * amount).round().clamp(0, 255);
+    final g = (ag + (bg - ag) * amount).round().clamp(0, 255);
+    final bl = (ab + (bb - ab) * amount).round().clamp(0, 255);
+    return toHex(r, g, bl);
+  }
+
+  static (double lighter, double darker) _sortedByLuminance(
+    String a,
+    String b,
+  ) {
+    final lumA = luminance(a);
+    final lumB = luminance(b);
+    return lumA >= lumB ? (lumA, lumB) : (lumB, lumA);
+  }
 }

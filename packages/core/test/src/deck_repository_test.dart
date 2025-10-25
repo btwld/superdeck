@@ -86,7 +86,8 @@ void main() {
 
       final stream = repository.loadDeckStream();
 
-      await expectLater(stream, emits(isA<Deck>()));
+      // Take only the first emission and cancel to prevent file watcher errors
+      await expectLater(stream.take(1), emits(isA<Deck>()));
     });
   });
 

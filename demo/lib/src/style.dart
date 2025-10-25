@@ -79,3 +79,27 @@ SlideStyle quoteStyle() {
     ),
   );
 }
+
+SlideStyle borderedStyle() {
+  return SlideStyle(
+    modifier: WidgetModifierConfig(
+      modifiers: [
+        BoxModifierMix(
+          BoxStyler(
+            // No margin/padding - border goes to viewport edges
+            decoration: BoxDecorationMix(
+              border: BoxBorderMix.all(
+                BorderSideMix(
+                  color: Colors.white,
+                  width: 2,
+                  style: BorderStyle.solid,
+                ),
+              ),
+              borderRadius: BorderRadiusMix.all(Radius.circular(16)),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}

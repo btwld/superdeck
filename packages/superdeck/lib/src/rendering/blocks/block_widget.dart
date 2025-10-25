@@ -11,9 +11,9 @@ import '../../deck/slide_configuration.dart';
 import '../../styling/styles.dart';
 import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
+import '../../ui/widgets/provider.dart';
 import '../../ui/widgets/webview_wrapper.dart';
 import '../../utils/converters.dart';
-import '../../ui/widgets/provider.dart';
 import 'markdown_viewer.dart';
 
 sealed class BlockWidget<T extends Block> extends StatefulWidget {
@@ -61,59 +61,53 @@ sealed class BlockWidget<T extends Block> extends StatefulWidget {
 class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
   @override
   Widget build(context) {
-    // In Mix 2.0, variants are applied via StyleBuilder automatically
-    // We just pass the style directly
-    final style = widget.configuration.style;
+    // Get the resolved SlideSpec (provided by SlideView)
+    final spec = SlideSpec.of(context);
 
-    return StyleBuilder<SlideSpec>(
-      style: style,
-      builder: (context, spec) {
-        final blockOffset = BlockWidget.calculateBlockOffset(
-          spec.blockContainer.spec,
-        );
+    final blockOffset = BlockWidget.calculateBlockOffset(
+      spec.blockContainer.spec,
+    );
 
-        final blockData = BlockData(
-          block: widget.block,
-          spec: spec,
-          size: Size(
-            math.max(0.0, widget.size.width - blockOffset.dx),
-            math.max(0.0, widget.size.height - blockOffset.dy),
-          ),
-        );
+    final blockData = BlockData(
+      block: widget.block,
+      spec: spec,
+      size: Size(
+        math.max(0.0, widget.size.width - blockOffset.dx),
+        math.max(0.0, widget.size.height - blockOffset.dy),
+      ),
+    );
 
-        Widget current = InheritedData(
-          data: blockData,
-          child: Box(
-            styleSpec: spec.blockContainer,
-            child: widget.build(context, blockData),
-          ),
-        );
+    Widget current = InheritedData(
+      data: blockData,
+      child: Box(
+        styleSpec: spec.blockContainer,
+        child: widget.build(context, blockData),
+      ),
+    );
 
-        if (widget.block.scrollable && !widget.configuration.isExporting) {
-          current = SingleChildScrollView(child: current);
-        } else {
-          current = Wrap(clipBehavior: Clip.hardEdge, children: [current]);
-        }
+    if (widget.block.scrollable && !widget.configuration.isExporting) {
+      current = SingleChildScrollView(child: current);
+    } else {
+      current = Wrap(clipBehavior: Clip.hardEdge, children: [current]);
+    }
 
-        final decoration = widget.configuration.debug
-            ? BoxDecoration(border: Border.all(color: Colors.cyan, width: 2))
-            : null;
+    final decoration = widget.configuration.debug
+        ? BoxDecoration(border: Border.all(color: Colors.cyan, width: 2))
+        : null;
 
-        return Container(
-          decoration: decoration,
-          child: ConstrainedBox(
-            constraints: BoxConstraints.loose(widget.size),
-            child: Stack(
-              children: [
-                Align(
-                  alignment: ConverterHelper.toAlignment(blockData.block.align),
-                  child: current,
-                ),
-              ],
+    return Container(
+      decoration: decoration,
+      child: ConstrainedBox(
+        constraints: BoxConstraints.loose(widget.size),
+        child: Stack(
+          children: [
+            Align(
+              alignment: ConverterHelper.toAlignment(blockData.block.align),
+              child: current,
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }

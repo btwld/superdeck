@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'package:path/path.dart' as p;
+import 'package:superdeck_core/markdown_json.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// Repository for managing deck data from the local file system.
@@ -122,6 +124,9 @@ class DeckRepository {
     final deckJson = prettyJson(reference.toMap());
     await configuration.deckJson.writeAsString(deckJson);
 
+    // Save full deck reference with markdown AST JSON
+    await _saveFullDeckReference(reference);
+
     // Generate the asset references for each slide thumbnail
     final thumbnails = reference.slides.map(
       (slide) => GeneratedAsset.thumbnail(slide.key),
@@ -194,6 +199,58 @@ class DeckRepository {
       ],
       configuration: configuration,
     );
+  }
+
+  /// Saves the full deck reference with markdown AST JSON for each slide content.
+  ///
+  /// Replaces the `content` field (string) with the parsed markdown AST (object)
+  /// for all ColumnBlocks that contain markdown content.
+  Future<void> _saveFullDeckReference(Deck reference) async {
+    final converter = MarkdownAstConverter(
+      extensionSet: md.ExtensionSet.gitHubWeb,
+    );
+
+    final slidesWithMarkdownJson = reference.slides.map((slide) {
+      final slideMap = slide.toMap();
+
+      // Process each section's blocks to replace content with markdown AST
+      final sections = slideMap['sections'] as List<dynamic>;
+      final processedSections = sections.map((section) {
+        final sectionMap = Map<String, dynamic>.from(section as Map);
+        final blocks = sectionMap['blocks'] as List<dynamic>;
+
+        final processedBlocks = blocks.map((block) {
+          final blockMap = Map<String, dynamic>.from(block as Map);
+
+          // If the block has content, replace it with parsed markdown AST
+          if (blockMap.containsKey('content') && blockMap['content'] is String) {
+            final contentString = blockMap['content'] as String;
+            final markdownAst = converter.toMap(
+              contentString,
+              includeMetadata: true,
+            );
+            // Replace the string content with the parsed AST object
+            blockMap['content'] = markdownAst;
+          }
+
+          return blockMap;
+        }).toList();
+
+        sectionMap['blocks'] = processedBlocks;
+        return sectionMap;
+      }).toList();
+
+      slideMap['sections'] = processedSections;
+      return slideMap;
+    }).toList();
+
+    final fullDeckMap = {
+      'slides': slidesWithMarkdownJson,
+      'configuration': reference.configuration.toMap(),
+    };
+
+    final fullDeckJson = prettyJson(fullDeckMap);
+    await configuration.deckFullJson.writeAsString(fullDeckJson);
   }
 
   /// Removes generated assets that are no longer referenced.

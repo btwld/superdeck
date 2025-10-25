@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';
+import '../../styling/styles.dart';
 import '../../utils/constants.dart';
 import '../blocks/block_widget.dart';
 
@@ -103,31 +105,49 @@ class SlideView extends StatelessWidget {
     );
 
     final sectionsWidget = _renderSections(slide, slideSize);
+
+    // Background should be outside the modifier to fill entire viewport
     return SizedBox.fromSize(
       size: kResolution,
       child: Stack(
         children: [
+          // Background fills entire viewport (not affected by modifier)
           Positioned.fill(child: backgroundWidget),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: headerHeight,
-            child: headerWidget,
-          ),
-          Positioned(
-            top: headerHeight,
-            left: 0,
-            right: 0,
-            height: slideSize.height,
-            child: sectionsWidget,
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: footerHeight,
-            child: footerWidget,
+          // Content wrapped with StyleBuilder to apply modifiers
+          Positioned.fill(
+            child: StyleBuilder<SlideSpec>(
+              style: slide.style,
+              builder: (context, spec) {
+                return Box(
+                  styleSpec: spec.slideContainer,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: headerHeight,
+                        child: headerWidget,
+                      ),
+                      Positioned(
+                        top: headerHeight,
+                        left: 0,
+                        right: 0,
+                        height: slideSize.height,
+                        child: sectionsWidget,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: footerHeight,
+                        child: footerWidget,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

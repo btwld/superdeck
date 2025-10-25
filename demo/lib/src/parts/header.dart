@@ -15,10 +15,11 @@ class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(slide.options.title ?? 'GenUI'),
-          const SizedBox(width: 20),
+          if (slide.options.title != null)
+            Text(slide.options.title!),
+          const Spacer(),
           Text('${index + 1}'),
         ],
       ),

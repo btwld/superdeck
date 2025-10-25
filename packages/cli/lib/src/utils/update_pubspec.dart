@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_writer/yaml_writer.dart';
@@ -15,7 +16,15 @@ String updatePubspecAssets(
   String pubspecContents,
 ) {
   // Parse the YAML content into a map
-  final parsedYaml = loadYaml(pubspecContents);
+  dynamic parsedYaml;
+  try {
+    parsedYaml = loadYaml(pubspecContents);
+  } on YamlException catch (e) {
+    throw Exception(
+      'Failed to parse pubspec.yaml. Invalid YAML syntax. '
+      'Please check your pubspec.yaml file. Error: $e',
+    );
+  }
 
   // Get the 'flutter' section from the parsed YAML, or an empty map if it doesn't exist
   final flutterSection =
@@ -27,20 +36,31 @@ String updatePubspecAssets(
 
   bool needsUpdate = false;
 
-  final superDeckDirPath = configuration.superdeckDir.path;
+  try {
+    // Normalize existing asset paths for comparison (e.g., .superdeck/ vs ./.superdeck/)
+    final normalizedAssets = assets.map((a) => p.normalize(a.toString())).toList();
 
-  // Add the '.superdeck/' path to the assets list if it's not already present
-  if (!assets.contains('$superDeckDirPath/')) {
-    assets.add('$superDeckDirPath/');
-    needsUpdate = true;
-  }
+    // Always use normalized paths without ./ prefix for consistency
+    final superDeckAssetPath = p.normalize(configuration.superdeckDir.path);
+    final superDeckAssetEntry = '$superDeckAssetPath/';
 
-  final assetsDirPath = configuration.assetsDir.path;
+    if (!normalizedAssets.contains(superDeckAssetPath)) {
+      assets.add(superDeckAssetEntry);
+      needsUpdate = true;
+    }
 
-  // Add the '.superdeck/generated/' path to the assets list if it's not already present
-  if (!assets.contains('$assetsDirPath/')) {
-    assets.add('$assetsDirPath/');
-    needsUpdate = true;
+    final assetsPath = p.normalize(configuration.assetsDir.path);
+    final assetsEntry = '$assetsPath/';
+
+    if (!normalizedAssets.contains(assetsPath)) {
+      assets.add(assetsEntry);
+      needsUpdate = true;
+    }
+  } catch (e) {
+    throw Exception(
+      'Failed to normalize asset paths. '
+      'Check your superdeck directory configuration. Error: $e',
+    );
   }
 
   if (!needsUpdate) {
