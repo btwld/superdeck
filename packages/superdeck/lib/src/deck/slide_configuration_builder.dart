@@ -39,19 +39,21 @@ class SlideConfigurationBuilder {
     Slide slide,
     DeckOptions options,
   ) {
-    // Start with built-in widgets, then collect user-provided widgets used in this slide
-    final widgets = <String, WidgetDefinition>{
-      ...builtInWidgets, // Built-in widgets (image, dartpad) are always available
-    };
+    // Start with built-in widgets, then add user widgets that are actually used
+    final widgets = Map<String, WidgetDefinition>.from(builtInWidgets);
 
-    for (final section in slide.sections) {
-      for (final block in section.blocks) {
-        if (block is WidgetBlock) {
-          final userWidget = options.widgets[block.name];
-          if (userWidget != null) {
-            widgets[block.name] = userWidget; // User widgets override built-ins
-          }
-        }
+    // Collect widget names used in this slide
+    final usedWidgetNames = slide.sections
+        .expand((section) => section.blocks)
+        .whereType<WidgetBlock>()
+        .map((block) => block.name)
+        .toSet();
+
+    // Add user widgets that are used (overriding built-ins if necessary)
+    for (final name in usedWidgetNames) {
+      final userWidget = options.widgets[name];
+      if (userWidget != null) {
+        widgets[name] = userWidget;
       }
     }
 

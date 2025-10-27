@@ -52,7 +52,13 @@ class DartPadArgs {
 
   /// Builds the DartPad URL from these arguments.
   String toUrl() {
-    return 'https://dartpad.dev/?id=$id&theme=$theme&embed=$embed&run=$run';
+    final params = [
+      'id=$id',
+      if (theme != null) 'theme=$theme',
+      'embed=$embed',
+      'run=$run',
+    ];
+    return 'https://dartpad.dev/?${params.join('&')}';
   }
 }
 

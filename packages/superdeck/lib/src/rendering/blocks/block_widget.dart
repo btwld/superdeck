@@ -82,11 +82,10 @@ class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
       ),
     );
 
-    if (widget.block.scrollable && !widget.configuration.isExporting) {
-      current = SingleChildScrollView(child: current);
-    } else {
-      current = Wrap(clipBehavior: Clip.hardEdge, children: [current]);
-    }
+    final shouldScroll = widget.block.scrollable && !widget.configuration.isExporting;
+    current = shouldScroll
+        ? SingleChildScrollView(child: current)
+        : Wrap(clipBehavior: Clip.hardEdge, children: [current]);
 
     final decoration = widget.configuration.debug
         ? BoxDecoration(border: Border.all(color: Colors.cyan, width: 2))

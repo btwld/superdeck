@@ -129,17 +129,12 @@ class QrCodeWidget extends WidgetDefinition<QrCodeArgs> {
 
   /// Parses hex color string to Color object.
   Color _parseColor(String? hex, Color defaultColor) {
-    if (hex == null) return defaultColor;
+    if (hex == null || hex.isEmpty) return defaultColor;
 
     try {
-      // Remove # if present
-      final hexCode = hex.replaceAll('#', '');
-
-      // Add alpha if not present
-      final fullHex = hexCode.length == 6 ? 'FF$hexCode' : hexCode;
-
-      return Color(int.parse(fullHex, radix: 16));
-    } catch (e) {
+      final hexCode = hex.replaceAll('#', '').padLeft(6, '0');
+      return Color(int.parse('FF$hexCode', radix: 16));
+    } catch (_) {
       return defaultColor;
     }
   }
