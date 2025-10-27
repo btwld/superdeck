@@ -17,8 +17,6 @@ class ParsedBlock {
     return switch (type) {
       SectionBlock.key ||
       ColumnBlock.key ||
-      ImageBlock.key ||
-      DartPadBlock.key ||
       WidgetBlock.key => {..._data, 'type': type},
       _ => {..._data, 'name': type, 'type': WidgetBlock.key},
     };

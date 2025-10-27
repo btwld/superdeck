@@ -6,13 +6,10 @@ import 'package:mix/mix.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../deck/deck_options.dart';
 import '../../deck/slide_configuration.dart';
 import '../../styling/styles.dart';
-import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/provider.dart';
-import '../../ui/widgets/webview_wrapper.dart';
 import '../../utils/converters.dart';
 import 'markdown_viewer.dart';
 
@@ -49,7 +46,7 @@ sealed class BlockWidget<T extends Block> extends StatefulWidget {
     required this.configuration,
   });
 
-  Widget build(BuildContext context, BlockData<T> data);
+  Widget build(BuildContext context, BlockData data);
 
   final T block;
   final Size size;
@@ -102,7 +99,7 @@ class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
         child: Stack(
           children: [
             Align(
-              alignment: ConverterHelper.toAlignment(blockData.block.align),
+              alignment: ConverterHelper.toAlignment(widget.block.align),
               child: current,
             ),
           ],
@@ -122,43 +119,13 @@ class ColumnBlockWidget extends BlockWidget<ColumnBlock> {
 
   @override
   Widget build(context, data) {
-    return MarkdownViewer(content: data.block.content, spec: data.spec);
+    final block = data.block as ColumnBlock;
+    return MarkdownViewer(content: block.content, spec: data.spec);
   }
 }
 
 /// Renders an ImageBlock from YAML configuration.
 ///
-/// **Security Note**: ImageBlock URIs come from trusted YAML configuration files
-/// (not user-provided markdown), so they bypass UriValidator security checks.
-/// Markdown images use ImageElementBuilder which validates all URIs.
-class ImageBlockWidget extends BlockWidget<ImageBlock> {
-  const ImageBlockWidget({
-    super.key,
-    required super.block,
-    required super.size,
-    required super.configuration,
-  });
-
-  @override
-  Widget build(context, data) {
-    final alignment = data.block.align ?? ContentAlignment.center;
-    final imageFit = data.block.fit ?? ImageFit.cover;
-    final spec = data.spec;
-
-    // YAML-sourced URIs are trusted - no validation needed
-    return CachedImage(
-      uri: Uri.parse(data.block.asset.fileName),
-      targetSize: data.size,
-      styleSpec: StyleSpec(
-        spec: spec.image.spec.copyWith(
-          fit: ConverterHelper.toBoxFit(imageFit),
-          alignment: ConverterHelper.toAlignment(alignment),
-        ),
-      ),
-    );
-  }
-}
-
 class WidgetBlockWidget extends BlockWidget<WidgetBlock> {
   const WidgetBlockWidget({
     super.key,
@@ -170,42 +137,33 @@ class WidgetBlockWidget extends BlockWidget<WidgetBlock> {
   @override
   Widget build(context, data) {
     final slide = SlideConfiguration.of(context);
+    final block = data.block as WidgetBlock;
 
-    final widgetBuilder = slide.getWidget(data.block.name);
+    final widgetDef = slide.getWidgetDefinition(block.name);
 
-    if (widgetBuilder == null) {
-      return ErrorWidgets.simple('Widget not found: ${data.block.name}');
+    if (widgetDef == null) {
+      return ErrorWidgets.simple('Widget not found: ${block.name}');
     }
 
     return Builder(
       builder: (context) {
         try {
+          // Parse arguments to typed, validated args object
+          final typedArgs = widgetDef.parse(block.args);
+
           return SizedBox(
             height: data.size.height,
-            child: widgetBuilder(WidgetArgs(data.block.args)),
+            child: widgetDef.build(context, typedArgs),
           );
-        } catch (e) {
+        } catch (e, stackTrace) {
+          // Catch validation errors and build errors
           return ErrorWidgets.detailed(
-            'Error building widget: ${data.block.name}',
-            e.toString(),
+            'Error building widget: ${block.name}',
+            '$e\n\n$stackTrace',
           );
         }
       },
     );
-  }
-}
-
-class DartPadBlockWidget extends BlockWidget<DartPadBlock> {
-  const DartPadBlockWidget({
-    super.key,
-    required super.block,
-    required super.size,
-    required super.configuration,
-  });
-
-  @override
-  Widget build(context, data) {
-    return WebViewWrapper(size: data.size, url: data.block.getDartPadUrl());
   }
 }
 
@@ -266,17 +224,7 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
           child: Stack(
             children: [
               switch (block) {
-                ImageBlock b => ImageBlockWidget(
-                  block: b,
-                  size: blockSize,
-                  configuration: configuration,
-                ),
                 WidgetBlock b => WidgetBlockWidget(
-                  block: b,
-                  size: blockSize,
-                  configuration: configuration,
-                ),
-                DartPadBlock b => DartPadBlockWidget(
                   block: b,
                   size: blockSize,
                   configuration: configuration,

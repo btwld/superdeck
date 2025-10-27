@@ -200,7 +200,7 @@ class _MarkdownHarness extends StatelessWidget {
     );
 
     // Provide BlockData with a reasonable slide size for testing
-    final blockData = BlockData<ColumnBlock>(
+    final blockData = BlockData(
       block: ColumnBlock(markdown),
       spec: slideSpec,
       size: const Size(800, 600),
@@ -209,7 +209,7 @@ class _MarkdownHarness extends StatelessWidget {
     return MaterialApp(
       home: InheritedData<SlideConfiguration>(
         data: slideConfiguration,
-        child: InheritedData<BlockData<ColumnBlock>>(
+        child: InheritedData<BlockData>(
           data: blockData,
           child: Scaffold(
             body: MarkdownRenderScope(

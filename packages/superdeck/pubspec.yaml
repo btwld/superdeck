@@ -40,6 +40,7 @@ dependencies:
   webview_flutter_web: ^0.2.3
   google_fonts: ^6.3.2
   meta: ^1.16.0
+  qr_flutter: ^4.1.0
   universal_html: ^2.2.4
   signals: ^6.2.0
 

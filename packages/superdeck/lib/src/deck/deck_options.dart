@@ -1,19 +1,18 @@
-import 'package:flutter/widgets.dart';
-
 import '../rendering/slides/slide_parts.dart';
 import '../styling/styles.dart';
+import 'widget_definition.dart';
 
 class DeckOptions {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
-  final Map<String, WidgetBlockBuilder> widgets;
+  final Map<String, WidgetDefinition> widgets;
   final SlideParts parts;
   final bool debug;
 
   const DeckOptions({
     this.baseStyle,
     this.styles = const <String, SlideStyle>{},
-    this.widgets = const <String, WidgetBlockBuilder>{},
+    this.widgets = const <String, WidgetDefinition>{},
     this.parts = const SlideParts(),
     this.debug = false,
   });
@@ -21,7 +20,7 @@ class DeckOptions {
   DeckOptions copyWith({
     SlideStyle? baseStyle,
     Map<String, SlideStyle>? styles,
-    Map<String, WidgetBlockBuilder>? widgets,
+    Map<String, WidgetDefinition>? widgets,
     SlideParts? parts,
     bool? debug,
   }) {
@@ -48,8 +47,6 @@ class DeckOptions {
   @override
   int get hashCode => Object.hash(baseStyle, styles, widgets, parts, debug);
 }
-
-typedef WidgetBlockBuilder = Widget Function(WidgetArgs args);
 
 /// A type-safe wrapper around `Map<String, dynamic>` for widget arguments.
 ///
