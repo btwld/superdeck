@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/src/utils/extensions.dart';
 
 import 'styles.dart';
 
@@ -179,7 +179,7 @@ SlideStyle _createDefaultSlideStyle() {
       bodyStyle: _baseTextStyle,
       cellPadding: const EdgeInsets.all(12),
       border: TableBorder.all(color: Colors.grey, width: 2),
-      cellDecoration: BoxDecoration(color: Colors.grey.useOpacity(0.1)),
+      cellDecoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1)),
     ),
 
     // Blockquotes

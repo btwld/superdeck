@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 
@@ -27,7 +28,7 @@ class MarkdownViewer extends ImplicitlyAnimatedWidget {
     super.key,
     required this.content,
     required this.spec,
-    super.duration = Durations.medium1,
+    super.duration = const Duration(milliseconds: 250),
     super.curve = Curves.linear,
   });
 

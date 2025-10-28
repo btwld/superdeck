@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
+import 'package:superdeck_ui/superdeck_ui.dart';
 
 import '../ui/widgets/error_widgets.dart';
-import '../ui/widgets/loading_indicator.dart';
+
 import '../ui/widgets/provider.dart';
 import '../utils/constants.dart';
 import 'slide_capture_service.dart';

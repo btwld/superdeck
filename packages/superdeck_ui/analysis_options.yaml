@@ -1,0 +1,2 @@
+include: package:flutter_lints/flutter.yaml
+extends: ../../shared_analysis_options.yaml

@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons, Colors;
+import 'package:flutter/widgets.dart';
+import 'package:superdeck_ui/superdeck_ui.dart';
 
 /// Simple error widget helpers to reduce duplication across the codebase
 /// Follows DRY principle by centralizing error UI patterns
@@ -53,11 +55,7 @@ class ErrorWidgets {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
-          ElevatedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-          ),
+          SDButton(onPressed: onRetry, label: 'Retry', icon: Icons.refresh),
         ],
       ),
     );

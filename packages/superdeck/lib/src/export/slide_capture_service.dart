@@ -3,7 +3,8 @@ import 'dart:developer';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
+import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -114,6 +115,7 @@ class SlideCaptureService {
         MediaQuery(
           data: MediaQuery.of(config.context),
           child: MaterialApp(
+            // TODO: Replace with Remix
             theme: Theme.of(config.context),
             debugShowCheckedModeBanner: false,
             home: Scaffold(body: widget),

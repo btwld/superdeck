@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/widgets.dart';
+import 'package:superdeck_ui/superdeck_ui.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewWrapper extends StatefulWidget {
@@ -108,15 +110,9 @@ class _WebViewWrapperState extends State<WebViewWrapper>
           ),
           Row(
             children: [
-              IconButton(
-                onPressed: _reloadDartPad,
-                icon: const Icon(Icons.refresh),
-              ),
+              SDIconButton(onPressed: _reloadDartPad, icon: Icons.refresh),
               // add button that clears the webview by running javascript
-              IconButton(
-                onPressed: clearDartPadEditor,
-                icon: const Icon(Icons.clear),
-              ),
+              SDIconButton(onPressed: clearDartPadEditor, icon: Icons.clear),
             ],
           ),
         ],

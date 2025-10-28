@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
+import 'package:flutter/widgets.dart';
+import 'package:superdeck_ui/superdeck_ui.dart';
 
 import '../rendering/slides/slide_screen.dart';
 import 'deck_controller.dart';
@@ -65,7 +67,7 @@ class _LoadingScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
+            IsometricLoading(),
             SizedBox(height: 16),
             Text('Loading presentation...'),
           ],
@@ -92,7 +94,7 @@ class _ErrorScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Error loading presentation: $error'),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
+            SDButton(onPressed: onRetry, label: 'Retry'),
           ],
         ),
       ),

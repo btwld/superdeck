@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'background.dart';
 import 'footer.dart';
 import 'header.dart';

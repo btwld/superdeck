@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class InheritedData<T> extends InheritedWidget {
   const InheritedData({super.key, required super.child, required this.data});

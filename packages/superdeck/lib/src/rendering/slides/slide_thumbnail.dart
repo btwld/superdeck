@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/widgets.dart';
+import 'package:superdeck_ui/superdeck_ui.dart';
 
 import '../../deck/slide_configuration.dart';
 import '../../export/thumbnail_controller.dart';
@@ -51,7 +53,7 @@ class _SlideThumbnailState extends State<SlideThumbnail> {
           aspectRatio: kAspectRatio,
           child: Container(
             color: Colors.grey[300],
-            child: const Center(child: CircularProgressIndicator()),
+            child: Center(child: IsometricLoading()),
           ),
         ),
       );

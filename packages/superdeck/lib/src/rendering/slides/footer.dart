@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class FooterPart extends StatelessWidget implements PreferredSizeWidget {
   const FooterPart({super.key});

@@ -10,14 +10,12 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.3.2
   mesh: ^0.4.3
-  mix: ^2.0.0-dev.5
+  mix: ^2.0.0-dev.4
   superdeck_core: ^0.0.1
   superdeck: ^0.0.4
   naked_ui: ^0.2.0-beta.7
-  remix: 
-    git:
-      url: https://github.com/btwld/remix.git
-      ref: main
+  remix: ^0.1.0-beta.1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
