@@ -49,7 +49,11 @@ class SlidePageContent extends StatelessWidget {
         }
 
         final safeIndex = index.clamp(0, slides.length - 1);
-        return SlideScreen(slides[safeIndex]);
+        return Semantics(
+          label: 'Slide ${safeIndex + 1}',
+          container: true,
+          child: SlideScreen(slides[safeIndex]),
+        );
       },
     );
   }

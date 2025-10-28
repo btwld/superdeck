@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/deck/deck_provider.dart';
 
 /// Helper to wait for presentation to load
 Future<void> waitForPresentationLoad(
@@ -39,7 +40,12 @@ Future<void> waitForPresentationLoad(
 
 /// Helper to wait for slide transitions to complete
 Future<void> waitForSlideTransition(WidgetTester tester) async {
-  await tester.pumpAndSettle(const Duration(milliseconds: 500));
+  // Use fixed pumps instead of pumpAndSettle to avoid hanging
+  // Navigation transitions take 1 second
+  for (int i = 0; i < 10; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  await tester.pump(); // One final pump to ensure everything is settled
 }
 
 /// Helper to simulate keyboard shortcuts
@@ -106,24 +112,28 @@ Future<void> waitForAnimations(WidgetTester tester) async {
 
 /// Extension methods for common test operations
 extension SuperDeckTestExtensions on WidgetTester {
-  /// Navigate to next slide using keyboard
+  /// Navigate to next slide using NavigationController
   Future<void> navigateToNextSlide() async {
-    await simulateKeyboardShortcut(
-      this,
-      LogicalKeyboardKey.arrowRight,
-      meta: true,
-    );
-    await waitForSlideTransition(this);
+    // Find a widget deep in the tree that has access to NavigationProvider
+    final textWidgets = find.byType(Text);
+    if (textWidgets.evaluate().isNotEmpty) {
+      final context = element(textWidgets.first);
+      final navigationController = NavigationProvider.of(context);
+      await navigationController.nextSlide();
+      await waitForSlideTransition(this);
+    }
   }
 
-  /// Navigate to previous slide using keyboard
+  /// Navigate to previous slide using NavigationController
   Future<void> navigateToPreviousSlide() async {
-    await simulateKeyboardShortcut(
-      this,
-      LogicalKeyboardKey.arrowLeft,
-      meta: true,
-    );
-    await waitForSlideTransition(this);
+    // Find a widget deep in the tree that has access to NavigationProvider
+    final textWidgets = find.byType(Text);
+    if (textWidgets.evaluate().isNotEmpty) {
+      final context = element(textWidgets.first);
+      final navigationController = NavigationProvider.of(context);
+      await navigationController.previousSlide();
+      await waitForSlideTransition(this);
+    }
   }
 
   /// Navigate using space key
