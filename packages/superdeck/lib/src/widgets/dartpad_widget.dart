@@ -5,8 +5,8 @@ import '../deck/widget_definition.dart';
 import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/webview_wrapper.dart';
 
-/// Strongly-typed arguments for DartPad widget.
-class DartPadArgs {
+/// Strongly-typed data transfer object for DartPad widget.
+class DartPadDto {
   /// DartPad snippet ID.
   final String id;
 
@@ -19,7 +19,7 @@ class DartPadArgs {
   /// Whether to auto-run.
   final bool run;
 
-  const DartPadArgs({
+  const DartPadDto({
     required this.id,
     this.theme,
     this.embed = true,
@@ -28,21 +28,21 @@ class DartPadArgs {
 
   /// Schema for validating DartPad arguments.
   static final schema = Ack.object({
-    'id': Ack.string(),
+    'id': Ack.string().notEmpty(),
     'theme': DartPadTheme.schema.nullable().optional(),
     'embed': Ack.boolean().nullable().optional(),
     'run': Ack.boolean().nullable().optional(),
   });
 
-  /// Parses and validates raw map into typed DartPadArgs.
-  static DartPadArgs parse(Map<String, Object?> map) {
+  /// Parses and validates raw map into typed DartPadDto.
+  static DartPadDto parse(Map<String, Object?> map) {
     schema.parse(map); // Validate first
 
     // Parse optional theme
     final themeStr = map['theme'] as String?;
     final theme = themeStr != null ? DartPadTheme.fromJson(themeStr) : null;
 
-    return DartPadArgs(
+    return DartPadDto(
       id: map['id'] as String,
       theme: theme,
       embed: map['embed'] as bool? ?? true,
@@ -54,7 +54,7 @@ class DartPadArgs {
   String toUrl() {
     final params = [
       'id=$id',
-      if (theme != null) 'theme=$theme',
+      if (theme != null) 'theme=${theme!.name}',
       'embed=$embed',
       'run=$run',
     ];
@@ -63,8 +63,6 @@ class DartPadArgs {
 }
 
 /// Built-in widget for embedding DartPad code editors in slides.
-///
-/// Replaces the former DartPadBlock with a schema-validated custom widget.
 ///
 /// Usage in markdown:
 /// ```markdown
@@ -81,14 +79,14 @@ class DartPadArgs {
 /// - `theme` (optional): Theme name (light, dark) - default: light
 /// - `embed` (optional): Whether to embed - default: true
 /// - `run` (optional): Whether to auto-run - default: true
-class DartPadWidget extends WidgetDefinition<DartPadArgs> {
+class DartPadWidget extends WidgetDefinition<DartPadDto> {
   const DartPadWidget();
 
   @override
-  DartPadArgs parse(Map<String, Object?> args) => DartPadArgs.parse(args);
+  DartPadDto parse(Map<String, Object?> args) => DartPadDto.parse(args);
 
   @override
-  Widget build(BuildContext context, DartPadArgs args) {
+  Widget build(BuildContext context, DartPadDto args) {
     // Access block data for sizing
     final data = BlockData.of(context);
 

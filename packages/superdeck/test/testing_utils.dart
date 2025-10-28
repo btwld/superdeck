@@ -14,7 +14,7 @@ List<SlideConfiguration> createTestSlides(int count) {
       slide: Slide(
         key: 'slide-$index',
         sections: [
-          SectionBlock([ColumnBlock('Test slide $index content')]),
+          SectionBlock([ContentBlock('Test slide $index content')]),
         ],
       ),
       thumbnailFile: 'thumbnail-$index.png',
@@ -35,7 +35,7 @@ SlideConfiguration createTestSlide({
     slide: Slide(
       key: 'slide-$index',
       sections: [
-        SectionBlock([ColumnBlock(content ?? 'Test slide $index content')]),
+        SectionBlock([ContentBlock(content ?? 'Test slide $index content')]),
       ],
     ),
     thumbnailFile: thumbnailFile ?? 'thumbnail-$index.png',
@@ -51,7 +51,7 @@ Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
         (index) => Slide(
           key: 'slide-$index',
           sections: [
-            SectionBlock([ColumnBlock('Test slide $index content')]),
+            SectionBlock([ContentBlock('Test slide $index content')]),
           ],
         ),
       );

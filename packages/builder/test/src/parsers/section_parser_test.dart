@@ -418,5 +418,5 @@ Header content.
 }
 
 extension on Block {
-  String get content => (this as ColumnBlock).content;
+  String get content => (this as ContentBlock).content;
 }

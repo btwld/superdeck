@@ -447,5 +447,44 @@ void main() {
         ),
       );
     });
+
+    test('normalizes @block tag to @column (ContentBlock)', () {
+      const text = '''
+@block
+Some markdown content
+
+@block{
+  align: center
+  flex: 2
+}
+More content
+''';
+
+      final blocks = const BlockParser().parse(text);
+
+      expect(blocks.length, 2);
+
+      // First @block block
+      expect(blocks[0].type, 'block'); // Original type
+      expect(blocks[0].data['type'], 'column'); // Normalized to ContentBlock.key
+
+      // Second @block block with options
+      expect(blocks[1].type, 'block');
+      expect(blocks[1].data['type'], 'column');
+      expect(blocks[1].data['align'], 'center');
+      expect(blocks[1].data['flex'], 2);
+    });
+
+    test('both @column and @block produce same ContentBlock type', () {
+      const textColumn = '@column{flex: 1}';
+      const textBlock = '@block{flex: 1}';
+
+      final blocksColumn = const BlockParser().parse(textColumn);
+      final blocksBlock = const BlockParser().parse(textBlock);
+
+      expect(blocksColumn[0].data['type'], blocksBlock[0].data['type']);
+      expect(blocksColumn[0].data['type'], 'column'); // Both normalize to 'column'
+      expect(blocksColumn[0].data['flex'], blocksBlock[0].data['flex']);
+    });
   });
 }

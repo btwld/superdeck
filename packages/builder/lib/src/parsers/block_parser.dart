@@ -14,20 +14,26 @@ class ParsedBlock {
   }) : _data = data;
 
   Map<String, dynamic> get data {
-    return switch (type) {
+    // Normalize 'block' tag to 'column' for backward compatibility
+    final normalizedType = type == 'block' ? ContentBlock.key : type;
+
+    return switch (normalizedType) {
       SectionBlock.key ||
-      ColumnBlock.key ||
-      WidgetBlock.key => {..._data, 'type': type},
+      ContentBlock.key ||
+      WidgetBlock.key => {..._data, 'type': normalizedType},
       _ => {..._data, 'name': type, 'type': WidgetBlock.key},
     };
   }
 }
 
-/// Parses build-time layout directives (@section, @column) with YAML-style options.
+/// Parses build-time layout directives (@section, @column, @block) with YAML-style options.
 ///
 /// Extracts custom directives like:
 /// - `@section` or `@section{flex: 1}`
-/// - `@column{align: center, flex: 2}`
+/// - `@column{align: center, flex: 2}` or `@block{align: center, flex: 2}`
+///
+/// Note: Both `@column` and `@block` tags create ContentBlock instances.
+/// `@column` is maintained for backward compatibility.
 ///
 /// **Why regex instead of markdown package BlockSyntax?**
 /// - These are build-time directives, not markdown syntax

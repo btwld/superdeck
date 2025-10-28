@@ -3,9 +3,10 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../deck/widget_definition.dart';
+import '../utils/converters.dart';
 
-/// Strongly-typed arguments for QR code widget.
-class QrCodeArgs {
+/// Strongly-typed data transfer object for QR code widget.
+class QrCodeDto {
   /// The data to encode in the QR code.
   final String text;
 
@@ -21,7 +22,7 @@ class QrCodeArgs {
   /// Hex color for QR code.
   final String? foregroundColor;
 
-  const QrCodeArgs({
+  const QrCodeDto({
     required this.text,
     this.size = 200.0,
     this.errorCorrection = 'medium',
@@ -29,19 +30,37 @@ class QrCodeArgs {
     this.foregroundColor,
   });
 
-  /// Schema for validating QR code arguments.
+  /// Schema for validating QR code arguments with comprehensive validation.
   static final schema = Ack.object({
-    'text': Ack.string(),
-    'size': Ack.double().nullable().optional(),
-    'errorCorrection': Ack.string().nullable().optional(),
-    'backgroundColor': Ack.string().nullable().optional(),
-    'foregroundColor': Ack.string().nullable().optional(),
+    'text': Ack.string()
+        .notEmpty()
+        .refine(
+          (text) => text.length <= 1000,
+          message: 'QR code text must be less than 1000 characters',
+        ),
+    'size': Ack.double()
+        .min(1)
+        .max(1000)
+        .nullable()
+        .optional(),
+    'errorCorrection': Ack.string()
+        .enumString(['low', 'l', 'medium', 'm', 'high', 'q', 'highest', 'h'])
+        .nullable()
+        .optional(),
+    'backgroundColor': Ack.string()
+        .nullable()
+        .optional()
+        .hexColor(),
+    'foregroundColor': Ack.string()
+        .nullable()
+        .optional()
+        .hexColor(),
   });
 
-  /// Parses and validates raw map into typed QrCodeArgs.
-  static QrCodeArgs parse(Map<String, Object?> map) {
+  /// Parses and validates raw map into typed QrCodeDto.
+  static QrCodeDto parse(Map<String, Object?> map) {
     schema.parse(map); // Validate first
-    return QrCodeArgs(
+    return QrCodeDto(
       text: map['text'] as String,
       size: (map['size'] as num?)?.toDouble() ?? 200.0,
       errorCorrection: map['errorCorrection'] as String? ?? 'medium',
@@ -70,18 +89,22 @@ class QrCodeArgs {
 /// - `errorCorrection` (optional): Error correction level - low, medium, high, or highest (default: medium)
 /// - `backgroundColor` (optional): Hex color for background (default: white)
 /// - `foregroundColor` (optional): Hex color for QR code (default: black)
-class QrCodeWidget extends WidgetDefinition<QrCodeArgs> {
+class QrCodeWidget extends WidgetDefinition<QrCodeDto> {
   const QrCodeWidget();
 
   @override
-  QrCodeArgs parse(Map<String, Object?> args) => QrCodeArgs.parse(args);
+  QrCodeDto parse(Map<String, Object?> args) => QrCodeDto.parse(args);
 
   @override
-  Widget build(BuildContext context, QrCodeArgs args) {
-    // Parse optional parameters
+  Widget build(BuildContext context, QrCodeDto args) {
+    // Parse optional parameters with defaults
     final errorCorrectionLevel = _parseErrorCorrection(args.errorCorrection);
-    final backgroundColor = _parseColor(args.backgroundColor, Colors.white);
-    final foregroundColor = _parseColor(args.foregroundColor, Colors.black);
+    final backgroundColor = args.backgroundColor != null
+        ? hexToColor(args.backgroundColor!)
+        : Colors.white;
+    final foregroundColor = args.foregroundColor != null
+        ? hexToColor(args.foregroundColor!)
+        : Colors.black;
 
     return Center(
       child: Container(
@@ -125,17 +148,5 @@ class QrCodeWidget extends WidgetDefinition<QrCodeArgs> {
       'highest' || 'h' => QrErrorCorrectLevel.H,
       _ => QrErrorCorrectLevel.M,
     };
-  }
-
-  /// Parses hex color string to Color object.
-  Color _parseColor(String? hex, Color defaultColor) {
-    if (hex == null || hex.isEmpty) return defaultColor;
-
-    try {
-      final hexCode = hex.replaceAll('#', '').padLeft(6, '0');
-      return Color(int.parse('FF$hexCode', radix: 16));
-    } catch (_) {
-      return defaultColor;
-    }
   }
 }

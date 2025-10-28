@@ -7,8 +7,8 @@ import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/cache_image_widget.dart';
 import '../utils/converters.dart';
 
-/// Strongly-typed arguments for image widget.
-class ImageArgs {
+/// Strongly-typed data transfer object for image widget.
+class ImageDto {
   /// The asset to display.
   final GeneratedAsset asset;
 
@@ -21,7 +21,7 @@ class ImageArgs {
   /// Optional explicit height.
   final double? height;
 
-  const ImageArgs({
+  const ImageDto({
     required this.asset,
     this.fit = ImageFit.cover,
     this.width,
@@ -32,12 +32,12 @@ class ImageArgs {
   static final schema = Ack.object({
     'asset': GeneratedAsset.schema,
     'fit': ImageFit.schema.nullable().optional(),
-    'width': Ack.double().nullable().optional(),
-    'height': Ack.double().nullable().optional(),
+    'width': Ack.double().positive().nullable().optional(),
+    'height': Ack.double().positive().nullable().optional(),
   });
 
-  /// Parses and validates raw map into typed ImageArgs.
-  static ImageArgs parse(Map<String, Object?> map) {
+  /// Parses and validates raw map into typed ImageDto.
+  static ImageDto parse(Map<String, Object?> map) {
     schema.parse(map); // Validate first
 
     // Parse asset
@@ -48,7 +48,7 @@ class ImageArgs {
     final fitStr = map['fit'] as String?;
     final fit = fitStr != null ? ImageFit.fromJson(fitStr) : ImageFit.cover;
 
-    return ImageArgs(
+    return ImageDto(
       asset: asset,
       fit: fit,
       width: (map['width'] as num?)?.toDouble(),
@@ -59,13 +59,13 @@ class ImageArgs {
 
 /// Built-in widget for displaying images in slides.
 ///
-/// Replaces the former ImageBlock with a schema-validated custom widget.
-///
 /// Usage in markdown:
 /// ```markdown
 /// @image {
 ///   asset:
-///     fileName: images/example.png
+///     name: example
+///     extension: png
+///     type: image
 ///   fit: contain
 ///   width: 300
 ///   height: 200
@@ -73,18 +73,18 @@ class ImageArgs {
 /// ```
 ///
 /// Parameters:
-/// - `asset` (required): GeneratedAsset map with fileName
-/// - `fit` (optional): ImageFit enum value (cover, contain, fill, etc.)
+/// - `asset` (required): GeneratedAsset map with name, extension, type
+/// - `fit` (optional): ImageFit enum value (cover, contain, fill, etc.) - default: cover
 /// - `width` (optional): Image width in logical pixels
 /// - `height` (optional): Image height in logical pixels
-class ImageWidget extends WidgetDefinition<ImageArgs> {
+class ImageWidget extends WidgetDefinition<ImageDto> {
   const ImageWidget();
 
   @override
-  ImageArgs parse(Map<String, Object?> args) => ImageArgs.parse(args);
+  ImageDto parse(Map<String, Object?> args) => ImageDto.parse(args);
 
   @override
-  Widget build(BuildContext context, ImageArgs args) {
+  Widget build(BuildContext context, ImageDto args) {
     // Access block data for styling and sizing
     final data = BlockData.of(context);
     final spec = data.spec;

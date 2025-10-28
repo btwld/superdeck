@@ -45,7 +45,7 @@ sealed class Block {
   static final discriminatedSchema = Ack.discriminated(
     discriminatorKey: 'type',
     schemas: {
-      ColumnBlock.key: ColumnBlock.schema,
+      ContentBlock.key: ContentBlock.schema,
       WidgetBlock.key: WidgetBlock.schema,
     },
   );
@@ -57,7 +57,7 @@ sealed class Block {
     final type = map['type'] as String;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
-      ColumnBlock.key => ColumnBlock.fromMap(map),
+      ContentBlock.key => ContentBlock.fromMap(map),
       WidgetBlock.key => WidgetBlock.fromMap(map),
       _ => throw ArgumentError('Unknown block type: $type'),
     };
@@ -136,7 +136,7 @@ class SectionBlock extends Block {
 
   /// Creates a section block with a single text column.
   static SectionBlock text(String content) {
-    return SectionBlock([ColumnBlock(content)]);
+    return SectionBlock([ContentBlock(content)]);
   }
 
   /// Validation schema for section blocks.
@@ -169,28 +169,29 @@ class SectionBlock extends Block {
   );
 }
 
-/// A block that displays markdown content in a column.
+/// A block that displays markdown content.
 ///
 /// This is the most common block type, used for text and markdown content.
-class ColumnBlock extends Block {
-  /// The type identifier for column blocks.
+class ContentBlock extends Block {
+  /// The type identifier for content blocks.
+  /// TODO: Change to 'block' in next major version
   static const key = 'column';
 
   /// The markdown content to display.
   final String content;
 
-  ColumnBlock(String? content, {super.align, super.flex, super.scrollable})
+  ContentBlock(String? content, {super.align, super.flex, super.scrollable})
     : content = content ?? '',
       super(type: key);
 
   @override
-  ColumnBlock copyWith({
+  ContentBlock copyWith({
     String? content,
     ContentAlignment? align,
     int? flex,
     bool? scrollable,
   }) {
-    return ColumnBlock(
+    return ContentBlock(
       content ?? this.content,
       align: align ?? this.align,
       flex: flex ?? this.flex,
@@ -209,9 +210,9 @@ class ColumnBlock extends Block {
     };
   }
 
-  static ColumnBlock fromMap(Map<String, dynamic> map) {
+  static ContentBlock fromMap(Map<String, dynamic> map) {
     try {
-      return ColumnBlock(
+      return ContentBlock(
         map['content'] as String?,
         align: map['align'] != null
             ? ContentAlignment.fromJson(map['align'] as String)
@@ -220,7 +221,7 @@ class ColumnBlock extends Block {
         scrollable: map['scrollable'] as bool? ?? false,
       );
     } catch (e) {
-      throw Exception('Failed to parse ColumnBlock: $e');
+      throw Exception('Failed to parse ContentBlock: $e');
     }
   }
 
@@ -235,7 +236,7 @@ class ColumnBlock extends Block {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ColumnBlock &&
+      other is ContentBlock &&
           runtimeType == other.runtimeType &&
           type == other.type &&
           align == other.align &&
@@ -295,11 +296,12 @@ class WidgetBlock extends Block {
 
   WidgetBlock({
     required this.name,
-    this.args = const {},
+    Map<String, dynamic>? args,
     super.align,
     super.flex,
     super.scrollable,
-  }) : super(type: key);
+  }) : args = args == null ? const {} : Map.unmodifiable(args),
+       super(type: key);
 
   @override
   WidgetBlock copyWith({
@@ -412,8 +414,8 @@ enum ContentAlignment {
   }
 }
 
-extension StringColumnExt on String {
-  ColumnBlock column() => ColumnBlock(this);
+extension StringContentExt on String {
+  ContentBlock toBlock() => ContentBlock(this);
 }
 
 extension BlockExt on Block {

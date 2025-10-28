@@ -103,7 +103,7 @@ class Slide {
       key: 'error',
       sections: [
         SectionBlock([
-          ColumnBlock('''
+          ContentBlock('''
 > [!CAUTION]
 > $title
 > $message
@@ -113,7 +113,7 @@ class Slide {
 ${error.toString()}
 ```
 '''),
-          ColumnBlock(''),
+          ContentBlock(''),
         ]),
       ],
     );

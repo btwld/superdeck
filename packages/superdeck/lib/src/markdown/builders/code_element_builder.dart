@@ -4,9 +4,9 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
 import '../../rendering/blocks/block_provider.dart';
-import '../../rendering/blocks/block_widget.dart';
 import '../../styling/styles.dart';
 import '../../ui/widgets/hero_element.dart';
+import '../../utils/converters.dart';
 import '../../utils/syntax_highlighter.dart';
 import '../markdown_helpers.dart';
 import '../markdown_hero_mixin.dart';
@@ -74,7 +74,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
 
         final containerSpec = spec.container?.spec;
         final codeOffset = containerSpec != null
-            ? BlockWidget.calculateBlockOffset(containerSpec)
+            ? ConverterHelper.calculateBlockOffset(containerSpec)
             : Offset.zero;
 
         final totalSize = Size(

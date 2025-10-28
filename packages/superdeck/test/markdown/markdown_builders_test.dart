@@ -244,7 +244,7 @@ class _MarkdownHarness extends StatelessWidget {
     );
 
     final blockData = BlockData(
-      block: ColumnBlock(markdown),
+      block: ContentBlock(markdown),
       spec: slideSpec,
       size: const Size(800, 600),
     );

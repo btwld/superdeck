@@ -92,7 +92,7 @@ class _SectionAggregator {
     final lastBlock = section.blocks.lastOrNull;
 
     final updatedBlocks = switch (lastBlock) {
-      ColumnBlock(content: final existingContent) => [
+      ContentBlock(content: final existingContent) => [
         ...section.blocks.take(section.blocks.length - 1),
         lastBlock.copyWith(
           content: existingContent.isEmpty
@@ -100,7 +100,7 @@ class _SectionAggregator {
               : '$existingContent\n$content',
         ),
       ],
-      _ => [...section.blocks, ColumnBlock(content)],
+      _ => [...section.blocks, ContentBlock(content)],
     };
 
     sections.last = section.copyWith(blocks: updatedBlocks);

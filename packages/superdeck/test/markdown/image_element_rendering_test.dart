@@ -207,7 +207,7 @@ class _MarkdownHarness extends StatelessWidget {
 
     // Provide BlockData with a reasonable slide size for testing
     final blockData = BlockData(
-      block: ColumnBlock(markdown),
+      block: ContentBlock(markdown),
       spec: slideSpec,
       size: const Size(800, 600),
     );
