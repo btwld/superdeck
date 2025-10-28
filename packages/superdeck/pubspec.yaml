@@ -43,7 +43,7 @@ dependencies:
   qr_flutter: ^4.1.0
   universal_html: ^2.2.4
   signals: ^6.2.0
-  ack_annotations: ^1.0.0-beta.1
+  ack_annotations: ^1.0.0-beta.2
 
 dev_dependencies:
   flutter_test:
@@ -54,15 +54,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   build_runner: ^2.5.4
-  ack_generator: ^1.0.0-beta.1
-
-dependency_overrides:
-  ack:
-    path: /Users/leofarias/bitwild/ack/packages/ack
-  ack_annotations:
-    path: /Users/leofarias/bitwild/ack/packages/ack_annotations
-  ack_generator:
-    path: /Users/leofarias/bitwild/ack/packages/ack_generator
+  ack_generator: ^1.0.0-beta.2
 
 flutter:
   assets:

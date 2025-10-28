@@ -2,9 +2,3 @@
 dependency_overrides:
   superdeck_core:
     path: ../core
-  ack:
-    path: /Users/leofarias/bitwild/ack/packages/ack
-  ack_annotations:
-    path: /Users/leofarias/bitwild/ack/packages/ack_annotations
-  ack_generator:
-    path: /Users/leofarias/bitwild/ack/packages/ack_generator
