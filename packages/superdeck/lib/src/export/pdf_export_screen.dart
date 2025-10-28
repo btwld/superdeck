@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart' show Icons, Colors, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:remix/remix.dart';
+import 'package:superdeck/src/ui/ui.dart';
 import 'package:superdeck/src/utils/constants.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/export/slide_capture_service.dart';
-import 'package:superdeck_ui/superdeck_ui.dart';
 
 import '../rendering/slides/slide_view.dart';
 import '../deck/slide_configuration.dart';

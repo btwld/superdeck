@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart' show MaterialApp;
 import 'package:mix/mix.dart';
-import 'package:superdeck_ui/superdeck_ui.dart';
+import 'package:superdeck/src/ui/tokens/colors.dart';
 
 import '../utils/initializer_provider.dart';
 import '../deck/deck_options.dart';

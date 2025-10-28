@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart' show Icons, Colors;
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/export/pdf_export_screen.dart';
-import 'package:superdeck_ui/superdeck_ui.dart';
+import 'package:superdeck/src/ui/tokens/colors.dart';
+import 'package:superdeck/src/ui/widgets/icon_button.dart';
+
 import 'package:flutter/widgets.dart';
 
 import '../../deck/deck_controller.dart';
@@ -16,6 +18,7 @@ class DeckBottomBar extends StatelessWidget {
       .crossAxisAlignment(CrossAxisAlignment.center)
       .height(60)
       .marginAll(12)
+      .spacing(16)
       .paddingX(20)
       .paddingY(10)
       .color(SDColors.bgLow.token())
@@ -40,12 +43,12 @@ class DeckBottomBar extends StatelessWidget {
           onPressed: deckController.toggleNotes,
           icon: isNotesOpen ? Icons.comment : Icons.comments_disabled,
         ),
-        const SizedBox(width: 16),
+
         SDIconButton(
           icon: Icons.save,
           onPressed: () => PdfExportDialogScreen.show(context),
         ),
-        const SizedBox(width: 16),
+
         SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
           onPressed: () => thumbnail.generateThumbnails(
@@ -68,7 +71,6 @@ class DeckBottomBar extends StatelessWidget {
           '$currentPage of $totalPages',
           style: const TextStyle(color: Colors.white),
         ),
-        const SizedBox(width: 16),
         SDIconButton(icon: Icons.close, onPressed: deckController.closeMenu),
       ],
     );

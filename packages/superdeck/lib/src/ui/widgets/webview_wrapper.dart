@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
-import 'package:superdeck_ui/superdeck_ui.dart';
+import 'package:superdeck/src/ui/widgets/icon_button.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewWrapper extends StatefulWidget {

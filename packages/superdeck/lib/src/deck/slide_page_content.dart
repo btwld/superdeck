@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
-import 'package:superdeck_ui/superdeck_ui.dart';
-
+import 'package:superdeck/src/ui/ui.dart';
 import '../rendering/slides/slide_screen.dart';
 import 'deck_controller.dart';
 import 'deck_provider.dart';

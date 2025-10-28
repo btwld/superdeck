@@ -27,8 +27,6 @@ dependencies:
   url_launcher: ^6.3.1
   mix: ^2.0.0-dev.4
   remix: ^0.1.0-beta.1
-  superdeck_ui: 
-    path: ../superdeck_ui
   flutter_markdown_plus: ^1.0.5
   superdeck_core: ^0.0.1
   markdown: ^7.3.0

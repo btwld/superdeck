@@ -5,10 +5,11 @@ import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
 import 'package:superdeck/src/rendering/slides/scaled_app.dart';
 import 'package:superdeck/src/ui/panels/comments_panel.dart';
 import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
+import 'package:superdeck/src/ui/widgets/icon_button.dart';
+import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
 import 'package:superdeck/src/utils/constants.dart';
 import 'package:superdeck/src/ui/extensions.dart';
 import 'package:superdeck/src/export/thumbnail_controller.dart';
-import 'package:superdeck_ui/superdeck_ui.dart';
 
 import '../deck/deck_controller.dart';
 import '../deck/deck_provider.dart';

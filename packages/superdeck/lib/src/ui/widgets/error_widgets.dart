@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart' show Icons, Colors;
 import 'package:flutter/widgets.dart';
-import 'package:superdeck_ui/superdeck_ui.dart';
+import 'package:superdeck/src/ui/widgets/button.dart';
 
 /// Simple error widget helpers to reduce duplication across the codebase
 /// Follows DRY principle by centralizing error UI patterns
