@@ -140,18 +140,28 @@ class DeckRepository {
     }
 
     // Map asset references to their corresponding file paths
-    final assetFiles = uniqueAssets.values.map(
-      (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)),
-    );
+    final assetFiles = uniqueAssets.values
+        .map(
+          (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)),
+        )
+        .toList();
+
+    final previousAssetsRef = await _readExistingAssetsReference();
+    final filesUnchanged =
+        previousAssetsRef != null &&
+        _haveSamePaths(assetFiles, previousAssetsRef.files);
 
     final assetsRef = GeneratedAssetsReference(
-      lastModified: DateTime.now(),
-      files: assetFiles.toList(),
+      lastModified: filesUnchanged
+          ? previousAssetsRef.lastModified
+          : DateTime.now(),
+      files: assetFiles,
     );
 
-    // Save the assets reference
-    final assetsJson = prettyJson(assetsRef.toMap());
-    await configuration.assetsRefJson.writeAsString(assetsJson);
+    if (!filesUnchanged) {
+      final assetsJson = prettyJson(assetsRef.toMap());
+      await configuration.assetsRefJson.writeAsString(assetsJson);
+    }
 
     await _cleanupGeneratedAssets(assetsRef);
   }
@@ -223,7 +233,8 @@ class DeckRepository {
           final blockMap = Map<String, dynamic>.from(block as Map);
 
           // If the block has content, replace it with parsed markdown AST
-          if (blockMap.containsKey('content') && blockMap['content'] is String) {
+          if (blockMap.containsKey('content') &&
+              blockMap['content'] is String) {
             final contentString = blockMap['content'] as String;
             final markdownAst = converter.toMap(
               contentString,
@@ -283,5 +294,41 @@ class DeckRepository {
         }
       }),
     );
+  }
+
+  Future<GeneratedAssetsReference?> _readExistingAssetsReference() async {
+    final file = configuration.assetsRefJson;
+    if (!await file.exists()) {
+      return null;
+    }
+
+    try {
+      final content = await file.readAsString();
+      if (content.trim().isEmpty) {
+        return null;
+      }
+
+      final data = jsonDecode(content) as Map<String, dynamic>;
+      return GeneratedAssetsReference.fromMap(data);
+    } catch (e) {
+      _logger.warning(
+        'Failed to parse existing generated assets reference: $e',
+      );
+      return null;
+    }
+  }
+
+  bool _haveSamePaths(List<File> current, List<File> previous) {
+    if (current.length != previous.length) {
+      return false;
+    }
+
+    for (var i = 0; i < current.length; i++) {
+      if (current[i].path != previous[i].path) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
