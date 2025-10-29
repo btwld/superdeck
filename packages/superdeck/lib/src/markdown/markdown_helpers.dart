@@ -93,7 +93,7 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
   String? fadingChar;
   double fadeOpacity = 0.0;
   bool isFadingOut = false;
-  String ghostSuffix = '';
+  List<String> ghostSuffixG = const <String>[];
 
   if (t < 0.5 && startSuffix.isNotEmpty) {
     final p = t * 2.0; // 0..1 in fade-out
@@ -109,10 +109,10 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
       fadeOpacity = frac; // 0..1
       isFadingOut = true;
       // Reserve width for the rest of the start string after the fading grapheme.
-      ghostSuffix = startSuffix.skip(remaining + 1).join();
+      ghostSuffixG = startSuffix.skip(remaining + 1).toList();
     } else {
       // No fading; ghost the empty remainder.
-      ghostSuffix = '';
+      ghostSuffixG = const <String>[];
     }
   } else if (t > 0.5 && endSuffix.isNotEmpty) {
     final p = (t - 0.5) * 2.0; // 0..1 in fade-in
@@ -128,25 +128,40 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
       fadeOpacity = frac; // 0..1
       isFadingOut = false;
       // Reserve width for what remains in the end string after the fading grapheme.
-      ghostSuffix = endSuffix.skip(added + 1).join();
+      ghostSuffixG = endSuffix.skip(added + 1).toList();
     } else {
-      ghostSuffix = endSuffix
+      ghostSuffixG = endSuffix
           .skip(added)
-          .join(); // alpha=0 keeps final width stable at the tail end
+          .toList(); // alpha=0 keeps final width stable at the tail end
     }
   } else if (t == 0.5 && endSuffix.isNotEmpty) {
     // Middle: nothing committed beyond prefix; show first end grapheme at 0 opacity.
     fadingChar = endSuffix.first;
     fadeOpacity = 0.0;
     isFadingOut = false;
-    ghostSuffix = endSuffix.skip(1).join();
+    ghostSuffixG = endSuffix.skip(1).toList();
   }
 
-  // If the fading char is whitespace, just commit it immediately and move on.
-  if (fadingChar != null && fadingChar.trim().isEmpty) {
+  String? takeNextGhostGrapheme() {
+    if (ghostSuffixG.isEmpty) {
+      return null;
+    }
+    final next = ghostSuffixG.first;
+    ghostSuffixG = ghostSuffixG.sublist(1);
+    return next;
+  }
+
+  // If the fading char is whitespace, commit it immediately but continue fading
+  // the next grapheme so animation time isn't lost to invisible characters.
+  while (fadingChar != null && fadingChar.trim().isEmpty) {
     committed += fadingChar;
-    fadingChar = null;
-    fadeOpacity = 0.0;
+    final replacement = takeNextGhostGrapheme();
+    if (replacement == null) {
+      fadingChar = null;
+      fadeOpacity = 0.0;
+      break;
+    }
+    fadingChar = replacement;
   }
 
   return LerpStringResult(
@@ -154,7 +169,7 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
     fadingChar: fadingChar,
     fadeOpacity: fadeOpacity.clamp(0.0, 1.0),
     isFadingOut: isFadingOut,
-    ghostSuffix: ghostSuffix,
+    ghostSuffix: ghostSuffixG.join(),
   );
 }
 

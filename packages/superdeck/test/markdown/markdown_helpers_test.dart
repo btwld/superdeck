@@ -329,6 +329,16 @@ void main() {
           expect(result.fadeOpacity, greaterThanOrEqualTo(0.0));
         }
       });
+
+      test('does not pause fade when the next grapheme is whitespace', () {
+        final result = lerpStringWithFade('Hi', 'Hi UI', 0.55);
+
+        expect(result.text, endsWith(' '), reason: 'Space should be committed');
+        expect(result.fadingChar, equals('U'),
+            reason: 'Next non-space grapheme should start fading immediately');
+        expect(result.hasFadingChar, isTrue);
+        expect(result.ghostSuffix, equals('I'));
+      });
     });
 
     group('common prefix handling', () {

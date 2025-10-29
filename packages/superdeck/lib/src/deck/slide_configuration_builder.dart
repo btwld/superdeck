@@ -2,8 +2,10 @@ import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../styling/styles.dart';
+import '../widgets/widgets.dart';
 import 'deck_options.dart';
 import 'slide_configuration.dart';
+import 'widget_definition.dart';
 
 /// Service responsible for transforming raw Slide domain entities
 /// into SlideConfiguration view models ready for rendering.
@@ -37,13 +39,21 @@ class SlideConfigurationBuilder {
     Slide slide,
     DeckOptions options,
   ) {
-    // Collect widget builders that are used in this slide
-    final widgets = <String, WidgetBlockBuilder>{};
-    for (final section in slide.sections) {
-      for (final block in section.blocks) {
-        if (block is WidgetBlock && options.widgets.containsKey(block.name)) {
-          widgets[block.name] = options.widgets[block.name]!;
-        }
+    // Start with built-in widgets, then add user widgets that are actually used
+    final widgets = Map<String, WidgetDefinition>.from(builtInWidgets);
+
+    // Collect widget names used in this slide
+    final usedWidgetNames = slide.sections
+        .expand((section) => section.blocks)
+        .whereType<WidgetBlock>()
+        .map((block) => block.name)
+        .toSet();
+
+    // Add user widgets that are used (overriding built-ins if necessary)
+    for (final name in usedWidgetNames) {
+      final userWidget = options.widgets[name];
+      if (userWidget != null) {
+        widgets[name] = userWidget;
       }
     }
 

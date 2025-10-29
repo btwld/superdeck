@@ -10,6 +10,7 @@ export 'src/models/slide_model.dart';
 export 'src/deck_configuration.dart';
 export 'src/deck_repository.dart';
 export 'src/deck_format_exception.dart';
+export 'src/build_status.dart';
 export 'src/tag_tokenizer.dart';
 export 'src/markdown_syntaxes.dart';
 export 'src/hero_tag_helpers.dart';

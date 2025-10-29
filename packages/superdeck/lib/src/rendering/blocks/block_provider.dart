@@ -4,7 +4,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../../ui/widgets/provider.dart';
 import '../../styling/styles.dart';
 
-class BlockData<T extends Block> {
+class BlockData {
   const BlockData({
     required this.spec,
     required this.size,
@@ -13,7 +13,7 @@ class BlockData<T extends Block> {
 
   final SlideSpec spec;
   final Size size;
-  final T block;
+  final Block block;
 
   @override
   bool operator ==(Object other) {
@@ -27,38 +27,14 @@ class BlockData<T extends Block> {
   int get hashCode => spec.hashCode ^ size.hashCode ^ block.hashCode;
 
   static BlockData of(BuildContext context) {
-    final data = _tryAnyBlockData(context);
+    final data = InheritedData.maybeOf<BlockData>(context);
     if (data == null) {
       throw FlutterError('BlockData not found');
     }
     return data;
   }
 
-  static BlockData<T>? inheritedData<T extends Block>(BuildContext context) {
-    return InheritedData.maybeOf<BlockData<T>>(context);
+  static BlockData? maybeOf(BuildContext context) {
+    return InheritedData.maybeOf<BlockData>(context);
   }
-
-  static BlockData? _tryAnyBlockData(BuildContext context) {
-    return inheritedData<ColumnBlock>(context) ??
-        inheritedData<WidgetBlock>(context) ??
-        inheritedData<ImageBlock>(context) ??
-        inheritedData<DartPadBlock>(context);
-  }
-}
-
-class SectionData {
-  const SectionData({required this.section, required this.size});
-
-  final SectionBlock section;
-  final Size size;
-
-  @override
-  bool operator ==(Object other) {
-    return other is SectionData &&
-        other.section == section &&
-        other.size == size;
-  }
-
-  @override
-  int get hashCode => section.hashCode ^ size.hashCode;
 }

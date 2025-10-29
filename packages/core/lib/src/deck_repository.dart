@@ -24,7 +24,7 @@ class DeckRepository {
     await configuration.assetsDir.ensureExists();
     await configuration.deckJson.ensureExists(content: '{}');
     await configuration.buildStatusJson.ensureExists(
-      content: prettyJson({'status': 'unknown'}),
+      content: prettyJson(BuildStatus.unknown().toJson()),
     );
     await configuration.slidesFile.ensureExists(content: '');
   }
@@ -140,18 +140,28 @@ class DeckRepository {
     }
 
     // Map asset references to their corresponding file paths
-    final assetFiles = uniqueAssets.values.map(
-      (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)),
-    );
+    final assetFiles = uniqueAssets.values
+        .map(
+          (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)),
+        )
+        .toList();
+
+    final previousAssetsRef = await _readExistingAssetsReference();
+    final filesUnchanged =
+        previousAssetsRef != null &&
+        _haveSamePaths(assetFiles, previousAssetsRef.files);
 
     final assetsRef = GeneratedAssetsReference(
-      lastModified: DateTime.now(),
-      files: assetFiles.toList(),
+      lastModified: filesUnchanged
+          ? previousAssetsRef.lastModified
+          : DateTime.now(),
+      files: assetFiles,
     );
 
-    // Save the assets reference
-    final assetsJson = prettyJson(assetsRef.toMap());
-    await configuration.assetsRefJson.writeAsString(assetsJson);
+    if (!filesUnchanged) {
+      final assetsJson = prettyJson(assetsRef.toMap());
+      await configuration.assetsRefJson.writeAsString(assetsJson);
+    }
 
     await _cleanupGeneratedAssets(assetsRef);
   }
@@ -159,27 +169,10 @@ class DeckRepository {
   /// Persists the result of the most recent build without replacing existing decks.
   ///
   /// The [status] parameter should be one of: 'building', 'success', 'failure', 'unknown'.
-  Future<void> saveBuildStatus({
-    required String status,
-    int? slideCount,
-    Object? error,
-    StackTrace? stackTrace,
-  }) async {
-    final statusData = <String, Object?>{
-      'status': status,
-      'timestamp': DateTime.now().toIso8601String(),
-      if (slideCount != null) 'slideCount': slideCount,
-    };
-
-    if (status == 'failure' && error != null) {
-      statusData['error'] = {
-        'type': error.runtimeType.toString(),
-        'message': error.toString(),
-        if (stackTrace != null) 'stackTrace': stackTrace.toString(),
-      };
-    }
-
-    await configuration.buildStatusJson.ensureWrite(prettyJson(statusData));
+  Future<void> saveBuildStatus(BuildStatus status) async {
+    await configuration.buildStatusJson.ensureWrite(
+      prettyJson(status.toJson()),
+    );
   }
 
   /// Reads the markdown content of the slides file.
@@ -223,7 +216,8 @@ class DeckRepository {
           final blockMap = Map<String, dynamic>.from(block as Map);
 
           // If the block has content, replace it with parsed markdown AST
-          if (blockMap.containsKey('content') && blockMap['content'] is String) {
+          if (blockMap.containsKey('content') &&
+              blockMap['content'] is String) {
             final contentString = blockMap['content'] as String;
             final markdownAst = converter.toMap(
               contentString,
@@ -283,5 +277,41 @@ class DeckRepository {
         }
       }),
     );
+  }
+
+  Future<GeneratedAssetsReference?> _readExistingAssetsReference() async {
+    final file = configuration.assetsRefJson;
+    if (!await file.exists()) {
+      return null;
+    }
+
+    try {
+      final content = await file.readAsString();
+      if (content.trim().isEmpty) {
+        return null;
+      }
+
+      final data = jsonDecode(content) as Map<String, dynamic>;
+      return GeneratedAssetsReference.fromMap(data);
+    } catch (e) {
+      _logger.warning(
+        'Failed to parse existing generated assets reference: $e',
+      );
+      return null;
+    }
+  }
+
+  bool _haveSamePaths(List<File> current, List<File> previous) {
+    if (current.length != previous.length) {
+      return false;
+    }
+
+    for (var i = 0; i < current.length; i++) {
+      if (current[i].path != previous[i].path) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

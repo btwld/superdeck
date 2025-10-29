@@ -9,7 +9,7 @@ dependencies:
   melos: ^6.3.3
   mix: ^1.7.0-beta.0
 
-dev_dependencies: 
+dev_dependencies:
   mix_generator: ^1.7.0-beta.0
 
 lint_staged:

@@ -78,7 +78,7 @@ class SlideView extends StatelessWidget {
           height: sectionSize.height,
           child: Stack(
             children: [
-              SectionBlockWidget(section: section, size: sectionSize),
+              SectionWidget(section: section, size: sectionSize),
               if (configuration.debug) _renderDebugInfo(section, sectionSize),
             ],
           ),

@@ -23,6 +23,10 @@ export 'package:superdeck/src/deck/navigation_controller.dart';
 export 'package:superdeck/src/deck/deck_options.dart';
 export 'package:superdeck/src/deck/deck_provider.dart';
 export 'package:superdeck/src/deck/slide_configuration.dart';
+export 'package:superdeck/src/deck/widget_definition.dart';
+
+// Built-in Widgets
+export 'package:superdeck/src/widgets/widgets.dart';
 
 // Core
 export 'package:superdeck_core/superdeck_core.dart';

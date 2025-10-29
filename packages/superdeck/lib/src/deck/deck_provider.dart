@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -148,10 +146,7 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
     // Start CLI watcher in debug mode for auto-rebuild
     if (kCanRunProcess) {
       try {
-        _cliWatcher = CliWatcher(
-          projectRoot: Directory.current,
-          configuration: configuration,
-        );
+        _cliWatcher = CliWatcher(configuration: configuration);
         _cliWatcher!.start();
         _logger.info('CLI watcher started');
 
