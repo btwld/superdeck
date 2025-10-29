@@ -217,7 +217,11 @@ class CliWatcher extends ChangeNotifier {
       _status = CliWatcherStatus.failed;
       await _writeErrorPresentation(exception);
     }
-    notifyListeners();
+
+    // Only notify if not disposed
+    if (_status != CliWatcherStatus.stopped) {
+      notifyListeners();
+    }
   }
 
   /// Writes an error deck to the deck.json file
@@ -264,6 +268,10 @@ class CliWatcher extends ChangeNotifier {
 
   Future<void> _refreshBuildStatus() async {
     if (_isReadingBuildStatus) return;
+
+    // Check if disposed before starting
+    if (_status == CliWatcherStatus.stopped) return;
+
     _isReadingBuildStatus = true;
 
     try {
@@ -313,7 +321,8 @@ class CliWatcher extends ChangeNotifier {
       var shouldNotify =
           previousStatus != status || wasRebuilding != _isRebuilding;
 
-      if (shouldNotify) {
+      // Only notify if not disposed
+      if (shouldNotify && _status != CliWatcherStatus.stopped) {
         if (_isRebuilding) {
           _logger.info('Build started (status: building)');
         } else if (previousStatus == 'building') {
