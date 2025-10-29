@@ -30,6 +30,6 @@ void main() {
 
       await tester.navigateToPreviousSlide();
       expect(find.byType(MaterialApp), findsWidgets);
-    }, semanticsEnabled: true);
+    });
   });
 }
