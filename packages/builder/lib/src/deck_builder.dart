@@ -43,9 +43,7 @@ class DeckBuilder {
       yield BuildCompleted(slides.toList());
     } catch (e, stackTrace) {
       await store.saveBuildStatus(
-        status: 'failure',
-        error: e,
-        stackTrace: stackTrace,
+        BuildStatus.failure(error: e, stackTrace: stackTrace),
       );
       yield BuildFailed(e, stackTrace);
     }
@@ -59,9 +57,7 @@ class DeckBuilder {
         yield BuildCompleted(slides.toList());
       } catch (e, stackTrace) {
         await store.saveBuildStatus(
-          status: 'failure',
-          error: e,
-          stackTrace: stackTrace,
+          BuildStatus.failure(error: e, stackTrace: stackTrace),
         );
         yield BuildFailed(e, stackTrace);
       }
@@ -73,7 +69,7 @@ class DeckBuilder {
     await store.initialize();
 
     // Write building status at the start
-    await store.saveBuildStatus(status: 'building');
+    await store.saveBuildStatus(BuildStatus.building());
 
     // Clear generated assets from previous builds
     store.clearGeneratedAssets();
@@ -113,8 +109,7 @@ class DeckBuilder {
       Deck(slides: processedSlides, configuration: configuration),
     );
     await store.saveBuildStatus(
-      status: 'success',
-      slideCount: processedSlides.length,
+      BuildStatus.success(slideCount: processedSlides.length),
     );
 
     return processedSlides;

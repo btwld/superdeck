@@ -24,7 +24,7 @@ class DeckRepository {
     await configuration.assetsDir.ensureExists();
     await configuration.deckJson.ensureExists(content: '{}');
     await configuration.buildStatusJson.ensureExists(
-      content: prettyJson({'status': 'unknown'}),
+      content: prettyJson(BuildStatus.unknown().toJson()),
     );
     await configuration.slidesFile.ensureExists(content: '');
   }
@@ -169,27 +169,10 @@ class DeckRepository {
   /// Persists the result of the most recent build without replacing existing decks.
   ///
   /// The [status] parameter should be one of: 'building', 'success', 'failure', 'unknown'.
-  Future<void> saveBuildStatus({
-    required String status,
-    int? slideCount,
-    Object? error,
-    StackTrace? stackTrace,
-  }) async {
-    final statusData = <String, Object?>{
-      'status': status,
-      'timestamp': DateTime.now().toIso8601String(),
-      if (slideCount != null) 'slideCount': slideCount,
-    };
-
-    if (status == 'failure' && error != null) {
-      statusData['error'] = {
-        'type': error.runtimeType.toString(),
-        'message': error.toString(),
-        if (stackTrace != null) 'stackTrace': stackTrace.toString(),
-      };
-    }
-
-    await configuration.buildStatusJson.ensureWrite(prettyJson(statusData));
+  Future<void> saveBuildStatus(BuildStatus status) async {
+    await configuration.buildStatusJson.ensureWrite(
+      prettyJson(status.toJson()),
+    );
   }
 
   /// Reads the markdown content of the slides file.
