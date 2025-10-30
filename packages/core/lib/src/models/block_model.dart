@@ -45,10 +45,8 @@ sealed class Block {
   static final discriminatedSchema = Ack.discriminated(
     discriminatorKey: 'type',
     schemas: {
-      ColumnBlock.key: ColumnBlock.schema,
-      DartPadBlock.key: DartPadBlock.schema,
+      ContentBlock.key: ContentBlock.schema,
       WidgetBlock.key: WidgetBlock.schema,
-      ImageBlock.key: ImageBlock.schema,
     },
   );
 
@@ -59,9 +57,7 @@ sealed class Block {
     final type = map['type'] as String;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
-      ColumnBlock.key => ColumnBlock.fromMap(map),
-      DartPadBlock.key => DartPadBlock.fromMap(map),
-      ImageBlock.key => ImageBlock.fromMap(map),
+      ContentBlock.key => ContentBlock.fromMap(map),
       WidgetBlock.key => WidgetBlock.fromMap(map),
       _ => throw ArgumentError('Unknown block type: $type'),
     };
@@ -140,7 +136,7 @@ class SectionBlock extends Block {
 
   /// Creates a section block with a single text column.
   static SectionBlock text(String content) {
-    return SectionBlock([ColumnBlock(content)]);
+    return SectionBlock([ContentBlock(content)]);
   }
 
   /// Validation schema for section blocks.
@@ -173,28 +169,29 @@ class SectionBlock extends Block {
   );
 }
 
-/// A block that displays markdown content in a column.
+/// A block that displays markdown content.
 ///
 /// This is the most common block type, used for text and markdown content.
-class ColumnBlock extends Block {
-  /// The type identifier for column blocks.
+class ContentBlock extends Block {
+  /// The type identifier for content blocks.
+  /// TODO: Change to 'block' in next major version
   static const key = 'column';
 
   /// The markdown content to display.
   final String content;
 
-  ColumnBlock(String? content, {super.align, super.flex, super.scrollable})
+  ContentBlock(String? content, {super.align, super.flex, super.scrollable})
     : content = content ?? '',
       super(type: key);
 
   @override
-  ColumnBlock copyWith({
+  ContentBlock copyWith({
     String? content,
     ContentAlignment? align,
     int? flex,
     bool? scrollable,
   }) {
-    return ColumnBlock(
+    return ContentBlock(
       content ?? this.content,
       align: align ?? this.align,
       flex: flex ?? this.flex,
@@ -213,9 +210,9 @@ class ColumnBlock extends Block {
     };
   }
 
-  static ColumnBlock fromMap(Map<String, dynamic> map) {
+  static ContentBlock fromMap(Map<String, dynamic> map) {
     try {
-      return ColumnBlock(
+      return ContentBlock(
         map['content'] as String?,
         align: map['align'] != null
             ? ContentAlignment.fromJson(map['align'] as String)
@@ -224,7 +221,7 @@ class ColumnBlock extends Block {
         scrollable: map['scrollable'] as bool? ?? false,
       );
     } catch (e) {
-      throw Exception('Failed to parse ColumnBlock: $e');
+      throw Exception('Failed to parse ContentBlock: $e');
     }
   }
 
@@ -239,7 +236,7 @@ class ColumnBlock extends Block {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ColumnBlock &&
+      other is ContentBlock &&
           runtimeType == other.runtimeType &&
           type == other.type &&
           align == other.align &&
@@ -267,205 +264,6 @@ enum DartPadTheme {
       orElse: () => throw ArgumentError('Invalid DartPadTheme: $value'),
     );
   }
-}
-
-class DartPadBlock extends Block {
-  final String id;
-  final DartPadTheme? theme;
-  final bool embed;
-  final bool run;
-
-  static const key = 'dartpad';
-
-  DartPadBlock({
-    required this.id,
-    this.theme,
-    this.embed = true,
-    this.run = true,
-    super.align,
-    super.flex,
-    super.scrollable,
-  }) : super(type: key);
-
-  String getDartPadUrl() {
-    return 'https://dartpad.dev/?id=$id&theme=$theme&embed=$embed&run=$run';
-  }
-
-  @override
-  DartPadBlock copyWith({
-    String? id,
-    DartPadTheme? theme,
-    bool? embed,
-    bool? run,
-    ContentAlignment? align,
-    int? flex,
-    bool? scrollable,
-  }) {
-    return DartPadBlock(
-      id: id ?? this.id,
-      theme: theme ?? this.theme,
-      embed: embed ?? this.embed,
-      run: run ?? this.run,
-      align: align ?? this.align,
-      flex: flex ?? this.flex,
-      scrollable: scrollable ?? this.scrollable,
-    );
-  }
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      'type': type,
-      if (align != null) 'align': align!.name,
-      'flex': flex,
-      'scrollable': scrollable,
-      'id': id,
-      if (theme != null) 'theme': theme!.name,
-      'embed': embed,
-      'run': run,
-    };
-  }
-
-  static DartPadBlock fromMap(Map<String, dynamic> map) {
-    return DartPadBlock(
-      id: map['id'] as String,
-      theme: map['theme'] != null
-          ? DartPadTheme.fromJson(map['theme'] as String)
-          : null,
-      embed: map['embed'] as bool? ?? true,
-      run: map['run'] as bool? ?? true,
-      align: map['align'] != null
-          ? ContentAlignment.fromJson(map['align'] as String)
-          : null,
-      flex: (map['flex'] as num?)?.toInt() ?? 1,
-      scrollable: map['scrollable'] as bool? ?? false,
-    );
-  }
-
-  static final schema = Ack.object({
-    'type': Ack.string(),
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
-    'id': Ack.string(),
-    'theme': DartPadTheme.schema.nullable().optional(),
-    'embed': Ack.boolean().nullable().optional(),
-    'run': Ack.boolean().nullable().optional(),
-  }, additionalProperties: true);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DartPadBlock &&
-          runtimeType == other.runtimeType &&
-          type == other.type &&
-          align == other.align &&
-          flex == other.flex &&
-          scrollable == other.scrollable &&
-          id == other.id &&
-          theme == other.theme &&
-          embed == other.embed &&
-          run == other.run;
-
-  @override
-  int get hashCode =>
-      Object.hash(type, align, flex, scrollable, id, theme, embed, run);
-}
-
-class ImageBlock extends Block {
-  static const key = 'image';
-  final GeneratedAsset asset;
-  final ImageFit? fit;
-  final double? width;
-  final double? height;
-
-  ImageBlock({
-    required this.asset,
-    this.fit,
-    this.width,
-    this.height,
-    super.align,
-    super.flex,
-    super.scrollable,
-  }) : super(type: key);
-
-  @override
-  ImageBlock copyWith({
-    GeneratedAsset? asset,
-    ImageFit? fit,
-    double? width,
-    double? height,
-    ContentAlignment? align,
-    int? flex,
-    bool? scrollable,
-  }) {
-    return ImageBlock(
-      asset: asset ?? this.asset,
-      fit: fit ?? this.fit,
-      width: width ?? this.width,
-      height: height ?? this.height,
-      align: align ?? this.align,
-      flex: flex ?? this.flex,
-      scrollable: scrollable ?? this.scrollable,
-    );
-  }
-
-  @override
-  Map<String, dynamic> toMap() {
-    return {
-      'type': type,
-      if (align != null) 'align': align!.name,
-      'flex': flex,
-      'scrollable': scrollable,
-      'asset': asset.toMap(),
-      if (fit != null) 'fit': fit!.name,
-      if (width != null) 'width': width,
-      if (height != null) 'height': height,
-    };
-  }
-
-  static ImageBlock fromMap(Map<String, dynamic> map) {
-    return ImageBlock(
-      asset: GeneratedAsset.fromMap(map['asset'] as Map<String, dynamic>),
-      fit: map['fit'] != null ? ImageFit.fromJson(map['fit'] as String) : null,
-      width: (map['width'] as num?)?.toDouble(),
-      height: (map['height'] as num?)?.toDouble(),
-      align: map['align'] != null
-          ? ContentAlignment.fromJson(map['align'] as String)
-          : null,
-      flex: (map['flex'] as num?)?.toInt() ?? 1,
-      scrollable: map['scrollable'] as bool? ?? false,
-    );
-  }
-
-  static final schema = Ack.object({
-    'type': Ack.string(),
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
-    "fit": ImageFit.schema.nullable().optional(),
-    "asset": GeneratedAsset.schema,
-    "width": Ack.double().nullable().optional(),
-    "height": Ack.double().nullable().optional(),
-  }, additionalProperties: true);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ImageBlock &&
-          runtimeType == other.runtimeType &&
-          type == other.type &&
-          align == other.align &&
-          flex == other.flex &&
-          scrollable == other.scrollable &&
-          asset == other.asset &&
-          fit == other.fit &&
-          width == other.width &&
-          height == other.height;
-
-  @override
-  int get hashCode =>
-      Object.hash(type, align, flex, scrollable, asset, fit, width, height);
 }
 
 enum ImageFit {
@@ -498,11 +296,12 @@ class WidgetBlock extends Block {
 
   WidgetBlock({
     required this.name,
-    this.args = const {},
+    Map<String, dynamic>? args,
     super.align,
     super.flex,
     super.scrollable,
-  }) : super(type: key);
+  }) : args = args == null ? const {} : Map.unmodifiable(args),
+       super(type: key);
 
   @override
   WidgetBlock copyWith({
@@ -615,8 +414,8 @@ enum ContentAlignment {
   }
 }
 
-extension StringColumnExt on String {
-  ColumnBlock column() => ColumnBlock(this);
+extension StringContentExt on String {
+  ContentBlock toBlock() => ContentBlock(this);
 }
 
 extension BlockExt on Block {

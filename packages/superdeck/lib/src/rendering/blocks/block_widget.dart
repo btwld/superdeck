@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
@@ -7,65 +6,40 @@ import 'package:mix/mix.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../deck/deck_options.dart';
 import '../../deck/slide_configuration.dart';
 import '../../styling/styles.dart';
-import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/provider.dart';
-import '../../ui/widgets/webview_wrapper.dart';
 import '../../utils/converters.dart';
 import 'markdown_viewer.dart';
 
-sealed class BlockWidget<T extends Block> extends StatefulWidget {
-  /// Calculates the block offset from padding, margin, and border.
-  ///
-  /// This is used to determine the actual content size available within a block
-  /// after accounting for the box decoration spacing.
-  static Offset calculateBlockOffset(BoxSpec spec) {
-    final padding = spec.padding ?? EdgeInsets.zero;
-    final margin = spec.margin ?? EdgeInsets.zero;
-
-    double horizontalBorder = 0.0;
-    double verticalBorder = 0.0;
-
-    if (spec.decoration is BoxDecoration) {
-      final border = (spec.decoration as BoxDecoration).border;
-      if (border != null) {
-        horizontalBorder = border.dimensions.horizontal;
-        verticalBorder = border.dimensions.vertical;
-      }
-    }
-
-    return Offset(
-      padding.horizontal + margin.horizontal + horizontalBorder,
-      padding.vertical + margin.vertical + verticalBorder,
-    );
-  }
-
-  const BlockWidget({
-    super.key,
+/// Private container widget that provides shared block infrastructure.
+///
+/// Handles sizing, styling, scrolling, alignment, and debug borders for all block types.
+class _BlockContainer extends StatefulWidget {
+  const _BlockContainer({
     required this.block,
     required this.size,
     required this.configuration,
+    required this.child,
   });
 
-  Widget build(BuildContext context, BlockData<T> data);
-
-  final T block;
+  final Block block;
   final Size size;
   final SlideConfiguration configuration;
+  final Widget child;
+
   @override
-  State<BlockWidget<T>> createState() => _BlockWidgetState<T>();
+  State<_BlockContainer> createState() => _BlockContainerState();
 }
 
-class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
+class _BlockContainerState extends State<_BlockContainer> {
   @override
   Widget build(context) {
     // Get the resolved SlideSpec (provided by SlideView)
     final spec = SlideSpec.of(context);
 
-    final blockOffset = BlockWidget.calculateBlockOffset(
+    final blockOffset = ConverterHelper.calculateBlockOffset(
       spec.blockContainer.spec,
     );
 
@@ -78,140 +52,141 @@ class _BlockWidgetState<T extends Block> extends State<BlockWidget<T>> {
       ),
     );
 
-    Widget current = InheritedData(
+    Widget content = InheritedData(
       data: blockData,
       child: Box(
         styleSpec: spec.blockContainer,
-        child: widget.build(context, blockData),
+        child: widget.child,
       ),
     );
 
-    if (widget.block.scrollable && !widget.configuration.isExporting) {
-      current = SingleChildScrollView(child: current);
-    } else {
-      current = Wrap(clipBehavior: Clip.hardEdge, children: [current]);
+    // Apply scrolling or wrap (for clipping non-scrollable content)
+    final shouldScroll = widget.block.scrollable && !widget.configuration.isExporting;
+    content = shouldScroll
+        ? SingleChildScrollView(child: content)
+        : Wrap(clipBehavior: Clip.hardEdge, children: [content]);
+
+    // Apply alignment
+    content = Align(
+      alignment: ConverterHelper.toAlignment(widget.block.align),
+      child: content,
+    );
+
+    // Apply size constraints
+    content = ConstrainedBox(
+      constraints: BoxConstraints.loose(widget.size),
+      child: content,
+    );
+
+    // Add debug border if needed
+    if (widget.configuration.debug) {
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.cyan, width: 2),
+        ),
+        child: content,
+      );
     }
 
-    final decoration = widget.configuration.debug
-        ? BoxDecoration(border: Border.all(color: Colors.cyan, width: 2))
-        : null;
-
-    return Container(
-      decoration: decoration,
-      child: ConstrainedBox(
-        constraints: BoxConstraints.loose(widget.size),
-        child: Stack(
-          children: [
-            Align(
-              alignment: ConverterHelper.toAlignment(blockData.block.align),
-              child: current,
-            ),
-          ],
-        ),
-      ),
-    );
+    return content;
   }
 }
 
-class ColumnBlockWidget extends BlockWidget<ColumnBlock> {
-  const ColumnBlockWidget({
-    super.key,
-    required super.block,
-    required super.size,
-    required super.configuration,
-  });
+/// Helper widget for content block children to access BlockData context.
+class _ContentBlockChild extends StatelessWidget {
+  const _ContentBlockChild({required this.content});
+
+  final String content;
 
   @override
-  Widget build(context, data) {
-    return MarkdownViewer(content: data.block.content, spec: data.spec);
+  Widget build(BuildContext context) {
+    final data = BlockData.of(context);
+    return MarkdownViewer(content: content, spec: data.spec);
   }
 }
 
-/// Renders an ImageBlock from YAML configuration.
-///
-/// **Security Note**: ImageBlock URIs come from trusted YAML configuration files
-/// (not user-provided markdown), so they bypass UriValidator security checks.
-/// Markdown images use ImageElementBuilder which validates all URIs.
-class ImageBlockWidget extends BlockWidget<ImageBlock> {
-  const ImageBlockWidget({
-    super.key,
-    required super.block,
-    required super.size,
-    required super.configuration,
-  });
+/// Helper widget for custom block children to access BlockData context.
+class _CustomBlockChild extends StatelessWidget {
+  const _CustomBlockChild({required this.block});
+
+  final WidgetBlock block;
 
   @override
-  Widget build(context, data) {
-    final alignment = data.block.align ?? ContentAlignment.center;
-    final imageFit = data.block.fit ?? ImageFit.cover;
-    final spec = data.spec;
-
-    // YAML-sourced URIs are trusted - no validation needed
-    return CachedImage(
-      uri: Uri.parse(data.block.asset.fileName),
-      targetSize: data.size,
-      styleSpec: StyleSpec(
-        spec: spec.image.spec.copyWith(
-          fit: ConverterHelper.toBoxFit(imageFit),
-          alignment: ConverterHelper.toAlignment(alignment),
-        ),
-      ),
-    );
-  }
-}
-
-class WidgetBlockWidget extends BlockWidget<WidgetBlock> {
-  const WidgetBlockWidget({
-    super.key,
-    required super.block,
-    required super.size,
-    required super.configuration,
-  });
-
-  @override
-  Widget build(context, data) {
+  Widget build(BuildContext context) {
     final slide = SlideConfiguration.of(context);
+    final data = BlockData.of(context);
+    final widgetDef = slide.getWidgetDefinition(block.name);
 
-    final widgetBuilder = slide.getWidget(data.block.name);
-
-    if (widgetBuilder == null) {
-      return ErrorWidgets.simple('Widget not found: ${data.block.name}');
+    if (widgetDef == null) {
+      return ErrorWidgets.simple('Widget not found: ${block.name}');
     }
 
-    return Builder(
-      builder: (context) {
-        try {
-          return SizedBox(
-            height: data.size.height,
-            child: widgetBuilder(WidgetArgs(data.block.args)),
-          );
-        } catch (e) {
-          return ErrorWidgets.detailed(
-            'Error building widget: ${data.block.name}',
-            e.toString(),
-          );
-        }
-      },
+    try {
+      final typedArgs = widgetDef.parse(block.args);
+      return SizedBox(
+        height: data.size.height,
+        child: widgetDef.build(context, typedArgs),
+      );
+    } catch (e, stackTrace) {
+      return ErrorWidgets.detailed(
+        'Error building widget: ${block.name}',
+        '$e\n\n$stackTrace',
+      );
+    }
+  }
+}
+
+/// Default block widget that renders markdown content.
+class BlockWidget extends StatelessWidget {
+  const BlockWidget({
+    super.key,
+    required this.block,
+    required this.size,
+    required this.configuration,
+  });
+
+  final ContentBlock block;
+  final Size size;
+  final SlideConfiguration configuration;
+
+  @override
+  Widget build(BuildContext context) {
+    return _BlockContainer(
+      block: block,
+      size: size,
+      configuration: configuration,
+      child: _ContentBlockChild(content: block.content),
     );
   }
 }
 
-class DartPadBlockWidget extends BlockWidget<DartPadBlock> {
-  const DartPadBlockWidget({
+/// Custom widget block that renders user-defined widgets.
+class CustomBlockWidget extends StatelessWidget {
+  const CustomBlockWidget({
     super.key,
-    required super.block,
-    required super.size,
-    required super.configuration,
+    required this.block,
+    required this.size,
+    required this.configuration,
   });
 
+  final WidgetBlock block;
+  final Size size;
+  final SlideConfiguration configuration;
+
   @override
-  Widget build(context, data) {
-    return WebViewWrapper(size: data.size, url: data.block.getDartPadUrl());
+  Widget build(BuildContext context) {
+    return _BlockContainer(
+      block: block,
+      size: size,
+      configuration: configuration,
+      child: _CustomBlockChild(block: block),
+    );
   }
 }
 
-class SectionBlockWidget extends StatelessWidget {
-  const SectionBlockWidget({
+/// Section widget that layouts child blocks horizontally.
+class SectionWidget extends StatelessWidget {
+  const SectionWidget({
     super.key,
     required this.section,
     required this.size,
@@ -240,60 +215,53 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
 
   @override
   Widget build(context) {
-    final blockLeftOffset = List.filled(section.blocks.length, 0.0);
-    double cumulativeLeftOffset = 0;
-    final widthPerFlex = size.width / section.totalBlockFlex;
-    // get index
-    for (var index = 0; index < section.blocks.length; index++) {
-      final block = section.blocks[index];
-      final blockWidth = widthPerFlex * block.flex;
-      blockLeftOffset[index] = cumulativeLeftOffset;
-      cumulativeLeftOffset = cumulativeLeftOffset + blockWidth;
-    }
-
     final configuration = SlideConfiguration.of(context);
+    final flexUnit = size.width / section.totalBlockFlex;
 
-    return Stack(
-      children: section.blocks.mapIndexed((index, block) {
-        final widthPercentage = block.flex / section.totalBlockFlex;
+    double leftOffset = 0;
+    final children = <Widget>[];
 
-        final blockSize = Size(size.width * widthPercentage, size.height);
+    for (final block in section.blocks) {
+      final blockWidth = flexUnit * block.flex;
+      final blockSize = Size(blockWidth, size.height);
 
-        return Positioned(
-          left: blockLeftOffset[index],
+      Widget blockWidget = switch (block) {
+        WidgetBlock b => CustomBlockWidget(
+          block: b,
+          size: blockSize,
+          configuration: configuration,
+        ),
+        ContentBlock b => BlockWidget(
+          block: b,
+          size: blockSize,
+          configuration: configuration,
+        ),
+        _ => const SizedBox.shrink(),
+      };
+
+      // Add debug info overlay if needed
+      if (configuration.debug) {
+        blockWidget = Stack(
+          children: [
+            blockWidget,
+            _renderDebugInfo(block, blockSize),
+          ],
+        );
+      }
+
+      children.add(
+        Positioned(
+          left: leftOffset,
           top: 0,
           width: blockSize.width,
           height: blockSize.height,
-          child: Stack(
-            children: [
-              switch (block) {
-                ImageBlock b => ImageBlockWidget(
-                  block: b,
-                  size: blockSize,
-                  configuration: configuration,
-                ),
-                WidgetBlock b => WidgetBlockWidget(
-                  block: b,
-                  size: blockSize,
-                  configuration: configuration,
-                ),
-                DartPadBlock b => DartPadBlockWidget(
-                  block: b,
-                  size: blockSize,
-                  configuration: configuration,
-                ),
-                ColumnBlock b => ColumnBlockWidget(
-                  block: b,
-                  size: blockSize,
-                  configuration: configuration,
-                ),
-                _ => const SizedBox.shrink(),
-              },
-              if (configuration.debug) _renderDebugInfo(block, blockSize),
-            ],
-          ),
-        );
-      }).toList(),
-    );
+          child: blockWidget,
+        ),
+      );
+
+      leftOffset += blockWidth;
+    }
+
+    return Stack(children: children);
   }
 }

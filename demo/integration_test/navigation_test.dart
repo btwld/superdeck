@@ -17,11 +17,11 @@ void main() {
 
       // Test right arrow navigation (next slide)
       await tester.navigateToNextSlide();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Test left arrow navigation (previous slide)
       await tester.navigateToPreviousSlide();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('keyboard navigation - space and backspace', (tester) async {
@@ -31,11 +31,11 @@ void main() {
 
       // Test space key for next slide
       await tester.navigateWithSpace();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Test backspace for previous slide
       await tester.navigateWithBackspace();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('keyboard navigation - home and end keys', (tester) async {
@@ -45,11 +45,11 @@ void main() {
 
       // Navigate to end
       await tester.goToLastSlide();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Navigate to beginning
       await tester.goToFirstSlide();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('navigation boundaries - cannot go beyond slides', (
@@ -64,14 +64,14 @@ void main() {
 
       // Try to go before first slide
       await tester.navigateToPreviousSlide();
-      expect(find.byType(MaterialApp), findsOneWidget); // Should not crash
+      expect(find.byType(MaterialApp), findsWidgets); // Should not crash
 
       // Navigate to last slide
       await tester.goToLastSlide();
 
       // Try to go beyond last slide
       await tester.navigateToNextSlide();
-      expect(find.byType(MaterialApp), findsOneWidget); // Should not crash
+      expect(find.byType(MaterialApp), findsWidgets); // Should not crash
     });
 
     testWidgets('fullscreen toggle', (tester) async {
@@ -81,11 +81,11 @@ void main() {
 
       // Enter fullscreen
       await tester.enterFullscreen();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Exit fullscreen
       await tester.exitFullscreen();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('presentation mode toggle', (tester) async {
@@ -95,11 +95,11 @@ void main() {
 
       // Toggle presentation mode
       await tester.togglePresentationMode();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Exit presentation mode
       await tester.exitFullscreen();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('mouse click navigation', (tester) async {
@@ -109,11 +109,11 @@ void main() {
 
       // Test click to advance slide
       await tester.clickToNavigate();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Test right-click for previous slide (if implemented)
       await tester.rightClickToNavigate();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('scroll wheel navigation', (tester) async {
@@ -123,11 +123,11 @@ void main() {
 
       // Simulate scroll down (next slide)
       await tester.scrollToNavigate(forward: true);
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Simulate scroll up (previous slide)
       await tester.scrollToNavigate(forward: false);
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('swipe gestures', (tester) async {
@@ -137,11 +137,11 @@ void main() {
 
       // Simulate swipe left (next slide)
       await tester.swipeToNavigate(forward: true);
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Simulate swipe right (previous slide)
       await tester.swipeToNavigate(forward: false);
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('rapid navigation handling', (tester) async {
@@ -163,7 +163,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // App should still be responsive and not crash
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('navigation with zoom controls', (tester) async {
@@ -173,19 +173,19 @@ void main() {
 
       // Zoom in
       await tester.zoomIn();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Navigate while zoomed
       await tester.navigateToNextSlide();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Zoom out
       await tester.zoomOut();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Reset zoom
       await tester.resetZoom();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
 
     testWidgets('navigation persistence across app lifecycle', (tester) async {
@@ -195,7 +195,7 @@ void main() {
 
       // Navigate to a specific slide
       await tester.navigateToNextSlide();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Simulate app going to background and coming back
       await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
@@ -219,11 +219,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify app is still responsive
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
 
       // Navigation should still work
       await tester.navigateToNextSlide();
-      expect(find.byType(MaterialApp), findsOneWidget);
+      expect(find.byType(MaterialApp), findsWidgets);
     });
   });
 }

@@ -48,21 +48,6 @@ jobs:
       - name: Build Runner (if needed)
         run: melos run build_runner:build
 
-      - name: Run Integration Tests - App Tests
-        working-directory: demo
-        run: flutter test integration_test/app_test.dart -d macos
-        continue-on-error: true
-
-      - name: Run Integration Tests - Navigation Tests
-        working-directory: demo
-        run: flutter test integration_test/navigation_test.dart -d macos
-        continue-on-error: true
-
-      - name: Run Integration Tests - Semantics Tests
-        working-directory: demo
-        run: flutter test integration_test/semantics_test.dart -d macos
-        continue-on-error: true
-
       - name: Run All Integration Tests
         working-directory: demo
         run: flutter test integration_test/ -d macos
@@ -113,7 +98,7 @@ jobs:
           mkdir -p test_driver
           cat > test_driver/integration_test.dart << 'EOF'
           import 'package:integration_test/integration_test_driver.dart';
-          
+
           Future<void> main() => integrationDriver();
           EOF
 

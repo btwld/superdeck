@@ -34,8 +34,6 @@ extension type RawSlideMarkdownType(Map<String, Object?> _data)
   Map<String, Object?> get frontmatter =>
       _data['frontmatter'] as Map<String, Object?>;
 
-  Map<String, Object?> toJson() => _data;
-
   RawSlideMarkdownType copyWith({
     String? key,
     String? content,

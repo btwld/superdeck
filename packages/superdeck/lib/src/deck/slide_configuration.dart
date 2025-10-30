@@ -4,7 +4,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../rendering/slides/slide_parts.dart';
 import '../styling/slide_style.dart';
 import '../ui/widgets/provider.dart';
-import 'deck_options.dart';
+import 'widget_definition.dart';
 
 class SlideConfiguration {
   final int slideIndex;
@@ -12,7 +12,7 @@ class SlideConfiguration {
   final Slide _slide;
   final bool debug;
   final SlideParts? parts;
-  final Map<String, WidgetBlockBuilder> _widgets;
+  final Map<String, WidgetDefinition> _widgets;
   final String thumbnailFile;
 
   final bool isExporting;
@@ -24,7 +24,7 @@ class SlideConfiguration {
     this.debug = false,
     this.parts,
     required this.thumbnailFile,
-    Map<String, WidgetBlockBuilder> widgets = const {},
+    Map<String, WidgetDefinition> widgets = const {},
     this.isExporting = false,
   }) : _slide = slide,
        _widgets = widgets;
@@ -39,7 +39,7 @@ class SlideConfiguration {
 
   List<String> get comments => _slide.comments;
 
-  WidgetBlockBuilder? getWidget(String name) => _widgets[name];
+  WidgetDefinition? getWidgetDefinition(String name) => _widgets[name];
 
   static SlideConfiguration of(BuildContext context) {
     return InheritedData.of(context);
@@ -52,7 +52,7 @@ class SlideConfiguration {
     bool? debug,
     SlideParts? parts,
     String? thumbnailFile,
-    Map<String, WidgetBlockBuilder>? widgets,
+    Map<String, WidgetDefinition>? widgets,
     bool? isExporting,
   }) {
     return SlideConfiguration(

@@ -26,12 +26,7 @@ void main() async {
               baseStyle: borderedStyle(),
               widgets: {
                 ...demoWidgets,
-                'twitter': (args) {
-                  return TwitterWidget(
-                    username: args.getString('username'),
-                    tweetId: args.getString('tweetId'),
-                  );
-                },
+                'twitter': _TwitterWidgetDefinition(),
               },
               // debug: true,
               styles: {
@@ -77,5 +72,22 @@ class TwitterWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
+  const _TwitterWidgetDefinition();
+
+  @override
+  Map<String, Object?> parse(Map<String, Object?> args) {
+    // No validation - just pass through
+    return args;
+  }
+
+  @override
+  Widget build(BuildContext context, Map<String, Object?> args) {
+    final username = args['username'] as String? ?? '';
+    final tweetId = args['tweetId'] as String? ?? '';
+    return TwitterWidget(username: username, tweetId: tweetId);
   }
 }

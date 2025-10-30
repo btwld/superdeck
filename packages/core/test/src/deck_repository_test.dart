@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -153,6 +154,36 @@ void main() {
       expect(assetsRefJson, contains('last_modified'));
       expect(assetsRefJson, contains('files'));
     });
+
+    test(
+      'saveReferences retains last_modified when asset files are unchanged',
+      () async {
+        final deck = Deck(
+          slides: [const Slide(key: 'intro')],
+          configuration: config,
+        );
+
+        await repository.saveReferences(deck);
+        final initialJson =
+            jsonDecode(await mockConfig.assetsRefJson.readAsString())
+                as Map<String, dynamic>;
+        final initialLastModified =
+            initialJson['last_modified'] as String;
+
+        // Delay to ensure DateTime.now would differ if rewriting happens.
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+
+        await repository.saveReferences(deck);
+        final subsequentJson =
+            jsonDecode(await mockConfig.assetsRefJson.readAsString())
+                as Map<String, dynamic>;
+
+        expect(
+          subsequentJson['last_modified'],
+          equals(initialLastModified),
+        );
+      },
+    );
 
     test('readDeckMarkdown reads the content of the slides file', () async {
       await mockConfig.slidesFile.writeAsString('# Test slides');

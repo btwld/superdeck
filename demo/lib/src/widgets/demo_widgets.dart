@@ -9,8 +9,7 @@ import '../examples/button.dart' as remix_button;
 
 /// Auto-registered demo widgets for Superdeck presentations.
 ///
-/// This map contains all demo widgets from the examples folder,
-/// wrapped appropriately for display within slides.
+/// This map contains all demo widgets from the examples folder.
 ///
 /// Usage in slides.md:
 /// ```markdown
@@ -20,31 +19,68 @@ import '../examples/button.dart' as remix_button;
 ///
 /// @remix-button
 /// ```
-Map<String, WidgetBlockBuilder> get demoWidgets => {
-  // Mix examples
-  'mix-simple-box': (args) => _DemoWrapper(
-    child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),
-  ),
-  'mix-variants': (args) => _DemoWrapper(
-    child: Transform.scale(scale: 3.0, child: mix_variants.Example()),
-  ),
-  'mix-animation': (args) => _DemoWrapper(
-    child: Transform.scale(scale: 3.0, child: mix_animation.SwitchAnimation()),
-  ),
+///
+/// Note: The QR code widget is now a built-in widget available as @qrcode
+Map<String, WidgetDefinition> get demoWidgets => {
+      // Mix examples - wrapped in simple widget definitions
+      'mix-simple-box': _SimpleWidgetDefinition(
+        (context, args) => _DemoWrapper(
+          child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),
+        ),
+      ),
+      'mix-variants': _SimpleWidgetDefinition(
+        (context, args) => _DemoWrapper(
+          child: Transform.scale(scale: 3.0, child: mix_variants.Example()),
+        ),
+      ),
+      'mix-animation': _SimpleWidgetDefinition(
+        (context, args) => _DemoWrapper(
+          child: Transform.scale(
+            scale: 3.0,
+            child: mix_animation.SwitchAnimation(),
+          ),
+        ),
+      ),
 
-  // Naked UI examples
-  'naked-select': (args) => _DemoWrapper(
-    child: Transform.scale(
-      scale: 2.0,
-      child: naked_select.SimpleSelectExample(),
-    ),
-  ),
+      // Naked UI examples
+      'naked-select': _SimpleWidgetDefinition(
+        (context, args) => _DemoWrapper(
+          child: Transform.scale(
+            scale: 2.0,
+            child: naked_select.SimpleSelectExample(),
+          ),
+        ),
+      ),
 
-  // Remix examples
-  'remix-button': (args) => _DemoWrapper(
-    child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
-  ),
-};
+      // Remix examples
+      'remix-button': _SimpleWidgetDefinition(
+        (context, args) => _DemoWrapper(
+          child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
+        ),
+      ),
+    };
+
+/// Simple widget definition for widgets without schemas.
+///
+/// Used for demo widgets that don't need argument validation.
+/// Uses raw `Map<String, Object?>` as the argument type (no parsing).
+class _SimpleWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
+  final Widget Function(BuildContext context, Map<String, Object?> args)
+      _builder;
+
+  const _SimpleWidgetDefinition(this._builder);
+
+  @override
+  Map<String, Object?> parse(Map<String, Object?> args) {
+    // No validation - just pass through
+    return args;
+  }
+
+  @override
+  Widget build(BuildContext context, Map<String, Object?> args) {
+    return _builder(context, args);
+  }
+}
 
 /// Wrapper widget that constrains demo widgets to their intrinsic size.
 ///

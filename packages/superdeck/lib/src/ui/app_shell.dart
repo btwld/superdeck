@@ -49,6 +49,7 @@ class _SplitViewState extends State<SplitView>
   late final AnimationController _animationController;
   late final Animation<double> _curvedAnimation;
   bool _isInitialized = false;
+  DeckController? _deckController;
 
   @override
   void initState() {
@@ -74,15 +75,15 @@ class _SplitViewState extends State<SplitView>
       _isInitialized = true;
 
       // Set initial animation value based on menu state
-      final deckController = DeckController.of(context);
-      final initialMenuState = deckController.isMenuOpen;
+      _deckController = DeckController.of(context);
+      final initialMenuState = _deckController!.isMenuOpen;
 
       if (initialMenuState) {
         _animationController.value = 1.0;
       }
 
       // Listen to menu state changes and animate
-      deckController.addListener(_onMenuStateChanged);
+      _deckController!.addListener(_onMenuStateChanged);
 
       // Generate thumbnails on first build only
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,9 +112,8 @@ class _SplitViewState extends State<SplitView>
 
   @override
   void dispose() {
-    // Remove listener
-    final deckController = DeckController.of(context);
-    deckController.removeListener(_onMenuStateChanged);
+    // Remove listener using saved reference
+    _deckController?.removeListener(_onMenuStateChanged);
     _animationController.dispose();
     super.dispose();
   }
