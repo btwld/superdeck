@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../ui/widgets/provider.dart';

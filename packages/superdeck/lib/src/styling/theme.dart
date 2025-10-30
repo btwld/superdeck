@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// TODO: Replace with Remix
 ThemeData get theme => ThemeData.dark().copyWith(
   colorScheme: ColorScheme.fromSeed(
     dynamicSchemeVariant: DynamicSchemeVariant.fidelity,

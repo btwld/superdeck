@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:superdeck/src/utils/extensions.dart';
+import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/widgets.dart';
 
 import '../../deck/slide_configuration.dart';
 import '../../ui/widgets/provider.dart';
@@ -17,7 +17,7 @@ class SlideScreen extends StatelessWidget {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.useOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 6,
               spreadRadius: 3,
             ),

@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons, Colors, Theme;
+import 'package:flutter/widgets.dart';
+import 'package:remix/remix.dart';
+import 'package:superdeck/src/ui/ui.dart';
 import 'package:superdeck/src/utils/constants.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/export/slide_capture_service.dart';
 
@@ -18,7 +20,7 @@ class PdfExportDialogScreen extends StatefulWidget {
 
   static void show(BuildContext context) {
     final deckController = DeckController.of(context);
-    showDialog(
+    showRemixDialog(
       context: context,
       builder: (context) =>
           PdfExportDialogScreen(slides: deckController.slides),
@@ -72,8 +74,7 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      insetPadding: const EdgeInsets.all(0),
+    return RemixDialog(
       child: SizedBox.fromSize(
         size: kResolution,
         child: ListenableBuilder(
@@ -146,36 +147,33 @@ class _PdfExportBar extends StatelessWidget {
           exportController.exportStatus == PdfExportStatus.complete
               ? Icon(
                   Icons.check_circle,
+                  // TODO: Replace with Remix
                   color: Theme.of(context).colorScheme.primary,
                   size: 32,
                 )
               : SizedBox(
                   height: 32,
                   width: 32,
-                  child: CircularProgressIndicator(
-                    color: Theme.of(context).colorScheme.primary,
-                    value:
-                        exportController.exportStatus ==
-                            PdfExportStatus.building
-                        ? null
-                        : exportController.progress,
+                  child: IsometricProgressIndicator(
+                    progress: exportController.progress,
                   ),
                 ),
           const SizedBox(height: 16.0),
           Text(
             _progressText,
+            // TODO: Replace with Remix
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 16.0),
-          TextButton.icon(
+          SDButton(
             onPressed: () {
               exportController.cancel();
               Navigator.of(context).pop();
             },
-            icon: const Icon(Icons.cancel, color: Colors.white),
-            label: const Text('Cancel', style: TextStyle(color: Colors.white)),
+            label: 'Cancel',
+            icon: Icons.cancel,
           ),
         ],
       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class CommentsPanel extends StatelessWidget {
   const CommentsPanel({super.key, required this.comments});
