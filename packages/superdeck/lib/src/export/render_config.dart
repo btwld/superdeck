@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 /// Simple configuration object for widget-to-image rendering
 /// Reduces parameter passing and improves readability (KISS principle)

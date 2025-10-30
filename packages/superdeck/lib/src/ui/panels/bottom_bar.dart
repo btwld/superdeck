@@ -1,6 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons, Colors;
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/export/pdf_export_screen.dart';
+import 'package:superdeck/src/ui/tokens/colors.dart';
+import 'package:superdeck/src/ui/widgets/icon_button.dart';
+
+import 'package:flutter/widgets.dart';
 
 import '../../deck/deck_controller.dart';
 import '../../deck/deck_provider.dart';
@@ -8,6 +12,17 @@ import '../../export/thumbnail_controller.dart';
 
 class DeckBottomBar extends StatelessWidget {
   const DeckBottomBar({super.key});
+
+  FlexBoxStyler get _bottomBarContainer => FlexBoxStyler()
+      .mainAxisAlignment(MainAxisAlignment.center)
+      .crossAxisAlignment(CrossAxisAlignment.center)
+      .height(60)
+      .marginAll(12)
+      .spacing(16)
+      .paddingX(20)
+      .paddingY(10)
+      .color(SDColors.bgLow.token())
+      .borderRounded(16);
 
   @override
   Widget build(BuildContext context) {
@@ -20,61 +35,44 @@ class DeckBottomBar extends StatelessWidget {
     final totalPages = deckController.totalSlides;
     final isNotesOpen = deckController.isNotesOpen;
 
-    return _bottomBarContainer(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // view notes
-          IconButton(
-            onPressed: deckController.toggleNotes,
-            icon: isNotesOpen
-                ? const Icon(Icons.comment)
-                : const Icon(Icons.comments_disabled),
+    return FlexBox(
+      style: _bottomBarContainer,
+      children: [
+        // view notes
+        SDIconButton(
+          onPressed: deckController.toggleNotes,
+          icon: isNotesOpen ? Icons.comment : Icons.comments_disabled,
+        ),
+
+        SDIconButton(
+          icon: Icons.save,
+          onPressed: () => PdfExportDialogScreen.show(context),
+        ),
+
+        SDIconButton(
+          icon: Icons.replay_circle_filled_rounded,
+          onPressed: () => thumbnail.generateThumbnails(
+            deckController.slides,
+            context,
+            force: true,
           ),
-          const SizedBox(width: 16),
-          IconButton(
-            onPressed: () => PdfExportDialogScreen.show(context),
-            icon: const Icon(Icons.save),
-          ),
-          const SizedBox(width: 16),
-          IconButton(
-            onPressed: () => thumbnail.generateThumbnails(
-              deckController.slides,
-              context,
-              force: true,
-            ),
-            icon: const Icon(Icons.replay_circle_filled_rounded),
-          ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: navigationController.previousSlide,
-          ),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward),
-            onPressed: navigationController.nextSlide,
-          ),
-          const Spacer(),
-          Text(
-            '$currentPage of $totalPages',
-            style: const TextStyle(color: Colors.white),
-          ),
-          const SizedBox(width: 16),
-          IconButton(
-            onPressed: deckController.closeMenu,
-            icon: const Icon(Icons.close),
-          ),
-        ],
-      ),
+        ),
+        const Spacer(),
+        SDIconButton(
+          icon: Icons.arrow_back,
+          onPressed: navigationController.previousSlide,
+        ),
+        SDIconButton(
+          icon: Icons.arrow_forward,
+          onPressed: navigationController.nextSlide,
+        ),
+        const Spacer(),
+        Text(
+          '$currentPage of $totalPages',
+          style: const TextStyle(color: Colors.white),
+        ),
+        SDIconButton(icon: Icons.close, onPressed: deckController.closeMenu),
+      ],
     );
   }
 }
-
-final _bottomBarContainer = BoxStyler()
-    .height(60)
-    .marginAll(12)
-    .paddingX(20)
-    .paddingY(10)
-    .color(const Color.fromARGB(255, 17, 17, 17))
-    .borderRounded(16);

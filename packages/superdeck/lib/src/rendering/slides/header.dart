@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import '../../deck/slide_configuration.dart';
 
 class HeaderPart extends StatelessWidget implements PreferredSizeWidget {

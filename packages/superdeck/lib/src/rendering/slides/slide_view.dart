@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -6,6 +6,7 @@ import '../../deck/slide_configuration.dart';
 import '../../styling/styles.dart';
 import '../../utils/constants.dart';
 import '../blocks/block_widget.dart';
+import 'package:flutter/widgets.dart';
 
 class SlideView extends StatelessWidget {
   final SlideConfiguration slide;

@@ -1,8 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
+    show Icons, Colors, Scaffold, FloatingActionButtonLocation;
+import 'package:flutter/widgets.dart';
 import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
 import 'package:superdeck/src/rendering/slides/scaled_app.dart';
 import 'package:superdeck/src/ui/panels/comments_panel.dart';
 import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
+import 'package:superdeck/src/ui/widgets/icon_button.dart';
+import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
 import 'package:superdeck/src/utils/constants.dart';
 import 'package:superdeck/src/ui/extensions.dart';
 import 'package:superdeck/src/export/thumbnail_controller.dart';
@@ -192,8 +196,8 @@ class _SplitViewState extends State<SplitView>
           floatingActionButtonLocation:
               FloatingActionButtonLocation.miniEndFloat,
           floatingActionButton: !isMenuOpen
-              ? IconButton(
-                  icon: const Icon(Icons.menu),
+              ? SDIconButton(
+                  icon: Icons.menu,
                   onPressed: deckController.openMenu,
                 )
               : null,
@@ -274,12 +278,7 @@ class _SplitViewState extends State<SplitView>
                         SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white70,
-                            ),
-                          ),
+                          child: IsometricLoading(),
                         ),
                         SizedBox(width: 8),
                         Text(

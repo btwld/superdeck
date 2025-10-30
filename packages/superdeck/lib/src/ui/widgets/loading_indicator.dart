@@ -1,5 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:superdeck/src/utils/extensions.dart';
+import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/widgets.dart';
+
+class IsometricProgressIndicator extends StatelessWidget {
+  const IsometricProgressIndicator({super.key, required this.progress});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = [
+      Colors.white.withValues(alpha: progress / 0.25),
+      Colors.white.withValues(alpha: (progress.clamp(0.25, 1) - 0.25) / 0.25),
+      Colors.white.withValues(alpha: (progress.clamp(0.5, 1) - 0.5) / 0.25),
+      Colors.white.withValues(alpha: (progress.clamp(0.75, 1) - 0.75) / 0.25),
+    ];
+
+    return CustomPaint(painter: IsometricLoadingPainter(colors: colors));
+  }
+}
 
 class IsometricLoading extends StatefulWidget {
   const IsometricLoading({super.key, this.color = Colors.white});
@@ -16,9 +34,9 @@ class _IsometricLoadingState extends State<IsometricLoading>
   late Animation<double> _animation;
   late final List<Color> _colors = [
     widget.color,
-    widget.color.useOpacity(0.7),
-    widget.color.useOpacity(0.4),
-    widget.color.useOpacity(0.2),
+    widget.color.withValues(alpha: 0.7),
+    widget.color.withValues(alpha: 0.4),
+    widget.color.withValues(alpha: 0.2),
   ];
 
   @override

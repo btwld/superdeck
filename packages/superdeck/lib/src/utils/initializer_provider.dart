@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/widgets.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'constants.dart';

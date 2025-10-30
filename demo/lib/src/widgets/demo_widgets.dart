@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
 import '../examples/mix/animation.dart' as mix_animation;
