@@ -15,7 +15,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 /// TDD tests for image element rendering issue.
 ///
 /// These tests verify that images render as block elements with proper
-/// BlockData context access, ensuring the StyleSpecBuilder builder callback
+/// BlockConfiguration context access, ensuring the StyleSpecBuilder builder callback
 /// executes correctly.
 void main() {
   group('ImageElementBuilder - Block Element Rendering', () {
@@ -27,7 +27,7 @@ void main() {
       expect(builder.isBlockElement(), isTrue);
     });
 
-    testWidgets('image builder callback executes with BlockData access', (
+    testWidgets('image builder callback executes with BlockConfiguration access', (
       tester,
     ) async {
       const markdown = '![test](assets/test.png)';
@@ -66,7 +66,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // ASSERTION: The ConstrainedBox should have tight constraints
-      // matching the BlockData size (800x600)
+      // matching the BlockConfiguration size (800x600)
       final constrainedBoxes = tester.widgetList<ConstrainedBox>(
         find.byType(ConstrainedBox),
       );
@@ -77,7 +77,7 @@ void main() {
         reason: 'Should find ConstrainedBox widgets',
       );
 
-      // Find the image's ConstrainedBox (tight 800x600 from BlockData)
+      // Find the image's ConstrainedBox (tight 800x600 from BlockConfiguration)
       final imageBox = constrainedBoxes.firstWhere(
         (box) =>
             box.constraints.maxWidth == 800.0 &&
@@ -85,7 +85,7 @@ void main() {
             box.constraints.minWidth == 800.0 &&
             box.constraints.minHeight == 600.0,
         orElse: () => throw TestFailure(
-          'No ConstrainedBox found with tight 800x600 constraints from BlockData',
+          'No ConstrainedBox found with tight 800x600 constraints from BlockConfiguration',
         ),
       );
 
@@ -182,7 +182,7 @@ void main() {
   });
 }
 
-/// Test harness that provides proper BlockData and InheritedData context
+/// Test harness that provides proper BlockConfiguration and InheritedData context
 /// for rendering markdown with images.
 ///
 /// Mirrors the setup from markdown_builders_test.dart but specifically
@@ -205,9 +205,9 @@ class _MarkdownHarness extends StatelessWidget {
       thumbnailFile: 'thumb.png',
     );
 
-    // Provide BlockData with a reasonable slide size for testing
-    final blockData = BlockData(
-      block: ContentBlock(markdown),
+    // Provide BlockConfiguration with a reasonable slide size for testing
+    final blockData = BlockConfiguration(
+      align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
     );
@@ -215,7 +215,7 @@ class _MarkdownHarness extends StatelessWidget {
     return MaterialApp(
       home: InheritedData<SlideConfiguration>(
         data: slideConfiguration,
-        child: InheritedData<BlockData>(
+        child: InheritedData<BlockConfiguration>(
           data: blockData,
           child: Scaffold(
             body: MarkdownRenderScope(

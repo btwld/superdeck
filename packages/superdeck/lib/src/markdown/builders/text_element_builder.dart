@@ -37,7 +37,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     return StyleSpecBuilder<TextSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
-        final blockData = BlockData.of(builderContext);
+        final blockData = BlockConfiguration.of(builderContext);
         final transformed = _transformLineBreaks(textContent);
 
         // Avoid empty Heroes (common source of duplicate in-flight painters).
@@ -81,7 +81,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
           heroData: TextElement(
             text: transformed,
             spec: spec,
-            size: BlockData.of(context).size,
+            size: BlockConfiguration.of(context).size,
           ),
           buildFlight: _buildStableFlight,
         );
