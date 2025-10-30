@@ -38,34 +38,19 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: Setup Melos
-        run: fvm dart pub global activate melos
+        run: dart pub global activate melos
 
       - name: Install dependencies
         run: |
-          fvm flutter pub get
-          fvm dart pub global run melos bootstrap
+          flutter pub get
+          melos bootstrap
 
       - name: Build Runner (if needed)
-        run: fvm dart pub global run melos run build_runner:build
-
-      - name: Run Integration Tests - App Tests
-        working-directory: demo
-        run: fvm flutter test integration_test/app_test.dart -d macos
-        continue-on-error: true
-
-      - name: Run Integration Tests - Navigation Tests
-        working-directory: demo
-        run: fvm flutter test integration_test/navigation_test.dart -d macos
-        continue-on-error: true
-
-      - name: Run Integration Tests - Semantics Tests
-        working-directory: demo
-        run: fvm flutter test integration_test/semantics_test.dart -d macos
-        continue-on-error: true
+        run: melos run build_runner:build
 
       - name: Run All Integration Tests
         working-directory: demo
-        run: fvm flutter test integration_test/ -d macos
+        run: flutter test integration_test/ -d macos
 
   integration-tests-web:
     runs-on: ubuntu-latest
@@ -92,15 +77,15 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: Setup Melos
-        run: fvm dart pub global activate melos
+        run: dart pub global activate melos
 
       - name: Install dependencies
         run: |
-          fvm flutter pub get
-          fvm dart pub global run melos bootstrap
+          flutter pub get
+          melos bootstrap
 
       - name: Build Runner (if needed)
-        run: fvm dart pub global run melos run build_runner:build
+        run: melos run build_runner:build
 
       - name: Install ChromeDriver
         run: |
@@ -123,7 +108,7 @@ jobs:
       - name: Run Web Integration Tests
         working-directory: demo
         run: |
-          fvm flutter drive \
+          flutter drive \
             --driver=test_driver/integration_test.dart \
             --target=integration_test/app_test.dart \
             -d chrome
