@@ -4,37 +4,37 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../../ui/widgets/provider.dart';
 import '../../styling/styles.dart';
 
-class BlockData {
-  const BlockData({
+class BlockConfiguration {
+  const BlockConfiguration({
     required this.spec,
     required this.size,
-    required this.block,
+    required this.align,
   });
 
   final SlideSpec spec;
   final Size size;
-  final Block block;
+  final ContentAlignment? align;
 
   @override
   bool operator ==(Object other) {
-    return other is BlockData &&
+    return other is BlockConfiguration &&
         other.spec == spec &&
         other.size == size &&
-        other.block == block;
+        other.align == align;
   }
 
   @override
-  int get hashCode => spec.hashCode ^ size.hashCode ^ block.hashCode;
+  int get hashCode => spec.hashCode ^ size.hashCode ^ align.hashCode;
 
-  static BlockData of(BuildContext context) {
-    final data = InheritedData.maybeOf<BlockData>(context);
+  static BlockConfiguration of(BuildContext context) {
+    final data = InheritedData.maybeOf<BlockConfiguration>(context);
     if (data == null) {
-      throw FlutterError('BlockData not found');
+      throw FlutterError('BlockConfiguration not found');
     }
     return data;
   }
 
-  static BlockData? maybeOf(BuildContext context) {
-    return InheritedData.maybeOf<BlockData>(context);
+  static BlockConfiguration? maybeOf(BuildContext context) {
+    return InheritedData.maybeOf<BlockConfiguration>(context);
   }
 }

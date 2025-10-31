@@ -32,25 +32,20 @@ jobs:
           fvm use stable --force
           fvm flutter --version
 
-      - name: Add FVM to PATH
-        run: |
-          echo "$(fvm flutter sdk-path)/bin" >> $GITHUB_PATH
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
       - name: Setup Melos
-        run: dart pub global activate melos
+        run: fvm dart pub global activate melos
 
       - name: Install dependencies
         run: |
-          flutter pub get
-          melos bootstrap
+          fvm flutter pub get
+          fvm exec melos bootstrap
 
       - name: Build Runner (if needed)
-        run: melos run build_runner:build
+        run: fvm exec melos run build_runner:build
 
       - name: Run All Integration Tests
         working-directory: demo
-        run: flutter test integration_test/ -d macos
+        run: fvm flutter test integration_test/ -d macos
 
   integration-tests-web:
     runs-on: ubuntu-latest
@@ -71,21 +66,16 @@ jobs:
           fvm use stable --force
           fvm flutter --version
 
-      - name: Add FVM to PATH
-        run: |
-          echo "$(fvm flutter sdk-path)/bin" >> $GITHUB_PATH
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-
       - name: Setup Melos
-        run: dart pub global activate melos
+        run: fvm dart pub global activate melos
 
       - name: Install dependencies
         run: |
-          flutter pub get
-          melos bootstrap
+          fvm flutter pub get
+          fvm exec melos bootstrap
 
       - name: Build Runner (if needed)
-        run: melos run build_runner:build
+        run: fvm exec melos run build_runner:build
 
       - name: Install ChromeDriver
         run: |
@@ -108,7 +98,7 @@ jobs:
       - name: Run Web Integration Tests
         working-directory: demo
         run: |
-          flutter drive \
+          fvm flutter drive \
             --driver=test_driver/integration_test.dart \
             --target=integration_test/app_test.dart \
             -d chrome

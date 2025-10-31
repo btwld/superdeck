@@ -25,7 +25,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
     // In real rendering, visitElementAfterWithContext will be called instead
     // because isBlockElement() returns true.
     throw UnsupportedError(
-      'ImageElementBuilder requires BuildContext for BlockData access. '
+      'ImageElementBuilder requires BuildContext for BlockConfiguration access. '
       'Use visitElementAfterWithContext or render through MarkdownBody.',
     );
   }
@@ -53,8 +53,8 @@ class ImageElementBuilder extends MarkdownElementBuilder
 
     final heroTag = element.attributes['hero'];
 
-    // Access BlockData from the context parameter (available because isBlockElement() is true)
-    final totalSize = BlockData.of(context).size;
+    // Access BlockConfiguration from the context parameter (available because isBlockElement() is true)
+    final totalSize = BlockConfiguration.of(context).size;
 
     return StyleSpecBuilder<ImageSpec>(
       styleSpec: styleSpec,

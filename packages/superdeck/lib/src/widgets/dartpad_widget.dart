@@ -87,8 +87,8 @@ class DartPadWidget extends WidgetDefinition<DartPadDto> {
 
   @override
   Widget build(BuildContext context, DartPadDto args) {
-    // Access block data for sizing
-    final data = BlockData.of(context);
+    // Access block configuration for sizing
+    final data = BlockConfiguration.of(context);
 
     return WebViewWrapper(size: data.size, url: args.toUrl());
   }

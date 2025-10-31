@@ -243,8 +243,8 @@ class _MarkdownHarness extends StatelessWidget {
       thumbnailFile: 'thumb.png',
     );
 
-    final blockData = BlockData(
-      block: ContentBlock(markdown),
+    final blockData = BlockConfiguration(
+      align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
     );
@@ -252,7 +252,7 @@ class _MarkdownHarness extends StatelessWidget {
     return MaterialApp(
       home: InheritedData<SlideConfiguration>(
         data: slideConfiguration,
-        child: InheritedData<BlockData>(
+        child: InheritedData<BlockConfiguration>(
           data: blockData,
           child: Scaffold(
             body: MarkdownRenderScope(

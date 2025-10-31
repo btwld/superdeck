@@ -102,7 +102,7 @@ class AlertElementBuilder extends MarkdownElementBuilder {
       AlertType.caution => Icons.dangerous_outlined,
     };
 
-    final blockData = BlockData.of(context);
+    final blockData = BlockConfiguration.of(context);
     final renderScope = MarkdownRenderScope.maybeOf(context);
     final registry =
         renderScope?.registry ?? SpecMarkdownBuilders(blockData.spec);

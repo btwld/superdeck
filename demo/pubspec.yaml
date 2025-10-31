@@ -14,10 +14,7 @@ dependencies:
   superdeck_core: ^0.0.1
   superdeck: ^0.0.4
   naked_ui: ^0.2.0-beta.7
-  remix: 
-    git:
-      url: https://github.com/btwld/remix.git
-      ref: main
+  remix: ^0.1.0-beta.1
   qr_flutter: ^4.1.0
 dev_dependencies:
   flutter_test:

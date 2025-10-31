@@ -85,12 +85,12 @@ class ImageWidget extends WidgetDefinition<ImageDto> {
 
   @override
   Widget build(BuildContext context, ImageDto args) {
-    // Access block data for styling and sizing
-    final data = BlockData.of(context);
+    // Access block configuration for styling and sizing
+    final data = BlockConfiguration.of(context);
     final spec = data.spec;
 
-    // Get alignment from block data
-    final alignment = data.block.align;
+    // Get alignment from block configuration
+    final alignment = data.align;
 
     // YAML-sourced URIs are trusted - no validation needed
     return CachedImage(

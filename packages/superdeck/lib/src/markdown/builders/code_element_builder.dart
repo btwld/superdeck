@@ -47,11 +47,11 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     return StyleSpecBuilder<MarkdownCodeblockSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
-        // Access BlockData from StyleSpecBuilder's builderContext (not the method's context parameter).
-        // StyleSpecBuilder wraps our widget in the Mix framework's context, ensuring BlockData
+        // Access BlockConfiguration from StyleSpecBuilder's builderContext (not the method's context parameter).
+        // StyleSpecBuilder wraps our widget in the Mix framework's context, ensuring BlockConfiguration
         // InheritedWidget is available in the widget tree. The method parameter context comes
         // from flutter_markdown_plus and may not have Mix framework ancestors yet.
-        final blockData = BlockData.of(builderContext);
+        final blockData = BlockConfiguration.of(builderContext);
 
         // Build the code widget
         Widget codeWidget = Row(

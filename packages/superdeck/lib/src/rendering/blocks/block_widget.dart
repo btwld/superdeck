@@ -43,8 +43,8 @@ class _BlockContainerState extends State<_BlockContainer> {
       spec.blockContainer.spec,
     );
 
-    final blockData = BlockData(
-      block: widget.block,
+    final blockData = BlockConfiguration(
+      align: widget.block.align,
       spec: spec,
       size: Size(
         math.max(0.0, widget.size.width - blockOffset.dx),
@@ -92,7 +92,7 @@ class _BlockContainerState extends State<_BlockContainer> {
   }
 }
 
-/// Helper widget for content block children to access BlockData context.
+/// Helper widget for content block children to access BlockConfiguration context.
 class _ContentBlockChild extends StatelessWidget {
   const _ContentBlockChild({required this.content});
 
@@ -100,12 +100,12 @@ class _ContentBlockChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = BlockData.of(context);
+    final data = BlockConfiguration.of(context);
     return MarkdownViewer(content: content, spec: data.spec);
   }
 }
 
-/// Helper widget for custom block children to access BlockData context.
+/// Helper widget for custom block children to access BlockConfiguration context.
 class _CustomBlockChild extends StatelessWidget {
   const _CustomBlockChild({required this.block});
 
@@ -114,7 +114,7 @@ class _CustomBlockChild extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final slide = SlideConfiguration.of(context);
-    final data = BlockData.of(context);
+    final data = BlockConfiguration.of(context);
     final widgetDef = slide.getWidgetDefinition(block.name);
 
     if (widgetDef == null) {

@@ -20,7 +20,7 @@ import 'package:markdown/markdown.dart' as md;
 /// - `![alt](url) {.hero}`
 ///
 /// **Benefits:**
-/// - Images access BlockData context for slide sizing
+/// - Images access BlockConfiguration context for slide sizing
 /// - Images render as full-width block elements
 /// - Hero animations are supported via `{.hero}` tags
 /// - Simpler than modifying TextElementBuilder to preserve inline children
