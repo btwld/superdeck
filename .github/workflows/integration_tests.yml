@@ -38,10 +38,10 @@ jobs:
       - name: Install dependencies
         run: |
           fvm flutter pub get
-          fvm melos bootstrap
+          fvm exec melos bootstrap
 
       - name: Build Runner (if needed)
-        run: fvm melos run build_runner:build
+        run: fvm exec melos run build_runner:build
 
       - name: Run All Integration Tests
         working-directory: demo
@@ -72,10 +72,10 @@ jobs:
       - name: Install dependencies
         run: |
           fvm flutter pub get
-          fvm melos bootstrap
+          fvm exec melos bootstrap
 
       - name: Build Runner (if needed)
-        run: fvm melos run build_runner:build
+        run: fvm exec melos run build_runner:build
 
       - name: Install ChromeDriver
         run: |
