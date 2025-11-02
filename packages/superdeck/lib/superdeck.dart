@@ -25,6 +25,9 @@ export 'package:superdeck/src/deck/deck_provider.dart';
 export 'package:superdeck/src/deck/slide_configuration.dart';
 export 'package:superdeck/src/deck/widget_definition.dart';
 
+// Export
+export 'package:superdeck/src/export/async_thumbnail.dart';
+
 // Built-in Widgets
 export 'package:superdeck/src/widgets/widgets.dart';
 

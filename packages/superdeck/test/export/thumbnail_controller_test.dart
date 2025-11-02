@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/export/thumbnail_controller.dart';
+import 'package:superdeck/src/export/async_thumbnail.dart';
 
 void main() {
   group('AsyncThumbnail', () {

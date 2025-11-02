@@ -5,51 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../ui/widgets/provider.dart';
 import '../utils/cli_watcher.dart';
 import '../utils/constants.dart';
-import '../ui/widgets/provider.dart';
-import '../export/thumbnail_controller.dart';
 import 'deck_controller.dart';
-import 'navigation_controller.dart';
 import 'deck_options.dart';
-
-/// Provider for the deck controller
-///
-/// Uses a custom InheritedWidget (not InheritedNotifierData) to provide
-/// manual control over rebuild behavior via ListenableBuilder. This allows
-/// fine-grained rebuild control where needed.
-///
-/// Note: updateShouldNotify returns false - rebuilds are controlled manually
-/// through ListenableBuilder widgets in the UI layer.
-class DeckProvider extends InheritedWidget {
-  final DeckController controller;
-
-  const DeckProvider({
-    super.key,
-    required this.controller,
-    required super.child,
-  });
-
-  static DeckController of(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<DeckProvider>()!
-        .controller;
-  }
-
-  @override
-  bool updateShouldNotify(DeckProvider oldWidget) => false;
-}
-
-/// Provider for the navigation controller
-///
-/// Uses InheritedNotifierData for automatic rebuild when controller changes.
-/// Unlike DeckProvider, this provides automatic propagation of changes to
-/// dependent widgets without requiring manual ListenableBuilder.
-class NavigationProvider {
-  static NavigationController of(BuildContext context) {
-    return InheritedNotifierData.of<NavigationController>(context);
-  }
-}
+import 'navigation_controller.dart';
 
 /// Widget that syncs thumbnail generation with deck slide changes
 ///
@@ -69,30 +30,29 @@ class _ThumbnailSyncManagerState extends State<ThumbnailSyncManager> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final deckController = DeckProvider.of(context);
-    final thumbnailController = ThumbnailController.of(context);
+    final deck = DeckController.of(context);
 
     // Initial thumbnail generation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        thumbnailController.generateThumbnails(deckController.slides.value, context);
+        deck.generateThumbnails(context);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final deckController = DeckProvider.of(context);
-    final thumbnailController = ThumbnailController.of(context);
+    final deck = DeckController.of(context);
 
-    // Listen to deck changes and regenerate thumbnails
+    // Listen to slide changes and regenerate thumbnails
     return Watch((context) {
-      final slides = deckController.slides.value;
+      // Watch the slides signal to trigger rebuild when it changes
+      deck.slides.value;
 
-      // Regenerate thumbnails after frame is complete
+      // Regenerate after frame completes
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          thumbnailController.generateThumbnails(slides, context);
+          deck.generateThumbnails(context);
         }
       });
 
@@ -101,7 +61,10 @@ class _ThumbnailSyncManagerState extends State<ThumbnailSyncManager> {
   }
 }
 
-/// Builder widget that creates and manages the controller
+/// Builder widget that creates and manages the DeckController
+///
+/// Provides the DeckController via InheritedData and manages its lifecycle
+/// including CLI watcher integration for auto-rebuild functionality.
 class DeckControllerBuilder extends StatefulWidget {
   final DeckOptions options;
   final Widget Function(BuildContext context, GoRouter router) builder;
@@ -118,8 +81,6 @@ class DeckControllerBuilder extends StatefulWidget {
 
 class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   late final DeckController _deckController;
-  late final NavigationController _navigationController;
-  late final ThumbnailController _thumbnailController;
   CliWatcher? _cliWatcher;
   final _logger = getLogger('DeckControllerBuilder');
 
@@ -134,13 +95,6 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       deckService: deckService,
       options: widget.options,
     );
-
-    // Create navigation controller with callback for total slides
-    _navigationController = NavigationController(
-      getTotalSlides: () => _deckController.totalSlides.value,
-    );
-
-    _thumbnailController = ThumbnailController();
 
     // Start CLI watcher in debug mode for auto-rebuild
     if (kCanRunProcess) {
@@ -178,29 +132,79 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   void dispose() {
     _cliWatcher?.removeListener(_onCliWatcherChanged);
     _cliWatcher?.dispose();
-    _navigationController.dispose();
     _deckController.dispose();
-    _thumbnailController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DeckProvider(
-      controller: _deckController,
-      child: InheritedNotifierData(
-        data: _navigationController,
-        child: InheritedNotifierData(
-          data: _thumbnailController,
-          child: ThumbnailSyncManager(
-            child: Builder(
-              builder: (context) {
-                return widget.builder(context, _navigationController.router);
-              },
-            ),
-          ),
+    return InheritedData(
+      data: _deckController,
+      child: ThumbnailSyncManager(
+        child: Builder(
+          builder: (context) {
+            return widget.builder(context, _deckController.router);
+          },
         ),
       ),
     );
   }
+}
+
+/// Provider for the navigation controller (backward compatibility)
+///
+/// This class provides access to navigation functionality for Phase 4 migration.
+/// Returns a NavigationControllerAdapter that delegates to DeckController.
+/// Will be removed in Phase 5 after all consumers are updated.
+@Deprecated('Use DeckController.of(context) instead')
+class NavigationProvider {
+  static NavigationController of(BuildContext context) {
+    final deck = DeckController.of(context);
+    // Return an adapter that delegates to DeckController
+    return _NavigationControllerAdapter(deck);
+  }
+}
+
+/// Adapter that makes DeckController compatible with NavigationController API
+///
+/// This temporary adapter allows existing consumers to continue using
+/// NavigationController methods while the underlying implementation
+/// uses DeckController. Will be removed in Phase 5.
+class _NavigationControllerAdapter extends NavigationController {
+  final DeckController _deck;
+
+  _NavigationControllerAdapter(this._deck)
+      : super(getTotalSlides: () => _deck.totalSlides.value) {
+    // Override the router with DeckController's router
+    router = _deck.router;
+  }
+
+  @override
+  int get currentIndex => _deck.currentIndex.value;
+
+  @override
+  Future<void> goToSlide(int index) => _deck.goToSlide(index);
+
+  @override
+  Future<void> nextSlide() => _deck.nextSlide();
+
+  @override
+  Future<void> previousSlide() => _deck.previousSlide();
+
+  @override
+  void updateCurrentIndex(int index) {
+    // DeckController's router handles index updates internally via onIndexChanged
+    // This method is called when the route changes, but the router already
+    // propagates the change to _deck._updateCurrentIndex via the callback.
+    // No action needed here.
+  }
+
+  @override
+  bool get isTransitioning => _deck.isTransitioning.value;
+
+  @override
+  bool get canGoNext => _deck.canGoNext.value;
+
+  @override
+  bool get canGoPrevious => _deck.canGoPrevious.value;
 }

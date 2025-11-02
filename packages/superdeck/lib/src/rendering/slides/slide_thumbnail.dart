@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:superdeck/src/ui/ui.dart';
 
 import '../../deck/slide_configuration.dart';
+import '../../export/async_thumbnail.dart';
 import '../../export/thumbnail_controller.dart';
 import '../../utils/constants.dart';
 

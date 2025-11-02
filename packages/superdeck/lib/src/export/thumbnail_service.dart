@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 
 import '../deck/slide_configuration.dart';
+import 'async_thumbnail.dart';
 import 'slide_capture_service.dart';
-import 'thumbnail_controller.dart';
 
 /// Stateless service for thumbnail generation operations.
 ///
@@ -61,6 +61,7 @@ class ThumbnailService {
 
     final imageData = await _slideCaptureService.capture(
       slide: slide,
+      // ignore: use_build_context_synchronously
       context: context,
     );
 
