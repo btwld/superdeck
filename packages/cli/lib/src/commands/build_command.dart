@@ -14,7 +14,7 @@ import 'base_command.dart';
 /// Creates a DeckBuilder with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckConfiguration configuration,
-  required DeckRepository store,
+  required DeckService store,
 }) {
   return DeckBuilder(
     tasks: [
@@ -74,7 +74,7 @@ class BuildCommand extends SuperdeckCommand {
 
   /// Cleans all generated assets and runs a full rebuild
   Future<bool> _cleanAndRebuild(
-    DeckRepository store,
+    DeckService store,
     DeckConfiguration config,
   ) async {
     logger.info('Force rebuild: Clearing all generated assets...');
@@ -96,7 +96,7 @@ class BuildCommand extends SuperdeckCommand {
   }
 
   /// Runs the build process with proper error handling and progress reporting
-  Future<bool> _runBuild(DeckRepository store, DeckConfiguration config) async {
+  Future<bool> _runBuild(DeckService store, DeckConfiguration config) async {
     // Wait while a build is already running
     while (_isRunning) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -166,7 +166,7 @@ class BuildCommand extends SuperdeckCommand {
 
   @override
   Future<int> run() async {
-    DeckRepository? store;
+    DeckService? store;
     try {
       final deckConfig = await loadConfiguration();
 
@@ -181,7 +181,7 @@ class BuildCommand extends SuperdeckCommand {
       }
 
       // Create the data store using the consolidated repository
-      store = DeckRepository(configuration: deckConfig);
+      store = DeckService(configuration: deckConfig);
       await store.initialize();
 
       // Log if force rebuild is enabled

@@ -238,7 +238,7 @@ class CliWatcher extends ChangeNotifier {
         configuration: configuration,
       );
 
-      final repository = DeckRepository(configuration: configuration);
+      final repository = DeckService(configuration: configuration);
       await repository.saveReferences(errorDeck);
       _logger.info('Error deck written to ${configuration.deckJson.path}');
     } catch (e) {

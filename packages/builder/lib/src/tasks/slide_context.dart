@@ -6,7 +6,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 class SlideContext {
   /// The index of the slide in the original list.
   final int slideIndex;
-  final DeckRepository dataStore;
+  final DeckService dataStore;
 
   /// The raw slide being processed.
   RawSlideMarkdownType slide;

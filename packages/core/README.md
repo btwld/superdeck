@@ -21,7 +21,7 @@ The `superdeck_core` package contains the essential components that power SuperD
 
 ### Repositories
 
-- `DeckRepository`: Unified repository using strategy pattern for platform-specific data access
+- `DeckService`: Unified repository using strategy pattern for platform-specific data access
 - `DeckReader`: Abstract interface for reading deck data
 - `LocalDeckReader`: File system-based implementation
 - `AssetBundleDeckReader`: Flutter asset bundle implementation
@@ -52,7 +52,7 @@ final config = DeckConfiguration(
 );
 
 // Initialize a repository with local file system reader
-final repository = DeckRepository(
+final repository = DeckService(
   configuration: config,
   reader: DeckReader.local(configuration: config),
 );

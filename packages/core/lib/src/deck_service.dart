@@ -8,16 +8,16 @@ import 'package:path/path.dart' as p;
 import 'package:superdeck_core/markdown_json.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-/// Repository for managing deck data from the local file system.
+/// Service for managing deck data from the local file system.
 ///
 /// Provides functionality for loading, watching, and saving decks,
 /// as well as managing generated assets.
-class DeckRepository {
-  DeckRepository({required this.configuration});
+class DeckService {
+  DeckService({required this.configuration});
 
   final DeckConfiguration configuration;
   final List<GeneratedAsset> _generatedAssets = [];
-  final Logger _logger = Logger('DeckRepository');
+  final Logger _logger = Logger('DeckService');
 
   /// Initializes the repository by creating necessary directories and files.
   Future<void> initialize() async {

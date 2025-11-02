@@ -6,8 +6,8 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import 'deck_options.dart';
 import 'deck_provider.dart';
-import 'slide_configuration_builder.dart';
 import 'slide_configuration.dart';
+import 'slide_configuration_builder.dart';
 
 /// Loading state for the deck
 enum DeckLoadingState { idle, loading, loaded, error }
@@ -19,7 +19,7 @@ enum DeckLoadingState { idle, loading, loaded, error }
 /// management. Navigation is handled separately by NavigationController.
 class DeckController {
   // Data layer
-  final DeckRepository _repository;
+  final DeckService _deckService;
   final SlideConfigurationBuilder _slideBuilder;
 
   // Stream subscription
@@ -61,15 +61,15 @@ class DeckController {
     () => _loadingState.value == DeckLoadingState.error,
   );
 
-  // Repository getter (for error retry)
-  DeckRepository get repository => _repository;
+  // Service getter (for error retry)
+  DeckService get repository => _deckService;
 
   DeckController({
-    required DeckRepository repository,
+    required DeckService deckService,
     required DeckOptions options,
-  })  : _repository = repository,
+  })  : _deckService = deckService,
         _slideBuilder = SlideConfigurationBuilder(
-          configuration: repository.configuration,
+          configuration: deckService.configuration,
         ) {
     _options.value = options;
     _startDeckStream();
@@ -79,7 +79,7 @@ class DeckController {
   void _startDeckStream() {
     _loadingState.value = DeckLoadingState.loading;
 
-    _deckSubscription = _repository.loadDeckStream().listen(
+    _deckSubscription = _deckService.loadDeckStream().listen(
       (deck) {
         _currentDeck.value = deck;
         _loadingState.value = DeckLoadingState.loaded;

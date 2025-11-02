@@ -24,7 +24,7 @@ class SlideProcessor {
   Future<List<Slide>> processAll(
     List<RawSlideMarkdown> rawSlides,
     List<Task> tasks,
-    DeckRepository store,
+    DeckService store,
   ) async {
     _logger.info(
       'Processing ${rawSlides.length} slides with $_concurrentSlides concurrent workers',

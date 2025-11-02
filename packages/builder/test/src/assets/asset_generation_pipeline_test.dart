@@ -35,12 +35,12 @@ class MockAssetGenerator implements AssetGenerator {
   Future<void> dispose() async {}
 }
 
-/// Mock DeckRepository for testing
-class MockDeckRepository extends DeckRepository {
+/// Mock DeckService for testing
+class MockDeckService extends DeckService {
   final Directory _tempDir;
   final Map<String, String> _assetPaths = {};
 
-  MockDeckRepository(this._tempDir) : super(configuration: DeckConfiguration());
+  MockDeckService(this._tempDir) : super(configuration: DeckConfiguration());
 
   @override
   String getGeneratedAssetPath(GeneratedAsset asset) {
@@ -59,13 +59,13 @@ class MockDeckRepository extends DeckRepository {
 void main() {
   group('AssetGenerationPipeline', () {
     late AssetGenerationPipeline pipeline;
-    late MockDeckRepository mockStore;
+    late MockDeckService mockStore;
     late MockAssetGenerator mockGenerator;
     late Directory tempDir;
 
     setUp(() {
       tempDir = Directory.systemTemp.createTempSync('asset_pipeline_test');
-      mockStore = MockDeckRepository(tempDir);
+      mockStore = MockDeckService(tempDir);
       mockGenerator = MockAssetGenerator('mermaid', [1, 2, 3, 4, 5]);
       pipeline = AssetGenerationPipeline(
         generators: [mockGenerator],

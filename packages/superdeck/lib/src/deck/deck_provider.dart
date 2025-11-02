@@ -128,10 +128,10 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
     super.initState();
 
     final configuration = DeckConfiguration();
-    final repository = DeckRepository(configuration: configuration);
+    final deckService = DeckService(configuration: configuration);
 
     _deckController = DeckController(
-      repository: repository,
+      deckService: deckService,
       options: widget.options,
     );
 

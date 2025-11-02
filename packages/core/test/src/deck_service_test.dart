@@ -9,14 +9,14 @@ import 'package:test/test.dart';
 import 'helpers/testing_utils.dart';
 
 void main() {
-  group('DeckRepository with LocalDeckReader', () {
+  group('DeckService with LocalDeckReader', () {
     late MockDeckConfiguration mockConfig;
-    late DeckRepository repository;
+    late DeckService repository;
 
     setUp(() {
       mockConfig = createMockConfig();
       final config = DeckConfiguration(projectDir: mockConfig.projectDir);
-      repository = DeckRepository(configuration: config);
+      repository = DeckService(configuration: config);
     });
 
     test(
@@ -92,15 +92,15 @@ void main() {
     });
   });
 
-  group('DeckRepository with LocalDeckReader (FileSystem features)', () {
+  group('DeckService with LocalDeckReader (FileSystem features)', () {
     late MockDeckConfiguration mockConfig;
     late DeckConfiguration config;
-    late DeckRepository repository;
+    late DeckService repository;
 
     setUp(() async {
       mockConfig = createMockConfig();
       config = DeckConfiguration(projectDir: mockConfig.projectDir);
-      repository = DeckRepository(configuration: config);
+      repository = DeckService(configuration: config);
 
       // Initialize the repository for each test
       await repository.initialize();
