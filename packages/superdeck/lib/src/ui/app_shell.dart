@@ -10,10 +10,8 @@ import 'package:superdeck/src/ui/widgets/icon_button.dart';
 import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
 import 'package:superdeck/src/utils/constants.dart';
 import 'package:superdeck/src/ui/extensions.dart';
-import 'package:superdeck/src/export/thumbnail_controller.dart';
 
 import '../deck/deck_controller.dart';
-import '../deck/deck_provider.dart';
 import '../deck/navigation_manager.dart';
 import 'panels/bottom_bar.dart';
 
@@ -100,10 +98,7 @@ class _SplitViewState extends State<SplitView>
       // Generate thumbnails on first build only
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          ThumbnailController.of(context).generateThumbnails(
-            deckController.slides.value,
-            context,
-          );
+          deckController.generateThumbnails(context);
         }
       });
     }
@@ -119,13 +114,12 @@ class _SplitViewState extends State<SplitView>
 
   // Build the panel content (thumbnails + optional comments).
   Widget _buildPanel(BuildContext context) {
-    final deckController = DeckController.of(context);
-    final navigationController = NavigationProvider.of(context);
+    final deck = DeckController.of(context);
 
     return Watch((context) {
-      final currentIndex = navigationController.currentIndex;
-      final isNotesOpen = deckController.isNotesOpen.value;
-      final slides = deckController.slides.value;
+      final currentIndex = deck.currentIndex.value;
+      final isNotesOpen = deck.isNotesOpen.value;
+      final slides = deck.slides.value;
 
       // Get current slide from index
       final currentSlide = (currentIndex >= 0 && currentIndex < slides.length)
@@ -137,7 +131,7 @@ class _SplitViewState extends State<SplitView>
         scrollDirection: widget.isSmallLayout
             ? Axis.horizontal
             : Axis.vertical,
-        onItemTap: navigationController.goToSlide,
+        onItemTap: deck.goToSlide,
         activeIndex: currentSlide?.slideIndex ?? 0,
         itemBuilder: (index, selected) {
           return SlideThumbnail(selected: selected, slide: slides[index]);

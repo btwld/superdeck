@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/deck_provider.dart';
+import 'package:superdeck/src/deck/deck_controller.dart';
 
 /// Helper to wait for presentation to load
 Future<void> waitForPresentationLoad(
@@ -112,26 +112,26 @@ Future<void> waitForAnimations(WidgetTester tester) async {
 
 /// Extension methods for common test operations
 extension SuperDeckTestExtensions on WidgetTester {
-  /// Navigate to next slide using NavigationController
+  /// Navigate to next slide using DeckController
   Future<void> navigateToNextSlide() async {
-    // Find a widget deep in the tree that has access to NavigationProvider
+    // Find a widget deep in the tree that has access to DeckController
     final textWidgets = find.byType(Text);
     if (textWidgets.evaluate().isNotEmpty) {
       final context = element(textWidgets.first);
-      final navigationController = NavigationProvider.of(context);
-      await navigationController.nextSlide();
+      final deck = DeckController.of(context);
+      await deck.nextSlide();
       await waitForSlideTransition(this);
     }
   }
 
-  /// Navigate to previous slide using NavigationController
+  /// Navigate to previous slide using DeckController
   Future<void> navigateToPreviousSlide() async {
-    // Find a widget deep in the tree that has access to NavigationProvider
+    // Find a widget deep in the tree that has access to DeckController
     final textWidgets = find.byType(Text);
     if (textWidgets.evaluate().isNotEmpty) {
       final context = element(textWidgets.first);
-      final navigationController = NavigationProvider.of(context);
-      await navigationController.previousSlide();
+      final deck = DeckController.of(context);
+      await deck.previousSlide();
       await waitForSlideTransition(this);
     }
   }

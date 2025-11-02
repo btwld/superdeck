@@ -8,8 +8,6 @@ import 'package:superdeck/src/ui/widgets/icon_button.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../deck/deck_controller.dart';
-import '../../deck/deck_provider.dart';
-import '../../export/thumbnail_controller.dart';
 
 class DeckBottomBar extends StatelessWidget {
   const DeckBottomBar({super.key});
@@ -27,17 +25,15 @@ class DeckBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deckController = DeckController.of(context);
-    final navigationController = NavigationProvider.of(context);
-    final thumbnail = ThumbnailController.of(context);
+    final deck = DeckController.of(context);
 
     return FlexBox(
       style: _bottomBarContainer,
       children: [
         // view notes - use Watch for reactive icon
         Watch((context) => SDIconButton(
-          onPressed: deckController.toggleNotes,
-          icon: deckController.isNotesOpen.value
+          onPressed: deck.toggleNotes,
+          icon: deck.isNotesOpen.value
             ? Icons.comment
             : Icons.comments_disabled,
         )),
@@ -49,30 +45,26 @@ class DeckBottomBar extends StatelessWidget {
 
         SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
-          onPressed: () => thumbnail.generateThumbnails(
-            deckController.slides.value,
-            context,
-            force: true,
-          ),
+          onPressed: () => deck.generateThumbnails(context, force: true),
         ),
         const Spacer(),
         SDIconButton(
           icon: Icons.arrow_back,
-          onPressed: navigationController.previousSlide,
+          onPressed: deck.previousSlide,
         ),
         SDIconButton(
           icon: Icons.arrow_forward,
-          onPressed: navigationController.nextSlide,
+          onPressed: deck.nextSlide,
         ),
         const Spacer(),
 
         // Page counter - use Watch for reactive text
         Watch((context) => Text(
-          '${navigationController.currentIndex + 1} of ${deckController.totalSlides.value}',
+          '${deck.currentIndex.value + 1} of ${deck.totalSlides.value}',
           style: const TextStyle(color: Colors.white),
         )),
 
-        SDIconButton(icon: Icons.close, onPressed: deckController.closeMenu),
+        SDIconButton(icon: Icons.close, onPressed: deck.closeMenu),
       ],
     );
   }

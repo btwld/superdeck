@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'navigation_events.dart';
-import 'deck_provider.dart';
+import 'deck_controller.dart';
 
 /// Unified widget for handling navigation input from keyboard and gestures
 ///
@@ -44,8 +44,8 @@ class _NavigationManagerState extends State<NavigationManager> {
   void _handleNavigationEvent(NavigationEvent? event) {
     if (event == null) return;
 
-    final controller = NavigationProvider.of(context);
-    controller.handleNavigationEvent(event);
+    final deck = DeckController.of(context);
+    deck.handleNavigationEvent(event);
   }
 
   @override

@@ -4,7 +4,6 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 import '../rendering/slides/slide_screen.dart';
 import 'deck_controller.dart';
-import 'deck_provider.dart';
 
 /// Widget for rendering slide page content
 ///
@@ -18,12 +17,6 @@ class SlidePageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deckController = DeckController.of(context);
-    final navigationController = NavigationProvider.of(context);
-
-    // Sync route index to navigation controller
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      navigationController.updateCurrentIndex(index);
-    });
 
     // Use Watch to react to signals
     return Watch((context) {
