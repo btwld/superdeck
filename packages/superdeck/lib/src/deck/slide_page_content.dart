@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 import '../rendering/slides/slide_screen.dart';
 import 'deck_controller.dart';
@@ -24,39 +25,36 @@ class SlidePageContent extends StatelessWidget {
       navigationController.updateCurrentIndex(index);
     });
 
-    // Use ListenableBuilder to react to both controllers
-    return ListenableBuilder(
-      listenable: Listenable.merge([deckController, navigationController]),
-      builder: (context, child) {
-        // Access deck controller state
-        final isLoading = deckController.isLoading;
-        final hasError = deckController.hasError;
-        final slides = deckController.slides;
+    // Use Watch to react to signals
+    return Watch((context) {
+      // Access deck controller state
+      final isLoading = deckController.isLoading.value;
+      final hasError = deckController.hasError.value;
+      final slides = deckController.slides.value;
 
-        // Render appropriate state
-        if (hasError) {
-          return _ErrorScreen(
-            error: deckController.error,
-            onRetry: deckController.repository.loadDeckStream,
-          );
-        }
-
-        if (isLoading) {
-          return const _LoadingScreen();
-        }
-
-        if (slides.isEmpty) {
-          return const _NoSlidesScreen();
-        }
-
-        final safeIndex = index.clamp(0, slides.length - 1);
-        return Semantics(
-          label: 'Slide ${safeIndex + 1}',
-          container: true,
-          child: SlideScreen(slides[safeIndex]),
+      // Render appropriate state
+      if (hasError) {
+        return _ErrorScreen(
+          error: deckController.error.value,
+          onRetry: deckController.repository.loadDeckStream,
         );
-      },
-    );
+      }
+
+      if (isLoading) {
+        return const _LoadingScreen();
+      }
+
+      if (slides.isEmpty) {
+        return const _NoSlidesScreen();
+      }
+
+      final safeIndex = index.clamp(0, slides.length - 1);
+      return Semantics(
+        label: 'Slide ${safeIndex + 1}',
+        container: true,
+        child: SlideScreen(slides[safeIndex]),
+      );
+    });
   }
 }
 

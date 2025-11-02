@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' show Icons, Colors;
 import 'package:mix/mix.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/export/pdf_export_screen.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/icon_button.dart';
@@ -30,19 +31,16 @@ class DeckBottomBar extends StatelessWidget {
     final navigationController = NavigationProvider.of(context);
     final thumbnail = ThumbnailController.of(context);
 
-    // No ListenableBuilder needed - this widget is inside SplitView's builder
-    final currentPage = navigationController.currentIndex + 1;
-    final totalPages = deckController.totalSlides;
-    final isNotesOpen = deckController.isNotesOpen;
-
     return FlexBox(
       style: _bottomBarContainer,
       children: [
-        // view notes
-        SDIconButton(
+        // view notes - use Watch for reactive icon
+        Watch((context) => SDIconButton(
           onPressed: deckController.toggleNotes,
-          icon: isNotesOpen ? Icons.comment : Icons.comments_disabled,
-        ),
+          icon: deckController.isNotesOpen.value
+            ? Icons.comment
+            : Icons.comments_disabled,
+        )),
 
         SDIconButton(
           icon: Icons.save,
@@ -52,7 +50,7 @@ class DeckBottomBar extends StatelessWidget {
         SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
           onPressed: () => thumbnail.generateThumbnails(
-            deckController.slides,
+            deckController.slides.value,
             context,
             force: true,
           ),
@@ -67,10 +65,13 @@ class DeckBottomBar extends StatelessWidget {
           onPressed: navigationController.nextSlide,
         ),
         const Spacer(),
-        Text(
-          '$currentPage of $totalPages',
+
+        // Page counter - use Watch for reactive text
+        Watch((context) => Text(
+          '${navigationController.currentIndex + 1} of ${deckController.totalSlides.value}',
           style: const TextStyle(color: Colors.white),
-        ),
+        )),
+
         SDIconButton(icon: Icons.close, onPressed: deckController.closeMenu),
       ],
     );

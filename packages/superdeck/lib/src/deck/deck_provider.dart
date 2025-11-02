@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../utils/cli_watcher.dart';
@@ -74,7 +75,7 @@ class _ThumbnailSyncManagerState extends State<ThumbnailSyncManager> {
     // Initial thumbnail generation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        thumbnailController.generateThumbnails(deckController.slides, context);
+        thumbnailController.generateThumbnails(deckController.slides.value, context);
       }
     });
   }
@@ -85,22 +86,18 @@ class _ThumbnailSyncManagerState extends State<ThumbnailSyncManager> {
     final thumbnailController = ThumbnailController.of(context);
 
     // Listen to deck changes and regenerate thumbnails
-    return ListenableBuilder(
-      listenable: deckController,
-      builder: (context, child) {
-        final slides = deckController.slides;
+    return Watch((context) {
+      final slides = deckController.slides.value;
 
-        // Regenerate thumbnails after frame is complete
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            thumbnailController.generateThumbnails(slides, context);
-          }
-        });
+      // Regenerate thumbnails after frame is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          thumbnailController.generateThumbnails(slides, context);
+        }
+      });
 
-        return child!;
-      },
-      child: widget.child,
-    );
+      return widget.child;
+    });
   }
 }
 
@@ -140,7 +137,7 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
 
     // Create navigation controller with callback for total slides
     _navigationController = NavigationController(
-      getTotalSlides: () => _deckController.totalSlides,
+      getTotalSlides: () => _deckController.totalSlides.value,
     );
 
     _thumbnailController = ThumbnailController();

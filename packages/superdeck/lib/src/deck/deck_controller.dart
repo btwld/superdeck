@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:signals/signals.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'deck_options.dart';
@@ -14,9 +15,9 @@ enum DeckLoadingState { idle, loading, loaded, error }
 /// Controller for deck data and state management
 ///
 /// Handles loading deck data, managing options, building slide configurations,
-/// and UI state (menu, notes, rebuilding). Navigation is handled separately
-/// by NavigationController.
-class DeckController extends ChangeNotifier {
+/// and UI state (menu, notes, rebuilding). Uses Signals for reactive state
+/// management. Navigation is handled separately by NavigationController.
+class DeckController {
   // Data layer
   final DeckRepository _repository;
   final SlideConfigurationBuilder _slideBuilder;
@@ -24,101 +25,96 @@ class DeckController extends ChangeNotifier {
   // Stream subscription
   StreamSubscription<Deck>? _deckSubscription;
 
-  // Deck state
-  DeckLoadingState _loadingState = DeckLoadingState.idle;
-  Deck? _currentDeck;
-  Object? _error;
+  // Deck state signals (private)
+  final _loadingState = signal<DeckLoadingState>(DeckLoadingState.idle);
+  final _currentDeck = signal<Deck?>(null);
+  final _error = signal<Object?>(null);
+  final _options = signal<DeckOptions>(DeckOptions());
 
-  // UI state
-  DeckOptions _options;
-  bool _isMenuOpen = false;
-  bool _isNotesOpen = false;
-  bool _isRebuilding = false;
+  // UI state signals (private)
+  final _isMenuOpen = signal<bool>(false);
+  final _isNotesOpen = signal<bool>(false);
+  final _isRebuilding = signal<bool>(false);
 
-  // Public getters
-  DeckLoadingState get loadingState => _loadingState;
-  bool get isLoading => _loadingState == DeckLoadingState.loading;
-  bool get hasError => _loadingState == DeckLoadingState.error;
-  Object? get error => _error;
-  DeckOptions get options => _options;
-  bool get isMenuOpen => _isMenuOpen;
-  bool get isNotesOpen => _isNotesOpen;
-  bool get isRebuilding => _isRebuilding;
+  // Public readonly getters for signals
+  ReadonlySignal<DeckLoadingState> get loadingState => _loadingState;
+  ReadonlySignal<Object?> get error => _error;
+  ReadonlySignal<DeckOptions> get options => _options;
+  ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
+  ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
+  ReadonlySignal<bool> get isRebuilding => _isRebuilding;
+
+  // Computed signals
+  late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
+    final deck = _currentDeck.value;
+    if (deck == null) return <SlideConfiguration>[];
+    return _slideBuilder.buildConfigurations(deck.slides, _options.value);
+  });
+
+  late final ReadonlySignal<int> totalSlides = computed(() => slides.value.length);
+
+  late final ReadonlySignal<bool> isLoading = computed(
+    () => _loadingState.value == DeckLoadingState.loading,
+  );
+
+  late final ReadonlySignal<bool> hasError = computed(
+    () => _loadingState.value == DeckLoadingState.error,
+  );
+
+  // Repository getter (for error retry)
   DeckRepository get repository => _repository;
-
-  // Computed properties
-  List<SlideConfiguration> get slides {
-    if (_currentDeck == null) return [];
-    return _slideBuilder.buildConfigurations(_currentDeck!.slides, _options);
-  }
-
-  int get totalSlides => slides.length;
 
   DeckController({
     required DeckRepository repository,
     required DeckOptions options,
-  }) : _repository = repository,
-       _options = options,
-       _slideBuilder = SlideConfigurationBuilder(
-         configuration: repository.configuration,
-       ) {
+  })  : _repository = repository,
+        _slideBuilder = SlideConfigurationBuilder(
+          configuration: repository.configuration,
+        ) {
+    _options.value = options;
     _startDeckStream();
   }
 
   // Stream handling
   void _startDeckStream() {
-    _loadingState = DeckLoadingState.loading;
-    notifyListeners();
+    _loadingState.value = DeckLoadingState.loading;
 
     _deckSubscription = _repository.loadDeckStream().listen(
       (deck) {
-        _currentDeck = deck;
-        _loadingState = DeckLoadingState.loaded;
-        _error = null;
-        notifyListeners();
+        _currentDeck.value = deck;
+        _loadingState.value = DeckLoadingState.loaded;
+        _error.value = null;
       },
       onError: (error) {
-        _error = error;
-        _loadingState = DeckLoadingState.error;
-        notifyListeners();
+        _error.value = error;
+        _loadingState.value = DeckLoadingState.error;
       },
     );
   }
 
   // UI state methods - Menu
   void openMenu() {
-    if (!_isMenuOpen) {
-      _isMenuOpen = true;
-      notifyListeners();
-    }
+    _isMenuOpen.value = true;
   }
 
   void closeMenu() {
-    if (_isMenuOpen) {
-      _isMenuOpen = false;
-      notifyListeners();
-    }
+    _isMenuOpen.value = false;
   }
 
   // UI state methods - Notes
   void toggleNotes() {
-    _isNotesOpen = !_isNotesOpen;
-    notifyListeners();
+    _isNotesOpen.value = !_isNotesOpen.value;
   }
 
   // UI state methods - Options
   void updateOptions(DeckOptions newOptions) {
-    if (_options != newOptions) {
-      _options = newOptions;
-      notifyListeners();
+    if (_options.value != newOptions) {
+      _options.value = newOptions;
     }
   }
 
   void setRebuilding(bool value) {
-    if (_isRebuilding != value) {
-      _isRebuilding = value;
-      notifyListeners();
-    }
+    _isRebuilding.value = value;
   }
 
   // Static accessor
@@ -130,9 +126,22 @@ class DeckController extends ChangeNotifier {
     return provider.controller;
   }
 
-  @override
   void dispose() {
     _deckSubscription?.cancel();
-    super.dispose();
+
+    // Dispose all signals
+    _loadingState.dispose();
+    _currentDeck.dispose();
+    _error.dispose();
+    _options.dispose();
+    _isMenuOpen.dispose();
+    _isNotesOpen.dispose();
+    _isRebuilding.dispose();
+
+    // Dispose computed signals
+    slides.dispose();
+    totalSlides.dispose();
+    isLoading.dispose();
+    hasError.dispose();
   }
 }

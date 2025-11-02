@@ -44,6 +44,7 @@ dependencies:
   qr_flutter: ^4.1.0
   universal_html: ^2.2.4
   signals: ^6.2.0
+  signals_flutter: ^6.2.0
   ack_annotations: ^1.0.0-beta.2
 
 dev_dependencies:

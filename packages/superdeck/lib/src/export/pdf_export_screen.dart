@@ -23,7 +23,7 @@ class PdfExportDialogScreen extends StatefulWidget {
     showRemixDialog(
       context: context,
       builder: (context) =>
-          PdfExportDialogScreen(slides: deckController.slides),
+          PdfExportDialogScreen(slides: deckController.slides.value),
     );
   }
 }
