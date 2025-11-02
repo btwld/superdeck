@@ -101,9 +101,6 @@ class DeckController {
     return index >= 0 && index < slidesList.length ? slidesList[index] : null;
   });
 
-  // Service getter (for error retry - legacy compatibility)
-  DeckService get repository => _deckService;
-
   // ========================================
   // CONSTRUCTOR
   // ========================================
@@ -158,6 +155,12 @@ class DeckController {
   @internal
   void setRebuilding(bool value) {
     _isRebuilding.value = value;
+  }
+
+  /// Forces the deck stream to restart (used for retry flows)
+  Future<void> reloadDeck() async {
+    await _deckSubscription?.cancel();
+    _startDeckStream();
   }
 
   // ========================================

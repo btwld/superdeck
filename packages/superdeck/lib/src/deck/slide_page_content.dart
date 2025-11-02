@@ -29,7 +29,7 @@ class SlidePageContent extends StatelessWidget {
       if (hasError) {
         return _ErrorScreen(
           error: deckController.error.value,
-          onRetry: deckController.repository.loadDeckStream,
+          onRetry: deckController.reloadDeck,
         );
       }
 

@@ -10,7 +10,6 @@ import '../utils/cli_watcher.dart';
 import '../utils/constants.dart';
 import 'deck_controller.dart';
 import 'deck_options.dart';
-import 'navigation_controller.dart';
 
 /// Widget that syncs thumbnail generation with deck slide changes
 ///
@@ -149,62 +148,4 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       ),
     );
   }
-}
-
-/// Provider for the navigation controller (backward compatibility)
-///
-/// This class provides access to navigation functionality for Phase 4 migration.
-/// Returns a NavigationControllerAdapter that delegates to DeckController.
-/// Will be removed in Phase 5 after all consumers are updated.
-@Deprecated('Use DeckController.of(context) instead')
-class NavigationProvider {
-  static NavigationController of(BuildContext context) {
-    final deck = DeckController.of(context);
-    // Return an adapter that delegates to DeckController
-    return _NavigationControllerAdapter(deck);
-  }
-}
-
-/// Adapter that makes DeckController compatible with NavigationController API
-///
-/// This temporary adapter allows existing consumers to continue using
-/// NavigationController methods while the underlying implementation
-/// uses DeckController. Will be removed in Phase 5.
-class _NavigationControllerAdapter extends NavigationController {
-  final DeckController _deck;
-
-  _NavigationControllerAdapter(this._deck)
-      : super(getTotalSlides: () => _deck.totalSlides.value) {
-    // Override the router with DeckController's router
-    router = _deck.router;
-  }
-
-  @override
-  int get currentIndex => _deck.currentIndex.value;
-
-  @override
-  Future<void> goToSlide(int index) => _deck.goToSlide(index);
-
-  @override
-  Future<void> nextSlide() => _deck.nextSlide();
-
-  @override
-  Future<void> previousSlide() => _deck.previousSlide();
-
-  @override
-  void updateCurrentIndex(int index) {
-    // DeckController's router handles index updates internally via onIndexChanged
-    // This method is called when the route changes, but the router already
-    // propagates the change to _deck._updateCurrentIndex via the callback.
-    // No action needed here.
-  }
-
-  @override
-  bool get isTransitioning => _deck.isTransitioning.value;
-
-  @override
-  bool get canGoNext => _deck.canGoNext.value;
-
-  @override
-  bool get canGoPrevious => _deck.canGoPrevious.value;
 }
