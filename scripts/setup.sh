@@ -154,6 +154,14 @@ setup_melos() {
     log_info "Melos already installed"
   fi
 
+  # Install DCM (Dart Code Metrics) if not already installed
+  if ! command -v dcm &> /dev/null; then
+    log_info "Installing DCM (Dart Code Metrics)..."
+    dart pub global activate dcm || log_warning "DCM installation failed, continuing..."
+  else
+    log_info "DCM already installed"
+  fi
+
   # Bootstrap the Melos workspace
   log_info "Bootstrapping Melos workspace..."
   if command -v melos &> /dev/null; then
@@ -254,6 +262,15 @@ verify_setup() {
     log_success "Melos: $melos_version"
   else
     log_warning "Melos not found in PATH"
+    issues=$((issues + 1))
+  fi
+
+  # Check if DCM is available
+  if command -v dcm &> /dev/null; then
+    local dcm_version=$(dcm --version 2>&1 | head -n1)
+    log_success "DCM: $dcm_version"
+  else
+    log_warning "DCM not found in PATH"
     issues=$((issues + 1))
   fi
 
