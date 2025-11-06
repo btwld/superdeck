@@ -34,22 +34,6 @@ class BuildCommand extends SuperdeckCommand {
   /// Flag to track if a build is currently in progress
   bool _isRunning = false;
 
-  void _logBuildFailure(Object error, [StackTrace? stackTrace]) {
-    if (error is DeckFormatException) {
-      logger.formatError(error);
-    } else {
-      logger.err('${error.runtimeType}: $error');
-    }
-
-    if (stackTrace != null) {
-      final trace = stackTrace.toString().trim();
-      if (trace.isNotEmpty) {
-        logger.err('Stack trace:');
-        logger.err(trace);
-      }
-    }
-  }
-
   /// Creates a new [BuildCommand] instance
   BuildCommand() {
     argParser
@@ -70,6 +54,22 @@ class BuildCommand extends SuperdeckCommand {
         help: 'Force rebuild all assets',
         negatable: false,
       );
+  }
+
+  void _logBuildFailure(Object error, [StackTrace? stackTrace]) {
+    if (error is DeckFormatException) {
+      logger.formatError(error);
+    } else {
+      logger.err('${error.runtimeType}: $error');
+    }
+
+    if (stackTrace != null) {
+      final trace = stackTrace.toString().trim();
+      if (trace.isNotEmpty) {
+        logger.err('Stack trace:');
+        logger.err(trace);
+      }
+    }
   }
 
   /// Cleans all generated assets and runs a full rebuild
@@ -232,21 +232,23 @@ class BuildCommand extends SuperdeckCommand {
           stdinSubscription = stdin
               .transform(utf8.decoder)
               .transform(const LineSplitter())
-              .listen((line) async {
+              .listen((line) {
                 final command = line.trim().toLowerCase();
                 switch (command) {
                   case 'r':
                   case 'rebuild':
                     logger.info('Manual rebuild triggered...');
-                    await _runBuild(repository, deckConfig);
+                    unawaited(_runBuild(repository, deckConfig));
+                    break;
                   case 'f':
                   case 'force-rebuild':
                     logger.info('Force rebuild triggered...');
-                    await _cleanAndRebuild(repository, deckConfig);
+                    unawaited(_cleanAndRebuild(repository, deckConfig));
+                    break;
                   case 'q':
                   case 'quit':
                     logger.info('Exiting watch mode...');
-                    await stdinSubscription?.cancel();
+                    unawaited(stdinSubscription?.cancel());
                     exit(ExitCode.success.code);
                   default:
                     logger.warn('Unknown command: "$command"');

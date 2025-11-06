@@ -18,6 +18,13 @@ class PublishCommand extends Command<int> {
 
   final Logger _logger;
 
+  static final RegExp _httpsRepositoryPattern = RegExp(
+    r'https://github\.com/([^/]+)/([^/.]+)(\.git)?',
+  );
+  static final RegExp _sshRepositoryPattern = RegExp(
+    r'git@github\.com:([^/]+)/([^/.]+)(\.git)?',
+  );
+
   PublishCommand({Logger? loggerOverride})
     : _logger = loggerOverride ?? logger {
     argParser
@@ -64,10 +71,12 @@ class PublishCommand extends Command<int> {
   /// Checks if the current directory is a git repository
   Future<bool> _isGitRepository(String repoPath) async {
     try {
-      final ProcessResult result = await Process.run('git', [
-        'rev-parse',
-        '--is-inside-work-tree',
-      ], workingDirectory: repoPath);
+      const args = ['rev-parse', '--is-inside-work-tree'];
+      final ProcessResult result = await Process.run(
+        'git',
+        args,
+        workingDirectory: repoPath,
+      );
 
       return result.exitCode == 0 && result.stdout.toString().trim() == 'true';
     } catch (e) {
@@ -78,11 +87,12 @@ class PublishCommand extends Command<int> {
   /// Gets the current branch name
   Future<String> _getCurrentBranch(String repoPath) async {
     try {
-      final ProcessResult result = await Process.run('git', [
-        'symbolic-ref',
-        '--short',
-        'HEAD',
-      ], workingDirectory: repoPath);
+      const args = ['symbolic-ref', '--short', 'HEAD'];
+      final ProcessResult result = await Process.run(
+        'git',
+        args,
+        workingDirectory: repoPath,
+      );
 
       return result.stdout.toString().trim();
     } catch (e) {
@@ -97,17 +107,13 @@ class PublishCommand extends Command<int> {
 
     // Extract repository name from different URL formats
     // Handle HTTPS URL: https://github.com/username/repo.git
-    final httpsMatch = RegExp(
-      r'https://github\.com/([^/]+)/([^/.]+)(\.git)?',
-    ).firstMatch(remoteUrl);
+    final httpsMatch = _httpsRepositoryPattern.firstMatch(remoteUrl);
     if (httpsMatch != null) {
       return httpsMatch.group(2);
     }
 
     // Handle SSH URL: git@github.com:username/repo.git
-    final sshMatch = RegExp(
-      r'git@github\.com:([^/]+)/([^/.]+)(\.git)?',
-    ).firstMatch(remoteUrl);
+    final sshMatch = _sshRepositoryPattern.firstMatch(remoteUrl);
     if (sshMatch != null) {
       return sshMatch.group(2);
     }
@@ -215,12 +221,12 @@ class PublishCommand extends Command<int> {
   /// Checks if a branch exists
   Future<bool> _branchExists(String repoPath, String branch) async {
     try {
-      final ProcessResult result = await Process.run('git', [
-        'show-ref',
-        '--verify',
-        '--quiet',
-        'refs/heads/$branch',
-      ], workingDirectory: repoPath);
+      final args = ['show-ref', '--verify', '--quiet', 'refs/heads/$branch'];
+      final ProcessResult result = await Process.run(
+        'git',
+        args,
+        workingDirectory: repoPath,
+      );
 
       return result.exitCode == 0;
     } catch (e) {
@@ -231,10 +237,12 @@ class PublishCommand extends Command<int> {
   /// Checks if there are any changes to commit
   Future<bool> _hasChangesToCommit(String repoPath) async {
     try {
-      final ProcessResult result = await Process.run('git', [
-        'status',
-        '--porcelain',
-      ], workingDirectory: repoPath);
+      const args = ['status', '--porcelain'];
+      final ProcessResult result = await Process.run(
+        'git',
+        args,
+        workingDirectory: repoPath,
+      );
 
       return result.stdout.toString().trim().isNotEmpty;
     } catch (e) {
@@ -302,11 +310,12 @@ class PublishCommand extends Command<int> {
   /// Gets the remote URL for the repository
   Future<String?> _getRepositoryUrl(String repoPath) async {
     try {
-      final ProcessResult result = await Process.run('git', [
-        'remote',
-        'get-url',
-        'origin',
-      ], workingDirectory: repoPath);
+      const args = ['remote', 'get-url', 'origin'];
+      final ProcessResult result = await Process.run(
+        'git',
+        args,
+        workingDirectory: repoPath,
+      );
 
       if (result.exitCode == 0) {
         final String url = result.stdout.toString().trim();
@@ -327,18 +336,14 @@ class PublishCommand extends Command<int> {
     String? repository;
 
     // Handle HTTPS URL: https://github.com/username/repo.git
-    final httpsMatch = RegExp(
-      r'https://github\.com/([^/]+)/([^/.]+)(\.git)?',
-    ).firstMatch(remoteUrl);
+    final httpsMatch = _httpsRepositoryPattern.firstMatch(remoteUrl);
     if (httpsMatch != null) {
       username = httpsMatch.group(1);
       repository = httpsMatch.group(2);
     }
     // Handle SSH URL: git@github.com:username/repo.git
     else {
-      final sshMatch = RegExp(
-        r'git@github\.com:([^/]+)/([^/.]+)(\.git)?',
-      ).firstMatch(remoteUrl);
+      final sshMatch = _sshRepositoryPattern.firstMatch(remoteUrl);
       if (sshMatch != null) {
         username = sshMatch.group(1);
         repository = sshMatch.group(2);
@@ -461,30 +466,25 @@ class PublishCommand extends Command<int> {
       // Use git worktree to handle the branch switching without affecting the working directory
       if (await _branchExists(currentDir, targetBranch)) {
         // If branch exists, add a worktree for it
-        await _runGitCommand(currentDir, [
+        final addWorktreeArgs = [
           'worktree',
           'add',
           '-f',
           tempDir,
           targetBranch,
-        ], dryRun: dryRun);
+        ];
+        await _runGitCommand(currentDir, addWorktreeArgs, dryRun: dryRun);
       } else {
         // If branch doesn't exist, create it as an orphan branch
-        await _runGitCommand(currentDir, [
-          'worktree',
-          'add',
-          '--detach',
-          tempDir,
-        ], dryRun: dryRun);
+        final detachWorktreeArgs = ['worktree', 'add', '--detach', tempDir];
+        await _runGitCommand(currentDir, detachWorktreeArgs, dryRun: dryRun);
 
-        await _runGitCommand(tempDir, [
-          'checkout',
-          '--orphan',
-          targetBranch,
-        ], dryRun: dryRun);
+        final checkoutArgs = ['checkout', '--orphan', targetBranch];
+        await _runGitCommand(tempDir, checkoutArgs, dryRun: dryRun);
 
         // Clean out any files in the new branch
-        await _runGitCommand(tempDir, ['rm', '-rf', '.'], dryRun: dryRun);
+        const rmArgs = ['rm', '-rf', '.'];
+        await _runGitCommand(tempDir, rmArgs, dryRun: dryRun);
       }
 
       if (!dryRun) {
@@ -516,25 +516,24 @@ class PublishCommand extends Command<int> {
       }
 
       // Stage and commit changes
-      await _runGitCommand(tempDir, ['add', '.'], dryRun: dryRun);
+      const addArgs = ['add', '.'];
+      await _runGitCommand(tempDir, addArgs, dryRun: dryRun);
 
       // Only commit if there are changes
       final bool hasChanges = dryRun || await _hasChangesToCommit(tempDir);
 
       if (hasChanges) {
-        await _runGitCommand(tempDir, [
+        final commitArgs = [
           'commit',
           '-m',
           '$commitMessage\n\nPublished from branch $currentBranch',
-        ], dryRun: dryRun);
+        ];
+        await _runGitCommand(tempDir, commitArgs, dryRun: dryRun);
 
         // Push if requested
         if (shouldPush) {
-          await _runGitCommand(tempDir, [
-            'push',
-            'origin',
-            targetBranch,
-          ], dryRun: dryRun);
+          final pushArgs = ['push', 'origin', targetBranch];
+          await _runGitCommand(tempDir, pushArgs, dryRun: dryRun);
         }
       } else {
         _logger.info(
@@ -544,11 +543,8 @@ class PublishCommand extends Command<int> {
 
       // Clean up the worktree
       if (!dryRun) {
-        await _runGitCommand(currentDir, [
-          'worktree',
-          'remove',
-          tempDir,
-        ], dryRun: dryRun);
+        final removeWorktreeArgs = ['worktree', 'remove', tempDir];
+        await _runGitCommand(currentDir, removeWorktreeArgs, dryRun: dryRun);
       } else {
         _logger.info('Would clean up the temporary git worktree');
       }

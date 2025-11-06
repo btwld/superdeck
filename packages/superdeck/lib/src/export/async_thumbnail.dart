@@ -15,7 +15,6 @@ class AsyncThumbnail extends ChangeNotifier {
   AsyncFileStatus _status = AsyncFileStatus.idle;
   File? _imageFile;
   bool _disposed = false;
-  Timer? _debounceTimer;
 
   /// The generator function that asynchronously returns an Image.
   final AsyncFileGenerator _generator;
@@ -23,22 +22,13 @@ class AsyncThumbnail extends ChangeNotifier {
   AsyncThumbnail({required AsyncFileGenerator generator})
     : _generator = generator;
 
-  /// Debounced notification to reduce excessive rebuilds
-  void _debouncedNotifyListeners() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 16), () {
-      if (!_disposed) {
-        // Schedule notification after the current build frame
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_disposed) {
-            notifyListeners();
-          }
-        });
-      }
-    });
+  void _notify() {
+    if (!_disposed) {
+      notifyListeners();
+    }
   }
 
-  Future<void> _generate(BuildContext context, [bool force = false]) async {
+  Future<void> _generate(BuildContext context, {required bool force}) async {
     if (_disposed) return;
 
     _status = AsyncFileStatus.loading;
@@ -46,37 +36,35 @@ class AsyncThumbnail extends ChangeNotifier {
       FileImage(_imageFile!).evict();
     }
     _imageFile = null;
-    _debouncedNotifyListeners();
+    _notify();
 
     try {
       _imageFile = await _generator(context, force);
-    } catch (e) {
+      _status = AsyncFileStatus.done;
+    } catch (_) {
       _status = AsyncFileStatus.error;
       _imageFile = null;
-    } finally {
-      _status = AsyncFileStatus.done;
-      if (!_disposed) {
-        _debouncedNotifyListeners();
-      }
     }
+
+    _notify();
   }
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
     _disposed = true;
+    super.dispose();
   }
 
-  Future<void> load(BuildContext context, [bool force = false]) async {
+  Future<void> load(BuildContext context, [bool force = false]) {
+    if (_disposed) return Future.value();
     if (force) {
-      return _generate(context, true);
+      return _generate(context, force: true);
     }
+
     return switch (_status) {
-      AsyncFileStatus.idle => _generate(context),
-      AsyncFileStatus.done => Future.value(),
-      AsyncFileStatus.loading => Future.value(),
-      AsyncFileStatus.error => _generate(context),
+      AsyncFileStatus.done || AsyncFileStatus.loading => Future.value(),
+      AsyncFileStatus.idle ||
+      AsyncFileStatus.error => _generate(context, force: false),
     };
   }
 
