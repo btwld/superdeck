@@ -1,13 +1,13 @@
 import 'package:flutter/widgets.dart';
 
-import 'navigation_events.dart';
 import 'deck_controller.dart';
+import 'navigation_events.dart';
 
 /// Unified widget for handling navigation input from keyboard and gestures
 ///
 /// This widget wraps the application content and listens to both keyboard
 /// and gesture inputs, converting them to navigation events that are then
-/// processed by the NavigationController.
+/// processed by the DeckController.
 ///
 /// Supported inputs:
 /// - Keyboard: Meta + Arrow keys (Command + Arrow on macOS)

@@ -263,8 +263,8 @@ class NavigationFooterPart extends StatelessWidget implements PreferredSizeWidge
   @override
   Widget build(BuildContext context) {
     final slide = SlideConfiguration.of(context);
-    final navigation = NavigationController.of(context);
-    
+    final deck = DeckController.of(context);
+
     return Container(
       height: preferredSize.height,
       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -278,12 +278,12 @@ class NavigationFooterPart extends StatelessWidget implements PreferredSizeWidge
         children: [
           // Previous button
           IconButton(
-            onPressed: navigation.canGoPrevious ? navigation.previousSlide : null,
+            onPressed: deck.canGoPrevious.value ? deck.previousSlide : null,
             icon: Icon(Icons.arrow_back, color: Colors.white),
             tooltip: 'Previous slide',
           ),
           SizedBox(width: 16),
-          
+
           // Progress bar
           Expanded(
             child: Column(
@@ -297,25 +297,25 @@ class NavigationFooterPart extends StatelessWidget implements PreferredSizeWidge
                       style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                     Text(
-                      '${navigation.totalSlides} slides',
+                      '${deck.totalSlides.value} slides',
                       style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
                     ),
                   ],
                 ),
                 SizedBox(height: 4),
                 LinearProgressIndicator(
-                  value: (slide.slideIndex + 1) / navigation.totalSlides,
+                  value: (slide.slideIndex + 1) / deck.totalSlides.value,
                   backgroundColor: Colors.grey.shade700,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade400),
                 ),
               ],
             ),
           ),
-          
+
           SizedBox(width: 16),
           // Next button
           IconButton(
-            onPressed: navigation.canGoNext ? navigation.nextSlide : null,
+            onPressed: deck.canGoNext.value ? deck.nextSlide : null,
             icon: Icon(Icons.arrow_forward, color: Colors.white),
             tooltip: 'Next slide',
           ),

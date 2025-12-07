@@ -2,14 +2,14 @@ import 'package:flutter/material.dart'
     show Icons, Colors, Scaffold, FloatingActionButtonLocation;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
 import 'package:superdeck/src/rendering/slides/scaled_app.dart';
+import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
+import 'package:superdeck/src/ui/extensions.dart';
 import 'package:superdeck/src/ui/panels/comments_panel.dart';
 import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
 import 'package:superdeck/src/ui/widgets/icon_button.dart';
 import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
 import 'package:superdeck/src/utils/constants.dart';
-import 'package:superdeck/src/ui/extensions.dart';
 
 import '../deck/deck_controller.dart';
 import '../deck/navigation_manager.dart';
@@ -95,12 +95,7 @@ class _SplitViewState extends State<SplitView>
         }
       });
 
-      // Generate thumbnails on first build only
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          deckController.generateThumbnails(context);
-        }
-      });
+      // Note: Thumbnail generation is handled by ThumbnailSyncManager
     }
   }
 
@@ -128,9 +123,7 @@ class _SplitViewState extends State<SplitView>
 
       /// Common content for thumbnails
       final thumbnailPanel = ThumbnailPanel(
-        scrollDirection: widget.isSmallLayout
-            ? Axis.horizontal
-            : Axis.vertical,
+        scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
         onItemTap: deck.goToSlide,
         activeIndex: currentSlide?.slideIndex ?? 0,
         itemBuilder: (index, selected) {
@@ -181,13 +174,9 @@ class _SplitViewState extends State<SplitView>
 
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.miniEndFloat,
+        floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         floatingActionButton: !isMenuOpen
-            ? SDIconButton(
-                icon: Icons.menu,
-                onPressed: deckController.openMenu,
-              )
+            ? SDIconButton(icon: Icons.menu, onPressed: deckController.openMenu)
             : null,
 
         // Only show bottom bar on small layout (uncomment if needed):

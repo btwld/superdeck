@@ -41,7 +41,7 @@ class DeckController {
   final _loadingState = signal<DeckLoadingState>(DeckLoadingState.idle);
   final _currentDeck = signal<Deck?>(null);
   final _error = signal<Object?>(null);
-  final _options = signal<DeckOptions>(DeckOptions());  // NEVER exposed
+  final _options = signal<DeckOptions>(DeckOptions()); // NEVER exposed
 
   // UI state
   final _isMenuOpen = signal<bool>(false);
@@ -72,7 +72,9 @@ class DeckController {
     return _slideBuilder.buildConfigurations(deck.slides, _options.value);
   });
 
-  late final ReadonlySignal<int> totalSlides = computed(() => slides.value.length);
+  late final ReadonlySignal<int> totalSlides = computed(
+    () => slides.value.length,
+  );
   late final ReadonlySignal<bool> isLoading = computed(
     () => _loadingState.value == DeckLoadingState.loading,
   );
@@ -108,10 +110,10 @@ class DeckController {
   DeckController({
     required DeckService deckService,
     required DeckOptions options,
-  })  : _deckService = deckService,
-        _slideBuilder = SlideConfigurationBuilder(
-          configuration: deckService.configuration,
-        ) {
+  }) : _deckService = deckService,
+       _slideBuilder = SlideConfigurationBuilder(
+         configuration: deckService.configuration,
+       ) {
     _options.value = options;
 
     // Create router with index change callback
@@ -139,6 +141,11 @@ class DeckController {
       onError: (e) {
         _error.value = e;
         _loadingState.value = DeckLoadingState.error;
+      },
+      onDone: () {
+        // Stream completed unexpectedly - this shouldn't happen during normal
+        // operation as the deck stream is a file watcher. Log for debugging.
+        debugPrint('[DeckController] Deck stream completed unexpectedly');
       },
     );
   }
@@ -199,14 +206,14 @@ class DeckController {
 
   /// Handles navigation events from input handlers (internal)
   @internal
-  void handleNavigationEvent(NavigationEvent event) {
+  Future<void> handleNavigationEvent(NavigationEvent event) async {
     switch (event) {
       case NextSlideEvent():
-        nextSlide();
+        await nextSlide();
       case PreviousSlideEvent():
-        previousSlide();
+        await previousSlide();
       case GoToSlideEvent(:final index):
-        goToSlide(index);
+        await goToSlide(index);
     }
   }
 

@@ -2,13 +2,14 @@ import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
+
 import '../rendering/slides/slide_screen.dart';
 import 'deck_controller.dart';
 
 /// Widget for rendering slide page content
 ///
-/// Handles loading states, errors, and syncing route index with navigation controller.
-/// Separated from NavigationController to avoid tight coupling.
+/// Handles loading states, errors, and syncing route index with DeckController.
+/// Separated from routing concerns to avoid tight coupling.
 class SlidePageContent extends StatelessWidget {
   final int index;
 

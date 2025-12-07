@@ -25,25 +25,3 @@ class InheritedData<T> extends InheritedWidget {
     return provider.data;
   }
 }
-
-class InheritedNotifierData<T extends Listenable> extends InheritedNotifier<T> {
-  const InheritedNotifierData({
-    super.key,
-    required super.child,
-    required T data,
-  }) : super(notifier: data);
-
-  static T? maybeOf<T extends Listenable>(BuildContext context) {
-    final provider = context
-        .dependOnInheritedWidgetOfExactType<InheritedNotifierData<T>>();
-    return provider?.notifier;
-  }
-
-  static T of<T extends Listenable>(BuildContext context) {
-    final notifier = maybeOf<T>(context);
-    if (notifier == null) {
-      throw FlutterError('Provider of type $T not found in the widget tree');
-    }
-    return notifier;
-  }
-}

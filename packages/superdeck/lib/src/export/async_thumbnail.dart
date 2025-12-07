@@ -14,10 +14,14 @@ enum AsyncFileStatus { idle, loading, done, error }
 class AsyncThumbnail extends ChangeNotifier {
   AsyncFileStatus _status = AsyncFileStatus.idle;
   File? _imageFile;
+  Object? _error;
   bool _disposed = false;
 
   /// The generator function that asynchronously returns an Image.
   final AsyncFileGenerator _generator;
+
+  /// Returns the last error that occurred during thumbnail generation.
+  Object? get error => _error;
 
   AsyncThumbnail({required AsyncFileGenerator generator})
     : _generator = generator;
@@ -41,8 +45,12 @@ class AsyncThumbnail extends ChangeNotifier {
     try {
       _imageFile = await _generator(context, force);
       _status = AsyncFileStatus.done;
-    } catch (_) {
+      _error = null;
+    } catch (error, stackTrace) {
+      debugPrint('[AsyncThumbnail] Failed to generate thumbnail: $error');
+      debugPrint('[AsyncThumbnail] Stack trace: $stackTrace');
       _status = AsyncFileStatus.error;
+      _error = error;
       _imageFile = null;
     }
 
