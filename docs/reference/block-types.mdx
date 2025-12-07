@@ -231,7 +231,7 @@ Embeds custom Flutter widgets defined in your app.
 **Properties:**
 
 ### `name` (required)
-Name of the widget as defined in `PresentationOptions.widgets`.
+Name of the widget as defined in `DeckOptions.widgets`.
 
 **Type:** String
 
@@ -243,7 +243,7 @@ Any additional properties become arguments passed to the widget builder.
 **Setup in Flutter app:**
 ```dart
 SuperDeckApp(
-  options: PresentationOptions(
+  options: DeckOptions(
     widgets: {
       'customChart': (args) {
         return CustomChartWidget(

@@ -133,7 +133,7 @@ class CustomBackgroundPart extends StatelessWidget {
 }
 ```
 
-### 2. Register Parts in PresentationOptions
+### 2. Register Parts in DeckOptions
 
 Add your custom parts to your app configuration:
 
@@ -152,7 +152,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: SuperDeckApp(
-        options: PresentationOptions(
+        options: DeckOptions(
           parts: SlideParts(
             header: CustomHeaderPart(),
             footer: CustomFooterPart(),
@@ -611,7 +611,7 @@ class SmartHeaderPart extends StatelessWidget implements PreferredSizeWidget {
 1. **Use SlideConfiguration.of(context)** - The proper way to access slide data
 2. **Implement PreferredSizeWidget** - Required for headers and footers
 3. **Handle edge cases** - Account for missing titles, null values, etc.
-4. **Test with debug mode** - Use `debug: true` in PresentationOptions
+4. **Test with debug mode** - Use `debug: true` in DeckOptions
 
 ## Common Patterns
 
@@ -716,7 +716,7 @@ class ConferenceFooterPart extends StatelessWidget implements PreferredSizeWidge
 Enable debug mode to visualize slide boundaries and data:
 
 ```dart
-PresentationOptions(
+DeckOptions(
   debug: true, // Shows visual debugging aids
   parts: SlideParts(
     header: CustomHeaderPart(),

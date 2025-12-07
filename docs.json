@@ -69,8 +69,8 @@
           "path": "/docs/reference/block-types"
         },
         {
-          "title": "PresentationOptions API",
-          "path": "/docs/reference/presentation-options"
+          "title": "DeckOptions API",
+          "path": "/docs/reference/deck-options"
         },
         {
           "title": "Agent Workflow Contracts",

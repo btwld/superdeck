@@ -1,16 +1,16 @@
 ---
-title: PresentationOptions Reference
+title: DeckOptions Reference
 description: Complete API reference for configuring SuperDeck presentations
 ---
 
-# PresentationOptions Reference
+# DeckOptions Reference
 
-`PresentationOptions` is the main configuration class for customizing SuperDeck presentations. It controls styling, custom widgets, slide parts, and debugging features.
+`DeckOptions` is the main configuration class for customizing SuperDeck presentations. It controls styling, custom widgets, slide parts, and debugging features.
 
 ## Constructor
 
 ```dart
-PresentationOptions({
+DeckOptions({
   PresentationStyle? baseStyle,
   Map<String, PresentationStyle> styles = const {},
   Map<String, WidgetBlockBuilder> widgets = const {},
@@ -29,7 +29,7 @@ Default styling applied to all slides.
 **Default:** `null` (uses default theme)
 
 ```dart
-PresentationOptions(
+DeckOptions(
   baseStyle: PresentationStyle(
     // Custom base styling
   ),
@@ -44,7 +44,7 @@ Named style variants that can be applied to specific slides.
 **Default:** `{}`
 
 ```dart
-PresentationOptions(
+DeckOptions(
   styles: {
     'title': TitleSlideStyle(),
     'quote': QuoteSlideStyle(),
@@ -70,7 +70,7 @@ Custom widget builders for `@widget` blocks.
 **Default:** `{}`
 
 ```dart
-PresentationOptions(
+DeckOptions(
   widgets: {
     'twitter': (args) => TwitterWidget(
       username: args.getString('username'),
@@ -97,7 +97,7 @@ Customizable slide components (header, footer, background).
 **Default:** `null`
 
 ```dart
-PresentationOptions(
+DeckOptions(
   parts: SlideParts(
     header: CustomHeaderPart(),
     footer: CustomFooterPart(),
@@ -116,7 +116,7 @@ Enables debug mode with visual debugging aids.
 **Default:** `false`
 
 ```dart
-PresentationOptions(
+DeckOptions(
   debug: true, // Shows block boundaries and debug info
 )
 ```
@@ -256,7 +256,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: SuperDeckApp(
-        options: PresentationOptions(
+        options: DeckOptions(
           // Base styling for all slides
           baseStyle: PresentationStyle(
             backgroundColor: Colors.white,

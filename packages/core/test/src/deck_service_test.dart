@@ -11,18 +11,18 @@ import 'helpers/testing_utils.dart';
 void main() {
   group('DeckService with LocalDeckReader', () {
     late MockDeckConfiguration mockConfig;
-    late DeckService repository;
+    late DeckService deckService;
 
     setUp(() {
       mockConfig = createMockConfig();
       final config = DeckConfiguration(projectDir: mockConfig.projectDir);
-      repository = DeckService(configuration: config);
+      deckService = DeckService(configuration: config);
     });
 
     test(
       'initialize creates necessary files and directories for LocalDeckReader',
       () async {
-        await repository.initialize();
+        await deckService.initialize();
 
         expect(mockConfig.deckJson.existsSync(), isTrue);
         expect(mockConfig.slidesFile.existsSync(), isTrue);
@@ -39,7 +39,7 @@ void main() {
       await testFile.parent.create(recursive: true);
       await testFile.writeAsString('test content');
 
-      final content = await repository.readAssetByPath(testFile.path);
+      final content = await deckService.readAssetByPath(testFile.path);
 
       expect(content, equals('test content'));
     });
@@ -51,7 +51,7 @@ void main() {
         type: 'image',
       );
 
-      final path = repository.getGeneratedAssetPath(asset);
+      final path = deckService.getGeneratedAssetPath(asset);
 
       expect(path, equals(p.join(mockConfig.assetsDir.path, 'image_test.png')));
     });
@@ -62,7 +62,7 @@ void main() {
         '{"slides":[],"configuration":{}}',
       );
 
-      final reference = await repository.loadDeck();
+      final reference = await deckService.loadDeck();
 
       expect(reference, isA<Deck>());
       expect(reference.slides, isEmpty);
@@ -72,7 +72,7 @@ void main() {
       await mockConfig.deckJson.parent.create(recursive: true);
       await mockConfig.deckJson.writeAsString('invalid json');
 
-      final reference = await repository.loadDeck();
+      final reference = await deckService.loadDeck();
 
       expect(reference, isA<Deck>());
       expect(reference.slides, hasLength(1));
@@ -85,7 +85,7 @@ void main() {
         '{"slides":[],"configuration":{}}',
       );
 
-      final stream = repository.loadDeckStream();
+      final stream = deckService.loadDeckStream();
 
       // Take only the first emission and cancel to prevent file watcher errors
       await expectLater(stream.take(1), emits(isA<Deck>()));
@@ -95,21 +95,21 @@ void main() {
   group('DeckService with LocalDeckReader (FileSystem features)', () {
     late MockDeckConfiguration mockConfig;
     late DeckConfiguration config;
-    late DeckService repository;
+    late DeckService deckService;
 
     setUp(() async {
       mockConfig = createMockConfig();
       config = DeckConfiguration(projectDir: mockConfig.projectDir);
-      repository = DeckService(configuration: config);
+      deckService = DeckService(configuration: config);
 
-      // Initialize the repository for each test
-      await repository.initialize();
+      // Initialize the deckService for each test
+      await deckService.initialize();
     });
 
     test(
       'initialize creates necessary files and directories for LocalDeckReader',
       () async {
-        await repository.initialize();
+        await deckService.initialize();
 
         expect(mockConfig.deckJson.existsSync(), isTrue);
         expect(mockConfig.slidesFile.existsSync(), isTrue);
@@ -127,11 +127,11 @@ void main() {
         type: 'image',
       );
 
-      final path = repository.getGeneratedAssetPath(asset);
+      final path = deckService.getGeneratedAssetPath(asset);
       expect(path, equals(p.join(mockConfig.assetsDir.path, 'image_test.png')));
 
       // Save references to ensure the asset is processed
-      await repository.saveReferences(Deck(slides: [], configuration: config));
+      await deckService.saveReferences(Deck(slides: [], configuration: config));
 
       // Now verify the assets_ref.json file exists
       expect(mockConfig.assetsRefJson.existsSync(), isTrue);
@@ -142,7 +142,7 @@ void main() {
     });
 
     test('saveReferences saves deck reference and assets reference', () async {
-      await repository.saveReferences(Deck(slides: [], configuration: config));
+      await deckService.saveReferences(Deck(slides: [], configuration: config));
 
       expect(mockConfig.deckJson.existsSync(), isTrue);
       expect(mockConfig.assetsRefJson.existsSync(), isTrue);
@@ -163,7 +163,7 @@ void main() {
           configuration: config,
         );
 
-        await repository.saveReferences(deck);
+        await deckService.saveReferences(deck);
         final initialJson =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
@@ -173,7 +173,7 @@ void main() {
         // Delay to ensure DateTime.now would differ if rewriting happens.
         await Future<void>.delayed(const Duration(milliseconds: 5));
 
-        await repository.saveReferences(deck);
+        await deckService.saveReferences(deck);
         final subsequentJson =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
@@ -188,7 +188,7 @@ void main() {
     test('readDeckMarkdown reads the content of the slides file', () async {
       await mockConfig.slidesFile.writeAsString('# Test slides');
 
-      final content = await repository.readDeckMarkdown();
+      final content = await deckService.readDeckMarkdown();
 
       expect(content, equals('# Test slides'));
     });
@@ -197,7 +197,7 @@ void main() {
       'loadDeckStream emits a reference when file changes',
       () async {
         final streamController = StreamController<Deck>();
-        final future = repository.loadDeckStream().take(2).toList();
+        final future = deckService.loadDeckStream().take(2).toList();
 
         // Wait a bit to ensure the stream is listening
         await Future.delayed(Duration(milliseconds: 100));

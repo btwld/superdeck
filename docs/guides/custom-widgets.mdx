@@ -9,14 +9,14 @@ SuperDeck allows you to embed custom Flutter widgets directly in your presentati
 
 ## How Custom Widgets Work
 
-1. **Define widget builders** in your Flutter app's `PresentationOptions`
+1. **Define widget builders** in your Flutter app's `DeckOptions`
 2. **Use `@widget` blocks** in your slides with the widget name
 3. **Pass arguments** to customize widget behavior
 4. **Access arguments** in your widget builder function
 
 ## Setting Up Custom Widgets
 
-### 1. Define Widget Builders in PresentationOptions
+### 1. Define Widget Builders in DeckOptions
 
 In your Flutter app's `main.dart`, register custom widgets:
 
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: SuperDeckApp(
-        options: PresentationOptions(
+        options: DeckOptions(
           widgets: {
             // Simple text widget
             'customText': (args) {
@@ -374,7 +374,7 @@ WidgetBlockBuilder myWidgetBuilder = (WidgetArgs args) {
 ### Color Palette Generator
 
 ```dart
-// In PresentationOptions
+// In DeckOptions
 'colorPalette': (args) {
   return ColorPaletteGenerator(
     prompts: args.getList('prompts', defaultValue: []),
@@ -396,7 +396,7 @@ WidgetBlockBuilder myWidgetBuilder = (WidgetArgs args) {
 ### Interactive Code Editor
 
 ```dart
-// In PresentationOptions
+// In DeckOptions
 'codeEditor': (args) {
   return CodeEditorWidget(
     language: args.getString('language', defaultValue: 'dart'),
@@ -419,7 +419,7 @@ WidgetBlockBuilder myWidgetBuilder = (WidgetArgs args) {
 ### Live Data Display
 
 ```dart
-// In PresentationOptions
+// In DeckOptions
 'liveChart': (args) {
   return LiveChartWidget(
     dataSource: args.getString('source'),
@@ -599,7 +599,7 @@ class _PresentationTimerWidgetState extends State<PresentationTimerWidget>
   }
 }
 
-// Usage in PresentationOptions
+// Usage in DeckOptions
 'timer': (args) {
   return PresentationTimerWidget(
     duration: Duration(
@@ -629,7 +629,7 @@ class _PresentationTimerWidgetState extends State<PresentationTimerWidget>
 ```
 Error: Widget 'myWidget' not found
 ```
-- Ensure the widget name is registered in `PresentationOptions.widgets`
+- Ensure the widget name is registered in `DeckOptions.widgets`
 - Check spelling and case sensitivity
 
 **Argument type errors:**
@@ -646,7 +646,7 @@ Error: Expected String but got int
 
 ### Debug Tips
 
-1. **Enable debug mode** - Use `debug: true` in `PresentationOptions`
+1. **Enable debug mode** - Use `debug: true` in `DeckOptions`
 2. **Add logging** - Use `print()` statements in widget builders
 3. **Check arguments** - Verify arguments are being passed correctly
 4. **Test widgets separately** - Create standalone test apps for complex widgets
@@ -654,5 +654,5 @@ Error: Expected String but got int
 ## Next Steps
 
 - Explore the [Examples](/examples) to see custom widgets in action
-- Check [PresentationOptions Reference](/docs/reference/presentation-options) for complete API
+- Check [DeckOptions Reference](/docs/reference/deck-options) for complete API
 - Review [Block Types Reference](/docs/reference/block-types) for `@widget` block details
