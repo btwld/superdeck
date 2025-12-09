@@ -28,7 +28,11 @@ enum SlideCaptureQuality {
 class SlideCaptureService {
   SlideCaptureService();
 
-  static final _generationQueue = <String>{};
+  /// Queue of slide keys currently being generated.
+  /// Instance-level to prevent interference between service instances.
+  final _generationQueue = <String>{};
+
+  /// Maximum concurrent generations to prevent memory pressure.
   static const _maxConcurrentGenerations = 3;
 
   Future<Uint8List> capture({

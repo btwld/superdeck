@@ -29,9 +29,13 @@ class DeckController {
   // ========================================
 
   final DeckService _deckService;
-  final NavigationService _navigationService = NavigationService();
-  final ThumbnailService _thumbnailService = ThumbnailService();
+  final NavigationService _navigationService;
+  final ThumbnailService _thumbnailService;
   final SlideConfigurationBuilder _slideBuilder;
+
+  // Disposal guard to prevent accessing disposed signals
+  // ignore: prefer_final_fields
+  bool _isDisposed = false;
 
   // ========================================
   // INTERNAL STATE (Private Signals)
@@ -107,10 +111,18 @@ class DeckController {
   // CONSTRUCTOR
   // ========================================
 
+  /// Creates a DeckController with the given dependencies.
+  ///
+  /// [navigationService] and [thumbnailService] can be injected for testing.
+  /// If not provided, default instances are created.
   DeckController({
     required DeckService deckService,
     required DeckOptions options,
+    NavigationService? navigationService,
+    ThumbnailService? thumbnailService,
   }) : _deckService = deckService,
+       _navigationService = navigationService ?? NavigationService(),
+       _thumbnailService = thumbnailService ?? ThumbnailService(),
        _slideBuilder = SlideConfigurationBuilder(
          configuration: deckService.configuration,
        ) {
@@ -134,15 +146,18 @@ class DeckController {
 
     _deckSubscription = _deckService.loadDeckStream().listen(
       (deck) {
+        if (_isDisposed) return;
         _currentDeck.value = deck;
         _loadingState.value = DeckLoadingState.loaded;
         _error.value = null;
       },
       onError: (e) {
+        if (_isDisposed) return;
         _error.value = e;
         _loadingState.value = DeckLoadingState.error;
       },
       onDone: () {
+        if (_isDisposed) return;
         // Stream completed unexpectedly - this shouldn't happen during normal
         // operation as the deck stream is a file watcher. Log for debugging.
         debugPrint('[DeckController] Deck stream completed unexpectedly');
@@ -153,6 +168,7 @@ class DeckController {
   /// Updates deck options (called by DeckControllerBuilder)
   @internal
   void updateOptions(DeckOptions newOptions) {
+    if (_isDisposed) return;
     if (_options.value != newOptions) {
       _options.value = newOptions;
     }
@@ -161,12 +177,21 @@ class DeckController {
   /// Sets rebuilding state (called by CliWatcher)
   @internal
   void setRebuilding(bool value) {
+    if (_isDisposed) return;
     _isRebuilding.value = value;
   }
 
   /// Forces the deck stream to restart (used for retry flows)
   Future<void> reloadDeck() async {
+    if (_isDisposed) return;
+
+    // Clear error and set loading state BEFORE cancellation to prevent race conditions
+    _error.value = null;
+    _loadingState.value = DeckLoadingState.loading;
+
     await _deckSubscription?.cancel();
+    _deckSubscription = null;
+
     _startDeckStream();
   }
 
@@ -188,7 +213,10 @@ class DeckController {
       targetIndex: index,
       totalSlides: totalSlides.value,
       onTransitionStart: () => _isTransitioning.value = true,
-      onTransitionEnd: () => _isTransitioning.value = false,
+      onTransitionEnd: () {
+        if (_isDisposed) return;
+        _isTransitioning.value = false;
+      },
     );
   }
 
@@ -219,6 +247,8 @@ class DeckController {
 
   /// Updates current index from router (internal, called by NavigationService)
   void _updateCurrentIndex(int index) {
+    if (_isDisposed) return;
+
     final maxIndex = totalSlides.value > 0 ? totalSlides.value - 1 : 0;
     final clampedIndex = index.clamp(0, maxIndex);
 
@@ -232,11 +262,35 @@ class DeckController {
   // ========================================
 
   void generateThumbnails(BuildContext context, {bool force = false}) {
+    if (_isDisposed) return;
+
+    final currentSlides = slides.value;
+    final currentSlideKeys = currentSlides.map((s) => s.key).toSet();
+
+    // Clean up stale thumbnails for removed slides to prevent memory leaks
+    final currentCache = _thumbnails.value;
+    final staleKeys = currentCache.keys
+        .where((k) => !currentSlideKeys.contains(k))
+        .toList();
+
+    if (staleKeys.isNotEmpty) {
+      for (final key in staleKeys) {
+        currentCache[key]?.dispose();
+      }
+      final cleanedCache = Map<String, AsyncThumbnail>.from(currentCache)
+        ..removeWhere((k, _) => staleKeys.contains(k));
+      _thumbnails.value = cleanedCache;
+    }
+
     _thumbnailService.generateThumbnails(
-      slides: slides.value,
+      slides: currentSlides,
       context: context,
       cache: _thumbnails.value,
-      onCacheUpdate: (cache) => _thumbnails.value = cache,
+      onCacheUpdate: (cache) {
+        if (!_isDisposed) {
+          _thumbnails.value = cache;
+        }
+      },
       force: force,
     );
   }
@@ -250,7 +304,17 @@ class DeckController {
   // ========================================
 
   void dispose() {
-    _deckSubscription?.cancel();
+    // Guard against double disposal
+    if (_isDisposed) return;
+    _isDisposed = true;
+
+    // Cancel stream subscription - use unawaited since dispose() is sync
+    // The subscription may emit events during cancellation, but _isDisposed
+    // flag prevents signal access after disposal
+    unawaited(_deckSubscription?.cancel());
+
+    // Dispose router (GoRouter implements ChangeNotifier)
+    router.dispose();
 
     // Dispose thumbnails
     for (final thumbnail in _thumbnails.value.values) {

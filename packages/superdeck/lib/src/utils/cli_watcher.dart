@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:signals/signals.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// Status of the CLI watcher process
@@ -27,21 +28,24 @@ enum CliWatcherStatus {
 ///
 /// Automatically starts `dart run superdeck build --watch` and monitors
 /// the process health. Injects error presentations when the process fails.
-class CliWatcher extends ChangeNotifier {
+class CliWatcher {
   final Directory projectRoot;
   final DeckConfiguration configuration;
   final _logger = getLogger('CliWatcher');
 
-  // State fields
-  CliWatcherStatus _status = CliWatcherStatus.idle;
-  Exception? _error;
-  bool _isRebuilding = false;
+  // Reactive state - Signals
+  final _status = signal<CliWatcherStatus>(CliWatcherStatus.idle);
+  final _error = signal<Exception?>(null);
+  final _isRebuilding = signal<bool>(false);
+  final _lastBuildStatus = signal<String>('unknown');
+  final _lastBuildStatusPayload = signal<Map<String, dynamic>?>(null);
+
+  // Non-reactive internal state
+  bool _disposed = false;
   bool _isWatchingBuildStatus = false;
   bool _isReadingBuildStatus = false;
   FileWatcher? _buildStatusWatcher;
   DateTime? _lastBuildStatusTimestamp;
-  String _lastBuildStatus = 'unknown';
-  Map<String, dynamic>? _lastBuildStatusPayload;
 
   // Process management
   Process? _process;
@@ -51,21 +55,15 @@ class CliWatcher extends ChangeNotifier {
   StreamSubscription<List<int>>? _stdoutSubscription;
   StreamSubscription<List<int>>? _stderrSubscription;
 
-  /// Current status of the watcher
-  CliWatcherStatus get status => _status;
-
-  /// Current error, if any
-  Exception? get error => _error;
-
-  /// Whether the CLI is currently rebuilding
-  bool get isRebuilding => _isRebuilding;
-
-  /// Latest status recorded in build_status.json (success, failure, unknown).
-  String get lastBuildStatus => _lastBuildStatus;
+  // Readonly accessors
+  ReadonlySignal<CliWatcherStatus> get status => _status;
+  ReadonlySignal<Exception?> get error => _error;
+  ReadonlySignal<bool> get isRebuilding => _isRebuilding;
+  ReadonlySignal<String> get lastBuildStatus => _lastBuildStatus;
 
   /// Raw payload from the last build status write (includes slideCount/error).
   Map<String, dynamic>? get lastBuildStatusPayload {
-    final payload = _lastBuildStatusPayload;
+    final payload = _lastBuildStatusPayload.value;
     if (payload == null) return null;
     return Map<String, dynamic>.unmodifiable(payload);
   }
@@ -74,14 +72,13 @@ class CliWatcher extends ChangeNotifier {
 
   /// Starts the CLI watcher process
   Future<void> start() async {
-    if (_status != CliWatcherStatus.idle) {
+    if (_status.value != CliWatcherStatus.idle) {
       _logger.warning('CLI watcher already started');
       return;
     }
 
-    _status = CliWatcherStatus.starting;
-    _error = null;
-    notifyListeners();
+    _status.value = CliWatcherStatus.starting;
+    _error.value = null;
 
     try {
       await _initializeBuildStatusMonitoring();
@@ -159,8 +156,7 @@ class CliWatcher extends ChangeNotifier {
         }
       }, onError: (error) => _logger.warning('stderr error: $error'));
 
-      _status = CliWatcherStatus.running;
-      notifyListeners();
+      _status.value = CliWatcherStatus.running;
 
       // Monitor process exit
       unawaited(
@@ -170,9 +166,8 @@ class CliWatcher extends ChangeNotifier {
       );
     } catch (e) {
       final exception = Exception('Failed to start CLI watcher: $e');
-      _error = exception;
-      _status = CliWatcherStatus.failed;
-      notifyListeners();
+      _error.value = exception;
+      _status.value = CliWatcherStatus.failed;
       await _writeErrorPresentation(exception);
       _logger.severe('Failed to start CLI watcher', e);
     }
@@ -194,7 +189,7 @@ class CliWatcher extends ChangeNotifier {
 
   /// Handles process exit
   Future<void> _handleProcessExit(int exitCode) async {
-    if (_status == CliWatcherStatus.stopped) {
+    if (_status.value == CliWatcherStatus.stopped) {
       // Already disposed, nothing to do
       return;
     }
@@ -202,7 +197,7 @@ class CliWatcher extends ChangeNotifier {
     _logger.info('CLI process exited with code: $exitCode');
 
     if (exitCode == 0) {
-      _status = CliWatcherStatus.stopped;
+      _status.value = CliWatcherStatus.stopped;
     } else {
       final lastError = _lastErrorLine;
       if (lastError != null) {
@@ -213,14 +208,9 @@ class CliWatcher extends ChangeNotifier {
             ? 'CLI process exited with code: $exitCode'
             : 'CLI process exited with code $exitCode. Last stderr line: $lastError',
       );
-      _error = exception;
-      _status = CliWatcherStatus.failed;
+      _error.value = exception;
+      _status.value = CliWatcherStatus.failed;
       await _writeErrorPresentation(exception);
-    }
-
-    // Only notify if not disposed
-    if (_status != CliWatcherStatus.stopped) {
-      notifyListeners();
     }
   }
 
@@ -267,10 +257,10 @@ class CliWatcher extends ChangeNotifier {
   }
 
   Future<void> _refreshBuildStatus() async {
-    if (_isReadingBuildStatus) return;
+    if (_isReadingBuildStatus || _disposed) return;
 
     // Check if disposed before starting
-    if (_status == CliWatcherStatus.stopped) return;
+    if (_status.value == CliWatcherStatus.stopped) return;
 
     _isReadingBuildStatus = true;
 
@@ -280,7 +270,14 @@ class CliWatcher extends ChangeNotifier {
         return;
       }
 
+      // Guard after async operation - dispose could have been called
+      if (_disposed) return;
+
       final raw = await file.readAsString();
+
+      // Guard after async operation
+      if (_disposed) return;
+
       if (raw.trim().isEmpty) {
         return;
       }
@@ -310,25 +307,26 @@ class CliWatcher extends ChangeNotifier {
 
       _lastBuildStatusTimestamp = timestamp ?? DateTime.now();
 
-      final previousStatus = _lastBuildStatus;
-      final wasRebuilding = _isRebuilding;
-      _lastBuildStatus = status;
-      _lastBuildStatusPayload = payload;
+      // Guard before accessing signals - dispose could have happened during parsing
+      if (_disposed) return;
+
+      final previousStatus = _lastBuildStatus.value;
+      final wasRebuilding = _isRebuilding.value;
+
+      // Update signals (only if not disposed)
+      _lastBuildStatus.value = status;
+      _lastBuildStatusPayload.value = payload;
 
       // Update rebuilding state based on status
-      _isRebuilding = (status == 'building');
+      _isRebuilding.value = (status == 'building');
 
-      var shouldNotify =
-          previousStatus != status || wasRebuilding != _isRebuilding;
-
-      // Only notify if not disposed
-      if (shouldNotify && _status != CliWatcherStatus.stopped) {
-        if (_isRebuilding) {
+      // Log state changes
+      if (previousStatus != status || wasRebuilding != _isRebuilding.value) {
+        if (_isRebuilding.value) {
           _logger.info('Build started (status: building)');
         } else if (previousStatus == 'building') {
           _logger.info('Build completed (status: $_lastBuildStatus)');
         }
-        notifyListeners();
       }
     } finally {
       _isReadingBuildStatus = false;
@@ -336,14 +334,14 @@ class CliWatcher extends ChangeNotifier {
   }
 
   /// Disposes the watcher and kills the process
-  @override
   void dispose() {
-    // ChangeNotifier.dispose() can only be called once, so check if already disposed
-    if (_status == CliWatcherStatus.stopped) {
+    // Check if already disposed (use bool flag to avoid reading disposed signals)
+    if (_disposed) {
       return;
     }
+    _disposed = true;
 
-    _status = CliWatcherStatus.stopped;
+    _status.value = CliWatcherStatus.stopped;
 
     // Stop file watching
     _buildStatusWatcher?.stopWatching();
@@ -361,6 +359,11 @@ class CliWatcher extends ChangeNotifier {
       _process = null;
     }
 
-    super.dispose();
+    // Dispose signals
+    _status.dispose();
+    _error.dispose();
+    _isRebuilding.dispose();
+    _lastBuildStatus.dispose();
+    _lastBuildStatusPayload.dispose();
   }
 }

@@ -8,8 +8,6 @@ Future<ProcessResult> runDartCommand(
   return Process.run(
     'dart',
     args,
-    environment: environmentOverrides?.isNotEmpty == true
-        ? environmentOverrides
-        : null,
+    environment: environmentOverrides,
   );
 }

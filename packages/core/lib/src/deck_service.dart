@@ -140,22 +140,20 @@ class DeckService {
     }
 
     // Map asset references to their corresponding file paths
-    final assetFiles = uniqueAssets.values
-        .map(
-          (asset) => File(p.join(configuration.assetsDir.path, asset.fileName)),
-        )
+    final assetPaths = uniqueAssets.values
+        .map((asset) => p.join(configuration.assetsDir.path, asset.fileName))
         .toList();
 
     final previousAssetsRef = await _readExistingAssetsReference();
     final filesUnchanged =
         previousAssetsRef != null &&
-        _haveSamePaths(assetFiles, previousAssetsRef.files);
+        _haveSamePaths(assetPaths, previousAssetsRef.files);
 
     final assetsRef = GeneratedAssetsReference(
       lastModified: filesUnchanged
           ? previousAssetsRef.lastModified
           : DateTime.now(),
-      files: assetFiles,
+      files: assetPaths,
     );
 
     if (!filesUnchanged) {
@@ -274,9 +272,7 @@ class DeckService {
         .map((e) => e as File)
         .toList();
 
-    final referencedFiles = assetsReference.files
-        .map((file) => file.path)
-        .toSet();
+    final referencedFiles = assetsReference.files.toSet();
 
     final filesToDelete = existingFiles.where(
       (file) => !referencedFiles.contains(file.path),
@@ -318,13 +314,13 @@ class DeckService {
     }
   }
 
-  bool _haveSamePaths(List<File> current, List<File> previous) {
+  bool _haveSamePaths(List<String> current, List<String> previous) {
     if (current.length != previous.length) {
       return false;
     }
 
     for (var i = 0; i < current.length; i++) {
-      if (current[i].path != previous[i].path) {
+      if (current[i] != previous[i]) {
         return false;
       }
     }

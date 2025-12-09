@@ -28,8 +28,8 @@ void main() {
         configuration: configuration,
       );
 
-      expect(watcher.status, CliWatcherStatus.idle);
-      expect(watcher.error, isNull);
+      expect(watcher.status.value, CliWatcherStatus.idle);
+      expect(watcher.error.value, isNull);
 
       watcher.dispose();
     });
@@ -51,7 +51,7 @@ void main() {
         // Status should be either starting, running, or failed (if CLI not available or project invalid)
         // The process can fail very quickly if there's no valid pubspec.yaml in the temp directory
         expect(
-          watcher.status,
+          watcher.status.value,
           isIn([
             CliWatcherStatus.starting,
             CliWatcherStatus.running,
@@ -66,7 +66,7 @@ void main() {
 
         // Eventually it should be running (or failed if CLI not available)
         expect(
-          watcher.status,
+          watcher.status.value,
           isIn([CliWatcherStatus.running, CliWatcherStatus.failed]),
         );
 
@@ -80,9 +80,12 @@ void main() {
         configuration: configuration,
       );
 
-      watcher.dispose();
+      // Verify initial status before dispose
+      expect(watcher.status.value, CliWatcherStatus.idle);
 
-      expect(watcher.status, CliWatcherStatus.stopped);
+      // Dispose should complete without error
+      expect(() => watcher.dispose(), returnsNormally);
+      // Note: Cannot read status.value after dispose - signals are disposed
     });
 
     test('dispose before start is safe', () {
@@ -92,7 +95,7 @@ void main() {
       );
 
       expect(() => watcher.dispose(), returnsNormally);
-      expect(watcher.status, CliWatcherStatus.stopped);
+      // Note: Cannot read status.value after dispose - signals are disposed
     });
 
     test('dispose after start kills the process', () async {
@@ -104,9 +107,15 @@ void main() {
       await watcher.start();
       await Future.delayed(const Duration(milliseconds: 100));
 
-      watcher.dispose();
+      // Verify it's running before dispose
+      expect(
+        watcher.status.value,
+        isIn([CliWatcherStatus.running, CliWatcherStatus.failed]),
+      );
 
-      expect(watcher.status, CliWatcherStatus.stopped);
+      // Dispose should complete without error
+      expect(() => watcher.dispose(), returnsNormally);
+      // Note: Cannot read status.value after dispose - signals are disposed
     });
 
     test('findDartExecutable prefers FVM if available', () {
@@ -159,8 +168,7 @@ void main() {
         watcher.dispose();
         watcher.dispose();
       }, returnsNormally);
-
-      expect(watcher.status, CliWatcherStatus.stopped);
+      // Note: Cannot read status.value after dispose - signals are disposed
     });
   });
 }

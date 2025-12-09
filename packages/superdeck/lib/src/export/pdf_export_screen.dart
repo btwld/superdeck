@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' show Icons, Colors, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:remix/remix.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 import 'package:superdeck/src/utils/constants.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
@@ -77,43 +78,43 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
     return RemixDialog(
       child: SizedBox.fromSize(
         size: kResolution,
-        child: ListenableBuilder(
-          listenable: _exportController,
-          builder: (context, _) {
-            return Stack(
-              children: [
-                PageView.builder(
-                  controller: _exportController.pageController,
-                  itemCount: _exportController.slides.length,
-                  itemBuilder: (context, index) {
-                    // Set to exporting true
-                    final slide = _exportController.slides[index].copyWith(
-                      isExporting: true,
-                      debug: false,
-                    );
+        child: Watch((context) {
+          // Watch the export status signal to trigger rebuilds
+          _exportController.exportStatus.value;
 
-                    return RepaintBoundary(
-                      key: _exportController.getSlideKey(slide),
-                      child: InheritedData(
-                        data: slide,
-                        child: SlideView(slide),
-                      ),
-                    );
-                  },
-                ),
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: _PdfExportBar(exportController: _exportController),
+          return Stack(
+            children: [
+              PageView.builder(
+                controller: _exportController.pageController,
+                itemCount: _exportController.slides.length,
+                itemBuilder: (context, index) {
+                  // Set to exporting true
+                  final slide = _exportController.slides[index].copyWith(
+                    isExporting: true,
+                    debug: false,
+                  );
+
+                  return RepaintBoundary(
+                    key: _exportController.getSlideKey(slide),
+                    child: InheritedData(
+                      data: slide,
+                      child: SlideView(slide),
                     ),
+                  );
+                },
+              ),
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: _PdfExportBar(exportController: _exportController),
                   ),
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -124,59 +125,58 @@ class _PdfExportBar extends StatelessWidget {
 
   final PdfController exportController;
 
-  /// Human readable progress text
-  String get _progressText {
-    final current = exportController.progressTuple.$1;
-    final total = exportController.progressTuple.$2;
-    return switch (exportController.exportStatus) {
-      PdfExportStatus.building => 'Building PDF...',
-      PdfExportStatus.complete => 'Done',
-      PdfExportStatus.capturing => 'Exporting $current / $total',
-      PdfExportStatus.idle => 'Exporting $current / $total',
-      PdfExportStatus.preparing => 'Preparing...',
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          exportController.exportStatus == PdfExportStatus.complete
-              ? Icon(
-                  Icons.check_circle,
-                  // TODO: Replace with Remix
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 32,
-                )
-              : SizedBox(
-                  height: 32,
-                  width: 32,
-                  child: IsometricProgressIndicator(
-                    progress: exportController.progress,
+    return Watch((context) {
+      final status = exportController.exportStatus.value;
+      final progressValue = exportController.progress.value;
+      final (current, total) = exportController.progressTuple.value;
+
+      final progressText = switch (status) {
+        PdfExportStatus.building => 'Building PDF...',
+        PdfExportStatus.complete => 'Done',
+        PdfExportStatus.capturing => 'Exporting $current / $total',
+        PdfExportStatus.idle => 'Exporting $current / $total',
+        PdfExportStatus.preparing => 'Preparing...',
+      };
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            status == PdfExportStatus.complete
+                ? Icon(
+                    Icons.check_circle,
+                    // TODO: Replace with Remix
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 32,
+                  )
+                : SizedBox(
+                    height: 32,
+                    width: 32,
+                    child: IsometricProgressIndicator(progress: progressValue),
                   ),
-                ),
-          const SizedBox(height: 16.0),
-          Text(
-            _progressText,
-            // TODO: Replace with Remix
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: Colors.white),
-          ),
-          const SizedBox(height: 16.0),
-          SDButton(
-            onPressed: () {
-              exportController.cancel();
-              Navigator.of(context).pop();
-            },
-            label: 'Cancel',
-            icon: Icons.cancel,
-          ),
-        ],
-      ),
-    );
+            const SizedBox(height: 16.0),
+            Text(
+              progressText,
+              // TODO: Replace with Remix
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.white),
+            ),
+            const SizedBox(height: 16.0),
+            SDButton(
+              onPressed: () {
+                exportController.cancel();
+                Navigator.of(context).pop();
+              },
+              label: 'Cancel',
+              icon: Icons.cancel,
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

@@ -53,7 +53,7 @@ void main() {
 
     group('Initialization', () {
       test('initializes with idle status', () {
-        expect(controller.exportStatus, PdfExportStatus.idle);
+        expect(controller.exportStatus.value, PdfExportStatus.idle);
       });
 
       test('initializes with provided slides', () {
@@ -69,6 +69,16 @@ void main() {
       test('disposed is false initially', () {
         expect(controller.disposed, false);
       });
+
+      test('progress starts at zero', () {
+        expect(controller.progress.value, 0.0);
+      });
+
+      test('progressTuple shows zero captured', () {
+        final (current, total) = controller.progressTuple.value;
+        expect(current, 0);
+        expect(total, 3);
+      });
     });
 
     group('State Management', () {
@@ -82,7 +92,7 @@ void main() {
 
     group('Export Status', () {
       test('starts with idle status', () {
-        expect(controller.exportStatus, PdfExportStatus.idle);
+        expect(controller.exportStatus.value, PdfExportStatus.idle);
       });
 
       // Note: Full export tests would require widget testing

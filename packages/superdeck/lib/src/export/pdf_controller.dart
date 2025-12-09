@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:signals/signals.dart';
 import 'package:superdeck/src/utils/constants.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:universal_html/html.dart' as html;
@@ -34,7 +35,7 @@ enum PdfExportStatus {
 ///
 /// Handles capturing slides as images and combining them into a PDF document.
 /// Supports both web and native platforms.
-class PdfController extends ChangeNotifier {
+class PdfController {
   /// Creates a new [PdfController]
   ///
   /// [slides] - List of slides to export
@@ -51,10 +52,26 @@ class PdfController extends ChangeNotifier {
 
   late final PageController _pageController;
   late final Map<String, GlobalKey> _slideKeys;
-  PdfExportStatus _exportStatus = PdfExportStatus.idle;
   final List<Uint8List> _images = [];
   bool _disposed = false;
   bool _cancelled = false;
+
+  // Reactive state - Signals
+  final _exportStatus = signal<PdfExportStatus>(PdfExportStatus.idle);
+  final _capturedCount = signal<int>(0);
+
+  // Computed signals
+  late final progress = computed(() {
+    if (_slideKeys.isEmpty) return 0.0;
+    return _capturedCount.value / _slideKeys.length;
+  });
+
+  late final progressTuple = computed(() {
+    return (_capturedCount.value, _slideKeys.length);
+  });
+
+  // Readonly accessors
+  ReadonlySignal<PdfExportStatus> get exportStatus => _exportStatus;
 
   void _checkExportAllowed() {
     if (_disposed) throw _ExportCancelledException('Controller disposed');
@@ -78,16 +95,6 @@ class PdfController extends ChangeNotifier {
 
   /// Gets the [GlobalKey] for a specific slide
   GlobalKey getSlideKey(SlideConfiguration slide) => _slideKeys[slide.key]!;
-
-  /// Current status of the export process
-  PdfExportStatus get exportStatus => _exportStatus;
-
-  /// Export progress from 0.0 to 1.0
-  double get progress =>
-      _slideKeys.isNotEmpty ? _images.length / _slideKeys.length : 0.0;
-
-  (int current, int total) get progressTuple =>
-      (_images.length, _slideKeys.length);
 
   /// Waits for a render boundary widget to be painted
   Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
@@ -147,14 +154,14 @@ class PdfController extends ChangeNotifier {
   /// Captures slides as images and combines them into a PDF document.
   Future<void> export() async {
     _cancelled = false;
-    _exportStatus = PdfExportStatus.preparing;
-    notifyListeners();
+    _capturedCount.value = 0;
+    _images.clear();
+    _exportStatus.value = PdfExportStatus.preparing;
 
     try {
       await _prepare();
 
-      _exportStatus = PdfExportStatus.capturing;
-      notifyListeners();
+      _exportStatus.value = PdfExportStatus.capturing;
 
       for (var i = 0; i < _slideKeys.length; i++) {
         _checkExportAllowed(); // check before starting this iteration
@@ -176,11 +183,10 @@ class PdfController extends ChangeNotifier {
         _checkExportAllowed();
 
         _images.add(image);
-        notifyListeners();
+        _capturedCount.value = _images.length;
       }
 
-      _exportStatus = PdfExportStatus.building;
-      notifyListeners();
+      _exportStatus.value = PdfExportStatus.building;
 
       await Future.delayed(_waitDuration);
       _checkExportAllowed();
@@ -190,19 +196,15 @@ class PdfController extends ChangeNotifier {
 
       _savePdf(pdf);
 
-      _exportStatus = PdfExportStatus.complete;
+      _exportStatus.value = PdfExportStatus.complete;
       _images.clear();
-      notifyListeners();
+      _capturedCount.value = 0;
     } on _ExportCancelledException catch (e) {
-      // Handle cancellation: update status and notify listeners.
-      _exportStatus = PdfExportStatus.idle;
+      // Handle cancellation: update status.
+      _exportStatus.value = PdfExportStatus.idle;
 
       // Optionally, log the cancellation.
       log(e.toString());
-    } finally {
-      if (!_disposed) {
-        notifyListeners();
-      }
     }
   }
 
@@ -239,11 +241,15 @@ class PdfController extends ChangeNotifier {
     _cancelled = true;
   }
 
-  @override
   void dispose() {
     _disposed = true;
     _pageController.dispose();
-    super.dispose();
+
+    // Dispose computed signals first, then source signals
+    progress.dispose();
+    progressTuple.dispose();
+    _exportStatus.dispose();
+    _capturedCount.dispose();
   }
 }
 

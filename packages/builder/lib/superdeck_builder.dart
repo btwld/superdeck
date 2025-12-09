@@ -8,7 +8,7 @@ export 'src/assets/mermaid_generator.dart';
 // Export build events
 export 'src/build_event.dart';
 // Export core exceptions
-export 'package:superdeck_core/src/deck_format_exception.dart';
+export 'package:superdeck_core/superdeck_core.dart' show DeckFormatException;
 export 'src/task_exception.dart';
 // Export parsers
 export 'src/parsers/block_parser.dart';

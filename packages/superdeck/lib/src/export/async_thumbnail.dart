@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 
@@ -10,66 +11,77 @@ typedef AsyncFileGenerator =
 
 enum AsyncFileStatus { idle, loading, done, error }
 
-/// A model that asynchronously loads an image and notifies listeners of changes.
-class AsyncThumbnail extends ChangeNotifier {
-  AsyncFileStatus _status = AsyncFileStatus.idle;
-  File? _imageFile;
-  Object? _error;
-  bool _disposed = false;
-
+/// A model that asynchronously loads an image and uses Signals for reactivity.
+class AsyncThumbnail {
   /// The generator function that asynchronously returns an Image.
   final AsyncFileGenerator _generator;
 
-  /// Returns the last error that occurred during thumbnail generation.
-  Object? get error => _error;
+  // Signals for reactive state
+  final _status = signal<AsyncFileStatus>(AsyncFileStatus.idle);
+  final _imageFile = signal<File?>(null);
+  final _error = signal<Object?>(null);
+
+  // Non-reactive internal state
+  bool _disposed = false;
+  bool _isGenerating = false;
+
+  // Readonly accessors
+  ReadonlySignal<AsyncFileStatus> get status => _status;
+  ReadonlySignal<Object?> get error => _error;
 
   AsyncThumbnail({required AsyncFileGenerator generator})
     : _generator = generator;
 
-  void _notify() {
-    if (!_disposed) {
-      notifyListeners();
-    }
-  }
-
   Future<void> _generate(BuildContext context, {required bool force}) async {
-    if (_disposed) return;
+    if (_disposed || _isGenerating) return;
+    _isGenerating = true;
 
-    _status = AsyncFileStatus.loading;
-    if (_imageFile != null) {
-      FileImage(_imageFile!).evict();
+    _status.value = AsyncFileStatus.loading;
+    final currentFile = _imageFile.value;
+    if (currentFile != null) {
+      FileImage(currentFile).evict();
     }
-    _imageFile = null;
-    _notify();
+    _imageFile.value = null;
 
     try {
-      _imageFile = await _generator(context, force);
-      _status = AsyncFileStatus.done;
-      _error = null;
+      final file = await _generator(context, force);
+
+      // Guard after async - disposal could have happened during generation
+      if (_disposed) return;
+
+      _imageFile.value = file;
+      _status.value = AsyncFileStatus.done;
+      _error.value = null;
     } catch (error, stackTrace) {
+      // Guard after async - don't update signals if disposed
+      if (_disposed) return;
+
       debugPrint('[AsyncThumbnail] Failed to generate thumbnail: $error');
       debugPrint('[AsyncThumbnail] Stack trace: $stackTrace');
-      _status = AsyncFileStatus.error;
-      _error = error;
-      _imageFile = null;
+      _status.value = AsyncFileStatus.error;
+      _error.value = error;
+      _imageFile.value = null;
+    } finally {
+      _isGenerating = false;
     }
-
-    _notify();
   }
 
-  @override
   void dispose() {
     _disposed = true;
-    super.dispose();
+
+    // Dispose signals
+    _status.dispose();
+    _imageFile.dispose();
+    _error.dispose();
   }
 
   Future<void> load(BuildContext context, [bool force = false]) {
-    if (_disposed) return Future.value();
+    if (_disposed || _isGenerating) return Future.value();
     if (force) {
       return _generate(context, force: true);
     }
 
-    return switch (_status) {
+    return switch (_status.value) {
       AsyncFileStatus.done || AsyncFileStatus.loading => Future.value(),
       AsyncFileStatus.idle ||
       AsyncFileStatus.error => _generate(context, force: false),
@@ -87,7 +99,7 @@ class AsyncThumbnail extends ChangeNotifier {
   ///
   /// Returns null if the file has not been generated yet.
   ImageProvider<Object>? get imageProvider {
-    final file = _imageFile;
+    final file = _imageFile.value;
     if (file == null) {
       return null;
     }
@@ -96,17 +108,14 @@ class AsyncThumbnail extends ChangeNotifier {
   }
 
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: this,
-      builder: (context, child) {
-        return switch (_status) {
-          AsyncFileStatus.idle => const IsometricLoading(),
-          AsyncFileStatus.loading => const IsometricLoading(),
-          AsyncFileStatus.done => _buildLoadedImage(context),
-          AsyncFileStatus.error => _errorWidget(context, this),
-        };
-      },
-    );
+    return Watch((context) {
+      return switch (_status.value) {
+        AsyncFileStatus.idle => const IsometricLoading(),
+        AsyncFileStatus.loading => const IsometricLoading(),
+        AsyncFileStatus.done => _buildLoadedImage(context),
+        AsyncFileStatus.error => _errorWidget(context, this),
+      };
+    });
   }
 
   Widget _buildLoadedImage(BuildContext context) {

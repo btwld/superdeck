@@ -12,7 +12,14 @@ import 'slide_capture_service.dart';
 /// any state. The controller using this service owns the cache and is
 /// notified of updates via the [onCacheUpdate] callback.
 class ThumbnailService {
-  final _slideCaptureService = SlideCaptureService();
+  final SlideCaptureService _slideCaptureService;
+
+  /// Creates a ThumbnailService.
+  ///
+  /// [slideCaptureService] can be injected for testing. If not provided,
+  /// a default instance is created.
+  ThumbnailService({SlideCaptureService? slideCaptureService})
+    : _slideCaptureService = slideCaptureService ?? SlideCaptureService();
 
   /// Generates thumbnails for all slides, updating the cache as needed.
   ///

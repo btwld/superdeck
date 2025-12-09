@@ -25,38 +25,46 @@ class ThumbnailSyncManager extends StatefulWidget {
 }
 
 class _ThumbnailSyncManagerState extends State<ThumbnailSyncManager> {
+  EffectCleanup? _slidesEffect;
+  bool _isInitialized = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // Only initialize once
+    if (_isInitialized) return;
+    _isInitialized = true;
+
     final deck = DeckController.of(context);
 
-    // Initial thumbnail generation
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        deck.generateThumbnails(context);
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final deck = DeckController.of(context);
-
-    // Listen to slide changes and regenerate thumbnails
-    return Watch((context) {
-      // Watch the slides signal to trigger rebuild when it changes
+    // Use effect instead of Watch to avoid infinite rebuild loop.
+    // Watch would cause: slides.value access → generateThumbnails →
+    // _thumbnails update → rebuild → repeat infinitely.
+    // Effect only tracks slides changes without triggering widget rebuilds.
+    _slidesEffect = effect(() {
+      // Track slides signal - effect will re-run when slides change
       deck.slides.value;
 
-      // Regenerate after frame completes
+      // Regenerate thumbnails after frame completes
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           deck.generateThumbnails(context);
         }
       });
-
-      return widget.child;
     });
+  }
+
+  @override
+  void dispose() {
+    _slidesEffect?.call();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // No Watch widget - effect handles the reactive tracking
+    return widget.child;
   }
 }
 
@@ -81,6 +89,7 @@ class DeckControllerBuilder extends StatefulWidget {
 class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   late final DeckController _deckController;
   CliWatcher? _cliWatcher;
+  EffectCleanup? _cliWatcherEffect;
   final _logger = getLogger('DeckControllerBuilder');
 
   @override
@@ -105,17 +114,14 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
         _cliWatcher!.start();
         _logger.info('CLI watcher started');
 
-        // Sync CLI watcher rebuilding state with deck controller
-        _cliWatcher!.addListener(_onCliWatcherChanged);
+        // Sync CLI watcher rebuilding state with deck controller using effect
+        _cliWatcherEffect = effect(() {
+          final isRebuilding = _cliWatcher!.isRebuilding.value;
+          _deckController.setRebuilding(isRebuilding);
+        });
       } catch (e) {
         _logger.warning('CLI watcher failed to start: $e');
       }
-    }
-  }
-
-  void _onCliWatcherChanged() {
-    if (_cliWatcher != null) {
-      _deckController.setRebuilding(_cliWatcher!.isRebuilding);
     }
   }
 
@@ -129,9 +135,15 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
 
   @override
   void dispose() {
-    _cliWatcher?.removeListener(_onCliWatcherChanged);
+    // Dispose in correct order:
+    // 1. Clean up effects first (stop them from accessing signals)
+    // 2. Stop async operations (CliWatcher file watching and signals)
+    // 3. Dispose controller last (signals should not be accessed after this)
+
+    _cliWatcherEffect?.call();
     _cliWatcher?.dispose();
     _deckController.dispose();
+
     super.dispose();
   }
 

@@ -1,9 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck_core/markdown_json.dart';
 import 'package:test/test.dart';
+
+import 'test_utils/json_snapshot_utils.dart';
 
 final _converter = MarkdownAstConverter(
   extensionSet: md.ExtensionSet.gitHubWeb,
@@ -17,14 +18,10 @@ final _converter = MarkdownAstConverter(
 /// the markdown package v7.3.0 with GitHub Web extensions.
 void main() {
   test('Generate comprehensive markdown reference', () {
+    final file = File('markdown_ref.json');
+
     final reference = <String, dynamic>{
-      'metadata': {
-        'generated': DateTime.now().toIso8601String(),
-        'markdown_package_version': '7.3.0',
-        'extension_set': 'gitHubWeb',
-        'description':
-            'Comprehensive reference of all markdown AST node types and structures',
-      },
+      'metadata': <String, dynamic>{}, // populated by writeJsonIfChanged
       'block_elements': <String, dynamic>{},
       'inline_elements': <String, dynamic>{},
       'special_cases': <String, dynamic>{},
@@ -74,16 +71,19 @@ void main() {
       reference['metadata_examples'] as Map<String, dynamic>,
     );
 
-    // Write to file with pretty printing, only if content changed
-    final file = File('markdown_ref.json');
-    final newContent = const JsonEncoder.withIndent('  ').convert(reference);
+    final written = writeJsonIfChanged(
+      file: file,
+      reference: reference,
+      buildMetadata: (timestamp) => {
+        'generated': timestamp,
+        'markdown_package_version': '7.3.0',
+        'extension_set': 'gitHubWeb',
+        'description':
+            'Comprehensive reference of all markdown AST node types and structures',
+      },
+    );
 
-    // Check if file exists and content is different
-    final shouldWrite =
-        !file.existsSync() || file.readAsStringSync() != newContent;
-
-    if (shouldWrite) {
-      file.writeAsStringSync(newContent);
+    if (written) {
       print(
         '✅ Generated markdown_ref.json with ${reference.length} categories',
       );

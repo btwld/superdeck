@@ -50,6 +50,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  mocktail: ^1.0.4
   flutter_lints: ^5.0.0
   custom_lint: ^0.7.5
   dart_code_metrics_presets: ^2.19.0
