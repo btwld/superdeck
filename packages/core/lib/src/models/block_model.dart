@@ -29,7 +29,7 @@ sealed class Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
   }, additionalProperties: true);
 
@@ -143,7 +143,7 @@ class SectionBlock extends Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
     'blocks': Ack.list(Ack.object({})).nullable().optional(),
   }, additionalProperties: true);
@@ -228,7 +228,7 @@ class ContentBlock extends Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
     'content': Ack.string().nullable().optional(),
   }, additionalProperties: true);
@@ -361,7 +361,7 @@ class WidgetBlock extends Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
     "name": Ack.string(),
   }, additionalProperties: true);
@@ -414,11 +414,11 @@ enum ContentAlignment {
   }
 }
 
-extension StringContentExt on String {
+extension StringContentX on String {
   ContentBlock toBlock() => ContentBlock(this);
 }
 
-extension BlockExt on Block {
+extension BlockX on Block {
   Block flex(int flex) => copyWith(flex: flex);
   Block scrollable([bool scrollable = true]) =>
       copyWith(scrollable: scrollable);

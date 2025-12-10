@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
-import 'package:superdeck_core/superdeck_core.dart' hide logger;
+import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 
 import '../utils/extensions.dart';
 import '../utils/logger.dart';
@@ -30,7 +30,7 @@ DeckBuilder _createStandardBuilder({
 ///
 /// This command parses and processes the slides.md file,
 /// generating all required assets and outputs for the presentation.
-class BuildCommand extends SuperdeckCommand {
+class BuildCommand extends SuperDeckCommand {
   /// Flag to track if a build is currently in progress
   bool _isRunning = false;
 

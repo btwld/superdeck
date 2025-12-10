@@ -72,12 +72,7 @@ class Slide {
   static final schema = Ack.object({
     "key": Ack.string(),
     'options': SlideOptions.schema.nullable().optional(),
-    'sections': Ack.list(
-      Ack.object({
-        'type': Ack.string(),
-        'blocks': Ack.list(Ack.object({})).nullable().optional(),
-      }),
-    ).optional(),
+    'sections': Ack.list(SectionBlock.schema).optional(),
     'comments': Ack.list(Ack.string()).optional(),
   }, additionalProperties: true);
 

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck_core/superdeck_core.dart' hide logger;
+import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 
 import 'src/commands/build_command.dart';
 import 'src/commands/publish_command.dart';

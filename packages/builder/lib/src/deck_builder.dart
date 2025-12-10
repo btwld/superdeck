@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:logging/logging.dart';
 import 'package:superdeck_builder/src/parsers/markdown_parser.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 

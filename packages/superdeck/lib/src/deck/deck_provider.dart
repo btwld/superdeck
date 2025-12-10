@@ -90,7 +90,7 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   late final DeckController _deckController;
   CliWatcher? _cliWatcher;
   EffectCleanup? _cliWatcherEffect;
-  final _logger = getLogger('DeckControllerBuilder');
+  final _logger = Logger('DeckControllerBuilder');
 
   @override
   void initState() {

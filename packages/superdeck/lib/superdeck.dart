@@ -5,7 +5,7 @@ export 'package:superdeck/src/rendering/blocks/block_widget.dart';
 export 'package:superdeck/src/rendering/slides/slide_parts.dart';
 
 // Utils
-export 'package:superdeck/src/utils/extensions.dart';
+export 'package:superdeck/src/ui/extensions.dart';
 export 'package:superdeck/src/ui/widgets/measure_size.dart';
 export 'package:superdeck/src/ui/widgets/provider.dart';
 

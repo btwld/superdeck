@@ -10,9 +10,6 @@ Future<void> initializeDependencies() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Future.wait([SyntaxHighlight.initialize(), _initializeWindowManager()]);
-
-  // Note: SharedPreferences is available via StorageHelper when needed.
-  // No pre-initialization required - it will initialize on first access.
 }
 
 Future<void> _initializeWindowManager() async {

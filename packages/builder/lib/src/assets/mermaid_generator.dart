@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:logging/logging.dart';
 import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 

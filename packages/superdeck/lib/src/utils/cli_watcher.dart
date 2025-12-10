@@ -31,7 +31,7 @@ enum CliWatcherStatus {
 class CliWatcher {
   final Directory projectRoot;
   final DeckConfiguration configuration;
-  final _logger = getLogger('CliWatcher');
+  final _logger = Logger('CliWatcher');
 
   // Reactive state - Signals
   final _status = signal<CliWatcherStatus>(CliWatcherStatus.idle);
