@@ -68,36 +68,42 @@ class PublishCommand extends Command<int> {
       );
   }
 
-  /// Checks if the current directory is a git repository
-  Future<bool> _isGitRepository(String repoPath) async {
+  /// Runs a git command that only needs the result without throwing.
+  Future<ProcessResult?> _runGitQuery(
+    String repoPath,
+    List<String> args,
+  ) async {
     try {
-      const args = ['rev-parse', '--is-inside-work-tree'];
-      final ProcessResult result = await Process.run(
+      return await Process.run(
         'git',
         args,
         workingDirectory: repoPath,
       );
-
-      return result.exitCode == 0 && result.stdout.toString().trim() == 'true';
-    } catch (e) {
-      return false;
+    } catch (_) {
+      return null;
     }
+  }
+
+  /// Checks if the current directory is a git repository
+  Future<bool> _isGitRepository(String repoPath) async {
+    const args = ['rev-parse', '--is-inside-work-tree'];
+    final result = await _runGitQuery(repoPath, args);
+
+    return result != null &&
+        result.exitCode == 0 &&
+        result.stdout.toString().trim() == 'true';
   }
 
   /// Gets the current branch name
   Future<String> _getCurrentBranch(String repoPath) async {
-    try {
-      const args = ['symbolic-ref', '--short', 'HEAD'];
-      final ProcessResult result = await Process.run(
-        'git',
-        args,
-        workingDirectory: repoPath,
-      );
+    const args = ['symbolic-ref', '--short', 'HEAD'];
+    final result = await _runGitQuery(repoPath, args);
 
-      return result.stdout.toString().trim();
-    } catch (e) {
+    if (result == null || result.exitCode != 0) {
       return '';
     }
+
+    return result.stdout.toString().trim();
   }
 
   /// Gets the repository name from the remote URL
@@ -220,34 +226,18 @@ class PublishCommand extends Command<int> {
 
   /// Checks if a branch exists
   Future<bool> _branchExists(String repoPath, String branch) async {
-    try {
-      final args = ['show-ref', '--verify', '--quiet', 'refs/heads/$branch'];
-      final ProcessResult result = await Process.run(
-        'git',
-        args,
-        workingDirectory: repoPath,
-      );
+    final args = ['show-ref', '--verify', '--quiet', 'refs/heads/$branch'];
+    final result = await _runGitQuery(repoPath, args);
 
-      return result.exitCode == 0;
-    } catch (e) {
-      return false;
-    }
+    return result?.exitCode == 0;
   }
 
   /// Checks if there are any changes to commit
   Future<bool> _hasChangesToCommit(String repoPath) async {
-    try {
-      const args = ['status', '--porcelain'];
-      final ProcessResult result = await Process.run(
-        'git',
-        args,
-        workingDirectory: repoPath,
-      );
+    const args = ['status', '--porcelain'];
+    final result = await _runGitQuery(repoPath, args);
 
-      return result.stdout.toString().trim().isNotEmpty;
-    } catch (e) {
-      return false;
-    }
+    return result?.stdout.toString().trim().isNotEmpty ?? false;
   }
 
   /// Runs a git command
@@ -309,24 +299,14 @@ class PublishCommand extends Command<int> {
 
   /// Gets the remote URL for the repository
   Future<String?> _getRepositoryUrl(String repoPath) async {
-    try {
-      const args = ['remote', 'get-url', 'origin'];
-      final ProcessResult result = await Process.run(
-        'git',
-        args,
-        workingDirectory: repoPath,
-      );
+    const args = ['remote', 'get-url', 'origin'];
+    final result = await _runGitQuery(repoPath, args);
 
-      if (result.exitCode == 0) {
-        final String url = result.stdout.toString().trim();
-
-        return url;
-      }
-
-      return null;
-    } catch (e) {
-      return null;
+    if (result != null && result.exitCode == 0) {
+      return result.stdout.toString().trim();
     }
+
+    return null;
   }
 
   /// Converts a git remote URL to a GitHub Pages URL
