@@ -55,3 +55,6 @@ CLAUDE.md
 
 # Local documentation artifacts
 *.local.md
+
+# Test coverage
+coverage/
