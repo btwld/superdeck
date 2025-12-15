@@ -41,5 +41,6 @@ jobs:
 
       - name: Build Runner
         run: melos run build_runner:build
+        timeout-minutes: 5
 
       - run: melos run test

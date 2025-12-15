@@ -45,7 +45,6 @@ dependencies:
   universal_html: ^2.2.4
   signals: ^6.2.0
   signals_flutter: ^6.2.0
-  ack_annotations: ^1.0.0-beta.2
 
 dev_dependencies:
   flutter_test:
@@ -54,8 +53,6 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   custom_lint: ^0.7.5
   dart_code_metrics_presets: ^2.19.0
-  build_runner: ^2.5.4
-  ack_generator: ^1.0.0-beta.2
 
 flutter:
   uses-material-design: true
