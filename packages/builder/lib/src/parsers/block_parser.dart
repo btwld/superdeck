@@ -32,8 +32,8 @@ class ParsedBlock {
 /// - `@section` or `@section{flex: 1}`
 /// - `@column{align: center, flex: 2}` or `@block{align: center, flex: 2}`
 ///
-/// Note: Both `@column` and `@block` tags create ContentBlock instances.
-/// `@column` is maintained for backward compatibility.
+/// Both `@column` and `@block` tags create [ContentBlock] instances.
+/// The `@block` tag is legacy and normalized to `@column` for backward compatibility.
 ///
 /// **Why regex instead of markdown package BlockSyntax?**
 /// - These are build-time directives, not markdown syntax

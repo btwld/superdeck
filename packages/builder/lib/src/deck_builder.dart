@@ -105,8 +105,6 @@ class DeckBuilder {
       await task.dispose();
     }
 
-    // Note: Don't close _metricsController here as it may be reused for file watching
-
     // Save the processed slides
     await store.saveReferences(
       Deck(slides: processedSlides, configuration: configuration),

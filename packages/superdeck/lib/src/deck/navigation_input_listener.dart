@@ -10,7 +10,7 @@ import 'navigation_events.dart';
 /// processed by the DeckController.
 ///
 /// Supported inputs:
-/// - Keyboard: Meta + Arrow keys (Command + Arrow on macOS)
+/// - Keyboard: Arrow Left/Right keys (previous/next slide)
 /// - Gestures: Tap left/right, Swipe left/right
 class NavigationInputListener extends StatefulWidget {
   const NavigationInputListener({super.key, required this.child});

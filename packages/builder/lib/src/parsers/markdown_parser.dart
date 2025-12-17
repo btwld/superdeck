@@ -5,15 +5,17 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'front_matter_parser.dart';
 import 'raw_slide_schema.dart';
 
-/// Stage 1 of 3-stage parsing: Splits presentation markdown into individual slides.
+/// Stage 1 of 2-stage build-time parsing: Splits presentation markdown into individual slides.
 ///
 /// Splits raw markdown by frontmatter delimiters (---), treating each section as
 /// a separate slide. This is build-time processing specific to presentation structure,
 /// not standard markdown parsing.
 ///
+/// Markdown content rendering (headings, lists, code blocks) is handled at
+/// runtime by flutter_markdown_plus, not during the build phase.
+///
 /// See also:
-/// - [SectionParser] - Stage 2: Parses @section/@column directives
-/// - [MarkdownViewer] (superdeck package) - Stage 3: Renders markdown content to widgets
+/// - [SectionParser] - Stage 2: Parses @section/@column directives into layout structure
 class MarkdownParser {
   const MarkdownParser();
 

@@ -55,7 +55,6 @@ class ConverterHelper {
   toFlexAlignment(Axis axis, ContentAlignment alignment) {
     // For horizontal axis (Row): main = horizontal, cross = vertical
     // For vertical axis (Column): main = vertical, cross = horizontal
-    // Note: vertical alignment is inverted for columns (end = top, start = bottom)
     final isHorizontal = axis == Axis.horizontal;
 
     if (isHorizontal) {
@@ -71,7 +70,7 @@ class ConverterHelper {
         ContentAlignment.bottomRight => (MainAxisAlignment.end, CrossAxisAlignment.end),
       };
     } else {
-      // Column: vertical main axis requires inverted alignment
+      // Column: vertical main axis, horizontal cross axis
       return switch (alignment) {
         ContentAlignment.topLeft => (MainAxisAlignment.start, CrossAxisAlignment.start),
         ContentAlignment.topCenter => (MainAxisAlignment.start, CrossAxisAlignment.center),

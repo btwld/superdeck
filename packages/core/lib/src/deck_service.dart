@@ -50,7 +50,7 @@ class DeckService {
   /// Provides a stream of deck updates.
   ///
   /// Watches the deck JSON file and emits updates when it changes.
-  /// Note: This only watches the JSON output. The caller is responsible for
+  /// This only watches the JSON output; the caller is responsible for
   /// running the DeckBuilder to generate the JSON from markdown.
   Stream<Deck> loadDeckStream() async* {
     _logger.info('Loading deck stream...');
