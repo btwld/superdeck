@@ -56,6 +56,10 @@
           "path": "/docs/guides/slide-parts"
         },
         {
+          "title": "Widget Size Guide",
+          "path": "/docs/guides/widget-size-guide"
+        },
+        {
           "title": "Mermaid Diagrams",
           "path": "/docs/guides/mermaid-diagrams"
         }
@@ -71,10 +75,6 @@
         {
           "title": "DeckOptions API",
           "path": "/docs/reference/deck-options"
-        },
-        {
-          "title": "Agent Workflow Contracts",
-          "path": "/docs/reference/agent-workflow"
         }
       ]
     },

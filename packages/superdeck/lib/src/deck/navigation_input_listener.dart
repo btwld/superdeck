@@ -12,16 +12,16 @@ import 'navigation_events.dart';
 /// Supported inputs:
 /// - Keyboard: Meta + Arrow keys (Command + Arrow on macOS)
 /// - Gestures: Tap left/right, Swipe left/right
-class NavigationManager extends StatefulWidget {
-  const NavigationManager({super.key, required this.child});
+class NavigationInputListener extends StatefulWidget {
+  const NavigationInputListener({super.key, required this.child});
 
   final Widget child;
 
   @override
-  State<NavigationManager> createState() => _NavigationManagerState();
+  State<NavigationInputListener> createState() => _NavigationInputListenerState();
 }
 
-class _NavigationManagerState extends State<NavigationManager> {
+class _NavigationInputListenerState extends State<NavigationInputListener> {
   final _keyboardHandler = KeyboardNavigationHandler();
   final _gestureHandler = GestureNavigationHandler();
   final _focusNode = FocusNode();
@@ -31,6 +31,7 @@ class _NavigationManagerState extends State<NavigationManager> {
     super.initState();
     // Request focus on mount to ensure keyboard events are captured
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _focusNode.requestFocus();
     });
   }

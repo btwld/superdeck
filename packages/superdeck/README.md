@@ -6,7 +6,7 @@ SuperDeck enables you to craft visually appealing and interactive presentations 
 
 ### [View demo here](https://superdeck-dev.web.app)
 
-### [Example code](https://github.com/leoafarias/superdeck/blob/main/example/slides.md)
+### [Example code](https://github.com/leoafarias/superdeck/blob/main/demo/slides.md)
 
 ## Getting Started
 
@@ -21,30 +21,41 @@ Follow these steps to integrate SuperDeck into your Flutter project:
 2. Import the `superdeck` package in your Dart code:
 
    ```dart
-   import 'package:superdeck/superdeck_flutter.dart';
+   import 'package:superdeck/superdeck.dart';
    ```
 
 3. Initialize SuperDeck and run the app:
 
    ```dart
+   import 'package:flutter/widgets.dart';
+   import 'package:superdeck/superdeck.dart';
+
    void main() async {
+     WidgetsFlutterBinding.ensureInitialized();
      await SuperDeckApp.initialize();
+
      runApp(
-       MaterialApp(
-         home: SuperDeckApp(
-           options: DeckOptions(
-             baseStyle: BaseStyle(),
-             widgets: {
-               'myCustomWidget': (args) {
-                 return CustomWidget(
-                   property: args.getString('property'),
-                 );
-               },
-             },
-           ),
+       SuperDeckApp(
+         options: DeckOptions(
+           widgets: const {
+             'myCustomWidget': MyCustomWidgetDefinition(),
+           },
          ),
        ),
      );
+   }
+
+   class MyCustomWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
+     const MyCustomWidgetDefinition();
+
+     @override
+     Map<String, Object?> parse(Map<String, Object?> args) => args;
+
+     @override
+     Widget build(BuildContext context, Map<String, Object?> args) {
+       final property = args['property'] as String? ?? '';
+       return CustomWidget(property: property);
+     }
    }
    ```
 
@@ -372,19 +383,21 @@ When initializing SuperDeck, you can customize its behavior with various options
 ```dart
 SuperDeckApp(
   options: DeckOptions(
-    baseStyle: BaseStyle(),
-    widgets: {
-      'customWidget': (args) => CustomWidget(property: args.getString('property')),
-    },
+    // Optional: style overrides (merged on top of defaultSlideStyle)
+    baseStyle: SlideStyle(),
     styles: {
-      'accentStyle': AccentStyle(),
-      'specialStyle': SpecialStyle(),
+      'accentStyle': SlideStyle(),
+      'specialStyle': SlideStyle(),
     },
-    parts: const SlideParts(
-      header: HeaderPart(),
-      footer: FooterPart(),
-      background: BackgroundPart(),
-    ),
+
+    // Custom widgets (registered by name)
+    widgets: const {
+      'customWidget': MyCustomWidgetDefinition(),
+    },
+
+    // Optional: slide chrome (header/footer/background)
+    parts: const SlideParts(),
+
     debug: false,
   ),
 )
@@ -402,13 +415,8 @@ Options include:
 You can register custom widgets that can be referenced in your slides:
 
 ```dart
-widgets: {
-  'twitter': (args) {
-    return TwitterWidget(
-      username: args.getString('username'),
-      tweetId: args.getString('tweetId'),
-    );
-  },
+widgets: const {
+  'twitter': TwitterWidgetDefinition(),
 },
 ```
 
@@ -434,10 +442,10 @@ SuperDeck can handle various types of assets:
 SuperDeck provides flexible styling options through its styling system:
 
 ```dart
-baseStyle: BaseStyle(),
+baseStyle: SlideStyle(),
 styles: {
-  'announcement': AnnouncementStyle(),
-  'quote': QuoteStyle(),
+  'announcement': SlideStyle(),
+  'quote': SlideStyle(),
 },
 ```
 
@@ -454,10 +462,10 @@ You can apply these styles to your slides or elements using class annotations:
 Slide parts allow you to add consistent elements to all slides:
 
 ```dart
-parts: const SlideParts(
-  header: HeaderPart(),
-  footer: FooterPart(),
-  background: BackgroundPart(),
+parts: SlideParts(
+  header: CustomHeaderPart(),
+  footer: CustomFooterPart(),
+  background: CustomBackgroundPart(),
 ),
 ```
 
@@ -469,11 +477,9 @@ Each part can be customized with your own widget implementation.
 
 The `Block` class is the base class for all block types:
 
-- `SectionBlock`: Container for other blocks
-- `ColumnBlock`: Displays markdown content
-- `ImageBlock`: Displays images
-- `DartPadBlock`: Embeds DartPad
-- `WidgetBlock`: Embeds custom widgets
+- `SectionBlock`: Container for organizing blocks horizontally
+- `ContentBlock`: Displays markdown content (used by `@column`)
+- `WidgetBlock`: Embeds Flutter widgets (including built-in widgets like `image`, `dartpad`, `qrcode`, `mermaid`)
 
 ### Asset Model
 

@@ -35,7 +35,7 @@ class DeckController {
 
   // Disposal guard to prevent accessing disposed signals
   // ignore: prefer_final_fields
-  bool _isDisposed = false;
+  bool _disposed = false;
 
   // ========================================
   // INTERNAL STATE (Private Signals)
@@ -146,18 +146,18 @@ class DeckController {
 
     _deckSubscription = _deckService.loadDeckStream().listen(
       (deck) {
-        if (_isDisposed) return;
+        if (_disposed) return;
         _currentDeck.value = deck;
         _loadingState.value = DeckLoadingState.loaded;
         _error.value = null;
       },
       onError: (e) {
-        if (_isDisposed) return;
+        if (_disposed) return;
         _error.value = e;
         _loadingState.value = DeckLoadingState.error;
       },
       onDone: () {
-        if (_isDisposed) return;
+        if (_disposed) return;
         // Stream completed unexpectedly - this shouldn't happen during normal
         // operation as the deck stream is a file watcher. Log for debugging.
         debugPrint('[DeckController] Deck stream completed unexpectedly');
@@ -168,7 +168,7 @@ class DeckController {
   /// Updates deck options (called by DeckControllerBuilder)
   @internal
   void updateOptions(DeckOptions newOptions) {
-    if (_isDisposed) return;
+    if (_disposed) return;
     if (_options.value != newOptions) {
       _options.value = newOptions;
     }
@@ -177,13 +177,13 @@ class DeckController {
   /// Sets rebuilding state (called by CliWatcher)
   @internal
   void setRebuilding(bool value) {
-    if (_isDisposed) return;
+    if (_disposed) return;
     _isRebuilding.value = value;
   }
 
   /// Forces the deck stream to restart (used for retry flows)
   Future<void> reloadDeck() async {
-    if (_isDisposed) return;
+    if (_disposed) return;
 
     // Clear error and set loading state BEFORE cancellation to prevent race conditions
     _error.value = null;
@@ -214,7 +214,7 @@ class DeckController {
       totalSlides: totalSlides.value,
       onTransitionStart: () => _isTransitioning.value = true,
       onTransitionEnd: () {
-        if (_isDisposed) return;
+        if (_disposed) return;
         _isTransitioning.value = false;
       },
     );
@@ -247,7 +247,7 @@ class DeckController {
 
   /// Updates current index from router (internal, called by NavigationService)
   void _updateCurrentIndex(int index) {
-    if (_isDisposed) return;
+    if (_disposed) return;
 
     final maxIndex = totalSlides.value > 0 ? totalSlides.value - 1 : 0;
     final clampedIndex = index.clamp(0, maxIndex);
@@ -262,7 +262,7 @@ class DeckController {
   // ========================================
 
   void generateThumbnails(BuildContext context, {bool force = false}) {
-    if (_isDisposed) return;
+    if (_disposed) return;
 
     final currentSlides = slides.value;
     final currentSlideKeys = currentSlides.map((s) => s.key).toSet();
@@ -287,7 +287,7 @@ class DeckController {
       context: context,
       cache: _thumbnails.value,
       onCacheUpdate: (cache) {
-        if (!_isDisposed) {
+        if (!_disposed) {
           _thumbnails.value = cache;
         }
       },
@@ -305,11 +305,11 @@ class DeckController {
 
   void dispose() {
     // Guard against double disposal
-    if (_isDisposed) return;
-    _isDisposed = true;
+    if (_disposed) return;
+    _disposed = true;
 
     // Cancel stream subscription - use unawaited since dispose() is sync
-    // The subscription may emit events during cancellation, but _isDisposed
+    // The subscription may emit events during cancellation, but _disposed
     // flag prevents signal access after disposal
     unawaited(_deckSubscription?.cancel());
 

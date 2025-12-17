@@ -5,654 +5,151 @@ description: Learn how to create and use custom Flutter widgets in SuperDeck pre
 
 # Custom Widgets Guide
 
-SuperDeck allows you to embed custom Flutter widgets directly in your presentations using the `@widget` block type. This enables interactive content, data visualizations, and any custom UI components you can build with Flutter.
+Render custom Flutter widgets from Markdown. Register widgets in `DeckOptions.widgets`, then use them in `slides.md`.
 
-## How Custom Widgets Work
+## Markdown Syntax
 
-1. **Define widget builders** in your Flutter app's `DeckOptions`
-2. **Use `@widget` blocks** in your slides with the widget name
-3. **Pass arguments** to customize widget behavior
-4. **Access arguments** in your widget builder function
+Two equivalent forms:
 
-## Setting Up Custom Widgets
+- **Shorthand (recommended)** - `@twitter { ... }`
+- **Explicit** - `@widget { name: "twitter" ... }`
 
-### 1. Define Widget Builders in DeckOptions
+All properties pass to `WidgetDefinition.parse()` as arguments.
 
-In your Flutter app's `main.dart`, register custom widgets:
+## 1) Create a `WidgetDefinition`
+
+### Simple: Map args (no validation)
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
+class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
+  const TwitterWidgetDefinition();
+
+  @override
+  Map<String, Object?> parse(Map<String, Object?> args) => args;
+
+  @override
+  Widget build(BuildContext context, Map<String, Object?> args) {
+    final username = args['username'] as String? ?? '';
+    final tweetId = args['tweetId'] as String? ?? '';
+    return Text('Twitter: @$username ($tweetId)');
+  }
+}
+```
+
+### Recommended: Typed args with validation
+
+Validate and convert the raw map to a typed args object in `parse()`. Use `Ack` (from `superdeck_core`) for schema validation.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
+class TwitterArgs {
+  const TwitterArgs({required this.username, required this.tweetId});
+
+  final String username;
+  final String tweetId;
+
+  static final schema = Ack.object({
+    'username': Ack.string().notEmpty(),
+    'tweetId': Ack.string().notEmpty(),
+  });
+
+  static TwitterArgs parse(Map<String, Object?> map) {
+    schema.parse(map);
+    return TwitterArgs(
+      username: map['username'] as String,
+      tweetId: map['tweetId'] as String,
+    );
+  }
+}
+
+class TwitterDefinition extends WidgetDefinition<TwitterArgs> {
+  const TwitterDefinition();
+
+  @override
+  TwitterArgs parse(Map<String, Object?> args) => TwitterArgs.parse(args);
+
+  @override
+  Widget build(BuildContext context, TwitterArgs args) {
+    return Text('Twitter: @${args.username} (${args.tweetId})');
+  }
+}
+```
+
+## 2) Register in `DeckOptions`
+
+```dart
+import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SuperDeckApp.initialize();
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SuperDeckApp(
-        options: DeckOptions(
-          widgets: {
-            // Simple text widget
-            'customText': (args) {
-              return Text(
-                args.getString('text', defaultValue: 'Hello World'),
-                style: TextStyle(
-                  fontSize: args.getDouble('fontSize', defaultValue: 24),
-                  color: Color(int.parse(
-                    args.getString('color', defaultValue: 'FF000000'),
-                    radix: 16,
-                  )),
-                ),
-              );
-            },
-            
-            // Interactive counter widget
-            'counter': (args) {
-              return CounterWidget(
-                initialValue: args.getInt('start', defaultValue: 0),
-                step: args.getInt('step', defaultValue: 1),
-                label: args.getString('label', defaultValue: 'Count'),
-              );
-            },
-            
-            // Chart widget with data
-            'chart': (args) {
-              return ChartWidget(
-                data: args.getList('data', defaultValue: []),
-                title: args.getString('title', defaultValue: 'Chart'),
-                type: args.getString('type', defaultValue: 'bar'),
-                showLegend: args.getBool('showLegend', defaultValue: true),
-              );
-            },
-            
-            // Social media embed
-            'twitter': (args) {
-              return TwitterEmbedWidget(
-                username: args.getString('username'),
-                tweetId: args.getString('tweetId'),
-                theme: args.getString('theme', defaultValue: 'light'),
-              );
-            },
-          },
-        ),
+  runApp(
+    SuperDeckApp(
+      options: DeckOptions(
+        widgets: const {
+          'twitter': TwitterWidgetDefinition(),
+        },
       ),
-    );
-  }
+    ),
+  );
 }
 ```
 
-### 2. Create Your Widget Classes
+## 3) Use in `slides.md`
 
-Example custom widget implementations:
-
-```dart
-// Simple counter widget
-class CounterWidget extends StatefulWidget {
-  final int initialValue;
-  final int step;
-  final String label;
-
-  const CounterWidget({
-    Key? key,
-    required this.initialValue,
-    required this.step,
-    required this.label,
-  }) : super(key: key);
-
-  @override
-  _CounterWidgetState createState() => _CounterWidgetState();
-}
-
-class _CounterWidgetState extends State<CounterWidget> {
-  late int count;
-
-  @override
-  void initState() {
-    super.initState();
-    count = widget.initialValue;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            widget.label,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          Text(
-            '$count',
-            style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: () => setState(() => count -= widget.step),
-                child: Text('-${widget.step}'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () => setState(() => count += widget.step),
-                child: Text('+${widget.step}'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Chart widget example
-class ChartWidget extends StatelessWidget {
-  final List<dynamic> data;
-  final String title;
-  final String type;
-  final bool showLegend;
-
-  const ChartWidget({
-    Key? key,
-    required this.data,
-    required this.title,
-    required this.type,
-    required this.showLegend,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 16),
-          Expanded(
-            child: _buildChart(),
-          ),
-          if (showLegend) _buildLegend(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChart() {
-    // Implement your chart visualization here
-    // You can use packages like fl_chart, charts_flutter, etc.
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text('$type Chart with ${data.length} data points'),
-      ),
-    );
-  }
-
-  Widget _buildLegend() {
-    return Container(
-      padding: EdgeInsets.only(top: 8),
-      child: Text('Legend: ${data.map((e) => e.toString()).join(', ')}'),
-    );
-  }
-}
-```
-
-## Using Custom Widgets in Slides
-
-### Basic Usage
+Shorthand:
 
 ```markdown
----
-title: Custom Widget Demo
----
-
-## Simple Text Widget
-
-@widget {
-  name: "customText"
-  text: "Hello SuperDeck!"
-  fontSize: 32
-  color: "FF2563EB"
+@twitter {
+  username: "flutterdev"
+  tweetId: "1234567890"
 }
-
----
-
-## Interactive Counter
-
-@section
-
-@column
-Try clicking the buttons:
-
-@widget {
-  name: "counter"
-  start: 10
-  step: 5
-  label: "Demo Counter"
-}
-
----
 ```
 
-### Advanced Examples
+Explicit:
 
 ```markdown
-## Data Visualization
-
-@section
-
-@column {
-  flex: 2
-}
-
-### Sales Data Q4 2023
-
-This chart shows our quarterly performance:
-
-@column
-
-@widget {
-  name: "chart"
-  title: "Q4 Sales Performance"
-  type: "bar"
-  showLegend: true
-  data: [
-    {"month": "Oct", "value": 150},
-    {"month": "Nov", "value": 200},
-    {"month": "Dec", "value": 250}
-  ]
-}
-
----
-
-## Social Media Integration
-
-@section
-
-@column
-Check out this relevant tweet:
-
-@column
-
 @widget {
   name: "twitter"
-  username: "flutter_dev"
-  tweetId: "1234567890123456789"
-  theme: "dark"
+  username: "flutterdev"
+  tweetId: "1234567890"
 }
-
----
 ```
 
-## WidgetArgs API
+## Access Block and Slide Context
 
-The `WidgetArgs` parameter provides type-safe access to arguments:
+In `WidgetDefinition.build()`:
 
-### Available Methods
-
-```dart
-// String values
-String getString(String key, {String? defaultValue})
-
-// Numeric values  
-int getInt(String key, {int? defaultValue})
-double getDouble(String key, {double? defaultValue})
-
-// Boolean values
-bool getBool(String key, {bool? defaultValue})
-
-// Collection values
-List<dynamic> getList(String key, {List<dynamic>? defaultValue})
-Map<String, dynamic> getMap(String key, {Map<String, dynamic>? defaultValue})
-
-// Utility methods
-bool hasKey(String key)
-dynamic getValue(String key)
-```
-
-### Example Usage
+- `BlockConfiguration.of(context)` - Block size, alignment, slide spec
+- `SlideConfiguration.of(context)` - Slide index, options, metadata
 
 ```dart
-WidgetBlockBuilder myWidgetBuilder = (WidgetArgs args) {
-  // Required arguments - will throw if missing
-  final title = args.getString('title');
-  
-  // Optional arguments with defaults
-  final size = args.getDouble('size', defaultValue: 100.0);
-  final enabled = args.getBool('enabled', defaultValue: true);
-  
-  // Complex data structures
-  final config = args.getMap('config', defaultValue: {});
-  final items = args.getList('items', defaultValue: []);
-  
-  // Check if argument exists
-  if (!args.hasKey('data')) {
-    return Text('No data provided');
-  }
-  
-  // Handle different data types
-  final rawValue = args.getValue('value');
-  if (rawValue is String) {
-    // Handle as string
-  } else if (rawValue is num) {
-    // Handle as number
-  }
-  
-  return MyCustomWidget(
-    title: title,
-    size: size,
-    enabled: enabled,
-    config: config,
-    items: items,
+@override
+Widget build(BuildContext context, TwitterArgs args) {
+  final block = BlockConfiguration.of(context);
+  final slide = SlideConfiguration.of(context);
+
+  return SizedBox(
+    width: block.size.width,
+    height: block.size.height,
+    child: Text('Slide ${slide.slideIndex + 1}: @${args.username}'),
   );
-};
-```
-
-## Real-World Examples
-
-### Color Palette Generator
-
-```dart
-// In DeckOptions
-'colorPalette': (args) {
-  return ColorPaletteGenerator(
-    prompts: args.getList('prompts', defaultValue: []),
-    schema: args.getBool('schema', defaultValue: false),
-    onGenerate: (palette) {
-      // Handle generated palette
-    },
-  );
-},
-
-// In slides
-@widget {
-  name: "colorPalette"
-  schema: true
-  prompts: ["tropical", "vibrant", "pastel", "cyberpunk"]
-}
-```
-
-### Interactive Code Editor
-
-```dart
-// In DeckOptions
-'codeEditor': (args) {
-  return CodeEditorWidget(
-    language: args.getString('language', defaultValue: 'dart'),
-    initialCode: args.getString('code', defaultValue: ''),
-    theme: args.getString('theme', defaultValue: 'dark'),
-    readOnly: args.getBool('readOnly', defaultValue: false),
-  );
-},
-
-// In slides
-@widget {
-  name: "codeEditor"
-  language: "dart"
-  theme: "dark"
-  readOnly: false
-  code: "void main() {\n  print('Hello World');\n}"
-}
-```
-
-### Live Data Display
-
-```dart
-// In DeckOptions
-'liveChart': (args) {
-  return LiveChartWidget(
-    dataSource: args.getString('source'),
-    refreshInterval: Duration(
-      seconds: args.getInt('refreshSeconds', defaultValue: 30),
-    ),
-    chartType: args.getString('type', defaultValue: 'line'),
-  );
-},
-
-// In slides
-@widget {
-  name: "liveChart"
-  source: "https://api.example.com/data"
-  refreshSeconds: 10
-  type: "line"
-}
-```
-
-## Best Practices
-
-### Widget Design
-
-1. **Keep widgets focused** - Each widget should have a single, clear purpose
-2. **Use meaningful defaults** - Provide sensible default values for optional arguments
-3. **Handle missing data gracefully** - Show error states or fallbacks for missing required data
-4. **Make widgets responsive** - Ensure widgets work on different screen sizes
-5. **Follow Flutter conventions** - Use standard Flutter patterns and naming
-
-### Argument Handling
-
-1. **Validate required arguments** - Check for required arguments and show clear error messages
-2. **Use type-safe methods** - Use `getString()`, `getInt()`, etc. instead of `getValue()`
-3. **Provide defaults** - Always specify default values for optional arguments
-4. **Document your API** - Clearly document what arguments your widgets expect
-
-### Performance
-
-1. **Optimize for presentations** - Widgets should load quickly and perform smoothly
-2. **Cache expensive operations** - Store computed values to avoid repeated calculations
-3. **Handle async operations** - Use FutureBuilder/StreamBuilder for async data
-4. **Dispose resources** - Properly dispose of controllers, streams, and other resources
-
-### Example Complex Widget
-
-```dart
-class PresentationTimerWidget extends StatefulWidget {
-  final Duration duration;
-  final bool autoStart;
-  final String format;
-
-  const PresentationTimerWidget({
-    Key? key,
-    required this.duration,
-    required this.autoStart,
-    required this.format,
-  }) : super(key: key);
-
-  @override
-  _PresentationTimerWidgetState createState() => _PresentationTimerWidgetState();
-}
-
-class _PresentationTimerWidgetState extends State<PresentationTimerWidget>
-    with TickerProviderStateMixin {
-  late AnimationController _controller;
-  Timer? _timer;
-  Duration _remaining = Duration.zero;
-  bool _isRunning = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _remaining = widget.duration;
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
-    
-    if (widget.autoStart) {
-      _startTimer();
-    }
-  }
-
-  void _startTimer() {
-    setState(() => _isRunning = true);
-    _controller.forward();
-    
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (_remaining.inSeconds <= 0) {
-        _stopTimer();
-        return;
-      }
-      
-      setState(() {
-        _remaining = _remaining - Duration(seconds: 1);
-      });
-    });
-  }
-
-  void _stopTimer() {
-    _timer?.cancel();
-    setState(() => _isRunning = false);
-  }
-
-  void _resetTimer() {
-    _timer?.cancel();
-    _controller.reset();
-    setState(() {
-      _remaining = widget.duration;
-      _isRunning = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 200,
-                height: 200,
-                child: CircularProgressIndicator(
-                  value: _controller.value,
-                  strokeWidth: 8,
-                ),
-              ),
-              Text(
-                _formatTime(_remaining),
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: _isRunning ? _stopTimer : _startTimer,
-                child: Text(_isRunning ? 'Pause' : 'Start'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: _resetTimer,
-                child: Text('Reset'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTime(Duration duration) {
-    switch (widget.format) {
-      case 'minutes':
-        return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
-      case 'seconds':
-        return '${duration.inSeconds}s';
-      default:
-        return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
-}
-
-// Usage in DeckOptions
-'timer': (args) {
-  return PresentationTimerWidget(
-    duration: Duration(
-      minutes: args.getInt('minutes', defaultValue: 5),
-      seconds: args.getInt('seconds', defaultValue: 0),
-    ),
-    autoStart: args.getBool('autoStart', defaultValue: false),
-    format: args.getString('format', defaultValue: 'minutes'),
-  );
-},
-
-// Usage in slides
-@widget {
-  name: "timer"
-  minutes: 10
-  seconds: 30
-  autoStart: true
-  format: "minutes"
 }
 ```
 
 ## Troubleshooting
 
-### Common Issues
+- **"Widget not found"** - Verify the name is registered in `DeckOptions.widgets`
+- **Parse/build errors** - SuperDeck renders error details with stack trace on slide
 
-**Widget not found error:**
-```
-Error: Widget 'myWidget' not found
-```
-- Ensure the widget name is registered in `DeckOptions.widgets`
-- Check spelling and case sensitivity
+## Notes
 
-**Argument type errors:**
-```
-Error: Expected String but got int
-```
-- Use the correct `WidgetArgs` method (`getString`, `getInt`, etc.)
-- Provide appropriate default values
-
-**Widget not updating:**
-- Ensure you're using StatefulWidget for interactive widgets
-- Call `setState()` when updating widget state
-- Check that arguments are being passed correctly
-
-### Debug Tips
-
-1. **Enable debug mode** - Use `debug: true` in `DeckOptions`
-2. **Add logging** - Use `print()` statements in widget builders
-3. **Check arguments** - Verify arguments are being passed correctly
-4. **Test widgets separately** - Create standalone test apps for complex widgets
-
-## Next Steps
-
-- Explore the [Examples](/examples) to see custom widgets in action
-- Check [DeckOptions Reference](/docs/reference/deck-options) for complete API
-- Review [Block Types Reference](/docs/reference/block-types) for `@widget` block details
+- Built-in widgets (`image`, `dartpad`, `qrcode`) are always available
+- Override built-in widgets by registering the same name

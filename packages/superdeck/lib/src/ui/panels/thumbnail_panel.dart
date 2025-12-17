@@ -60,6 +60,7 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.activeIndex != widget.activeIndex) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         _scrollToActiveSlide(widget.activeIndex);
       });
     }

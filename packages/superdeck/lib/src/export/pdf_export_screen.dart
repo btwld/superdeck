@@ -44,7 +44,10 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
       slideCaptureService: SlideCaptureService(),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _handleExport());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _handleExport();
+    });
   }
 
   Future<void> _handleExport() async {

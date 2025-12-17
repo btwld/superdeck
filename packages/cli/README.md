@@ -1,13 +1,13 @@
 # SuperDeck CLI
 
-Command line interface for SuperDeck - Create beautiful and interactive presentations directly within your Flutter app, using the simplicity and power of Markdown.
+Create beautiful, interactive presentations in Flutter using Markdown.
 
 ## Features
 
-- **Setup** - Configure your Flutter project for SuperDeck
-- **Build** - Generate required assets from your slides
-- **Watch** - Automatically rebuild when slides are modified
-- **Publish** - Publish your SuperDeck app to GitHub Pages
+- **Setup** - Configure your project
+- **Build** - Generate assets from slides
+- **Watch** - Auto-rebuild on changes
+- **Publish** - Deploy to GitHub Pages
 
 ## Installation
 
@@ -26,53 +26,48 @@ dev_dependencies:
 
 ### Setup
 
-Configure your Flutter project for SuperDeck, including adding asset configurations to `pubspec.yaml` and configuring macOS entitlements if needed.
+Configure your project for SuperDeck.
 
 ```bash
 superdeck setup
 ```
 
 Options:
-- `--force` (`-f`): Skip confirmation prompts and apply all changes
+- `--force` (`-f`) - Skip confirmations
 
-This command will:
-1. Create a `slides.md` file if it doesn't exist
-2. Add necessary assets to `pubspec.yaml` for SuperDeck
-3. Configure macOS entitlements (if macOS is supported in your project)
+Creates `slides.md`, updates `pubspec.yaml`, and configures macOS entitlements.
 
 ### Build
 
-Build all required assets for your slide deck.
+Build required assets.
 
 ```bash
 superdeck build
 ```
 
 Options:
-- `--watch` (`-w`): Watch for changes in the slides file and rebuild automatically
+- `--watch` (`-w`) - Auto-rebuild on changes
+- `--skip-pubspec` - Skip updating pubspec.yaml
+- `--force-rebuild` (`-f`) - Force rebuild all
 
 ### Publish
 
-Publish your SuperDeck app to GitHub Pages.
+Deploy to GitHub Pages.
 
 ```bash
 superdeck publish
 ```
 
 Options:
-- `--branch` (`-b`): The git branch where the built content will be published (default: `gh-pages`)
-- `--message` (`-m`): The commit message for the publication (default: `Publish Superdeck app to GitHub Pages`)
-- `--[no-]push`: Push the changes to remote after publication (default: `true`)
-- `--[no-]build`: Build the web app before publishing with the correct base-href for GitHub Pages (default: `true`)
-- `--build-dir`: Directory containing the built web assets to publish (default: `build/web`)
-- `--dry-run`: Run through the publication process without making actual changes
+- `--branch` (`-b`) - Target branch (default: `gh-pages`)
+- `--message` (`-m`) - Commit message
+- `--[no-]push` - Push to remote (default: `true`)
+- `--[no-]build` - Build before publishing (default: `true`)
+- `--build-dir` - Build directory (default: `build/web`)
+- `--example-dir` - App directory (default: `.`)
+- `--dry-run` - Preview without changes
 
-This command will:
-1. Build your app for web with the correct base-href for GitHub Pages (unless `--no-build` is specified)
-2. Create or update the target Git branch (default: `gh-pages`)
-3. Copy the build output to the target branch
-4. Commit the changes
-5. Push to remote (unless `--no-push` is specified)
+Builds for web, updates target branch, commits, and pushes.
 
 #### Reverting a Publication
 
@@ -142,31 +137,29 @@ superdeck publish --dry-run
 
 ## Additional information
 
-### Getting Help
+### Resources
 
-- **Documentation**: Visit the [SuperDeck documentation](https://github.com/leoafarias/superdeck)
-- **Examples**: See the [example project](https://github.com/leoafarias/superdeck/tree/main/packages/superdeck/example)
-- **Live Demo**: Try the [online demo](https://superdeck-dev.web.app)
+- [Documentation](https://github.com/leoafarias/superdeck)
+- [Examples](https://github.com/leoafarias/superdeck/tree/main/packages/superdeck/example)
+- [Live Demo](https://superdeck-dev.web.app)
 
 ### Contributing
 
-We welcome contributions! Please see our [contributing guidelines](https://github.com/leoafarias/superdeck/blob/main/CONTRIBUTING.md) for more information.
+See [contributing guidelines](https://github.com/leoafarias/superdeck/blob/main/CONTRIBUTING.md).
 
-### Filing Issues
+### Issues
 
-Found a bug or have a feature request? Please file an issue on our [GitHub issue tracker](https://github.com/leoafarias/superdeck/issues).
-
-When filing an issue, please include:
-- A clear description of the problem
-- Steps to reproduce the issue
-- Your Flutter and Dart SDK versions
-- Any relevant error messages or logs
+File issues on [GitHub](https://github.com/leoafarias/superdeck/issues). Include:
+- Problem description
+- Reproduction steps
+- Flutter/Dart versions
+- Error messages
 
 ### Support
 
-- For questions and discussions, use [GitHub Discussions](https://github.com/leoafarias/superdeck/discussions)
-- For bug reports, use [GitHub Issues](https://github.com/leoafarias/superdeck/issues)
+- [Discussions](https://github.com/leoafarias/superdeck/discussions)
+- [Issues](https://github.com/leoafarias/superdeck/issues)
 
 ### License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/leoafarias/superdeck/blob/main/LICENSE) file for details.
+MIT License - see [LICENSE](https://github.com/leoafarias/superdeck/blob/main/LICENSE).

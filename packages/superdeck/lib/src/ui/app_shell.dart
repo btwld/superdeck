@@ -12,7 +12,7 @@ import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
 import 'package:superdeck/src/utils/constants.dart';
 
 import '../deck/deck_controller.dart';
-import '../deck/navigation_manager.dart';
+import '../deck/navigation_input_listener.dart';
 import 'panels/bottom_bar.dart';
 
 /// High-level app shell that toggles between
@@ -24,7 +24,7 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationManager(
+    return NavigationInputListener(
       child: SplitView(isSmallLayout: context.isSmall, child: child),
     );
   }
@@ -49,6 +49,7 @@ class _SplitViewState extends State<SplitView>
   late final Animation<double> _curvedAnimation;
   bool _isInitialized = false;
   EffectCleanup? _menuEffectCleanup;
+  EffectCleanup? _thumbnailSyncEffectCleanup;
 
   @override
   void initState() {
@@ -95,7 +96,19 @@ class _SplitViewState extends State<SplitView>
         }
       });
 
-      // Note: Thumbnail generation is handled by ThumbnailSyncManager
+      // Sync thumbnail generation with slide changes without triggering rebuilds.
+      // Use effect instead of Watch to avoid infinite rebuild loops.
+      _thumbnailSyncEffectCleanup = effect(() {
+        // Track slides signal - effect will re-run when slides change
+        deckController.slides.value;
+
+        // Regenerate thumbnails after frame completes
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            deckController.generateThumbnails(context);
+          }
+        });
+      });
     }
   }
 
@@ -103,6 +116,7 @@ class _SplitViewState extends State<SplitView>
   void dispose() {
     // Cleanup effect
     _menuEffectCleanup?.call();
+    _thumbnailSyncEffectCleanup?.call();
     _animationController.dispose();
     super.dispose();
   }

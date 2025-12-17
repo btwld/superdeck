@@ -5,68 +5,58 @@ description: Complete reference for all SuperDeck block types and their properti
 
 # Block Types Reference
 
-SuperDeck supports 5 block types for different content and layout needs. All blocks share common properties and support specific additional properties.
+SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`) use the `@widget` system.
 
 ## Common Properties
 
 All blocks support these properties:
 
 ### `align`
-Controls content alignment within the block.
+**Type:** String | **Default:** `top_left`
 
-**Type:** String  
-**Default:** `"topLeft"`  
-**Options:** 
-- `"topLeft"`, `"topCenter"`, `"topRight"`
-- `"centerLeft"`, `"center"`, `"centerRight"`
-- `"bottomLeft"`, `"bottomCenter"`, `"bottomRight"`
+Controls content alignment:
+- `top_left`, `top_center`, `top_right`
+- `center_left`, `center`, `center_right`
+- `bottom_left`, `bottom_center`, `bottom_right`
 
 ### `flex`
-Controls relative sizing in flexible layouts.
+**Type:** Number | **Default:** `1`
 
-**Type:** Number  
-**Default:** `1`  
-**Example:** `flex: 2` takes twice the space of `flex: 1`
+Controls relative sizing (`flex: 2` takes twice the space of `flex: 1`).
 
 ### `scrollable`
-Enables scrolling for overflow content.
+**Type:** Boolean | **Default:** `false`
 
-**Type:** Boolean  
-**Default:** `false`
+Enables scrolling for overflow content.
 
 ## @column
 
-The most common block type for markdown content.
+Renders markdown content.
 
 ```markdown
 @column {
-  align: "center"
+  align: center
   flex: 2
   scrollable: true
 }
 
 # Your Content Here
 
-Any markdown content including:
 - Lists
-- Images  
+- Images
 - Code blocks
 - Tables
 ```
 
-**Use cases:**
-- Text content
-- Mixed markdown elements
-- Code examples
-- Lists and tables
+Use for text, code examples, lists, and tables.
 
 ## @section
 
-Container block that arranges child blocks horizontally.
+Arranges child blocks horizontally.
 
 ```markdown
 @section {
-  align: "topCenter"
+  align: top_center
   flex: 1
 }
 
@@ -78,14 +68,11 @@ Right content
 ```
 
 **Properties:**
-- **`blocks`** - Array of child blocks (automatically populated)
+- `blocks` - Child blocks (auto-populated)
 
-**Use cases:**
-- Multi-column layouts
-- Side-by-side content
-- Grouping related blocks
+Use for multi-column layouts and side-by-side content.
 
-**Example - Three columns:**
+**Three-column example:**
 ```markdown
 @section
 
@@ -95,124 +82,8 @@ Column 1
 @column
 Column 2
 
-@column  
+@column
 Column 3
-```
-
-## @image
-
-Dedicated block for displaying images with various fit options.
-
-```markdown
-@image {
-  asset: "path/to/image.png"
-  fit: "cover"
-  width: 400
-  height: 300
-  align: "center"
-}
-```
-
-**Properties:**
-
-### `asset` (required)
-Image path or URL.
-
-**Type:** String  
-**Examples:**
-- `"assets/logo.png"` (local asset)
-- `"https://example.com/image.png"` (external URL)
-
-### `fit`
-How the image should be resized to fit its container.
-
-**Type:** String  
-**Default:** `"contain"`  
-**Options:**
-- `"fill"` - Fill container, may distort image
-- `"contain"` - Fit entire image within container
-- `"cover"` - Cover entire container, may crop image
-- `"fitWidth"` - Fit to container width
-- `"fitHeight"` - Fit to container height
-- `"none"` - No scaling
-- `"scaleDown"` - Scale down only, never up
-
-### `width`
-Fixed width in pixels.
-
-**Type:** Number  
-**Optional:** If not specified, uses available space
-
-### `height`
-Fixed height in pixels.
-
-**Type:** Number  
-**Optional:** If not specified, maintains aspect ratio
-
-**Example - Hero image:**
-```markdown
-@section
-
-@image {
-  asset: "hero-banner.jpg"
-  fit: "cover"
-  height: 400
-  align: "center"
-}
-```
-
-## @dartpad
-
-Embeds interactive DartPad examples.
-
-```markdown
-@dartpad {
-  id: "your_dartpad_id"
-  theme: "dark"
-  embed: true
-  run: false
-}
-```
-
-**Properties:**
-
-### `id` (required)
-DartPad ID from dartpad.dev.
-
-**Type:** String  
-**Example:** `"d7b09149ffee07ec7c28"`
-
-### `theme`
-DartPad color theme.
-
-**Type:** String  
-**Default:** `"light"`  
-**Options:** `"light"`, `"dark"`
-
-### `embed`
-Whether to show DartPad in embed mode.
-
-**Type:** Boolean  
-**Default:** `true`
-
-### `run`
-Whether to auto-run the code.
-
-**Type:** Boolean  
-**Default:** `false`
-
-**Notes:**
-- Only works in release/profile mode
-- Shows placeholder widget in debug mode
-- Requires network access
-
-**Example - Auto-running dark theme:**
-```markdown
-@dartpad {
-  id: "d7b09149ffee07ec7c28"
-  theme: "dark"
-  run: true
-}
 ```
 
 ## @widget
@@ -231,55 +102,104 @@ Embeds custom Flutter widgets defined in your app.
 **Properties:**
 
 ### `name` (required)
-Name of the widget as defined in `DeckOptions.widgets`.
-
 **Type:** String
 
-### Custom Arguments
-Any additional properties become arguments passed to the widget builder.
+Widget name from `DeckOptions.widgets`.
 
-**Type:** Any JSON-serializable values
+### Custom Arguments
+**Type:** JSON-serializable values
+
+All additional properties pass to the widget builder.
 
 **Setup in Flutter app:**
 ```dart
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
+class CustomChartDefinition extends WidgetDefinition<Map<String, Object?>> {
+  const CustomChartDefinition();
+
+  @override
+  Map<String, Object?> parse(Map<String, Object?> args) => args;
+
+  @override
+  Widget build(BuildContext context, Map<String, Object?> args) {
+    final title = args['title'] as String? ?? 'Untitled Chart';
+    final data = (args['data'] as List?)?.cast<Object?>() ?? const [];
+
+    return Text('$title (${data.length} points)');
+  }
+}
+
 SuperDeckApp(
   options: DeckOptions(
-    widgets: {
-      'customChart': (args) {
-        return CustomChartWidget(
-          title: args.getString('title'),
-          data: args.getList('data'),
-          config: args.getMap('config'),
-        );
-      },
+    widgets: const {
+      'customChart': CustomChartDefinition(),
     },
   ),
-)
+);
 ```
 
-**Accessing arguments:**
-```dart
-// In your widget builder function
-WidgetBlockBuilder chartBuilder = (WidgetArgs args) {
-  final title = args.getString('title', defaultValue: 'Chart');
-  final data = args.getList('data');
-  final showLegend = args.getBool('showLegend', defaultValue: true);
-  
-  return CustomChart(
-    title: title,
-    data: data,
-    showLegend: showLegend,
-  );
-};
+**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to `WidgetDefinition.parse()` as `Map<String, Object?>`.
+
+## Built-in Widgets
+
+Use shorthand syntax for these widgets.
+
+### image
+
+```markdown
+@image {
+  src: "path/to/image.png"
+  fit: cover
+  width: 400
+  height: 300
+}
 ```
 
-**Available argument methods:**
-- `getString(key, {defaultValue})`
-- `getInt(key, {defaultValue})`
-- `getDouble(key, {defaultValue})`
-- `getBool(key, {defaultValue})`
-- `getList(key, {defaultValue})`
-- `getMap(key, {defaultValue})`
+**Properties:**
+- `src` (required) - Image path or URL
+- `fit` - `fill`, `contain`, `cover`, `fitWidth`, `fitHeight`, `none`, `scaleDown` (default: `contain`)
+- `width`, `height` - Fixed dimensions in pixels
+
+### dartpad
+
+```markdown
+@dartpad {
+  id: "d7b09149ffee07ec7c28"
+  theme: dark
+  run: true
+}
+```
+
+**Properties:**
+- `id` (required) - DartPad ID from dartpad.dev
+- `theme` - `light` or `dark` (default: `light`)
+- `embed` - Embed mode (default: `true`)
+- `run` - Auto-run code (default: `false`)
+
+Works in release/profile mode only. Shows placeholder in debug mode.
+
+### qrcode
+
+Generates QR codes.
+
+```markdown
+@qrcode {
+  data: "https://example.com"
+  size: 200
+}
+```
+
+### mermaid
+
+Renders Mermaid diagrams (or use fenced code blocks with `mermaid` language).
+
+```markdown
+@mermaid {
+  diagram: "graph TD; A-->B; B-->C;"
+}
+```
 
 ## Block Syntax
 
@@ -305,7 +225,7 @@ WidgetBlockBuilder chartBuilder = (WidgetArgs args) {
 **Centered content:**
 ```markdown
 @column {
-  align: "center"
+  align: center
 }
 ```
 
@@ -327,7 +247,7 @@ WidgetBlockBuilder chartBuilder = (WidgetArgs args) {
 @image {
   asset: "hero.jpg"
   fit: "cover"
-  align: "center"
+  align: center
 }
 ```
 
@@ -351,9 +271,9 @@ WidgetBlockBuilder chartBuilder = (WidgetArgs args) {
 
 ## Best Practices
 
-1. **Use @column for most content** - It's the most flexible block type
-2. **Combine blocks in @section** - Create rich layouts with mixed content
-3. **Set explicit dimensions for @image** - Prevents layout shifts
-4. **Test @dartpad IDs** - Verify DartPad examples work before presenting
-5. **Document custom @widget args** - Make widget APIs clear for team members
-6. **Use consistent alignment** - Stick to a few alignment patterns for visual consistency
+1. Use `@column` for most content
+2. Combine blocks in `@section` for rich layouts
+3. Set explicit image dimensions to prevent shifts
+4. Test DartPad IDs before presenting
+5. Document custom widget arguments
+6. Use consistent alignment patterns

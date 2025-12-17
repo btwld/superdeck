@@ -11,63 +11,6 @@ import '../utils/constants.dart';
 import 'deck_controller.dart';
 import 'deck_options.dart';
 
-/// Widget that syncs thumbnail generation with deck slide changes
-///
-/// Automatically regenerates thumbnails when the deck controller's slides change.
-/// This separates the thumbnail sync concern from DeckControllerBuilder.
-class ThumbnailSyncManager extends StatefulWidget {
-  final Widget child;
-
-  const ThumbnailSyncManager({super.key, required this.child});
-
-  @override
-  State<ThumbnailSyncManager> createState() => _ThumbnailSyncManagerState();
-}
-
-class _ThumbnailSyncManagerState extends State<ThumbnailSyncManager> {
-  EffectCleanup? _slidesEffect;
-  bool _isInitialized = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Only initialize once
-    if (_isInitialized) return;
-    _isInitialized = true;
-
-    final deck = DeckController.of(context);
-
-    // Use effect instead of Watch to avoid infinite rebuild loop.
-    // Watch would cause: slides.value access → generateThumbnails →
-    // _thumbnails update → rebuild → repeat infinitely.
-    // Effect only tracks slides changes without triggering widget rebuilds.
-    _slidesEffect = effect(() {
-      // Track slides signal - effect will re-run when slides change
-      deck.slides.value;
-
-      // Regenerate thumbnails after frame completes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          deck.generateThumbnails(context);
-        }
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _slidesEffect?.call();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // No Watch widget - effect handles the reactive tracking
-    return widget.child;
-  }
-}
-
 /// Builder widget that creates and manages the DeckController
 ///
 /// Provides the DeckController via InheritedData and manages its lifecycle
@@ -137,11 +80,12 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   void dispose() {
     // Dispose in correct order:
     // 1. Clean up effects first (stop them from accessing signals)
-    // 2. Stop async operations (CliWatcher file watching and signals)
-    // 3. Dispose controller last (signals should not be accessed after this)
-
     _cliWatcherEffect?.call();
+
+    // 2. Stop async operations (CliWatcher file watching and signals)
     _cliWatcher?.dispose();
+
+    // 3. Dispose controller last (signals should not be accessed after this)
     _deckController.dispose();
 
     super.dispose();
@@ -151,12 +95,10 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   Widget build(BuildContext context) {
     return InheritedData(
       data: _deckController,
-      child: ThumbnailSyncManager(
-        child: Builder(
-          builder: (context) {
-            return widget.builder(context, _deckController.router);
-          },
-        ),
+      child: Builder(
+        builder: (context) {
+          return widget.builder(context, _deckController.router);
+        },
       ),
     );
   }

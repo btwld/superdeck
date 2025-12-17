@@ -27,27 +27,15 @@ These options work with all commands:
 
 ### `superdeck setup`
 
-Initialize SuperDeck in a Flutter project.
+Initialize SuperDeck in a Flutter project. Creates a sample `slides.md` file, updates `pubspec.yaml` with asset configuration, sets up macOS entitlements for network access, and configures a custom `index.html` for web.
 
 ```bash
-superdeck setup [options]
-```
-
-**What it does:**
-- Creates sample `slides.md` file if none exists
-- Updates `pubspec.yaml` with asset configuration
-- Sets up macOS entitlements for network access
-- Configures custom `index.html` for web with loading indicator
-
-**Example:**
-```bash
-cd my-flutter-project
 superdeck setup
 ```
 
 ### `superdeck build`
 
-Build presentations from markdown files.
+Build presentations from markdown files. Parses `slides.md`, generates presentation data in `.superdeck/superdeck.json`, and creates optimized assets.
 
 ```bash
 superdeck build [options]
@@ -55,11 +43,11 @@ superdeck build [options]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--watch`, `-w` | Watch for file changes and rebuild automatically |
-| `--skip-pubspec` | Skip updating pubspec.yaml |
-| `--force-rebuild` | Force rebuild all assets |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--watch` | `-w` | Watch for file changes and rebuild automatically |
+| `--skip-pubspec` | | Skip updating pubspec.yaml |
+| `--force-rebuild` | `-f` | Force rebuild all assets |
 
 **Examples:**
 ```bash
@@ -67,21 +55,15 @@ superdeck build [options]
 superdeck build
 
 # Build and watch for changes (recommended for development)
-superdeck build --watch
+superdeck build -w
 
 # Force rebuild everything
-superdeck build --force-rebuild
+superdeck build -f
 ```
-
-**What it does:**
-- Parses `slides.md` markdown content
-- Generates `.superdeck/superdeck.json` presentation data
-- Creates optimized assets in `.superdeck/assets/`
-- Generates asset references in `.superdeck/generated_assets.json`
 
 ### `superdeck publish`
 
-Publish presentation to GitHub Pages.
+Publish presentation to GitHub Pages. Builds the web version with proper base-href, commits to the target branch using git worktree, and optionally pushes to remote.
 
 ```bash
 superdeck publish [options]
@@ -89,30 +71,30 @@ superdeck publish [options]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--branch <name>` | Target branch (default: gh-pages) |
-| `--message <msg>` | Commit message |
-| `--push` | Push changes to remote |
-| `--dry-run` | Show what would be done without making changes |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--branch <name>` | `-b` | Target branch (default: gh-pages) |
+| `--message <msg>` | `-m` | Commit message |
+| `--push` | | Push changes to remote (default: true, use `--no-push` to skip) |
+| `--build` | | Build web app before publishing (default: true, use `--no-build` to skip) |
+| `--build-dir <path>` | | Build output directory (default: build/web) |
+| `--example-dir <path>` | | Project directory (default: .) |
+| `--dry-run` | | Show what would be done without making changes |
 
 **Examples:**
 ```bash
 # Publish to gh-pages branch
 superdeck publish
 
-# Publish with custom message and push
-superdeck publish --message "Update presentation" --push
+# Publish with custom message
+superdeck publish -m "Update presentation"
 
-# See what would happen without doing it
+# Skip build step (if already built)
+superdeck publish --no-build
+
+# Preview without making changes
 superdeck publish --dry-run
 ```
-
-**What it does:**
-- Builds web version with proper base-href for GitHub Pages
-- Uses git worktree for safe branch management
-- Commits built files to specified branch
-- Optionally pushes to remote repository
 
 ### `superdeck version`
 

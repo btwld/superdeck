@@ -5,7 +5,7 @@ description: Learn how to create custom headers, footers, and backgrounds for Su
 
 # Custom Slide Parts Guide
 
-SuperDeck allows you to customize the appearance of your presentations by creating custom slide parts: headers, footers, and backgrounds. These components are rendered consistently across all slides in your presentation.
+Customize your presentations with custom slide parts: headers, footers, and backgrounds. SuperDeck renders these components consistently across all slides.
 
 ## Overview
 
@@ -15,7 +15,7 @@ Slide parts are reusable UI components that appear on every slide:
 - **Footer** - Appears at the bottom of each slide (implements `PreferredSizeWidget`)
 - **Background** - Renders behind the slide content (regular `Widget`)
 
-Each part is optional and can be customized independently.
+Each part is optional. Customize them independently.
 
 ## Basic Setup
 
@@ -138,31 +138,24 @@ class CustomBackgroundPart extends StatelessWidget {
 Add your custom parts to your app configuration:
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SuperDeckApp.initialize();
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SuperDeckApp(
-        options: DeckOptions(
-          parts: SlideParts(
-            header: CustomHeaderPart(),
-            footer: CustomFooterPart(),
-            background: CustomBackgroundPart(),
-          ),
-          // ... other options
+  runApp(
+    SuperDeckApp(
+      options: DeckOptions(
+        parts: SlideParts(
+          header: CustomHeaderPart(),
+          footer: CustomFooterPart(),
+          background: CustomBackgroundPart(),
         ),
+        // ... other options
       ),
     );
-  }
+  );
 }
 ```
 
@@ -278,7 +271,7 @@ class NavigationFooterPart extends StatelessWidget implements PreferredSizeWidge
         children: [
           // Previous button
           IconButton(
-            onPressed: deck.canGoPrevious.value ? deck.previousSlide : null,
+            onPressed: deck.canGoPrevious.value ? () => deck.previousSlide() : null,
             icon: Icon(Icons.arrow_back, color: Colors.white),
             tooltip: 'Previous slide',
           ),
@@ -315,7 +308,7 @@ class NavigationFooterPart extends StatelessWidget implements PreferredSizeWidge
           SizedBox(width: 16),
           // Next button
           IconButton(
-            onPressed: deck.canGoNext.value ? deck.nextSlide : null,
+            onPressed: deck.canGoNext.value ? () => deck.nextSlide() : null,
             icon: Icon(Icons.arrow_forward, color: Colors.white),
             tooltip: 'Next slide',
           ),
@@ -510,19 +503,19 @@ The `SlideConfiguration` class provides access to slide information:
 ```dart
 class SlideConfiguration {
   final int slideIndex;                    // Current slide index (0-based)
-  final Style style;                       // Mix styling for the slide
+  final SlideStyle style;                  // Mix styling for the slide
   final bool debug;                        // Debug mode flag
   final SlideParts? parts;                 // Current slide parts configuration
   final String thumbnailFile;              // Thumbnail file path
   final bool isExporting;                  // Whether currently exporting
-  
+
   // Access to slide data
   SlideOptions get options;                // Slide frontmatter options
   String get key;                          // Unique slide identifier
   Slide get data;                          // Raw slide data
   List<SectionBlock> get sections;         // Slide content sections
   List<String> get comments;               // Speaker notes
-  
+
   // Access slide configuration
   static SlideConfiguration of(BuildContext context);
 }

@@ -42,7 +42,7 @@ class SlideCaptureService {
   }) async {
     final queueKey = shortHash(slide.key + quality.name);
     try {
-      while (_generationQueue.length > _maxConcurrentGenerations) {
+      while (_generationQueue.length >= _maxConcurrentGenerations) {
         await Future.delayed(const Duration(milliseconds: 50));
       }
 

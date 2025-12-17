@@ -2,6 +2,7 @@ library;
 
 // Rendering
 export 'package:superdeck/src/rendering/blocks/block_widget.dart';
+export 'package:superdeck/src/rendering/blocks/block_provider.dart';
 export 'package:superdeck/src/rendering/slides/slide_parts.dart';
 
 // Utils
@@ -20,7 +21,7 @@ export 'package:superdeck/src/ui/app_shell.dart';
 // Deck
 export 'package:superdeck/src/deck/deck_controller.dart';
 export 'package:superdeck/src/deck/deck_options.dart';
-export 'package:superdeck/src/deck/deck_provider.dart';
+export 'package:superdeck/src/deck/deck_controller_builder.dart';
 export 'package:superdeck/src/deck/slide_configuration.dart';
 export 'package:superdeck/src/deck/widget_definition.dart';
 

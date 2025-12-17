@@ -4,7 +4,7 @@ SuperDeck runs as a Melos workspace pinned to Flutter stable via FVM. Use these 
 
 ## Project Structure & Module Organization
 - `packages/core`: rendering primitives shared by apps and CLI.
-- `packages/superdeck`: Flutter widgets plus `integration_test/`.
+- `packages/superdeck`: Flutter widgets and presentation components.
 - `packages/cli`: source for the `superdeck` CLI wrapper.
 - `packages/builder`: generators and build-runner glue.
 - `demo/` sample app, `assets/` shared media, docs live under `docs/`.
@@ -28,9 +28,9 @@ SuperDeck runs as a Melos workspace pinned to Flutter stable via FVM. Use these 
 - Keep widgets focused, respect analyzer member ordering, and colocate private helpers with the widget they support.
 
 ## Testing Guidelines
-- Unit tests belong under each package’s `test/`; integration suites live in `packages/superdeck/integration_test/`.
+- Unit tests belong under each package's `test/`.
 - Regenerate code before tests (`melos run build_runner:build`) to keep generated files current.
-- Use `melos run test` for a full pass; run targeted cases such as `fvm flutter test integration_test/app_test.dart -d macos` or `-d chrome` when platform checks matter.
+- Use `melos run test` for a full pass; run targeted cases with `fvm flutter test <path>` when needed.
 - Add regression tests with bug fixes; CI blocks merges on failing analyze/test jobs and posts integration results per platform.
 
 ## Commit & Pull Request Guidelines

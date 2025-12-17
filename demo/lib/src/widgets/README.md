@@ -12,7 +12,7 @@ This directory contains auto-registered widgets that can be used directly in you
 ### How It Works
 
 1. Example widgets from `../examples/` are imported with namespace aliases
-2. Each is wrapped in `_DemoWrapper` which provides MaterialApp/Scaffold context
+2. Each is wrapped in `_DemoWrapper` to keep it compact and centered
 3. The `demoWidgets` getter returns a complete map ready for `DeckOptions.widgets`
 4. In `main.dart`, we spread `...demoWidgets` into the widgets map
 
@@ -89,9 +89,10 @@ Button variants (solid, soft, outline) with hover/press states.
    ```
 3. **Register it** in the `demoWidgets` map:
    ```dart
-   'mix-your-widget': (args) => _DemoWrapper(
-     backgroundColor: Colors.white,
-     child: mix_your_widget.YourWidget(),
+   'mix-your-widget': _SimpleWidgetDefinition(
+     (context, args) => _DemoWrapper(
+       child: mix_your_widget.YourWidget(),
+     ),
    ),
    ```
 4. **Use it** in `slides.md`:
@@ -130,16 +131,16 @@ TextStyleMix(
 
 ## Widget Arguments
 
-All widgets receive `WidgetArgs` which provides type-safe getters:
+Demo widgets receive a raw argument map (`Map<String, Object?>`). Most demo widgets ignore args, but you can read values directly:
 
 ```dart
-'custom-widget': (args) {
-  final text = args.getString('text');
-  final size = args.getIntOr('size', 100);
-  final enabled = args.getBoolOr('enabled', true);
+'custom-widget': _SimpleWidgetDefinition((context, args) {
+  final text = args['text'] as String? ?? 'Hello World';
+  final size = (args['size'] as num?)?.toInt() ?? 100;
+  final enabled = args['enabled'] as bool? ?? true;
 
   return YourWidget(text: text, size: size, enabled: enabled);
-}
+}),
 ```
 
 Use in markdown:
@@ -156,9 +157,7 @@ Use in markdown:
 
 `_DemoWrapper` provides:
 
-- **MaterialApp** context (required for Material widgets)
-- **Scaffold** structure (handles background color)
-- **Center** alignment (centers widget in slide)
-- **Transparent background** by default (customizable per widget)
+- **Center** alignment (centers the demo in the slide)
+- **Intrinsic sizing** (prevents demos from expanding to fill the whole block)
 
-This eliminates the need for each example to wrap itself in these layers.
+This eliminates the need for each example to manage layout constraints in every demo widget.
