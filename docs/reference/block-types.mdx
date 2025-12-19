@@ -5,14 +5,14 @@ description: Complete reference for all SuperDeck block types and their properti
 
 # Block Types Reference
 
-SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`) use the `@widget` system.
+SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget system as `@widget`.
 
 ## Common Properties
 
 All blocks support these properties:
 
 ### `align`
-**Type:** String | **Default:** `top_left`
+**Type:** String | **Default:** `center`
 
 Controls content alignment:
 - `top_left`, `top_center`, `top_right`
@@ -158,7 +158,7 @@ Use shorthand syntax for these widgets.
 ```
 
 **Properties:**
-- `src` (required) - Image path or URL
+- `src` (required) - Asset path, absolute file path (`/Users/...` or `file:///...`), or URL
 - `fit` - `fill`, `contain`, `cover`, `fitWidth`, `fitHeight`, `none`, `scaleDown` (default: `contain`)
 - `width`, `height` - Fixed dimensions in pixels
 
@@ -176,9 +176,7 @@ Use shorthand syntax for these widgets.
 - `id` (required) - DartPad ID from dartpad.dev
 - `theme` - `light` or `dark` (default: `light`)
 - `embed` - Embed mode (default: `true`)
-- `run` - Auto-run code (default: `false`)
-
-Works in release/profile mode only. Shows placeholder in debug mode.
+- `run` - Auto-run code (default: `true`)
 
 ### qrcode
 
@@ -186,20 +184,26 @@ Generates QR codes.
 
 ```markdown
 @qrcode {
-  data: "https://example.com"
+  text: "https://example.com"
   size: 200
 }
 ```
+**Properties:**
+- `text` (required) - Text to encode
+- `size` - Size in logical pixels (default: `200`)
+- `errorCorrection` - `low`, `medium`, `high`, `highest` (default: `medium`)
+- `backgroundColor`, `foregroundColor` - Hex colors (for example, `#ffffff`)
 
-### mermaid
+### Mermaid Diagrams
 
-Renders Mermaid diagrams (or use fenced code blocks with `mermaid` language).
+Use a fenced code block with the `mermaid` language. The CLI renders Mermaid to PNG during `superdeck build`.
 
-```markdown
-@mermaid {
-  diagram: "graph TD; A-->B; B-->C;"
-}
+````markdown
+```mermaid
+graph TD
+  A[Start] --> B[End]
 ```
+````
 
 ## Block Syntax
 
@@ -245,8 +249,8 @@ Renders Mermaid diagrams (or use fenced code blocks with `mermaid` language).
 **Hero image:**
 ```markdown
 @image {
-  asset: "hero.jpg"
-  fit: "cover"
+  src: assets/hero.jpg
+  fit: cover
   align: center
 }
 ```

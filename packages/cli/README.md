@@ -1,6 +1,6 @@
 # SuperDeck CLI
 
-Create beautiful, interactive presentations in Flutter using Markdown.
+The SuperDeck CLI sets up your Flutter project, builds slide assets from `slides.md`, and can publish a web build to GitHub Pages.
 
 ## Features
 
@@ -15,11 +15,16 @@ Create beautiful, interactive presentations in Flutter using Markdown.
 dart pub global activate superdeck_cli
 ```
 
-Or add it to your `pubspec.yaml` as a dev dependency:
+Or add it to your Flutter project as a dev dependency:
 
-```yaml
-dev_dependencies:
-  superdeck_cli: ^1.0.0
+```bash
+dart pub add --dev superdeck_cli
+```
+
+Then run the CLI with:
+
+```bash
+dart run superdeck_cli:main --help
 ```
 
 ## Commands
@@ -34,6 +39,7 @@ superdeck setup
 
 Options:
 - `--force` (`-f`) - Skip confirmations
+- `--[no-]setup-web` - Create a custom `web/index.html` with a loading indicator (default: `true`)
 
 Creates `slides.md`, updates `pubspec.yaml`, and configures macOS entitlements.
 
@@ -68,13 +74,6 @@ Options:
 - `--dry-run` - Preview without changes
 
 Builds for web, updates target branch, commits, and pushes.
-
-#### Reverting a Publication
-
-To revert a publication:
-```bash
-superdeck publish --revert
-```
 
 ## Usage Examples
 
@@ -132,20 +131,20 @@ superdeck publish --dry-run
 ## Requirements
 
 - Flutter SDK
-- Dart SDK version 3.0.0 or higher
+- Dart SDK version 3.9.0 or higher
 - Git (for publish command)
 
 ## Additional information
 
 ### Resources
 
-- [Documentation](https://github.com/leoafarias/superdeck)
-- [Examples](https://github.com/leoafarias/superdeck/tree/main/packages/superdeck/example)
+- [Documentation](https://github.com/leoafarias/superdeck/tree/main/docs)
+- [Demo app](https://github.com/leoafarias/superdeck/tree/main/demo)
 - [Live Demo](https://superdeck-dev.web.app)
 
 ### Contributing
 
-See [contributing guidelines](https://github.com/leoafarias/superdeck/blob/main/CONTRIBUTING.md).
+Open a pull request on GitHub. If you change dependencies, run `melos bootstrap` in the repo root.
 
 ### Issues
 
@@ -162,4 +161,4 @@ File issues on [GitHub](https://github.com/leoafarias/superdeck/issues). Include
 
 ### License
 
-MIT License - see [LICENSE](https://github.com/leoafarias/superdeck/blob/main/LICENSE).
+BSD 3-Clause License - see [LICENSE](https://github.com/leoafarias/superdeck/blob/main/LICENSE).

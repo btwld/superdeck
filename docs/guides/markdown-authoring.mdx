@@ -56,7 +56,7 @@ SuperDeck has 3 core block types:
 | `@column` | Renders markdown content | `flex`, `align`, `scrollable` |
 | `@widget` | Embeds custom widgets | `name` + custom args |
 
-Built-in widgets (`image`, `dartpad`, `qrcode`, `mermaid`) use the same syntax.
+Built-in widgets (`image`, `dartpad`, `qrcode`) use the same syntax. Mermaid diagrams use fenced code blocks (` ```mermaid`).
 
 ---
 
@@ -113,7 +113,7 @@ Display images with fit options.
 }
 ````
 
-Properties: `src` (required), `fit` (`contain`, `cover`, `fill`, `fitWidth`, `fitHeight`), `width`, `height`
+Properties: `src` (required; asset path, absolute file path, or URL), `fit` (`contain`, `cover`, `fill`, `fitWidth`, `fitHeight`, `none`, `scaleDown`), `width`, `height`
 
 ### `@dartpad`
 
@@ -129,7 +129,7 @@ Embed interactive DartPad examples.
 
 Properties: `id` (required), `theme` (`light` or `dark`), `embed`, `run`
 
-> DartPad only works in release/profile mode. It shows a placeholder in debug mode.
+> DartPad uses an embedded WebView. Make sure your target platform supports WebViews.
 
 ### Custom Widgets
 

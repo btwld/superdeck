@@ -15,13 +15,14 @@ Blocks automatically arrange themselves:
 - **Horizontal sections** - Use `@section` for side-by-side layouts
 - **Flexible sizing** - Control space with `flex`
 
-## The 5 Block Types
+## Common blocks
 
 ```markdown
 @column        # Markdown content (most common)
 @section       # Container for horizontal layouts
 @image         # Images with fit options
 @dartpad       # Interactive code examples
+@qrcode        # QR codes
 @widget        # Custom Flutter widgets
 ```
 
@@ -72,8 +73,8 @@ Takes 1/3 of the space
 - Point two
 
 @image {
-  asset: "screenshot.png"
-  fit: "contain"
+  src: assets/screenshot.png
+  fit: contain
 }
 ```
 

@@ -26,7 +26,7 @@ enum CliWatcherStatus {
 
 /// Watches and manages the CLI build process
 ///
-/// Automatically starts `dart run superdeck build --watch` and monitors
+/// Automatically starts `dart run superdeck_cli:main build --watch` and monitors
 /// the process health. Injects error presentations when the process fails.
 class CliWatcher {
   final Directory projectRoot;

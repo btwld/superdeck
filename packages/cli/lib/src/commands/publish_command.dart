@@ -74,11 +74,7 @@ class PublishCommand extends Command<int> {
     List<String> args,
   ) async {
     try {
-      return await Process.run(
-        'git',
-        args,
-        workingDirectory: repoPath,
-      );
+      return await Process.run('git', args, workingDirectory: repoPath);
     } catch (_) {
       return null;
     }
@@ -165,6 +161,7 @@ class PublishCommand extends Command<int> {
   Future<bool> _buildWebApp(
     String workingDirectory, {
     String? baseHref,
+    String? outputDirectory,
     bool dryRun = false,
   }) async {
     if (dryRun) {
@@ -172,6 +169,10 @@ class PublishCommand extends Command<int> {
         _logger.info('Would build web app with base-href: $baseHref');
       } else {
         _logger.info('Would build web app with default base-href');
+      }
+
+      if (outputDirectory != null) {
+        _logger.info('Would write build output to: $outputDirectory');
       }
 
       return true;
@@ -199,6 +200,10 @@ class PublishCommand extends Command<int> {
       // Add base-href if provided
       if (baseHref != null) {
         buildArgs.add('--base-href=$baseHref');
+      }
+
+      if (outputDirectory != null) {
+        buildArgs.add('--output=$outputDirectory');
       }
 
       final ProcessResult result = await Process.run(
@@ -355,6 +360,8 @@ class PublishCommand extends Command<int> {
     final bool shouldPush = args['push'] as bool;
     final bool dryRun = args['dry-run'] as bool;
     final bool shouldBuild = args['build'] as bool;
+    final String exampleDirArg = args['example-dir'] as String;
+    final String buildDirArg = args['build-dir'] as String;
 
     if (dryRun) {
       _logger.info('Running in dry-run mode. No changes will be made.');
@@ -362,10 +369,14 @@ class PublishCommand extends Command<int> {
 
     // Get current directory
     final String currentDir = Directory.current.path;
-    final String buildDir = path.join(
-      currentDir,
-      argResults!['example-dir'] as String,
-      'build/web',
+
+    final String exampleDir = path.normalize(
+      path.join(currentDir, exampleDirArg),
+    );
+    final String buildDir = path.normalize(
+      path.isAbsolute(buildDirArg)
+          ? buildDirArg
+          : path.join(exampleDir, buildDirArg),
     );
 
     // Check if we're in a git repository
@@ -406,6 +417,7 @@ class PublishCommand extends Command<int> {
       final bool buildSuccessful = await _buildWebApp(
         currentDir,
         baseHref: baseHref,
+        outputDirectory: buildDir,
         dryRun: dryRun,
       );
 

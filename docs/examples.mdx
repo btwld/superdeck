@@ -71,7 +71,7 @@ Use this for comparisons, pros/cons lists, or showing two related concepts side-
 
 Use this when demonstrating code snippets, API usage, or implementation details.
 
-```markdown
+````markdown
 @column
 
 ```dart
@@ -89,7 +89,7 @@ Column(
 ```
 
 ---
-```
+````
 
 **Features shown:**
 - Dart syntax highlighting
@@ -98,7 +98,7 @@ Column(
 
 ### Complex Schema Definition
 
-```markdown
+````markdown
 @column
 
 ```dart
@@ -121,7 +121,7 @@ final schema = Schema.object(properties: {
 ```
 
 ---
-```
+````
 
 ## Visual Content
 
@@ -142,7 +142,7 @@ final schema = Schema.object(properties: {
 
 ### Mixed Content Layout
 
-```markdown
+````markdown
 @section
 
 @column
@@ -160,7 +160,7 @@ graph TD
 ![Screenshot](https://picsum.photos/800/1400) {.cover}
 
 ---
-```
+````
 
 **Features shown:**
 - Mermaid diagram integration
@@ -178,7 +178,8 @@ graph TD
 
 @dartpad {
   id: "sample_dartpad_id"
-  code: ""
+  theme: dark
+  run: true
 }
 
 @column
@@ -214,7 +215,7 @@ graph TD
 
 ### Complex Multi-Section
 
-```markdown
+````markdown
 @section
 
 @section {
@@ -245,7 +246,7 @@ Column(
 ![Screenshot](https://picsum.photos/800/1400) {.cover}
 
 ---
-```
+````
 
 **Features shown:**
 - Nested sections
@@ -345,7 +346,7 @@ Try the interactive counter:
 
 ### Process Flow
 
-```markdown
+````markdown
 @column
 
 ```mermaid
@@ -361,7 +362,7 @@ graph TD
 Simple workflow representation using Mermaid syntax.
 
 ---
-```
+````
 
 **Features shown:**
 - Mermaid diagram integration
@@ -372,7 +373,7 @@ Simple workflow representation using Mermaid syntax.
 
 ### Custom CSS Classes
 
-```markdown
+````markdown
 # Important Heading {.heading}
 ## Subtitle Content {.subheading}
 
@@ -381,12 +382,11 @@ Regular content here.
 Some special text {.here}
 
 ```dart
-// Code with styling
-function example() {
-  return "formatted code";
+void main() {
+  print('Styled code block');
 }
 ``` {.code}
-```
+````
 
 **Features shown:**
 - CSS class application
@@ -416,7 +416,7 @@ adaptive UIs across devices and platforms.
 
 ### Technical Explanation
 
-```markdown
+````markdown
 @section
 
 @column
@@ -425,7 +425,7 @@ adaptive UIs across devices and platforms.
 
 @column
 
-```dart 
+```dart
 final schema = Schema.array(
   description: 'List of recipes',
   items: Schema.object(
@@ -441,7 +441,7 @@ final schema = Schema.array(
 ```
 
 ---
-```
+````
 
 ## Best Practices Shown
 

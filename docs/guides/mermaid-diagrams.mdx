@@ -311,75 +311,13 @@ erDiagram
 
 ## Styling and Theming
 
-SuperDeck provides a **simple 4-color theme system** for customizing all Mermaid diagrams with just a few values.
+SuperDeck renders Mermaid diagrams to PNG during `superdeck build`. By default, the builder uses Mermaid’s `base` theme with a dark set of `themeVariables`.
 
-### Simple Theme Customization
+Some diagram types (for example, `timeline` in dark mode) fall back to Mermaid’s `default` theme to keep axes and grid lines readable.
 
-Define your theme with just 4 colors:
+### Per-Diagram Styling
 
-```dart
-final theme = MermaidTheme(
-  background: '#0b0f14',  // Canvas color
-  primary: '#0ea5e9',     // Main accent (nodes, highlights)
-  text: '#e2e8f0',        // Text color
-  darkMode: true,         // Dark or light derivations
-);
-
-final generator = MermaidGenerator(theme: theme);
-```
-
-### How It Works
-
-From your 4 colors, SuperDeck automatically derives **90+ theme variables**:
-
-- **Secondary/Tertiary colors** - Mermaid rotates hue for color harmony
-- **Node backgrounds** - Slightly lighter/darker than canvas
-- **Borders** - Darker shade of primary
-- **Lines/arrows** - Muted text color
-- **12-color palette** - For pie charts, evenly spaced hues
-
-All diagram types (flowcharts, sequence, pie, state, class, gantt) use the same consistent color palette.
-
-### Preset Themes
-
-Use built-in presets for quick setup:
-
-```dart
-// Dark theme (default) - perfect for presentations
-MermaidGenerator(theme: MermaidTheme.dark);
-
-// Light theme - for daytime presentations or printing
-MermaidGenerator(theme: MermaidTheme.light);
-```
-
-### Dark vs Light Mode
-
-The `darkMode` flag tells Mermaid how to derive colors:
-
-- **`darkMode: true`** → Light text on dark backgrounds (default)
-- **`darkMode: false`** → Dark text on light backgrounds
-
-```dart
-// Dark presentation theme
-MermaidTheme(
-  background: '#1a1a2e',
-  primary: '#00ff88',
-  text: '#ffffff',
-  darkMode: true,
-);
-
-// Light presentation theme
-MermaidTheme(
-  background: '#ffffff',
-  primary: '#0066FF',
-  text: '#1a1a1a',
-  darkMode: false,
-);
-```
-
-### Advanced: Per-Diagram Custom Styling
-
-You can still override styling for individual diagrams using Mermaid's theming directives. Add configuration at the top of your diagram:
+To customize a single diagram, use Mermaid’s `init` directive at the top of the code block:
 
 ````markdown
 ```mermaid
@@ -388,7 +326,6 @@ You can still override styling for individual diagrams using Mermaid's theming d
   'themeVariables': {
     'primaryColor': '#ff6b6b',
     'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#ff6b6b',
     'lineColor': '#feca57'
   }
 }}%%
@@ -427,23 +364,9 @@ flowchart TD
 ```
 ````
 
-### Links and Interactions
+### Links
 
-Add clickable links to diagram elements:
-
-````markdown
-```mermaid
-flowchart LR
-  A[SuperDeck Docs] --> B[Getting Started]
-  A --> C[Guides]
-  A --> D[API Reference]
-  
-  click A "https://docs.superdeck.dev"
-  click B "https://docs.superdeck.dev/getting-started"
-  click C "https://docs.superdeck.dev/guides"
-  click D "https://docs.superdeck.dev/api"
-```
-````
+Mermaid supports `click` directives in SVG output. SuperDeck renders diagrams to PNG, so click interactions are not preserved. If you need links, add them as normal Markdown next to the diagram.
 
 ### Comments
 

@@ -7,8 +7,8 @@ import 'package:yaml_writer/yaml_writer.dart';
 ///
 /// This function takes a [yamlContent] string representing the contents of a
 /// pubspec.yaml file. It parses the YAML, adds the '.superdeck/' and
-/// '.superdeck/generated/' paths to the 'assets' section under the 'flutter'
-/// key if they don't already exist, and returns the updated YAML as a string.
+/// '.superdeck/assets/' paths to the 'assets' section under the 'flutter' key
+/// if they don't already exist, and returns the updated YAML as a string.
 ///
 /// Returns the updated pubspec YAML content as a string.
 String updatePubspecAssets(

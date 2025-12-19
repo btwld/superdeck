@@ -27,6 +27,7 @@ class ThumbnailPanel extends StatefulWidget {
 
 class _ThumbnailPanelState extends State<ThumbnailPanel> {
   final _duration = const Duration(milliseconds: 300);
+  final _pageStorageBucket = PageStorageBucket();
   late final ItemScrollController _itemScrollController;
   late final ItemPositionsListener _itemPositionsListener;
   late List<ItemPosition> _visibleItems;
@@ -108,23 +109,29 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black,
-      child: ScrollablePositionedList.builder(
-        scrollDirection: widget.scrollDirection,
-        itemCount: widget.itemCount,
-        itemPositionsListener: _itemPositionsListener,
-        itemScrollController: _itemScrollController,
-        padding: const EdgeInsets.all(20),
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-            child: GestureDetector(
-              onTap: () => widget.onItemTap(index),
-              child: widget.itemBuilder(index, index == widget.activeIndex),
-            ),
-          );
-        },
+    return PageStorage(
+      bucket: _pageStorageBucket,
+      child: Container(
+        color: Colors.black,
+        child: ScrollablePositionedList.builder(
+          key: PageStorageKey<String>(
+            'thumbnail-panel-${widget.scrollDirection.name}',
+          ),
+          scrollDirection: widget.scrollDirection,
+          itemCount: widget.itemCount,
+          itemPositionsListener: _itemPositionsListener,
+          itemScrollController: _itemScrollController,
+          padding: const EdgeInsets.all(20),
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+              child: GestureDetector(
+                onTap: () => widget.onItemTap(index),
+                child: widget.itemBuilder(index, index == widget.activeIndex),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

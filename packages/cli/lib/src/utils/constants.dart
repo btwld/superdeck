@@ -1,5 +1,5 @@
 /// The version of the SuperDeck CLI package
-const packageVersion = '0.1.0';
+const packageVersion = '0.0.1';
 
 /// CLI name
 const cliName = 'superdeck';
