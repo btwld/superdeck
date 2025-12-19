@@ -10,7 +10,7 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.3.2
   mesh: ^0.4.3
-  mix: ^2.0.0-dev.4
+  mix: ^2.0.0-rc.0
   superdeck_core: ^0.0.1
   superdeck: ^0.0.4
   naked_ui: ^0.2.0-beta.7
