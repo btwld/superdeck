@@ -8,4 +8,5 @@ const _kHeight = 720.0;
 
 const kResolution = Size(_kWidth, _kHeight);
 
-const kCanRunProcess = kDebugMode && !kIsWeb;
+const kIsTest = bool.fromEnvironment('FLUTTER_TEST');
+const kCanRunProcess = kDebugMode && !kIsWeb && !kIsTest;

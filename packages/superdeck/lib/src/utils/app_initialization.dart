@@ -13,7 +13,7 @@ Future<void> initializeDependencies() async {
 }
 
 Future<void> _initializeWindowManager() async {
-  if (kIsWeb) return;
+  if (kIsWeb || kIsTest) return;
 
   await windowManager.ensureInitialized();
 

@@ -34,6 +34,13 @@ class NavigationService {
   }) {
     return GoRouter(
       initialLocation: '/slides/0',
+      // Handle root path - can occur on initial load or direct URL access
+      redirect: (context, state) {
+        if (state.uri.path == '/') {
+          return '/slides/0';
+        }
+        return null;
+      },
       routes: [
         GoRoute(
           path: '/slides/:index',

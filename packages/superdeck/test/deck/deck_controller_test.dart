@@ -60,6 +60,7 @@ void main() {
       controller = DeckController(
         deckService: mockDeckService,
         options: const DeckOptions(),
+        enableDeckStream: true,
       );
     });
 
@@ -275,6 +276,7 @@ void main() {
         final disposableController = DeckController(
           deckService: disposableService,
           options: const DeckOptions(),
+          enableDeckStream: true,
         );
 
         expect(() => disposableController.dispose(), returnsNormally);

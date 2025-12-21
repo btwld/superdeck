@@ -9,6 +9,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
 import '../ui/widgets/provider.dart';
+import '../utils/constants.dart';
 import 'deck_options.dart';
 import 'navigation_events.dart';
 import 'navigation_service.dart';
@@ -32,6 +33,7 @@ class DeckController {
   final NavigationService _navigationService;
   final ThumbnailService _thumbnailService;
   final SlideConfigurationBuilder _slideBuilder;
+  final bool _enableDeckStream;
 
   // Disposal guard to prevent accessing disposed signals
   // ignore: prefer_final_fields
@@ -64,6 +66,7 @@ class DeckController {
 
   // Stream subscription
   StreamSubscription<Deck>? _deckSubscription;
+  EffectCleanup? _indexClampEffect;
 
   // ========================================
   // COMPUTED STATE (Read-Only Public API)
@@ -118,11 +121,13 @@ class DeckController {
   DeckController({
     required DeckService deckService,
     required DeckOptions options,
+    bool enableDeckStream = !kIsTest,
     NavigationService? navigationService,
     ThumbnailService? thumbnailService,
   }) : _deckService = deckService,
        _navigationService = navigationService ?? NavigationService(),
        _thumbnailService = thumbnailService ?? ThumbnailService(),
+       _enableDeckStream = enableDeckStream,
        _slideBuilder = SlideConfigurationBuilder(
          configuration: deckService.configuration,
        ) {
@@ -132,6 +137,17 @@ class DeckController {
     router = _navigationService.createRouter(
       onIndexChanged: (index) => _updateCurrentIndex(index),
     );
+
+    // Clamp index when slide count changes (e.g., deck reloads with fewer slides)
+    _indexClampEffect = effect(() {
+      final total = totalSlides.value;
+      final maxIndex = total > 0 ? total - 1 : 0;
+      final currentIdx = _currentIndex.peek();
+      final clamped = currentIdx.clamp(0, maxIndex);
+      if (_currentIndex.value != clamped) {
+        _currentIndex.value = clamped;
+      }
+    });
 
     // Start deck loading
     _startDeckStream();
@@ -143,6 +159,11 @@ class DeckController {
 
   void _startDeckStream() {
     _loadingState.value = DeckLoadingState.loading;
+
+    if (!_enableDeckStream) {
+      unawaited(_loadDeckOnce());
+      return;
+    }
 
     _deckSubscription = _deckService.loadDeckStream().listen(
       (deck) {
@@ -163,6 +184,20 @@ class DeckController {
         debugPrint('[DeckController] Deck stream completed unexpectedly');
       },
     );
+  }
+
+  Future<void> _loadDeckOnce() async {
+    try {
+      final deck = await _deckService.loadDeck();
+      if (_disposed) return;
+      _currentDeck.value = deck;
+      _loadingState.value = DeckLoadingState.loaded;
+      _error.value = null;
+    } catch (e) {
+      if (_disposed) return;
+      _error.value = e;
+      _loadingState.value = DeckLoadingState.error;
+    }
   }
 
   /// Updates deck options (called by DeckControllerBuilder)
@@ -188,6 +223,11 @@ class DeckController {
     // Clear error and set loading state BEFORE cancellation to prevent race conditions
     _error.value = null;
     _loadingState.value = DeckLoadingState.loading;
+
+    if (!_enableDeckStream) {
+      await _loadDeckOnce();
+      return;
+    }
 
     await _deckSubscription?.cancel();
     _deckSubscription = null;
@@ -307,6 +347,9 @@ class DeckController {
     // Guard against double disposal
     if (_disposed) return;
     _disposed = true;
+
+    // Stop effects before disposing signals
+    _indexClampEffect?.call();
 
     // Cancel stream subscription - use unawaited since dispose() is sync
     // The subscription may emit events during cancellation, but _disposed
