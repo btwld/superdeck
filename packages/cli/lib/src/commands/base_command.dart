@@ -42,12 +42,23 @@ abstract class SuperDeckCommand extends Command<int> {
       progress.complete('Configuration loaded.');
 
       return config;
+    } on YamlException catch (e) {
+      // YAML syntax error - fail loudly
+      progress.fail('Invalid configuration file');
+      logger.err('YAML syntax error in ${configFile.path}:');
+      logger.err('  ${e.message}');
+      logger.err('Please fix your superdeck.yaml syntax.');
+      rethrow;
+    } on FormatException catch (e) {
+      // Configuration parsing error - fail loudly
+      progress.fail('Invalid configuration');
+      logger.err('Configuration error: ${e.message}');
+      rethrow;
     } catch (e) {
+      // Unexpected error - fail loudly
       progress.fail('Failed to load configuration');
-      logger.err('Error: $e');
-      logger.info('Using default configuration.');
-
-      return DeckConfiguration();
+      logger.err('Unexpected error: $e');
+      rethrow;
     }
   }
 }

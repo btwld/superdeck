@@ -141,6 +141,8 @@ class _PdfExportBar extends StatelessWidget {
         PdfExportStatus.capturing => 'Exporting $current / $total',
         PdfExportStatus.idle => 'Exporting $current / $total',
         PdfExportStatus.preparing => 'Preparing...',
+        PdfExportStatus.failed =>
+          exportController.exportError.value ?? 'Export failed',
       };
 
       return Padding(
@@ -148,18 +150,23 @@ class _PdfExportBar extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            status == PdfExportStatus.complete
-                ? Icon(
-                    Icons.check_circle,
-                    // TODO: Replace with Remix
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 32,
-                  )
-                : SizedBox(
-                    height: 32,
-                    width: 32,
-                    child: IsometricProgressIndicator(progress: progressValue),
-                  ),
+            switch (status) {
+              PdfExportStatus.complete => Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 32,
+                ),
+              PdfExportStatus.failed => Icon(
+                  Icons.error,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 32,
+                ),
+              _ => SizedBox(
+                  height: 32,
+                  width: 32,
+                  child: IsometricProgressIndicator(progress: progressValue),
+                ),
+            },
             const SizedBox(height: 16.0),
             Text(
               progressText,

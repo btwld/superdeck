@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -29,20 +28,6 @@ void main() {
         expect(mockConfig.assetsDir.existsSync(), isTrue);
       },
     );
-
-    test('readAssetByPath reads the content of a file', () async {
-      final testFile = File(
-        p.join(mockConfig.assetsDir.parent.path, 'test.txt'),
-      );
-
-      // Ensure parent directory exists
-      await testFile.parent.create(recursive: true);
-      await testFile.writeAsString('test content');
-
-      final content = await deckService.readAssetByPath(testFile.path);
-
-      expect(content, equals('test content'));
-    });
 
     test('getGeneratedAssetPath returns the correct path', () {
       final asset = GeneratedAsset(

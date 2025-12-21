@@ -29,6 +29,9 @@ enum PdfExportStatus {
 
   /// Preparing slides for export
   preparing,
+
+  /// Export failed with error
+  failed,
 }
 
 /// Controller for exporting slides to PDF
@@ -59,6 +62,7 @@ class PdfController {
   // Reactive state - Signals
   final _exportStatus = signal<PdfExportStatus>(PdfExportStatus.idle);
   final _capturedCount = signal<int>(0);
+  final _exportError = signal<String?>(null);
 
   // Computed signals
   late final progress = computed(() {
@@ -72,6 +76,7 @@ class PdfController {
 
   // Readonly accessors
   ReadonlySignal<PdfExportStatus> get exportStatus => _exportStatus;
+  ReadonlySignal<String?> get exportError => _exportError;
 
   void _checkExportAllowed() {
     if (_disposed) throw _ExportCancelledException('Controller disposed');
@@ -234,6 +239,8 @@ class PdfController {
       log('Save result: $result');
     } catch (e) {
       log('Error saving pdf: $e');
+      _exportError.value = 'Failed to save PDF: $e';
+      _exportStatus.value = PdfExportStatus.failed;
     }
   }
 
@@ -250,6 +257,7 @@ class PdfController {
     progressTuple.dispose();
     _exportStatus.dispose();
     _capturedCount.dispose();
+    _exportError.dispose();
   }
 }
 

@@ -69,13 +69,20 @@ class PublishCommand extends Command<int> {
   }
 
   /// Runs a git command that only needs the result without throwing.
+  ///
+  /// Returns null if git is not available or the command fails to execute.
+  /// Logs the error for debugging purposes.
   Future<ProcessResult?> _runGitQuery(
     String repoPath,
     List<String> args,
   ) async {
     try {
       return await Process.run('git', args, workingDirectory: repoPath);
-    } catch (_) {
+    } on ProcessException catch (e) {
+      _logger.detail('Git command failed: ${args.join(' ')} - ${e.message}');
+      return null;
+    } on IOException catch (e) {
+      _logger.detail('Git I/O error: ${args.join(' ')} - $e');
       return null;
     }
   }

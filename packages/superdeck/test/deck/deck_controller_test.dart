@@ -202,18 +202,20 @@ void main() {
     group('Options Updates', () {
       test('updateOptions updates internal options', () {
         const newOptions = DeckOptions(debug: true);
-        controller.updateOptions(newOptions);
-        // Options are internal, but we can verify slides are rebuilt
-        // by checking the debug flag propagates to slide configurations
-        // This is an indirect test since _options is private
-        expect(true, isTrue); // Options update completed without error
+        // Verify options update completes without throwing
+        expect(() => controller.updateOptions(newOptions), returnsNormally);
       });
 
       test('updateOptions does not trigger if options unchanged', () {
         const options = DeckOptions();
-        controller.updateOptions(options);
-        controller.updateOptions(options); // Same options
-        expect(true, isTrue); // No error, idempotent behavior
+        // Verify idempotent behavior - calling twice with same options doesn't throw
+        expect(
+          () {
+            controller.updateOptions(options);
+            controller.updateOptions(options);
+          },
+          returnsNormally,
+        );
       });
     });
 
@@ -260,12 +262,8 @@ void main() {
 
         expect(controller.isLoading.value, isFalse);
 
-        // Reload should set loading state
-        await controller.reloadDeck();
-
-        // Note: Since we're using a mock, the loading state depends on
-        // stream behavior. Just verify no errors occur.
-        expect(true, isTrue);
+        // Reload should complete without error
+        await expectLater(controller.reloadDeck(), completes);
       });
     });
 

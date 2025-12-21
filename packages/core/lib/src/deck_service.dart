@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
 import 'package:path/path.dart' as p;
-import 'package:superdeck_core/markdown_json.dart';
+import 'package:superdeck_core/src/markdown_json.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// Service for managing deck data from the local file system.
@@ -110,11 +110,6 @@ class DeckService {
   String getGeneratedAssetPath(GeneratedAsset asset) {
     _generatedAssets.add(asset);
     return p.join(configuration.assetsDir.path, asset.fileName);
-  }
-
-  /// Reads an asset file by its path.
-  Future<String> readAssetByPath(String path) async {
-    return File(path).readAsString();
   }
 
   /// Saves the deck reference and manages generated assets.

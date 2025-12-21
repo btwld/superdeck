@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
-import 'package:superdeck_core/markdown_json.dart';
+import 'package:superdeck_core/src/markdown_json.dart';
 import 'package:test/test.dart';
 
 import 'test_utils/json_snapshot_utils.dart';

@@ -49,8 +49,10 @@ class SyntaxHighlight {
       );
       final code = highlighter.highlight(source);
       return splitTextSpansByLines([code]);
-    } catch (e) {
-      // If highlighting fails, return plain text
+    } catch (e, stackTrace) {
+      // Log the failure for debugging, but gracefully return plain text
+      debugPrint('[SyntaxHighlighter] Failed to highlight $effectiveLanguage: $e');
+      debugPrint('[SyntaxHighlighter] Stack: $stackTrace');
       return [TextSpan(text: source)];
     }
   }
