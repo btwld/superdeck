@@ -20,7 +20,7 @@ import '../examples/button.dart' as remix_button;
 /// @remix-button
 /// ```
 ///
-/// Note: The QR code widget is now a built-in widget available as @qrcode
+/// The QR code widget is now a built-in widget available as `@qrcode`.
 Map<String, WidgetDefinition> get demoWidgets => {
       // Mix examples - wrapped in simple widget definitions
       'mix-simple-box': _SimpleWidgetDefinition(

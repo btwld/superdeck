@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:superdeck_core/superdeck_core.dart';
 
 typedef ExtractedFrontmatter = ({
@@ -68,11 +66,16 @@ class FrontmatterParser {
     final markdownContent = result.markdown;
     Map<String, dynamic> yamlMap = {};
 
-    try {
-      yamlMap = convertYamlToMap(yamlString);
-    } catch (e) {
-      log('Error parsing yaml: $e');
-      yamlMap = {};
+    if (yamlString.isNotEmpty) {
+      try {
+        yamlMap = convertYamlToMap(yamlString);
+      } catch (e) {
+        throw FormatException(
+          'Invalid YAML frontmatter in slide. '
+          'Check for syntax errors in your slide configuration. '
+          'Error: $e',
+        );
+      }
     }
 
     return (frontmatter: yamlMap, contents: markdownContent);

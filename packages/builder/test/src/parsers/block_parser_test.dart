@@ -448,7 +448,7 @@ void main() {
       );
     });
 
-    test('normalizes @block tag to @column (ContentBlock)', () {
+    test('normalizes @block tag to ContentBlock key', () {
       const text = '''
 @block
 Some markdown content
@@ -466,11 +466,11 @@ More content
 
       // First @block block
       expect(blocks[0].type, 'block'); // Original type
-      expect(blocks[0].data['type'], 'column'); // Normalized to ContentBlock.key
+      expect(blocks[0].data['type'], 'block'); // Normalized to ContentBlock.key
 
       // Second @block block with options
       expect(blocks[1].type, 'block');
-      expect(blocks[1].data['type'], 'column');
+      expect(blocks[1].data['type'], 'block');
       expect(blocks[1].data['align'], 'center');
       expect(blocks[1].data['flex'], 2);
     });
@@ -483,7 +483,10 @@ More content
       final blocksBlock = const BlockParser().parse(textBlock);
 
       expect(blocksColumn[0].data['type'], blocksBlock[0].data['type']);
-      expect(blocksColumn[0].data['type'], 'column'); // Both normalize to 'column'
+      expect(
+        blocksColumn[0].data['type'],
+        'block',
+      ); // Both normalize to ContentBlock.key
       expect(blocksColumn[0].data['flex'], blocksBlock[0].data['flex']);
     });
   });

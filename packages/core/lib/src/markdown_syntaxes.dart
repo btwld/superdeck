@@ -150,7 +150,7 @@ class ImageHeroSyntax extends md.ImageSyntax {
 ///
 /// Converts ` ```dart {.hero}` into `<code hero="hero" class="language-dart">`.
 ///
-/// Note: The `{.hero}` marker remains in the info string after extraction,
+/// The `{.hero}` marker remains in the info string after extraction,
 /// but since language detection only looks at the first token, this doesn't
 /// affect syntax highlighting or other tooling that inspects the info string.
 class HeroFencedCodeBlockSyntax extends md.FencedCodeBlockSyntax {

@@ -1,5 +1,7 @@
 import 'package:logging/logging.dart';
 
+export 'package:logging/logging.dart' show Logger, Level;
+
 /// Configure logging for the entire application
 void configureLogging({
   Level level = Level.INFO,
@@ -28,11 +30,6 @@ void configureLogging({
   });
 }
 
-/// Get a logger instance for a specific class or component
-Logger getLogger(String name) {
-  return Logger(name);
-}
-
 /// ANSI color codes for different log levels
 final _levelColors = {
   Level.FINEST: '\x1B[36m', // Cyan
@@ -57,20 +54,3 @@ String _formatLevel(Level level, bool colorOutput) {
 
 /// Default logger instance for quick access
 final logger = Logger('Superdeck');
-
-/// Extensions for the Logger class
-extension LoggerX on Logger {
-  /// Log with an empty line
-  void newLine() => info('');
-
-  /// Log a message with a specific color
-  void colorized(String message, String ansiColor) {
-    final reset = '\x1B[0m';
-    info('$ansiColor$message$reset');
-  }
-
-  /// Log a success message (green)
-  void success(String message) {
-    colorized(message, '\x1B[32m');
-  }
-}

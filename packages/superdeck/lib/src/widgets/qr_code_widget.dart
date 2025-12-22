@@ -32,29 +32,17 @@ class QrCodeDto {
 
   /// Schema for validating QR code arguments with comprehensive validation.
   static final schema = Ack.object({
-    'text': Ack.string()
-        .notEmpty()
-        .refine(
-          (text) => text.length <= 1000,
-          message: 'QR code text must be less than 1000 characters',
-        ),
-    'size': Ack.double()
-        .min(1)
-        .max(1000)
-        .nullable()
-        .optional(),
+    'text': Ack.string().notEmpty().refine(
+      (text) => text.length <= 1000,
+      message: 'QR code text must be less than 1000 characters',
+    ),
+    'size': Ack.double().min(1).max(1000).nullable().optional(),
     'errorCorrection': Ack.string()
         .enumString(['low', 'l', 'medium', 'm', 'high', 'q', 'highest', 'h'])
         .nullable()
         .optional(),
-    'backgroundColor': Ack.string()
-        .nullable()
-        .optional()
-        .hexColor(),
-    'foregroundColor': Ack.string()
-        .nullable()
-        .optional()
-        .hexColor(),
+    'backgroundColor': Ack.string().nullable().optional().hexColor(),
+    'foregroundColor': Ack.string().nullable().optional().hexColor(),
   });
 
   /// Parses and validates raw map into typed QrCodeDto.

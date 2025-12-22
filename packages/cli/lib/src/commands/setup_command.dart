@@ -16,7 +16,7 @@ import 'base_command.dart';
 /// 2. If macOS is present, the entitlements files are properly configured
 /// 3. A basic slides.md file is created if none exists
 /// 4. Custom index.html is set up with a loading indicator for web
-class SetupCommand extends SuperdeckCommand {
+class SetupCommand extends SuperDeckCommand {
   /// Creates a new [SetupCommand] instance
   SetupCommand() {
     argParser.addFlag(

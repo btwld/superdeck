@@ -19,8 +19,8 @@ import 'package:crypto/crypto.dart';
 /// - Cache keys (use [generateContentHash] instead)
 /// - Data integrity verification
 ///
-/// Note: This is needed as Dart's built-in `hashCode` for strings is not guaranteed
-/// to be consistent across different platforms or Dart versions.
+/// Dart's built-in `hashCode` for strings is not guaranteed to be consistent
+/// across different platforms or Dart versions, so this provides a stable alternative.
 ///
 /// [valueToHash] is the string input that you want to convert into a hash ID.
 ///

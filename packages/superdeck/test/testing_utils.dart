@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/styling/styles.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+export 'fixtures/slide_fixtures.dart';
 
 /// Creates a list of test slides for testing navigation and presentation
 List<SlideConfiguration> createTestSlides(int count) {
@@ -96,4 +97,52 @@ void expectWidgetVisible(Finder finder) {
 /// Verifies that a widget does not exist
 void expectWidgetNotFound(Finder finder) {
   expect(finder, findsNothing);
+}
+
+// ---------------------------------------------------------------------------
+// Additional helpers (additive; backward compatible)
+// ---------------------------------------------------------------------------
+
+int _testSlideId = 0;
+
+String _nextKey(String prefix) => '$prefix-${_testSlideId++}';
+
+/// Creates a Slide from a list of sections for inline test setup.
+Slide createSlideFromSections(
+  List<SectionBlock> sections, {
+  String? key,
+  SlideOptions? options,
+}) {
+  return Slide(
+    key: key ?? _nextKey('test-slide'),
+    sections: sections,
+    options: options,
+  );
+}
+
+/// Creates a simple single-section slide with given blocks.
+Slide createSlideFromBlocks(
+  List<Block> blocks, {
+  String? key,
+  int sectionFlex = 1,
+}) {
+  return Slide(
+    key: key ?? _nextKey('test-slide'),
+    sections: [SectionBlock(blocks, flex: sectionFlex)],
+  );
+}
+
+/// Creates a content block with common defaults.
+ContentBlock createContentBlock(
+  String content, {
+  int flex = 1,
+  ContentAlignment? align,
+  bool scrollable = false,
+}) {
+  return ContentBlock(
+    content,
+    flex: flex,
+    align: align,
+    scrollable: scrollable,
+  );
 }

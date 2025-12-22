@@ -56,6 +56,10 @@
           "path": "/docs/guides/slide-parts"
         },
         {
+          "title": "Widget Size Guide",
+          "path": "/docs/guides/widget-size-guide"
+        },
+        {
           "title": "Mermaid Diagrams",
           "path": "/docs/guides/mermaid-diagrams"
         }
@@ -69,12 +73,8 @@
           "path": "/docs/reference/block-types"
         },
         {
-          "title": "PresentationOptions API",
-          "path": "/docs/reference/presentation-options"
-        },
-        {
-          "title": "Agent Workflow Contracts",
-          "path": "/docs/reference/agent-workflow"
+          "title": "DeckOptions API",
+          "path": "/docs/reference/deck-options"
         }
       ]
     },

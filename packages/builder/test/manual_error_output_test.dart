@@ -46,7 +46,9 @@ print('hello');
       print('\n' + '=' * 80);
       print('TEST 1: Invalid YAML in code block options');
       print('=' * 80);
-      print('Expected output: Error should mention position, language, and show options');
+      print(
+        'Expected output: Error should mention position, language, and show options',
+      );
       print('✓ Test passed - error format validated');
     });
 
@@ -89,16 +91,11 @@ print('test 2 with more content to trigger preview truncation - adding lots of t
       }
     });
 
-    test('YAML parsing warning logs are captured (non-strict mode)', () {
-      // Note: This test would require calling convertYamlToMap directly
-      // in non-strict mode, which isn't exposed. The parser now uses strict mode.
-
-      print('\n' + '=' * 80);
-      print('TEST 3: YAML Warning Logs');
-      print('=' * 80);
-      print('Note: Parser now uses strict mode, so warnings only appear');
-      print('when convertYamlToMap is called directly with strict=false');
-      print('✓ Skipped - covered by unit tests');
-    });
+    test(
+      'YAML parsing warning logs are captured (non-strict mode)',
+      () {},
+      skip:
+          'Non-strict YAML parsing is not exposed here; covered by unit tests.',
+    );
   });
 }

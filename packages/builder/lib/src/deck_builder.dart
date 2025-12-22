@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:logging/logging.dart';
 import 'package:superdeck_builder/src/parsers/markdown_parser.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -15,7 +14,7 @@ class DeckBuilder {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;
   final DeckConfiguration configuration;
-  final DeckRepository store;
+  final DeckService store;
   final Logger _logger = Logger('DeckBuilder');
 
   late final SlideProcessor _processor;
@@ -105,8 +104,6 @@ class DeckBuilder {
     for (var task in tasks) {
       await task.dispose();
     }
-
-    // Note: Don't close _metricsController here as it may be reused for file watching
 
     // Save the processed slides
     await store.saveReferences(

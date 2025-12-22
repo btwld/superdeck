@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 
+import '../../deck/deck_controller.dart';
 import '../../deck/slide_configuration.dart';
-import '../../export/thumbnail_controller.dart';
 import '../../utils/constants.dart';
 
-class SlideThumbnail extends StatefulWidget {
+class SlideThumbnail extends StatelessWidget {
   final bool selected;
   final SlideConfiguration slide;
 
@@ -17,59 +18,37 @@ class SlideThumbnail extends StatefulWidget {
   });
 
   @override
-  State<SlideThumbnail> createState() => _SlideThumbnailState();
-}
-
-class _SlideThumbnailState extends State<SlideThumbnail> {
-  ThumbnailController? _thumbnailController;
-  AsyncThumbnail? _asyncThumbnail;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _initializeThumbnail();
-  }
-
-  @override
-  void didUpdateWidget(SlideThumbnail oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.slide != widget.slide) {
-      _initializeThumbnail();
-    }
-  }
-
-  void _initializeThumbnail() {
-    _thumbnailController = ThumbnailController.of(context);
-    _asyncThumbnail = _thumbnailController!.get(widget.slide, context);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // Return a loading placeholder if thumbnail isn't initialized yet
-    if (_asyncThumbnail == null) {
-      return _PreviewContainer(
-        selected: widget.selected,
-        child: AspectRatio(
-          aspectRatio: kAspectRatio,
-          child: Container(
-            color: Colors.grey[300],
-            child: Center(child: IsometricLoading()),
+    final deck = DeckController.of(context);
+
+    return Watch((context) {
+      final asyncThumbnail = deck.getThumbnail(slide.key);
+
+      if (asyncThumbnail == null) {
+        return _PreviewContainer(
+          selected: selected,
+          child: AspectRatio(
+            aspectRatio: kAspectRatio,
+            child: Container(
+              color: Colors.grey[300],
+              child: const Center(child: IsometricLoading()),
+            ),
           ),
+        );
+      }
+
+      return _PreviewContainer(
+        selected: selected,
+        child: Stack(
+          children: [
+            AspectRatio(
+              aspectRatio: kAspectRatio,
+              child: asyncThumbnail.build(context),
+            ),
+          ],
         ),
       );
-    }
-
-    return _PreviewContainer(
-      selected: widget.selected,
-      child: Stack(
-        children: [
-          AspectRatio(
-            aspectRatio: kAspectRatio,
-            child: _asyncThumbnail!.build(context),
-          ),
-        ],
-      ),
-    );
+    });
   }
 }
 

@@ -14,6 +14,9 @@ const onGist = NamedVariant('gist');
 const onDebug = NamedVariant('debug');
 const onImage = NamedVariant('image');
 
+WidgetModifierConfig _pad(EdgeInsetsGeometryMix value) =>
+    WidgetModifierConfig.padding(value);
+
 /// Creates the default base slide style with all typography, alerts, code blocks, etc.
 ///
 /// This provides the foundation styling for all slides including:
@@ -75,7 +78,7 @@ SlideStyle _createDefaultSlideStyle() {
             fontFamily: _baseTextStyle.fontFamily,
           ),
         )
-        .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 16)),
+        .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 16))),
 
     h2: TextStyler()
         .style(
@@ -87,7 +90,7 @@ SlideStyle _createDefaultSlideStyle() {
             fontFamily: _baseTextStyle.fontFamily,
           ),
         )
-        .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 12)),
+        .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 12))),
 
     h3: TextStyler()
         .style(
@@ -99,7 +102,7 @@ SlideStyle _createDefaultSlideStyle() {
             fontFamily: _baseTextStyle.fontFamily,
           ),
         )
-        .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 12)),
+        .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 12))),
 
     h4: TextStyler()
         .style(
@@ -111,7 +114,7 @@ SlideStyle _createDefaultSlideStyle() {
             fontFamily: _baseTextStyle.fontFamily,
           ),
         )
-        .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 8)),
+        .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 8))),
 
     h5: TextStyler()
         .style(
@@ -123,7 +126,7 @@ SlideStyle _createDefaultSlideStyle() {
             fontFamily: _baseTextStyle.fontFamily,
           ),
         )
-        .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 4)),
+        .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 4))),
 
     h6: TextStyler()
         .style(
@@ -135,7 +138,7 @@ SlideStyle _createDefaultSlideStyle() {
             fontFamily: _baseTextStyle.fontFamily,
           ),
         )
-        .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 3)),
+        .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 3))),
 
     // Paragraph
     p: TextStyler()
@@ -147,7 +150,7 @@ SlideStyle _createDefaultSlideStyle() {
             fontFamily: _baseTextStyle.fontFamily,
           ),
         )
-        .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 12)),
+        .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 12))),
 
     // Inline text styles
     link: _baseTextStyle.copyWith(color: const Color.fromARGB(255, 66, 82, 96)),
@@ -202,14 +205,14 @@ SlideStyle _createDefaultSlideStyle() {
       ),
       text: TextStyler()
           .style(
-            TextStyleMix(
-              fontSize: _baseTextStyle.fontSize,
-              height: 1.6,
-              color: _baseTextStyle.color,
-              fontFamily: _baseTextStyle.fontFamily,
-            ),
-          )
-          .wrapPadding(EdgeInsetsGeometryMix.only(bottom: 8)),
+          TextStyleMix(
+            fontSize: _baseTextStyle.fontSize,
+            height: 1.6,
+            color: _baseTextStyle.color,
+            fontFamily: _baseTextStyle.fontFamily,
+          ),
+        )
+          .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 8))),
     ),
 
     // Checkbox

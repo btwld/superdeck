@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
-import 'package:superdeck_core/superdeck_core.dart' hide logger;
+import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 
 import '../utils/extensions.dart';
 import '../utils/logger.dart';
@@ -14,7 +14,7 @@ import 'base_command.dart';
 /// Creates a DeckBuilder with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckConfiguration configuration,
-  required DeckRepository store,
+  required DeckService store,
 }) {
   return DeckBuilder(
     tasks: [
@@ -30,25 +30,9 @@ DeckBuilder _createStandardBuilder({
 ///
 /// This command parses and processes the slides.md file,
 /// generating all required assets and outputs for the presentation.
-class BuildCommand extends SuperdeckCommand {
+class BuildCommand extends SuperDeckCommand {
   /// Flag to track if a build is currently in progress
   bool _isRunning = false;
-
-  void _logBuildFailure(Object error, [StackTrace? stackTrace]) {
-    if (error is DeckFormatException) {
-      logger.formatError(error);
-    } else {
-      logger.err('${error.runtimeType}: $error');
-    }
-
-    if (stackTrace != null) {
-      final trace = stackTrace.toString().trim();
-      if (trace.isNotEmpty) {
-        logger.err('Stack trace:');
-        logger.err(trace);
-      }
-    }
-  }
 
   /// Creates a new [BuildCommand] instance
   BuildCommand() {
@@ -72,9 +56,25 @@ class BuildCommand extends SuperdeckCommand {
       );
   }
 
+  void _logBuildFailure(Object error, [StackTrace? stackTrace]) {
+    if (error is DeckFormatException) {
+      logger.formatError(error);
+    } else {
+      logger.err('${error.runtimeType}: $error');
+    }
+
+    if (stackTrace != null) {
+      final trace = stackTrace.toString().trim();
+      if (trace.isNotEmpty) {
+        logger.err('Stack trace:');
+        logger.err(trace);
+      }
+    }
+  }
+
   /// Cleans all generated assets and runs a full rebuild
   Future<bool> _cleanAndRebuild(
-    DeckRepository store,
+    DeckService store,
     DeckConfiguration config,
   ) async {
     logger.info('Force rebuild: Clearing all generated assets...');
@@ -96,7 +96,7 @@ class BuildCommand extends SuperdeckCommand {
   }
 
   /// Runs the build process with proper error handling and progress reporting
-  Future<bool> _runBuild(DeckRepository store, DeckConfiguration config) async {
+  Future<bool> _runBuild(DeckService store, DeckConfiguration config) async {
     // Wait while a build is already running
     while (_isRunning) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -166,7 +166,7 @@ class BuildCommand extends SuperdeckCommand {
 
   @override
   Future<int> run() async {
-    DeckRepository? store;
+    DeckService? store;
     try {
       final deckConfig = await loadConfiguration();
 
@@ -181,7 +181,7 @@ class BuildCommand extends SuperdeckCommand {
       }
 
       // Create the data store using the consolidated repository
-      store = DeckRepository(configuration: deckConfig);
+      store = DeckService(configuration: deckConfig);
       await store.initialize();
 
       // Log if force rebuild is enabled
@@ -232,21 +232,23 @@ class BuildCommand extends SuperdeckCommand {
           stdinSubscription = stdin
               .transform(utf8.decoder)
               .transform(const LineSplitter())
-              .listen((line) async {
+              .listen((line) {
                 final command = line.trim().toLowerCase();
                 switch (command) {
                   case 'r':
                   case 'rebuild':
                     logger.info('Manual rebuild triggered...');
-                    await _runBuild(repository, deckConfig);
+                    unawaited(_runBuild(repository, deckConfig));
+                    break;
                   case 'f':
                   case 'force-rebuild':
                     logger.info('Force rebuild triggered...');
-                    await _cleanAndRebuild(repository, deckConfig);
+                    unawaited(_cleanAndRebuild(repository, deckConfig));
+                    break;
                   case 'q':
                   case 'quit':
                     logger.info('Exiting watch mode...');
-                    await stdinSubscription?.cancel();
+                    unawaited(stdinSubscription?.cancel());
                     exit(ExitCode.success.code);
                   default:
                     logger.warn('Unknown command: "$command"');

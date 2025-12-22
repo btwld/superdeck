@@ -15,16 +15,11 @@ class CommentsPanel extends StatelessWidget {
         color: Color.fromARGB(255, 35, 35, 35),
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (int i = 0; i < comments.length; i++) ...[
-              Text(comments[i]),
-              if (i < comments.length - 1) const SizedBox(height: 10),
-            ],
-          ],
-        ),
+      child: ListView.separated(
+        padding: EdgeInsets.zero,
+        itemCount: comments.length,
+        itemBuilder: (context, index) => Text(comments[index]),
+        separatorBuilder: (context, index) => const SizedBox(height: 10),
       ),
     );
   }

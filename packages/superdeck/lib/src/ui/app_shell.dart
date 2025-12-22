@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart'
     show Icons, Colors, Scaffold, FloatingActionButtonLocation;
 import 'package:flutter/widgets.dart';
-import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/rendering/slides/scaled_app.dart';
+import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
+import 'package:superdeck/src/ui/extensions.dart';
 import 'package:superdeck/src/ui/panels/comments_panel.dart';
 import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
 import 'package:superdeck/src/ui/widgets/icon_button.dart';
 import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
 import 'package:superdeck/src/utils/constants.dart';
-import 'package:superdeck/src/ui/extensions.dart';
-import 'package:superdeck/src/export/thumbnail_controller.dart';
 
 import '../deck/deck_controller.dart';
-import '../deck/deck_provider.dart';
-import '../deck/navigation_manager.dart';
+import '../deck/navigation_input_listener.dart';
 import 'panels/bottom_bar.dart';
 
 /// High-level app shell that toggles between
@@ -25,7 +24,7 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationManager(
+    return NavigationInputListener(
       child: SplitView(isSmallLayout: context.isSmall, child: child),
     );
   }
@@ -49,7 +48,8 @@ class _SplitViewState extends State<SplitView>
   late final AnimationController _animationController;
   late final Animation<double> _curvedAnimation;
   bool _isInitialized = false;
-  DeckController? _deckController;
+  EffectCleanup? _menuEffectCleanup;
+  EffectCleanup? _thumbnailSyncEffectCleanup;
 
   @override
   void initState() {
@@ -74,108 +74,105 @@ class _SplitViewState extends State<SplitView>
     if (!_isInitialized) {
       _isInitialized = true;
 
+      final deckController = DeckController.of(context);
+
       // Set initial animation value based on menu state
-      _deckController = DeckController.of(context);
-      final initialMenuState = _deckController!.isMenuOpen;
+      final initialMenuState = deckController.isMenuOpen.value;
 
       if (initialMenuState) {
         _animationController.value = 1.0;
       }
 
-      // Listen to menu state changes and animate
-      _deckController!.addListener(_onMenuStateChanged);
+      // Use effect to listen to menu state changes
+      _menuEffectCleanup = effect(() {
+        if (!mounted) return;
 
-      // Generate thumbnails on first build only
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final deckController = DeckController.of(context);
-          ThumbnailController.of(
-            context,
-          ).generateThumbnails(deckController.slides, context);
+        final isMenuOpen = deckController.isMenuOpen.value;
+
+        if (isMenuOpen && _animationController.value != 1.0) {
+          _animationController.forward();
+        } else if (!isMenuOpen && _animationController.value != 0.0) {
+          _animationController.reverse();
         }
       });
-    }
-  }
 
-  void _onMenuStateChanged() {
-    if (!mounted) return;
+      // Sync thumbnail generation with slide changes without triggering rebuilds.
+      // Use effect instead of Watch to avoid infinite rebuild loops.
+      _thumbnailSyncEffectCleanup = effect(() {
+        // Track slides signal - effect will re-run when slides change
+        deckController.slides.value;
 
-    final deckController = DeckController.of(context);
-    final isMenuOpen = deckController.isMenuOpen;
-
-    if (isMenuOpen && _animationController.value != 1.0) {
-      _animationController.forward();
-    } else if (!isMenuOpen && _animationController.value != 0.0) {
-      _animationController.reverse();
+        // Regenerate thumbnails after frame completes
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            deckController.generateThumbnails(context);
+          }
+        });
+      });
     }
   }
 
   @override
   void dispose() {
-    // Remove listener using saved reference
-    _deckController?.removeListener(_onMenuStateChanged);
+    // Cleanup effect
+    _menuEffectCleanup?.call();
+    _thumbnailSyncEffectCleanup?.call();
     _animationController.dispose();
     super.dispose();
   }
 
   // Build the panel content (thumbnails + optional comments).
   Widget _buildPanel(BuildContext context) {
-    final deckController = DeckController.of(context);
-    final navigationController = NavigationProvider.of(context);
+    final deck = DeckController.of(context);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([deckController, navigationController]),
-      builder: (context, _) {
-        final currentIndex = navigationController.currentIndex;
-        final isNotesOpen = deckController.isNotesOpen;
-        final slides = deckController.slides;
+    return Watch((context) {
+      final currentIndex = deck.currentIndex.value;
+      final isNotesOpen = deck.isNotesOpen.value;
+      final slides = deck.slides.value;
 
-        // Get current slide from index
-        final currentSlide = (currentIndex >= 0 && currentIndex < slides.length)
-            ? slides[currentIndex]
-            : null;
+      // Get current slide from index
+      final currentSlide = (currentIndex >= 0 && currentIndex < slides.length)
+          ? slides[currentIndex]
+          : null;
 
-        /// Common content for thumbnails
-        final thumbnailPanel = ThumbnailPanel(
-          scrollDirection: widget.isSmallLayout
-              ? Axis.horizontal
-              : Axis.vertical,
-          onItemTap: navigationController.goToSlide,
-          activeIndex: currentSlide?.slideIndex ?? 0,
-          itemBuilder: (index, selected) {
-            return SlideThumbnail(selected: selected, slide: slides[index]);
-          },
-          itemCount: slides.length,
+      /// Common content for thumbnails
+      final thumbnailPanel = ThumbnailPanel(
+        scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
+        onItemTap: deck.goToSlide,
+        activeIndex: currentSlide?.slideIndex ?? 0,
+        itemBuilder: (index, selected) {
+          return SlideThumbnail(selected: selected, slide: slides[index]);
+        },
+        itemCount: slides.length,
+      );
+
+      /// Comments panel (shown only if notes are open)
+      final commentsPanel = isNotesOpen
+          ? CommentsPanel(comments: currentSlide?.comments ?? [])
+          : const SizedBox();
+
+      // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
+      // or for a big layout, we might do a column if it's on the SIDE.
+      // This is somewhat reversed based on your preference, so adjust as needed.
+      if (widget.isSmallLayout) {
+        // Panel at bottom => put them side-by-side in a Row
+        return Row(
+          children: [
+            !isNotesOpen
+                ? Expanded(child: thumbnailPanel)
+                : Expanded(child: commentsPanel),
+          ],
         );
-
-        /// Comments panel (shown only if notes are open)
-        final commentsPanel = isNotesOpen
-            ? CommentsPanel(comments: currentSlide?.comments ?? [])
-            : const SizedBox();
-
-        // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
-        // or for a big layout, we might do a column if it's on the SIDE.
-        // This is somewhat reversed based on your preference, so adjust as needed.
-        if (widget.isSmallLayout) {
-          // Panel at bottom => put them side-by-side in a Row
-          return Row(
-            children: [
-              !isNotesOpen
-                  ? Expanded(child: thumbnailPanel)
-                  : Expanded(child: commentsPanel),
-            ],
-          );
-        } else {
-          // Panel on the side => put them in a Column
-          return Column(
-            children: [
-              Expanded(flex: 3, child: thumbnailPanel),
-              if (isNotesOpen) Expanded(flex: 1, child: commentsPanel),
-            ],
-          );
-        }
-      },
-    );
+      } else {
+        // Panel on the side => put them in a Column
+        return Column(
+          children: [
+            Expanded(flex: 3, child: thumbnailPanel),
+            if (isNotesOpen) Expanded(flex: 1, child: commentsPanel),
+          ],
+        );
+      }
+    });
   }
 
   @override
@@ -185,114 +182,107 @@ class _SplitViewState extends State<SplitView>
     // For small layout, the panel is typically at the bottom (vertical),
     // so we place it in a Column below the main content.
     // For regular layout, place it on the left in a Row.
-    return ListenableBuilder(
-      listenable: deckController,
-      builder: (context, _) {
-        final isMenuOpen = deckController.isMenuOpen;
-        final isRebuilding = deckController.isRebuilding;
+    return Watch((context) {
+      final isMenuOpen = deckController.isMenuOpen.value;
+      final isRebuilding = deckController.isRebuilding.value;
 
-        return Scaffold(
-          backgroundColor: const Color.fromARGB(255, 9, 9, 9),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.miniEndFloat,
-          floatingActionButton: !isMenuOpen
-              ? SDIconButton(
-                  icon: Icons.menu,
-                  onPressed: deckController.openMenu,
-                )
-              : null,
+      return Scaffold(
+        backgroundColor: const Color.fromARGB(255, 9, 9, 9),
+        floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
+        floatingActionButton: !isMenuOpen
+            ? SDIconButton(icon: Icons.menu, onPressed: deckController.openMenu)
+            : null,
 
-          // Only show bottom bar on small layout (uncomment if needed):
-          bottomNavigationBar: SizeTransition(
-            axis: Axis.vertical,
-            sizeFactor: _curvedAnimation,
-            child: const DeckBottomBar(),
-          ),
+        // Only show bottom bar on small layout (uncomment if needed):
+        bottomNavigationBar: SizeTransition(
+          axis: Axis.vertical,
+          sizeFactor: _curvedAnimation,
+          child: const DeckBottomBar(),
+        ),
 
-          // Body changes layout based on [isSmallLayout].
-          body: Stack(
-            children: [
-              widget.isSmallLayout
-                  ? Column(
-                      children: [
-                        // Main slide content
-                        Expanded(
-                          child: Center(
-                            child: ScaledWidget(
-                              targetSize: kResolution,
-                              child: widget.child,
-                            ),
+        // Body changes layout based on [isSmallLayout].
+        body: Stack(
+          children: [
+            widget.isSmallLayout
+                ? Column(
+                    children: [
+                      // Main slide content
+                      Expanded(
+                        child: Center(
+                          child: ScaledWidget(
+                            targetSize: kResolution,
+                            child: widget.child,
                           ),
                         ),
-                        // Animated bottom panel
-                        SizeTransition(
-                          axis: Axis.vertical,
-                          sizeFactor: _curvedAnimation,
-                          child: SizedBox(
-                            height: 200,
-                            child: _buildPanel(context),
+                      ),
+                      // Animated bottom panel
+                      SizeTransition(
+                        axis: Axis.vertical,
+                        sizeFactor: _curvedAnimation,
+                        child: SizedBox(
+                          height: 200,
+                          child: _buildPanel(context),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      // Animated side panel
+                      SizeTransition(
+                        axis: Axis.horizontal,
+                        sizeFactor: _curvedAnimation,
+                        child: SizedBox(
+                          width: 300,
+                          child: _buildPanel(context),
+                        ),
+                      ),
+                      // Main slide content
+                      Expanded(
+                        child: Center(
+                          child: ScaledWidget(
+                            targetSize: kResolution,
+                            child: widget.child,
                           ),
                         ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        // Animated side panel
-                        SizeTransition(
-                          axis: Axis.horizontal,
-                          sizeFactor: _curvedAnimation,
-                          child: SizedBox(
-                            width: 300,
-                            child: _buildPanel(context),
-                          ),
-                        ),
-                        // Main slide content
-                        Expanded(
-                          child: Center(
-                            child: ScaledWidget(
-                              targetSize: kResolution,
-                              child: widget.child,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-              // Loading indicator when rebuilding
-              if (isRebuilding)
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black87,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white24, width: 1),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: IsometricLoading(),
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Rebuilding...',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+            // Loading indicator when rebuilding
+            if (isRebuilding)
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white24, width: 1),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: IsometricLoading(),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Rebuilding...',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          ),
-        );
-      },
-    );
+              ),
+          ],
+        ),
+      );
+    });
   }
 }

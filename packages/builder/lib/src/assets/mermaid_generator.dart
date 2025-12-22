@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:logging/logging.dart';
 import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -348,9 +347,6 @@ class MermaidGenerator implements AssetGenerator {
       );
       return true;
     }
-
-    // Future: Add other problematic diagram types here as needed
-    // if (trimmed.startsWith('gantt')) return true;
 
     return false;
   }

@@ -29,7 +29,7 @@ sealed class Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
   }, additionalProperties: true);
 
@@ -46,6 +46,7 @@ sealed class Block {
     discriminatorKey: 'type',
     schemas: {
       ContentBlock.key: ContentBlock.schema,
+      ContentBlock.legacyKey: ContentBlock.schema, // Backward compatibility
       WidgetBlock.key: WidgetBlock.schema,
     },
   );
@@ -57,7 +58,7 @@ sealed class Block {
     final type = map['type'] as String;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
-      ContentBlock.key => ContentBlock.fromMap(map),
+      ContentBlock.key || ContentBlock.legacyKey => ContentBlock.fromMap(map),
       WidgetBlock.key => WidgetBlock.fromMap(map),
       _ => throw ArgumentError('Unknown block type: $type'),
     };
@@ -143,7 +144,7 @@ class SectionBlock extends Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
     'blocks': Ack.list(Ack.object({})).nullable().optional(),
   }, additionalProperties: true);
@@ -174,8 +175,10 @@ class SectionBlock extends Block {
 /// This is the most common block type, used for text and markdown content.
 class ContentBlock extends Block {
   /// The type identifier for content blocks.
-  /// TODO: Change to 'block' in next major version
-  static const key = 'column';
+  static const key = 'block';
+
+  /// Legacy key for backward compatibility with existing slides.
+  static const legacyKey = 'column';
 
   /// The markdown content to display.
   final String content;
@@ -228,7 +231,7 @@ class ContentBlock extends Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
     'content': Ack.string().nullable().optional(),
   }, additionalProperties: true);
@@ -361,7 +364,7 @@ class WidgetBlock extends Block {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.string().nullable().optional(),
+    'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
     "name": Ack.string(),
   }, additionalProperties: true);
@@ -414,11 +417,11 @@ enum ContentAlignment {
   }
 }
 
-extension StringContentExt on String {
+extension StringContentX on String {
   ContentBlock toBlock() => ContentBlock(this);
 }
 
-extension BlockExt on Block {
+extension BlockX on Block {
   Block flex(int flex) => copyWith(flex: flex);
   Block scrollable([bool scrollable = true]) =>
       copyWith(scrollable: scrollable);

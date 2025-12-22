@@ -1,16 +1,29 @@
-# superdeck_demo
+# SuperDeck demo
 
-A new Flutter project.
+This app is the SuperDeck demo and is used to validate the slide runtime and CLI.
 
-## Getting Started
+## Run locally
 
-This project is a starting point for a Flutter application.
+From the repo root:
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+fvm use stable --force
+dart pub global activate melos
+melos bootstrap
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Terminal 1 (build slides):
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd demo
+dart run superdeck_cli:main build --watch
+```
+
+Terminal 2 (run the app):
+
+```bash
+cd demo
+fvm flutter run
+```
+
+Edit `demo/slides.md` and hot reload to see changes.

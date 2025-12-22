@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
+
 import '../rendering/slides/slide_screen.dart';
 import 'deck_controller.dart';
-import 'deck_provider.dart';
 
 /// Widget for rendering slide page content
 ///
-/// Handles loading states, errors, and syncing route index with navigation controller.
-/// Separated from NavigationController to avoid tight coupling.
+/// Handles loading states, errors, and syncing route index with DeckController.
+/// Separated from routing concerns to avoid tight coupling.
 class SlidePageContent extends StatelessWidget {
   final int index;
 
@@ -17,46 +18,37 @@ class SlidePageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deckController = DeckController.of(context);
-    final navigationController = NavigationProvider.of(context);
 
-    // Sync route index to navigation controller
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      navigationController.updateCurrentIndex(index);
-    });
+    // Use Watch to react to signals
+    return Watch((context) {
+      // Access deck controller state
+      final isLoading = deckController.isLoading.value;
+      final hasError = deckController.hasError.value;
+      final slides = deckController.slides.value;
 
-    // Use ListenableBuilder to react to both controllers
-    return ListenableBuilder(
-      listenable: Listenable.merge([deckController, navigationController]),
-      builder: (context, child) {
-        // Access deck controller state
-        final isLoading = deckController.isLoading;
-        final hasError = deckController.hasError;
-        final slides = deckController.slides;
-
-        // Render appropriate state
-        if (hasError) {
-          return _ErrorScreen(
-            error: deckController.error,
-            onRetry: deckController.repository.loadDeckStream,
-          );
-        }
-
-        if (isLoading) {
-          return const _LoadingScreen();
-        }
-
-        if (slides.isEmpty) {
-          return const _NoSlidesScreen();
-        }
-
-        final safeIndex = index.clamp(0, slides.length - 1);
-        return Semantics(
-          label: 'Slide ${safeIndex + 1}',
-          container: true,
-          child: SlideScreen(slides[safeIndex]),
+      // Render appropriate state
+      if (hasError) {
+        return _ErrorScreen(
+          error: deckController.error.value,
+          onRetry: deckController.reloadDeck,
         );
-      },
-    );
+      }
+
+      if (isLoading) {
+        return const _LoadingScreen();
+      }
+
+      if (slides.isEmpty) {
+        return const _NoSlidesScreen();
+      }
+
+      final safeIndex = index.clamp(0, slides.length - 1);
+      return Semantics(
+        label: 'Slide ${safeIndex + 1}',
+        container: true,
+        child: SlideScreen(slides[safeIndex]),
+      );
+    });
   }
 }
 

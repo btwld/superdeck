@@ -7,73 +7,83 @@ import 'package:yaml_writer/yaml_writer.dart';
 ///
 /// This function takes a [yamlContent] string representing the contents of a
 /// pubspec.yaml file. It parses the YAML, adds the '.superdeck/' and
-/// '.superdeck/generated/' paths to the 'assets' section under the 'flutter'
-/// key if they don't already exist, and returns the updated YAML as a string.
+/// '.superdeck/assets/' paths to the 'assets' section under the 'flutter' key
+/// if they don't already exist, and returns the updated YAML as a string.
 ///
 /// Returns the updated pubspec YAML content as a string.
 String updatePubspecAssets(
   DeckConfiguration configuration,
   String pubspecContents,
 ) {
-  // Parse the YAML content into a map
-  dynamic parsedYaml;
-  try {
-    parsedYaml = loadYaml(pubspecContents);
-  } on YamlException catch (e) {
-    throw Exception(
-      'Failed to parse pubspec.yaml. Invalid YAML syntax. '
-      'Please check your pubspec.yaml file. Error: $e',
-    );
-  }
+  final parsedYaml = _loadPubspecMap(pubspecContents);
+  final flutterSection = _stringKeyedMap(
+    parsedYaml['flutter'] as Map? ?? const <String, dynamic>{},
+  );
 
-  // Get the 'flutter' section from the parsed YAML, or an empty map if it doesn't exist
-  final flutterSection =
-      // ignore: avoid-dynamic
-      {...(parsedYaml['flutter'] ?? {}) as Map}.cast<String, dynamic>();
+  final assets = List<String>.from(
+    (flutterSection['assets'] as List?)?.map((value) => value.toString()) ??
+        const <String>[],
+    growable: true,
+  );
+  final normalizedAssets = assets.map((asset) => p.normalize(asset)).toSet();
 
-  // Get the 'assets' list from the 'flutter' section, or an empty list if it doesn't exist
-  final assets = flutterSection['assets']?.toList() ?? [];
-
-  bool needsUpdate = false;
-
-  try {
-    // Normalize existing asset paths for comparison (e.g., .superdeck/ vs ./.superdeck/)
-    final normalizedAssets = assets.map((a) => p.normalize(a.toString())).toList();
-
-    // Always use normalized paths without ./ prefix for consistency
-    final superDeckAssetPath = p.normalize(configuration.superdeckDir.path);
-    final superDeckAssetEntry = '$superDeckAssetPath/';
-
-    if (!normalizedAssets.contains(superDeckAssetPath)) {
-      assets.add(superDeckAssetEntry);
+  var needsUpdate = false;
+  void addAssetDirectory(String directoryPath) {
+    final normalized = p.normalize(directoryPath);
+    if (normalizedAssets.add(normalized)) {
+      assets.add('$normalized/');
       needsUpdate = true;
     }
-
-    final assetsPath = p.normalize(configuration.assetsDir.path);
-    final assetsEntry = '$assetsPath/';
-
-    if (!normalizedAssets.contains(assetsPath)) {
-      assets.add(assetsEntry);
-      needsUpdate = true;
-    }
-  } catch (e) {
-    throw Exception(
-      'Failed to normalize asset paths. '
-      'Check your superdeck directory configuration. Error: $e',
-    );
   }
+
+  addAssetDirectory(configuration.superdeckDir.path);
+  addAssetDirectory(configuration.assetsDir.path);
 
   if (!needsUpdate) {
     return pubspecContents;
   }
 
-  // Update the 'assets' key in the 'flutter' section with the modified assets list
   flutterSection['assets'] = assets;
 
-  // Create a new map from the parsed YAML and update the 'flutter' key with the modified section
-  final updatedYaml = Map<String, dynamic>.from(parsedYaml)
+  final updatedYaml = Map.of(parsedYaml)
     ..['flutter'] = flutterSection;
 
-  // Convert the updated YAML map back to a string and return it
   return YamlWriter(allowUnquotedStrings: true).write(updatedYaml);
+}
+
+Map<String, dynamic> _loadPubspecMap(String pubspecContents) {
+  Object? yaml;
+  try {
+    yaml = loadYaml(pubspecContents);
+  } on YamlException catch (error, stackTrace) {
+    return _pubspecFormatException(
+      'Failed to parse pubspec.yaml. Invalid YAML syntax. '
+      'Please check your pubspec.yaml file. Error: $error',
+      stackTrace,
+    );
+  }
+
+  if (yaml is Map<Object?, Object?>) {
+    return _stringKeyedMap(yaml);
+  }
+
+  return _pubspecFormatException(
+    'Expected pubspec.yaml to define a map at the top level.',
+    StackTrace.current,
+  );
+}
+
+Map<String, dynamic> _stringKeyedMap(Map<Object?, Object?> source) {
+  return source.map((key, value) {
+    final stringKey = key?.toString();
+    if (stringKey == null) {
+      throw const FormatException('Encountered null key in pubspec.yaml map.');
+    }
+
+    return MapEntry(stringKey, value);
+  });
+}
+
+Never _pubspecFormatException(String message, StackTrace stackTrace) {
+  return Error.throwWithStackTrace(FormatException(message), stackTrace);
 }

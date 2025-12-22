@@ -2,14 +2,14 @@ import 'dart:convert';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck_core/superdeck_core.dart' hide logger;
+import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 import 'package:yaml/yaml.dart';
 
-/// Base class for Superdeck commands with common functionality
-abstract class SuperdeckCommand extends Command<int> {
+/// Base class for SuperDeck commands with common functionality
+abstract class SuperDeckCommand extends Command<int> {
   final Logger logger;
 
-  SuperdeckCommand({Logger? loggerOverride})
+  SuperDeckCommand({Logger? loggerOverride})
     : logger = loggerOverride ?? Logger();
 
   /// Loads the Superdeck configuration from the default file
@@ -42,12 +42,23 @@ abstract class SuperdeckCommand extends Command<int> {
       progress.complete('Configuration loaded.');
 
       return config;
+    } on YamlException catch (e) {
+      // YAML syntax error - fail loudly
+      progress.fail('Invalid configuration file');
+      logger.err('YAML syntax error in ${configFile.path}:');
+      logger.err('  ${e.message}');
+      logger.err('Please fix your superdeck.yaml syntax.');
+      rethrow;
+    } on FormatException catch (e) {
+      // Configuration parsing error - fail loudly
+      progress.fail('Invalid configuration');
+      logger.err('Configuration error: ${e.message}');
+      rethrow;
     } catch (e) {
+      // Unexpected error - fail loudly
       progress.fail('Failed to load configuration');
-      logger.err('Error: $e');
-      logger.info('Using default configuration.');
-
-      return DeckConfiguration();
+      logger.err('Unexpected error: $e');
+      rethrow;
     }
   }
 }

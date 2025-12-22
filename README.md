@@ -1,590 +1,85 @@
-![Superdeck logo](./assets/logo-dark.png#gh-dark-mode-only)
-![Superdeck logo](./assets/logo-light.png#gh-light-mode-only)
+![SuperDeck logo](./assets/logo-dark.png#gh-dark-mode-only)
+![SuperDeck logo](./assets/logo-light.png#gh-light-mode-only)
 
 # SuperDeck
 
-SuperDeck enables you to craft visually appealing and interactive presentations directly within your Flutter apps, using the simplicity and power of Markdown.
+SuperDeck is a Flutter presentation framework. You write slides in Markdown, and SuperDeck renders them with Flutter.
 
 ![Screenshot](https://github.com/leoafarias/superdeck/assets/435833/42ec88e9-d3d9-4c52-bbf9-5a2809cca257)
 
-### [View demo here](https://superdeck-dev.web.app)
+- Live demo: https://superdeck-dev.web.app
+- Example deck: `demo/slides.md`
+- Documentation (in this repo): `docs/`
 
-### [Example code](https://github.com/leoafarias/superdeck/blob/main/demo/slides.md)
+## Quickstart
 
-## Getting Started
-
-Follow these steps to integrate SuperDeck into your Flutter project:
-
-1. Install the CLI to set up your project:
+1. Install the CLI:
 
    ```bash
    dart pub global activate superdeck_cli
    ```
 
-2. In your Flutter project, run the setup command:
+2. In your Flutter project, run setup and add the package:
 
    ```bash
+   cd your_flutter_project
    superdeck setup
-   ```
-
-   This command will:
-   - Configure your pubspec.yaml with required assets
-   - Set up macOS entitlements if applicable
-   - Create a basic slides.md file if none exists
-   - Set up a custom index.html for web with loading indicator
-
-3. Add the `superdeck` package to your project:
-
-   ```bash
    flutter pub add superdeck
    ```
 
-4. Import the package and initialize SuperDeck:
+3. Initialize SuperDeck in `lib/main.dart`:
 
    ```dart
+   import 'package:flutter/widgets.dart';
    import 'package:superdeck/superdeck.dart';
 
-   void main() async {
+   Future<void> main() async {
+     WidgetsFlutterBinding.ensureInitialized();
      await SuperDeckApp.initialize();
-     runApp(
-       MaterialApp(
-         title: 'Superdeck',
-         debugShowCheckedModeBanner: false,
-         home: SuperDeckApp(
-           options: DeckOptions(
-             baseStyle: BaseStyle(),
-             widgets: {
-               'twitter': (args) {
-                 return TwitterWidget(
-                   username: args.getString('username'),
-                   tweetId: args.getString('tweetId'),
-                 );
-               },
-             },
-             debug: false,
-             styles: {
-               'announcement': AnnouncementStyle(),
-               'quote': QuoteStyle(),
-             },
-             parts: const SlideParts(
-               header: HeaderPart(),
-               footer: FooterPart(),
-               background: BackgroundPart(),
-             ),
-           ),
-         ),
-       ),
-     );
+
+     runApp(const SuperDeckApp(options: DeckOptions()));
    }
    ```
 
-## Block-Based System
+4. Build slides and run the app:
 
-SuperDeck uses a powerful block-based system for arranging content in your slides. This provides flexible layouts and composition options.
+   ```bash
+   superdeck build --watch
+   flutter run
+   ```
 
-### Block Types
+## Write slides
 
-- `@column` - For text and markdown content
-- `@section` - Container for organizing multiple blocks
-- `@image` - For displaying images with various options
-- `@dartpad` - Embed DartPad examples
-- `@widget` - Embed custom widgets with arguments
+Create a `slides.md` file in your project root. Separate slides with `---`.
 
-### Basic Layout Example
-
-```markdown
+```md
 ---
 
 @column
-
-# Welcome to SuperDeck
-
-Your awesome slides start here!
+# Welcome
 
 @column
-
-- Create beautiful slides using markdown
-- Arrange content using the block-based system
-- Customize with images, widgets, and more
+- Write slides in Markdown
+- Use blocks for layout
 
 ---
 ```
 
-### Multiple Columns Example
+## Learn more
 
-```markdown
----
+- `docs/getting-started.mdx`
+- `docs/guides/cli-reference.mdx`
+- `docs/reference/block-types.mdx`
+- `docs/reference/deck-options.mdx`
 
-@column {
-  align: center_left
-  flex: 2
-}
+## Contributing
 
-## Left Column Content
-
-- Item 1
-- Item 2
-- Item 3
-
-@column {
-  align: center_right
-}
-
-## Right Column Content
-
-With some explanatory text.
-
----
-```
-
-### Custom Alignment Options
-
-Blocks support various alignment options:
-- `topLeft`, `topCenter`, `topRight`
-- `centerLeft`, `center`, `centerRight`
-- `bottomLeft`, `bottomCenter`, `bottomRight`
-
-### Flex Property
-
-Use the `flex` property to control relative sizing of blocks:
-
-```markdown
-@section
-@column {
-  flex: 2
-}
-This column takes up twice the space
-@column
-Normal sized column
-```
-
-### Image Block Example
-
-```markdown
-@column
-
-## Image Example
-
-@column
-
-![example_image](https://picsum.photos/800/600) {.cover}
-```
-
-### DartPad Block Example
-
-```markdown
-@dartpad {
-  id: your_dartpad_id
-  theme: dark
-  run: true
-}
-```
-
-### Widget Block Example
-
-```markdown
-@widget {
-  name: colorPalette
-  schema: true
-  prompts: [tropical, vibrant, pastel]
-}
-```
-
-## Slide Examples
-
-### Simple Slide with a Single Column
-
-```markdown
----
-
-@column
-
-# My Slide Title
-
-- Point 1
-- Point 2
-- Point 3
-
----
-```
-
-### Multi-Column Layout
-
-```markdown
----
-
-@column {
-  align: center_left
-  flex: 2
-}
-
-# Left Content
-
-- More content on the left side
-- With a larger flex value
-
-@column {
-  align: center_right
-}
-
-# Right Content
-
-This content takes up less space due to the default flex value of 1.
-
----
-```
-
-### Slide with Custom Widget
-
-```markdown
----
-
-@column
-
-# Tweet Example
-
-@twitter {
-  username: username
-  tweetId: 1234567890
-}
-
-@column
-
-# More content
-
----
-```
-
-### Slide with Mermaid Diagram
-
-```markdown
----
-
-@column
-
-# Diagram Example
-
-```mermaid
-graph TD
-    A[Start] --> B[Input]
-    B --> C[Process]
-    C --> D[Output]
-    D --> E[End]
-``` {.code}
-
----
-```
-
-### Slide with DartPad
-
-```markdown
----
-
-@column
-
-# DartPad Example
-
-@dartpad {
-  id: example-dartpad-id
-  theme: dark
-}
-
-@column
-
-# Explanation
-
-This code demonstrates how to use Flutter widgets.
-
----
-```
-
-### Slide with Image
-
-```markdown
----
-
-@column
-
-# Image Example
-
-![Example Image](https://example.com/image.png) {.cover}
-
-@column
-
-# Text alongside the image
-
----
-```
-
-### Advanced Layout with Nested Sections
-
-```markdown
----
-
-@section
-
-@column {
-  align: center
-}
-
-# Main Header
-
-@section {
-  flex: 2
-}
-
-@column {
-  align: center_left
-}
-
-## Left Content
-
-@column {
-  align: center_right
-}
-
-## Right Content
-
----
-```
-
-## SuperDeck App Options
-
-### DeckOptions
-
-When initializing SuperDeck, configure deck-level behavior with `DeckOptions`:
-
-```dart
-SuperDeckApp(
-  options: DeckOptions(
-    baseStyle: BaseStyle(),
-    widgets: {
-      'twitter': (args) {
-        return TwitterWidget(
-          username: args.getString('username'),
-          tweetId: args.getString('tweetId'),
-        );
-      },
-    },
-    styles: {
-      'announcement': AnnouncementStyle(),
-      'quote': QuoteStyle(),
-    },
-    parts: const SlideParts(
-      header: HeaderPart(),
-      footer: FooterPart(),
-      background: BackgroundPart(),
-    ),
-    debug: false,
-  ),
-);
-```
-
-### Custom Widgets
-
-You can register custom widgets and reference them directly from markdown:
-
-```dart
-widgets: {
-  'twitter': (args) {
-    return TwitterWidget(
-      username: args.getString('username'),
-      tweetId: args.getString('tweetId'),
-    );
-  },
-},
-```
-
-```markdown
-@twitter {
-  username: username
-  tweetId: 1234567890
-}
-```
-
-### Generated Assets
-
-SuperDeck can generate and manage rich assets for your deck:
-
-- Image formats including PNG, JPEG, GIF, WEBP, and SVG
-- Auto-generated thumbnails for quick previews
-- Mermaid diagram renderings
-
-## Styles and Customization
-
-Apply global themes and per-slide styling through `DeckOptions`:
-
-```dart
-baseStyle: BaseStyle(),
-styles: {
-  'announcement': AnnouncementStyle(),
-  'quote': QuoteStyle(),
-},
-```
-
-You can also add CSS classes to individual elements using the `{.class-name}` syntax:
-
-```markdown
-## Styled Heading {.highlight}
-
-![example_image](https://picsum.photos/800/600) {.cover}
-```
-
-## Slide Parts
-
-Slide parts let you add consistent UI chrome to every slide:
-
-```dart
-parts: const SlideParts(
-  header: HeaderPart(),
-  footer: FooterPart(),
-  background: BackgroundPart(),
-)
-```
-
-## API Reference
-
-### Block Model
-
-The `Block` hierarchy powers the SuperDeck renderer:
-
-- `SectionBlock`: Containers that organize other blocks
-- `ColumnBlock`: Renders markdown content within a column
-- `ImageBlock`: Displays local or remote images
-- `DartPadBlock`: Embeds live DartPad snippets
-- `WidgetBlock`: Hosts custom Flutter widgets registered in `DeckOptions`
-
-### Asset Model
-
-`GeneratedAsset` instances represent resources produced during builds:
-
-- Image variants (PNG, JPEG, GIF, WEBP, SVG)
-- Slide thumbnails for quick previews
-- Mermaid diagrams rendered from fenced markdown blocks
-
-### Slide Model
-
-Each `Slide` captures the structure of a presentation segment:
-
-- `key`: Unique identifier for lookup and navigation
-- `options`: Slide-level configuration and metadata
-- `sections`: Ordered collection of section blocks
-- `comments`: Optional presenter notes or annotations
-
-## Advanced Features
-
-### Code Highlighting
-
-Add the `.code` class to code fences for consistent formatting:
-
-```markdown
-```dart
-void main() {
-  print('Hello, world!');
-}
-``` {.code}
-```
-
-### Animations
-
-Animate individual elements with the `.animate` helper:
-
-```markdown
-# This title will animate {.animate}
-```
-
-### Notes and Alerts
-
-Call out supplemental information directly in markdown:
-
-```markdown
-> [!NOTE]
-> This is a note.
-
-> [!WARNING]
-> This is a warning.
-
-> [!CAUTION]
-> This is a caution.
-```
-
-## Configuration
-
-You can configure SuperDeck by creating a `superdeck.yaml` file in the root of your project. This allows you to set default options for all slides.
-
-## Development
-
-### Running the CLI Locally
-
-The SuperDeck CLI is included as a dev dependency in the demo app, making it easy to run locally:
+SuperDeck is a Melos workspace pinned to Flutter stable via FVM.
 
 ```bash
-# From the demo app directory, run the CLI directly
-cd demo
-dart ../packages/cli/bin/main.dart <command> [arguments]
-
-# Example: Build slides
-dart ../packages/cli/bin/main.dart build
-
-# Example: Watch for changes and rebuild automatically
-dart ../packages/cli/bin/main.dart build --watch
+fvm use stable --force
+dart pub global activate melos
+melos bootstrap
+melos run analyze
+melos run test
 ```
-
-### Developing with the Demo App
-
-The demo app located at `demo/` is a complete Flutter application that showcases SuperDeck functionality:
-
-#### Running the Demo App
-
-1. **Navigate to the demo directory:**
-   ```bash
-   cd demo
-   ```
-
-2. **Build the slides using the local CLI:**
-   ```bash
-   dart ../packages/cli/bin/main.dart build
-   ```
-
-3. **Run the Flutter app:**
-   ```bash
-   flutter run
-   ```
-
-#### Development Workflow
-
-For an efficient development workflow when working on SuperDeck:
-
-1. **Start the CLI in watch mode** (in one terminal):
-   ```bash
-   cd demo
-   dart ../packages/cli/bin/main.dart build --watch
-   ```
-
-2. **Run the Flutter app** (in another terminal):
-   ```bash
-   cd demo
-   flutter run
-   ```
-
-3. **Edit slides:** Modify `demo/slides.md` and the CLI will automatically rebuild the assets.
-
-4. **Hot reload:** Use Flutter's hot reload (`r`) to see changes in the app immediately.
-
-#### Available CLI Commands for Development
-
-- `dart ../packages/cli/bin/main.dart build` - Build slides once
-- `dart ../packages/cli/bin/main.dart build --watch` - Build and watch for changes
-- `dart ../packages/cli/bin/main.dart setup` - Set up SuperDeck configuration
-- `dart ../packages/cli/bin/main.dart --help` - Show all available commands
-
-#### Demo App Structure
-
-- `demo/slides.md` - The main presentation content
-- `demo/superdeck.yaml` - Configuration file for SuperDeck
-- `demo/lib/main.dart` - Flutter app entry point
-- `demo/assets/` - Static assets for the presentation
-
-## For More Details
-
-Check out `demo/slides.md` for a complete deck walkthrough and explore the API documentation for advanced usage scenarios.

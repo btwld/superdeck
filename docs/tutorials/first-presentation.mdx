@@ -5,25 +5,25 @@ description: Step-by-step tutorial to create your first complete SuperDeck prese
 
 # First Presentation Tutorial
 
-This tutorial walks you through creating a complete presentation from scratch, introducing SuperDeck's key features along the way.
+Create a complete presentation from scratch while learning SuperDeck's key features.
 
-## What We'll Build
+## What You'll Build
 
-A presentation about Flutter development with:
-- Title slide with centered content
-- Multi-column layouts  
+A Flutter development presentation with:
+- Centered title slide
+- Multi-column layouts
 - Images and code examples
-- Interactive DartPad embed
+- Interactive DartPad
 - Custom styling
 
 ## Prerequisites
 
-- SuperDeck installed and set up ([Getting Started](/getting-started))
+- SuperDeck installed and set up ([Getting Started](/docs/getting-started))
 - Basic understanding of Markdown
 
-## Step 1: Create the Title Slide
+## Step 1: Create a Title Slide
 
-Start with a simple title slide in your `slides.md`:
+In your `slides.md`:
 
 ```markdown
 ---
@@ -33,7 +33,7 @@ title: Flutter Development Essentials
 @section
 
 @column {
-  align: "center"
+  align: center
 }
 
 # Flutter Development Essentials
@@ -79,9 +79,7 @@ Flutter is Google's **UI toolkit** for building natively compiled applications f
 ---
 ```
 
-## Step 3: Multi-Column Layout
-
-Create a features comparison slide:
+## Step 3: Create Multi-Column Layout
 
 ```markdown
 ## Why Choose Flutter?
@@ -119,7 +117,7 @@ Create a features comparison slide:
 
 Include syntax-highlighted code:
 
-```markdown
+````markdown
 ## Your First Flutter App
 
 @section
@@ -159,7 +157,7 @@ class MyApp extends StatelessWidget {
 - **StatelessWidget** - Immutable widgets
 
 ---
-```
+````
 
 ## Step 5: Interactive Content
 
@@ -191,11 +189,9 @@ Experiment with this Flutter code:
 ---
 ```
 
-**Note:** Replace `your_dartpad_id` with an actual DartPad ID from [dartpad.dev](https://dartpad.dev).
+Replace `your_dartpad_id` with an ID from [dartpad.dev](https://dartpad.dev).
 
-## Step 6: Image Showcase
-
-Create a visual slide:
+## Step 6: Add Images
 
 ```markdown
 ## Flutter in Action
@@ -213,25 +209,23 @@ Create a visual slide:
 - **Tencent**
 
 @image {
-  asset: "https://docs.flutter.dev/assets/images/docs/showcase/showcase-montage.jpg"
-  fit: "cover"
+  src: https://docs.flutter.dev/assets/images/docs/showcase/showcase-montage.jpg
+  fit: cover
   flex: 2
 }
 
 ---
 ```
 
-## Step 7: Call-to-Action Slide
+## Step 7: Add Call-to-Action
 
-End with next steps:
-
-```markdown
+````markdown
 ## Get Started Today!
 
 @section
 
 @column {
-  align: "center"
+  align: center
 }
 
 ### Ready to build with Flutter?
@@ -239,7 +233,7 @@ End with next steps:
 **Install Flutter:**
 ```bash
 flutter create my_app
-cd my_app  
+cd my_app
 flutter run
 ```
 
@@ -249,13 +243,13 @@ flutter run
 - [Flutter documentation](https://docs.flutter.dev)
 
 ---
-```
+````
 
 ## Complete Example
 
 Here's the full `slides.md` file:
 
-```markdown
+````markdown
 ---
 title: Flutter Development Essentials
 ---
@@ -263,13 +257,13 @@ title: Flutter Development Essentials
 @section
 
 @column {
-  align: "center"
+  align: center
 }
 
 # Flutter Development Essentials
 ## Building Beautiful Apps with Ease
 
-**Your Name**  
+**Your Name**
 *Today's Date*
 
 ---
@@ -284,10 +278,10 @@ title: Flutter Development Essentials
 
 Flutter is Google's **UI toolkit** for building natively compiled applications for:
 
-- 📱 Mobile (iOS & Android)
-- 🌐 Web  
-- 🖥️ Desktop (Windows, macOS, Linux)
-- 📺 Embedded devices
+- Mobile (iOS & Android)
+- Web
+- Desktop (Windows, macOS, Linux)
+- Embedded devices
 
 @column
 
@@ -301,24 +295,24 @@ Flutter is Google's **UI toolkit** for building natively compiled applications f
 
 @column
 
-### ⚡ Performance
+### Performance
 - Native performance
 - 60fps animations
 - Direct GPU rendering
 
-### 🎨 Beautiful UI  
+### Beautiful UI
 - Material Design
 - Cupertino widgets
 - Custom styling
 
 @column
 
-### 🔥 Hot Reload
+### Hot Reload
 - Instant updates
-- Preserve app state  
+- Preserve app state
 - Fast iteration
 
-### 🌍 Single Codebase
+### Single Codebase
 - Write once, run everywhere
 - Shared business logic
 - Consistent user experience
@@ -330,7 +324,7 @@ Flutter is Google's **UI toolkit** for building natively compiled applications f
 @section
 
 @column {
-  align: "center"
+  align: center
 }
 
 ### Ready to build with Flutter?
@@ -338,7 +332,7 @@ Flutter is Google's **UI toolkit** for building natively compiled applications f
 **Install Flutter:**
 ```bash
 flutter create my_app
-cd my_app  
+cd my_app
 flutter run
 ```
 
@@ -347,21 +341,19 @@ flutter run
 - [Flutter documentation](https://docs.flutter.dev)
 
 ---
-```
+````
 
 ## Next Steps
 
-Now that you've created your first presentation:
-
 - **[Block Types Reference](/docs/reference/block-types)** - Learn all block types
-- **[CLI Reference](/docs/guides/cli-reference)** - Master the CLI tools  
-- **[Styling Guide](/docs/guides/styling-guide)** - Customize appearance
-- **[Examples](/examples)** - See more real-world examples
+- **[CLI Reference](/docs/guides/cli-reference)** - Master CLI tools
+- **[DeckOptions API](/docs/reference/deck-options)** - Customize styles
+- **[Examples](/docs/examples)** - View real-world examples
 
 ## Tips for Great Presentations
 
 1. **Keep slides focused** - One concept per slide
-2. **Use visuals** - Images and code examples enhance understanding  
+2. **Use visuals** - Images and code enhance understanding
 3. **Test early** - Use watch mode for rapid iteration
 4. **Practice navigation** - Test keyboard and touch controls
-5. **Consider your audience** - Adjust content complexity accordingly
+5. **Know your audience** - Adjust complexity accordingly

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -27,12 +26,12 @@ class AssetGenerationResult {
 /// replaces the content with asset references.
 class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
-  final DeckRepository _store;
+  final DeckService _store;
   final Logger _logger = Logger('AssetGenerationPipeline');
 
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
-    required DeckRepository store,
+    required DeckService store,
   }) : _generators = generators,
        _store = store;
 

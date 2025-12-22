@@ -25,8 +25,8 @@ dependencies:
   file_picker: ^8.0.7
   path_provider: ^2.1.4
   url_launcher: ^6.3.1
-  mix: ^2.0.0-dev.4
-  remix: ^0.1.0-beta.1
+  mix: ^2.0.0-rc.0
+  remix: ^0.1.0-beta.2
   flutter_markdown_plus: ^1.0.5
   superdeck_core: ^0.0.1
   markdown: ^7.3.0
@@ -44,20 +44,18 @@ dependencies:
   qr_flutter: ^4.1.0
   universal_html: ^2.2.4
   signals: ^6.2.0
-  ack_annotations: ^1.0.0-beta.2
+  signals_flutter: ^6.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  mocktail: ^1.0.4
   flutter_lints: ^5.0.0
   custom_lint: ^0.7.5
   dart_code_metrics_presets: ^2.19.0
-  integration_test:
-    sdk: flutter
-  build_runner: ^2.5.4
-  ack_generator: ^1.0.0-beta.2
 
 flutter:
+  uses-material-design: true
   assets:
     - assets/
     - assets/grammars/

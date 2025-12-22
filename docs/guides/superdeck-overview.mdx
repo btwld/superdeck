@@ -5,19 +5,19 @@ description: Understand how SuperDeck turns Markdown into rich Flutter presentat
 
 # SuperDeck Overview
 
-SuperDeck pairs the flexibility of Flutter with Markdown authoring so you can ship beautiful, interactive presentations across web, desktop, and mobile without rebuilding slides for every platform.
+Create presentations with Flutter and Markdown.
 
 ---
 
-## What SuperDeck Does
+## What You Can Build
 
-SuperDeck transforms Markdown files into fully rendered Flutter presentations with:
+With SuperDeck, you can:
 
-- **Two-stage build pipeline** – Parse Markdown at build time, render Flutter widgets at runtime
-- **Rich markdown extensions** – Block-based layouts, custom widgets, hero animations, alerts, Mermaid diagrams, and more
-- **Flexible styling system** – Type-safe control over typography, colors, spacing, and themes using Mix builders
-- **Asset management** – Build-time Mermaid rendering with content-hash caching plus hooks for custom generators
-- **Export & publishing** – PDF export and one-command deployment to GitHub Pages
+- **Write slides in Markdown** with live hot-reload during development
+- **Embed interactive content** like DartPad playgrounds, Mermaid diagrams, and custom widgets
+- **Style everything** with type-safe control over typography, colors, and themes
+- **Deploy** to web or desktop
+- **Export to PDF** or publish directly to GitHub Pages
 
 ---
 
@@ -47,15 +47,19 @@ Build presentations with Markdown and Flutter
 ![Logo](assets/logo.png)
 ````
 
-**Available blocks**
+**Core block types**
 
 - `@section` – multi-column container with configurable flex ratios
 - `@column` – display markdown content with alignment and scrolling
-- `@image` – images with fit options (`cover`, `contain`, `fill`, `fitWidth`, `fitHeight`)
-- `@dartpad` – embedded DartPad snippets with live editing
 - `@widget` – custom registered Flutter widgets
 
-**Alignment options**: `topLeft`, `topCenter`, `topRight`, `centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, `bottomRight`
+**Built-in widgets** (use shorthand syntax like `@image { ... }`):
+
+- `image` – images with fit options (`cover`, `contain`, `fill`, `fitWidth`, `fitHeight`)
+- `dartpad` – embedded DartPad snippets with live editing
+- `qrcode` – generate QR codes
+
+**Alignment options**: `top_left`, `top_center`, `top_right`, `center_left`, `center`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`
 
 ### Custom Widget Support
 
@@ -64,14 +68,8 @@ Register custom Flutter widgets and use them directly in Markdown:
 ```dart
 SuperDeckApp(
   options: DeckOptions(
-    widgets: {
-      'twitter': (args) => TwitterWidget(
-        username: args.getString('username'),
-        tweetId: args.getString('tweetId'),
-      ),
-      'chart': (args) => DataChart(
-        data: args.getStringList('values'),
-      ),
+    widgets: const {
+      'twitter': TwitterWidgetDefinition(),
     },
   ),
 )
@@ -86,12 +84,7 @@ Use in Markdown:
 }
 ````
 
-**Type-safe widget argument helpers**
-
-- `getString()`, `getInt()`, `getDouble()`, `getBool()` – required typed values
-- `getStringOrNull()`, `getIntOrNull()` – nullable variants
-- `getStringOr(key, defaultValue)` – default fallbacks
-- `getStringList()`, `getNested()` – lists and nested objects
+SuperDeck calls `WidgetDefinition.parse()` with the block's arguments and then `WidgetDefinition.build()` to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
 
 ### Markdown Extensions
 
@@ -139,24 +132,30 @@ Control every aspect of your presentation through the `SlideStyle` system:
 
 ```dart
 final customStyle = SlideStyle(
-  h1: TextStyler()
-      .style(TextStyleMix(fontSize: 48, color: Colors.purple)),
-  p: TextStyler()
-      .style(TextStyleMix(fontSize: 18, height: 1.5)),
+  h1: TextStyler().style(
+    TextStyleMix(fontSize: 48, color: Colors.purple),
+  ),
+  p: TextStyler().style(
+    TextStyleMix(fontSize: 18, height: 1.5),
+  ),
   code: MarkdownCodeblockStyle(
     textStyle: const TextStyle(fontFamily: 'Fira Code', color: Colors.white),
-    container: BoxStyler()
-        .color(const Color(0xFF1E1E1E))
-        .padding(EdgeInsetsGeometryMix.all(24))
-        .borderRadius(BorderRadiusMix.circular(16)),
+    container: BoxStyler(
+      decoration: BoxDecorationMix(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadiusMix.all(Radius.circular(16)),
+      ),
+    ),
   ),
-  blockContainer: BoxStyler()
-      .padding(EdgeInsetsGeometryMix.all(24))
-      .borderRadius(BorderRadiusMix.circular(16)),
+  blockContainer: BoxStyler(
+    decoration: BoxDecorationMix(
+      borderRadius: BorderRadiusMix.all(Radius.circular(16)),
+    ),
+  ),
 );
 ```
 
-Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above; reuse `customStyle` as `DeckOptions.baseStyle` or as a named variant.
+Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above. Use `customStyle` as `DeckOptions.baseStyle` or as a named style variant.
 
 **Styleable elements**
 
@@ -174,8 +173,19 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 
 ---
 
+## How It Works
+
+SuperDeck uses a two-stage build pipeline:
+
+1. **Build time**: The CLI parses your `slides.md` file, renders Mermaid diagrams to images, and generates asset manifests
+2. **Runtime**: Flutter renders the parsed slide data as widgets with full styling control
+
+This approach gives you fast hot-reload during development while ensuring optimized assets in production.
+
+---
+
 ## Next Steps
 
-- Learn how to author slides with the [Markdown Authoring Guide](./markdown-authoring).
-- Dive deeper into block behavior in the [Block Types reference](../reference/block-types).
-- Explore automation and publishing with the [CLI Reference](./cli-reference).
+- Learn how to author slides with the [Markdown Authoring Guide](./markdown-authoring)
+- Dive deeper into block behavior in the [Block Types reference](../reference/block-types)
+- Explore automation and publishing with the [CLI Reference](./cli-reference)

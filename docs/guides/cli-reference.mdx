@@ -27,27 +27,22 @@ These options work with all commands:
 
 ### `superdeck setup`
 
-Initialize SuperDeck in a Flutter project.
+Initialize SuperDeck in a Flutter project. Creates a sample `slides.md` file, updates `pubspec.yaml` with asset configuration, sets up macOS entitlements for network access, and configures a custom `index.html` for web.
 
 ```bash
-superdeck setup [options]
-```
-
-**What it does:**
-- Creates sample `slides.md` file if none exists
-- Updates `pubspec.yaml` with asset configuration
-- Sets up macOS entitlements for network access
-- Configures custom `index.html` for web with loading indicator
-
-**Example:**
-```bash
-cd my-flutter-project
 superdeck setup
 ```
 
+**Options:**
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--force` | `-f` | Skip confirmation prompts |
+| `--[no-]setup-web` | | Set up a custom `web/index.html` (default: `true`) |
+
 ### `superdeck build`
 
-Build presentations from markdown files.
+Build presentations from markdown files. Parses `slides.md`, generates presentation data in `.superdeck/superdeck.json`, and creates optimized assets.
 
 ```bash
 superdeck build [options]
@@ -55,11 +50,11 @@ superdeck build [options]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--watch`, `-w` | Watch for file changes and rebuild automatically |
-| `--skip-pubspec` | Skip updating pubspec.yaml |
-| `--force-rebuild` | Force rebuild all assets |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--watch` | `-w` | Watch for file changes and rebuild automatically |
+| `--skip-pubspec` | | Skip updating pubspec.yaml |
+| `--force-rebuild` | `-f` | Force rebuild all assets |
 
 **Examples:**
 ```bash
@@ -67,21 +62,15 @@ superdeck build [options]
 superdeck build
 
 # Build and watch for changes (recommended for development)
-superdeck build --watch
+superdeck build -w
 
 # Force rebuild everything
-superdeck build --force-rebuild
+superdeck build -f
 ```
-
-**What it does:**
-- Parses `slides.md` markdown content
-- Generates `.superdeck/superdeck.json` presentation data
-- Creates optimized assets in `.superdeck/assets/`
-- Generates asset references in `.superdeck/generated_assets.json`
 
 ### `superdeck publish`
 
-Publish presentation to GitHub Pages.
+Publish presentation to GitHub Pages. Builds the web version with proper base-href, commits to the target branch using git worktree, and optionally pushes to remote.
 
 ```bash
 superdeck publish [options]
@@ -89,44 +78,37 @@ superdeck publish [options]
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--branch <name>` | Target branch (default: gh-pages) |
-| `--message <msg>` | Commit message |
-| `--push` | Push changes to remote |
-| `--dry-run` | Show what would be done without making changes |
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--branch <name>` | `-b` | Target branch (default: gh-pages) |
+| `--message <msg>` | `-m` | Commit message |
+| `--push` | | Push changes to remote (default: true, use `--no-push` to skip) |
+| `--build` | | Build web app before publishing (default: true, use `--no-build` to skip) |
+| `--build-dir <path>` | | Build output directory (default: build/web) |
+| `--example-dir <path>` | | Project directory (default: .) |
+| `--dry-run` | | Show what would be done without making changes |
 
 **Examples:**
 ```bash
 # Publish to gh-pages branch
 superdeck publish
 
-# Publish with custom message and push
-superdeck publish --message "Update presentation" --push
+# Publish with custom message
+superdeck publish -m "Update presentation"
 
-# See what would happen without doing it
+# Skip build step (if already built)
+superdeck publish --no-build
+
+# Preview without making changes
 superdeck publish --dry-run
 ```
 
-**What it does:**
-- Builds web version with proper base-href for GitHub Pages
-- Uses git worktree for safe branch management
-- Commits built files to specified branch
-- Optionally pushes to remote repository
-
 ### `superdeck version`
 
-Show version information.
+Print the SuperDeck CLI version.
 
 ```bash
 superdeck version
-```
-
-**Output:**
-```
-SuperDeck CLI Version: 1.0.0
-Core Version: 1.0.0
-Builder Version: 1.0.0
 ```
 
 ## File Structure
@@ -139,11 +121,12 @@ project/
 ├── pubspec.yaml                 # Updated with asset configuration
 ├── .superdeck/
 │   ├── superdeck.json          # Generated presentation data
-│   ├── assets/                 # Generated assets
-│   │   ├── thumbnails/         # Slide thumbnails
-│   │   ├── mermaid/           # Mermaid diagram images
-│   │   └── cached/            # Cached external images
-│   └── generated_assets.json   # Asset references
+│   ├── superdeck_full.json     # Includes markdown AST JSON (for debugging)
+│   ├── generated_assets.json   # Asset manifest
+│   ├── build_status.json       # Last build status
+│   └── assets/                 # Generated assets (for example, Mermaid PNGs)
+│       ├── mermaid_<hash>.png
+│       └── thumbnail_<slideKey>.png  # Generated at runtime
 └── web/
     └── index.html              # Custom index with loading indicator
 ```
@@ -157,17 +140,22 @@ The CLI automatically adds this to your `pubspec.yaml`:
 ```yaml
 flutter:
   assets:
+    - .superdeck/
     - .superdeck/assets/
 ```
 
 ### macOS Entitlements
 
-For network access (required for external images), adds to `macos/Runner/DebugProfile.entitlements`:
+For macOS projects, `superdeck setup` updates `macos/Runner/Release.entitlements` and `macos/Runner/DebugProfile.entitlements` to allow network access (required for remote images and DartPad):
 
 ```xml
+<key>com.apple.security.app-sandbox</key>
+<false/>
 <key>com.apple.security.network.client</key>
 <true/>
 ```
+
+In debug builds, it also enables `com.apple.security.network.server` and `com.apple.security.cs.allow-jit`.
 
 ## Common Workflows
 
@@ -189,7 +177,7 @@ superdeck build
 flutter run -d web
 
 # Publish to GitHub Pages
-superdeck publish --push
+superdeck publish
 ```
 
 ### Troubleshooting Workflow
@@ -205,23 +193,16 @@ superdeck build --force-rebuild
 superdeck publish --dry-run
 ```
 
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `SUPERDECK_VERBOSE` | Enable verbose logging (same as --verbose) |
-| `SUPERDECK_QUIET` | Suppress output (same as --quiet) |
-
 ## Exit Codes
 
 | Code | Description |
 |------|-------------|
 | 0 | Success |
-| 1 | General error |
-| 2 | Invalid arguments |
-| 3 | File not found |
-| 4 | Build failed |
-| 5 | Publish failed |
+| 64 | Invalid arguments |
+| 65 | Invalid data (config/YAML) |
+| 69 | Required file missing (for example, `slides.md`) |
+| 70 | Command failed |
+| 74 | File system error |
 
 ## Common Issues
 
@@ -239,7 +220,7 @@ superdeck publish --dry-run
 **Solution:** Initialize git repository: `git init && git add . && git commit -m "Initial commit"`
 
 **Problem:** `Error: No changes to commit`
-**Solution:** Make changes to your slides or use `--force-rebuild`
+**Solution:** This is informational. Make a change (or run `superdeck build --force-rebuild`) and publish again.
 
 ### Watch Mode Issues
 
@@ -252,7 +233,7 @@ superdeck publish --dry-run
 ## Performance Tips
 
 1. **Use watch mode** - `superdeck build --watch` is optimized for development
-2. **Cache external images** - External images are cached after first download
+2. **Cache remote images** - Remote images are cached at runtime by `cached_network_image`
 3. **Skip pubspec updates** - Use `--skip-pubspec` if you manage assets manually
 4. **Incremental builds** - Only changed assets are rebuilt by default
 
@@ -270,9 +251,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: subosito/flutter-action@v2
     - run: dart pub global activate superdeck_cli
     - run: superdeck build
-    - run: superdeck publish --push
+    - run: superdeck publish
 ```

@@ -5,13 +5,13 @@ description: Set up SuperDeck in your Flutter project and create your first pres
 
 # Getting Started
 
-This guide walks you through setting up SuperDeck in your Flutter project and creating your first presentation.
+Set up SuperDeck in your Flutter project and create your first presentation.
 
 ## Prerequisites
 
-- Flutter SDK installed
-- Dart SDK installed
-- A Flutter project (or create one with `flutter create my_presentation`)
+- Flutter SDK
+- Dart SDK
+- Flutter project (or create one with `flutter create my_presentation`)
 
 ## Installation
 
@@ -21,20 +21,20 @@ This guide walks you through setting up SuperDeck in your Flutter project and cr
 dart pub global activate superdeck_cli
 ```
 
-### 2. Set up your Flutter project
+### 2. Set up your project
 
-Navigate to your Flutter project and run:
+In your Flutter project directory:
 
 ```bash
 cd your-flutter-project
 superdeck setup
 ```
 
-This command:
-- Creates a sample `slides.md` file
-- Updates `pubspec.yaml` with asset configuration
-- Sets up macOS entitlements for network access
-- Configures custom `index.html` for web with loading indicator
+This creates:
+- Sample `slides.md` file
+- Asset configuration in `pubspec.yaml`
+- macOS entitlements for network access
+- Custom `index.html` for web with loading indicator
 
 ### 3. Add SuperDeck dependency
 
@@ -47,34 +47,25 @@ flutter pub add superdeck
 Update your `main.dart`:
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SuperDeckApp.initialize();
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'My SuperDeck Presentation',
-      debugShowCheckedModeBanner: false,
-      home: SuperDeckApp(
-        options: DeckOptions(
-          debug: true, // Enable debug mode during development
-        ),
+  runApp(
+    SuperDeckApp(
+      options: DeckOptions(
+        debug: true, // Enable debug mode during development
       ),
-    );
-  }
+    ),
+  );
 }
 ```
 
 ## Your First Presentation
 
-The `superdeck setup` command creates a basic `slides.md` file. Edit it to create your first presentation:
+Edit the generated `slides.md` file:
 
 ```markdown
 ---
@@ -89,11 +80,11 @@ This is your first slide.
 
 ## What is SuperDeck?
 
-SuperDeck enables you to create beautiful presentations using:
+Create beautiful presentations using:
 
-- Markdown for content  
+- Markdown for content
 - Flutter for rendering
-- Block-based layouts for flexibility
+- Block-based layouts
 
 ---
 
@@ -114,21 +105,17 @@ SuperDeck enables you to create beautiful presentations using:
 ---
 ```
 
-## Building Your Presentation
-
-Build your slides using the CLI:
+## Build Your Presentation
 
 ```bash
 # Build once
 superdeck build
 
-# Build and watch for changes (recommended for development)
+# Watch for changes (recommended)
 superdeck build --watch
 ```
 
-## Running Your App
-
-Now run your Flutter app:
+## Run Your App
 
 ```bash
 flutter run
@@ -136,9 +123,9 @@ flutter run
 
 ## Development Workflow
 
-For the best development experience, use two terminals:
+Use two terminals:
 
-**Terminal 1** - CLI in watch mode:
+**Terminal 1** - Watch mode:
 ```bash
 superdeck build --watch
 ```
@@ -148,7 +135,7 @@ superdeck build --watch
 flutter run
 ```
 
-Now when you edit `slides.md`, the CLI automatically rebuilds your presentation, and you can hot reload Flutter to see changes instantly.
+Edit `slides.md`, and the CLI rebuilds automatically. Hot reload Flutter to see changes.
 
 ## File Structure
 
@@ -172,16 +159,16 @@ your-flutter-project/
 - **[First Presentation Tutorial](/docs/tutorials/first-presentation)** - Create a complete presentation
 - **[CLI Reference](/docs/guides/cli-reference)** - All CLI commands and options
 
-## Common Issues
+## Troubleshooting
 
-**Build fails with asset errors?**
-- Ensure your `pubspec.yaml` includes `.superdeck/assets/` in the assets section
-- Run `superdeck setup` again to fix configuration
+**Asset errors during build**
+- Verify `pubspec.yaml` includes `.superdeck/` and `.superdeck/assets/`
+- Run `superdeck setup` to fix configuration
 
-**SuperDeckApp.initialize() fails?**
-- Make sure you call `WidgetsFlutterBinding.ensureInitialized()` first
-- Check that your `slides.md` file exists and is valid
+**SuperDeckApp.initialize() fails**
+- Call `WidgetsFlutterBinding.ensureInitialized()` first
+- Verify `slides.md` exists and is valid
 
-**Changes not showing?**
-- Ensure CLI watch mode is running (`superdeck build --watch`)
-- Hot reload Flutter after CLI rebuilds complete
+**Changes not appearing**
+- Confirm CLI watch mode is running
+- Hot reload Flutter after rebuilds complete

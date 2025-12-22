@@ -15,34 +15,25 @@ void main() async {
 
   await SuperDeckApp.initialize();
   runApp(
-    Builder(
-      builder: (context) {
-        return MaterialApp(
-          title: 'Superdeck',
-          debugShowCheckedModeBanner: false,
-          showSemanticsDebugger: false,
-          home: SuperDeckApp(
-            options: DeckOptions(
-              baseStyle: borderedStyle(),
-              widgets: {
-                ...demoWidgets,
-                'twitter': _TwitterWidgetDefinition(),
-              },
-              // debug: true,
-              styles: {
-                'announcement': announcementStyle(),
-                'quote': quoteStyle(),
-                // 'bordered': borderedStyle(),
-              },
-              parts: const SlideParts(
-                header: HeaderPart(),
-                footer: FooterPart(),
-                background: BackgroundPart(),
-              ),
-            ),
-          ),
-        );
-      },
+    SuperDeckApp(
+      options: DeckOptions(
+        baseStyle: borderedStyle(),
+        widgets: {
+          ...demoWidgets,
+          'twitter': const _TwitterWidgetDefinition(),
+        },
+        // debug: true,
+        styles: {
+          'announcement': announcementStyle(),
+          'quote': quoteStyle(),
+          // 'bordered': borderedStyle(),
+        },
+        parts: const SlideParts(
+          header: HeaderPart(),
+          footer: FooterPart(),
+          background: BackgroundPart(),
+        ),
+      ),
     ),
   );
 }

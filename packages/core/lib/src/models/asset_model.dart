@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -114,13 +112,13 @@ class GeneratedAsset {
 
 class GeneratedAssetsReference {
   final DateTime lastModified;
-  final List<File> files;
+  final List<String> files;
 
   GeneratedAssetsReference({required this.lastModified, required this.files});
 
   GeneratedAssetsReference copyWith({
     DateTime? lastModified,
-    List<File>? files,
+    List<String>? files,
   }) {
     return GeneratedAssetsReference(
       lastModified: lastModified ?? this.lastModified,
@@ -131,7 +129,7 @@ class GeneratedAssetsReference {
   Map<String, dynamic> toMap() {
     return {
       'last_modified': lastModified.toIso8601String(),
-      'files': files.map((f) => f.path).toList(),
+      'files': files,
     };
   }
 
@@ -139,7 +137,7 @@ class GeneratedAssetsReference {
     return GeneratedAssetsReference(
       lastModified: DateTime.parse(map['last_modified'] as String),
       files: (map['files'] as List<dynamic>)
-          .map((path) => File(path as String))
+          .map((path) => path as String)
           .toList(),
     );
   }
@@ -150,14 +148,11 @@ class GeneratedAssetsReference {
       other is GeneratedAssetsReference &&
           runtimeType == other.runtimeType &&
           lastModified == other.lastModified &&
-          const ListEquality().equals(
-            files.map((f) => f.path).toList(),
-            other.files.map((f) => f.path).toList(),
-          );
+          const ListEquality().equals(files, other.files);
 
   @override
   int get hashCode => Object.hash(
     lastModified,
-    const ListEquality().hash(files.map((f) => f.path).toList()),
+    const ListEquality().hash(files),
   );
 }

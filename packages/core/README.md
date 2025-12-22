@@ -1,77 +1,40 @@
-# SuperDeck Core
+# superdeck_core
 
-Core library for SuperDeck - provides the foundational models, repositories, and utilities for building and managing deck data.
+Core models and utilities for SuperDeck.
 
-## Overview
+Most projects should depend on `superdeck` (Flutter) and use `superdeck_cli` for builds. Use `superdeck_core` when you want to read or write deck data outside the Flutter runtime.
 
-The `superdeck_core` package contains the essential components that power SuperDeck presentations:
+## What it provides
 
-- **Models**: Data structures for slides, blocks, and presentation metadata
-- **Repositories**: Interfaces and implementations for loading and managing deck data
-- **Utilities**: Helper functions for file watching, JSON formatting, and more
+- Deck data models (`Deck`, `Slide`, `SlideOptions`, block models)
+- File layout helpers (`DeckConfiguration` for `slides.md` and `.superdeck/`)
+- Local storage and file watching (`DeckService`)
+- Markdown extensions and parsing helpers
 
-## Key Components
-
-### Models
-
-- `Slide`: Represents a single slide with content sections and metadata
-- `Block`: Base class for various content blocks (columns, images, widgets, etc.)
-- `Deck`: Container for all slides and deck configuration
-- `DeckConfiguration`: Configuration settings for the deck system
-
-### Repositories
-
-- `DeckRepository`: Unified repository using strategy pattern for platform-specific data access
-- `DeckReader`: Abstract interface for reading deck data
-- `LocalDeckReader`: File system-based implementation
-- `AssetBundleDeckReader`: Flutter asset bundle implementation
-
-### Utilities
-
-- File watching capabilities for hot reload
-- JSON pretty printing for readable output
-- YAML utilities for configuration parsing
-- Hash generation for content identification
-
-## Usage
-
-This package is typically used as a dependency by other SuperDeck packages:
-
-```yaml
-dependencies:
-  superdeck_core: ^0.0.1
-```
+## Example (Dart VM)
 
 ```dart
+import 'dart:io';
+
 import 'package:superdeck_core/superdeck_core.dart';
 
-// Create a configuration
-final config = DeckConfiguration(
-  projectDir: Directory.current.path,
-  slidesPath: 'slides.md',
-);
+Future<void> main() async {
+  final config = DeckConfiguration(projectDir: Directory.current.path);
+  final service = DeckService(configuration: config);
 
-// Initialize a repository with local file system reader
-final repository = DeckRepository(
-  configuration: config,
-  reader: DeckReader.local(configuration: config),
-);
-await repository.initialize();
+  await service.initialize();
+  final deck = await service.loadDeck();
 
-// Load deck data
-final deck = await repository.loadDeck();
+  print('Slides: ${deck.slides.length}');
+}
 ```
 
-## Architecture
+## Related packages
 
-The core package follows a clean architecture pattern:
+- `superdeck` - Flutter slide runtime
+- `superdeck_builder` - asset generation and build pipeline
+- `superdeck_cli` - CLI wrapper (installs the `superdeck` command)
 
-1. **Models** define the data structures
-2. **Repositories** provide data access abstractions
-3. **Utilities** offer cross-cutting functionality
+## License
 
-This separation ensures the core logic remains independent of specific UI frameworks or build tools.
-
-## Contributing
-
-See the main [SuperDeck repository](https://github.com/leoafarias/superdeck) for contribution guidelines.
+BSD 3-Clause. See `LICENSE` in the repository root.
