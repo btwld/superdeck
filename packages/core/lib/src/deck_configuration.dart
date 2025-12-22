@@ -68,12 +68,22 @@ final class DeckConfiguration {
     return fromMap(map);
   }
 
-  static final schema = Ack.object({
-    'projectDir': Ack.string().nullable().optional(),
-    'slidesPath': Ack.string().nullable().optional(),
-    'outputDir': Ack.string().nullable().optional(),
-    'assetsPath': Ack.string().nullable().optional(),
-  });
+  static final schema = Ack.object(
+    {
+      'projectDir': Ack.string().nullable().optional().description(
+        'Base project directory path',
+      ),
+      'slidesPath': Ack.string().nullable().optional().description(
+        'Path to the source markdown file (default: slides.md)',
+      ),
+      'outputDir': Ack.string().nullable().optional().description(
+        'Output directory for generated files (default: .superdeck)',
+      ),
+      'assetsPath': Ack.string().nullable().optional().description(
+        'Assets subdirectory path (default: assets)',
+      ),
+    },
+  ).description('Configuration for deck file paths and directories');
 
   static File get defaultFile => File('superdeck.yaml');
 

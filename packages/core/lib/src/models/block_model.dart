@@ -26,12 +26,21 @@ sealed class Block {
   });
 
   /// Base schema for all block types
-  static final schema = Ack.object({
-    'type': Ack.string(),
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
-  }, additionalProperties: true);
+  static final schema = Ack.object(
+    {
+      'type': Ack.string().description('The block type identifier'),
+      'align': ContentAlignment.schema.nullable().optional().description(
+        'Content alignment within the block',
+      ),
+      'flex': Ack.integer().nullable().optional().description(
+        'Flex weight for flexible layout sizing (default: 1)',
+      ),
+      'scrollable': Ack.boolean().nullable().optional().description(
+        'Whether the block content is scrollable',
+      ),
+    },
+    additionalProperties: true,
+  ).description('Base block structure for slide content');
 
   /// Parses a block from a JSON map.
   ///
@@ -49,6 +58,8 @@ sealed class Block {
       ContentBlock.legacyKey: ContentBlock.schema, // Backward compatibility
       WidgetBlock.key: WidgetBlock.schema,
     },
+  ).description(
+    'A block can be a content block (markdown), widget block, or section block',
   );
 
   Map<String, dynamic> toMap();
@@ -141,13 +152,25 @@ class SectionBlock extends Block {
   }
 
   /// Validation schema for section blocks.
-  static final schema = Ack.object({
-    'type': Ack.string(),
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
-    'blocks': Ack.list(Ack.object({})).nullable().optional(),
-  }, additionalProperties: true);
+  static final schema = Ack.object(
+    {
+      'type': Ack.string().description('Must be "section" for section blocks'),
+      'align': ContentAlignment.schema.nullable().optional().description(
+        'Content alignment within the section',
+      ),
+      'flex': Ack.integer().nullable().optional().description(
+        'Flex weight for vertical layout sizing (default: 1)',
+      ),
+      'scrollable': Ack.boolean().nullable().optional().description(
+        'Whether the section content is scrollable',
+      ),
+      'blocks': Ack.list(Block.discriminatedSchema).nullable().optional()
+          .description('Child blocks arranged horizontally in the section'),
+    },
+    additionalProperties: true,
+  ).description(
+    'A section block contains multiple child blocks arranged horizontally',
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -228,13 +251,26 @@ class ContentBlock extends Block {
     }
   }
 
-  static final schema = Ack.object({
-    'type': Ack.string(),
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
-    'content': Ack.string().nullable().optional(),
-  }, additionalProperties: true);
+  static final schema = Ack.object(
+    {
+      'type': Ack.string().description(
+        'Must be "block" (or legacy "column") for content blocks',
+      ),
+      'align': ContentAlignment.schema.nullable().optional().description(
+        'Content alignment within the block',
+      ),
+      'flex': Ack.integer().nullable().optional().description(
+        'Flex weight for layout sizing (default: 1)',
+      ),
+      'scrollable': Ack.boolean().nullable().optional().description(
+        'Whether the content is scrollable',
+      ),
+      'content': Ack.string().nullable().optional().description(
+        'Markdown content to display in this block',
+      ),
+    },
+    additionalProperties: true,
+  ).description('A content block that displays markdown text');
 
   @override
   bool operator ==(Object other) =>
@@ -361,13 +397,27 @@ class WidgetBlock extends Block {
     );
   }
 
-  static final schema = Ack.object({
-    'type': Ack.string(),
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
-    "name": Ack.string(),
-  }, additionalProperties: true);
+  static final schema = Ack.object(
+    {
+      'type': Ack.string().description('Must be "widget" for widget blocks'),
+      'align': ContentAlignment.schema.nullable().optional().description(
+        'Widget alignment within the block',
+      ),
+      'flex': Ack.integer().nullable().optional().description(
+        'Flex weight for layout sizing (default: 1)',
+      ),
+      'scrollable': Ack.boolean().nullable().optional().description(
+        'Whether the widget is scrollable',
+      ),
+      'name': Ack.string().description(
+        'The registered widget name to render',
+      ),
+    },
+    additionalProperties: true,
+  ).description(
+    'A widget block that renders a custom Flutter widget by name. '
+    'Additional properties are passed as widget arguments.',
+  );
 
   @override
   bool operator ==(Object other) =>

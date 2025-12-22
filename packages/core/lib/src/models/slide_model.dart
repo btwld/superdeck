@@ -69,12 +69,25 @@ class Slide {
   }
 
   /// Validation schema for slide data.
-  static final schema = Ack.object({
-    "key": Ack.string(),
-    'options': SlideOptions.schema.nullable().optional(),
-    'sections': Ack.list(SectionBlock.schema).optional(),
-    'comments': Ack.list(Ack.string()).optional(),
-  }, additionalProperties: true);
+  static final schema = Ack.object(
+    {
+      'key': Ack.string().description(
+        'Unique identifier for this slide, typically a hash of the content',
+      ),
+      'options': SlideOptions.schema.nullable().optional().description(
+        'Optional configuration options for the slide (title, style, custom args)',
+      ),
+      'sections': Ack.list(SectionBlock.schema).optional().description(
+        'List of sections that make up the slide layout (arranged vertically)',
+      ),
+      'comments': Ack.list(Ack.string()).optional().description(
+        'Speaker notes or comments associated with this slide',
+      ),
+    },
+    additionalProperties: true,
+  ).description(
+    'A slide in the presentation containing sections of content blocks',
+  );
 
   /// Parses a slide from a JSON map.
   ///
@@ -180,10 +193,20 @@ class SlideOptions {
   }
 
   /// Validation schema for slide options.
-  static final schema = Ack.object({
-    'title': Ack.string().nullable().optional(),
-    'style': Ack.string().nullable().optional(),
-  }, additionalProperties: true);
+  static final schema = Ack.object(
+    {
+      'title': Ack.string().nullable().optional().description(
+        'The title of the slide for navigation and metadata',
+      ),
+      'style': Ack.string().nullable().optional().description(
+        'The style template name to apply to this slide',
+      ),
+    },
+    additionalProperties: true,
+  ).description(
+    'Configuration options for a slide including title, style, and custom arguments. '
+    'Additional properties are passed as template arguments.',
+  );
 
   /// Parses slide options from a JSON map.
   static SlideOptions parse(Map<String, dynamic> map) {
