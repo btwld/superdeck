@@ -71,7 +71,7 @@ void main() {
       reference['metadata_examples'] as Map<String, dynamic>,
     );
 
-    final written = writeJsonIfChanged(
+    final isUpToDate = isJsonSnapshotUpToDate(
       file: file,
       reference: reference,
       buildMetadata: (timestamp) => {
@@ -83,15 +83,12 @@ void main() {
       },
     );
 
-    if (written) {
-      print(
-        '✅ Generated markdown_ref.json with ${reference.length} categories',
-      );
-    } else {
-      print(
-        '✓ markdown_ref.json is up to date (${reference.length} categories)',
-      );
-    }
+    expect(
+      isUpToDate,
+      isTrue,
+      reason:
+          'Snapshot out of date. Regenerate markdown_ref.json and commit updates.',
+    );
   });
 }
 

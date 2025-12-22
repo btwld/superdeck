@@ -3,6 +3,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/utils/syntax_highlighter.dart';
 
 void main() {
+  testWidgets('SyntaxHighlight.render requires initialization', (tester) async {
+    const source = 'void main() {}';
+
+    final beforeInit = SyntaxHighlight.render(source, 'dart');
+    expect(beforeInit.length, 1);
+    expect(beforeInit[0].text, source);
+    expect(beforeInit[0].children, isNull);
+
+    await SyntaxHighlight.initialize();
+
+    final afterInit = SyntaxHighlight.render(source, 'dart');
+    expect(afterInit, isNotEmpty);
+    expect(afterInit[0].children, isNotEmpty);
+  });
+
   group('splitTextSpansByLines', () {
     test('returns empty TextSpan for empty input', () {
       final result = splitTextSpansByLines([]);
@@ -112,11 +127,7 @@ void main() {
       final spans = [
         const TextSpan(
           children: [
-            TextSpan(
-              children: [
-                TextSpan(text: 'Deep\nNesting'),
-              ],
-            ),
+            TextSpan(children: [TextSpan(text: 'Deep\nNesting')]),
           ],
         ),
       ];

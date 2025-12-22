@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:syntax_highlight/syntax_highlight.dart';
@@ -6,6 +8,9 @@ class SyntaxHighlight {
   SyntaxHighlight._();
 
   static late HighlighterTheme _theme;
+  static bool _isInitialized = false;
+  static bool _warnedUninitialized = false;
+  static Future<void>? _initializeFuture;
 
   static final List<String> _mainSupportedLanguages = ['dart', 'json', 'yaml'];
 
@@ -15,21 +20,44 @@ class SyntaxHighlight {
     'mermaid',
   ];
 
-  static Future<void> initialize() async {
-    await Highlighter.initialize(_mainSupportedLanguages);
-    _theme = await HighlighterTheme.loadDarkTheme();
-    // Load the default light theme and create a highlightfer.
+  static Future<void> initialize() {
+    if (_isInitialized) return Future.value();
+    _initializeFuture ??= _initialize();
+    return _initializeFuture!;
+  }
 
-    // Load the markdown grammar and add it to the highlighter.
-    for (var language in _secondarySupportedLangs) {
-      final grammar = await rootBundle.loadString(
-        'packages/superdeck/assets/grammars/$language.json',
-      );
-      Highlighter.addLanguage(language, grammar);
+  static Future<void> _initialize() async {
+    try {
+      await Highlighter.initialize(_mainSupportedLanguages);
+      _theme = await HighlighterTheme.loadDarkTheme();
+
+      // Load the markdown grammar and add it to the highlighter.
+      for (var language in _secondarySupportedLangs) {
+        final grammar = await rootBundle.loadString(
+          'packages/superdeck/assets/grammars/$language.json',
+        );
+        Highlighter.addLanguage(language, grammar);
+      }
+
+      _isInitialized = true;
+    } catch (_) {
+      _initializeFuture = null;
+      rethrow;
     }
   }
 
   static List<TextSpan> render(String source, String? language) {
+    if (!_isInitialized) {
+      if (!_warnedUninitialized) {
+        debugPrint(
+          '[SyntaxHighlighter] render() called before initialize(); '
+          'returning plain text.',
+        );
+        _warnedUninitialized = true;
+      }
+      return [TextSpan(text: source)];
+    }
+
     // Get all supported languages (main + secondary)
     final allSupportedLanguages = [
       ..._mainSupportedLanguages,
@@ -51,7 +79,9 @@ class SyntaxHighlight {
       return splitTextSpansByLines([code]);
     } catch (e, stackTrace) {
       // Log the failure for debugging, but gracefully return plain text
-      debugPrint('[SyntaxHighlighter] Failed to highlight $effectiveLanguage: $e');
+      debugPrint(
+        '[SyntaxHighlighter] Failed to highlight $effectiveLanguage: $e',
+      );
       debugPrint('[SyntaxHighlighter] Stack: $stackTrace');
       return [TextSpan(text: source)];
     }

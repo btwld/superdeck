@@ -23,7 +23,7 @@ void main() {
       'ast': converter.toMap(markdown, includeMetadata: true),
     };
 
-    final written = writeJsonIfChanged(
+    final isUpToDate = isJsonSnapshotUpToDate(
       file: outputFile,
       reference: reference,
       buildMetadata: (timestamp) => {
@@ -36,10 +36,11 @@ void main() {
       },
     );
 
-    if (written) {
-      print('✅ Generated github_markdown_ref.json');
-    } else {
-      print('✓ github_markdown_ref.json is up to date');
-    }
+    expect(
+      isUpToDate,
+      isTrue,
+      reason:
+          'Snapshot out of date. Regenerate github_markdown_ref.json and commit updates.',
+    );
   });
 }

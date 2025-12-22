@@ -14,8 +14,11 @@ class ParsedBlock {
   }) : _data = data;
 
   Map<String, dynamic> get data {
-    // Normalize 'block' tag to 'column' for backward compatibility
-    final normalizedType = type == 'block' ? ContentBlock.key : type;
+    // Normalize legacy @column to the current ContentBlock key.
+    final normalizedType =
+        type == ContentBlock.legacyKey || type == ContentBlock.key
+        ? ContentBlock.key
+        : type;
 
     return switch (normalizedType) {
       SectionBlock.key ||
@@ -33,7 +36,7 @@ class ParsedBlock {
 /// - `@column{align: center, flex: 2}` or `@block{align: center, flex: 2}`
 ///
 /// Both `@column` and `@block` tags create [ContentBlock] instances.
-/// The `@block` tag is legacy and normalized to `@column` for backward compatibility.
+/// The `@column` tag is legacy and normalized to `@block` for backward compatibility.
 ///
 /// **Why regex instead of markdown package BlockSyntax?**
 /// - These are build-time directives, not markdown syntax

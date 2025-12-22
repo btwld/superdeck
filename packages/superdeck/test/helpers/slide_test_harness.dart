@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/utils/constants.dart'; // kResolution
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
+import 'package:superdeck/src/utils/syntax_highlighter.dart';
 
 /// Lightweight harness for pumping slides with production defaults.
 class SlideTestHarness {
@@ -17,6 +18,7 @@ class SlideTestHarness {
     bool isExporting = false,
     SlideParts? parts,
   }) async {
+    await SyntaxHighlight.initialize();
     final configuration = createConfiguration(
       slide,
       style: style,
@@ -72,6 +74,7 @@ class SlideTestHarness {
     SlideConfiguration configuration, {
     Size? resolution,
   }) async {
+    await SyntaxHighlight.initialize();
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

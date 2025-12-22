@@ -47,11 +47,31 @@ bool writeJsonIfChanged({
   return false;
 }
 
+/// Returns true if the on-disk JSON snapshot matches the [reference].
+///
+/// This does not write files. It uses the existing snapshot metadata timestamp
+/// (if present) to ensure stable comparison behavior.
+bool isJsonSnapshotUpToDate({
+  required File file,
+  required Map<String, dynamic> reference,
+  required Map<String, dynamic> Function(String timestamp) buildMetadata,
+}) {
+  final existing = file.existsSync()
+      ? jsonDecode(file.readAsStringSync()) as Map<String, dynamic>
+      : null;
+
+  final previousTimestamp =
+      (existing?['metadata'] as Map<String, dynamic>?)?['generated'] as String?;
+
+  // Mirror writeJsonIfChanged's comparison strategy.
+  final referenceWithMetadata = Map<String, dynamic>.from(reference)
+    ..['metadata'] = buildMetadata(previousTimestamp ?? '');
+
+  return _contentEquals(referenceWithMetadata, existing);
+}
+
 /// Compares two reference maps, ignoring the 'generated' field in metadata.
-bool _contentEquals(
-  Map<String, dynamic> next,
-  Map<String, dynamic>? existing,
-) {
+bool _contentEquals(Map<String, dynamic> next, Map<String, dynamic>? existing) {
   if (existing == null) return false;
 
   // Shallow copy to avoid mutating originals
