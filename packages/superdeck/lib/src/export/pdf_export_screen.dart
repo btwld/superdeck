@@ -170,7 +170,6 @@ class _PdfExportBar extends StatelessWidget {
             const SizedBox(height: 16.0),
             Text(
               progressText,
-              // TODO: Replace with Remix
               style: Theme.of(
                 context,
               ).textTheme.bodyLarge?.copyWith(color: Colors.white),

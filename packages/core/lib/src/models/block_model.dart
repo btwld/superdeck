@@ -46,6 +46,7 @@ sealed class Block {
     discriminatorKey: 'type',
     schemas: {
       ContentBlock.key: ContentBlock.schema,
+      ContentBlock.legacyKey: ContentBlock.schema, // Backward compatibility
       WidgetBlock.key: WidgetBlock.schema,
     },
   );
@@ -57,7 +58,7 @@ sealed class Block {
     final type = map['type'] as String;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
-      ContentBlock.key => ContentBlock.fromMap(map),
+      ContentBlock.key || ContentBlock.legacyKey => ContentBlock.fromMap(map),
       WidgetBlock.key => WidgetBlock.fromMap(map),
       _ => throw ArgumentError('Unknown block type: $type'),
     };
@@ -174,8 +175,10 @@ class SectionBlock extends Block {
 /// This is the most common block type, used for text and markdown content.
 class ContentBlock extends Block {
   /// The type identifier for content blocks.
-  /// TODO: Change to 'block' in next major version
-  static const key = 'column';
+  static const key = 'block';
+
+  /// Legacy key for backward compatibility with existing slides.
+  static const legacyKey = 'column';
 
   /// The markdown content to display.
   final String content;

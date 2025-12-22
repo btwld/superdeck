@@ -348,9 +348,6 @@ class MermaidGenerator implements AssetGenerator {
       return true;
     }
 
-    // Future: Add other problematic diagram types here as needed
-    // if (trimmed.startsWith('gantt')) return true;
-
     return false;
   }
 

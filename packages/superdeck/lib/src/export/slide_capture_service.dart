@@ -119,7 +119,6 @@ class SlideCaptureService {
         MediaQuery(
           data: MediaQuery.of(config.context),
           child: MaterialApp(
-            // TODO: Replace with Remix
             theme: Theme.of(config.context),
             debugShowCheckedModeBanner: false,
             home: Scaffold(body: widget),

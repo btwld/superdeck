@@ -238,7 +238,7 @@ void main() {
         final block = ContentBlock('Hello');
 
         expect(block.content, 'Hello');
-        expect(block.type, 'column');
+        expect(block.type, 'block');
         expect(block.flex, 1);
         expect(block.scrollable, false);
         expect(block.align, isNull);
@@ -316,7 +316,7 @@ void main() {
           final block = ContentBlock('');
           final map = block.toMap();
 
-          expect(map['type'], 'column');
+          expect(map['type'], 'block');
           expect(map['flex'], 1);
           expect(map['scrollable'], false);
           expect(map.containsKey('content'), isFalse);
@@ -332,7 +332,7 @@ void main() {
           );
           final map = block.toMap();
 
-          expect(map['type'], 'column');
+          expect(map['type'], 'block');
           expect(map['content'], 'Content');
           expect(map['align'], 'center');
           expect(map['flex'], 2);
@@ -365,6 +365,17 @@ void main() {
           expect(block.align, ContentAlignment.center);
           expect(block.flex, 2);
           expect(block.scrollable, true);
+        });
+
+        test('deserializes new block type', () {
+          final map = {
+            'type': 'block',
+            'content': 'New format',
+          };
+          final block = ContentBlock.fromMap(map);
+
+          expect(block.content, 'New format');
+          expect(block.type, 'block');
         });
 
         test('handles numeric flex as double', () {
