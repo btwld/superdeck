@@ -22,3 +22,8 @@ export 'markdown_list_style.dart';
 export 'markdown_table_style.dart';
 export 'markdown_text_style.dart';
 export 'slide_style.dart';
+
+// Style Schema (YAML configuration)
+export 'schema/style_config_loader.dart';
+export 'schema/style_options_merger.dart';
+export 'schema/style_schemas.dart';
