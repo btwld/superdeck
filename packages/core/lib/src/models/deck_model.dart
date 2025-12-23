@@ -1,3 +1,4 @@
+import 'package:ack/ack.dart';
 import 'package:collection/collection.dart';
 
 import '../deck_configuration.dart';
@@ -34,6 +35,21 @@ class Deck {
         map['configuration'] as Map<String, dynamic>? ?? {},
       ),
     );
+  }
+
+  /// Ack schema for validating complete deck/presentation JSON.
+  static final schema = Ack.object({
+    'slides': Ack.list(Slide.schema),
+    'configuration': DeckConfiguration.schema.nullable().optional(),
+  });
+
+  /// Parses a deck from a JSON map with validation.
+  ///
+  /// Validates the map against the schema before parsing.
+  /// Throws an exception if the validation fails.
+  static Deck parse(Map<String, dynamic> map) {
+    schema.parse(map);
+    return fromMap(map);
   }
 
   @override
