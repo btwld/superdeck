@@ -1,7 +1,11 @@
+import 'package:superdeck_core/superdeck_core.dart';
+
 import '../../deck/deck_options.dart';
 import '../slide_style.dart';
 import 'style_config_loader.dart';
 import 'style_schemas.dart';
+
+final _logger = Logger('StyleOptionsMerger');
 
 /// Merges style configuration from YAML files with code-defined options.
 ///
@@ -54,7 +58,7 @@ class StyleOptionsMerger {
     );
 
     if (yamlConfig == null) {
-      // No YAML config found or parsing failed - return code options unchanged
+      _logger.fine('No YAML style configuration loaded, using code options only');
       return codeOptions;
     }
 
@@ -91,6 +95,7 @@ class StyleOptionsMerger {
   /// Returns:
   /// - null if both are null
   /// - yaml style if code is null
+  /// - code style if yaml is null
   /// - yaml merged with code (code wins) if both exist
   static SlideStyle? _mergeBaseStyle(
     SlideStyle? yamlStyle,
