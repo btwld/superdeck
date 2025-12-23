@@ -18,6 +18,8 @@ jobs:
         shell: bash
         run: |
           curl -fsSL https://fvm.app/install.sh | bash
+          echo "/home/runner/fvm/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/fvm/bin:$PATH"
           fvm use stable --force
 
       - uses: kuhnroyal/flutter-fvm-config-action@v2
