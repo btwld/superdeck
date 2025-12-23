@@ -189,8 +189,15 @@ class CliWatcher {
 
   /// Handles process exit
   Future<void> _handleProcessExit(int exitCode) async {
+    // Check disposal flag BEFORE accessing any signals to avoid
+    // "signal read after disposed" warning when dispose() was called
+    // before this async callback executed
+    if (_disposed) {
+      return;
+    }
+
     if (_status.value == CliWatcherStatus.stopped) {
-      // Already disposed, nothing to do
+      // Already stopped via dispose(), nothing to do
       return;
     }
 
