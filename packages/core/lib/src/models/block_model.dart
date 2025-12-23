@@ -146,7 +146,7 @@ class SectionBlock extends Block {
     'align': ContentAlignment.schema.nullable().optional(),
     'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
-    'blocks': Ack.list(Ack.object({})).nullable().optional(),
+    'blocks': Ack.list(Block.discriminatedSchema).nullable().optional(),
   }, additionalProperties: true);
 
   @override
