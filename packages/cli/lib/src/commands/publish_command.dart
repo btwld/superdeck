@@ -24,9 +24,13 @@ class PublishCommand extends Command<int> {
   static final RegExp _sshRepositoryPattern = RegExp(
     r'git@github\.com:([^/]+)/([^/.]+)(\.git)?',
   );
+  // Valid git branch name pattern (alphanumeric, dots, hyphens, underscores, slashes)
+  static final RegExp _validBranchNamePattern = RegExp(
+    r'^[a-zA-Z0-9][a-zA-Z0-9._/-]*$',
+  );
 
   PublishCommand({Logger? loggerOverride})
-    : _logger = loggerOverride ?? logger {
+      : _logger = loggerOverride ?? logger {
     argParser
       ..addOption(
         'branch',
@@ -97,6 +101,24 @@ class PublishCommand extends Command<int> {
         result.stdout.toString().trim() == 'true';
   }
 
+  /// Validates a git branch name to prevent command injection
+  bool _isValidBranchName(String branch) {
+    // Reject empty names
+    if (branch.isEmpty) return false;
+
+    // Reject names with path traversal
+    if (branch.contains('..')) return false;
+
+    // Reject names starting with hyphen (could be interpreted as flags)
+    if (branch.startsWith('-')) return false;
+
+    // Reject names with control characters or spaces
+    if (branch.contains(RegExp(r'[\s\x00-\x1f\x7f]'))) return false;
+
+    // Must match valid git branch name pattern
+    return _validBranchNamePattern.hasMatch(branch);
+  }
+
   /// Gets the current branch name
   Future<String> _getCurrentBranch(String repoPath) async {
     const args = ['symbolic-ref', '--short', 'HEAD'];
@@ -130,9 +152,11 @@ class PublishCommand extends Command<int> {
     return null;
   }
 
-  /// Set up a custom index.html with loading indicator before build
-  Future<void> _setupCustomIndexHtml(String repoDir, bool isDryRun) async {
+  /// Set up a custom index.html with loading indicator before build.
+  /// Returns the backup file path if a backup was created, null otherwise.
+  Future<String?> _setupCustomIndexHtml(String repoDir, bool isDryRun) async {
     final progress = _logger.progress('Setting up custom index.html');
+    String? backupPath;
     try {
       if (!isDryRun) {
         final webDir = path.join(
@@ -144,7 +168,7 @@ class PublishCommand extends Command<int> {
 
         // Create a backup of the original index.html if it exists
         if (File(indexHtmlPath).existsSync()) {
-          final backupPath = path.join(webDir, 'index.html.bak');
+          backupPath = path.join(webDir, 'index.html.bak');
           await File(indexHtmlPath).copy(backupPath);
           _logger.detail('Created backup of original index.html');
         }
@@ -157,10 +181,28 @@ class PublishCommand extends Command<int> {
       }
 
       progress.complete('Custom index.html setup complete');
+      return backupPath;
     } catch (e) {
       progress.fail('Failed to set up custom index.html');
       _logger.err('Error setting up custom index.html: $e');
       rethrow;
+    }
+  }
+
+  /// Restores the original index.html from backup if it exists.
+  Future<void> _restoreIndexHtmlBackup(String? backupPath) async {
+    if (backupPath == null) return;
+
+    final backupFile = File(backupPath);
+    if (!backupFile.existsSync()) return;
+
+    final indexHtmlPath = backupPath.replaceAll('.bak', '');
+    try {
+      await backupFile.copy(indexHtmlPath);
+      await backupFile.delete();
+      _logger.detail('Restored original index.html from backup');
+    } catch (e) {
+      _logger.warn('Failed to restore index.html backup: $e');
     }
   }
 
@@ -370,6 +412,16 @@ class PublishCommand extends Command<int> {
     final String exampleDirArg = args['example-dir'] as String;
     final String buildDirArg = args['build-dir'] as String;
 
+    // Validate branch name to prevent command injection
+    if (!_isValidBranchName(targetBranch)) {
+      _logger.err(
+        'Invalid branch name: "$targetBranch". '
+        'Branch names must start with alphanumeric and contain only '
+        'letters, numbers, dots, hyphens, underscores, or slashes.',
+      );
+      return ExitCode.usage.code;
+    }
+
     if (dryRun) {
       _logger.info('Running in dry-run mode. No changes will be made.');
     }
@@ -413,9 +465,10 @@ class PublishCommand extends Command<int> {
       }
     }
 
-    // Setup custom index.html before building
+    // Setup custom index.html before building (track backup for restoration)
+    String? indexHtmlBackupPath;
     if (shouldBuild) {
-      await _setupCustomIndexHtml(currentDir, dryRun);
+      indexHtmlBackupPath = await _setupCustomIndexHtml(currentDir, dryRun);
     }
 
     // Build the web app if requested
@@ -430,6 +483,7 @@ class PublishCommand extends Command<int> {
 
       if (!buildSuccessful && !dryRun) {
         _logger.err('Web build failed. Publication aborted.');
+        await _restoreIndexHtmlBackup(indexHtmlBackupPath);
 
         return ExitCode.software.code;
       }
@@ -588,6 +642,7 @@ class PublishCommand extends Command<int> {
       progress.fail('Publication failed');
       _logger.err('Error during publication: $e');
       _logger.detail('$stackTrace');
+      await _restoreIndexHtmlBackup(indexHtmlBackupPath);
 
       return ExitCode.software.code;
     }

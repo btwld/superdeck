@@ -177,36 +177,3 @@ List<int> parseLineNumbers(String input) {
   lineNumberList.sort();
   return lineNumberList;
 }
-
-const vscodeDarkTheme = {
-  'root': TextStyle(
-    color: Color(0xffD4D4D4),
-    backgroundColor: Color(0xff1E1E1E),
-  ),
-  'emphasis': TextStyle(fontStyle: FontStyle.italic),
-  'strong': TextStyle(fontWeight: FontWeight.bold),
-  'section': TextStyle(color: Color(0xff569cd6), fontWeight: FontWeight.bold),
-  'comment': TextStyle(color: Color(0xff608b4e)),
-  'literal': TextStyle(color: Color(0xffb5cea8)),
-  'regexp': TextStyle(color: Color(0xff646695)),
-  'selector-tag': TextStyle(color: Color(0xff569cd6)),
-  'selector-class': TextStyle(color: Color(0xffd7ba7d)),
-  'selector-attr': TextStyle(color: Color(0xff9cdcfe)),
-  'selector-pseudo': TextStyle(color: Color(0xffd7ba7d)),
-  'built_in': TextStyle(color: Color(0xff569cd6)),
-  'bullet': TextStyle(color: Color(0xff6796e6)),
-  'code': TextStyle(color: Color(0xffce9178)),
-  'formula': TextStyle(color: Color(0xff569cd6)),
-  'keyword': TextStyle(color: Color(0xff569cd6)),
-  'keyword.operator': TextStyle(color: Color(0xffd4d4d4)),
-  'operator': TextStyle(color: Color(0xff569cd6)),
-  'punctuation': TextStyle(color: Color(0xff808080)),
-  'meta': TextStyle(color: Color(0xff569cd6)),
-  'meta.string': TextStyle(color: Color(0xffce9178)),
-  'number': TextStyle(color: Color(0xffb5cea8)),
-  'string': TextStyle(color: Color(0xffce9178)),
-  'string.regexp': TextStyle(color: Color(0xffd16969)),
-  'symbol': TextStyle(color: Color(0xff569cd6)),
-  'type': TextStyle(color: Color(0xff569cd6)),
-  'variable': TextStyle(color: Color(0xff9cdcfe)),
-};

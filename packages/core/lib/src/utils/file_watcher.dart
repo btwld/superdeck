@@ -10,11 +10,12 @@ class FileWatcher {
 
   /// Returns a stream of file change events.
   ///
-  /// Emits an event each time the file is modified. Events are debounced to prevent
+  /// Emits an event each time the file is modified. Events are throttled to prevent
   /// multiple emissions during a single file save operation.
   Stream<void> watch() {
     final directory = file.parent;
     StreamSubscription<FileSystemEvent>? subscription;
+    Timer? debounceTimer;
 
     late final StreamController<void> controller;
     controller = StreamController<void>(
@@ -28,13 +29,17 @@ class FileWatcher {
           if (eventPath == targetPath && !_isProcessing) {
             _isProcessing = true;
             controller.add(null);
-            Future.delayed(const Duration(milliseconds: 100), () {
+            // Use cancelable Timer instead of Future.delayed
+            debounceTimer?.cancel();
+            debounceTimer = Timer(const Duration(milliseconds: 100), () {
               _isProcessing = false;
             });
           }
         });
       },
       onCancel: () async {
+        debounceTimer?.cancel();
+        debounceTimer = null;
         await subscription?.cancel();
         subscription = null;
       },

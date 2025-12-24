@@ -1,3 +1,5 @@
+import 'dart:convert' show jsonEncode;
+
 import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/src/ui/widgets/icon_button.dart';
@@ -83,10 +85,12 @@ class _WebViewWrapperState extends State<WebViewWrapper>
 
   // Function to set content in the DartPad editor
   Future<void> setDartPadEditorContent(String content) {
+    // Escape content as JSON string to prevent JavaScript injection
+    final escapedContent = jsonEncode(content);
     return executeInIframe('''
                 var editor = document.querySelector('.CodeMirror')?.CodeMirror;
                 if(editor){
-                  editor.setValue($content);
+                  editor.setValue($escapedContent);
                   editor.setCursor(editor.lineCount(), 0);
                   editor.focus();
                   console.log('DartPad editor content set!');
