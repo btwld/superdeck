@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-import 'markdown_checkbox_spec.dart';
+import '../specs/markdown_checkbox_spec.dart';
 
 /// Style class for configuring [MarkdownCheckboxSpec] properties.
 final class MarkdownCheckboxStyle extends Style<MarkdownCheckboxSpec>

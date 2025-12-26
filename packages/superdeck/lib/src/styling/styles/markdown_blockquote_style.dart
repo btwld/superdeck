@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-import 'markdown_blockquote_spec.dart';
+import '../specs/markdown_blockquote_spec.dart';
 
 /// Style class for configuring [MarkdownBlockquoteSpec] properties.
 final class MarkdownBlockquoteStyle extends Style<MarkdownBlockquoteSpec>

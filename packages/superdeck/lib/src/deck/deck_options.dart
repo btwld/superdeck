@@ -1,5 +1,5 @@
 import '../rendering/slides/slide_parts.dart';
-import '../styling/styles.dart';
+import '../styling/styling.dart';
 import 'widget_definition.dart';
 
 class DeckOptions {

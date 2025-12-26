@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
-import '../styling/slide_style.dart';
+import '../styling/styles/slide_style.dart';
 import '../ui/widgets/provider.dart';
 import 'widget_definition.dart';
 

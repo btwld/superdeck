@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-import 'markdown_alert_spec.dart';
-import 'markdown_alert_type_spec.dart';
+import '../specs/markdown_alert_spec.dart';
+import '../specs/markdown_alert_type_spec.dart';
 import 'markdown_alert_type_style.dart';
 
 /// Style class for configuring [MarkdownAlertSpec] properties.

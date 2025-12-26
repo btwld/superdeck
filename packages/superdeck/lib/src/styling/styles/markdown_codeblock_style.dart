@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-import 'markdown_codeblock_spec.dart';
+import '../specs/markdown_codeblock_spec.dart';
 
 /// Style class for configuring [MarkdownCodeblockSpec] properties.
 final class MarkdownCodeblockStyle extends Style<MarkdownCodeblockSpec>

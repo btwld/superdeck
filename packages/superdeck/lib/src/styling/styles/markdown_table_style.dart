@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mix/mix.dart';
 
-import 'markdown_table_spec.dart';
+import '../specs/markdown_table_spec.dart';
 
 /// Style class for configuring [MarkdownTableSpec] properties.
 ///

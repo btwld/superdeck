@@ -11,8 +11,8 @@ export 'package:superdeck/src/ui/widgets/measure_size.dart';
 export 'package:superdeck/src/ui/widgets/provider.dart';
 
 // Styling
-export 'package:superdeck/src/styling/style.dart';
-export 'package:superdeck/src/styling/styles.dart';
+export 'package:superdeck/src/styling/default_style.dart';
+export 'package:superdeck/src/styling/styling.dart';
 
 // UI
 export 'package:superdeck/src/ui/superdeck_app.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-import 'markdown_list_spec.dart';
+import '../specs/markdown_list_spec.dart';
 
 /// Style class for configuring [MarkdownListSpec] properties.
 final class MarkdownListStyle extends Style<MarkdownListSpec>

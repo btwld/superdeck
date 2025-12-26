@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../ui/widgets/provider.dart';
-import '../../styling/styles.dart';
+import '../../styling/styling.dart';
 
 class BlockConfiguration {
   const BlockConfiguration({

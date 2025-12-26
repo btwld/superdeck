@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
-import 'package:superdeck/src/styling/schema/style_options_merger.dart';
-import 'package:superdeck/src/styling/slide_style.dart';
+import 'package:superdeck/src/styling/schema/style_config.dart';
+import 'package:superdeck/src/styling/styles/slide_style.dart';
 
 void main() {
-  group('StyleOptionsMerger', () {
+  group('StyleConfig', () {
     group('merge', () {
       test('returns code options when yaml config is empty', () {
         final codeStyle = SlideStyle(
@@ -15,7 +15,7 @@ void main() {
 
         final yamlConfig = (baseStyle: null, styles: <String, SlideStyle>{});
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         expect(result.baseStyle, isNotNull);
       });
@@ -28,7 +28,7 @@ void main() {
 
         final codeOptions = const DeckOptions();
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         expect(result.baseStyle, isNotNull);
       });
@@ -45,7 +45,7 @@ void main() {
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         expect(result.baseStyle, isNotNull);
         // Code style should override yaml style for h1
@@ -60,7 +60,7 @@ void main() {
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         // Code style should be preserved even when yaml has no base
         expect(result.baseStyle, isNotNull);
@@ -85,7 +85,7 @@ void main() {
           styles: {'title': codeTitleStyle, 'special': codeSpecialStyle},
         );
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         // Both 'title' (merged) and 'special' (code only) should exist
         expect(result.styles.containsKey('title'), isTrue);
@@ -100,7 +100,7 @@ void main() {
         );
         final codeOptions = DeckOptions(styles: {'special': codeSpecialStyle});
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         expect(result.styles.containsKey('special'), isTrue);
       });
@@ -116,7 +116,7 @@ void main() {
 
         final codeOptions = const DeckOptions();
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         expect(result.styles.containsKey('title'), isTrue);
       });
@@ -126,7 +126,7 @@ void main() {
 
         final codeOptions = DeckOptions(debug: true);
 
-        final result = StyleOptionsMerger.merge(yamlConfig, codeOptions);
+        final result = StyleConfig.merge(yamlConfig, codeOptions);
 
         expect(result.debug, isTrue);
       });
@@ -139,7 +139,7 @@ void main() {
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = await StyleOptionsMerger.loadAndMerge(
+        final result = await StyleConfig.loadAndMerge(
           codeOptions,
           loader: () async => null, // No YAML file
         );
@@ -155,7 +155,7 @@ base:
 ''';
         final codeOptions = const DeckOptions();
 
-        final result = await StyleOptionsMerger.loadAndMerge(
+        final result = await StyleConfig.loadAndMerge(
           codeOptions,
           loader: () async => yamlContent,
         );
@@ -170,13 +170,115 @@ base:
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = await StyleOptionsMerger.loadAndMerge(
+        final result = await StyleConfig.loadAndMerge(
           codeOptions,
           loader: () async => invalidYaml,
         );
 
         // Should return code options unchanged when yaml fails
         expect(result.baseStyle, isNotNull);
+      });
+
+      test('parses valid YAML into StyleConfiguration', () async {
+        final yaml = '''
+base:
+  h1:
+    fontSize: 96.0
+styles:
+  - name: title
+    h1:
+      fontSize: 120.0
+''';
+        final result = await StyleConfig.loadAndMerge(
+          const DeckOptions(),
+          loader: () async => yaml,
+        );
+
+        expect(result.baseStyle, isNotNull);
+        expect(result.styles, hasLength(1));
+        expect(result.styles.containsKey('title'), isTrue);
+      });
+
+      test('returns code options for empty yaml string', () async {
+        final codeOptions = DeckOptions(
+          baseStyle: SlideStyle(
+            h1: TextStyler().style(TextStyleMix(fontSize: 96)),
+          ),
+        );
+
+        final result = await StyleConfig.loadAndMerge(
+          codeOptions,
+          loader: () async => '',
+        );
+
+        expect(result.baseStyle, isNotNull);
+      });
+
+      test('returns code options for whitespace-only string', () async {
+        final codeOptions = DeckOptions(
+          baseStyle: SlideStyle(
+            h1: TextStyler().style(TextStyleMix(fontSize: 96)),
+          ),
+        );
+
+        final result = await StyleConfig.loadAndMerge(
+          codeOptions,
+          loader: () async => '   \n\t  ',
+        );
+
+        expect(result.baseStyle, isNotNull);
+      });
+
+      test('returns code options for schema validation failure', () async {
+        // fontsize is a typo (should be fontSize) - strict validation catches this
+        final yaml = '''
+base:
+  h1:
+    fontsize: 96.0
+''';
+        final codeOptions = DeckOptions(
+          baseStyle: SlideStyle(
+            h1: TextStyler().style(TextStyleMix(fontSize: 48)),
+          ),
+        );
+
+        final result = await StyleConfig.loadAndMerge(
+          codeOptions,
+          loader: () async => yaml,
+        );
+
+        // Should return code options unchanged when schema validation fails
+        expect(result.baseStyle, isNotNull);
+      });
+
+      test('returns code options for empty yaml map', () async {
+        final codeOptions = DeckOptions(
+          baseStyle: SlideStyle(
+            h1: TextStyler().style(TextStyleMix(fontSize: 96)),
+          ),
+        );
+
+        final result = await StyleConfig.loadAndMerge(
+          codeOptions,
+          loader: () async => '{}',
+        );
+
+        expect(result.baseStyle, isNotNull);
+      });
+    });
+
+    group('StyleConfiguration typedef', () {
+      test('can be created directly for testing', () {
+        final style = SlideStyle(
+          h1: TextStyler().style(TextStyleMix(fontSize: 96)),
+        );
+        final config = (
+          baseStyle: style,
+          styles: <String, SlideStyle>{'title': style},
+        );
+
+        expect(config.baseStyle, isNotNull);
+        expect(config.styles, hasLength(1));
       });
     });
   });

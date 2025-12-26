@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
-import 'package:superdeck/src/styling/slide_style.dart';
+import 'package:superdeck/src/styling/styles/slide_style.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
