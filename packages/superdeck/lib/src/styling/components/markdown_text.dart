@@ -2,7 +2,62 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-import '../specs/markdown_text_spec.dart';
+// ============================================================
+// SPEC
+// ============================================================
+
+/// Specification for markdown text styling properties.
+///
+/// Defines styling for regular markdown text including text style,
+/// padding, and alignment.
+final class MarkdownTextSpec extends Spec<MarkdownTextSpec>
+    with Diagnosticable {
+  final TextStyle? textStyle;
+  final EdgeInsets? padding;
+  final WrapAlignment? alignment;
+
+  const MarkdownTextSpec({this.textStyle, this.padding, this.alignment});
+
+  @override
+  MarkdownTextSpec copyWith({
+    TextStyle? textStyle,
+    EdgeInsets? padding,
+    WrapAlignment? alignment,
+  }) {
+    return MarkdownTextSpec(
+      textStyle: textStyle ?? this.textStyle,
+      padding: padding ?? this.padding,
+      alignment: alignment ?? this.alignment,
+    );
+  }
+
+  @override
+  MarkdownTextSpec lerp(MarkdownTextSpec? other, double t) {
+    if (other == null) return this;
+
+    return MarkdownTextSpec(
+      textStyle: TextStyle.lerp(textStyle, other.textStyle, t),
+      padding: EdgeInsets.lerp(padding, other.padding, t),
+      alignment: t < 0.5 ? alignment : other.alignment,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('textStyle', textStyle))
+      ..add(DiagnosticsProperty('padding', padding))
+      ..add(EnumProperty('alignment', alignment));
+  }
+
+  @override
+  List<Object?> get props => [textStyle, padding, alignment];
+}
+
+// ============================================================
+// STYLE
+// ============================================================
 
 /// Style class for configuring [MarkdownTextSpec] properties.
 ///
@@ -60,19 +115,16 @@ final class MarkdownTextStyle extends Style<MarkdownTextSpec>
     return merge(MarkdownTextStyle(alignment: value));
   }
 
-  /// Applies variants to this style (required by VariantStyleMixin)
   @override
   MarkdownTextStyle variants(List<VariantStyle<MarkdownTextSpec>> value) {
     return merge(MarkdownTextStyle(variants: value));
   }
 
-  /// Applies animation configuration (required by AnimationStyleMixin)
   @override
   MarkdownTextStyle animate(AnimationConfig value) {
     return merge(MarkdownTextStyle(animation: value));
   }
 
-  /// Applies widget modifier (required by WidgetModifierStyleMixin)
   @override
   MarkdownTextStyle wrap(WidgetModifierConfig value) {
     return merge(MarkdownTextStyle(modifier: value));

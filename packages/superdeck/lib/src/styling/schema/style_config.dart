@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/deck_options.dart';
-import '../styles/slide_style.dart';
+import '../components/slide.dart';
 import 'style_schemas.dart';
 
 final _logger = Logger('StyleConfig');

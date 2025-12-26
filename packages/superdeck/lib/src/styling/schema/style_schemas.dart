@@ -2,14 +2,14 @@ import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../styles/markdown_alert_style.dart';
-import '../styles/markdown_alert_type_style.dart';
-import '../styles/markdown_blockquote_style.dart';
-import '../styles/markdown_checkbox_style.dart';
-import '../styles/markdown_codeblock_style.dart';
-import '../styles/markdown_list_style.dart';
-import '../styles/markdown_table_style.dart';
-import '../styles/slide_style.dart';
+import '../components/markdown_alert.dart';
+import '../components/markdown_alert_type.dart';
+import '../components/markdown_blockquote.dart';
+import '../components/markdown_checkbox.dart';
+import '../components/markdown_codeblock.dart';
+import '../components/markdown_list.dart';
+import '../components/markdown_table.dart';
+import '../components/slide.dart';
 
 typedef _JsonMap = Map<String, Object?>;
 

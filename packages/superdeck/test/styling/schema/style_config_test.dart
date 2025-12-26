@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck/src/styling/schema/style_config.dart';
-import 'package:superdeck/src/styling/styles/slide_style.dart';
+import 'package:superdeck/src/styling/components/slide.dart';
 
 void main() {
   group('StyleConfig', () {

@@ -1,27 +1,16 @@
-// Mix 2.0 Hand-written Specs
-export 'specs/markdown_alert_spec.dart';
-export 'specs/markdown_alert_type_spec.dart';
-export 'specs/markdown_blockquote_spec.dart';
-export 'specs/markdown_checkbox_spec.dart';
-export 'specs/markdown_codeblock_spec.dart';
-export 'specs/markdown_list_spec.dart';
-export 'specs/markdown_table_spec.dart';
-export 'specs/markdown_text_spec.dart';
-export 'specs/slide_spec.dart';
+// Mix 2.0 Combined Spec+Style Components
+export 'components/markdown_alert.dart';
+export 'components/markdown_alert_type.dart';
+export 'components/markdown_blockquote.dart';
+export 'components/markdown_checkbox.dart';
+export 'components/markdown_codeblock.dart';
+export 'components/markdown_list.dart';
+export 'components/markdown_table.dart';
+export 'components/markdown_text.dart';
+export 'components/slide.dart';
 
 // Default style
 export 'default_style.dart';
-
-// Mix 2.0 Hand-written Styles
-export 'styles/markdown_alert_style.dart';
-export 'styles/markdown_alert_type_style.dart';
-export 'styles/markdown_blockquote_style.dart';
-export 'styles/markdown_checkbox_style.dart';
-export 'styles/markdown_codeblock_style.dart';
-export 'styles/markdown_list_style.dart';
-export 'styles/markdown_table_style.dart';
-export 'styles/markdown_text_style.dart';
-export 'styles/slide_style.dart';
 
 // Style Schema (YAML configuration)
 export 'schema/style_config.dart';

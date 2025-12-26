@@ -7,8 +7,7 @@ import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/markdown/builders/alert_element_builder.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
-import 'package:superdeck/src/styling/specs/slide_spec.dart';
-import 'package:superdeck/src/styling/styles/slide_style.dart';
+import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
