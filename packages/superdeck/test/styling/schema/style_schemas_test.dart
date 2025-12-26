@@ -252,7 +252,7 @@ void main() {
         });
         expect(result.isOk, isTrue);
 
-        // Verify transform produced StyleConfiguration
+        // Verify transform produced StyleConfigResult
         final config = result.getOrThrow()!;
         expect(config.baseStyle, isNotNull);
         expect(config.styles, hasLength(2));
@@ -278,7 +278,7 @@ void main() {
         expect(result.isOk, isTrue);
       });
 
-      test('transforms empty config to valid StyleConfiguration', () {
+      test('transforms empty config to valid StyleConfigResult', () {
         final result = StyleSchemas.styleConfigSchema.safeParse({});
         expect(result.isOk, isTrue);
 

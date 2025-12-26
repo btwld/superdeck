@@ -3,21 +3,16 @@ import 'package:go_router/go_router.dart';
 
 import 'slide_page_content.dart';
 
-/// Service for deck navigation and routing operations.
+/// Stateless service for deck navigation and routing operations.
 ///
 /// Handles router creation, slide transitions, and navigation logic.
-/// Uses index deduplication to prevent redundant callbacks during rebuilds.
+/// Deduplication of index changes is handled by the controller, not this service.
 class NavigationService {
   /// Default transition duration for slide animations.
   static const _defaultTransitionDuration = Duration(seconds: 1);
 
   /// Configurable transition duration for testing.
   final Duration transitionDuration;
-
-  /// Tracks last notified index to prevent duplicate callbacks.
-  /// The pageBuilder can be called multiple times during rebuilds,
-  /// but we only want to notify when the index actually changes.
-  int? _lastNotifiedIndex;
 
   /// Creates a NavigationService with optional custom transition duration.
   ///
@@ -27,8 +22,8 @@ class NavigationService {
 
   /// Creates a GoRouter configured for slide navigation.
   ///
-  /// The [onIndexChanged] callback is invoked only when the index actually
-  /// changes, not on every rebuild. This prevents redundant state updates.
+  /// The [onIndexChanged] callback is invoked on every page build.
+  /// Deduplication of redundant calls is handled by the controller.
   GoRouter createRouter({
     required void Function(int) onIndexChanged,
   }) {
@@ -47,12 +42,8 @@ class NavigationService {
           pageBuilder: (context, state) {
             final index = _parseIndex(state.pathParameters['index']);
 
-            // Only notify if index actually changed - prevents redundant
-            // callbacks during widget rebuilds, hot reload, etc.
-            if (_lastNotifiedIndex != index) {
-              _lastNotifiedIndex = index;
-              onIndexChanged(index);
-            }
+            // Notify controller of index - controller handles deduplication
+            onIndexChanged(index);
 
             return CustomTransitionPage(
               key: ValueKey('slide-$index'),

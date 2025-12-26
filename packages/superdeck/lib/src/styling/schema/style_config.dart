@@ -7,7 +7,7 @@ import '../../deck/deck_options.dart';
 import '../components/slide.dart';
 import 'style_schemas.dart';
 
-final _logger = Logger('StyleConfig');
+final _logger = Logger('StyleConfigLoader');
 
 /// Function type for loading YAML content.
 /// Returns the YAML string content, or null if not available.
@@ -17,7 +17,7 @@ typedef StyleYamlLoader = Future<String?> Function();
 ///
 /// This class combines YAML loading with style merging into a single, cohesive API.
 /// It uses [StyleSchemas.styleConfigSchema] which validates and transforms YAML
-/// directly into [StyleConfiguration] with Flutter types.
+/// directly into [StyleConfigResult] with Flutter types.
 ///
 /// ## Merge Precedence
 /// Code styles win over YAML styles. The merge order is:
@@ -34,7 +34,7 @@ typedef StyleYamlLoader = Future<String?> Function();
 /// ```dart
 /// void main() async {
 ///   // Load styles.yaml and merge with code options
-///   final options = await StyleConfig.loadAndMerge(
+///   final options = await StyleConfigLoader.loadAndMerge(
 ///     DeckOptions(
 ///       baseStyle: myCustomStyle,
 ///       styles: {'special': specialStyle},
@@ -44,8 +44,8 @@ typedef StyleYamlLoader = Future<String?> Function();
 ///   runApp(SuperDeckApp(options: options));
 /// }
 /// ```
-class StyleConfig {
-  StyleConfig._();
+class StyleConfigLoader {
+  StyleConfigLoader._();
 
   /// Default styles file path relative to working directory.
   static const defaultStylesPath = 'styles.yaml';
@@ -87,7 +87,7 @@ class StyleConfig {
   ///
   /// Code options take precedence over YAML options.
   static DeckOptions merge(
-    StyleConfiguration yamlConfig,
+    StyleConfigResult yamlConfig,
     DeckOptions codeOptions,
   ) {
     final mergedBaseStyle = _mergeBaseStyle(
@@ -122,7 +122,7 @@ class StyleConfig {
   /// - The file doesn't exist (when using default file loader)
   /// - Running on web without a custom loader
   /// - The YAML is invalid or validation fails
-  static Future<StyleConfiguration?> _load({
+  static Future<StyleConfigResult?> _load({
     StyleYamlLoader? loader,
     required String path,
   }) async {
@@ -134,7 +134,7 @@ class StyleConfig {
     return _fromYamlString(yamlString);
   }
 
-  /// Parses and validates a YAML string into a [StyleConfiguration].
+  /// Parses and validates a YAML string into a [StyleConfigResult].
   ///
   /// The schema validates the YAML structure and transforms it directly
   /// into Flutter/Mix types using Ack's transform() method.
@@ -142,7 +142,7 @@ class StyleConfig {
   /// Returns null if:
   /// - The YAML string is empty or invalid
   /// - Validation fails against the style schema
-  static StyleConfiguration? _fromYamlString(String yamlString) {
+  static StyleConfigResult? _fromYamlString(String yamlString) {
     final content = yamlString.trim();
     if (content.isEmpty) return null;
 

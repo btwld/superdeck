@@ -15,7 +15,7 @@ typedef _JsonMap = Map<String, Object?>;
 
 /// Result type from parsing styles.yaml.
 /// Produced directly by [StyleSchemas.styleConfigSchema.parse()].
-typedef StyleConfiguration = ({
+typedef StyleConfigResult = ({
   SlideStyle? baseStyle,
   Map<String, SlideStyle> styles,
 });
@@ -26,7 +26,7 @@ typedef StyleConfiguration = ({
 /// ```dart
 /// final yamlMap = convertYamlToMap(yamlString);
 /// final config = StyleSchemas.styleConfigSchema.parse(yamlMap);
-/// // config is StyleConfiguration with baseStyle and styles ready to use!
+/// // config is StyleConfigResult with baseStyle and styles ready to use!
 /// ```
 ///
 /// ## Architecture: Transforms at Each Level
@@ -308,7 +308,7 @@ class StyleSchemas {
   // LEVEL 6: Top-Level Schema WITH TRANSFORM
   // ===========================================================================
 
-  /// Top-level schema that validates AND transforms to [StyleConfiguration].
+  /// Top-level schema that validates AND transforms to [StyleConfigResult].
   ///
   /// Use this schema to parse styles.yaml directly into Flutter types:
   /// ```dart
@@ -683,9 +683,9 @@ class StyleSchemas {
     return true;
   }
 
-  /// Transforms to [StyleConfiguration].
+  /// Transforms to [StyleConfigResult].
   /// Note: base is SlideStyle, styles is list of named tuples!
-  static StyleConfiguration _transformToStyleConfig(
+  static StyleConfigResult _transformToStyleConfig(
     Map<String, dynamic>? data,
   ) {
     // 'base' is already a SlideStyle from slideStyleSchema transform

@@ -5,7 +5,7 @@ import 'package:superdeck/src/styling/schema/style_config.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 
 void main() {
-  group('StyleConfig', () {
+  group('StyleConfigLoader', () {
     group('merge', () {
       test('returns code options when yaml config is empty', () {
         final codeStyle = SlideStyle(
@@ -15,7 +15,7 @@ void main() {
 
         final yamlConfig = (baseStyle: null, styles: <String, SlideStyle>{});
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         expect(result.baseStyle, isNotNull);
       });
@@ -28,7 +28,7 @@ void main() {
 
         final codeOptions = const DeckOptions();
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         expect(result.baseStyle, isNotNull);
       });
@@ -45,7 +45,7 @@ void main() {
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         expect(result.baseStyle, isNotNull);
         // Code style should override yaml style for h1
@@ -60,7 +60,7 @@ void main() {
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         // Code style should be preserved even when yaml has no base
         expect(result.baseStyle, isNotNull);
@@ -85,7 +85,7 @@ void main() {
           styles: {'title': codeTitleStyle, 'special': codeSpecialStyle},
         );
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         // Both 'title' (merged) and 'special' (code only) should exist
         expect(result.styles.containsKey('title'), isTrue);
@@ -100,7 +100,7 @@ void main() {
         );
         final codeOptions = DeckOptions(styles: {'special': codeSpecialStyle});
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         expect(result.styles.containsKey('special'), isTrue);
       });
@@ -116,7 +116,7 @@ void main() {
 
         final codeOptions = const DeckOptions();
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         expect(result.styles.containsKey('title'), isTrue);
       });
@@ -126,7 +126,7 @@ void main() {
 
         final codeOptions = DeckOptions(debug: true);
 
-        final result = StyleConfig.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         expect(result.debug, isTrue);
       });
@@ -139,7 +139,7 @@ void main() {
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
           loader: () async => null, // No YAML file
         );
@@ -155,7 +155,7 @@ base:
 ''';
         final codeOptions = const DeckOptions();
 
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
           loader: () async => yamlContent,
         );
@@ -170,7 +170,7 @@ base:
         );
         final codeOptions = DeckOptions(baseStyle: codeStyle);
 
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
           loader: () async => invalidYaml,
         );
@@ -179,7 +179,7 @@ base:
         expect(result.baseStyle, isNotNull);
       });
 
-      test('parses valid YAML into StyleConfiguration', () async {
+      test('parses valid YAML into StyleConfigResult', () async {
         final yaml = '''
 base:
   h1:
@@ -189,7 +189,7 @@ styles:
     h1:
       fontSize: 120.0
 ''';
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           const DeckOptions(),
           loader: () async => yaml,
         );
@@ -206,7 +206,7 @@ styles:
           ),
         );
 
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
           loader: () async => '',
         );
@@ -221,7 +221,7 @@ styles:
           ),
         );
 
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
           loader: () async => '   \n\t  ',
         );
@@ -242,7 +242,7 @@ base:
           ),
         );
 
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
           loader: () async => yaml,
         );
@@ -258,7 +258,7 @@ base:
           ),
         );
 
-        final result = await StyleConfig.loadAndMerge(
+        final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
           loader: () async => '{}',
         );
@@ -267,7 +267,7 @@ base:
       });
     });
 
-    group('StyleConfiguration typedef', () {
+    group('StyleConfigResult typedef', () {
       test('can be created directly for testing', () {
         final style = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 96)),
