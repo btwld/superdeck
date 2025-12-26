@@ -1,7 +1,7 @@
 {
   "slides": [
     {
-      "key": "y6odZRD8",
+      "key": "oWZOik7Q",
       "options": {},
       "sections": [
         {
@@ -10,7 +10,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "align": "center",
               "flex": 1,
               "scrollable": false,
@@ -23,10 +23,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Generative UI {.heading}"
+                        "text": "SuperDeck {.heading}"
                       }
                     ],
-                    "generatedId": "generative-ui-heading"
+                    "generatedId": "superdeck-heading"
                   },
                   {
                     "type": "element",
@@ -34,10 +34,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "with Flutter {.subheading}"
+                        "text": "Build presentations with Flutter {.subheading}"
                       }
                     ],
-                    "generatedId": "with-flutter-subheading"
+                    "generatedId": "build-presentations-with-flutter-subheading"
                   }
                 ],
                 "linkReferences": {},
@@ -60,7 +60,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "align": "center",
               "flex": 1,
               "scrollable": false,
@@ -96,7 +96,7 @@
               }
             },
             {
-              "type": "column",
+              "type": "block",
               "align": "centerLeft",
               "flex": 1,
               "scrollable": false,
@@ -161,7 +161,7 @@
       "comments": []
     },
     {
-      "key": "1iWWSXBj",
+      "key": "zWjQv1LZ",
       "options": {},
       "sections": [
         {
@@ -170,102 +170,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false
-            },
-            {
-              "type": "column",
-              "align": "centerLeft",
-              "flex": 2,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "div",
-                    "attributes": {
-                      "class": "markdown-alert markdown-alert-warning"
-                    },
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "p",
-                        "attributes": {
-                          "class": "markdown-alert-title"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "Warning"
-                          }
-                        ]
-                      },
-                      {
-                        "type": "element",
-                        "tag": "p",
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "This presentation contains live AI-generated content. Unexpected things may occur during the demonstration."
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "cLfhgcPz",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "align": "centerRight",
-              "flex": 2,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Generative UI {.heading}"
-                      }
-                    ],
-                    "generatedId": "generative-ui-heading"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -277,10 +182,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "VS"
+                        "text": "What is SuperDeck? {.heading}"
                       }
                     ],
-                    "generatedId": "vs"
+                    "generatedId": "what-is-superdeck-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -289,75 +194,7 @@
               }
             },
             {
-              "type": "column",
-              "flex": 2,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "AI Assisted Code Generation"
-                      }
-                    ],
-                    "generatedId": "ai-assisted-code-generation"
-                  },
-                  {
-                    "type": "text",
-                    "text": "\n<!-- Code Generation code as the output to boost developer productivity vs Generates widgets definitions to be rendered on the screen -->"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": [
-        "Code Generation code as the output to boost developer productivity vs Generates widgets definitions to be rendered on the screen"
-      ]
-    },
-    {
-      "key": "o9smpzVG",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "What is Generative UI? {.heading}"
-                      }
-                    ],
-                    "generatedId": "what-is-generative-ui-heading"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -373,7 +210,17 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "LLMs are great at generating content based on context"
+                            "text": "Write slides in "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Markdown"
+                              }
+                            ]
                           }
                         ]
                       },
@@ -383,7 +230,61 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "GUIs are great at providing structured, interactive interfaces for user input and navigation"
+                            "text": "Render with "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Flutter"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Use "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "custom widgets"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " in your slides"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Export to "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "PDF"
+                              }
+                            ]
                           }
                         ]
                       }
@@ -401,7 +302,7 @@
       "comments": []
     },
     {
-      "key": "BM8dTIiu",
+      "key": "Okr7hZ1o",
       "options": {},
       "sections": [
         {
@@ -410,50 +311,12 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h1",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "LLM ❤️ GUI {.heading}"
-                      }
-                    ],
-                    "generatedId": "llm--gui-heading"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "wlPRX3Si",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false
             },
             {
-              "type": "column",
+              "type": "block",
               "align": "center",
               "flex": 5,
               "scrollable": false,
@@ -466,10 +329,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Creates dynamic, context-aware UIs by interpreting actions and maintaining state with LLMs for fluid, interactive responses. {.heading}"
+                        "text": "A developer-first presentation framework that combines the simplicity of Markdown with the power of Flutter. {.heading}"
                       }
                     ],
-                    "generatedId": "creates-dynamic-context-aware-uis-by-interpreting-actions-and-maintaining-state-with-llms-for-fluid-interactive-responses-heading"
+                    "generatedId": "a-developer-first-presentation-framework-that-combines-the-simplicity-of-markdown-with-the-power-of-flutter-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -478,7 +341,7 @@
               }
             },
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false
             }
@@ -488,7 +351,7 @@
       "comments": []
     },
     {
-      "key": "H9csiBSw",
+      "key": "0TtwLoDp",
       "options": {},
       "sections": [
         {
@@ -497,140 +360,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Benefits over Chat {.heading}"
-                      }
-                    ],
-                    "generatedId": "benefits-over-chat-heading"
-                  },
-                  {
-                    "type": "element",
-                    "tag": "ul",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "li",
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "More intuitive and user-friendly, especially for complex tasks"
-                          }
-                        ]
-                      },
-                      {
-                        "type": "element",
-                        "tag": "li",
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "Faster feedback loop between users and LLMs"
-                          }
-                        ]
-                      },
-                      {
-                        "type": "element",
-                        "tag": "li",
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "Enhances efficiency and interaction"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "xBKlVDUe",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false
-            },
-            {
-              "type": "column",
-              "align": "center",
-              "flex": 3,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Flutter is Well-Suited for Generative UI {.heading}"
-                      }
-                    ],
-                    "generatedId": "flutter-is-well-suited-for-generative-ui-heading"
-                  },
-                  {
-                    "type": "element",
-                    "tag": "p",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Built for any screen: Ideal for generating adaptive UIs across devices and platforms."
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "IEf0uIsv",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -642,10 +372,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Generative UI workflow"
+                        "text": "Key Features {.heading}"
                       }
                     ],
-                    "generatedId": "generative-ui-workflow"
+                    "generatedId": "key-features-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -661,7 +391,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "align": "topCenter",
               "flex": 1,
               "scrollable": false,
@@ -676,7 +406,7 @@
                         "type": "element",
                         "tag": "img",
                         "attributes": {
-                          "src": ".superdeck/assets/mermaid_8Tvg01k0.png",
+                          "src": ".superdeck/assets/mermaid_sjKdIahN.png",
                           "alt": "mermaid_asset"
                         },
                         "isEmpty": true
@@ -695,7 +425,7 @@
       "comments": []
     },
     {
-      "key": "rM86p0hI",
+      "key": "ygyykrRI",
       "options": {},
       "sections": [
         {
@@ -704,7 +434,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -716,10 +446,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "How can LLMs Understand Your UI? {.heading}"
+                        "text": "Markdown-First {.heading}"
                       }
                     ],
-                    "generatedId": "how-can-llms-understand-your-ui-heading"
+                    "generatedId": "markdown-first-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -728,7 +458,7 @@
               }
             },
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -739,336 +469,8 @@
                     "tag": "p",
                     "children": [
                       {
-                        "type": "element",
-                        "tag": "img",
-                        "attributes": {
-                          "src": "assets/structured_output.png",
-                          "alt": "structured_output"
-                        },
-                        "isEmpty": true
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "qk3SfBXV",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
                         "type": "text",
-                        "text": "Define the Schema {.heading}"
-                      }
-                    ],
-                    "generatedId": "define-the-schema-heading"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "pre",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "code",
-                        "attributes": {
-                          "class": "language-dart"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "final schema = Schema.array(\n  description: 'List of recipes',\n  items: Schema.object(\n    properties: {\n      'recipeName': Schema.string(\n        description: 'Name of the recipe.',\n        nullable: false,\n      ),\n    },\n    requiredProperties: ['recipeName'],\n  ),\n);\n\n```{.code}\n"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "KzZen8xS",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "align": "bottomCenter",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Configure responseMimeType &amp; responseSchema {.heading}"
-                      }
-                    ],
-                    "generatedId": "configure-responsemimetype--responseschema-heading"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "pre",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "code",
-                        "attributes": {
-                          "class": "language-dart"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "final schema = Schema.array(\n  description: 'List of recipes',\n  items: Schema.object(\n    properties: {\n      'recipeName': Schema.string(\n        description: 'Name of the recipe.',\n        nullable: false,\n      ),\n    },\n    requiredProperties: ['recipeName'],\n  ),\n);\n\n\nfinal model = GenerativeModel(\n  model: 'gemini-1.5-pro',\n  apiKey: apiKey,\n  generationConfig: GenerationConfig(\n    responseMimeType: 'application/json',\n    responseSchema: schema,\n  ),\n);\n\n```{.code}\n"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "9BjDiS9I",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 2,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 2,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h4",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Passing a prompt to your model {.heading}"
-                      }
-                    ],
-                    "generatedId": "passing-a-prompt-to-your-model-heading"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
-              "flex": 3,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "pre",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "code",
-                        "attributes": {
-                          "class": "language-dart"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "final prompt = 'List a few popular cookie recipes.';\nfinal response = await model.generateContent([Content.text(prompt)]);\n\nprint(response.candidates.first.content);\n\n```{.code}\n"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        },
-        {
-          "type": "section",
-          "flex": 3,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "align": "bottomLeft",
-              "flex": 2,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h4",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "JSON Response"
-                      }
-                    ],
-                    "generatedId": "json-response"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
-              "flex": 3,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "pre",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "code",
-                        "attributes": {
-                          "class": "language-json"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "[\n  {\n    &quot;recipeName&quot;: &quot;Chocolate Chip Cookies&quot;\n  },\n  {\n    &quot;recipeName&quot;: &quot;Peanut Butter Cookies&quot;\n  },\n  {\n    &quot;recipeName&quot;: &quot;Snickerdoodles&quot;\n  }\n]\n"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "LSp4z6Ax",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Color Palette Generator"
-                      }
-                    ],
-                    "generatedId": "color-palette-generator"
-                  },
-                  {
-                    "type": "element",
-                    "tag": "p",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Generate a color palette based on a given text."
+                        "text": "Write your presentations in familiar Markdown syntax:"
                       }
                     ]
                   },
@@ -1082,7 +484,7 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "Name of the palette"
+                            "text": "Headers and text formatting"
                           }
                         ]
                       },
@@ -1092,7 +494,7 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "Font family"
+                            "text": "Code blocks with syntax highlighting"
                           }
                         ]
                       },
@@ -1102,7 +504,7 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "Font color"
+                            "text": "Lists and blockquotes"
                           }
                         ]
                       },
@@ -1112,7 +514,31 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "Color for each corner of the palette"
+                            "text": "Mermaid diagrams"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Custom widgets via "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "code",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "@widget"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " syntax"
                           }
                         ]
                       }
@@ -1130,7 +556,7 @@
       "comments": []
     },
     {
-      "key": "NPSFThkt",
+      "key": "ucrZF2yj",
       "options": {},
       "sections": [
         {
@@ -1139,7 +565,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1151,10 +577,59 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Color Palette Schema"
+                        "text": "Slide Layouts {.heading}"
                       }
                     ],
-                    "generatedId": "color-palette-schema"
+                    "generatedId": "slide-layouts-heading"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "SuperDeck supports flexible layouts using sections and columns."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "nFGg3DBS",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "centerRight",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Two Columns {.heading}"
+                      }
+                    ],
+                    "generatedId": "two-columns-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -1163,9 +638,9 @@
               }
             },
             {
-              "type": "column",
-              "flex": 2,
-              "scrollable": true,
+              "type": "block",
+              "flex": 3,
+              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1177,12 +652,12 @@
                         "type": "element",
                         "tag": "code",
                         "attributes": {
-                          "class": "language-dart"
+                          "class": "language-markdown"
                         },
                         "children": [
                           {
                             "type": "text",
-                            "text": "final schema = Schema.object(\n  properties: {\n  'name': Schema.string(\n    description:'Name of the color palette',\n    nullable: false,\n  ),\n  'font': Schema.enumString(\n    enumValues: ColorPaletteFontFamily.enumString,\n    description: 'Font to use for color palette name',\n    nullable: false,\n  ),\n  'fontColor': Schema.string(\n    description: 'Font color. Format: #FF0000',\n    nullable: false,\n  ),\n  'topLeftColor': Schema.string(\n    description: 'Top left color. Format: #FF0000',\n    nullable: false,\n  ),\n  'topRightColor': Schema.string(\n    description: 'Top right color. Format: #FF0000',\n    nullable: false,\n  ),\n  'bottomLeftColor': Schema.string(\n    description: 'Bottom left color. Format: #FF0000',\n    nullable: false,\n  ),\n  'bottomRightColor': Schema.string(\n    description: 'Bottom right color. Format: #FF0000',\n    nullable: false,\n  )\n}, requiredProperties: [\n  'name',\n  'font',\n  'fontColor',\n  'topLeftColor',\n  'topRightColor',\n  'bottomLeftColor',\n    'bottomRightColor',\n  ],\n);\n\n"
+                            "text": "@column {\n  flex: 2\n}\nLeft content here\n\n@column {\n  flex: 3\n}\nRight content here\n"
                           }
                         ]
                       }
@@ -1200,7 +675,7 @@
       "comments": []
     },
     {
-      "key": "H0jUl8Aj",
+      "key": "TapnpYyY",
       "options": {},
       "sections": [
         {
@@ -1209,7 +684,8 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
+              "align": "center",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1217,75 +693,14 @@
                 "children": [
                   {
                     "type": "element",
-                    "tag": "h2",
+                    "tag": "h3",
                     "children": [
                       {
                         "type": "text",
-                        "text": "LLMs Orchestrate APIs"
+                        "text": "Top Section"
                       }
                     ],
-                    "generatedId": "llms-orchestrate-apis"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "Orj9fgGT",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h4",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Gemini Function Calling"
-                      }
-                    ],
-                    "generatedId": "gemini-function-calling"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "p",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "The Function Calling feature is in Beta release"
-                      }
-                    ]
+                    "generatedId": "top-section"
                   }
                 ],
                 "linkReferences": {},
@@ -1297,11 +712,12 @@
         },
         {
           "type": "section",
-          "flex": 4,
+          "flex": 2,
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
+              "align": "center",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1309,22 +725,46 @@
                 "children": [
                   {
                     "type": "element",
-                    "tag": "p",
+                    "tag": "h3",
                     "children": [
                       {
-                        "type": "element",
-                        "tag": "img",
-                        "attributes": {
-                          "src": "assets/llm_tools.png",
-                          "alt": "llm tools"
-                        },
-                        "isEmpty": true
-                      },
+                        "type": "text",
+                        "text": "Middle Section (flex: 2)"
+                      }
+                    ],
+                    "generatedId": "middle-section-flex-2"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
                       {
                         "type": "text",
-                        "text": "{.cover}"
+                        "text": "Bottom Section"
                       }
-                    ]
+                    ],
+                    "generatedId": "bottom-section"
                   }
                 ],
                 "linkReferences": {},
@@ -1338,7 +778,7 @@
       "comments": []
     },
     {
-      "key": "hvptxGXN",
+      "key": "LTUoImyo",
       "options": {},
       "sections": [
         {
@@ -1347,8 +787,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
-              "align": "bottomRight",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1360,20 +799,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "User Interaction {.heading}"
+                        "text": "Code Blocks {.heading}"
                       }
                     ],
-                    "generatedId": "user-interaction-heading"
-                  },
-                  {
-                    "type": "element",
-                    "tag": "p",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Natural Language way to interact with an LLM"
-                      }
-                    ]
+                    "generatedId": "code-blocks-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -1382,7 +811,7 @@
               }
             },
             {
-              "type": "column",
+              "type": "block",
               "flex": 2,
               "scrollable": false,
               "content": {
@@ -1390,16 +819,20 @@
                 "children": [
                   {
                     "type": "element",
-                    "tag": "p",
+                    "tag": "pre",
                     "children": [
                       {
                         "type": "element",
-                        "tag": "img",
+                        "tag": "code",
                         "attributes": {
-                          "src": "assets/llm_interaction.png",
-                          "alt": "llm response"
+                          "class": "language-dart"
                         },
-                        "isEmpty": true
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "import 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': MyWidgetDefinition(),\n        },\n      ),\n    ),\n  );\n}\n```{.code}\n"
+                          }
+                        ]
                       }
                     ]
                   }
@@ -1415,7 +848,7 @@
       "comments": []
     },
     {
-      "key": "vNPVWgez",
+      "key": "JKiqEnfi",
       "options": {},
       "sections": [
         {
@@ -1424,8 +857,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
-              "align": "centerLeft",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1437,10 +869,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Widget Response {.heading}"
+                        "text": "Mermaid Diagrams {.heading}"
                       }
                     ],
-                    "generatedId": "widget-response-heading"
+                    "generatedId": "mermaid-diagrams-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -1449,8 +881,8 @@
               }
             },
             {
-              "type": "column",
-              "flex": 3,
+              "type": "block",
+              "flex": 1,
               "scrollable": false,
               "content": {
                 "type": "document",
@@ -1463,8 +895,8 @@
                         "type": "element",
                         "tag": "img",
                         "attributes": {
-                          "src": "assets/widget_response.png",
-                          "alt": "widget_response"
+                          "src": ".superdeck/assets/mermaid_5qHCMJAS.png",
+                          "alt": "mermaid_asset"
                         },
                         "isEmpty": true
                       }
@@ -1482,7 +914,7 @@
       "comments": []
     },
     {
-      "key": "pNxPyfLK",
+      "key": "6OVyREa4",
       "options": {},
       "sections": [
         {
@@ -1491,7 +923,73 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Sequence Diagrams {.heading}"
+                      }
+                    ],
+                    "generatedId": "sequence-diagrams-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "img",
+                        "attributes": {
+                          "src": ".superdeck/assets/mermaid_c9oXzHsh.png",
+                          "alt": "mermaid_asset"
+                        },
+                        "isEmpty": true
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "w1RCbAgf",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1503,33 +1001,19 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "What if the tool to use is a widget schema?"
+                        "text": "Custom Widgets {.heading}"
                       }
                     ],
-                    "generatedId": "what-if-the-tool-to-use-is-a-widget-schema"
+                    "generatedId": "custom-widgets-heading"
                   }
                 ],
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
               }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "ubDKfZYy",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
+            },
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1540,13 +1024,8 @@
                     "tag": "p",
                     "children": [
                       {
-                        "type": "element",
-                        "tag": "img",
-                        "attributes": {
-                          "src": "assets/widget_schema.png",
-                          "alt": "widget_schema"
-                        },
-                        "isEmpty": true
+                        "type": "text",
+                        "text": "Embed interactive Flutter widgets directly in your slides!"
                       }
                     ]
                   }
@@ -1562,7 +1041,7 @@
       "comments": []
     },
     {
-      "key": "NZRVZ1Vo",
+      "key": "sZG7JPVC",
       "options": {},
       "sections": [
         {
@@ -1571,8 +1050,8 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
-              "flex": 2,
+              "type": "block",
+              "flex": 1,
               "scrollable": false,
               "content": {
                 "type": "document",
@@ -1583,11 +1062,24 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Dropdown Widget Schema"
+                        "text": "Mix Box Example {.heading}"
                       }
                     ],
-                    "generatedId": "dropdown-widget-schema"
-                  },
+                    "generatedId": "mix-box-example-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
                   {
                     "type": "element",
                     "tag": "pre",
@@ -1596,12 +1088,12 @@
                         "type": "element",
                         "tag": "code",
                         "attributes": {
-                          "class": "language-dart"
+                          "class": "language-markdown"
                         },
                         "children": [
                           {
                             "type": "text",
-                            "text": "class DropdownSchemaDto {\n  final String label;\n  final String currentValue;\n  final List&lt;String&gt; options;\n\n  DropdownSchemaDto({\n    required this.label,\n    required this.currentValue,\n    required this.options,\n  });\n\n"
+                            "text": "@mix-simple-box\n"
                           }
                         ]
                       }
@@ -1614,192 +1106,16 @@
               }
             },
             {
-              "type": "column",
+              "type": "block",
+              "align": "center",
               "flex": 3,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "pre",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "code",
-                        "attributes": {
-                          "class": "language-dart"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "  static final schema = Schema.object(properties: {\n    'label': Schema.string(\n      description: 'The label of the dropdown',\n      nullable: false,\n    ),\n    'currentValue': Schema.string(\n      description: 'The currentValue of the dropdown',\n      nullable: false,\n    ),\n    'options': Schema.array(\n      description: 'The options of the dropdown',\n      items: Schema.string(\n        description: 'The options of the dropdown',\n        nullable: false,\n      ),\n      nullable: false,\n    )\n  });\n}\n"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "w2vRYcf2",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Dropdown Schema Builder"
-                      }
-                    ],
-                    "generatedId": "dropdown-schema-builder"
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
+              "scrollable": false
             },
-            {
-              "type": "column",
-              "flex": 2,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "pre",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "code",
-                        "attributes": {
-                          "class": "language-dart"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": " ListTile(\n  title: Text(schema.label),\n  trailing: DropdownButton&lt;String&gt;(\n    value: schema.currentValue,\n    items: schema.options.map((option) {\n      return DropdownMenuItem&lt;String&gt;(\n        value: option,\n        child: Text(option),\n      );\n    }).toList(),\n    onChanged: (newValue) {},\n  ),\n);\n"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "Wxrj9iSH",
-      "options": {},
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "column",
-              "flex": 1,
-              "scrollable": false,
-              "content": {
-                "type": "document",
-                "children": [
-                  {
-                    "type": "element",
-                    "tag": "h3",
-                    "children": [
-                      {
-                        "type": "text",
-                        "text": "Widget Schemas"
-                      }
-                    ],
-                    "generatedId": "widget-schemas"
-                  },
-                  {
-                    "type": "element",
-                    "tag": "pre",
-                    "children": [
-                      {
-                        "type": "element",
-                        "tag": "code",
-                        "attributes": {
-                          "class": "language-dart"
-                        },
-                        "children": [
-                          {
-                            "type": "text",
-                            "text": "final schema = Schema.object(properties: {\n  'textFields': Schema.array(\n    description: 'A list of text fields',\n    items: TextFieldSchemaDto.schema,\n    nullable: true,\n  ),\n  'dropdowns': Schema.array(\n    description: 'A list of dropdowns',\n    items: DropdownSchemaDto.schema,\n    nullable: true,\n  ),\n  'colorPickers': Schema.array(\n    description: 'A list of colors pickers',\n    items: ColorPickerDtoSchema.schema,\n    nullable: true,\n  ),\n});\n\n"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ],
-                "linkReferences": {},
-                "footnoteLabels": [],
-                "footnoteReferences": {}
-              }
-            }
-          ]
-        }
-      ],
-      "comments": []
-    },
-    {
-      "key": "fpxHqWPC",
-      "options": {
-        "style": "demo"
-      },
-      "sections": [
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
             {
               "type": "widget",
               "flex": 1,
               "scrollable": false,
-              "name": "widgetSchema",
-              "kind": "widget",
-              "prompts": [
-                "Change top colors",
-                "Change font",
-                "Change all colors",
-                "Change everything"
-              ]
+              "name": "mix-simple-box"
             }
           ]
         }
@@ -1807,7 +1123,414 @@
       "comments": []
     },
     {
-      "key": "6BveUMOZ",
+      "key": "Vd7qLnez",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Interactive Variants {.heading}"
+                      }
+                    ],
+                    "generatedId": "interactive-variants-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Hover and press interactions using Mix variants."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false
+            },
+            {
+              "type": "widget",
+              "flex": 1,
+              "scrollable": false,
+              "name": "mix-variants"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "vUawpBCt",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Remix Buttons {.heading}"
+                      }
+                    ],
+                    "generatedId": "remix-buttons-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Design system components with Remix."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false
+            },
+            {
+              "type": "widget",
+              "flex": 1,
+              "scrollable": false,
+              "name": "remix-button"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "xTJVKjNU",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Animations {.heading}"
+                      }
+                    ],
+                    "generatedId": "animations-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Implicit and keyframe animations with Mix."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false
+            },
+            {
+              "type": "widget",
+              "flex": 1,
+              "scrollable": false,
+              "name": "mix-animation"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "OOAuzaNb",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Styling Options {.heading}"
+                      }
+                    ],
+                    "generatedId": "styling-options-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "SuperDeck supports custom themes and per-slide styling."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "8HoJuISS",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": true,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Style Configuration"
+                      }
+                    ],
+                    "generatedId": "style-configuration"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "pre",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "code",
+                        "attributes": {
+                          "class": "language-yaml"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "# superdeck.yaml\nstyles:\n  default:\n    background: '#1a1a2e'\n    primaryColor: '#4CAF50'\n\n  code:\n    background: '#0f0f23'\n\n  quote:\n    background: 'linear-gradient(...)'\n"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "1ruW2MIW",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "style: quote"
+                      }
+                    ],
+                    "generatedId": "style-quote"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "blockquote",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "p",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Your quote here"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "element",
+                    "tag": "pre",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "code",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": ""
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "Mhd9VSys",
       "options": {
         "style": "quote"
       },
@@ -1818,7 +1541,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1834,7 +1557,7 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "The future of UI might be orchestrating\nuser experiences rather than creating it."
+                            "text": "SuperDeck makes presentations feel like coding - simple, version-controlled, and powerful."
                           }
                         ]
                       }
@@ -1852,7 +1575,501 @@
       "comments": []
     },
     {
-      "key": "XoYNuUMV",
+      "key": "0XuX5yRh",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Architecture {.heading}"
+                      }
+                    ],
+                    "generatedId": "architecture-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "img",
+                        "attributes": {
+                          "src": ".superdeck/assets/mermaid_pPsidI1N.png",
+                          "alt": "mermaid_asset"
+                        },
+                        "isEmpty": true
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "s6ZvJDZM",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Getting Started {.heading}"
+                      }
+                    ],
+                    "generatedId": "getting-started-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "ol",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Add SuperDeck to your project"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Create "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "code",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "slides.md"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Run the CLI"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Present!"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 3,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "pre",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "code",
+                        "attributes": {
+                          "class": "language-bash"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "# Add dependency\nflutter pub add superdeck\n\n# Build slides\ndart run superdeck_cli:main build\n\n# Run presentation\nflutter run\n"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "MFTXeosu",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Project Structure {.heading}"
+                      }
+                    ],
+                    "generatedId": "project-structure-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "pre",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "code",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "my_presentation/\n├── lib/\n│   └── main.dart\n├── slides.md\n├── superdeck.yaml\n└── pubspec.yaml\n"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "Ed76pazc",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Export Options {.heading}"
+                      }
+                    ],
+                    "generatedId": "export-options-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "ul",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "PDF Export"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " - Generate PDF for sharing"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Thumbnails"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " - Auto-generated slide previews"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Web Deploy"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " - Build for web hosting"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "D2ahKvXd",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false
+            },
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Why SuperDeck? {.heading}"
+                      }
+                    ],
+                    "generatedId": "why-superdeck-heading"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "ul",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Version control your presentations"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Use your favorite editor"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Leverage Flutter's ecosystem"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Hot reload while editing"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Cross-platform output"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "YtddmLt4",
       "options": {},
       "sections": [
         {
@@ -1862,7 +2079,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1874,10 +2091,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Thank you"
+                        "text": "Thank You {.heading}"
                       }
                     ],
-                    "generatedId": "thank-you"
+                    "generatedId": "thank-you-heading"
                   }
                 ],
                 "linkReferences": {},
@@ -1893,7 +2110,7 @@
           "scrollable": false,
           "blocks": [
             {
-              "type": "column",
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1905,7 +2122,7 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Leo Farias\n@leoafarias\n(GitHub, Twitter/X)"
+                        "text": "Leo Farias"
                       }
                     ]
                   }
@@ -1916,7 +2133,36 @@
               }
             },
             {
-              "type": "column",
+              "type": "widget",
+              "flex": 1,
+              "scrollable": false,
+              "name": "leoafarias"
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "(GitHub, Twitter/X)"
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
               "flex": 1,
               "scrollable": false,
               "content": {
@@ -1928,10 +2174,10 @@
                     "children": [
                       {
                         "type": "text",
-                        "text": "Slides + Code"
+                        "text": "Source Code"
                       }
                     ],
-                    "generatedId": "slides--code"
+                    "generatedId": "source-code"
                   },
                   {
                     "type": "element",
@@ -1941,12 +2187,12 @@
                         "type": "element",
                         "tag": "a",
                         "attributes": {
-                          "href": "https://github.com/leoafarias/gen-ui-talk"
+                          "href": "https://github.com/leoafarias/superdeck"
                         },
                         "children": [
                           {
                             "type": "text",
-                            "text": "https://github.com/leoafarias/gen-ui-talk"
+                            "text": "https://github.com/leoafarias/superdeck"
                           }
                         ]
                       }
