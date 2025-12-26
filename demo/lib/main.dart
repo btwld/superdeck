@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 import 'src/parts/background.dart';
@@ -9,6 +10,9 @@ import 'src/widgets/demo_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Disable signals logging to reduce console noise
+  SignalsObserver.instance = null;
 
   // Enable semantics for testing
   WidgetsBinding.instance.ensureSemantics();

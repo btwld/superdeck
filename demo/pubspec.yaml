@@ -13,6 +13,7 @@ dependencies:
   mix: ^2.0.0-rc.0
   superdeck_core: ^0.0.1
   superdeck: ^0.0.4
+  signals_flutter: ^6.0.4
   naked_ui: ^0.2.0-beta.7
   remix: ^0.1.0-beta.1
   qr_flutter: ^4.1.0

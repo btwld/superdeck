@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
 
-import 'styles.dart';
+import 'styling.dart';
 
 // Base text style for the presentation
 TextStyle get _baseTextStyle =>

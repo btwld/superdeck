@@ -1,7 +1,7 @@
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../styling/styles.dart';
+import '../styling/styling.dart';
 import '../widgets/widgets.dart';
 import 'deck_options.dart';
 import 'slide_configuration.dart';

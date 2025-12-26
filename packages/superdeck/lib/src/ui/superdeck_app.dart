@@ -6,7 +6,7 @@ import '../utils/app_initialization.dart';
 import '../deck/deck_options.dart';
 import '../deck/deck_controller_builder.dart';
 import 'app_shell.dart';
-import '../styling/theme.dart';
+import 'theme.dart';
 import 'package:flutter/widgets.dart';
 
 class SuperDeckApp extends StatelessWidget {

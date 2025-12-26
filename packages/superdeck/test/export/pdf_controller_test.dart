@@ -3,7 +3,7 @@ import 'package:superdeck/src/export/pdf_controller.dart';
 import 'package:superdeck/src/export/slide_capture_service.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-import 'package:superdeck/src/styling/slide_style.dart';
+import 'package:superdeck/src/styling/components/slide.dart';
 
 void main() {
   group('PdfController', () {

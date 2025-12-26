@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
+import '../../utils/constants.dart';
 import 'error_widgets.dart';
 
 ImageProvider getImageProvider(Uri uri) {
@@ -18,9 +19,11 @@ ImageProvider getImageProvider(Uri uri) {
       }
       return FileImage(File.fromUri(uri));
     default:
-      // Absolute paths are treated as files on non-web platforms.
-      if (!kIsWeb && uri.hasAbsolutePath) {
-        return FileImage(File.fromUri(uri));
+      // On platforms that can run processes (desktop debug), files are
+      // generated at runtime and loaded from the filesystem.
+      // On web/release, files are pre-bundled as assets.
+      if (kCanRunProcess) {
+        return FileImage(File(uri.path).absolute);
       }
       return AssetImage(uri.path);
   }

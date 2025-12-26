@@ -4,7 +4,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
 import '../../rendering/blocks/block_provider.dart';
-import '../../styling/styles.dart';
+import '../../styling/styling.dart';
 import '../../ui/widgets/hero_element.dart';
 import '../../utils/converters.dart';
 import '../../utils/syntax_highlighter.dart';

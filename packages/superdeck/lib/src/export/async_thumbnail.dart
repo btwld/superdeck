@@ -52,12 +52,10 @@ class AsyncThumbnail {
       _imageFile.value = file;
       _status.value = AsyncFileStatus.done;
       _error.value = null;
-    } catch (error, stackTrace) {
+    } catch (error, _) {
       // Guard after async - don't update signals if disposed
       if (_disposed) return;
 
-      debugPrint('[AsyncThumbnail] Failed to generate thumbnail: $error');
-      debugPrint('[AsyncThumbnail] Stack trace: $stackTrace');
       _status.value = AsyncFileStatus.error;
       _error.value = error;
       _imageFile.value = null;
@@ -127,9 +125,7 @@ class AsyncThumbnail {
     return Image(
       gaplessPlayback: true,
       image: provider,
-      errorBuilder: (context, error, _) {
-        return _errorWidget(context, this);
-      },
+      errorBuilder: (context, error, _) => _errorWidget(context, this),
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 
 import '../../markdown/markdown_element_builders_registry.dart';
-import '../../styling/styles.dart';
+import '../../styling/styling.dart';
 import 'markdown_render_scope.dart';
 
 /// Tween for interpolating between SlideSpec values

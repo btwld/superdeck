@@ -5,7 +5,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
 import '../../rendering/blocks/block_provider.dart';
-import '../../styling/styles.dart';
+import '../../styling/styling.dart';
 import '../markdown_element_builders_registry.dart';
 import '../../rendering/blocks/markdown_render_scope.dart';
 
