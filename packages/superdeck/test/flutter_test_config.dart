@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Global test configuration that runs before all tests.
 ///
@@ -11,6 +12,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// See: https://pub.dev/packages/google_fonts#testing
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Disable Google Fonts runtime fetching in tests.
+  // The default_style.dart checks this flag and uses fallback fonts when disabled.
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Mock path_provider to return a temp directory
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -217,26 +222,18 @@ class _MockHttpClientRequest implements HttpClientRequest {
   void writeln([Object? object = '']) {}
 }
 
-/// Mock response that returns 200 with minimal TTF data.
+/// Mock response that returns 404 to prevent Google Fonts from trying to parse invalid data.
+/// When Google Fonts gets a 404, it gracefully falls back to platform fonts.
 class _MockHttpClientResponse extends Stream<List<int>>
     implements HttpClientResponse {
-  // Minimal TTF header bytes (enough to not crash font loading)
-  static final _minimalTtf = <int>[
-    0x00, 0x01, 0x00, 0x00, // sfnt version
-    0x00, 0x00, // numTables
-    0x00, 0x00, // searchRange
-    0x00, 0x00, // entrySelector
-    0x00, 0x00, // rangeShift
-  ];
+  @override
+  int get statusCode => 404;
 
   @override
-  int get statusCode => 200;
+  String get reasonPhrase => 'Not Found';
 
   @override
-  String get reasonPhrase => 'OK';
-
-  @override
-  int get contentLength => _minimalTtf.length;
+  int get contentLength => 0;
 
   @override
   HttpClientResponseCompressionState get compressionState =>
@@ -281,9 +278,8 @@ class _MockHttpClientResponse extends Stream<List<int>>
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    // Return minimal TTF data then complete
+    // Return empty data for 404 response
     Timer.run(() {
-      onData?.call(_minimalTtf);
       onDone?.call();
     });
     return _MockStreamSubscription();
