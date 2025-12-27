@@ -45,4 +45,41 @@ jobs:
         run: melos run build_runner:build
         timeout-minutes: 5
 
-      - run: melos run test
+      - name: Run Unit Tests
+        run: melos run test
+
+  integration-test:
+    runs-on: ubuntu-latest
+    name: Integration Tests
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install FVM
+        shell: bash
+        run: |
+          curl -fsSL https://fvm.app/install.sh | bash
+          echo "/home/runner/fvm/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/fvm/bin:$PATH"
+          fvm use stable --force
+
+      - uses: kuhnroyal/flutter-fvm-config-action@v2
+        id: fvm-config-action
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm-config-action.outputs.FLUTTER_VERSION }}
+          channel: ${{ steps.fvm-config-action.outputs.FLUTTER_CHANNEL }}
+
+      - name: Setup Melos
+        uses: bluefireteam/melos-action@v3
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Runner
+        run: melos run build_runner:build
+        timeout-minutes: 5
+
+      - name: Run Integration Tests
+        run: melos run test:integration
+        timeout-minutes: 10

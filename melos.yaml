@@ -88,6 +88,16 @@ scripts:
     packageFilters:
       dirExists: test
 
+  test:integration:
+    run: melos exec -- flutter test integration_test
+    description: Run flutter integration tests
+    packageFilters:
+      dirExists: integration_test
+
+  test:all:
+    run: melos run test && melos run test:integration
+    description: Run all tests (unit + integration)
+
   test:coverage:
     run: melos exec -- flutter test --coverage
     description: Run flutter test with coverage
