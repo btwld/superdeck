@@ -45,8 +45,7 @@ SlideConfiguration createTestSlide({
 
 /// Creates a test deck with the given slides
 Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
-  final testSlides =
-      slides ??
+  final testSlides = slides ??
       List.generate(
         3,
         (index) => Slide(
@@ -58,12 +57,6 @@ Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
       );
 
   return Deck(slides: testSlides, configuration: config ?? createMockConfig());
-}
-
-/// Mock configuration for testing
-class MockConfig {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 /// Creates a mock configuration

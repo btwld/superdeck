@@ -19,6 +19,9 @@ import 'raw_slide_schema.dart';
 class MarkdownParser {
   const MarkdownParser();
 
+  // Regex to match code fence: 3+ backticks at start, optionally followed by language
+  static final _codeFencePattern = RegExp(r'^(`{3,})(\s*\S*)?$');
+
   /// Splits the entire markdown into slides.
   ///
   /// A "slide" is defined by frontmatter sections delimited with `---`.
@@ -31,14 +34,26 @@ class MarkdownParser {
     final buffer = StringBuffer();
     bool insideFrontMatter = false;
 
-    var isCodeBlock = false;
+    int? codeFenceLength; // null = not in code block, otherwise = fence length
 
     for (var line in lines) {
       final trimmed = line.trim();
-      if (trimmed.startsWith('```')) {
-        isCodeBlock = !isCodeBlock;
+
+      // Check for code fence (opening or closing)
+      final fenceMatch = _codeFencePattern.firstMatch(trimmed);
+      if (fenceMatch != null) {
+        final backticks = fenceMatch.group(1)!.length;
+        if (codeFenceLength == null) {
+          // Opening a code block
+          codeFenceLength = backticks;
+        } else if (backticks >= codeFenceLength) {
+          // Closing the code block (needs same or more backticks)
+          codeFenceLength = null;
+        }
+        // If backticks < codeFenceLength, it's content inside the block
       }
-      if (isCodeBlock) {
+
+      if (codeFenceLength != null) {
         buffer.writeln(line);
         continue;
       }
