@@ -5,9 +5,21 @@ import 'package:mix/mix.dart';
 
 import 'styling.dart';
 
+/// Safely loads a Google Font, falling back to platform default when runtime
+/// fetching is disabled (e.g., in tests).
+TextStyle _safeGoogleFont(TextStyle Function() fontLoader) {
+  // When runtime fetching is disabled (typically in tests), Google Fonts
+  // requires bundled font assets. Since we don't bundle fonts for tests,
+  // use platform default instead.
+  if (!GoogleFonts.config.allowRuntimeFetching) {
+    return const TextStyle();
+  }
+  return fontLoader();
+}
+
 // Base text style for the presentation
 TextStyle get _baseTextStyle =>
-    GoogleFonts.poppins().copyWith(fontSize: 24, color: Colors.white);
+    _safeGoogleFont(GoogleFonts.poppins).copyWith(fontSize: 24, color: Colors.white);
 
 // Custom variants for different block types
 const onGist = NamedVariant('gist');
@@ -166,7 +178,8 @@ SlideStyle _createDefaultSlideStyle() {
 
     // Code blocks
     code: MarkdownCodeblockStyle(
-      textStyle: GoogleFonts.jetBrainsMono(fontSize: 18).copyWith(height: 1.8),
+      textStyle: _safeGoogleFont(() => GoogleFonts.jetBrainsMono(fontSize: 18))
+          .copyWith(height: 1.8),
       container: BoxStyler(
         padding: EdgeInsetsMix.all(32),
         decoration: BoxDecorationMix(
