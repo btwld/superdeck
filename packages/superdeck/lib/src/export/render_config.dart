@@ -12,17 +12,4 @@ class RenderConfig {
     required this.context,
     this.targetSize,
   });
-
-  /// Creates a copy with optional parameter overrides
-  RenderConfig copyWith({
-    double? pixelRatio,
-    BuildContext? context,
-    Size? targetSize,
-  }) {
-    return RenderConfig(
-      pixelRatio: pixelRatio ?? this.pixelRatio,
-      context: context ?? this.context,
-      targetSize: targetSize ?? this.targetSize,
-    );
-  }
 }

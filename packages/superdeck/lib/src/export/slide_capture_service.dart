@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck_core/superdeck_core.dart' show generateValueHash;
 
 import '../rendering/slides/slide_view.dart';
 import '../utils/constants.dart';
@@ -40,7 +41,7 @@ class SlideCaptureService {
     required SlideConfiguration slide,
     required BuildContext context,
   }) async {
-    final queueKey = shortHash(slide.key + quality.name);
+    final queueKey = generateValueHash(slide.key + quality.name);
     try {
       while (_generationQueue.length >= _maxConcurrentGenerations) {
         await Future.delayed(const Duration(milliseconds: 50));

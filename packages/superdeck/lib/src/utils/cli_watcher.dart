@@ -94,67 +94,23 @@ class CliWatcher {
       ], workingDirectory: projectRoot.path);
 
       // Subscribe to streams to prevent buffer blocking
-      _stdoutSubscription = _process!.stdout.listen((data) {
-        // Accumulate chunks and process line-by-line to handle ANSI/progress updates
-        final chunk = String.fromCharCodes(data);
-        _stdoutBuffer.write(chunk);
+      _stdoutSubscription = _process!.stdout.listen(
+        (data) => _processStreamLines(
+          data,
+          _stdoutBuffer,
+          (line) => _logger.info('[CLI] $line'),
+        ),
+        onError: (error) => _logger.warning('stdout error: $error'),
+      );
 
-        // Normalize carriage returns used by progress spinners
-        var text = _stdoutBuffer.toString().replaceAll('\r', '\n');
-        final lastNewline = text.lastIndexOf('\n');
-
-        if (lastNewline == -1) {
-          // Wait for a full line
-          return;
-        }
-
-        final complete = text.substring(0, lastNewline);
-        final remainder = text.substring(lastNewline + 1);
-        _stdoutBuffer
-          ..clear()
-          ..write(remainder);
-
-        final lines = complete.split('\n');
-        for (var line in lines) {
-          // Strip ANSI escape codes
-          line = line.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
-          line = line.trim();
-          if (line.isEmpty) continue;
-
-          _logger.info('[CLI] $line');
-        }
-      }, onError: (error) => _logger.warning('stdout error: $error'));
-
-      _stderrSubscription = _process!.stderr.listen((data) {
-        // Accumulate chunks and process line-by-line to handle ANSI/progress updates
-        final chunk = String.fromCharCodes(data);
-        _stderrBuffer.write(chunk);
-
-        var text = _stderrBuffer.toString().replaceAll('\r', '\n');
-        final lastNewline = text.lastIndexOf('\n');
-
-        if (lastNewline == -1) {
-          return;
-        }
-
-        final complete = text.substring(0, lastNewline);
-        final remainder = text.substring(lastNewline + 1);
-        _stderrBuffer
-          ..clear()
-          ..write(remainder);
-
-        final lines = complete.split('\n');
-        for (var line in lines) {
-          // Strip ANSI escape codes
-          line = line.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
-          line = line.trim();
-          if (line.isEmpty) continue;
-
+      _stderrSubscription = _process!.stderr.listen(
+        (data) => _processStreamLines(data, _stderrBuffer, (line) {
           _lastErrorLine = line;
           _logger.severe('[CLI ERROR] $line');
           debugPrint('[CLI ERROR] $line');
-        }
-      }, onError: (error) => _logger.warning('stderr error: $error'));
+        }),
+        onError: (error) => _logger.warning('stderr error: $error'),
+      );
 
       _status.value = CliWatcherStatus.running;
 
@@ -170,6 +126,44 @@ class CliWatcher {
       _status.value = CliWatcherStatus.failed;
       await _writeErrorPresentation(exception);
       _logger.severe('Failed to start CLI watcher', e);
+    }
+  }
+
+  /// Processes incoming stream data line-by-line with ANSI code stripping.
+  ///
+  /// Accumulates chunks in [buffer], extracts complete lines,
+  /// strips ANSI escape codes, and calls [onLine] for each non-empty line.
+  void _processStreamLines(
+    List<int> data,
+    StringBuffer buffer,
+    void Function(String line) onLine,
+  ) {
+    final chunk = String.fromCharCodes(data);
+    buffer.write(chunk);
+
+    // Normalize carriage returns used by progress spinners
+    var text = buffer.toString().replaceAll('\r', '\n');
+    final lastNewline = text.lastIndexOf('\n');
+
+    if (lastNewline == -1) {
+      // Wait for a full line
+      return;
+    }
+
+    final complete = text.substring(0, lastNewline);
+    final remainder = text.substring(lastNewline + 1);
+    buffer
+      ..clear()
+      ..write(remainder);
+
+    final lines = complete.split('\n');
+    for (var line in lines) {
+      // Strip ANSI escape codes
+      line = line.replaceAll(RegExp(r'\x1B\[[0-?]*[ -/]*[@-~]'), '');
+      line = line.trim();
+      if (line.isEmpty) continue;
+
+      onLine(line);
     }
   }
 

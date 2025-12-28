@@ -35,6 +35,24 @@ extension DirectoryX on Directory {
   }
 }
 
+/// Parses an enum value from a JSON string with normalization.
+///
+/// Normalizes the input by removing underscores and comparing case-insensitively.
+/// Throws [ArgumentError] if no matching enum value is found.
+///
+/// Example:
+/// ```dart
+/// static DartPadTheme fromJson(String value) =>
+///     enumFromJson(value, DartPadTheme.values, 'DartPadTheme');
+/// ```
+T enumFromJson<T extends Enum>(String value, List<T> values, String typeName) {
+  final normalized = value.replaceAll('_', '');
+  return values.firstWhere(
+    (e) => e.name.toLowerCase() == normalized.toLowerCase(),
+    orElse: () => throw ArgumentError('Invalid $typeName: $value'),
+  );
+}
+
 /// ACK (Schema Validation) helper function for enums
 StringSchema ackEnum(List<Enum> values) {
   return Ack.string().enumString(

@@ -259,14 +259,8 @@ enum DartPadTheme {
 
   String toJson() => name;
 
-  static DartPadTheme fromJson(String value) {
-    // Support both camelCase and snake_case (though this enum is all lowercase)
-    final normalized = value.replaceAll('_', '');
-    return DartPadTheme.values.firstWhere(
-      (e) => e.name.toLowerCase() == normalized.toLowerCase(),
-      orElse: () => throw ArgumentError('Invalid DartPadTheme: $value'),
-    );
-  }
+  static DartPadTheme fromJson(String value) =>
+      enumFromJson(value, values, 'DartPadTheme');
 }
 
 enum ImageFit {
@@ -282,14 +276,8 @@ enum ImageFit {
 
   String toJson() => name;
 
-  static ImageFit fromJson(String value) {
-    // Support both camelCase and snake_case
-    final normalized = value.replaceAll('_', '');
-    return ImageFit.values.firstWhere(
-      (e) => e.name.toLowerCase() == normalized.toLowerCase(),
-      orElse: () => throw ArgumentError('Invalid ImageFit: $value'),
-    );
-  }
+  static ImageFit fromJson(String value) =>
+      enumFromJson(value, values, 'ImageFit');
 }
 
 class WidgetBlock extends Block {
@@ -407,14 +395,8 @@ enum ContentAlignment {
 
   String toJson() => name;
 
-  static ContentAlignment fromJson(String value) {
-    // Support both camelCase and snake_case
-    final normalized = value.replaceAll('_', '');
-    return ContentAlignment.values.firstWhere(
-      (e) => e.name.toLowerCase() == normalized.toLowerCase(),
-      orElse: () => throw ArgumentError('Invalid ContentAlignment: $value'),
-    );
-  }
+  static ContentAlignment fromJson(String value) =>
+      enumFromJson(value, values, 'ContentAlignment');
 }
 
 extension StringContentX on String {
