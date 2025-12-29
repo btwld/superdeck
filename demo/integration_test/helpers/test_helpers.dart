@@ -9,50 +9,6 @@ import 'package:superdeck_example/src/parts/header.dart';
 import 'package:superdeck_example/src/style.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
-/// The expected viewport size for SuperDeck (matches kResolution in constants.dart)
-const kTestViewportSize = Size(1280, 720);
-
-/// Checks if a FlutterErrorDetails is a RenderFlex overflow error.
-///
-/// These errors can occur in CI environments due to viewport size differences
-/// and are safe to ignore for integration tests.
-bool _isOverflowError(FlutterErrorDetails details) {
-  final message = details.exceptionAsString();
-  return message.contains('A RenderFlex overflowed') ||
-      message.contains('A RenderBox was not laid out') ||
-      message.contains('overflowed by');
-}
-
-/// Configures the test to ignore RenderFlex overflow errors.
-///
-/// CI environments (especially Linux with xvfb) may report overflow errors
-/// due to viewport/display size differences that don't occur in production.
-/// This function filters those specific errors while still catching real issues.
-///
-/// IMPORTANT: Must be called at the start of each test that may encounter
-/// overflow errors, NOT in setUp or setUpAll.
-///
-/// Example:
-/// ```dart
-/// testWidgets('my test', (tester) async {
-///   ignoreOverflowErrors();
-///   await tester.pumpWidget(MyApp());
-///   // ...test code...
-/// });
-/// ```
-void ignoreOverflowErrors() {
-  final originalOnError = FlutterError.onError;
-  FlutterError.onError = (FlutterErrorDetails details) {
-    if (_isOverflowError(details)) {
-      // Log but don't fail the test for overflow errors in CI
-      debugPrint('Ignoring overflow error in CI: ${details.exceptionAsString()}');
-      return;
-    }
-    // For all other errors, use the original handler
-    originalOnError?.call(details);
-  };
-}
-
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
   const TestApp({super.key});
@@ -106,19 +62,8 @@ DeckController? findDeckController(WidgetTester tester) {
 extension IntegrationTestExtensions on WidgetTester {
   /// Pumps the test app and waits for it to fully load.
   ///
-  /// Sets the viewport to match kResolution (1280x720) to prevent layout
-  /// overflow in CI environments with smaller default viewports.
-  /// Also configures overflow error filtering for CI environments.
-  ///
   /// Returns the DeckController for further assertions.
   Future<DeckController?> pumpTestApp() async {
-    // Ignore overflow errors in CI (xvfb viewport limitations)
-    ignoreOverflowErrors();
-
-    // Set viewport to match expected resolution (prevents overflow in CI)
-    view.physicalSize = kTestViewportSize;
-    view.devicePixelRatio = 1.0;
-
     await pumpWidget(const TestApp());
     await pumpAndSettle(const Duration(seconds: 5));
     return findDeckController(this);

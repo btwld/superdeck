@@ -13,13 +13,6 @@ void main() {
 
     group('App Startup', () {
       testWidgets('app starts successfully without errors', (tester) async {
-        // Ignore overflow errors in CI (xvfb viewport limitations)
-        ignoreOverflowErrors();
-
-        // Set viewport to match expected resolution (prevents overflow in CI)
-        tester.view.physicalSize = kTestViewportSize;
-        tester.view.devicePixelRatio = 1.0;
-
         await tester.pumpWidget(const TestApp());
 
         // Wait for initial load
@@ -31,18 +24,17 @@ void main() {
         // Wait for app to fully settle
         await tester.pumpAndSettle(const Duration(seconds: 5));
 
-        // Verify app rendered without exceptions (overflow errors are filtered)
-        expect(tester.takeException(), isNull);
+        // Check for exceptions, but ignore RenderFlex overflow which is common
+        // in CI environments with smaller viewport sizes
+        final exception = tester.takeException();
+        if (exception != null) {
+          final isLayoutOverflow = exception.toString().contains('overflowed');
+          expect(isLayoutOverflow, isTrue,
+              reason: 'Only layout overflow is acceptable, got: $exception');
+        }
       });
 
       testWidgets('app shows loading state before slides load', (tester) async {
-        // Ignore overflow errors in CI (xvfb viewport limitations)
-        ignoreOverflowErrors();
-
-        // Set viewport to match expected resolution (prevents overflow in CI)
-        tester.view.physicalSize = kTestViewportSize;
-        tester.view.devicePixelRatio = 1.0;
-
         await tester.pumpWidget(const TestApp());
 
         // Immediately after pump, check initial state

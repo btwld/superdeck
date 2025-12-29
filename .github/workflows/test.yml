@@ -92,5 +92,7 @@ jobs:
         timeout-minutes: 5
 
       - name: Run Integration Tests
-        run: xvfb-run -a --server-args="-screen 0 1920x1080x24" melos exec --dir-exists=integration_test -- flutter test integration_test --fail-fast --concurrency=1
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: melos run test:integration
         timeout-minutes: 10
