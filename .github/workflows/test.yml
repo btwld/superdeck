@@ -54,6 +54,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Linux Desktop Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev ninja-build pkg-config
+
       - name: Install FVM
         shell: bash
         run: |
