@@ -9,6 +9,9 @@ import 'package:superdeck_example/src/parts/header.dart';
 import 'package:superdeck_example/src/style.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
+/// The expected viewport size for SuperDeck (matches kResolution in constants.dart)
+const kTestViewportSize = Size(1280, 720);
+
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
   const TestApp({super.key});
@@ -62,8 +65,15 @@ DeckController? findDeckController(WidgetTester tester) {
 extension IntegrationTestExtensions on WidgetTester {
   /// Pumps the test app and waits for it to fully load.
   ///
+  /// Sets the viewport to match kResolution (1280x720) to prevent layout
+  /// overflow in CI environments with smaller default viewports.
+  ///
   /// Returns the DeckController for further assertions.
   Future<DeckController?> pumpTestApp() async {
+    // Set viewport to match expected resolution (prevents overflow in CI)
+    view.physicalSize = kTestViewportSize;
+    view.devicePixelRatio = 1.0;
+
     await pumpWidget(const TestApp());
     await pumpAndSettle(const Duration(seconds: 5));
     return findDeckController(this);
