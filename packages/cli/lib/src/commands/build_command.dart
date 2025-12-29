@@ -11,15 +11,35 @@ import '../utils/logger.dart';
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 
+/// Detects if running in a CI environment.
+bool _isCI() {
+  final env = Platform.environment;
+  return env['CI'] == 'true' ||
+      env['GITHUB_ACTIONS'] == 'true' ||
+      env['GITLAB_CI'] == 'true' ||
+      env['CIRCLECI'] == 'true' ||
+      env['TRAVIS'] == 'true';
+}
+
 /// Creates a DeckBuilder with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckConfiguration configuration,
   required DeckService store,
 }) {
+  // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions
+  final browserLaunchOptions = _isCI()
+      ? <String, dynamic>{
+          'args': ['--no-sandbox', '--disable-setuid-sandbox'],
+        }
+      : null;
+
   return DeckBuilder(
     tasks: [
       DartFormatterTask(),
-      AssetGenerationTask.withDefaults(store: store),
+      AssetGenerationTask.withDefaults(
+        store: store,
+        browserLaunchOptions: browserLaunchOptions,
+      ),
     ],
     configuration: configuration,
     store: store,
