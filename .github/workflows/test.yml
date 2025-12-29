@@ -80,6 +80,14 @@ jobs:
         run: melos run build_runner:build
         timeout-minutes: 5
 
+      - name: Build SuperDeck Assets
+        run: |
+          cd demo
+          dart run superdeck_cli:main build
+        timeout-minutes: 5
+
       - name: Run Integration Tests
-        run: melos run test:integration
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: melos run test:integration
         timeout-minutes: 10

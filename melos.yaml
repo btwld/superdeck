@@ -89,7 +89,7 @@ scripts:
       dirExists: test
 
   test:integration:
-    run: melos exec -- flutter test integration_test
+    run: melos exec -- flutter test integration_test -d linux
     description: Run flutter integration tests
     packageFilters:
       dirExists: integration_test
