@@ -42,6 +42,9 @@ sealed class Block {
   }
 
   /// Schema for discriminated union of block types.
+  ///
+  /// Note: SectionBlock is intentionally not included here as it is a container
+  /// for discriminated blocks, not a discriminated type itself.
   static final discriminatedSchema = Ack.discriminated(
     discriminatorKey: 'type',
     schemas: {
@@ -142,7 +145,6 @@ class SectionBlock extends Block {
 
   /// Validation schema for section blocks.
   static final schema = Ack.object({
-    'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
     'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
@@ -229,7 +231,6 @@ class ContentBlock extends Block {
   }
 
   static final schema = Ack.object({
-    'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
     'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
@@ -362,11 +363,10 @@ class WidgetBlock extends Block {
   }
 
   static final schema = Ack.object({
-    'type': Ack.string(),
     'align': ContentAlignment.schema.nullable().optional(),
     'flex': Ack.integer().nullable().optional(),
     'scrollable': Ack.boolean().nullable().optional(),
-    "name": Ack.string(),
+    'name': Ack.string(),
   }, additionalProperties: true);
 
   @override
