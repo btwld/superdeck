@@ -432,7 +432,11 @@ void main() {
 
       group('schema', () {
         test('validates minimal block', () {
-          final result = ContentBlock.schema.safeParse({'type': 'column'});
+          // Note: 'content' is required to satisfy Google AI schema requirements
+          final result = ContentBlock.schema.safeParse({
+            'type': 'column',
+            'content': '',
+          });
           expect(result.isOk, isTrue);
         });
 

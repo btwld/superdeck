@@ -211,7 +211,8 @@ void main() {
             'key': 'full',
             'options': {'title': 'Title'},
             'sections': [
-              {'type': 'section'},
+              // Note: 'blocks' is required to satisfy Google AI schema requirements
+              {'type': 'section', 'blocks': []},
             ],
             'comments': ['Note'],
           };
