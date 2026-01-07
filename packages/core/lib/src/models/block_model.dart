@@ -28,9 +28,9 @@ sealed class Block {
   /// Base schema for all block types
   static final schema = Ack.object({
     'type': Ack.string(),
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
+    'align': ContentAlignment.schema.optional(),
+    'flex': Ack.integer().optional(),
+    'scrollable': Ack.boolean().optional(),
   }, additionalProperties: true);
 
   /// Parses a block from a JSON map.
@@ -148,9 +148,9 @@ class SectionBlock extends Block {
   /// Note: 'blocks' is required (not optional) to satisfy Google AI schema
   /// requirements which reject OBJECT types with all-optional properties.
   static final schema = Ack.object({
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
+    'align': ContentAlignment.schema.optional(),
+    'flex': Ack.integer().optional(),
+    'scrollable': Ack.boolean().optional(),
     'blocks': Ack.list(Block.discriminatedSchema),
   }, additionalProperties: true);
 
@@ -238,9 +238,9 @@ class ContentBlock extends Block {
   /// Note: 'content' is required (not optional) to satisfy Google AI schema
   /// requirements which reject OBJECT types with all-optional properties.
   static final schema = Ack.object({
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
+    'align': ContentAlignment.schema.optional(),
+    'flex': Ack.integer().optional(),
+    'scrollable': Ack.boolean().optional(),
     'content': Ack.string(),
   }, additionalProperties: true);
 
@@ -370,9 +370,9 @@ class WidgetBlock extends Block {
   }
 
   static final schema = Ack.object({
-    'align': ContentAlignment.schema.nullable().optional(),
-    'flex': Ack.integer().nullable().optional(),
-    'scrollable': Ack.boolean().nullable().optional(),
+    'align': ContentAlignment.schema.optional(),
+    'flex': Ack.integer().optional(),
+    'scrollable': Ack.boolean().optional(),
     'name': Ack.string(),
   }, additionalProperties: true);
 

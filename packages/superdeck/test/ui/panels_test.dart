@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/ui/panels/comments_panel.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
-import '../testing_utils.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

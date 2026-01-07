@@ -71,7 +71,7 @@ class Slide {
   /// Validation schema for slide data.
   static final schema = Ack.object({
     "key": Ack.string(),
-    'options': SlideOptions.schema.nullable().optional(),
+    'options': SlideOptions.schema.optional(),
     'sections': Ack.list(SectionBlock.schema).optional(),
     'comments': Ack.list(Ack.string()).optional(),
   }, additionalProperties: true);
@@ -181,8 +181,8 @@ class SlideOptions {
 
   /// Validation schema for slide options.
   static final schema = Ack.object({
-    'title': Ack.string().nullable().optional(),
-    'style': Ack.string().nullable().optional(),
+    'title': Ack.string().optional(),
+    'style': Ack.string().optional(),
   }, additionalProperties: true);
 
   /// Parses slide options from a JSON map.

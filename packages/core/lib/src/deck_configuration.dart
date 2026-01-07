@@ -118,10 +118,10 @@ final class DeckConfiguration {
   }
 
   static final schema = Ack.object({
-    'projectDir': Ack.string().nullable().optional(),
-    'slidesPath': Ack.string().nullable().optional(),
-    'outputDir': Ack.string().nullable().optional(),
-    'assetsPath': Ack.string().nullable().optional(),
+    'projectDir': Ack.string().optional(),
+    'slidesPath': Ack.string().optional(),
+    'outputDir': Ack.string().optional(),
+    'assetsPath': Ack.string().optional(),
   });
 
   static File get defaultFile => File('superdeck.yaml');

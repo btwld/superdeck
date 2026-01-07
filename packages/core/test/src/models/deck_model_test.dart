@@ -247,15 +247,11 @@ void main() {
                 'comments': ['Note'],
               },
             ],
-            'configuration': {
-              'projectDir': '/test',
-            },
           };
           final deck = Deck.parse(map);
 
           expect(deck.slides[0].key, 'full');
           expect(deck.slides[0].options?.title, 'Title');
-          expect(deck.configuration.projectDir, '/test');
         });
 
         test('parses deck with widget blocks', () {
@@ -325,17 +321,6 @@ void main() {
                 'comments': ['note'],
               },
             ],
-            'configuration': {
-              'projectDir': '/test',
-            },
-          });
-          expect(result.isOk, isTrue);
-        });
-
-        test('validates deck with nullable configuration', () {
-          final result = Deck.schema.safeParse({
-            'slides': <dynamic>[],
-            'configuration': null,
           });
           expect(result.isOk, isTrue);
         });
