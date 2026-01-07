@@ -194,8 +194,10 @@ SlideStyle _createDefaultSlideStyle() {
       headStyle: _baseTextStyle.copyWith(fontWeight: FontWeight.bold),
       bodyStyle: _baseTextStyle,
       cellPadding: const EdgeInsets.all(12),
-      border: TableBorder.all(color: Colors.grey, width: 2),
-      cellDecoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1)),
+      border: TableBorder.all(color: _baseTextStyle.color!, width: 2),
+      cellDecoration: BoxDecoration(
+        color: _baseTextStyle.color!.withValues(alpha: 0.1),
+      ),
     ),
 
     // Blockquotes
@@ -203,7 +205,9 @@ SlideStyle _createDefaultSlideStyle() {
       textStyle: _baseTextStyle.copyWith(fontSize: 32),
       padding: const EdgeInsets.only(bottom: 12, left: 30),
       decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: Colors.grey, width: 4)),
+        border: Border(
+          left: BorderSide(color: _baseTextStyle.color!, width: 4),
+        ),
       ),
     ),
 
@@ -250,7 +254,7 @@ SlideStyle _createDefaultSlideStyle() {
 
     // Horizontal rule
     horizontalRuleDecoration: BoxDecoration(
-      border: Border(bottom: BorderSide(color: Colors.grey, width: 2)),
+      border: Border(bottom: BorderSide(color: _baseTextStyle.color!, width: 2)),
     ),
   );
 }
