@@ -144,14 +144,11 @@ class SectionBlock extends Block {
   }
 
   /// Validation schema for section blocks.
-  ///
-  /// Note: 'blocks' is required (not optional) to satisfy Google AI schema
-  /// requirements which reject OBJECT types with all-optional properties.
   static final schema = Ack.object({
     'align': ContentAlignment.schema.optional(),
     'flex': Ack.integer().optional(),
     'scrollable': Ack.boolean().optional(),
-    'blocks': Ack.list(Block.discriminatedSchema),
+    'blocks': Ack.list(Block.discriminatedSchema).optional(),
   }, additionalProperties: true);
 
   @override
@@ -234,14 +231,11 @@ class ContentBlock extends Block {
   }
 
   /// Validation schema for content blocks.
-  ///
-  /// Note: 'content' is required (not optional) to satisfy Google AI schema
-  /// requirements which reject OBJECT types with all-optional properties.
   static final schema = Ack.object({
     'align': ContentAlignment.schema.optional(),
     'flex': Ack.integer().optional(),
     'scrollable': Ack.boolean().optional(),
-    'content': Ack.string(),
+    'content': Ack.string().optional(),
   }, additionalProperties: true);
 
   @override
