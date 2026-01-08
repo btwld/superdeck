@@ -39,6 +39,8 @@ class AsyncThumbnail {
     _status.value = AsyncFileStatus.loading;
     final currentFile = _imageFile.value;
     if (currentFile != null) {
+      // Clear all cached images to ensure stale thumbnails don't linger
+      imageCache.clear();
       FileImage(currentFile).evict();
     }
     _imageFile.value = null;
@@ -123,7 +125,7 @@ class AsyncThumbnail {
     }
 
     return Image(
-      gaplessPlayback: true,
+      gaplessPlayback: false,
       image: provider,
       errorBuilder: (context, error, _) => _errorWidget(context, this),
     );
