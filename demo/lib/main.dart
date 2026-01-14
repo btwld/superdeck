@@ -22,10 +22,7 @@ void main() async {
     SuperDeckApp(
       options: DeckOptions(
         baseStyle: borderedStyle(),
-        widgets: {
-          ...demoWidgets,
-          'twitter': const _TwitterWidgetDefinition(),
-        },
+        widgets: {...demoWidgets, 'twitter': const _TwitterWidgetDefinition()},
         // debug: true,
         styles: {
           'announcement': announcementStyle(),
@@ -37,6 +34,7 @@ void main() async {
           footer: FooterPart(),
           background: BackgroundPart(),
         ),
+        watchForChanges: true,
       ),
     ),
   );

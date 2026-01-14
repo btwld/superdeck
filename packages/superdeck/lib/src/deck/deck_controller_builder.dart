@@ -47,8 +47,8 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       options: widget.options,
     );
 
-    // Start CLI watcher in debug mode for auto-rebuild
-    if (kCanRunProcess) {
+    // Start CLI watcher in debug mode for auto-rebuild (if enabled)
+    if (kCanRunProcess && widget.options.watchForChanges) {
       try {
         _cliWatcher = CliWatcher(
           projectRoot: Directory.current,
@@ -65,6 +65,8 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       } catch (e) {
         _logger.warning('CLI watcher failed to start: $e');
       }
+    } else if (!widget.options.watchForChanges) {
+      _logger.info('CLI watcher disabled via DeckOptions.watchForChanges');
     }
   }
 
