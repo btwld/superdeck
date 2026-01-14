@@ -13,7 +13,9 @@ command:
     dependencies:
       collection: ^1.18.0
       mix: ^2.0.0-rc.0
-      ack: ^1.0.0-beta.2
+      ack: ^1.0.0-beta.4
+      ack_annotations: ^1.0.0-beta.4
+      ack_generator: ^1.0.0-beta.4
   # publish:
     # hooks:
     #   pre: melos run gen:build
