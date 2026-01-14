@@ -1359,12 +1359,11 @@ void main() {
 
     group('Edge Cases', () {
       test('handles null values gracefully', () {
-        final result = StyleSchemas.styleConfigSchema.safeParse({
+        // Schema should handle nulls gracefully without throwing
+        StyleSchemas.styleConfigSchema.safeParse({
           'base': null,
           'styles': null,
         });
-        // Depending on schema, this might pass or fail
-        // The schema should handle nulls gracefully
       });
 
       test('handles very large font sizes', () {
@@ -1566,7 +1565,7 @@ void main() {
         final result = StyleSchemas.colorSchema.safeParse('#ABCDEF');
         final color = result.getOrThrow()!;
         expect(color.a, 1.0); // Full alpha
-        expect((color.value & 0x00FFFFFF), 0xABCDEF);
+        expect((color.toARGB32() & 0x00FFFFFF), 0xABCDEF);
       });
 
       test('colorSchema transforms 8-digit hex correctly', () {
