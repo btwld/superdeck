@@ -100,11 +100,6 @@ class DeckBuilder {
       store,
     );
 
-    // Dispose of all tasks
-    for (var task in tasks) {
-      await task.dispose();
-    }
-
     // Save the processed slides
     await store.saveReferences(
       Deck(slides: processedSlides, configuration: configuration),
@@ -115,5 +110,15 @@ class DeckBuilder {
     );
 
     return processedSlides;
+  }
+
+  /// Disposes of all tasks and releases resources.
+  ///
+  /// Call this method when done with the builder, especially after watch mode ends.
+  /// This ensures resources like browser instances are properly cleaned up.
+  Future<void> dispose() async {
+    for (var task in tasks) {
+      await task.dispose();
+    }
   }
 }

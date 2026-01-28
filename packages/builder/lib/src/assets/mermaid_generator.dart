@@ -14,6 +14,7 @@ class MermaidGenerator implements AssetGenerator {
   static final _logger = Logger('MermaidGenerator');
 
   Browser? _browser;
+  Future<Browser>? _browserInitFuture;
   final Map<String, dynamic> _launchOptions;
 
   /// HTML template for rendering Mermaid diagrams.
@@ -256,35 +257,61 @@ class MermaidGenerator implements AssetGenerator {
     return GeneratedAsset.mermaid(content);
   }
 
-  /// Get or create a browser instance
+  /// Get or create a browser instance.
+  ///
+  /// Uses a shared future to prevent concurrent browser launches - if multiple
+  /// calls arrive while the browser is being initialized, they all await the
+  /// same initialization future.
   Future<Browser> _getBrowser() async {
-    if (_browser == null) {
-      try {
-        _logger.info('Launching headless browser for Mermaid rendering');
-        _browser = await puppeteer.launch(
-          headless: _launchOptions['headless'] ?? true,
-          args: _launchOptions['args'] as List<String>?,
-          executablePath: _launchOptions['executablePath'] as String?,
-        );
-        _logger.info('Browser launched successfully');
-      } catch (e, stackTrace) {
-        _logger.severe(
-          'Failed to launch browser for Mermaid rendering. '
-          'Ensure Chrome/Chromium is installed and accessible.',
-          e,
-          stackTrace,
-        );
-        Error.throwWithStackTrace(
-          Exception(
-            'Failed to launch browser for Mermaid diagram generation. '
-            'Please ensure Chrome or Chromium is installed and accessible. '
-            'Error: $e',
-          ),
-          stackTrace,
-        );
-      }
+    // Return existing browser if available
+    if (_browser != null) {
+      return _browser!;
     }
-    return _browser!;
+
+    // If initialization is in progress, await it
+    if (_browserInitFuture != null) {
+      return _browserInitFuture!;
+    }
+
+    // Start initialization and store the future for concurrent callers
+    _browserInitFuture = _launchBrowser();
+    try {
+      _browser = await _browserInitFuture!;
+      return _browser!;
+    } catch (e) {
+      // Clear the future on failure so retry is possible
+      _browserInitFuture = null;
+      rethrow;
+    }
+  }
+
+  /// Internal browser launch logic.
+  Future<Browser> _launchBrowser() async {
+    try {
+      _logger.info('Launching headless browser for Mermaid rendering');
+      final browser = await puppeteer.launch(
+        headless: _launchOptions['headless'] ?? true,
+        args: _launchOptions['args'] as List<String>?,
+        executablePath: _launchOptions['executablePath'] as String?,
+      );
+      _logger.info('Browser launched successfully');
+      return browser;
+    } catch (e, stackTrace) {
+      _logger.severe(
+        'Failed to launch browser for Mermaid rendering. '
+        'Ensure Chrome/Chromium is installed and accessible.',
+        e,
+        stackTrace,
+      );
+      Error.throwWithStackTrace(
+        Exception(
+          'Failed to launch browser for Mermaid diagram generation. '
+          'Please ensure Chrome or Chromium is installed and accessible. '
+          'Error: $e',
+        ),
+        stackTrace,
+      );
+    }
   }
 
   /// Execute an action with a new page
@@ -493,6 +520,16 @@ class MermaidGenerator implements AssetGenerator {
 
   @override
   Future<void> dispose() async {
+    // Wait for any in-flight initialization to complete before disposing
+    if (_browserInitFuture != null) {
+      try {
+        await _browserInitFuture;
+      } catch (_) {
+        // Ignore initialization errors during dispose
+      }
+    }
+    _browserInitFuture = null;
+
     if (_browser != null) {
       await _browser!.close();
       _browser = null;

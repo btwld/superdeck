@@ -246,13 +246,19 @@ class BuildCommand extends SuperDeckCommand {
         logger.info('Press Ctrl+C to stop watching.');
         logger.info('');
 
+        // Create a builder that will handle watching and rebuilding
+        final builder = _createStandardBuilder(
+          configuration: deckConfig,
+          store: repository,
+        );
+
         // Listen to stdin for interactive commands
         StreamSubscription<String>? stdinSubscription;
         try {
           stdinSubscription = stdin
               .transform(utf8.decoder)
               .transform(const LineSplitter())
-              .listen((line) {
+              .listen((line) async {
                 final command = line.trim().toLowerCase();
                 switch (command) {
                   case 'r':
@@ -268,7 +274,8 @@ class BuildCommand extends SuperDeckCommand {
                   case 'q':
                   case 'quit':
                     logger.info('Exiting watch mode...');
-                    unawaited(stdinSubscription?.cancel());
+                    await stdinSubscription?.cancel();
+                    await builder.dispose();
                     exit(ExitCode.success.code);
                   default:
                     logger.warn('Unknown command: "$command"');
@@ -277,12 +284,6 @@ class BuildCommand extends SuperDeckCommand {
                     );
                 }
               });
-
-          // Create a builder that will handle watching and rebuilding
-          final builder = _createStandardBuilder(
-            configuration: deckConfig,
-            store: repository,
-          );
 
           // Start watching for changes and rebuilding when needed
           await for (final event in builder.watchAndBuild()) {
@@ -302,6 +303,7 @@ class BuildCommand extends SuperDeckCommand {
           }
         } finally {
           await stdinSubscription?.cancel();
+          await builder.dispose();
         }
       }
 
