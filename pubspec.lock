@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
+  characters:
+    dependency: transitive
+    description:
+      name: characters
+      sha256: f71061c654a3380576a52b451dd5532377954cf9dbd272a78fc8479606670803
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
   charcode:
     dependency: transitive
     description:
@@ -81,6 +89,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  flutter:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   glob:
     dependency: transitive
     description:
@@ -129,6 +142,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.9.0"
+  material_color_utilities:
+    dependency: transitive
+    description:
+      name: material_color_utilities
+      sha256: f7142bb1154231d7ea5f96bc7bde4bda2a0945d2806bb11670e30b850d56bdec
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.11.1"
   melos:
     dependency: "direct main"
     description:
@@ -145,6 +166,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.0"
+  mix:
+    dependency: "direct main"
+    description:
+      name: mix
+      sha256: "8e592af7848570d46eaa3200f692d76177fa94e72b6adac904441ab1d19f11ee"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0-rc.0"
   mustache_template:
     dependency: transitive
     description:
@@ -217,6 +246,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
+  sky_engine:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   source_span:
     dependency: transitive
     description:
@@ -257,6 +291,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  vector_math:
+    dependency: transitive
+    description:
+      name: vector_math
+      sha256: d530bd74fea330e6e364cda7a85019c434070188383e1cd8d9777ee586914c5b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   web:
     dependency: transitive
     description:
@@ -282,5 +324,5 @@ packages:
     source: hosted
     version: "2.2.2"
 sdks:
-  dart: ">=3.9.0 <4.0.0"
-  flutter: ">=3.35.0"
+  dart: ">=3.10.0 <4.0.0"
+  flutter: ">=3.38.1"
