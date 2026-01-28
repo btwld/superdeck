@@ -7,10 +7,6 @@ environment:
 
 dependencies:
   melos: ^6.3.3
-  mix: ^2.0.0-rc.0
-
-dev_dependencies:
-  mix_generator: ^2.0.0-rc.0
 
 lint_staged:
   '**.dart': dart fix --apply && dcm fix
