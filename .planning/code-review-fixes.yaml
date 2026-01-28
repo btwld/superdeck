@@ -2,15 +2,35 @@ plan:
   task: "Address all SuperDeck 1.0 Release Code Review issues"
   created: "2026-01-27"
   updated: "2026-01-28"
-  status: "in_progress"
+  status: "partially_complete"
   source: "reference.md code review"
 
 summary:
   total_subtasks: 13
+  completed_subtasks: 5
   estimated_complexity: "medium"
   workstreams: 6
   blockers: 0
   should_fix: 13
+
+implementation_progress:
+  completed:
+    - T1: "SDK constraints aligned to >=3.9.0 <4.0.0"
+    - T2: "Mix version conflict resolved (aligned to ^2.0.0-rc.0)"
+    - T4: "Watch task lifecycle bug fixed - added DeckBuilder.dispose()"
+    - T10: "Path validation fixed - checks for '..' as segment not substring"
+    - T12: "Browser init race condition fixed with shared future"
+  pending:
+    - T3: "Toolchain discovery standardization"
+    - T5: "Serialize rebuilds"
+    - T6: "Unify file watching"
+    - T7: "Asset paths for nested outputDir"
+    - T8: "Pubspec formatting preservation"
+    - T9: "Fenced code parsing"
+    - T11: "Offline Mermaid support"
+    - T13: "Verification (requires Flutter SDK)"
+  commit: "0180a5e"
+  branch: "claude/superdeck-code-review-fixes-AlJxN"
 
 notes:
   removed_tasks:
