@@ -1,0 +1,476 @@
+plan:
+  task: "Address all SuperDeck 1.0 Release Code Review issues"
+  created: "2026-01-27"
+  updated: "2026-01-28"
+  status: "in_progress"
+  source: "reference.md code review"
+
+summary:
+  total_subtasks: 13
+  estimated_complexity: "medium"
+  workstreams: 6
+  blockers: 0
+  should_fix: 13
+
+notes:
+  removed_tasks:
+    - id: "Originally planned T1, T2 (IO isolation)"
+      reason: |
+        dart:io usage is intentional - it's part of the build-time/development workflow.
+        The web build consumes pre-built deck JSON and doesn't need file watching or
+        process spawning. The existing kCanRunProcess check already handles this correctly.
+        This is NOT a blocker for 1.0.
+
+  audit_findings:
+    - id: "MIX_VERSION_CONFLICT"
+      severity: "high"
+      added: "2026-01-28"
+      description: |
+        Root pubspec.yaml has mix: ^1.7.0-beta.0 but melos.yaml and packages/superdeck
+        have mix: ^2.0.0-rc.0. This is a MAJOR VERSION CONFLICT (1.x vs 2.x) that
+        could cause dependency resolution issues. Must be resolved as part of T2.
+      files:
+        - "pubspec.yaml (line 10): mix: ^1.7.0-beta.0"
+        - "melos.yaml (line 15): mix: ^2.0.0-rc.0"
+        - "packages/superdeck/pubspec.yaml (line 28): mix: ^2.0.0-rc.0"
+      resolution: "Align all mix versions to ^2.0.0-rc.0 (or stable when available)"
+
+workstreams:
+  - id: WS1
+    name: "Toolchain & dependency alignment"
+    priority: P1
+    tasks: [T1, T2, T3]
+    milestone: "SDK constraints consistent; no beta/RC deps; toolchain resolution unified"
+
+  - id: WS2
+    name: "Build/watch pipeline reliability"
+    priority: P2
+    tasks: [T4, T5, T6]
+    milestone: "No disposed task reuse; rebuilds serialized; watcher unified"
+
+  - id: WS3
+    name: "Assets & output correctness"
+    priority: P3
+    tasks: [T7, T8]
+    milestone: "Asset path fix; pubspec edits preserve comments"
+
+  - id: WS4
+    name: "Parsing & validation robustness"
+    priority: P4
+    tasks: [T9, T10]
+    milestone: "Parsing/validation fixes pass tests"
+
+  - id: WS5
+    name: "Mermaid export reliability"
+    priority: P5
+    tasks: [T11, T12]
+    milestone: "Offline mermaid supported; browser init race resolved"
+
+  - id: WS6
+    name: "Verification"
+    priority: P0
+    tasks: [T13]
+    milestone: "melos run analyze/test pass across all packages"
+
+subtasks:
+  # ============================================================================
+  # WS1: Toolchain & Dependency Alignment (P1)
+  # ============================================================================
+  - id: T1
+    name: "Align SDK constraints"
+    description: |
+      Update root and package SDK constraints to consistent >=3.9.0 baseline
+      and sync melos expectations.
+    depends_on: []
+    acceptance_criteria:
+      - "All pubspecs specify sdk >=3.9.0 <4.0.0 and flutter >=3.35.0"
+      - "melos bootstrap succeeds using FVM stable"
+    complexity: "low"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "pubspec.yaml"
+      - "packages/core/pubspec.yaml"
+      - "packages/superdeck/pubspec.yaml"
+      - "packages/cli/pubspec.yaml"
+      - "packages/builder/pubspec.yaml"
+      - "melos.yaml"
+    steps:
+      - "Update root pubspec.yaml to sdk: >=3.9.0 <4.0.0 and flutter: >=3.35.0"
+      - "Align all package pubspec.yaml SDK constraints"
+      - "Check melos.yaml for SDK pinning and update"
+
+  - id: T2
+    name: "Replace beta/RC dependencies"
+    description: |
+      Upgrade or pin mix/remix/ack to stable versions and update any breaking API usage.
+      IMPORTANT: Also resolve the mix version conflict between root (^1.7.0-beta.0) and
+      packages (^2.0.0-rc.0) - align all to the same version.
+    depends_on: [T1]
+    acceptance_criteria:
+      - "No beta/RC dependencies in pubspecs"
+      - "All mix versions aligned (no 1.x vs 2.x conflict)"
+      - "melos run analyze and melos run test pass"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "pubspec.yaml"
+      - "packages/superdeck/pubspec.yaml"
+      - "packages/core/pubspec.yaml"
+      - "packages/builder/pubspec.yaml"
+      - "melos.yaml"
+      - "pubspec.lock"
+    steps:
+      - "Find all -beta/-rc dependencies in pubspecs"
+      - "CRITICAL: Resolve mix version conflict - root has ^1.7.0-beta.0, others have ^2.0.0-rc.0"
+      - "Upgrade to stable releases (mix, remix, ack, ack_annotations, ack_generator)"
+      - "Update code for any API changes"
+      - "Regenerate lockfile"
+
+  - id: T3
+    name: "Standardize toolchain discovery"
+    description: |
+      Create shared SDK resolver that prefers .fvm/flutter_sdk, falls back to PATH,
+      and allows env overrides. Use resolver in builder and CLI.
+    depends_on: [T1]
+    acceptance_criteria:
+      - "All Dart/Flutter process launches use the shared resolver"
+      - "Tests confirm FVM is preferred when .fvm/flutter_sdk exists"
+      - "No direct hard-coded dart/flutter invocations remain outside resolver"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/builder/lib/src/utils/process_utils.dart"
+      - "packages/builder/lib/src/dart_code_utils.dart"
+      - "packages/superdeck/lib/src/utils/cli_watcher.dart"
+      - "packages/cli/lib/src/utils/sdk_resolver.dart (new)"
+      - "packages/cli/test/**"
+    steps:
+      - "Create shared SDK resolver in packages/cli/lib/src/utils/sdk_resolver.dart"
+      - "Use resolver in builder runDartCommand and CLI watcher"
+      - "Add unit tests for resolver precedence"
+      - "Document resolver behavior"
+
+  # ============================================================================
+  # WS2: Build/Watch Pipeline Reliability (P2)
+  # ============================================================================
+  - id: T4
+    name: "Fix watch task lifecycle"
+    description: |
+      Refactor watch mode to avoid disposing tasks on every build. Add DeckBuilder.dispose()
+      that disposes tasks once when watch stops.
+    depends_on: []
+    acceptance_criteria:
+      - "Two consecutive watchAndBuild rebuilds run without task disposal errors"
+      - "Tasks are disposed exactly once when watch ends"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/builder/lib/src/deck_builder.dart"
+      - "packages/cli/lib/src/commands/build_command.dart"
+      - "packages/builder/test/**"
+    steps:
+      - "Change DeckBuilder.build() to avoid disposing tasks when in watch mode"
+      - "Add DeckBuilder.dispose() that disposes tasks once"
+      - "Update CLI watch flow to call dispose() on exit"
+      - "Add regression test for watch mode builds"
+
+  - id: T5
+    name: "Serialize rebuilds to prevent overlap"
+    description: |
+      Add build queue/lock in CLI watch mode to serialize rebuild requests from
+      both manual commands and file watchers.
+    depends_on: [T4]
+    acceptance_criteria:
+      - "Concurrent rebuild triggers do not overlap writes to .superdeck output"
+      - "Logs show serialized rebuilds"
+      - "Tests validate queue behavior"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/cli/lib/src/commands/build_command.dart"
+      - "packages/cli/lib/src/utils/build_coordinator.dart (new)"
+      - "packages/cli/test/**"
+    steps:
+      - "Introduce build queue/lock in CLI watch mode"
+      - "Route manual and file-watch rebuilds through same queue"
+      - "Ensure force-rebuild clears assets before queued rebuild"
+      - "Add tests for overlapping rebuild requests"
+
+  - id: T6
+    name: "Unify file watching strategy"
+    description: |
+      Standardize on single watcher API and remove ad-hoc watchers across packages.
+    depends_on: [T4]
+    acceptance_criteria:
+      - "All file watching goes through single watcher abstraction"
+      - "Directory.watch/File.watch usage only inside watcher implementation"
+      - "Watch-related tests pass with consistent debounce"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/core/lib/src/utils/file_watcher.dart"
+      - "packages/core/lib/src/deck_service.dart"
+      - "packages/builder/lib/src/deck_builder.dart"
+      - "packages/superdeck/lib/src/utils/cli_watcher.dart"
+      - "packages/core/test/**"
+    steps:
+      - "Select single watcher API (prefer core FileWatcher)"
+      - "Update DeckBuilder.watchAndBuild to use unified watcher"
+      - "Update DeckService.loadDeckStream to use unified watcher"
+      - "Update CliWatcher to use same watcher abstraction"
+      - "Add tests for consistent debounce and event behavior"
+
+  # ============================================================================
+  # WS3: Assets & Output Correctness (P3)
+  # ============================================================================
+  - id: T7
+    name: "Fix asset paths for nested outputDir"
+    description: |
+      Correct path computation for asset output paths relative to project root,
+      not outputDir parent.
+    depends_on: []
+    acceptance_criteria:
+      - "Nested outputDir produces correct pubspec asset paths"
+      - "No absolute paths written into pubspec assets"
+    complexity: "low"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/core/lib/src/deck_configuration.dart"
+      - "packages/builder/lib/src/assets/asset_generation_pipeline.dart"
+      - "packages/cli/lib/src/utils/update_pubspec.dart"
+      - "packages/core/test/src/deck_configuration_test.dart"
+      - "packages/cli/test/**"
+    steps:
+      - "Add helpers on DeckConfiguration to compute asset paths relative to project root"
+      - "Update asset_generation_pipeline.dart to use correct base directory"
+      - "Update pubspec asset insertion to use relative paths"
+      - "Add tests for nested outputDir"
+
+  - id: T8
+    name: "Preserve pubspec formatting/comments on rewrite"
+    description: |
+      Replace YAML serialization with yaml_edit to modify only flutter.assets
+      while preserving formatting and comments.
+    depends_on: []
+    acceptance_criteria:
+      - "Pubspec comments/formatting remain unchanged aside from assets"
+      - "Snapshot tests confirm minimal diffs"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/cli/lib/src/utils/update_pubspec.dart"
+      - "packages/cli/pubspec.yaml"
+      - "packages/cli/test/src/utils/update_pubspec_test.dart"
+      - "packages/cli/test/fixtures/pubspec_with_comments.yaml (new)"
+    steps:
+      - "Add yaml_edit dependency to cli package"
+      - "Replace YAML serialization with yaml_edit targeted edits"
+      - "Preserve existing formatting, comments, and ordering"
+      - "Add snapshot tests with commented pubspec fixture"
+
+  # ============================================================================
+  # WS4: Parsing & Validation Robustness (P4)
+  # ============================================================================
+  - id: T9
+    name: "Replace regex-based fenced code parsing"
+    description: |
+      Implement line-based fence scanner that tracks open/close fences.
+      Use scanner in TagTokenizer to exclude fenced blocks from tag matching.
+    depends_on: []
+    acceptance_criteria:
+      - "Tags inside fenced code blocks are never tokenized"
+      - "Tags outside code blocks are still tokenized"
+      - "Tests cover common and edge-case fence syntax (backticks AND tildes)"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/core/lib/src/tag_tokenizer.dart"
+      - "packages/core/lib/src/utils/code_fence_scanner.dart (new)"
+      - "packages/core/test/src/tag_tokenizer_test.dart"
+    steps:
+      - "Implement line-based fence scanner in packages/core/lib/src/utils/code_fence_scanner.dart"
+      - "Update TagTokenizer to use scanner results"
+      - "Add tests for nested fences, indented fences, mixed backtick/tilde fences"
+
+  - id: T10
+    name: "Fix path validation false positives"
+    description: |
+      Change traversal checks to reject only '..' path segments (not substrings).
+      Apply same logic to UriValidator.
+    depends_on: []
+    acceptance_criteria:
+      - "Paths like assets/..foo.png pass validation"
+      - "Paths like ../secret or a/../b are rejected"
+      - "Tests cover both accept and reject cases"
+    complexity: "low"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/core/lib/src/deck_configuration.dart"
+      - "packages/superdeck/lib/src/utils/uri_validator.dart"
+      - "packages/core/test/src/deck_configuration_test.dart"
+      - "packages/superdeck/test/utils/uri_validator_test.dart"
+    steps:
+      - "Change traversal checks to reject only '..' path segments"
+      - "Apply same logic to UriValidator"
+      - "Add tests for safe filenames containing '..' and unsafe traversal paths"
+
+  # ============================================================================
+  # WS5: Mermaid Export Reliability (P5)
+  # ============================================================================
+  - id: T11
+    name: "Add offline Mermaid support"
+    description: |
+      Bundle local Mermaid ESM build under packages/builder/assets. Configure
+      MermaidGenerator to load from local file by default with optional CDN fallback.
+    depends_on: []
+    acceptance_criteria:
+      - "Mermaid generation succeeds with no network access when local source configured"
+      - "Tests confirm local source path is used"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/builder/lib/src/assets/mermaid_generator.dart"
+      - "packages/builder/pubspec.yaml"
+      - "packages/builder/assets/mermaid/mermaid.esm.min.mjs (new)"
+      - "packages/builder/test/src/assets/mermaid_generator_test.dart"
+    steps:
+      - "Download and bundle local Mermaid ESM build"
+      - "Add config to MermaidGenerator to load from local file"
+      - "Use local bundle by default; allow optional CDN fallback"
+      - "Add tests verifying local source selection"
+
+  - id: T12
+    name: "Synchronize browser initialization"
+    description: |
+      Guard _getBrowser() with shared future or lock to avoid concurrent launches.
+      Ensure browser disposal waits for in-flight initialization.
+    depends_on: [T11]
+    acceptance_criteria:
+      - "Concurrent generate calls do not launch multiple browsers"
+      - "No race-condition exceptions during parallel Mermaid generation"
+    complexity: "medium"
+    recommended_agent: "Implementer"
+    status: "pending"
+    completed_at: null
+    files:
+      - "packages/builder/lib/src/assets/mermaid_generator.dart"
+      - "packages/builder/test/src/assets/mermaid_generator_test.dart"
+    steps:
+      - "Guard _getBrowser() with shared future or lock"
+      - "Ensure browser disposal waits for in-flight initialization"
+      - "Add concurrency test for simultaneous generation"
+
+  # ============================================================================
+  # WS6: Verification (P0 - Final)
+  # ============================================================================
+  - id: T13
+    name: "Repo-wide verification"
+    description: |
+      Run build_runner, analyze, and tests across all packages. Address any failures.
+    depends_on: [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]
+    acceptance_criteria:
+      - "melos run analyze exits 0"
+      - "melos run test exits 0"
+    complexity: "low"
+    recommended_agent: "Tester"
+    status: "pending"
+    completed_at: null
+    files: []
+    steps:
+      - "Run melos run build_runner:build if generators affected"
+      - "Run melos run analyze"
+      - "Run melos run test"
+      - "Address any failures until green"
+
+execution_order:
+  phase_1_toolchain:
+    - T1  # SDK constraints (can start immediately)
+    - T2  # Beta deps + mix version conflict (depends on T1)
+    - T3  # Toolchain discovery (depends on T1)
+  phase_2_pipeline:
+    - T4  # Task lifecycle (can start immediately)
+    - T5  # Serialize rebuilds (depends on T4)
+    - T6  # Unify file watching (depends on T4)
+  phase_3_assets:
+    - T7  # Asset paths (can start immediately)
+    - T8  # Pubspec formatting (can start immediately)
+  phase_4_parsing:
+    - T9  # Fenced code parsing (can start immediately)
+    - T10 # Path validation (can start immediately)
+  phase_5_mermaid:
+    - T11 # Offline Mermaid (can start immediately)
+    - T12 # Browser sync (depends on T11)
+  phase_6_verification:
+    - T13 # Repo-wide verification (depends on all above)
+
+parallel_opportunities:
+  - "T1, T4, T7, T8, T9, T10, T11 can all start in parallel"
+  - "T2, T3 can run in parallel after T1"
+  - "T5, T6 can run in parallel after T4"
+
+risks:
+  - id: R1
+    description: "Upgrading mix/remix/ack may introduce API changes or behavior shifts"
+    likelihood: "medium"
+    impact: "medium"
+    mitigation: "Pin to stable versions and add targeted regression tests"
+
+  - id: R2
+    description: "Watch pipeline refactor may miss file events or over-trigger builds"
+    likelihood: "medium"
+    impact: "medium"
+    mitigation: "Unify watcher strategy and add debounce + integration tests"
+
+  - id: R3
+    description: "yaml_edit may still adjust formatting in edge cases"
+    likelihood: "low"
+    impact: "medium"
+    mitigation: "Add snapshot tests for pubspec with comments and unusual formatting"
+
+  - id: R4
+    description: "Markdown parsing changes could alter existing slide rendering"
+    likelihood: "low"
+    impact: "medium"
+    mitigation: "Add backward-compat tests using real slides.md fixtures"
+
+  - id: R5
+    description: "Mermaid offline support increases bundle size or introduces licensing concerns"
+    likelihood: "low"
+    impact: "medium"
+    mitigation: "Verify mermaid license and allow opt-in local asset path"
+
+  - id: R6
+    description: "Mix version conflict (1.x vs 2.x) may require significant API migration"
+    likelihood: "medium"
+    impact: "high"
+    mitigation: "Audit mix API usage across codebase before upgrading; align to 2.x"
+
+metadata:
+  total_subtasks: 13
+  completed_subtasks: 0
+  estimated_complexity: "medium"
+  estimated_phases: 6
+  last_audit: "2026-01-28"
+  audit_findings_count: 1

@@ -2,15 +2,15 @@ name: superdeck_workspace
 publish_to: none
 
 environment:
-  sdk: ^3.6.0
-  flutter: ">=3.27.0"
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
 
 dependencies:
   melos: ^6.3.3
-  mix: ^1.7.0-beta.0
+  mix: ^2.0.0-rc.0
 
 dev_dependencies:
-  mix_generator: ^1.7.0-beta.0
+  mix_generator: ^2.0.0-rc.0
 
 lint_staged:
   '**.dart': dart fix --apply && dcm fix

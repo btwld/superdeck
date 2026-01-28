@@ -61,8 +61,14 @@ class UriValidator {
 
     // Block path traversal attacks for non-network URIs
     // Network URIs (http/https) don't have path traversal risk in this context
+    // Check for '..' as a path segment, not as a substring (allows '..config.png')
     if (uri.scheme != 'http' && uri.scheme != 'https') {
-      if (trimmed.contains('..')) {
+      final segments = uri.pathSegments;
+      // Also check the raw path for leading '..' before any path segments
+      final startsWithTraversal = trimmed.startsWith('../') ||
+          trimmed.startsWith(r'..\') ||
+          trimmed == '..';
+      if (segments.contains('..') || startsWithTraversal) {
         throw FormatException('Path traversal detected');
       }
     }
