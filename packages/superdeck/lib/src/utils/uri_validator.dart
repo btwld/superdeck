@@ -61,14 +61,14 @@ class UriValidator {
 
     // Block path traversal attacks for non-network URIs
     // Network URIs (http/https) don't have path traversal risk in this context
-    // Check for '..' as a path segment, not as a substring (allows '..config.png')
+    // Check the RAW string for '..' path segments because Uri.parse() resolves
+    // them (e.g., 'file:///../../../etc/passwd' becomes 'file:///etc/passwd').
+    // This ensures we catch traversal before normalization strips the evidence.
+    // We check segments (split on /) rather than substring match to allow
+    // filenames containing '..' (e.g., '..config.png', 'foo..bar.txt').
     if (uri.scheme != 'http' && uri.scheme != 'https') {
-      final segments = uri.pathSegments;
-      // Also check the raw path for leading '..' before any path segments
-      final startsWithTraversal = trimmed.startsWith('../') ||
-          trimmed.startsWith(r'..\') ||
-          trimmed == '..';
-      if (segments.contains('..') || startsWithTraversal) {
+      final rawSegments = trimmed.split('/');
+      if (rawSegments.any((s) => s == '..' || s == '%2e%2e' || s == '%2E%2E')) {
         throw FormatException('Path traversal detected');
       }
     }
