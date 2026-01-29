@@ -17,6 +17,7 @@ final class DeckConfiguration {
   });
 
   /// Validates a path to prevent directory traversal attacks.
+  ///
   /// Rejects paths containing '..' as a path segment, but allows filenames
   /// that happen to contain '..' (e.g., '..config.png', 'foo..bar.txt').
   static String _validateRelativePath(

@@ -11,7 +11,7 @@ import '../utils/logger.dart';
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 
-/// Detects if running in a CI environment.
+/// Returns whether the process is running in a CI environment.
 bool _isCI() {
   final env = Platform.environment;
   return env['CI'] == 'true' ||
@@ -21,7 +21,7 @@ bool _isCI() {
       env['TRAVIS'] == 'true';
 }
 
-/// Creates a DeckBuilder with the standard CLI task pipeline.
+/// Creates a [DeckBuilder] with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckConfiguration configuration,
   required DeckService store,
@@ -46,15 +46,15 @@ DeckBuilder _createStandardBuilder({
   );
 }
 
-/// Command to build SuperDeck presentations
+/// Builds SuperDeck presentations from markdown.
 ///
-/// This command parses and processes the slides.md file,
-/// generating all required assets and outputs for the presentation.
+/// Parses and processes the slides.md file, generating all required assets
+/// and outputs for the presentation.
 class BuildCommand extends SuperDeckCommand {
-  /// Flag to track if a build is currently in progress
+  /// Whether a build is currently in progress.
   bool _isRunning = false;
 
-  /// Creates a new [BuildCommand] instance
+  /// Creates a new [BuildCommand].
   BuildCommand() {
     argParser
       ..addFlag(
@@ -94,8 +94,8 @@ class BuildCommand extends SuperDeckCommand {
 
   /// Cleans all generated assets and runs a full rebuild.
   ///
-  /// If [builder] is provided, it will be used for the build. Otherwise, a new
-  /// builder will be created and disposed after the build completes.
+  /// Uses the provided [builder] for the build, or creates and disposes a new
+  /// one if not provided.
   Future<bool> _cleanAndRebuild(
     DeckService store,
     DeckConfiguration config, {
@@ -121,8 +121,8 @@ class BuildCommand extends SuperDeckCommand {
 
   /// Runs the build process with proper error handling and progress reporting.
   ///
-  /// If [builder] is provided, it will be used for the build. Otherwise, a new
-  /// builder will be created and disposed after the build completes.
+  /// Uses the provided [builder] for the build, or creates and disposes a new
+  /// one if not provided.
   Future<bool> _runBuild(
     DeckService store,
     DeckConfiguration config, {
@@ -346,7 +346,7 @@ class BuildCommand extends SuperDeckCommand {
   String get name => 'build';
 }
 
-/// Ensures the pubspec.yaml has the necessary assets configuration
+/// Ensures the pubspec.yaml has the necessary assets configuration.
 Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 

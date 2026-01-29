@@ -258,7 +258,7 @@ class MermaidGenerator implements AssetGenerator {
     return GeneratedAsset.mermaid(content);
   }
 
-  /// Get or create a browser instance.
+  /// Returns an existing browser instance or creates a new one.
   ///
   /// Uses a shared future to prevent concurrent browser launches - if multiple
   /// calls arrive while the browser is being initialized, they all await the
@@ -311,7 +311,7 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
-  /// Internal browser launch logic.
+  /// Launches a new headless browser for Mermaid rendering.
   Future<Browser> _launchBrowser() async {
     try {
       _logger.info('Launching headless browser for Mermaid rendering');
@@ -340,7 +340,7 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
-  /// Execute an action with a new page
+  /// Executes an action with a new browser page, closing it afterwards.
   Future<T> _withPage<T>(Future<T> Function(Page page) action) async {
     final browser = await _getBrowser();
     final page = await browser.newPage();
@@ -375,14 +375,14 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
-  /// Check if diagram type should use fallback theme instead of custom theme.
+  /// Returns whether the diagram type should use fallback theme instead of custom theme.
   ///
   /// Some diagram types (timeline, gantt) have rendering issues with custom
   /// dark themes where structural elements (axis, grid lines) become invisible.
-  /// For these diagrams, we fall back to Mermaid's default theme which has
+  /// For these diagrams, this falls back to Mermaid's default theme which has
   /// better visibility for structural elements.
   ///
-  /// Only applies to DARK mode - light mode custom theme works fine for timeline.
+  /// Only applies to dark mode - light mode custom theme works fine for timeline.
   bool _shouldUseFallbackTheme(String graphDefinition) {
     final trimmed = graphDefinition.trim().toLowerCase();
 
@@ -404,7 +404,7 @@ class MermaidGenerator implements AssetGenerator {
     return false;
   }
 
-  /// Generates PNG image from Mermaid diagram definition.
+  /// Generates a PNG image from the given Mermaid diagram definition.
   Future<List<int>> _generateMermaidImage(String graphDefinition) {
     _logger.fine('Starting Mermaid image generation');
 
@@ -544,7 +544,7 @@ class MermaidGenerator implements AssetGenerator {
     });
   }
 
-  /// Timeout for waiting on browser initialization during dispose.
+  /// The timeout for waiting on browser initialization during dispose.
   static const _disposeTimeout = Duration(seconds: 30);
 
   @override
