@@ -130,7 +130,7 @@ superdeck publish --dry-run
 
 ## Requirements
 
-- Flutter SDK
+- Flutter SDK version 3.35.0 or higher
 - Dart SDK version 3.9.0 or higher
 - Git (for publish command)
 

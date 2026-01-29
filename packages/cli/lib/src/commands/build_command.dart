@@ -92,11 +92,15 @@ class BuildCommand extends SuperDeckCommand {
     }
   }
 
-  /// Cleans all generated assets and runs a full rebuild
+  /// Cleans all generated assets and runs a full rebuild.
+  ///
+  /// If [builder] is provided, it will be used for the build. Otherwise, a new
+  /// builder will be created and disposed after the build completes.
   Future<bool> _cleanAndRebuild(
     DeckService store,
-    DeckConfiguration config,
-  ) async {
+    DeckConfiguration config, {
+    DeckBuilder? builder,
+  }) async {
     logger.info('Force rebuild: Clearing all generated assets...');
 
     // Delete and recreate assets directory
@@ -111,12 +115,19 @@ class BuildCommand extends SuperDeckCommand {
       logger.detail('Deleted generated_assets.json');
     }
 
-    // Run the build
-    return _runBuild(store, config);
+    // Run the build (pass through the builder if provided)
+    return _runBuild(store, config, builder: builder);
   }
 
-  /// Runs the build process with proper error handling and progress reporting
-  Future<bool> _runBuild(DeckService store, DeckConfiguration config) async {
+  /// Runs the build process with proper error handling and progress reporting.
+  ///
+  /// If [builder] is provided, it will be used for the build. Otherwise, a new
+  /// builder will be created and disposed after the build completes.
+  Future<bool> _runBuild(
+    DeckService store,
+    DeckConfiguration config, {
+    DeckBuilder? builder,
+  }) async {
     // Wait while a build is already running
     while (_isRunning) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -125,13 +136,14 @@ class BuildCommand extends SuperDeckCommand {
     _isRunning = true;
     final progress = logger.progress('Generating slides...');
 
-    try {
-      // Create builder with default tasks
-      final builder = _createStandardBuilder(
-        configuration: config,
-        store: store,
-      );
+    // Track if we created the builder (and thus need to dispose it)
+    final ownsBuilder = builder == null;
+    builder ??= _createStandardBuilder(
+      configuration: config,
+      store: store,
+    );
 
+    try {
       // Run the build process
       final slides = await builder.build();
 
@@ -181,6 +193,10 @@ class BuildCommand extends SuperDeckCommand {
       return false;
     } finally {
       _isRunning = false;
+      // Dispose the builder if we created it (not in watch mode)
+      if (ownsBuilder) {
+        await builder.dispose();
+      }
     }
   }
 
@@ -264,12 +280,14 @@ class BuildCommand extends SuperDeckCommand {
                   case 'r':
                   case 'rebuild':
                     logger.info('Manual rebuild triggered...');
-                    unawaited(_runBuild(repository, deckConfig));
+                    // Reuse the watch builder to avoid spawning extra browser instances
+                    unawaited(_runBuild(repository, deckConfig, builder: builder));
                     break;
                   case 'f':
                   case 'force-rebuild':
                     logger.info('Force rebuild triggered...');
-                    unawaited(_cleanAndRebuild(repository, deckConfig));
+                    // Reuse the watch builder to avoid spawning extra browser instances
+                    unawaited(_cleanAndRebuild(repository, deckConfig, builder: builder));
                     break;
                   case 'q':
                   case 'quit':

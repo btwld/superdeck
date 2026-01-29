@@ -370,6 +370,92 @@ void main() {
       });
     });
 
+    group('path traversal validation', () {
+      test('rejects outputDir with forward slash traversal', () {
+        expect(
+          () => DeckConfiguration(outputDir: '../escape').superdeckDir,
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('path traversal'),
+            ),
+          ),
+        );
+      });
+
+      test('rejects outputDir with backslash traversal', () {
+        expect(
+          () => DeckConfiguration(outputDir: r'..\escape').superdeckDir,
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('path traversal'),
+            ),
+          ),
+        );
+      });
+
+      test('rejects assetsPath with traversal', () {
+        expect(
+          () => DeckConfiguration(assetsPath: '../../secrets').assetsDir,
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('path traversal'),
+            ),
+          ),
+        );
+      });
+
+      test('rejects slidesPath with traversal', () {
+        expect(
+          () => DeckConfiguration(slidesPath: '../../../etc/passwd').slidesFile,
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('path traversal'),
+            ),
+          ),
+        );
+      });
+
+      test('rejects absolute path for outputDir', () {
+        expect(
+          () => DeckConfiguration(outputDir: '/absolute/path').superdeckDir,
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('relative path'),
+            ),
+          ),
+        );
+      });
+
+      test('allows filenames containing double dots', () {
+        // Filenames like '..config.png' or 'foo..bar' should be allowed
+        // because '..' is not a path segment
+        final config = DeckConfiguration(assetsPath: '..hidden');
+        expect(config.assetsDir.path, contains('..hidden'));
+      });
+
+      test('allows filenames with double dots in middle', () {
+        final config = DeckConfiguration(slidesPath: 'my..slides.md');
+        expect(config.slidesFile.path, contains('my..slides.md'));
+      });
+
+      test('allows nested paths without traversal', () {
+        final config = DeckConfiguration(outputDir: 'build/output/slides');
+        expect(config.superdeckDir.path, contains('build'));
+        expect(config.superdeckDir.path, contains('output'));
+        expect(config.superdeckDir.path, contains('slides'));
+      });
+    });
+
     group('equality', () {
       test('equal configs are equal', () {
         final config1 = DeckConfiguration(projectDir: '/same');

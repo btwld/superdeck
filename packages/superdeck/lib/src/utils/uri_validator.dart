@@ -64,11 +64,23 @@ class UriValidator {
     // Check the RAW string for '..' path segments because Uri.parse() resolves
     // them (e.g., 'file:///../../../etc/passwd' becomes 'file:///etc/passwd').
     // This ensures we catch traversal before normalization strips the evidence.
-    // We check segments (split on /) rather than substring match to allow
+    // We check segments (split on / and \) rather than substring match to allow
     // filenames containing '..' (e.g., '..config.png', 'foo..bar.txt').
     if (uri.scheme != 'http' && uri.scheme != 'https') {
-      final rawSegments = trimmed.split('/');
-      if (rawSegments.any((s) => s == '..' || s == '%2e%2e' || s == '%2E%2E')) {
+      // Normalize the path for traversal detection:
+      // 1. Decode common percent-encoded separators (case-insensitive)
+      // 2. Split on both forward and back slashes
+      final normalized = trimmed
+          .replaceAll(RegExp(r'%2f', caseSensitive: false), '/')
+          .replaceAll(RegExp(r'%5c', caseSensitive: false), '\\');
+      final rawSegments = normalized.split(RegExp(r'[/\\]'));
+
+      // Check for '..' traversal segments (also check percent-encoded variants
+      // case-insensitively)
+      if (rawSegments.any((s) {
+        final lower = s.toLowerCase();
+        return s == '..' || lower == '%2e%2e';
+      })) {
         throw FormatException('Path traversal detected');
       }
     }

@@ -15,6 +15,7 @@ class MermaidGenerator implements AssetGenerator {
 
   Browser? _browser;
   Future<Browser>? _browserInitFuture;
+  bool _disposed = false;
   final Map<String, dynamic> _launchOptions;
 
   /// HTML template for rendering Mermaid diagrams.
@@ -262,10 +263,30 @@ class MermaidGenerator implements AssetGenerator {
   /// Uses a shared future to prevent concurrent browser launches - if multiple
   /// calls arrive while the browser is being initialized, they all await the
   /// same initialization future.
+  ///
+  /// Handles browser disconnection gracefully by detecting stale instances
+  /// and relaunching when needed.
   Future<Browser> _getBrowser() async {
-    // Return existing browser if available
-    if (_browser != null) {
+    // Prevent usage after disposal
+    if (_disposed) {
+      throw StateError(
+        'MermaidGenerator has been disposed. '
+        'Cannot generate diagrams after dispose() has been called.',
+      );
+    }
+
+    // Return existing browser if still connected
+    if (_browser != null && _browser!.isConnected) {
       return _browser!;
+    }
+
+    // Browser disconnected externally - clean up stale references
+    if (_browser != null && !_browser!.isConnected) {
+      _logger.warning(
+        'Browser disconnected unexpectedly. Relaunching for next diagram.',
+      );
+      _browser = null;
+      _browserInitFuture = null;
     }
 
     // If initialization is in progress, await it
@@ -282,6 +303,11 @@ class MermaidGenerator implements AssetGenerator {
       // Clear the future on failure so retry is possible
       _browserInitFuture = null;
       rethrow;
+    } finally {
+      // Clear the init future after completion - the result is now in _browser
+      // This prevents stale futures from being returned if _browser is later
+      // cleared due to disconnection
+      _browserInitFuture = null;
     }
   }
 
@@ -518,12 +544,32 @@ class MermaidGenerator implements AssetGenerator {
     });
   }
 
+  /// Timeout for waiting on browser initialization during dispose.
+  static const _disposeTimeout = Duration(seconds: 30);
+
   @override
   Future<void> dispose() async {
-    // Wait for any in-flight initialization to complete before disposing
+    // Mark as disposed first to prevent new browser launches
+    _disposed = true;
+
+    // Wait for any in-flight initialization to complete before disposing,
+    // but with a timeout to prevent indefinite hangs if browser launch is stuck
     if (_browserInitFuture != null) {
       try {
-        await _browserInitFuture;
+        await _browserInitFuture!.timeout(
+          _disposeTimeout,
+          onTimeout: () {
+            _logger.warning(
+              'Browser initialization timed out during dispose after '
+              '${_disposeTimeout.inSeconds}s. Proceeding with cleanup.',
+            );
+            // Throw TimeoutException to break out of the await - caught by catch block below
+            throw TimeoutException(
+              'Browser initialization timeout during dispose',
+              _disposeTimeout,
+            );
+          },
+        );
       } catch (_) {
         // Ignore initialization errors during dispose
       }
@@ -531,7 +577,11 @@ class MermaidGenerator implements AssetGenerator {
     _browserInitFuture = null;
 
     if (_browser != null) {
-      await _browser!.close();
+      try {
+        await _browser!.close();
+      } catch (e) {
+        _logger.warning('Error closing browser during dispose: $e');
+      }
       _browser = null;
     }
   }

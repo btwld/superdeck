@@ -117,8 +117,9 @@ class DeckBuilder {
   /// Call this method when done with the builder, especially after watch mode ends.
   /// This ensures resources like browser instances are properly cleaned up.
   Future<void> dispose() async {
-    for (var task in tasks) {
-      await task.dispose();
-    }
+    // Convert FutureOr<void> to Future<void> for Future.wait compatibility
+    await Future.wait(
+      tasks.map((task) async => task.dispose()),
+    );
   }
 }
