@@ -11,7 +11,7 @@ import '../utils/logger.dart';
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 
-/// Detects if running in a CI environment.
+/// Returns whether the process is running in a CI environment.
 bool _isCI() {
   final env = Platform.environment;
   return env['CI'] == 'true' ||
@@ -21,7 +21,7 @@ bool _isCI() {
       env['TRAVIS'] == 'true';
 }
 
-/// Creates a DeckBuilder with the standard CLI task pipeline.
+/// Creates a [DeckBuilder] with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckConfiguration configuration,
   required DeckService store,
@@ -46,15 +46,15 @@ DeckBuilder _createStandardBuilder({
   );
 }
 
-/// Command to build SuperDeck presentations
+/// Builds SuperDeck presentations from markdown.
 ///
-/// This command parses and processes the slides.md file,
-/// generating all required assets and outputs for the presentation.
+/// Parses and processes the slides.md file, generating all required assets
+/// and outputs for the presentation.
 class BuildCommand extends SuperDeckCommand {
-  /// Flag to track if a build is currently in progress
+  /// Whether a build is currently in progress.
   bool _isRunning = false;
 
-  /// Creates a new [BuildCommand] instance
+  /// Creates a new [BuildCommand].
   BuildCommand() {
     argParser
       ..addFlag(
@@ -92,11 +92,15 @@ class BuildCommand extends SuperDeckCommand {
     }
   }
 
-  /// Cleans all generated assets and runs a full rebuild
+  /// Cleans all generated assets and runs a full rebuild.
+  ///
+  /// Uses the provided [builder] for the build, or creates and disposes a new
+  /// one if not provided.
   Future<bool> _cleanAndRebuild(
     DeckService store,
-    DeckConfiguration config,
-  ) async {
+    DeckConfiguration config, {
+    DeckBuilder? builder,
+  }) async {
     logger.info('Force rebuild: Clearing all generated assets...');
 
     // Delete and recreate assets directory
@@ -111,12 +115,19 @@ class BuildCommand extends SuperDeckCommand {
       logger.detail('Deleted generated_assets.json');
     }
 
-    // Run the build
-    return _runBuild(store, config);
+    // Run the build (pass through the builder if provided)
+    return _runBuild(store, config, builder: builder);
   }
 
-  /// Runs the build process with proper error handling and progress reporting
-  Future<bool> _runBuild(DeckService store, DeckConfiguration config) async {
+  /// Runs the build process with proper error handling and progress reporting.
+  ///
+  /// Uses the provided [builder] for the build, or creates and disposes a new
+  /// one if not provided.
+  Future<bool> _runBuild(
+    DeckService store,
+    DeckConfiguration config, {
+    DeckBuilder? builder,
+  }) async {
     // Wait while a build is already running
     while (_isRunning) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -125,13 +136,14 @@ class BuildCommand extends SuperDeckCommand {
     _isRunning = true;
     final progress = logger.progress('Generating slides...');
 
-    try {
-      // Create builder with default tasks
-      final builder = _createStandardBuilder(
-        configuration: config,
-        store: store,
-      );
+    // Track if we created the builder (and thus need to dispose it)
+    final ownsBuilder = builder == null;
+    builder ??= _createStandardBuilder(
+      configuration: config,
+      store: store,
+    );
 
+    try {
       // Run the build process
       final slides = await builder.build();
 
@@ -181,6 +193,10 @@ class BuildCommand extends SuperDeckCommand {
       return false;
     } finally {
       _isRunning = false;
+      // Dispose the builder if we created it (not in watch mode)
+      if (ownsBuilder) {
+        await builder.dispose();
+      }
     }
   }
 
@@ -246,29 +262,38 @@ class BuildCommand extends SuperDeckCommand {
         logger.info('Press Ctrl+C to stop watching.');
         logger.info('');
 
+        // Create a builder that will handle watching and rebuilding
+        final builder = _createStandardBuilder(
+          configuration: deckConfig,
+          store: repository,
+        );
+
         // Listen to stdin for interactive commands
         StreamSubscription<String>? stdinSubscription;
         try {
           stdinSubscription = stdin
               .transform(utf8.decoder)
               .transform(const LineSplitter())
-              .listen((line) {
+              .listen((line) async {
                 final command = line.trim().toLowerCase();
                 switch (command) {
                   case 'r':
                   case 'rebuild':
                     logger.info('Manual rebuild triggered...');
-                    unawaited(_runBuild(repository, deckConfig));
+                    // Reuse the watch builder to avoid spawning extra browser instances
+                    unawaited(_runBuild(repository, deckConfig, builder: builder));
                     break;
                   case 'f':
                   case 'force-rebuild':
                     logger.info('Force rebuild triggered...');
-                    unawaited(_cleanAndRebuild(repository, deckConfig));
+                    // Reuse the watch builder to avoid spawning extra browser instances
+                    unawaited(_cleanAndRebuild(repository, deckConfig, builder: builder));
                     break;
                   case 'q':
                   case 'quit':
                     logger.info('Exiting watch mode...');
-                    unawaited(stdinSubscription?.cancel());
+                    await stdinSubscription?.cancel();
+                    await builder.dispose();
                     exit(ExitCode.success.code);
                   default:
                     logger.warn('Unknown command: "$command"');
@@ -277,12 +302,6 @@ class BuildCommand extends SuperDeckCommand {
                     );
                 }
               });
-
-          // Create a builder that will handle watching and rebuilding
-          final builder = _createStandardBuilder(
-            configuration: deckConfig,
-            store: repository,
-          );
 
           // Start watching for changes and rebuilding when needed
           await for (final event in builder.watchAndBuild()) {
@@ -302,6 +321,7 @@ class BuildCommand extends SuperDeckCommand {
           }
         } finally {
           await stdinSubscription?.cancel();
+          await builder.dispose();
         }
       }
 
@@ -326,7 +346,7 @@ class BuildCommand extends SuperDeckCommand {
   String get name => 'build';
 }
 
-/// Ensures the pubspec.yaml has the necessary assets configuration
+/// Ensures the pubspec.yaml has the necessary assets configuration.
 Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 

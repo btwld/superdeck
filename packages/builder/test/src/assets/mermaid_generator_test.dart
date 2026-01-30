@@ -159,5 +159,44 @@ void main() {
 
     // Note: Error handling tests that require browser (generateAsset calls)
     // have been removed. These should be run as integration tests separately.
+
+    group('lifecycle management', () {
+      test('dispose can be called multiple times safely', () async {
+        final generator = MermaidGenerator();
+
+        // First dispose should succeed
+        await expectLater(generator.dispose(), completes);
+
+        // Second dispose should also complete without error
+        await expectLater(generator.dispose(), completes);
+      });
+
+      test('generateAsset throws after dispose', () async {
+        final generator = MermaidGenerator();
+        await generator.dispose();
+
+        // Attempting to generate after dispose should throw
+        // (StateError is wrapped in Exception by generateAsset's error handling)
+        await expectLater(
+          () => generator.generateAsset('graph TD; A-->B', 'test.png'),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('disposed'),
+            ),
+          ),
+        );
+      });
+
+      test('createAssetReference works after dispose', () async {
+        final generator = MermaidGenerator();
+        await generator.dispose();
+
+        // createAssetReference doesn't need the browser, so it should work
+        final asset = generator.createAssetReference('graph TD; A-->B');
+        expect(asset, isNotNull);
+      });
+    });
   });
 }

@@ -17,27 +17,31 @@ final class DeckConfiguration {
   });
 
   /// Validates a path to prevent directory traversal attacks.
-  /// Rejects paths containing '..' or absolute paths for relative-only fields.
+  ///
+  /// Rejects paths containing '..' as a path segment, but allows filenames
+  /// that happen to contain '..' (e.g., '..config.png', 'foo..bar.txt').
   static String _validateRelativePath(
     String? userPath,
     String defaultPath,
     String pathType,
   ) {
-    final path = userPath ?? defaultPath;
+    final pathValue = userPath ?? defaultPath;
 
-    // Reject paths with traversal sequences
-    if (path.contains('..')) {
+    // Reject paths with '..' as a path segment (directory traversal)
+    // Split by both forward and back slashes to handle all platforms
+    final segments = pathValue.split(RegExp(r'[/\\]'));
+    if (segments.contains('..')) {
       throw ArgumentError(
-        '$pathType cannot contain path traversal sequences "..": $path',
+        '$pathType cannot contain path traversal sequences "..": $pathValue',
       );
     }
 
     // Reject absolute paths for paths that should be relative
-    if (p.isAbsolute(path)) {
-      throw ArgumentError('$pathType must be a relative path: $path');
+    if (p.isAbsolute(pathValue)) {
+      throw ArgumentError('$pathType must be a relative path: $pathValue');
     }
 
-    return path;
+    return pathValue;
   }
 
   String get _baseDir => projectDir ?? '.';

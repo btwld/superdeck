@@ -45,7 +45,7 @@ melos bootstrap
 
 Always work inside the FVM-provided SDK (`.fvm/flutter_sdk`) to avoid toolchain drift.
 
-**Required SDK versions**: Dart >=3.9.0, Flutter >=3.35.0
+**Required SDK versions**: Dart >=3.10.0, Flutter >=3.38.1
 
 ## Common Commands
 

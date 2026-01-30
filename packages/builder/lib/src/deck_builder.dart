@@ -8,7 +8,8 @@ import 'slide_processor.dart';
 import 'tasks/task.dart';
 
 /// Builds decks from markdown content by processing slides through a series of tasks.
-/// It handles loading markdown content, parsing slides, executing build tasks,
+///
+/// Handles loading markdown content, parsing slides, executing build tasks,
 /// managing generated assets, and saving the compiled deck.
 class DeckBuilder {
   /// List of tasks to execute for each slide.
@@ -100,11 +101,6 @@ class DeckBuilder {
       store,
     );
 
-    // Dispose of all tasks
-    for (var task in tasks) {
-      await task.dispose();
-    }
-
     // Save the processed slides
     await store.saveReferences(
       Deck(slides: processedSlides, configuration: configuration),
@@ -115,5 +111,16 @@ class DeckBuilder {
     );
 
     return processedSlides;
+  }
+
+  /// Disposes all tasks and releases resources.
+  ///
+  /// Call this when done with the builder, especially after watch mode ends.
+  /// This ensures resources like browser instances are properly cleaned up.
+  Future<void> dispose() async {
+    // Convert FutureOr<void> to Future<void> for Future.wait compatibility
+    await Future.wait(
+      tasks.map((task) async => task.dispose()),
+    );
   }
 }

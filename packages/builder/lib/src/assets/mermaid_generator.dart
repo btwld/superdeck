@@ -14,6 +14,8 @@ class MermaidGenerator implements AssetGenerator {
   static final _logger = Logger('MermaidGenerator');
 
   Browser? _browser;
+  Future<Browser>? _browserInitFuture;
+  bool _disposed = false;
   final Map<String, dynamic> _launchOptions;
 
   /// HTML template for rendering Mermaid diagrams.
@@ -256,38 +258,89 @@ class MermaidGenerator implements AssetGenerator {
     return GeneratedAsset.mermaid(content);
   }
 
-  /// Get or create a browser instance
+  /// Returns an existing browser instance or creates a new one.
+  ///
+  /// Uses a shared future to prevent concurrent browser launches - if multiple
+  /// calls arrive while the browser is being initialized, they all await the
+  /// same initialization future.
+  ///
+  /// Handles browser disconnection gracefully by detecting stale instances
+  /// and relaunching when needed.
   Future<Browser> _getBrowser() async {
-    if (_browser == null) {
-      try {
-        _logger.info('Launching headless browser for Mermaid rendering');
-        _browser = await puppeteer.launch(
-          headless: _launchOptions['headless'] ?? true,
-          args: _launchOptions['args'] as List<String>?,
-          executablePath: _launchOptions['executablePath'] as String?,
-        );
-        _logger.info('Browser launched successfully');
-      } catch (e, stackTrace) {
-        _logger.severe(
-          'Failed to launch browser for Mermaid rendering. '
-          'Ensure Chrome/Chromium is installed and accessible.',
-          e,
-          stackTrace,
-        );
-        Error.throwWithStackTrace(
-          Exception(
-            'Failed to launch browser for Mermaid diagram generation. '
-            'Please ensure Chrome or Chromium is installed and accessible. '
-            'Error: $e',
-          ),
-          stackTrace,
-        );
-      }
+    // Prevent usage after disposal
+    if (_disposed) {
+      throw StateError(
+        'MermaidGenerator has been disposed. '
+        'Cannot generate diagrams after dispose() has been called.',
+      );
     }
-    return _browser!;
+
+    // Return existing browser if still connected
+    if (_browser != null && _browser!.isConnected) {
+      return _browser!;
+    }
+
+    // Browser disconnected externally - clean up stale references
+    if (_browser != null && !_browser!.isConnected) {
+      _logger.warning(
+        'Browser disconnected unexpectedly. Relaunching for next diagram.',
+      );
+      _browser = null;
+      _browserInitFuture = null;
+    }
+
+    // If initialization is in progress, await it
+    if (_browserInitFuture != null) {
+      return _browserInitFuture!;
+    }
+
+    // Start initialization and store the future for concurrent callers
+    _browserInitFuture = _launchBrowser();
+    try {
+      _browser = await _browserInitFuture!;
+      return _browser!;
+    } catch (e) {
+      // Clear the future on failure so retry is possible
+      _browserInitFuture = null;
+      rethrow;
+    } finally {
+      // Clear the init future after completion - the result is now in _browser
+      // This prevents stale futures from being returned if _browser is later
+      // cleared due to disconnection
+      _browserInitFuture = null;
+    }
   }
 
-  /// Execute an action with a new page
+  /// Launches a new headless browser for Mermaid rendering.
+  Future<Browser> _launchBrowser() async {
+    try {
+      _logger.info('Launching headless browser for Mermaid rendering');
+      final browser = await puppeteer.launch(
+        headless: _launchOptions['headless'] ?? true,
+        args: _launchOptions['args'] as List<String>?,
+        executablePath: _launchOptions['executablePath'] as String?,
+      );
+      _logger.info('Browser launched successfully');
+      return browser;
+    } catch (e, stackTrace) {
+      _logger.severe(
+        'Failed to launch browser for Mermaid rendering. '
+        'Ensure Chrome/Chromium is installed and accessible.',
+        e,
+        stackTrace,
+      );
+      Error.throwWithStackTrace(
+        Exception(
+          'Failed to launch browser for Mermaid diagram generation. '
+          'Please ensure Chrome or Chromium is installed and accessible. '
+          'Error: $e',
+        ),
+        stackTrace,
+      );
+    }
+  }
+
+  /// Executes an action with a new browser page, closing it afterwards.
   Future<T> _withPage<T>(Future<T> Function(Page page) action) async {
     final browser = await _getBrowser();
     final page = await browser.newPage();
@@ -322,14 +375,14 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
-  /// Check if diagram type should use fallback theme instead of custom theme.
+  /// Returns whether the diagram type should use fallback theme instead of custom theme.
   ///
   /// Some diagram types (timeline, gantt) have rendering issues with custom
   /// dark themes where structural elements (axis, grid lines) become invisible.
-  /// For these diagrams, we fall back to Mermaid's default theme which has
+  /// For these diagrams, this falls back to Mermaid's default theme which has
   /// better visibility for structural elements.
   ///
-  /// Only applies to DARK mode - light mode custom theme works fine for timeline.
+  /// Only applies to dark mode - light mode custom theme works fine for timeline.
   bool _shouldUseFallbackTheme(String graphDefinition) {
     final trimmed = graphDefinition.trim().toLowerCase();
 
@@ -351,7 +404,7 @@ class MermaidGenerator implements AssetGenerator {
     return false;
   }
 
-  /// Generates PNG image from Mermaid diagram definition.
+  /// Generates a PNG image from the given Mermaid diagram definition.
   Future<List<int>> _generateMermaidImage(String graphDefinition) {
     _logger.fine('Starting Mermaid image generation');
 
@@ -491,10 +544,36 @@ class MermaidGenerator implements AssetGenerator {
     });
   }
 
+  /// The timeout for waiting on browser initialization during dispose.
+  static const _disposeTimeout = Duration(seconds: 30);
+
   @override
   Future<void> dispose() async {
+    // Mark as disposed first to prevent new browser launches
+    _disposed = true;
+
+    // Wait for any in-flight initialization to complete before disposing,
+    // but with a timeout to prevent indefinite hangs if browser launch is stuck
+    if (_browserInitFuture != null) {
+      try {
+        await _browserInitFuture!.timeout(_disposeTimeout);
+      } on TimeoutException {
+        _logger.warning(
+          'Browser initialization timed out during dispose after '
+          '${_disposeTimeout.inSeconds}s. Proceeding with cleanup.',
+        );
+      } catch (_) {
+        // Ignore other initialization errors during dispose
+      }
+    }
+    _browserInitFuture = null;
+
     if (_browser != null) {
-      await _browser!.close();
+      try {
+        await _browser!.close();
+      } catch (e) {
+        _logger.warning('Error closing browser during dispose: $e');
+      }
       _browser = null;
     }
   }
