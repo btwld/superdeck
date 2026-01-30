@@ -556,22 +556,14 @@ class MermaidGenerator implements AssetGenerator {
     // but with a timeout to prevent indefinite hangs if browser launch is stuck
     if (_browserInitFuture != null) {
       try {
-        await _browserInitFuture!.timeout(
-          _disposeTimeout,
-          onTimeout: () {
-            _logger.warning(
-              'Browser initialization timed out during dispose after '
-              '${_disposeTimeout.inSeconds}s. Proceeding with cleanup.',
-            );
-            // Throw TimeoutException to break out of the await - caught by catch block below
-            throw TimeoutException(
-              'Browser initialization timeout during dispose',
-              _disposeTimeout,
-            );
-          },
+        await _browserInitFuture!.timeout(_disposeTimeout);
+      } on TimeoutException {
+        _logger.warning(
+          'Browser initialization timed out during dispose after '
+          '${_disposeTimeout.inSeconds}s. Proceeding with cleanup.',
         );
       } catch (_) {
-        // Ignore initialization errors during dispose
+        // Ignore other initialization errors during dispose
       }
     }
     _browserInitFuture = null;
