@@ -6,7 +6,7 @@ homepage: https://github.com/leoafarias/superdeck
 executables:
   superdeck: main
 environment:
-  sdk: ">=3.10.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 
 dependencies:
