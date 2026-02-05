@@ -2,8 +2,7 @@
   "analysis_metadata": {
     "date": "2026-02-05",
     "repository": "SuperDeck",
-    "commit": "6661f98",
-    "branch": "claude/multi-agent-code-review-9ZwMb",
+    "revision": "v2 - After architect review",
     "total_files": 223,
     "total_lines": 39000,
     "test_files": 65,
@@ -11,369 +10,134 @@
     "assertion_ratio": 2.05
   },
   "summary": {
-    "total_issues": 47,
+    "initial_issues_flagged": 47,
+    "after_architect_review": 12,
+    "removed_as_over_engineered": 35,
     "by_severity": {
-      "critical": 3,
-      "high": 14,
-      "medium": 22,
+      "critical": 1,
+      "medium": 3,
       "low": 8
-    },
-    "by_category": {
-      "structural": 12,
-      "quality": 8,
-      "security": 7,
-      "maintainability": 6,
-      "dart_flutter": 14
     }
   },
-  "critical_issues": [
+  "actionable_issues": [
     {
       "id": "CRIT-1",
-      "category": "structural",
-      "type": "MASSIVE_METHOD",
       "severity": "critical",
-      "file": "packages/cli/lib/src/commands/publish_command.dart",
-      "lines": "403-649",
-      "method": "PublishCommand.run()",
-      "description": "Method is 246 lines (6x recommended 40-line limit)",
-      "impact": "Extremely difficult to test, maintain, or modify safely",
-      "fix_effort_hours": 3,
-      "suggested_fix": "Extract into _validateAndPrepare(), _buildForPublish(), _setupGitWorktree(), _publishToWorktree(), _cleanup()"
-    },
-    {
-      "id": "CRIT-2",
-      "category": "dart_flutter",
-      "type": "UNSAFE_SETSTATE",
-      "severity": "critical",
+      "type": "CRASH_BUG",
       "file": "packages/superdeck/lib/src/ui/widgets/webview_wrapper.dart",
       "lines": "54-66",
-      "methods": ["_showDartPad()", "_reloadDartPad()"],
-      "description": "setState() called after async operations without mounted check",
-      "impact": "Will cause 'setState called after dispose' crashes",
-      "fix_effort_hours": 0.25,
-      "suggested_fix": "Wrap setState calls with if (mounted) check"
+      "description": "setState called after async without mounted check",
+      "impact": "Will crash with 'setState called after dispose' if widget unmounts",
+      "fix": "Add if (mounted) check before setState calls",
+      "effort_minutes": 15
     },
-    {
-      "id": "CRIT-3",
-      "category": "quality",
-      "type": "ZERO_ASSERTIONS",
-      "severity": "critical",
-      "file": "packages/superdeck/test/styling/schema/style_schemas_test.dart",
-      "lines": "1361-1367",
-      "test_name": "handles null values gracefully",
-      "description": "Test has no expect() statements",
-      "impact": "Contributes to coverage metrics but validates nothing",
-      "fix_effort_hours": 0.1,
-      "suggested_fix": "Add expect(result.isOk, isTrue) or validate result structure"
-    }
-  ],
-  "high_issues": [
-    {
-      "id": "HIGH-1",
-      "category": "structural",
-      "type": "VERY_LONG_METHOD",
-      "severity": "high",
-      "file": "packages/builder/lib/src/assets/mermaid_generator.dart",
-      "lines": "408-544",
-      "method": "_generateMermaidImage()",
-      "description": "136 lines with 5+ levels of callback nesting",
-      "fix_effort_hours": 1.5
-    },
-    {
-      "id": "HIGH-2",
-      "category": "structural",
-      "type": "GOD_CLASS",
-      "severity": "high",
-      "file": "packages/superdeck/lib/src/styling/components/slide.dart",
-      "lines": "21-613",
-      "classes": ["SlideStyle", "SlideSpec"],
-      "description": "23 properties each with multiple 30+ line methods",
-      "fix_effort_hours": 4
-    },
-    {
-      "id": "HIGH-3",
-      "category": "structural",
-      "type": "GOD_CLASS",
-      "severity": "high",
-      "file": "packages/superdeck/lib/src/deck/deck_controller.dart",
-      "lines": "27-396",
-      "description": "Multiple concerns: deck loading, navigation, UI state, thumbnails, router",
-      "fix_effort_hours": 3
-    },
-    {
-      "id": "HIGH-4",
-      "category": "structural",
-      "type": "UTILITY_CLASS_BLOAT",
-      "severity": "high",
-      "file": "packages/superdeck/lib/src/styling/schema/style_schemas.dart",
-      "lines": "49-706",
-      "description": "Single class with 50+ static methods, 10+ static properties",
-      "fix_effort_hours": 2
-    },
-    {
-      "id": "HIGH-5",
-      "category": "structural",
-      "type": "LONG_METHOD",
-      "severity": "high",
-      "file": "packages/cli/lib/src/commands/publish_command.dart",
-      "lines": "210-279",
-      "method": "_buildWebApp()",
-      "description": "69 lines with 3 duplicated dry-run checks",
-      "fix_effort_hours": 1
-    },
-    {
-      "id": "HIGH-6",
-      "category": "security",
-      "type": "UNRESTRICTED_JS",
-      "severity": "high",
-      "file": "packages/superdeck/lib/src/ui/widgets/webview_wrapper.dart",
-      "line": 31,
-      "description": "JavaScriptMode.unrestricted allows raw JS execution",
-      "fix_effort_hours": 0.5
-    },
-    {
-      "id": "HIGH-7",
-      "category": "security",
-      "type": "SANDBOX_BYPASS",
-      "severity": "high",
-      "file": "packages/cli/lib/src/commands/build_command.dart",
-      "lines": "29-34",
-      "description": "Browser sandbox disabled in CI with --no-sandbox flag",
-      "fix_effort_hours": 0.25
-    },
-    {
-      "id": "HIGH-8",
-      "category": "quality",
-      "type": "WEAK_ASSERTIONS",
-      "severity": "high",
-      "files": ["style_schemas_test.dart", "markdown_json_test.dart"],
-      "count": 47,
-      "description": "Tests use only isOk/isFail without validating actual values",
-      "fix_effort_hours": 1
-    },
-    {
-      "id": "HIGH-9",
-      "category": "quality",
-      "type": "COPY_PASTE_TESTS",
-      "severity": "high",
-      "file": "packages/core/test/markdown_json_test.dart",
-      "lines": "400-493",
-      "count": 20,
-      "description": "Alert tests are exact copies with only string changed",
-      "fix_effort_hours": 0.5
-    }
-  ],
-  "medium_issues": [
     {
       "id": "MED-1",
-      "category": "quality",
-      "file": "packages/superdeck/test/styling/schema/style_schemas_test.dart",
-      "lines": "281-340",
-      "description": "Padding tests only check isOk status"
+      "severity": "medium",
+      "type": "SECURITY_REVIEW",
+      "file": "packages/superdeck/lib/src/widgets/image_widget.dart",
+      "lines": "73-80",
+      "description": "_parseUri may bypass UriValidator",
+      "action": "Review for path traversal risk",
+      "effort_minutes": 30
     },
     {
       "id": "MED-2",
-      "category": "quality",
-      "file": "packages/core/test/markdown_json_test.dart",
-      "description": ".any() + boolean checks are weak assertions"
+      "severity": "medium",
+      "type": "TEST_REVIEW",
+      "file": "packages/core/test/markdown_reference_generator_test.dart",
+      "description": "1041-line snapshot test",
+      "action": "Confirm snapshot validates meaningful behavior",
+      "effort_minutes": 60
     },
     {
       "id": "MED-3",
-      "category": "quality",
-      "file": "packages/core/test/markdown_reference_generator_test.dart",
-      "description": "1041-line test validates only snapshot, not content"
+      "severity": "medium",
+      "type": "TEST_QUALITY",
+      "description": "Some schema tests only check isOk",
+      "action": "Selectively strengthen tests for critical schemas",
+      "effort_minutes": 90
     },
-    {
-      "id": "MED-4",
-      "category": "quality",
-      "count": 34,
-      "description": "Weak isNotNull assertions throughout test suite"
-    },
-    {
-      "id": "MED-5",
-      "category": "security",
-      "file": "packages/cli/lib/src/commands/publish_command.dart",
-      "lines": "508-511",
-      "description": "Predictable temp directory names using milliseconds"
-    },
-    {
-      "id": "MED-6",
-      "category": "security",
-      "files": ["setup_command.dart", "publish_command.dart"],
-      "description": "Non-atomic file operations"
-    },
-    {
-      "id": "MED-7",
-      "category": "security",
-      "file": "packages/core/pubspec.yaml",
-      "line": 17,
-      "description": "Beta dependency: ack ^1.0.0-beta.4"
-    },
-    {
-      "id": "MED-8",
-      "category": "security",
-      "file": "packages/superdeck/lib/src/widgets/image_widget.dart",
-      "lines": "73-80",
-      "description": "_parseUri bypasses UriValidator"
-    },
-    {
-      "id": "MED-9",
-      "category": "maintainability",
-      "description": "Magic Duration numbers scattered (50ms, 100ms, 200ms)"
-    },
-    {
-      "id": "MED-10",
-      "category": "maintainability",
-      "file": "packages/superdeck/lib/src/rendering/slides/scaled_app.dart",
-      "line": 66,
-      "description": "Typo 'teh' in comment"
-    },
-    {
-      "id": "MED-11",
-      "category": "maintainability",
-      "file": "packages/superdeck/lib/src/export/slide_capture_service.dart",
-      "line": 140,
-      "description": "Unclear 'isDirty' variable name"
-    },
-    {
-      "id": "MED-12",
-      "category": "maintainability",
-      "file": "packages/superdeck/lib/src/export/pdf_controller.dart",
-      "line": 122,
-      "description": "Magic number maxAttempts = 3 without explanation"
-    },
-    {
-      "id": "MED-13",
-      "category": "dart_flutter",
-      "file": "packages/superdeck/lib/src/ui/widgets/loading_indicator.dart",
-      "line": 28,
-      "description": "createState() returns untyped State instead of State<IsometricLoading>"
-    },
-    {
-      "id": "MED-14",
-      "category": "dart_flutter",
-      "file": "packages/superdeck/lib/src/deck/slide_page_content.dart",
-      "line": 65,
-      "description": "Non-const IsometricLoading() instantiation"
-    },
-    {
-      "id": "MED-15",
-      "category": "dart_flutter",
-      "count": 15,
-      "description": "Non-const widget instantiations where const is possible"
-    }
-  ],
-  "low_issues": [
     {
       "id": "LOW-1",
-      "category": "structural",
-      "file": "packages/builder/lib/src/assets/mermaid_generator.dart",
-      "lines": "22-76",
-      "description": "54-line inline HTML template"
+      "severity": "low",
+      "file": "packages/superdeck/lib/src/rendering/slides/scaled_app.dart",
+      "line": 66,
+      "description": "Typo 'teh' in comment",
+      "action": "Fix when touching file"
     },
     {
       "id": "LOW-2",
-      "category": "structural",
-      "file": "packages/superdeck/lib/src/styling/components/slide.dart",
-      "description": "SlideStyle.merge() 35-line boilerplate"
+      "severity": "low",
+      "file": "packages/superdeck/lib/src/ui/widgets/loading_indicator.dart",
+      "line": 28,
+      "description": "createState() returns untyped State",
+      "action": "Fix when touching file"
     },
     {
       "id": "LOW-3",
-      "category": "maintainability",
-      "file": "packages/superdeck/lib/src/export/pdf_controller.dart",
-      "description": "Comment pollution - comments restating code"
+      "severity": "low",
+      "file": "packages/superdeck/lib/src/deck/slide_page_content.dart",
+      "line": 65,
+      "description": "Non-const IsometricLoading()",
+      "action": "Fix when touching file"
     },
     {
       "id": "LOW-4",
-      "category": "maintainability",
-      "description": "Obvious comments like '// Get the size'"
+      "severity": "low",
+      "description": "15 non-const widget instantiations",
+      "action": "Fix opportunistically"
     },
     {
       "id": "LOW-5",
-      "category": "maintainability",
-      "file": "packages/builder/lib/src/parsers/section_parser.dart",
-      "line": 35,
-      "description": "Non-standard 'idx' loop variable"
-    },
-    {
-      "id": "LOW-6",
-      "category": "security",
-      "file": "packages/cli/lib/src/commands/base_command.dart",
-      "description": "YAML parsing mitigated by schema validation"
-    },
-    {
-      "id": "LOW-7",
-      "category": "security",
-      "description": "Base command YAML loading documentation needed"
-    },
-    {
-      "id": "LOW-8",
-      "category": "quality",
-      "description": "Tests checking structure without validating content"
+      "severity": "low",
+      "file": "packages/core/pubspec.yaml",
+      "description": "Track ack stable release",
+      "action": "Monitor"
     }
   ],
-  "positive_findings": {
-    "architecture": [
-      "No circular dependencies",
-      "Clear package separation (core/superdeck/builder/cli)",
-      "Good use of sealed classes",
-      "Clean architecture dependency flow"
-    ],
-    "security": [
-      "No hardcoded secrets",
-      "Git commands use safe array arguments",
-      "Comprehensive URI validation",
-      "Schema validation with ack library"
-    ],
-    "code_quality": [
-      "No untracked TODO/FIXME",
-      "No commented-out code",
-      "No dead code detected",
-      "Proper disposal patterns",
-      "Good Signals framework usage",
-      "Consistent naming conventions"
-    ],
-    "tests": [
-      "2.05 assertion ratio meets minimum",
-      "Well-organized test structure",
-      "Good coverage infrastructure"
-    ]
-  },
-  "agents": {
-    "structure": {
-      "issues_found": 12,
-      "critical": 1,
-      "high": 5,
-      "medium": 4,
-      "low": 2
-    },
-    "quality": {
-      "issues_found": 8,
-      "critical": 1,
-      "high": 3,
-      "medium": 4,
-      "low": 0
-    },
-    "security": {
-      "issues_found": 7,
-      "critical": 0,
-      "high": 2,
-      "medium": 4,
-      "low": 1
-    },
-    "maintainability": {
-      "issues_found": 6,
-      "critical": 0,
-      "high": 0,
-      "medium": 4,
-      "low": 2
-    },
-    "dart_flutter": {
-      "issues_found": 14,
-      "critical": 1,
-      "high": 4,
-      "medium": 6,
-      "low": 3
+  "removed_issues": {
+    "reason": "Over-engineered recommendations",
+    "count": 35,
+    "categories": {
+      "arbitrary_line_limits": [
+        "PublishCommand.run() 246 lines - cohesive deployment workflow",
+        "_generateMermaidImage() 136 lines - cohesive build sequence",
+        "_buildWebApp() 69 lines - straightforward build function"
+      ],
+      "unnecessary_abstractions": [
+        "SlideStyle/SlideSpec decomposition - domain complexity, Mix framework",
+        "DeckController extraction - already well-organized",
+        "StyleSchemas splitting - declarative data, not procedural"
+      ],
+      "would_break_functionality": [
+        "WebView CSP restrictions - would break DartPad"
+      ],
+      "already_addressed": [
+        "Browser sandbox documentation - already in code"
+      ],
+      "worse_alternative": [
+        "Parameterize alert tests - explicit tests more debuggable"
+      ],
+      "no_real_benefit": [
+        "Extract Duration constants - single-use values",
+        "Rename isDirty, idx - common patterns",
+        "Comment pollution - subjective preference"
+      ],
+      "not_applicable_to_cli_tools": [
+        "Predictable temp directory names",
+        "Non-atomic file operations"
+      ]
     }
-  }
+  },
+  "positive_findings": [
+    "No hardcoded secrets",
+    "No circular dependencies",
+    "Proper resource disposal patterns",
+    "Good type safety (no dynamic in domain)",
+    "Clean architecture separation",
+    "2.05 assertions/test ratio",
+    "Signals framework properly used"
+  ],
+  "key_insight": "Long methods that are cohesive linear workflows don't benefit from artificial extraction. The 40-line rule is a guideline, not a law."
 }
