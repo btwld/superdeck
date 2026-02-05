@@ -25,7 +25,7 @@ class IsometricLoading extends StatefulWidget {
   final Color color;
 
   @override
-  State createState() => _IsometricLoadingState();
+  State<IsometricLoading> createState() => _IsometricLoadingState();
 }
 
 class _IsometricLoadingState extends State<IsometricLoading>

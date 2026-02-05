@@ -70,6 +70,11 @@ class ImageDto {
     );
   }
 
+  /// Parses image source into a [Uri].
+  ///
+  /// Security: This method handles `@image` blocks from YAML configuration,
+  /// which is trusted author-provided content. Markdown image sources
+  /// (untrusted user content) use [UriValidator] for path traversal protection.
   static Uri _parseUri(String src) {
     // Handle Windows absolute paths (e.g., C:\path\to\file.png).
     if (RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(src)) {
