@@ -1,6 +1,6 @@
 name: superdeck_cli
 description: Command line interface for SuperDeck
-version: 0.0.1
+version: 1.0.0
 homepage: https://github.com/leoafarias/superdeck
 
 executables:
@@ -14,8 +14,8 @@ dependencies:
   args: ^2.6.0
   path: ^1.9.0
   yaml_writer: ^2.0.1
-  superdeck_core: ^0.0.1
-  superdeck_builder: ^0.0.1
+  superdeck_core: ^1.0.0
+  superdeck_builder: ^1.0.0
   mason_logger: ^0.3.1
 
 dev_dependencies:
