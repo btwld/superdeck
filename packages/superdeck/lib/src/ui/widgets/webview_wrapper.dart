@@ -53,6 +53,7 @@ class _WebViewWrapperState extends State<WebViewWrapper>
 
   Future<void> _showDartPad() async {
     await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
     setState(() {
       _hide = false;
     });
@@ -63,6 +64,7 @@ class _WebViewWrapperState extends State<WebViewWrapper>
       _hide = true;
     });
     await Future.delayed(const Duration(milliseconds: 150));
+    if (!mounted) return;
     await _controller.reload();
   }
 
