@@ -63,7 +63,7 @@ class ScaledWidget extends StatelessWidget {
   }
 }
 
-//  create inherited widget that can pass teh scale factor to the child widget
+/// Inherited widget that passes the scale factor to child widgets.
 class ScaledWidgetProvider extends InheritedWidget {
   const ScaledWidgetProvider({
     required this.scale,
