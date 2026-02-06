@@ -4,22 +4,22 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-/// Web implementation of [DeckService] that reads deck JSON from Flutter assets.
+/// Asset-based [DeckService] implementation for runtimes without file processes.
 ///
-/// The standard [DeckService] relies on dart:io file APIs which are unavailable
-/// in web runtimes.
-class WebDeckService extends DeckService {
-  WebDeckService({
+/// The standard [DeckService] relies on local file I/O and file watchers.
+/// In web and release-like runtimes, deck data is read from bundled assets.
+class BundledDeckService extends DeckService {
+  BundledDeckService({
     required super.configuration,
     this.deckAssetPath = '.superdeck/superdeck.json',
   });
 
   final String deckAssetPath;
-  final Logger _logger = Logger('WebDeckService');
+  final Logger _logger = Logger('BundledDeckService');
 
   @override
   Future<void> initialize() async {
-    // No-op on web: bundled assets are generated ahead of time by the CLI.
+    // No-op: bundled assets are generated ahead of time by the CLI.
   }
 
   @override
@@ -44,7 +44,7 @@ class WebDeckService extends DeckService {
 
   @override
   Stream<Deck> loadDeckStream() async* {
-    _logger.info('Loading bundled deck on web...');
+    _logger.info('Loading bundled deck from assets...');
     yield await loadDeck();
   }
 }
