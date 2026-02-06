@@ -125,9 +125,7 @@ void main() {
 
     group('error handling configuration', () {
       test('timeout configuration is properly set', () {
-        final generator = MermaidGenerator(
-          configuration: const {'timeout': 5},
-        );
+        final generator = MermaidGenerator(configuration: const {'timeout': 5});
 
         expect(generator.configuration['timeout'], equals(5));
       });

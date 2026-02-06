@@ -99,10 +99,7 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
                   return RepaintBoundary(
                     key: _exportController.getSlideKey(slide),
-                    child: InheritedData(
-                      data: slide,
-                      child: SlideView(slide),
-                    ),
+                    child: InheritedData(data: slide, child: SlideView(slide)),
                   );
                 },
               ),
@@ -152,20 +149,20 @@ class _PdfExportBar extends StatelessWidget {
           children: [
             switch (status) {
               PdfExportStatus.complete => Icon(
-                  Icons.check_circle,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 32,
-                ),
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.primary,
+                size: 32,
+              ),
               PdfExportStatus.failed => Icon(
-                  Icons.error,
-                  color: Theme.of(context).colorScheme.error,
-                  size: 32,
-                ),
+                Icons.error,
+                color: Theme.of(context).colorScheme.error,
+                size: 32,
+              ),
               _ => SizedBox(
-                  height: 32,
-                  width: 32,
-                  child: IsometricProgressIndicator(progress: progressValue),
-                ),
+                height: 32,
+                width: 32,
+                child: IsometricProgressIndicator(progress: progressValue),
+              ),
             },
             const SizedBox(height: 16.0),
             Text(

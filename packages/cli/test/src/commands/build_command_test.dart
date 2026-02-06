@@ -52,10 +52,7 @@ void main() {
       });
 
       test('has force-rebuild flag configured correctly', () {
-        expect(
-          command.argParser.options.containsKey('force-rebuild'),
-          isTrue,
-        );
+        expect(command.argParser.options.containsKey('force-rebuild'), isTrue);
         final forceOption = command.argParser.options['force-rebuild']!;
         expect(forceOption.abbr, equals('f'));
         expect(forceOption.negatable, isFalse);
@@ -66,9 +63,7 @@ void main() {
     group('run() - configuration loading', () {
       test('returns error code when slides file does not exist', () async {
         // Create a config file but no slides file
-        final configFile = File(
-          path.join(tempDir.path, 'superdeck.yaml'),
-        );
+        final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
         await configFile.writeAsString('slides_path: slides.md');
 
         final runner = createTestRunner(command);
@@ -84,24 +79,26 @@ void main() {
         );
       });
 
-      test('loads default configuration when config file does not exist',
-          () async {
-        // Create slides file without config
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
-        await slidesFile.writeAsString('# Test Slide\n\nContent');
+      test(
+        'loads default configuration when config file does not exist',
+        () async {
+          // Create slides file without config
+          final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+          await slidesFile.writeAsString('# Test Slide\n\nContent');
 
-        final runner = createTestRunner(command);
-        final result = await runner.run(['build']);
+          final runner = createTestRunner(command);
+          final result = await runner.run(['build']);
 
-        // Should succeed with default config
-        expect(
-          result,
-          anyOf(
-            equals(ExitCode.success.code),
-            equals(ExitCode.software.code),
-          ),
-        );
-      });
+          // Should succeed with default config
+          expect(
+            result,
+            anyOf(
+              equals(ExitCode.success.code),
+              equals(ExitCode.software.code),
+            ),
+          );
+        },
+      );
     });
 
     group('run() - basic build execution', () {
@@ -120,10 +117,7 @@ This is test content.
 
         expect(
           result,
-          anyOf(
-            equals(ExitCode.success.code),
-            equals(ExitCode.software.code),
-          ),
+          anyOf(equals(ExitCode.success.code), equals(ExitCode.software.code)),
         );
       });
 
@@ -155,10 +149,7 @@ This is test content.
         // Should not crash, may succeed or fail gracefully
         expect(
           result,
-          anyOf(
-            equals(ExitCode.success.code),
-            equals(ExitCode.software.code),
-          ),
+          anyOf(equals(ExitCode.success.code), equals(ExitCode.software.code)),
         );
       });
     });
@@ -213,9 +204,7 @@ version: 1.0.0
         final slidesFile = File(path.join(tempDir.path, 'slides.md'));
         await slidesFile.writeAsString('# Test');
 
-        final configFile = File(
-          path.join(tempDir.path, 'superdeck.yaml'),
-        );
+        final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
         await configFile.writeAsString('invalid: yaml: content:');
 
         createTestPubspec(tempDir);

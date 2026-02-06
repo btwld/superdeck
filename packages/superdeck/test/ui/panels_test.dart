@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/ui/panels/comments_panel.dart';
 
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -12,9 +11,7 @@ void main() {
       await tester.pumpWidget(
         MixScope(
           child: MaterialApp(
-            home: Scaffold(
-              body: CommentsPanel(comments: const []),
-            ),
+            home: Scaffold(body: CommentsPanel(comments: const [])),
           ),
         ),
       );
@@ -62,9 +59,7 @@ void main() {
       await tester.pumpWidget(
         MixScope(
           child: MaterialApp(
-            home: Scaffold(
-              body: CommentsPanel(comments: [longText]),
-            ),
+            home: Scaffold(body: CommentsPanel(comments: [longText])),
           ),
         ),
       );

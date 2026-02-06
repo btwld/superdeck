@@ -411,9 +411,7 @@ void main() {
     test('decoration with border adds border dimensions', () {
       final spec = BoxSpec(
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          border: Border.all(width: 2),
-        ),
+        decoration: BoxDecoration(border: Border.all(width: 2)),
       );
       final offset = ConverterHelper.calculateBlockOffset(spec);
       expect(offset.dx, 24.0); // 20 padding + 4 border (2 left + 2 right)
@@ -431,18 +429,14 @@ void main() {
     });
 
     test('symmetric horizontal padding', () {
-      final spec = BoxSpec(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-      );
+      final spec = BoxSpec(padding: const EdgeInsets.symmetric(horizontal: 15));
       final offset = ConverterHelper.calculateBlockOffset(spec);
       expect(offset.dx, 30.0);
       expect(offset.dy, 0.0);
     });
 
     test('symmetric vertical margin', () {
-      final spec = BoxSpec(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-      );
+      final spec = BoxSpec(margin: const EdgeInsets.symmetric(vertical: 8));
       final offset = ConverterHelper.calculateBlockOffset(spec);
       expect(offset.dx, 0.0);
       expect(offset.dy, 16.0);

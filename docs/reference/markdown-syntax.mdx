@@ -1,0 +1,151 @@
+---
+title: Markdown syntax reference
+description: Complete syntax reference for writing SuperDeck slides in Markdown
+---
+
+# Markdown syntax reference
+
+Use this reference to look up syntax for front matter, blocks, and built-in widget arguments.
+
+## Slide front matter
+
+Each slide can include YAML front matter.
+
+Supported keys:
+
+- `title`: Slide title used in navigation and exports.
+- `style`: Named style variant from `DeckOptions.styles`.
+- Custom keys: Available through `slide.options.args['keyName']`.
+
+Example:
+
+````markdown
+---
+title: Product Vision
+style: overview
+owner: Platform Team
+---
+````
+
+## Block types
+
+SuperDeck supports three core block types.
+
+| Block | Purpose | Key properties |
+|---|---|---|
+| `@section` | Container for horizontal layout | `flex`, `align`, `scrollable` |
+| `@column` | Render markdown content | `flex`, `align`, `scrollable` |
+| `@widget` | Embed custom Flutter widgets | `name` + custom args |
+
+Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@widget`.
+
+## Common block properties
+
+### `flex`
+
+- Type: number
+- Default: `1`
+- Meaning: relative size in the parent layout.
+
+### `align`
+
+- Type: string
+- Default: `center`
+- Values: `top_left`, `top_center`, `top_right`, `center_left`, `center`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`
+
+### `scrollable`
+
+- Type: boolean
+- Default: `false`
+- Meaning: enable scrolling for overflow content.
+
+## Built-in widgets
+
+### `@image`
+
+Example:
+
+````markdown
+@image {
+  src: assets/value-loop.png
+  fit: contain
+  height: 420
+}
+````
+
+Arguments:
+
+- `src` (required): asset path, absolute file path, or URL.
+- `fit`: `contain`, `cover`, `fill`, `fitWidth`, `fitHeight`, `none`, `scaleDown`.
+- `width`: number.
+- `height`: number.
+
+### `@dartpad`
+
+Example:
+
+````markdown
+@dartpad {
+  id: "d7b09149b0843f2b9d09e081e3cfd5a3"
+  theme: dark
+  run: true
+}
+````
+
+Arguments:
+
+- `id` (required): DartPad snippet identifier.
+- `theme`: `light` or `dark`.
+- `embed`: boolean.
+- `run`: boolean.
+
+### `@qrcode`
+
+Example:
+
+````markdown
+@qrcode {
+  value: "https://superdeck.dev"
+  size: 220
+}
+````
+
+Arguments:
+
+- `value` (required): content to encode.
+- `size`: number.
+- `padding`: number.
+
+## Markdown extensions
+
+### Alerts
+
+Use GitHub-style alert syntax:
+
+````markdown
+> [!NOTE]
+> Additional context.
+
+> [!WARNING]
+> Important warning.
+````
+
+### Hero classes
+
+Use classes to animate matching elements between slides:
+
+````markdown
+# Roadmap {.hero-title}
+![Diagram](assets/roadmap.png) {.hero-visual}
+````
+
+### Mermaid blocks
+
+Use fenced code blocks with `mermaid` as the language:
+
+````markdown
+```mermaid
+graph TD
+  Start --> Build --> Ship
+```
+````

@@ -39,27 +39,23 @@ void main() {
 
     group('alignment grid', () {
       testWidgets('renders all 9 in 3x3 grid', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.allAlignments(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.allAlignments());
         tester.expectBlockCount(9);
         tester.expectSectionCount(3);
         expect(tester.takeException(), isNull);
       });
 
       testWidgets('grid blocks do not overlap meaningfully', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.allAlignments(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.allAlignments());
         final blocks = find.byType(BlockWidget);
         final rects = List.generate(9, (i) => tester.getRect(blocks.at(i)));
         for (int i = 0; i < rects.length; i++) {
           for (int j = i + 1; j < rects.length; j++) {
             final intersection = rects[i].intersect(rects[j]);
             expect(
-              intersection.isEmpty || intersection.width < 5 || intersection.height < 5,
+              intersection.isEmpty ||
+                  intersection.width < 5 ||
+                  intersection.height < 5,
               true,
             );
           }
@@ -72,9 +68,7 @@ void main() {
         final slide = Slide(
           key: 'small-centered',
           sections: [
-            SectionBlock([
-              ContentBlock('Hi', align: ContentAlignment.center),
-            ]),
+            SectionBlock([ContentBlock('Hi', align: ContentAlignment.center)]),
           ],
         );
         await SlideTestHarness.pumpSlide(tester, slide);
@@ -86,7 +80,9 @@ void main() {
         expect((blockRect.center.dx - textRect.center.dx).abs(), lessThan(50));
       });
 
-      testWidgets('large scrollable content respects alignment', (tester) async {
+      testWidgets('large scrollable content respects alignment', (
+        tester,
+      ) async {
         final slide = Slide(
           key: 'large-top-left',
           sections: [
@@ -107,10 +103,7 @@ void main() {
 
     group('alignment in columns', () {
       testWidgets('different alignments per column', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.allAlignments(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.allAlignments());
         tester.expectBlockCount(9);
         expect(tester.takeException(), isNull);
       });
@@ -121,8 +114,12 @@ void main() {
         final slide = Slide(
           key: 'section-alignments',
           sections: [
-            SectionBlock([ContentBlock('Top', align: ContentAlignment.topCenter)]),
-            SectionBlock([ContentBlock('Bottom', align: ContentAlignment.bottomCenter)]),
+            SectionBlock([
+              ContentBlock('Top', align: ContentAlignment.topCenter),
+            ]),
+            SectionBlock([
+              ContentBlock('Bottom', align: ContentAlignment.bottomCenter),
+            ]),
           ],
         );
 

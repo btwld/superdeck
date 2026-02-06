@@ -40,16 +40,15 @@ void main() {
 
     group('column layouts', () {
       testWidgets('single column fills width', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.singleColumn(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.singleColumn());
         final block = find.byType(BlockWidget);
         final size = tester.getSize(block);
         expect(size.width, greaterThan(700));
       });
 
-      testWidgets('two equal columns split width roughly 50/50', (tester) async {
+      testWidgets('two equal columns split width roughly 50/50', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.twoColumnEqual(),
@@ -83,7 +82,9 @@ void main() {
     });
 
     group('section layouts', () {
-      testWidgets('two equal sections split height roughly 50/50', (tester) async {
+      testWidgets('two equal sections split height roughly 50/50', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.twoSectionEqual(),
@@ -100,7 +101,13 @@ void main() {
           SlideFixtures.twoSectionWeighted(topFlex: 1, bottomFlex: 2),
         );
         final sections = find.byType(SectionWidget);
-        tester.expectFlexRatio(sections.at(0), sections.at(1), 1, 2, axis: Axis.vertical);
+        tester.expectFlexRatio(
+          sections.at(0),
+          sections.at(1),
+          1,
+          2,
+          axis: Axis.vertical,
+        );
       });
 
       testWidgets('header/body/footer 1:3:1', (tester) async {
@@ -168,7 +175,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('non-scrollable long content does not throw overflow', (tester) async {
+      testWidgets('non-scrollable long content does not throw overflow', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.nonScrollableBlock(lineCount: 200),

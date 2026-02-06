@@ -1,13 +1,13 @@
 ---
-title: Block Types Reference
+title: Block types reference
 description: Complete reference for all SuperDeck block types and their properties
 ---
 
-# Block Types Reference
+# Block types reference
 
 SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget system as `@widget`.
 
-## Common Properties
+## Common properties
 
 All blocks support these properties:
 
@@ -106,7 +106,7 @@ Embeds custom Flutter widgets defined in your app.
 
 Widget name from `DeckOptions.widgets`.
 
-### Custom Arguments
+### Custom arguments
 **Type:** JSON-serializable values
 
 All additional properties pass to the widget builder.
@@ -142,7 +142,7 @@ SuperDeckApp(
 
 **Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to `WidgetDefinition.parse()` as `Map<String, Object?>`.
 
-## Built-in Widgets
+## Built-in widgets
 
 Use shorthand syntax for these widgets.
 
@@ -194,7 +194,7 @@ Generates QR codes.
 - `errorCorrection` - `low`, `medium`, `high`, `highest` (default: `medium`)
 - `backgroundColor`, `foregroundColor` - Hex colors (for example, `#ffffff`)
 
-### Mermaid Diagrams
+### Mermaid diagrams
 
 Use a fenced code block with the `mermaid` language. The CLI renders Mermaid to PNG during `superdeck build`.
 
@@ -205,9 +205,9 @@ graph TD
 ```
 ````
 
-## Block Syntax
+## Block syntax
 
-### Basic Syntax
+### Basic syntax
 ```markdown
 @blocktype {
   property1: value1
@@ -217,14 +217,14 @@ graph TD
 }
 ```
 
-### Property Types
+### Property types
 - **String:** Use quotes for string values: `"hello world"`
 - **Number:** No quotes: `42`, `3.14`
 - **Boolean:** `true` or `false`
 - **Object:** Nested braces: `{ key: "value" }`
 - **Array:** Square brackets: `["item1", "item2"]`
 
-### Common Patterns
+### Common patterns
 
 **Centered content:**
 ```markdown
@@ -273,7 +273,7 @@ graph TD
 }
 ```
 
-## Best Practices
+## Best practices
 
 1. Use `@column` for most content
 2. Combine blocks in `@section` for rich layouts

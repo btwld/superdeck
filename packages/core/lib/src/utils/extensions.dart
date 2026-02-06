@@ -74,9 +74,10 @@ extension HexColorValidation on StringSchema {
       (value) {
         final hexCode = value.replaceAll('#', '');
         return (hexCode.length == 6 || hexCode.length == 8) &&
-               RegExp(r'^[0-9a-fA-F]+$').hasMatch(hexCode);
+            RegExp(r'^[0-9a-fA-F]+$').hasMatch(hexCode);
       },
-      message: 'Invalid hex color. Use 6 or 8 hex digits (e.g., "#ff0000" or "#80ff0000")',
+      message:
+          'Invalid hex color. Use 6 or 8 hex digits (e.g., "#ff0000" or "#80ff0000")',
     );
   }
 }

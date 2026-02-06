@@ -18,15 +18,13 @@ class NavigationService {
   ///
   /// [transitionDuration] can be shortened for testing or adjusted for UX.
   NavigationService({Duration? transitionDuration})
-      : transitionDuration = transitionDuration ?? _defaultTransitionDuration;
+    : transitionDuration = transitionDuration ?? _defaultTransitionDuration;
 
   /// Creates a GoRouter configured for slide navigation.
   ///
   /// The [onIndexChanged] callback is invoked on every page build.
   /// Deduplication of redundant calls is handled by the controller.
-  GoRouter createRouter({
-    required void Function(int) onIndexChanged,
-  }) {
+  GoRouter createRouter({required void Function(int) onIndexChanged}) {
     return GoRouter(
       initialLocation: '/slides/0',
       // Handle root path - can occur on initial load or direct URL access

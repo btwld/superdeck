@@ -45,7 +45,8 @@ SlideConfiguration createTestSlide({
 
 /// Creates a test deck with the given slides
 Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
-  final testSlides = slides ??
+  final testSlides =
+      slides ??
       List.generate(
         3,
         (index) => Slide(

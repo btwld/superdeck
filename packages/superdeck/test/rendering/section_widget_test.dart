@@ -12,10 +12,7 @@ void main() {
   group('SectionWidget', () {
     group('basic rendering', () {
       testWidgets('renders single block in section', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.singleColumn(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.singleColumn());
 
         tester.expectSectionCount(1);
         tester.expectBlockCount(1);
@@ -32,10 +29,7 @@ void main() {
       });
 
       testWidgets('handles empty section without error', (tester) async {
-        final slide = Slide(
-          key: 'empty-section',
-          sections: [SectionBlock([])],
-        );
+        final slide = Slide(key: 'empty-section', sections: [SectionBlock([])]);
 
         await SlideTestHarness.pumpSlide(tester, slide);
         expect(tester.takeException(), isNull);
@@ -43,7 +37,9 @@ void main() {
     });
 
     group('horizontal flex distribution', () {
-      testWidgets('two blocks with equal flex have equal widths', (tester) async {
+      testWidgets('two blocks with equal flex have equal widths', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.twoColumnEqual(),
@@ -59,7 +55,9 @@ void main() {
         );
       });
 
-      testWidgets('two blocks with 1:2 flex have correct width ratio', (tester) async {
+      testWidgets('two blocks with 1:2 flex have correct width ratio', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.twoColumnWeighted(leftFlex: 1, rightFlex: 2),
@@ -90,10 +88,7 @@ void main() {
       });
 
       testWidgets('single block fills section width', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.singleColumn(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.singleColumn());
 
         final section = find.byType(SectionWidget);
         final block = find.byType(BlockWidget);

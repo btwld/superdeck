@@ -11,9 +11,9 @@ class DeckOptions {
 
   /// Whether to watch for file changes and auto-rebuild the deck.
   ///
-  /// When `true` (default), starts a CLI watcher process that monitors
+  /// When `true`, starts a CLI watcher process that monitors
   /// the slides file and rebuilds automatically on changes.
-  /// Set to `false` to disable file watching.
+  /// Defaults to `false`.
   final bool watchForChanges;
 
   const DeckOptions({

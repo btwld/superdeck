@@ -1,9 +1,9 @@
 ---
-title: Custom Slide Parts
+title: Custom slide parts
 description: Add a header, footer, and background to every slide.
 ---
 
-# Custom Slide Parts
+# Custom slide parts
 
 Use slide parts to render shared UI on every slide:
 
@@ -11,7 +11,7 @@ Use slide parts to render shared UI on every slide:
 - Footer (`PreferredSizeWidget`)
 - Background (`Widget`)
 
-## 1) Create parts
+## Create slide parts
 
 Header and footer widgets must implement `PreferredSizeWidget`.
 
@@ -72,7 +72,7 @@ class DeckBackground extends StatelessWidget {
 }
 ```
 
-## 2) Register parts
+## Register slide parts
 
 Register your parts in `DeckOptions.parts`.
 

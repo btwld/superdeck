@@ -24,7 +24,10 @@ void main() {
         final yamlStyle = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 120)),
         );
-        final yamlConfig = (baseStyle: yamlStyle, styles: <String, SlideStyle>{});
+        final yamlConfig = (
+          baseStyle: yamlStyle,
+          styles: <String, SlideStyle>{},
+        );
 
         final codeOptions = const DeckOptions();
 
@@ -38,7 +41,10 @@ void main() {
           h1: TextStyler().style(TextStyleMix(fontSize: 96)),
           h2: TextStyler().style(TextStyleMix(fontSize: 72)),
         );
-        final yamlConfig = (baseStyle: yamlStyle, styles: <String, SlideStyle>{});
+        final yamlConfig = (
+          baseStyle: yamlStyle,
+          styles: <String, SlideStyle>{},
+        );
 
         final codeStyle = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 120)), // override
@@ -147,21 +153,24 @@ void main() {
         expect(result.baseStyle, isNotNull);
       });
 
-      test('merges yaml with code options when loader returns valid yaml', () async {
-        final yamlContent = '''
+      test(
+        'merges yaml with code options when loader returns valid yaml',
+        () async {
+          final yamlContent = '''
 base:
   h1:
     fontSize: 120
 ''';
-        final codeOptions = const DeckOptions();
+          final codeOptions = const DeckOptions();
 
-        final result = await StyleConfigLoader.loadAndMerge(
-          codeOptions,
-          loader: () async => yamlContent,
-        );
+          final result = await StyleConfigLoader.loadAndMerge(
+            codeOptions,
+            loader: () async => yamlContent,
+          );
 
-        expect(result.baseStyle, isNotNull);
-      });
+          expect(result.baseStyle, isNotNull);
+        },
+      );
 
       test('returns code options when yaml parsing fails', () async {
         final invalidYaml = 'invalid: yaml: content: [';

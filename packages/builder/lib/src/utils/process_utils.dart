@@ -5,9 +5,5 @@ Future<ProcessResult> runDartCommand(
   List<String> args, {
   Map<String, String>? environmentOverrides,
 }) {
-  return Process.run(
-    'dart',
-    args,
-    environment: environmentOverrides,
-  );
+  return Process.run('dart', args, environment: environmentOverrides);
 }

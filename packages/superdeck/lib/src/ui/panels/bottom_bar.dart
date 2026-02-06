@@ -31,12 +31,14 @@ class DeckBottomBar extends StatelessWidget {
       style: _bottomBarContainer,
       children: [
         // view notes - use Watch for reactive icon
-        Watch((context) => SDIconButton(
-          onPressed: deck.toggleNotes,
-          icon: deck.isNotesOpen.value
-            ? Icons.comment
-            : Icons.comments_disabled,
-        )),
+        Watch(
+          (context) => SDIconButton(
+            onPressed: deck.toggleNotes,
+            icon: deck.isNotesOpen.value
+                ? Icons.comment
+                : Icons.comments_disabled,
+          ),
+        ),
 
         SDIconButton(
           icon: Icons.save,
@@ -48,21 +50,17 @@ class DeckBottomBar extends StatelessWidget {
           onPressed: () => deck.generateThumbnails(context, force: true),
         ),
         const Spacer(),
-        SDIconButton(
-          icon: Icons.arrow_back,
-          onPressed: deck.previousSlide,
-        ),
-        SDIconButton(
-          icon: Icons.arrow_forward,
-          onPressed: deck.nextSlide,
-        ),
+        SDIconButton(icon: Icons.arrow_back, onPressed: deck.previousSlide),
+        SDIconButton(icon: Icons.arrow_forward, onPressed: deck.nextSlide),
         const Spacer(),
 
         // Page counter - use Watch for reactive text
-        Watch((context) => Text(
-          '${deck.currentIndex.value + 1} of ${deck.totalSlides.value}',
-          style: const TextStyle(color: Colors.white),
-        )),
+        Watch(
+          (context) => Text(
+            '${deck.currentIndex.value + 1} of ${deck.totalSlides.value}',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
 
         SDIconButton(icon: Icons.close, onPressed: deck.closeMenu),
       ],

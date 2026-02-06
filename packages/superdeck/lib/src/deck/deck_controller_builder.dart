@@ -8,6 +8,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/cli_watcher.dart';
 import '../utils/constants.dart';
+import 'bundled_deck_service.dart';
 import 'deck_controller.dart';
 import 'deck_options.dart';
 
@@ -40,11 +41,15 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
     super.initState();
 
     final configuration = DeckConfiguration();
-    final deckService = DeckService(configuration: configuration);
+    final deckService = kCanRunProcess
+        ? DeckService(configuration: configuration)
+        : BundledDeckService(configuration: configuration);
 
     _deckController = DeckController(
       deckService: deckService,
       options: widget.options,
+      // Asset-based runtimes load once; process-capable runtimes can file-watch.
+      enableDeckStream: kCanRunProcess,
     );
 
     // Start CLI watcher in debug mode for auto-rebuild (if enabled)

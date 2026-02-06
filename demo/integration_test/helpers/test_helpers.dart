@@ -29,10 +29,7 @@ class TestApp extends StatelessWidget {
       options: DeckOptions(
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
-        styles: {
-          'announcement': announcementStyle(),
-          'quote': quoteStyle(),
-        },
+        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
         parts: const SlideParts(
           header: HeaderPart(),
           footer: FooterPart(),

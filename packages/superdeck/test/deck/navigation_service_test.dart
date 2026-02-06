@@ -25,10 +25,7 @@ void main() {
         final service = NavigationService(
           transitionDuration: const Duration(milliseconds: -100),
         );
-        expect(
-          service.transitionDuration,
-          const Duration(milliseconds: -100),
-        );
+        expect(service.transitionDuration, const Duration(milliseconds: -100));
       });
 
       test('accepts very long duration', () {

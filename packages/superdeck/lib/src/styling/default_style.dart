@@ -18,8 +18,9 @@ TextStyle _safeGoogleFont(TextStyle Function() fontLoader) {
 }
 
 // Base text style for the presentation
-TextStyle get _baseTextStyle =>
-    _safeGoogleFont(GoogleFonts.poppins).copyWith(fontSize: 24, color: Colors.white);
+TextStyle get _baseTextStyle => _safeGoogleFont(
+  GoogleFonts.poppins,
+).copyWith(fontSize: 24, color: Colors.white);
 
 // Custom variants for different block types
 const onGist = NamedVariant('gist');
@@ -178,8 +179,9 @@ SlideStyle _createDefaultSlideStyle() {
 
     // Code blocks
     code: MarkdownCodeblockStyle(
-      textStyle: _safeGoogleFont(() => GoogleFonts.jetBrainsMono(fontSize: 18))
-          .copyWith(height: 1.8),
+      textStyle: _safeGoogleFont(
+        () => GoogleFonts.jetBrainsMono(fontSize: 18),
+      ).copyWith(height: 1.8),
       container: BoxStyler(
         padding: EdgeInsetsMix.all(32),
         decoration: BoxDecorationMix(
@@ -222,13 +224,13 @@ SlideStyle _createDefaultSlideStyle() {
       ),
       text: TextStyler()
           .style(
-          TextStyleMix(
-            fontSize: _baseTextStyle.fontSize,
-            height: 1.6,
-            color: _baseTextStyle.color,
-            fontFamily: _baseTextStyle.fontFamily,
-          ),
-        )
+            TextStyleMix(
+              fontSize: _baseTextStyle.fontSize,
+              height: 1.6,
+              color: _baseTextStyle.color,
+              fontFamily: _baseTextStyle.fontFamily,
+            ),
+          )
           .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 8))),
     ),
 
@@ -254,7 +256,9 @@ SlideStyle _createDefaultSlideStyle() {
 
     // Horizontal rule
     horizontalRuleDecoration: BoxDecoration(
-      border: Border(bottom: BorderSide(color: _baseTextStyle.color!, width: 2)),
+      border: Border(
+        bottom: BorderSide(color: _baseTextStyle.color!, width: 2),
+      ),
     ),
   );
 }

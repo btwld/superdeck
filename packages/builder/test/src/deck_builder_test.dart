@@ -13,7 +13,7 @@ final class MockTask extends Task {
   final bool throwOnDispose;
 
   MockTask({this.disposeDelay, this.throwOnDispose = false})
-      : super('MockTask');
+    : super('MockTask');
 
   @override
   FutureOr<void> run(SlideContext context) {

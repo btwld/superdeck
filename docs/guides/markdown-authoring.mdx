@@ -1,15 +1,15 @@
 ---
-title: Markdown Authoring Guide
+title: Markdown authoring guide
 description: Author Markdown that compiles cleanly into SuperDeck slide decks.
 ---
 
-# Markdown Authoring Guide
+# Markdown authoring guide
 
 Write your SuperDeck slides in Markdown. This guide shows you how to structure content and use block syntax.
 
 ---
 
-## Quick Start
+## Quick start
 
 A basic slide with a title and content:
 
@@ -29,7 +29,7 @@ title: My First Slide
 
 ---
 
-## Slide Options (Front Matter)
+## Slide options (front matter)
 
 Each slide can have YAML front matter with these options:
 
@@ -46,21 +46,19 @@ style: overview
 
 ---
 
-## Block Types
+## Block types
 
-SuperDeck has 3 core block types:
+Use these block types when you compose slides:
 
-| Block | Purpose | Key Properties |
-|-------|---------|----------------|
-| `@section` | Container for horizontal layout | `flex`, `align`, `scrollable` |
-| `@column` | Renders markdown content | `flex`, `align`, `scrollable` |
-| `@widget` | Embeds custom widgets | `name` + custom args |
+- `@section` for horizontal layout containers.
+- `@column` for markdown content.
+- `@widget` for custom Flutter widgets.
 
-Built-in widgets (`image`, `dartpad`, `qrcode`) use the same syntax. Mermaid diagrams use fenced code blocks (` ```mermaid`).
+For the full syntax and argument reference, see the [Markdown syntax reference](../reference/markdown-syntax).
 
 ---
 
-## Layout Building Blocks
+## Layout building blocks
 
 ### `@section`
 
@@ -89,17 +87,19 @@ Renders markdown content. Most slides use one or more columns.
 - Finish with supporting data
 ````
 
-### Common Properties
+### Common properties
 
-All blocks support these properties:
+Use these properties on blocks:
 
 - `flex` – Relative size (default: `1`). A column with `flex: 2` takes twice the space of `flex: 1`
-- `align` – Content alignment: `top_left`, `top_center`, `top_right`, `center_left`, `center`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`
+- `align` – Content alignment such as `top_left`, `center`, and `bottom_right`
 - `scrollable` – Enable scrolling for overflow content (default: `false`)
+
+For complete value definitions, see the [Markdown syntax reference](../reference/markdown-syntax).
 
 ---
 
-## Built-in Widgets
+## Built-in widgets
 
 ### `@image`
 
@@ -113,7 +113,7 @@ Display images with fit options.
 }
 ````
 
-Properties: `src` (required; asset path, absolute file path, or URL), `fit` (`contain`, `cover`, `fill`, `fitWidth`, `fitHeight`, `none`, `scaleDown`), `width`, `height`
+For all `@image` arguments, see the [Markdown syntax reference](../reference/markdown-syntax).
 
 ### `@dartpad`
 
@@ -127,11 +127,11 @@ Embed interactive DartPad examples.
 }
 ````
 
-Properties: `id` (required), `theme` (`light` or `dark`), `embed`, `run`
+For all `@dartpad` arguments, see the [Markdown syntax reference](../reference/markdown-syntax).
 
 > DartPad uses an embedded WebView. Make sure your target platform supports WebViews.
 
-### Custom Widgets
+### Custom widgets
 
 Register widgets in `DeckOptions.widgets`, then use them with the shorthand syntax:
 
@@ -147,7 +147,7 @@ The widget name becomes the block type (`@metricCard`), and all properties are p
 
 ---
 
-## Markdown Features
+## Markdown features
 
 ### Standard Markdown
 
@@ -183,7 +183,7 @@ Use GitHub-style alerts for callouts:
 > Helpful suggestions.
 ````
 
-### Hero Animations
+### Hero animations
 
 Add class names to animate elements between slides:
 
@@ -196,7 +196,7 @@ Elements with matching class names animate smoothly during slide transitions.
 
 ---
 
-## Mermaid Diagrams
+## Mermaid diagrams
 
 Add Mermaid diagrams using fenced code blocks:
 
@@ -238,8 +238,9 @@ See the [SuperDeck Overview](./superdeck-overview) for more styling options.
 
 ---
 
-## Next Steps
+## Next steps
 
-- Explore block properties in the [Block Types reference](../reference/block-types)
+- Explore syntax details in the [Markdown syntax reference](../reference/markdown-syntax)
+- Explore block behavior in the [Block types reference](../reference/block-types)
 - Learn about publishing with the [CLI Reference](./cli-reference)
 - Create custom widgets with the [Custom Widgets Guide](./custom-widgets)

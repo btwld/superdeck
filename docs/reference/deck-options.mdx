@@ -1,9 +1,9 @@
 ---
-title: DeckOptions Reference
+title: DeckOptions reference
 description: Complete API reference for configuring SuperDeck presentations
 ---
 
-# DeckOptions Reference
+# DeckOptions reference
 
 `DeckOptions` configures `SuperDeckApp` styling, custom widgets, slide parts, and debug visuals.
 
@@ -16,6 +16,7 @@ const DeckOptions({
   Map<String, WidgetDefinition> widgets = const {},
   SlideParts parts = const SlideParts(),
   bool debug = false,
+  bool watchForChanges = false,
 });
 ```
 
@@ -85,7 +86,7 @@ Or shorthand:
 }
 ```
 
-#### WidgetDefinition example (simple Map args)
+#### WidgetDefinition example (simple map args)
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -122,7 +123,7 @@ DeckOptions(
 )
 ```
 
-See [Custom Slide Parts Guide](/docs/guides/slide-parts) for examples.
+See [Custom Slide Parts Guide](/guides/slide-parts) for examples.
 
 ### `debug`
 **Type:** `bool` | **Default:** `false`
@@ -135,7 +136,19 @@ DeckOptions(
 )
 ```
 
-## Complete Configuration Example
+### `watchForChanges`
+**Type:** `bool` | **Default:** `false`
+
+Enables file watching for automatic deck rebuilds when supported by your
+runtime flow.
+
+```dart
+DeckOptions(
+  watchForChanges: true,
+)
+```
+
+## Complete configuration example
 
 ```dart
 import 'package:flutter/material.dart';
@@ -166,7 +179,7 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## Best Practices
+## Best practices
 
 ### Styling
 1. Start with `baseStyle` for defaults
@@ -174,7 +187,7 @@ class MyApp extends StatelessWidget {
 3. Maintain consistent palette and typography
 4. Test across different screen sizes
 
-### Custom Widgets
+### Custom widgets
 1. Validate in `parse()` early
 2. Provide explicit defaults
 3. Throw helpful errors (rendered on-slide)

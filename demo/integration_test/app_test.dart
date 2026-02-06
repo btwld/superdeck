@@ -29,8 +29,11 @@ void main() {
         final exception = tester.takeException();
         if (exception != null) {
           final isLayoutOverflow = exception.toString().contains('overflowed');
-          expect(isLayoutOverflow, isTrue,
-              reason: 'Only layout overflow is acceptable, got: $exception');
+          expect(
+            isLayoutOverflow,
+            isTrue,
+            reason: 'Only layout overflow is acceptable, got: $exception',
+          );
         }
       });
 
@@ -62,12 +65,28 @@ void main() {
       testWidgets('slides load and display', (tester) async {
         final controller = await tester.pumpTestApp();
 
-        expect(controller, isNotNull, reason: 'DeckController should be available');
-        expect(controller!.isLoading.value, isFalse, reason: 'Loading should complete');
-        expect(controller.hasError.value, isFalse, reason: 'No error should occur');
+        expect(
+          controller,
+          isNotNull,
+          reason: 'DeckController should be available',
+        );
+        expect(
+          controller!.isLoading.value,
+          isFalse,
+          reason: 'Loading should complete',
+        );
+        expect(
+          controller.hasError.value,
+          isFalse,
+          reason: 'No error should occur',
+        );
 
         final slideCount = controller.totalSlides.value;
-        expect(slideCount, greaterThan(0), reason: 'Should have at least one slide');
+        expect(
+          slideCount,
+          greaterThan(0),
+          reason: 'Should have at least one slide',
+        );
       });
 
       testWidgets('demo app has at least 5 slides', (tester) async {
@@ -85,7 +104,11 @@ void main() {
         final controller = await tester.pumpTestApp();
 
         expect(controller, isNotNull);
-        expect(controller!.currentIndex.value, 0, reason: 'Should start at first slide');
+        expect(
+          controller!.currentIndex.value,
+          0,
+          reason: 'Should start at first slide',
+        );
         expect(
           controller.currentSlide.value,
           isNotNull,
@@ -100,13 +123,21 @@ void main() {
 
         expect(controller, isNotNull);
         expect(controller!.currentIndex.value, 0);
-        expect(controller.canGoNext.value, isTrue, reason: 'Should be able to go next');
+        expect(
+          controller.canGoNext.value,
+          isTrue,
+          reason: 'Should be able to go next',
+        );
 
         // Navigate to next slide
         await controller.nextSlide();
         await tester.pumpAndSettle(const Duration(seconds: 2));
 
-        expect(controller.currentIndex.value, 1, reason: 'Should be on second slide');
+        expect(
+          controller.currentIndex.value,
+          1,
+          reason: 'Should be on second slide',
+        );
       });
 
       testWidgets('can navigate to previous slide', (tester) async {
@@ -123,7 +154,11 @@ void main() {
         await controller.previousSlide();
         await tester.pumpAndSettle(const Duration(seconds: 2));
 
-        expect(controller.currentIndex.value, 0, reason: 'Should be back on first slide');
+        expect(
+          controller.currentIndex.value,
+          0,
+          reason: 'Should be back on first slide',
+        );
       });
 
       testWidgets('canGoPrevious is false on first slide', (tester) async {

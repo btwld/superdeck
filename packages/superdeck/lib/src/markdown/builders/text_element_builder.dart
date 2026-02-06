@@ -137,7 +137,9 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
       children.add(
         TextSpan(
           text: lerp.fadingChar!,
-          style: baseStyle.copyWith(color: baseColor.withValues(alpha: visibleAlpha)),
+          style: baseStyle.copyWith(
+            color: baseColor.withValues(alpha: visibleAlpha),
+          ),
         ),
       );
     }

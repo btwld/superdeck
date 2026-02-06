@@ -192,10 +192,7 @@ line3''';
           await dir.ensureExists();
 
           expect(await dir.exists(), isTrue);
-          expect(
-            await Directory('${tempDir.path}/deep').exists(),
-            isTrue,
-          );
+          expect(await Directory('${tempDir.path}/deep').exists(), isTrue);
           expect(
             await Directory('${tempDir.path}/deep/nested').exists(),
             isTrue,
@@ -361,7 +358,6 @@ line3''';
           expect(schema.safeParse('rgb(255, 0, 0)').isOk, isFalse);
         });
       });
-
     });
   });
 }

@@ -1,15 +1,15 @@
 ---
-title: SuperDeck Overview
+title: SuperDeck overview
 description: Understand how SuperDeck turns Markdown into rich Flutter presentations.
 ---
 
-# SuperDeck Overview
+# SuperDeck overview
 
 Create presentations with Flutter and Markdown.
 
 ---
 
-## What You Can Build
+## What you can build
 
 With SuperDeck, you can:
 
@@ -21,9 +21,9 @@ With SuperDeck, you can:
 
 ---
 
-## Core Features
+## Core features
 
-### Markdown Layout System
+### Markdown layout system
 
 SuperDeck uses a powerful `@block` syntax for organizing slide content into flexible layouts:
 
@@ -61,7 +61,7 @@ Build presentations with Markdown and Flutter
 
 **Alignment options**: `top_left`, `top_center`, `top_right`, `center_left`, `center`, `center_right`, `bottom_left`, `bottom_center`, `bottom_right`
 
-### Custom Widget Support
+### Custom widget support
 
 Register custom Flutter widgets and use them directly in Markdown:
 
@@ -86,7 +86,7 @@ Use in Markdown:
 
 SuperDeck calls `WidgetDefinition.parse()` with the block's arguments and then `WidgetDefinition.build()` to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
 
-### Markdown Extensions
+### Markdown extensions
 
 **Hero animations** – CSS-like tags for seamless slide transitions:
 
@@ -124,9 +124,9 @@ graph TD
 
 ---
 
-## Styling & Theming
+## Styling & theming
 
-### Comprehensive Styling API
+### Comprehensive styling API
 
 Control every aspect of your presentation through the `SlideStyle` system:
 
@@ -165,7 +165,7 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 - Alerts: note, tip, important, warning, caution
 - Layout: containers, images, flex configurations
 
-### Theme System
+### Theme system
 
 - **Mix 2.0 integration** – Type-safe, composable styles
 - **Google Fonts support** – Custom typography with automatic loading
@@ -173,7 +173,7 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 
 ---
 
-## How It Works
+## How it works
 
 SuperDeck uses a two-stage build pipeline:
 
@@ -184,7 +184,7 @@ This approach gives you fast hot-reload during development while ensuring optimi
 
 ---
 
-## Next Steps
+## Next steps
 
 - Learn how to author slides with the [Markdown Authoring Guide](./markdown-authoring)
 - Dive deeper into block behavior in the [Block Types reference](../reference/block-types)

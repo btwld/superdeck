@@ -22,43 +22,43 @@ import '../examples/button.dart' as remix_button;
 ///
 /// The QR code widget is now a built-in widget available as `@qrcode`.
 Map<String, WidgetDefinition> get demoWidgets => {
-      // Mix examples - wrapped in simple widget definitions
-      'mix-simple-box': _SimpleWidgetDefinition(
-        (context, args) => _DemoWrapper(
-          child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),
-        ),
+  // Mix examples - wrapped in simple widget definitions
+  'mix-simple-box': _SimpleWidgetDefinition(
+    (context, args) => _DemoWrapper(
+      child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),
+    ),
+  ),
+  'mix-variants': _SimpleWidgetDefinition(
+    (context, args) => _DemoWrapper(
+      child: Transform.scale(scale: 3.0, child: mix_variants.Example()),
+    ),
+  ),
+  'mix-animation': _SimpleWidgetDefinition(
+    (context, args) => _DemoWrapper(
+      child: Transform.scale(
+        scale: 3.0,
+        child: mix_animation.SwitchAnimation(),
       ),
-      'mix-variants': _SimpleWidgetDefinition(
-        (context, args) => _DemoWrapper(
-          child: Transform.scale(scale: 3.0, child: mix_variants.Example()),
-        ),
-      ),
-      'mix-animation': _SimpleWidgetDefinition(
-        (context, args) => _DemoWrapper(
-          child: Transform.scale(
-            scale: 3.0,
-            child: mix_animation.SwitchAnimation(),
-          ),
-        ),
-      ),
+    ),
+  ),
 
-      // Naked UI examples
-      'naked-select': _SimpleWidgetDefinition(
-        (context, args) => _DemoWrapper(
-          child: Transform.scale(
-            scale: 2.0,
-            child: naked_select.SimpleSelectExample(),
-          ),
-        ),
+  // Naked UI examples
+  'naked-select': _SimpleWidgetDefinition(
+    (context, args) => _DemoWrapper(
+      child: Transform.scale(
+        scale: 2.0,
+        child: naked_select.SimpleSelectExample(),
       ),
+    ),
+  ),
 
-      // Remix examples
-      'remix-button': _SimpleWidgetDefinition(
-        (context, args) => _DemoWrapper(
-          child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
-        ),
-      ),
-    };
+  // Remix examples
+  'remix-button': _SimpleWidgetDefinition(
+    (context, args) => _DemoWrapper(
+      child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
+    ),
+  ),
+};
 
 /// Simple widget definition for widgets without schemas.
 ///
@@ -66,7 +66,7 @@ Map<String, WidgetDefinition> get demoWidgets => {
 /// Uses raw `Map<String, Object?>` as the argument type (no parsing).
 class _SimpleWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
   final Widget Function(BuildContext context, Map<String, Object?> args)
-      _builder;
+  _builder;
 
   const _SimpleWidgetDefinition(this._builder);
 

@@ -42,9 +42,7 @@ class Deck {
   /// Note: configuration is intentionally excluded from the schema as it's
   /// operational metadata (file paths) not content data. The class still
   /// supports configuration via constructor and fromMap() for backward compat.
-  static final schema = Ack.object({
-    'slides': Ack.list(Slide.schema),
-  });
+  static final schema = Ack.object({'slides': Ack.list(Slide.schema)});
 
   /// Parses a deck from a JSON map with validation.
   ///

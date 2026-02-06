@@ -295,8 +295,9 @@ class StyleSchemas {
 
   /// Validates slide style and transforms to [SlideStyle].
   /// All nested values are already their Flutter types!
-  static final slideStyleSchema =
-      Ack.object(_slideStyleProperties).transform(_createSlideStyle);
+  static final slideStyleSchema = Ack.object(
+    _slideStyleProperties,
+  ).transform(_createSlideStyle);
 
   /// Validates named style and transforms to named tuple.
   static final namedStyleSchema = Ack.object({
@@ -316,18 +317,16 @@ class StyleSchemas {
   /// // config.baseStyle is SlideStyle?
   /// // config.styles is Map<String, SlideStyle>
   /// ```
-  static final styleConfigSchema = Ack.object(
-    {
-      'base': slideStyleSchema.optional(),
-      'styles': Ack.list(namedStyleSchema).optional(),
-    },
-    additionalProperties: true,
-  )
-      .refine(
-        _validateUniqueStyleNames,
-        message: 'Duplicate style names found in styles list',
-      )
-      .transform(_transformToStyleConfig);
+  static final styleConfigSchema =
+      Ack.object({
+            'base': slideStyleSchema.optional(),
+            'styles': Ack.list(namedStyleSchema).optional(),
+          }, additionalProperties: true)
+          .refine(
+            _validateUniqueStyleNames,
+            message: 'Duplicate style names found in styles list',
+          )
+          .transform(_transformToStyleConfig);
 
   // ===========================================================================
   // TRANSFORM FUNCTIONS
@@ -416,8 +415,9 @@ class StyleSchemas {
 
     return BoxDecorationMix(
       color: color,
-      borderRadius:
-          borderRadius != null ? BorderRadiusMix.circular(borderRadius) : null,
+      borderRadius: borderRadius != null
+          ? BorderRadiusMix.circular(borderRadius)
+          : null,
     );
   }
 
@@ -546,8 +546,9 @@ class StyleSchemas {
       headStyle: _read<TextStyle>(data, 'headStyle'),
       bodyStyle: _read<TextStyle>(data, 'bodyStyle'),
       padding: paddingData != null ? _parseEdgeInsets(paddingData) : null,
-      cellPadding:
-          cellPaddingData != null ? _parseEdgeInsets(cellPaddingData) : null,
+      cellPadding: cellPaddingData != null
+          ? _parseEdgeInsets(cellPaddingData)
+          : null,
       cellDecoration: cellDecorationData != null
           ? BoxDecoration(
               color: cellDecorationData['color'] as Color?,
@@ -650,9 +651,7 @@ class StyleSchemas {
 
   /// Creates a named style tuple from validated data.
   /// Note: data is non-null in practice (validation ensures valid input).
-  static ({String name, SlideStyle style}) _createNamedStyle(
-    _JsonMap? data,
-  ) {
+  static ({String name, SlideStyle style}) _createNamedStyle(_JsonMap? data) {
     final name = data!['name'] as String;
     // Create SlideStyle from all properties except 'name'
     final styleData = _JsonMap.from(data)..remove('name');
@@ -685,19 +684,20 @@ class StyleSchemas {
 
   /// Transforms to [StyleConfigResult].
   /// Note: base is SlideStyle, styles is list of named tuples!
-  static StyleConfigResult _transformToStyleConfig(
-    Map<String, dynamic>? data,
-  ) {
+  static StyleConfigResult _transformToStyleConfig(Map<String, dynamic>? data) {
     // 'base' is already a SlideStyle from slideStyleSchema transform
     final baseStyle = data?['base'] as SlideStyle?;
 
     // 'styles' is already a List of named tuples from namedStyleSchema transform
     final styles = switch (data) {
       {'styles': final List stylesList} => {
-          for (final item in stylesList)
-            if (item case (name: final String name, style: final SlideStyle style))
-              name: style,
-        },
+        for (final item in stylesList)
+          if (item case (
+            name: final String name,
+            style: final SlideStyle style,
+          ))
+            name: style,
+      },
       _ => <String, SlideStyle>{},
     };
 

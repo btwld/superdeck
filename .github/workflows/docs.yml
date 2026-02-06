@@ -1,0 +1,32 @@
+name: Documentation
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/**"
+      - "docs.json"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "docs/**"
+      - "docs.json"
+      - ".github/workflows/docs.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install docs.page CLI
+        run: npm install -g @docs.page/cli
+
+      - name: Validate documentation
+        run: npx @docs.page/cli check

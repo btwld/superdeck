@@ -390,11 +390,7 @@ void main() {
 
     group('schema', () {
       test('validates correct structure', () {
-        final valid = {
-          'name': 'test',
-          'extension': 'png',
-          'type': 'thumbnail',
-        };
+        final valid = {'name': 'test', 'extension': 'png', 'type': 'thumbnail'};
 
         expect(GeneratedAsset.schema.safeParse(valid).isOk, isTrue);
       });

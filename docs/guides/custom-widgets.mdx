@@ -1,13 +1,13 @@
 ---
-title: Custom Widgets Guide
+title: Custom widgets guide
 description: Learn how to create and use custom Flutter widgets in SuperDeck presentations
 ---
 
-# Custom Widgets Guide
+# Custom widgets guide
 
 Render custom Flutter widgets from Markdown. Register widgets in `DeckOptions.widgets`, then use them in `slides.md`.
 
-## Markdown Syntax
+## Markdown syntax
 
 Two equivalent forms:
 
@@ -16,9 +16,9 @@ Two equivalent forms:
 
 All properties pass to `WidgetDefinition.parse()` as arguments.
 
-## 1) Create a `WidgetDefinition`
+## Create a `WidgetDefinition`
 
-### Simple: Map args (no validation)
+### Simple: map args (no validation)
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -39,7 +39,7 @@ class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
 }
 ```
 
-### Recommended: Typed args with validation
+### Recommended: typed args with validation
 
 Validate and convert the raw map to a typed args object in `parse()`. Use `Ack` (from `superdeck_core`) for schema validation.
 
@@ -80,7 +80,7 @@ class TwitterDefinition extends WidgetDefinition<TwitterArgs> {
 }
 ```
 
-## 2) Register in `DeckOptions`
+## Register widgets in `DeckOptions`
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -102,7 +102,7 @@ void main() async {
 }
 ```
 
-## 3) Use in `slides.md`
+## Use widgets in `slides.md`
 
 Shorthand:
 
@@ -123,7 +123,7 @@ Explicit:
 }
 ```
 
-## Access Block and Slide Context
+## Access block and slide context
 
 In `WidgetDefinition.build()`:
 

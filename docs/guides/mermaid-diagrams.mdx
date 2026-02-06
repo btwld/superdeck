@@ -1,13 +1,13 @@
 ---
-title: Mermaid Diagrams Guide
+title: Mermaid diagrams guide
 description: Create beautiful diagrams and flowcharts using Mermaid syntax in SuperDeck presentations
 ---
 
-# Mermaid Diagrams Guide
+# Mermaid diagrams guide
 
 SuperDeck includes built-in support for [Mermaid](https://mermaid.js.org/) diagrams, allowing you to create flowcharts, sequence diagrams, class diagrams, and more using simple text syntax. During the build process, mermaid diagrams are automatically rendered to high-quality images.
 
-## Supported Diagram Types
+## Supported diagram types
 
 - **Flowcharts** - Process flows and decision trees
 - **Sequence Diagrams** - Interactions between participants over time
@@ -18,7 +18,7 @@ SuperDeck includes built-in support for [Mermaid](https://mermaid.js.org/) diagr
 - **Gantt Charts** - Project timelines
 - **Entity-Relationship Diagrams** - Database relationships
 
-## Basic Usage
+## Basic usage
 
 Create a mermaid diagram by using a fenced code block with the `mermaid` language:
 
@@ -35,7 +35,7 @@ graph TD
 
 ## Flowcharts
 
-### Basic Flowchart
+### Basic flowchart
 
 ````markdown
 ```mermaid
@@ -58,7 +58,7 @@ flowchart TD
 ```
 ````
 
-### Node Shapes
+### Node shapes
 
 SuperDeck supports all Mermaid node shapes:
 
@@ -81,7 +81,7 @@ flowchart LR
 ```
 ````
 
-### Direction Options
+### Direction options
 
 Control flowchart direction:
 
@@ -97,7 +97,7 @@ flowchart LR
 ```
 ````
 
-## Sequence Diagrams
+## Sequence diagrams
 
 Perfect for showing interactions between different systems or users:
 
@@ -127,7 +127,7 @@ sequenceDiagram
 ```
 ````
 
-### Sequence Diagram Features
+### Sequence diagram features
 
 - **Participants**: Define actors in the sequence
 - **Messages**: Arrows between participants (`->>`, `-->>`, `-x`, `--x`)
@@ -135,7 +135,7 @@ sequenceDiagram
 - **Loops**: Repetitive actions (`loop`, `end`)
 - **Alternatives**: Conditional flows (`alt`, `else`, `end`)
 
-## Class Diagrams
+## Class diagrams
 
 Show object-oriented relationships:
 
@@ -174,7 +174,7 @@ classDiagram
 ```
 ````
 
-## State Diagrams
+## State diagrams
 
 Model state transitions and workflows:
 
@@ -202,7 +202,7 @@ stateDiagram-v2
 ```
 ````
 
-## Pie Charts
+## Pie charts
 
 Visualize data proportions:
 
@@ -216,7 +216,7 @@ pie title SuperDeck Usage by Platform
 ```
 ````
 
-## Journey Maps
+## Journey maps
 
 Show user experience flows:
 
@@ -243,7 +243,7 @@ journey
 ```
 ````
 
-## Gantt Charts
+## Gantt charts
 
 Project timeline visualization:
 
@@ -270,7 +270,7 @@ gantt
 ```
 ````
 
-## Entity-Relationship Diagrams
+## Entity-relationship diagrams
 
 Database schema visualization:
 
@@ -309,13 +309,13 @@ erDiagram
 ```
 ````
 
-## Styling and Theming
+## Styling and theming
 
 SuperDeck renders Mermaid diagrams to PNG during `superdeck build`. By default, the builder uses Mermaid’s `base` theme with a dark set of `themeVariables`.
 
 Some diagram types (for example, `timeline` in dark mode) fall back to Mermaid’s `default` theme to keep axes and grid lines readable.
 
-### Per-Diagram Styling
+### Per-diagram styling
 
 To customize a single diagram, use Mermaid’s `init` directive at the top of the code block:
 
@@ -335,7 +335,7 @@ graph TD
 ```
 ````
 
-## Advanced Features
+## Advanced features
 
 ### Subgraphs
 
@@ -386,7 +386,7 @@ flowchart TD
 ```
 ````
 
-## Build Process
+## Build process
 
 When you run `superdeck build`, mermaid diagrams are automatically:
 
@@ -399,7 +399,7 @@ Generated images are saved to `.superdeck/assets/` and automatically included in
 
 ## Troubleshooting
 
-### Common Issues
+### Common issues
 
 1. **Syntax Errors**: Validate your Mermaid syntax using the [official live editor](https://mermaid.live/)
 2. **Missing Images**: Check build output for any generation errors
@@ -413,16 +413,16 @@ Use verbose mode to see detailed build information:
 superdeck build --verbose
 ```
 
-## Best Practices
+## Best practices
 
-### Design Guidelines
+### Design guidelines
 
 1. **Keep it Simple**: Avoid overly complex diagrams
 2. **Use Colors Wisely**: Consider presentation background when styling
 3. **Readable Text**: Ensure text is large enough for presentation viewing
 4. **Consistent Style**: Use similar styling across all diagrams
 
-### Performance Tips
+### Performance tips
 
 1. **Keep Diagrams Simple**: Avoid overly complex diagrams for better readability
 2. **Test Early**: Build regularly to catch syntax issues

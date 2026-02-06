@@ -20,11 +20,11 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   // Mock path_provider to return a temp directory
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(
-    const MethodChannel('plugins.flutter.io/path_provider'),
-    (MethodCall methodCall) async {
-      return Directory.systemTemp.path;
-    },
-  );
+        const MethodChannel('plugins.flutter.io/path_provider'),
+        (MethodCall methodCall) async {
+          return Directory.systemTemp.path;
+        },
+      );
 
   // Override HTTP to return 200 with minimal data for font requests
   HttpOverrides.global = _MockHttpOverrides();
@@ -58,30 +58,45 @@ class _MockHttpClient implements HttpClient {
   String? userAgent;
 
   @override
-  void addCredentials(Uri url, String realm, HttpClientCredentials credentials) {}
+  void addCredentials(
+    Uri url,
+    String realm,
+    HttpClientCredentials credentials,
+  ) {}
 
   @override
   void addProxyCredentials(
-      String host, int port, String realm, HttpClientCredentials credentials) {}
+    String host,
+    int port,
+    String realm,
+    HttpClientCredentials credentials,
+  ) {}
 
   @override
   set authenticate(
-      Future<bool> Function(Uri url, String scheme, String? realm)? f) {}
+    Future<bool> Function(Uri url, String scheme, String? realm)? f,
+  ) {}
 
   @override
   set authenticateProxy(
-      Future<bool> Function(String host, int port, String scheme, String? realm)?
-          f) {}
+    Future<bool> Function(String host, int port, String scheme, String? realm)?
+    f,
+  ) {}
 
   @override
   set badCertificateCallback(
-      bool Function(X509Certificate cert, String host, int port)? callback) {}
+    bool Function(X509Certificate cert, String host, int port)? callback,
+  ) {}
 
   @override
   set connectionFactory(
-      Future<ConnectionTask<Socket>> Function(
-              Uri url, String? proxyHost, int? proxyPort)?
-          f) {}
+    Future<ConnectionTask<Socket>> Function(
+      Uri url,
+      String? proxyHost,
+      int? proxyPort,
+    )?
+    f,
+  ) {}
 
   @override
   set findProxy(String Function(Uri url)? f) {}
@@ -118,8 +133,11 @@ class _MockHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> open(
-          String method, String host, int port, String path) =>
-      Future.value(_MockHttpClientRequest());
+    String method,
+    String host,
+    int port,
+    String path,
+  ) => Future.value(_MockHttpClientRequest());
 
   @override
   Future<HttpClientRequest> openUrl(String method, Uri url) =>
@@ -186,7 +204,8 @@ class _MockHttpClientRequest implements HttpClientRequest {
   List<Cookie> get cookies => [];
 
   @override
-  Future<HttpClientResponse> get done => Future.value(_MockHttpClientResponse());
+  Future<HttpClientResponse> get done =>
+      Future.value(_MockHttpClientResponse());
 
   @override
   HttpHeaders get headers => _MockHttpHeaders();
@@ -268,8 +287,7 @@ class _MockHttpClientResponse extends Stream<List<int>>
     String? method,
     Uri? url,
     bool? followLoops,
-  ]) =>
-      Future.value(_MockHttpClientResponse());
+  ]) => Future.value(_MockHttpClientResponse());
 
   @override
   StreamSubscription<List<int>> listen(

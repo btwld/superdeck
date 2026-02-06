@@ -8,10 +8,7 @@ void main() {
   group('Deck Model', () {
     group('Deck', () {
       test('creates with required parameters', () {
-        final deck = Deck(
-          slides: const [],
-          configuration: DeckConfiguration(),
-        );
+        final deck = Deck(slides: const [], configuration: DeckConfiguration());
 
         expect(deck.slides, isEmpty);
         expect(deck.configuration, isNotNull);
@@ -22,10 +19,7 @@ void main() {
           const Slide(key: 'slide-1'),
           const Slide(key: 'slide-2'),
         ];
-        final deck = Deck(
-          slides: slides,
-          configuration: DeckConfiguration(),
-        );
+        final deck = Deck(slides: slides, configuration: DeckConfiguration());
 
         expect(deck.slides.length, 2);
         expect(deck.slides[0].key, 'slide-1');
@@ -38,9 +32,7 @@ void main() {
             slides: const [Slide(key: 'original')],
             configuration: DeckConfiguration(),
           );
-          final copy = original.copyWith(
-            slides: const [Slide(key: 'new')],
-          );
+          final copy = original.copyWith(slides: const [Slide(key: 'new')]);
 
           expect(copy.slides[0].key, 'new');
         });
@@ -86,7 +78,9 @@ void main() {
             slides: [
               Slide(
                 key: 'slide-1',
-                sections: [SectionBlock([ContentBlock('Content')])],
+                sections: [
+                  SectionBlock([ContentBlock('Content')]),
+                ],
               ),
             ],
             configuration: DeckConfiguration(),
@@ -116,9 +110,7 @@ void main() {
 
       group('fromMap', () {
         test('deserializes minimal map', () {
-          final map = <String, dynamic>{
-            'slides': <dynamic>[],
-          };
+          final map = <String, dynamic>{'slides': <dynamic>[]};
           final deck = Deck.fromMap(map);
 
           expect(deck.slides, isEmpty);
@@ -141,10 +133,7 @@ void main() {
         test('deserializes map with configuration', () {
           final map = {
             'slides': <dynamic>[],
-            'configuration': {
-              'projectDir': '/test',
-              'outputDir': '.superdeck',
-            },
+            'configuration': {'projectDir': '/test', 'outputDir': '.superdeck'},
           };
           final deck = Deck.fromMap(map);
 
@@ -287,9 +276,7 @@ void main() {
 
       group('schema', () {
         test('validates minimal deck', () {
-          final result = Deck.schema.safeParse({
-            'slides': <dynamic>[],
-          });
+          final result = Deck.schema.safeParse({'slides': <dynamic>[]});
           expect(result.isOk, isTrue);
         });
 

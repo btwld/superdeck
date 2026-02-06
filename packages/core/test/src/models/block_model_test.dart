@@ -193,10 +193,7 @@ void main() {
             ContentAlignment.fromJson('TOPLEFT'),
             ContentAlignment.topLeft,
           );
-          expect(
-            ContentAlignment.fromJson('Center'),
-            ContentAlignment.center,
-          );
+          expect(ContentAlignment.fromJson('Center'), ContentAlignment.center);
           expect(
             ContentAlignment.fromJson('BOTTOM_CENTER'),
             ContentAlignment.bottomCenter,
@@ -368,10 +365,7 @@ void main() {
         });
 
         test('deserializes new block type', () {
-          final map = {
-            'type': 'block',
-            'content': 'New format',
-          };
+          final map = {'type': 'block', 'content': 'New format'};
           final block = ContentBlock.fromMap(map);
 
           expect(block.content, 'New format');
@@ -862,8 +856,9 @@ void main() {
       });
 
       test('copyWith can be chained via multiple calls', () {
-        final block =
-            ContentBlock('Test').copyWith(flex: 3).copyWith(scrollable: true);
+        final block = ContentBlock(
+          'Test',
+        ).copyWith(flex: 3).copyWith(scrollable: true);
 
         expect(block.flex, 3);
         expect(block.scrollable, true);

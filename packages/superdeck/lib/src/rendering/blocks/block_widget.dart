@@ -53,14 +53,12 @@ class _BlockContainerState extends State<_BlockContainer> {
 
     Widget content = InheritedData(
       data: blockData,
-      child: Box(
-        styleSpec: spec.blockContainer,
-        child: widget.child,
-      ),
+      child: Box(styleSpec: spec.blockContainer, child: widget.child),
     );
 
     // Apply scrolling or wrap (for clipping non-scrollable content)
-    final shouldScroll = widget.block.scrollable && !widget.configuration.isExporting;
+    final shouldScroll =
+        widget.block.scrollable && !widget.configuration.isExporting;
     content = shouldScroll
         ? SingleChildScrollView(child: content)
         : Wrap(clipBehavior: Clip.hardEdge, children: [content]);
@@ -185,11 +183,7 @@ class CustomBlockWidget extends StatelessWidget {
 
 /// Section widget that layouts child blocks horizontally.
 class SectionWidget extends StatelessWidget {
-  const SectionWidget({
-    super.key,
-    required this.section,
-    required this.size,
-  });
+  const SectionWidget({super.key, required this.section, required this.size});
 
   final SectionBlock section;
   final Size size;
@@ -241,10 +235,7 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
       // Add debug info overlay if needed
       if (configuration.debug) {
         blockWidget = Stack(
-          children: [
-            blockWidget,
-            _renderDebugInfo(block, blockSize),
-          ],
+          children: [blockWidget, _renderDebugInfo(block, blockSize)],
         );
       }
 

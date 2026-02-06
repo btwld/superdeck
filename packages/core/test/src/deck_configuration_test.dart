@@ -71,10 +71,7 @@ void main() {
         test('is inside superdeckDir', () {
           final config = DeckConfiguration();
 
-          expect(
-            config.deckJson.path,
-            contains(config.superdeckDir.path),
-          );
+          expect(config.deckJson.path, contains(config.superdeckDir.path));
           expect(config.deckJson.path, endsWith('superdeck.json'));
         });
       });
@@ -83,10 +80,7 @@ void main() {
         test('is inside superdeckDir', () {
           final config = DeckConfiguration();
 
-          expect(
-            config.deckFullJson.path,
-            contains(config.superdeckDir.path),
-          );
+          expect(config.deckFullJson.path, contains(config.superdeckDir.path));
           expect(config.deckFullJson.path, endsWith('superdeck_full.json'));
         });
       });
@@ -107,10 +101,7 @@ void main() {
         test('is inside superdeckDir', () {
           final config = DeckConfiguration();
 
-          expect(
-            config.assetsDir.path,
-            contains(config.superdeckDir.path),
-          );
+          expect(config.assetsDir.path, contains(config.superdeckDir.path));
         });
       });
 
@@ -118,14 +109,8 @@ void main() {
         test('is inside superdeckDir', () {
           final config = DeckConfiguration();
 
-          expect(
-            config.assetsRefJson.path,
-            contains(config.superdeckDir.path),
-          );
-          expect(
-            config.assetsRefJson.path,
-            endsWith('generated_assets.json'),
-          );
+          expect(config.assetsRefJson.path, contains(config.superdeckDir.path));
+          expect(config.assetsRefJson.path, endsWith('generated_assets.json'));
         });
       });
 

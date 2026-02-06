@@ -60,11 +60,7 @@ final class DeckConfiguration {
       File(p.join(superdeckDir.path, 'superdeck_full.json'));
 
   Directory get assetsDir {
-    final validated = _validateRelativePath(
-      assetsPath,
-      'assets',
-      'assetsPath',
-    );
+    final validated = _validateRelativePath(assetsPath, 'assets', 'assetsPath');
     return Directory(p.join(superdeckDir.path, validated));
   }
 

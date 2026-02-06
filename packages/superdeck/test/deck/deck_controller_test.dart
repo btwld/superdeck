@@ -226,13 +226,10 @@ void main() {
       test('updateOptions does not trigger if options unchanged', () {
         const options = DeckOptions();
         // Verify idempotent behavior - calling twice with same options doesn't throw
-        expect(
-          () {
-            controller.updateOptions(options);
-            controller.updateOptions(options);
-          },
-          returnsNormally,
-        );
+        expect(() {
+          controller.updateOptions(options);
+          controller.updateOptions(options);
+        }, returnsNormally);
       });
     });
 

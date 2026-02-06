@@ -193,7 +193,9 @@ void main() {
 
       test('throws on backslash traversal in file URI', () {
         expect(
-          () => UriValidator.validate(r'file:///C:\Users\..\..\..\Windows\System32'),
+          () => UriValidator.validate(
+            r'file:///C:\Users\..\..\..\Windows\System32',
+          ),
           throwsA(
             isA<FormatException>().having(
               (e) => e.message,
@@ -323,13 +325,17 @@ void main() {
         // HTTP URLs are exempt from traversal checks because:
         // 1. The server controls what path resolves to
         // 2. Browsers already handle this safely
-        final uri = UriValidator.validate('http://example.com/../../../etc/passwd');
+        final uri = UriValidator.validate(
+          'http://example.com/../../../etc/passwd',
+        );
         expect(uri, isNotNull);
         expect(uri!.scheme, 'http');
       });
 
       test('allows .. in HTTPS URL path (intentionally permissive)', () {
-        final uri = UriValidator.validate('https://example.com/../../../etc/passwd');
+        final uri = UriValidator.validate(
+          'https://example.com/../../../etc/passwd',
+        );
         expect(uri, isNotNull);
         expect(uri!.scheme, 'https');
       });

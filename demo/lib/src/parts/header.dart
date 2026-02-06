@@ -17,8 +17,7 @@ class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (slide.options.title != null)
-            Text(slide.options.title!),
+          if (slide.options.title != null) Text(slide.options.title!),
           const Spacer(),
           Text('${index + 1}'),
         ],

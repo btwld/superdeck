@@ -15,7 +15,9 @@ void main() {
       });
 
       test('creates with all parameters', () {
-        final sections = [SectionBlock([ContentBlock('Content')])];
+        final sections = [
+          SectionBlock([ContentBlock('Content')]),
+        ];
         final comments = ['Speaker note 1', 'Speaker note 2'];
         final options = const SlideOptions(title: 'Title', style: 'custom');
 
@@ -51,7 +53,9 @@ void main() {
 
         test('copies with new sections', () {
           const original = Slide(key: 'key');
-          final newSections = [SectionBlock([ContentBlock('New')])];
+          final newSections = [
+            SectionBlock([ContentBlock('New')]),
+          ];
           final copy = original.copyWith(sections: newSections);
 
           expect(copy.sections.length, 1);
@@ -68,7 +72,9 @@ void main() {
           final original = Slide(
             key: 'key',
             options: const SlideOptions(title: 'Title'),
-            sections: [SectionBlock([ContentBlock('Content')])],
+            sections: [
+              SectionBlock([ContentBlock('Content')]),
+            ],
             comments: ['Note'],
           );
           final copy = original.copyWith();
@@ -241,8 +247,7 @@ void main() {
             error: Exception('Details'),
           );
 
-          final content =
-              (slide.sections[0].blocks[0] as ContentBlock).content;
+          final content = (slide.sections[0].blocks[0] as ContentBlock).content;
           expect(content.contains('Parse Error'), isTrue);
           expect(content.contains('Could not parse slide'), isTrue);
         });
@@ -254,8 +259,7 @@ void main() {
             error: Exception('Detailed error info'),
           );
 
-          final content =
-              (slide.sections[0].blocks[0] as ContentBlock).content;
+          final content = (slide.sections[0].blocks[0] as ContentBlock).content;
           expect(content.contains('Detailed error info'), isTrue);
           expect(content.contains('```dart'), isTrue);
         });
@@ -304,11 +308,15 @@ void main() {
         test('different sections make slides unequal', () {
           final slide1 = Slide(
             key: 'key',
-            sections: [SectionBlock([ContentBlock('A')])],
+            sections: [
+              SectionBlock([ContentBlock('A')]),
+            ],
           );
           final slide2 = Slide(
             key: 'key',
-            sections: [SectionBlock([ContentBlock('B')])],
+            sections: [
+              SectionBlock([ContentBlock('B')]),
+            ],
           );
 
           expect(slide1, isNot(slide2));
@@ -483,10 +491,7 @@ void main() {
         });
 
         test('parses map with additional properties', () {
-          final options = SlideOptions.parse({
-            'title': 'T',
-            'extra': 'value',
-          });
+          final options = SlideOptions.parse({'title': 'T', 'extra': 'value'});
 
           expect(options.title, 'T');
           expect(options.args['extra'], 'value');
