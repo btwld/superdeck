@@ -1,9 +1,11 @@
 ---
-title: Getting Started
+title: Getting started
 description: Set up SuperDeck in your Flutter project and create your first presentation
+diataxis: tutorial
+audience: new SuperDeck users
 ---
 
-# Getting Started
+# Getting started
 
 Set up SuperDeck in your Flutter project and create your first presentation.
 
@@ -15,13 +17,13 @@ Set up SuperDeck in your Flutter project and create your first presentation.
 
 ## Installation
 
-### 1. Install SuperDeck CLI
+### Install SuperDeck CLI
 
 ```bash
 dart pub global activate superdeck_cli
 ```
 
-### 2. Set up your project
+### Set up your project
 
 In your Flutter project directory:
 
@@ -36,13 +38,13 @@ This creates:
 - macOS entitlements for network access
 - Custom `index.html` for web with loading indicator
 
-### 3. Add SuperDeck dependency
+### Add SuperDeck dependency
 
 ```bash
 flutter pub add superdeck
 ```
 
-### 4. Initialize SuperDeck in your app
+### Initialize SuperDeck in your app
 
 Update your `main.dart`:
 
@@ -63,7 +65,7 @@ void main() async {
 }
 ```
 
-## Your First Presentation
+## Your first presentation
 
 Edit the generated `slides.md` file:
 
@@ -105,7 +107,7 @@ Create beautiful presentations using:
 ---
 ```
 
-## Build Your Presentation
+## Build your presentation
 
 ```bash
 # Build once
@@ -115,13 +117,13 @@ superdeck build
 superdeck build --watch
 ```
 
-## Run Your App
+## Run your app
 
 ```bash
 flutter run
 ```
 
-## Development Workflow
+## Development workflow
 
 Use two terminals:
 
@@ -137,7 +139,7 @@ flutter run
 
 Edit `slides.md`, and the CLI rebuilds automatically. Hot reload Flutter to see changes.
 
-## File Structure
+## File structure
 
 After setup, your project will have:
 
@@ -153,7 +155,7 @@ your-flutter-project/
     └── main.dart             # Your Flutter app
 ```
 
-## Next Steps
+## Next steps
 
 - **[Block Layouts Tutorial](/tutorials/block-layouts)** - Learn SuperDeck's layout system
 - **[First Presentation Tutorial](/tutorials/first-presentation)** - Create a complete presentation

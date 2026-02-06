@@ -35,7 +35,7 @@
   },
   "sidebar": [
     {
-      "group": "Overview",
+      "group": "Home",
       "pages": [
         {
           "title": "Home",
@@ -44,57 +44,44 @@
       ]
     },
     {
-      "group": "Getting Started",
-      "pages": [
-        {
-          "title": "Getting Started",
-          "href": "/getting-started"
-        }
-      ]
-    },
-    {
       "group": "Tutorials",
       "pages": [
         {
-          "title": "Block Layouts",
-          "href": "/tutorials/block-layouts"
+          "title": "Getting started",
+          "href": "/getting-started"
         },
         {
-          "title": "First Presentation",
+          "title": "First presentation",
           "href": "/tutorials/first-presentation"
         }
       ]
     },
     {
-      "group": "How-to Guides",
+      "group": "How-to guides",
       "pages": [
         {
-          "title": "SuperDeck Overview",
-          "href": "/guides/superdeck-overview"
+          "title": "Block layouts",
+          "href": "/tutorials/block-layouts"
         },
         {
-          "title": "Markdown Authoring",
-          "href": "/guides/markdown-authoring"
-        },
-        {
-          "title": "CLI Reference",
-          "href": "/guides/cli-reference"
-        },
-        {
-          "title": "Custom Widgets",
+          "title": "Custom widgets",
           "href": "/guides/custom-widgets"
         },
         {
-          "title": "Custom Slide Parts",
+          "title": "Markdown authoring",
+          "href": "/guides/markdown-authoring"
+        },
+        {
+          "title": "Mermaid diagrams",
+          "href": "/guides/mermaid-diagrams"
+        },
+        {
+          "title": "Slide parts",
           "href": "/guides/slide-parts"
         },
         {
-          "title": "Widget Size Guide",
+          "title": "Widget size measurement",
           "href": "/guides/widget-size-guide"
-        },
-        {
-          "title": "Mermaid Diagrams",
-          "href": "/guides/mermaid-diagrams"
         }
       ]
     },
@@ -102,18 +89,30 @@
       "group": "Reference",
       "pages": [
         {
-          "title": "Block Types",
+          "title": "CLI reference",
+          "href": "/guides/cli-reference"
+        },
+        {
+          "title": "Block types",
           "href": "/reference/block-types"
         },
         {
           "title": "DeckOptions API",
           "href": "/reference/deck-options"
+        },
+        {
+          "title": "Markdown syntax",
+          "href": "/reference/markdown-syntax"
         }
       ]
     },
     {
-      "group": "Examples",
+      "group": "Explanation",
       "pages": [
+        {
+          "title": "SuperDeck overview",
+          "href": "/guides/superdeck-overview"
+        },
         {
           "title": "Examples",
           "href": "/examples"

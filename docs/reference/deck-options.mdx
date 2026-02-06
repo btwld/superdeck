@@ -1,9 +1,11 @@
 ---
-title: DeckOptions Reference
+title: DeckOptions reference
 description: Complete API reference for configuring SuperDeck presentations
+diataxis: reference
+audience: Flutter developers configuring SuperDeck
 ---
 
-# DeckOptions Reference
+# DeckOptions reference
 
 `DeckOptions` configures `SuperDeckApp` styling, custom widgets, slide parts, and debug visuals.
 
@@ -86,7 +88,7 @@ Or shorthand:
 }
 ```
 
-#### WidgetDefinition example (simple Map args)
+#### WidgetDefinition example (simple map args)
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -148,7 +150,7 @@ DeckOptions(
 )
 ```
 
-## Complete Configuration Example
+## Complete configuration example
 
 ```dart
 import 'package:flutter/material.dart';
@@ -179,7 +181,7 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## Best Practices
+## Best practices
 
 ### Styling
 1. Start with `baseStyle` for defaults
@@ -187,7 +189,7 @@ class MyApp extends StatelessWidget {
 3. Maintain consistent palette and typography
 4. Test across different screen sizes
 
-### Custom Widgets
+### Custom widgets
 1. Validate in `parse()` early
 2. Provide explicit defaults
 3. Throw helpful errors (rendered on-slide)

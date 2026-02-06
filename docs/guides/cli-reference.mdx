@@ -1,9 +1,11 @@
 ---
-title: CLI Reference
+title: CLI reference
 description: Complete reference for SuperDeck CLI commands and options
+diataxis: reference
+audience: CLI users
 ---
 
-# CLI Reference
+# CLI reference
 
 The SuperDeck CLI provides tools for setting up, building, and publishing presentations. This reference covers all commands and options.
 
@@ -13,7 +15,7 @@ The SuperDeck CLI provides tools for setting up, building, and publishing presen
 dart pub global activate superdeck_cli
 ```
 
-## Global Options
+## Global options
 
 These options work with all commands:
 
@@ -112,7 +114,7 @@ Print the SuperDeck CLI version.
 superdeck version
 ```
 
-## File Structure
+## File structure
 
 After running CLI commands, your project will have:
 
@@ -134,7 +136,7 @@ project/
 
 ## Configuration
 
-### pubspec.yaml Updates
+### pubspec.yaml updates
 
 The CLI automatically adds this to your `pubspec.yaml`:
 
@@ -145,7 +147,7 @@ flutter:
     - .superdeck/assets/
 ```
 
-### macOS Entitlements
+### macOS entitlements
 
 For macOS projects, `superdeck setup` updates `macos/Runner/Release.entitlements` and `macos/Runner/DebugProfile.entitlements` to allow network access (required for remote images and DartPad):
 
@@ -158,9 +160,9 @@ For macOS projects, `superdeck setup` updates `macos/Runner/Release.entitlements
 
 In debug builds, it also enables `com.apple.security.network.server` and `com.apple.security.cs.allow-jit`.
 
-## Common Workflows
+## Common workflows
 
-### Development Workflow
+### Development workflow
 
 ```bash
 # Terminal 1: Start CLI in watch mode
@@ -170,7 +172,7 @@ superdeck build --watch
 flutter run
 ```
 
-### Publishing Workflow
+### Publishing workflow
 
 ```bash
 # Build and test locally
@@ -181,7 +183,7 @@ flutter run -d web
 superdeck publish
 ```
 
-### Troubleshooting Workflow
+### Troubleshooting workflow
 
 ```bash
 # Verbose output for debugging
@@ -194,7 +196,7 @@ superdeck build --force-rebuild
 superdeck publish --dry-run
 ```
 
-## Exit Codes
+## Exit codes
 
 | Code | Description |
 |------|-------------|
@@ -205,9 +207,9 @@ superdeck publish --dry-run
 | 70 | Command failed |
 | 74 | File system error |
 
-## Common Issues
+## Common issues
 
-### Build Fails
+### Build fails
 
 **Problem:** `Error: slides.md not found`
 **Solution:** Ensure `slides.md` exists in project root or run `superdeck setup`
@@ -215,7 +217,7 @@ superdeck publish --dry-run
 **Problem:** `Error: Invalid markdown syntax`  
 **Solution:** Check your markdown syntax, especially block definitions and frontmatter
 
-### Publish Fails
+### Publish fails
 
 **Problem:** `Error: Not a git repository`
 **Solution:** Initialize git repository: `git init && git add . && git commit -m "Initial commit"`
@@ -223,7 +225,7 @@ superdeck publish --dry-run
 **Problem:** `Error: No changes to commit`
 **Solution:** This is informational. Make a change (or run `superdeck build --force-rebuild`) and publish again.
 
-### Watch Mode Issues
+### Watch mode issues
 
 **Problem:** Changes not detected
 **Solution:** Ensure you're editing `slides.md` in the project root
@@ -231,7 +233,7 @@ superdeck publish --dry-run
 **Problem:** Build errors in watch mode
 **Solution:** Fix the error and save again; watch mode will retry automatically
 
-## Performance Tips
+## Performance tips
 
 1. **Use watch mode** - `superdeck build --watch` is optimized for development
 2. **Cache remote images** - Remote images are cached at runtime by `cached_network_image`
@@ -240,7 +242,7 @@ superdeck publish --dry-run
 
 ## Integration with CI/CD
 
-### GitHub Actions Example
+### GitHub Actions example
 
 ```yaml
 name: Deploy SuperDeck
