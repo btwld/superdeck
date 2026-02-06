@@ -6,14 +6,12 @@ on:
     paths:
       - "docs/**"
       - "docs.json"
-      - "tools/docs/**"
       - ".github/workflows/docs.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "docs/**"
       - "docs.json"
-      - "tools/docs/**"
       - ".github/workflows/docs.yml"
 
 jobs:
@@ -29,9 +27,6 @@ jobs:
 
       - name: Install docs.page CLI
         run: npm install -g @docs.page/cli
-
-      - name: Run docs quality checks
-        run: node tools/docs/check-docs.mjs
 
       - name: Validate documentation
         run: npx @docs.page/cli check

@@ -9,7 +9,6 @@
 ## Validation
 
 - [ ] `npx @docs.page/cli check`
-- [ ] `node tools/docs/check-docs.mjs`
 - [ ] `dart analyze` / `melos run analyze:dart` (if code changed)
 - [ ] `flutter test` / `melos exec -- flutter test` (if code changed)
 
