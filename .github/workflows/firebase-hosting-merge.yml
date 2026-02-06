@@ -33,6 +33,11 @@ jobs:
           flutter-version: ${{ steps.fvm-config-action.outputs.FLUTTER_VERSION }}
           channel: ${{ steps.fvm-config-action.outputs.FLUTTER_CHANNEL }}
 
+      - name: Align Melos SDK path
+        run: |
+          mkdir -p .fvm
+          ln -sfn "$FLUTTER_ROOT" .fvm/flutter_sdk
+
       - name: Setup Melos
         uses: bluefireteam/melos-action@v3
 
