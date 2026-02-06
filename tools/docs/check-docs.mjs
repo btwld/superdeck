@@ -7,8 +7,7 @@ const ROOT = process.cwd();
 const DOCS_DIR = path.join(ROOT, 'docs');
 const DOCS_JSON = path.join(ROOT, 'docs.json');
 
-const REQUIRED_FRONTMATTER = ['title', 'description', 'diataxis', 'audience'];
-const DIATAXIS_ALLOWED = new Set(['tutorial', 'how-to', 'reference', 'explanation']);
+const REQUIRED_FRONTMATTER = ['title', 'description'];
 
 const PROPER_NOUNS = new Set([
   'SuperDeck',
@@ -29,27 +28,7 @@ const PROPER_NOUNS = new Set([
   'CI/CD',
   'Dart',
   'Markdown',
-  'Diataxis',
-  'Diátaxis',
   'Actions',
-]);
-
-const EXPECTED_DIATAXIS_BY_FILE = new Map([
-  ['docs/index.mdx', 'explanation'],
-  ['docs/getting-started.mdx', 'tutorial'],
-  ['docs/examples.mdx', 'explanation'],
-  ['docs/tutorials/first-presentation.mdx', 'tutorial'],
-  ['docs/tutorials/block-layouts.mdx', 'how-to'],
-  ['docs/guides/custom-widgets.mdx', 'how-to'],
-  ['docs/guides/slide-parts.mdx', 'how-to'],
-  ['docs/guides/widget-size-guide.mdx', 'how-to'],
-  ['docs/guides/markdown-authoring.mdx', 'how-to'],
-  ['docs/guides/mermaid-diagrams.mdx', 'how-to'],
-  ['docs/guides/cli-reference.mdx', 'reference'],
-  ['docs/guides/superdeck-overview.mdx', 'explanation'],
-  ['docs/reference/block-types.mdx', 'reference'],
-  ['docs/reference/deck-options.mdx', 'reference'],
-  ['docs/reference/markdown-syntax.mdx', 'reference'],
 ]);
 
 const errors = [];
@@ -227,21 +206,6 @@ async function main() {
       }
     }
 
-    if (attrs.diataxis && !DIATAXIS_ALLOWED.has(attrs.diataxis)) {
-      addError(
-        relPath,
-        `Invalid \`diataxis\` value \`${attrs.diataxis}\`. Allowed: ${[...DIATAXIS_ALLOWED].join(', ')}`,
-      );
-    }
-
-    const expected = EXPECTED_DIATAXIS_BY_FILE.get(relPath);
-    if (expected && attrs.diataxis && attrs.diataxis !== expected) {
-      addError(
-        relPath,
-        `Expected \`diataxis: ${expected}\` for this page mapping, found \`${attrs.diataxis}\`.`,
-      );
-    }
-
     const { headings, absoluteLinks } = extractHeadingsAndLinks(content);
 
     const h1s = headings.filter((h) => h.level === 1);
@@ -268,7 +232,7 @@ async function main() {
       }
     }
 
-    if (attrs.diataxis === 'reference') {
+    if (relPath.startsWith('docs/reference/') || relPath === 'docs/guides/cli-reference.mdx') {
       const refStepMatch = content.match(/\bStep\s+\d+\b/i);
       if (refStepMatch) {
         addError(relPath, 'Reference pages must not contain procedural "Step N" language.');

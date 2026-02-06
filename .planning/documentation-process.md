@@ -7,7 +7,7 @@ This document is the source of truth for how SuperDeck documentation is written,
 Goals:
 
 - Keep docs aligned with the codebase and CLI behavior.
-- Organize docs by user need using Diataxis.
+- Organize docs by user need (tutorials, how-to, reference, explanation).
 - Apply consistent technical writing style based on the Google developer style guide.
 - Enforce quality with CI checks.
 
@@ -16,7 +16,7 @@ Goals:
 - Diataxis: https://diataxis.fr/
 - Google developer documentation style guide: https://developers.google.com/style/highlights
 
-## Information architecture (Diataxis)
+## Information architecture
 
 SuperDeck docs are grouped by intent, not by implementation details.
 
@@ -55,15 +55,6 @@ Use explanation docs to build understanding and context.
 - `docs/guides/superdeck-overview.mdx`
 - `docs/examples.mdx`
 
-## Frontmatter contract
-
-Every docs page must define:
-
-- `title`
-- `description`
-- `diataxis` (`tutorial`, `how-to`, `reference`, `explanation`)
-- `audience`
-
 ## Writing rules (Google style, adapted)
 
 ### Voice and tense
@@ -94,42 +85,9 @@ Every docs page must define:
 - Keep reference pages declarative and complete.
 - Avoid procedural language (`Step 1`, “follow these steps”).
 
-## Page templates
-
-### Tutorial template
-
-1. Outcome and what the reader will build
-2. Prerequisites
-3. Linear steps with validation points
-4. Complete end-state example
-5. Next steps
-
-### How-to template
-
-1. Task statement
-2. Prerequisites
-3. Procedure
-4. Verification
-5. Troubleshooting
-
-### Reference template
-
-1. Scope
-2. API/syntax/options table
-3. Defaults and constraints
-4. Edge cases and compatibility notes
-
-### Explanation template
-
-1. Problem space / context
-2. Concepts and mental model
-3. Tradeoffs
-4. Links to tutorials/how-to/reference
-
 ## Review checklist (required for docs PRs)
 
-- [ ] Each changed page declares `diataxis` and `audience`.
-- [ ] Each page matches one primary Diataxis intent.
+- [ ] Each changed page has a single clear intent.
 - [ ] Headings are sentence case.
 - [ ] No numbered headings.
 - [ ] Internal absolute links resolve.
@@ -148,8 +106,8 @@ Docs CI validates:
 
 When adding a new docs page:
 
-1. Pick a Diataxis type first.
-2. Add page frontmatter with required keys.
-3. Place page in the matching sidebar group in `docs.json`.
+1. Choose the page intent first (tutorial/how-to/reference/explanation).
+2. Add frontmatter keys required by docs.page (`title`, `description`).
+3. Place the page in the matching sidebar group in `docs.json`.
 4. Link from at least one related page.
 5. Run docs checks locally before opening a PR.

@@ -15,8 +15,8 @@
 
 ## Docs checklist (required when docs changed)
 
-- [ ] Every changed docs page includes frontmatter: `title`, `description`, `diataxis`, `audience`
-- [ ] Each changed page matches one Diataxis intent (`tutorial`, `how-to`, `reference`, `explanation`)
+- [ ] Every changed docs page includes frontmatter: `title`, `description`
+- [ ] Each changed page has a single clear intent (`tutorial`, `how-to`, `reference`, or `explanation`)
 - [ ] Headings use sentence case
 - [ ] No numbered headings (for example, `## Step 1`)
 - [ ] Internal links were verified
