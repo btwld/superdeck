@@ -2,11 +2,6 @@
   "$schema": "https://docs.page/schema.json",
   "name": "SuperDeck",
   "description": "Create beautiful presentations with Flutter and Markdown",
-  "socialPreview": "/assets/logo.png",
-  "logo": {
-    "light": "/assets/logo.png",
-    "dark": "/assets/logo.png"
-  },
   "theme": {
     "defaultTheme": "light",
     "primary": "#2563eb",
