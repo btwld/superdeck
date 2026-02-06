@@ -10,9 +10,9 @@ SuperDeck renders Markdown slides in Flutter.
 In your Flutter project:
 
 ```bash
-flutter pub add superdeck
 dart pub global activate superdeck_cli
 superdeck setup
+flutter pub add superdeck
 ```
 
 ## Initialize
@@ -73,4 +73,4 @@ https://github.com/leoafarias/superdeck/blob/main/docs/guides/custom-widgets.mdx
 
 ## License
 
-BSD 3-Clause. See `LICENSE` in the repository root.
+BSD 3-Clause. See `LICENSE`.

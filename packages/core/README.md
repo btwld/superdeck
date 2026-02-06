@@ -37,4 +37,4 @@ Future<void> main() async {
 
 ## License
 
-BSD 3-Clause. See `LICENSE` in the repository root.
+BSD 3-Clause. See `LICENSE`.

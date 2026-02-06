@@ -1,8 +1,9 @@
-### Unreleased
+## 1.0.0
 
-* Roll back experimental setext-heading hero parsing; ATX headers continue to use the shared helper.
-* Fix image hero-tag parsing to avoid inline parser overruns and keep Flutter/core paths aligned.
-* Document the shared `{.hero}` helper and scope so future contributions stay consistent.
+* First stable release of SuperDeck
+* Roll back experimental setext-heading hero parsing; ATX headers continue to use the shared helper
+* Fix image hero-tag parsing to avoid inline parser overruns and keep Flutter/core paths aligned
+* Document the shared `{.hero}` helper and scope so future contributions stay consistent
 
 ### 0.0.4
 
