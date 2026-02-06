@@ -1,101 +1,124 @@
 {
+  "$schema": "https://docs.page/schema.json",
   "name": "SuperDeck",
   "description": "Create beautiful presentations with Flutter and Markdown",
-  "logo": "/assets/logo.png",
-  "theme": {
-    "light": {
-      "primary": "#2563eb"
-    },
-    "dark": {
-      "primary": "#3b82f6"
-    }
+  "socialPreview": "/assets/logo.png",
+  "logo": {
+    "light": "/assets/logo.png",
+    "dark": "/assets/logo.png"
   },
-  "navigation": [
-    {
-      "title": "Home",
-      "path": "/"
-    },
-    {
-      "title": "Getting Started",
-      "path": "/getting-started"
-    },
-    {
-      "title": "Tutorials",
-      "children": [
-        {
-          "title": "Block Layouts",
-          "path": "/tutorials/block-layouts"
-        },
-        {
-          "title": "First Presentation",
-          "path": "/tutorials/first-presentation"
-        }
-      ]
-    },
-    {
-      "title": "How-to Guides",
-      "children": [
-        {
-          "title": "SuperDeck Overview",
-          "path": "/guides/superdeck-overview"
-        },
-        {
-          "title": "Markdown Authoring",
-          "path": "/guides/markdown-authoring"
-        },
-        {
-          "title": "CLI Reference",
-          "path": "/guides/cli-reference"
-        },
-        {
-          "title": "Custom Widgets",
-          "path": "/guides/custom-widgets"
-        },
-        {
-          "title": "Custom Slide Parts",
-          "path": "/guides/slide-parts"
-        },
-        {
-          "title": "Widget Size Guide",
-          "path": "/guides/widget-size-guide"
-        },
-        {
-          "title": "Mermaid Diagrams",
-          "path": "/guides/mermaid-diagrams"
-        }
-      ]
-    },
-    {
-      "title": "Reference",
-      "children": [
-        {
-          "title": "Block Types",
-          "path": "/reference/block-types"
-        },
-        {
-          "title": "DeckOptions API",
-          "path": "/reference/deck-options"
-        }
-      ]
-    },
-    {
-      "title": "Examples",
-      "path": "/examples"
-    }
-  ],
-  "footer": {
+  "theme": {
+    "defaultTheme": "light",
+    "primary": "#2563eb",
+    "primaryDark": "#3b82f6"
+  },
+  "header": {
+    "showName": true,
+    "showThemeToggle": true,
+    "showGitHubCard": true,
     "links": [
       {
-        "title": "GitHub",
-        "href": "https://github.com/leoafarias/superdeck"
-      },
-      {
         "title": "Pub.dev",
-        "href": "https://pub.dev/packages/superdeck"
+        "href": "https://pub.dev/packages/superdeck",
+        "cta": true
       }
     ]
   },
   "social": {
-    "github": "leoafarias/superdeck"
-  }
+    "github": "btwld/superdeck"
+  },
+  "search": {},
+  "content": {
+    "showPageTitle": true,
+    "zoomImages": true,
+    "automaticallyInferNextPrevious": true
+  },
+  "sidebar": [
+    {
+      "group": "Overview",
+      "pages": [
+        {
+          "title": "Home",
+          "href": "/"
+        }
+      ]
+    },
+    {
+      "group": "Getting Started",
+      "pages": [
+        {
+          "title": "Getting Started",
+          "href": "/getting-started"
+        }
+      ]
+    },
+    {
+      "group": "Tutorials",
+      "pages": [
+        {
+          "title": "Block Layouts",
+          "href": "/tutorials/block-layouts"
+        },
+        {
+          "title": "First Presentation",
+          "href": "/tutorials/first-presentation"
+        }
+      ]
+    },
+    {
+      "group": "How-to Guides",
+      "pages": [
+        {
+          "title": "SuperDeck Overview",
+          "href": "/guides/superdeck-overview"
+        },
+        {
+          "title": "Markdown Authoring",
+          "href": "/guides/markdown-authoring"
+        },
+        {
+          "title": "CLI Reference",
+          "href": "/guides/cli-reference"
+        },
+        {
+          "title": "Custom Widgets",
+          "href": "/guides/custom-widgets"
+        },
+        {
+          "title": "Custom Slide Parts",
+          "href": "/guides/slide-parts"
+        },
+        {
+          "title": "Widget Size Guide",
+          "href": "/guides/widget-size-guide"
+        },
+        {
+          "title": "Mermaid Diagrams",
+          "href": "/guides/mermaid-diagrams"
+        }
+      ]
+    },
+    {
+      "group": "Reference",
+      "pages": [
+        {
+          "title": "Block Types",
+          "href": "/reference/block-types"
+        },
+        {
+          "title": "DeckOptions API",
+          "href": "/reference/deck-options"
+        }
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        {
+          "title": "Examples",
+          "href": "/examples"
+        }
+      ]
+    }
+  ]
 }
