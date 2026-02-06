@@ -285,9 +285,7 @@ Some paragraph text.
         expect(
           () => tokenizer.tokenize(text),
           throwsA(
-            predicate<DeckFormatException>(
-              (e) => e.message.contains('myTag'),
-            ),
+            predicate<DeckFormatException>((e) => e.message.contains('myTag')),
           ),
         );
       });
@@ -379,10 +377,7 @@ not closed''';
         // Use clearly invalid YAML syntax
         const text = '@tag { key: [unclosed }';
 
-        expect(
-          () => tokenizer.tokenize(text),
-          throwsA(isA<FormatException>()),
-        );
+        expect(() => tokenizer.tokenize(text), throwsA(isA<FormatException>()));
       });
 
       test('throws DeckFormatException for unclosed braces', () {
@@ -391,9 +386,7 @@ not closed''';
         expect(
           () => tokenizer.tokenize(text),
           throwsA(
-            predicate<DeckFormatException>(
-              (e) => e.message.contains('myTag'),
-            ),
+            predicate<DeckFormatException>((e) => e.message.contains('myTag')),
           ),
         );
       });

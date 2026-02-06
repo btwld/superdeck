@@ -76,7 +76,9 @@ class StyleConfigLoader {
     );
 
     if (yamlConfig == null) {
-      _logger.fine('No YAML style configuration loaded, using code options only');
+      _logger.fine(
+        'No YAML style configuration loaded, using code options only',
+      );
       return codeOptions;
     }
 
@@ -95,10 +97,7 @@ class StyleConfigLoader {
       codeOptions.baseStyle,
     );
 
-    final mergedStyles = _mergeStyleMaps(
-      yamlConfig.styles,
-      codeOptions.styles,
-    );
+    final mergedStyles = _mergeStyleMaps(yamlConfig.styles, codeOptions.styles);
 
     return codeOptions.copyWith(
       baseStyle: mergedBaseStyle,
@@ -159,7 +158,9 @@ class StyleConfigLoader {
     final result = StyleSchemas.styleConfigSchema.safeParse(map);
     if (result.isFail) {
       final error = result.getError();
-      _logger.warning('Style configuration validation failed: ${error.message}');
+      _logger.warning(
+        'Style configuration validation failed: ${error.message}',
+      );
       return null;
     }
 
@@ -228,7 +229,10 @@ class StyleConfigLoader {
     };
   }
 
-  static SlideStyle _mergeWithCode(SlideStyle? yamlStyle, SlideStyle codeStyle) {
+  static SlideStyle _mergeWithCode(
+    SlideStyle? yamlStyle,
+    SlideStyle codeStyle,
+  ) {
     return yamlStyle?.merge(codeStyle) ?? codeStyle;
   }
 }

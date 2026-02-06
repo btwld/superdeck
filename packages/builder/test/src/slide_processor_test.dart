@@ -12,11 +12,7 @@ base class MockTask extends Task {
   final bool shouldFail;
   final Exception? exceptionToThrow;
 
-  MockTask(
-    super.name, {
-    this.shouldFail = false,
-    this.exceptionToThrow,
-  });
+  MockTask(super.name, {this.shouldFail = false, this.exceptionToThrow});
 
   @override
   Future<void> run(SlideContext context) async {
@@ -147,11 +143,18 @@ void main() {
         final task1 = ContentModifierTask('[Task1]');
         final task2 = ContentModifierTask('[Task2]');
 
-        final slides = await processor.processAll([rawSlide], [task1, task2], store);
+        final slides = await processor.processAll(
+          [rawSlide],
+          [task1, task2],
+          store,
+        );
 
         expect(slides, hasLength(1));
         // Content should be modified by both tasks in order
-        expect(slides[0].sections[0].blocks[0].content, contains('[Task2][Task1]Original'));
+        expect(
+          slides[0].sections[0].blocks[0].content,
+          contains('[Task2][Task1]Original'),
+        );
       });
 
       test('maintains task execution order', () async {
@@ -239,7 +242,9 @@ void main() {
         );
 
         final task = MockTask('TestTask');
-        final slides = await customProcessor.processAll(rawSlides, [task], store);
+        final slides = await customProcessor.processAll(rawSlides, [
+          task,
+        ], store);
 
         expect(slides, hasLength(5));
         expect(task.executedSlides, hasLength(5));
@@ -372,11 +377,10 @@ void main() {
         final trackingTask = MockTask('TrackingTask');
 
         try {
-          await processor.processAll(
-            rawSlides,
-            [failOnThirdTask, trackingTask],
-            store,
-          );
+          await processor.processAll(rawSlides, [
+            failOnThirdTask,
+            trackingTask,
+          ], store);
           fail('Should have thrown TaskException');
         } on TaskException catch (e) {
           expect(e.slideIndex, equals(2));
@@ -403,10 +407,7 @@ void main() {
         final rawSlide = RawSlideMarkdownType.parse({
           'key': 'slide-1',
           'content': 'Content',
-          'frontmatter': {
-            'title': 'Test Title',
-            'style': 'dark',
-          },
+          'frontmatter': {'title': 'Test Title', 'style': 'dark'},
         });
 
         final slides = await processor.processAll([rawSlide], [], store);
@@ -480,7 +481,10 @@ Content here
 
         expect(slides, hasLength(1));
         expect(slides[0].sections, isNotEmpty);
-        expect(slides[0].sections[0].blocks[0].content, contains('Just a heading'));
+        expect(
+          slides[0].sections[0].blocks[0].content,
+          contains('Just a heading'),
+        );
       });
     });
 
@@ -617,7 +621,10 @@ More content.
         final slides = await processor.processAll([rawSlide], [], store);
 
         expect(slides, hasLength(1));
-        expect(slides[0].sections[0].blocks[0].content, contains('void main()'));
+        expect(
+          slides[0].sections[0].blocks[0].content,
+          contains('void main()'),
+        );
       });
 
       test('handles multiple complex frontmatter fields', () async {
@@ -656,11 +663,11 @@ More content.
         final task2 = MockTask('Task2');
         final task3 = MockTask('Task3');
 
-        final slides = await processor.processAll(
-          rawSlides,
-          [task1, task2, task3],
-          store,
-        );
+        final slides = await processor.processAll(rawSlides, [
+          task1,
+          task2,
+          task3,
+        ], store);
 
         expect(slides, hasLength(6));
         expect(task1.executedSlides, hasLength(6));
@@ -722,10 +729,7 @@ void example() {
 
 <!-- Another note -->
 ''',
-          'frontmatter': {
-            'title': 'Complex Slide Title',
-            'style': 'dark',
-          },
+          'frontmatter': {'title': 'Complex Slide Title', 'style': 'dark'},
         });
 
         final slides = await processor.processAll([rawSlide], [], store);
@@ -741,7 +745,10 @@ void example() {
 }
 
 /// Helper for creating simple mock tasks
-Task createMockTask(String name, {required Future<void> Function(SlideContext) run}) {
+Task createMockTask(
+  String name, {
+  required Future<void> Function(SlideContext) run,
+}) {
   return _SimpleMockTask(name, run);
 }
 

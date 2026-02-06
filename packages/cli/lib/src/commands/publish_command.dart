@@ -30,7 +30,7 @@ class PublishCommand extends Command<int> {
   );
 
   PublishCommand({Logger? loggerOverride})
-      : _logger = loggerOverride ?? logger {
+    : _logger = loggerOverride ?? logger {
     argParser
       ..addOption(
         'branch',

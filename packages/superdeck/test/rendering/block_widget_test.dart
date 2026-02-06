@@ -47,17 +47,16 @@ void main() {
       }
 
       testWidgets('all 9 alignments render in grid', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.allAlignments(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.allAlignments());
         tester.expectBlockCount(9);
         expect(tester.takeException(), isNull);
       });
     });
 
     group('scrollable behavior', () {
-      testWidgets('scrollable block wraps content in ScrollView', (tester) async {
+      testWidgets('scrollable block wraps content in ScrollView', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.scrollableBlock(lineCount: 80),
@@ -73,7 +72,9 @@ void main() {
         tester.expectNotScrollable(find.byType(BlockWidget));
       });
 
-      testWidgets('scrollable block is NOT scrollable when exporting', (tester) async {
+      testWidgets('scrollable block is NOT scrollable when exporting', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.scrollableBlock(lineCount: 80),
@@ -84,7 +85,9 @@ void main() {
     });
 
     group('error handling', () {
-      testWidgets('CustomBlockWidget shows error for unknown widget', (tester) async {
+      testWidgets('CustomBlockWidget shows error for unknown widget', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.withCustomWidget(widgetName: 'nonexistent_widget_xyz'),
@@ -95,34 +98,28 @@ void main() {
 
     group('size constraints', () {
       testWidgets('block fills section width', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.singleColumn(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.singleColumn());
 
         final block = find.byType(BlockWidget);
         final size = tester.getSize(block);
-        expect(size.width, greaterThan(700)); // viewport may be smaller than kResolution
+        expect(
+          size.width,
+          greaterThan(700),
+        ); // viewport may be smaller than kResolution
         expect(size.height, greaterThan(300)); // header/footer reduce height
       });
     });
 
     group('markdown content types', () {
       testWidgets('renders headings and lists', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.mixedMarkdown(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.mixedMarkdown());
 
         expect(find.textContaining('Title'), findsOneWidget);
         expect(find.textContaining('Item 1'), findsOneWidget);
       });
 
       testWidgets('renders code block', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.withCodeBlock(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.withCodeBlock());
         expect(find.byType(BlockWidget), findsOneWidget);
         expect(tester.takeException(), isNull);
       });

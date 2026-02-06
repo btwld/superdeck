@@ -16,60 +16,54 @@ void main() {
       }
     });
 
-    test(
-      'BUG: thumbnail write fails when assets directory does not exist',
-      () async {
-        // This test demonstrates the bug in ThumbnailService._generateThumbnail
-        // At line 75: await file.writeAsBytes(imageData);
-        //
-        // The issue: DeckService.initialize() is never called in DeckControllerBuilder,
-        // so the assets directory is never created. When ThumbnailService tries to
-        // write the thumbnail file, it fails with FileSystemException.
+    test('BUG: thumbnail write fails when assets directory does not exist', () async {
+      // This test demonstrates the bug in ThumbnailService._generateThumbnail
+      // At line 75: await file.writeAsBytes(imageData);
+      //
+      // The issue: DeckService.initialize() is never called in DeckControllerBuilder,
+      // so the assets directory is never created. When ThumbnailService tries to
+      // write the thumbnail file, it fails with FileSystemException.
 
-        // Simulate the path that would be generated for a thumbnail
-        final assetsDir = Directory('${tempDir.path}/.superdeck/assets');
-        final thumbnailPath = '${assetsDir.path}/thumb-slide-abc123.png';
+      // Simulate the path that would be generated for a thumbnail
+      final assetsDir = Directory('${tempDir.path}/.superdeck/assets');
+      final thumbnailPath = '${assetsDir.path}/thumb-slide-abc123.png';
 
-        // The assets directory does NOT exist (simulating missing initialization)
-        expect(await assetsDir.exists(), isFalse);
+      // The assets directory does NOT exist (simulating missing initialization)
+      expect(await assetsDir.exists(), isFalse);
 
-        // This is exactly what happens at ThumbnailService line 75
-        final file = File(thumbnailPath);
-        final imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header bytes
+      // This is exactly what happens at ThumbnailService line 75
+      final file = File(thumbnailPath);
+      final imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header bytes
 
-        // BUG: This throws FileSystemException because parent dir doesn't exist
-        expect(
-          () async => await file.writeAsBytes(imageData),
-          throwsA(isA<FileSystemException>()),
-        );
-      },
-    );
+      // BUG: This throws FileSystemException because parent dir doesn't exist
+      expect(
+        () async => await file.writeAsBytes(imageData),
+        throwsA(isA<FileSystemException>()),
+      );
+    });
 
-    test(
-      'FIX: thumbnail write succeeds when assets directory exists',
-      () async {
-        // This test shows the expected behavior after the fix.
-        // When DeckService.initialize() is called, it creates the assets directory,
-        // and thumbnail generation works correctly.
+    test('FIX: thumbnail write succeeds when assets directory exists', () async {
+      // This test shows the expected behavior after the fix.
+      // When DeckService.initialize() is called, it creates the assets directory,
+      // and thumbnail generation works correctly.
 
-        final assetsDir = Directory('${tempDir.path}/.superdeck/assets');
-        final thumbnailPath = '${assetsDir.path}/thumb-slide-abc123.png';
+      final assetsDir = Directory('${tempDir.path}/.superdeck/assets');
+      final thumbnailPath = '${assetsDir.path}/thumb-slide-abc123.png';
 
-        // FIX: Create the assets directory (what DeckService.initialize() does)
-        await assetsDir.create(recursive: true);
-        expect(await assetsDir.exists(), isTrue);
+      // FIX: Create the assets directory (what DeckService.initialize() does)
+      await assetsDir.create(recursive: true);
+      expect(await assetsDir.exists(), isTrue);
 
-        // Now the write succeeds
-        final file = File(thumbnailPath);
-        final imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header bytes
+      // Now the write succeeds
+      final file = File(thumbnailPath);
+      final imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header bytes
 
-        await file.writeAsBytes(imageData);
+      await file.writeAsBytes(imageData);
 
-        // Verify the file was created
-        expect(await file.exists(), isTrue);
-        expect(await file.length(), equals(4));
-      },
-    );
+      // Verify the file was created
+      expect(await file.exists(), isTrue);
+      expect(await file.length(), equals(4));
+    });
 
     test(
       'TDD FAILING TEST: ThumbnailService should ensure directory exists before writing',

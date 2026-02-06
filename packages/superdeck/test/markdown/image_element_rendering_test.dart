@@ -26,35 +26,36 @@ void main() {
       expect(builder.isBlockElement(), isTrue);
     });
 
-    testWidgets('image builder callback executes with BlockConfiguration access', (
-      tester,
-    ) async {
-      const markdown = '![test](assets/test.png)';
+    testWidgets(
+      'image builder callback executes with BlockConfiguration access',
+      (tester) async {
+        const markdown = '![test](assets/test.png)';
 
-      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+        await tester.pumpAndSettle();
 
-      // ASSERTION: The image should render through ImageElementBuilder
-      // Look for the CachedImage widget which proves the builder was called
-      expect(
-        find.byType(ConstrainedBox),
-        findsWidgets,
-        reason:
-            'Image should render with ConstrainedBox from ImageElementBuilder',
-      );
+        // ASSERTION: The image should render through ImageElementBuilder
+        // Look for the CachedImage widget which proves the builder was called
+        expect(
+          find.byType(ConstrainedBox),
+          findsWidgets,
+          reason:
+              'Image should render with ConstrainedBox from ImageElementBuilder',
+        );
 
-      // Verify StyleSpecBuilder was used (proves builder callback executed)
-      final allWidgets = tester.allWidgets.toList();
-      final hasStyleSpecBuilder = allWidgets.any(
-        (widget) => widget.toString().contains('StyleSpecBuilder<ImageSpec>'),
-      );
+        // Verify StyleSpecBuilder was used (proves builder callback executed)
+        final allWidgets = tester.allWidgets.toList();
+        final hasStyleSpecBuilder = allWidgets.any(
+          (widget) => widget.toString().contains('StyleSpecBuilder<ImageSpec>'),
+        );
 
-      expect(
-        hasStyleSpecBuilder,
-        isTrue,
-        reason: 'Should have StyleSpecBuilder<ImageSpec> in widget tree',
-      );
-    });
+        expect(
+          hasStyleSpecBuilder,
+          isTrue,
+          reason: 'Should have StyleSpecBuilder<ImageSpec> in widget tree',
+        );
+      },
+    );
 
     testWidgets('image renders with block-level size constraints', (
       tester,

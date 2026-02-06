@@ -161,7 +161,10 @@ code
         final blocks = parser.parse(content);
 
         expect(blocks, hasLength(1));
-        expect(blocks[0].content, equals('code with leading/trailing whitespace'));
+        expect(
+          blocks[0].content,
+          equals('code with leading/trailing whitespace'),
+        );
       });
 
       test('handles unclosed code fence', () {

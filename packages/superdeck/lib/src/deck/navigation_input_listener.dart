@@ -18,7 +18,8 @@ class NavigationInputListener extends StatefulWidget {
   final Widget child;
 
   @override
-  State<NavigationInputListener> createState() => _NavigationInputListenerState();
+  State<NavigationInputListener> createState() =>
+      _NavigationInputListenerState();
 }
 
 class _NavigationInputListenerState extends State<NavigationInputListener> {

@@ -45,8 +45,7 @@ String updatePubspecAssets(
 
   flutterSection['assets'] = assets;
 
-  final updatedYaml = Map.of(parsedYaml)
-    ..['flutter'] = flutterSection;
+  final updatedYaml = Map.of(parsedYaml)..['flutter'] = flutterSection;
 
   return YamlWriter(allowUnquotedStrings: true).write(updatedYaml);
 }

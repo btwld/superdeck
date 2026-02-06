@@ -463,14 +463,17 @@ final class SlideStyle extends Style<SlideSpec>
   StyleSpec<SlideSpec> resolve(BuildContext context) {
     // Resolve required StyleSpec fields with fallback defaults
     // These fields are non-nullable in SlideSpec and must always have a value
-    final resolvedAlert = MixOps.resolve(context, $alert) ??
+    final resolvedAlert =
+        MixOps.resolve(context, $alert) ??
         const StyleSpec(spec: MarkdownAlertSpec());
-    final resolvedBlockContainer = MixOps.resolve(context, $blockContainer) ??
+    final resolvedBlockContainer =
+        MixOps.resolve(context, $blockContainer) ??
         const StyleSpec(spec: BoxSpec());
-    final resolvedSlideContainer = MixOps.resolve(context, $slideContainer) ??
+    final resolvedSlideContainer =
+        MixOps.resolve(context, $slideContainer) ??
         const StyleSpec(spec: BoxSpec());
-    final resolvedImage = MixOps.resolve(context, $image) ??
-        const StyleSpec(spec: ImageSpec());
+    final resolvedImage =
+        MixOps.resolve(context, $image) ?? const StyleSpec(spec: ImageSpec());
 
     return StyleSpec(
       spec: SlideSpec(

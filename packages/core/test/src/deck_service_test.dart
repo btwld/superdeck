@@ -152,8 +152,7 @@ void main() {
         final initialJson =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
-        final initialLastModified =
-            initialJson['last_modified'] as String;
+        final initialLastModified = initialJson['last_modified'] as String;
 
         // Delay to ensure DateTime.now would differ if rewriting happens.
         await Future<void>.delayed(const Duration(milliseconds: 5));
@@ -163,10 +162,7 @@ void main() {
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
 
-        expect(
-          subsequentJson['last_modified'],
-          equals(initialLastModified),
-        );
+        expect(subsequentJson['last_modified'], equals(initialLastModified));
       },
     );
 

@@ -31,17 +31,20 @@ void main() {
         expect(color.b, 0.0);
       });
 
-      test('accepts valid 8-digit hex color with alpha and transforms to Color', () {
-        final result = StyleSchemas.colorSchema.safeParse('#FF0000AA');
-        expect(result.isOk, isTrue);
-        final color = result.getOrThrow();
-        expect(color, isA<Color>());
-        // 8-digit: FF0000AA parses as RRGGBBAA → 0xAAFF0000 in ARGB
-        expect(color!.a, closeTo(0xAA / 255, 0.01));
-        expect(color.r, 1.0);
-        expect(color.g, 0.0);
-        expect(color.b, 0.0);
-      });
+      test(
+        'accepts valid 8-digit hex color with alpha and transforms to Color',
+        () {
+          final result = StyleSchemas.colorSchema.safeParse('#FF0000AA');
+          expect(result.isOk, isTrue);
+          final color = result.getOrThrow();
+          expect(color, isA<Color>());
+          // 8-digit: FF0000AA parses as RRGGBBAA → 0xAAFF0000 in ARGB
+          expect(color!.a, closeTo(0xAA / 255, 0.01));
+          expect(color.r, 1.0);
+          expect(color.g, 0.0);
+          expect(color.b, 0.0);
+        },
+      );
 
       test('accepts lowercase hex color', () {
         final result = StyleSchemas.colorSchema.safeParse('#ff0000');
@@ -142,9 +145,7 @@ void main() {
         // When used in an ObjectSchema, missing keys are handled by ObjectSchema.
         // Calling safeParse(null) directly tests explicit null, which is different.
         // Test with a parent object to show proper optional behavior:
-        final parentSchema = Ack.object({
-          'color': StyleSchemas.colorSchema,
-        });
+        final parentSchema = Ack.object({'color': StyleSchemas.colorSchema});
         final result = parentSchema.safeParse(<String, dynamic>{});
         expect(result.isOk, isTrue);
         // Key is absent from output when not provided
@@ -180,7 +181,11 @@ void main() {
 
         for (final entry in weights.entries) {
           final result = StyleSchemas.fontWeightSchema.safeParse(entry.key);
-          expect(result.isOk, isTrue, reason: 'Expected ${entry.key} to be valid');
+          expect(
+            result.isOk,
+            isTrue,
+            reason: 'Expected ${entry.key} to be valid',
+          );
           expect(result.getOrThrow(), entry.value);
         }
       });
@@ -217,7 +222,11 @@ void main() {
 
         for (final entry in decorations.entries) {
           final result = StyleSchemas.textDecorationSchema.safeParse(entry.key);
-          expect(result.isOk, isTrue, reason: 'Expected ${entry.key} to be valid');
+          expect(
+            result.isOk,
+            isTrue,
+            reason: 'Expected ${entry.key} to be valid',
+          );
           expect(result.getOrThrow(), entry.value);
         }
       });
@@ -228,7 +237,9 @@ void main() {
       });
 
       test('rejects underscore variant', () {
-        final result = StyleSchemas.textDecorationSchema.safeParse('line_through');
+        final result = StyleSchemas.textDecorationSchema.safeParse(
+          'line_through',
+        );
         expect(result.isFail, isTrue);
       });
 
@@ -251,7 +262,11 @@ void main() {
 
         for (final entry in alignments.entries) {
           final result = StyleSchemas.alignmentSchema.safeParse(entry.key);
-          expect(result.isOk, isTrue, reason: 'Expected ${entry.key} to be valid');
+          expect(
+            result.isOk,
+            isTrue,
+            reason: 'Expected ${entry.key} to be valid',
+          );
           expect(result.getOrThrow(), entry.value);
         }
       });
@@ -309,9 +324,7 @@ void main() {
       });
 
       test('accepts object with only vertical', () {
-        final result = StyleSchemas.paddingSchema.safeParse({
-          'vertical': 8.0,
-        });
+        final result = StyleSchemas.paddingSchema.safeParse({'vertical': 8.0});
         expect(result.isOk, isTrue);
       });
 
@@ -366,9 +379,7 @@ void main() {
       });
 
       test('rejects unknown object keys', () {
-        final result = StyleSchemas.paddingSchema.safeParse({
-          'invalid': 16.0,
-        });
+        final result = StyleSchemas.paddingSchema.safeParse({'invalid': 16.0});
         expect(result.isFail, isTrue);
       });
     });
@@ -440,18 +451,13 @@ void main() {
       });
 
       test('accepts valid container with margin', () {
-        final result = StyleSchemas.containerSchema.safeParse({
-          'margin': 8.0,
-        });
+        final result = StyleSchemas.containerSchema.safeParse({'margin': 8.0});
         expect(result.isOk, isTrue);
       });
 
       test('accepts valid container with decoration', () {
         final result = StyleSchemas.containerSchema.safeParse({
-          'decoration': {
-            'color': '#FFFFFF',
-            'borderRadius': 12.0,
-          },
+          'decoration': {'color': '#FFFFFF', 'borderRadius': 12.0},
         });
         expect(result.isOk, isTrue);
       });
@@ -460,10 +466,7 @@ void main() {
         final result = StyleSchemas.containerSchema.safeParse({
           'padding': 16.0,
           'margin': 8.0,
-          'decoration': {
-            'color': '#000000',
-            'borderRadius': 4.0,
-          },
+          'decoration': {'color': '#000000', 'borderRadius': 4.0},
         });
         expect(result.isOk, isTrue);
       });
@@ -474,9 +477,7 @@ void main() {
       });
 
       test('rejects unknown container keys', () {
-        final result = StyleSchemas.containerSchema.safeParse({
-          'width': 100.0,
-        });
+        final result = StyleSchemas.containerSchema.safeParse({'width': 100.0});
         expect(result.isFail, isTrue);
       });
     });
@@ -530,9 +531,7 @@ void main() {
       });
 
       test('rejects zero fontSize', () {
-        final result = StyleSchemas.textStyleSchema.safeParse({
-          'fontSize': 0,
-        });
+        final result = StyleSchemas.textStyleSchema.safeParse({'fontSize': 0});
         expect(result.isFail, isTrue);
       });
 
@@ -649,10 +648,7 @@ void main() {
           },
           'container': {
             'padding': 16.0,
-            'decoration': {
-              'color': '#000000',
-              'borderRadius': 8.0,
-            },
+            'decoration': {'color': '#000000', 'borderRadius': 8.0},
           },
         });
         expect(result.isOk, isTrue);
@@ -661,18 +657,14 @@ void main() {
 
       test('accepts code style with only textStyle', () {
         final result = StyleSchemas.codeStyleSchema.safeParse({
-          'textStyle': {
-            'fontSize': 16.0,
-          },
+          'textStyle': {'fontSize': 16.0},
         });
         expect(result.isOk, isTrue);
       });
 
       test('accepts code style with only container', () {
         final result = StyleSchemas.codeStyleSchema.safeParse({
-          'container': {
-            'padding': 32.0,
-          },
+          'container': {'padding': 32.0},
         });
         expect(result.isOk, isTrue);
       });
@@ -686,18 +678,9 @@ void main() {
     group('blockquoteSchema', () {
       test('accepts valid blockquote config', () {
         final result = StyleSchemas.blockquoteSchema.safeParse({
-          'textStyle': {
-            'fontSize': 32.0,
-            'color': '#CCCCCC',
-          },
-          'padding': {
-            'left': 30.0,
-            'bottom': 12.0,
-          },
-          'decoration': {
-            'color': '#888888',
-            'borderRadius': 4.0,
-          },
+          'textStyle': {'fontSize': 32.0, 'color': '#CCCCCC'},
+          'padding': {'left': 30.0, 'bottom': 12.0},
+          'decoration': {'color': '#888888', 'borderRadius': 4.0},
           'alignment': 'start',
         });
         expect(result.isOk, isTrue);
@@ -706,18 +689,14 @@ void main() {
 
       test('accepts blockquote with minimal config', () {
         final result = StyleSchemas.blockquoteSchema.safeParse({
-          'textStyle': {
-            'fontSize': 24.0,
-          },
+          'textStyle': {'fontSize': 24.0},
         });
         expect(result.isOk, isTrue);
       });
 
       test('accepts blockquote with only padding', () {
         final result = StyleSchemas.blockquoteSchema.safeParse({
-          'padding': {
-            'all': 16.0,
-          },
+          'padding': {'all': 16.0},
         });
         expect(result.isOk, isTrue);
       });
@@ -738,14 +717,8 @@ void main() {
     group('listSchema', () {
       test('accepts valid list config', () {
         final result = StyleSchemas.listSchema.safeParse({
-          'bullet': {
-            'fontSize': 24.0,
-            'color': '#FFFFFF',
-          },
-          'text': {
-            'fontSize': 24.0,
-            'height': 1.6,
-          },
+          'bullet': {'fontSize': 24.0, 'color': '#FFFFFF'},
+          'text': {'fontSize': 24.0, 'height': 1.6},
           'orderedAlignment': 'start',
           'unorderedAlignment': 'start',
         });
@@ -755,18 +728,14 @@ void main() {
 
       test('accepts list with only bullet', () {
         final result = StyleSchemas.listSchema.safeParse({
-          'bullet': {
-            'fontSize': 20.0,
-          },
+          'bullet': {'fontSize': 20.0},
         });
         expect(result.isOk, isTrue);
       });
 
       test('accepts list with only text', () {
         final result = StyleSchemas.listSchema.safeParse({
-          'text': {
-            'fontSize': 22.0,
-          },
+          'text': {'fontSize': 22.0},
         });
         expect(result.isOk, isTrue);
       });
@@ -787,10 +756,7 @@ void main() {
     group('checkboxSchema', () {
       test('accepts valid checkbox config', () {
         final result = StyleSchemas.checkboxSchema.safeParse({
-          'textStyle': {
-            'fontSize': 20.0,
-            'color': '#FFFFFF',
-          },
+          'textStyle': {'fontSize': 20.0, 'color': '#FFFFFF'},
         });
         expect(result.isOk, isTrue);
         expect(result.getOrThrow(), isA<MarkdownCheckboxStyle>());
@@ -813,23 +779,11 @@ void main() {
     group('tableSchema', () {
       test('accepts valid table config', () {
         final result = StyleSchemas.tableSchema.safeParse({
-          'headStyle': {
-            'fontSize': 24.0,
-            'fontWeight': 'bold',
-          },
-          'bodyStyle': {
-            'fontSize': 20.0,
-          },
-          'padding': {
-            'all': 8.0,
-          },
-          'cellPadding': {
-            'all': 12.0,
-          },
-          'cellDecoration': {
-            'color': '#F0F0F0',
-            'borderRadius': 2.0,
-          },
+          'headStyle': {'fontSize': 24.0, 'fontWeight': 'bold'},
+          'bodyStyle': {'fontSize': 20.0},
+          'padding': {'all': 8.0},
+          'cellPadding': {'all': 12.0},
+          'cellDecoration': {'color': '#F0F0F0', 'borderRadius': 2.0},
         });
         expect(result.isOk, isTrue);
         expect(result.getOrThrow(), isA<MarkdownTableStyle>());
@@ -837,9 +791,7 @@ void main() {
 
       test('accepts table with minimal config', () {
         final result = StyleSchemas.tableSchema.safeParse({
-          'headStyle': {
-            'fontWeight': 'bold',
-          },
+          'headStyle': {'fontWeight': 'bold'},
         });
         expect(result.isOk, isTrue);
       });
@@ -861,18 +813,11 @@ void main() {
     group('alertTypeSchema', () {
       test('accepts valid alert type config', () {
         final result = StyleSchemas.alertTypeSchema.safeParse({
-          'heading': {
-            'fontSize': 24.0,
-            'fontWeight': 'bold',
-          },
-          'description': {
-            'fontSize': 20.0,
-          },
+          'heading': {'fontSize': 24.0, 'fontWeight': 'bold'},
+          'description': {'fontSize': 20.0},
           'container': {
             'padding': 16.0,
-            'decoration': {
-              'color': '#E3F2FD',
-            },
+            'decoration': {'color': '#E3F2FD'},
           },
         });
         expect(result.isOk, isTrue);
@@ -881,9 +826,7 @@ void main() {
 
       test('accepts alert type with only heading', () {
         final result = StyleSchemas.alertTypeSchema.safeParse({
-          'heading': {
-            'fontSize': 28.0,
-          },
+          'heading': {'fontSize': 28.0},
         });
         expect(result.isOk, isTrue);
       });
@@ -956,19 +899,10 @@ void main() {
     group('slideStyleSchema', () {
       test('accepts valid slide style config', () {
         final result = StyleSchemas.slideStyleSchema.safeParse({
-          'h1': {
-            'fontSize': 96.0,
-            'fontWeight': 'bold',
-            'color': '#FFFFFF',
-          },
-          'p': {
-            'fontSize': 24.0,
-            'color': '#CCCCCC',
-          },
+          'h1': {'fontSize': 96.0, 'fontWeight': 'bold', 'color': '#FFFFFF'},
+          'p': {'fontSize': 24.0, 'color': '#CCCCCC'},
           'code': {
-            'textStyle': {
-              'fontFamily': 'Fira Code',
-            },
+            'textStyle': {'fontFamily': 'Fira Code'},
           },
         });
         expect(result.isOk, isTrue);
@@ -1001,13 +935,25 @@ void main() {
 
       test('accepts all block elements', () {
         final result = StyleSchemas.slideStyleSchema.safeParse({
-          'code': {'textStyle': {'fontSize': 16.0}},
-          'blockquote': {'textStyle': {'fontSize': 32.0}},
-          'list': {'text': {'fontSize': 24.0}},
-          'checkbox': {'textStyle': {'fontSize': 20.0}},
-          'table': {'headStyle': {'fontWeight': 'bold'}},
+          'code': {
+            'textStyle': {'fontSize': 16.0},
+          },
+          'blockquote': {
+            'textStyle': {'fontSize': 32.0},
+          },
+          'list': {
+            'text': {'fontSize': 24.0},
+          },
+          'checkbox': {
+            'textStyle': {'fontSize': 20.0},
+          },
+          'table': {
+            'headStyle': {'fontWeight': 'bold'},
+          },
           'alert': {
-            'note': {'heading': {'fontSize': 24.0}},
+            'note': {
+              'heading': {'fontSize': 24.0},
+            },
           },
         });
         expect(result.isOk, isTrue);
@@ -1015,22 +961,15 @@ void main() {
 
       test('accepts containers', () {
         final result = StyleSchemas.slideStyleSchema.safeParse({
-          'blockContainer': {
-            'padding': 40.0,
-          },
-          'slideContainer': {
-            'padding': 20.0,
-          },
+          'blockContainer': {'padding': 40.0},
+          'slideContainer': {'padding': 20.0},
         });
         expect(result.isOk, isTrue);
       });
 
       test('accepts horizontalRuleDecoration', () {
         final result = StyleSchemas.slideStyleSchema.safeParse({
-          'horizontalRuleDecoration': {
-            'color': '#CCCCCC',
-            'borderRadius': 2.0,
-          },
+          'horizontalRuleDecoration': {'color': '#CCCCCC', 'borderRadius': 2.0},
         });
         expect(result.isOk, isTrue);
       });
@@ -1095,7 +1034,9 @@ void main() {
       test('accepts hyphenated names', () {
         final result = StyleSchemas.namedStyleSchema.safeParse({
           'name': 'code-heavy',
-          'code': {'textStyle': {'fontSize': 14.0}},
+          'code': {
+            'textStyle': {'fontSize': 14.0},
+          },
         });
         expect(result.isOk, isTrue);
       });
@@ -1103,7 +1044,9 @@ void main() {
       test('accepts underscore names', () {
         final result = StyleSchemas.namedStyleSchema.safeParse({
           'name': 'code_heavy',
-          'code': {'textStyle': {'fontSize': 14.0}},
+          'code': {
+            'textStyle': {'fontSize': 14.0},
+          },
         });
         expect(result.isOk, isTrue);
       });
@@ -1173,8 +1116,14 @@ void main() {
       test('rejects duplicate style names', () {
         final result = StyleSchemas.styleConfigSchema.safeParse({
           'styles': [
-            {'name': 'title', 'h1': {'fontSize': 96.0}},
-            {'name': 'title', 'h1': {'fontSize': 120.0}}, // duplicate
+            {
+              'name': 'title',
+              'h1': {'fontSize': 96.0},
+            },
+            {
+              'name': 'title',
+              'h1': {'fontSize': 120.0},
+            }, // duplicate
           ],
         });
         expect(result.isFail, isTrue);
@@ -1183,7 +1132,9 @@ void main() {
       test('allows unknown top-level keys for forward compatibility', () {
         final result = StyleSchemas.styleConfigSchema.safeParse({
           'version': 2, // unknown key - should pass through
-          'base': {'h1': {'fontSize': 96.0}},
+          'base': {
+            'h1': {'fontSize': 96.0},
+          },
         });
         expect(result.isOk, isTrue);
       });
@@ -1193,7 +1144,9 @@ void main() {
           'version': 2,
           'schema': 'v1',
           'metadata': {'author': 'Test'},
-          'base': {'h1': {'fontSize': 96.0}},
+          'base': {
+            'h1': {'fontSize': 96.0},
+          },
         });
         expect(result.isOk, isTrue);
       });
@@ -1216,10 +1169,7 @@ void main() {
               'color': '#FF0000',
               'paddingBottom': 16.0,
             },
-            'link': {
-              'color': '#0000FF',
-              'decoration': 'underline',
-            },
+            'link': {'color': '#0000FF', 'decoration': 'underline'},
           },
         });
         expect(result.isOk, isTrue);
@@ -1233,16 +1183,10 @@ void main() {
         final result = StyleSchemas.styleConfigSchema.safeParse({
           'base': {
             'code': {
-              'textStyle': {
-                'fontFamily': 'JetBrains Mono',
-                'fontSize': 18.0,
-              },
+              'textStyle': {'fontFamily': 'JetBrains Mono', 'fontSize': 18.0},
               'container': {
                 'padding': 32.0,
-                'decoration': {
-                  'color': '#000000',
-                  'borderRadius': 10.0,
-                },
+                'decoration': {'color': '#000000', 'borderRadius': 10.0},
               },
             },
           },
@@ -1400,17 +1344,21 @@ void main() {
       test('validates color format strictly', () {
         // Test various invalid color formats
         final invalidColors = [
-          'FF0000',     // missing #
-          '#FFF',       // too short
-          '#FFFFFFF',   // wrong length
-          '#GGGGGG',    // invalid hex
-          'red',        // named colors not supported
+          'FF0000', // missing #
+          '#FFF', // too short
+          '#FFFFFFF', // wrong length
+          '#GGGGGG', // invalid hex
+          'red', // named colors not supported
           'rgb(255,0,0)', // rgb format not supported
         ];
 
         for (final color in invalidColors) {
           final result = StyleSchemas.colorSchema.safeParse(color);
-          expect(result.isFail, isTrue, reason: 'Expected $color to be invalid');
+          expect(
+            result.isFail,
+            isTrue,
+            reason: 'Expected $color to be invalid',
+          );
         }
       });
 
@@ -1422,9 +1370,7 @@ void main() {
       });
 
       test('handles empty style list', () {
-        final result = StyleSchemas.styleConfigSchema.safeParse({
-          'styles': [],
-        });
+        final result = StyleSchemas.styleConfigSchema.safeParse({'styles': []});
         expect(result.isOk, isTrue);
         final config = result.getOrThrow()!;
         expect(config.styles, isEmpty);
@@ -1463,10 +1409,7 @@ void main() {
               'color': '#FFFFFF',
               'paddingBottom': 12.0,
             },
-            'link': {
-              'color': '#425260',
-              'decoration': 'none',
-            },
+            'link': {'color': '#425260', 'decoration': 'none'},
             'code': {
               'textStyle': {
                 'fontFamily': 'JetBrains Mono',
@@ -1476,57 +1419,26 @@ void main() {
               },
               'container': {
                 'padding': 32.0,
-                'decoration': {
-                  'color': '#000000',
-                  'borderRadius': 10.0,
-                },
+                'decoration': {'color': '#000000', 'borderRadius': 10.0},
               },
             },
             'blockquote': {
-              'textStyle': {
-                'fontSize': 32.0,
-                'color': '#CCCCCC',
-              },
-              'padding': {
-                'left': 30.0,
-                'bottom': 12.0,
-              },
-              'decoration': {
-                'color': '#888888',
-              },
+              'textStyle': {'fontSize': 32.0, 'color': '#CCCCCC'},
+              'padding': {'left': 30.0, 'bottom': 12.0},
+              'decoration': {'color': '#888888'},
             },
             'list': {
-              'bullet': {
-                'fontSize': 24.0,
-                'color': '#FFFFFF',
-              },
-              'text': {
-                'fontSize': 24.0,
-                'height': 1.6,
-                'paddingBottom': 8.0,
-              },
+              'bullet': {'fontSize': 24.0, 'color': '#FFFFFF'},
+              'text': {'fontSize': 24.0, 'height': 1.6, 'paddingBottom': 8.0},
             },
             'alert': {
               'note': {
-                'heading': {
-                  'fontSize': 24.0,
-                  'fontWeight': 'bold',
-                },
-                'description': {
-                  'fontSize': 24.0,
-                },
+                'heading': {'fontSize': 24.0, 'fontWeight': 'bold'},
+                'description': {'fontSize': 24.0},
                 'container': {
-                  'padding': {
-                    'horizontal': 24.0,
-                    'vertical': 8.0,
-                  },
-                  'margin': {
-                    'vertical': 12.0,
-                  },
-                  'decoration': {
-                    'color': '#0D47A1',
-                    'borderRadius': 4.0,
-                  },
+                  'padding': {'horizontal': 24.0, 'vertical': 8.0},
+                  'margin': {'vertical': 12.0},
+                  'decoration': {'color': '#0D47A1', 'borderRadius': 4.0},
                 },
               },
             },
@@ -1534,16 +1446,12 @@ void main() {
           'styles': [
             {
               'name': 'title-slide',
-              'h1': {
-                'fontSize': 120.0,
-              },
+              'h1': {'fontSize': 120.0},
             },
             {
               'name': 'code-heavy',
               'code': {
-                'textStyle': {
-                  'fontSize': 16.0,
-                },
+                'textStyle': {'fontSize': 16.0},
               },
             },
           ],
@@ -1623,7 +1531,9 @@ void main() {
 
       test('styleConfigSchema transforms to record type', () {
         final result = StyleSchemas.styleConfigSchema.safeParse({
-          'base': {'h1': {'fontSize': 96.0}},
+          'base': {
+            'h1': {'fontSize': 96.0},
+          },
         });
         final config = result.getOrThrow()!;
         expect(config.baseStyle, isNotNull);
@@ -1647,7 +1557,9 @@ void main() {
       test('top-level schema allows unknown keys (permissive)', () {
         final result = StyleSchemas.styleConfigSchema.safeParse({
           'unknownKey': 'value',
-          'base': {'h1': {'fontSize': 96.0}},
+          'base': {
+            'h1': {'fontSize': 96.0},
+          },
         });
         expect(result.isOk, isTrue);
       });
@@ -1698,10 +1610,7 @@ void main() {
       });
 
       test('can have null baseStyle', () {
-        final config = (
-          baseStyle: null,
-          styles: <String, SlideStyle>{},
-        );
+        final config = (baseStyle: null, styles: <String, SlideStyle>{});
 
         expect(config.baseStyle, isNull);
         expect(config.styles, isEmpty);

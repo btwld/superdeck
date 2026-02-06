@@ -26,7 +26,8 @@ extension LayoutAssertions on WidgetTester {
     expect(
       actualRatio,
       closeTo(expectedRatio, tolerance),
-      reason: 'Flex ratio should be $flex1:$flex2 ($expectedRatio), got $actualRatio',
+      reason:
+          'Flex ratio should be $flex1:$flex2 ($expectedRatio), got $actualRatio',
     );
   }
 
@@ -55,7 +56,8 @@ extension LayoutAssertions on WidgetTester {
       expect(
         actualDimension,
         closeTo(expectedDimension, tolerance),
-        reason: 'Widget $i should have dimension $expectedDimension, got $actualDimension',
+        reason:
+            'Widget $i should have dimension $expectedDimension, got $actualDimension',
       );
     }
   }

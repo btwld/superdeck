@@ -13,10 +13,7 @@ void main() {
   group('SlideView', () {
     group('basic rendering', () {
       testWidgets('renders single section slide', (tester) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.singleColumn(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.singleColumn());
 
         expect(find.byType(SlideView), findsOneWidget);
         tester.expectSectionCount(1);
@@ -43,7 +40,9 @@ void main() {
     });
 
     group('section layout - vertical flex', () {
-      testWidgets('two sections with equal flex have equal heights', (tester) async {
+      testWidgets('two sections with equal flex have equal heights', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.twoSectionEqual(),
@@ -59,7 +58,9 @@ void main() {
         );
       });
 
-      testWidgets('two sections with 1:2 flex have correct height ratio', (tester) async {
+      testWidgets('two sections with 1:2 flex have correct height ratio', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.twoSectionWeighted(topFlex: 1, bottomFlex: 2),
@@ -75,7 +76,9 @@ void main() {
         );
       });
 
-      testWidgets('three sections follow 1:3:1 flex distribution', (tester) async {
+      testWidgets('three sections follow 1:3:1 flex distribution', (
+        tester,
+      ) async {
         await SlideTestHarness.pumpSlide(
           tester,
           SlideFixtures.threeSectionLayout(),
@@ -103,7 +106,9 @@ void main() {
     });
 
     group('slide size', () {
-      testWidgets('renders at default resolution (kResolution)', (tester) async {
+      testWidgets('renders at default resolution (kResolution)', (
+        tester,
+      ) async {
         final originalSize = tester.view.physicalSize;
         final originalDpr = tester.view.devicePixelRatio;
         tester.view
@@ -115,10 +120,7 @@ void main() {
             ..devicePixelRatio = originalDpr;
         });
 
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.singleColumn(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.singleColumn());
 
         final slideView = find.byType(SlideView);
         final size = tester.getSize(slideView);
@@ -139,10 +141,7 @@ void main() {
             ..devicePixelRatio = originalDpr;
         });
 
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.singleColumn(),
-        );
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.singleColumn());
 
         final section = find.byType(SectionWidget);
         final size = tester.getSize(section);

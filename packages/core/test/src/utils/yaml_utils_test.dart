@@ -230,10 +230,7 @@ key:
 
         test('throws for clearly invalid YAML', () {
           const yaml = '{ key: value, }}}';
-          expect(
-            () => convertYamlToMap(yaml, strict: true),
-            throwsA(anything),
-          );
+          expect(() => convertYamlToMap(yaml, strict: true), throwsA(anything));
         });
       });
 

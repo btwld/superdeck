@@ -271,13 +271,11 @@ void main() {
 
         // Early in fade-out: more characters visible
         final result1 = lerpStringWithFade(start, end, 0.1);
-        final length1 = result1.text.length +
-            (result1.hasFadingChar ? 1 : 0);
+        final length1 = result1.text.length + (result1.hasFadingChar ? 1 : 0);
 
         // Later in fade-out: fewer characters visible
         final result2 = lerpStringWithFade(start, end, 0.4);
-        final length2 = result2.text.length +
-            (result2.hasFadingChar ? 1 : 0);
+        final length2 = result2.text.length + (result2.hasFadingChar ? 1 : 0);
 
         expect(length1, greaterThan(length2));
       });
@@ -309,13 +307,11 @@ void main() {
 
         // Early in fade-in: fewer characters visible
         final result1 = lerpStringWithFade(start, end, 0.6);
-        final length1 = result1.text.length +
-            (result1.hasFadingChar ? 1 : 0);
+        final length1 = result1.text.length + (result1.hasFadingChar ? 1 : 0);
 
         // Later in fade-in: more characters visible
         final result2 = lerpStringWithFade(start, end, 0.9);
-        final length2 = result2.text.length +
-            (result2.hasFadingChar ? 1 : 0);
+        final length2 = result2.text.length + (result2.hasFadingChar ? 1 : 0);
 
         expect(length1, lessThan(length2));
       });
@@ -334,8 +330,11 @@ void main() {
         final result = lerpStringWithFade('Hi', 'Hi UI', 0.55);
 
         expect(result.text, endsWith(' '), reason: 'Space should be committed');
-        expect(result.fadingChar, equals('U'),
-            reason: 'Next non-space grapheme should start fading immediately');
+        expect(
+          result.fadingChar,
+          equals('U'),
+          reason: 'Next non-space grapheme should start fading immediately',
+        );
         expect(result.hasFadingChar, isTrue);
         expect(result.ghostSuffix, equals('I'));
       });
@@ -352,8 +351,11 @@ void main() {
             '${commonPrefix}Universe',
             t,
           );
-          expect(result.text, startsWith(commonPrefix),
-              reason: 'Failed at t=$t');
+          expect(
+            result.text,
+            startsWith(commonPrefix),
+            reason: 'Failed at t=$t',
+          );
         }
       });
 
@@ -371,16 +373,20 @@ void main() {
         final result = lerpStringWithFade('', 'Hello', 0.75);
 
         // Should be fading in characters from 'Hello'
-        expect(result.text.length + (result.hasFadingChar ? 1 : 0),
-            greaterThan(0));
+        expect(
+          result.text.length + (result.hasFadingChar ? 1 : 0),
+          greaterThan(0),
+        );
       });
 
       test('handles empty end string', () {
         final result = lerpStringWithFade('Hello', '', 0.25);
 
         // Should be fading out characters from 'Hello'
-        expect(result.text.length + (result.hasFadingChar ? 1 : 0),
-            lessThan('Hello'.length));
+        expect(
+          result.text.length + (result.hasFadingChar ? 1 : 0),
+          lessThan('Hello'.length),
+        );
       });
 
       test('handles both empty strings', () {
@@ -407,8 +413,8 @@ void main() {
 
         for (var t = 0.0; t <= 1.0; t += 0.1) {
           final result = lerpStringWithFade(start, end, t);
-          final totalLength = result.text.length +
-              (result.fadingChar?.length ?? 0);
+          final totalLength =
+              result.text.length + (result.fadingChar?.length ?? 0);
 
           expect(
             totalLength,

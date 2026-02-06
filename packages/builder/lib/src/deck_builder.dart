@@ -119,8 +119,6 @@ class DeckBuilder {
   /// This ensures resources like browser instances are properly cleaned up.
   Future<void> dispose() async {
     // Convert FutureOr<void> to Future<void> for Future.wait compatibility
-    await Future.wait(
-      tasks.map((task) async => task.dispose()),
-    );
+    await Future.wait(tasks.map((task) async => task.dispose()));
   }
 }

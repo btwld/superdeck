@@ -127,10 +127,7 @@ class GeneratedAssetsReference {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'last_modified': lastModified.toIso8601String(),
-      'files': files,
-    };
+    return {'last_modified': lastModified.toIso8601String(), 'files': files};
   }
 
   static GeneratedAssetsReference fromMap(Map<String, dynamic> map) {
@@ -151,8 +148,6 @@ class GeneratedAssetsReference {
           const ListEquality().equals(files, other.files);
 
   @override
-  int get hashCode => Object.hash(
-    lastModified,
-    const ListEquality().hash(files),
-  );
+  int get hashCode =>
+      Object.hash(lastModified, const ListEquality().hash(files));
 }

@@ -412,13 +412,13 @@ class MermaidGenerator implements AssetGenerator {
     final useFallbackTheme = _shouldUseFallbackTheme(graphDefinition);
 
     final theme = useFallbackTheme
-        ? 'default'  // Use Mermaid's default theme for timeline/gantt
+        ? 'default' // Use Mermaid's default theme for timeline/gantt
         : (configuration['theme'] as String? ?? 'base');
     final themeVariables = useFallbackTheme
-        ? <String, dynamic>{}  // No custom variables for fallback
+        ? <String, dynamic>{} // No custom variables for fallback
         : (configuration['themeVariables'] ?? {});
     final themeCSS = useFallbackTheme
-        ? ''  // No custom CSS for fallback
+        ? '' // No custom CSS for fallback
         : (configuration['themeCSS'] as String? ?? '');
     final look = configuration['look'] as String? ?? 'classic';
     final securityLevel = configuration['securityLevel'] as String? ?? 'strict';

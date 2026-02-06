@@ -138,10 +138,7 @@ class BuildCommand extends SuperDeckCommand {
 
     // Track if we created the builder (and thus need to dispose it)
     final ownsBuilder = builder == null;
-    builder ??= _createStandardBuilder(
-      configuration: config,
-      store: store,
-    );
+    builder ??= _createStandardBuilder(configuration: config, store: store);
 
     try {
       // Run the build process
@@ -281,13 +278,21 @@ class BuildCommand extends SuperDeckCommand {
                   case 'rebuild':
                     logger.info('Manual rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
-                    unawaited(_runBuild(repository, deckConfig, builder: builder));
+                    unawaited(
+                      _runBuild(repository, deckConfig, builder: builder),
+                    );
                     break;
                   case 'f':
                   case 'force-rebuild':
                     logger.info('Force rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
-                    unawaited(_cleanAndRebuild(repository, deckConfig, builder: builder));
+                    unawaited(
+                      _cleanAndRebuild(
+                        repository,
+                        deckConfig,
+                        builder: builder,
+                      ),
+                    );
                     break;
                   case 'q':
                   case 'quit':
