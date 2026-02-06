@@ -16,6 +16,7 @@ const DeckOptions({
   Map<String, WidgetDefinition> widgets = const {},
   SlideParts parts = const SlideParts(),
   bool debug = false,
+  bool watchForChanges = false,
 });
 ```
 
@@ -122,7 +123,7 @@ DeckOptions(
 )
 ```
 
-See [Custom Slide Parts Guide](/docs/guides/slide-parts) for examples.
+See [Custom Slide Parts Guide](/guides/slide-parts) for examples.
 
 ### `debug`
 **Type:** `bool` | **Default:** `false`
@@ -132,6 +133,18 @@ Enables visual debugging aids.
 ```dart
 DeckOptions(
   debug: true,
+)
+```
+
+### `watchForChanges`
+**Type:** `bool` | **Default:** `false`
+
+Enables file watching for automatic deck rebuilds when supported by your
+runtime flow.
+
+```dart
+DeckOptions(
+  watchForChanges: true,
 )
 ```
 

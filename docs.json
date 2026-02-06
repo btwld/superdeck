@@ -17,18 +17,18 @@
     },
     {
       "title": "Getting Started",
-      "path": "/docs/getting-started"
+      "path": "/getting-started"
     },
     {
       "title": "Tutorials",
       "children": [
         {
           "title": "Block Layouts",
-          "path": "/docs/tutorials/block-layouts"
+          "path": "/tutorials/block-layouts"
         },
         {
           "title": "First Presentation",
-          "path": "/docs/tutorials/first-presentation"
+          "path": "/tutorials/first-presentation"
         }
       ]
     },
@@ -37,31 +37,31 @@
       "children": [
         {
           "title": "SuperDeck Overview",
-          "path": "/docs/guides/superdeck-overview"
+          "path": "/guides/superdeck-overview"
         },
         {
           "title": "Markdown Authoring",
-          "path": "/docs/guides/markdown-authoring"
+          "path": "/guides/markdown-authoring"
         },
         {
           "title": "CLI Reference",
-          "path": "/docs/guides/cli-reference"
+          "path": "/guides/cli-reference"
         },
         {
           "title": "Custom Widgets",
-          "path": "/docs/guides/custom-widgets"
+          "path": "/guides/custom-widgets"
         },
         {
           "title": "Custom Slide Parts",
-          "path": "/docs/guides/slide-parts"
+          "path": "/guides/slide-parts"
         },
         {
           "title": "Widget Size Guide",
-          "path": "/docs/guides/widget-size-guide"
+          "path": "/guides/widget-size-guide"
         },
         {
           "title": "Mermaid Diagrams",
-          "path": "/docs/guides/mermaid-diagrams"
+          "path": "/guides/mermaid-diagrams"
         }
       ]
     },
@@ -70,17 +70,17 @@
       "children": [
         {
           "title": "Block Types",
-          "path": "/docs/reference/block-types"
+          "path": "/reference/block-types"
         },
         {
           "title": "DeckOptions API",
-          "path": "/docs/reference/deck-options"
+          "path": "/reference/deck-options"
         }
       ]
     },
     {
       "title": "Examples",
-      "path": "/docs/examples"
+      "path": "/examples"
     }
   ],
   "footer": {
