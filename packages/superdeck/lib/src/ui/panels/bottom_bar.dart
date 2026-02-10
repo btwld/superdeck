@@ -45,10 +45,15 @@ class DeckBottomBar extends StatelessWidget {
           onPressed: () => PdfExportDialogScreen.show(context),
         ),
 
-        SDIconButton(
-          icon: Icons.replay_circle_filled_rounded,
-          onPressed: () => deck.generateThumbnails(context, force: true),
-        ),
+        Watch((context) {
+          if (!deck.areThumbnailsEnabled) {
+            return const SizedBox.shrink();
+          }
+          return SDIconButton(
+            icon: Icons.replay_circle_filled_rounded,
+            onPressed: () => deck.generateThumbnails(context, force: true),
+          );
+        }),
         const Spacer(),
         SDIconButton(icon: Icons.arrow_back, onPressed: deck.previousSlide),
         SDIconButton(icon: Icons.arrow_forward, onPressed: deck.nextSlide),

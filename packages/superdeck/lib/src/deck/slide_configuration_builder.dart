@@ -57,12 +57,12 @@ class SlideConfigurationBuilder {
       }
     }
 
-    // Generate thumbnail path using slide key and assets directory
-    final thumbnailAsset = GeneratedAsset.thumbnail(slide.key);
-    final thumbnailPath = p.join(
-      configuration.assetsDir.path,
-      thumbnailAsset.fileName,
-    );
+    final thumbnailPath = options.generateThumbnails
+        ? p.join(
+            configuration.assetsDir.path,
+            GeneratedAsset.thumbnail(slide.key).fileName,
+          )
+        : null;
 
     // Merge styles: default -> base -> slide-specific
     final mergedStyle = defaultSlideStyle

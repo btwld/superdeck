@@ -89,6 +89,7 @@ class DeckController {
     () => _loadingState.value == DeckLoadingState.error,
   );
   ReadonlySignal<Object?> get error => _error;
+  bool get areThumbnailsEnabled => _options.value.generateThumbnails;
 
   // UI computeds
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
@@ -209,7 +210,7 @@ class DeckController {
     }
   }
 
-  /// Sets rebuilding state (called by CliWatcher)
+  /// Sets rebuilding state (called by the deck watcher)
   @internal
   void setRebuilding(bool value) {
     if (_disposed) return;
@@ -303,6 +304,15 @@ class DeckController {
 
   void generateThumbnails(BuildContext context, {bool force = false}) {
     if (_disposed) return;
+    if (!_options.value.generateThumbnails) {
+      if (_thumbnails.value.isNotEmpty) {
+        for (final thumbnail in _thumbnails.value.values) {
+          thumbnail.dispose();
+        }
+        _thumbnails.value = {};
+      }
+      return;
+    }
 
     final currentSlides = slides.value;
     final currentSlideKeys = currentSlides.map((s) => s.key).toSet();

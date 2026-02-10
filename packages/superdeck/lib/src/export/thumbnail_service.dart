@@ -38,6 +38,12 @@ class ThumbnailService {
     final updatedCache = Map<String, AsyncThumbnail>.from(cache);
 
     for (final slide in slides) {
+      final thumbnailFile = slide.thumbnailFile;
+      if (thumbnailFile == null || thumbnailFile.isEmpty) {
+        updatedCache.remove(slide.key)?.dispose();
+        continue;
+      }
+
       final thumbnail = updatedCache.putIfAbsent(
         slide.key,
         () => AsyncThumbnail(
@@ -60,7 +66,14 @@ class ThumbnailService {
     BuildContext context,
     bool force,
   ) async {
-    final file = File(slide.thumbnailFile);
+    final thumbnailFile = slide.thumbnailFile;
+    if (thumbnailFile == null || thumbnailFile.isEmpty) {
+      throw StateError(
+        'Thumbnail generation requires a thumbnail file path for slide ${slide.key}.',
+      );
+    }
+
+    final file = File(thumbnailFile);
 
     if (!force && await file.exists() && await file.length() > 0) {
       return file;
@@ -71,6 +84,11 @@ class ThumbnailService {
       // ignore: use_build_context_synchronously
       context: context,
     );
+
+    final parent = file.parent;
+    if (!await parent.exists()) {
+      await parent.create(recursive: true);
+    }
 
     await file.writeAsBytes(imageData);
     return file;

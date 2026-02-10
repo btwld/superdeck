@@ -7,13 +7,15 @@ import '../ui/widgets/provider.dart';
 import 'widget_definition.dart';
 
 class SlideConfiguration {
+  static const _thumbnailFileUnset = Object();
+
   final int slideIndex;
   final SlideStyle style;
   final Slide _slide;
   final bool debug;
   final SlideParts? parts;
   final Map<String, WidgetDefinition> _widgets;
-  final String thumbnailFile;
+  final String? thumbnailFile;
 
   final bool isExporting;
 
@@ -23,7 +25,7 @@ class SlideConfiguration {
     required Slide slide,
     this.debug = false,
     this.parts,
-    required this.thumbnailFile,
+    this.thumbnailFile,
     Map<String, WidgetDefinition> widgets = const {},
     this.isExporting = false,
   }) : _slide = slide,
@@ -51,7 +53,7 @@ class SlideConfiguration {
     Slide? slide,
     bool? debug,
     SlideParts? parts,
-    String? thumbnailFile,
+    Object? thumbnailFile = _thumbnailFileUnset,
     Map<String, WidgetDefinition>? widgets,
     bool? isExporting,
   }) {
@@ -61,7 +63,9 @@ class SlideConfiguration {
       slide: slide ?? _slide,
       debug: debug ?? this.debug,
       parts: parts ?? this.parts,
-      thumbnailFile: thumbnailFile ?? this.thumbnailFile,
+      thumbnailFile: identical(thumbnailFile, _thumbnailFileUnset)
+          ? this.thumbnailFile
+          : thumbnailFile as String?,
       widgets: widgets ?? _widgets,
       isExporting: isExporting ?? this.isExporting,
     );

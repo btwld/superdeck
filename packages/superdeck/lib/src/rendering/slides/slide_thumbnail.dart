@@ -23,6 +23,7 @@ class SlideThumbnail extends StatelessWidget {
 
     return Watch((context) {
       final asyncThumbnail = deck.getThumbnail(slide.key);
+      final thumbnailsEnabled = deck.areThumbnailsEnabled;
 
       if (asyncThumbnail == null) {
         return _PreviewContainer(
@@ -31,7 +32,14 @@ class SlideThumbnail extends StatelessWidget {
             aspectRatio: kAspectRatio,
             child: Container(
               color: Colors.grey[300],
-              child: const Center(child: IsometricLoading()),
+              child: Center(
+                child: thumbnailsEnabled
+                    ? const IsometricLoading()
+                    : Text(
+                        'Preview unavailable',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+              ),
             ),
           ),
         );

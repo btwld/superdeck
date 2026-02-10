@@ -101,6 +101,7 @@ class _SplitViewState extends State<SplitView>
       _thumbnailSyncEffectCleanup = effect(() {
         // Track slides signal - effect will re-run when slides change
         deckController.slides.value;
+        deckController.areThumbnailsEnabled;
 
         // Regenerate thumbnails after frame completes
         WidgetsBinding.instance.addPostFrameCallback((_) {
