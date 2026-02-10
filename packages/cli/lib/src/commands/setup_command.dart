@@ -101,7 +101,7 @@ Built with SuperDeck
   }
 
   /// Set up a custom index.html with loading indicator for web
-  Future<void> _setupCustomIndexHtml(Directory projectDir) async {
+  Future<bool> _setupCustomIndexHtml(Directory projectDir) async {
     final progress = logger.progress('Setting up custom index.html for web...');
 
     try {
@@ -112,7 +112,7 @@ Built with SuperDeck
         progress.fail('Web directory not found');
         logger.warn('Web directory not found at ${webDir.path}');
 
-        return;
+        return false;
       }
 
       final indexHtmlPath = path.join(webDir.path, 'index.html');
@@ -132,9 +132,10 @@ Built with SuperDeck
         await indexHtmlFile.writeAsString(customIndexHtml);
         progress.complete('Created custom index.html with loading indicator');
       }
+      return true;
     } catch (e) {
-      progress.fail('Failed to set up custom index.html');
-      logger.err('Error setting up custom index.html: $e');
+      progress.fail('Failed to set up custom index.html: $e');
+      rethrow;
     }
   }
 
@@ -289,8 +290,12 @@ Built with SuperDeck
       if (setupWeb) {
         try {
           final projectDir = Directory.current;
-          await _setupCustomIndexHtml(projectDir);
-          successCount++;
+          final webWasSetup = await _setupCustomIndexHtml(projectDir);
+          if (webWasSetup) {
+            successCount++;
+          } else {
+            warningCount++;
+          }
         } catch (e) {
           logger.err('Failed to set up web support: $e');
           errorCount++;

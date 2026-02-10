@@ -103,15 +103,25 @@ class PdfController {
 
   /// Waits for a render boundary widget to be painted
   Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
-    while (key.currentContext == null) {
-      await Future.delayed(const Duration(milliseconds: 10));
+    const maxAttempts = 500;
+    const retryDelay = Duration(milliseconds: 10);
+
+    for (var attempt = 1; key.currentContext == null; attempt++) {
+      if (attempt > maxAttempts) {
+        throw TimeoutException('Timed out waiting for render boundary context.');
+      }
+      await Future.delayed(retryDelay);
     }
 
-    final repaintBoundary = key.currentContext!.findRenderObject()!;
-    final isAttached = repaintBoundary.attached;
-
-    while (!isAttached) {
-      await Future.delayed(const Duration(milliseconds: 10));
+    for (var attempt = 1; ; attempt++) {
+      final repaintBoundary = key.currentContext?.findRenderObject();
+      if (repaintBoundary?.attached ?? false) break;
+      if (attempt > maxAttempts) {
+        throw TimeoutException(
+          'Timed out waiting for render boundary attachment.',
+        );
+      }
+      await Future.delayed(retryDelay);
     }
 
     await WidgetsBinding.instance.endOfFrame;
@@ -205,11 +215,11 @@ class PdfController {
       _images.clear();
       _capturedCount.value = 0;
     } on _ExportCancelledException catch (e) {
-      // Handle cancellation: update status.
       _exportStatus.value = PdfExportStatus.idle;
-
-      // Optionally, log the cancellation.
       log(e.toString());
+    } catch (e) {
+      _exportStatus.value = PdfExportStatus.failed;
+      log('Export failed: $e');
     }
   }
 

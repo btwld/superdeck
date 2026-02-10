@@ -1,6 +1,12 @@
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/export/async_thumbnail.dart';
+import 'package:superdeck/src/export/thumbnail_service.dart';
+import 'package:superdeck/src/styling/styling.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
   group('ThumbnailService - directory issue', () {
@@ -101,5 +107,151 @@ void main() {
         expect(await assetsDir.exists(), isTrue);
       },
     );
+  });
+
+  group('ThumbnailService - generateThumbnails', () {
+    late ThumbnailService service;
+
+    setUp(() {
+      service = ThumbnailService();
+    });
+
+    testWidgets('removes slides with null thumbnailFile from cache',
+        (tester) async {
+      final slideWithoutThumb = SlideConfiguration(
+        slideIndex: 0,
+        style: SlideStyle(),
+        slide: Slide(
+          key: 'no-thumb',
+          sections: [SectionBlock([ContentBlock('No thumbnail')])],
+        ),
+        thumbnailFile: null,
+      );
+
+      final existingThumbnail = AsyncThumbnail(
+        generator: (_, __) => throw UnimplementedError(),
+      );
+      final cache = <String, AsyncThumbnail>{
+        'no-thumb': existingThumbnail,
+      };
+      Map<String, AsyncThumbnail>? updatedCache;
+
+      await tester.pumpWidget(
+        Builder(builder: (context) {
+          service.generateThumbnails(
+            slides: [slideWithoutThumb],
+            context: context,
+            cache: cache,
+            onCacheUpdate: (c) => updatedCache = c,
+          );
+          return const SizedBox();
+        }),
+      );
+
+      expect(updatedCache, isNotNull);
+      expect(updatedCache!.containsKey('no-thumb'), isFalse);
+    });
+
+    testWidgets('skips slides with empty thumbnailFile', (tester) async {
+      final slideWithEmptyThumb = SlideConfiguration(
+        slideIndex: 0,
+        style: SlideStyle(),
+        slide: Slide(
+          key: 'empty-thumb',
+          sections: [SectionBlock([ContentBlock('Empty thumbnail')])],
+        ),
+        thumbnailFile: '',
+      );
+
+      final cache = <String, AsyncThumbnail>{};
+      Map<String, AsyncThumbnail>? updatedCache;
+
+      await tester.pumpWidget(
+        Builder(builder: (context) {
+          service.generateThumbnails(
+            slides: [slideWithEmptyThumb],
+            context: context,
+            cache: cache,
+            onCacheUpdate: (c) => updatedCache = c,
+          );
+          return const SizedBox();
+        }),
+      );
+
+      expect(updatedCache, isNotNull);
+      expect(updatedCache!.containsKey('empty-thumb'), isFalse);
+    });
+
+    testWidgets('creates AsyncThumbnail entries for slides with thumbnailFile',
+        (tester) async {
+      final slideWithThumb = SlideConfiguration(
+        slideIndex: 0,
+        style: SlideStyle(),
+        slide: Slide(
+          key: 'has-thumb',
+          sections: [SectionBlock([ContentBlock('Has thumbnail')])],
+        ),
+        thumbnailFile: '/tmp/test-thumb.png',
+      );
+
+      final cache = <String, AsyncThumbnail>{};
+      Map<String, AsyncThumbnail>? updatedCache;
+
+      await tester.pumpWidget(
+        Builder(builder: (context) {
+          service.generateThumbnails(
+            slides: [slideWithThumb],
+            context: context,
+            cache: cache,
+            onCacheUpdate: (c) => updatedCache = c,
+          );
+          return const SizedBox();
+        }),
+      );
+
+      expect(updatedCache, isNotNull);
+      expect(updatedCache!.containsKey('has-thumb'), isTrue);
+    });
+
+    testWidgets('calls onCacheUpdate with all entries', (tester) async {
+      final slides = [
+        SlideConfiguration(
+          slideIndex: 0,
+          style: SlideStyle(),
+          slide: Slide(
+            key: 'slide-a',
+            sections: [SectionBlock([ContentBlock('A')])],
+          ),
+          thumbnailFile: '/tmp/thumb-a.png',
+        ),
+        SlideConfiguration(
+          slideIndex: 1,
+          style: SlideStyle(),
+          slide: Slide(
+            key: 'slide-b',
+            sections: [SectionBlock([ContentBlock('B')])],
+          ),
+          thumbnailFile: '/tmp/thumb-b.png',
+        ),
+      ];
+
+      final cache = <String, AsyncThumbnail>{};
+      Map<String, AsyncThumbnail>? updatedCache;
+
+      await tester.pumpWidget(
+        Builder(builder: (context) {
+          service.generateThumbnails(
+            slides: slides,
+            context: context,
+            cache: cache,
+            onCacheUpdate: (c) => updatedCache = c,
+          );
+          return const SizedBox();
+        }),
+      );
+
+      expect(updatedCache, isNotNull);
+      expect(updatedCache!.keys, containsAll(['slide-a', 'slide-b']));
+    });
   });
 }

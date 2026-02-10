@@ -56,9 +56,12 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
     // Start runtime deck watcher in debug mode for auto-rebuild (if enabled)
     if (kCanRunProcess && widget.options.watchForChanges) {
       try {
-        _deckWatcher = DeckWatcher(configuration: configuration);
+        _deckWatcher = DeckWatcher(
+          configuration: configuration,
+          store: deckService,
+        );
         _deckWatcher!.start();
-        _logger.info('Deck watcher started');
+        _logger.info('Deck watcher starting');
 
         // Sync watcher rebuilding state with deck controller using effect
         _deckWatcherEffect = effect(() {

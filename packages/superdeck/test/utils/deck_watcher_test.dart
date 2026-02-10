@@ -109,5 +109,53 @@ void main() {
         watcher.dispose();
       }, returnsNormally);
     });
+
+    test('start is guarded against double invocation', () async {
+      final watcher = DeckWatcher(configuration: configuration);
+      await watcher.start();
+
+      // Second start should be a no-op (status is no longer idle)
+      await watcher.start();
+
+      // Should still be in a valid state
+      expect(
+        watcher.status.value,
+        isNot(DeckWatcherStatus.idle),
+      );
+
+      watcher.dispose();
+    });
+
+    test('constructs with external DeckService store', () async {
+      final store = DeckService(configuration: configuration);
+      await store.initialize();
+
+      final watcher = DeckWatcher(
+        configuration: configuration,
+        store: store,
+      );
+
+      expect(watcher.status.value, DeckWatcherStatus.idle);
+
+      watcher.dispose();
+    });
+
+    test('build status payload is unmodifiable', () async {
+      final watcher = DeckWatcher(configuration: configuration);
+      await watcher.start();
+
+      await _waitFor(
+        () => watcher.lastBuildStatusPayload != null,
+      );
+
+      final payload = watcher.lastBuildStatusPayload;
+      expect(payload, isNotNull);
+      expect(
+        () => payload!['injected'] = 'value',
+        throwsA(isA<UnsupportedError>()),
+      );
+
+      watcher.dispose();
+    });
   });
 }

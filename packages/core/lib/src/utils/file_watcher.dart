@@ -23,8 +23,8 @@ class FileWatcher {
         subscription = directory.watch(events: FileSystemEvent.modify).listen((
           event,
         ) {
-          final eventPath = event.path.replaceFirst('./', '');
-          final targetPath = file.path.replaceFirst('./', '');
+          final eventPath = _stripRelativePrefix(event.path);
+          final targetPath = _stripRelativePrefix(file.path);
 
           if (eventPath == targetPath && !_isProcessing) {
             _isProcessing = true;
@@ -63,8 +63,8 @@ class FileWatcher {
 
       // Check if this event is for our target file
       // Normalize paths to handle cases like "./slides.md" vs "slides.md"
-      final eventPath = event.path.replaceFirst('./', '');
-      final targetPath = file.path.replaceFirst('./', '');
+      final eventPath = _stripRelativePrefix(event.path);
+      final targetPath = _stripRelativePrefix(file.path);
 
       if (eventPath == targetPath) {
         await _runOnFileChange(onFileChange);
@@ -80,6 +80,8 @@ class FileWatcher {
 
   /// Checks if the watcher is currently active.
   bool get isWatching => _subscription != null;
+
+  String _stripRelativePrefix(String path) => path.replaceFirst('./', '');
 
   /// Runs the provided [onFileChange] callback, managing _isProcessing state and error handling.
   Future<void> _runOnFileChange(FutureOr<void> Function() onFileChange) async {

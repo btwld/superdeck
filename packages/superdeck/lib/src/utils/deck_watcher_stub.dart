@@ -1,23 +1,7 @@
 import 'package:signals/signals.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-/// Status of the watcher lifecycle.
-enum DeckWatcherStatus {
-  /// Not started yet.
-  idle,
-
-  /// Initial setup is in progress.
-  starting,
-
-  /// Watcher is healthy and listening for changes.
-  running,
-
-  /// Last build failed.
-  failed,
-
-  /// Explicitly stopped via dispose().
-  stopped,
-}
+import 'deck_watcher_types.dart';
 
 /// No-op watcher for platforms that do not support runtime file watching.
 class DeckWatcher {
@@ -42,7 +26,7 @@ class DeckWatcher {
     return Map<String, dynamic>.unmodifiable(payload);
   }
 
-  DeckWatcher({required this.configuration});
+  DeckWatcher({required this.configuration, DeckService? store});
 
   Future<void> start() async {
     if (_disposed) return;

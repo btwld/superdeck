@@ -5,29 +5,14 @@ import 'package:signals/signals.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-/// Status of the watcher lifecycle.
-enum DeckWatcherStatus {
-  /// Not started yet.
-  idle,
-
-  /// Initial setup is in progress.
-  starting,
-
-  /// Watcher is healthy and listening for changes.
-  running,
-
-  /// Last build failed.
-  failed,
-
-  /// Explicitly stopped via dispose().
-  stopped,
-}
+import 'deck_watcher_types.dart';
 
 /// Watches slide file changes and rebuilds using DeckBuilder directly.
 ///
 /// This replaces the previous subprocess-based watcher with in-process builds.
 class DeckWatcher {
   final DeckConfiguration configuration;
+  final DeckService? _externalStore;
   final _logger = Logger('DeckWatcher');
 
   // Reactive state - Signals
@@ -56,7 +41,8 @@ class DeckWatcher {
     return Map<String, dynamic>.unmodifiable(payload);
   }
 
-  DeckWatcher({required this.configuration});
+  DeckWatcher({required this.configuration, DeckService? store})
+      : _externalStore = store;
 
   /// Starts watching and rebuilding slides.
   Future<void> start() async {
@@ -69,7 +55,7 @@ class DeckWatcher {
     _error.value = null;
 
     try {
-      _store = DeckService(configuration: configuration);
+      _store = _externalStore ?? DeckService(configuration: configuration);
       await _store!.initialize();
 
       _builder = DeckBuilder(
@@ -200,7 +186,10 @@ class DeckWatcher {
       unawaited(builder.dispose());
     }
 
-    _store = null;
+    // Only clear the store reference if we created it ourselves
+    if (_externalStore == null) {
+      _store = null;
+    }
 
     _status.dispose();
     _error.dispose();
