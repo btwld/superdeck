@@ -7,8 +7,6 @@ import '../ui/widgets/provider.dart';
 import 'widget_definition.dart';
 
 class SlideConfiguration {
-  static const _thumbnailFileUnset = Object();
-
   final int slideIndex;
   final SlideStyle style;
   final Slide _slide;
@@ -53,19 +51,23 @@ class SlideConfiguration {
     Slide? slide,
     bool? debug,
     SlideParts? parts,
-    Object? thumbnailFile = _thumbnailFileUnset,
+    String? thumbnailFile,
+    bool setThumbnailFile = false,
     Map<String, WidgetDefinition>? widgets,
     bool? isExporting,
   }) {
+    assert(
+      setThumbnailFile || thumbnailFile == null,
+      'Pass setThumbnailFile: true to update thumbnailFile.',
+    );
+
     return SlideConfiguration(
       slideIndex: slideIndex ?? this.slideIndex,
       style: style ?? this.style,
       slide: slide ?? _slide,
       debug: debug ?? this.debug,
       parts: parts ?? this.parts,
-      thumbnailFile: identical(thumbnailFile, _thumbnailFileUnset)
-          ? this.thumbnailFile
-          : thumbnailFile as String?,
+      thumbnailFile: setThumbnailFile ? thumbnailFile : this.thumbnailFile,
       widgets: widgets ?? _widgets,
       isExporting: isExporting ?? this.isExporting,
     );
