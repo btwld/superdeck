@@ -8,7 +8,7 @@ class DeckOptions {
   final Map<String, WidgetDefinition> widgets;
   final SlideParts parts;
   final bool debug;
-  final bool generateThumbnails;
+  final bool showThumbnails;
 
   /// Whether to watch for file changes and auto-rebuild the deck.
   ///
@@ -23,9 +23,13 @@ class DeckOptions {
     this.widgets = const <String, WidgetDefinition>{},
     this.parts = const SlideParts(),
     this.debug = false,
-    this.generateThumbnails = true,
+    bool? showThumbnails,
+    @Deprecated('Use showThumbnails instead') bool? generateThumbnails,
     this.watchForChanges = false,
-  });
+  }) : showThumbnails = generateThumbnails ?? showThumbnails ?? true;
+
+  @Deprecated('Use showThumbnails instead')
+  bool get generateThumbnails => showThumbnails;
 
   DeckOptions copyWith({
     SlideStyle? baseStyle,
@@ -33,7 +37,8 @@ class DeckOptions {
     Map<String, WidgetDefinition>? widgets,
     SlideParts? parts,
     bool? debug,
-    bool? generateThumbnails,
+    bool? showThumbnails,
+    @Deprecated('Use showThumbnails instead') bool? generateThumbnails,
     bool? watchForChanges,
   }) {
     return DeckOptions(
@@ -42,7 +47,8 @@ class DeckOptions {
       widgets: widgets ?? this.widgets,
       parts: parts ?? this.parts,
       debug: debug ?? this.debug,
-      generateThumbnails: generateThumbnails ?? this.generateThumbnails,
+      showThumbnails:
+          generateThumbnails ?? showThumbnails ?? this.showThumbnails,
       watchForChanges: watchForChanges ?? this.watchForChanges,
     );
   }
@@ -57,7 +63,7 @@ class DeckOptions {
           widgets == other.widgets &&
           parts == other.parts &&
           debug == other.debug &&
-          generateThumbnails == other.generateThumbnails &&
+          showThumbnails == other.showThumbnails &&
           watchForChanges == other.watchForChanges;
 
   @override
@@ -67,7 +73,7 @@ class DeckOptions {
     widgets,
     parts,
     debug,
-    generateThumbnails,
+    showThumbnails,
     watchForChanges,
   );
 }

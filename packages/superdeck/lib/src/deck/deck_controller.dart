@@ -67,6 +67,7 @@ class DeckController {
   // Stream subscription
   StreamSubscription<Deck>? _deckSubscription;
   EffectCleanup? _indexClampEffect;
+  EffectCleanup? _thumbnailCacheEffect;
 
   // ========================================
   // COMPUTED STATE (Read-Only Public API)
@@ -89,7 +90,7 @@ class DeckController {
     () => _loadingState.value == DeckLoadingState.error,
   );
   ReadonlySignal<Object?> get error => _error;
-  bool get areThumbnailsEnabled => _options.value.generateThumbnails;
+  bool get areThumbnailsEnabled => _options.value.showThumbnails;
 
   // UI computeds
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
@@ -148,6 +149,19 @@ class DeckController {
       if (_currentIndex.value != clamped) {
         _currentIndex.value = clamped;
       }
+    });
+
+    // Keep thumbnail cache synced with current slides in read-only mode.
+    _thumbnailCacheEffect = effect(() {
+      final thumbnailsEnabled = _options.value.showThumbnails;
+      if (!thumbnailsEnabled) {
+        _disposeAllThumbnails();
+        return;
+      }
+
+      // Track slide changes and synchronize cache entries accordingly.
+      slides.value;
+      _syncThumbnails();
     });
 
     // Start deck loading
@@ -302,47 +316,43 @@ class DeckController {
   // THUMBNAIL ACTIONS
   // ========================================
 
-  void generateThumbnails(BuildContext context, {bool force = false}) {
-    if (_disposed) return;
-    if (!_options.value.generateThumbnails) {
-      if (_thumbnails.value.isNotEmpty) {
-        for (final thumbnail in _thumbnails.value.values) {
-          thumbnail.dispose();
-        }
-        _thumbnails.value = {};
-      }
+  void _disposeAllThumbnails() {
+    final thumbnails = _thumbnails.peek();
+    if (thumbnails.isEmpty) {
       return;
     }
 
-    final currentSlides = slides.value;
-    final currentSlideKeys = currentSlides.map((s) => s.key).toSet();
-
-    // Clean up stale thumbnails for removed slides to prevent memory leaks
-    final currentCache = _thumbnails.value;
-    final staleKeys = currentCache.keys
-        .where((k) => !currentSlideKeys.contains(k))
-        .toList();
-
-    if (staleKeys.isNotEmpty) {
-      for (final key in staleKeys) {
-        currentCache[key]?.dispose();
-      }
-      final cleanedCache = Map<String, AsyncThumbnail>.from(currentCache)
-        ..removeWhere((k, _) => staleKeys.contains(k));
-      _thumbnails.value = cleanedCache;
+    for (final thumbnail in thumbnails.values) {
+      thumbnail.dispose();
     }
+    _thumbnails.value = {};
+  }
 
+  void _syncThumbnails() {
     _thumbnailService.generateThumbnails(
-      slides: currentSlides,
-      context: context,
-      cache: _thumbnails.value,
+      slides: slides.value,
+      cache: _thumbnails.peek(),
       onCacheUpdate: (cache) {
         if (!_disposed) {
           _thumbnails.value = cache;
         }
       },
-      force: force,
     );
+  }
+
+  void generateThumbnails(BuildContext context, {bool force = false}) {
+    if (_disposed) return;
+    if (!_options.value.showThumbnails) {
+      _disposeAllThumbnails();
+      return;
+    }
+
+    _syncThumbnails();
+    if (!force) return;
+
+    for (final thumbnail in _thumbnails.value.values) {
+      unawaited(thumbnail.load(context, true));
+    }
   }
 
   AsyncThumbnail? getThumbnail(String slideKey) {
@@ -360,6 +370,7 @@ class DeckController {
 
     // Stop effects before disposing signals
     _indexClampEffect?.call();
+    _thumbnailCacheEffect?.call();
 
     // Cancel stream subscription - use unawaited since dispose() is sync
     // The subscription may emit events during cancellation, but _disposed
@@ -370,9 +381,7 @@ class DeckController {
     router.dispose();
 
     // Dispose thumbnails
-    for (final thumbnail in _thumbnails.value.values) {
-      thumbnail.dispose();
-    }
+    _disposeAllThumbnails();
 
     // Dispose signals
     _loadingState.dispose();

@@ -47,13 +47,18 @@ class MockDeckConfiguration {
   String? get slidesPath => null;
   String? get outputDir => null;
   String? get assetsPath => null;
+  String? get thumbnailsPath => null;
   Directory get superdeckDir => Directory(p.join(_tempDir.path, '.superdeck'));
   File get deckJson =>
       File(p.join(_tempDir.path, '.superdeck', 'superdeck.json'));
   Directory get assetsDir =>
       Directory(p.join(_tempDir.path, '.superdeck', 'assets'));
+  Directory get thumbnailsDir =>
+      Directory(p.join(_tempDir.path, '.superdeck', 'thumbnails'));
   File get assetsRefJson =>
       File(p.join(_tempDir.path, '.superdeck', 'generated_assets.json'));
+  File get thumbnailsManifestJson =>
+      File(p.join(_tempDir.path, '.superdeck', 'thumbnails_manifest.json'));
   File get slidesFile => File(p.join(_tempDir.path, 'slides.md'));
   File get pubspecFile => File(p.join(_tempDir.path, 'pubspec.yaml'));
 }

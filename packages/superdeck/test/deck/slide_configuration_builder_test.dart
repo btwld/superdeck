@@ -28,22 +28,21 @@ void main() {
       expect(configs, hasLength(1));
       final thumbnailFile = configs.first.thumbnailFile;
       expect(thumbnailFile, isNotNull);
-      expect(thumbnailFile, contains(configuration.assetsDir.path));
+      expect(thumbnailFile, contains(configuration.thumbnailsDir.path));
       expect(thumbnailFile, contains('thumbnail_slide-1.png'));
     });
 
     test('omits thumbnail path when thumbnail generation is disabled', () {
       final configs = builder.buildConfigurations([
         slide,
-      ], const DeckOptions(generateThumbnails: false));
+      ], const DeckOptions(showThumbnails: false));
 
       expect(configs, hasLength(1));
       expect(configs.first.thumbnailFile, isNull);
     });
 
     test('returns empty list for empty slides', () {
-      final configs =
-          builder.buildConfigurations([], const DeckOptions());
+      final configs = builder.buildConfigurations([], const DeckOptions());
 
       expect(configs, isEmpty);
     });
@@ -52,20 +51,25 @@ void main() {
       final slides = [
         Slide(
           key: 'a',
-          sections: [SectionBlock([ContentBlock('Slide A')])],
+          sections: [
+            SectionBlock([ContentBlock('Slide A')]),
+          ],
         ),
         Slide(
           key: 'b',
-          sections: [SectionBlock([ContentBlock('Slide B')])],
+          sections: [
+            SectionBlock([ContentBlock('Slide B')]),
+          ],
         ),
         Slide(
           key: 'c',
-          sections: [SectionBlock([ContentBlock('Slide C')])],
+          sections: [
+            SectionBlock([ContentBlock('Slide C')]),
+          ],
         ),
       ];
 
-      final configs =
-          builder.buildConfigurations(slides, const DeckOptions());
+      final configs = builder.buildConfigurations(slides, const DeckOptions());
 
       expect(configs, hasLength(3));
       expect(configs[0].slideIndex, 0);
@@ -80,16 +84,19 @@ void main() {
       final slides = [
         Slide(
           key: 'first',
-          sections: [SectionBlock([ContentBlock('First')])],
+          sections: [
+            SectionBlock([ContentBlock('First')]),
+          ],
         ),
         Slide(
           key: 'second',
-          sections: [SectionBlock([ContentBlock('Second')])],
+          sections: [
+            SectionBlock([ContentBlock('Second')]),
+          ],
         ),
       ];
 
-      final configs =
-          builder.buildConfigurations(slides, const DeckOptions());
+      final configs = builder.buildConfigurations(slides, const DeckOptions());
 
       expect(configs[0].thumbnailFile, contains('thumbnail_first.png'));
       expect(configs[1].thumbnailFile, contains('thumbnail_second.png'));
@@ -101,10 +108,9 @@ void main() {
         link: const TextStyle(color: Color(0xFFFF0000)),
       );
 
-      final configs = builder.buildConfigurations(
-        [slide],
-        DeckOptions(baseStyle: baseStyle),
-      );
+      final configs = builder.buildConfigurations([
+        slide,
+      ], DeckOptions(baseStyle: baseStyle));
 
       final expected = defaultSlideStyle.merge(baseStyle);
       expect(configs.first.style, expected);
@@ -120,28 +126,24 @@ void main() {
 
       final slideWithStyle = Slide(
         key: 'styled',
-        sections: [SectionBlock([ContentBlock('Styled')])],
+        sections: [
+          SectionBlock([ContentBlock('Styled')]),
+        ],
         options: const SlideOptions(style: 'custom'),
       );
 
-      final configs = builder.buildConfigurations(
-        [slideWithStyle],
-        DeckOptions(
-          baseStyle: baseStyle,
-          styles: {'custom': customStyle},
-        ),
-      );
+      final configs = builder.buildConfigurations([
+        slideWithStyle,
+      ], DeckOptions(baseStyle: baseStyle, styles: {'custom': customStyle}));
 
-      final expected =
-          defaultSlideStyle.merge(baseStyle).merge(customStyle);
+      final expected = defaultSlideStyle.merge(baseStyle).merge(customStyle);
       expect(configs.first.style, expected);
     });
 
     test('passes debug flag through to configurations', () {
-      final configs = builder.buildConfigurations(
-        [slide],
-        const DeckOptions(debug: true),
-      );
+      final configs = builder.buildConfigurations([
+        slide,
+      ], const DeckOptions(debug: true));
 
       expect(configs.first.debug, isTrue);
     });

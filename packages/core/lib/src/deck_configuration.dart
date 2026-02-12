@@ -8,12 +8,14 @@ final class DeckConfiguration {
   final String? slidesPath;
   final String? outputDir;
   final String? assetsPath;
+  final String? thumbnailsPath;
 
   DeckConfiguration({
     this.projectDir,
     this.slidesPath,
     this.outputDir,
     this.assetsPath,
+    this.thumbnailsPath,
   });
 
   /// Validates a path to prevent directory traversal attacks.
@@ -64,8 +66,19 @@ final class DeckConfiguration {
     return Directory(p.join(superdeckDir.path, validated));
   }
 
+  Directory get thumbnailsDir {
+    final validated = _validateRelativePath(
+      thumbnailsPath,
+      'thumbnails',
+      'thumbnailsPath',
+    );
+    return Directory(p.join(superdeckDir.path, validated));
+  }
+
   File get assetsRefJson =>
       File(p.join(superdeckDir.path, 'generated_assets.json'));
+  File get thumbnailsManifestJson =>
+      File(p.join(superdeckDir.path, 'thumbnails_manifest.json'));
   File get buildStatusJson =>
       File(p.join(superdeckDir.path, 'build_status.json'));
 
@@ -85,12 +98,14 @@ final class DeckConfiguration {
     String? slidesPath,
     String? outputDir,
     String? assetsPath,
+    String? thumbnailsPath,
   }) {
     return DeckConfiguration(
       projectDir: projectDir ?? this.projectDir,
       slidesPath: slidesPath ?? this.slidesPath,
       outputDir: outputDir ?? this.outputDir,
       assetsPath: assetsPath ?? this.assetsPath,
+      thumbnailsPath: thumbnailsPath ?? this.thumbnailsPath,
     );
   }
 
@@ -100,6 +115,7 @@ final class DeckConfiguration {
       if (slidesPath != null) 'slidesPath': slidesPath,
       if (outputDir != null) 'outputDir': outputDir,
       if (assetsPath != null) 'assetsPath': assetsPath,
+      if (thumbnailsPath != null) 'thumbnailsPath': thumbnailsPath,
     };
   }
 
@@ -109,6 +125,7 @@ final class DeckConfiguration {
       slidesPath: map['slidesPath'] as String?,
       outputDir: map['outputDir'] as String?,
       assetsPath: map['assetsPath'] as String?,
+      thumbnailsPath: map['thumbnailsPath'] as String?,
     );
   }
 
@@ -122,6 +139,7 @@ final class DeckConfiguration {
     'slidesPath': Ack.string().optional(),
     'outputDir': Ack.string().optional(),
     'assetsPath': Ack.string().optional(),
+    'thumbnailsPath': Ack.string().optional(),
   });
 
   static File get defaultFile => File('superdeck.yaml');
@@ -134,9 +152,15 @@ final class DeckConfiguration {
           projectDir == other.projectDir &&
           slidesPath == other.slidesPath &&
           outputDir == other.outputDir &&
-          assetsPath == other.assetsPath;
+          assetsPath == other.assetsPath &&
+          thumbnailsPath == other.thumbnailsPath;
 
   @override
-  int get hashCode =>
-      Object.hash(projectDir, slidesPath, outputDir, assetsPath);
+  int get hashCode => Object.hash(
+    projectDir,
+    slidesPath,
+    outputDir,
+    assetsPath,
+    thumbnailsPath,
+  );
 }

@@ -11,6 +11,7 @@ void main() {
         expect(config.slidesPath, isNull);
         expect(config.outputDir, isNull);
         expect(config.assetsPath, isNull);
+        expect(config.thumbnailsPath, isNull);
       });
 
       test('creates with all parameters', () {
@@ -19,12 +20,14 @@ void main() {
           slidesPath: 'presentation.md',
           outputDir: 'build',
           assetsPath: 'images',
+          thumbnailsPath: 'thumbnails',
         );
 
         expect(config.projectDir, '/project');
         expect(config.slidesPath, 'presentation.md');
         expect(config.outputDir, 'build');
         expect(config.assetsPath, 'images');
+        expect(config.thumbnailsPath, 'thumbnails');
       });
     });
 
@@ -114,6 +117,41 @@ void main() {
         });
       });
 
+      group('thumbnailsDir', () {
+        test('uses default thumbnails when thumbnailsPath is null', () {
+          final config = DeckConfiguration();
+
+          expect(config.thumbnailsDir.path, contains('thumbnails'));
+        });
+
+        test('uses custom thumbnailsPath when provided', () {
+          final config = DeckConfiguration(thumbnailsPath: 'custom-thumbnails');
+
+          expect(config.thumbnailsDir.path, contains('custom-thumbnails'));
+        });
+
+        test('is inside superdeckDir', () {
+          final config = DeckConfiguration();
+
+          expect(config.thumbnailsDir.path, contains(config.superdeckDir.path));
+        });
+      });
+
+      group('thumbnailsManifestJson', () {
+        test('is inside superdeckDir', () {
+          final config = DeckConfiguration();
+
+          expect(
+            config.thumbnailsManifestJson.path,
+            contains(config.superdeckDir.path),
+          );
+          expect(
+            config.thumbnailsManifestJson.path,
+            endsWith('thumbnails_manifest.json'),
+          );
+        });
+      });
+
       group('buildStatusJson', () {
         test('is inside superdeckDir', () {
           final config = DeckConfiguration();
@@ -189,12 +227,20 @@ void main() {
         expect(copy.assetsPath, 'new-assets');
       });
 
+      test('copies with new thumbnailsPath', () {
+        final original = DeckConfiguration(thumbnailsPath: 'old-thumbnails');
+        final copy = original.copyWith(thumbnailsPath: 'new-thumbnails');
+
+        expect(copy.thumbnailsPath, 'new-thumbnails');
+      });
+
       test('preserves values when not specified', () {
         final original = DeckConfiguration(
           projectDir: '/project',
           slidesPath: 'slides.md',
           outputDir: 'output',
           assetsPath: 'assets',
+          thumbnailsPath: 'thumbnails',
         );
         final copy = original.copyWith();
 
@@ -202,6 +248,7 @@ void main() {
         expect(copy.slidesPath, original.slidesPath);
         expect(copy.outputDir, original.outputDir);
         expect(copy.assetsPath, original.assetsPath);
+        expect(copy.thumbnailsPath, original.thumbnailsPath);
       });
     });
 
@@ -221,6 +268,7 @@ void main() {
         expect(map.containsKey('slidesPath'), isFalse);
         expect(map.containsKey('outputDir'), isFalse);
         expect(map.containsKey('assetsPath'), isFalse);
+        expect(map.containsKey('thumbnailsPath'), isFalse);
       });
 
       test('serializes all values when present', () {
@@ -229,6 +277,7 @@ void main() {
           slidesPath: 'slides.md',
           outputDir: 'output',
           assetsPath: 'assets',
+          thumbnailsPath: 'thumbnails',
         );
         final map = config.toMap();
 
@@ -236,6 +285,7 @@ void main() {
         expect(map['slidesPath'], 'slides.md');
         expect(map['outputDir'], 'output');
         expect(map['assetsPath'], 'assets');
+        expect(map['thumbnailsPath'], 'thumbnails');
       });
     });
 
@@ -247,6 +297,7 @@ void main() {
         expect(config.slidesPath, isNull);
         expect(config.outputDir, isNull);
         expect(config.assetsPath, isNull);
+        expect(config.thumbnailsPath, isNull);
       });
 
       test('deserializes partial map', () {
@@ -259,6 +310,7 @@ void main() {
         expect(config.slidesPath, 'deck.md');
         expect(config.outputDir, isNull);
         expect(config.assetsPath, isNull);
+        expect(config.thumbnailsPath, isNull);
       });
 
       test('deserializes full map', () {
@@ -267,12 +319,14 @@ void main() {
           'slidesPath': 'slides.md',
           'outputDir': 'output',
           'assetsPath': 'assets',
+          'thumbnailsPath': 'thumbnails',
         });
 
         expect(config.projectDir, '/project');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, 'output');
         expect(config.assetsPath, 'assets');
+        expect(config.thumbnailsPath, 'thumbnails');
       });
     });
 
@@ -283,6 +337,7 @@ void main() {
           slidesPath: 'rt.md',
           outputDir: 'rt-out',
           assetsPath: 'rt-assets',
+          thumbnailsPath: 'rt-thumbnails',
         );
 
         final restored = DeckConfiguration.fromMap(original.toMap());
@@ -302,6 +357,7 @@ void main() {
         expect(restored.outputDir, 'out');
         expect(restored.slidesPath, isNull);
         expect(restored.assetsPath, isNull);
+        expect(restored.thumbnailsPath, isNull);
       });
     });
 
@@ -335,6 +391,7 @@ void main() {
           'slidesPath': 'slides.md',
           'outputDir': 'output',
           'assetsPath': 'assets',
+          'thumbnailsPath': 'thumbnails',
         });
         expect(result.isOk, isTrue);
       });
@@ -398,6 +455,20 @@ void main() {
       test('rejects slidesPath with traversal', () {
         expect(
           () => DeckConfiguration(slidesPath: '../../../etc/passwd').slidesFile,
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('path traversal'),
+            ),
+          ),
+        );
+      });
+
+      test('rejects thumbnailsPath with traversal', () {
+        expect(
+          () =>
+              DeckConfiguration(thumbnailsPath: '../../secrets').thumbnailsDir,
           throwsA(
             isA<ArgumentError>().having(
               (e) => e.message,
@@ -474,6 +545,13 @@ void main() {
       test('different assetsPath makes configs unequal', () {
         final config1 = DeckConfiguration(assetsPath: 'a');
         final config2 = DeckConfiguration(assetsPath: 'b');
+
+        expect(config1, isNot(config2));
+      });
+
+      test('different thumbnailsPath makes configs unequal', () {
+        final config1 = DeckConfiguration(thumbnailsPath: 'a');
+        final config2 = DeckConfiguration(thumbnailsPath: 'b');
 
         expect(config1, isNot(config2));
       });

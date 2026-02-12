@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -165,6 +166,70 @@ void main() {
         expect(subsequentJson['last_modified'], equals(initialLastModified));
       },
     );
+
+    test(
+      'saveReferences excludes slide thumbnails from generated assets',
+      () async {
+        final deck = Deck(
+          slides: [const Slide(key: 'intro')],
+          configuration: config,
+        );
+
+        await deckService.saveReferences(deck);
+
+        final assetsRef =
+            jsonDecode(await mockConfig.assetsRefJson.readAsString())
+                as Map<String, dynamic>;
+        final files = (assetsRef['files'] as List<dynamic>).cast<String>();
+        expect(files, isEmpty);
+      },
+    );
+
+    test(
+      'cleanup only affects assets domain and preserves thumbnails domain',
+      () async {
+        await config.assetsDir.create(recursive: true);
+        final staleAsset = File(p.join(config.assetsDir.path, 'stale.txt'));
+        await staleAsset.writeAsString('stale');
+
+        await config.thumbnailsDir.create(recursive: true);
+        final thumbnail = File(
+          p.join(config.thumbnailsDir.path, 'thumbnail_intro.png'),
+        );
+        await thumbnail.writeAsString('thumbnail');
+
+        await deckService.saveReferences(
+          Deck(
+            slides: [const Slide(key: 'intro')],
+            configuration: config,
+          ),
+        );
+
+        expect(await staleAsset.exists(), isFalse);
+        expect(await thumbnail.exists(), isTrue);
+      },
+    );
+
+    test('generated assets still include non-thumbnail artifacts', () async {
+      final mermaidAsset = GeneratedAsset.mermaid('graph TD; A-->B;');
+      deckService.getGeneratedAssetPath(mermaidAsset);
+
+      await deckService.saveReferences(
+        Deck(
+          slides: [const Slide(key: 'intro')],
+          configuration: config,
+        ),
+      );
+
+      final assetsRef =
+          jsonDecode(await mockConfig.assetsRefJson.readAsString())
+              as Map<String, dynamic>;
+      final files = (assetsRef['files'] as List<dynamic>).cast<String>();
+
+      expect(files, hasLength(1));
+      expect(files.first, endsWith(mermaidAsset.fileName));
+      expect(files.first, isNot(contains('thumbnail_')));
+    });
 
     test('readDeckMarkdown reads the content of the slides file', () async {
       await mockConfig.slidesFile.writeAsString('# Test slides');

@@ -7,6 +7,7 @@ export 'src/models/asset_model.dart';
 export 'src/models/block_model.dart';
 export 'src/models/deck_model.dart';
 export 'src/models/slide_model.dart';
+export 'src/models/thumbnail_manifest.dart';
 export 'src/deck_configuration.dart';
 export 'src/deck_service.dart';
 export 'src/deck_format_exception.dart';

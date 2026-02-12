@@ -1,41 +1,34 @@
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
-
 import '../deck/slide_configuration.dart';
 import 'async_thumbnail.dart';
-import 'slide_capture_service.dart';
 
-/// Stateless service for thumbnail generation operations.
+/// Stateless service for read-only thumbnail cache operations.
 ///
-/// Handles thumbnail generation and cache management without maintaining
-/// any state. The controller using this service owns the cache and is
-/// notified of updates via the [onCacheUpdate] callback.
+/// Handles thumbnail cache synchronization without maintaining any state.
+/// The controller using this service owns the cache and is notified of
+/// updates via the [onCacheUpdate] callback.
 class ThumbnailService {
-  final SlideCaptureService _slideCaptureService;
+  const ThumbnailService();
 
-  /// Creates a ThumbnailService.
+  /// Synchronizes thumbnail entries for all slides, updating cache as needed.
   ///
-  /// [slideCaptureService] can be injected for testing. If not provided,
-  /// a default instance is created.
-  ThumbnailService({SlideCaptureService? slideCaptureService})
-    : _slideCaptureService = slideCaptureService ?? SlideCaptureService();
-
-  /// Generates thumbnails for all slides, updating the cache as needed.
-  ///
-  /// For each slide, either reuses an existing [AsyncThumbnail] from [cache]
-  /// or creates a new one. Calls [onCacheUpdate] with the updated cache
-  /// after processing all slides.
-  ///
-  /// If [force] is true, regenerates all thumbnails even if they exist.
+  /// For each slide, either reuses an existing [AsyncThumbnail] from [cache],
+  /// creates a new read-only [AsyncThumbnail], or removes entries for slides
+  /// without thumbnail paths.
   void generateThumbnails({
     required List<SlideConfiguration> slides,
-    required BuildContext context,
     required Map<String, AsyncThumbnail> cache,
     required void Function(Map<String, AsyncThumbnail>) onCacheUpdate,
-    bool force = false,
   }) {
     final updatedCache = Map<String, AsyncThumbnail>.from(cache);
+    final currentKeys = slides.map((slide) => slide.key).toSet();
+
+    for (final entry in cache.entries) {
+      if (!currentKeys.contains(entry.key)) {
+        updatedCache.remove(entry.key)?.dispose();
+      }
+    }
 
     for (final slide in slides) {
       final thumbnailFile = slide.thumbnailFile;
@@ -47,50 +40,43 @@ class ThumbnailService {
       final thumbnail = updatedCache.putIfAbsent(
         slide.key,
         () => AsyncThumbnail(
-          generator: (ctx, force) => _generateThumbnail(slide, ctx, force),
+          filePath: thumbnailFile,
+          generator: (_, force) => _resolveThumbnailFile(slide, force),
         ),
       );
-      thumbnail.load(context, force);
+      // Recreate entry if path changed or previous resolution ended with no file.
+      if (thumbnail.filePath != thumbnailFile ||
+          thumbnail.shouldRefreshOnSync) {
+        updatedCache.remove(slide.key)?.dispose();
+        updatedCache[slide.key] = AsyncThumbnail(
+          filePath: thumbnailFile,
+          generator: (_, force) => _resolveThumbnailFile(slide, force),
+        );
+      }
     }
 
     onCacheUpdate(updatedCache);
   }
 
-  /// Generates a single thumbnail for a slide.
+  /// Resolves a thumbnail file for a slide without generating or writing files.
   ///
-  /// Returns the existing thumbnail file if [force] is false and the file
-  /// exists with non-zero size. Otherwise, captures a new thumbnail using
-  /// [SlideCaptureService] and writes it to disk.
-  Future<File> _generateThumbnail(
-    SlideConfiguration slide,
-    BuildContext context,
-    bool force,
-  ) async {
+  /// Returns `null` if the thumbnail file is absent or empty.
+  Future<File?> _resolveThumbnailFile(SlideConfiguration slide, bool _) async {
     final thumbnailFile = slide.thumbnailFile;
     if (thumbnailFile == null || thumbnailFile.isEmpty) {
-      throw StateError(
-        'Thumbnail generation requires a thumbnail file path for slide ${slide.key}.',
-      );
+      return null;
     }
 
     final file = File(thumbnailFile);
-
-    if (!force && await file.exists() && await file.length() > 0) {
-      return file;
+    if (!await file.exists()) {
+      return null;
     }
 
-    final imageData = await _slideCaptureService.capture(
-      slide: slide,
-      // ignore: use_build_context_synchronously
-      context: context,
-    );
-
-    final parent = file.parent;
-    if (!await parent.exists()) {
-      await parent.create(recursive: true);
+    final length = await file.length();
+    if (length <= 0) {
+      return null;
     }
 
-    await file.writeAsBytes(imageData);
     return file;
   }
 }

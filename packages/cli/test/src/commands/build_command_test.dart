@@ -169,13 +169,23 @@ This is test content.
         final oldAsset = File(path.join(assetsDir.path, 'old_asset.txt'));
         await oldAsset.writeAsString('old content');
 
+        final thumbnailsDir = Directory(
+          path.join(tempDir.path, '.superdeck', 'thumbnails'),
+        );
+        await thumbnailsDir.create(recursive: true);
+        final thumbnail = File(path.join(thumbnailsDir.path, 'thumbnail.png'));
+        await thumbnail.writeAsString('thumbnail');
+
         expect(oldAsset.existsSync(), isTrue);
+        expect(thumbnail.existsSync(), isTrue);
 
         final runner = createTestRunner(command);
         await runner.run(['build', '--force-rebuild']);
 
         // Old asset should be gone
         expect(oldAsset.existsSync(), isFalse);
+        // Thumbnails domain is outside force-rebuild cleanup scope
+        expect(thumbnail.existsSync(), isTrue);
       });
 
       test('skip-pubspec flag skips pubspec update', () async {

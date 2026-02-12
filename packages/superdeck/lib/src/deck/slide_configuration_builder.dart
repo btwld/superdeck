@@ -57,9 +57,9 @@ class SlideConfigurationBuilder {
       }
     }
 
-    final thumbnailPath = options.generateThumbnails
+    final thumbnailPath = options.showThumbnails
         ? p.join(
-            configuration.assetsDir.path,
+            configuration.thumbnailsDir.path,
             GeneratedAsset.thumbnail(slide.key).fileName,
           )
         : null;

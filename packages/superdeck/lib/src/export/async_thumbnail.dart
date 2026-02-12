@@ -7,7 +7,7 @@ import 'package:superdeck/src/ui/ui.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 
 typedef AsyncFileGenerator =
-    Future<File> Function(BuildContext context, bool force);
+    Future<File?> Function(BuildContext context, bool force);
 
 enum AsyncFileStatus { idle, loading, done, error }
 
@@ -15,6 +15,7 @@ enum AsyncFileStatus { idle, loading, done, error }
 class AsyncThumbnail {
   /// The generator function that asynchronously returns an Image.
   final AsyncFileGenerator _generator;
+  final String? filePath;
 
   // Signals for reactive state
   final _status = signal<AsyncFileStatus>(AsyncFileStatus.idle);
@@ -28,8 +29,16 @@ class AsyncThumbnail {
   // Readonly accessors
   ReadonlySignal<AsyncFileStatus> get status => _status;
   ReadonlySignal<Object?> get error => _error;
+  bool get shouldRefreshOnSync {
+    final currentStatus = _status.peek();
+    return switch (currentStatus) {
+      AsyncFileStatus.error => true,
+      AsyncFileStatus.done => _imageFile.peek() == null,
+      AsyncFileStatus.idle || AsyncFileStatus.loading => false,
+    };
+  }
 
-  AsyncThumbnail({required AsyncFileGenerator generator})
+  AsyncThumbnail({required AsyncFileGenerator generator, this.filePath})
     : _generator = generator;
 
   Future<void> _generate(BuildContext context, {required bool force}) async {
@@ -88,11 +97,8 @@ class AsyncThumbnail {
     };
   }
 
-  Widget _errorWidget(BuildContext context, AsyncThumbnail thumbnail) {
-    return ErrorWidgets.withRetry(
-      'Failed to load thumbnail',
-      () => thumbnail.load(context, true),
-    );
+  Widget _placeholderWidget() {
+    return ErrorWidgets.simple('Preview unavailable');
   }
 
   /// Returns the resolved image provider when the file has loaded.
@@ -110,24 +116,31 @@ class AsyncThumbnail {
   Widget build(BuildContext context) {
     return Watch((context) {
       return switch (_status.value) {
-        AsyncFileStatus.idle => const IsometricLoading(),
+        AsyncFileStatus.idle => _buildIdleState(context),
         AsyncFileStatus.loading => const IsometricLoading(),
         AsyncFileStatus.done => _buildLoadedImage(context),
-        AsyncFileStatus.error => _errorWidget(context, this),
+        AsyncFileStatus.error => _placeholderWidget(),
       };
     });
+  }
+
+  Widget _buildIdleState(BuildContext context) {
+    // Lazy load on first render. This keeps runtime thumbnail access read-only
+    // while avoiding explicit generation triggers from UI controllers.
+    unawaited(load(context));
+    return const IsometricLoading();
   }
 
   Widget _buildLoadedImage(BuildContext context) {
     final provider = imageProvider;
     if (provider == null) {
-      return _errorWidget(context, this);
+      return _placeholderWidget();
     }
 
     return Image(
       gaplessPlayback: false,
       image: provider,
-      errorBuilder: (context, error, _) => _errorWidget(context, this),
+      errorBuilder: (context, error, _) => _placeholderWidget(),
     );
   }
 }
