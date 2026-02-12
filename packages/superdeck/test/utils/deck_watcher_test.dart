@@ -53,9 +53,18 @@ void main() {
       await watcher.start();
 
       await _waitFor(
-        () =>
-            watcher.status.value == DeckWatcherStatus.running ||
-            watcher.status.value == DeckWatcherStatus.failed,
+        () {
+          final status = watcher.status.value;
+          final buildStatus = watcher.lastBuildStatus.value;
+          final hasPayload = watcher.lastBuildStatusPayload != null;
+
+          final watcherReady =
+              status == DeckWatcherStatus.running ||
+              status == DeckWatcherStatus.failed;
+          final buildReady = buildStatus != 'unknown' || hasPayload;
+
+          return watcherReady && buildReady;
+        },
       );
 
       expect(
