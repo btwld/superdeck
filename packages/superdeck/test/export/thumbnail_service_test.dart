@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/export/async_thumbnail.dart';
+import 'package:superdeck/src/export/slide_capture_service.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
 import 'package:superdeck/src/styling/styling.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -11,10 +13,12 @@ import 'package:superdeck_core/superdeck_core.dart';
 void main() {
   group('ThumbnailService', () {
     late ThumbnailService service;
+    late _FakeSlideCaptureService captureService;
     late Directory tempDir;
 
     setUp(() async {
-      service = const ThumbnailService();
+      captureService = _FakeSlideCaptureService();
+      service = ThumbnailService(slideCaptureService: captureService);
       tempDir = await Directory.systemTemp.createTemp('thumbnail_test_');
     });
 
@@ -75,76 +79,165 @@ void main() {
       expect(updated, isEmpty);
     });
 
-    test('sync does not create missing parent directories', () async {
-      final missingPath =
-          '${tempDir.path}/nonexistent/subdir/thumbnail_missing.png';
-      final parentDir = Directory('${tempDir.path}/nonexistent/subdir');
-      final file = File(missingPath);
-      expect(await parentDir.exists(), isFalse);
-      expect(await file.exists(), isFalse);
+    test(
+      'load generates missing thumbnails and creates parent directories',
+      () async {
+        final missingPath =
+            '${tempDir.path}/nonexistent/subdir/thumbnail_missing.png';
+        final parentDir = Directory('${tempDir.path}/nonexistent/subdir');
+        final file = File(missingPath);
+        expect(await parentDir.exists(), isFalse);
+        expect(await file.exists(), isFalse);
 
-      service.generateThumbnails(
-        slides: [_buildSlide(key: 'missing', thumbnailFile: missingPath)],
-        cache: {},
-        onCacheUpdate: (_) {},
-      );
+        var cache = <String, AsyncThumbnail>{};
+        service.generateThumbnails(
+          slides: [_buildSlide(key: 'missing', thumbnailFile: missingPath)],
+          cache: cache,
+          onCacheUpdate: (next) => cache = next,
+        );
 
-      expect(await parentDir.exists(), isFalse);
-      expect(await file.exists(), isFalse);
-    });
+        await cache['missing']!.load(_FakeBuildContext());
 
-    test('sync does not mutate existing thumbnail files', () async {
+        expect(await parentDir.exists(), isTrue);
+        expect(await file.exists(), isTrue);
+        expect(await file.length(), greaterThan(0));
+        expect(captureService.captureCalls, 1);
+      },
+    );
+
+    test('load reuses existing thumbnails when force is false', () async {
       final thumbnailPath = '${tempDir.path}/thumbnail_ok.png';
       final file = File(thumbnailPath);
-      await file.writeAsBytes([0x89, 0x50, 0x4E, 0x47]);
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes([0x89, 0x50, 0x4E, 0x47, 0x00]);
       final originalLength = await file.length();
 
+      var cache = <String, AsyncThumbnail>{};
       service.generateThumbnails(
         slides: [_buildSlide(key: 'ok', thumbnailFile: thumbnailPath)],
-        cache: {},
-        onCacheUpdate: (_) {},
+        cache: cache,
+        onCacheUpdate: (next) => cache = next,
       );
+
+      await cache['ok']!.load(_FakeBuildContext());
 
       expect(await file.exists(), isTrue);
       expect(await file.length(), originalLength);
+      expect(captureService.captureCalls, 0);
+    });
+
+    test('force load regenerates and overwrites existing thumbnails', () async {
+      final thumbnailPath = '${tempDir.path}/thumbnail_force.png';
+      final file = File(thumbnailPath);
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes([0x89, 0x50, 0x4E, 0x47]);
+
+      captureService.nextBytes = Uint8List.fromList([
+        0x89,
+        0x50,
+        0x4E,
+        0x47,
+        0xAA,
+        0xBB,
+      ]);
+
+      var cache = <String, AsyncThumbnail>{};
+      service.generateThumbnails(
+        slides: [_buildSlide(key: 'force', thumbnailFile: thumbnailPath)],
+        cache: cache,
+        onCacheUpdate: (next) => cache = next,
+      );
+
+      await cache['force']!.load(_FakeBuildContext(), true);
+
+      final bytes = await file.readAsBytes();
+      expect(bytes, equals(captureService.nextBytes));
+      expect(captureService.captureCalls, 1);
     });
 
     test(
-      'recreates unresolved entry when syncing a now-available file path',
+      'load falls back to app cache when configured thumbnail path is not writable',
       () async {
-        final thumbnailPath = '${tempDir.path}/thumbnail_refresh.png';
-        final slide = _buildSlide(key: 'refresh', thumbnailFile: thumbnailPath);
+        final slideKey = 'fallback-${tempDir.uri.pathSegments.last}';
+        final invalidThumbnailPath = tempDir.path;
 
         var cache = <String, AsyncThumbnail>{};
+        final slide = _buildSlide(
+          key: slideKey,
+          thumbnailFile: invalidThumbnailPath,
+        );
+
         service.generateThumbnails(
           slides: [slide],
           cache: cache,
           onCacheUpdate: (next) => cache = next,
         );
+        await cache[slideKey]!.load(_FakeBuildContext());
+        expect(captureService.captureCalls, 1);
 
-        final initial = cache['refresh']!;
-        expect(initial.shouldRefreshOnSync, isFalse);
-
-        await initial.load(_FakeBuildContext());
-
-        expect(initial.shouldRefreshOnSync, isTrue);
-
-        final file = File(thumbnailPath);
-        await file.parent.create(recursive: true);
-        await file.writeAsBytes([0x89, 0x50, 0x4E, 0x47]);
-
+        cache = <String, AsyncThumbnail>{};
         service.generateThumbnails(
           slides: [slide],
+          cache: cache,
+          onCacheUpdate: (next) => cache = next,
+        );
+        await cache[slideKey]!.load(_FakeBuildContext());
+
+        // Second load should resolve from fallback cache instead of recapturing.
+        expect(captureService.captureCalls, 1);
+      },
+    );
+
+    test(
+      'recreates cache entry when thumbnail path changes for same slide key',
+      () {
+        final firstPath = '${tempDir.path}/thumb_a.png';
+        final secondPath = '${tempDir.path}/thumb_b.png';
+        final firstSlide = _buildSlide(
+          key: 'refresh',
+          thumbnailFile: firstPath,
+        );
+        final secondSlide = _buildSlide(
+          key: 'refresh',
+          thumbnailFile: secondPath,
+        );
+
+        var cache = <String, AsyncThumbnail>{};
+        service.generateThumbnails(
+          slides: [firstSlide],
+          cache: cache,
+          onCacheUpdate: (next) => cache = next,
+        );
+
+        final initial = cache['refresh']!;
+
+        service.generateThumbnails(
+          slides: [secondSlide],
           cache: cache,
           onCacheUpdate: (next) => cache = next,
         );
 
         final refreshed = cache['refresh']!;
         expect(identical(refreshed, initial), isFalse);
-        expect(refreshed.shouldRefreshOnSync, isFalse);
+        expect(refreshed.filePath, secondPath);
       },
     );
   });
+}
+
+class _FakeSlideCaptureService extends SlideCaptureService {
+  Uint8List nextBytes = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47]);
+  int captureCalls = 0;
+
+  @override
+  Future<Uint8List> capture({
+    SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
+    required SlideConfiguration slide,
+    required BuildContext context,
+  }) async {
+    captureCalls++;
+    return nextBytes;
+  }
 }
 
 SlideConfiguration _buildSlide({

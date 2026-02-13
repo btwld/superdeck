@@ -43,7 +43,7 @@ superdeck setup
 
 ### `superdeck build`
 
-Build presentations from markdown files. Parses `slides.md`, generates presentation data in `.superdeck/superdeck.json`, and creates optimized assets.
+Build presentations from markdown files. Parses `slides.md`, generates presentation data in `.superdeck/superdeck.json`, and creates optimized build-time assets (for example Mermaid PNGs).
 
 ```bash
 superdeck build [options]
@@ -125,12 +125,18 @@ project/
 │   ├── superdeck_full.json     # Includes markdown AST JSON (for debugging)
 │   ├── generated_assets.json   # Asset manifest
 │   ├── build_status.json       # Last build status
-│   └── assets/                 # Generated assets (for example, Mermaid PNGs)
+│   ├── assets/                 # Build-time generated assets
 │       ├── mermaid_<hash>.png
-│       └── thumbnail_<slideKey>.png  # Generated at runtime
+│   └── thumbnails/             # Runtime thumbnail path (when writable)
+│       └── thumbnail_<slideKey>.png
 └── web/
     └── index.html              # Custom index with loading indicator
 ```
+
+`superdeck build` does not pre-generate slide thumbnails in the current pipeline.
+Thumbnails are generated on-demand at runtime when missing, then cached.
+On IO platforms, SuperDeck can fall back to the app cache directory if `.superdeck/thumbnails` is not writable.
+On web, thumbnail bytes are persisted in browser storage.
 
 ## Configuration
 

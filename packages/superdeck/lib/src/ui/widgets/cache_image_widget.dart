@@ -10,6 +10,12 @@ import 'error_widgets.dart';
 
 ImageProvider getImageProvider(Uri uri) {
   switch (uri.scheme) {
+    case 'data':
+      final data = uri.data;
+      if (data != null) {
+        return MemoryImage(data.contentAsBytes());
+      }
+      return AssetImage(uri.path);
     case 'http':
     case 'https':
       return CachedNetworkImageProvider(uri.toString());
@@ -19,9 +25,9 @@ ImageProvider getImageProvider(Uri uri) {
       }
       return FileImage(File.fromUri(uri));
     default:
-      // On platforms that can run processes (desktop debug), files are
-      // generated at runtime and loaded from the filesystem.
-      // On web/release, files are pre-bundled as assets.
+      // On process-capable runtimes (desktop debug), files can be loaded
+      // directly from the local filesystem. Other runtimes fall back to
+      // bundled assets when no explicit network/data scheme is present.
       if (kCanRunProcess) {
         return FileImage(File(uri.path).absolute);
       }

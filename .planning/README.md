@@ -5,6 +5,9 @@ This hidden folder (`.planning/`) contains internal development and planning doc
 ## Contents
 
 - **feature-templates.md** - Complete implementation plan for the slide templates feature
+- **thumbnail-runtime-cache-plan.md** - Runtime/build thumbnail caching decisions and rollout plan
+- **thumbnail-pre-generation-rfc.md** - Optional CLI thumbnail pre-generation command proposal
+- **thumbnail-regeneration-handoff-one-pager.md** - One-page execution + RFC handoff brief
 - **markdown-extensions.md** - Architecture documentation for the markdown processing pipeline
 
 ## Purpose

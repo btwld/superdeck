@@ -1,20 +1,32 @@
-import 'dart:io';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 
 import '../deck/slide_configuration.dart';
 import 'async_thumbnail.dart';
+import 'slide_capture_service.dart';
+import 'thumbnail_cache_store.dart';
 
-/// Stateless service for read-only thumbnail cache operations.
+/// Stateless service for runtime thumbnail generation and cache synchronization.
 ///
-/// Handles thumbnail cache synchronization without maintaining any state.
+/// Handles thumbnail generation + cache synchronization without maintaining
+/// any state.
 /// The controller using this service owns the cache and is notified of
 /// updates via the [onCacheUpdate] callback.
 class ThumbnailService {
-  const ThumbnailService();
+  final SlideCaptureService _slideCaptureService;
+  final ThumbnailCacheStore _cacheStore;
+
+  ThumbnailService({
+    SlideCaptureService? slideCaptureService,
+    ThumbnailCacheStore? cacheStore,
+  }) : _slideCaptureService = slideCaptureService ?? SlideCaptureService(),
+       _cacheStore = cacheStore ?? createThumbnailCacheStore();
 
   /// Synchronizes thumbnail entries for all slides, updating cache as needed.
   ///
   /// For each slide, either reuses an existing [AsyncThumbnail] from [cache],
-  /// creates a new read-only [AsyncThumbnail], or removes entries for slides
+  /// creates a new [AsyncThumbnail], or removes entries for slides
   /// without thumbnail paths.
   void generateThumbnails({
     required List<SlideConfiguration> slides,
@@ -26,6 +38,12 @@ class ThumbnailService {
 
     for (final entry in cache.entries) {
       if (!currentKeys.contains(entry.key)) {
+        unawaited(
+          _cacheStore.delete(
+            slideKey: entry.key,
+            filePath: entry.value.filePath,
+          ),
+        );
         updatedCache.remove(entry.key)?.dispose();
       }
     }
@@ -33,6 +51,9 @@ class ThumbnailService {
     for (final slide in slides) {
       final thumbnailFile = slide.thumbnailFile;
       if (thumbnailFile == null || thumbnailFile.isEmpty) {
+        unawaited(
+          _cacheStore.delete(slideKey: slide.key, filePath: thumbnailFile),
+        );
         updatedCache.remove(slide.key)?.dispose();
         continue;
       }
@@ -41,16 +62,21 @@ class ThumbnailService {
         slide.key,
         () => AsyncThumbnail(
           filePath: thumbnailFile,
-          generator: (_, force) => _resolveThumbnailFile(slide, force),
+          generator: (context, force) =>
+              _resolveOrGenerateThumbnail(slide, context, force),
         ),
       );
-      // Recreate entry if path changed or previous resolution ended with no file.
+      // Recreate entry if path changed or previous resolution ended with no URI.
       if (thumbnail.filePath != thumbnailFile ||
           thumbnail.shouldRefreshOnSync) {
+        unawaited(
+          _cacheStore.delete(slideKey: slide.key, filePath: thumbnail.filePath),
+        );
         updatedCache.remove(slide.key)?.dispose();
         updatedCache[slide.key] = AsyncThumbnail(
           filePath: thumbnailFile,
-          generator: (_, force) => _resolveThumbnailFile(slide, force),
+          generator: (context, force) =>
+              _resolveOrGenerateThumbnail(slide, context, force),
         );
       }
     }
@@ -58,25 +84,48 @@ class ThumbnailService {
     onCacheUpdate(updatedCache);
   }
 
-  /// Resolves a thumbnail file for a slide without generating or writing files.
+  /// Resolves a thumbnail URI for a slide or generates and caches it.
   ///
-  /// Returns `null` if the thumbnail file is absent or empty.
-  Future<File?> _resolveThumbnailFile(SlideConfiguration slide, bool _) async {
+  /// Returns `null` only when generation or persistence cannot produce a URI.
+  Future<Uri?> _resolveOrGenerateThumbnail(
+    SlideConfiguration slide,
+    BuildContext context,
+    bool force,
+  ) async {
     final thumbnailFile = slide.thumbnailFile;
+    if (!force) {
+      final cached = await _cacheStore.resolve(
+        slideKey: slide.key,
+        filePath: thumbnailFile,
+      );
+      if (cached != null) {
+        return cached;
+      }
+    }
+
+    if (context case Element element when !element.mounted) {
+      return null;
+    }
+
+    final imageData = await _slideCaptureService.capture(
+      slide: slide,
+      // ignore: use_build_context_synchronously
+      context: context,
+    );
+
+    final cachedUri = await _cacheStore.write(
+      slideKey: slide.key,
+      filePath: thumbnailFile,
+      bytes: imageData,
+    );
+    if (cachedUri != null) {
+      return cachedUri;
+    }
+
     if (thumbnailFile == null || thumbnailFile.isEmpty) {
       return null;
     }
 
-    final file = File(thumbnailFile);
-    if (!await file.exists()) {
-      return null;
-    }
-
-    final length = await file.length();
-    if (length <= 0) {
-      return null;
-    }
-
-    return file;
+    return Uri.parse(thumbnailFile);
   }
 }

@@ -177,8 +177,8 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 
 SuperDeck uses a two-stage build pipeline:
 
-1. **Build time**: The CLI parses your `slides.md` file, renders Mermaid diagrams to images, and generates asset manifests
-2. **Runtime**: Flutter renders the parsed slide data as widgets with full styling control
+1. **Build time**: The CLI parses your `slides.md` file, renders Mermaid diagrams to images, and generates build asset manifests
+2. **Runtime**: Flutter renders the parsed slide data as widgets, and generates slide thumbnails on-demand when a thumbnail file is missing
 
 This approach gives you fast hot-reload during development while ensuring optimized assets in production.
 
