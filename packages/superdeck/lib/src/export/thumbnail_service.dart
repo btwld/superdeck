@@ -51,10 +51,16 @@ class ThumbnailService {
     for (final slide in slides) {
       final thumbnailFile = slide.thumbnailFile;
       if (thumbnailFile == null || thumbnailFile.isEmpty) {
-        unawaited(
-          _cacheStore.delete(slideKey: slide.key, filePath: thumbnailFile),
-        );
-        updatedCache.remove(slide.key)?.dispose();
+        final existing = updatedCache.remove(slide.key);
+        if (existing != null) {
+          unawaited(
+            _cacheStore.delete(
+              slideKey: slide.key,
+              filePath: existing.filePath,
+            ),
+          );
+          existing.dispose();
+        }
         continue;
       }
 
@@ -126,6 +132,6 @@ class ThumbnailService {
       return null;
     }
 
-    return Uri.parse(thumbnailFile);
+    return Uri.file(thumbnailFile);
   }
 }

@@ -34,11 +34,22 @@ class DeckWatcher {
   ReadonlySignal<bool> get isRebuilding => _isRebuilding;
   ReadonlySignal<String> get lastBuildStatus => _lastBuildStatus;
 
-  /// Raw payload from the last build event write (includes slideCount/error).
+  /// Raw payload from the last build event (includes slideCount/error).
   Map<String, dynamic>? get lastBuildStatusPayload {
     final payload = _lastBuildStatusPayload.value;
     if (payload == null) return null;
-    return Map<String, dynamic>.unmodifiable(payload);
+    return _deepUnmodifiable(payload);
+  }
+
+  static Map<String, dynamic> _deepUnmodifiable(Map<String, dynamic> source) {
+    return Map<String, dynamic>.unmodifiable(
+      source.map((key, value) {
+        if (value is Map<String, dynamic>) {
+          return MapEntry(key, _deepUnmodifiable(value));
+        }
+        return MapEntry(key, value);
+      }),
+    );
   }
 
   DeckWatcher({required this.configuration, DeckService? store})

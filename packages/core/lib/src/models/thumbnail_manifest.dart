@@ -9,8 +9,8 @@ class ThumbnailManifest {
   ThumbnailManifest({
     required this.schemaVersion,
     required this.renderSignature,
-    required this.slides,
-  });
+    required List<ThumbnailManifestSlide> slides,
+  }) : slides = List.unmodifiable(slides);
 
   ThumbnailManifest copyWith({
     int? schemaVersion,
