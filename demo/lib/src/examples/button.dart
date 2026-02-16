@@ -15,9 +15,10 @@ class ButtonExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Wrap(
+        alignment: WrapAlignment.center,
         spacing: 16,
+        runSpacing: 16,
         children: [
           RemixButton(onPressed: () {}, label: 'Solid', style: solidStyle),
           RemixButton(onPressed: () {}, label: 'Outline', style: outlineStyle),

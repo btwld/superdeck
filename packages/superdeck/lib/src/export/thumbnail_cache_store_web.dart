@@ -9,9 +9,10 @@ ThumbnailCacheStore createThumbnailCacheStore() => _WebThumbnailCacheStore();
 
 class _WebThumbnailCacheStore implements ThumbnailCacheStore {
   static const _keyPrefix = 'superdeck.thumbnail.';
-  static const _fnvOffset = 0xcbf29ce484222325;
-  static const _fnvPrime = 0x100000001b3;
-  static const _fnvMask = 0xFFFFFFFFFFFFFFFF;
+  // Use 32-bit FNV-1a to stay within JavaScript's safe integer range.
+  static const _fnvOffset = 0x811c9dc5;
+  static const _fnvPrime = 0x01000193;
+  static const _fnvMask = 0xFFFFFFFF;
 
   static String _cacheKey(String slideKey, String? filePath) {
     final input = '$slideKey|${filePath ?? ''}';
@@ -21,7 +22,7 @@ class _WebThumbnailCacheStore implements ThumbnailCacheStore {
       hash = (hash * _fnvPrime) & _fnvMask;
     }
 
-    return '$_keyPrefix${hash.toRadixString(16).padLeft(16, '0')}';
+    return '$_keyPrefix${hash.toRadixString(16).padLeft(8, '0')}';
   }
 
   @override
