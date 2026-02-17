@@ -8,6 +8,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../../deck/slide_configuration.dart';
 import '../../styling/styling.dart';
 import '../../ui/widgets/error_widgets.dart';
+import '../../ui/widgets/overflow_clip.dart';
 import '../../ui/widgets/provider.dart';
 import '../../utils/converters.dart';
 import 'markdown_viewer.dart';
@@ -56,12 +57,10 @@ class _BlockContainerState extends State<_BlockContainer> {
       child: Box(styleSpec: spec.blockContainer, child: widget.child),
     );
 
-    // Apply scrolling or wrap (for clipping non-scrollable content)
-    final shouldScroll =
-        widget.block.scrollable && !widget.configuration.isExporting;
-    content = shouldScroll
-        ? SingleChildScrollView(child: content)
-        : Wrap(clipBehavior: Clip.hardEdge, children: [content]);
+    content = OverflowClip(
+      scrollable: widget.block.scrollable && !widget.configuration.isExporting,
+      child: content,
+    );
 
     // Apply alignment
     content = Align(

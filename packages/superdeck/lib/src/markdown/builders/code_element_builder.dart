@@ -6,6 +6,7 @@ import 'package:mix/mix.dart';
 import '../../rendering/blocks/block_provider.dart';
 import '../../styling/styling.dart';
 import '../../ui/widgets/hero_element.dart';
+import '../../ui/widgets/overflow_clip.dart';
 import '../../utils/converters.dart';
 import '../../utils/syntax_highlighter.dart';
 import '../markdown_helpers.dart';
@@ -150,96 +151,90 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             final fadeColor = baseColor.withValues(alpha: adjustedOpacity);
             final fadeTextStyle = fadeBaseStyle.copyWith(color: fadeColor);
 
-            // Wrap prevents overflow during hero flight when code block size changes between slides.
-            // SizedBox alone can cause RenderFlex overflow errors during interpolation.
-            return Wrap(
-              clipBehavior: Clip.hardEdge,
-              children: [
-                SizedBox.fromSize(
-                  size: interpolatedSize,
-                  child: Box(
-                    styleSpec: interpolatedSpec.container,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: () {
-                        if (highlightedLines.isEmpty) {
-                          if (fadeChar != null && fadeChar != '\n') {
-                            return [
-                              RichText(
-                                text: TextSpan(
-                                  style: interpolatedSpec.textStyle,
-                                  children: [
-                                    TextSpan(
-                                      text: fadeChar,
-                                      style: fadeTextStyle,
-                                    ),
-                                  ],
-                                ),
+            return OverflowClip(
+              child: SizedBox.fromSize(
+                size: interpolatedSize,
+                child: Box(
+                  styleSpec: interpolatedSpec.container,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: () {
+                      if (highlightedLines.isEmpty) {
+                        if (fadeChar != null && fadeChar != '\n') {
+                          return [
+                            RichText(
+                              text: TextSpan(
+                                style: interpolatedSpec.textStyle,
+                                children: [
+                                  TextSpan(
+                                    text: fadeChar,
+                                    style: fadeTextStyle,
+                                  ),
+                                ],
                               ),
-                            ];
-                          }
-
-                          return <Widget>[];
+                            ),
+                          ];
                         }
 
-                        return List.generate(highlightedLines.length, (index) {
-                          final lineSpan = highlightedLines[index];
-                          final isLastLine =
-                              index == highlightedLines.length - 1;
-                          InlineSpan richLine;
+                        return <Widget>[];
+                      }
 
-                          if (lineSpan.children != null &&
-                              lineSpan.children!.isNotEmpty) {
-                            final children = List<InlineSpan>.from(
-                              lineSpan.children!,
+                      return List.generate(highlightedLines.length, (index) {
+                        final lineSpan = highlightedLines[index];
+                        final isLastLine = index == highlightedLines.length - 1;
+                        InlineSpan richLine;
+
+                        if (lineSpan.children != null &&
+                            lineSpan.children!.isNotEmpty) {
+                          final children = List<InlineSpan>.from(
+                            lineSpan.children!,
+                          );
+
+                          if (isLastLine &&
+                              fadeChar != null &&
+                              fadeChar != '\n') {
+                            children.add(
+                              TextSpan(text: fadeChar, style: fadeTextStyle),
                             );
-
-                            if (isLastLine &&
-                                fadeChar != null &&
-                                fadeChar != '\n') {
-                              children.add(
-                                TextSpan(text: fadeChar, style: fadeTextStyle),
-                              );
-                            }
-
-                            richLine = TextSpan(
-                              style: lineSpan.style,
-                              children: children,
-                            );
-                          } else {
-                            final children = <InlineSpan>[];
-                            if (lineSpan.text != null &&
-                                lineSpan.text!.isNotEmpty) {
-                              children.add(
-                                TextSpan(
-                                  text: lineSpan.text,
-                                  style: lineSpan.style,
-                                ),
-                              );
-                            }
-                            if (isLastLine &&
-                                fadeChar != null &&
-                                fadeChar != '\n') {
-                              children.add(
-                                TextSpan(text: fadeChar, style: fadeTextStyle),
-                              );
-                            }
-
-                            richLine = TextSpan(children: children);
                           }
 
-                          return RichText(
-                            text: TextSpan(
-                              style: interpolatedSpec.textStyle,
-                              children: [richLine],
-                            ),
+                          richLine = TextSpan(
+                            style: lineSpan.style,
+                            children: children,
                           );
-                        });
-                      }(),
-                    ),
+                        } else {
+                          final children = <InlineSpan>[];
+                          if (lineSpan.text != null &&
+                              lineSpan.text!.isNotEmpty) {
+                            children.add(
+                              TextSpan(
+                                text: lineSpan.text,
+                                style: lineSpan.style,
+                              ),
+                            );
+                          }
+                          if (isLastLine &&
+                              fadeChar != null &&
+                              fadeChar != '\n') {
+                            children.add(
+                              TextSpan(text: fadeChar, style: fadeTextStyle),
+                            );
+                          }
+
+                          richLine = TextSpan(children: children);
+                        }
+
+                        return RichText(
+                          text: TextSpan(
+                            style: interpolatedSpec.textStyle,
+                            children: [richLine],
+                          ),
+                        );
+                      });
+                    }(),
                   ),
                 ),
-              ],
+              ),
             );
           },
         );
