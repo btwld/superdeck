@@ -14,6 +14,9 @@ class DeckOptions {
   final Map<String, SlideTemplate> templates;
 
   /// Default template applied when a slide has no explicit template.
+  ///
+  /// Individual slides can opt out by setting `template: 'none'`, which
+  /// disables applying any template for that slide.
   final SlideTemplate? defaultTemplate;
 
   /// Whether to watch for file changes and auto-rebuild the deck.

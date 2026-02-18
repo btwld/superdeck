@@ -33,7 +33,16 @@ class TemplateResolutionResult {
 class TemplateResolver {
   final DeckOptions _options;
 
-  const TemplateResolver(this._options);
+  TemplateResolver(this._options) {
+    if (_options.templates.containsKey(noneTemplate)) {
+      throw ArgumentError.value(
+        noneTemplate,
+        'templates',
+        '"$noneTemplate" is reserved for opting out of defaultTemplate. '
+            'Please use a different template name.',
+      );
+    }
+  }
 
   /// Reserved template name that opts out of [DeckOptions.defaultTemplate].
   ///
@@ -57,7 +66,7 @@ class TemplateResolver {
     if (template != null) {
       return _resolveWithTemplate(
         template,
-        templateName ?? 'default',
+        templateName ?? 'defaultTemplate',
         styleName,
       );
     }
@@ -72,9 +81,13 @@ class TemplateResolver {
 
       final template = _options.templates[templateName];
       if (template == null) {
+        final availableTemplates = _options.templates.keys.toList();
+        final availableMessage = availableTemplates.isEmpty
+            ? 'No templates are registered in this deck.'
+            : 'Available templates: ${availableTemplates.join(', ')}';
+
         throw TemplateException(
-          'Unknown template "$templateName". '
-          'Available templates: ${_options.templates.keys.join(', ')}',
+          'Unknown template "$templateName". $availableMessage',
         );
       }
       return template;

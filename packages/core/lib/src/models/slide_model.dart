@@ -144,6 +144,9 @@ class SlideOptions {
   final String? style;
 
   /// The slide template to use for chrome and style isolation.
+  ///
+  /// `template: 'none'` is a reserved opt-out value used to disable template
+  /// application for the slide when a deck-level default template is configured.
   final String? template;
 
   /// Additional arguments passed to the slide.

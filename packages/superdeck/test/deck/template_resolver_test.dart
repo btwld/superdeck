@@ -5,40 +5,49 @@ import 'package:superdeck/superdeck.dart';
 void main() {
   group('TemplateResolver', () {
     group('No template', () {
-      test('no template, no style — returns defaultSlideStyle merged with options.baseStyle', () {
-        final baseStyle = SlideStyle();
-        final options = DeckOptions(baseStyle: baseStyle);
-        final resolver = TemplateResolver(options);
+      test(
+        'no template, no style — returns defaultSlideStyle merged with options.baseStyle',
+        () {
+          final baseStyle = SlideStyle();
+          final options = DeckOptions(baseStyle: baseStyle);
+          final resolver = TemplateResolver(options);
 
-        final result = resolver.resolve(null);
+          final result = resolver.resolve(null);
 
-        expect(result.usingTemplate, isFalse);
-        expect(result.parts, options.parts);
-        expect(result.style, defaultSlideStyle.merge(baseStyle).merge(null));
-      });
+          expect(result.usingTemplate, isFalse);
+          expect(result.parts, options.parts);
+          expect(result.style, defaultSlideStyle.merge(baseStyle).merge(null));
+        },
+      );
 
-      test('no template, no style, null slideOptions — returns defaultSlideStyle merged with baseStyle', () {
-        final options = DeckOptions();
-        final resolver = TemplateResolver(options);
+      test(
+        'no template, no style, null slideOptions — returns defaultSlideStyle merged with baseStyle',
+        () {
+          final options = DeckOptions();
+          final resolver = TemplateResolver(options);
 
-        final result = resolver.resolve(null);
+          final result = resolver.resolve(null);
 
-        expect(result.usingTemplate, isFalse);
-        expect(result.style, defaultSlideStyle.merge(null).merge(null));
-        expect(result.parts, options.parts);
-      });
+          expect(result.usingTemplate, isFalse);
+          expect(result.style, defaultSlideStyle.merge(null).merge(null));
+          expect(result.parts, options.parts);
+        },
+      );
 
-      test('no template, with style — resolves style from options.styles map', () {
-        final namedStyle = SlideStyle();
-        final options = DeckOptions(styles: {'dark': namedStyle});
-        final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(style: 'dark');
+      test(
+        'no template, with style — resolves style from options.styles map',
+        () {
+          final namedStyle = SlideStyle();
+          final options = DeckOptions(styles: {'dark': namedStyle});
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(style: 'dark');
 
-        final result = resolver.resolve(slideOptions);
+          final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isFalse);
-        expect(result.style, defaultSlideStyle.merge(null).merge(namedStyle));
-      });
+          expect(result.usingTemplate, isFalse);
+          expect(result.style, defaultSlideStyle.merge(null).merge(namedStyle));
+        },
+      );
 
       test('no template, unknown style — throws TemplateException', () {
         final options = DeckOptions(styles: {'light': SlideStyle()});
@@ -51,22 +60,27 @@ void main() {
         );
       });
 
-      test('no template, unknown style — exception message includes "in deck" and style name', () {
-        final options = DeckOptions(styles: {'light': SlideStyle(), 'dark': SlideStyle()});
-        final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(style: 'missing');
+      test(
+        'no template, unknown style — exception message includes "in deck" and style name',
+        () {
+          final options = DeckOptions(
+            styles: {'light': SlideStyle(), 'dark': SlideStyle()},
+          );
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(style: 'missing');
 
-        expect(
-          () => resolver.resolve(slideOptions),
-          throwsA(
-            isA<TemplateException>().having(
-              (e) => e.message,
-              'message',
-              allOf(contains('missing'), contains('in deck')),
+          expect(
+            () => resolver.resolve(slideOptions),
+            throwsA(
+              isA<TemplateException>().having(
+                (e) => e.message,
+                'message',
+                allOf(contains('missing'), contains('in deck')),
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
     });
 
     group('With template', () {
@@ -101,9 +115,7 @@ void main() {
 
       test('template + style — uses template styles map', () {
         final templateStyle = SlideStyle();
-        final template = SlideTemplate(
-          styles: {'accent': templateStyle},
-        );
+        final template = SlideTemplate(styles: {'accent': templateStyle});
         final options = DeckOptions(templates: {'branded': template});
         final resolver = TemplateResolver(options);
         const slideOptions = SlideOptions(template: 'branded', style: 'accent');
@@ -118,12 +130,13 @@ void main() {
       });
 
       test('template, unknown style — throws TemplateException', () {
-        final template = SlideTemplate(
-          styles: {'known': SlideStyle()},
-        );
+        final template = SlideTemplate(styles: {'known': SlideStyle()});
         final options = DeckOptions(templates: {'myTemplate': template});
         final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(template: 'myTemplate', style: 'unknown');
+        const slideOptions = SlideOptions(
+          template: 'myTemplate',
+          style: 'unknown',
+        );
 
         expect(
           () => resolver.resolve(slideOptions),
@@ -131,25 +144,29 @@ void main() {
         );
       });
 
-      test('template, unknown style — exception message includes template name and style name', () {
-        final template = SlideTemplate(
-          styles: {'valid': SlideStyle()},
-        );
-        final options = DeckOptions(templates: {'corporate': template});
-        final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(template: 'corporate', style: 'bogus');
+      test(
+        'template, unknown style — exception message includes template name and style name',
+        () {
+          final template = SlideTemplate(styles: {'valid': SlideStyle()});
+          final options = DeckOptions(templates: {'corporate': template});
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(
+            template: 'corporate',
+            style: 'bogus',
+          );
 
-        expect(
-          () => resolver.resolve(slideOptions),
-          throwsA(
-            isA<TemplateException>().having(
-              (e) => e.message,
-              'message',
-              allOf(contains('bogus'), contains('corporate')),
+          expect(
+            () => resolver.resolve(slideOptions),
+            throwsA(
+              isA<TemplateException>().having(
+                (e) => e.message,
+                'message',
+                allOf(contains('bogus'), contains('corporate')),
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
 
       test('unknown template name — throws TemplateException', () {
         final options = DeckOptions(templates: {'existing': SlideTemplate()});
@@ -162,22 +179,48 @@ void main() {
         );
       });
 
-      test('unknown template name — exception message references the unknown template name', () {
-        final options = DeckOptions(templates: {'real': SlideTemplate()});
-        final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(template: 'phantom');
+      test(
+        'unknown template name — exception message references the unknown template name',
+        () {
+          final options = DeckOptions(templates: {'real': SlideTemplate()});
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(template: 'phantom');
 
-        expect(
-          () => resolver.resolve(slideOptions),
-          throwsA(
-            isA<TemplateException>().having(
-              (e) => e.message,
-              'message',
-              contains('phantom'),
+          expect(
+            () => resolver.resolve(slideOptions),
+            throwsA(
+              isA<TemplateException>().having(
+                (e) => e.message,
+                'message',
+                contains('phantom'),
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
+
+      test(
+        'unknown template name — no registered templates message is explicit',
+        () {
+          final options = DeckOptions();
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(template: 'phantom');
+
+          expect(
+            () => resolver.resolve(slideOptions),
+            throwsA(
+              isA<TemplateException>().having(
+                (e) => e.message,
+                'message',
+                allOf(
+                  contains('phantom'),
+                  contains('No templates are registered in this deck.'),
+                ),
+              ),
+            ),
+          );
+        },
+      );
     });
 
     group('defaultTemplate', () {
@@ -202,7 +245,9 @@ void main() {
         final explicitTemplateStyle = SlideStyle();
 
         final defaultTemplate = SlideTemplate(baseStyle: defaultTemplateStyle);
-        final explicitTemplate = SlideTemplate(baseStyle: explicitTemplateStyle);
+        final explicitTemplate = SlideTemplate(
+          baseStyle: explicitTemplateStyle,
+        );
 
         final options = DeckOptions(
           defaultTemplate: defaultTemplate,
@@ -265,63 +310,107 @@ void main() {
         expect(result.usingTemplate, isFalse);
         expect(result.style, defaultSlideStyle.merge(null).merge(deckStyle));
       });
+
+      test(
+        'defaultTemplate unknown style message identifies defaultTemplate',
+        () {
+          final defaultTemplate = SlideTemplate(
+            styles: {'known': SlideStyle()},
+          );
+          final options = DeckOptions(defaultTemplate: defaultTemplate);
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(style: 'unknown');
+
+          expect(
+            () => resolver.resolve(slideOptions),
+            throwsA(
+              isA<TemplateException>().having(
+                (e) => e.message,
+                'message',
+                allOf(contains('defaultTemplate'), contains('unknown')),
+              ),
+            ),
+          );
+        },
+      );
+    });
+
+    group('Reserved template name', () {
+      test('throws when deck registers reserved "none" template name', () {
+        expect(
+          () => TemplateResolver(
+            DeckOptions(
+              templates: {TemplateResolver.noneTemplate: SlideTemplate()},
+            ),
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
     });
 
     group('Style merge order', () {
-      test('without template: defaultSlideStyle → options.baseStyle → options.styles[style]', () {
-        final baseStyle = SlideStyle();
-        final namedStyle = SlideStyle();
-        final options = DeckOptions(
-          baseStyle: baseStyle,
-          styles: {'variant': namedStyle},
-        );
-        final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(style: 'variant');
+      test(
+        'without template: defaultSlideStyle → options.baseStyle → options.styles[style]',
+        () {
+          final baseStyle = SlideStyle();
+          final namedStyle = SlideStyle();
+          final options = DeckOptions(
+            baseStyle: baseStyle,
+            styles: {'variant': namedStyle},
+          );
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(style: 'variant');
 
-        final result = resolver.resolve(slideOptions);
+          final result = resolver.resolve(slideOptions);
 
-        final expected = defaultSlideStyle
-            .merge(baseStyle)
-            .merge(namedStyle);
+          final expected = defaultSlideStyle.merge(baseStyle).merge(namedStyle);
 
-        expect(result.style, expected);
-      });
+          expect(result.style, expected);
+        },
+      );
 
-      test('with template: defaultSlideStyle → template.baseStyle → template.styles[style]', () {
-        final templateBase = SlideStyle();
-        final templateVariant = SlideStyle();
-        final template = SlideTemplate(
-          baseStyle: templateBase,
-          styles: {'highlight': templateVariant},
-        );
-        final options = DeckOptions(templates: {'themed': template});
-        final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(template: 'themed', style: 'highlight');
+      test(
+        'with template: defaultSlideStyle → template.baseStyle → template.styles[style]',
+        () {
+          final templateBase = SlideStyle();
+          final templateVariant = SlideStyle();
+          final template = SlideTemplate(
+            baseStyle: templateBase,
+            styles: {'highlight': templateVariant},
+          );
+          final options = DeckOptions(templates: {'themed': template});
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(
+            template: 'themed',
+            style: 'highlight',
+          );
 
-        final result = resolver.resolve(slideOptions);
+          final result = resolver.resolve(slideOptions);
 
-        final expected = defaultSlideStyle
-            .merge(templateBase)
-            .merge(templateVariant);
+          final expected = defaultSlideStyle
+              .merge(templateBase)
+              .merge(templateVariant);
 
-        expect(result.style, expected);
-      });
+          expect(result.style, expected);
+        },
+      );
 
-      test('with template and no style variant: defaultSlideStyle → template.baseStyle', () {
-        final templateBase = SlideStyle();
-        final template = SlideTemplate(baseStyle: templateBase);
-        final options = DeckOptions(templates: {'simple': template});
-        final resolver = TemplateResolver(options);
-        const slideOptions = SlideOptions(template: 'simple');
+      test(
+        'with template and no style variant: defaultSlideStyle → template.baseStyle',
+        () {
+          final templateBase = SlideStyle();
+          final template = SlideTemplate(baseStyle: templateBase);
+          final options = DeckOptions(templates: {'simple': template});
+          final resolver = TemplateResolver(options);
+          const slideOptions = SlideOptions(template: 'simple');
 
-        final result = resolver.resolve(slideOptions);
+          final result = resolver.resolve(slideOptions);
 
-        final expected = defaultSlideStyle
-            .merge(templateBase)
-            .merge(null);
+          final expected = defaultSlideStyle.merge(templateBase).merge(null);
 
-        expect(result.style, expected);
-      });
+          expect(result.style, expected);
+        },
+      );
 
       test('options.baseStyle is not applied when a named template is used', () {
         final optionsBaseStyle = SlideStyle();
