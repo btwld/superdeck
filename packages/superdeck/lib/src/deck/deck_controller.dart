@@ -158,10 +158,16 @@ class DeckController {
 
   DeckConfiguration _resolveDeckConfiguration(Deck deck) {
     final deckConfiguration = deck.configuration;
-    if (deckConfiguration == DeckConfiguration()) {
-      return _deckService.configuration;
-    }
-    return deckConfiguration;
+    return _hasExplicitConfigurationOverrides(deckConfiguration)
+        ? deckConfiguration
+        : _deckService.configuration;
+  }
+
+  bool _hasExplicitConfigurationOverrides(DeckConfiguration configuration) {
+    return configuration.projectDir != null ||
+        configuration.slidesPath != null ||
+        configuration.outputDir != null ||
+        configuration.assetsPath != null;
   }
 
   void _startDeckStream() {

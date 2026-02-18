@@ -14,7 +14,8 @@ class MockDeckService extends DeckService {
   Deck? _currentDeck;
   Object? _errorToEmit;
 
-  MockDeckService() : super(configuration: DeckConfiguration());
+  MockDeckService({DeckConfiguration? configuration})
+    : super(configuration: configuration ?? DeckConfiguration());
 
   @override
   Future<Deck> loadDeck() async {
@@ -257,6 +258,52 @@ void main() {
           p.join('.webdeck', 'img', 'thumbnail_web-config.png'),
         );
       });
+
+      test(
+        'falls back to service configuration when deck configuration is empty',
+        () async {
+          final serviceConfig = DeckConfiguration(
+            outputDir: '.service',
+            assetsPath: 'svc_assets',
+          );
+          final service = MockDeckService(configuration: serviceConfig);
+          final tempController = DeckController(
+            deckService: service,
+            options: const DeckOptions(),
+            enableDeckStream: true,
+          );
+
+          try {
+            final deck = createTestDeck(
+              slides: [
+                Slide(
+                  key: 'service-fallback',
+                  sections: [
+                    SectionBlock([ContentBlock('Slide')]),
+                  ],
+                ),
+              ],
+              config: DeckConfiguration(),
+            );
+            service.emitDeck(deck);
+
+            await Future.delayed(Duration.zero);
+
+            expect(tempController.slides.value, hasLength(1));
+            expect(
+              tempController.slides.value.first.thumbnailFile,
+              p.join(
+                '.service',
+                'svc_assets',
+                'thumbnail_service-fallback.png',
+              ),
+            );
+          } finally {
+            tempController.dispose();
+            service.dispose();
+          }
+        },
+      );
     });
 
     group(
