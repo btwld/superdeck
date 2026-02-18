@@ -7,6 +7,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../ui/widgets/provider.dart';
 import '../utils/cli_watcher.dart';
+import '../utils/config_resolver.dart';
 import '../utils/constants.dart';
 import 'bundled_deck_service.dart';
 import 'deck_controller.dart';
@@ -18,11 +19,13 @@ import 'deck_options.dart';
 /// including CLI watcher integration for auto-rebuild functionality.
 class DeckControllerBuilder extends StatefulWidget {
   final DeckOptions options;
+  final DeckConfiguration? configuration;
   final Widget Function(BuildContext context, GoRouter router) builder;
 
   const DeckControllerBuilder({
     super.key,
     required this.options,
+    this.configuration,
     required this.builder,
   });
 
@@ -40,7 +43,7 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   void initState() {
     super.initState();
 
-    final configuration = DeckConfiguration();
+    final configuration = resolveConfiguration(widget.configuration);
     final deckService = kCanRunProcess
         ? DeckService(configuration: configuration)
         : BundledDeckService(configuration: configuration);

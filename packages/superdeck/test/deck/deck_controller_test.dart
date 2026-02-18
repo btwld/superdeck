@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -13,7 +14,8 @@ class MockDeckService extends DeckService {
   Deck? _currentDeck;
   Object? _errorToEmit;
 
-  MockDeckService() : super(configuration: DeckConfiguration());
+  MockDeckService({DeckConfiguration? configuration})
+    : super(configuration: configuration ?? DeckConfiguration());
 
   @override
   Future<Deck> loadDeck() async {
@@ -231,6 +233,77 @@ void main() {
           controller.updateOptions(options);
         }, returnsNormally);
       });
+    });
+
+    group('Configuration Resolution', () {
+      test('uses deck configuration when building slide thumbnails', () async {
+        final deck = createTestDeck(
+          slides: [
+            Slide(
+              key: 'web-config',
+              sections: [
+                SectionBlock([ContentBlock('Slide')]),
+              ],
+            ),
+          ],
+          config: DeckConfiguration(outputDir: '.webdeck', assetsPath: 'img'),
+        );
+        mockDeckService.emitDeck(deck);
+
+        await Future.delayed(Duration.zero);
+
+        expect(controller.slides.value, hasLength(1));
+        expect(
+          controller.slides.value.first.thumbnailFile,
+          p.join('.webdeck', 'img', 'thumbnail_web-config.png'),
+        );
+      });
+
+      test(
+        'falls back to service configuration when deck configuration is empty',
+        () async {
+          final serviceConfig = DeckConfiguration(
+            outputDir: '.service',
+            assetsPath: 'svc_assets',
+          );
+          final service = MockDeckService(configuration: serviceConfig);
+          final tempController = DeckController(
+            deckService: service,
+            options: const DeckOptions(),
+            enableDeckStream: true,
+          );
+
+          try {
+            final deck = createTestDeck(
+              slides: [
+                Slide(
+                  key: 'service-fallback',
+                  sections: [
+                    SectionBlock([ContentBlock('Slide')]),
+                  ],
+                ),
+              ],
+              config: DeckConfiguration(),
+            );
+            service.emitDeck(deck);
+
+            await Future.delayed(Duration.zero);
+
+            expect(tempController.slides.value, hasLength(1));
+            expect(
+              tempController.slides.value.first.thumbnailFile,
+              p.join(
+                '.service',
+                'svc_assets',
+                'thumbnail_service-fallback.png',
+              ),
+            );
+          } finally {
+            tempController.dispose();
+            service.dispose();
+          }
+        },
+      );
     });
 
     group(
