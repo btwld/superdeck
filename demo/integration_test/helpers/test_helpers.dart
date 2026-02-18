@@ -7,6 +7,7 @@ import 'package:superdeck_example/src/parts/background.dart';
 import 'package:superdeck_example/src/parts/footer.dart';
 import 'package:superdeck_example/src/parts/header.dart';
 import 'package:superdeck_example/src/style.dart';
+import 'package:superdeck_example/src/templates.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
 /// Test app widget that mirrors the production app configuration.
@@ -30,6 +31,10 @@ class TestApp extends StatelessWidget {
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
         styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
+        templates: {
+          'corporate': corporateTemplate(),
+          'minimal': minimalTemplate(),
+        },
         parts: const SlideParts(
           header: HeaderPart(),
           footer: FooterPart(),
