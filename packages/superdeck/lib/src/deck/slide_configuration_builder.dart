@@ -1,10 +1,10 @@
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../styling/styling.dart';
 import '../widgets/widgets.dart';
 import 'deck_options.dart';
 import 'slide_configuration.dart';
+import 'template_resolver.dart';
 import 'widget_definition.dart';
 
 /// Service responsible for transforming raw Slide domain entities
@@ -28,8 +28,10 @@ class SlideConfigurationBuilder {
       return [];
     }
 
+    final resolver = TemplateResolver(options);
+
     return rawSlides.asMap().entries.map((entry) {
-      return _buildConfiguration(entry.key, entry.value, options);
+      return _buildConfiguration(entry.key, entry.value, options, resolver);
     }).toList();
   }
 
@@ -38,6 +40,7 @@ class SlideConfigurationBuilder {
     int index,
     Slide slide,
     DeckOptions options,
+    TemplateResolver resolver,
   ) {
     // Start with built-in widgets, then add user widgets that are actually used
     final widgets = Map<String, WidgetDefinition>.from(builtInWidgets);
@@ -64,18 +67,16 @@ class SlideConfigurationBuilder {
       thumbnailAsset.fileName,
     );
 
-    // Merge styles: default -> base -> slide-specific
-    final mergedStyle = defaultSlideStyle
-        .merge(options.baseStyle)
-        .merge(options.styles[slide.options?.style]);
+    // Resolve template, style, and parts
+    final resolution = resolver.resolve(slide.options);
 
     return SlideConfiguration(
       slideIndex: index,
-      style: mergedStyle,
+      style: resolution.style,
       slide: slide,
       widgets: widgets,
       thumbnailFile: thumbnailPath,
-      parts: options.parts,
+      parts: resolution.parts,
       debug: options.debug,
     );
   }

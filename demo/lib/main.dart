@@ -6,6 +6,7 @@ import 'src/parts/background.dart';
 import 'src/parts/footer.dart';
 import 'src/parts/header.dart';
 import 'src/style.dart';
+import 'src/templates.dart';
 import 'src/widgets/demo_widgets.dart';
 
 void main() async {
@@ -27,7 +28,10 @@ void main() async {
         styles: {
           'announcement': announcementStyle(),
           'quote': quoteStyle(),
-          // 'bordered': borderedStyle(),
+        },
+        templates: {
+          'corporate': corporateTemplate(),
+          'minimal': minimalTemplate(),
         },
         parts: const SlideParts(
           header: HeaderPart(),

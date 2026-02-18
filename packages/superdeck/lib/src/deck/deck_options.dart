@@ -1,5 +1,6 @@
 import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
+import 'slide_template.dart';
 import 'widget_definition.dart';
 
 class DeckOptions {
@@ -8,6 +9,12 @@ class DeckOptions {
   final Map<String, WidgetDefinition> widgets;
   final SlideParts parts;
   final bool debug;
+
+  /// Named slide templates that bundle chrome + style systems.
+  final Map<String, SlideTemplate> templates;
+
+  /// Default template applied when a slide has no explicit template.
+  final SlideTemplate? defaultTemplate;
 
   /// Whether to watch for file changes and auto-rebuild the deck.
   ///
@@ -22,6 +29,8 @@ class DeckOptions {
     this.widgets = const <String, WidgetDefinition>{},
     this.parts = const SlideParts(),
     this.debug = false,
+    this.templates = const <String, SlideTemplate>{},
+    this.defaultTemplate,
     this.watchForChanges = false,
   });
 
@@ -31,6 +40,8 @@ class DeckOptions {
     Map<String, WidgetDefinition>? widgets,
     SlideParts? parts,
     bool? debug,
+    Map<String, SlideTemplate>? templates,
+    SlideTemplate? defaultTemplate,
     bool? watchForChanges,
   }) {
     return DeckOptions(
@@ -39,6 +50,8 @@ class DeckOptions {
       widgets: widgets ?? this.widgets,
       parts: parts ?? this.parts,
       debug: debug ?? this.debug,
+      templates: templates ?? this.templates,
+      defaultTemplate: defaultTemplate ?? this.defaultTemplate,
       watchForChanges: watchForChanges ?? this.watchForChanges,
     );
   }
@@ -53,9 +66,19 @@ class DeckOptions {
           widgets == other.widgets &&
           parts == other.parts &&
           debug == other.debug &&
+          templates == other.templates &&
+          defaultTemplate == other.defaultTemplate &&
           watchForChanges == other.watchForChanges;
 
   @override
-  int get hashCode =>
-      Object.hash(baseStyle, styles, widgets, parts, debug, watchForChanges);
+  int get hashCode => Object.hash(
+    baseStyle,
+    styles,
+    widgets,
+    parts,
+    debug,
+    templates,
+    defaultTemplate,
+    watchForChanges,
+  );
 }

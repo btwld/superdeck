@@ -369,6 +369,20 @@ void main() {
         expect(options.args['custom'], 'value');
       });
 
+      test('creates with template parameter', () {
+        const options = SlideOptions(template: 'my-template');
+
+        expect(options.template, 'my-template');
+        expect(options.title, isNull);
+        expect(options.style, isNull);
+      });
+
+      test('template defaults to null', () {
+        const options = SlideOptions();
+
+        expect(options.template, isNull);
+      });
+
       group('copyWith', () {
         test('copies with new title', () {
           const original = SlideOptions(title: 'Original');
@@ -391,16 +405,25 @@ void main() {
           expect(copy.args, {'b': 2});
         });
 
+        test('copies with new template', () {
+          const original = SlideOptions(template: 'original-template');
+          final copy = original.copyWith(template: 'new-template');
+
+          expect(copy.template, 'new-template');
+        });
+
         test('preserves values when not specified', () {
           const original = SlideOptions(
             title: 'T',
             style: 'S',
+            template: 'tmpl',
             args: {'k': 'v'},
           );
           final copy = original.copyWith();
 
           expect(copy.title, original.title);
           expect(copy.style, original.style);
+          expect(copy.template, original.template);
           expect(copy.args, original.args);
         });
       });
@@ -420,6 +443,20 @@ void main() {
 
           expect(map['title'], 'T');
           expect(map['style'], 'S');
+        });
+
+        test('serializes template when present', () {
+          const options = SlideOptions(template: 'my-template');
+          final map = options.toMap();
+
+          expect(map['template'], 'my-template');
+        });
+
+        test('omits template when null', () {
+          const options = SlideOptions(title: 'T');
+          final map = options.toMap();
+
+          expect(map.containsKey('template'), isFalse);
         });
 
         test('spreads args into map', () {
@@ -452,6 +489,22 @@ void main() {
           expect(options.style, 'parsed-style');
         });
 
+        test('deserializes template field', () {
+          final map = {'template': 'parsed-template'};
+          final options = SlideOptions.fromMap(map);
+
+          expect(options.template, 'parsed-template');
+        });
+
+        test('removes template from args', () {
+          final map = {'template': 'tmpl', 'extra': 'val'};
+          final options = SlideOptions.fromMap(map);
+
+          expect(options.template, 'tmpl');
+          expect(options.args.containsKey('template'), isFalse);
+          expect(options.args['extra'], 'val');
+        });
+
         test('puts unknown keys into args', () {
           final map = {
             'title': 'T',
@@ -481,6 +534,18 @@ void main() {
           expect(restored.style, original.style);
           expect(restored.args['k'], original.args['k']);
         });
+
+        test('preserves template through toMap/fromMap', () {
+          const original = SlideOptions(
+            title: 'RT',
+            template: 'rt-template',
+          );
+
+          final restored = SlideOptions.fromMap(original.toMap());
+
+          expect(restored.template, original.template);
+          expect(restored.args.containsKey('template'), isFalse);
+        });
       });
 
       group('parse', () {
@@ -495,6 +560,17 @@ void main() {
 
           expect(options.title, 'T');
           expect(options.args['extra'], 'value');
+        });
+
+        test('parses map with template field', () {
+          final options = SlideOptions.parse({
+            'title': 'T',
+            'template': 'parsed-template',
+          });
+
+          expect(options.title, 'T');
+          expect(options.template, 'parsed-template');
+          expect(options.args.containsKey('template'), isFalse);
         });
       });
 
@@ -527,6 +603,20 @@ void main() {
 
           expect(opt1, isNot(opt2));
         });
+
+        test('different template makes options unequal', () {
+          const opt1 = SlideOptions(template: 'template-a');
+          const opt2 = SlideOptions(template: 'template-b');
+
+          expect(opt1, isNot(opt2));
+        });
+
+        test('template present vs absent makes options unequal', () {
+          const opt1 = SlideOptions(template: 'some-template');
+          const opt2 = SlideOptions();
+
+          expect(opt1, isNot(opt2));
+        });
       });
 
       group('schema', () {
@@ -547,6 +637,21 @@ void main() {
           final result = SlideOptions.schema.safeParse({
             'title': 'T',
             'custom': 'value',
+          });
+          expect(result.isOk, isTrue);
+        });
+
+        test('validates map with template field', () {
+          final result = SlideOptions.schema.safeParse({
+            'title': 'T',
+            'template': 'my-template',
+          });
+          expect(result.isOk, isTrue);
+        });
+
+        test('validates map with only template field', () {
+          final result = SlideOptions.schema.safeParse({
+            'template': 'standalone-template',
           });
           expect(result.isOk, isTrue);
         });
