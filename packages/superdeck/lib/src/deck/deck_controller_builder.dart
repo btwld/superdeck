@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
@@ -6,9 +6,9 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../ui/widgets/provider.dart';
-import '../utils/cli_watcher.dart';
 import '../utils/config_resolver.dart';
 import '../utils/constants.dart';
+import '../utils/deck_watcher.dart';
 import 'bundled_deck_service.dart';
 import 'deck_controller.dart';
 import 'deck_options.dart';
@@ -16,7 +16,7 @@ import 'deck_options.dart';
 /// Builder widget that creates and manages the DeckController
 ///
 /// Provides the DeckController via InheritedData and manages its lifecycle
-/// including CLI watcher integration for auto-rebuild functionality.
+/// including deck watcher integration for auto-rebuild functionality.
 class DeckControllerBuilder extends StatefulWidget {
   final DeckOptions options;
   final DeckConfiguration? configuration;
@@ -35,8 +35,8 @@ class DeckControllerBuilder extends StatefulWidget {
 
 class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   late final DeckController _deckController;
-  CliWatcher? _cliWatcher;
-  EffectCleanup? _cliWatcherEffect;
+  DeckWatcher? _deckWatcher;
+  EffectCleanup? _deckWatcherEffect;
   final _logger = Logger('DeckControllerBuilder');
 
   @override
@@ -55,26 +55,26 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       enableDeckStream: kCanRunProcess,
     );
 
-    // Start CLI watcher in debug mode for auto-rebuild (if enabled)
+    // Start runtime deck watcher on process-capable platforms (if enabled).
     if (kCanRunProcess && widget.options.watchForChanges) {
       try {
-        _cliWatcher = CliWatcher(
-          projectRoot: Directory.current,
+        _deckWatcher = DeckWatcher(
           configuration: configuration,
+          store: deckService,
         );
-        _cliWatcher!.start();
-        _logger.info('CLI watcher started');
+        unawaited(_deckWatcher!.start());
+        _logger.info('Deck watcher started');
 
-        // Sync CLI watcher rebuilding state with deck controller using effect
-        _cliWatcherEffect = effect(() {
-          final isRebuilding = _cliWatcher!.isRebuilding.value;
+        // Sync deck watcher rebuilding state with deck controller using effect.
+        _deckWatcherEffect = effect(() {
+          final isRebuilding = _deckWatcher!.isRebuilding.value;
           _deckController.setRebuilding(isRebuilding);
         });
       } catch (e) {
-        _logger.warning('CLI watcher failed to start: $e');
+        _logger.warning('Deck watcher failed to start: $e');
       }
     } else if (!widget.options.watchForChanges) {
-      _logger.info('CLI watcher disabled via DeckOptions.watchForChanges');
+      _logger.info('Deck watcher disabled via DeckOptions.watchForChanges');
     }
   }
 
@@ -90,10 +90,10 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   void dispose() {
     // Dispose in correct order:
     // 1. Clean up effects first (stop them from accessing signals)
-    _cliWatcherEffect?.call();
+    _deckWatcherEffect?.call();
 
-    // 2. Stop async operations (CliWatcher file watching and signals)
-    _cliWatcher?.dispose();
+    // 2. Stop async operations (watching and signals)
+    _deckWatcher?.dispose();
 
     // 3. Dispose controller last (signals should not be accessed after this)
     _deckController.dispose();
