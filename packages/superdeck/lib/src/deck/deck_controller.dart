@@ -32,7 +32,6 @@ class DeckController {
   final DeckService _deckService;
   final NavigationService _navigationService;
   final ThumbnailService _thumbnailService;
-  final SlideConfigurationBuilder _slideBuilder;
   final bool _enableDeckStream;
 
   // Disposal guard to prevent accessing disposed signals
@@ -76,7 +75,10 @@ class DeckController {
   late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
     final deck = _currentDeck.value;
     if (deck == null) return <SlideConfiguration>[];
-    return _slideBuilder.buildConfigurations(deck.slides, _options.value);
+    final configuration = _resolveDeckConfiguration(deck);
+    return SlideConfigurationBuilder(
+      configuration: configuration,
+    ).buildConfigurations(deck.slides, _options.value);
   });
 
   late final ReadonlySignal<int> totalSlides = computed(
@@ -127,10 +129,7 @@ class DeckController {
   }) : _deckService = deckService,
        _navigationService = navigationService ?? NavigationService(),
        _thumbnailService = thumbnailService ?? ThumbnailService(),
-       _enableDeckStream = enableDeckStream,
-       _slideBuilder = SlideConfigurationBuilder(
-         configuration: deckService.configuration,
-       ) {
+       _enableDeckStream = enableDeckStream {
     _options.value = options;
 
     // Create router with index change callback
@@ -156,6 +155,14 @@ class DeckController {
   // ========================================
   // DECK OPERATIONS
   // ========================================
+
+  DeckConfiguration _resolveDeckConfiguration(Deck deck) {
+    final deckConfiguration = deck.configuration;
+    if (deckConfiguration == DeckConfiguration()) {
+      return _deckService.configuration;
+    }
+    return deckConfiguration;
+  }
 
   void _startDeckStream() {
     _loadingState.value = DeckLoadingState.loading;

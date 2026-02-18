@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -230,6 +231,31 @@ void main() {
           controller.updateOptions(options);
           controller.updateOptions(options);
         }, returnsNormally);
+      });
+    });
+
+    group('Configuration Resolution', () {
+      test('uses deck configuration when building slide thumbnails', () async {
+        final deck = createTestDeck(
+          slides: [
+            Slide(
+              key: 'web-config',
+              sections: [
+                SectionBlock([ContentBlock('Slide')]),
+              ],
+            ),
+          ],
+          config: DeckConfiguration(outputDir: '.webdeck', assetsPath: 'img'),
+        );
+        mockDeckService.emitDeck(deck);
+
+        await Future.delayed(Duration.zero);
+
+        expect(controller.slides.value, hasLength(1));
+        expect(
+          controller.slides.value.first.thumbnailFile,
+          p.join('.webdeck', 'img', 'thumbnail_web-config.png'),
+        );
       });
     });
 
