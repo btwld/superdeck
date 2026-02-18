@@ -433,6 +433,48 @@ my_presentation/
 
 ---
 
+## Slide Templates {.heading}
+
+@column
+
+Templates bundle **chrome** (header, footer, background) with an **isolated style system** — like Keynote master slides.
+
+---
+template: corporate
+---
+
+@column {
+  align: center
+}
+# Corporate Template {.heading}
+
+This slide uses the `corporate` template with branded header and footer.
+
+---
+template: corporate
+style: highlight
+---
+
+@column {
+  align: center
+}
+# Highlight Style {.heading}
+
+Templates can have their own named style variants.
+
+---
+template: minimal
+---
+
+@column {
+  align: center
+}
+# Minimal Template {.heading}
+
+A clean, typography-focused template with no chrome distractions.
+
+---
+
 @section{
   align: bottom_center
   flex: 2

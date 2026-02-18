@@ -140,22 +140,35 @@ class SlideOptions {
   /// The title of the slide, if any.
   final String? title;
 
-  /// The style template to apply to this slide.
+  /// The style variant to apply to this slide.
   final String? style;
 
-  /// Additional arguments passed to the slide template.
+  /// The slide template to use for chrome and style isolation.
+  ///
+  /// `template: 'none'` is a reserved opt-out value used to disable template
+  /// application for the slide when a deck-level default template is configured.
+  final String? template;
+
+  /// Additional arguments passed to the slide.
   final Map<String, Object?> args;
 
-  const SlideOptions({this.title, this.style, this.args = const {}});
+  const SlideOptions({
+    this.title,
+    this.style,
+    this.template,
+    this.args = const {},
+  });
 
   SlideOptions copyWith({
     String? title,
     String? style,
+    String? template,
     Map<String, Object?>? args,
   }) {
     return SlideOptions(
       title: title ?? this.title,
       style: style ?? this.style,
+      template: template ?? this.template,
       args: args ?? this.args,
     );
   }
@@ -164,6 +177,7 @@ class SlideOptions {
     return {
       if (title != null) 'title': title,
       if (style != null) 'style': style,
+      if (template != null) 'template': template,
       ...args,
     };
   }
@@ -171,18 +185,26 @@ class SlideOptions {
   static SlideOptions fromMap(Map<String, dynamic> map) {
     final title = map['title'] as String?;
     final style = map['style'] as String?;
+    final template = map['template'] as String?;
 
     final args = Map<String, Object?>.from(map);
     args.remove('title');
     args.remove('style');
+    args.remove('template');
 
-    return SlideOptions(title: title, style: style, args: args);
+    return SlideOptions(
+      title: title,
+      style: style,
+      template: template,
+      args: args,
+    );
   }
 
   /// Validation schema for slide options.
   static final schema = Ack.object({
     'title': Ack.string().optional(),
     'style': Ack.string().optional(),
+    'template': Ack.string().optional(),
   }, additionalProperties: true);
 
   /// Parses slide options from a JSON map.
@@ -198,8 +220,10 @@ class SlideOptions {
           runtimeType == other.runtimeType &&
           title == other.title &&
           style == other.style &&
+          template == other.template &&
           const MapEquality().equals(args, other.args);
 
   @override
-  int get hashCode => Object.hash(title, style, const MapEquality().hash(args));
+  int get hashCode =>
+      Object.hash(title, style, template, const MapEquality().hash(args));
 }
