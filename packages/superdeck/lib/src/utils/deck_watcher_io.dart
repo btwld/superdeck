@@ -63,16 +63,16 @@ class DeckWatcher {
   DeckBuilder? _builder;
   StreamSubscription<BuildEvent>? _buildSubscription;
 
-  ReadonlySignal<DeckWatcherStatus> get status => _status;
-  ReadonlySignal<Object?> get error => _error;
-  ReadonlySignal<bool> get isRebuilding => _isRebuilding;
-
   DeckWatcher({
     required this.configuration,
     DeckService? store,
     DeckBuilderFactory? builderFactory,
   }) : _store = store ?? DeckService(configuration: configuration),
        _builderFactory = builderFactory ?? _createStandardBuilder;
+
+  ReadonlySignal<DeckWatcherStatus> get status => _status;
+  ReadonlySignal<Object?> get error => _error;
+  ReadonlySignal<bool> get isRebuilding => _isRebuilding;
 
   Future<void> start() async {
     if (_disposed || _status.value == DeckWatcherStatus.stopped) {
@@ -89,14 +89,31 @@ class DeckWatcher {
 
     try {
       await _store.initialize();
+      if (_disposed) return;
 
-      _builder = _builderFactory(configuration: configuration, store: _store);
+      final builder = _builderFactory(
+        configuration: configuration,
+        store: _store,
+      );
+      if (_disposed) {
+        await builder.dispose();
+        return;
+      }
 
-      _buildSubscription = _builder!.watchAndBuild().listen(
+      final buildSubscription = builder.watchAndBuild().listen(
         _handleBuildEvent,
         onError: _handleUnexpectedWatchError,
         onDone: _handleWatchCompletion,
       );
+
+      if (_disposed) {
+        await buildSubscription.cancel();
+        await builder.dispose();
+        return;
+      }
+
+      _builder = builder;
+      _buildSubscription = buildSubscription;
 
       if (_disposed) return;
       _status.value = DeckWatcherStatus.running;

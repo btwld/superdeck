@@ -13,11 +13,11 @@ class DeckWatcher {
 
   bool _disposed = false;
 
+  DeckWatcher({required this.configuration, DeckService? store});
+
   ReadonlySignal<DeckWatcherStatus> get status => _status;
   ReadonlySignal<Object?> get error => _error;
   ReadonlySignal<bool> get isRebuilding => _isRebuilding;
-
-  DeckWatcher({required this.configuration, DeckService? store});
 
   Future<void> start() async {
     if (_disposed || _status.value != DeckWatcherStatus.idle) {
