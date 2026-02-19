@@ -222,7 +222,7 @@ class DeckController {
     }
   }
 
-  /// Sets rebuilding state (called by CliWatcher)
+  /// Sets rebuilding state (called by DeckWatcher)
   @internal
   void setRebuilding(bool value) {
     if (_disposed) return;
