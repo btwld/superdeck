@@ -23,7 +23,7 @@ ImageProvider getImageProvider(Uri uri) {
       if (bytes == null) {
         return AssetImage(uri.path);
       }
-      return MemoryImage(Uint8List.fromList(bytes));
+      return MemoryImage(bytes);
     default:
       // On platforms that can run processes (desktop debug), files are
       // generated at runtime and loaded from the filesystem.

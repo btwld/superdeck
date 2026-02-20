@@ -34,6 +34,18 @@ void main() {
       expect(await file.readAsBytes(), bytes);
     });
 
+    test('write skips empty payloads', () async {
+      const key = 'thumbnail_empty.png';
+      final file = File(p.join(tempDir.path, key));
+
+      final writtenUri = await store.write(key, const []);
+      final resolvedUri = await store.resolve(key);
+
+      expect(writtenUri, isNull);
+      expect(resolvedUri, isNull);
+      expect(await file.exists(), isFalse);
+    });
+
     test('delete removes stored asset', () async {
       const key = 'thumbnail_slide.png';
       await store.write(key, [9, 8, 7]);

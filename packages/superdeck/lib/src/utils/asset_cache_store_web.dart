@@ -30,10 +30,18 @@ class _WebAssetCacheStore implements AssetCacheStore {
     final bundledPath = p.posix.join(_bundledAssetsPath, normalizedKey);
     try {
       final byteData = await rootBundle.load(bundledPath);
-      if (byteData.lengthInBytes == 0) {
+      final bundledBytes = byteData.buffer.asUint8List(
+        byteData.offsetInBytes,
+        byteData.lengthInBytes,
+      );
+      if (bundledBytes.isEmpty) {
         return null;
       }
-      return Uri(path: bundledPath);
+      _cache[normalizedKey] = bundledBytes;
+      return Uri.dataFromBytes(
+        bundledBytes,
+        mimeType: _mimeTypeForAssetKey(normalizedKey),
+      );
     } on Object {
       return null;
     }
