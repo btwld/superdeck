@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -17,7 +18,7 @@ class _WebAssetCacheStore implements AssetCacheStore {
 
   @override
   Future<Uri?> resolve(String assetKey) async {
-    final normalizedKey = _normalizeAssetKey(assetKey);
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
 
     final cachedBytes = _cache[normalizedKey];
     if (cachedBytes != null && cachedBytes.isNotEmpty) {
@@ -42,14 +43,14 @@ class _WebAssetCacheStore implements AssetCacheStore {
         bundledBytes,
         mimeType: _mimeTypeForAssetKey(normalizedKey),
       );
-    } on Object {
+    } on FlutterError {
       return null;
     }
   }
 
   @override
   Future<Uri?> write(String assetKey, List<int> bytes) async {
-    final normalizedKey = _normalizeAssetKey(assetKey);
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
     final data = Uint8List.fromList(bytes);
     if (data.isEmpty) {
       return null;
@@ -64,24 +65,12 @@ class _WebAssetCacheStore implements AssetCacheStore {
 
   @override
   Future<void> delete(String assetKey) async {
-    final normalizedKey = _normalizeAssetKey(assetKey);
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
     _cache.remove(normalizedKey);
   }
 
   static String _normalizePath(String path) {
     return path.replaceAll('\\', '/');
-  }
-
-  String _normalizeAssetKey(String assetKey) {
-    final normalized = p.basename(assetKey);
-    if (normalized.isEmpty || normalized != assetKey) {
-      throw ArgumentError.value(
-        assetKey,
-        'assetKey',
-        'Asset key must be a bare filename',
-      );
-    }
-    return normalized;
   }
 
   String _mimeTypeForAssetKey(String assetKey) {

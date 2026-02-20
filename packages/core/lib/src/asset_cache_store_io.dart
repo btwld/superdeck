@@ -42,19 +42,7 @@ class IoAssetCacheStore implements AssetCacheStore {
   }
 
   File _assetFile(String assetKey) {
-    final normalizedKey = _normalizeAssetKey(assetKey);
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
     return File(p.join(cacheDir.path, normalizedKey));
-  }
-
-  String _normalizeAssetKey(String assetKey) {
-    final normalized = p.basename(assetKey);
-    if (normalized.isEmpty || normalized != assetKey) {
-      throw ArgumentError.value(
-        assetKey,
-        'assetKey',
-        'Asset key must be a bare filename',
-      );
-    }
-    return normalized;
   }
 }

@@ -45,7 +45,7 @@ class ThumbnailService {
       final thumbnail = updatedCache.putIfAbsent(
         slide.key,
         () => AsyncThumbnail(
-          generator: (ctx, force) =>
+          generator: (ctx, {required force}) =>
               generateThumbnail(slide: slide, context: ctx, force: force),
         ),
       );

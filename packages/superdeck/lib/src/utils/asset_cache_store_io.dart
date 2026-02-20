@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 AssetCacheStore createAssetCacheStore({
@@ -31,7 +32,7 @@ class _IoRuntimeAssetCacheStore implements AssetCacheStore {
 
   @override
   Future<Uri?> resolve(String assetKey) async {
-    final normalizedKey = _normalizeAssetKey(assetKey);
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
 
     final appCacheUri = await _cacheStore.resolve(normalizedKey);
     if (appCacheUri != null) {
@@ -51,25 +52,13 @@ class _IoRuntimeAssetCacheStore implements AssetCacheStore {
 
   @override
   Future<Uri?> write(String assetKey, List<int> bytes) {
-    final normalizedKey = _normalizeAssetKey(assetKey);
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
     return _cacheStore.write(normalizedKey, bytes);
   }
 
   @override
   Future<void> delete(String assetKey) {
-    final normalizedKey = _normalizeAssetKey(assetKey);
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
     return _cacheStore.delete(normalizedKey);
-  }
-
-  String _normalizeAssetKey(String assetKey) {
-    final normalized = p.basename(assetKey);
-    if (normalized.isEmpty || normalized != assetKey) {
-      throw ArgumentError.value(
-        assetKey,
-        'assetKey',
-        'Asset key must be a bare filename',
-      );
-    }
-    return normalized;
   }
 }
