@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:path/path.dart' as path;
 import 'package:superdeck_builder/superdeck_builder.dart';
+import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// Result of asset generation pipeline processing on slide content.
@@ -27,13 +27,18 @@ class AssetGenerationResult {
 class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
   final DeckService _store;
+  final AssetCacheStore _cache;
   final Logger _logger = Logger('AssetGenerationPipeline');
 
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
     required DeckService store,
+    AssetCacheStore? cacheStore,
   }) : _generators = generators,
-       _store = store;
+       _store = store,
+       _cache =
+           cacheStore ??
+           IoAssetCacheStore(cacheDir: store.configuration.assetsDir);
 
   /// Processes all assets in the given slide content.
   ///
@@ -118,32 +123,61 @@ class AssetGenerationPipeline {
     final generatedAsset = generator.createAssetReference(codeBlock.content);
 
     final assetPath = _store.getGeneratedAssetPath(generatedAsset);
-    final assetFile = File(assetPath);
-
-    // Check if asset already exists
-    if (await assetFile.exists()) {
+    final cachedUri = await _cache.resolve(generatedAsset.fileName);
+    if (cachedUri != null) {
+      _validateCachedAssetPath(
+        cacheUri: cachedUri,
+        expectedPath: assetPath,
+        assetKey: generatedAsset.fileName,
+      );
       _logger.info(
         '${generator.type} asset already exists for slide $slideIndex',
       );
     } else {
       _logger.info('Generating ${generator.type} asset for slide $slideIndex');
 
-      // Generate the asset
       final assetData = await generator.generateAsset(
         codeBlock.content,
         assetPath,
       );
-
-      // Write to disk
-      await assetFile.writeAsBytes(assetData);
+      final writtenUri = await _cache.write(generatedAsset.fileName, assetData);
+      if (writtenUri == null) {
+        throw StateError(
+          'Failed to write ${generator.type} asset to cache for key '
+          '"${generatedAsset.fileName}".',
+        );
+      }
+      _validateCachedAssetPath(
+        cacheUri: writtenUri,
+        expectedPath: assetPath,
+        assetKey: generatedAsset.fileName,
+      );
     }
 
     // Create replacement syntax with relative path from project directory
     final projectDir = _store.configuration.superdeckDir.parent.path;
-    final relativePath = path.relative(assetFile.path, from: projectDir);
+    final relativePath = path.relative(assetPath, from: projectDir);
     final replacementSyntax = '![${generator.type}_asset]($relativePath)';
 
     return (generatedAsset, replacementSyntax);
+  }
+
+  void _validateCachedAssetPath({
+    required Uri cacheUri,
+    required String expectedPath,
+    required String assetKey,
+  }) {
+    final resolvedPath = path.normalize(
+      cacheUri.scheme == 'file' ? cacheUri.toFilePath() : cacheUri.path,
+    );
+    final normalizedExpectedPath = path.normalize(expectedPath);
+    if (resolvedPath != normalizedExpectedPath) {
+      throw StateError(
+        'Asset cache path mismatch for "$assetKey". Expected '
+        '"$normalizedExpectedPath" but resolved "$resolvedPath". '
+        'Configure cacheStore to use configuration.assetsDir.',
+      );
+    }
   }
 
   /// Disposes of all generators.

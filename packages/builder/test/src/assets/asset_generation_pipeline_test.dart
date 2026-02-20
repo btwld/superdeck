@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:superdeck_builder/src/assets/asset_generation_pipeline.dart';
 import 'package:superdeck_builder/src/assets/asset_generator.dart';
+import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
@@ -9,6 +10,8 @@ import 'package:test/test.dart';
 class MockAssetGenerator implements AssetGenerator {
   final String _type;
   final List<int> _mockData;
+  int generateCallCount = 0;
+  String? lastAssetPath;
 
   MockAssetGenerator(this._type, this._mockData);
 
@@ -28,6 +31,8 @@ class MockAssetGenerator implements AssetGenerator {
 
   @override
   Future<List<int>> generateAsset(String content, String assetPath) async {
+    generateCallCount++;
+    lastAssetPath = assetPath;
     return _mockData;
   }
 
@@ -56,6 +61,39 @@ class MockDeckService extends DeckService {
   }
 }
 
+class InMemoryAssetCacheStore implements AssetCacheStore {
+  final Directory _cacheDir;
+  final Map<String, List<int>> _bytesByKey = {};
+
+  InMemoryAssetCacheStore(this._cacheDir);
+
+  @override
+  Future<Uri?> resolve(String assetKey) async {
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
+    final bytes = _bytesByKey[normalizedKey];
+    if (bytes == null || bytes.isEmpty) {
+      return null;
+    }
+    return File('${_cacheDir.path}/$normalizedKey').uri;
+  }
+
+  @override
+  Future<Uri?> write(String assetKey, List<int> bytes) async {
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
+    if (bytes.isEmpty) {
+      return null;
+    }
+    _bytesByKey[normalizedKey] = bytes;
+    return File('${_cacheDir.path}/$normalizedKey').uri;
+  }
+
+  @override
+  Future<void> delete(String assetKey) async {
+    final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
+    _bytesByKey.remove(normalizedKey);
+  }
+}
+
 void main() {
   group('AssetGenerationPipeline', () {
     late AssetGenerationPipeline pipeline;
@@ -70,6 +108,9 @@ void main() {
       pipeline = AssetGenerationPipeline(
         generators: [mockGenerator],
         store: mockStore,
+        cacheStore: IoAssetCacheStore(
+          cacheDir: Directory('${tempDir.path}/assets'),
+        ),
       );
     });
 
@@ -105,6 +146,25 @@ More content.
       expect(result.updatedContent, contains('![mermaid_asset]'));
       expect(result.generatedAssets, hasLength(1));
       expect(result.generatedAssets.first.type, equals('mermaid'));
+    });
+
+    test('writes generated asset bytes to expected asset path', () async {
+      const content = '''
+```mermaid
+graph TD
+  A --> B
+```
+''';
+
+      final result = await pipeline.processSlideContent(content, 0);
+      final generatedPath =
+          '${tempDir.path}/assets/${result.generatedAssets.first.fileName}';
+      final generatedFile = File(generatedPath);
+
+      expect(await generatedFile.exists(), isTrue);
+      expect(await generatedFile.readAsBytes(), equals([1, 2, 3, 4, 5]));
+      expect(mockGenerator.lastAssetPath, equals(generatedPath));
+      expect(mockGenerator.generateCallCount, equals(1));
     });
 
     test('finds correct generator for content type', () async {
@@ -150,6 +210,46 @@ graph LR
       expect(result.generatedAssets, hasLength(2));
       expect(result.updatedContent, contains('![mermaid_asset]'));
     });
+
+    test('skips regeneration when cached asset already exists', () async {
+      const content = '''
+```mermaid
+graph TD
+  A --> B
+```
+''';
+
+      await pipeline.processSlideContent(content, 0);
+      await pipeline.processSlideContent(content, 1);
+
+      expect(mockGenerator.generateCallCount, equals(1));
+    });
+
+    test(
+      'throws when cache resolves to a different path than deck assets',
+      () async {
+        final mismatchedCache = InMemoryAssetCacheStore(
+          Directory('${tempDir.path}/external-cache'),
+        );
+        final mismatchedPipeline = AssetGenerationPipeline(
+          generators: [mockGenerator],
+          store: mockStore,
+          cacheStore: mismatchedCache,
+        );
+
+        const content = '''
+```mermaid
+graph TD
+  A --> B
+```
+''';
+
+        await expectLater(
+          mismatchedPipeline.processSlideContent(content, 0),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
 
     test('dispose calls dispose on all generators', () async {
       await expectLater(pipeline.dispose(), completes);
