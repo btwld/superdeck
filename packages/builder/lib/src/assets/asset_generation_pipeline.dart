@@ -123,23 +123,35 @@ class AssetGenerationPipeline {
     final generatedAsset = generator.createAssetReference(codeBlock.content);
 
     final assetPath = _store.getGeneratedAssetPath(generatedAsset);
-
-    // Check if asset already exists
-    if (await _cache.resolve(generatedAsset.fileName) != null) {
+    final cachedUri = await _cache.resolve(generatedAsset.fileName);
+    if (cachedUri != null) {
+      _validateCachedAssetPath(
+        cacheUri: cachedUri,
+        expectedPath: assetPath,
+        assetKey: generatedAsset.fileName,
+      );
       _logger.info(
         '${generator.type} asset already exists for slide $slideIndex',
       );
     } else {
       _logger.info('Generating ${generator.type} asset for slide $slideIndex');
 
-      // Generate the asset
       final assetData = await generator.generateAsset(
         codeBlock.content,
         assetPath,
       );
-
-      // Write to disk
-      await _cache.write(generatedAsset.fileName, assetData);
+      final writtenUri = await _cache.write(generatedAsset.fileName, assetData);
+      if (writtenUri == null) {
+        throw StateError(
+          'Failed to write ${generator.type} asset to cache for key '
+          '"${generatedAsset.fileName}".',
+        );
+      }
+      _validateCachedAssetPath(
+        cacheUri: writtenUri,
+        expectedPath: assetPath,
+        assetKey: generatedAsset.fileName,
+      );
     }
 
     // Create replacement syntax with relative path from project directory
@@ -148,6 +160,29 @@ class AssetGenerationPipeline {
     final replacementSyntax = '![${generator.type}_asset]($relativePath)';
 
     return (generatedAsset, replacementSyntax);
+  }
+
+  void _validateCachedAssetPath({
+    required Uri cacheUri,
+    required String expectedPath,
+    required String assetKey,
+  }) {
+    if (cacheUri.scheme != 'file') {
+      throw StateError(
+        'Asset cache must return file URIs for key "$assetKey", '
+        'got "$cacheUri".',
+      );
+    }
+
+    final resolvedPath = path.normalize(cacheUri.toFilePath());
+    final normalizedExpectedPath = path.normalize(expectedPath);
+    if (resolvedPath != normalizedExpectedPath) {
+      throw StateError(
+        'Asset cache path mismatch for "$assetKey". Expected '
+        '"$normalizedExpectedPath" but resolved "$resolvedPath". '
+        'Configure cacheStore to use configuration.assetsDir.',
+      );
+    }
   }
 
   /// Disposes of all generators.

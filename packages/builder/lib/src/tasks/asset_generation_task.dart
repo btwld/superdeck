@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../assets/asset_generation_pipeline.dart';
@@ -24,9 +23,7 @@ final class AssetGenerationTask extends Task {
   }) : _pipeline = AssetGenerationPipeline(
          generators: generators,
          store: store,
-         cacheStore:
-             cacheStore ??
-             IoAssetCacheStore(cacheDir: store.configuration.assetsDir),
+         cacheStore: cacheStore,
        ),
        super('asset_generation', configuration: configuration);
 
