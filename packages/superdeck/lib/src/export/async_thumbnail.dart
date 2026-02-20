@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -7,7 +6,7 @@ import 'package:superdeck/src/ui/ui.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 
 typedef AsyncFileGenerator =
-    Future<File> Function(BuildContext context, bool force);
+    Future<Uri?> Function(BuildContext context, {required bool force});
 
 enum AsyncFileStatus { idle, loading, done, error }
 
@@ -18,8 +17,9 @@ class AsyncThumbnail {
 
   // Signals for reactive state
   final _status = signal<AsyncFileStatus>(AsyncFileStatus.idle);
-  final _imageFile = signal<File?>(null);
+  final _imageUri = signal<Uri?>(null);
   final _error = signal<Object?>(null);
+  ImageProvider<Object>? _cachedProvider;
 
   // Non-reactive internal state
   bool _disposed = false;
@@ -37,21 +37,33 @@ class AsyncThumbnail {
     _isGenerating = true;
 
     _status.value = AsyncFileStatus.loading;
-    final currentFile = _imageFile.value;
-    if (currentFile != null) {
-      // Clear all cached images to ensure stale thumbnails don't linger
-      imageCache.clear();
-      FileImage(currentFile).evict();
+    final currentUri = _imageUri.value;
+    if (currentUri != null) {
+      // Evict only the previous thumbnail provider to avoid global cache churn.
+      final cachedProvider = _cachedProvider;
+      if (cachedProvider != null) {
+        imageCache.evict(cachedProvider);
+      }
     }
-    _imageFile.value = null;
+    _imageUri.value = null;
+    _cachedProvider = null;
 
     try {
-      final file = await _generator(context, force);
+      final uri = await _generator(context, force: force);
 
       // Guard after async - disposal could have happened during generation
       if (_disposed) return;
 
-      _imageFile.value = file;
+      if (uri == null) {
+        _status.value = AsyncFileStatus.error;
+        _error.value = StateError('Thumbnail unavailable');
+        _imageUri.value = null;
+        _cachedProvider = null;
+        return;
+      }
+
+      _imageUri.value = uri;
+      _cachedProvider = getImageProvider(uri);
       _status.value = AsyncFileStatus.done;
       _error.value = null;
     } catch (error, _) {
@@ -60,7 +72,8 @@ class AsyncThumbnail {
 
       _status.value = AsyncFileStatus.error;
       _error.value = error;
-      _imageFile.value = null;
+      _imageUri.value = null;
+      _cachedProvider = null;
     } finally {
       _isGenerating = false;
     }
@@ -68,10 +81,11 @@ class AsyncThumbnail {
 
   void dispose() {
     _disposed = true;
+    _cachedProvider = null;
 
     // Dispose signals
     _status.dispose();
-    _imageFile.dispose();
+    _imageUri.dispose();
     _error.dispose();
   }
 
@@ -99,12 +113,7 @@ class AsyncThumbnail {
   ///
   /// Returns null if the file has not been generated yet.
   ImageProvider<Object>? get imageProvider {
-    final file = _imageFile.value;
-    if (file == null) {
-      return null;
-    }
-
-    return getImageProvider(file.uri);
+    return _cachedProvider;
   }
 
   Widget build(BuildContext context) {

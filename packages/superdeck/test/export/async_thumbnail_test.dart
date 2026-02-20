@@ -6,7 +6,7 @@ void main() {
     group('initialization', () {
       test('initializes with idle status', () {
         final thumbnail = AsyncThumbnail(
-          generator: (context, force) async {
+          generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
         );
@@ -20,7 +20,7 @@ void main() {
 
       test('imageProvider returns null when no file loaded', () {
         final thumbnail = AsyncThumbnail(
-          generator: (context, force) async {
+          generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
         );
@@ -34,7 +34,7 @@ void main() {
     group('disposal', () {
       test('can be disposed without loading', () {
         final thumbnail = AsyncThumbnail(
-          generator: (context, force) async {
+          generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
         );
@@ -45,7 +45,7 @@ void main() {
 
       test('double dispose does not throw', () {
         final thumbnail = AsyncThumbnail(
-          generator: (context, force) async {
+          generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
         );

@@ -56,7 +56,10 @@ void main() {
 
       final configs = builder.buildConfigurations(slides, options);
 
-      expect(configs[0].style, defaultSlideStyle.merge(templateBase).merge(null));
+      expect(
+        configs[0].style,
+        defaultSlideStyle.merge(templateBase).merge(null),
+      );
       expect(configs[0].parts, templateParts);
     });
 
@@ -155,6 +158,15 @@ void main() {
       expect(configs[0].slideIndex, 0);
       expect(configs[1].slideIndex, 1);
       expect(configs[2].slideIndex, 2);
+    });
+
+    test('thumbnailFile stores generated asset key only', () {
+      final options = DeckOptions();
+      final slides = [const Slide(key: 'cover')];
+
+      final configs = builder.buildConfigurations(slides, options);
+
+      expect(configs.first.thumbnailFile, 'thumbnail_cover.png');
     });
   });
 }

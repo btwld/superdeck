@@ -13,6 +13,7 @@ class SlideConfiguration {
   final bool debug;
   final SlideParts? parts;
   final Map<String, WidgetDefinition> _widgets;
+  // Bare thumbnail asset key (for example: thumbnail_intro.png).
   final String thumbnailFile;
 
   final bool isExporting;

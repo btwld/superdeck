@@ -1,105 +1,182 @@
-import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/export/slide_capture_service.dart';
+import 'package:superdeck/src/export/thumbnail_service.dart';
+
+class _FakeAssetCacheStore implements AssetCacheStore {
+  final List<String> callOrder = [];
+
+  Uri? resolvedUri;
+  Uri? writeUri;
+  String? deletedKey;
+  List<int>? writtenBytes;
+
+  _FakeAssetCacheStore({this.resolvedUri, this.writeUri});
+
+  @override
+  Future<Uri?> resolve(String assetKey) async {
+    callOrder.add('resolve:$assetKey');
+    return resolvedUri;
+  }
+
+  @override
+  Future<Uri?> write(String assetKey, List<int> bytes) async {
+    callOrder.add('write:$assetKey');
+    writtenBytes = bytes;
+    return writeUri;
+  }
+
+  @override
+  Future<void> delete(String assetKey) async {
+    callOrder.add('delete:$assetKey');
+    deletedKey = assetKey;
+  }
+}
+
+class _FakeSlideCaptureService extends SlideCaptureService {
+  int captureCalls = 0;
+  final Uint8List bytes;
+
+  _FakeSlideCaptureService(this.bytes);
+
+  @override
+  Future<Uint8List> capture({
+    SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
+    required SlideConfiguration slide,
+    required BuildContext context,
+  }) async {
+    captureCalls += 1;
+    return bytes;
+  }
+}
+
+SlideConfiguration _createSlide(String key) {
+  return SlideConfiguration(
+    slideIndex: 0,
+    style: SlideStyle(),
+    slide: Slide(key: key),
+    thumbnailFile: 'thumbnail_$key.png',
+  );
+}
+
+Future<BuildContext> _pumpContext(WidgetTester tester) async {
+  final key = GlobalKey();
+  await tester.pumpWidget(
+    Directionality(
+      textDirection: TextDirection.ltr,
+      child: SizedBox(key: key),
+    ),
+  );
+  return key.currentContext!;
+}
 
 void main() {
-  group('ThumbnailService - directory issue', () {
-    late Directory tempDir;
+  group('ThumbnailService', () {
+    testWidgets('returns cache hit without capturing', (tester) async {
+      final context = await _pumpContext(tester);
+      final store = _FakeAssetCacheStore(
+        resolvedUri: Uri.parse('file:///tmp/cache-thumb.png'),
+      );
+      final capture = _FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
 
-    setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('thumbnail_test_');
+      final result = await service.generateThumbnail(
+        slide: _createSlide('intro'),
+        context: context,
+        force: false,
+      );
+
+      expect(result, equals(Uri.parse('file:///tmp/cache-thumb.png')));
+      expect(capture.captureCalls, 0);
+      expect(store.callOrder, equals(['resolve:thumbnail_intro.png']));
     });
 
-    tearDown(() async {
-      if (await tempDir.exists()) {
-        await tempDir.delete(recursive: true);
-      }
-    });
+    testWidgets('captures and writes when cache misses', (tester) async {
+      final context = await _pumpContext(tester);
+      final store = _FakeAssetCacheStore(
+        resolvedUri: null,
+        writeUri: Uri.parse('file:///tmp/new-thumb.png'),
+      );
+      final capture = _FakeSlideCaptureService(Uint8List.fromList([7, 8, 9]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
 
-    test('BUG: thumbnail write fails when assets directory does not exist', () async {
-      // This test demonstrates the bug in ThumbnailService._generateThumbnail
-      // At line 75: await file.writeAsBytes(imageData);
-      //
-      // The issue: DeckService.initialize() is never called in DeckControllerBuilder,
-      // so the assets directory is never created. When ThumbnailService tries to
-      // write the thumbnail file, it fails with FileSystemException.
+      final result = await service.generateThumbnail(
+        slide: _createSlide('agenda'),
+        context: context,
+        force: false,
+      );
 
-      // Simulate the path that would be generated for a thumbnail
-      final assetsDir = Directory('${tempDir.path}/.superdeck/assets');
-      final thumbnailPath = '${assetsDir.path}/thumb-slide-abc123.png';
-
-      // The assets directory does NOT exist (simulating missing initialization)
-      expect(await assetsDir.exists(), isFalse);
-
-      // This is exactly what happens at ThumbnailService line 75
-      final file = File(thumbnailPath);
-      final imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header bytes
-
-      // BUG: This throws FileSystemException because parent dir doesn't exist
+      expect(result, equals(Uri.parse('file:///tmp/new-thumb.png')));
+      expect(capture.captureCalls, 1);
+      expect(store.writtenBytes, equals([7, 8, 9]));
       expect(
-        () async => await file.writeAsBytes(imageData),
-        throwsA(isA<FileSystemException>()),
+        store.callOrder,
+        equals(['resolve:thumbnail_agenda.png', 'write:thumbnail_agenda.png']),
       );
     });
 
-    test('FIX: thumbnail write succeeds when assets directory exists', () async {
-      // This test shows the expected behavior after the fix.
-      // When DeckService.initialize() is called, it creates the assets directory,
-      // and thumbnail generation works correctly.
+    testWidgets('force generation deletes cache before writing', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final store = _FakeAssetCacheStore(
+        resolvedUri: Uri.parse('file:///tmp/old-thumb.png'),
+        writeUri: Uri.parse('file:///tmp/new-thumb.png'),
+      );
+      final capture = _FakeSlideCaptureService(Uint8List.fromList([4, 5, 6]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
 
-      final assetsDir = Directory('${tempDir.path}/.superdeck/assets');
-      final thumbnailPath = '${assetsDir.path}/thumb-slide-abc123.png';
+      final result = await service.generateThumbnail(
+        slide: _createSlide('force'),
+        context: context,
+        force: true,
+      );
 
-      // FIX: Create the assets directory (what DeckService.initialize() does)
-      await assetsDir.create(recursive: true);
-      expect(await assetsDir.exists(), isTrue);
-
-      // Now the write succeeds
-      final file = File(thumbnailPath);
-      final imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header bytes
-
-      await file.writeAsBytes(imageData);
-
-      // Verify the file was created
-      expect(await file.exists(), isTrue);
-      expect(await file.length(), equals(4));
+      expect(result, equals(Uri.parse('file:///tmp/new-thumb.png')));
+      expect(capture.captureCalls, 1);
+      expect(store.deletedKey, equals('thumbnail_force.png'));
+      expect(
+        store.callOrder,
+        equals(['delete:thumbnail_force.png', 'write:thumbnail_force.png']),
+      );
     });
 
-    test(
-      'TDD FAILING TEST: ThumbnailService should ensure directory exists before writing',
-      () async {
-        // TDD: This test defines what the FIX should do.
-        // Currently this test FAILS because ThumbnailService doesn't ensure
-        // the parent directory exists before writing.
-        //
-        // After implementing the fix, this test should PASS.
+    testWidgets('returns null when write fails', (tester) async {
+      final context = await _pumpContext(tester);
+      final store = _FakeAssetCacheStore(resolvedUri: null, writeUri: null);
+      final capture = _FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
 
-        final assetsDir = Directory('${tempDir.path}/.superdeck/assets');
-        final thumbnailPath = '${assetsDir.path}/thumb-slide-abc123.png';
+      final result = await service.generateThumbnail(
+        slide: _createSlide('missing'),
+        context: context,
+        force: false,
+      );
 
-        // Directory does NOT exist initially
-        expect(await assetsDir.exists(), isFalse);
-
-        // Simulate what the FIXED ThumbnailService should do:
-        // 1. Check if parent directory exists
-        // 2. Create it if needed
-        // 3. Then write the file
-
-        final file = File(thumbnailPath);
-        final imageData = [0x89, 0x50, 0x4E, 0x47];
-
-        // THE FIX: Ensure parent directory exists before writing
-        // This is what ThumbnailService._generateThumbnail should do
-        final parentDir = file.parent;
-        if (!await parentDir.exists()) {
-          await parentDir.create(recursive: true);
-        }
-        await file.writeAsBytes(imageData);
-
-        // After the fix, this should work
-        expect(await file.exists(), isTrue);
-        expect(await assetsDir.exists(), isTrue);
-      },
-    );
+      expect(result, isNull);
+      expect(capture.captureCalls, 1);
+      expect(
+        store.callOrder,
+        equals([
+          'resolve:thumbnail_missing.png',
+          'write:thumbnail_missing.png',
+        ]),
+      );
+    });
   });
 }

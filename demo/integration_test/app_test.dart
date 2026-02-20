@@ -13,16 +13,11 @@ void main() {
 
     group('App Startup', () {
       testWidgets('app starts successfully without errors', (tester) async {
-        await tester.pumpWidget(const TestApp());
-
-        // Wait for initial load
-        await tester.pump();
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
 
         // Verify no error screen is shown
         expect(find.textContaining('Error loading presentation'), findsNothing);
-
-        // Wait for app to fully settle
-        await tester.pumpAndSettle(const Duration(seconds: 5));
 
         // Check for exceptions, but ignore RenderFlex overflow which is common
         // in CI environments with smaller viewport sizes
@@ -49,15 +44,22 @@ void main() {
 
         // If controller found early, it may already be loading
         if (controller != null) {
-          // Either loading or already loaded is acceptable
+          // Early frames may be either still loading or already loaded.
           expect(
-            controller.isLoading.value || !controller.isLoading.value,
+            controller.isLoading.value || controller.totalSlides.value > 0,
             isTrue,
+            reason: 'App should be loading or have slides available',
           );
+          await tester.waitForSlidesLoaded(controller);
+          expect(controller.isLoading.value, isFalse);
+          return;
         }
 
-        // Wait for full load
-        await tester.pumpAndSettle(const Duration(seconds: 5));
+        // Controller may be mounted after first frame on slower CI machines.
+        await tester.pumpFor(const Duration(seconds: 1));
+        final delayedController = findDeckController(tester);
+        expect(delayedController, isNotNull);
+        await tester.waitForSlidesLoaded(delayedController!);
       });
     });
 
@@ -131,7 +133,11 @@ void main() {
 
         // Navigate to next slide
         await controller.nextSlide();
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 1,
+          timeout: const Duration(seconds: 5),
+          debugLabel: 'navigation to slide 1',
+        );
 
         expect(
           controller.currentIndex.value,
@@ -152,7 +158,11 @@ void main() {
 
         // Now navigate back
         await controller.previousSlide();
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 0,
+          timeout: const Duration(seconds: 5),
+          debugLabel: 'navigation back to slide 0',
+        );
 
         expect(
           controller.currentIndex.value,
@@ -227,11 +237,19 @@ void main() {
         expect(controller!.isMenuOpen.value, isFalse);
 
         controller.openMenu();
-        await tester.pumpAndSettle();
+        await tester.pumpUntil(
+          () => controller.isMenuOpen.value,
+          timeout: const Duration(seconds: 3),
+          debugLabel: 'menu open',
+        );
         expect(controller.isMenuOpen.value, isTrue);
 
         controller.closeMenu();
-        await tester.pumpAndSettle();
+        await tester.pumpUntil(
+          () => !controller.isMenuOpen.value,
+          timeout: const Duration(seconds: 3),
+          debugLabel: 'menu close',
+        );
         expect(controller.isMenuOpen.value, isFalse);
       });
 
@@ -242,11 +260,19 @@ void main() {
         expect(controller!.isNotesOpen.value, isFalse);
 
         controller.toggleNotes();
-        await tester.pumpAndSettle();
+        await tester.pumpUntil(
+          () => controller.isNotesOpen.value,
+          timeout: const Duration(seconds: 3),
+          debugLabel: 'notes open',
+        );
         expect(controller.isNotesOpen.value, isTrue);
 
         controller.toggleNotes();
-        await tester.pumpAndSettle();
+        await tester.pumpUntil(
+          () => !controller.isNotesOpen.value,
+          timeout: const Duration(seconds: 3),
+          debugLabel: 'notes close',
+        );
         expect(controller.isNotesOpen.value, isFalse);
       });
     });

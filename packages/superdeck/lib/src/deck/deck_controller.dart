@@ -9,6 +9,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
 import '../ui/widgets/provider.dart';
+import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
 import 'deck_options.dart';
 import 'navigation_events.dart';
@@ -128,7 +129,13 @@ class DeckController {
     ThumbnailService? thumbnailService,
   }) : _deckService = deckService,
        _navigationService = navigationService ?? NavigationService(),
-       _thumbnailService = thumbnailService ?? ThumbnailService(),
+       _thumbnailService =
+           thumbnailService ??
+           ThumbnailService(
+             cacheStore: createAssetCacheStore(
+               configuration: deckService.configuration,
+             ),
+           ),
        _enableDeckStream = enableDeckStream {
     _options.value = options;
 
