@@ -49,7 +49,6 @@ class _SplitViewState extends State<SplitView>
   late final Animation<double> _curvedAnimation;
   bool _isInitialized = false;
   EffectCleanup? _menuEffectCleanup;
-  EffectCleanup? _thumbnailSyncEffectCleanup;
 
   @override
   void initState() {
@@ -95,20 +94,6 @@ class _SplitViewState extends State<SplitView>
           _animationController.reverse();
         }
       });
-
-      // Sync thumbnail generation with slide changes without triggering rebuilds.
-      // Use effect instead of Watch to avoid infinite rebuild loops.
-      _thumbnailSyncEffectCleanup = effect(() {
-        // Track slides signal - effect will re-run when slides change
-        deckController.slides.value;
-
-        // Regenerate thumbnails after frame completes
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            deckController.generateThumbnails(context);
-          }
-        });
-      });
     }
   }
 
@@ -116,7 +101,6 @@ class _SplitViewState extends State<SplitView>
   void dispose() {
     // Cleanup effect
     _menuEffectCleanup?.call();
-    _thumbnailSyncEffectCleanup?.call();
     _animationController.dispose();
     super.dispose();
   }

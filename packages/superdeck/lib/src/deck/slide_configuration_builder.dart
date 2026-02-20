@@ -1,4 +1,3 @@
-import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../widgets/widgets.dart';
@@ -60,12 +59,8 @@ class SlideConfigurationBuilder {
       }
     }
 
-    // Generate thumbnail path using slide key and assets directory
+    // Generate thumbnail asset key using slide key.
     final thumbnailAsset = GeneratedAsset.thumbnail(slide.key);
-    final thumbnailPath = p.join(
-      configuration.assetsDir.path,
-      thumbnailAsset.fileName,
-    );
 
     // Resolve template, style, and parts
     final resolution = resolver.resolve(slide.options);
@@ -75,7 +70,7 @@ class SlideConfigurationBuilder {
       style: resolution.style,
       slide: slide,
       widgets: widgets,
-      thumbnailFile: thumbnailPath,
+      thumbnailFile: thumbnailAsset.fileName,
       parts: resolution.parts,
       debug: options.debug,
     );

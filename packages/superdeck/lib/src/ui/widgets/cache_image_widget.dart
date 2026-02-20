@@ -18,6 +18,12 @@ ImageProvider getImageProvider(Uri uri) {
         return AssetImage(uri.path);
       }
       return FileImage(File.fromUri(uri));
+    case 'data':
+      final bytes = uri.data?.contentAsBytes();
+      if (bytes == null) {
+        return AssetImage(uri.path);
+      }
+      return MemoryImage(Uint8List.fromList(bytes));
     default:
       // On platforms that can run processes (desktop debug), files are
       // generated at runtime and loaded from the filesystem.

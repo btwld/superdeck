@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/widgets.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../deck/slide_configuration.dart';
 import 'async_thumbnail.dart';
@@ -12,14 +11,19 @@ import 'slide_capture_service.dart';
 /// any state. The controller using this service owns the cache and is
 /// notified of updates via the [onCacheUpdate] callback.
 class ThumbnailService {
+  final AssetCacheStore _cacheStore;
   final SlideCaptureService _slideCaptureService;
 
   /// Creates a ThumbnailService.
   ///
+  /// [cacheStore] is required and handles key-based cache resolution.
   /// [slideCaptureService] can be injected for testing. If not provided,
   /// a default instance is created.
-  ThumbnailService({SlideCaptureService? slideCaptureService})
-    : _slideCaptureService = slideCaptureService ?? SlideCaptureService();
+  ThumbnailService({
+    required AssetCacheStore cacheStore,
+    SlideCaptureService? slideCaptureService,
+  }) : _cacheStore = cacheStore,
+       _slideCaptureService = slideCaptureService ?? SlideCaptureService();
 
   /// Generates thumbnails for all slides, updating the cache as needed.
   ///
@@ -41,7 +45,8 @@ class ThumbnailService {
       final thumbnail = updatedCache.putIfAbsent(
         slide.key,
         () => AsyncThumbnail(
-          generator: (ctx, force) => _generateThumbnail(slide, ctx, force),
+          generator: (ctx, force) =>
+              generateThumbnail(slide: slide, context: ctx, force: force),
         ),
       );
       thumbnail.load(context, force);
@@ -52,18 +57,25 @@ class ThumbnailService {
 
   /// Generates a single thumbnail for a slide.
   ///
-  /// Returns the existing thumbnail file if [force] is false and the file
-  /// exists with non-zero size. Otherwise, captures a new thumbnail using
-  /// [SlideCaptureService] and writes it to disk.
-  Future<File> _generateThumbnail(
-    SlideConfiguration slide,
-    BuildContext context,
-    bool force,
-  ) async {
-    final file = File(slide.thumbnailFile);
-
-    if (!force && await file.exists() && await file.length() > 0) {
-      return file;
+  /// Resolve order:
+  /// 1. Cache store resolve (app cache first, then bundled fallback by platform)
+  /// 2. Capture/generate fresh
+  /// 3. Cache store write
+  ///
+  /// Returns null when nothing can be resolved/generated.
+  @visibleForTesting
+  Future<Uri?> generateThumbnail({
+    required SlideConfiguration slide,
+    required BuildContext context,
+    required bool force,
+  }) async {
+    if (!force) {
+      final resolvedUri = await _cacheStore.resolve(slide.thumbnailFile);
+      if (resolvedUri != null) {
+        return resolvedUri;
+      }
+    } else {
+      await _cacheStore.delete(slide.thumbnailFile);
     }
 
     final imageData = await _slideCaptureService.capture(
@@ -72,7 +84,6 @@ class ThumbnailService {
       context: context,
     );
 
-    await file.writeAsBytes(imageData);
-    return file;
+    return _cacheStore.write(slide.thumbnailFile, imageData);
   }
 }

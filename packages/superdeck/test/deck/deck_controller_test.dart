@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:path/path.dart' as p;
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -255,7 +254,7 @@ void main() {
         expect(controller.slides.value, hasLength(1));
         expect(
           controller.slides.value.first.thumbnailFile,
-          p.join('.webdeck', 'img', 'thumbnail_web-config.png'),
+          'thumbnail_web-config.png',
         );
       });
 
@@ -292,11 +291,7 @@ void main() {
             expect(tempController.slides.value, hasLength(1));
             expect(
               tempController.slides.value.first.thumbnailFile,
-              p.join(
-                '.service',
-                'svc_assets',
-                'thumbnail_service-fallback.png',
-              ),
+              'thumbnail_service-fallback.png',
             );
           } finally {
             tempController.dispose();
