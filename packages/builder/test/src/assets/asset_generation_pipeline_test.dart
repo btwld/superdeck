@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:superdeck_builder/src/assets/asset_generation_pipeline.dart';
 import 'package:superdeck_builder/src/assets/asset_generator.dart';
+import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
@@ -70,6 +71,9 @@ void main() {
       pipeline = AssetGenerationPipeline(
         generators: [mockGenerator],
         store: mockStore,
+        cacheStore: IoAssetCacheStore(
+          cacheDir: Directory('${tempDir.path}/assets'),
+        ),
       );
     });
 

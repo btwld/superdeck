@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:path/path.dart' as path;
 import 'package:superdeck_builder/superdeck_builder.dart';
+import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// Result of asset generation pipeline processing on slide content.
@@ -27,13 +27,18 @@ class AssetGenerationResult {
 class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
   final DeckService _store;
+  final AssetCacheStore _cache;
   final Logger _logger = Logger('AssetGenerationPipeline');
 
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
     required DeckService store,
+    AssetCacheStore? cacheStore,
   }) : _generators = generators,
-       _store = store;
+       _store = store,
+       _cache =
+           cacheStore ??
+           IoAssetCacheStore(cacheDir: store.configuration.assetsDir);
 
   /// Processes all assets in the given slide content.
   ///
@@ -118,10 +123,9 @@ class AssetGenerationPipeline {
     final generatedAsset = generator.createAssetReference(codeBlock.content);
 
     final assetPath = _store.getGeneratedAssetPath(generatedAsset);
-    final assetFile = File(assetPath);
 
     // Check if asset already exists
-    if (await assetFile.exists()) {
+    if (await _cache.resolve(generatedAsset.fileName) != null) {
       _logger.info(
         '${generator.type} asset already exists for slide $slideIndex',
       );
@@ -135,12 +139,12 @@ class AssetGenerationPipeline {
       );
 
       // Write to disk
-      await assetFile.writeAsBytes(assetData);
+      await _cache.write(generatedAsset.fileName, assetData);
     }
 
     // Create replacement syntax with relative path from project directory
     final projectDir = _store.configuration.superdeckDir.parent.path;
-    final relativePath = path.relative(assetFile.path, from: projectDir);
+    final relativePath = path.relative(assetPath, from: projectDir);
     final replacementSyntax = '![${generator.type}_asset]($relativePath)';
 
     return (generatedAsset, replacementSyntax);

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../assets/asset_generation_pipeline.dart';
@@ -18,10 +19,14 @@ final class AssetGenerationTask extends Task {
   AssetGenerationTask({
     required List<AssetGenerator> generators,
     required DeckService store,
+    AssetCacheStore? cacheStore,
     Map<String, dynamic> configuration = const {},
   }) : _pipeline = AssetGenerationPipeline(
          generators: generators,
          store: store,
+         cacheStore:
+             cacheStore ??
+             IoAssetCacheStore(cacheDir: store.configuration.assetsDir),
        ),
        super('asset_generation', configuration: configuration);
 
@@ -29,6 +34,7 @@ final class AssetGenerationTask extends Task {
   factory AssetGenerationTask.withDefaults({
     required DeckService store,
     Map<String, dynamic>? browserLaunchOptions,
+    AssetCacheStore? cacheStore,
     Map<String, dynamic> configuration = const {},
   }) {
     final generators = <AssetGenerator>[
@@ -38,6 +44,7 @@ final class AssetGenerationTask extends Task {
     return AssetGenerationTask(
       generators: generators,
       store: store,
+      cacheStore: cacheStore,
       configuration: configuration,
     );
   }
