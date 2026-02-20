@@ -167,14 +167,9 @@ class AssetGenerationPipeline {
     required String expectedPath,
     required String assetKey,
   }) {
-    if (cacheUri.scheme != 'file') {
-      throw StateError(
-        'Asset cache must return file URIs for key "$assetKey", '
-        'got "$cacheUri".',
-      );
-    }
-
-    final resolvedPath = path.normalize(cacheUri.toFilePath());
+    final resolvedPath = path.normalize(
+      cacheUri.scheme == 'file' ? cacheUri.toFilePath() : cacheUri.path,
+    );
     final normalizedExpectedPath = path.normalize(expectedPath);
     if (resolvedPath != normalizedExpectedPath) {
       throw StateError(
