@@ -93,6 +93,15 @@ class _SplitViewState extends State<SplitView>
         } else if (!isMenuOpen && _animationController.value != 0.0) {
           _animationController.reverse();
         }
+
+        if (isMenuOpen) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || !deckController.isMenuOpen.value) {
+              return;
+            }
+            deckController.generateThumbnails(context);
+          });
+        }
       });
     }
   }
@@ -174,7 +183,11 @@ class _SplitViewState extends State<SplitView>
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         floatingActionButton: !isMenuOpen
-            ? SDIconButton(icon: Icons.menu, onPressed: deckController.openMenu)
+            ? SDIconButton(
+                icon: Icons.menu,
+                onPressed: deckController.openMenu,
+                semanticLabel: 'Open menu',
+              )
             : null,
 
         // Only show bottom bar on small layout (uncomment if needed):

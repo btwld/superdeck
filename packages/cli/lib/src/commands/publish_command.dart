@@ -502,10 +502,12 @@ class PublishCommand extends Command<int> {
     // Publish to GitHub Pages
     _logger.info('Publishing to GitHub Pages...');
     final progress = _logger.progress('Publishing to $targetBranch branch');
+    String? tempDir;
+    var worktreeCreated = false;
 
     try {
       // Create a temporary git worktree for the target branch
-      final String tempDir = path.join(
+      tempDir = path.join(
         Directory.systemTemp.path,
         'superdeck_publish_${DateTime.now().millisecondsSinceEpoch}',
       );
@@ -527,10 +529,12 @@ class PublishCommand extends Command<int> {
           targetBranch,
         ];
         await _runGitCommand(currentDir, addWorktreeArgs, dryRun: dryRun);
+        worktreeCreated = !dryRun;
       } else {
         // If branch doesn't exist, create it as an orphan branch
         final detachWorktreeArgs = ['worktree', 'add', '--detach', tempDir];
         await _runGitCommand(currentDir, detachWorktreeArgs, dryRun: dryRun);
+        worktreeCreated = !dryRun;
 
         final checkoutArgs = ['checkout', '--orphan', targetBranch];
         await _runGitCommand(tempDir, checkoutArgs, dryRun: dryRun);
@@ -594,14 +598,6 @@ class PublishCommand extends Command<int> {
         );
       }
 
-      // Clean up the worktree
-      if (!dryRun) {
-        final removeWorktreeArgs = ['worktree', 'remove', tempDir];
-        await _runGitCommand(currentDir, removeWorktreeArgs, dryRun: dryRun);
-      } else {
-        _logger.info('Would clean up the temporary git worktree');
-      }
-
       progress.complete(
         dryRun ? 'Dry run completed successfully' : 'Publication successful',
       );
@@ -642,9 +638,27 @@ class PublishCommand extends Command<int> {
       progress.fail('Publication failed');
       _logger.err('Error during publication: $e');
       _logger.detail('$stackTrace');
-      await _restoreIndexHtmlBackup(indexHtmlBackupPath);
 
       return ExitCode.software.code;
+    } finally {
+      // Always restore index.html if we backed it up before build.
+      await _restoreIndexHtmlBackup(indexHtmlBackupPath);
+
+      // Always remove temporary worktree if it was created.
+      if (worktreeCreated && tempDir != null) {
+        try {
+          final removeWorktreeArgs = ['worktree', 'remove', '--force', tempDir];
+          await _runGitCommand(
+            currentDir,
+            removeWorktreeArgs,
+            dryRun: dryRun,
+          );
+        } catch (e) {
+          _logger.warn('Failed to clean up temporary git worktree: $e');
+        }
+      } else if (dryRun && tempDir != null) {
+        _logger.info('Would clean up the temporary git worktree at $tempDir');
+      }
     }
   }
 }

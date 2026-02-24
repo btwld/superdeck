@@ -44,14 +44,14 @@ jobs:
           fatal-warnings: false
 
       - name: Install dependencies
-        run: flutter pub get
+        run: fvm flutter pub get
 
       - name: Build Runner
         run: melos run build_runner:build
         timeout-minutes: 5
 
       - name: Run Unit Tests
-        run: melos run test
+        run: melos run test --no-select
 
   integration-test:
     runs-on: ubuntu-latest
@@ -89,7 +89,7 @@ jobs:
         uses: bluefireteam/melos-action@v3
 
       - name: Install dependencies
-        run: flutter pub get
+        run: fvm flutter pub get
 
       - name: Build Runner
         run: melos run build_runner:build
@@ -98,11 +98,85 @@ jobs:
       - name: Build SuperDeck Assets
         run: |
           cd demo
-          dart run superdeck_cli:main build
+          fvm dart run superdeck_cli:main build
         timeout-minutes: 5
 
       - name: Run Integration Tests
         uses: coactions/setup-xvfb@v1
         with:
-          run: melos run test:integration
+          run: melos run test:integration --no-select
         timeout-minutes: 10
+
+  web-smoke:
+    runs-on: ubuntu-latest
+    name: Web Smoke (Playwright)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux Desktop Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev ninja-build pkg-config
+
+      - name: Install FVM
+        shell: bash
+        run: |
+          curl -fsSL https://fvm.app/install.sh | bash
+          echo "/home/runner/fvm/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/fvm/bin:$PATH"
+          fvm use stable --force
+
+      - uses: kuhnroyal/flutter-fvm-config-action@v2
+        id: fvm-config-action
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm-config-action.outputs.FLUTTER_VERSION }}
+          channel: ${{ steps.fvm-config-action.outputs.FLUTTER_CHANNEL }}
+
+      - name: Align Melos SDK path
+        run: |
+          mkdir -p .fvm
+          ln -sfn "$FLUTTER_ROOT" .fvm/flutter_sdk
+
+      - name: Setup Melos
+        uses: bluefireteam/melos-action@v3
+
+      - name: Install dependencies
+        run: fvm flutter pub get
+
+      - name: Build Runner
+        run: melos run build_runner:build
+        timeout-minutes: 5
+
+      - name: Build SuperDeck Assets
+        run: |
+          cd demo
+          fvm dart run superdeck_cli:main build
+        timeout-minutes: 5
+
+      - name: Build Web App
+        run: |
+          cd demo
+          fvm flutter build web --release
+        timeout-minutes: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install E2E dependencies
+        run: |
+          cd demo/e2e
+          npm install
+
+      - name: Install Playwright browser
+        run: |
+          cd demo/e2e
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke tests
+        run: |
+          cd demo/e2e
+          npm run test:smoke

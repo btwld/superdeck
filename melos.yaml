@@ -8,8 +8,8 @@ packages:
 command:
   bootstrap:
     environment:
-      sdk: ">=3.9.0 <4.0.0"
-      flutter: ">=3.35.0"
+      sdk: ">=3.10.0 <4.0.0"
+      flutter: ">=3.38.1"
     dependencies:
       collection: ^1.18.0
       mix: ^2.0.0-rc.0
@@ -23,98 +23,112 @@ command:
 scripts:
   # ANALYSIS
   analyze:
-    run: melos run analyze:dart && melos run analyze:dcm
+    run: fvm flutter pub run melos run analyze:dart && fvm flutter pub run melos run analyze:dcm
     description: Run standard static analysis checks.
       
   analyze:all:
-    run: melos run analyze && melos run analyze:dcm:unused-files && melos run analyze:dcm:unused-code
+    run: fvm flutter pub run melos run analyze && fvm flutter pub run melos run analyze:dcm:unused-files && fvm flutter pub run melos run analyze:dcm:unused-code
     description: Run all analysis checks including unused files and code.
 
   analyze:dart:
-    run: melos exec -c 10 -- dart analyze --fatal-infos
+    run: fvm flutter pub run melos exec -c 10 -- fvm dart analyze --fatal-infos
     description: Run Dart static analysis checks.
 
   analyze:dcm:
-    run: melos exec -c 10 -- dcm analyze . --fatal-style --fatal-warnings
+    run: fvm flutter pub run melos exec -c 10 -- dcm analyze . --fatal-style --fatal-warnings
     description: Run DCM static analysis checks.
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 
   analyze:dcm:unused-files:
-    run: melos exec -c 10 -- dcm check-unused-files . --fatal-unused
+    run: fvm flutter pub run melos exec -c 10 -- dcm check-unused-files . --fatal-unused
     description: Check for unused files using DCM.
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 
   analyze:dcm:unused-code:
-    run: melos exec -c 10 -- dcm check-unused-code . --fatal-unused
+    run: fvm flutter pub run melos exec -c 10 -- dcm check-unused-code . --fatal-unused
     description: Check for unused code using DCM.
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 
   fix:
-    run: melos run fix:dart && melos run fix:dcm
+    run: fvm flutter pub run melos run fix:dart && fvm flutter pub run melos run fix:dcm
     description: Run all static analysis checks and apply fixes.
 
   fix:dart:
-    run: melos exec -- dart fix --apply .
+    run: fvm flutter pub run melos exec -- fvm dart fix --apply .
     description: Run Dart static analysis checks.
 
   fix:dcm:
-    run: melos exec -- dcm fix .
+    run: fvm flutter pub run melos exec -- dcm fix .
     description: Run DCM static analysis checks.
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 
   build_runner:watch:
-    run: melos exec --order-dependents -- dart run build_runner watch --delete-conflicting-outputs
+    run: fvm flutter pub run melos exec --order-dependents -- fvm dart run build_runner watch --delete-conflicting-outputs
     description: Generate code for all packages
     packageFilters:
       dependsOn: "build_runner"
 
   build_runner:build:
-    run: melos run build_runner:clean && melos exec --order-dependents -- dart run build_runner build --delete-conflicting-outputs
+    run: fvm flutter pub run melos run build_runner:clean && fvm flutter pub run melos exec --order-dependents -- fvm dart run build_runner build --delete-conflicting-outputs
     description: Generate code for all packages
     packageFilters:
       dependsOn: "build_runner"
 
   build_runner:clean:
-    run: melos exec --order-dependents -- dart run build_runner clean
+    run: fvm flutter pub run melos exec --order-dependents -- fvm dart run build_runner clean
     description: Clean generated code for all packages
     packageFilters:
       dependsOn: "build_runner"
 
   test:
-    run: melos exec -- flutter test
+    run: fvm flutter pub run melos exec -- fvm flutter test
     description: Run flutter test
     packageFilters:
       dirExists: test
 
   test:integration:
-    run: melos exec -- flutter test integration_test -d linux --fail-fast
-    description: Run flutter integration tests
+    run: fvm flutter pub run melos exec -- fvm flutter test integration_test -d linux --fail-fast --timeout 5m
+    description: Run flutter integration tests on Linux (CI default)
     packageFilters:
       dirExists: integration_test
 
+  test:integration:macos:
+    run: fvm flutter pub run melos exec -- fvm flutter test integration_test -d macos --fail-fast --timeout 5m
+    description: Run flutter integration tests on macOS (local)
+    packageFilters:
+      dirExists: integration_test
+
+  test:e2e:web:prepare:
+    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter build web --release
+    description: Build demo assets and release web output for Playwright smoke tests.
+
+  test:e2e:web:
+    run: fvm flutter pub run melos run test:e2e:web:prepare && cd demo/e2e && npm install && npx playwright install chromium && npm run test:smoke
+    description: Run Playwright smoke tests for the demo web build.
+
   test:all:
-    run: melos run test && melos run test:integration
+    run: fvm flutter pub run melos run test && fvm flutter pub run melos run test:integration
     description: Run all tests (unit + integration)
 
   test:coverage:
-    run: melos exec -- flutter test --coverage
+    run: fvm flutter pub run melos exec -- fvm flutter test --coverage
     description: Run flutter test with coverage
     packageFilters:
       dirExists: test
 
   clean:
-    run: melos exec -- flutter clean
+    run: fvm flutter pub run melos exec -- fvm flutter clean
     description: Clean all packages
 
   brb:
-    run: melos run gen:build:superdeck
+    run: fvm flutter pub run melos run gen:build:superdeck
 
   brbc:
-    run: melos run gen:clean
+    run: fvm flutter pub run melos run gen:clean
 
   custom_lint_analyze:
-    run: dart pub global activate custom_lint && melos exec --depends-on="mix_lint" custom_lint
+    run: fvm dart pub global activate custom_lint && fvm flutter pub run melos exec --depends-on="mix_lint" fvm dart run custom_lint

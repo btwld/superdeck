@@ -5,12 +5,22 @@ import 'package:remix/remix.dart';
 class SDIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
+  final String? semanticLabel;
 
-  const SDIconButton({super.key, required this.icon, required this.onPressed});
+  const SDIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.semanticLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return RemixIconButton(icon: icon, onPressed: onPressed, style: _style);
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: RemixIconButton(icon: icon, onPressed: onPressed, style: _style),
+    );
   }
 
   RemixIconButtonStyle get _style => RemixIconButtonStyle()

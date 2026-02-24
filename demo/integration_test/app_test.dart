@@ -3,6 +3,20 @@ import 'package:integration_test/integration_test.dart';
 
 import 'helpers/test_helpers.dart';
 
+void assertOnlyLayoutOverflowOrNoException(WidgetTester tester) {
+  final exception = tester.takeException();
+  if (exception == null) {
+    return;
+  }
+
+  final isLayoutOverflow = exception.toString().contains('overflowed');
+  expect(
+    isLayoutOverflow,
+    isTrue,
+    reason: 'Only layout overflow is acceptable, got: $exception',
+  );
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -18,18 +32,7 @@ void main() {
 
         // Verify no error screen is shown
         expect(find.textContaining('Error loading presentation'), findsNothing);
-
-        // Check for exceptions, but ignore RenderFlex overflow which is common
-        // in CI environments with smaller viewport sizes
-        final exception = tester.takeException();
-        if (exception != null) {
-          final isLayoutOverflow = exception.toString().contains('overflowed');
-          expect(
-            isLayoutOverflow,
-            isTrue,
-            reason: 'Only layout overflow is acceptable, got: $exception',
-          );
-        }
+        assertOnlyLayoutOverflowOrNoException(tester);
       });
 
       testWidgets('app shows loading state before slides load', (tester) async {
@@ -60,6 +63,130 @@ void main() {
         final delayedController = findDeckController(tester);
         expect(delayedController, isNotNull);
         await tester.waitForSlidesLoaded(delayedController!);
+      });
+    });
+
+    group('Visible UI', () {
+      testWidgets('first slide heading is visible', (tester) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+
+        expect(find.text('SuperDeck'), findsOneWidget);
+        expect(
+          find.textContaining('Build presentations with Flutter'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('menu button opens controls and updates counter', (
+        tester,
+      ) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+        expect(controller!.isMenuOpen.value, isFalse);
+
+        await tester.tap(find.bySemanticsLabel('Open menu'));
+        await tester.pumpFor(const Duration(milliseconds: 500));
+        expect(controller.isMenuOpen.value, isTrue);
+
+        expect(
+          find.textContaining('1 of ${controller.totalSlides.value}'),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.bySemanticsLabel('Next slide'));
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 1,
+          debugLabel: 'menu arrow-forward navigation',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+
+        expect(
+          find.textContaining('2 of ${controller.totalSlides.value}'),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.bySemanticsLabel('Close menu'));
+        await tester.pumpFor(const Duration(milliseconds: 300));
+        expect(controller.isMenuOpen.value, isFalse);
+      });
+
+      testWidgets('notes panel toggles from bottom bar controls', (
+        tester,
+      ) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+        expect(controller!.isNotesOpen.value, isFalse);
+
+        await tester.tap(find.bySemanticsLabel('Open menu'));
+        await tester.pumpFor(const Duration(milliseconds: 300));
+
+        await tester.tap(find.bySemanticsLabel('Open notes panel'));
+        await tester.pumpUntil(
+          () => controller.isNotesOpen.value,
+          debugLabel: 'notes panel open from icon',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+
+        // Semantics label updates can lag on some macOS runners. Use whichever
+        // toggle label is currently available to close the notes panel.
+        final closeNotesFinder = find.bySemanticsLabel('Close notes panel');
+        final openNotesFinder = find.bySemanticsLabel('Open notes panel');
+
+        if (closeNotesFinder.evaluate().isNotEmpty) {
+          await tester.tap(closeNotesFinder);
+        } else if (openNotesFinder.evaluate().isNotEmpty) {
+          await tester.tap(openNotesFinder);
+        } else {
+          fail(
+            'Could not find notes toggle button after opening panel.\n'
+            '${describeDeckControllerState(controller)}',
+          );
+        }
+
+        await tester.pumpUntil(
+          () => !controller.isNotesOpen.value,
+          debugLabel: 'notes panel close from icon',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+      });
+
+      testWidgets('thumbnail workflow supports navigation and regenerate', (
+        tester,
+      ) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+        expect(controller!.slides.value.length, greaterThanOrEqualTo(2));
+
+        final firstSlideKey = controller.slides.value.first.key;
+
+        await tester.tap(find.bySemanticsLabel('Open menu'));
+        await tester.pumpFor(const Duration(milliseconds: 500));
+        expect(controller.isMenuOpen.value, isTrue);
+
+        await tester.pumpUntil(
+          () => controller.getThumbnail(firstSlideKey) != null,
+          timeout: const Duration(seconds: 10),
+          debugLabel: 'thumbnail cache warmup on menu open',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+
+        expect(find.bySemanticsLabel('Slide thumbnail 1'), findsWidgets);
+        expect(find.bySemanticsLabel('Slide thumbnail 2'), findsWidgets);
+
+        await tester.tap(find.bySemanticsLabel('Slide thumbnail 2').first);
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 1,
+          debugLabel: 'thumbnail navigation to slide 2',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+
+        await tester.tap(find.bySemanticsLabel('Regenerate thumbnails'));
+        await tester.pumpFor(const Duration(milliseconds: 300));
+
+        expect(controller.getThumbnail(firstSlideKey), isNotNull);
+        expect(find.textContaining('Error loading presentation'), findsNothing);
+        assertOnlyLayoutOverflowOrNoException(tester);
       });
     });
 
@@ -116,6 +243,19 @@ void main() {
           isNotNull,
           reason: 'Current slide should be available',
         );
+      });
+
+      testWidgets('asset-heavy slide loads without presentation error', (
+        tester,
+      ) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+
+        await tester.navigateToSlide(controller!, 4);
+        expect(controller.currentIndex.value, 4);
+        expect(controller.hasError.value, isFalse);
+        expect(find.textContaining('Error loading presentation'), findsNothing);
+        assertOnlyLayoutOverflowOrNoException(tester);
       });
     });
 
