@@ -50,6 +50,9 @@ jobs:
         run: melos run build_runner:build
         timeout-minutes: 5
 
+      - name: Check Contract Schemas
+        run: melos run contracts:check --no-select
+
       - name: Run Unit Tests
         run: melos run test --no-select
 

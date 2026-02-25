@@ -33,7 +33,7 @@ void main() {
         isA<Map<String, dynamic>>(),
       );
       expect(
-        generator.configuration['themeVariables']['darkMode'],
+        (generator.configuration['themeVariables'] as Map?)?['darkMode'],
         equals(true),
       );
       expect(generator.configuration['themeCSS'], isA<String>());

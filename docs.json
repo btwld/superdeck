@@ -96,6 +96,10 @@
           "href": "/reference/deck-options"
         },
         {
+          "title": "Contracts and schemas",
+          "href": "/reference/contracts"
+        },
+        {
           "title": "Markdown syntax",
           "href": "/reference/markdown-syntax"
         }

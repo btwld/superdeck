@@ -12,7 +12,7 @@ abstract interface class AssetGenerator {
   String get type;
 
   /// Configuration options for this generator.
-  Map<String, dynamic> get configuration;
+  Map<String, Object?> get configuration;
 
   /// Creates a [GeneratedAsset] reference for the given content.
   ///

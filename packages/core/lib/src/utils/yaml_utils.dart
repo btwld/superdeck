@@ -24,12 +24,12 @@ bool isYamlFile(String path) {
   return extension == '.yaml' || extension == '.yml';
 }
 
-/// Converts YAML string to a `Map<String, dynamic>`
+/// Converts YAML string to a `Map<String, Object?>`
 ///
 /// Supports both block-style and flow-style YAML:
 /// - Block-style: `key1: value1\nkey2: value2`
 /// - Flow-style: `{key1: value1, key2: value2}`
-Map<String, dynamic> convertYamlToMap(
+Map<String, Object?> convertYamlToMap(
   String yamlString, {
   bool strict = false,
 }) {
@@ -40,7 +40,7 @@ Map<String, dynamic> convertYamlToMap(
     if (yamlDoc == null) return {};
 
     final converted = _deepConvert(yamlDoc);
-    return converted is Map ? converted as Map<String, dynamic> : {};
+    return converted is Map ? converted as Map<String, Object?> : {};
   } on YamlException catch (e) {
     _logger.warning(
       'Invalid YAML syntax in options: "$yamlString". '
@@ -64,7 +64,7 @@ Map<String, dynamic> convertYamlToMap(
 /// Recursively converts YAML types (YamlMap, YamlList) to plain Dart types
 dynamic _deepConvert(dynamic value) {
   if (value is Map) {
-    return Map<String, dynamic>.fromEntries(
+    return Map<String, Object?>.fromEntries(
       value.entries.map(
         (e) => MapEntry(e.key.toString(), _deepConvert(e.value)),
       ),

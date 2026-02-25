@@ -11,7 +11,7 @@ final _codeFencePattern = RegExp(
 
 // Data class to hold code block details
 class ParsedFencedCode {
-  final Map<String, dynamic> options;
+  final Map<String, Object?> options;
   final String language;
   final String content;
   // The first index of the opening fence
@@ -55,7 +55,7 @@ class FencedCodeParser {
       final startIndex = match.start;
       final endIndex = match.end;
 
-      final Map<String, dynamic> optionsMap;
+      final Map<String, Object?> optionsMap;
       if (options.isNotEmpty) {
         try {
           optionsMap = convertYamlToMap(options, strict: true);

@@ -218,11 +218,11 @@ class DeckService {
       // Process each section's blocks to replace content with markdown AST
       final sections = slideMap['sections'] as List<dynamic>;
       final processedSections = sections.map((section) {
-        final sectionMap = Map<String, dynamic>.from(section as Map);
-        final blocks = sectionMap['blocks'] as List<dynamic>;
+        final sectionMap = Map<String, Object?>.from(section as Map);
+        final blocks = sectionMap['blocks'] as List<dynamic>? ?? const [];
 
         final processedBlocks = blocks.map((block) {
-          final blockMap = Map<String, dynamic>.from(block as Map);
+          final blockMap = Map<String, Object?>.from(block as Map);
 
           // If the block has content, replace it with parsed markdown AST
           if (blockMap.containsKey('content') &&
@@ -247,10 +247,8 @@ class DeckService {
       return slideMap;
     }).toList();
 
-    final fullDeckMap = {
-      'slides': slidesWithMarkdownJson,
-      'configuration': reference.configuration.toMap(),
-    };
+    final fullDeckMap = reference.toMap();
+    fullDeckMap['slides'] = slidesWithMarkdownJson;
 
     final fullDeckJson = prettyJson(fullDeckMap);
     await configuration.deckFullJson.writeAsString(fullDeckJson);

@@ -36,7 +36,7 @@ sealed class Block {
   /// Parses a block from a JSON map.
   ///
   /// Automatically determines the block type from the discriminator key.
-  static Block parse(Map<String, dynamic> map) {
+  static Block parse(Map<String, Object?> map) {
     discriminatedSchema.parse(map);
     return fromMap(map);
   }
@@ -54,10 +54,10 @@ sealed class Block {
     },
   );
 
-  Map<String, dynamic> toMap();
+  Map<String, Object?> toMap();
   Block copyWith({ContentAlignment? align, int? flex, bool? scrollable});
 
-  static Block fromMap(Map<String, dynamic> map) {
+  static Block fromMap(Map<String, Object?> map) {
     final type = map['type'] as String;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
@@ -109,7 +109,7 @@ class SectionBlock extends Block {
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {
       'type': type,
       if (align != null) 'align': align!.name,
@@ -119,10 +119,10 @@ class SectionBlock extends Block {
     };
   }
 
-  static SectionBlock fromMap(Map<String, dynamic> map) {
+  static SectionBlock fromMap(Map<String, Object?> map) {
     return SectionBlock(
       (map['blocks'] as List<dynamic>?)
-          ?.map((e) => Block.fromMap(e as Map<String, dynamic>))
+          ?.map((e) => Block.fromMap(e as Map<String, Object?>))
           .toList(),
       align: map['align'] != null
           ? ContentAlignment.fromJson(map['align'] as String)
@@ -133,7 +133,7 @@ class SectionBlock extends Block {
   }
 
   /// Parses a section block from a JSON map.
-  static SectionBlock parse(Map<String, dynamic> map) {
+  static SectionBlock parse(Map<String, Object?> map) {
     schema.parse(map);
     return fromMap(map);
   }
@@ -172,6 +172,9 @@ class SectionBlock extends Block {
   );
 }
 
+/// Alias used by generated Ack model schemas for [SectionBlock] references.
+final sectionBlockSchema = SectionBlock.schema;
+
 /// A block that displays markdown content.
 ///
 /// This is the most common block type, used for text and markdown content.
@@ -205,7 +208,7 @@ class ContentBlock extends Block {
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {
       'type': type,
       if (align != null) 'align': align!.name,
@@ -215,7 +218,7 @@ class ContentBlock extends Block {
     };
   }
 
-  static ContentBlock fromMap(Map<String, dynamic> map) {
+  static ContentBlock fromMap(Map<String, Object?> map) {
     try {
       return ContentBlock(
         map['content'] as String?,
@@ -294,12 +297,12 @@ enum ImageFit {
 
 class WidgetBlock extends Block {
   static const key = 'widget';
-  final Map<String, dynamic> args;
+  final Map<String, Object?> args;
   final String name;
 
   WidgetBlock({
     required this.name,
-    Map<String, dynamic>? args,
+    Map<String, Object?>? args,
     super.align,
     super.flex,
     super.scrollable,
@@ -309,7 +312,7 @@ class WidgetBlock extends Block {
   @override
   WidgetBlock copyWith({
     String? name,
-    Map<String, dynamic>? args,
+    Map<String, Object?>? args,
     ContentAlignment? align,
     int? flex,
     bool? scrollable,
@@ -324,7 +327,7 @@ class WidgetBlock extends Block {
   }
 
   @override
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {
       'type': type,
       if (align != null) 'align': align!.name,
@@ -335,7 +338,7 @@ class WidgetBlock extends Block {
     };
   }
 
-  static WidgetBlock fromMap(Map<String, dynamic> map) {
+  static WidgetBlock fromMap(Map<String, Object?> map) {
     // Extract known fields
     final name = map['name'] as String;
     final align = map['align'] != null
@@ -345,7 +348,7 @@ class WidgetBlock extends Block {
     final scrollable = map['scrollable'] as bool? ?? false;
 
     // Everything else goes into args (implementing UnmappedPropertiesHook behavior)
-    final args = Map<String, dynamic>.from(map);
+    final args = Map<String, Object?>.from(map);
     args.remove('type');
     args.remove('align');
     args.remove('flex');

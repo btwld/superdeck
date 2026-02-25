@@ -1,56 +1,121 @@
 import 'package:ack/ack.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 import 'package:collection/collection.dart';
 
 import '../deck_configuration.dart';
 import 'slide_model.dart';
 
+part 'deck_model.g.dart';
+
+bool _doesNotContainUnsupportedLegacyRootFields(Map<String, Object?>? map) {
+  return map == null || !map.containsKey('schemaVersion');
+}
+
+bool _doesNotSetNullForOptionalDeckFields(Map<String, Object?>? map) {
+  return map == null || !map.containsKey('style') || map['style'] != null;
+}
+
+@AckModel(
+  additionalProperties: true,
+  additionalPropertiesField: 'unknownRootFields',
+)
 class Deck {
-  const Deck({required this.slides, required this.configuration});
-
+  static const _knownRootFields = <String>{'slides', 'style', 'configuration'};
   final List<Slide> slides;
+  final Map<String, Object?>? style;
   final DeckConfiguration configuration;
+  final Map<String, Object?> unknownRootFields;
 
-  Deck copyWith({List<Slide>? slides, DeckConfiguration? configuration}) {
+  const Deck({
+    required this.slides,
+    required this.configuration,
+    this.style,
+    this.unknownRootFields = const {},
+  });
+
+  Deck copyWith({
+    List<Slide>? slides,
+    Map<String, Object?>? style,
+    DeckConfiguration? configuration,
+    Map<String, Object?>? unknownRootFields,
+  }) {
     return Deck(
       slides: slides ?? this.slides,
+      style: style ?? this.style,
       configuration: configuration ?? this.configuration,
+      unknownRootFields: unknownRootFields ?? this.unknownRootFields,
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
+  Map<String, Object?> toMap() {
+    final map = <String, Object?>{
       'slides': slides.map((s) => s.toMap()).toList(),
       'configuration': configuration.toMap(),
     };
+
+    if (style != null) {
+      map['style'] = Map<String, Object?>.from(style!);
+    }
+
+    if (unknownRootFields.isNotEmpty) {
+      for (final entry in unknownRootFields.entries) {
+        if (_knownRootFields.contains(entry.key)) {
+          continue;
+        }
+        map[entry.key] = entry.value;
+      }
+    }
+
+    return map;
   }
 
-  static Deck fromMap(Map<String, dynamic> map) {
-    return Deck(
-      slides:
-          (map['slides'] as List<dynamic>?)
-              ?.map((e) => Slide.fromMap(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      configuration: DeckConfiguration.fromMap(
-        map['configuration'] as Map<String, dynamic>? ?? {},
-      ),
-    );
+  static Deck fromMap(Map<String, Object?> map) {
+    final payload = schema.parse(map) as Map<String, Object?>;
+
+    return _fromPayload(payload);
   }
 
   /// Ack schema for validating complete deck/presentation JSON.
-  ///
-  /// Note: configuration is intentionally excluded from the schema as it's
-  /// operational metadata (file paths) not content data. The class still
-  /// supports configuration via constructor and fromMap() for backward compat.
-  static final schema = Ack.object({'slides': Ack.list(Slide.schema)});
+  static final schema = deckSchema
+      .extend({
+        'slides': Ack.list(Slide.schema),
+        'configuration': deckConfigurationSchema.passthrough().optional(),
+      })
+      .refine(
+        _doesNotContainUnsupportedLegacyRootFields,
+        message:
+            'Unsupported root field "schemaVersion". '
+            'Deck contract is unversioned.',
+      )
+      .refine(
+        _doesNotSetNullForOptionalDeckFields,
+        message: '"style" cannot be null when provided.',
+      );
 
-  /// Parses a deck from a JSON map with validation.
-  ///
-  /// Validates the map against the schema before parsing.
-  /// Throws an exception if the validation fails.
-  static Deck parse(Map<String, dynamic> map) {
-    schema.parse(map);
-    return fromMap(map);
+  /// Alias for [fromMap].
+  static Deck parse(Map<String, Object?> map) => fromMap(map);
+
+  static Deck _fromPayload(Map<String, Object?> payload) {
+    final styleValue = payload['style'];
+    final configurationValue = payload['configuration'];
+    return Deck(
+      slides: (payload['slides'] as List<dynamic>)
+          .map(
+            (slide) => Slide.fromMap(Map<String, Object?>.from(slide as Map)),
+          )
+          .toList(),
+      style: styleValue == null
+          ? null
+          : Map<String, Object?>.from(styleValue as Map),
+      configuration: configurationValue == null
+          ? DeckConfiguration()
+          : DeckConfiguration.fromMap(
+              Map<String, Object?>.from(configurationValue as Map),
+            ),
+      unknownRootFields: Map<String, Object?>.fromEntries(
+        payload.entries.where((entry) => !_knownRootFields.contains(entry.key)),
+      ),
+    );
   }
 
   @override
@@ -59,9 +124,18 @@ class Deck {
       other is Deck &&
           runtimeType == other.runtimeType &&
           const DeepCollectionEquality().equals(slides, other.slides) &&
-          configuration == other.configuration;
+          const DeepCollectionEquality().equals(style, other.style) &&
+          configuration == other.configuration &&
+          const DeepCollectionEquality().equals(
+            unknownRootFields,
+            other.unknownRootFields,
+          );
 
   @override
-  int get hashCode =>
-      Object.hash(const DeepCollectionEquality().hash(slides), configuration);
+  int get hashCode => Object.hash(
+    const DeepCollectionEquality().hash(slides),
+    const DeepCollectionEquality().hash(style),
+    configuration,
+    const DeepCollectionEquality().hash(unknownRootFields),
+  );
 }

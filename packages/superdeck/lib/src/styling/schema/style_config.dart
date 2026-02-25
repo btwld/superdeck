@@ -145,7 +145,7 @@ class StyleConfigLoader {
     final content = yamlString.trim();
     if (content.isEmpty) return null;
 
-    final Map<String, dynamic> map;
+    final Map<String, Object?> map;
     try {
       map = convertYamlToMap(content, strict: true);
     } catch (e) {

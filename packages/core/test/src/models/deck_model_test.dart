@@ -106,6 +106,20 @@ void main() {
           expect(config['projectDir'], '/project');
           expect(config['slidesPath'], 'slides.md');
         });
+
+        test('preserves root style and unknown root fields by default', () {
+          final deck = Deck(
+            slides: const [],
+            style: const {'theme': 'dark'},
+            unknownRootFields: const {'custom': true},
+            configuration: DeckConfiguration(),
+          );
+
+          final map = deck.toMap();
+
+          expect(map['style'], {'theme': 'dark'});
+          expect(map['custom'], isTrue);
+        });
       });
 
       group('fromMap', () {
@@ -141,6 +155,17 @@ void main() {
           expect(deck.configuration.outputDir, '.superdeck');
         });
 
+        test('ignores unknown configuration fields', () {
+          final map = {
+            'slides': <dynamic>[],
+            'configuration': {'projectDir': '/test', 'customConfigField': true},
+          };
+
+          final deck = Deck.fromMap(map);
+
+          expect(deck.configuration.projectDir, '/test');
+        });
+
         test('deserializes complex slide structure', () {
           final map = <String, dynamic>{
             'slides': [
@@ -171,6 +196,32 @@ void main() {
           expect(slide.sections.length, 1);
           expect(slide.sections[0].blocks.length, 2);
           expect(slide.comments, ['Speaker note']);
+        });
+
+        test('deserializes style and preserves unknown root fields', () {
+          final map = <String, dynamic>{
+            'slides': <dynamic>[],
+            'style': <String, dynamic>{'theme': 'dark'},
+            'custom': 'value',
+          };
+
+          final deck = Deck.fromMap(map);
+
+          expect(deck.style, {'theme': 'dark'});
+          expect(deck.unknownRootFields, {'custom': 'value'});
+        });
+
+        test('throws when unsupported legacy schemaVersion is present', () {
+          final map = <String, dynamic>{
+            'schemaVersion': 1,
+            'slides': <dynamic>[],
+          };
+
+          expect(() => Deck.fromMap(map), throwsA(isA<Exception>()));
+        });
+
+        test('throws when slides is missing', () {
+          expect(() => Deck.fromMap({}), throwsA(isA<Exception>()));
         });
       });
 
@@ -272,6 +323,19 @@ void main() {
           expect(section.blocks[0], isA<WidgetBlock>());
           expect((section.blocks[0] as WidgetBlock).name, 'image');
         });
+
+        test('throws when slides is missing', () {
+          expect(() => Deck.parse({}), throwsA(isA<Exception>()));
+        });
+
+        test('throws when unsupported legacy schemaVersion is present', () {
+          final map = <String, dynamic>{
+            'schemaVersion': 1,
+            'slides': <dynamic>[],
+          };
+
+          expect(() => Deck.parse(map), throwsA(isA<Exception>()));
+        });
       });
 
       group('schema', () {
@@ -316,6 +380,38 @@ void main() {
           final result = Deck.schema.safeParse({});
           expect(result.isOk, isFalse);
         });
+
+        test('allows root style and unknown root fields', () {
+          final result = Deck.schema.safeParse({
+            'slides': [
+              {'key': 'test'},
+            ],
+            'style': {'theme': 'dark'},
+            'futureField': true,
+          });
+
+          expect(result.isOk, isTrue);
+        });
+
+        test('fails validation when style is explicitly null', () {
+          final result = Deck.schema.safeParse({
+            'slides': [
+              {'key': 'test'},
+            ],
+            'style': null,
+          });
+
+          expect(result.isOk, isFalse);
+        });
+
+        test('fails validation when unsupported schemaVersion is present', () {
+          final result = Deck.schema.safeParse({
+            'schemaVersion': 1,
+            'slides': <dynamic>[],
+          });
+
+          expect(result.isOk, isFalse);
+        });
       });
 
       group('equality', () {
@@ -354,6 +450,21 @@ void main() {
           final deck2 = Deck(
             slides: const [],
             configuration: DeckConfiguration(projectDir: '/b'),
+          );
+
+          expect(deck1, isNot(deck2));
+        });
+
+        test('different unknown root fields make decks unequal', () {
+          final deck1 = Deck(
+            slides: const [],
+            unknownRootFields: const {'a': 1},
+            configuration: DeckConfiguration(),
+          );
+          final deck2 = Deck(
+            slides: const [],
+            unknownRootFields: const {'b': 1},
+            configuration: DeckConfiguration(),
           );
 
           expect(deck1, isNot(deck2));

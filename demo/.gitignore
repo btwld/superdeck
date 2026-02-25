@@ -50,5 +50,5 @@ app.*.map.json
 
 .env
 lib/env/env.g.dart
+.superdeck/*.json
 .superdeck/assets/*
-!.superdeck/assets/.gitkeep

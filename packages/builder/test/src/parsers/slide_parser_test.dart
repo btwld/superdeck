@@ -6,9 +6,9 @@ import 'package:test/test.dart';
 void main() {
   final markdownParser = MarkdownParser();
 
-  group('RawSlideMarkdownType.parse', () {
-    test('creates RawSlideMarkdownType for valid map', () {
-      final slide = RawSlideMarkdownType.parse({
+  group('RawSlideMarkdown.parse', () {
+    test('creates RawSlideMarkdown for valid map', () {
+      final slide = RawSlideMarkdown.parse({
         'key': 'slide-1',
         'content': 'Hello World',
         'frontmatter': {'title': 'Slide 1'},
@@ -21,7 +21,7 @@ void main() {
 
     test('throws AckException when frontmatter is not a map', () {
       expect(
-        () => RawSlideMarkdownType.parse({
+        () => RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': 'Hello World',
           'frontmatter': 'invalid',
@@ -32,7 +32,7 @@ void main() {
 
     test('throws AckException when required keys are missing', () {
       expect(
-        () => RawSlideMarkdownType.parse({
+        () => RawSlideMarkdown.parse({
           'content': 'Hello World',
           'frontmatter': const {},
         }),
@@ -185,6 +185,59 @@ title: Slide 1
       expect(slides.length, equals(1));
       expect(slides[0].frontmatter['title'], equals('Slide 1'));
       expect(slides[0].content, isEmpty);
+    });
+
+    test('applies deterministic key suffixes for collisions', () {
+      final parser = MarkdownParser(keyGenerator: (_) => 'duplicate');
+      const markdown = '''
+---
+title: Slide 1
+---
+One
+
+---
+title: Slide 2
+---
+Two
+
+---
+title: Slide 3
+---
+Three
+''';
+
+      final slides = parser.parse(markdown);
+
+      expect(slides.map((slide) => slide.key).toList(), <String>[
+        'duplicate',
+        'duplicate__2',
+        'duplicate__3',
+      ]);
+    });
+
+    test('uses custom key generator when provided', () {
+      final parser = MarkdownParser(
+        keyGenerator: (source) {
+          final normalized = source.trim().toLowerCase();
+          return normalized.contains('first') ? 'first' : 'other';
+        },
+      );
+      const markdown = '''
+---
+title: First
+---
+Slide one
+
+---
+title: Second
+---
+Slide two
+''';
+
+      final slides = parser.parse(markdown);
+
+      expect(slides.first.key, 'first');
+      expect(slides.last.key, 'other');
     });
 
     test(

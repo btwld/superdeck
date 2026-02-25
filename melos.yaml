@@ -84,6 +84,18 @@ scripts:
     packageFilters:
       dependsOn: "build_runner"
 
+  contracts:export:
+    exec: fvm dart run tool/export_contract_schemas.dart
+    description: Export canonical JSON Schema artifacts for SuperDeck contracts.
+    packageFilters:
+      scope: "superdeck_core"
+
+  contracts:check:
+    exec: fvm dart run tool/export_contract_schemas.dart --check
+    description: Verify canonical JSON Schema artifacts are up to date.
+    packageFilters:
+      scope: "superdeck_core"
+
   test:
     run: fvm flutter pub run melos exec -- fvm flutter test
     description: Run flutter test

@@ -16,7 +16,7 @@ class MermaidGenerator implements AssetGenerator {
   Browser? _browser;
   Future<Browser>? _browserInitFuture;
   bool _disposed = false;
-  final Map<String, dynamic> _launchOptions;
+  final Map<String, Object?> _launchOptions;
 
   /// HTML template for rendering Mermaid diagrams.
   static final _mermaidHtmlTemplate = '''
@@ -76,7 +76,7 @@ class MermaidGenerator implements AssetGenerator {
 ''';
 
   @override
-  final Map<String, dynamic> configuration;
+  final Map<String, Object?> configuration;
 
   /// Creates a Mermaid generator with hardcoded dark theme as default.
   ///
@@ -85,8 +85,8 @@ class MermaidGenerator implements AssetGenerator {
   /// back to Mermaid's default theme to ensure structural elements (axis, grid
   /// lines) remain visible. See _shouldUseFallbackTheme() for fallback logic.
   MermaidGenerator({
-    Map<String, dynamic>? launchOptions,
-    Map<String, dynamic>? configuration,
+    Map<String, Object?>? launchOptions,
+    Map<String, Object?>? configuration,
   }) : _launchOptions = launchOptions ?? {},
        configuration = configuration ?? _defaultConfiguration;
 
@@ -316,7 +316,7 @@ class MermaidGenerator implements AssetGenerator {
     try {
       _logger.info('Launching headless browser for Mermaid rendering');
       final browser = await puppeteer.launch(
-        headless: _launchOptions['headless'] ?? true,
+        headless: _launchOptions['headless'] as bool? ?? true,
         args: _launchOptions['args'] as List<String>?,
         executablePath: _launchOptions['executablePath'] as String?,
       );
@@ -387,7 +387,7 @@ class MermaidGenerator implements AssetGenerator {
     final trimmed = graphDefinition.trim().toLowerCase();
 
     // Check if we're in dark mode
-    final themeVars = configuration['themeVariables'] as Map<String, dynamic>?;
+    final themeVars = configuration['themeVariables'] as Map<String, Object?>?;
     final isDarkMode = themeVars?['darkMode'] as bool? ?? true;
 
     // Timeline diagrams have axis visibility issues with custom DARK themes only
@@ -415,7 +415,7 @@ class MermaidGenerator implements AssetGenerator {
         ? 'default' // Use Mermaid's default theme for timeline/gantt
         : (configuration['theme'] as String? ?? 'base');
     final themeVariables = useFallbackTheme
-        ? <String, dynamic>{} // No custom variables for fallback
+        ? <String, Object?>{} // No custom variables for fallback
         : (configuration['themeVariables'] ?? {});
     final themeCSS = useFallbackTheme
         ? '' // No custom CSS for fallback
@@ -430,7 +430,7 @@ class MermaidGenerator implements AssetGenerator {
     final timeout = Duration(seconds: configuration['timeout'] as int? ?? 10);
 
     // Extract ALL diagram-specific configs for passing to mermaid.initialize
-    final diagramConfigs = <String, dynamic>{};
+    final diagramConfigs = <String, Object?>{};
     final diagramConfigKeys = [
       'flowchart',
       'sequence',

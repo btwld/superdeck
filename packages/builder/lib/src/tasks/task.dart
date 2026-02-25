@@ -11,7 +11,7 @@ abstract base class Task {
   final String name;
 
   /// Configuration options for this task
-  final Map<String, dynamic> configuration;
+  final Map<String, Object?> configuration;
 
   /// Logger instance for the task.
   late final Logger logger = Logger('Task: $name');

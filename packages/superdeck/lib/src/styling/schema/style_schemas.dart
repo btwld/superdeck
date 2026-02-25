@@ -662,7 +662,7 @@ class StyleSchemas {
   // ---------------------------------------------------------------------------
 
   /// Validates that style names are unique.
-  static bool _validateUniqueStyleNames(Map<String, dynamic>? config) {
+  static bool _validateUniqueStyleNames(Map<String, Object?>? config) {
     final styles = config?['styles'];
     if (styles is! List || styles.isEmpty) return true;
 
@@ -683,7 +683,7 @@ class StyleSchemas {
 
   /// Transforms to [StyleConfigResult].
   /// Note: base is SlideStyle, styles is list of named tuples!
-  static StyleConfigResult _transformToStyleConfig(Map<String, dynamic>? data) {
+  static StyleConfigResult _transformToStyleConfig(Map<String, Object?>? data) {
     // 'base' is already a SlideStyle from slideStyleSchema transform
     final baseStyle = data?['base'] as SlideStyle?;
 

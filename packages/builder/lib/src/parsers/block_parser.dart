@@ -4,16 +4,16 @@ class ParsedBlock {
   final String type;
   final int startIndex;
   final int endIndex;
-  final Map<String, dynamic> _data;
+  final Map<String, Object?> _data;
 
   const ParsedBlock({
     required this.type,
-    required Map<String, dynamic> data,
+    required Map<String, Object?> data,
     required this.startIndex,
     required this.endIndex,
   }) : _data = data;
 
-  Map<String, dynamic> get data {
+  Map<String, Object?> get data {
     // Normalize legacy @column to the current ContentBlock key.
     final normalizedType =
         type == ContentBlock.legacyKey || type == ContentBlock.key

@@ -1,8 +1,24 @@
 import 'dart:io';
 
 import 'package:ack/ack.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 import 'package:path/path.dart' as p;
 
+part 'deck_configuration.g.dart';
+
+bool _doesNotSetNullForOptionalDeckConfigurationFields(
+  Map<String, Object?>? map,
+) {
+  if (map == null) {
+    return true;
+  }
+  return (!map.containsKey('projectDir') || map['projectDir'] != null) &&
+      (!map.containsKey('slidesPath') || map['slidesPath'] != null) &&
+      (!map.containsKey('outputDir') || map['outputDir'] != null) &&
+      (!map.containsKey('assetsPath') || map['assetsPath'] != null);
+}
+
+@AckModel()
 final class DeckConfiguration {
   final String? projectDir;
   final String? slidesPath;
@@ -94,7 +110,7 @@ final class DeckConfiguration {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {
       if (projectDir != null) 'projectDir': projectDir,
       if (slidesPath != null) 'slidesPath': slidesPath,
@@ -103,7 +119,7 @@ final class DeckConfiguration {
     };
   }
 
-  static DeckConfiguration fromMap(Map<String, dynamic> map) {
+  static DeckConfiguration fromMap(Map<String, Object?> map) {
     return DeckConfiguration(
       projectDir: map['projectDir'] as String?,
       slidesPath: map['slidesPath'] as String?,
@@ -112,17 +128,17 @@ final class DeckConfiguration {
     );
   }
 
-  static DeckConfiguration parse(Map<String, dynamic> map) {
+  static DeckConfiguration parse(Map<String, Object?> map) {
     schema.parse(map);
     return fromMap(map);
   }
 
-  static final schema = Ack.object({
-    'projectDir': Ack.string().optional(),
-    'slidesPath': Ack.string().optional(),
-    'outputDir': Ack.string().optional(),
-    'assetsPath': Ack.string().optional(),
-  });
+  static final schema = deckConfigurationSchema.refine(
+    _doesNotSetNullForOptionalDeckConfigurationFields,
+    message:
+        '"projectDir", "slidesPath", "outputDir", and "assetsPath" cannot '
+        'be null when provided.',
+  );
 
   static File get defaultFile => File('superdeck.yaml');
 

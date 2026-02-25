@@ -1,0 +1,41 @@
+---
+title: Contracts and Schemas
+description: Canonical SuperDeck deck JSON contract for tooling and runtime consumers
+---
+
+# Contracts and schemas
+
+`superdeck_core` is the canonical contract package for `superdeck.json`.
+
+## Root deck contract (`superdeck.json`)
+
+`Deck` is the root model and contract surface.
+
+Root fields:
+
+- `slides` (required)
+- `style` (optional root style map)
+- `configuration` (optional operational config map)
+- additional unknown root fields (allowed for forward compatibility)
+
+Notes:
+
+- `Deck.toMap()` preserves root `style` and unknown root fields by default.
+
+## Compatibility note
+
+Contract compatibility is not frozen yet.
+Breaking changes to deck contract shape may happen as SuperDeck finalizes the tooling surface.
+
+## Machine-readable schema artifacts
+
+Canonical JSON Schema artifacts are exported to:
+
+- `packages/core/schema/superdeck.deck.schema.json`
+
+Commands:
+
+```bash
+melos run contracts:export
+melos run contracts:check
+```

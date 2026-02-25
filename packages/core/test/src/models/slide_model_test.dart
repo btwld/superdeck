@@ -345,6 +345,14 @@ void main() {
           });
           expect(result.isOk, isTrue);
         });
+
+        test('fails validation when options is explicitly null', () {
+          final result = Slide.schema.safeParse({
+            'key': 'full',
+            'options': null,
+          });
+          expect(result.isOk, isFalse);
+        });
       });
     });
 
@@ -536,10 +544,7 @@ void main() {
         });
 
         test('preserves template through toMap/fromMap', () {
-          const original = SlideOptions(
-            title: 'RT',
-            template: 'rt-template',
-          );
+          const original = SlideOptions(title: 'RT', template: 'rt-template');
 
           final restored = SlideOptions.fromMap(original.toMap());
 
@@ -654,6 +659,21 @@ void main() {
             'template': 'standalone-template',
           });
           expect(result.isOk, isTrue);
+        });
+
+        test('fails validation when title is explicitly null', () {
+          final result = SlideOptions.schema.safeParse({'title': null});
+          expect(result.isOk, isFalse);
+        });
+
+        test('fails validation when style is explicitly null', () {
+          final result = SlideOptions.schema.safeParse({'style': null});
+          expect(result.isOk, isFalse);
+        });
+
+        test('fails validation when template is explicitly null', () {
+          final result = SlideOptions.schema.safeParse({'template': null});
+          expect(result.isOk, isFalse);
         });
       });
     });
