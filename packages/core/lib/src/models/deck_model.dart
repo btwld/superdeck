@@ -3,17 +3,16 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'package:collection/collection.dart';
 
 import '../deck_configuration.dart';
+import '../utils/schema_refinement_utils.dart';
 import 'slide_model.dart';
 
 part 'deck_model.g.dart';
 
-bool _doesNotContainUnsupportedLegacyRootFields(Map<String, Object?>? map) {
-  return map == null || !map.containsKey('schemaVersion');
-}
+bool _doesNotContainUnsupportedLegacyRootFields(Map<String, Object?> map) =>
+    !map.containsKey('schemaVersion');
 
-bool _doesNotSetNullForOptionalDeckFields(Map<String, Object?>? map) {
-  return map == null || !map.containsKey('style') || map['style'] != null;
-}
+bool _doesNotSetNullForOptionalDeckFields(Map<String, Object?> map) =>
+    doesNotSetExplicitNullForOptionalKeys(map, const ['style']);
 
 @AckModel(
   additionalProperties: true,
@@ -79,7 +78,7 @@ class Deck {
   static final schema = deckSchema
       .extend({
         'slides': Ack.list(Slide.schema),
-        'configuration': deckConfigurationSchema.passthrough().optional(),
+        'configuration': DeckConfiguration.schema.optional(),
       })
       .refine(
         _doesNotContainUnsupportedLegacyRootFields,
@@ -109,7 +108,7 @@ class Deck {
           : Map<String, Object?>.from(styleValue as Map),
       configuration: configurationValue == null
           ? DeckConfiguration()
-          : DeckConfiguration.fromMap(
+          : DeckConfiguration.parse(
               Map<String, Object?>.from(configurationValue as Map),
             ),
       unknownRootFields: Map<String, Object?>.fromEntries(

@@ -1,3 +1,4 @@
+import 'package:ack/ack.dart';
 import 'package:superdeck_core/src/models/block_model.dart';
 import 'package:superdeck_core/src/models/slide_model.dart';
 import 'package:test/test.dart';
@@ -180,6 +181,21 @@ void main() {
 
           expect(slide.comments, ['Comment 1', 'Comment 2']);
         });
+
+        test(
+          'throws AckException when options optional fields are explicitly null',
+          () {
+            for (final field in ['title', 'style', 'template']) {
+              expect(
+                () => Slide.fromMap({
+                  'key': 'invalid-options',
+                  'options': {field: null},
+                }),
+                throwsA(isA<AckException>()),
+              );
+            }
+          },
+        );
       });
 
       group('round-trip serialization', () {
@@ -189,7 +205,7 @@ void main() {
             options: const SlideOptions(title: 'RT Title', style: 'rt-style'),
             sections: [
               SectionBlock([
-                ContentBlock('Section content', align: ContentAlignment.center),
+                ContentBlock('Section content'),
               ]),
             ],
             comments: ['RT Comment'],
@@ -352,6 +368,17 @@ void main() {
             'options': null,
           });
           expect(result.isOk, isFalse);
+        });
+
+        test('fails validation when options fields are explicitly null', () {
+          for (final field in ['title', 'style', 'template']) {
+            final result = Slide.schema.safeParse({
+              'key': 'full',
+              'options': {field: null},
+            });
+
+            expect(result.isOk, isFalse);
+          }
         });
       });
     });
@@ -661,19 +688,11 @@ void main() {
           expect(result.isOk, isTrue);
         });
 
-        test('fails validation when title is explicitly null', () {
-          final result = SlideOptions.schema.safeParse({'title': null});
-          expect(result.isOk, isFalse);
-        });
-
-        test('fails validation when style is explicitly null', () {
-          final result = SlideOptions.schema.safeParse({'style': null});
-          expect(result.isOk, isFalse);
-        });
-
-        test('fails validation when template is explicitly null', () {
-          final result = SlideOptions.schema.safeParse({'template': null});
-          expect(result.isOk, isFalse);
+        test('fails validation when optional fields are explicitly null', () {
+          for (final field in ['title', 'style', 'template']) {
+            final result = SlideOptions.schema.safeParse({field: null});
+            expect(result.isOk, isFalse);
+          }
         });
       });
     });

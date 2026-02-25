@@ -3,20 +3,19 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'package:collection/collection.dart';
 import 'package:superdeck_core/src/models/block_model.dart';
 
+import '../utils/schema_refinement_utils.dart';
+
 part 'slide_model.g.dart';
 
-bool _doesNotSetNullForOptionalSlideFields(Map<String, Object?>? map) {
-  return map == null || !map.containsKey('options') || map['options'] != null;
-}
+bool _doesNotSetNullForOptionalSlideFields(Map<String, Object?> map) =>
+    doesNotSetExplicitNullForOptionalKeys(map, const ['options']);
 
-bool _doesNotSetNullForOptionalSlideOptionFields(Map<String, Object?>? map) {
-  if (map == null) {
-    return true;
-  }
-  return (!map.containsKey('title') || map['title'] != null) &&
-      (!map.containsKey('style') || map['style'] != null) &&
-      (!map.containsKey('template') || map['template'] != null);
-}
+bool _doesNotSetNullForOptionalSlideOptionFields(Map<String, Object?> map) =>
+    doesNotSetExplicitNullForOptionalKeys(map, const [
+      'title',
+      'style',
+      'template',
+    ]);
 
 /// Represents a single slide in a presentation.
 ///
@@ -89,6 +88,7 @@ class Slide {
   /// Validation schema for slide data.
   static final schema = slideSchema
       .extend({
+        'options': SlideOptions.schema.optional(),
         'sections': Ack.list(sectionBlockSchema).optional(),
         'comments': Ack.list(Ack.string()).optional(),
       })

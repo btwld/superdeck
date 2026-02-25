@@ -346,24 +346,16 @@ void main() {
         expect(result.isOk, isTrue);
       });
 
-      test('fails when projectDir is explicitly null', () {
-        final result = DeckConfiguration.schema.safeParse({'projectDir': null});
-        expect(result.isOk, isFalse);
-      });
-
-      test('fails when slidesPath is explicitly null', () {
-        final result = DeckConfiguration.schema.safeParse({'slidesPath': null});
-        expect(result.isOk, isFalse);
-      });
-
-      test('fails when outputDir is explicitly null', () {
-        final result = DeckConfiguration.schema.safeParse({'outputDir': null});
-        expect(result.isOk, isFalse);
-      });
-
-      test('fails when assetsPath is explicitly null', () {
-        final result = DeckConfiguration.schema.safeParse({'assetsPath': null});
-        expect(result.isOk, isFalse);
+      test('fails when optional fields are explicitly null', () {
+        for (final field in [
+          'projectDir',
+          'slidesPath',
+          'outputDir',
+          'assetsPath',
+        ]) {
+          final result = DeckConfiguration.schema.safeParse({field: null});
+          expect(result.isOk, isFalse);
+        }
       });
     });
 

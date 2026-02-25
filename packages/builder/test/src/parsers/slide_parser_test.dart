@@ -187,57 +187,31 @@ title: Slide 1
       expect(slides[0].content, isEmpty);
     });
 
-    test('applies deterministic key suffixes for collisions', () {
-      final parser = MarkdownParser(keyGenerator: (_) => 'duplicate');
+    test('applies deterministic key suffixes for hash collisions', () {
+      final parser = MarkdownParser();
       const markdown = '''
 ---
-title: Slide 1
+title: Same
 ---
-One
+Repeated content
 
 ---
-title: Slide 2
+title: Same
 ---
-Two
+Repeated content
 
 ---
-title: Slide 3
+title: Same
 ---
-Three
+Repeated content
 ''';
 
       final slides = parser.parse(markdown);
+      final baseKey = slides.first.key;
 
-      expect(slides.map((slide) => slide.key).toList(), <String>[
-        'duplicate',
-        'duplicate__2',
-        'duplicate__3',
-      ]);
-    });
-
-    test('uses custom key generator when provided', () {
-      final parser = MarkdownParser(
-        keyGenerator: (source) {
-          final normalized = source.trim().toLowerCase();
-          return normalized.contains('first') ? 'first' : 'other';
-        },
-      );
-      const markdown = '''
----
-title: First
----
-Slide one
-
----
-title: Second
----
-Slide two
-''';
-
-      final slides = parser.parse(markdown);
-
-      expect(slides.first.key, 'first');
-      expect(slides.last.key, 'other');
+      expect(slides[0].key, baseKey);
+      expect(slides[1].key, '${baseKey}__2');
+      expect(slides.map((slide) => slide.key).toSet().length, slides.length);
     });
 
     test(

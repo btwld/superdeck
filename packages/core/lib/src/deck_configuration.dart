@@ -4,18 +4,19 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:path/path.dart' as p;
 
+import 'utils/schema_refinement_utils.dart';
+
 part 'deck_configuration.g.dart';
 
 bool _doesNotSetNullForOptionalDeckConfigurationFields(
-  Map<String, Object?>? map,
+  Map<String, Object?> map,
 ) {
-  if (map == null) {
-    return true;
-  }
-  return (!map.containsKey('projectDir') || map['projectDir'] != null) &&
-      (!map.containsKey('slidesPath') || map['slidesPath'] != null) &&
-      (!map.containsKey('outputDir') || map['outputDir'] != null) &&
-      (!map.containsKey('assetsPath') || map['assetsPath'] != null);
+  return doesNotSetExplicitNullForOptionalKeys(map, const [
+    'projectDir',
+    'slidesPath',
+    'outputDir',
+    'assetsPath',
+  ]);
 }
 
 @AckModel()
@@ -133,7 +134,7 @@ final class DeckConfiguration {
     return fromMap(map);
   }
 
-  static final schema = deckConfigurationSchema.refine(
+  static final schema = deckConfigurationSchema.passthrough().refine(
     _doesNotSetNullForOptionalDeckConfigurationFields,
     message:
         '"projectDir", "slidesPath", "outputDir", and "assetsPath" cannot '

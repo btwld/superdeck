@@ -1,3 +1,4 @@
+import 'package:ack/ack.dart';
 import 'package:superdeck_core/src/deck_configuration.dart';
 import 'package:superdeck_core/src/models/block_model.dart';
 import 'package:superdeck_core/src/models/deck_model.dart';
@@ -58,6 +59,18 @@ void main() {
 
           expect(copy.slides[0].key, 'keep');
           expect(copy.configuration.projectDir, '/keep');
+        });
+
+        test('preserves style when style is explicitly null', () {
+          final original = Deck(
+            slides: const [],
+            style: const {'theme': 'dark'},
+            configuration: DeckConfiguration(),
+          );
+
+          final copy = original.copyWith(style: null);
+
+          expect(copy.style, {'theme': 'dark'});
         });
       });
 
@@ -217,12 +230,72 @@ void main() {
             'slides': <dynamic>[],
           };
 
-          expect(() => Deck.fromMap(map), throwsA(isA<Exception>()));
+          expect(
+            () => Deck.fromMap(map),
+            throwsA(
+              isA<AckException>().having(
+                (error) => error.toString(),
+                'message',
+                allOf(contains('schemaVersion'), contains('Unsupported')),
+              ),
+            ),
+          );
         });
 
         test('throws when slides is missing', () {
-          expect(() => Deck.fromMap({}), throwsA(isA<Exception>()));
+          expect(
+            () => Deck.fromMap({}),
+            throwsA(
+              isA<AckException>().having(
+                (error) => error.toJson(),
+                'message',
+                contains('slides'),
+              ),
+            ),
+          );
         });
+
+        test(
+          'throws AckException when configuration optional fields are explicitly null',
+          () {
+            for (final field in [
+              'projectDir',
+              'slidesPath',
+              'outputDir',
+              'assetsPath',
+            ]) {
+              expect(
+                () => Deck.fromMap({
+                  'slides': <dynamic>[],
+                  'configuration': {field: null},
+                }),
+                throwsA(isA<AckException>()),
+              );
+            }
+          },
+        );
+      });
+
+      group('configuration null-field parsing', () {
+        test(
+          'Deck.parse throws AckException when configuration optional fields are explicitly null',
+          () {
+            for (final field in [
+              'projectDir',
+              'slidesPath',
+              'outputDir',
+              'assetsPath',
+            ]) {
+              expect(
+                () => Deck.parse({
+                  'slides': <dynamic>[],
+                  'configuration': {field: null},
+                }),
+                throwsA(isA<AckException>()),
+              );
+            }
+          },
+        );
       });
 
       group('round-trip serialization', () {
@@ -234,7 +307,7 @@ void main() {
                 options: const SlideOptions(title: 'RT Title'),
                 sections: [
                   SectionBlock([
-                    ContentBlock('Content', align: ContentAlignment.center),
+                    ContentBlock('Content'),
                   ]),
                 ],
                 comments: ['Note'],
@@ -325,7 +398,16 @@ void main() {
         });
 
         test('throws when slides is missing', () {
-          expect(() => Deck.parse({}), throwsA(isA<Exception>()));
+          expect(
+            () => Deck.parse({}),
+            throwsA(
+              isA<AckException>().having(
+                (error) => error.toJson(),
+                'message',
+                contains('slides'),
+              ),
+            ),
+          );
         });
 
         test('throws when unsupported legacy schemaVersion is present', () {
@@ -334,7 +416,16 @@ void main() {
             'slides': <dynamic>[],
           };
 
-          expect(() => Deck.parse(map), throwsA(isA<Exception>()));
+          expect(
+            () => Deck.parse(map),
+            throwsA(
+              isA<AckException>().having(
+                (error) => error.toString(),
+                'message',
+                allOf(contains('schemaVersion'), contains('Unsupported')),
+              ),
+            ),
+          );
         });
       });
 
@@ -403,6 +494,25 @@ void main() {
 
           expect(result.isOk, isFalse);
         });
+
+        test(
+          'fails validation when configuration optional fields are explicitly null',
+          () {
+            for (final field in [
+              'projectDir',
+              'slidesPath',
+              'outputDir',
+              'assetsPath',
+            ]) {
+              final result = Deck.schema.safeParse({
+                'slides': <dynamic>[],
+                'configuration': {field: null},
+              });
+
+              expect(result.isOk, isFalse);
+            }
+          },
+        );
 
         test('fails validation when unsupported schemaVersion is present', () {
           final result = Deck.schema.safeParse({

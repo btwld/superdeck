@@ -5,8 +5,6 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'front_matter_parser.dart';
 import 'raw_slide_schema.dart';
 
-typedef SlideKeyGenerator = String Function(String source);
-
 String _uniquifyKey(
   String baseKey,
   Set<String> usedKeys, {
@@ -33,9 +31,7 @@ String _uniquifyKey(
 /// See also:
 /// - [SectionParser] - Stage 2: Parses @section/@column directives into layout structure
 class MarkdownParser {
-  final SlideKeyGenerator keyGenerator;
-
-  const MarkdownParser({this.keyGenerator = generateValueHash});
+  const MarkdownParser();
 
   // Regex to match code fence: 3+ backticks at start, optionally followed by language
   static final _codeFencePattern = RegExp(r'^(`{3,})(\s*\S*)?$');
@@ -109,7 +105,7 @@ class MarkdownParser {
 
     for (final rawSlide in rawSlides) {
       final frontmatter = frontMatterExtractor.parse(rawSlide);
-      final baseKey = keyGenerator(rawSlide);
+      final baseKey = generateValueHash(rawSlide);
       final key = _uniquifyKey(baseKey, usedKeys);
       usedKeys.add(key);
 
