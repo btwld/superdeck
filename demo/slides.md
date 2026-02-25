@@ -19,7 +19,7 @@
 #### @leoafarias {.subheading}
 
 @column {
-  align: center_left
+  align: centerLeft
 }
 - Founder/CEO/CTO
 - Open Source Contributor (fvm, mix, superdeck, others..)
@@ -55,7 +55,7 @@
 @section
 
 @column {
-  align: top_center
+  align: topCenter
 }
 ```mermaid
 mindmap
@@ -102,7 +102,7 @@ SuperDeck supports flexible layouts using sections and columns.
 
 @column {
   flex: 2
-  align: center_right
+  align: centerRight
 }
 ### Two Columns {.heading}
 
@@ -476,7 +476,7 @@ A clean, typography-focused template with no chrome distractions.
 ---
 
 @section{
-  align: bottom_center
+  align: bottomCenter
   flex: 2
 }
 # Thank You {.heading}

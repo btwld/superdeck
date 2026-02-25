@@ -68,7 +68,7 @@ Your awesome slides start here!
 - Add more items here
 
 @column {
-  align: center_right
+  align: centerRight
 }
 
 This content appears in the right column.

@@ -202,7 +202,7 @@ line3''';
     });
 
     group('ackEnum', () {
-      test('converts simple enum names to snake_case', () {
+      test('validates simple enum names', () {
         final schema = ackEnum(SimpleEnum.values);
 
         expect(schema.safeParse('one').isOk, isTrue);
@@ -210,12 +210,12 @@ line3''';
         expect(schema.safeParse('three').isOk, isTrue);
       });
 
-      test('converts camelCase enum names to snake_case', () {
+      test('validates camelCase enum names', () {
         final schema = ackEnum(CamelCaseEnum.values);
 
-        expect(schema.safeParse('first_value').isOk, isTrue);
-        expect(schema.safeParse('second_value').isOk, isTrue);
-        expect(schema.safeParse('third_value_here').isOk, isTrue);
+        expect(schema.safeParse('firstValue').isOk, isTrue);
+        expect(schema.safeParse('secondValue').isOk, isTrue);
+        expect(schema.safeParse('thirdValueHere').isOk, isTrue);
       });
 
       test('handles single word enums', () {
@@ -233,12 +233,11 @@ line3''';
         expect(schema.safeParse('').isOk, isFalse);
       });
 
-      test('handles uppercase abbreviations', () {
+      test('validates abbreviation enum names', () {
         final schema = ackEnum(AbbreviationEnum.values);
 
-        // URLParser becomes url_parser
-        expect(schema.safeParse('url_parser').isOk, isTrue);
-        expect(schema.safeParse('html_element').isOk, isTrue);
+        expect(schema.safeParse('urlParser').isOk, isTrue);
+        expect(schema.safeParse('htmlElement').isOk, isTrue);
       });
 
       test('handles numeric suffixes', () {

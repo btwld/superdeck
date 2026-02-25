@@ -64,7 +64,7 @@
       "options": {
         "style": "quote"
       },
-      "markdown": "{@section}\n{@column align: bottom_right flex: 3}\n# This presentation will be great\n\n{@column}\n\n{@section}\n\n\n{@column }\n{@column flex: 2 align: top_right}\n> Create your Flutter presentations faster and easier than ever.\n> You can quote me on that\n> ### Leo",
+      "markdown": "{@section}\n{@column align: bottomRight flex: 3}\n# This presentation will be great\n\n{@column}\n\n{@section}\n\n\n{@column }\n{@column flex: 2 align: topRight}\n> Create your Flutter presentations faster and easier than ever.\n> You can quote me on that\n> ### Leo",
       "sections": [
         {
           "options": null,
@@ -73,7 +73,7 @@
               "content": "\n# This presentation will be great",
               "options": {
                 "flex": 3,
-                "align": "bottom_right"
+                "align": "bottomRight"
               },
               "type": "column"
             },
@@ -96,7 +96,7 @@
               "content": "\n> Create your Flutter presentations faster and easier than ever.\n> You can quote me on that\n> ### Leo",
               "options": {
                 "flex": 2,
-                "align": "top_right"
+                "align": "topRight"
               },
               "type": "column"
             }
@@ -109,7 +109,7 @@
       "options": {
         "style": "show_sections"
       },
-      "markdown": "{@section}\n{@image src: https://picsum.photos/1200/1200?waves align: top_left fit: cover}\n\n{@section flex: 2}\n{@column flex: 2}\n# Two Column HGoes here\n\nThis is a two-column layout. You can use it to compare two different concepts or ideas.\n\n\n{@column}\n\n### Section Options\n\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section",
+      "markdown": "{@section}\n{@image src: https://picsum.photos/1200/1200?waves align: topLeft fit: cover}\n\n{@section flex: 2}\n{@column flex: 2}\n# Two Column HGoes here\n\nThis is a two-column layout. You can use it to compare two different concepts or ideas.\n\n\n{@column}\n\n### Section Options\n\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section",
       "sections": [
         {
           "options": null,
@@ -118,7 +118,7 @@
               "options": {
                 "src": "https://picsum.photos/1200/1200?waves",
                 "fit": "cover",
-                "align": "top_left",
+                "align": "topLeft",
                 "type": "image"
               },
               "content": "",
@@ -152,7 +152,7 @@
       "options": {
         "style": "show_sections"
       },
-      "markdown": "{@section}\n{@column align: bottom_right}\n\n## First\n\n{@column}  \n\n\n## Header\n\n{@section flex: 2}\n\n### Left Section\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section\n\n{@column}\n\n#### Section Options\n\n```yaml\nsections:\n  left:\n    alignment: bottom_right\n    flex: 2\n  right:\n    alignment: bottom_left\n  header:\n    alignment: bottom_left\n```",
+      "markdown": "{@section}\n{@column align: bottomRight}\n\n## First\n\n{@column}  \n\n\n## Header\n\n{@section flex: 2}\n\n### Left Section\nEasily customize the content of each section to suit your needs.\n\nUse front matter to define the layout of each section\n\n{@column}\n\n#### Section Options\n\n```yaml\nsections:\n  left:\n    alignment: bottomRight\n    flex: 2\n  right:\n    alignment: bottomLeft\n  header:\n    alignment: bottomLeft\n```",
       "sections": [
         {
           "options": null,
@@ -160,7 +160,7 @@
             {
               "content": "\n## First",
               "options": {
-                "align": "bottom_right"
+                "align": "bottomRight"
               },
               "type": "column"
             },
@@ -181,7 +181,7 @@
               "type": "column"
             },
             {
-              "content": "\n#### Section Options\n```yaml\nsections:\n  left:\n    alignment: bottom_right\n    flex: 2\n  right:\n    alignment: bottom_left\n  header:\n    alignment: bottom_left\n```",
+              "content": "\n#### Section Options\n```yaml\nsections:\n  left:\n    alignment: bottomRight\n    flex: 2\n  right:\n    alignment: bottomLeft\n  header:\n    alignment: bottomLeft\n```",
               "options": null,
               "type": "column"
             }

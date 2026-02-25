@@ -42,7 +42,7 @@ Use this for comparisons, pros/cons lists, or showing two related concepts side-
 
 @column {
   flex: 2
-  align: center_left
+  align: centerLeft
 }
 
 ### Generative UI
@@ -107,8 +107,8 @@ final schema = Schema.object(properties: {
     description: 'The text content to display on color palette. Format: #FF0000',
     nullable: false,
   ),
-  'font': Schema.enumString(
-    enumValues: ColorPaletteFontFamily.enumString,
+  'font': Schema.enumValues(
+    enumValues: ColorPaletteFontFamily.values,
     description: 'The font to use for the poster text.',
     nullable: false,
   ),
@@ -259,14 +259,14 @@ Column(
 @section
 
 @column {
-  align: center_right
+  align: centerRight
 }
 
 #### Leo Farias
 @leoafarias
 
 @column {
-  align: center_left
+  align: centerLeft
 }
 
 - Founder/CEO/CTO
@@ -288,7 +288,7 @@ Column(
 
 ```markdown
 @column {
-  align: center_left
+  align: centerLeft
   flex: 2
 }
 

@@ -13,6 +13,22 @@ import '../components/slide.dart';
 
 typedef _JsonMap = Map<String, Object?>;
 
+enum _FontWeightToken {
+  normal,
+  bold,
+  w100,
+  w200,
+  w300,
+  w400,
+  w500,
+  w600,
+  w700,
+  w800,
+  w900,
+}
+
+enum _TextDecorationToken { none, underline, lineThrough, overline }
+
 /// Result type from parsing styles.yaml.
 /// Produced directly by [StyleSchemas.styleConfigSchema.parse()].
 typedef StyleConfigResult = ({
@@ -49,34 +65,25 @@ typedef StyleConfigResult = ({
 class StyleSchemas {
   StyleSchemas._();
 
-  static const _fontWeights = <String, FontWeight>{
-    'normal': FontWeight.normal,
-    'bold': FontWeight.bold,
-    'w100': FontWeight.w100,
-    'w200': FontWeight.w200,
-    'w300': FontWeight.w300,
-    'w400': FontWeight.w400,
-    'w500': FontWeight.w500,
-    'w600': FontWeight.w600,
-    'w700': FontWeight.w700,
-    'w800': FontWeight.w800,
-    'w900': FontWeight.w900,
+  static const _fontWeights = <_FontWeightToken, FontWeight>{
+    _FontWeightToken.normal: FontWeight.normal,
+    _FontWeightToken.bold: FontWeight.bold,
+    _FontWeightToken.w100: FontWeight.w100,
+    _FontWeightToken.w200: FontWeight.w200,
+    _FontWeightToken.w300: FontWeight.w300,
+    _FontWeightToken.w400: FontWeight.w400,
+    _FontWeightToken.w500: FontWeight.w500,
+    _FontWeightToken.w600: FontWeight.w600,
+    _FontWeightToken.w700: FontWeight.w700,
+    _FontWeightToken.w800: FontWeight.w800,
+    _FontWeightToken.w900: FontWeight.w900,
   };
 
-  static const _textDecorations = <String, TextDecoration>{
-    'none': TextDecoration.none,
-    'underline': TextDecoration.underline,
-    'lineThrough': TextDecoration.lineThrough,
-    'overline': TextDecoration.overline,
-  };
-
-  static const _wrapAlignments = <String, WrapAlignment>{
-    'start': WrapAlignment.start,
-    'end': WrapAlignment.end,
-    'center': WrapAlignment.center,
-    'spaceBetween': WrapAlignment.spaceBetween,
-    'spaceAround': WrapAlignment.spaceAround,
-    'spaceEvenly': WrapAlignment.spaceEvenly,
+  static const _textDecorations = <_TextDecorationToken, TextDecoration>{
+    _TextDecorationToken.none: TextDecoration.none,
+    _TextDecorationToken.underline: TextDecoration.underline,
+    _TextDecorationToken.lineThrough: TextDecoration.lineThrough,
+    _TextDecorationToken.overline: TextDecoration.overline,
   };
 
   static final _baseTextCoreProperties = <String, AckSchema<Object>>{
@@ -103,22 +110,19 @@ class StyleSchemas {
       .optional();
 
   /// Validates font weight values and transforms to [FontWeight].
-  static final fontWeightSchema = Ack.string()
-      .enumString(_fontWeights.keys.toList())
-      .transform(_stringToFontWeight)
-      .optional();
+  static final fontWeightSchema = Ack.enumValues(
+    _FontWeightToken.values,
+  ).transform(_fontWeightToFlutter).optional();
 
   /// Validates text decoration values and transforms to [TextDecoration].
-  static final textDecorationSchema = Ack.string()
-      .enumString(_textDecorations.keys.toList())
-      .transform(_stringToTextDecoration)
-      .optional();
+  static final textDecorationSchema = Ack.enumValues(
+    _TextDecorationToken.values,
+  ).transform(_textDecorationToFlutter).optional();
 
   /// Validates wrap alignment values and transforms to [WrapAlignment].
-  static final alignmentSchema = Ack.string()
-      .enumString(_wrapAlignments.keys.toList())
-      .transform(_stringToWrapAlignment)
-      .optional();
+  static final alignmentSchema = Ack.enumValues(
+    WrapAlignment.values,
+  ).optional();
 
   // ===========================================================================
   // LEVEL 2: Padding Schema WITH TRANSFORM
@@ -360,19 +364,14 @@ class StyleSchemas {
     return Color(int.parse(hex, radix: 16));
   }
 
-  /// Transforms font weight string to [FontWeight].
-  static FontWeight _stringToFontWeight(String? value) {
+  /// Transforms font weight token to [FontWeight].
+  static FontWeight _fontWeightToFlutter(_FontWeightToken? value) {
     return _fontWeights[value] ?? FontWeight.normal;
   }
 
-  /// Transforms text decoration string to [TextDecoration].
-  static TextDecoration _stringToTextDecoration(String? value) {
+  /// Transforms text decoration token to [TextDecoration].
+  static TextDecoration _textDecorationToFlutter(_TextDecorationToken? value) {
     return _textDecorations[value] ?? TextDecoration.none;
-  }
-
-  /// Transforms wrap alignment string to [WrapAlignment].
-  static WrapAlignment _stringToWrapAlignment(String? value) {
-    return _wrapAlignments[value] ?? WrapAlignment.start;
   }
 
   // ---------------------------------------------------------------------------
