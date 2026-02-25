@@ -26,7 +26,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 
 @column {
   flex: 2
-  align: center_left
+  align: centerLeft
 }
 ### Traditional Tools {.heading}
 
@@ -64,7 +64,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 
 @column {
   flex: 2
-  align: center_left
+  align: centerLeft
 }
 ### Hot Reload {.heading}
 
@@ -117,7 +117,7 @@ How SuperDeck organizes content on slides.
 
 @section {
   flex: 3
-  align: top_left
+  align: topLeft
 }
 
 @column {
@@ -190,7 +190,7 @@ SuperDeck uses three core block types:
 
 Each block supports:
 - `flex` - Relative sizing (default: 1)
-- `align` - Content positioning (e.g., `center`, `top_left`)
+- `align` - Content positioning (e.g., `center`, `topLeft`)
 - `scrollable` - Enable overflow scrolling
 
 ---
@@ -222,7 +222,7 @@ The CLI processes your markdown through multiple stages:
 
 @column {
   flex: 2
-  align: center_left
+  align: centerLeft
 }
 ### Getting Started {.heading}
 
@@ -317,7 +317,7 @@ style: quote
 
 @section {
   flex: 2
-  align: bottom_center
+  align: bottomCenter
 }
 # Start Building {.heading}
 ## github.com/leoafarias/superdeck {.subheading}
@@ -328,4 +328,3 @@ style: quote
   align: center
 }
 MIT License | Flutter & Dart
-

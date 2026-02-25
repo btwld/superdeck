@@ -712,7 +712,7 @@ Column 1 content
 
 @column{
   flex: 2
-  align: top_left
+  align: topLeft
 }
 Column 2 content
 

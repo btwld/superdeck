@@ -185,7 +185,7 @@ Header content column 2.
         );
       });
 
-      test('Section with columns and alignment attribute in snake case', () {
+      test('Section with columns and alignment attribute', () {
         const markdown = '''
 @section
 @column{
@@ -194,7 +194,7 @@ Header content column 2.
 Body content column 1.
 
 @column{
-      align: bottom_right
+      align: bottomRight
 }
 Body content column 2.
 ''';
@@ -211,45 +211,42 @@ Body content column 2.
         );
       });
 
-      test(
-        'Section with columns, flex, and alignment attributes in snake case',
-        () {
-          const markdown = '''
+      test('Section with columns, flex, and alignment attributes', () {
+        const markdown = '''
 @section
 @column{
   flex: 3 
-  align: top_left
+  align: topLeft
 }
 Footer content column 1.
 @column{
   flex: 1
-  align: center_right
+  align: centerRight
 }
 Footer content column 2.
 ''';
 
-          final sections = sectionParser.parse(markdown);
-          expect(sections[0].blocks.length, equals(2));
+        final sections = sectionParser.parse(markdown);
+        expect(sections[0].blocks.length, equals(2));
 
-          expect(
-            sections[0].blocks[0].content.trim(),
-            'Footer content column 1.',
-          );
-          expect(
-            sections[0].blocks[1].content.trim(),
-            'Footer content column 2.',
-          );
+        expect(
+          sections[0].blocks[0].content.trim(),
+          'Footer content column 1.',
+        );
+        expect(
+          sections[0].blocks[1].content.trim(),
+          'Footer content column 2.',
+        );
 
-          expect(sections[0].blocks[0].flex, equals(3));
-          expect(sections[0].blocks[0].align, equals(ContentAlignment.topLeft));
+        expect(sections[0].blocks[0].flex, equals(3));
+        expect(sections[0].blocks[0].align, equals(ContentAlignment.topLeft));
 
-          expect(sections[0].blocks[1].flex, equals(1));
-          expect(
-            sections[0].blocks[1].align,
-            equals(ContentAlignment.centerRight),
-          );
-        },
-      );
+        expect(sections[0].blocks[1].flex, equals(1));
+        expect(
+          sections[0].blocks[1].align,
+          equals(ContentAlignment.centerRight),
+        );
+      });
 
       test('Sections with columns and attributes', () {
         const markdown = '''
@@ -263,20 +260,20 @@ Header content.
 @section
 @column{
     flex: 2
-    align: center_left
+    align: centerLeft
 }
 Body content column 1.
 
 @column{
     flex: 1
-    align: center_right
+    align: centerRight
 }
 Body content column 2.
 
 @section
 @column{
     flex: 1
-    align: bottom_center
+    align: bottomCenter
 }
 Footer content.
 
@@ -323,7 +320,7 @@ Footer content.
 Header content.
 
 @section{
-  align: top_left
+  align: topLeft
   flex: 2
 }
 @column{
@@ -332,10 +329,10 @@ Header content.
 Body content.
 
 @section{
-  align: bottom_right
+  align: bottomRight
   flex: 1
 }
-@column{ align: bottom_right}
+@column{ align: bottomRight}
 Footer content.
 
 ''';

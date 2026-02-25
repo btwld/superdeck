@@ -76,16 +76,25 @@ void main() {
           expect(ImageFit.fromJson('scaleDown'), ImageFit.scaleDown);
         });
 
-        test('parses snake_case values', () {
-          expect(ImageFit.fromJson('fit_width'), ImageFit.fitWidth);
-          expect(ImageFit.fromJson('fit_height'), ImageFit.fitHeight);
-          expect(ImageFit.fromJson('scale_down'), ImageFit.scaleDown);
+        test('throws for underscored values', () {
+          expect(
+            () => ImageFit.fromJson('fit_width'),
+            throwsA(isA<ArgumentError>()),
+          );
+          expect(
+            () => ImageFit.fromJson('fit_height'),
+            throwsA(isA<ArgumentError>()),
+          );
+          expect(
+            () => ImageFit.fromJson('scale_down'),
+            throwsA(isA<ArgumentError>()),
+          );
         });
 
         test('parses case-insensitively', () {
           expect(ImageFit.fromJson('FILL'), ImageFit.fill);
           expect(ImageFit.fromJson('Cover'), ImageFit.cover);
-          expect(ImageFit.fromJson('FIT_WIDTH'), ImageFit.fitWidth);
+          expect(ImageFit.fromJson('FITWIDTH'), ImageFit.fitWidth);
         });
 
         test('throws for invalid value', () {
@@ -101,13 +110,16 @@ void main() {
           expect(ImageFit.schema.safeParse('fill').isOk, isTrue);
           expect(ImageFit.schema.safeParse('contain').isOk, isTrue);
           expect(ImageFit.schema.safeParse('cover').isOk, isTrue);
+          expect(ImageFit.schema.safeParse('fitWidth').isOk, isTrue);
+          expect(ImageFit.schema.safeParse('fitHeight').isOk, isTrue);
           expect(ImageFit.schema.safeParse('none').isOk, isTrue);
+          expect(ImageFit.schema.safeParse('scaleDown').isOk, isTrue);
         });
 
-        test('validates snake_case values', () {
-          expect(ImageFit.schema.safeParse('fit_width').isOk, isTrue);
-          expect(ImageFit.schema.safeParse('fit_height').isOk, isTrue);
-          expect(ImageFit.schema.safeParse('scale_down').isOk, isTrue);
+        test('rejects underscored values', () {
+          expect(ImageFit.schema.safeParse('fit_width').isOk, isFalse);
+          expect(ImageFit.schema.safeParse('fit_height').isOk, isFalse);
+          expect(ImageFit.schema.safeParse('scale_down').isOk, isFalse);
         });
 
         test('rejects invalid values', () {
@@ -169,22 +181,22 @@ void main() {
           );
         });
 
-        test('parses snake_case values', () {
+        test('throws for underscored values', () {
           expect(
-            ContentAlignment.fromJson('top_left'),
-            ContentAlignment.topLeft,
+            () => ContentAlignment.fromJson('top_left'),
+            throwsA(isA<ArgumentError>()),
           );
           expect(
-            ContentAlignment.fromJson('top_center'),
-            ContentAlignment.topCenter,
+            () => ContentAlignment.fromJson('top_center'),
+            throwsA(isA<ArgumentError>()),
           );
           expect(
-            ContentAlignment.fromJson('center_left'),
-            ContentAlignment.centerLeft,
+            () => ContentAlignment.fromJson('center_left'),
+            throwsA(isA<ArgumentError>()),
           );
           expect(
-            ContentAlignment.fromJson('bottom_right'),
-            ContentAlignment.bottomRight,
+            () => ContentAlignment.fromJson('bottom_right'),
+            throwsA(isA<ArgumentError>()),
           );
         });
 
@@ -195,7 +207,7 @@ void main() {
           );
           expect(ContentAlignment.fromJson('Center'), ContentAlignment.center);
           expect(
-            ContentAlignment.fromJson('BOTTOM_CENTER'),
+            ContentAlignment.fromJson('BOTTOMCENTER'),
             ContentAlignment.bottomCenter,
           );
         });
@@ -210,16 +222,30 @@ void main() {
 
       group('schema', () {
         test('validates all enum values', () {
+          expect(ContentAlignment.schema.safeParse('topLeft').isOk, isTrue);
+          expect(ContentAlignment.schema.safeParse('topCenter').isOk, isTrue);
+          expect(ContentAlignment.schema.safeParse('topRight').isOk, isTrue);
+          expect(ContentAlignment.schema.safeParse('centerLeft').isOk, isTrue);
           expect(ContentAlignment.schema.safeParse('center').isOk, isTrue);
+          expect(ContentAlignment.schema.safeParse('centerRight').isOk, isTrue);
+          expect(ContentAlignment.schema.safeParse('bottomLeft').isOk, isTrue);
+          expect(
+            ContentAlignment.schema.safeParse('bottomCenter').isOk,
+            isTrue,
+          );
+          expect(ContentAlignment.schema.safeParse('bottomRight').isOk, isTrue);
         });
 
-        test('validates snake_case values', () {
-          expect(ContentAlignment.schema.safeParse('top_left').isOk, isTrue);
-          expect(ContentAlignment.schema.safeParse('top_center').isOk, isTrue);
-          expect(ContentAlignment.schema.safeParse('center_left').isOk, isTrue);
+        test('rejects underscored values', () {
+          expect(ContentAlignment.schema.safeParse('top_left').isOk, isFalse);
+          expect(ContentAlignment.schema.safeParse('top_center').isOk, isFalse);
+          expect(
+            ContentAlignment.schema.safeParse('center_left').isOk,
+            isFalse,
+          );
           expect(
             ContentAlignment.schema.safeParse('bottom_right').isOk,
-            isTrue,
+            isFalse,
           );
         });
 

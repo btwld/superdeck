@@ -5,6 +5,8 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../deck/widget_definition.dart';
 import '../utils/converters.dart';
 
+enum _QrErrorCorrectionToken { low, l, medium, m, high, q, highest, h }
+
 /// Strongly-typed data transfer object for QR code widget.
 class QrCodeDto {
   /// The data to encode in the QR code.
@@ -37,23 +39,26 @@ class QrCodeDto {
       message: 'QR code text must be less than 1000 characters',
     ),
     'size': Ack.double().min(1).max(1000).nullable().optional(),
-    'errorCorrection': Ack.string()
-        .enumString(['low', 'l', 'medium', 'm', 'high', 'q', 'highest', 'h'])
-        .nullable()
-        .optional(),
+    'errorCorrection': Ack.enumValues(
+      _QrErrorCorrectionToken.values,
+    ).nullable().optional(),
     'backgroundColor': Ack.string().nullable().optional().hexColor(),
     'foregroundColor': Ack.string().nullable().optional().hexColor(),
   });
 
   /// Parses and validates raw map into typed QrCodeDto.
   static QrCodeDto parse(Map<String, Object?> map) {
-    schema.parse(map); // Validate first
+    final parsed = schema.parse(map)!;
+    final errorCorrection =
+        parsed['errorCorrection'] as _QrErrorCorrectionToken? ??
+        _QrErrorCorrectionToken.medium;
+
     return QrCodeDto(
-      text: map['text'] as String,
-      size: (map['size'] as num?)?.toDouble() ?? 200.0,
-      errorCorrection: map['errorCorrection'] as String? ?? 'medium',
-      backgroundColor: map['backgroundColor'] as String?,
-      foregroundColor: map['foregroundColor'] as String?,
+      text: parsed['text'] as String,
+      size: (parsed['size'] as num?)?.toDouble() ?? 200.0,
+      errorCorrection: errorCorrection.name,
+      backgroundColor: parsed['backgroundColor'] as String?,
+      foregroundColor: parsed['foregroundColor'] as String?,
     );
   }
 }

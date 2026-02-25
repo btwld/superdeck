@@ -262,10 +262,9 @@ enum DartPadTheme {
   String toJson() => name;
 
   static DartPadTheme fromJson(String value) {
-    // Support both camelCase and snake_case (though this enum is all lowercase)
-    final normalized = value.replaceAll('_', '');
+    final normalized = value.toLowerCase();
     return DartPadTheme.values.firstWhere(
-      (e) => e.name.toLowerCase() == normalized.toLowerCase(),
+      (e) => e.name.toLowerCase() == normalized,
       orElse: () => throw ArgumentError('Invalid DartPadTheme: $value'),
     );
   }
@@ -285,10 +284,9 @@ enum ImageFit {
   String toJson() => name;
 
   static ImageFit fromJson(String value) {
-    // Support both camelCase and snake_case
-    final normalized = value.replaceAll('_', '');
+    final normalized = value.toLowerCase();
     return ImageFit.values.firstWhere(
-      (e) => e.name.toLowerCase() == normalized.toLowerCase(),
+      (e) => e.name.toLowerCase() == normalized,
       orElse: () => throw ArgumentError('Invalid ImageFit: $value'),
     );
   }
@@ -409,10 +407,9 @@ enum ContentAlignment {
   String toJson() => name;
 
   static ContentAlignment fromJson(String value) {
-    // Support both camelCase and snake_case
-    final normalized = value.replaceAll('_', '');
+    final normalized = value.toLowerCase();
     return ContentAlignment.values.firstWhere(
-      (e) => e.name.toLowerCase() == normalized.toLowerCase(),
+      (e) => e.name.toLowerCase() == normalized,
       orElse: () => throw ArgumentError('Invalid ContentAlignment: $value'),
     );
   }
