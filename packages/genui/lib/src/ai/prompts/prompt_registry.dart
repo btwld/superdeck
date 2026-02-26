@@ -54,7 +54,11 @@ class PromptRegistry {
     if (_loading != null) {
       return _loading!;
     }
-    _loading = _loadInternal();
+
+    _loading = _loadInternal().catchError((error) {
+      _loading = null;
+      throw error;
+    });
     return _loading!;
   }
 

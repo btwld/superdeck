@@ -20,20 +20,39 @@ Set your Gemini API key via either method:
 1. **Build-time** (recommended): `--dart-define=GOOGLE_AI_API_KEY=xxx`
 2. **Runtime** (dev only): Create a `.env` file with `GOOGLE_AI_API_KEY=xxx`
 
+`genUiRoutes()` automatically initializes GenUI runtime dependencies
+(paths, prompt assets, examples, and optional `.env` loading).
+
 ## Usage
 
 ```dart
 import 'package:superdeck_genui/superdeck_genui.dart';
+
+// Optional (recommended for custom/manual integration)
+await initializeGenUi();
 
 // Add routes to your GoRouter
 final router = GoRouter(
   routes: [...genUiRoutes()],
 );
 
+// Optional: override default route screens (for custom host integration)
+final customRouter = GoRouter(
+  routes: [
+    ...genUiRoutes(
+      presentationBuilder: (context, state) {
+        return PresentationDeckHost(
+          deckAppBuilder: (options) => MyPresentationApp(options: options),
+        );
+      },
+    ),
+  ],
+);
+
 // Or use individual screens directly
-const ChatScreen();
-const CreatingPresentationScreen();
-const PresentationDeckHost();
+const GenUiBootstrapScope(child: ChatScreen());
+const GenUiBootstrapScope(child: CreatingPresentationScreen());
+const GenUiBootstrapScope(child: PresentationDeckHost());
 ```
 
 ## Related packages

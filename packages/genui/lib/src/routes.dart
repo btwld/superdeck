@@ -1,8 +1,10 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'chat/view/chat_screen.dart';
 import 'presentation/view/creating_presentation_screen.dart';
 import 'presentation/view/presentation_deck_host.dart';
+import 'bootstrap/genui_bootstrap.dart';
 import 'utils/deck_style_service.dart';
 
 void _applyStyleFromExtra(Object? extra) {
@@ -31,21 +33,40 @@ abstract final class GenUiRoutes {
 ///   ],
 /// );
 /// ```
-List<RouteBase> genUiRoutes() => [
+///
+/// Optional builders let hosts override the default screens while preserving
+/// GenUI bootstrap initialization.
+List<RouteBase> genUiRoutes({
+  Widget Function(BuildContext context, GoRouterState state)? chatBuilder,
+  Widget Function(BuildContext context, GoRouterState state)? creatingBuilder,
+  Widget Function(BuildContext context, GoRouterState state)?
+  presentationBuilder,
+}) => [
   GoRoute(
     path: GenUiRoutes.chat,
-    builder: (context, state) => const ChatScreen(),
+    builder: (context, state) {
+      final child = chatBuilder?.call(context, state) ?? const ChatScreen();
+      return GenUiBootstrapScope(child: child);
+    },
   ),
   GoRoute(
     path: GenUiRoutes.presentationCreating,
-    builder: (context, state) => const CreatingPresentationScreen(),
+    builder: (context, state) {
+      final child =
+          creatingBuilder?.call(context, state) ??
+          const CreatingPresentationScreen();
+      return GenUiBootstrapScope(child: child);
+    },
   ),
   GoRoute(
     path: GenUiRoutes.presentation,
     builder: (context, state) {
       _applyStyleFromExtra(state.extra);
 
-      return const PresentationDeckHost();
+      final child =
+          presentationBuilder?.call(context, state) ??
+          const PresentationDeckHost();
+      return GenUiBootstrapScope(child: child);
     },
   ),
 ];
