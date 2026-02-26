@@ -249,7 +249,7 @@ final summaryCard = CatalogItem(
 
             // Navigate immediately to show loading
             if (buildContext.mounted) {
-              buildContext.go(Routes.presentationCreating);
+              buildContext.go(GenUiRoutes.presentationCreating);
             }
           },
         );

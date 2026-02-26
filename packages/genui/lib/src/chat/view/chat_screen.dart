@@ -9,6 +9,7 @@ import './widgets/chat_input.dart';
 import './widgets/chat_scaffold.dart';
 import './widgets/empty_state.dart';
 import './widgets/model_select.dart';
+import '../chat_message.dart';
 import '../chat_viewmodel.dart';
 import '../../viewmodel_scope.dart';
 import '../../routes.dart';
@@ -156,14 +157,14 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
               callback: (context, onProgress) =>
                   viewModel.regenerateFromLastPrompt(onProgress),
             );
-            context.go(Routes.presentationCreating);
+            context.go(GenUiRoutes.presentationCreating);
           },
         ),
         SdIconButton(
           icon: Icons.slideshow,
           semanticLabel: 'View presentation',
           onPressed: () {
-            context.go(Routes.presentation);
+            context.go(GenUiRoutes.presentation);
           },
         ),
         Watch((context) {

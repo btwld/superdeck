@@ -21,9 +21,6 @@ abstract final class GenUiRoutes {
   static const presentationCreating = '/presentation/creating';
 }
 
-/// Keep the old name as an alias for backward compatibility during migration.
-typedef Routes = GenUiRoutes;
-
 /// Returns the list of GoRoutes for the GenUI wizard.
 ///
 /// Consumers integrate these into their own GoRouter configuration:

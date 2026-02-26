@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
+import '../../chat_message.dart';
 import '../../chat_viewmodel.dart';
 import './typing_indicator.dart';
 import '../../../viewmodel_scope.dart';

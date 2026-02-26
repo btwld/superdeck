@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genui/genui.dart';
 
+import 'package:superdeck_genui/src/chat/chat_message.dart';
 import 'package:superdeck_genui/src/chat/chat_viewmodel.dart';
 import 'package:superdeck_genui/src/chat/view/widgets/model_select.dart';
 import 'package:superdeck_genui/src/ai/prompts/prompt_registry.dart';

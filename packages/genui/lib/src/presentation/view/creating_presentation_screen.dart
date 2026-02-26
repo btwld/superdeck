@@ -136,7 +136,7 @@ class _CreatingPresentationScreenState
               if (mounted) {
                 final style = viewModel.result.value?.style;
                 DeckStyleService.setStyle(style);
-                context.go(Routes.presentation, extra: {'style': style});
+                context.go(GenUiRoutes.presentation, extra: {'style': style});
               }
             });
           }
@@ -157,7 +157,7 @@ class _CreatingPresentationScreenState
             },
             onCancel: () {
               viewModel.reset();
-              context.go(Routes.chat);
+              context.go(GenUiRoutes.chat);
             },
           );
 
@@ -171,7 +171,7 @@ class _CreatingPresentationScreenState
             _navigated = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                context.go(Routes.chat);
+                context.go(GenUiRoutes.chat);
               }
             });
           }

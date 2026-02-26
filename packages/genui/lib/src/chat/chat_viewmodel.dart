@@ -20,9 +20,6 @@ import '../constants/paths.dart';
 import '../viewmodel_scope.dart';
 import '../debug_logger.dart';
 
-// Re-export message types for consumers of ChatViewModel
-export './chat_message.dart';
-
 /// Builder for creating GenUI conversations.
 ///
 /// Allows tests to inject a mock conversation without extra abstractions.
