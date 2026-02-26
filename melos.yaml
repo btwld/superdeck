@@ -67,19 +67,19 @@ scripts:
       dependsOn: "dart_code_metrics_presets"
 
   build_runner:watch:
-    run: fvm flutter pub run melos exec --order-dependents -- fvm dart run build_runner watch --delete-conflicting-outputs
+    run: fvm flutter pub run melos exec --order-dependents -- dart run build_runner watch --delete-conflicting-outputs
     description: Generate code for all packages
     packageFilters:
       dependsOn: "build_runner"
 
   build_runner:build:
-    run: fvm flutter pub run melos run build_runner:clean && fvm flutter pub run melos exec --order-dependents -- fvm dart run build_runner build --delete-conflicting-outputs
+    run: fvm flutter pub run melos run build_runner:clean && fvm flutter pub run melos exec --order-dependents -- dart run build_runner build --delete-conflicting-outputs
     description: Generate code for all packages
     packageFilters:
       dependsOn: "build_runner"
 
   build_runner:clean:
-    run: fvm flutter pub run melos exec --order-dependents -- fvm dart run build_runner clean
+    run: fvm flutter pub run melos exec --order-dependents -- dart run build_runner clean
     description: Clean generated code for all packages
     packageFilters:
       dependsOn: "build_runner"
