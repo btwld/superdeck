@@ -1,5 +1,6 @@
-import 'dart:developer' as developer;
 import 'dart:ui';
+
+import '../debug_logger.dart';
 
 /// Result of parsing a hex color string.
 typedef ColorParseResult = ({Color color, bool isValid});
@@ -32,7 +33,7 @@ ColorParseResult parseHexColor(String hex) {
     }
     return (color: Color(int.parse(hex, radix: 16)), isValid: true);
   } catch (e) {
-    developer.log('Invalid hex color: $hex', name: 'ColorUtils', error: e);
+    debugLog.log('ColorUtils', 'Invalid hex color: $hex ($e)');
     return (color: _fallbackGray, isValid: false);
   }
 }

@@ -21,11 +21,13 @@ String? _extractFirstContent(Map<String, dynamic> slide) {
   if (sections == null || sections.isEmpty) return null;
 
   for (final section in sections) {
-    final blocks = (section as Map?)?['blocks'] as List?;
+    if (section is! Map) continue;
+    final blocks = section['blocks'] as List?;
     if (blocks == null) continue;
 
     for (final block in blocks) {
-      final content = (block as Map?)?['content'] as String?;
+      if (block is! Map) continue;
+      final content = block['content'] as String?;
       if (content != null && content.isNotEmpty) {
         return content;
       }

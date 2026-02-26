@@ -24,8 +24,10 @@ class ViewModelScope<T> extends StatefulWidget {
     final element = context
         .getElementForInheritedWidgetOfExactType<_ViewModelInherited<T>>();
     final widget = element?.widget as _ViewModelInherited<T>?;
-    assert(widget != null, 'No ViewModelScope<$T> found in context');
-    return widget!.viewModel;
+    if (widget == null) {
+      throw FlutterError('No ViewModelScope<$T> found in context');
+    }
+    return widget.viewModel;
   }
 
   @override

@@ -67,9 +67,18 @@ class DeckDocumentStore {
 
     DeckStyleType? style;
     if (map.containsKey('style') && map['style'] != null) {
-      style = DeckStyleType.safeParse(map['style']).getOrNull();
+      final rawStyle = map['style'];
+      style = DeckStyleType.safeParse(rawStyle).getOrNull();
       if (style == null) {
-        throw DeckToolException.deckSchemaInvalid('Invalid "style" object');
+        String styleDetails;
+        try {
+          styleDetails = jsonEncode(rawStyle);
+        } catch (_) {
+          styleDetails = rawStyle.toString();
+        }
+        throw DeckToolException.deckSchemaInvalid(
+          'Invalid "style" object: failed to parse value $styleDetails',
+        );
       }
     }
 

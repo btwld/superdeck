@@ -88,8 +88,8 @@ abstract final class GenUiBootstrap {
 
     try {
       await dotenv.load(fileName: dotenvFileName);
-    } catch (_) {
-      // Dotenv is optional; missing files should not block startup.
+    } catch (e) {
+      debugLog.log('BOOTSTRAP', 'Dotenv loading skipped: $e');
     }
   }
 

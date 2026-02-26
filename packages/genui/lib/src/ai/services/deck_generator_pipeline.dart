@@ -128,74 +128,78 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
 
     // Process in batches of 3 to avoid rate limits
     const batchSize = 3;
-    for (var i = 0; i < requirements.length; i += batchSize) {
-      final batch = requirements.skip(i).take(batchSize).toList();
-      debugLog.log(
-        'IMG',
-        'Processing batch ${i ~/ batchSize + 1}: '
-            '${batch.map((r) => r.slideKey).join(', ')}',
-      );
+    try {
+      for (var i = 0; i < requirements.length; i += batchSize) {
+        final batch = requirements.skip(i).take(batchSize).toList();
+        debugLog.log(
+          'IMG',
+          'Processing batch ${i ~/ batchSize + 1}: '
+              '${batch.map((r) => r.slideKey).join(', ')}',
+        );
 
-      await Future.wait(
-        batch.map((req) async {
-          final safeKey = _fileSafeKey(req.slideKey, requirements.indexOf(req));
-          final filename = 'slide-$safeKey-illustration.png';
-          final outputPath = p.join(Paths.superdeckAssetsPath, filename);
+        await Future.wait(
+          batch.map((req) async {
+            final safeKey =
+                _fileSafeKey(req.slideKey, requirements.indexOf(req));
+            final filename = 'slide-$safeKey-illustration.png';
+            final outputPath = p.join(Paths.superdeckAssetsPath, filename);
 
-          try {
-            // Build prompt with style (if present) and always wrap with
-            // ImageGeneratorService.buildPrompt for presentation constraints
-            final basePrompt = style != null
-                ? style.buildPrompt(req.subject)
-                : req.subject;
-            final prompt = ImageGeneratorService.buildPrompt(
-              basePrompt,
-              backgroundColor: backgroundColor,
-            );
-            debugLog.log(
-              'IMG',
-              '[${req.slideKey}] Generating with prompt '
-                  '(${prompt.length} chars):\n$prompt',
-            );
-
-            final imgStart = DateTime.now();
-            final result = await imageService.generateImage(prompt);
-            final imgMs = DateTime.now().difference(imgStart).inMilliseconds;
-
-            if (result.success && result.bytes != null) {
-              final bytes = result.bytes as Uint8List;
-              await File(outputPath).writeAsBytes(bytes, flush: true);
-              successes[req.slideKey] = '.superdeck/assets/$filename';
-              completed++;
-              debugLog.log(
-                'IMG',
-                '[${req.slideKey}] OK in ${imgMs}ms - '
-                    '${bytes.length} bytes → $outputPath',
+            try {
+              // Build prompt with style (if present) and always wrap with
+              // ImageGeneratorService.buildPrompt for presentation constraints
+              final basePrompt = style != null
+                  ? style.buildPrompt(req.subject)
+                  : req.subject;
+              final prompt = ImageGeneratorService.buildPrompt(
+                basePrompt,
+                backgroundColor: backgroundColor,
               );
-            } else {
-              failures[req.slideKey] = result.error ?? 'Unknown error';
-              failed++;
               debugLog.log(
                 'IMG',
-                '[${req.slideKey}] FAILED in ${imgMs}ms: ${result.error}',
+                '[${req.slideKey}] Generating with prompt '
+                    '(${prompt.length} chars):\n$prompt',
+              );
+
+              final imgStart = DateTime.now();
+              final result = await imageService.generateImage(prompt);
+              final imgMs =
+                  DateTime.now().difference(imgStart).inMilliseconds;
+
+              if (result.success && result.bytes != null) {
+                final bytes = result.bytes as Uint8List;
+                await File(outputPath).writeAsBytes(bytes, flush: true);
+                successes[req.slideKey] = '.superdeck/assets/$filename';
+                completed++;
+                debugLog.log(
+                  'IMG',
+                  '[${req.slideKey}] OK in ${imgMs}ms - '
+                      '${bytes.length} bytes → $outputPath',
+                );
+              } else {
+                failures[req.slideKey] = result.error ?? 'Unknown error';
+                failed++;
+                debugLog.log(
+                  'IMG',
+                  '[${req.slideKey}] FAILED in ${imgMs}ms: ${result.error}',
+                );
+              }
+            } catch (e, stack) {
+              failures[req.slideKey] = e.toString();
+              failed++;
+              debugLog.error(
+                'IMG',
+                '[${req.slideKey}] EXCEPTION: ${e.runtimeType}',
+                stack,
               );
             }
-          } catch (e, stack) {
-            failures[req.slideKey] = e.toString();
-            failed++;
-            debugLog.error(
-              'IMG',
-              '[${req.slideKey}] EXCEPTION: ${e.runtimeType}',
-              stack,
-            );
-          }
 
-          onProgress?.call(completed, failed);
-        }),
-      );
+            onProgress?.call(completed, failed);
+          }),
+        );
+      }
+    } finally {
+      imageService.dispose();
     }
-
-    imageService.dispose();
     return _ImageGenerationResults(successes: successes, failures: failures);
   }
 
@@ -314,9 +318,8 @@ $outlineContext
       buffer.writeln('- **${slide['key']}**: ${slide['title']}');
       buffer.writeln('  Layout: ${slide['layoutHint']}');
       buffer.writeln('  Purpose: ${slide['purpose']}');
-      if (slide['imageRequirement'] != null) {
-        final subject = (slide['imageRequirement'] as Map)['subject'];
-        buffer.writeln('  Image: $subject');
+      if (slide['imageRequirement'] case Map imageReq) {
+        buffer.writeln('  Image: ${imageReq['subject']}');
       }
       buffer.writeln('');
     }
@@ -354,7 +357,15 @@ $outlineContext
     final jsonText = textParts.join('');
 
     try {
-      return jsonDecode(jsonText) as Map<String, dynamic>;
+      final decoded = jsonDecode(jsonText);
+      if (decoded is! Map<String, dynamic>) {
+        debugLog.error(
+          'DECK_GEN',
+          'Expected JSON map for $context, got ${decoded.runtimeType}',
+        );
+        return null;
+      }
+      return decoded;
     } catch (e) {
       debugLog.error('DECK_GEN', 'JSON parse failed for $context: $e');
       return null;

@@ -72,13 +72,11 @@ class EmptyState extends StatelessWidget {
                       'Sales report Q4',
                       'Team onboarding',
                     ])
-                      GestureDetector(
+                      InkWell(
                         onTap: () => onSuggestionTap?.call(suggestion),
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: suggestionChip(
-                            child: suggestionText('"$suggestion"'),
-                          ),
+                        borderRadius: BorderRadius.circular(12),
+                        child: suggestionChip(
+                          child: suggestionText('"$suggestion"'),
                         ),
                       ),
                   ],

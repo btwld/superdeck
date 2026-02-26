@@ -22,7 +22,7 @@ String buildPromptFromWizardContext(WizardContext context) {
 /// Maximum length for user-provided text fields.
 const int _maxFieldLength = 500;
 
-/// Sanitizes user input to prevent prompt injection.
+/// Sanitizes user input to reduce prompt injection risk.
 ///
 /// - Truncates to max length
 /// - Removes control characters (except newlines/tabs)
