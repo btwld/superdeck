@@ -64,51 +64,43 @@
             "type": "string"
           },
           "options": {
-            "anyOf": [
-              {
-                "additionalProperties": {},
-                "description": "Optional configuration options for this slide such as title and style.",
-                "properties": {
-                  "style": {
-                    "anyOf": [
-                      {
-                        "description": "The style variant to apply to this slide.",
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+            "additionalProperties": {},
+            "properties": {
+              "style": {
+                "anyOf": [
+                  {
+                    "description": "The style variant to apply to this slide.",
+                    "type": "string"
                   },
-                  "template": {
-                    "anyOf": [
-                      {
-                        "description": "The slide template to use for chrome and style isolation. `template: 'none'` is a reserved opt-out value used to disable template application for the slide when a deck-level default template is configured.",
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "title": {
-                    "anyOf": [
-                      {
-                        "description": "The title of the slide, if any.",
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                  {
+                    "type": "null"
                   }
-                },
-                "type": "object"
+                ]
               },
-              {
-                "type": "null"
+              "template": {
+                "anyOf": [
+                  {
+                    "description": "The slide template to use for chrome and style isolation. `template: 'none'` is a reserved opt-out value used to disable template application for the slide when a deck-level default template is configured.",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "title": {
+                "anyOf": [
+                  {
+                    "description": "The title of the slide, if any.",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
-            ]
+            },
+            "type": "object"
           },
           "sections": {
             "items": {
@@ -116,15 +108,15 @@
               "properties": {
                 "align": {
                   "enum": [
-                    "top_left",
-                    "top_center",
-                    "top_right",
-                    "center_left",
+                    "topLeft",
+                    "topCenter",
+                    "topRight",
+                    "centerLeft",
                     "center",
-                    "center_right",
-                    "bottom_left",
-                    "bottom_center",
-                    "bottom_right"
+                    "centerRight",
+                    "bottomLeft",
+                    "bottomCenter",
+                    "bottomRight"
                   ],
                   "type": "string"
                 },
@@ -136,15 +128,15 @@
                         "properties": {
                           "align": {
                             "enum": [
-                              "top_left",
-                              "top_center",
-                              "top_right",
-                              "center_left",
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
                               "center",
-                              "center_right",
-                              "bottom_left",
-                              "bottom_center",
-                              "bottom_right"
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
                             ],
                             "type": "string"
                           },
@@ -172,15 +164,15 @@
                         "properties": {
                           "align": {
                             "enum": [
-                              "top_left",
-                              "top_center",
-                              "top_right",
-                              "center_left",
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
                               "center",
-                              "center_right",
-                              "bottom_left",
-                              "bottom_center",
-                              "bottom_right"
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
                             ],
                             "type": "string"
                           },
@@ -208,15 +200,15 @@
                         "properties": {
                           "align": {
                             "enum": [
-                              "top_left",
-                              "top_center",
-                              "top_right",
-                              "center_left",
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
                               "center",
-                              "center_right",
-                              "bottom_left",
-                              "bottom_center",
-                              "bottom_right"
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
                             ],
                             "type": "string"
                           },
