@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "dart": {
-      "command": "dart",
-      "args": ["mcp-server", "--log-file", "/tmp/dart-mcp.log"]
-    }
-  }
-}
