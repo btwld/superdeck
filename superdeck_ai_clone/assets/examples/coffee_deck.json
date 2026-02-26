@@ -1,0 +1,334 @@
+{
+  "slides": [
+    {
+      "key": "s3Uis7TW",
+      "sections": [
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "content": "# Introduction to Coffee\n### A Professional Foundation for Aspiring Baristas"
+            }
+          ],
+          "flex": 2
+        }
+      ],
+      "options": {
+        "title": "Title Slide"
+      }
+    },
+    {
+      "key": "doQ9LlAT",
+      "sections": [
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "## What We Will Cover"
+            }
+          ],
+          "flex": 1
+        },
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "- **The Legend of Coffee:** Tracing its historical roots.\n- **From Bean to Cup:** Understanding varieties and processing.\n- **The Art of Roasting:** How flavor is developed.\n- **The Science of Brewing:** Principles of extraction."
+            }
+          ],
+          "flex": 3
+        }
+      ],
+      "options": {
+        "title": "Agenda"
+      }
+    },
+    {
+      "key": "0ED5cXqR",
+      "sections": [
+        {
+          "type": "section",
+          "flex": 2,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 2,
+              "align": "centerLeft",
+              "content": "### A Brief History\n\nFrom Ethiopian discovery to global phenomenon"
+            },
+            {
+              "type": "block",
+              "flex": 3,
+              "content": "- **9th Century:** Discovered in Ethiopian forests\n- **15th Century:** Cultivated on Arabian Peninsula\n- **17th Century:** Coffeehouses spread across Europe\n- **18th Century:** Americas become major producers"
+            }
+          ]
+        }
+      ],
+      "options": {
+        "title": "History of Coffee"
+      }
+    },
+    {
+      "key": "F0h7UorN",
+      "sections": [
+        {
+          "type": "section",
+          "flex": 2,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "content": "## \"Good communication is as stimulating as black coffee, and just as hard to sleep after.\"\n\n##### — Anne Morrow Lindbergh"
+            }
+          ]
+        }
+      ],
+      "options": {
+        "title": "Inspirational Quote"
+      }
+    },
+    {
+      "key": "AwbQbKjQ",
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "blocks": [
+            {
+              "type": "block",
+              "content": "## Arabica vs. Robusta"
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 3,
+          "blocks": [
+            {
+              "type": "block",
+              "content": "| Attribute | Arabica | Robusta |\n|-----------|---------|----------|\n| **Flavor** | Complex, sweet, high acidity | Bold, strong, low acidity |\n| **Caffeine** | ~1.5% by weight | ~2.5% or more |\n| **Cultivation** | High altitudes, specific climates | Resilient, hot climates |\n| **Cost** | Premium pricing | Budget-friendly |"
+            }
+          ]
+        }
+      ],
+      "options": {
+        "title": "Bean Varieties Comparison"
+      }
+    },
+    {
+      "key": "BE9T7PHM",
+      "sections": [
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "## From Cherry to Green Bean"
+            }
+          ],
+          "flex": 1
+        },
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "Processing methods profoundly impact the final taste profile.\n\n- **Washed Process:** Removes all fruit before drying. Results in clean, bright, and acidic flavors.\n- **Natural Process:** Dries the entire cherry. Creates fruity, sweet, and heavy-bodied coffees.\n- **Honey Process:** Removes skin but leaves some mucilage. A balance between washed and natural methods."
+            }
+          ],
+          "flex": 3
+        }
+      ],
+      "options": {
+        "title": "Coffee Processing"
+      }
+    },
+    {
+      "key": "Nd1jUNeu",
+      "sections": [
+        {
+          "type": "section",
+          "flex": 2,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 2,
+              "align": "centerLeft",
+              "content": "### The Art of Roasting\n\nTransforming potential into flavor"
+            },
+            {
+              "type": "block",
+              "flex": 3,
+              "content": "- Roasting is a chemical process that brings out aroma and flavor\n- **Maillard Reaction:** Creates browning and savory notes\n- **Caramelization:** Develops sweetness and body\n- **First Crack:** Signals start of light roast\n- **Second Crack:** Indicates darker roast"
+            }
+          ]
+        }
+      ],
+      "options": {
+        "title": "The Art of Roasting"
+      }
+    },
+    {
+      "key": "4UQI3blB",
+      "sections": [
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "## Understanding Roast Profiles"
+            }
+          ],
+          "flex": 1
+        },
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "#### Light Roast\n- Bright acidity\n- Floral & fruity notes\n- Highlights origin characteristics\n- Lighter body",
+              "flex": 1
+            },
+            {
+              "type": "block",
+              "content": "#### Medium Roast\n- Balanced flavor\n- Sweet, caramel notes\n- Rounded acidity\n- Fuller body",
+              "flex": 1
+            },
+            {
+              "type": "block",
+              "content": "#### Dark Roast\n- Low acidity\n- Bold, roasty flavors\n- bittersweet, chocolate notes\n- Heavy body",
+              "flex": 1
+            }
+          ],
+          "align": "topLeft",
+          "flex": 3
+        }
+      ],
+      "options": {
+        "title": "Roast Profiles"
+      }
+    },
+    {
+      "key": "YvfaPx4Z",
+      "sections": [
+        {
+          "type": "section",
+          "flex": 2,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 2,
+              "align": "centerLeft",
+              "content": "### Four Pillars of Brewing\n\nMaster these for perfect extraction"
+            },
+            {
+              "type": "block",
+              "flex": 3,
+              "content": "- **Grind Size:** Fine for espresso, coarse for French press\n- **Water Temperature:** 195-205°F (90-96°C)\n- **Brew Ratio:** Start with 1:16 coffee to water\n- **Contact Time:** Varies by brewing method"
+            }
+          ]
+        }
+      ],
+      "options": {
+        "title": "Brewing Principles"
+      }
+    },
+    {
+      "key": "0UZxnk2G",
+      "sections": [
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "## Exploring Brewing Methods"
+            }
+          ],
+          "flex": 1
+        },
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "#### Immersion\nGrounds are fully saturated in water for the entire brew time.\n\n- French Press\n- AeroPress\n- Clever Dripper",
+              "flex": 1
+            },
+            {
+              "type": "block",
+              "content": "#### Infusion / Drip\nWater passes through a bed of coffee grounds.\n\n- Pour-Over (V60, Chemex)\n- Automatic Drip Machine\n- Espresso",
+              "flex": 1
+            }
+          ],
+          "flex": 3
+        }
+      ],
+      "options": {
+        "title": "Brewing Methods"
+      }
+    },
+    {
+      "key": "H9ausGBa",
+      "sections": [
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "## Key Takeaways for the Barista"
+            }
+          ],
+          "flex": 1
+        },
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "content": "- **Context is Key:** History and origin shape the coffee in the cup.\n- **Quality is Paramount:** Great coffee starts with great green beans.\n- **Roasting Creates Flavor:** The roaster develops the bean's potential.\n- **Brewing Unlocks Flavor:** Your skill as a barista brings that potential to life."
+            }
+          ],
+          "flex": 3
+        }
+      ],
+      "options": {
+        "title": "Summary"
+      }
+    },
+    {
+      "key": "fwg1xEdo",
+      "sections": [
+        {
+          "type": "section",
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "content": "# Thank You\n## Continue Your Coffee Journey"
+            }
+          ],
+          "flex": 2
+        }
+      ],
+      "options": {
+        "title": "Closing Slide"
+      }
+    }
+  ],
+  "style": {
+    "name": "Artisan Brewing",
+    "colors": {
+      "heading": "#4B2C20",
+      "body": "#F5F5DC",
+      "background": "#8B4513"
+    },
+    "fonts": {
+      "headline": "playfairDisplay",
+      "body": "sourceSerif4"
+    }
+  }
+}

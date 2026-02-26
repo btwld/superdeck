@@ -1,0 +1,223 @@
+import 'dart:typed_data';
+
+import 'package:signals/signals_flutter.dart';
+import 'package:superdeck_ai/core/ai/wizard_context.dart';
+import 'package:superdeck_ai/core/ai/services/deck_generator_service.dart';
+import 'package:superdeck_ai/core/ai/services/generation_progress.dart';
+import 'package:superdeck_ai/core/viewmodel_scope.dart';
+import 'package:superdeck_ai/core/debug_logger.dart';
+
+/// The status of presentation generation.
+///
+/// - [idle]: No generation in progress
+/// - [generating]: Actively generating presentation
+/// - [preview]: Generation complete, showing thumbnail previews
+/// - [success]: Preview accepted, ready to view presentation
+/// - [error]: Generation failed with error
+enum GenerationStatus { idle, generating, preview, success, error }
+
+/// Callback for presentation generation with progress support.
+typedef GenerationCallback =
+    Future<DeckGenerationResult> Function(
+      WizardContext context,
+      GenerationProgressCallback? onProgress,
+    );
+
+/// ViewModel managing the state of presentation generation.
+///
+/// This follows the same pattern as [ChatViewModel], using Signals for
+/// reactive state management. It survives route changes and handles
+/// edge cases like refresh and deep-linking.
+class PresentationViewModel implements Disposable {
+  final _status = Signal<GenerationStatus>(GenerationStatus.idle);
+  final _result = Signal<DeckGenerationResult?>(null);
+  final _error = Signal<String?>(null);
+  final _phase = Signal<GenerationPhase>(GenerationPhase.idle);
+  final _imageProgress = Signal<ImageGenerationProgress?>(null);
+  final _thumbnailPreviews = Signal<List<(int, Uint8List)>>(const []);
+
+  /// Mutable backing list — signal publishes an unmodifiable view on each add.
+  final _thumbnailList = <(int, Uint8List)>[];
+
+  /// Epoch counter for thumbnail generation cancellation.
+  ///
+  /// Incremented when a new generation starts or the ViewModel is reset,
+  /// causing in-flight thumbnail captures from a previous epoch to be ignored.
+  int _thumbnailEpoch = 0;
+
+  // Store context for retry
+  WizardContext? _lastContext;
+  GenerationCallback? _callback;
+
+  /// Current generation status.
+  late final Computed<GenerationStatus> status = computed(() => _status.value);
+
+  /// The result of the last generation attempt.
+  late final Computed<DeckGenerationResult?> result = computed(
+    () => _result.value,
+  );
+
+  /// Error message if generation failed.
+  late final Computed<String?> error = computed(() => _error.value);
+
+  /// Current generation phase for progress display.
+  late final Computed<GenerationPhase> phase = computed(() => _phase.value);
+
+  /// Image generation progress (when in generatingImages phase).
+  late final Computed<ImageGenerationProgress?> imageProgress = computed(
+    () => _imageProgress.value,
+  );
+
+  /// Thumbnail preview images generated after deck creation.
+  late final Computed<List<(int, Uint8List)>> thumbnailPreviews = computed(
+    () => _thumbnailPreviews.value,
+  );
+
+  /// Current thumbnail generation epoch.
+  ///
+  /// Used by the UI layer to detect cancellation: if the epoch has changed
+  /// since thumbnail generation started, in-flight results should be discarded.
+  int get thumbnailEpoch => _thumbnailEpoch;
+
+  /// User-friendly progress message based on current phase.
+  late final Computed<String> progressMessage = computed(() {
+    final p = _imageProgress.value;
+    return switch (_phase.value) {
+      GenerationPhase.idle => '',
+      GenerationPhase.generatingOutline => 'Planning presentation structure...',
+      GenerationPhase.generatingImages =>
+        p != null && p.total > 0
+            ? 'Generating illustrations (${p.completed}/${p.total})...'
+            : 'Generating illustrations...',
+      GenerationPhase.generatingFinalDeck => 'Building your presentation...',
+      GenerationPhase.finalizing => 'Finalizing presentation...',
+      GenerationPhase.generatingThumbnails => 'Generating slide previews...',
+    };
+  });
+
+  /// Starts presentation generation.
+  ///
+  /// Clears previous state and sets status to [GenerationStatus.generating],
+  /// then transitions to [GenerationStatus.preview] or [GenerationStatus.error]
+  /// based on the result. The preview state allows thumbnail generation before
+  /// navigating to the full presentation.
+  ///
+  /// The [callback] receives progress updates via [GenerationProgressCallback].
+  Future<void> generate({
+    required WizardContext context,
+    required GenerationCallback callback,
+  }) async {
+    _lastContext = context;
+    _callback = callback;
+    _result.value = null;
+    _error.value = null;
+    _phase.value = GenerationPhase.idle;
+    _imageProgress.value = null;
+    _clearThumbnails();
+    _status.value = GenerationStatus.generating;
+
+    try {
+      final result = await callback(context, _onProgress);
+      _result.value = result;
+      _imageProgress.value = null;
+      if (result.success) {
+        // Enter preview state - thumbnails will be generated by the UI layer
+        _phase.value = GenerationPhase.generatingThumbnails;
+        _status.value = GenerationStatus.preview;
+      } else {
+        _phase.value = GenerationPhase.idle;
+        _status.value = GenerationStatus.error;
+        _error.value = result.error;
+      }
+    } catch (e, stack) {
+      debugLog.error('PRESENTATION', e, stack);
+      _phase.value = GenerationPhase.idle;
+      _imageProgress.value = null;
+      _status.value = GenerationStatus.error;
+      _error.value = e.toString();
+    }
+  }
+
+  /// Handles progress updates from DeckGeneratorService.
+  void _onProgress(
+    GenerationPhase phase,
+    ImageGenerationProgress? imageProgress,
+  ) {
+    _phase.value = phase;
+    _imageProgress.value = imageProgress;
+  }
+
+  /// Adds a thumbnail preview image if the [epoch] still matches.
+  ///
+  /// Called by the UI layer as each slide thumbnail is captured.
+  /// Thumbnails from a cancelled (stale) epoch are silently ignored,
+  /// preventing race conditions when a new generation starts while
+  /// thumbnails from a previous generation are still in-flight.
+  void addThumbnailPreview(
+    int slideIndex,
+    Uint8List imageBytes, {
+    required int epoch,
+  }) {
+    if (epoch != _thumbnailEpoch) return;
+    _thumbnailList.add((slideIndex, imageBytes));
+    _thumbnailPreviews.value = List.unmodifiable(_thumbnailList);
+  }
+
+  /// Marks thumbnail generation as complete for the given [epoch].
+  ///
+  /// Ignored if the epoch is stale (a new generation has started).
+  void finishThumbnailGeneration({required int epoch}) {
+    if (epoch != _thumbnailEpoch) return;
+    _phase.value = GenerationPhase.idle;
+    if (_thumbnailList.isEmpty) {
+      // All captures failed - skip preview and proceed automatically.
+      _status.value = GenerationStatus.success;
+    }
+  }
+
+  /// Proceeds from preview to the full presentation view.
+  void proceedToPresentation() {
+    _phase.value = GenerationPhase.idle;
+    _status.value = GenerationStatus.success;
+  }
+
+  /// Retries the last generation attempt.
+  ///
+  /// Does nothing if no previous generation context exists.
+  Future<void> retry() async {
+    if (_lastContext != null && _callback != null) {
+      await generate(context: _lastContext!, callback: _callback!);
+    }
+  }
+
+  /// Resets the ViewModel to idle state.
+  ///
+  /// Use this for cancellation (returning to idle without generating).
+  /// Not needed before [generate] - it clears state automatically.
+  void reset() {
+    _status.value = GenerationStatus.idle;
+    _result.value = null;
+    _error.value = null;
+    _phase.value = GenerationPhase.idle;
+    _imageProgress.value = null;
+    _clearThumbnails();
+  }
+
+  /// Clears thumbnails and increments epoch to cancel in-flight captures.
+  void _clearThumbnails() {
+    _thumbnailEpoch++;
+    _thumbnailList.clear();
+    _thumbnailPreviews.value = const [];
+  }
+
+  /// Disposes all Signals owned by this ViewModel.
+  @override
+  void dispose() {
+    _status.dispose();
+    _result.dispose();
+    _error.dispose();
+    _phase.dispose();
+    _imageProgress.dispose();
+    _thumbnailPreviews.dispose();
+  }
+}

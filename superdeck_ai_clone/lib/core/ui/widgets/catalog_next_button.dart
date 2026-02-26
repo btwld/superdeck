@@ -1,0 +1,23 @@
+import 'package:flutter/material.dart';
+import 'package:superdeck_ai/core/ui/ui.dart';
+
+class CatalogNextButton extends StatelessWidget {
+  const CatalogNextButton({super.key, required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: SdIconButton(
+          icon: Icons.arrow_forward_rounded,
+          onPressed: onPressed,
+          semanticLabel: 'Next step',
+        ),
+      ),
+    );
+  }
+}

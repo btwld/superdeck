@@ -1,0 +1,98 @@
+# See https://www.dartlang.org/guides/libraries/private-files
+
+# Files and directories created by pub
+.dart_tool/
+.packages
+build/
+
+# Directory created by dartdoc
+doc/api/
+
+# dotenv environment variables file
+.env*
+
+# Avoid committing generated Javascript files
+*.dart.js
+*.info.json
+*.js
+*.js_
+*.js.deps
+*.js.map
+
+# Flutter plugins
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Flutter/Dart/Pub related
+**/doc/api/
+.fvm/
+.pub-cache/
+.pub/
+coverage/
+lib/generated_plugin_registrant.dart
+
+# Android related
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/key.properties
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+
+# iOS/XCode related
+**/macos/**/*.mode1v3
+**/macos/**/*.mode2v3
+**/macos/**/*.moved-aside
+**/macos/**/*.pbxuser
+**/macos/**/*.perspectivev3
+**/macos/**/*sync/
+**/macos/**/.sconsign.dblite
+**/macos/**/.tags*
+**/macos/**/.vagrant/
+**/macos/**/DerivedData/
+**/macos/**/Icon?
+**/macos/**/Pods/
+**/macos/**/.symlinks/
+**/macos/**/profile
+**/macos/**/xcuserdata
+**/macos/.generated/
+**/macos/Flutter/.last_build_id
+**/macos/Flutter/App.framework
+**/macos/Flutter/Flutter.framework
+**/macos/Flutter/Flutter.podspec
+**/macos/Flutter/Generated.xcconfig
+**/macos/Flutter/app.flx
+**/macos/Flutter/app.zip
+**/macos/Flutter/flutter_assets/
+**/macos/Flutter/flutter_export_environment.sh
+**/macos/ServiceDefinitions.json
+**/macos/Runner/GeneratedPluginRegistrant.*
+
+# Exceptions to above rules
+!**/macos/**/default.mode1v3
+!**/macos/**/default.mode2v3
+!**/macos/**/default.pbxuser
+!**/macos/**/default.perspectivev3
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# FVM (keep .fvmrc tracked for consistent Flutter versions)
+.local-chrome/
+
+# SuperDeck generated files
+.superdeck/assets/
+.superdeck/debug.log
+.superdeck/build_status.json
+.superdeck/superdeck.json
+.superdeck/superdeck_full.json
+.superdeck/last_prompt.txt
+.superdeck/last_generation.json
+.superdeck/generated_assets.json
+.superdeck/examples/
+
+# Generated presentation output
+slides.md
+
+# Debug logs
+debug_log.txt
