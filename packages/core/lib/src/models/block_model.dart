@@ -125,7 +125,7 @@ class SectionBlock extends Block {
           ?.map((e) => Block.fromMap(e as Map<String, Object?>))
           .toList(),
       align: map['align'] != null
-          ? ContentAlignment.fromJson(map['align'] as String)
+          ? ContentAlignment.fromJson(map['align']!)
           : null,
       flex: (map['flex'] as num?)?.toInt() ?? 1,
       scrollable: map['scrollable'] as bool? ?? false,
@@ -223,7 +223,7 @@ class ContentBlock extends Block {
       return ContentBlock(
         map['content'] as String?,
         align: map['align'] != null
-            ? ContentAlignment.fromJson(map['align'] as String)
+            ? ContentAlignment.fromJson(map['align']!)
             : null,
         flex: (map['flex'] as num?)?.toInt() ?? 1,
         scrollable: map['scrollable'] as bool? ?? false,
@@ -264,7 +264,11 @@ enum DartPadTheme {
 
   String toJson() => name;
 
-  static DartPadTheme fromJson(String value) {
+  static DartPadTheme fromJson(Object value) {
+    if (value is DartPadTheme) return value;
+    if (value is! String) {
+      throw ArgumentError('Invalid DartPadTheme: $value');
+    }
     final normalized = value.toLowerCase();
     return DartPadTheme.values.firstWhere(
       (e) => e.name.toLowerCase() == normalized,
@@ -286,7 +290,11 @@ enum ImageFit {
 
   String toJson() => name;
 
-  static ImageFit fromJson(String value) {
+  static ImageFit fromJson(Object value) {
+    if (value is ImageFit) return value;
+    if (value is! String) {
+      throw ArgumentError('Invalid ImageFit: $value');
+    }
     final normalized = value.toLowerCase();
     return ImageFit.values.firstWhere(
       (e) => e.name.toLowerCase() == normalized,
@@ -342,7 +350,7 @@ class WidgetBlock extends Block {
     // Extract known fields
     final name = map['name'] as String;
     final align = map['align'] != null
-        ? ContentAlignment.fromJson(map['align'] as String)
+        ? ContentAlignment.fromJson(map['align']!)
         : null;
     final flex = (map['flex'] as num?)?.toInt() ?? 1;
     final scrollable = map['scrollable'] as bool? ?? false;
@@ -409,7 +417,11 @@ enum ContentAlignment {
 
   String toJson() => name;
 
-  static ContentAlignment fromJson(String value) {
+  static ContentAlignment fromJson(Object value) {
+    if (value is ContentAlignment) return value;
+    if (value is! String) {
+      throw ArgumentError('Invalid ContentAlignment: $value');
+    }
     final normalized = value.toLowerCase();
     return ContentAlignment.values.firstWhere(
       (e) => e.name.toLowerCase() == normalized,
