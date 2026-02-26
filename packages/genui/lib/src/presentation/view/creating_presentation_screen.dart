@@ -63,9 +63,11 @@ class _CreatingPresentationScreenState
 
   void _startPhraseTimer() {
     _timer = Timer.periodic(const Duration(seconds: 3), (_) {
-      setState(() {
-        _currentPhraseIndex++;
-      });
+      if (mounted) {
+        setState(() {
+          _currentPhraseIndex++;
+        });
+      }
     });
   }
 

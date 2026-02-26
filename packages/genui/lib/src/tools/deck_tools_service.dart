@@ -307,7 +307,9 @@ class DeckToolsService {
   Future<T> _runSerializedMutation<T>(Future<T> Function() operation) {
     final completer = Completer<T>();
     _mutationQueue = _mutationQueue
-        .catchError((Object ignoredError, StackTrace ignoredStackTrace) {})
+        .catchError((Object error, StackTrace stackTrace) {
+          debugPrint('DeckToolsService: previous mutation failed: $error');
+        })
         .then((_) async {
           try {
             completer.complete(await operation());

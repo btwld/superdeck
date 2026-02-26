@@ -155,6 +155,7 @@ class ChatViewModel implements Disposable {
   }
 
   void _bindOnSubmit(A2uiMessageProcessor processor) {
+    _onSubmitSubscription?.cancel();
     _onSubmitSubscription = processor.onSubmit.listen((message) {
       final parsed = UserActionPayload.tryParse(message.text);
       if (parsed == null) {

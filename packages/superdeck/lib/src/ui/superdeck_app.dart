@@ -22,7 +22,13 @@ class SuperDeckApp extends StatelessWidget {
   }) async {
     await initializeDependencies();
     for (final plugin in plugins) {
-      await plugin.initialize();
+      try {
+        await plugin.initialize();
+      } catch (e, stack) {
+        debugPrint(
+          'SuperDeckPlugin "${plugin.name}" failed to initialize: $e\n$stack',
+        );
+      }
     }
   }
 
