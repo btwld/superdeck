@@ -100,7 +100,8 @@ class Deck {
     return Deck(
       slides: (payload['slides'] as List<dynamic>)
           .map(
-            (slide) => Slide.fromMap(Map<String, Object?>.from(slide as Map)),
+            (slide) =>
+                Slide.fromValidatedMap(Map<String, Object?>.from(slide as Map)),
           )
           .toList(),
       style: styleValue == null

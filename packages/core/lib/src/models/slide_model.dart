@@ -1,7 +1,9 @@
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:collection/collection.dart';
-import 'package:superdeck_core/src/models/block_model.dart';
+import 'package:meta/meta.dart';
+
+import 'block_model.dart';
 
 import '../utils/schema_refinement_utils.dart';
 
@@ -10,12 +12,10 @@ part 'slide_model.g.dart';
 bool _doesNotSetNullForOptionalSlideFields(Map<String, Object?> map) =>
     doesNotSetExplicitNullForOptionalKeys(map, const ['options']);
 
+const _knownSlideOptionFields = <String>{'title', 'style', 'template'};
+
 bool _doesNotSetNullForOptionalSlideOptionFields(Map<String, Object?> map) =>
-    doesNotSetExplicitNullForOptionalKeys(map, const [
-      'title',
-      'style',
-      'template',
-    ]);
+    doesNotSetExplicitNullForOptionalKeys(map, _knownSlideOptionFields);
 
 /// Represents a single slide in a presentation.
 ///
@@ -67,6 +67,15 @@ class Slide {
 
   static Slide fromMap(Map<String, Object?> map) {
     final payload = schema.parse(map) as Map<String, Object?>;
+    return _fromPayload(payload);
+  }
+
+  @internal
+  static Slide fromValidatedMap(Map<String, Object?> payload) {
+    return _fromPayload(payload);
+  }
+
+  static Slide _fromPayload(Map<String, Object?> payload) {
     final optionsPayload = payload['options'] as Map<String, Object?>?;
 
     return Slide(
@@ -200,10 +209,15 @@ class SlideOptions {
 
   static SlideOptions fromMap(Map<String, Object?> map) {
     final payload = schema.parse(map) as Map<String, Object?>;
-    final args = Map<String, Object?>.from(payload)
-      ..remove('title')
-      ..remove('style')
-      ..remove('template');
+    return _fromPayload(payload);
+  }
+
+  static SlideOptions _fromPayload(Map<String, Object?> payload) {
+    final args = Map<String, Object?>.fromEntries(
+      payload.entries.where(
+        (entry) => !_knownSlideOptionFields.contains(entry.key),
+      ),
+    );
 
     return SlideOptions(
       title: payload['title'] as String?,

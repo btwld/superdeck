@@ -211,6 +211,33 @@ void main() {
           expect(slide.comments, ['Speaker note']);
         });
 
+        test(
+          'preserves template and unknown slide option args via deck parse',
+          () {
+            final map = <String, dynamic>{
+              'slides': [
+                {
+                  'key': 'slide-with-options',
+                  'options': {
+                    'template': 'hero-template',
+                    'customArg': 'value',
+                    'customCount': 42,
+                  },
+                },
+              ],
+            };
+
+            final deck = Deck.fromMap(map);
+            final options = deck.slides.single.options;
+
+            expect(options, isNotNull);
+            expect(options!.template, 'hero-template');
+            expect(options.args['customArg'], 'value');
+            expect(options.args['customCount'], 42);
+            expect(options.args.containsKey('template'), isFalse);
+          },
+        );
+
         test('deserializes style and preserves unknown root fields', () {
           final map = <String, dynamic>{
             'slides': <dynamic>[],
@@ -306,9 +333,7 @@ void main() {
                 key: 'rt-slide',
                 options: const SlideOptions(title: 'RT Title'),
                 sections: [
-                  SectionBlock([
-                    ContentBlock('Content'),
-                  ]),
+                  SectionBlock([ContentBlock('Content')]),
                 ],
                 comments: ['Note'],
               ),

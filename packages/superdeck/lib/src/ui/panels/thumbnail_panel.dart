@@ -129,7 +129,6 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
                 button: true,
                 selected: index == widget.activeIndex,
                 label: 'Slide thumbnail ${index + 1}',
-                onTap: () => widget.onItemTap(index),
                 child: GestureDetector(
                   onTap: () => widget.onItemTap(index),
                   child: widget.itemBuilder(index, index == widget.activeIndex),
