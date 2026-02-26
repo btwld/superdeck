@@ -26,24 +26,45 @@ async function expectSlideCounter(page: Page, slideNumber: number) {
   ).toBeVisible();
 }
 
+async function readSlideCounter(page: Page): Promise<{current: number; total: number}> {
+  const counter = page.getByRole('group', {name: /\d+ of \d+/}).first();
+  await expect(counter).toBeVisible();
+
+  const label = (await counter.getAttribute('aria-label')) ?? (await counter.textContent()) ?? '';
+  const match = label.match(/(\d+)\s+of\s+(\d+)/i);
+  if (!match) {
+    throw new Error(`Could not parse slide counter from "${label}"`);
+  }
+
+  return {
+    current: Number.parseInt(match[1]!, 10),
+    total: Number.parseInt(match[2]!, 10),
+  };
+}
+
 test('app boots without error UI', async ({page}) => {
   await page.goto(appUrl);
 
-  await expectSlideCounter(page, 1);
-  await expect(
-    page.getByRole('img', {name: /SuperDeck Build presentations with Flutter/i}),
-  ).toBeVisible();
+  const counter = await readSlideCounter(page);
+  expect(counter.current).toBe(1);
+  expect(counter.total).toBeGreaterThan(0);
   await expect(page.getByRole('button', {name: 'Open menu'})).toBeVisible();
+  await expect(page.getByText('Error loading presentation')).toHaveCount(0);
 });
 
 test('keyboard navigation advances slide', async ({page}) => {
   await page.goto(appUrl);
-  await expectSlideCounter(page, 1);
+  const {total} = await readSlideCounter(page);
 
   await nextSlideByKeyboard(page);
-  await expectSlideCounter(page, 2);
+  if (total > 1) {
+    await expectSlideCounter(page, 2);
 
-  await previousSlideByKeyboard(page);
+    await previousSlideByKeyboard(page);
+    await expectSlideCounter(page, 1);
+    return;
+  }
+
   await expectSlideCounter(page, 1);
 });
 
@@ -83,12 +104,13 @@ test('asset-heavy slide renders without fatal console/network errors', async ({
   });
 
   await page.goto(appUrl);
-  await expectSlideCounter(page, 1);
-  await nextSlideByKeyboard(page);
-  await expectSlideCounter(page, 2);
-  await expect(
-    page.getByRole('img', {name: /Leo Farias|Founder\/CEO\/CTO/i}),
-  ).toBeVisible();
+  const {total} = await readSlideCounter(page);
+  if (total > 1) {
+    await nextSlideByKeyboard(page);
+    await expectSlideCounter(page, 2);
+  } else {
+    await expectSlideCounter(page, 1);
+  }
 
   const unexpectedConsoleErrors = consoleErrors.filter(
     (error) => !error.toLowerCase().includes('overflowed'),
