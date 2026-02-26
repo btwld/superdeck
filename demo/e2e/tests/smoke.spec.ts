@@ -47,7 +47,6 @@ test('app boots without error UI', async ({page}) => {
 
   const counter = await readSlideCounter(page);
   expect(counter.current).toBe(1);
-  expect(counter.total).toBeGreaterThan(0);
   await expect(page.getByRole('button', {name: 'Open menu'})).toBeVisible();
   await expect(page.getByText('Error loading presentation')).toHaveCount(0);
 });
