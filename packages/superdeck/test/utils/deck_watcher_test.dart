@@ -200,6 +200,102 @@ void main() {
       await events.close();
     });
 
+    test('can restart after stream error failure', () async {
+      final firstEvents = StreamController<BuildEvent>();
+      final secondEvents = StreamController<BuildEvent>();
+      final eventStreams = [firstEvents.stream, secondEvents.stream];
+      var builderFactoryCalls = 0;
+      final builders = <_FakeDeckBuilder>[];
+
+      final watcher = DeckWatcher(
+        configuration: configuration,
+        store: store,
+        builderFactory:
+            ({
+              required DeckConfiguration configuration,
+              required DeckService store,
+            }) {
+              final builder = _FakeDeckBuilder(
+                configuration: configuration,
+                store: store,
+                events: eventStreams[builderFactoryCalls],
+              );
+              builderFactoryCalls++;
+              builders.add(builder);
+              return builder;
+            },
+      );
+
+      await watcher.start();
+      expect(builderFactoryCalls, 1);
+
+      firstEvents.addError(Exception('stream error'));
+      await _flushEvents();
+      expect(watcher.status.value, DeckWatcherStatus.failed);
+
+      await watcher.start();
+      expect(builderFactoryCalls, 2);
+      expect(builders.first.disposed, isTrue);
+      expect(watcher.status.value, DeckWatcherStatus.running);
+      expect(watcher.error.value, isNull);
+
+      secondEvents.add(const BuildStarted());
+      await _flushEvents();
+      expect(watcher.isRebuilding.value, isTrue);
+
+      watcher.dispose();
+      await _flushEvents();
+      expect(builders.last.disposed, isTrue);
+
+      await firstEvents.close();
+      await secondEvents.close();
+    });
+
+    test('can restart after stream completion stop', () async {
+      final firstEvents = StreamController<BuildEvent>();
+      final secondEvents = StreamController<BuildEvent>();
+      final eventStreams = [firstEvents.stream, secondEvents.stream];
+      var builderFactoryCalls = 0;
+      final builders = <_FakeDeckBuilder>[];
+
+      final watcher = DeckWatcher(
+        configuration: configuration,
+        store: store,
+        builderFactory:
+            ({
+              required DeckConfiguration configuration,
+              required DeckService store,
+            }) {
+              final builder = _FakeDeckBuilder(
+                configuration: configuration,
+                store: store,
+                events: eventStreams[builderFactoryCalls],
+              );
+              builderFactoryCalls++;
+              builders.add(builder);
+              return builder;
+            },
+      );
+
+      await watcher.start();
+      expect(builderFactoryCalls, 1);
+
+      await firstEvents.close();
+      await _flushEvents();
+      expect(watcher.status.value, DeckWatcherStatus.stopped);
+
+      await watcher.start();
+      expect(builderFactoryCalls, 2);
+      expect(builders.first.disposed, isTrue);
+      expect(watcher.status.value, DeckWatcherStatus.running);
+
+      watcher.dispose();
+      await _flushEvents();
+      expect(builders.last.disposed, isTrue);
+
+      await secondEvents.close();
+    });
+
     test('multiple dispose calls are safe', () {
       final watcher = DeckWatcher(configuration: configuration, store: store);
 

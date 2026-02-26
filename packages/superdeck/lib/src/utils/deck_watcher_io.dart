@@ -75,13 +75,31 @@ class DeckWatcher {
   ReadonlySignal<bool> get isRebuilding => _isRebuilding;
 
   Future<void> start() async {
-    if (_disposed || _status.value == DeckWatcherStatus.stopped) {
+    if (_disposed) {
       return;
     }
 
-    if (_status.value != DeckWatcherStatus.idle) {
+    final isRestarting =
+        _status.value == DeckWatcherStatus.failed ||
+        _status.value == DeckWatcherStatus.stopped;
+
+    if (!isRestarting && _status.value != DeckWatcherStatus.idle) {
       _logger.warning('Deck watcher already started');
       return;
+    }
+
+    if (isRestarting) {
+      final buildSubscription = _buildSubscription;
+      _buildSubscription = null;
+      final builder = _builder;
+      _builder = null;
+
+      await buildSubscription?.cancel();
+      await builder?.dispose();
+
+      if (_disposed) return;
+      _status.value = DeckWatcherStatus.idle;
+      _isRebuilding.value = false;
     }
 
     _status.value = DeckWatcherStatus.starting;

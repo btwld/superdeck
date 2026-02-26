@@ -72,10 +72,6 @@ class MarkdownParser {
         continue;
       }
 
-      if (insideFrontMatter && trimmed.isEmpty) {
-        insideFrontMatter = false;
-      }
-
       if (trimmed == '---') {
         if (!insideFrontMatter) {
           if (buffer.isNotEmpty) {

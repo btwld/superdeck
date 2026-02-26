@@ -1,5 +1,19 @@
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/export/async_thumbnail.dart';
+
+Future<BuildContext> _pumpContext(WidgetTester tester) async {
+  final key = GlobalKey();
+  await tester.pumpWidget(
+    Directionality(
+      textDirection: TextDirection.ltr,
+      child: SizedBox(key: key),
+    ),
+  );
+  return key.currentContext!;
+}
 
 void main() {
   group('AsyncThumbnail', () {
@@ -56,9 +70,53 @@ void main() {
       });
     });
 
-    // Note: Widget tests for load/generate behavior are skipped because
-    // signals_flutter and Flutter's widget testing framework have timing
-    // issues that cause tests to hang. The core functionality is tested
-    // via the DeckController tests and integration testing.
+    group('load', () {
+      testWidgets('queues force reload while generation is in progress', (
+        tester,
+      ) async {
+        final context = await _pumpContext(tester);
+        final firstGeneration = Completer<Uri?>();
+        final secondGeneration = Completer<Uri?>();
+        final forceValues = <bool>[];
+        var calls = 0;
+
+        final thumbnail = AsyncThumbnail(
+          generator: (context, {required force}) {
+            forceValues.add(force);
+            calls += 1;
+
+            return switch (calls) {
+              1 => firstGeneration.future,
+              2 => secondGeneration.future,
+              _ => Future.value(Uri.parse('file:///tmp/unexpected.png')),
+            };
+          },
+        );
+
+        final firstLoad = thumbnail.load(context);
+        expect(calls, 1);
+        expect(forceValues, equals([false]));
+        expect(thumbnail.status.value, equals(AsyncFileStatus.loading));
+
+        await thumbnail.load(context, true);
+        expect(calls, 1);
+
+        firstGeneration.complete(Uri.parse('file:///tmp/first.png'));
+        await firstLoad;
+
+        expect(calls, 2);
+        expect(forceValues, equals([false, true]));
+        expect(thumbnail.status.value, equals(AsyncFileStatus.loading));
+
+        secondGeneration.complete(Uri.parse('file:///tmp/second.png'));
+        await tester.pump();
+
+        expect(thumbnail.status.value, equals(AsyncFileStatus.done));
+        expect(thumbnail.error.value, isNull);
+        expect(thumbnail.imageProvider, isNotNull);
+
+        thumbnail.dispose();
+      });
+    });
   });
 }

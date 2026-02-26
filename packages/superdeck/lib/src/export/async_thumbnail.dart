@@ -24,6 +24,7 @@ class AsyncThumbnail {
   // Non-reactive internal state
   bool _disposed = false;
   bool _isGenerating = false;
+  bool _pendingForce = false;
 
   // Readonly accessors
   ReadonlySignal<AsyncFileStatus> get status => _status;
@@ -76,11 +77,18 @@ class AsyncThumbnail {
       _cachedProvider = null;
     } finally {
       _isGenerating = false;
+      if (!_disposed && _pendingForce && context.mounted) {
+        _pendingForce = false;
+        unawaited(_generate(context, force: true));
+      } else {
+        _pendingForce = false;
+      }
     }
   }
 
   void dispose() {
     _disposed = true;
+    _pendingForce = false;
     _cachedProvider = null;
 
     // Dispose signals
@@ -90,7 +98,13 @@ class AsyncThumbnail {
   }
 
   Future<void> load(BuildContext context, [bool force = false]) {
-    if (_disposed || _isGenerating) return Future.value();
+    if (_disposed) return Future.value();
+    if (_isGenerating) {
+      if (force) {
+        _pendingForce = true;
+      }
+      return Future.value();
+    }
     if (force) {
       return _generate(context, force: true);
     }

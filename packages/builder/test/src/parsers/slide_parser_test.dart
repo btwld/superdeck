@@ -141,6 +141,37 @@ Content for slide 2
       expect(slides[1].content, equals('Content for slide 2'));
     });
 
+    test(
+      'parses frontmatter with blank lines without splitting slides',
+      () async {
+        const markdown = '''
+---
+title: Slide 1
+
+description: Has a blank line above
+---
+Content for slide 1
+
+---
+title: Slide 2
+---
+Content for slide 2
+''';
+
+        final slides = markdownParser.parse(markdown);
+
+        expect(slides.length, equals(2));
+        expect(slides[0].frontmatter['title'], equals('Slide 1'));
+        expect(
+          slides[0].frontmatter['description'],
+          equals('Has a blank line above'),
+        );
+        expect(slides[0].content, equals('Content for slide 1'));
+        expect(slides[1].frontmatter['title'], equals('Slide 2'));
+        expect(slides[1].content, equals('Content for slide 2'));
+      },
+    );
+
     test('handles empty markdown string', () async {
       const markdown = '';
 
