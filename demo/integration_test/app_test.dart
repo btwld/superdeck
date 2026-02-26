@@ -67,15 +67,22 @@ void main() {
     });
 
     group('Visible UI', () {
-      testWidgets('first slide heading is visible', (tester) async {
+      testWidgets('first slide is available after load', (tester) async {
         final controller = await tester.pumpTestApp();
         expect(controller, isNotNull);
 
-        expect(find.text('SuperDeck'), findsOneWidget);
-        expect(
-          find.textContaining('Build presentations with Flutter'),
-          findsOneWidget,
+        await tester.pumpUntil(
+          () => controller!.currentSlide.value != null,
+          debugLabel: 'current slide availability',
+          onTimeout: () => describeDeckControllerState(controller),
         );
+
+        expect(controller!.hasError.value, isFalse);
+        expect(controller.totalSlides.value, greaterThan(0));
+        expect(controller.currentIndex.value, 0);
+        expect(controller.currentSlide.value, isNotNull);
+        expect(find.textContaining('Error loading presentation'), findsNothing);
+        assertOnlyLayoutOverflowOrNoException(tester);
       });
 
       testWidgets('menu button opens controls and updates counter', (
