@@ -48,6 +48,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - packages/superdeck_genui/assets/prompts/
-    - packages/superdeck_genui/assets/prompts/partials/
-    - packages/superdeck_genui/assets/examples/
+    - assets/prompts/
+    - assets/prompts/partials/
+    - assets/examples/
