@@ -117,6 +117,7 @@ void main() {
         await tester.tap(find.bySemanticsLabel('Close menu'));
         await tester.pumpFor(const Duration(milliseconds: 300));
         expect(controller.isMenuOpen.value, isFalse);
+        assertOnlyLayoutOverflowOrNoException(tester);
       });
 
       testWidgets('notes panel toggles from bottom bar controls', (
