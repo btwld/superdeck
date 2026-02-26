@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_genui/superdeck_genui.dart';
 
 import 'src/parts/background.dart';
 import 'src/parts/footer.dart';
@@ -11,6 +12,7 @@ import 'src/widgets/demo_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  const plugins = [GenUiPlugin()];
 
   // Disable signals logging to reduce console noise
   SignalsObserver.instance = null;
@@ -18,17 +20,14 @@ void main() async {
   // Enable semantics for testing
   WidgetsBinding.instance.ensureSemantics();
 
-  await SuperDeckApp.initialize();
+  await SuperDeckApp.initialize(plugins: plugins);
   runApp(
     SuperDeckApp(
       options: DeckOptions(
         baseStyle: borderedStyle(),
         widgets: {...demoWidgets, 'twitter': const _TwitterWidgetDefinition()},
         // debug: true,
-        styles: {
-          'announcement': announcementStyle(),
-          'quote': quoteStyle(),
-        },
+        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
         templates: {
           'corporate': corporateTemplate(),
           'minimal': minimalTemplate(),
@@ -39,6 +38,7 @@ void main() async {
           background: BackgroundPart(),
         ),
         watchForChanges: true,
+        plugins: plugins,
       ),
     ),
   );

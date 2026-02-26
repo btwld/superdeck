@@ -6,6 +6,7 @@ import 'package:superdeck/src/ui/tokens/colors.dart';
 
 import '../deck/deck_controller_builder.dart';
 import '../deck/deck_options.dart';
+import '../deck/superdeck_plugin.dart';
 import '../utils/app_initialization.dart';
 import 'app_shell.dart';
 import 'theme.dart';
@@ -16,8 +17,13 @@ class SuperDeckApp extends StatelessWidget {
   final DeckOptions options;
   final DeckConfiguration? configuration;
 
-  static Future<void> initialize() async {
+  static Future<void> initialize({
+    List<SuperDeckPlugin> plugins = const <SuperDeckPlugin>[],
+  }) async {
     await initializeDependencies();
+    for (final plugin in plugins) {
+      await plugin.initialize();
+    }
   }
 
   @override

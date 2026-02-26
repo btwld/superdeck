@@ -24,6 +24,7 @@ export 'src/presentation/view/presentation_deck_host.dart';
 // Routes
 export 'src/routes.dart';
 export 'src/bootstrap/genui_bootstrap.dart';
+export 'src/genui_plugin.dart';
 
 // UI Components
 export 'src/ui/ui.dart';

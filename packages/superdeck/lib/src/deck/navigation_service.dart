@@ -24,7 +24,10 @@ class NavigationService {
   ///
   /// The [onIndexChanged] callback is invoked on every page build.
   /// Deduplication of redundant calls is handled by the controller.
-  GoRouter createRouter({required void Function(int) onIndexChanged}) {
+  GoRouter createRouter({
+    required void Function(int) onIndexChanged,
+    List<RouteBase> additionalRoutes = const <RouteBase>[],
+  }) {
     return GoRouter(
       initialLocation: '/slides/0',
       // Handle root path - can occur on initial load or direct URL access
@@ -51,6 +54,7 @@ class NavigationService {
             );
           },
         ),
+        ...additionalRoutes,
       ],
     );
   }

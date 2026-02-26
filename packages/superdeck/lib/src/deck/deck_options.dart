@@ -1,6 +1,7 @@
 import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
 import 'slide_template.dart';
+import 'superdeck_plugin.dart';
 import 'widget_definition.dart';
 
 class DeckOptions {
@@ -26,6 +27,9 @@ class DeckOptions {
   /// Defaults to `false`.
   final bool watchForChanges;
 
+  /// Optional plugin descriptors that extend deck behavior.
+  final List<SuperDeckPlugin> plugins;
+
   const DeckOptions({
     this.baseStyle,
     this.styles = const <String, SlideStyle>{},
@@ -35,6 +39,7 @@ class DeckOptions {
     this.templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
     this.watchForChanges = false,
+    this.plugins = const <SuperDeckPlugin>[],
   });
 
   DeckOptions copyWith({
@@ -46,6 +51,7 @@ class DeckOptions {
     Map<String, SlideTemplate>? templates,
     SlideTemplate? defaultTemplate,
     bool? watchForChanges,
+    List<SuperDeckPlugin>? plugins,
   }) {
     return DeckOptions(
       baseStyle: baseStyle ?? this.baseStyle,
@@ -56,6 +62,7 @@ class DeckOptions {
       templates: templates ?? this.templates,
       defaultTemplate: defaultTemplate ?? this.defaultTemplate,
       watchForChanges: watchForChanges ?? this.watchForChanges,
+      plugins: plugins ?? this.plugins,
     );
   }
 
@@ -71,7 +78,8 @@ class DeckOptions {
           debug == other.debug &&
           templates == other.templates &&
           defaultTemplate == other.defaultTemplate &&
-          watchForChanges == other.watchForChanges;
+          watchForChanges == other.watchForChanges &&
+          plugins == other.plugins;
 
   @override
   int get hashCode => Object.hash(
@@ -83,5 +91,6 @@ class DeckOptions {
     templates,
     defaultTemplate,
     watchForChanges,
+    plugins,
   );
 }

@@ -16,6 +16,7 @@ import 'navigation_events.dart';
 import 'navigation_service.dart';
 import 'slide_configuration.dart';
 import 'slide_configuration_builder.dart';
+import 'superdeck_plugin.dart';
 
 /// Loading state for the deck
 enum DeckLoadingState { idle, loading, loaded, error }
@@ -34,6 +35,7 @@ class DeckController {
   final NavigationService _navigationService;
   final ThumbnailService _thumbnailService;
   final bool _enableDeckStream;
+  final List<SuperDeckPlugin> _plugins;
 
   // Disposal guard to prevent accessing disposed signals
   // ignore: prefer_final_fields
@@ -97,6 +99,7 @@ class DeckController {
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
   ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
   ReadonlySignal<bool> get isRebuilding => _isRebuilding;
+  List<SuperDeckPlugin> get plugins => _plugins;
 
   // Navigation computeds
   ReadonlySignal<int> get currentIndex => _currentIndex;
@@ -136,12 +139,17 @@ class DeckController {
                configuration: deckService.configuration,
              ),
            ),
-       _enableDeckStream = enableDeckStream {
-    _options.value = options;
+       _enableDeckStream = enableDeckStream,
+       _plugins = options.plugins {
+    _options.value = options.copyWith(plugins: _plugins);
+    final pluginRoutes = _plugins
+        .expand((plugin) => plugin.buildRoutes())
+        .toList(growable: false);
 
     // Create router with index change callback
     router = _navigationService.createRouter(
       onIndexChanged: (index) => _updateCurrentIndex(index),
+      additionalRoutes: pluginRoutes,
     );
 
     // Clamp index when slide count changes (e.g., deck reloads with fewer slides)
@@ -224,8 +232,12 @@ class DeckController {
   @internal
   void updateOptions(DeckOptions newOptions) {
     if (_disposed) return;
-    if (_options.value != newOptions) {
-      _options.value = newOptions;
+    final normalizedOptions = identical(newOptions.plugins, _plugins)
+        ? newOptions
+        : newOptions.copyWith(plugins: _plugins);
+
+    if (_options.value != normalizedOptions) {
+      _options.value = normalizedOptions;
     }
   }
 

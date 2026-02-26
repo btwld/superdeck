@@ -24,6 +24,7 @@ export 'package:superdeck/src/deck/deck_options.dart';
 export 'package:superdeck/src/deck/deck_controller_builder.dart';
 export 'package:superdeck/src/deck/slide_configuration.dart';
 export 'package:superdeck/src/deck/slide_template.dart';
+export 'package:superdeck/src/deck/superdeck_plugin.dart';
 export 'package:superdeck/src/deck/template_exception.dart';
 export 'package:superdeck/src/deck/widget_definition.dart';
 

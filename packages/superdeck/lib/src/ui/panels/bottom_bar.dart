@@ -26,6 +26,9 @@ class DeckBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deck = DeckController.of(context);
+    final pluginActions = deck.plugins
+        .expand((plugin) => plugin.buildActions(context))
+        .toList(growable: false);
 
     return FlexBox(
       style: _bottomBarContainer,
@@ -49,6 +52,7 @@ class DeckBottomBar extends StatelessWidget {
           icon: Icons.replay_circle_filled_rounded,
           onPressed: () => deck.generateThumbnails(context, force: true),
         ),
+        ...pluginActions,
         const Spacer(),
         SDIconButton(icon: Icons.arrow_back, onPressed: deck.previousSlide),
         SDIconButton(icon: Icons.arrow_forward, onPressed: deck.nextSlide),
