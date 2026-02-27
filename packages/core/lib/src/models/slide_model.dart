@@ -5,17 +5,9 @@ import 'package:meta/meta.dart';
 
 import 'block_model.dart';
 
-import '../utils/schema_refinement_utils.dart';
-
 part 'slide_model.g.dart';
 
-bool _doesNotSetNullForOptionalSlideFields(Map<String, Object?> map) =>
-    doesNotSetExplicitNullForOptionalKeys(map, const ['options']);
-
 const _knownSlideOptionFields = <String>{'title', 'style', 'template'};
-
-bool _doesNotSetNullForOptionalSlideOptionFields(Map<String, Object?> map) =>
-    doesNotSetExplicitNullForOptionalKeys(map, _knownSlideOptionFields);
 
 /// Represents a single slide in a presentation.
 ///
@@ -95,16 +87,11 @@ class Slide {
   }
 
   /// Validation schema for slide data.
-  static final schema = slideSchema
-      .extend({
-        'options': SlideOptions.schema.optional(),
-        'sections': Ack.list(sectionBlockSchema).optional(),
-        'comments': Ack.list(Ack.string()).optional(),
-      })
-      .refine(
-        _doesNotSetNullForOptionalSlideFields,
-        message: '"options" cannot be null when provided.',
-      );
+  static final schema = slideSchema.extend({
+    'options': SlideOptions.schema.optional(),
+    'sections': Ack.list(sectionBlockSchema).optional(),
+    'comments': Ack.list(Ack.string()).optional(),
+  });
 
   /// Alias for [fromMap].
   static Slide parse(Map<String, Object?> map) => fromMap(map);
@@ -228,10 +215,11 @@ class SlideOptions {
   }
 
   /// Validation schema for slide options.
-  static final schema = slideOptionsSchema.refine(
-    _doesNotSetNullForOptionalSlideOptionFields,
-    message: '"title", "style", and "template" cannot be null when provided.',
-  );
+  static final schema = slideOptionsSchema.extend({
+    'title': Ack.string().optional(),
+    'style': Ack.string().optional(),
+    'template': Ack.string().optional(),
+  });
 
   /// Alias for [fromMap].
   static SlideOptions parse(Map<String, Object?> map) => fromMap(map);

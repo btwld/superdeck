@@ -54,7 +54,9 @@ class PdfController {
     required this.slides,
     required this.slideCaptureService,
     Duration waitDuration = const Duration(milliseconds: 100),
-  }) : _waitDuration = waitDuration {
+    Duration renderAttachmentTimeout = _kRenderAttachmentTimeout,
+  }) : _waitDuration = waitDuration,
+       _renderAttachmentTimeout = renderAttachmentTimeout {
     _pageController = PageController(initialPage: 0);
     _slideKeys = {for (var slide in slides) slide.key: GlobalKey()};
   }
@@ -97,6 +99,7 @@ class PdfController {
 
   /// Duration used to wait between operations
   final Duration _waitDuration;
+  final Duration _renderAttachmentTimeout;
 
   /// Whether this controller has been disposed
   bool get disposed => _disposed;
@@ -113,13 +116,20 @@ class PdfController {
 
   /// Waits for a render boundary widget to be painted
   Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
+    final deadline = DateTime.now().add(_renderAttachmentTimeout);
+
     while (key.currentContext == null) {
+      _checkExportAllowed();
+      if (DateTime.now().isAfter(deadline)) {
+        throw StateError(
+          'RenderObject context not available within $_renderAttachmentTimeout',
+        );
+      }
       await Future.delayed(_kPollInterval);
     }
 
-    final deadline = DateTime.now().add(_kRenderAttachmentTimeout);
-
     while (true) {
+      _checkExportAllowed();
       if (key.currentContext == null) {
         throw StateError(
           'RenderObject context became null while waiting for attachment',
@@ -130,7 +140,7 @@ class PdfController {
       if (repaintBoundary == null) {
         if (DateTime.now().isAfter(deadline)) {
           throw StateError(
-            'RenderObject not attached within $_kRenderAttachmentTimeout',
+            'RenderObject not attached within $_renderAttachmentTimeout',
           );
         }
         await Future.delayed(_kPollInterval);
@@ -143,7 +153,7 @@ class PdfController {
 
       if (DateTime.now().isAfter(deadline)) {
         throw StateError(
-          'RenderObject not attached within $_kRenderAttachmentTimeout',
+          'RenderObject not attached within $_renderAttachmentTimeout',
         );
       }
       await Future.delayed(_kPollInterval);

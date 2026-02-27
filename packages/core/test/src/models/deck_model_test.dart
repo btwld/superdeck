@@ -5,6 +5,27 @@ import 'package:superdeck_core/src/models/deck_model.dart';
 import 'package:superdeck_core/src/models/slide_model.dart';
 import 'package:test/test.dart';
 
+Map<String, Object?> _propertySchema(
+  Map<String, Object?> schema,
+  String property,
+) {
+  final properties = schema['properties'] as Map<String, Object?>;
+  return Map<String, Object?>.from(properties[property] as Map);
+}
+
+void _expectSchemaIsNotNullable(Map<String, Object?> schema) {
+  expect(schema['type'], isNot('null'));
+
+  final anyOf = schema['anyOf'] as List<dynamic>?;
+  if (anyOf != null) {
+    final hasNullType = anyOf
+        .whereType<Map>()
+        .map((item) => item['type'])
+        .contains('null');
+    expect(hasNullType, isFalse);
+  }
+}
+
 void main() {
   group('Deck Model', () {
     group('Deck', () {
@@ -60,18 +81,6 @@ void main() {
           expect(copy.slides[0].key, 'keep');
           expect(copy.configuration.projectDir, '/keep');
         });
-
-        test('preserves style when style is explicitly null', () {
-          final original = Deck(
-            slides: const [],
-            style: const {'theme': 'dark'},
-            configuration: DeckConfiguration(),
-          );
-
-          final copy = original.copyWith(style: null);
-
-          expect(copy.style, {'theme': 'dark'});
-        });
       });
 
       group('toMap', () {
@@ -118,20 +127,6 @@ void main() {
           final config = map['configuration'] as Map;
           expect(config['projectDir'], '/project');
           expect(config['slidesPath'], 'slides.md');
-        });
-
-        test('preserves root style and unknown root fields by default', () {
-          final deck = Deck(
-            slides: const [],
-            style: const {'theme': 'dark'},
-            unknownRootFields: const {'custom': true},
-            configuration: DeckConfiguration(),
-          );
-
-          final map = deck.toMap();
-
-          expect(map['style'], {'theme': 'dark'});
-          expect(map['custom'], isTrue);
         });
       });
 
@@ -238,35 +233,13 @@ void main() {
           },
         );
 
-        test('deserializes style and preserves unknown root fields', () {
-          final map = <String, dynamic>{
-            'slides': <dynamic>[],
-            'style': <String, dynamic>{'theme': 'dark'},
-            'custom': 'value',
-          };
-
-          final deck = Deck.fromMap(map);
-
-          expect(deck.style, {'theme': 'dark'});
-          expect(deck.unknownRootFields, {'custom': 'value'});
-        });
-
         test('throws when unsupported legacy schemaVersion is present', () {
           final map = <String, dynamic>{
             'schemaVersion': 1,
             'slides': <dynamic>[],
           };
 
-          expect(
-            () => Deck.fromMap(map),
-            throwsA(
-              isA<AckException>().having(
-                (error) => error.toString(),
-                'message',
-                allOf(contains('schemaVersion'), contains('Unsupported')),
-              ),
-            ),
-          );
+          expect(() => Deck.fromMap(map), throwsA(isA<AckException>()));
         });
 
         test('throws when slides is missing', () {
@@ -441,16 +414,7 @@ void main() {
             'slides': <dynamic>[],
           };
 
-          expect(
-            () => Deck.parse(map),
-            throwsA(
-              isA<AckException>().having(
-                (error) => error.toString(),
-                'message',
-                allOf(contains('schemaVersion'), contains('Unsupported')),
-              ),
-            ),
-          );
+          expect(() => Deck.parse(map), throwsA(isA<AckException>()));
         });
       });
 
@@ -497,24 +461,12 @@ void main() {
           expect(result.isOk, isFalse);
         });
 
-        test('allows root style and unknown root fields', () {
+        test('fails validation for root style field', () {
           final result = Deck.schema.safeParse({
             'slides': [
               {'key': 'test'},
             ],
             'style': {'theme': 'dark'},
-            'futureField': true,
-          });
-
-          expect(result.isOk, isTrue);
-        });
-
-        test('fails validation when style is explicitly null', () {
-          final result = Deck.schema.safeParse({
-            'slides': [
-              {'key': 'test'},
-            ],
-            'style': null,
           });
 
           expect(result.isOk, isFalse);
@@ -546,6 +498,34 @@ void main() {
           });
 
           expect(result.isOk, isFalse);
+        });
+
+        test('json schema also rejects null for optional contract fields', () {
+          final jsonSchema = Deck.schema.toJsonSchema();
+
+          final configurationSchema = _propertySchema(
+            jsonSchema,
+            'configuration',
+          );
+          final configurationProjectDirSchema = _propertySchema(
+            configurationSchema,
+            'projectDir',
+          );
+          _expectSchemaIsNotNullable(configurationProjectDirSchema);
+
+          final slidesSchema = _propertySchema(jsonSchema, 'slides');
+          final slideItemSchema = Map<String, Object?>.from(
+            slidesSchema['items'] as Map,
+          );
+          final slideOptionsSchema = _propertySchema(
+            slideItemSchema,
+            'options',
+          );
+          final slideOptionsTitleSchema = _propertySchema(
+            slideOptionsSchema,
+            'title',
+          );
+          _expectSchemaIsNotNullable(slideOptionsTitleSchema);
         });
       });
 
@@ -585,21 +565,6 @@ void main() {
           final deck2 = Deck(
             slides: const [],
             configuration: DeckConfiguration(projectDir: '/b'),
-          );
-
-          expect(deck1, isNot(deck2));
-        });
-
-        test('different unknown root fields make decks unequal', () {
-          final deck1 = Deck(
-            slides: const [],
-            unknownRootFields: const {'a': 1},
-            configuration: DeckConfiguration(),
-          );
-          final deck2 = Deck(
-            slides: const [],
-            unknownRootFields: const {'b': 1},
-            configuration: DeckConfiguration(),
           );
 
           expect(deck1, isNot(deck2));

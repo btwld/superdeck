@@ -4,20 +4,7 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:path/path.dart' as p;
 
-import 'utils/schema_refinement_utils.dart';
-
 part 'deck_configuration.g.dart';
-
-bool _doesNotSetNullForOptionalDeckConfigurationFields(
-  Map<String, Object?> map,
-) {
-  return doesNotSetExplicitNullForOptionalKeys(map, const [
-    'projectDir',
-    'slidesPath',
-    'outputDir',
-    'assetsPath',
-  ]);
-}
 
 @AckModel()
 final class DeckConfiguration {
@@ -134,12 +121,12 @@ final class DeckConfiguration {
     return fromMap(map);
   }
 
-  static final schema = deckConfigurationSchema.passthrough().refine(
-    _doesNotSetNullForOptionalDeckConfigurationFields,
-    message:
-        '"projectDir", "slidesPath", "outputDir", and "assetsPath" cannot '
-        'be null when provided.',
-  );
+  static final schema = deckConfigurationSchema.extend({
+    'projectDir': Ack.string().optional(),
+    'slidesPath': Ack.string().optional(),
+    'outputDir': Ack.string().optional(),
+    'assetsPath': Ack.string().optional(),
+  }).passthrough();
 
   static File get defaultFile => File('superdeck.yaml');
 

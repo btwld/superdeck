@@ -1,50 +1,22 @@
 {
   "$id": "https://superdeck.dev/schema/superdeck.deck.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": {},
+  "additionalProperties": false,
   "properties": {
     "configuration": {
       "additionalProperties": {},
       "properties": {
         "assetsPath": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "string"
         },
         "outputDir": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "string"
         },
         "projectDir": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "string"
         },
         "slidesPath": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "string"
         }
       },
       "type": "object"
@@ -67,37 +39,13 @@
             "additionalProperties": {},
             "properties": {
               "style": {
-                "anyOf": [
-                  {
-                    "description": "The style variant to apply to this slide.",
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": "string"
               },
               "template": {
-                "anyOf": [
-                  {
-                    "description": "The slide template to use for chrome and style isolation. `template: 'none'` is a reserved opt-out value used to disable template application for the slide when a deck-level default template is configured.",
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": "string"
               },
               "title": {
-                "anyOf": [
-                  {
-                    "description": "The title of the slide, if any.",
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": "string"
               }
             },
             "type": "object"
@@ -254,18 +202,6 @@
         "type": "object"
       },
       "type": "array"
-    },
-    "style": {
-      "anyOf": [
-        {
-          "additionalProperties": {},
-          "properties": {},
-          "type": "object"
-        },
-        {
-          "type": "null"
-        }
-      ]
     }
   },
   "required": [

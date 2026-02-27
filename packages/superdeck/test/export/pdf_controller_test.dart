@@ -183,6 +183,61 @@ void main() {
         expect(key.contextReadCount, greaterThanOrEqualTo(2));
         expect(renderObject.attachedReadCount, greaterThanOrEqualTo(2));
       });
+
+      testWidgets('times out when context never becomes available', (
+        tester,
+      ) async {
+        final timeoutController = PdfController(
+          slides: testSlides,
+          slideCaptureService: slideCaptureService,
+          waitDuration: const Duration(milliseconds: 10),
+          renderAttachmentTimeout: const Duration(milliseconds: 30),
+        );
+        final key = _FakeGlobalKey([null]);
+
+        final waitFuture = timeoutController.waitForRenderBoundaryPaint(key);
+        await tester.pump(const Duration(milliseconds: 60));
+
+        await expectLater(
+          waitFuture,
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.toString(),
+              'message',
+              contains('context not available'),
+            ),
+          ),
+        );
+
+        timeoutController.dispose();
+      });
+
+      testWidgets('throws cancellation while waiting for context', (
+        tester,
+      ) async {
+        final cancellableController = PdfController(
+          slides: testSlides,
+          slideCaptureService: slideCaptureService,
+          waitDuration: const Duration(milliseconds: 10),
+          renderAttachmentTimeout: const Duration(seconds: 1),
+        );
+        final key = _FakeGlobalKey([null]);
+
+        final waitFuture = cancellableController.waitForRenderBoundaryPaint(
+          key,
+        );
+        cancellableController.cancel();
+        await tester.pump(const Duration(milliseconds: 20));
+
+        await expectLater(
+          waitFuture,
+          throwsA(
+            predicate((error) => error.toString().contains('Export cancelled')),
+          ),
+        );
+
+        cancellableController.dispose();
+      });
     });
   });
 }
