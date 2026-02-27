@@ -117,10 +117,30 @@ class PdfController {
       await Future.delayed(_kPollInterval);
     }
 
-    final repaintBoundary = key.currentContext!.findRenderObject()!;
     final deadline = DateTime.now().add(_kRenderAttachmentTimeout);
 
-    while (!repaintBoundary.attached) {
+    while (true) {
+      if (key.currentContext == null) {
+        throw StateError(
+          'RenderObject context became null while waiting for attachment',
+        );
+      }
+
+      final repaintBoundary = key.currentContext?.findRenderObject();
+      if (repaintBoundary == null) {
+        if (DateTime.now().isAfter(deadline)) {
+          throw StateError(
+            'RenderObject not attached within $_kRenderAttachmentTimeout',
+          );
+        }
+        await Future.delayed(_kPollInterval);
+        continue;
+      }
+
+      if (repaintBoundary.attached) {
+        break;
+      }
+
       if (DateTime.now().isAfter(deadline)) {
         throw StateError(
           'RenderObject not attached within $_kRenderAttachmentTimeout',

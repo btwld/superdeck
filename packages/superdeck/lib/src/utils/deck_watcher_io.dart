@@ -29,7 +29,7 @@ DeckBuilder _createStandardBuilder({
 }) {
   // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions.
   final browserLaunchOptions = _isCI()
-      ? <String, dynamic>{
+      ? <String, Object?>{
           'args': ['--no-sandbox', '--disable-setuid-sandbox'],
         }
       : null;

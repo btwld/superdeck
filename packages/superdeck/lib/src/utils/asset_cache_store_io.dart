@@ -54,14 +54,20 @@ class _IoRuntimeAssetCacheStore implements AssetCacheStore {
       return appCacheUri;
     }
 
-    final appCacheLastModified = await File.fromUri(appCacheUri).lastModified();
-    final bundledLastModified = await bundledFile.lastModified();
+    try {
+      final appCacheLastModified = await File.fromUri(
+        appCacheUri,
+      ).lastModified();
+      final bundledLastModified = await bundledFile.lastModified();
 
-    if (bundledLastModified.isAfter(appCacheLastModified)) {
+      if (bundledLastModified.isAfter(appCacheLastModified)) {
+        return bundledFile.uri;
+      }
+
+      return appCacheUri;
+    } on FileSystemException {
       return bundledFile.uri;
     }
-
-    return appCacheUri;
   }
 
   @override

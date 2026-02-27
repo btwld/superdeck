@@ -35,6 +35,12 @@ class _WebViewWrapperState extends State<WebViewWrapper>
           },
           onNavigationRequest: (NavigationRequest request) {
             final sourceHost = Uri.tryParse(widget.url)?.host;
+            if (sourceHost == null) {
+              debugPrint(
+                'WebViewWrapper: unable to parse host from "${widget.url}". '
+                'Blocking navigation to "${request.url}".',
+              );
+            }
             final requestHost = Uri.tryParse(request.url)?.host;
             if (sourceHost != null && requestHost == sourceHost) {
               return NavigationDecision.navigate;
