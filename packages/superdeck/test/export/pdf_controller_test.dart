@@ -196,9 +196,7 @@ void main() {
         final key = _FakeGlobalKey([null]);
 
         final waitFuture = timeoutController.waitForRenderBoundaryPaint(key);
-        await tester.pump(const Duration(milliseconds: 60));
-
-        await expectLater(
+        final expectation = expectLater(
           waitFuture,
           throwsA(
             isA<StateError>().having(
@@ -208,6 +206,8 @@ void main() {
             ),
           ),
         );
+        await tester.pump(const Duration(milliseconds: 60));
+        await expectation;
 
         timeoutController.dispose();
       });
@@ -226,15 +226,15 @@ void main() {
         final waitFuture = cancellableController.waitForRenderBoundaryPaint(
           key,
         );
-        cancellableController.cancel();
-        await tester.pump(const Duration(milliseconds: 20));
-
-        await expectLater(
+        final expectation = expectLater(
           waitFuture,
           throwsA(
             predicate((error) => error.toString().contains('Export cancelled')),
           ),
         );
+        cancellableController.cancel();
+        await tester.pump(const Duration(milliseconds: 20));
+        await expectation;
 
         cancellableController.dispose();
       });

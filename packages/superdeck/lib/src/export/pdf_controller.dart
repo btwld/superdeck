@@ -116,16 +116,17 @@ class PdfController {
 
   /// Waits for a render boundary widget to be painted
   Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
-    final deadline = DateTime.now().add(_renderAttachmentTimeout);
+    var elapsed = Duration.zero;
 
     while (key.currentContext == null) {
       _checkExportAllowed();
-      if (DateTime.now().isAfter(deadline)) {
+      if (elapsed >= _renderAttachmentTimeout) {
         throw StateError(
           'RenderObject context not available within $_renderAttachmentTimeout',
         );
       }
       await Future.delayed(_kPollInterval);
+      elapsed += _kPollInterval;
     }
 
     while (true) {
@@ -138,12 +139,13 @@ class PdfController {
 
       final repaintBoundary = key.currentContext?.findRenderObject();
       if (repaintBoundary == null) {
-        if (DateTime.now().isAfter(deadline)) {
+        if (elapsed >= _renderAttachmentTimeout) {
           throw StateError(
             'RenderObject not attached within $_renderAttachmentTimeout',
           );
         }
         await Future.delayed(_kPollInterval);
+        elapsed += _kPollInterval;
         continue;
       }
 
@@ -151,12 +153,13 @@ class PdfController {
         break;
       }
 
-      if (DateTime.now().isAfter(deadline)) {
+      if (elapsed >= _renderAttachmentTimeout) {
         throw StateError(
           'RenderObject not attached within $_renderAttachmentTimeout',
         );
       }
       await Future.delayed(_kPollInterval);
+      elapsed += _kPollInterval;
     }
 
     await WidgetsBinding.instance.endOfFrame;
