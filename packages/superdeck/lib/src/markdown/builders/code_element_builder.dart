@@ -19,6 +19,61 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     this.styleSpec = const StyleSpec(spec: MarkdownCodeblockSpec()),
   ]);
 
+  TextStyle _resolveTrailingStyle(List<TextSpan> lines, TextStyle baseStyle) {
+    TextStyle? resolveFromSpan(TextSpan span) {
+      if ((span.text?.isNotEmpty ?? false) && span.style != null) {
+        return span.style;
+      }
+      if (span.children != null && span.children!.isNotEmpty) {
+        for (var i = span.children!.length - 1; i >= 0; i--) {
+          final child = span.children![i];
+          if (child is TextSpan) {
+            final candidate = resolveFromSpan(child);
+            if (candidate != null) {
+              return candidate;
+            }
+          }
+        }
+      }
+      return span.style;
+    }
+
+    for (var i = lines.length - 1; i >= 0; i--) {
+      final candidate = resolveFromSpan(lines[i]);
+      if (candidate != null) {
+        return candidate;
+      }
+    }
+
+    return baseStyle;
+  }
+
+  InlineSpan _buildFadingLineSpan(
+    TextSpan lineSpan, {
+    required bool isLastLine,
+    String? fadeChar,
+    TextStyle? fadeTextStyle,
+  }) {
+    if (lineSpan.children != null && lineSpan.children!.isNotEmpty) {
+      final children = List<InlineSpan>.from(lineSpan.children!);
+      if (isLastLine && fadeChar != null && fadeChar != '\n') {
+        children.add(TextSpan(text: fadeChar, style: fadeTextStyle));
+      }
+
+      return TextSpan(style: lineSpan.style, children: children);
+    }
+
+    final children = <InlineSpan>[];
+    if (lineSpan.text != null && lineSpan.text!.isNotEmpty) {
+      children.add(TextSpan(text: lineSpan.text, style: lineSpan.style));
+    }
+    if (isLastLine && fadeChar != null && fadeChar != '\n') {
+      children.add(TextSpan(text: fadeChar, style: fadeTextStyle));
+    }
+
+    return TextSpan(children: children);
+  }
+
   @override
   Widget? visitElementAfterWithContext(
     BuildContext context,
@@ -110,37 +165,10 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
               committedText,
               to.language,
             );
-
-            TextStyle resolveTrailingStyle(List<TextSpan> lines) {
-              TextStyle? resolveFromSpan(TextSpan span) {
-                if ((span.text?.isNotEmpty ?? false) && span.style != null) {
-                  return span.style;
-                }
-                if (span.children != null && span.children!.isNotEmpty) {
-                  for (var i = span.children!.length - 1; i >= 0; i--) {
-                    final child = span.children![i];
-                    if (child is TextSpan) {
-                      final candidate = resolveFromSpan(child);
-                      if (candidate != null) {
-                        return candidate;
-                      }
-                    }
-                  }
-                }
-                return span.style;
-              }
-
-              for (var i = lines.length - 1; i >= 0; i--) {
-                final candidate = resolveFromSpan(lines[i]);
-                if (candidate != null) {
-                  return candidate;
-                }
-              }
-
-              return interpolatedSpec.textStyle ?? const TextStyle();
-            }
-
-            final trailingStyle = resolveTrailingStyle(highlightedLines);
+            final trailingStyle = _resolveTrailingStyle(
+              highlightedLines,
+              interpolatedSpec.textStyle ?? const TextStyle(),
+            );
             final fadeBaseStyle = trailingStyle;
             final baseColor = fadeBaseStyle.color ?? const Color(0xFF000000);
             final fadeOpacity = lerpResult.fadeOpacity.clamp(0.0, 1.0);
@@ -182,47 +210,12 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
                       return List.generate(highlightedLines.length, (index) {
                         final lineSpan = highlightedLines[index];
                         final isLastLine = index == highlightedLines.length - 1;
-                        InlineSpan richLine;
-
-                        if (lineSpan.children != null &&
-                            lineSpan.children!.isNotEmpty) {
-                          final children = List<InlineSpan>.from(
-                            lineSpan.children!,
-                          );
-
-                          if (isLastLine &&
-                              fadeChar != null &&
-                              fadeChar != '\n') {
-                            children.add(
-                              TextSpan(text: fadeChar, style: fadeTextStyle),
-                            );
-                          }
-
-                          richLine = TextSpan(
-                            style: lineSpan.style,
-                            children: children,
-                          );
-                        } else {
-                          final children = <InlineSpan>[];
-                          if (lineSpan.text != null &&
-                              lineSpan.text!.isNotEmpty) {
-                            children.add(
-                              TextSpan(
-                                text: lineSpan.text,
-                                style: lineSpan.style,
-                              ),
-                            );
-                          }
-                          if (isLastLine &&
-                              fadeChar != null &&
-                              fadeChar != '\n') {
-                            children.add(
-                              TextSpan(text: fadeChar, style: fadeTextStyle),
-                            );
-                          }
-
-                          richLine = TextSpan(children: children);
-                        }
+                        final richLine = _buildFadingLineSpan(
+                          lineSpan,
+                          isLastLine: isLastLine,
+                          fadeChar: fadeChar,
+                          fadeTextStyle: fadeTextStyle,
+                        );
 
                         return RichText(
                           text: TextSpan(

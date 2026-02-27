@@ -26,25 +26,36 @@ class _WebViewWrapperState extends State<WebViewWrapper>
   @override
   void initState() {
     super.initState();
-    // (widget._uniqueKey).currentState?.dispose();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (int progress) {},
-          onPageStarted: (String url) {},
           onPageFinished: (String url) {
             _showDartPad();
           },
-          onHttpError: (HttpResponseError error) {},
-          onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
-            return NavigationDecision.navigate;
+            final sourceHost = Uri.tryParse(widget.url)?.host;
+            final requestHost = Uri.tryParse(request.url)?.host;
+            if (sourceHost != null && requestHost == sourceHost) {
+              return NavigationDecision.navigate;
+            }
+            return NavigationDecision.prevent;
           },
         ),
       );
 
     _loadDartPad();
+  }
+
+  @override
+  void didUpdateWidget(WebViewWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url) {
+      setState(() {
+        _hide = true;
+      });
+      _loadDartPad();
+    }
   }
 
   Future<void> _loadDartPad() async {
@@ -73,7 +84,6 @@ class _WebViewWrapperState extends State<WebViewWrapper>
   }
 
   Future<void> clearDartPadEditor() {
-    _controller.reload();
     return executeInIframe('''
                 var editor = document.querySelector('.CodeMirror')?.CodeMirror;
                 if (editor) {
