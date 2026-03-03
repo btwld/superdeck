@@ -35,10 +35,10 @@ docs/         # User-facing documentation (MDX format)
 
 ## Environment Setup
 
-This project uses FVM (Flutter Version Management) pinned to Flutter stable:
+This project uses FVM (Flutter Version Management) pinned via `.fvmrc`:
 
 ```bash
-fvm use stable --force
+fvm use --force
 dart pub global activate melos
 melos bootstrap
 ```

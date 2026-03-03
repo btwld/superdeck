@@ -117,52 +117,29 @@ class PdfController {
   /// Waits for a render boundary widget to be painted
   Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
     var elapsed = Duration.zero;
+    var hasSeenContext = false;
 
-    while (key.currentContext == null) {
+    while (elapsed < _renderAttachmentTimeout) {
       _checkExportAllowed();
-      if (elapsed >= _renderAttachmentTimeout) {
-        throw StateError(
-          'RenderObject context not available within $_renderAttachmentTimeout',
-        );
-      }
-      await Future.delayed(_kPollInterval);
-      elapsed += _kPollInterval;
-    }
 
-    while (true) {
-      _checkExportAllowed();
-      if (key.currentContext == null) {
-        throw StateError(
-          'RenderObject context became null while waiting for attachment',
-        );
+      if (key.currentContext != null) {
+        hasSeenContext = true;
       }
 
       final repaintBoundary = key.currentContext?.findRenderObject();
-      if (repaintBoundary == null) {
-        if (elapsed >= _renderAttachmentTimeout) {
-          throw StateError(
-            'RenderObject not attached within $_renderAttachmentTimeout',
-          );
-        }
-        await Future.delayed(_kPollInterval);
-        elapsed += _kPollInterval;
-        continue;
-      }
-
-      if (repaintBoundary.attached) {
-        break;
-      }
-
-      if (elapsed >= _renderAttachmentTimeout) {
-        throw StateError(
-          'RenderObject not attached within $_renderAttachmentTimeout',
-        );
+      if (repaintBoundary != null && repaintBoundary.attached) {
+        await WidgetsBinding.instance.endOfFrame;
+        return;
       }
       await Future.delayed(_kPollInterval);
       elapsed += _kPollInterval;
     }
 
-    await WidgetsBinding.instance.endOfFrame;
+    throw StateError(
+      hasSeenContext
+          ? 'RenderObject not attached within $_renderAttachmentTimeout'
+          : 'RenderObject context not available within $_renderAttachmentTimeout',
+    );
   }
 
   /// Captures an image from a [GlobalKey] with retry logic

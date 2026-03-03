@@ -184,6 +184,20 @@ void main() {
         expect(renderObject.attachedReadCount, greaterThanOrEqualTo(2));
       });
 
+      testWidgets('continues waiting when context is temporarily null', (
+        tester,
+      ) async {
+        final renderObject = _SequencedRenderObject([true]);
+        final buildContext = _FakeBuildContext(renderObject);
+        final key = _FakeGlobalKey([null, buildContext, null, buildContext]);
+
+        final waitFuture = controller.waitForRenderBoundaryPaint(key);
+
+        await tester.pump(const Duration(milliseconds: 40));
+        await tester.pump();
+        await waitFuture;
+      });
+
       testWidgets('times out when context never becomes available', (
         tester,
       ) async {

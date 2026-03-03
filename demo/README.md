@@ -7,7 +7,7 @@ This app is the SuperDeck demo and is used to validate the slide runtime and CLI
 From the repo root:
 
 ```bash
-fvm use stable --force
+fvm use --force
 dart pub global activate melos
 melos bootstrap
 ```
