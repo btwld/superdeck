@@ -1,11 +1,19 @@
 import 'package:ack/ack.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 import 'package:collection/collection.dart';
-import 'package:superdeck_core/src/models/block_model.dart';
+import 'package:meta/meta.dart';
+
+import 'block_model.dart';
+
+part 'slide_model.g.dart';
+
+const _knownSlideOptionFields = <String>{'title', 'style', 'template'};
 
 /// Represents a single slide in a presentation.
 ///
 /// A slide contains sections of content blocks, optional configuration options,
 /// and any speaker notes or comments. Each slide is uniquely identified by a key.
+@AckModel(additionalProperties: true)
 class Slide {
   /// Unique identifier for this slide, typically generated from content hash.
   final String key;
@@ -40,7 +48,7 @@ class Slide {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {
       'key': key,
       if (options != null) 'options': options!.toMap(),
@@ -49,41 +57,44 @@ class Slide {
     };
   }
 
-  static Slide fromMap(Map<String, dynamic> map) {
+  static Slide fromMap(Map<String, Object?> map) {
+    final payload = schema.parse(map) as Map<String, Object?>;
+    return _fromPayload(payload);
+  }
+
+  @internal
+  static Slide fromValidatedMap(Map<String, Object?> payload) {
+    return _fromPayload(payload);
+  }
+
+  static Slide _fromPayload(Map<String, Object?> payload) {
+    final optionsPayload = payload['options'] as Map<String, Object?>?;
+
     return Slide(
-      key: map['key'] as String,
-      options: map['options'] != null
-          ? SlideOptions.fromMap(map['options'] as Map<String, dynamic>)
-          : null,
-      sections:
-          (map['sections'] as List<dynamic>?)
-              ?.map((e) => SectionBlock.fromMap(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      comments:
-          (map['comments'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          [],
+      key: payload['key'] as String,
+      options: optionsPayload == null
+          ? null
+          : SlideOptions.fromMap(optionsPayload),
+      sections: (payload['sections'] as List<dynamic>? ?? const [])
+          .map(
+            (section) =>
+                SectionBlock.fromMap(Map<String, Object?>.from(section as Map)),
+          )
+          .toList(),
+      comments: (payload['comments'] as List<dynamic>? ?? const [])
+          .cast<String>(),
     );
   }
 
   /// Validation schema for slide data.
-  static final schema = Ack.object({
-    "key": Ack.string(),
+  static final schema = slideSchema.extend({
     'options': SlideOptions.schema.optional(),
-    'sections': Ack.list(SectionBlock.schema).optional(),
+    'sections': Ack.list(sectionBlockSchema).optional(),
     'comments': Ack.list(Ack.string()).optional(),
-  }, additionalProperties: true);
+  });
 
-  /// Parses a slide from a JSON map.
-  ///
-  /// Validates the map against the schema before parsing.
-  /// Throws an exception if the validation fails.
-  static Slide parse(Map<String, dynamic> map) {
-    schema.parse(map);
-    return fromMap(map);
-  }
+  /// Alias for [fromMap].
+  static Slide parse(Map<String, Object?> map) => fromMap(map);
 
   /// Creates an error slide to display errors in the presentation.
   ///
@@ -136,6 +147,7 @@ ${error.toString()}
 /// Configuration options for a slide.
 ///
 /// Provides metadata and styling information for individual slides.
+@AckModel(additionalProperties: true, additionalPropertiesField: 'args')
 class SlideOptions {
   /// The title of the slide, if any.
   final String? title;
@@ -173,7 +185,7 @@ class SlideOptions {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {
       if (title != null) 'title': title,
       if (style != null) 'style': style,
@@ -182,36 +194,35 @@ class SlideOptions {
     };
   }
 
-  static SlideOptions fromMap(Map<String, dynamic> map) {
-    final title = map['title'] as String?;
-    final style = map['style'] as String?;
-    final template = map['template'] as String?;
+  static SlideOptions fromMap(Map<String, Object?> map) {
+    final payload = schema.parse(map) as Map<String, Object?>;
+    return _fromPayload(payload);
+  }
 
-    final args = Map<String, Object?>.from(map);
-    args.remove('title');
-    args.remove('style');
-    args.remove('template');
+  static SlideOptions _fromPayload(Map<String, Object?> payload) {
+    final args = Map<String, Object?>.fromEntries(
+      payload.entries.where(
+        (entry) => !_knownSlideOptionFields.contains(entry.key),
+      ),
+    );
 
     return SlideOptions(
-      title: title,
-      style: style,
-      template: template,
+      title: payload['title'] as String?,
+      style: payload['style'] as String?,
+      template: payload['template'] as String?,
       args: args,
     );
   }
 
   /// Validation schema for slide options.
-  static final schema = Ack.object({
+  static final schema = slideOptionsSchema.extend({
     'title': Ack.string().optional(),
     'style': Ack.string().optional(),
     'template': Ack.string().optional(),
-  }, additionalProperties: true);
+  });
 
-  /// Parses slide options from a JSON map.
-  static SlideOptions parse(Map<String, dynamic> map) {
-    schema.parse(map);
-    return fromMap(map);
-  }
+  /// Alias for [fromMap].
+  static SlideOptions parse(Map<String, Object?> map) => fromMap(map);
 
   @override
   bool operator ==(Object other) =>

@@ -6,6 +6,21 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import 'asset_generator.dart';
 
+typedef _MermaidRenderConfig = ({
+  String theme,
+  Map<String, Object?> themeVariables,
+  String themeCSS,
+  String look,
+  String securityLevel,
+  int handDrawnSeed,
+  String extraCSS,
+  int width,
+  int height,
+  num deviceScaleFactor,
+  Duration timeout,
+  Map<String, Object?> diagramConfigs,
+});
+
 /// Asset generator for Mermaid diagrams.
 ///
 /// Converts Mermaid diagram syntax into PNG images using a headless browser.
@@ -16,7 +31,7 @@ class MermaidGenerator implements AssetGenerator {
   Browser? _browser;
   Future<Browser>? _browserInitFuture;
   bool _disposed = false;
-  final Map<String, dynamic> _launchOptions;
+  final Map<String, Object?> _launchOptions;
 
   /// HTML template for rendering Mermaid diagrams.
   static final _mermaidHtmlTemplate = '''
@@ -30,7 +45,7 @@ class MermaidGenerator implements AssetGenerator {
     <pre class="mermaid"></pre>
 
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
 
       // Safe, decoded inputs from Dart
       const graph          = atob('__GRAPH_B64__');
@@ -68,15 +83,19 @@ class MermaidGenerator implements AssetGenerator {
       if (document.fonts?.ready) { await document.fonts.ready; }
 
       // Render and confirm we have an SVG
-      await mermaid.run({ querySelector: 'pre.mermaid' });
-      window.mermaidReady = !!document.querySelector('pre.mermaid svg');
+      try {
+        await mermaid.run({ querySelector: 'pre.mermaid' });
+        window.mermaidReady = !!document.querySelector('pre.mermaid svg');
+      } catch (e) {
+        window.mermaidError = e?.message || String(e);
+      }
     </script>
   </body>
 </html>
 ''';
 
   @override
-  final Map<String, dynamic> configuration;
+  final Map<String, Object?> configuration;
 
   /// Creates a Mermaid generator with hardcoded dark theme as default.
   ///
@@ -85,8 +104,8 @@ class MermaidGenerator implements AssetGenerator {
   /// back to Mermaid's default theme to ensure structural elements (axis, grid
   /// lines) remain visible. See _shouldUseFallbackTheme() for fallback logic.
   MermaidGenerator({
-    Map<String, dynamic>? launchOptions,
-    Map<String, dynamic>? configuration,
+    Map<String, Object?>? launchOptions,
+    Map<String, Object?>? configuration,
   }) : _launchOptions = launchOptions ?? {},
        configuration = configuration ?? _defaultConfiguration;
 
@@ -96,6 +115,33 @@ class MermaidGenerator implements AssetGenerator {
     font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
   }
 ''';
+  static const _defaultViewportWidth = 1280;
+  static const _defaultViewportHeight = 780;
+  static const _defaultDeviceScaleFactor = 2;
+  static const _defaultTimeout = 10;
+  static const _diagramConfigKeys = [
+    'flowchart',
+    'sequence',
+    'class',
+    'state',
+    'gantt',
+    'pie',
+    'timeline',
+    'journey',
+    'quadrant',
+    'sankey',
+    'radar',
+    'kanban',
+    'mindmap',
+    'architecture',
+    'block',
+    'packet',
+    'treemap',
+    'c4',
+    'xyChart',
+    'gitGraph',
+    'er',
+  ];
 
   /// Hardcoded dark theme variables (pre-computed for optimal dark slide rendering)
   /// Based on: background=#0b0f14, primary=#0ea5e9, text=#e2e8f0, darkMode=true
@@ -240,10 +286,10 @@ class MermaidGenerator implements AssetGenerator {
     'journey': {},
 
     // Rendering mechanics for the browser page
-    'viewportWidth': 1280,
-    'viewportHeight': 780,
-    'deviceScaleFactor': 2,
-    'timeout': 10,
+    'viewportWidth': _defaultViewportWidth,
+    'viewportHeight': _defaultViewportHeight,
+    'deviceScaleFactor': _defaultDeviceScaleFactor,
+    'timeout': _defaultTimeout,
     'extraCSS': '', // Optional extra CSS
   };
 
@@ -316,7 +362,7 @@ class MermaidGenerator implements AssetGenerator {
     try {
       _logger.info('Launching headless browser for Mermaid rendering');
       final browser = await puppeteer.launch(
-        headless: _launchOptions['headless'] ?? true,
+        headless: _launchOptions['headless'] as bool? ?? true,
         args: _launchOptions['args'] as List<String>?,
         executablePath: _launchOptions['executablePath'] as String?,
       );
@@ -356,7 +402,8 @@ class MermaidGenerator implements AssetGenerator {
     try {
       return await _generateMermaidImage(content);
     } on TimeoutException catch (e, stackTrace) {
-      final timeoutSeconds = configuration['timeout'] as int? ?? 10;
+      final timeoutSeconds =
+          configuration['timeout'] as int? ?? _defaultTimeout;
       Error.throwWithStackTrace(
         Exception(
           'Mermaid generation timed out after $timeoutSeconds seconds. '
@@ -387,7 +434,7 @@ class MermaidGenerator implements AssetGenerator {
     final trimmed = graphDefinition.trim().toLowerCase();
 
     // Check if we're in dark mode
-    final themeVars = configuration['themeVariables'] as Map<String, dynamic>?;
+    final themeVars = configuration['themeVariables'] as Map<String, Object?>?;
     final isDarkMode = themeVars?['darkMode'] as bool? ?? true;
 
     // Timeline diagrams have axis visibility issues with custom DARK themes only
@@ -407,113 +454,56 @@ class MermaidGenerator implements AssetGenerator {
   /// Generates a PNG image from the given Mermaid diagram definition.
   Future<List<int>> _generateMermaidImage(String graphDefinition) {
     _logger.fine('Starting Mermaid image generation');
-
-    // Detect diagram type and use fallback theme for problematic diagrams
-    final useFallbackTheme = _shouldUseFallbackTheme(graphDefinition);
-
-    final theme = useFallbackTheme
-        ? 'default' // Use Mermaid's default theme for timeline/gantt
-        : (configuration['theme'] as String? ?? 'base');
-    final themeVariables = useFallbackTheme
-        ? <String, dynamic>{} // No custom variables for fallback
-        : (configuration['themeVariables'] ?? {});
-    final themeCSS = useFallbackTheme
-        ? '' // No custom CSS for fallback
-        : (configuration['themeCSS'] as String? ?? '');
-    final look = configuration['look'] as String? ?? 'classic';
-    final securityLevel = configuration['securityLevel'] as String? ?? 'strict';
-    final handDrawnSeed = configuration['handDrawnSeed'] as int? ?? 0;
-    final extraCSS = configuration['extraCSS'] as String? ?? '';
-    final width = configuration['viewportWidth'] as int? ?? 1280;
-    final height = configuration['viewportHeight'] as int? ?? 780;
-    final deviceScaleFactor = configuration['deviceScaleFactor'] as num? ?? 2;
-    final timeout = Duration(seconds: configuration['timeout'] as int? ?? 10);
-
-    // Extract ALL diagram-specific configs for passing to mermaid.initialize
-    final diagramConfigs = <String, dynamic>{};
-    final diagramConfigKeys = [
-      'flowchart',
-      'sequence',
-      'class',
-      'state',
-      'gantt',
-      'pie',
-      'timeline',
-      'journey',
-      'quadrant',
-      'sankey',
-      'radar',
-      'kanban',
-      'mindmap',
-      'architecture',
-      'block',
-      'packet',
-      'treemap',
-      'c4',
-      'xyChart',
-      'gitGraph',
-      'er',
-    ];
-
-    for (final key in diagramConfigKeys) {
-      if (configuration.containsKey(key)) {
-        diagramConfigs[key] = configuration[key];
-      }
-    }
+    final config = _resolveRenderConfig(graphDefinition);
 
     _logger.fine(
-      'Using theme: $theme, viewport: ${width}x$height, timeout: ${timeout.inSeconds}s',
+      'Using theme: ${config.theme}, viewport: ${config.width}x${config.height}, '
+      'timeout: ${config.timeout.inSeconds}s',
     );
 
-    // Base64 encode for safe injection
-    final graphB64 = base64Encode(utf8.encode(graphDefinition));
-    final themeCSSB64 = base64Encode(utf8.encode(themeCSS));
-    final extraCSSB64 = base64Encode(utf8.encode(extraCSS));
-
-    final htmlContent = _mermaidHtmlTemplate
-        .replaceAll('__GRAPH_B64__', graphB64)
-        .replaceAll('__THEME__', theme)
-        .replaceAll('__LOOK__', look)
-        .replaceAll('__SECURITY_LEVEL__', securityLevel)
-        .replaceAll('__THEME_VARIABLES__', jsonEncode(themeVariables))
-        .replaceAll('__THEME_CSS_B64__', themeCSSB64)
-        .replaceAll('__HAND_DRAWN_SEED__', handDrawnSeed.toString())
-        .replaceAll('__EXTRA_CSS_B64__', extraCSSB64)
-        .replaceAll('__DIAGRAM_CONFIGS__', jsonEncode(diagramConfigs));
+    final htmlContent = _buildHtmlContent(config, graphDefinition);
 
     return _withPage((page) async {
       _logger.fine(
-        'Setting viewport to ${width}x$height with scale factor $deviceScaleFactor',
+        'Setting viewport to ${config.width}x${config.height} with scale factor '
+        '${config.deviceScaleFactor}',
       );
 
       // Set viewport before loading content
       await page.setViewport(
         DeviceViewport(
-          width: width,
-          height: height,
-          deviceScaleFactor: deviceScaleFactor,
+          width: config.width,
+          height: config.height,
+          deviceScaleFactor: config.deviceScaleFactor,
         ),
       );
 
       _logger.fine('Loading HTML content into page');
-      await page.setContent(htmlContent);
+      await page.setContent(htmlContent, timeout: config.timeout);
 
       _logger.fine(
-        'Waiting for Mermaid to render (timeout: ${timeout.inSeconds}s)',
+        'Waiting for Mermaid to render (timeout: ${config.timeout.inSeconds}s)',
       );
 
       // Wait for mermaid to finish rendering
       try {
         await page.waitForFunction(
-          'window.mermaidReady === true',
-          timeout: timeout,
+          'window.mermaidReady === true || window.mermaidError != null',
+          timeout: config.timeout,
         );
+
+        final mermaidError = await page.evaluate<String?>(
+          'window.mermaidError',
+        );
+        if (mermaidError != null) {
+          throw Exception('Mermaid syntax error: $mermaidError');
+        }
       } on TimeoutException {
         _logger.severe(
-          'Mermaid rendering timed out after ${timeout.inSeconds}s',
+          'Mermaid rendering timed out after ${config.timeout.inSeconds}s',
         );
         throw Exception(
-          'Mermaid diagram failed to render within ${timeout.inSeconds} seconds. '
+          'Mermaid diagram failed to render within ${config.timeout.inSeconds} seconds. '
           'This may indicate invalid Mermaid syntax or a browser rendering issue. '
           'Check your diagram syntax or increase the timeout.',
         );
@@ -542,6 +532,73 @@ class MermaidGenerator implements AssetGenerator {
       );
       return screenshot;
     });
+  }
+
+  _MermaidRenderConfig _resolveRenderConfig(String graphDefinition) {
+    // Detect diagram type and use fallback theme for problematic diagrams
+    final useFallbackTheme = _shouldUseFallbackTheme(graphDefinition);
+
+    final theme = useFallbackTheme
+        ? 'default' // Use Mermaid's default theme for timeline/gantt
+        : (configuration['theme'] as String? ?? 'base');
+
+    final themeVariables = useFallbackTheme
+        ? <String, Object?>{}
+        : Map<String, Object?>.from(
+            configuration['themeVariables'] as Map? ??
+                const <String, Object?>{},
+          );
+
+    final themeCSS = useFallbackTheme
+        ? '' // No custom CSS for fallback
+        : (configuration['themeCSS'] as String? ?? '');
+
+    final diagramConfigs = <String, Object?>{};
+    for (final key in _diagramConfigKeys) {
+      if (configuration.containsKey(key)) {
+        diagramConfigs[key] = configuration[key];
+      }
+    }
+
+    return (
+      theme: theme,
+      themeVariables: themeVariables,
+      themeCSS: themeCSS,
+      look: configuration['look'] as String? ?? 'classic',
+      securityLevel: configuration['securityLevel'] as String? ?? 'strict',
+      handDrawnSeed: configuration['handDrawnSeed'] as int? ?? 0,
+      extraCSS: configuration['extraCSS'] as String? ?? '',
+      width: configuration['viewportWidth'] as int? ?? _defaultViewportWidth,
+      height: configuration['viewportHeight'] as int? ?? _defaultViewportHeight,
+      deviceScaleFactor:
+          configuration['deviceScaleFactor'] as num? ??
+          _defaultDeviceScaleFactor,
+      timeout: Duration(
+        seconds: configuration['timeout'] as int? ?? _defaultTimeout,
+      ),
+      diagramConfigs: diagramConfigs,
+    );
+  }
+
+  String _buildHtmlContent(
+    _MermaidRenderConfig config,
+    String graphDefinition,
+  ) {
+    // Base64 encode for safe injection
+    final graphB64 = base64Encode(utf8.encode(graphDefinition));
+    final themeCSSB64 = base64Encode(utf8.encode(config.themeCSS));
+    final extraCSSB64 = base64Encode(utf8.encode(config.extraCSS));
+
+    return _mermaidHtmlTemplate
+        .replaceAll('__GRAPH_B64__', graphB64)
+        .replaceAll('__THEME__', config.theme)
+        .replaceAll('__LOOK__', config.look)
+        .replaceAll('__SECURITY_LEVEL__', config.securityLevel)
+        .replaceAll('__THEME_VARIABLES__', jsonEncode(config.themeVariables))
+        .replaceAll('__THEME_CSS_B64__', themeCSSB64)
+        .replaceAll('__HAND_DRAWN_SEED__', config.handDrawnSeed.toString())
+        .replaceAll('__EXTRA_CSS_B64__', extraCSSB64)
+        .replaceAll('__DIAGRAM_CONFIGS__', jsonEncode(config.diagramConfigs));
   }
 
   /// The timeout for waiting on browser initialization during dispose.

@@ -125,12 +125,13 @@ project/
 │   ├── superdeck_full.json     # Includes markdown AST JSON (for debugging)
 │   ├── generated_assets.json   # Asset manifest
 │   ├── build_status.json       # Last build status
-│   └── assets/                 # Generated assets (for example, Mermaid PNGs)
-│       ├── mermaid_<hash>.png
-│       └── thumbnail_<slideKey>.png  # Generated at runtime
+│   └── assets/                 # Build-generated assets (for example, Mermaid PNGs)
+│       └── mermaid_<hash>.png
 └── web/
     └── index.html              # Custom index with loading indicator
 ```
+
+Runtime slide thumbnails are referenced by key (`thumbnail_<slideKey>.png`) and cached by the app at runtime (system temp on IO platforms, in-memory data URIs on web).
 
 ## Configuration
 

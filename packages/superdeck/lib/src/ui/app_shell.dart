@@ -93,6 +93,15 @@ class _SplitViewState extends State<SplitView>
         } else if (!isMenuOpen && _animationController.value != 0.0) {
           _animationController.reverse();
         }
+
+        if (isMenuOpen) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || !deckController.isMenuOpen.value) {
+              return;
+            }
+            deckController.generateThumbnails(context);
+          });
+        }
       });
     }
   }
@@ -171,6 +180,7 @@ class _SplitViewState extends State<SplitView>
     final menuButton = SDIconButton(
       icon: Icons.menu,
       onPressed: deckController.openMenu,
+      semanticLabel: 'Open menu',
     );
     Widget? pluginAction;
     for (final plugin in deckController.plugins) {

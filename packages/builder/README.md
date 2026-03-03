@@ -7,7 +7,7 @@ Most projects should use `superdeck_cli` to run builds. Use `superdeck_builder` 
 ## What it provides
 
 - Markdown-to-JSON slide processing
-- Asset generation pipeline (Mermaid diagrams, thumbnails)
+- Asset generation pipeline (for example, Mermaid diagrams)
 - Schema code generation via `build_runner`
 
 ## Related packages

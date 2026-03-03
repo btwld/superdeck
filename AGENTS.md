@@ -35,10 +35,10 @@ docs/         # User-facing documentation (MDX format)
 
 ## Environment Setup
 
-This project uses FVM (Flutter Version Management) pinned to Flutter stable:
+This project uses FVM (Flutter Version Management) pinned via `.fvmrc`:
 
 ```bash
-fvm use stable --force
+fvm use --force
 dart pub global activate melos
 melos bootstrap
 ```
@@ -99,7 +99,7 @@ melos run clean            # Clean all Flutter build artifacts
 ### Generated Files
 - Files matching `*.g.dart`, `*.mapper.dart` are auto-generated
 - Regenerate with `melos run build_runner:build` before testing
-- Do not commit generated artifacts (except assets under `packages/superdeck/assets/`)
+- Commit generated files when they change and keep them synchronized with source updates
 
 ## Testing Guidelines
 

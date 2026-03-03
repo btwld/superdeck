@@ -12,7 +12,7 @@ final class DartFormatterTask extends Task {
 
   DartFormatterTask({
     Map<String, String>? environmentOverrides,
-    Map<String, dynamic> configuration = const {},
+    Map<String, Object?> configuration = const {},
   }) : _environmentOverrides = environmentOverrides,
        super('dart_formatter', configuration: configuration);
 

@@ -61,12 +61,13 @@ class _PreviewContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Using Flutter widgets with AnimatedContainer for transitions
+    const animationDuration = Duration(milliseconds: 200);
     final scale = selected ? 1.05 : 1.0;
     return AnimatedOpacity(
       opacity: selected ? 1.0 : 0.5,
-      duration: const Duration(milliseconds: 200),
+      duration: animationDuration,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: animationDuration,
         margin: const EdgeInsets.all(8),
         transform: Matrix4.diagonal3Values(scale, scale, 1.0),
         decoration: BoxDecoration(

@@ -1,0 +1,212 @@
+{
+  "$id": "https://superdeck.dev/schema/superdeck.deck.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "configuration": {
+      "additionalProperties": {},
+      "properties": {
+        "assetsPath": {
+          "type": "string"
+        },
+        "outputDir": {
+          "type": "string"
+        },
+        "projectDir": {
+          "type": "string"
+        },
+        "slidesPath": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "slides": {
+      "items": {
+        "additionalProperties": {},
+        "properties": {
+          "comments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "key": {
+            "description": "Unique identifier for this slide, typically generated from content hash.",
+            "type": "string"
+          },
+          "options": {
+            "additionalProperties": {},
+            "properties": {
+              "style": {
+                "type": "string"
+              },
+              "template": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "sections": {
+            "items": {
+              "additionalProperties": {},
+              "properties": {
+                "align": {
+                  "enum": [
+                    "topLeft",
+                    "topCenter",
+                    "topRight",
+                    "centerLeft",
+                    "center",
+                    "centerRight",
+                    "bottomLeft",
+                    "bottomCenter",
+                    "bottomRight"
+                  ],
+                  "type": "string"
+                },
+                "blocks": {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "additionalProperties": {},
+                        "properties": {
+                          "align": {
+                            "enum": [
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
+                              "center",
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
+                            ],
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "flex": {
+                            "type": "integer"
+                          },
+                          "scrollable": {
+                            "type": "boolean"
+                          },
+                          "type": {
+                            "const": "block",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": {},
+                        "properties": {
+                          "align": {
+                            "enum": [
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
+                              "center",
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
+                            ],
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "flex": {
+                            "type": "integer"
+                          },
+                          "scrollable": {
+                            "type": "boolean"
+                          },
+                          "type": {
+                            "const": "column",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": {},
+                        "properties": {
+                          "align": {
+                            "enum": [
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
+                              "center",
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
+                            ],
+                            "type": "string"
+                          },
+                          "flex": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "scrollable": {
+                            "type": "boolean"
+                          },
+                          "type": {
+                            "const": "widget",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "name"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                "flex": {
+                  "type": "integer"
+                },
+                "scrollable": {
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "slides"
+  ],
+  "title": "SuperDeck Deck Contract",
+  "type": "object"
+}

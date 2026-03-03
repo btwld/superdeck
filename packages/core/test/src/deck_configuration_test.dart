@@ -345,6 +345,18 @@ void main() {
         });
         expect(result.isOk, isTrue);
       });
+
+      test('fails when optional fields are explicitly null', () {
+        for (final field in [
+          'projectDir',
+          'slidesPath',
+          'outputDir',
+          'assetsPath',
+        ]) {
+          final result = DeckConfiguration.schema.safeParse({field: null});
+          expect(result.isOk, isFalse);
+        }
+      });
     });
 
     group('defaultFile', () {

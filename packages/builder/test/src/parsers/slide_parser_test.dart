@@ -6,9 +6,9 @@ import 'package:test/test.dart';
 void main() {
   final markdownParser = MarkdownParser();
 
-  group('RawSlideMarkdownType.parse', () {
-    test('creates RawSlideMarkdownType for valid map', () {
-      final slide = RawSlideMarkdownType.parse({
+  group('RawSlideMarkdown.parse', () {
+    test('creates RawSlideMarkdown for valid map', () {
+      final slide = RawSlideMarkdown.parse({
         'key': 'slide-1',
         'content': 'Hello World',
         'frontmatter': {'title': 'Slide 1'},
@@ -21,7 +21,7 @@ void main() {
 
     test('throws AckException when frontmatter is not a map', () {
       expect(
-        () => RawSlideMarkdownType.parse({
+        () => RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': 'Hello World',
           'frontmatter': 'invalid',
@@ -32,7 +32,7 @@ void main() {
 
     test('throws AckException when required keys are missing', () {
       expect(
-        () => RawSlideMarkdownType.parse({
+        () => RawSlideMarkdown.parse({
           'content': 'Hello World',
           'frontmatter': const {},
         }),
@@ -141,6 +141,37 @@ Content for slide 2
       expect(slides[1].content, equals('Content for slide 2'));
     });
 
+    test(
+      'parses frontmatter with blank lines without splitting slides',
+      () async {
+        const markdown = '''
+---
+title: Slide 1
+
+description: Has a blank line above
+---
+Content for slide 1
+
+---
+title: Slide 2
+---
+Content for slide 2
+''';
+
+        final slides = markdownParser.parse(markdown);
+
+        expect(slides.length, equals(2));
+        expect(slides[0].frontmatter['title'], equals('Slide 1'));
+        expect(
+          slides[0].frontmatter['description'],
+          equals('Has a blank line above'),
+        );
+        expect(slides[0].content, equals('Content for slide 1'));
+        expect(slides[1].frontmatter['title'], equals('Slide 2'));
+        expect(slides[1].content, equals('Content for slide 2'));
+      },
+    );
+
     test('handles empty markdown string', () async {
       const markdown = '';
 
@@ -185,6 +216,33 @@ title: Slide 1
       expect(slides.length, equals(1));
       expect(slides[0].frontmatter['title'], equals('Slide 1'));
       expect(slides[0].content, isEmpty);
+    });
+
+    test('applies deterministic key suffixes for hash collisions', () {
+      final parser = MarkdownParser();
+      const markdown = '''
+---
+title: Same
+---
+Repeated content
+
+---
+title: Same
+---
+Repeated content
+
+---
+title: Same
+---
+Repeated content
+''';
+
+      final slides = parser.parse(markdown);
+      final baseKey = slides.first.key;
+
+      expect(slides[0].key, baseKey);
+      expect(slides[1].key, '${baseKey}__2');
+      expect(slides.map((slide) => slide.key).toSet().length, slides.length);
     });
 
     test(

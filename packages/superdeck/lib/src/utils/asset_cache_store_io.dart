@@ -35,19 +35,39 @@ class _IoRuntimeAssetCacheStore implements AssetCacheStore {
     final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
 
     final appCacheUri = await _cacheStore.resolve(normalizedKey);
-    if (appCacheUri != null) {
+    final bundledFile = File(p.join(_bundledAssetsDir.path, normalizedKey));
+    if (appCacheUri == null) {
+      if (!await bundledFile.exists()) {
+        return null;
+      }
+      if (await bundledFile.length() == 0) {
+        return null;
+      }
+
+      return bundledFile.uri;
+    }
+
+    if (!await bundledFile.exists()) {
+      return appCacheUri;
+    }
+    if (await bundledFile.length() == 0) {
       return appCacheUri;
     }
 
-    final bundledFile = File(p.join(_bundledAssetsDir.path, normalizedKey));
-    if (!await bundledFile.exists()) {
-      return null;
-    }
-    if (await bundledFile.length() == 0) {
-      return null;
-    }
+    try {
+      final appCacheLastModified = await File.fromUri(
+        appCacheUri,
+      ).lastModified();
+      final bundledLastModified = await bundledFile.lastModified();
 
-    return bundledFile.uri;
+      if (bundledLastModified.isAfter(appCacheLastModified)) {
+        return bundledFile.uri;
+      }
+
+      return appCacheUri;
+    } on FileSystemException {
+      return bundledFile.uri;
+    }
   }
 
   @override

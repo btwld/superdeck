@@ -24,6 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install FVM
+        shell: bash
+        run: |
+          curl -fsSL https://fvm.app/install.sh | bash
+          echo "/home/runner/fvm/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/fvm/bin:$PATH"
+          fvm use --force
+
       - uses: kuhnroyal/flutter-fvm-config-action@v2
         id: fvm-config-action
 
@@ -46,7 +54,7 @@ jobs:
       - name: Build SuperDeck assets
         run: |
           cd demo
-          dart run superdeck_cli:main build
+          fvm dart run superdeck_cli:main build
 
       - name: Deploy Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0

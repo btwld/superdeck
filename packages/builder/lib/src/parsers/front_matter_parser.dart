@@ -1,7 +1,7 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 typedef ExtractedFrontmatter = ({
-  Map<String, dynamic> frontmatter,
+  Map<String, Object?> frontmatter,
   String? contents,
 });
 
@@ -64,7 +64,7 @@ class FrontmatterParser {
 
     final yamlString = result.yaml;
     final markdownContent = result.markdown;
-    Map<String, dynamic> yamlMap = {};
+    Map<String, Object?> yamlMap = {};
 
     if (yamlString.isNotEmpty) {
       try {
