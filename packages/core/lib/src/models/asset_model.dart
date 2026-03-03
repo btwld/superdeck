@@ -20,7 +20,11 @@ enum AssetExtension {
 
   String toJson() => name;
 
-  static AssetExtension fromJson(String value) {
+  static AssetExtension fromJson(Object value) {
+    if (value is AssetExtension) return value;
+    if (value is! String) {
+      throw ArgumentError('Invalid AssetExtension: $value');
+    }
     return AssetExtension.values.firstWhere(
       (e) => e.name == value,
       orElse: () => throw ArgumentError('Invalid AssetExtension: $value'),
@@ -55,14 +59,14 @@ class GeneratedAsset {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {'name': name, 'extension': extension.name, 'type': type};
   }
 
-  static GeneratedAsset fromMap(Map<String, dynamic> map) {
+  static GeneratedAsset fromMap(Map<String, Object?> map) {
     return GeneratedAsset(
       name: map['name'] as String,
-      extension: AssetExtension.fromJson(map['extension'] as String),
+      extension: AssetExtension.fromJson(map['extension']!),
       type: map['type'] as String,
     );
   }
@@ -126,11 +130,11 @@ class GeneratedAssetsReference {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, Object?> toMap() {
     return {'last_modified': lastModified.toIso8601String(), 'files': files};
   }
 
-  static GeneratedAssetsReference fromMap(Map<String, dynamic> map) {
+  static GeneratedAssetsReference fromMap(Map<String, Object?> map) {
     return GeneratedAssetsReference(
       lastModified: DateTime.parse(map['last_modified'] as String),
       files: (map['files'] as List<dynamic>)

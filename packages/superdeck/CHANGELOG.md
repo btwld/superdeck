@@ -1,0 +1,26 @@
+## 1.0.0
+
+- First stable release of `superdeck`.
+- Roll back experimental setext-heading hero parsing; ATX headers continue to use the shared helper.
+- Fix image hero-tag parsing to avoid inline parser overruns and keep Flutter/core paths aligned.
+- Document the shared `{.hero}` helper and scope so future contributions stay consistent.
+
+## 0.0.4
+
+- Fix better error handling when `mmdc` (`mermaid-cli`) is not installed.
+- Improve the asset generation pipeline.
+
+## 0.0.3
+
+- Clean up dependencies.
+- Update example code.
+- Improve logging.
+- Fix and improve Mermaid generation.
+
+## 0.0.2
+
+- Add demo and example code.
+
+## 0.0.1
+
+- Initial version.

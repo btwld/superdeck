@@ -37,21 +37,34 @@ class DeckBottomBar extends StatelessWidget {
             icon: deck.isNotesOpen.value
                 ? Icons.comment
                 : Icons.comments_disabled,
+            semanticLabel: deck.isNotesOpen.value
+                ? 'Close notes panel'
+                : 'Open notes panel',
           ),
         ),
 
         SDIconButton(
           icon: Icons.save,
           onPressed: () => PdfExportDialogScreen.show(context),
+          semanticLabel: 'Export PDF',
         ),
 
         SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
           onPressed: () => deck.generateThumbnails(context, force: true),
+          semanticLabel: 'Regenerate thumbnails',
         ),
         const Spacer(),
-        SDIconButton(icon: Icons.arrow_back, onPressed: deck.previousSlide),
-        SDIconButton(icon: Icons.arrow_forward, onPressed: deck.nextSlide),
+        SDIconButton(
+          icon: Icons.arrow_back,
+          onPressed: deck.previousSlide,
+          semanticLabel: 'Previous slide',
+        ),
+        SDIconButton(
+          icon: Icons.arrow_forward,
+          onPressed: deck.nextSlide,
+          semanticLabel: 'Next slide',
+        ),
         const Spacer(),
 
         // Page counter - use Watch for reactive text
@@ -62,7 +75,11 @@ class DeckBottomBar extends StatelessWidget {
           ),
         ),
 
-        SDIconButton(icon: Icons.close, onPressed: deck.closeMenu),
+        SDIconButton(
+          icon: Icons.close,
+          onPressed: deck.closeMenu,
+          semanticLabel: 'Close menu',
+        ),
       ],
     );
   }

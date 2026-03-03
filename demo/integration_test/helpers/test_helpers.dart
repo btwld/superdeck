@@ -10,6 +10,23 @@ import 'package:superdeck_example/src/style.dart';
 import 'package:superdeck_example/src/templates.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
+String describeDeckControllerState(DeckController? controller) {
+  if (controller == null) {
+    return 'DeckController: null';
+  }
+
+  return [
+    'DeckController state:',
+    '  isLoading=${controller.isLoading.value}',
+    '  hasError=${controller.hasError.value}',
+    '  error=${controller.error.value}',
+    '  totalSlides=${controller.totalSlides.value}',
+    '  currentIndex=${controller.currentIndex.value}',
+    '  isMenuOpen=${controller.isMenuOpen.value}',
+    '  isNotesOpen=${controller.isNotesOpen.value}',
+  ].join('\n');
+}
+
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
   const TestApp({super.key});
@@ -81,6 +98,7 @@ extension IntegrationTestExtensions on WidgetTester {
     Duration timeout = const Duration(seconds: 10),
     Duration step = const Duration(milliseconds: 50),
     String debugLabel = 'condition',
+    String Function()? onTimeout,
   }) async {
     final stopwatch = Stopwatch()..start();
     while (stopwatch.elapsed < timeout) {
@@ -90,7 +108,15 @@ extension IntegrationTestExtensions on WidgetTester {
       await pump(step);
     }
 
-    fail('Timed out waiting for $debugLabel after ${timeout.inSeconds}s');
+    final diagnostics = onTimeout?.call();
+    if (diagnostics == null || diagnostics.isEmpty) {
+      fail('Timed out waiting for $debugLabel after ${timeout.inSeconds}s');
+    }
+
+    fail(
+      'Timed out waiting for $debugLabel after ${timeout.inSeconds}s\n'
+      'Diagnostics:\n$diagnostics',
+    );
   }
 
   /// Pumps the test app and waits for it to fully load.
@@ -100,10 +126,22 @@ extension IntegrationTestExtensions on WidgetTester {
     await pumpWidget(const TestApp());
     await pumpFor(const Duration(milliseconds: 200));
 
+    await pumpUntil(
+      () => findDeckController(this) != null,
+      timeout: const Duration(seconds: 15),
+      debugLabel: 'DeckController to mount',
+      onTimeout: () => _startupDiagnostics(),
+    );
+
     final controller = findDeckController(this);
-    if (controller == null) {
-      return null;
-    }
+    expect(
+      controller,
+      isNotNull,
+      reason:
+          'DeckController was not found after startup.\n'
+          'Diagnostics:\n${_startupDiagnostics()}',
+    );
+    if (controller == null) return null;
 
     await waitForSlidesLoaded(controller);
     return controller;
@@ -115,10 +153,14 @@ extension IntegrationTestExtensions on WidgetTester {
       () => !controller.isLoading.value,
       timeout: const Duration(seconds: 20),
       debugLabel: 'slides to finish loading',
+      onTimeout: () => describeDeckControllerState(controller),
     );
 
     if (controller.hasError.value) {
-      fail('Deck failed to load: ${controller.error.value}');
+      fail(
+        'Deck failed to load: ${controller.error.value}\n'
+        '${describeDeckControllerState(controller)}',
+      );
     }
 
     await pumpFor(const Duration(milliseconds: 200));
@@ -131,7 +173,17 @@ extension IntegrationTestExtensions on WidgetTester {
       () => controller.currentIndex.value == index,
       timeout: const Duration(seconds: 5),
       debugLabel: 'navigation to slide $index',
+      onTimeout: () => describeDeckControllerState(controller),
     );
     await pumpFor(const Duration(milliseconds: 200));
+  }
+
+  String _startupDiagnostics() {
+    final controller = findDeckController(this);
+    return [
+      describeDeckControllerState(controller),
+      'Scaffold count=${find.byType(Scaffold).evaluate().length}',
+      'Error text count=${find.textContaining('Error loading presentation').evaluate().length}',
+    ].join('\n');
   }
 }

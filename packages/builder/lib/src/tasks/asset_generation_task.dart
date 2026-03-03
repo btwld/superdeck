@@ -19,7 +19,7 @@ final class AssetGenerationTask extends Task {
     required List<AssetGenerator> generators,
     required DeckService store,
     AssetCacheStore? cacheStore,
-    Map<String, dynamic> configuration = const {},
+    Map<String, Object?> configuration = const {},
   }) : _pipeline = AssetGenerationPipeline(
          generators: generators,
          store: store,
@@ -30,9 +30,9 @@ final class AssetGenerationTask extends Task {
   /// Factory constructor that creates a default asset pipeline with standard generators.
   factory AssetGenerationTask.withDefaults({
     required DeckService store,
-    Map<String, dynamic>? browserLaunchOptions,
+    Map<String, Object?>? browserLaunchOptions,
     AssetCacheStore? cacheStore,
-    Map<String, dynamic> configuration = const {},
+    Map<String, Object?> configuration = const {},
   }) {
     final generators = <AssetGenerator>[
       MermaidGenerator(launchOptions: browserLaunchOptions),

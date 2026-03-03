@@ -52,16 +52,50 @@ void main() {
       expect(resolved, bundledFile.uri);
     });
 
-    test('resolves app cache before bundled asset', () async {
+    test('resolves app cache when bundled asset is missing', () async {
+      final cachedUri = await store.write(assetKey, [9, 9, 9]);
+
+      final resolved = await store.resolve(assetKey);
+
+      expect(cachedUri, isNotNull);
+      expect(resolved, cachedUri);
+    });
+
+    test('resolves newer app cache over bundled asset', () async {
       final bundledFile = File(p.join(configuration.assetsDir.path, assetKey));
       await bundledFile.writeAsBytes([1, 2, 3]);
 
       final cachedUri = await store.write(assetKey, [9, 9, 9]);
+      final cacheFile = File.fromUri(cachedUri!);
+
+      final olderTime = DateTime.now().subtract(const Duration(minutes: 2));
+      final newerTime = DateTime.now();
+      await bundledFile.setLastModified(olderTime);
+      await cacheFile.setLastModified(newerTime);
+
       final resolved = await store.resolve(assetKey);
 
       expect(cachedUri, isNotNull);
       expect(resolved, cachedUri);
       expect(resolved, isNot(bundledFile.uri));
+    });
+
+    test('resolves newer bundled asset over stale app cache', () async {
+      final bundledFile = File(p.join(configuration.assetsDir.path, assetKey));
+      await bundledFile.writeAsBytes([1, 2, 3]);
+
+      final cachedUri = await store.write(assetKey, [9, 9, 9]);
+      final cacheFile = File.fromUri(cachedUri!);
+
+      final olderTime = DateTime.now().subtract(const Duration(minutes: 2));
+      final newerTime = DateTime.now();
+      await cacheFile.setLastModified(olderTime);
+      await bundledFile.setLastModified(newerTime);
+
+      final resolved = await store.resolve(assetKey);
+
+      expect(cachedUri, isNotNull);
+      expect(resolved, bundledFile.uri);
     });
 
     test('delete removes app cache without deleting bundled asset', () async {

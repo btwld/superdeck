@@ -74,10 +74,10 @@ Create a `slides.md` file in your project root. Separate slides with `---`.
 
 ## Contributing
 
-SuperDeck is a Melos workspace pinned to Flutter stable via FVM.
+SuperDeck is a Melos workspace pinned via FVM in `.fvmrc`.
 
 ```bash
-fvm use stable --force
+fvm use --force
 dart pub global activate melos
 melos bootstrap
 melos run analyze

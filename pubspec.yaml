@@ -10,4 +10,4 @@ dependencies:
   mix: ^2.0.0-rc.0
 
 lint_staged:
-  '**.dart': dart fix --apply && dcm fix
+  '**.dart': fvm dart fix --apply && dcm fix

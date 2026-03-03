@@ -50,7 +50,7 @@ String updatePubspecAssets(
   return YamlWriter(allowUnquotedStrings: true).write(updatedYaml);
 }
 
-Map<String, dynamic> _loadPubspecMap(String pubspecContents) {
+Map<String, Object?> _loadPubspecMap(String pubspecContents) {
   Object? yaml;
   try {
     yaml = loadYaml(pubspecContents);
@@ -72,7 +72,7 @@ Map<String, dynamic> _loadPubspecMap(String pubspecContents) {
   );
 }
 
-Map<String, dynamic> _stringKeyedMap(Map<Object?, Object?> source) {
+Map<String, Object?> _stringKeyedMap(Map<Object?, Object?> source) {
   return source.map((key, value) {
     final stringKey = key?.toString();
     if (stringKey == null) {

@@ -5,7 +5,7 @@ homepage: https://github.com/leoafarias/superdeck
 
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
+  sdk: ">=3.10.0 <4.0.0"
 
 
 # Add regular dependencies here.
@@ -15,6 +15,7 @@ dependencies:
   path: ^1.9.0
   meta: ^1.15.0
   ack: ^1.0.0-beta.7
+  ack_annotations: ^1.0.0-beta.7
   markdown: ^7.3.0
   logging: ^1.3.0
   crypto: ^3.0.6

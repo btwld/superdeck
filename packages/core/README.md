@@ -7,6 +7,7 @@ Most projects should depend on `superdeck` (Flutter) and use `superdeck_cli` for
 ## What it provides
 
 - Deck data models (`Deck`, `Slide`, `SlideOptions`, block models)
+- Canonical deck contract schema (`Deck.schema`)
 - File layout helpers (`DeckConfiguration` for `slides.md` and `.superdeck/`)
 - Local storage and file watching (`DeckService`)
 - Markdown extensions and parsing helpers
@@ -34,6 +35,11 @@ Future<void> main() async {
 - `superdeck` - Flutter slide runtime
 - `superdeck_builder` - asset generation and build pipeline
 - `superdeck_cli` - CLI wrapper (installs the `superdeck` command)
+
+## Contract docs
+
+- `/docs/reference/contracts.mdx` in this repository
+- Published docs route: `/reference/contracts`
 
 ## License
 

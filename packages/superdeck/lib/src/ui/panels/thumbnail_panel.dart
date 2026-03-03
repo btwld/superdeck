@@ -125,9 +125,14 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-              child: GestureDetector(
-                onTap: () => widget.onItemTap(index),
-                child: widget.itemBuilder(index, index == widget.activeIndex),
+              child: Semantics(
+                button: true,
+                selected: index == widget.activeIndex,
+                label: 'Slide thumbnail ${index + 1}',
+                child: GestureDetector(
+                  onTap: () => widget.onItemTap(index),
+                  child: widget.itemBuilder(index, index == widget.activeIndex),
+                ),
               ),
             );
           },

@@ -39,6 +39,12 @@ enum PdfExportStatus {
 /// Handles capturing slides as images and combining them into a PDF document.
 /// Supports both web and native platforms.
 class PdfController {
+  static const _kPollInterval = Duration(milliseconds: 10);
+  static const _kRetryDelay = Duration(milliseconds: 100);
+  static const _kPrepareAnimationDuration = Duration(milliseconds: 50);
+  static const _kCaptureAnimationDuration = Duration(milliseconds: 1);
+  static const _kRenderAttachmentTimeout = Duration(seconds: 5);
+
   /// Creates a new [PdfController]
   ///
   /// [slides] - List of slides to export
@@ -48,7 +54,9 @@ class PdfController {
     required this.slides,
     required this.slideCaptureService,
     Duration waitDuration = const Duration(milliseconds: 100),
-  }) : _waitDuration = waitDuration {
+    Duration renderAttachmentTimeout = _kRenderAttachmentTimeout,
+  }) : _waitDuration = waitDuration,
+       _renderAttachmentTimeout = renderAttachmentTimeout {
     _pageController = PageController(initialPage: 0);
     _slideKeys = {for (var slide in slides) slide.key: GlobalKey()};
   }
@@ -91,6 +99,7 @@ class PdfController {
 
   /// Duration used to wait between operations
   final Duration _waitDuration;
+  final Duration _renderAttachmentTimeout;
 
   /// Whether this controller has been disposed
   bool get disposed => _disposed;
@@ -101,20 +110,36 @@ class PdfController {
   /// Gets the [GlobalKey] for a specific slide
   GlobalKey getSlideKey(SlideConfiguration slide) => _slideKeys[slide.key]!;
 
+  @visibleForTesting
+  Future<void> waitForRenderBoundaryPaint(GlobalKey key) =>
+      _waitForRenderBoundaryPaint(key);
+
   /// Waits for a render boundary widget to be painted
   Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
-    while (key.currentContext == null) {
-      await Future.delayed(const Duration(milliseconds: 10));
+    var elapsed = Duration.zero;
+    var hasSeenContext = false;
+
+    while (elapsed < _renderAttachmentTimeout) {
+      _checkExportAllowed();
+
+      if (key.currentContext != null) {
+        hasSeenContext = true;
+      }
+
+      final repaintBoundary = key.currentContext?.findRenderObject();
+      if (repaintBoundary != null && repaintBoundary.attached) {
+        await WidgetsBinding.instance.endOfFrame;
+        return;
+      }
+      await Future.delayed(_kPollInterval);
+      elapsed += _kPollInterval;
     }
 
-    final repaintBoundary = key.currentContext!.findRenderObject()!;
-    final isAttached = repaintBoundary.attached;
-
-    while (!isAttached) {
-      await Future.delayed(const Duration(milliseconds: 10));
-    }
-
-    await WidgetsBinding.instance.endOfFrame;
+    throw StateError(
+      hasSeenContext
+          ? 'RenderObject not attached within $_renderAttachmentTimeout'
+          : 'RenderObject context not available within $_renderAttachmentTimeout',
+    );
   }
 
   /// Captures an image from a [GlobalKey] with retry logic
@@ -130,7 +155,7 @@ class PdfController {
         );
       } catch (error) {
         if (attempt == maxAttempts) rethrow;
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(_kRetryDelay);
       }
     }
     throw Exception('Failed to capture image after $maxAttempts attempts.');
@@ -146,7 +171,7 @@ class PdfController {
 
       await _pageController.animateToPage(
         i,
-        duration: const Duration(milliseconds: 50),
+        duration: _kPrepareAnimationDuration,
         curve: Curves.linear,
       );
 
@@ -176,7 +201,7 @@ class PdfController {
 
         await _pageController.animateToPage(
           i,
-          duration: const Duration(milliseconds: 1),
+          duration: _kCaptureAnimationDuration,
           curve: Curves.linear,
         );
 

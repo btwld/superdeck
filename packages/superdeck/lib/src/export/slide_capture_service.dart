@@ -34,6 +34,8 @@ class SlideCaptureService {
 
   /// Maximum concurrent generations to prevent memory pressure.
   static const _maxConcurrentGenerations = 3;
+  static const _kQueuePollInterval = Duration(milliseconds: 50);
+  static const _kRenderSettleDelay = Duration(milliseconds: 100);
 
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
@@ -43,7 +45,7 @@ class SlideCaptureService {
     final queueKey = shortHash(slide.key + quality.name);
     try {
       while (_generationQueue.length >= _maxConcurrentGenerations) {
-        await Future.delayed(const Duration(milliseconds: 50));
+        await Future.delayed(_kQueuePollInterval);
       }
 
       _generationQueue.add(queueKey);
@@ -190,7 +192,7 @@ class SlideCaptureService {
           ..flushCompositingBits()
           ..flushPaint();
 
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(_kRenderSettleDelay);
 
         if (!isDirty) {
           log('Image generation completed.');

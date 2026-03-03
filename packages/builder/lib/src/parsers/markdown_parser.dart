@@ -5,6 +5,20 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'front_matter_parser.dart';
 import 'raw_slide_schema.dart';
 
+String _uniquifyKey(
+  String baseKey,
+  Set<String> usedKeys, {
+  String separator = '__',
+}) {
+  if (!usedKeys.contains(baseKey)) return baseKey;
+  var suffix = 2;
+  while (true) {
+    final candidate = '$baseKey$separator$suffix';
+    if (!usedKeys.contains(candidate)) return candidate;
+    suffix++;
+  }
+}
+
 /// Stage 1 of 2-stage build-time parsing: Splits presentation markdown into individual slides.
 ///
 /// Splits raw markdown by frontmatter delimiters (---), treating each section as
@@ -58,10 +72,6 @@ class MarkdownParser {
         continue;
       }
 
-      if (insideFrontMatter && trimmed.isEmpty) {
-        insideFrontMatter = false;
-      }
-
       if (trimmed == '---') {
         if (!insideFrontMatter) {
           if (buffer.isNotEmpty) {
@@ -81,23 +91,27 @@ class MarkdownParser {
     return slides;
   }
 
-  List<RawSlideMarkdownType> parse(String markdown) {
+  List<RawSlideMarkdown> parse(String markdown) {
     final rawSlides = _splitSlides(markdown);
 
-    final slides = <RawSlideMarkdownType>[];
+    final slides = <RawSlideMarkdown>[];
+    final usedKeys = <String>{};
 
     final frontMatterExtractor = FrontmatterParser();
 
     for (final rawSlide in rawSlides) {
       final frontmatter = frontMatterExtractor.parse(rawSlide);
+      final baseKey = generateValueHash(rawSlide);
+      final key = _uniquifyKey(baseKey, usedKeys);
+      usedKeys.add(key);
 
       final slideData = {
-        'key': generateValueHash(rawSlide),
+        'key': key,
         'content': (frontmatter.contents ?? '').trim(),
         'frontmatter': frontmatter.frontmatter,
       };
 
-      slides.add(RawSlideMarkdownType.parse(slideData));
+      slides.add(RawSlideMarkdown.parse(slideData));
     }
 
     return slides;

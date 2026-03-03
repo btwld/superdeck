@@ -33,7 +33,7 @@ base class ContentModifierTask extends Task {
 
   @override
   Future<void> run(SlideContext context) async {
-    final updated = RawSlideMarkdownType.parse({
+    final updated = RawSlideMarkdown.parse({
       'key': context.slide.key,
       'content': '$prefix${context.slide.content}',
       'frontmatter': context.slide.frontmatter,
@@ -67,7 +67,7 @@ void main() {
 
     group('Basic Processing', () {
       test('processes single slide successfully', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': '# Hello World',
           'frontmatter': {'title': 'Test Slide'},
@@ -83,17 +83,17 @@ void main() {
 
       test('processes multiple slides successfully', () async {
         final rawSlides = [
-          RawSlideMarkdownType.parse({
+          RawSlideMarkdown.parse({
             'key': 'slide-1',
             'content': 'Content 1',
             'frontmatter': {},
           }),
-          RawSlideMarkdownType.parse({
+          RawSlideMarkdown.parse({
             'key': 'slide-2',
             'content': 'Content 2',
             'frontmatter': {},
           }),
-          RawSlideMarkdownType.parse({
+          RawSlideMarkdown.parse({
             'key': 'slide-3',
             'content': 'Content 3',
             'frontmatter': {},
@@ -119,7 +119,7 @@ void main() {
       });
 
       test('processes slides with no tasks', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': '# Hello',
           'frontmatter': {},
@@ -134,7 +134,7 @@ void main() {
 
     group('Task Execution', () {
       test('executes multiple tasks in sequence', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': 'Original',
           'frontmatter': {},
@@ -160,7 +160,7 @@ void main() {
       test('maintains task execution order', () async {
         final rawSlides = List.generate(
           3,
-          (i) => RawSlideMarkdownType.parse({
+          (i) => RawSlideMarkdown.parse({
             'key': 'slide-$i',
             'content': 'Content $i',
             'frontmatter': {},
@@ -181,12 +181,12 @@ void main() {
 
       test('task receives correct slide context', () async {
         final rawSlides = [
-          RawSlideMarkdownType.parse({
+          RawSlideMarkdown.parse({
             'key': 'first',
             'content': 'First content',
             'frontmatter': {},
           }),
-          RawSlideMarkdownType.parse({
+          RawSlideMarkdown.parse({
             'key': 'second',
             'content': 'Second content',
             'frontmatter': {},
@@ -216,7 +216,7 @@ void main() {
       test('respects default concurrency limit of 4', () async {
         final rawSlides = List.generate(
           10,
-          (i) => RawSlideMarkdownType.parse({
+          (i) => RawSlideMarkdown.parse({
             'key': 'slide-$i',
             'content': 'Content $i',
             'frontmatter': {},
@@ -234,7 +234,7 @@ void main() {
         final customProcessor = SlideProcessor(concurrentSlides: 2);
         final rawSlides = List.generate(
           5,
-          (i) => RawSlideMarkdownType.parse({
+          (i) => RawSlideMarkdown.parse({
             'key': 'slide-$i',
             'content': 'Content $i',
             'frontmatter': {},
@@ -254,7 +254,7 @@ void main() {
         final processor2 = SlideProcessor(concurrentSlides: 2);
         final rawSlides = List.generate(
           3,
-          (i) => RawSlideMarkdownType.parse({
+          (i) => RawSlideMarkdown.parse({
             'key': 'slide-$i',
             'content': 'Content $i',
             'frontmatter': {},
@@ -272,7 +272,7 @@ void main() {
 
     group('Error Handling', () {
       test('throws TaskException when task fails', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': 'Content',
           'frontmatter': {},
@@ -301,12 +301,12 @@ void main() {
 
       test('includes slide index in error', () async {
         final rawSlides = [
-          RawSlideMarkdownType.parse({
+          RawSlideMarkdown.parse({
             'key': 'slide-0',
             'content': 'Content 0',
             'frontmatter': {},
           }),
-          RawSlideMarkdownType.parse({
+          RawSlideMarkdown.parse({
             'key': 'slide-1',
             'content': 'Content 1',
             'frontmatter': {},
@@ -333,7 +333,7 @@ void main() {
       });
 
       test('preserves original exception in TaskException', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': 'Content',
           'frontmatter': {},
@@ -358,7 +358,7 @@ void main() {
       test('stops processing on first error', () async {
         final rawSlides = List.generate(
           5,
-          (i) => RawSlideMarkdownType.parse({
+          (i) => RawSlideMarkdown.parse({
             'key': 'slide-$i',
             'content': 'Content $i',
             'frontmatter': {},
@@ -392,7 +392,7 @@ void main() {
 
     group('Slide Building', () {
       test('builds slide with correct key', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'custom-key',
           'content': 'Content',
           'frontmatter': {},
@@ -404,7 +404,7 @@ void main() {
       });
 
       test('parses frontmatter into SlideOptions', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': 'Content',
           'frontmatter': {'title': 'Test Title', 'style': 'dark'},
@@ -417,7 +417,7 @@ void main() {
       });
 
       test('parses content into sections', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': '''
 @section
@@ -436,7 +436,7 @@ Column content
       });
 
       test('parses comments from content', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': '''
 # Title
@@ -458,7 +458,7 @@ Content here
       });
 
       test('handles empty frontmatter', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': 'Just content',
           'frontmatter': {},
@@ -471,7 +471,7 @@ Content here
       });
 
       test('handles slides with only content', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': '# Just a heading\n\nAnd some text.',
           'frontmatter': {},
@@ -490,7 +490,7 @@ Content here
 
     group('Edge Cases', () {
       test('handles empty slide content', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'empty-slide',
           'content': '',
           'frontmatter': {},
@@ -504,7 +504,7 @@ Content here
       });
 
       test('handles special characters in content', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'special-chars',
           'content': '''
 # Title with émojis 🎉
@@ -525,7 +525,7 @@ Symbols: ← → ↑ ↓
 
       test('handles very long content', () async {
         final longContent = List.generate(1000, (i) => 'Line $i').join('\n');
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'long-slide',
           'content': longContent,
           'frontmatter': {},
@@ -538,7 +538,7 @@ Symbols: ← → ↑ ↓
       });
 
       test('handles whitespace-only content', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'whitespace-slide',
           'content': '   \n\n   \t\t   \n   ',
           'frontmatter': {},
@@ -551,7 +551,7 @@ Symbols: ← → ↑ ↓
       });
 
       test('handles malformed section tags', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'malformed-slide',
           'content': '''
 @section
@@ -572,7 +572,7 @@ Some content without tag
       });
 
       test('handles slides with only comments', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'comments-only',
           'content': '''
 <!-- Comment 1 -->
@@ -589,7 +589,7 @@ Some content without tag
       });
 
       test('handles mixed newline types', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'mixed-newlines',
           'content': 'Line 1\nLine 2\r\nLine 3\rLine 4',
           'frontmatter': {},
@@ -602,7 +602,7 @@ Some content without tag
       });
 
       test('handles content with code blocks', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'code-slide',
           'content': '''
 # Code Example
@@ -628,7 +628,7 @@ More content.
       });
 
       test('handles multiple complex frontmatter fields', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'complex-frontmatter',
           'content': 'Content',
           'frontmatter': {
@@ -652,7 +652,7 @@ More content.
       test('processes multiple slides with multiple tasks', () async {
         final rawSlides = List.generate(
           6,
-          (i) => RawSlideMarkdownType.parse({
+          (i) => RawSlideMarkdown.parse({
             'key': 'slide-$i',
             'content': 'Content $i',
             'frontmatter': {'index': i},
@@ -678,7 +678,7 @@ More content.
       test('maintains slide order after processing', () async {
         final rawSlides = List.generate(
           10,
-          (i) => RawSlideMarkdownType.parse({
+          (i) => RawSlideMarkdown.parse({
             'key': 'slide-$i',
             'content': 'Content $i',
             'frontmatter': {},
@@ -694,7 +694,7 @@ More content.
       });
 
       test('handles complex slide with all features', () async {
-        final rawSlide = RawSlideMarkdownType.parse({
+        final rawSlide = RawSlideMarkdown.parse({
           'key': 'complex-slide',
           'content': '''
 # Main Title

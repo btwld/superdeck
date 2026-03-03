@@ -5,7 +5,7 @@ import 'utils/yaml_utils.dart';
 
 class TagToken {
   final String name;
-  final Map<String, dynamic> options;
+  final Map<String, Object?> options;
   final String? rawOptions;
   final int startIndex;
   final int endIndex;
@@ -146,7 +146,7 @@ class TagTokenizer {
     );
   }
 
-  Map<String, dynamic> _parseOptions(
+  Map<String, Object?> _parseOptions(
     String rawInner,
     String tagName,
     String source,

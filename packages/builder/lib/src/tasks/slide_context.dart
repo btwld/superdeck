@@ -9,7 +9,7 @@ class SlideContext {
   final DeckService dataStore;
 
   /// The raw slide being processed.
-  RawSlideMarkdownType slide;
+  RawSlideMarkdown slide;
 
   SlideContext(this.slideIndex, this.slide, this.dataStore);
 }
