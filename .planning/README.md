@@ -2,10 +2,16 @@
 
 This hidden folder (`.planning/`) contains internal development and planning documentation that is **not published** to the public website.
 
-## Contents
+## Canonical Planning Set
 
-- **feature-templates.md** - Complete implementation plan for the slide templates feature
-- **markdown-extensions.md** - Architecture documentation for the markdown processing pipeline
+The main rewrite/planning documents are:
+
+- **rewrite-v2-full-plan.md** - Umbrella rewrite plan
+- **rewrite-v2-feature-matrix.md** - Current feature inventory, parity decisions, and open rows
+- **rewrite-v2-parser-semantics.md** - Frozen parser-level v2 contract
+- **rewrite-v2-build-watch-runtime.md** - Frozen operational/runtime contract for build, watch, and thumbnail behavior
+- **rewrite-v2-contract-migration-matrix.md** - Compatibility and public-surface migration planning
+- **session.md** - Live handoff, current state, and next-step tracking
 
 ## Purpose
 

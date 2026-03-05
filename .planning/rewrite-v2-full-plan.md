@@ -18,6 +18,23 @@ This rewrite is justified by concrete issues in the current implementation:
 
 The rewrite is a breaking `v2`, uses a full package reorganization, and excludes `packages/genui` from the rewrite scope.
 
+## Canonical Planning Docs After Reconciliation
+This file is the umbrella rewrite plan.
+
+Detailed sign-off lives in:
+- `.planning/rewrite-v2-feature-matrix.md`
+- `.planning/rewrite-v2-parser-semantics.md`
+- `.planning/rewrite-v2-build-watch-runtime.md`
+- `.planning/rewrite-v2-contract-migration-matrix.md`
+
+Use this file for:
+- rewrite goals
+- package/layer responsibilities
+- phase sequencing
+- risks and acceptance criteria
+
+Do not use this file as the sole source of truth for parser grammar, runtime watch semantics, or migration/public-surface naming.
+
 ## Current Implementation Context
 
 ### What exists today
@@ -84,7 +101,7 @@ The rewrite only makes sense if it preserves the real product surface that exist
 - `setup` creates sample slides, patches `pubspec.yaml`, writes custom `web/index.html`, and updates macOS entitlements
 - `build` supports watch and force rebuild behavior
 - `publish` builds web with GitHub Pages base-href, uses git worktree flow, writes `.nojekyll`, supports dry-run, and restores temporary mutations
-- `superdeck.yaml` is the shared operational config input for CLI and runtime
+- `superdeck.yaml` is currently read in both CLI and some runtime flows, but strictness and availability differ by environment today
 
 ### Why a rewrite makes sense
 The rewrite is warranted because the current implementation carries structural complexity that is now shaping behavior:
@@ -693,8 +710,8 @@ final class BuildOutput {
 ### Inputs and operational config
 Inputs:
 - `slides.md` authoring source
-- optional `superdeck.yaml` operational config shared by CLI and runtime
-- runtime-only `styles.yaml` remains outside deck artifact generation and is merged by `runtime_flutter`
+- local runtime configuration as frozen in `.planning/rewrite-v2-build-watch-runtime.md`
+- external config sources such as `superdeck.yaml` and `styles.yaml` remain explicit planning decisions, not fixed assumptions in this umbrella doc
 
 ### Task pipeline order
 1. load source
@@ -735,9 +752,9 @@ Rules:
 - no `exit()` inside command handlers
 
 ### Configuration loading policy
-- CLI/build and runtime use the same strict `superdeck.yaml` parser
-- invalid operational config becomes a typed configuration failure, not a silent fallback to defaults
-- permissive fallback behavior, if retained anywhere, must be explicit and opt-in
+- External config-source policy is still open.
+- Do not treat one shared strict `superdeck.yaml` policy as frozen in this umbrella plan.
+- Final `superdeck.yaml` / `styles.yaml` behavior belongs in `.planning/rewrite-v2-feature-matrix.md`, `.planning/rewrite-v2-build-watch-runtime.md`, and `.planning/rewrite-v2-contract-migration-matrix.md`.
 
 ## Runtime Flutter Design
 
@@ -758,7 +775,8 @@ Implementations:
 - initialize syntax highlighting grammars
 - initialize desktop window management on supported non-web platforms
 - initialize plugins with typed success/failure reporting
-- resolve operational config and merge `styles.yaml` with code options before first render
+- follow the runtime-local configuration contract already frozen in `.planning/rewrite-v2-build-watch-runtime.md`
+- keep external config-source behavior explicit rather than assuming automatic `styles.yaml` merge or shared `superdeck.yaml` resolution
 
 ### Controller model
 `DeckControllerV2` owns:
@@ -825,7 +843,7 @@ final class DeckRenderOptions {
 
 Policy:
 - `watchForChanges` is removed from the core render options surface and replaced by explicit dev tooling/session APIs
-- `styles.yaml` remains a runtime-side merge input, not a build artifact concern
+- `styles.yaml` remains a runtime-side concern in the current implementation, but its loading/merge policy is still explicitly open
 
 #### Style resolution
 Rules:
@@ -888,7 +906,7 @@ Rule:
 - `build`
   - one-shot build
 - `watch`
-  - dedicated watch session
+  - optional/manual orchestration only if retained
 - `publish`
   - build web
   - resolve base-href from repository identity
@@ -901,7 +919,8 @@ Rule:
   - v1 to v2 dry run or apply
 
 ### Important CLI simplifications
-- `watch` should be its own explicit command, not a mode hidden inside `build`
+- local day-to-day dev should be runtime-first (`flutter run` + embedded app watch/build)
+- if CLI watch remains, it should be optional/manual orchestration and not a peer owner of the primary dev loop
 - `publish` should use a scoped `IndexHtmlOverrideSession`
 - all temporary filesystem changes must live inside scoped cleanup objects
 - `DeckOptions.watchForChanges` compatibility is handled by a thin dev adapter or migration warning, not by embedding watch orchestration inside normal runtime options
@@ -923,6 +942,7 @@ Subservices:
 This replaces today’s single large command-object approach.
 
 ## Migration Plan
+Detailed row-by-row compatibility and public-surface rename tracking belong in `.planning/rewrite-v2-contract-migration-matrix.md`.
 
 ### Migration command
 `superdeck migrate --to-v2`
@@ -942,14 +962,21 @@ Modes:
 - produce migration report
 
 ### Compatibility policy
+- Treat the contract-migration matrix as the canonical place for unresolved compatibility details.
 - v2 runtime only reads v2 artifacts
 - migration tools handle v1 inputs
 - no permanent dual-read runtime support
 
 ## Documentation Plan
 
-### New planning docs to create when implementation mode is allowed
+### Canonical planning docs after reconciliation
 - `.planning/rewrite-v2-full-plan.md`
+- `.planning/rewrite-v2-feature-matrix.md`
+- `.planning/rewrite-v2-parser-semantics.md`
+- `.planning/rewrite-v2-build-watch-runtime.md`
+- `.planning/rewrite-v2-contract-migration-matrix.md`
+
+### Additional planning docs still useful before implementation
 - `.planning/rewrite-v2-package-map.md`
 - `.planning/rewrite-v2-migration-plan.md`
 - `.planning/rewrite-v2-test-matrix.md`
@@ -1090,7 +1117,7 @@ Acceptance criteria:
 - orphan asset removal
 - generator failure propagation
 - `superdeck_full.v2.json` AST emission
-- strict `superdeck.yaml` parsing
+- config loading behavior once the external config policy is frozen
 - deterministic mermaid asset naming and reuse
 
 ### Runtime tests
@@ -1109,7 +1136,7 @@ Acceptance criteria:
 ### CLI tests
 - setup idempotency
 - build one-shot
-- watch session commands
+- optional CLI watch/manual orchestration behavior if that surface is retained
 - publish dry-run
 - publish cleanup on pre-worktree failure
 - migrate dry-run and apply
@@ -1131,7 +1158,7 @@ The rewrite is complete only when all are true:
 - runtime thumbnail correctness does not depend on menu toggles
 - PDF export remains supported through an explicit export subsystem
 - publish has no cleanup gap
-- watch mode has no polling serialization and no hard exit
+- any retained watch orchestration has no polling serialization and no hard exit
 - malformed frontmatter is a deterministic authoring error
 - setup and publish preserve current project bootstrapping responsibilities
 - public widget/slide-part/plugin extension surfaces remain explicit and tested
@@ -1165,9 +1192,10 @@ Mitigation:
 - frontmatter must be a strict YAML map in v2
 - backtick and tilde fences are both supported uniformly
 - code-defined style config overrides YAML-defined style config
-- `watch` becomes a distinct first-class command
+- runtime-first local development uses embedded app watch/build
+- any retained CLI watch surface is optional/manual orchestration only
 - `superdeck_full` remains a debug/tooling artifact with markdown AST expansion
 - standalone markdown image behavior is preserved; inline-image expansion is not part of the rewrite baseline
-- `SuperDeckApp.initialize()` remains the required bootstrap API
-- `styles.yaml` stays runtime-side unless a later version intentionally moves style compilation into the build step
+- runtime bootstrap remains a first-class surface, but the final bootstrap/config API should not be inferred from stale assumptions in this umbrella plan
+- external config-source policy for `superdeck.yaml` / `styles.yaml` remains explicitly deferred until the detailed docs freeze it
 - the rewrite plan document should ultimately be stored at `.planning/rewrite-v2-full-plan.md`

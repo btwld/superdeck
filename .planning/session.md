@@ -15,6 +15,7 @@ Agents should read this file before substantive work and update it as work progr
 - `.planning/rewrite-v2-feature-matrix.md`
 - `.planning/rewrite-v2-parser-semantics.md`
 - `.planning/rewrite-v2-build-watch-runtime.md`
+- `.planning/rewrite-v2-contract-migration-matrix.md`
 
 ## Current State
 - The v2 rewrite plan has been restored locally and reviewed against the current codebase.
@@ -61,30 +62,156 @@ Agents should read this file before substantive work and update it as work progr
   - `@block` is now the only public markdown-block syntax taught in docs/examples/templates
   - `@qrcode` argument docs were corrected to match the implementation
 - High-level docs, starter templates, READMEs, and demo decks now teach only `@block` on the public/user-facing surface.
+- The planning docs have now been reconciled into a clearer authority model:
+  - `.planning/rewrite-v2-full-plan.md` is the umbrella rewrite plan
+  - `.planning/rewrite-v2-feature-matrix.md`, `.planning/rewrite-v2-parser-semantics.md`, and `.planning/rewrite-v2-build-watch-runtime.md` are the detailed sign-off docs
+  - `.planning/rewrite-v2-contract-migration-matrix.md` is now the canonical home for compatibility and public-surface migration rows
+- The legacy template-feature planning doc has been removed:
+  - template behavior is already covered by the canonical rewrite docs
+  - `.planning/README.md` now points at the current canonical planning set instead of stale one-off feature docs
 
 ## Open Decisions To Freeze
-1. Serialized `comments` -> `notes` migration:
-   - parser semantics are frozen to `notes`
-   - serialized artifact/API migration details still need to be specified
-2. `superdeck.yaml` strictness:
-   - unify CLI/runtime behavior
-3. `styles.yaml` placement:
-   - keep runtime-side or move later into build-time compilation
-4. `watchForChanges` and watch ownership:
-   - freeze what the feature means operationally before deciding compatibility behavior
+1. External config source policy:
+   - keep `superdeck.yaml` strictness and `styles.yaml` support out of the current runtime-local contract
+2. Embedded runtime watch API:
+   - runtime app watch is now the intended v2 mode on `kCanRunProcess` runtimes
+   - it is also frozen that embedded watch should not remain a normal `DeckOptions` render field
+   - the primary local dev loop should be runtime-first (`flutter run` + embedded watch/build), not CLI-watch-first
+   - CLI watch is now treated as optional/manual orchestration only, not as a peer owner of the primary local dev loop
+   - remaining work is freezing startup API placement
+3. Public package entry surface:
+   - freeze which barrel exports remain canonical in v2
+4. Thumbnail storage and invalidation contract:
+   - freeze whether thumbnails are treated as runtime snapshots, build artifacts, or a hybrid surface
+5. Bundled runtime path contract:
+   - freeze whether custom `outputDir` / `assetsPath` are supported consistently outside `kCanRunProcess` runtimes
 
 ## Recommended Next Steps
-1. Create `.planning/rewrite-v2-parser-semantics.md`
-   - completed
-2. Freeze the build/watch/runtime decisions in `.planning/rewrite-v2-build-watch-runtime.md`
-   - lock operational ownership before model/interface design
-3. Create `.planning/rewrite-v2-contract-migration-matrix.md`
-   - lock artifact renames, API renames, and migration behavior
-4. Turn the remaining `covered-open` items in `.planning/rewrite-v2-feature-matrix.md` into explicit decisions
+1. Freeze the remaining open rows in `.planning/rewrite-v2-contract-migration-matrix.md`
+   - especially artifact naming/versioning, public entry points, and `watchForChanges` migration guidance
+2. Turn the remaining `covered-open` rows in `.planning/rewrite-v2-feature-matrix.md` into frozen decisions
+   - external config policy
+   - embedded watch API placement
+   - thumbnail contract
+   - bundled runtime path support
+3. Re-run a final planning consistency pass after those decisions are frozen
+   - then use the reconciled docs as the implementation review checklist
 
 ## Session Log
 
 ### 2026-03-05
+- Froze two additional rewrite decisions across the planning docs:
+  - `comments` -> `notes` is now a hard v2 break with no runtime dual-read or artifact compatibility shim; migration guidance/tooling owns the rename
+  - runtime/build failure policy now keeps the last good deck visible when one exists, surfaces a visible error state, and falls back to an error slide/failure screen only when no valid deck is available
+- Removed the legacy `.planning/feature-templates.md` doc after confirming:
+  - it was only referenced by the stale `.planning/README.md`
+  - template behavior is already covered by the canonical rewrite planning docs
+  - the file was an older feature-specific implementation plan, not a current rewrite source of truth
+- Updated `.planning/README.md` so it now points to the current canonical planning set instead of stale/nonexistent one-off docs.
+- Implemented the documentation reconciliation pass across the planning docs:
+  - created `.planning/rewrite-v2-contract-migration-matrix.md` as the missing compatibility/public-surface planning home
+  - reconciled `.planning/rewrite-v2-full-plan.md` so it now behaves as an umbrella plan instead of competing with the detailed sign-off docs
+  - normalized the planning terminology so v2 planning uses canonical `notes` while keeping `comments` only for current serialized/runtime field references and migration context
+  - aligned the feature matrix and session handoff with the remaining open decision set, including thumbnail and bundled-runtime path contracts
+  - kept public/current-product docs out of scope unless they were directly contradictory
+- Starting decision-by-decision sign-off for the remaining runtime/build items:
+  - ask one question at a time
+  - lead with the recommended default and why
+  - keep each question tied to the current code and planning docs so the remaining open items can be frozen without broad re-exploration
+- Froze the local runtime configuration contract in planning:
+  - app-facing local runtime config remains `SuperDeckApp(options, configuration?)`
+  - `DeckConfiguration` owns local path/layout concerns:
+    - `projectDir`
+    - `slidesPath`
+    - `outputDir`
+    - `assetsPath`
+  - `DeckOptions` owns runtime/render composition concerns:
+    - styles/templates/widgets/parts/debug/plugins
+    - live render composition explicitly includes header/footer/background via `parts`
+    - embedded watch control belongs to startup-only runtime/session wiring, not to normal render options
+  - mutability is now split explicitly:
+    - render composition may update live
+    - operational wiring (`DeckConfiguration`, plugin setup, watch ownership) is startup-only
+  - external YAML config discovery remains deferred from this contract
+- Froze the initial embedded watch trigger split:
+  - automatic deck rebuild/watch is required only for `slides.md` / `configuration.slidesFile`
+  - code-driven presentation changes such as header/footer/background/styles/widgets/templates continue through normal Flutter hot reload / app rebuild flow
+  - deck watcher is for markdown/deck-artifact rebuilds, not for replacing Flutter’s own development workflow
+- Narrowed the configuration scope for the current runtime/build sign-off:
+  - do not treat `styles.yaml` as required for this phase
+  - do not block on `superdeck.yaml` strictness/acquisition yet
+  - focus first on the runtime-local/in-app configuration contract:
+    - `DeckConfiguration`
+    - `DeckOptions`
+    - startup/default behavior
+  - treat external YAML config sources as a later simplification/migration pass
+- Froze the runtime-mode direction for build/watch in planning:
+  - process-capable runtimes (`kCanRunProcess`) keep embedded app watch/build as a first-class v2 mode
+  - bundled web/release-like runtimes remain consume-only and do not watch/rebuild local source files
+  - CLI watch may remain, but it is no longer treated as the required owner of dev watch behavior
+  - remaining open questions are now narrower:
+    - final API placement for the embedded watch surface
+    - trigger scope beyond `slides.md`
+    - overlap/ownership behavior if CLI and runtime watch are both present
+- Narrowed the intended local development workflow:
+  - the primary day-to-day dev loop on process-capable runtimes should be `flutter run` plus embedded app watch/build
+  - CLI watch is no longer part of the required local iteration path
+  - CLI still remains important for:
+    - one-time/setup responsibilities
+    - publish/deployment responsibilities
+    - optional one-shot/manual build flows
+- Froze the remaining CLI relationship for the current planning pass:
+  - CLI watch survives only as optional/manual orchestration
+  - it is not a peer owner of the primary local development loop
+  - implementation cleanup may still choose whether that optional path uses a thinner shared-session wrapper internally
+- Ran a broader v2 rewrite planning audit for sync/drift across the canonical docs and the current code-backed surfaces:
+  - the current authoritative sign-off set is now:
+    - `.planning/rewrite-v2-feature-matrix.md`
+    - `.planning/rewrite-v2-parser-semantics.md`
+    - `.planning/rewrite-v2-build-watch-runtime.md`
+  - `.planning/rewrite-v2-full-plan.md` now has some stale assumptions relative to those narrower sign-off docs:
+    - it still assumes one shared strict `superdeck.yaml` policy
+    - it still assumes a first-class dedicated CLI `watch` command
+    - it still assumes runtime bootstrap merges `styles.yaml` before first render
+    - it still contains an outdated "new planning docs to create" list that includes the full plan file itself
+  - the feature matrix currently has no `gap` rows, but still has unresolved `covered-open` rows for:
+    - `superdeck.yaml`
+    - `styles.yaml`
+    - embedded runtime watch API placement
+    - public package entry surface
+    - bundled runtime path support
+- Expanded `.planning/rewrite-v2-build-watch-runtime.md` with a deeper operational pass across configuration, runtime modes, deck updates, and thumbnail reset behavior:
+  - documented current config-path differences:
+    - CLI `superdeck.yaml` loading is strict/fail-loud
+    - runtime IO config resolution is permissive fallback-to-default
+    - bundled web/test runtimes do not read local YAML automatically
+    - `styles.yaml` is opt-in via `StyleConfigLoader`, not automatic startup behavior
+  - documented the current deck update lifecycle:
+    - source rebuild and deck artifact consumption are separate loops
+    - `watchForChanges` adds source rebuild ownership inside the app but does not control deck JSON live-reload
+    - build failures are written to `build_status.json` and watcher state, but not promoted into the main `DeckController` error model
+  - documented runtime mode differences:
+    - process-capable runtime can either consume external builds or host embedded watch/build
+    - bundled runtimes are one-shot asset consumers with materially different config/watch behavior
+    - CLI watch and runtime watch can currently overlap without one authoritative owner
+  - documented thumbnail reset/cache behavior in more detail:
+    - deck-change cleanup only happens when `generateThumbnails()` runs
+    - CLI force rebuild clears bundled assets but not runtime temp thumbnail cache
+    - web runtime cache is memory-only while IO runtime cache persists in temp storage
+  - identified one additional contract gap:
+    - bundled deck loading uses a fixed `.superdeck/superdeck.json` path by default while other runtime asset paths still derive from `DeckConfiguration`
+- Expanded `.planning/rewrite-v2-build-watch-runtime.md` with a detailed thumbnail workflow review:
+  - separated thumbnail identity, build manifest references, runtime trigger path, cache resolution, and widget-capture generation
+  - documented that thumbnails are usually runtime-generated snapshots even though their paths are listed in the generated-assets manifest
+  - called out the current mixed contract where `AssetCacheStore` is used for both build-time persistent assets and runtime thumbnail cache/fallback behavior
+  - identified concrete risks:
+    - invalidation currently keys off slide identity only
+    - panel-open is the main generation trigger rather than deck-change completion
+    - stale runtime cache files are not fully cleaned up
+    - opening the thumbnail panel eagerly starts work for the whole deck
+  - recorded the likely v2 direction:
+    - keep thumbnails runtime-rendered unless a true build-time Flutter renderer is introduced
+    - give thumbnails a dedicated cache/invalidation contract separate from generic build assets
 - Added `.planning/rewrite-v2-build-watch-runtime.md` as the operational companion to the parser contract:
   - documents the current build pipeline end to end
   - separates source rebuild/watch behavior from runtime deck-consumption behavior

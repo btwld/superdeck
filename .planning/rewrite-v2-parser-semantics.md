@@ -129,10 +129,10 @@ This is a strict-proof document, not a best-effort audit:
 | block normalization | Unknown directive names normalize to widget shorthand blocks | `block_parser.dart` | `block_parser_test.dart` | `docs/guides/custom-widgets.mdx`, `docs/reference/block-types.mdx` | validated | Direct parser fixture now proves custom widget shorthand normalization |
 | block normalization | Explicit `@widget { name: ... }` is accepted | `block_parser.dart` | `block_parser_test.dart` | `docs/guides/custom-widgets.mdx`, `docs/reference/block-types.mdx` | validated | Direct parser fixture now proves explicit widget parsing |
 | block normalization | Escaped directives via `_@` are restored to literal markdown text | `section_parser.dart` | `section_parser_test.dart` | `docs/guides/markdown-authoring.mdx`, `docs/reference/markdown-syntax.mdx` | validated | Direct parser fixture proves literal restoration before later real directives |
-| comments | HTML comments parse as note/comment strings | `comment_parser.dart` | `comment_parser_test.dart` | `docs/guides/markdown-authoring.mdx`, `docs/reference/markdown-syntax.mdx` | validated | Single, multiple, empty, and multiline comments are covered |
-| comments | Comment text is trimmed and multiline comments are normalized | `comment_parser.dart` | `comment_parser_test.dart` | none | validated | Parser collapses internal whitespace |
-| comments | Invalid HTML comment forms are ignored | `comment_parser.dart` | `comment_parser_test.dart` | none | validated | Current parser is intentionally selective |
-| comments | Extracted comments land in `Slide.comments` | `slide_processor.dart`, `slide_model.dart` | `slide_processor_test.dart`, `slide_model_test.dart` | `docs/guides/slide-parts.mdx` | validated | Serialized contract still uses `comments` today |
+| notes | HTML comments parse into note strings | `comment_parser.dart` | `comment_parser_test.dart` | `docs/guides/markdown-authoring.mdx`, `docs/reference/markdown-syntax.mdx` | validated | Single, multiple, empty, and multiline HTML comments are covered |
+| notes | HTML comment text is trimmed and multiline notes are normalized | `comment_parser.dart` | `comment_parser_test.dart` | none | validated | Parser collapses internal whitespace |
+| notes | Invalid HTML comment forms are ignored | `comment_parser.dart` | `comment_parser_test.dart` | none | validated | Current parser is intentionally selective |
+| notes | Extracted notes currently land in `Slide.comments` | `slide_processor.dart`, `slide_model.dart` | `slide_processor_test.dart`, `slide_model_test.dart` | `docs/guides/slide-parts.mdx` | validated | Current serialized/runtime contract still uses `comments` today |
 | fenced-code transforms | Fenced code parsing supports backticks, tildes, options, indices, and longer closers | `fenced_code_parser.dart`, `code_fence.dart` | `fenced_code_parser_test.dart` | `docs/guides/markdown-authoring.mdx`, `docs/reference/markdown-syntax.mdx` | validated | Shared fence behavior is well tested |
 | fenced-code transforms | Brace-free YAML map options are accepted after the language token | `fenced_code_parser.dart`, `yaml_utils.dart` | `fenced_code_parser_test.dart` | `docs/guides/markdown-authoring.mdx`, `docs/reference/markdown-syntax.mdx` | validated | Docs now describe brace-free headers as legacy compatibility while keeping the braced form canonical |
 | fenced-code transforms | Non-map top-level fenced-code option payloads currently collapse to `{}` instead of throwing | `fenced_code_parser.dart`, `yaml_utils.dart` | `fenced_code_parser_test.dart` | none | validated | Shared YAML utility quirk; v2 should reject this explicitly |
@@ -155,7 +155,7 @@ The current build path is effectively:
 3. Run zero or more configured slide tasks against the slide content.
 4. In standard CLI/runtime build flows, those tasks currently include Dart fenced-code formatting and Mermaid asset generation.
 5. Parse the task-updated content into sections and blocks.
-6. Extract HTML comments from that same final content buffer into slide notes/comments.
+6. Extract HTML comments from that same final content buffer into slide notes, which still serialize under `comments` in the current runtime contract.
 7. Build the typed slide contract.
 
 This document is intentionally feature-first. Package ownership and future module boundaries belong in the full rewrite plan, not in the parser semantics contract.
@@ -398,12 +398,12 @@ Unclosed fences remain active until end-of-file. v2 should preserve that behavio
   - `docs/guides/slide-parts.mdx`
 
 ### Observed v1 behavior
-- HTML comments `<!-- ... -->` are extracted into slide comments.
-- Multi-line comments are normalized by trimming each line, dropping empty lines, and joining the remaining lines with a single space.
-- Empty comments are preserved as empty strings.
+- HTML comments `<!-- ... -->` are extracted into slide notes, which still serialize under `comments` in the current runtime contract.
+- Multi-line HTML-comment notes are normalized by trimming each line, dropping empty lines, and joining the remaining lines with a single space.
+- Empty HTML-comment notes are preserved as empty strings.
 - Invalid comment-like text is ignored.
-- Comments are extracted from slide content after build tasks run.
-- The comment markup remains present in the markdown content buffer used for section parsing.
+- Notes are extracted from slide content after build tasks run.
+- The original HTML comment markup remains present in the markdown content buffer used for section parsing.
 
 ### V2 decision
 1. `[intentional rename]` The canonical semantic field is `notes` rather than `comments`. Reason: HTML comments are authoring notes, not public markdown content semantics.
@@ -466,13 +466,13 @@ Build tasks still need direct fenced-code parsing after slide splitting, so the 
   - `docs/tutorials/block-layouts.mdx`
 
 ### Observed v1 behavior
-- User docs now cover frontmatter, escaped directives, HTML-comment speaker notes, `template`, `@block` as an accepted alias, and Dart fenced-code formatting in standard build flows.
+- User docs now cover frontmatter, escaped directives, HTML-comment speaker notes, `template`, canonical `@block` usage, and Dart fenced-code formatting in standard build flows.
 - Docs now lead with canonical `@block` while still documenting `@column` as a compatibility alias.
 - Fenced-code docs now mention brace-free option headers only as legacy compatibility, while teaching the braced form as canonical.
 
 ### V2 decision
 1. `[intentional cleanup]` Docs should teach the stable v2 contract rather than every incidental permissive v1 parsing path. Reason: the docs are the user-facing grammar, so they should lead with canonical forms even when v1 currently accepts looser input.
-2. `[preserve current]` User docs should continue to describe implemented authoring behavior where that behavior is part of the supported surface today, including frontmatter, comments-as-notes authoring, widget forms, and Dart fenced-code formatting in standard build flows.
+2. `[preserve current]` User docs should continue to describe implemented authoring behavior where that behavior is part of the supported surface today, including frontmatter, HTML-comment note authoring, widget forms, and Dart fenced-code formatting in standard build flows.
 
 ## Parser-Level Interface Changes Frozen Here
 - The normalized slide semantic field is `notes`, even though the current serialized/runtime surface still uses `comments`.
