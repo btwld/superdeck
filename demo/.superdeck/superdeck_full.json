@@ -1,7 +1,57 @@
 {
   "slides": [
     {
-      "key": "biKLhHrI",
+      "key": "nnHI7Gnw",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 2,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h1",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "SuperDeck {.heading}"
+                      }
+                    ],
+                    "generatedId": "superdeck-heading"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "h1",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Build presentations with Flutter {.subheading}"
+                      }
+                    ],
+                    "generatedId": "build-presentations-with-flutter-subheading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "RgCOqyGy",
       "options": {},
       "sections": [
         {
@@ -111,7 +161,148 @@
       "comments": []
     },
     {
-      "key": "CnTTVIsy",
+      "key": "TcStpizi",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "What is SuperDeck? {.heading}"
+                      }
+                    ],
+                    "generatedId": "what-is-superdeck-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "ul",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Write slides in "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Markdown"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Render with "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "Flutter"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Use "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "custom widgets"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " in your slides"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Export to "
+                          },
+                          {
+                            "type": "element",
+                            "tag": "strong",
+                            "children": [
+                              {
+                                "type": "text",
+                                "text": "PDF"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "7biToIbl",
       "options": {},
       "sections": [
         {
@@ -160,7 +351,81 @@
       "comments": []
     },
     {
-      "key": "7jC0PdcY",
+      "key": "JP7T137d",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Key Features {.heading}"
+                      }
+                    ],
+                    "generatedId": "key-features-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "topCenter",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "img",
+                        "attributes": {
+                          "src": ".superdeck/assets/mermaid_sjKdIahN.png",
+                          "alt": "mermaid_asset"
+                        },
+                        "isEmpty": true
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "JJRQslQK",
       "options": {},
       "sections": [
         {
@@ -291,7 +556,55 @@
       "comments": []
     },
     {
-      "key": "Ckt4mogF",
+      "key": "MClcEqCK",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Slide Layouts {.heading}"
+                      }
+                    ],
+                    "generatedId": "slide-layouts-heading"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "SuperDeck supports flexible layouts using sections and columns."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "g7lIjAlr",
       "options": {},
       "sections": [
         {
@@ -362,7 +675,110 @@
       "comments": []
     },
     {
-      "key": "6NBziQ68",
+      "key": "e9HnvMg9",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Top Section"
+                      }
+                    ],
+                    "generatedId": "top-section"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 2,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Middle Section (flex: 2)"
+                      }
+                    ],
+                    "generatedId": "middle-section-flex-2"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Bottom Section"
+                      }
+                    ],
+                    "generatedId": "bottom-section"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "gVuZG7ua",
       "options": {},
       "sections": [
         {
@@ -414,7 +830,7 @@
                         "children": [
                           {
                             "type": "text",
-                            "text": "import 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': MyWidgetDefinition(),\n        },\n      ),\n    ),\n  );\n}\n```{.code}\n"
+                            "text": "import 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': MyWidgetDefinition(),\n        },\n      ),\n    ),\n  );\n}\n```{.code}\n\n---\n\n### Mermaid Diagrams {.heading}\n\n@column\n\n```mermaid\nflowchart LR\n    A[Markdown] --&gt; B[Parser]\n    B --&gt; C[Slides]\n    C --&gt; D[Flutter UI]\n    D --&gt; E[PDF Export]\n\n    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff\n"
                           }
                         ]
                       }
@@ -432,7 +848,7 @@
       "comments": []
     },
     {
-      "key": "lFChRtzz",
+      "key": "4CNn7o0N",
       "options": {},
       "sections": [
         {
@@ -498,7 +914,68 @@
       "comments": []
     },
     {
-      "key": "lOhsg2jI",
+      "key": "V7kPb4Lp",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Custom Widgets {.heading}"
+                      }
+                    ],
+                    "generatedId": "custom-widgets-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Embed interactive Flutter widgets directly in your slides!"
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "dpDlFxBB",
       "options": {},
       "sections": [
         {
@@ -580,7 +1057,80 @@
       "comments": []
     },
     {
-      "key": "k8aaXQbS",
+      "key": "0yQFwzmY",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Interactive Variants {.heading}"
+                      }
+                    ],
+                    "generatedId": "interactive-variants-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Hover and press interactions using Mix variants."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false
+            },
+            {
+              "type": "widget",
+              "flex": 1,
+              "scrollable": false,
+              "name": "mix-variants"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "a5DHlwQO",
       "options": {},
       "sections": [
         {
@@ -653,7 +1203,80 @@
       "comments": []
     },
     {
-      "key": "D7X6p8wi",
+      "key": "jDM5LnKe",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Animations {.heading}"
+                      }
+                    ],
+                    "generatedId": "animations-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 2,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Implicit and keyframe animations with Mix."
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false
+            },
+            {
+              "type": "widget",
+              "flex": 1,
+              "scrollable": false,
+              "name": "mix-animation"
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "8S3E7sSK",
       "options": {},
       "sections": [
         {
@@ -714,7 +1337,64 @@
       "comments": []
     },
     {
-      "key": "5eCK3C67",
+      "key": "Z2Ux7ll7",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": true,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Style Configuration"
+                      }
+                    ],
+                    "generatedId": "style-configuration"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "pre",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "code",
+                        "attributes": {
+                          "class": "language-yaml"
+                        },
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "# superdeck.yaml\nstyles:\n  default:\n    background: '#1a1a2e'\n    primaryColor: '#4CAF50'\n\n  code:\n    background: '#0f0f23'\n\n  quote:\n    background: 'linear-gradient(...)'\n"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "nHvy5Q4p",
       "options": {},
       "sections": [
         {
@@ -829,7 +1509,73 @@
       "comments": []
     },
     {
-      "key": "VmQWxfoT",
+      "key": "WLlnZqUO",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h2",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Architecture {.heading}"
+                      }
+                    ],
+                    "generatedId": "architecture-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "p",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "img",
+                        "attributes": {
+                          "src": ".superdeck/assets/mermaid_pPsidI1N.png",
+                          "alt": "mermaid_asset"
+                        },
+                        "isEmpty": true
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "Z4O0WD4H",
       "options": {},
       "sections": [
         {
@@ -968,7 +1714,74 @@
       "comments": []
     },
     {
-      "key": "URpiFlcx",
+      "key": "jtofuW80",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Project Structure {.heading}"
+                      }
+                    ],
+                    "generatedId": "project-structure-heading"
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "pre",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "code",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "my_presentation/\n├── lib/\n│   └── main.dart\n├── slides.md\n├── superdeck.yaml\n└── pubspec.yaml\n"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "XXjcIDlw",
       "options": {},
       "sections": [
         {
@@ -1085,7 +1898,112 @@
       "comments": []
     },
     {
-      "key": "fjLi9Gbn",
+      "key": "9Dvq4KaS",
+      "options": {},
+      "sections": [
+        {
+          "type": "section",
+          "flex": 1,
+          "scrollable": false,
+          "blocks": [
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false
+            },
+            {
+              "type": "block",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "content": {
+                "type": "document",
+                "children": [
+                  {
+                    "type": "element",
+                    "tag": "h3",
+                    "children": [
+                      {
+                        "type": "text",
+                        "text": "Why SuperDeck? {.heading}"
+                      }
+                    ],
+                    "generatedId": "why-superdeck-heading"
+                  },
+                  {
+                    "type": "element",
+                    "tag": "ul",
+                    "children": [
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Version control your presentations"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Use your favorite editor"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Leverage Flutter's ecosystem"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Hot reload while editing"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "element",
+                        "tag": "li",
+                        "children": [
+                          {
+                            "type": "text",
+                            "text": "Cross-platform output"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              }
+            },
+            {
+              "type": "block",
+              "flex": 1,
+              "scrollable": false
+            }
+          ]
+        }
+      ],
+      "comments": []
+    },
+    {
+      "key": "PXXVcNne",
       "options": {},
       "sections": [
         {
@@ -1342,7 +2260,7 @@
       "comments": []
     },
     {
-      "key": "8OYJmHzt",
+      "key": "debAcY6g",
       "options": {},
       "sections": [
         {
