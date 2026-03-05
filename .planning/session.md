@@ -14,6 +14,7 @@ Agents should read this file before substantive work and update it as work progr
 - `.planning/rewrite-v2-full-plan.md`
 - `.planning/rewrite-v2-feature-matrix.md`
 - `.planning/rewrite-v2-parser-semantics.md`
+- `.planning/rewrite-v2-build-watch-runtime.md`
 
 ## Current State
 - The v2 rewrite plan has been restored locally and reviewed against the current codebase.
@@ -27,6 +28,12 @@ Agents should read this file before substantive work and update it as work progr
   - `dart-flutter` for repository work
   - `code-simplifier` for code changes, reviews, refactors, and rewrite work
 - `.planning/rewrite-v2-parser-semantics.md` now exists and freezes the parser-level v2 contract from current code/tests.
+- `.planning/rewrite-v2-build-watch-runtime.md` now exists and captures the current operational/runtime semantics for:
+  - build execution
+  - watch ownership and trigger surface
+  - `kCanRunProcess` runtime mode split
+  - runtime deck consumption vs source rebuild loops
+  - thumbnail lifecycle
 - Parser-level decisions now frozen:
   - frontmatter must be YAML-map-only
   - invalid YAML and missing frontmatter closing delimiters are hard errors
@@ -63,19 +70,48 @@ Agents should read this file before substantive work and update it as work progr
    - unify CLI/runtime behavior
 3. `styles.yaml` placement:
    - keep runtime-side or move later into build-time compilation
-4. `watchForChanges` migration:
-   - compatibility shim vs hard migration to explicit watch tooling
+4. `watchForChanges` and watch ownership:
+   - freeze what the feature means operationally before deciding compatibility behavior
 
 ## Recommended Next Steps
 1. Create `.planning/rewrite-v2-parser-semantics.md`
    - completed
-2. Create `.planning/rewrite-v2-contract-migration-matrix.md`
+2. Freeze the build/watch/runtime decisions in `.planning/rewrite-v2-build-watch-runtime.md`
+   - lock operational ownership before model/interface design
+3. Create `.planning/rewrite-v2-contract-migration-matrix.md`
    - lock artifact renames, API renames, and migration behavior
-3. Turn the remaining `covered-open` items in `.planning/rewrite-v2-feature-matrix.md` into explicit decisions
+4. Turn the remaining `covered-open` items in `.planning/rewrite-v2-feature-matrix.md` into explicit decisions
 
 ## Session Log
 
 ### 2026-03-05
+- Added `.planning/rewrite-v2-build-watch-runtime.md` as the operational companion to the parser contract:
+  - documents the current build pipeline end to end
+  - separates source rebuild/watch behavior from runtime deck-consumption behavior
+  - freezes `kCanRunProcess` as the current runtime mode boundary that matters for embedded build/watch
+  - captures thumbnail lifecycle as part of the same operational surface instead of treating it as a separate concern
+  - records current drift where `DeckOptions.watchForChanges` docs still describe a CLI watcher even though the app starts `DeckWatcher` directly
+- Adjusted the planning sequence based on the runtime/build audit:
+  - do not jump to v2 model/interface design yet
+  - freeze operational build/watch/runtime ownership first
+  - then use that to drive the contract-migration matrix and later model/interface decisions
+- Updated `.planning/rewrite-v2-parser-semantics.md` typed output contract to explicitly document the args bag pattern:
+  - `SlideOptions.args`: passthrough map for frontmatter keys not in `title`/`style`/`template`
+  - `WidgetBlock.args`: passthrough map for directive options not in `type`/`name`/`align`/`flex`/`scrollable`
+  - Both bags are intentionally unvalidated at parser level; widget args validated at render time by `WidgetDefinition.parse()`
+  - Slide args are available to user code but unused by the framework itself
+- Also documented `@column` as a temporary migration alias (will be removed, not permanent)
+- Clarified parser-semantics sign-off scope:
+  - this phase is planning/docs-only, not parser implementation yet
+  - code changes for the frozen v2 parser contract are deferred until after the documentation and assumption set are fully locked
+- Folded the parser sign-off assumptions/defaults back into `.planning/rewrite-v2-parser-semantics.md`:
+  - added an explicit parser-only scope boundary
+  - added sign-off defaults for when to preserve, tighten, or clean up behavior
+  - added a parser-level interface-change summary so the frozen contract is readable without reconstructing it from all stage sections
+- Defined the immediate review-process next step for the v2 refactor:
+  - do not start broad implementation review yet
+  - first create `.planning/rewrite-v2-contract-migration-matrix.md` to freeze renamed artifacts, public API renames, compatibility behavior, and proof gates
+  - use that matrix plus `.planning/rewrite-v2-feature-matrix.md` as the review checklist before accepting refactor work as correct
 - Removed the legacy markdown-block alias from the public/user-facing documentation surface while preserving implementation compatibility:
   - updated `docs/`, top-level `README.md`, `packages/superdeck/README.md`, the CLI starter deck template, and demo markdown decks to show only `@block`
   - remaining legacy-alias references are now limited to implementation comments, tests/fixtures, and internal agent/planning context where the backward-compatibility contract still needs to be described

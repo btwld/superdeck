@@ -12,6 +12,15 @@ This is the parser-level companion to:
 - `.planning/rewrite-v2-full-plan.md`
 - `.planning/rewrite-v2-feature-matrix.md`
 
+## Scope Boundary
+This document is a parser-only sign-off artifact.
+
+- It freezes what authored Markdown means after build-time parsing.
+- It is the review baseline for later refactor validation: implementation review should ask whether code matches this parser contract, not whether the refactor "looks right".
+- It covers slide splitting, frontmatter extraction, directive tokenization, block normalization, section aggregation, note extraction, and fenced-code parsing for build tasks.
+- It does not freeze artifact filenames, serialized compatibility shapes, public runtime/API migration naming, or migration-tool behavior.
+- Those adjacent compatibility decisions belong in `.planning/rewrite-v2-contract-migration-matrix.md`.
+
 ## Evidence Base
 Code, tests, and docs used to derive this spec:
 
@@ -70,6 +79,12 @@ This is a strict-proof document, not a best-effort audit:
 - `intentional tighten`: v2 rejects or narrows currently accepted behavior
 - `intentional rename`: v2 keeps the semantic behavior but changes its canonical name
 - `intentional cleanup`: v2 removes an incidental quirk or hidden duplication without changing the core authoring capability
+
+## Sign-Off Defaults
+- Preserve user-visible behavior unless the current behavior is ambiguous, silently lossy, or structurally invalid.
+- Use `intentional tighten` when permissive parsing would otherwise hide author mistakes or widen the grammar beyond the supported contract.
+- Use `intentional cleanup` when the current implementation rewrites authored content, duplicates semantics, or relies on offset-hostile normalization that does not add user capability.
+- Treat naming changes in this document as parser-semantic names first; serialized/runtime compatibility is a separate migration-layer decision.
 
 ## Current Feature Validation Audit
 
@@ -362,7 +377,7 @@ Unclosed fences remain active until end-of-file. v2 should preserve that behavio
 2. `[preserve current]` Free markdown before any directive becomes a markdown block in an implicit first section.
 3. `[preserve current]` Each `@section` starts a fresh section boundary, and later blocks/content attach to the current section in source order.
 4. `[preserve current]` Free markdown between directives is retained in source order, adjacent markdown spans in the same section are merged, and whitespace-only spans produced by structural parsing are discarded.
-5. `[preserve current]` Typed block-option validation for fields such as `flex`, `align`, and `scrollable` remains a hard error in the typed block layer.
+5. `[preserve current]` Typed block-option validation for fields such as `flex`, `align`, and `scrollable` remains a hard error in the typed block layer. The parser validates only these structural layout fields. Widget-specific args and slide-level passthrough args are bagged unvalidated into their respective `args` maps; widget arg validation is deferred to render time via `WidgetDefinition.parse()`.
 6. `[intentional cleanup]` Remove the current trailing-span-only `trim()` normalization. Reason: v1 trims only the final free-markdown span after the last directive, which makes content preservation asymmetric for otherwise equivalent spans.
 7. `[intentional cleanup]` Preserve markdown text exactly apart from line-ending normalization, escaped-directive unescaping, and removal of empty structural spans. Reason: current frontmatter and section stages apply selective `trim()` calls that are incidental, not author intent.
 
@@ -459,6 +474,15 @@ Build tasks still need direct fenced-code parsing after slide splitting, so the 
 1. `[intentional cleanup]` Docs should teach the stable v2 contract rather than every incidental permissive v1 parsing path. Reason: the docs are the user-facing grammar, so they should lead with canonical forms even when v1 currently accepts looser input.
 2. `[preserve current]` User docs should continue to describe implemented authoring behavior where that behavior is part of the supported surface today, including frontmatter, comments-as-notes authoring, widget forms, and Dart fenced-code formatting in standard build flows.
 
+## Parser-Level Interface Changes Frozen Here
+- The normalized slide semantic field is `notes`, even though the current serialized/runtime surface still uses `comments`.
+- The normalized markdown block type is `block`.
+- `@column` remains accepted only as a migration alias, not as a canonical parser surface.
+- Missing frontmatter closing delimiters are hard parser errors.
+- Non-map top-level YAML payloads are hard parser errors for both directive options and fenced-code options.
+- Parser stages must not `trim()`-normalize frontmatter-stripped markdown, trailing section spans, or fenced-code bodies.
+- Extracted HTML-comment notes must be removed from markdown before section parsing so notes have one semantic owner.
+
 ## Typed Output Contract
 This is the normalized v2 handoff shape implied by the stage decisions above.
 
@@ -476,6 +500,11 @@ The parser pipeline should hand off a normalized authoring result with these sem
   - `options`
   - `sections`
   - `notes`
+- slide options
+  - `title?` (string)
+  - `style?` (string)
+  - `template?` (string)
+  - `args` (passthrough map: all frontmatter keys not in `title`/`style`/`template`)
 - section
   - `align?`
   - `flex`
@@ -493,7 +522,9 @@ The parser pipeline should hand off a normalized authoring result with these sem
   - `flex`
   - `scrollable`
   - widget name
-  - typed/raw args
+  - `args` (passthrough map: all directive options not in `type`/`name`/`align`/`flex`/`scrollable`)
+
+Both `SlideOptions.args` and `WidgetBlock.args` use the same pattern: extract known structural fields, bag the rest into an unvalidated passthrough map. The parser must not validate the contents of either args bag. Widget args are validated at render time by each `WidgetDefinition.parse()` implementation; slide args are available to user code but are not consumed by the framework itself.
 
 The contract migration doc can define final serialized field names and artifact filenames, but parser semantics should already assume canonical `notes` and canonical `block`.
 
