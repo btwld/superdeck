@@ -16,7 +16,10 @@ String _fileSafeKey(String key, int index) {
 }
 
 /// Removes stale asset files that don't match current slide keys.
-Future<void> _cleanupStaleAssets(List<Map<String, dynamic>> slides) async {
+Future<void> _cleanupStaleAssets(
+  List<Map<String, dynamic>> slides, {
+  Map<String, int> sourceSlideIndicesByKey = const {},
+}) async {
   final assetsDir = Directory(Paths.superdeckAssetsPath);
   if (!await assetsDir.exists()) return;
 
@@ -27,7 +30,8 @@ Future<void> _cleanupStaleAssets(List<Map<String, dynamic>> slides) async {
   for (var i = 0; i < slides.length; i++) {
     final key = slides[i]['key']?.toString();
     if (key == null) continue;
-    final safeKey = _fileSafeKey(key, i);
+    final sourceIndex = sourceSlideIndicesByKey[key] ?? i;
+    final safeKey = _fileSafeKey(key, sourceIndex);
     validThumbnails.add('thumbnail_$safeKey.png');
     validIllustrations.add('slide-$safeKey-illustration.png');
   }
@@ -66,10 +70,15 @@ Future<void> _cleanupStaleAssets(List<Map<String, dynamic>> slides) async {
 
 /// Image requirement extracted from outline.
 class _ImageRequirement {
-  const _ImageRequirement({required this.slideKey, required this.subject});
+  const _ImageRequirement({
+    required this.slideKey,
+    required this.subject,
+    required this.sourceSlideIndex,
+  });
 
   final String slideKey;
   final String subject;
+  final int sourceSlideIndex;
 }
 
 /// Results from parallel image generation.

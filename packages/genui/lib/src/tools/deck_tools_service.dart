@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -49,6 +48,7 @@ class DeckToolsService {
   final BuildContextProvider _contextProvider;
   final SlideCaptureFn? _captureSlide;
   final ReadSlideConfigurationBuilder _buildReadSlideConfiguration;
+  static const _invalidSlideSchemaMessage = 'Invalid slide schema payload';
 
   SlideCaptureService? _captureService;
   Future<void> _mutationQueue = Future.value();
@@ -62,18 +62,24 @@ class DeckToolsService {
     final document = await _documentStore.readRequired();
     final index = request.index;
     mutation.validateReadIndex(index, document.slides.length);
-
     final context = _requireMountedContext();
+
     final slide = document.slides[index];
     final slideConfiguration = _buildReadSlideConfiguration(
       slide: slide,
       configuration: _documentStore.configuration,
       style: document.style,
       index: index,
-    ).copyWith(slideIndex: index);
+    );
+    final indexedSlideConfiguration = slideConfiguration.copyWith(
+      slideIndex: index,
+    );
 
-    // ignore: use_build_context_synchronously
-    final imageBytes = await _captureSlideBytes(slideConfiguration, context);
+    final imageBytes = await _captureSlideBytes(
+      indexedSlideConfiguration,
+      // ignore: use_build_context_synchronously
+      context,
+    );
     final snapshot = mutation.buildDeckSnapshot(
       document.slides,
       style: document.style,
@@ -255,16 +261,14 @@ class DeckToolsService {
     bool allowMissingKey = false,
   }) {
     if (rawSchema is! Map) {
-      throw DeckToolException.deckSchemaInvalid('Invalid slide schema payload');
+      throw DeckToolException.deckSchemaInvalid(_invalidSlideSchemaMessage);
     }
 
     final schemaMap = Map<String, dynamic>.from(rawSchema);
     if (allowMissingKey) {
       final typedSchema = CreateSlideType.safeParse(schemaMap).getOrNull();
       if (typedSchema == null) {
-        throw DeckToolException.deckSchemaInvalid(
-          'Invalid slide schema payload',
-        );
+        throw DeckToolException.deckSchemaInvalid(_invalidSlideSchemaMessage);
       }
 
       return Map<String, dynamic>.from(typedSchema);
@@ -272,7 +276,7 @@ class DeckToolsService {
 
     final typedSchema = SlideType.safeParse(schemaMap).getOrNull();
     if (typedSchema == null) {
-      throw DeckToolException.deckSchemaInvalid('Invalid slide schema payload');
+      throw DeckToolException.deckSchemaInvalid(_invalidSlideSchemaMessage);
     }
 
     return Map<String, dynamic>.from(typedSchema);
@@ -305,19 +309,15 @@ class DeckToolsService {
   }
 
   Future<T> _runSerializedMutation<T>(Future<T> Function() operation) {
-    final completer = Completer<T>();
-    _mutationQueue = _mutationQueue
+    final future = _mutationQueue
         .catchError((Object error, StackTrace stackTrace) {
           debugPrint('DeckToolsService: previous mutation failed: $error');
         })
-        .then((_) async {
-          try {
-            completer.complete(await operation());
-          } catch (error, stackTrace) {
-            completer.completeError(error, stackTrace);
-          }
-        });
-    return completer.future;
+        .then((_) => operation());
+    _mutationQueue = future
+        .then<void>((_) {})
+        .catchError((Object _, StackTrace __) {});
+    return future;
   }
 
   BuildContext _requireMountedContext() {
@@ -357,9 +357,6 @@ class DeckToolsService {
       configuration: configuration,
     );
     final options = buildDeckOptionsFromStyle(style);
-    return slideBuilder
-        .buildConfigurations([slide], options)
-        .single
-        .copyWith(slideIndex: index);
+    return slideBuilder.buildConfigurations([slide], options).single;
   }
 }

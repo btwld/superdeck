@@ -63,6 +63,10 @@ Future<_ImagePhaseData> _runImagePhase(
 
   final availableImages = <String, String>{};
   Map<String, String>? imageFailures;
+  final sourceSlideIndicesByKey = <String, int>{
+    for (final requirement in imageRequirements)
+      requirement.slideKey: requirement.sourceSlideIndex,
+  };
 
   if (imageRequirements.isNotEmpty && imageStyleId != null) {
     debugLog.log(
@@ -119,6 +123,7 @@ Future<_ImagePhaseData> _runImagePhase(
   return _ImagePhaseData(
     availableImages: availableImages,
     imageFailures: imageFailures,
+    sourceSlideIndicesByKey: sourceSlideIndicesByKey,
   );
 }
 
@@ -163,6 +168,7 @@ Future<DeckGenerationResult> _finalizeDeck(
   required Map<String, dynamic> deckJson,
   required Map<String, String> availableImages,
   required Map<String, String>? imageFailures,
+  required Map<String, int> sourceSlideIndicesByKey,
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,
 }) async {
@@ -200,7 +206,10 @@ Future<DeckGenerationResult> _finalizeDeck(
     'Wrote deck to ${file.path} (${jsonString.length} chars)',
   );
 
-  await _cleanupStaleAssets(sanitizedSlides);
+  await _cleanupStaleAssets(
+    sanitizedSlides,
+    sourceSlideIndicesByKey: sourceSlideIndicesByKey,
+  );
 
   final totalMs = DateTime.now().difference(pipelineStart).inMilliseconds;
   debugLog.log(

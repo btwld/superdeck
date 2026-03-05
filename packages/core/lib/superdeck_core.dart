@@ -20,4 +20,5 @@ export 'src/utils/file_watcher.dart';
 export 'src/utils/generate_hash.dart';
 export 'src/utils/logging_utils.dart';
 export 'src/utils/pretty_json.dart';
+export 'src/utils/code_fence.dart';
 export 'src/utils/yaml_utils.dart';

@@ -4,8 +4,14 @@ import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
 import 'package:path/path.dart' as p;
+import 'package:logging/logging.dart';
 import 'package:superdeck_core/src/markdown_json.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'deck_configuration.dart';
+import 'models/asset_model.dart';
+import 'models/deck_model.dart';
+import 'models/slide_model.dart';
+import 'utils/extensions.dart';
+import 'utils/pretty_json.dart';
 
 /// Service for managing deck data from the local file system.
 ///
@@ -16,7 +22,7 @@ class DeckService {
 
   final DeckConfiguration configuration;
   final List<GeneratedAsset> _generatedAssets = [];
-  final Logger _logger = Logger('DeckService');
+  final _logger = Logger('DeckService');
 
   /// Initializes the repository by creating necessary directories and files.
   Future<void> initialize() async {
@@ -185,8 +191,8 @@ class DeckService {
   }
 
   /// Reads the markdown content of the slides file.
-  Future<String> readDeckMarkdown() async {
-    return await configuration.slidesFile.readAsString();
+  Future<String> readDeckMarkdown() {
+    return configuration.slidesFile.readAsString();
   }
 
   /// Creates an error deck with the specified details.

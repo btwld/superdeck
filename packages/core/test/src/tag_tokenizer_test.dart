@@ -292,9 +292,24 @@ Some paragraph text.
     });
 
     group('code block protection', () {
-      test('ignores tags inside fenced code blocks', () {
+      for (final marker in ['```', '~~~']) {
+        test('ignores tags inside $marker fenced code blocks', () {
+          final text =
+              '''
+$marker
+@ignored
+$marker
+@found''';
+          final tokens = tokenizer.tokenize(text);
+
+          expect(tokens, hasLength(1));
+          expect(tokens[0].name, 'found');
+        });
+      }
+
+      test('ignores tags inside code blocks with language', () {
         const text = '''
-```
+```dart
 @ignored
 ```
 @found''';
@@ -304,11 +319,51 @@ Some paragraph text.
         expect(tokens[0].name, 'found');
       });
 
-      test('ignores tags inside code blocks with language', () {
+      test('ignores tags inside tilde fenced code blocks with language', () {
+        const text = '''
+~~~dart
+@ignored
+~~~
+@found''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens, hasLength(1));
+        expect(tokens[0].name, 'found');
+      });
+
+      test('does not treat trailing text as a closing fence', () {
         const text = '''
 ```dart
 @ignored
+```not-closing
+@stillIgnored
 ```
+@found''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens, hasLength(1));
+        expect(tokens[0].name, 'found');
+      });
+
+      test('does not close a fence with a different marker type', () {
+        const text = '''
+```dart
+@ignored
+~~~
+@stillIgnored
+```
+@found''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens, hasLength(1));
+        expect(tokens[0].name, 'found');
+      });
+
+      test('closes fence when marker length increases with same character', () {
+        const text = '''
+```
+@ignored
+````
 @found''';
         final tokens = tokenizer.tokenize(text);
 
@@ -358,8 +413,20 @@ code2
         expect(tokens[0].name, 'found');
       });
 
+      test('unclosed tilde fence with trailing tags is ignored', () {
+        const text = '''
+@before
+~~~
+@ignored
+@stillIgnored''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens, hasLength(1));
+        expect(tokens[0].name, 'before');
+      });
+
       test('code block at end without closing is handled', () {
-        // This tests behavior when code block regex doesn't find closing
+        // Unclosed blocks should still prevent tags inside them from matching.
         const text = '''
 @before
 ```

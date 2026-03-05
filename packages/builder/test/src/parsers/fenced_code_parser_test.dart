@@ -46,6 +46,38 @@ second
         expect(blocks[1].language, equals('python'));
         expect(blocks[1].content, equals('second'));
       });
+
+      test('supports closing fence with more delimiter characters', () {
+        const content = '''
+```
+first
+````
+
+~~~dart
+second
+~~~~
+''';
+        final blocks = parser.parse(content);
+
+        expect(blocks, hasLength(2));
+        expect(blocks[0].language, equals(''));
+        expect(blocks[0].content, equals('first'));
+        expect(blocks[1].language, equals('dart'));
+        expect(blocks[1].content, equals('second'));
+      });
+
+      test('supports closing tildes with longer matching fence', () {
+        const content = '''
+~~~js
+const value = 1;
+~~~~
+''';
+        final blocks = parser.parse(content);
+
+        expect(blocks, hasLength(1));
+        expect(blocks[0].language, equals('js'));
+        expect(blocks[0].content, equals('const value = 1;'));
+      });
     });
 
     group('options parsing', () {
@@ -54,6 +86,32 @@ second
 ```dart {lineLength: 80, foo: bar}
 code
 ```
+''';
+        final blocks = parser.parse(content);
+
+        expect(blocks, hasLength(1));
+        expect(blocks[0].options['lineLength'], equals(80));
+        expect(blocks[0].options['foo'], equals('bar'));
+      });
+
+      test('parses tilde fenced code block', () {
+        const content = '''
+~~~dart
+code
+~~~
+''';
+        final blocks = parser.parse(content);
+
+        expect(blocks, hasLength(1));
+        expect(blocks[0].language, equals('dart'));
+        expect(blocks[0].content, equals('code'));
+      });
+
+      test('parses options in tilde fenced code block', () {
+        const content = '''
+~~~dart {lineLength: 80, foo: bar}
+code
+~~~
 ''';
         final blocks = parser.parse(content);
 

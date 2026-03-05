@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:path/path.dart' as path;
-import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+
+import '../parsers/fenced_code_parser.dart';
+import '../markdown_utils.dart';
+import 'asset_generator.dart';
 
 /// Result of asset generation pipeline processing on slide content.
 class AssetGenerationResult {
@@ -28,7 +31,7 @@ class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
   final DeckService _store;
   final AssetCacheStore _cache;
-  final Logger _logger = Logger('AssetGenerationPipeline');
+  final _logger = Logger('AssetGenerationPipeline');
 
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
@@ -87,10 +90,9 @@ class AssetGenerationPipeline {
     );
   }
 
-  /// Finds the appropriate generator for the given content type using pattern matching.
+  /// Finds the first generator that can process [contentType].
   AssetGenerator? _findGenerator(String contentType) {
     for (final generator in _generators) {
-      // Use generator's canProcess method which might use pattern matching internally
       if (generator.canProcess(contentType)) {
         return generator;
       }
@@ -123,13 +125,8 @@ class AssetGenerationPipeline {
     final generatedAsset = generator.createAssetReference(codeBlock.content);
 
     final assetPath = _store.getGeneratedAssetPath(generatedAsset);
-    final cachedUri = await _cache.resolve(generatedAsset.fileName);
-    if (cachedUri != null) {
-      _validateCachedAssetPath(
-        cacheUri: cachedUri,
-        expectedPath: assetPath,
-        assetKey: generatedAsset.fileName,
-      );
+    var resolvedUri = await _cache.resolve(generatedAsset.fileName);
+    if (resolvedUri != null) {
       _logger.info(
         '${generator.type} asset already exists for slide $slideIndex',
       );
@@ -140,19 +137,20 @@ class AssetGenerationPipeline {
         codeBlock.content,
         assetPath,
       );
-      final writtenUri = await _cache.write(generatedAsset.fileName, assetData);
-      if (writtenUri == null) {
+      resolvedUri = await _cache.write(generatedAsset.fileName, assetData);
+      if (resolvedUri == null) {
         throw StateError(
           'Failed to write ${generator.type} asset to cache for key '
           '"${generatedAsset.fileName}".',
         );
       }
-      _validateCachedAssetPath(
-        cacheUri: writtenUri,
-        expectedPath: assetPath,
-        assetKey: generatedAsset.fileName,
-      );
     }
+
+    _validateCachedAssetPath(
+      cacheUri: resolvedUri,
+      expectedPath: assetPath,
+      assetKey: generatedAsset.fileName,
+    );
 
     // Create replacement syntax with relative path from project directory
     final projectDir = _store.configuration.superdeckDir.parent.path;

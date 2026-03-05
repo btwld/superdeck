@@ -1,10 +1,6 @@
 part of 'deck_generator_service.dart';
 
 extension _DeckGeneratorPipeline on DeckGeneratorService {
-  // ===========================================================================
-  // PHASE 1: Generate Outline
-  // ===========================================================================
-
   /// Generates a lightweight presentation outline.
   ///
   /// Returns the outline JSON or null on failure.
@@ -28,45 +24,16 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       'DECK_GEN',
       'Outline system prompt (${systemPrompt.length} chars)',
     );
-    final request = google_ai.GenerateContentRequest(
-      model: outlineModelName,
-      contents: [
-        google_ai.Content(
-          role: 'user',
-          parts: [google_ai.Part(text: prompt)],
-        ),
-      ],
-      generationConfig: google_ai.GenerationConfig(
-        responseMimeType: 'application/json',
-        responseSchema: adaptResult.schema,
-      ),
-      systemInstruction: google_ai.Content(
-        parts: [google_ai.Part(text: systemPrompt)],
-      ),
-    );
 
-    debugLog.log('DECK_GEN', 'Sending outline request to $outlineModelName...');
-    final response = await retryPolicy.run(
-      () => service
-          .generateContent(request)
-          .timeout(
-            const Duration(minutes: 2),
-            onTimeout: () {
-              throw TimeoutException('Outline generation timed out');
-            },
-          ),
+    return _runJsonGeneration(
+      service: service,
+      modelName: outlineModelName,
+      prompt: prompt,
+      schema: adaptResult.schema!,
+      systemPrompt: systemPrompt,
+      phase: 'outline',
     );
-    debugLog.log(
-      'DECK_GEN',
-      'Outline response: ${response.candidates.length} candidates',
-    );
-
-    return _parseJsonResponse(response, 'outline');
   }
-
-  // ===========================================================================
-  // PHASE 2: Generate Images
-  // ===========================================================================
 
   /// Extracts image requirements from the outline.
   List<_ImageRequirement> _extractImageRequirements(
@@ -76,7 +43,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     final slides = outline['slides'] as List?;
     if (slides == null) return requirements;
 
-    for (final slide in slides) {
+    for (final entry in slides.asMap().entries) {
+      final sourceSlideIndex = entry.key;
+      final slide = entry.value;
       if (slide is! Map) continue;
 
       final key = slide['key']?.toString();
@@ -88,15 +57,16 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       final subject = imageReq['subject']?.toString();
       if (subject == null || subject.isEmpty) continue;
 
-      requirements.add(_ImageRequirement(slideKey: key, subject: subject));
+      requirements.add(
+        _ImageRequirement(
+          slideKey: key,
+          subject: subject,
+          sourceSlideIndex: sourceSlideIndex,
+        ),
+      );
     }
 
-    // Hard cap at 3 images per presentation
-    if (requirements.length > 3) {
-      return requirements.take(3).toList();
-    }
-
-    return requirements;
+    return requirements.take(3).toList();
   }
 
   /// Generates images from outline requirements in parallel batches.
@@ -139,14 +109,11 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
 
         await Future.wait(
           batch.map((req) async {
-            final safeKey =
-                _fileSafeKey(req.slideKey, requirements.indexOf(req));
+            final safeKey = _fileSafeKey(req.slideKey, req.sourceSlideIndex);
             final filename = 'slide-$safeKey-illustration.png';
             final outputPath = p.join(Paths.superdeckAssetsPath, filename);
 
             try {
-              // Build prompt with style (if present) and always wrap with
-              // ImageGeneratorService.buildPrompt for presentation constraints
               final basePrompt = style != null
                   ? style.buildPrompt(req.subject)
                   : req.subject;
@@ -162,8 +129,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
 
               final imgStart = DateTime.now();
               final result = await imageService.generateImage(prompt);
-              final imgMs =
-                  DateTime.now().difference(imgStart).inMilliseconds;
+              final imgMs = DateTime.now().difference(imgStart).inMilliseconds;
 
               if (result.success && result.bytes != null) {
                 final bytes = result.bytes as Uint8List;
@@ -203,10 +169,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     return _ImageGenerationResults(successes: successes, failures: failures);
   }
 
-  // ===========================================================================
-  // PHASE 3: Generate Final Deck
-  // ===========================================================================
-
   /// Generates the final deck with available images context.
   Future<Map<String, dynamic>?> _generateFinalDeck(
     google_ai.GenerativeService service,
@@ -237,43 +199,18 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       'Final deck thinking budget: ${thinkingBudget > 0 ? thinkingBudget : 'disabled'}',
     );
 
-    final request = google_ai.GenerateContentRequest(
-      model: modelName,
-      contents: [
-        google_ai.Content(
-          role: 'user',
-          parts: [google_ai.Part(text: prompt)],
-        ),
-      ],
-      generationConfig: google_ai.GenerationConfig(
-        responseMimeType: 'application/json',
-        responseSchema: adaptResult.schema,
-        thinkingConfig: thinkingBudget > 0
-            ? google_ai.ThinkingConfig(thinkingBudget: thinkingBudget)
-            : null,
-      ),
-      systemInstruction: google_ai.Content(
-        parts: [google_ai.Part(text: systemPrompt)],
-      ),
+    return _runJsonGeneration(
+      service: service,
+      modelName: modelName,
+      prompt: prompt,
+      schema: adaptResult.schema!,
+      systemPrompt: systemPrompt,
+      phase: 'deck',
+      thinkingConfig: thinkingBudget > 0
+          ? google_ai.ThinkingConfig(thinkingBudget: thinkingBudget)
+          : null,
+      timeout: const Duration(minutes: 3),
     );
-
-    debugLog.log('DECK_GEN', 'Sending final deck request to $modelName...');
-    final response = await retryPolicy.run(
-      () => service
-          .generateContent(request)
-          .timeout(
-            const Duration(minutes: 3),
-            onTimeout: () {
-              throw TimeoutException('Final deck generation timed out');
-            },
-          ),
-    );
-    debugLog.log(
-      'DECK_GEN',
-      'Final deck response: ${response.candidates.length} candidates',
-    );
-
-    return _parseJsonResponse(response, 'deck');
   }
 
   /// Builds the system prompt for Phase 3 with outline and available images.
@@ -327,9 +264,51 @@ $outlineContext
     return buffer.toString();
   }
 
-  // ===========================================================================
-  // HELPERS
-  // ===========================================================================
+  Future<Map<String, dynamic>?> _runJsonGeneration({
+    required google_ai.GenerativeService service,
+    required String modelName,
+    required String prompt,
+    required google_ai.Schema schema,
+    required String systemPrompt,
+    required String phase,
+    google_ai.ThinkingConfig? thinkingConfig,
+    Duration timeout = const Duration(minutes: 2),
+  }) async {
+    final request = google_ai.GenerateContentRequest(
+      model: modelName,
+      contents: [
+        google_ai.Content(
+          role: 'user',
+          parts: [google_ai.Part(text: prompt)],
+        ),
+      ],
+      generationConfig: google_ai.GenerationConfig(
+        responseMimeType: 'application/json',
+        responseSchema: schema,
+        thinkingConfig: thinkingConfig,
+      ),
+      systemInstruction: google_ai.Content(
+        parts: [google_ai.Part(text: systemPrompt)],
+      ),
+    );
+
+    debugLog.log('DECK_GEN', 'Sending $phase request to $modelName...');
+    final response = await retryPolicy.run(
+      () => service
+          .generateContent(request)
+          .timeout(
+            timeout,
+            onTimeout: () => throw TimeoutException(
+              '${phase[0].toUpperCase()}${phase.substring(1)} generation timed out',
+            ),
+          ),
+    );
+    debugLog.log(
+      'DECK_GEN',
+      '$phase response: ${response.candidates.length} candidates',
+    );
+    return _parseJsonResponse(response, phase);
+  }
 
   /// Parses JSON from a Gemini response.
   Map<String, dynamic>? _parseJsonResponse(
