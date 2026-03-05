@@ -207,7 +207,7 @@ void main() {
         });
 
         test(
-          'preserves template and unknown slide option args via deck parse',
+          'preserves template and unknown slide option args via deck fromMap',
           () {
             final map = <String, dynamic>{
               'slides': [
@@ -233,47 +233,49 @@ void main() {
           },
         );
 
-        test('throws when unsupported legacy schemaVersion is present', () {
+        test('ignores unsupported legacy schemaVersion', () {
           final map = <String, dynamic>{
             'schemaVersion': 1,
             'slides': <dynamic>[],
           };
 
-          expect(() => Deck.fromMap(map), throwsA(isA<AckException>()));
+          final deck = Deck.fromMap(map);
+
+          expect(deck.slides, isEmpty);
         });
 
-        test('throws when slides is missing', () {
-          expect(
-            () => Deck.fromMap({}),
-            throwsA(
-              isA<AckException>().having(
-                (error) => error.toJson(),
-                'message',
-                contains('slides'),
-              ),
-            ),
-          );
+        test('defaults missing slides to an empty deck', () {
+          final deck = Deck.fromMap({});
+
+          expect(deck.slides, isEmpty);
         });
 
-        test(
-          'throws AckException when configuration optional fields are explicitly null',
-          () {
-            for (final field in [
-              'projectDir',
-              'slidesPath',
-              'outputDir',
-              'assetsPath',
-            ]) {
-              expect(
-                () => Deck.fromMap({
-                  'slides': <dynamic>[],
-                  'configuration': {field: null},
-                }),
-                throwsA(isA<AckException>()),
-              );
-            }
-          },
-        );
+        test('tolerates null configuration fields for legacy payloads', () {
+          final deck = Deck.fromMap({
+            'slides': <dynamic>[],
+            'configuration': {
+              'projectDir': null,
+              'slidesPath': null,
+              'outputDir': null,
+              'assetsPath': null,
+            },
+          });
+
+          expect(deck.configuration.projectDir, isNull);
+          expect(deck.configuration.slidesPath, isNull);
+          expect(deck.configuration.outputDir, isNull);
+          expect(deck.configuration.assetsPath, isNull);
+        });
+
+        test('tolerates null slide options for legacy payloads', () {
+          final deck = Deck.fromMap({
+            'slides': [
+              {'key': 'legacy-slide', 'options': null},
+            ],
+          });
+
+          expect(deck.slides.single.options, isNull);
+        });
       });
 
       group('configuration null-field parsing', () {

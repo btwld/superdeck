@@ -1,13 +1,10 @@
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart';
 
 import 'block_model.dart';
 
 part 'slide_model.g.dart';
-
-const _knownSlideOptionFields = <String>{'title', 'style', 'template'};
 
 /// Represents a single slide in a presentation.
 ///
@@ -58,31 +55,20 @@ class Slide {
   }
 
   static Slide fromMap(Map<String, Object?> map) {
-    final payload = schema.parse(map) as Map<String, Object?>;
-    return _fromPayload(payload);
-  }
-
-  @internal
-  static Slide fromValidatedMap(Map<String, Object?> payload) {
-    return _fromPayload(payload);
-  }
-
-  static Slide _fromPayload(Map<String, Object?> payload) {
-    final optionsPayload = payload['options'] as Map<String, Object?>?;
+    final optionsValue = map['options'];
 
     return Slide(
-      key: payload['key'] as String,
-      options: optionsPayload == null
-          ? null
-          : SlideOptions.fromMap(optionsPayload),
-      sections: (payload['sections'] as List<dynamic>? ?? const [])
+      key: map['key'] as String,
+      options: optionsValue is Map
+          ? SlideOptions.fromMap(Map<String, Object?>.from(optionsValue))
+          : null,
+      sections: (map['sections'] as List<dynamic>? ?? const [])
           .map(
             (section) =>
                 SectionBlock.fromMap(Map<String, Object?>.from(section as Map)),
           )
           .toList(),
-      comments: (payload['comments'] as List<dynamic>? ?? const [])
-          .cast<String>(),
+      comments: (map['comments'] as List<dynamic>? ?? const []).cast<String>(),
     );
   }
 
@@ -93,8 +79,10 @@ class Slide {
     'comments': Ack.list(Ack.string()).optional(),
   });
 
-  /// Alias for [fromMap].
-  static Slide parse(Map<String, Object?> map) => fromMap(map);
+  static Slide parse(Map<String, Object?> map) {
+    final payload = schema.parse(map) as Map<String, Object?>;
+    return fromMap(payload);
+  }
 
   /// Creates an error slide to display errors in the presentation.
   ///
@@ -195,21 +183,15 @@ class SlideOptions {
   }
 
   static SlideOptions fromMap(Map<String, Object?> map) {
-    final payload = schema.parse(map) as Map<String, Object?>;
-    return _fromPayload(payload);
-  }
-
-  static SlideOptions _fromPayload(Map<String, Object?> payload) {
-    final args = Map<String, Object?>.fromEntries(
-      payload.entries.where(
-        (entry) => !_knownSlideOptionFields.contains(entry.key),
-      ),
-    );
+    final args = Map<String, Object?>.from(map)
+      ..remove('title')
+      ..remove('style')
+      ..remove('template');
 
     return SlideOptions(
-      title: payload['title'] as String?,
-      style: payload['style'] as String?,
-      template: payload['template'] as String?,
+      title: map['title'] as String?,
+      style: map['style'] as String?,
+      template: map['template'] as String?,
       args: args,
     );
   }
@@ -221,8 +203,10 @@ class SlideOptions {
     'template': Ack.string().optional(),
   });
 
-  /// Alias for [fromMap].
-  static SlideOptions parse(Map<String, Object?> map) => fromMap(map);
+  static SlideOptions parse(Map<String, Object?> map) {
+    final payload = schema.parse(map) as Map<String, Object?>;
+    return fromMap(payload);
+  }
 
   @override
   bool operator ==(Object other) =>

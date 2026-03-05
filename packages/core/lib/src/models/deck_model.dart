@@ -25,9 +25,19 @@ class Deck {
   }
 
   static Deck fromMap(Map<String, Object?> map) {
-    final payload = schema.parse(map) as Map<String, Object?>;
-
-    return _fromPayload(payload);
+    final configurationValue = map['configuration'];
+    return Deck(
+      slides: (map['slides'] as List<dynamic>? ?? const [])
+          .map(
+            (slide) => Slide.fromMap(Map<String, Object?>.from(slide as Map)),
+          )
+          .toList(),
+      configuration: configurationValue is Map
+          ? DeckConfiguration.fromMap(
+              Map<String, Object?>.from(configurationValue),
+            )
+          : DeckConfiguration(),
+    );
   }
 
   /// Ack schema for validating complete deck/presentation JSON.
@@ -36,24 +46,9 @@ class Deck {
     'configuration': DeckConfiguration.schema.optional(),
   });
 
-  /// Alias for [fromMap].
-  static Deck parse(Map<String, Object?> map) => fromMap(map);
-
-  static Deck _fromPayload(Map<String, Object?> payload) {
-    final configurationValue = payload['configuration'];
-    return Deck(
-      slides: (payload['slides'] as List<dynamic>)
-          .map(
-            (slide) =>
-                Slide.fromValidatedMap(Map<String, Object?>.from(slide as Map)),
-          )
-          .toList(),
-      configuration: configurationValue == null
-          ? DeckConfiguration()
-          : DeckConfiguration.parse(
-              Map<String, Object?>.from(configurationValue as Map),
-            ),
-    );
+  static Deck parse(Map<String, Object?> map) {
+    final payload = schema.parse(map) as Map<String, Object?>;
+    return fromMap(payload);
   }
 
   @override

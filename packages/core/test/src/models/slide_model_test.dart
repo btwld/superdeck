@@ -182,20 +182,23 @@ void main() {
           expect(slide.comments, ['Comment 1', 'Comment 2']);
         });
 
-        test(
-          'throws AckException when options optional fields are explicitly null',
-          () {
-            for (final field in ['title', 'style', 'template']) {
-              expect(
-                () => Slide.fromMap({
-                  'key': 'invalid-options',
-                  'options': {field: null},
-                }),
-                throwsA(isA<AckException>()),
-              );
-            }
-          },
-        );
+        test('tolerates null options for legacy payloads', () {
+          final slide = Slide.fromMap({'key': 'legacy-slide', 'options': null});
+
+          expect(slide.options, isNull);
+        });
+
+        test('tolerates null option fields for legacy payloads', () {
+          for (final field in ['title', 'style', 'template']) {
+            final slide = Slide.fromMap({
+              'key': 'legacy-slide',
+              'options': {field: null, 'custom': 'value'},
+            });
+
+            expect(slide.options, isNotNull);
+            expect(slide.options!.args['custom'], 'value');
+          }
+        });
       });
 
       group('round-trip serialization', () {
@@ -204,9 +207,7 @@ void main() {
             key: 'roundtrip',
             options: const SlideOptions(title: 'RT Title', style: 'rt-style'),
             sections: [
-              SectionBlock([
-                ContentBlock('Section content'),
-              ]),
+              SectionBlock([ContentBlock('Section content')]),
             ],
             comments: ['RT Comment'],
           );
@@ -242,6 +243,25 @@ void main() {
 
           expect(slide.key, 'full');
           expect(slide.options?.title, 'Title');
+        });
+
+        test('throws AckException when options is explicitly null', () {
+          expect(
+            () => Slide.parse({'key': 'invalid', 'options': null}),
+            throwsA(isA<AckException>()),
+          );
+        });
+
+        test('throws AckException when option fields are explicitly null', () {
+          for (final field in ['title', 'style', 'template']) {
+            expect(
+              () => Slide.parse({
+                'key': 'invalid',
+                'options': {field: null},
+              }),
+              throwsA(isA<AckException>()),
+            );
+          }
         });
       });
 

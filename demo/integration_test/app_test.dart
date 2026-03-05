@@ -3,6 +3,8 @@ import 'package:integration_test/integration_test.dart';
 
 import 'helpers/test_helpers.dart';
 
+const _minimumDemoSlideCount = 5;
+
 void assertOnlyLayoutOverflowOrNoException(WidgetTester tester) {
   final exception = tester.takeException();
   if (exception == null) {
@@ -78,7 +80,10 @@ void main() {
         );
 
         expect(controller!.hasError.value, isFalse);
-        expect(controller.totalSlides.value, greaterThan(0));
+        expect(
+          controller.totalSlides.value,
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+        );
         expect(controller.currentIndex.value, 0);
         expect(controller.currentSlide.value, isNotNull);
         expect(find.textContaining('Error loading presentation'), findsNothing);
@@ -92,6 +97,7 @@ void main() {
         expect(controller, isNotNull);
         expect(controller!.isMenuOpen.value, isFalse);
         final totalSlides = controller.totalSlides.value;
+        expect(totalSlides, greaterThanOrEqualTo(_minimumDemoSlideCount));
 
         await tester.tap(find.bySemanticsLabel('Open menu'));
         await tester.pumpFor(const Duration(milliseconds: 500));
@@ -100,19 +106,12 @@ void main() {
         expect(find.textContaining('1 of $totalSlides'), findsOneWidget);
 
         await tester.tap(find.bySemanticsLabel('Next slide'));
-        await tester.pumpFor(const Duration(milliseconds: 300));
-
-        if (totalSlides > 1) {
-          await tester.pumpUntil(
-            () => controller.currentIndex.value == 1,
-            debugLabel: 'menu arrow-forward navigation',
-            onTimeout: () => describeDeckControllerState(controller),
-          );
-          expect(find.textContaining('2 of $totalSlides'), findsOneWidget);
-        } else {
-          expect(controller.currentIndex.value, 0);
-          expect(find.textContaining('1 of $totalSlides'), findsOneWidget);
-        }
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 1,
+          debugLabel: 'menu arrow-forward navigation',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+        expect(find.textContaining('2 of $totalSlides'), findsOneWidget);
 
         await tester.tap(find.bySemanticsLabel('Close menu'));
         await tester.pumpFor(const Duration(milliseconds: 300));
@@ -166,7 +165,7 @@ void main() {
         final controller = await tester.pumpTestApp();
         expect(controller, isNotNull);
         final totalSlides = controller!.slides.value.length;
-        expect(totalSlides, greaterThan(0));
+        expect(totalSlides, greaterThanOrEqualTo(_minimumDemoSlideCount));
 
         final firstSlideKey = controller.slides.value.first.key;
 
@@ -182,7 +181,7 @@ void main() {
         final thumb1 = find.bySemanticsLabel('Slide thumbnail 1');
         final panelItemsVisible = thumb1.evaluate().isNotEmpty;
 
-        if (panelItemsVisible && totalSlides > 1) {
+        if (panelItemsVisible) {
           await tester.tap(thumb1.first);
           await tester.pumpFor(const Duration(milliseconds: 300));
 
@@ -197,7 +196,7 @@ void main() {
               onTimeout: () => describeDeckControllerState(controller),
             );
           }
-        } else if (totalSlides > 1) {
+        } else {
           // Fallback: use controller-based navigation when panel items
           // are not rendered (headless CI with zero-viewport lazy list).
           await tester.navigateToSlide(controller, 1);
@@ -237,19 +236,19 @@ void main() {
         final slideCount = controller.totalSlides.value;
         expect(
           slideCount,
-          greaterThan(0),
-          reason: 'Should have at least one slide',
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+          reason: 'Demo should have at least $_minimumDemoSlideCount slides',
         );
       });
 
-      testWidgets('demo app has at least one slide', (tester) async {
+      testWidgets('demo app has at least five slides', (tester) async {
         final controller = await tester.pumpTestApp();
 
         expect(controller, isNotNull);
         expect(
           controller!.totalSlides.value,
-          greaterThan(0),
-          reason: 'Demo should have at least one slide',
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+          reason: 'Demo should have at least $_minimumDemoSlideCount slides',
         );
       });
 
@@ -274,9 +273,11 @@ void main() {
       ) async {
         final controller = await tester.pumpTestApp();
         expect(controller, isNotNull);
-        final targetIndex = controller!.totalSlides.value > 4
-            ? 4
-            : controller.totalSlides.value - 1;
+        expect(
+          controller!.totalSlides.value,
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+        );
+        const targetIndex = 4;
 
         await tester.navigateToSlide(controller, targetIndex);
         expect(controller.currentIndex.value, targetIndex);
@@ -292,46 +293,38 @@ void main() {
 
         expect(controller, isNotNull);
         expect(controller!.currentIndex.value, 0);
-        if (controller.totalSlides.value > 1) {
-          expect(
-            controller.canGoNext.value,
-            isTrue,
-            reason: 'Should be able to go next',
-          );
+        expect(
+          controller.totalSlides.value,
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+        );
+        expect(
+          controller.canGoNext.value,
+          isTrue,
+          reason: 'Should be able to go next',
+        );
 
-          // Navigate to next slide
-          await controller.nextSlide();
-          await tester.pumpUntil(
-            () => controller.currentIndex.value == 1,
-            timeout: const Duration(seconds: 5),
-            debugLabel: 'navigation to slide 1',
-          );
-
-          expect(
-            controller.currentIndex.value,
-            1,
-            reason: 'Should be on second slide',
-          );
-          return;
-        }
-
-        expect(controller.canGoNext.value, isFalse);
         await controller.nextSlide();
-        await tester.pumpFor(const Duration(milliseconds: 200));
-        expect(controller.currentIndex.value, 0);
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 1,
+          timeout: const Duration(seconds: 5),
+          debugLabel: 'navigation to slide 1',
+        );
+
+        expect(
+          controller.currentIndex.value,
+          1,
+          reason: 'Should be on second slide',
+        );
       });
 
       testWidgets('can navigate to previous slide', (tester) async {
         final controller = await tester.pumpTestApp();
 
         expect(controller, isNotNull);
-        if (controller!.totalSlides.value <= 1) {
-          expect(controller.canGoPrevious.value, isFalse);
-          await controller.previousSlide();
-          await tester.pumpFor(const Duration(milliseconds: 200));
-          expect(controller.currentIndex.value, 0);
-          return;
-        }
+        expect(
+          controller!.totalSlides.value,
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+        );
 
         // First navigate to slide 1
         await tester.navigateToSlide(controller, 1);
@@ -379,11 +372,12 @@ void main() {
         final controller = await tester.pumpTestApp();
 
         expect(controller, isNotNull);
-        final targetIndex = controller!.totalSlides.value > 3
-            ? 3
-            : controller.totalSlides.value - 1;
+        expect(
+          controller!.totalSlides.value,
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+        );
+        const targetIndex = 3;
 
-        // Navigate to an available slide.
         await tester.navigateToSlide(controller, targetIndex);
 
         expect(controller.currentIndex.value, targetIndex);
@@ -393,15 +387,16 @@ void main() {
         final controller = await tester.pumpTestApp();
 
         expect(controller, isNotNull);
-        final targetIndex = controller!.totalSlides.value > 2
-            ? 2
-            : controller.totalSlides.value - 1;
+        expect(
+          controller!.totalSlides.value,
+          greaterThanOrEqualTo(_minimumDemoSlideCount),
+        );
+        const targetIndex = 2;
 
         final slide0 = controller.currentSlide.value;
         expect(slide0, isNotNull);
         expect(slide0!.slideIndex, 0);
 
-        // Navigate to an available slide.
         await tester.navigateToSlide(controller, targetIndex);
 
         final currentSlide = controller.currentSlide.value;
