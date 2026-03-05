@@ -47,13 +47,13 @@ Agents should read this file before substantive work and update it as work progr
   - implemented features that still lack direct parser fixtures
   - implemented features that still lack authoring docs
 - The parser validation audit has been expanded into a stage-by-stage feature inventory tied to concrete test suites and implementation files.
-- Authoring docs have been partially realigned with the parser audit:
+- Authoring docs have been realigned with the parser audit:
   - `template` frontmatter is now documented
   - escaped directives via `_@` are now documented
   - HTML-comment speaker notes are now documented
-  - `@block` is now documented as an accepted markdown-block alias
+  - `@block` is now the only public markdown-block syntax taught in docs/examples/templates
   - `@qrcode` argument docs were corrected to match the implementation
-- High-level docs now also mention `@column` / `@block` together in overview/index surfaces, reducing remaining syntax-teaching drift.
+- High-level docs, starter templates, READMEs, and demo decks now teach only `@block` on the public/user-facing surface.
 
 ## Open Decisions To Freeze
 1. Serialized `comments` -> `notes` migration:
@@ -76,26 +76,26 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-05
-- Removed `@column` from the public/user-facing documentation surface while preserving implementation compatibility:
+- Removed the legacy markdown-block alias from the public/user-facing documentation surface while preserving implementation compatibility:
   - updated `docs/`, top-level `README.md`, `packages/superdeck/README.md`, the CLI starter deck template, and demo markdown decks to show only `@block`
-  - remaining `@column` references are now limited to implementation comments, tests/fixtures, and internal agent/planning context where the backward-compatibility contract still needs to be described
+  - remaining legacy-alias references are now limited to implementation comments, tests/fixtures, and internal agent/planning context where the backward-compatibility contract still needs to be described
 - Verification for the public-docs sweep:
-  - `rg -n '@column' docs README.md packages/superdeck/README.md packages/cli/lib/src/commands/setup_command.dart demo/showcase.md demo/slides.md`
+  - searched the public/user-facing surfaces for the legacy block alias across `docs/`, READMEs, the CLI starter deck template, and demo markdown decks
   - `git diff --check`
-  - result: no remaining public/user-facing `@column` references and diff hygiene clean
+  - result: no remaining public/user-facing legacy-alias references and diff hygiene clean
 - Verified the nested fenced-code doc examples from a markdown/MDX perspective:
   - the standard ` ````markdown ... ```dart ... ``` ... ```` ` pattern is valid and renders correctly because the outer fence is longer than the inner fence
   - fixed one malformed docs example in `docs/examples.mdx` where an inner closing fence incorrectly had trailing `{.code}`, which is not valid fenced-code closing syntax
   - verification: targeted fence scan across the main docs surfaces plus `git diff --check`, both clean
 - Closed the remaining parser-semantics documentation follow-up:
-  - tutorial/example/reference docs now lead with canonical `@block` examples and label `@column` as a compatibility alias
+  - tutorial/example/reference docs now lead with canonical `@block` examples and label the legacy block form only as compatibility behavior
   - fenced-code docs now mention brace-free option headers only as legacy compatibility while keeping braced headers canonical
   - `.planning/rewrite-v2-parser-semantics.md` no longer tracks active docs drift for parser semantics; it now records documentation alignment notes instead
 - Verification for the docs-only follow-up:
   - `git diff --check`
   - result: clean
 - Continuing the remaining parser-semantics follow-up items:
-  - convert tutorial/example docs from `@column`-first teaching to canonical `@block`-first examples while keeping `@column` documented as a migration alias
+  - convert tutorial/example docs from legacy-block-first teaching to canonical `@block`-first examples while keeping backward compatibility in the implementation
   - decide whether brace-free fenced-code option headers stay implementation-only compatibility or get a brief legacy-compatibility note in docs
 - Completed the strict-proof parser-semantics audit pass:
   - added direct characterization fixtures for widget shorthand normalization, explicit `@widget { name: ... }`, `_@` escaped directives, frontmatter post-extraction trim normalization, directive/fenced-code non-map option collapse, fenced-code brace-free YAML-map headers, and the trailing post-last-directive trim asymmetry
@@ -131,10 +131,10 @@ Agents should read this file before substantive work and update it as work progr
 - Remaining parser-surface validation gaps now called out explicitly:
   - explicit `@widget` and shorthand widget directives need direct parser fixtures
   - `_@` escaped directives still have no dedicated parser fixtures
-  - public docs still teach `@column` while v2 planning freezes canonical `@block`
+  - public docs still taught the legacy block form while v2 planning froze canonical `@block`
 - Follow-up doc updates reduced the remaining parser-surface docs drift:
   - `template`/`template: none`, `_@`, and HTML-comment notes are now documented
-  - remaining authoring drift is primarily that docs still lead with `@column` while v2 planning freezes `@block` as canonical
+  - remaining authoring drift was primarily that docs still led with the legacy block form while v2 planning froze `@block` as canonical
 - Expanded the parser validation audit into a stage-by-stage feature matrix covering slide splitting, frontmatter, directive tokenization, normalization, comments, and fenced-code transforms.
 - Updated high-level docs (`docs/index.mdx`, `docs/guides/superdeck-overview.mdx`, `docs/reference/block-types.mdx`) so `@block` is no longer absent from top-level syntax summaries.
 - Ran the parser-focused verification subset with the pinned FVM SDK:
@@ -145,7 +145,7 @@ Agents should read this file before substantive work and update it as work progr
   - the parser semantics doc now treats fenced-code transforms as task-driven/flow-dependent rather than an unconditional parser stage
   - section aggregation coverage is now explicitly represented in the parser validation audit
   - parser-semantics wording is now feature-first and no longer mixes in future package ownership boundaries
-- Reduced broader `@column` teaching drift in tutorial-style docs by adding `@block` alias notes to:
+- Reduced broader legacy-block teaching drift in tutorial-style docs by adding `@block`-first notes to:
   - `docs/getting-started.mdx`
   - `docs/tutorials/block-layouts.mdx`
   - `docs/examples.mdx`
