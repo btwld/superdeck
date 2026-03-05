@@ -1,5 +1,8 @@
 import 'package:collection/collection.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:ack/ack.dart';
+
+import '../utils/extensions.dart';
+import '../utils/generate_hash.dart';
 
 enum AssetExtension {
   png,
@@ -72,9 +75,9 @@ class GeneratedAsset {
   }
 
   static final schema = Ack.object({
-    "name": Ack.string(),
-    "extension": AssetExtension.schema,
-    "type": Ack.string(),
+    'name': Ack.string(),
+    'extension': AssetExtension.schema,
+    'type': Ack.string(),
   });
 
   static GeneratedAsset thumbnail(String slideKey) {

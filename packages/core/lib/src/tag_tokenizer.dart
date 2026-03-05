@@ -2,6 +2,7 @@ import 'package:yaml/yaml.dart';
 
 import 'deck_format_exception.dart';
 import 'utils/yaml_utils.dart';
+import 'utils/code_fence.dart';
 
 class TagToken {
   final String name;
@@ -27,18 +28,50 @@ class TagTokenizer {
   const TagTokenizer();
 
   static final _tagPattern = RegExp(r'^\s*@([\w-]+)', multiLine: true);
-  static final _codeBlockPattern = RegExp(
-    r'^```.*?^```',
-    multiLine: true,
-    dotAll: true,
-  );
+
+  static List<_Range> _collectCodeBlockRanges(String text) {
+    final ranges = <_Range>[];
+
+    String? activeFence;
+    var startIndex = 0;
+
+    var offset = 0;
+    while (offset < text.length) {
+      final newlineIndex = text.indexOf('\n', offset);
+      final lineEnd = newlineIndex == -1 ? text.length : newlineIndex;
+      final line = text.substring(offset, lineEnd).replaceAll('\r', '');
+
+      final fence = parseCodeFenceLine(line);
+      if (activeFence == null) {
+        if (fence != null) {
+          activeFence = fence.marker;
+          startIndex = offset;
+        }
+      } else if (fence != null &&
+          canCloseCodeFence(
+            marker: activeFence,
+            minLength: activeFence.length,
+            line: line,
+          )) {
+        ranges.add(_Range(startIndex, lineEnd));
+        activeFence = null;
+      }
+
+      if (newlineIndex == -1) {
+        break;
+      }
+      offset = lineEnd + 1;
+    }
+
+    if (activeFence != null) {
+      ranges.add(_Range(startIndex, text.length));
+    }
+
+    return ranges;
+  }
 
   List<TagToken> tokenize(String text) {
-    // Find all code block ranges to exclude from tag matching
-    final codeBlockRanges = <_Range>[];
-    for (final match in _codeBlockPattern.allMatches(text)) {
-      codeBlockRanges.add(_Range(match.start, match.end));
-    }
+    final codeBlockRanges = _collectCodeBlockRanges(text);
 
     final tokens = <TagToken>[];
 

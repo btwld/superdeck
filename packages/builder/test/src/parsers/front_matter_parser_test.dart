@@ -50,22 +50,29 @@ Content after empty frontmatter.
       expect(result.contents, equals('Content after empty frontmatter.'));
     });
 
-    test('Handles malformed YAML gracefully', () {
+    test('Throws for malformed YAML', () {
       const input = '''
 ---
-title Test Title: malformed YAML
+title: [unclosed
 ---
 
 Content after malformed YAML.
 ''';
 
-      final result = parser.parse(input);
+      expect(() => parser.parse(input), throwsA(isA<FormatException>()));
+    });
 
-      // The YamlUtils.convertYamlToMap function actually parses this as valid YAML
-      // with a key of "title Test Title" and value of "malformed YAML"
-      expect(result.frontmatter, isNotEmpty);
-      expect(result.frontmatter['title Test Title'], equals('malformed YAML'));
-      expect(result.contents, equals('Content after malformed YAML.'));
+    test('Throws for non-map frontmatter payload', () {
+      const input = '''
+---
+- item one
+- item two
+---
+
+Content after non-map frontmatter.
+''';
+
+      expect(() => parser.parse(input), throwsA(isA<FormatException>()));
     });
 
     test('Handles missing closing delimiter', () {

@@ -1,4 +1,4 @@
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:yaml/yaml.dart';
 
 typedef ExtractedFrontmatter = ({
   Map<String, Object?> frontmatter,
@@ -61,23 +61,48 @@ class FrontmatterParser {
 
   ExtractedFrontmatter parse(String content) {
     final result = parseFrontMatter(content);
+    return (
+      frontmatter: _parseFrontmatterYaml(result.yaml),
+      contents: result.markdown,
+    );
+  }
 
-    final yamlString = result.yaml;
-    final markdownContent = result.markdown;
-    Map<String, Object?> yamlMap = {};
+  Map<String, Object?> _parseFrontmatterYaml(String yamlString) {
+    if (yamlString.isEmpty) return {};
 
-    if (yamlString.isNotEmpty) {
-      try {
-        yamlMap = convertYamlToMap(yamlString);
-      } catch (e) {
+    try {
+      final yamlDoc = loadYaml(yamlString);
+      if (yamlDoc == null) {
+        return {};
+      }
+      if (yamlDoc is! YamlMap) {
         throw FormatException(
-          'Invalid YAML frontmatter in slide. '
-          'Check for syntax errors in your slide configuration. '
-          'Error: $e',
+          'Frontmatter must be a YAML map. Received: ${yamlDoc.runtimeType}',
         );
       }
+      return _toPlainMap(yamlDoc);
+    } catch (e) {
+      throw FormatException(
+        'Invalid YAML frontmatter in slide. '
+        'Check for syntax errors in your slide configuration. '
+        'Error: $e',
+      );
     }
+  }
 
-    return (frontmatter: yamlMap, contents: markdownContent);
+  Map<String, Object?> _toPlainMap(YamlMap yamlMap) {
+    return Map<String, Object?>.fromEntries(
+      yamlMap.entries.map(
+        (entry) => MapEntry(entry.key.toString(), _toPlainValue(entry.value)),
+      ),
+    );
+  }
+
+  Object? _toPlainValue(Object? value) {
+    if (value is YamlMap) return _toPlainMap(value);
+    if (value is YamlList) {
+      return value.map(_toPlainValue).toList();
+    }
+    return value;
   }
 }

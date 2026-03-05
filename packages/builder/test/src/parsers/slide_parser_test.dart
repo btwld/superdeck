@@ -42,6 +42,56 @@ void main() {
   });
 
   group('MarkdownParser.parse', () {
+    test('handles plain --- separators without frontmatter', () async {
+      const markdown = '''
+A
+---
+B
+---
+C
+''';
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides.length, equals(3));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(slides[0].content, equals('A'));
+      expect(slides[1].frontmatter, isEmpty);
+      expect(slides[1].content, equals('B'));
+      expect(slides[2].frontmatter, isEmpty);
+      expect(slides[2].content, equals('C'));
+    });
+
+    test('throws when frontmatter is not a map', () {
+      const markdown = '''
+---
+- item one
+- item two
+---
+
+Content after non-map frontmatter.
+''';
+
+      expect(
+        () => markdownParser.parse(markdown),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('throws when frontmatter is malformed', () {
+      const markdown = '''
+---
+title: [unclosed
+---
+
+Content after malformed frontmatter.
+''';
+
+      expect(
+        () => markdownParser.parse(markdown),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
     test('parses valid markdown into RawSlides', () async {
       const markdown = '''
 ---
@@ -70,6 +120,56 @@ Content for slide 3
       expect(slides[1].content, equals('Content for slide 2'));
       expect(slides[2].frontmatter, {});
       expect(slides[2].content, equals('Content for slide 3'));
+    });
+
+    test('does not split --- inside tilde fenced code blocks', () async {
+      const markdown = '''
+Slide 1
+~~~dart
+---
+print('inside code');
+---
+~~~
+
+---
+
+Slide 2
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides.length, equals(2));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(
+        slides[0].content,
+        equals("Slide 1\n~~~dart\n---\nprint('inside code');\n---\n~~~"),
+      );
+      expect(slides[1].frontmatter, isEmpty);
+      expect(slides[1].content, equals('Slide 2'));
+    });
+
+    test('splits plain --- separators into multiple slides', () {
+      const markdown = '''
+Slide A
+
+---
+
+Slide B
+
+---
+
+Slide C
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides.length, equals(3));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(slides[0].content, equals('Slide A'));
+      expect(slides[1].frontmatter, isEmpty);
+      expect(slides[1].content, equals('Slide B'));
+      expect(slides[2].frontmatter, isEmpty);
+      expect(slides[2].content, equals('Slide C'));
     });
 
     test(
@@ -276,6 +376,58 @@ Content for slide 3
         expect(slides[2].content, equals('Content for slide 3'));
       },
     );
+
+    test('supports separators before and after plain slides', () {
+      const markdown = '''
+---
+title: First
+---
+Welcome
+
+---
+No frontmatter here
+
+---
+title: Second
+---
+
+Has YAML again
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides.length, equals(3));
+      expect(slides[0].frontmatter['title'], equals('First'));
+      expect(slides[0].content, equals('Welcome'));
+      expect(slides[1].frontmatter, isEmpty);
+      expect(slides[1].content, equals('No frontmatter here'));
+      expect(slides[2].frontmatter['title'], equals('Second'));
+      expect(slides[2].content, equals('Has YAML again'));
+    });
+
+    test('ignores --- inside fenced code when splitting slides', () {
+      const markdown = '''
+---
+title: Slide 1
+---
+Code block below:
+
+~~~
+---
+Inside code
+---
+~~~
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides.length, equals(1));
+      expect(slides[0].frontmatter['title'], equals('Slide 1'));
+      expect(
+        slides[0].content,
+        equals('Code block below:\n\n~~~\n---\nInside code\n---\n~~~'),
+      );
+    });
   });
 
   // Group test notes from comments

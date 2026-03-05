@@ -79,10 +79,12 @@ class _ImagePhaseData {
   const _ImagePhaseData({
     required this.availableImages,
     required this.imageFailures,
+    required this.sourceSlideIndicesByKey,
   });
 
   final Map<String, String> availableImages;
   final Map<String, String>? imageFailures;
+  final Map<String, int> sourceSlideIndicesByKey;
 }
 
 class _StyleData {
@@ -192,6 +194,7 @@ class DeckGeneratorService {
         deckJson: deckJson,
         availableImages: imagePhase.availableImages,
         imageFailures: imagePhase.imageFailures,
+        sourceSlideIndicesByKey: imagePhase.sourceSlideIndicesByKey,
         pipelineStart: pipelineStart,
         onProgress: onProgress,
       );

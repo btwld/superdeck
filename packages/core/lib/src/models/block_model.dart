@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:ack/ack.dart';
+
+import '../utils/extensions.dart';
 
 /// Base class for all content blocks in a slide.
 ///
@@ -347,7 +349,6 @@ class WidgetBlock extends Block {
   }
 
   static WidgetBlock fromMap(Map<String, Object?> map) {
-    // Extract known fields
     final name = map['name'] as String;
     final align = map['align'] != null
         ? ContentAlignment.fromJson(map['align']!)

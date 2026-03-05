@@ -1,10 +1,5 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
-final _codeFencePattern = RegExp(
-  r'```(?<backtickInfo>[^`]*)[\s\S]*?```',
-  multiLine: true,
-);
-
 // ```<language> {<key1>: <value1>, <key2>: <value2>, ...}
 // <code content>
 // ```
@@ -37,50 +32,99 @@ class FencedCodeParser {
   const FencedCodeParser();
 
   List<ParsedFencedCode> parse(String text) {
-    final matches = _codeFencePattern.allMatches(text);
-    List<ParsedFencedCode> parsedBlocks = [];
+    final parsedBlocks = <ParsedFencedCode>[];
 
-    for (final match in matches) {
-      final backtickInfo = match.namedGroup('backtickInfo');
+    String? activeFence;
+    String? openingLine;
+    int? startIndex;
+    final blockContent = <String>[];
 
-      final lines = backtickInfo?.split('\n');
-      final firstLine = lines?.first ?? '';
-      final rest = lines?.sublist(1).join('\n') ?? '';
+    var offset = 0;
+    while (offset < text.length) {
+      final newlineIndex = text.indexOf('\n', offset);
+      final lineEnd = newlineIndex == -1 ? text.length : newlineIndex;
+      final line = text.substring(offset, lineEnd);
 
-      final language = firstLine.split(' ')[0];
-      final options = firstLine.replaceFirst(language, '').trim();
-
-      final content = rest;
-
-      final startIndex = match.start;
-      final endIndex = match.end;
-
-      final Map<String, Object?> optionsMap;
-      if (options.isNotEmpty) {
-        try {
-          optionsMap = convertYamlToMap(options, strict: true);
-        } catch (e) {
-          throw Exception(
-            'Failed to parse options for code block at position $startIndex-$endIndex. '
-            'Language: $language. Options: "$options". Error: $e',
-          );
+      final fence = parseCodeFenceLine(line);
+      if (activeFence == null) {
+        if (fence != null) {
+          activeFence = fence.marker;
+          openingLine = fence.rest;
+          startIndex = offset;
+          blockContent.clear();
         }
+      } else if (fence != null &&
+          canCloseCodeFence(
+            marker: activeFence,
+            minLength: activeFence.length,
+            line: line,
+          )) {
+        final endIndex = lineEnd;
+        final header = _parseFenceHeader(openingLine!);
+        final optionsMap = _parseFenceOptions(
+          options: header.options,
+          startIndex: startIndex!,
+          endIndex: endIndex,
+          language: header.language,
+        );
+
+        parsedBlocks.add(
+          ParsedFencedCode(
+            options: optionsMap,
+            language: header.language,
+            content: blockContent.join('\n').trim(),
+            startIndex: startIndex,
+            endIndex: endIndex,
+          ),
+        );
+
+        activeFence = null;
+        openingLine = null;
+        startIndex = null;
       } else {
-        optionsMap = {};
+        blockContent.add(line);
       }
 
-      parsedBlocks.add(
-        ParsedFencedCode(
-          options: optionsMap,
-          language: language,
-          content: content.trim(),
-          startIndex: startIndex,
-          endIndex: endIndex,
-        ),
-      );
+      if (newlineIndex == -1) {
+        break;
+      }
+      offset = lineEnd + 1;
     }
 
     return parsedBlocks;
+  }
+
+  ({String language, String options}) _parseFenceHeader(String openingLine) {
+    final firstLine = openingLine.trim();
+    final spaceIndex = firstLine.indexOf(' ');
+
+    if (spaceIndex == -1) {
+      return (language: firstLine, options: '');
+    }
+
+    return (
+      language: firstLine.substring(0, spaceIndex),
+      options: firstLine.substring(spaceIndex + 1).trim(),
+    );
+  }
+
+  Map<String, Object?> _parseFenceOptions({
+    required String options,
+    required int startIndex,
+    required int endIndex,
+    required String language,
+  }) {
+    if (options.isEmpty) return {};
+
+    try {
+      return convertYamlToMap(options, strict: true);
+    } catch (e) {
+      throw Exception(
+        'Failed to parse options for code block at position '
+        '$startIndex-$endIndex. Language: $language. Options: "$options". '
+        'Error: $e',
+      );
+    }
   }
 }
 

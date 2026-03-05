@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:superdeck_core/superdeck_core.dart';
+import 'package:yaml/yaml.dart';
 
 import 'front_matter_parser.dart';
 import 'raw_slide_schema.dart';
@@ -33,62 +34,140 @@ String _uniquifyKey(
 class MarkdownParser {
   const MarkdownParser();
 
-  // Regex to match code fence: 3+ backticks at start, optionally followed by language
-  static final _codeFencePattern = RegExp(r'^(`{3,})(\s*\S*)?$');
-
   /// Splits the entire markdown into slides.
   ///
-  /// A "slide" is defined by frontmatter sections delimited with `---`.
-  /// Code blocks (fenced by ```) are respected, so `---` inside a code block
-  /// won't be treated as frontmatter delimiters.
+  /// A slide boundary is any `---` outside of fenced code blocks.
+  /// If a slide starts with a frontmatter block (`---` + YAML map + `---`),
+  /// that pair is kept with the slide instead of creating extra boundaries.
   static List<String> _splitSlides(String content) {
-    content = content.trim();
-    final lines = LineSplitter().convert(content);
+    final trimmedContent = content.trim();
+    if (trimmedContent.isEmpty) return [];
+
+    final lines = LineSplitter()
+        .convert(trimmedContent)
+        .map((line) => line.replaceAll('\r', ''))
+        .toList();
+
     final slides = <String>[];
-    final buffer = StringBuffer();
-    bool insideFrontMatter = false;
+    final currentSlide = <String>[];
+    String? activeFence;
 
-    int? codeFenceLength; // null = not in code block, otherwise = fence length
+    void flushCurrentSlide() {
+      _appendSlide(currentSlide, slides);
+      currentSlide.clear();
+    }
 
-    for (var line in lines) {
-      final trimmed = line.trim();
-
-      // Check for code fence (opening or closing)
-      final fenceMatch = _codeFencePattern.firstMatch(trimmed);
-      if (fenceMatch != null) {
-        final backticks = fenceMatch.group(1)!.length;
-        if (codeFenceLength == null) {
-          // Opening a code block
-          codeFenceLength = backticks;
-        } else if (backticks >= codeFenceLength) {
-          // Closing the code block (needs same or more backticks)
-          codeFenceLength = null;
-        }
-        // If backticks < codeFenceLength, it's content inside the block
-      }
-
-      if (codeFenceLength != null) {
-        buffer.writeln(line);
+    for (var index = 0; index < lines.length; index++) {
+      final line = lines[index];
+      final fenceState = _processFenceLine(activeFence, line);
+      activeFence = fenceState.activeFence;
+      if (fenceState.isFenceLine) {
+        currentSlide.add(line);
         continue;
       }
 
-      if (trimmed == '---') {
-        if (!insideFrontMatter) {
-          if (buffer.isNotEmpty) {
-            slides.add(buffer.toString().trim());
-            buffer.clear();
+      if (activeFence == null && line.trim() == '---') {
+        final candidateEndIndex = _findFrontMatterEnd(lines, index + 1);
+
+        if (candidateEndIndex != null) {
+          final candidateYaml = lines
+              .sublist(index + 1, candidateEndIndex)
+              .join('\n');
+
+          if (_isFrontMatterCandidate(candidateYaml)) {
+            if (currentSlide.isNotEmpty) {
+              flushCurrentSlide();
+            }
+
+            for (var i = index; i <= candidateEndIndex; i++) {
+              currentSlide.add(lines[i]);
+            }
+            index = candidateEndIndex;
+            continue;
           }
         }
-        insideFrontMatter = !insideFrontMatter;
+
+        flushCurrentSlide();
+        continue;
       }
-      buffer.writeln(line);
+
+      currentSlide.add(line);
     }
 
-    if (buffer.isNotEmpty) {
-      slides.add(buffer.toString());
-    }
+    _appendSlide(currentSlide, slides);
 
     return slides;
+  }
+
+  static int? _findFrontMatterEnd(List<String> lines, int start) {
+    String? activeFence;
+
+    for (var i = start; i < lines.length; i++) {
+      final line = lines[i];
+      final fenceState = _processFenceLine(activeFence, line);
+      activeFence = fenceState.activeFence;
+      if (fenceState.isFenceLine) {
+        continue;
+      }
+
+      if (activeFence == null && line.trim() == '---') {
+        return i;
+      }
+    }
+
+    return null;
+  }
+
+  static ({String? activeFence, bool isFenceLine}) _processFenceLine(
+    String? activeFence,
+    String line,
+  ) {
+    final fence = parseCodeFenceLine(line);
+    if (fence == null) {
+      return (activeFence: activeFence, isFenceLine: false);
+    }
+    if (activeFence == null) {
+      return (activeFence: fence.marker, isFenceLine: true);
+    }
+    if (canCloseCodeFence(
+      marker: activeFence,
+      minLength: activeFence.length,
+      line: line,
+    )) {
+      return (activeFence: null, isFenceLine: true);
+    }
+    return (activeFence: activeFence, isFenceLine: true);
+  }
+
+  static bool _isFrontMatterCandidate(String value) {
+    final candidate = value.trim();
+    if (candidate.isEmpty) return true;
+
+    try {
+      final yaml = loadYaml(candidate);
+      return yaml is YamlMap || yaml is YamlList;
+    } on YamlException {
+      return _looksLikeFrontMatterCandidate(candidate);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static bool _looksLikeFrontMatterCandidate(String value) {
+    return value.split('\n').any((line) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) return false;
+      return trimmed.contains(':') || trimmed.startsWith('- ');
+    });
+  }
+
+  static void _appendSlide(List<String> lines, List<String> slides) {
+    if (lines.isEmpty) return;
+
+    final slideText = lines.join('\n').trim();
+    if (slideText.isNotEmpty) {
+      slides.add(slideText);
+    }
   }
 
   List<RawSlideMarkdown> parse(String markdown) {

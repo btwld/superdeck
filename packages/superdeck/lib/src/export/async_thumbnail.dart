@@ -38,8 +38,7 @@ class AsyncThumbnail {
     _isGenerating = true;
 
     _status.value = AsyncFileStatus.loading;
-    final currentUri = _imageUri.value;
-    if (currentUri != null) {
+    if (_imageUri.value != null) {
       // Evict only the previous thumbnail provider to avoid global cache churn.
       final cachedProvider = _cachedProvider;
       if (cachedProvider != null) {
@@ -77,11 +76,10 @@ class AsyncThumbnail {
       _cachedProvider = null;
     } finally {
       _isGenerating = false;
-      if (!_disposed && _pendingForce && context.mounted) {
-        _pendingForce = false;
+      final shouldForce = _pendingForce;
+      _pendingForce = false;
+      if (!_disposed && shouldForce && context.mounted) {
         unawaited(_generate(context, force: true));
-      } else {
-        _pendingForce = false;
       }
     }
   }
@@ -89,6 +87,10 @@ class AsyncThumbnail {
   void dispose() {
     _disposed = true;
     _pendingForce = false;
+    final cachedProvider = _cachedProvider;
+    if (cachedProvider != null) {
+      imageCache.evict(cachedProvider);
+    }
     _cachedProvider = null;
 
     // Dispose signals
@@ -116,10 +118,10 @@ class AsyncThumbnail {
     };
   }
 
-  Widget _errorWidget(BuildContext context, AsyncThumbnail thumbnail) {
+  Widget _errorWidget(BuildContext context) {
     return ErrorWidgets.withRetry(
       'Failed to load thumbnail',
-      () => thumbnail.load(context, true),
+      () => load(context, true),
     );
   }
 
@@ -136,7 +138,7 @@ class AsyncThumbnail {
         AsyncFileStatus.idle => const IsometricLoading(),
         AsyncFileStatus.loading => const IsometricLoading(),
         AsyncFileStatus.done => _buildLoadedImage(context),
-        AsyncFileStatus.error => _errorWidget(context, this),
+        AsyncFileStatus.error => _errorWidget(context),
       };
     });
   }
@@ -144,13 +146,13 @@ class AsyncThumbnail {
   Widget _buildLoadedImage(BuildContext context) {
     final provider = imageProvider;
     if (provider == null) {
-      return _errorWidget(context, this);
+      return _errorWidget(context);
     }
 
     return Image(
       gaplessPlayback: false,
       image: provider,
-      errorBuilder: (context, error, _) => _errorWidget(context, this),
+      errorBuilder: (context, error, _) => _errorWidget(context),
     );
   }
 }

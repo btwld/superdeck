@@ -14,7 +14,7 @@ import 'tasks/task.dart';
 /// Handles concurrency control and coordinates task execution for each slide.
 class SlideProcessor {
   final int _concurrentSlides;
-  final Logger _logger = Logger('SlideProcessor');
+  final _logger = Logger('SlideProcessor');
 
   SlideProcessor({int concurrentSlides = 4})
     : _concurrentSlides = concurrentSlides;
@@ -54,12 +54,8 @@ class SlideProcessor {
       // Wait for this batch to complete
       final results = await Future.wait(futures);
 
-      // Extract processed slides using functional approach
-      final slidesToAdd = await Future.wait(
-        results.map((result) => _buildSlide(result)),
-      );
-
-      processedSlides.addAll(slidesToAdd);
+      // Build final slides from processed contexts.
+      processedSlides.addAll(results.map(_buildSlide));
     }
 
     return processedSlides;
@@ -70,7 +66,7 @@ class SlideProcessor {
     SlideContext context,
     List<Task> tasks,
   ) async {
-    for (var task in tasks) {
+    for (final task in tasks) {
       await _runTask(task, context);
     }
     return context;
@@ -104,7 +100,7 @@ class SlideProcessor {
   }
 
   /// Builds final Slide from processed context
-  Future<Slide> _buildSlide(SlideContext result) async {
+  Slide _buildSlide(SlideContext result) {
     return Slide(
       key: result.slide.key,
       options: SlideOptions.parse(result.slide.frontmatter),

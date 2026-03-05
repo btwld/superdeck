@@ -7,6 +7,21 @@ import 'package:test/test.dart';
 
 import 'helpers/testing_utils.dart';
 
+class _SlideWithNullBlocks extends Slide {
+  const _SlideWithNullBlocks({required super.key});
+
+  @override
+  Map<String, Object?> toMap() {
+    return {
+      'key': key,
+      'sections': [
+        {'type': 'section', 'blocks': null},
+      ],
+      'comments': const <String>[],
+    };
+  }
+}
+
 void main() {
   group('DeckService with LocalDeckReader', () {
     late MockDeckConfiguration mockConfig;
@@ -163,6 +178,45 @@ void main() {
                 as Map<String, dynamic>;
 
         expect(subsequentJson['last_modified'], equals(initialLastModified));
+      },
+    );
+
+    test(
+      'saveReferences normalizes sections with missing or null blocks in full deck output',
+      () async {
+        final deck = Deck(
+          slides: [
+            Slide(key: 'missing-blocks', sections: [SectionBlock(<Block>[])]),
+            const _SlideWithNullBlocks(key: 'null-blocks'),
+          ],
+          configuration: config,
+        );
+
+        await deckService.saveReferences(deck);
+
+        final fullDeck =
+            jsonDecode(await config.deckFullJson.readAsString())
+                as Map<String, dynamic>;
+        final slides = (fullDeck['slides'] as List)
+            .cast<Map<String, dynamic>>();
+
+        final missingBlocksSlide = slides.firstWhere(
+          (slide) => slide['key'] == 'missing-blocks',
+        );
+        final nullBlocksSlide = slides.firstWhere(
+          (slide) => slide['key'] == 'null-blocks',
+        );
+
+        final missingSection =
+            (missingBlocksSlide['sections'] as List).first
+                as Map<String, dynamic>;
+        final nullSection =
+            (nullBlocksSlide['sections'] as List).first as Map<String, dynamic>;
+
+        expect(missingSection['blocks'], isA<List>());
+        expect(missingSection['blocks'], isEmpty);
+        expect(nullSection['blocks'], isA<List>());
+        expect(nullSection['blocks'], isEmpty);
       },
     );
 
