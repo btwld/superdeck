@@ -144,6 +144,32 @@ code
         expect(blocks[0].options, isEmpty);
       });
 
+      test('accepts brace-free YAML map options after the language token', () {
+        const content = '''
+```dart lineLength: 80
+code
+```
+''';
+        final blocks = parser.parse(content);
+
+        expect(blocks, hasLength(1));
+        expect(blocks[0].language, equals('dart'));
+        expect(blocks[0].options, equals({'lineLength': 80}));
+      });
+
+      test('collapses non-map root options payloads to an empty map', () {
+        const content = '''
+```dart [a, b]
+code
+```
+''';
+        final blocks = parser.parse(content);
+
+        expect(blocks, hasLength(1));
+        expect(blocks[0].language, equals('dart'));
+        expect(blocks[0].options, isEmpty);
+      });
+
       test('throws on invalid YAML options', () {
         const content = '''
 ```dart {invalid yaml: [unclosed}

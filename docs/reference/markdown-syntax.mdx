@@ -15,6 +15,7 @@ Supported keys:
 
 - `title`: Slide title used in navigation and exports.
 - `style`: Named style variant from `DeckOptions.styles`.
+- `template`: Optional template name. Use `none` to opt out of a configured default template.
 - Custom keys: Available through `slide.options.args['keyName']`.
 
 Example:
@@ -34,7 +35,7 @@ SuperDeck supports three core block types.
 | Block | Purpose | Key properties |
 |---|---|---|
 | `@section` | Container for horizontal layout | `flex`, `align`, `scrollable` |
-| `@column` | Render markdown content | `flex`, `align`, `scrollable` |
+| `@block` | Render markdown content | `flex`, `align`, `scrollable` |
 | `@widget` | Embed custom Flutter widgets | `name` + custom args |
 
 Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@widget`.
@@ -105,16 +106,39 @@ Example:
 
 ````markdown
 @qrcode {
-  value: "https://superdeck.dev"
+  text: "https://superdeck.dev"
   size: 220
 }
 ````
 
 Arguments:
 
-- `value` (required): content to encode.
+- `text` (required): content to encode.
 - `size`: number.
-- `padding`: number.
+- `errorCorrection`: `low`, `medium`, `high`, `highest`.
+- `backgroundColor`: hex color string.
+- `foregroundColor`: hex color string.
+
+## Escaped directives
+
+To render a literal directive marker instead of starting a block, prefix it with `_@`:
+
+````markdown
+_@section
+_@block { flex: 2 }
+````
+
+The leading underscore is removed and the line is rendered as literal markdown text.
+
+## Speaker notes
+
+Use HTML comments for speaker notes:
+
+````markdown
+<!-- Mention migration risks here -->
+````
+
+Comments are extracted as slide notes and are not intended to be visible slide content.
 
 ## Markdown extensions
 
@@ -138,6 +162,32 @@ Use classes to animate matching elements between slides:
 # Roadmap {.hero-title}
 ![Diagram](assets/roadmap.png) {.hero-visual}
 ````
+
+### Dart code blocks
+
+Use fenced code blocks with `dart` as the language:
+
+````markdown
+```dart
+void main() {
+  print('Hello, SuperDeck');
+}
+```
+````
+
+In the standard `superdeck build` and watch flows, fenced `dart` blocks are reformatted during build before the slide is rendered.
+
+When you pass fenced-code options, use the braced header form:
+
+````markdown
+```dart {lineLength: 80}
+void main() {
+  print('Hello, SuperDeck');
+}
+```
+````
+
+The current parser also accepts a legacy compatibility form without braces after the language token, but the braced form is the canonical syntax.
 
 ### Mermaid blocks
 

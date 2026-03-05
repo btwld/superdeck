@@ -196,6 +196,16 @@ Some paragraph text.
         expect(tokens[0].options, {'key': 'value'});
       });
 
+      test('collapses non-map root options payloads to an empty map', () {
+        const text = '@tag {[a, b]}';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens, hasLength(1));
+        expect(tokens[0].name, 'tag');
+        expect(tokens[0].options, isEmpty);
+        expect(tokens[0].rawOptions, '[a, b]');
+      });
+
       test('parses empty options block', () {
         const text = '@tag {  }';
         final tokens = tokenizer.tokenize(text);

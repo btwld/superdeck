@@ -29,12 +29,12 @@ Controls relative sizing (`flex: 2` takes twice the space of `flex: 1`).
 
 Enables scrolling for overflow content.
 
-## @column
+## @block
 
 Renders markdown content.
 
 ```markdown
-@column {
+@block {
   align: center
   flex: 2
   scrollable: true
@@ -60,10 +60,10 @@ Arranges child blocks horizontally.
   flex: 1
 }
 
-@column
+@block
 Left content
 
-@column
+@block
 Right content
 ```
 
@@ -76,13 +76,13 @@ Use for multi-column layouts and side-by-side content.
 ```markdown
 @section
 
-@column
+@block
 Column 1
 
-@column
+@block
 Column 2
 
-@column
+@block
 Column 3
 ```
 
@@ -228,7 +228,7 @@ graph TD
 
 **Centered content:**
 ```markdown
-@column {
+@block {
   align: center
 }
 ```
@@ -237,11 +237,11 @@ graph TD
 ```markdown
 @section
 
-@column {
+@block {
   flex: 1
 }
 
-@column {
+@block {
   flex: 1
 }
 ```
@@ -275,7 +275,7 @@ graph TD
 
 ## Best practices
 
-1. Use `@column` for most content
+1. Use `@block` for most content
 2. Combine blocks in `@section` for rich layouts
 3. Set explicit image dimensions to prevent shifts
 4. Test DartPad IDs before presenting

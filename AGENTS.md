@@ -4,6 +4,19 @@ This file provides guidance to Claude Code and other AI assistants working on th
 
 > **Note**: `CLAUDE.md` is a symlink to this file.
 
+## Start Here
+
+Before doing substantive work in this repository:
+- Always read `.planning/session.md` first.
+- Treat `.planning/session.md` as the live handoff and working-memory document for the repo.
+- Update `.planning/session.md` when:
+  - you start a meaningful task
+  - you change the plan or direction
+  - you discover important constraints or risks
+  - you finish a meaningful chunk of work
+
+For very small, read-only, or trivial tasks, keep the update minimal, but do not skip checking the file first.
+
 ## Project Overview
 
 SuperDeck is a Flutter presentation framework that renders slides written in Markdown. Users write slides in a `slides.md` file using Markdown syntax with custom block annotations, and SuperDeck renders them as a Flutter application.
@@ -75,6 +88,47 @@ fvm flutter test <path>    # Run specific test file
 ```bash
 melos run clean            # Clean all Flutter build artifacts
 ```
+
+## AI Assistant Workflow
+
+This repository is a Dart/Flutter codebase end-to-end. Agent workflow should reflect that.
+
+### Required skills
+- Always use the `dart-flutter` skill for work in this repository.
+- Also use the `code-simplifier` skill for code changes, reviews, refactors, rewrite planning, and architecture work.
+- In practice, most SuperDeck tasks should use both skills together.
+
+### Recommended order when both skills apply
+1. `dart-flutter`
+   - validate Dart/Flutter API design
+   - validate state, lifecycle, package boundaries, and runtime behavior
+   - validate test strategy and operational safety
+2. `code-simplifier`
+   - remove unnecessary abstraction
+   - reduce duplication and incidental complexity
+   - keep the final design aligned with KISS/YAGNI/clarity
+
+### Rewrite and architecture best practices
+- Before proposing or changing architecture, inventory the current feature surface from code, docs, and tests.
+- Do not trust docs alone when validating rewrite scope or feature parity.
+- For any major rewrite, keep a feature matrix in `.planning/` that maps:
+  - current behavior
+  - source files
+  - target v2 owner
+  - parity decision
+  - migration note
+  - validation/test gate
+- Treat parsing, contracts, runtime bootstrap, export flows, and CLI setup/publish behavior as high-risk surfaces that must be specified explicitly.
+- If a parser or contract rule cannot be written as a testable rule, the design is not complete enough yet.
+
+### Working expectations for agents
+- Prefer changes that make invalid states harder to represent.
+- Prefer one clear owner per behavior over shared implicit coordination.
+- Preserve user-visible behavior unless the change is explicitly documented as a migration.
+- When behavior is intentionally changed, document:
+  - why the current behavior is insufficient
+  - what replaces it
+  - how existing users migrate
 
 ## Coding Standards
 

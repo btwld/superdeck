@@ -30,6 +30,52 @@ void main() {
       );
       expect(sections[0].blocks[0].content, markdown);
     });
+
+    test('restores escaped directives as literal markdown before real directives', () {
+      const markdown = '''
+_@section
+Literal intro
+
+@section
+Actual section content
+''';
+
+      final sections = sectionParser.parse(markdown);
+
+      expect(sections, hasLength(2));
+      expect(sections[0].blocks, hasLength(1));
+      expect(sections[0].blocks[0].content, equals('@section\nLiteral intro\n\n'));
+      expect(sections[1].blocks, hasLength(1));
+      expect(sections[1].blocks[0].content, equals('Actual section content'));
+    });
+
+    test('trim-normalizes only the trailing markdown span after the last directive', () {
+      const markdown =
+          '@column\n'
+          'First\n'
+          '\n'
+          '@column\n'
+          '\n'
+          '  Tail with surrounding whitespace'
+          '  \n'
+          '\n';
+
+      final sections = sectionParser.parse(markdown);
+
+      expect(sections, hasLength(1));
+      expect(sections[0].blocks, hasLength(2));
+      expect(
+        sections[0].blocks[0].content,
+        equals('\nFirst\n'),
+        reason: 'Intermediate spans keep their surrounding newlines.',
+      );
+      expect(
+        sections[0].blocks[1].content,
+        equals('Tail with surrounding whitespace'),
+        reason:
+            'The final post-directive span is trim-normalized before aggregation.',
+      );
+    });
   });
 
   group('Section Structure', () {

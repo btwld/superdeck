@@ -489,5 +489,46 @@ More content
       ); // Both normalize to ContentBlock.key
       expect(blocksColumn[0].data['flex'], blocksBlock[0].data['flex']);
     });
+
+    test('normalizes widget shorthand tags to widget blocks', () {
+      const text = '''
+@metricCard {
+  value: 42
+  trend: up
+}
+''';
+
+      final blocks = const BlockParser().parse(text);
+
+      expect(blocks, hasLength(1));
+      expect(blocks[0].type, 'metricCard');
+      expect(blocks[0].data, {
+        'type': 'widget',
+        'name': 'metricCard',
+        'value': 42,
+        'trend': 'up',
+      });
+    });
+
+    test('parses explicit @widget blocks with name and custom args', () {
+      const text = '''
+@widget {
+  name: customChart
+  points: 3
+  visible: true
+}
+''';
+
+      final blocks = const BlockParser().parse(text);
+
+      expect(blocks, hasLength(1));
+      expect(blocks[0].type, 'widget');
+      expect(blocks[0].data, {
+        'type': 'widget',
+        'name': 'customChart',
+        'points': 3,
+        'visible': true,
+      });
+    });
   });
 }

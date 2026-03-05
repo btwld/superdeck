@@ -18,7 +18,7 @@ A basic slide with a title and content:
 title: My First Slide
 ---
 
-@column
+@block
 
 # Welcome to SuperDeck
 
@@ -35,6 +35,7 @@ Each slide can have YAML front matter with these options:
 
 - `title` – Slide title (appears in navigation and exports)
 - `style` – Named style variant to apply (defined in `DeckOptions.styles`)
+- `template` – Optional slide template name. Use `none` to opt out of a configured default template
 - Custom keys – Access via `slide.options.args['keyName']` in slide parts
 
 ````markdown
@@ -51,7 +52,7 @@ style: overview
 Use these block types when you compose slides:
 
 - `@section` for horizontal layout containers.
-- `@column` for markdown content.
+- `@block` for markdown content.
 - `@widget` for custom Flutter widgets.
 
 For the full syntax and argument reference, see the [Markdown syntax reference](../reference/markdown-syntax).
@@ -71,12 +72,12 @@ Groups blocks horizontally. Use sections to create multi-column layouts.
 }
 ````
 
-### `@column`
+### `@block`
 
-Renders markdown content. Most slides use one or more columns.
+Renders markdown content. Most slides use one or more markdown blocks.
 
 ````markdown
-@column {
+@block {
   flex: 2
   align: topLeft
 }
@@ -91,11 +92,32 @@ Renders markdown content. Most slides use one or more columns.
 
 Use these properties on blocks:
 
-- `flex` – Relative size (default: `1`). A column with `flex: 2` takes twice the space of `flex: 1`
+- `flex` – Relative size (default: `1`). A block with `flex: 2` takes twice the space of `flex: 1`
 - `align` – Content alignment such as `topLeft`, `center`, and `bottomRight`
 - `scrollable` – Enable scrolling for overflow content (default: `false`)
 
 For complete value definitions, see the [Markdown syntax reference](../reference/markdown-syntax).
+
+---
+
+## Speaker notes and escapes
+
+### Speaker notes
+
+Use HTML comments for speaker notes:
+
+````markdown
+<!-- Remind audience that this chart excludes enterprise customers -->
+````
+
+### Escaped directives
+
+Prefix a directive with `_@` to render it literally instead of starting a block:
+
+````markdown
+_@section
+_@block { flex: 2 }
+````
 
 ---
 
@@ -154,7 +176,7 @@ The widget name becomes the block type (`@metricCard`), and all properties are p
 Use headings, lists, tables, and code blocks as you normally would:
 
 ````markdown
-@column
+@block
 
 # Slide Title
 
@@ -167,6 +189,8 @@ Use headings, lists, tables, and code blocks as you normally would:
 | Auth    | Done   |
 | API     | In Progress |
 ````
+
+In the standard `superdeck build` and watch flows, fenced `dart` blocks are reformatted during build before they are rendered on a slide. If you pass fenced-code options, prefer the braced header form; the current parser also accepts a legacy compatibility form without braces after the language token.
 
 ### Alerts
 

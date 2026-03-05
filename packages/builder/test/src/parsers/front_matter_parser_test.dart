@@ -139,6 +139,24 @@ Content after complex YAML.
         equals('Markdown with leading and trailing whitespace.'),
       );
     });
+
+    test('trim-normalizes markdown body after frontmatter extraction', () {
+      const input = '''
+---
+title: Trim Test
+---
+
+
+Body content that should be trimmed.
+
+
+''';
+
+      final result = parser.parse(input);
+
+      expect(result.frontmatter, equals({'title': 'Trim Test'}));
+      expect(result.contents, equals('Body content that should be trimmed.'));
+    });
   });
 
   group('parseFrontMatter Tests', () {

@@ -55,10 +55,10 @@ Create a `slides.md` file in your project root. Separate slides with `---`.
 ```md
 ---
 
-@column
+@block
 # Welcome
 
-@column
+@block
 - Write slides in Markdown
 - Use blocks for layout
 
