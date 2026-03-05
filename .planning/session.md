@@ -88,7 +88,7 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Recommended Next Steps
 1. Freeze the remaining open rows in `.planning/rewrite-v2-contract-migration-matrix.md`
-   - especially artifact naming/versioning, public entry points, and `watchForChanges` migration guidance
+   - especially public entry points and `watchForChanges` migration guidance
 2. Turn the remaining `covered-open` rows in `.planning/rewrite-v2-feature-matrix.md` into frozen decisions
    - external config policy
    - embedded watch API placement
@@ -100,6 +100,18 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-05
+- Continuing the remaining decision-freeze pass after reconciliation:
+  - `comments` -> `notes` is now frozen as a hard v2 break
+  - v2 artifact filenames are now frozen to explicit `.v2.json` names during the breaking-contract transition
+  - failure behavior is now frozen to:
+    - keep the last good deck when one exists
+    - show a visible error state
+    - fall back to an error slide/failure screen only when no valid deck exists
+  - the remaining decision order is now:
+    - public package entry surface
+    - embedded watch API placement
+    - thumbnail storage/invalidation contract
+    - bundled runtime path support
 - Froze two additional rewrite decisions across the planning docs:
   - `comments` -> `notes` is now a hard v2 break with no runtime dual-read or artifact compatibility shim; migration guidance/tooling owns the rename
   - runtime/build failure policy now keeps the last good deck visible when one exists, surfaces a visible error state, and falls back to an error slide/failure screen only when no valid deck is available

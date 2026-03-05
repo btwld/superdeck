@@ -27,20 +27,16 @@ Its job is to make them explicit, assign an owner, and attach a validation gate.
 | Surface | Current v1 surface | Canonical v2 surface | Status | Owner | Migration note | Validation gate |
 |---|---|---|---|---|---|---|
 | Slide note field | Slide notes serialize and flow through runtime/public contracts as `comments` | Planning, artifacts, and runtime/public v2 contracts use canonical `notes` | frozen | `packages/contracts`, `packages/migration_tools`, `packages/runtime_flutter` | Treat `comments` -> `notes` as a hard v2 break: no runtime dual-read compatibility, no artifact compatibility shim, and migration guidance/tooling is responsible for the rename | migration tests, contract tests, runtime tests |
-| Deck artifact filenames and versioning | `.superdeck/superdeck.json`, `.superdeck/superdeck_full.json`, `.superdeck/generated_assets.json`, `.superdeck/build_status.json` | Versioned v2 artifact contract with explicit canonical names | open | `packages/contracts`, `packages/build_engine`, `packages/migration_tools` | Decide final v2 filenames/version markers and how migration tooling rewrites or validates v1 artifact expectations | contract tests, integration tests |
+| Deck artifact filenames and versioning | `.superdeck/superdeck.json`, `.superdeck/superdeck_full.json`, `.superdeck/generated_assets.json`, `.superdeck/build_status.json` | `.superdeck/superdeck.v2.json`, `.superdeck/superdeck_full.v2.json`, `.superdeck/generated_assets.v2.json`, `.superdeck/build_status.v2.json` | frozen | `packages/contracts`, `packages/build_engine`, `packages/migration_tools` | Use explicit v2 filenames during the breaking-contract transition so runtime/artifact expectations do not silently mix v1 and v2 files; migration tooling/docs own the rename | contract tests, integration tests |
 | Public package/barrel entry surface | Public API currently flows through existing barrel exports such as `superdeck.dart` and `superdeck_core.dart` | Frozen canonical v2 entry points with explicit compatibility/removal notes | open | `packages/contracts`, `packages/runtime_flutter` | Decide which current entry points remain canonical, which are compatibility-only, and which are removed | API audit, migration tests |
 | Embedded watch API guidance | `DeckOptions.watchForChanges` is the current runtime-facing switch for embedded source rebuilds | Startup-only embedded watch/dev API outside normal render options; CLI watch remains optional/manual only | open | `packages/runtime_flutter`, `packages/cli`, `packages/migration_tools` | Decide the final startup API placement/name and migration guidance for current `watchForChanges` usage | runtime tests, migration tests |
 | Markdown block directive rename | `@column` and `@block` both parse today | Canonical v2 markdown block directive is `@block`; `@column` is migration-only | frozen | `packages/authoring`, `packages/migration_tools` | Keep parser compatibility while docs and migration tooling lead with `@block` | parser fixtures, migration tests |
 
 ## Remaining Open Decisions In This Doc
-1. Artifact naming/versioning
-- Decide final v2 file names and version markers.
-- Keep versioning explicit enough for migration tooling and contract tests.
-
-2. Public entry points
+1. Public entry points
 - Decide canonical barrels and any compatibility-only exports.
 
-3. Embedded watch API migration
+2. Embedded watch API migration
 - Decide the final startup-only API surface that replaces the current `DeckOptions.watchForChanges` usage pattern.
 
 ## Defaults For Reconciliation
