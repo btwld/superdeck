@@ -34,6 +34,10 @@ String _uniquifyKey(
 class MarkdownParser {
   const MarkdownParser();
 
+  static final _yamlMapKeyPattern = RegExp(
+    r'''^(?:[A-Za-z_][A-Za-z0-9_-]*|"(?:[^"\\]|\\.)+"|'(?:[^'\\]|\\.)+')\s*:''',
+  );
+
   /// Splits the entire markdown into slides.
   ///
   /// A slide boundary is any `---` outside of fenced code blocks.
@@ -142,6 +146,9 @@ class MarkdownParser {
   static bool _isFrontMatterCandidate(String value) {
     final candidate = value.trim();
     if (candidate.isEmpty) return true;
+    if (_startsWithDirective(candidate)) {
+      return false;
+    }
 
     try {
       final yaml = loadYaml(candidate);
@@ -154,11 +161,40 @@ class MarkdownParser {
   }
 
   static bool _looksLikeFrontMatterCandidate(String value) {
-    return value.split('\n').any((line) {
-      final trimmed = line.trim();
-      if (trimmed.isEmpty) return false;
-      return trimmed.contains(':') || trimmed.startsWith('- ');
-    });
+    var sawMapKey = false;
+    for (final rawLine in value.split('\n')) {
+      final line = rawLine.trim();
+      if (line.isEmpty || line.startsWith('#')) {
+        continue;
+      }
+
+      if (_yamlMapKeyPattern.hasMatch(line)) {
+        sawMapKey = true;
+        continue;
+      }
+
+      // Allow continuation lines that could belong to multiline YAML values.
+      if (rawLine.startsWith(' ') || rawLine.startsWith('\t')) {
+        continue;
+      }
+
+      return false;
+    }
+
+    return sawMapKey;
+  }
+
+  static bool _startsWithDirective(String value) {
+    for (final rawLine in value.split('\n')) {
+      final line = rawLine.trim();
+      if (line.isEmpty || line.startsWith('#')) {
+        continue;
+      }
+
+      return line.startsWith('@');
+    }
+
+    return false;
   }
 
   static void _appendSlide(List<String> lines, List<String> slides) {

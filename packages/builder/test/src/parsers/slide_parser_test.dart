@@ -92,6 +92,60 @@ Content after malformed frontmatter.
       );
     });
 
+    test('does not treat @section slide content as malformed frontmatter', () {
+      const markdown = '''
+---
+title: Intro
+---
+Intro content
+
+---
+@section {
+  flex: 2
+}
+@column
+Slide body
+
+---
+Final slide
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides.length, equals(3));
+      expect(slides[0].frontmatter['title'], equals('Intro'));
+      expect(slides[0].content, equals('Intro content'));
+      expect(
+        slides[1].content,
+        equals('@section {\n  flex: 2\n}\n@column\nSlide body'),
+      );
+      expect(slides[2].content, equals('Final slide'));
+    });
+
+    test(
+      'does not treat plain markdown with colons as frontmatter candidate',
+      () {
+        const markdown = '''
+Slide 1
+---
+API: Overview
+This line is normal markdown content.
+---
+Slide 3
+''';
+
+        final slides = markdownParser.parse(markdown);
+
+        expect(slides.length, equals(3));
+        expect(slides[0].content, equals('Slide 1'));
+        expect(
+          slides[1].content,
+          equals('API: Overview\nThis line is normal markdown content.'),
+        );
+        expect(slides[2].content, equals('Slide 3'));
+      },
+    );
+
     test('parses valid markdown into RawSlides', () async {
       const markdown = '''
 ---
