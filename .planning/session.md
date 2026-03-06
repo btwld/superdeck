@@ -66,40 +66,40 @@ Agents should read this file before substantive work and update it as work progr
   - `.planning/rewrite-v2-full-plan.md` is the umbrella rewrite plan
   - `.planning/rewrite-v2-feature-matrix.md`, `.planning/rewrite-v2-parser-semantics.md`, and `.planning/rewrite-v2-build-watch-runtime.md` are the detailed sign-off docs
   - `.planning/rewrite-v2-contract-migration-matrix.md` is now the canonical home for compatibility and public-surface migration rows
+- The final remaining v2 planning freeze decisions are now documented across the canonical planning set:
+  - public package entry surface
+  - embedded watch moved to `DeckConfiguration.watch`
+  - thumbnails are runtime-owned dev snapshots with render-signature invalidation
+  - bundled runtimes use canonical bundled v2 paths only
+  - external YAML config remains explicitly deferred
 - The legacy template-feature planning doc has been removed:
   - template behavior is already covered by the canonical rewrite docs
   - `.planning/README.md` now points at the current canonical planning set instead of stale one-off feature docs
 
-## Open Decisions To Freeze
+## Deferred Follow-Up
 1. External config source policy:
    - keep `superdeck.yaml` strictness and `styles.yaml` support out of the current runtime-local contract
-2. Embedded runtime watch API:
-   - runtime app watch is now the intended v2 mode on `kCanRunProcess` runtimes
-   - it is also frozen that embedded watch should not remain a normal `DeckOptions` render field
-   - the primary local dev loop should be runtime-first (`flutter run` + embedded watch/build), not CLI-watch-first
-   - CLI watch is now treated as optional/manual orchestration only, not as a peer owner of the primary local dev loop
-   - remaining work is freezing startup API placement
-3. Public package entry surface:
-   - freeze which barrel exports remain canonical in v2
-4. Thumbnail storage and invalidation contract:
-   - freeze whether thumbnails are treated as runtime snapshots, build artifacts, or a hybrid surface
-5. Bundled runtime path contract:
-   - freeze whether custom `outputDir` / `assetsPath` are supported consistently outside `kCanRunProcess` runtimes
+   - revisit external YAML acquisition/strictness in a dedicated later pass, not as a blocker for the current implementation review checklist
 
 ## Recommended Next Steps
-1. Freeze the remaining open rows in `.planning/rewrite-v2-contract-migration-matrix.md`
-   - especially public entry points and `watchForChanges` migration guidance
-2. Turn the remaining `covered-open` rows in `.planning/rewrite-v2-feature-matrix.md` into frozen decisions
-   - external config policy
-   - embedded watch API placement
-   - thumbnail contract
-   - bundled runtime path support
-3. Re-run a final planning consistency pass after those decisions are frozen
-   - then use the reconciled docs as the implementation review checklist
+1. Re-run a final planning consistency pass across the canonical docs.
+2. Use the reconciled planning set as the implementation review checklist.
+3. Revisit external YAML config policy later as an explicit follow-up, not as part of the current freeze.
 
 ## Session Log
 
 ### 2026-03-05
+- Implemented the final remaining planning freeze pass across the canonical docs:
+  - froze one canonical primary barrel per package
+  - kept `superdeck_core/asset_cache_store_io.dart` as an explicit platform-specific helper surface
+  - removed `superdeck_cli/runner.dart` from the supported public API surface
+  - moved embedded watch to startup-only `DeckConfiguration.watch`
+  - treated `watchForChanges` as legacy v1 migration terminology only
+  - froze thumbnails as runtime-owned dev snapshots, not build artifacts
+  - froze thumbnail invalidation to `slide key + render signature`
+  - froze bundled runtimes to canonical bundled v2 paths only
+  - kept `superdeck.yaml` and `styles.yaml` explicitly deferred from the current runtime-local contract
+  - the next step is now a final consistency audit rather than more decision gathering
 - Continuing the remaining decision-freeze pass after reconciliation:
   - `comments` -> `notes` is now frozen as a hard v2 break
   - v2 artifact filenames are now frozen to explicit `.v2.json` names during the breaking-contract transition

@@ -92,19 +92,19 @@ Validation can be:
 | Feature | Current implementation refs | Current behavior | V2 owner | Decision | Plan status | Validation gate | Migration note |
 |---|---|---|---|---|---|---|---|
 | File-backed deck loading | `packages/core/lib/src/deck_service.dart`, `packages/superdeck/lib/src/deck/deck_controller_builder.dart`, `packages/superdeck/lib/src/utils/constants.dart` | Debug IO runtimes where `kCanRunProcess` is true load from filesystem and can stream updates | `packages/runtime_flutter` | preserve | covered | runtime tests | none |
-| Bundled deck loading | `packages/superdeck/lib/src/deck/bundled_deck_service.dart`, `packages/superdeck/lib/src/deck/deck_controller_builder.dart`, `packages/superdeck/lib/src/utils/constants.dart` | Web/test/release-like runtimes load bundled JSON assets instead of file-backed streaming | `packages/runtime_flutter` | preserve | covered-open | runtime tests | freeze whether bundled runtimes support custom `outputDir` / `assetsPath` consistently |
+| Bundled deck loading | `packages/superdeck/lib/src/deck/bundled_deck_service.dart`, `packages/superdeck/lib/src/deck/deck_controller_builder.dart`, `packages/superdeck/lib/src/utils/constants.dart` | Web/test/release-like runtimes load bundled JSON assets instead of file-backed streaming | `packages/runtime_flutter` | preserve | covered | runtime tests | bundled runtimes use canonical bundled v2 artifact paths only; custom `outputDir` / `assetsPath` remain a local dev/process-capable concern |
 | Route shape | `packages/superdeck/lib/src/deck/navigation_service.dart` | Router uses `/slides/:index` with root redirect | `packages/runtime_flutter` | preserve | covered | runtime tests | none |
 | Keyboard navigation | `packages/superdeck/lib/src/deck/navigation_events.dart`, `packages/superdeck/lib/src/deck/navigation_input_listener.dart` | Meta + arrows navigate slides | `packages/runtime_flutter` | preserve | covered | runtime tests | none |
 | Touch navigation | `packages/superdeck/lib/src/deck/navigation_events.dart`, `packages/superdeck/lib/src/deck/navigation_input_listener.dart` | Tap left/right and swipe navigate on touch devices | `packages/runtime_flutter` | preserve | covered | runtime tests | none |
 | Slide layout engine | `packages/superdeck/lib/src/rendering/slides/slide_view.dart`, `packages/superdeck/lib/src/rendering/blocks/block_widget.dart` | Sections stack vertically; blocks lay out horizontally with flex/alignment/scroll | `packages/runtime_flutter` | preserve | covered | golden/widget tests | none |
 | Slide parts | `packages/superdeck/lib/src/rendering/slides/slide_parts.dart`, docs | Header/footer/background can be customized and read slide context | `packages/runtime_flutter` | preserve | covered | runtime/widget tests | none |
 | Template system | `packages/superdeck/lib/src/deck/slide_template.dart`, `packages/superdeck/lib/src/deck/template_resolver.dart` | Templates bundle parts + style systems, with `template: none` opt-out | `packages/runtime_flutter` | preserve | covered | runtime tests | none |
-| Style merge from code + YAML | `packages/superdeck/lib/src/styling/schema/style_config.dart` | `StyleConfigLoader` can load `styles.yaml` and merge it with code-defined styles, with code winning conflicts; this is not automatic runtime startup behavior today | `packages/runtime_flutter` | preserve | covered-open | runtime tests | freeze strictness policy and whether loading stays opt-in |
+| Style merge from code + YAML | `packages/superdeck/lib/src/styling/schema/style_config.dart` | `StyleConfigLoader` can load `styles.yaml` and merge it with code-defined styles, with code winning conflicts; this is not automatic runtime startup behavior today | `packages/runtime_flutter` | preserve | covered | runtime tests | external YAML loading stays opt-in and explicitly deferred from the current runtime-local contract |
 | Built-in widget registry | `packages/superdeck/lib/src/widgets/widgets.dart`, `packages/superdeck/lib/src/deck/slide_configuration_builder.dart` | `image`, `dartpad`, `qrcode` are always available and can be overridden | `packages/runtime_flutter` | preserve | covered | runtime tests | none |
 | Custom widget parse/build contract | `packages/superdeck/lib/src/deck/widget_definition.dart`, `packages/superdeck/lib/src/rendering/blocks/block_widget.dart` | WidgetDefinition parses raw args and builds using block + slide context | `packages/runtime_flutter` | preserve with stronger typing | covered | runtime tests | move to typed outcomes |
 | Notes panel | `packages/superdeck/lib/src/ui/app_shell.dart`, `packages/superdeck/lib/src/ui/panels/comments_panel.dart` | Notes panel shows current slide notes; the current runtime field still uses `comments` | `packages/runtime_flutter` | preserve with rename cleanup | covered | runtime tests | `comments` becomes `notes` |
 | Thumbnail panel | `packages/superdeck/lib/src/ui/app_shell.dart`, `packages/superdeck/lib/src/ui/panels/thumbnail_panel.dart` | Responsive thumbnail panel on side/bottom layouts | `packages/runtime_flutter` | preserve | covered | runtime/widget tests | none |
-| Thumbnail generation | `packages/superdeck/lib/src/export/thumbnail_service.dart`, `packages/superdeck/lib/src/deck/deck_controller.dart` | Runtime thumbnails generated on demand with stale-state issues today | `packages/runtime_flutter` | preserve with cleanup | covered-open | runtime tests | freeze runtime-snapshot vs build-asset contract and invalidation rules |
+| Thumbnail generation | `packages/superdeck/lib/src/export/thumbnail_service.dart`, `packages/superdeck/lib/src/deck/deck_controller.dart` | Runtime thumbnails generated on demand with stale-state issues today | `packages/runtime_flutter` | preserve with cleanup | covered | runtime tests | thumbnails are runtime-owned dev snapshots only, generated in embedded dev/watch mode, consumed as bundled assets or fallback UI elsewhere, and invalidated by `slide key + render signature` |
 | Runtime asset cache | `packages/superdeck/lib/src/utils/asset_cache_store_io.dart`, `packages/superdeck/lib/src/utils/asset_cache_store_web.dart` | IO and web backends have different resolve/write semantics | `packages/runtime_flutter` | preserve with unification | covered | runtime tests | none |
 | Plugin routes/actions/floating action | `packages/superdeck/lib/src/deck/superdeck_plugin.dart`, `packages/superdeck/lib/src/ui/app_shell.dart`, `packages/superdeck/lib/src/ui/panels/bottom_bar.dart` | Plugins contribute routes, inline actions, floating action, and async init | `packages/runtime_flutter` | preserve with stronger lifecycle typing | covered | runtime tests | none |
 | Rebuild indicator | `packages/superdeck/lib/src/deck/deck_controller_builder.dart`, `packages/superdeck/lib/src/ui/app_shell.dart` | Runtime UI can show rebuild state driven by watcher | `packages/runtime_flutter` | preserve | covered | runtime tests | none |
@@ -116,7 +116,7 @@ Validation can be:
 
 | Feature | Current implementation refs | Current behavior | V2 owner | Decision | Plan status | Validation gate | Migration note |
 |---|---|---|---|---|---|---|---|
-| `superdeck.yaml` load path | `packages/cli/lib/src/commands/base_command.dart`, `packages/superdeck/lib/src/utils/config_resolver_io.dart` | Current CLI is strict; runtime currently falls back more permissively | `packages/build_engine`, `packages/runtime_flutter`, `packages/cli` | change intentionally | covered-open | integration tests | freeze one shared policy |
+| `superdeck.yaml` load path | `packages/cli/lib/src/commands/base_command.dart`, `packages/superdeck/lib/src/utils/config_resolver_io.dart` | Current CLI is strict; runtime currently falls back more permissively | `packages/build_engine`, `packages/runtime_flutter`, `packages/cli` | change intentionally | covered | integration tests | external config-source behavior is explicitly deferred from the current runtime-local contract and is not a blocker for the current rewrite checklist |
 | `setup` sample slides | `packages/cli/lib/src/commands/setup_command.dart` | Creates starter `slides.md` if missing | `packages/cli` | preserve | covered | CLI tests | none |
 | `setup` pubspec patching | `packages/cli/lib/src/utils/update_pubspec.dart`, `packages/cli/lib/src/commands/setup_command.dart` | Adds `.superdeck/` and `.superdeck/assets/` to Flutter assets | `packages/cli` | preserve | covered | CLI tests | none |
 | `setup` custom web index | `packages/cli/lib/src/utils/templates.dart`, `packages/cli/lib/src/commands/setup_command.dart` | Writes custom `web/index.html` with loading indicator | `packages/cli` | preserve | covered | CLI tests | none |
@@ -128,45 +128,27 @@ Validation can be:
 | `publish` git worktree flow | `packages/cli/lib/src/commands/publish_command.dart` | Uses worktree for branch publishing without disrupting main worktree | `packages/cli` | preserve | covered | CLI integration tests | none |
 | `publish` `.nojekyll` | `packages/cli/lib/src/commands/publish_command.dart` | Writes `.nojekyll` into published site | `packages/cli` | preserve | covered | CLI tests | none |
 | `publish` dry-run | `packages/cli/lib/src/commands/publish_command.dart` | Simulates work without mutating filesystem or git state | `packages/cli` | preserve | covered | CLI tests | none |
-| Runtime-triggered watch behavior | `packages/superdeck/lib/src/deck/deck_options.dart`, `packages/superdeck/lib/src/deck/deck_controller_builder.dart` | `watchForChanges` currently starts runtime watcher orchestration from `DeckOptions` | `packages/runtime_flutter`, `packages/cli`, `packages/migration_tools` | preserve with cleanup | covered-open | runtime + migration tests | keep embedded app watch on `kCanRunProcess` runtimes, move it out of normal render options into startup-only runtime config, and freeze automatic rebuild trigger to `slides.md` while code-side styling/widget changes rely on Flutter hot reload |
+| Runtime-triggered watch behavior | `packages/superdeck/lib/src/deck/deck_options.dart`, `packages/superdeck/lib/src/deck/deck_controller_builder.dart` | `watchForChanges` currently starts runtime watcher orchestration from `DeckOptions` | `packages/runtime_flutter`, `packages/cli`, `packages/migration_tools` | preserve with cleanup | covered | runtime + migration tests | v2 uses startup-only `DeckConfiguration.watch`; `watchForChanges` is legacy migration terminology only; automatic rebuild trigger stays limited to `slides.md` while code-side styling/widget changes rely on Flutter hot reload |
 
 ## Public API And Migration Surface
 
 | Feature | Current implementation refs | Current behavior | V2 owner | Decision | Plan status | Validation gate | Migration note |
 |---|---|---|---|---|---|---|---|
-| Package entry surface | `packages/superdeck/lib/superdeck.dart`, `packages/core/lib/superdeck_core.dart` | Public API currently exposed through barrel exports | `packages/contracts`, `packages/runtime_flutter` | preserve with cleanup | covered-open | API audit | freeze public entry points |
+| Package entry surface | `packages/superdeck/lib/superdeck.dart`, `packages/core/lib/superdeck_core.dart` | Public API currently exposed through barrel exports | `packages/contracts`, `packages/runtime_flutter` | preserve with cleanup | covered | API audit | one canonical primary barrel per package; keep `superdeck_core/asset_cache_store_io.dart` as the only explicit extra helper surface; remove `superdeck_cli/runner.dart` from the supported public API |
 | Deck JSON schema export | `packages/core/tool/export_contract_schemas.dart`, `packages/core/schema/superdeck.deck.schema.json` | Canonical schema export already exists | `packages/contracts` | preserve with versioning | covered | contract tests | add v2 schema versioning |
 | `comments` field in artifacts | `packages/core/lib/src/models/slide_model.dart` | Contract currently serializes slide notes under `comments` | `packages/contracts`, `packages/migration_tools` | change intentionally | covered | migration tests | hard v2 break: canonical artifact/runtime/public field is `notes`, with no runtime dual-read compatibility for `comments` |
 | `@column` alias | `packages/core/lib/src/models/block_model.dart`, parser code, docs | Legacy alias still accepted widely | `packages/authoring`, `packages/migration_tools` | change intentionally | covered | parser + migration tests | canonicalize to `@block` |
 | `template: none` | `packages/superdeck/lib/src/deck/template_resolver.dart`, tests | Reserved opt-out of default template behavior | `packages/runtime_flutter`, `packages/contracts` | preserve | covered | runtime tests | none |
 | Built-in widget names | `packages/superdeck/lib/src/widgets/widgets.dart` | `image`, `dartpad`, `qrcode` are part of the public authoring contract | `packages/runtime_flutter`, `packages/migration_tools` | preserve | covered | runtime tests | none |
 
-## Open Decisions To Freeze Before Implementation
+## Deferred Follow-Up Outside The Current Freeze
 
 1. External config source policy
-- Keep `superdeck.yaml` strictness and `styles.yaml` loading/placement out of the current runtime-local contract.
-- Those sources remain a later planning/migration pass and are not required to finish the embedded runtime watch/runtime sign-off.
-
-2. Embedded runtime watch API
-- Runtime app watch is now the intended v2 mode on `kCanRunProcess` runtimes.
-- It is also now frozen that this should not remain a normal `DeckOptions` render field.
-- The primary local dev loop should be runtime-first (`flutter run` + embedded watch/build), not CLI-watch-first.
-- CLI watch is now treated as optional/manual orchestration only, not as a peer owner of the primary local dev loop.
-- Decide the final startup-only API placement for the embedded runtime watch surface.
-
-3. Public package entry surface
-- Freeze which barrel exports remain canonical in v2 and which package entry points are compatibility-only or removed.
-
-4. Thumbnail storage and invalidation contract
-- Freeze whether thumbnails are runtime snapshots, build artifacts, or a hybrid contract.
-- Freeze the invalidation rules so thumbnail correctness no longer depends on incidental UI timing.
-
-5. Bundled runtime path support
-- Freeze whether bundled runtimes officially support custom `outputDir` / `assetsPath`.
-- Align deck JSON lookup, bundled asset lookup, and runtime fallback rules if that support remains.
+- `superdeck.yaml` and `styles.yaml` remain outside the current runtime-local contract.
+- Revisit them in a dedicated external-config pass rather than treating them as blockers for the current rewrite checklist.
 
 ## Next Validation Steps
 
 1. Use `.planning/rewrite-v2-contract-migration-matrix.md` as the canonical home for renamed artifacts and public API changes.
 2. Link each migration-matrix row to concrete v2 tasks and tests before implementation starts.
-3. Turn the remaining `covered-open` items into frozen decisions before implementation starts.
+3. Run a final planning consistency audit and use the reconciled docs as the implementation review checklist.

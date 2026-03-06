@@ -107,20 +107,23 @@ This is the configuration contract we freeze now.
 How values are loaded from external YAML sources is deferred.
 
 ### 2. `DeckConfiguration` ownership
-`DeckConfiguration` owns local source/artifact location semantics.
+`DeckConfiguration` owns startup-only local source/artifact/runtime wiring semantics.
 
-Its current/frozen field set is:
+Its frozen v2 field set is:
 - `projectDir`
 - `slidesPath`
 - `outputDir`
 - `assetsPath`
+- `watch`
 
 Recommended v2 contract:
-- keep `DeckConfiguration` limited to local path/layout concerns
+- keep `DeckConfiguration` as the startup-only local config object
 - keep path values relative/path-safe local configuration
-- do not put style/template/widget/plugin/render behavior into `DeckConfiguration`
+- keep file/layout/runtime wiring in `DeckConfiguration`
+- do not put style/template/widget/render composition into `DeckConfiguration`
 - `slidesPath` matters for embedded source rebuild/watch
 - `outputDir` / `assetsPath` matter for generated artifact lookup and asset resolution
+- `watch` is a simple startup-only `bool` that replaces legacy `DeckOptions.watchForChanges`
 
 ### 3. `DeckOptions` ownership
 `DeckOptions` owns local runtime/render composition.
@@ -139,7 +142,8 @@ Its current v1 surface includes:
 Recommended v2 contract:
 - keep style/template/widget/chrome/plugin/render composition in `DeckOptions`
 - keep file-system/source/artifact location out of `DeckOptions`
-- move embedded watch control out of `DeckOptions` and into the startup-only local runtime/session surface
+- remove embedded watch control from `DeckOptions`
+- keep watch/build enablement in `DeckConfiguration.watch`
 
 Frozen composition split for v2:
 - live render/styling composition:
@@ -154,12 +158,12 @@ Frozen composition split for v2:
   - `defaultTemplate`
   - `debug`
 - startup-only runtime/session wiring:
-  - embedded watch/build enablement
   - plugin set / plugin initialization
+  - build/watch enablement through `DeckConfiguration.watch`
 
 Note:
 - the contract frozen here is that embedded watch is not a normal render option anymore
-- the still-open part is only the exact startup API placement/name for that watch control
+- the canonical v2 field is `DeckConfiguration.watch`
 
 ### 4. Mutability contract
 Not all local runtime configuration is equally dynamic today.
@@ -167,7 +171,7 @@ Not all local runtime configuration is equally dynamic today.
 Startup-only local runtime configuration:
 - all of `DeckConfiguration`
 - plugin set / plugin initialization
-- embedded watch ownership/control
+- embedded watch ownership/control through `DeckConfiguration.watch`
 
 Live-update-capable local runtime configuration:
 - `baseStyle`
@@ -198,13 +202,12 @@ Default local runtime configuration remains:
 
 Default runtime behavior remains:
 - consume already-built deck artifacts
-- embedded app watch/build is off unless explicitly enabled on process-capable runtimes
+- embedded app watch/build is off unless `DeckConfiguration.watch` is explicitly enabled on process-capable runtimes
 
 ### 6. Deferred from this contract
 The following are intentionally deferred:
 - `superdeck.yaml` acquisition/strictness policy
 - `styles.yaml` loading/merge policy
-- exact bundled-runtime custom-path support rules
 
 ## Current Build/Watch Stack
 
@@ -432,18 +435,18 @@ For v2, the runtime-mode contract is:
   - they read the already-built bundled deck value and bundled assets
 
 This freezes the mode boundary itself.
-What remains open is the exact API placement, trigger surface, and failure/reporting contract inside the process-capable mode.
+What remains distinct is the runtime-mode behavior inside the process-capable mode, not the API placement.
 
-### 1. Process-capable runtime with `watchForChanges: false`
-This is the current "consume built artifacts only" mode.
+### 1. Process-capable runtime with `DeckConfiguration.watch: false`
+This is the frozen v2 "consume built artifacts only" mode.
 
 - the app uses `DeckService`
 - the app watches generated deck JSON for changes
 - the app does not rebuild source markdown itself
 - this is the current compatibility mode for "external build flow rewrites artifacts, app live-reloads them"
 
-### 2. Process-capable runtime with `watchForChanges: true`
-This is the current embedded build/watch mode and the intended first-class v2 watch mode.
+### 2. Process-capable runtime with `DeckConfiguration.watch: true`
+This is the frozen v2 embedded build/watch mode and the intended first-class dev watch mode.
 
 - the app uses `DeckService`
 - the app also starts `DeckWatcher`
@@ -452,8 +455,7 @@ This is the current embedded build/watch mode and the intended first-class v2 wa
 In v2 planning, this mode should remain supported explicitly.
 CLI watch may still exist as optional orchestration, but it is not the required owner of dev watch behavior.
 
-Operationally, this still means CLI watch and runtime watch can overlap if both are used at once.
-The exact ownership rule and overlap-prevention behavior are still open.
+Operationally, CLI watch may still exist as optional/manual orchestration, but the primary local dev loop is runtime-first and owned by the app.
 
 ### 3. Bundled web/test/release-like runtime
 This is the current bundled-only mode and the intended v2 bundled/runtime contract.
@@ -487,9 +489,11 @@ So the simplification is:
 - remove CLI from the primary day-to-day dev watch loop
 - do not remove CLI from the product surface entirely yet
 
-## `watchForChanges` Today
+## Legacy v1 `watchForChanges` Behavior
 
 `DeckOptions.watchForChanges` currently behaves like an app-level flag that allows runtime-triggered watch/build behavior on process-capable runtimes.
+
+In the frozen v2 planning contract, this behavior moves to `DeckConfiguration.watch`.
 
 What it currently means in practice:
 - if disabled, the app still loads and streams the generated deck artifact when file-backed deck loading is active
@@ -673,15 +677,16 @@ This keeps the last good deck visible, but it also means embedded build/watch fa
 
 ## Recommended V2 Direction
 
-### 1. Keep thumbnails as a runtime-rendered concern unless v2 adds a true build-time Flutter renderer
+### 1. Keep thumbnails as a runtime-rendered concern in dev mode unless v2 adds a true build-time Flutter renderer
 - today thumbnails depend on Flutter rendering, active theme/context, and widget definitions
 - that makes them qualitatively different from Mermaid/image asset generation
+- headless/build-time thumbnail rendering is a future project, not part of the current rewrite
 
 ### 2. Split the contract conceptually into two owners
 - build assets:
   - deterministic assets produced during build and written to `.superdeck/assets`
 - runtime thumbnails:
-  - render-derived preview snapshots resolved from a dedicated runtime thumbnail store
+  - render-derived preview snapshots resolved from a dedicated runtime thumbnail store in process-capable dev/watch mode
 
 Even if the code still reuses some helpers, the planning contract should stop treating those as the same category.
 
@@ -690,6 +695,7 @@ Even if the code still reuses some helpers, the planning contract should stop tr
 - derive a separate thumbnail cache key/signature from:
   - slide key
   - effective style/template identity
+  - debug/export-affecting settings
   - other render-affecting inputs that should invalidate previews
 
 ### 4. Tie thumbnail refresh to deck/slide-set changes, not only menu-open
@@ -697,9 +703,10 @@ Even if the code still reuses some helpers, the planning contract should stop tr
 - generate missing thumbnails automatically when the thumbnail UI is active
 - keep force-regenerate as an explicit manual escape hatch
 
-### 5. Decide whether the manifest should describe existing files or declared thumbnail references
-- if `generated_assets.json` is a manifest of files that actually exist, current thumbnail entries are misleading
-- if it is instead a manifest of resolvable asset references, that should be stated explicitly
+### 5. Freeze non-dev runtime behavior explicitly
+- bundled web/release-like and other non-dev modes do not generate thumbnails locally
+- those modes consume bundled thumbnails if present
+- when bundled thumbnails are absent, those modes should show placeholder/fallback UI rather than trying to become implicit thumbnail renderers
 
 ### 6. Prefer visible-first thumbnail generation for large decks
 - generate visible thumbnails first
@@ -707,13 +714,13 @@ Even if the code still reuses some helpers, the planning contract should stop tr
 - avoid treating "open the panel" as "render every slide preview immediately"
 
 ### 7. Freeze bundled-runtime path support explicitly
-- decide whether bundled runtimes officially support custom `outputDir` / `assetsPath`
-- if yes, the deck asset path, asset fallback path, and publish/setup flows need one shared rule
-- if not, document the bundled-runtime path restrictions clearly
+- bundled runtimes use canonical bundled v2 artifact paths only
+- custom `outputDir` / `assetsPath` remain a local dev/process-capable concern
+- bundled runtime path restrictions should be documented explicitly
 
-## Working Assumptions From Current Discussion
+## Working Assumptions After Current Freeze
 
-These are the current working assumptions to carry into the next decision pass:
+These are the working assumptions that now anchor the current implementation review checklist:
 
 1. The build engine must exist independently of the CLI.
 - The app must be able to host the engine when the runtime allows it.
@@ -722,42 +729,23 @@ These are the current working assumptions to carry into the next decision pass:
 2. `kCanRunProcess` is a first-class runtime boundary.
 - Process-capable and bundled-only runtimes should be treated as distinct operational modes.
 
-3. `watchForChanges` is important as a feature, but compatibility is not the main concern.
+3. Embedded watch is important as a feature, but legacy `watchForChanges` compatibility is not the main concern.
 - The important question is what the feature means and how it works.
 - The less important question is preserving the current v1 surface exactly.
 
 4. `superdeck.yaml` compatibility is low priority.
 - It can be substantially redesigned or replaced if needed.
 
-5. Build/watch behavior needs a deeper review before final model/interface design.
-- The model contracts depend on the operational ownership boundaries here.
+5. The build/watch/runtime boundary is now explicit enough to support model/interface work.
+- The next step is consistency review and implementation planning, not more decision gathering in this area.
 
-## Remaining Open Items After Current Sign-Off
-
-The following decisions remain open in this runtime/build planning surface:
+## Deferred Follow-Up After Current Sign-Off
 
 1. External config source policy
 - Keep `superdeck.yaml` strictness and `styles.yaml` loading/merge behavior explicitly deferred.
 - Do not infer automatic startup config/style loading from the current implementation.
 
-2. Embedded runtime watch API placement
-- Embedded app watch/build is frozen as first-class on process-capable runtimes.
-- CLI watch is frozen as optional/manual orchestration only.
-- The remaining open work is the final startup-only API placement/name that replaces `DeckOptions.watchForChanges`.
-
-3. Thumbnail storage and invalidation contract
-- Freeze whether thumbnails are runtime snapshots, build artifacts, or a hybrid contract.
-- Freeze invalidation rules so correctness does not depend on incidental UI timing.
-
-4. Bundled runtime path support
-- Decide whether bundled runtimes officially support custom `outputDir` / `assetsPath`.
-- If yes, define one canonical deck-json, bundled-asset, and runtime-fallback path rule.
-
 ## Recommended Next Step
-Use this document as the operational companion to the parser contract.
+Use this document as the operational companion to the parser contract and the feature matrix.
 
-The next planning pass should either:
-- freeze the remaining open runtime/build decisions listed above, or
-- fold the frozen outcomes into `.planning/rewrite-v2-feature-matrix.md` and `.planning/rewrite-v2-contract-migration-matrix.md`
-
-but it should not jump straight to package/interface modeling before these operational boundaries are explicit.
+The next step is a final planning consistency audit across the canonical rewrite docs, then use the reconciled set as the implementation review checklist.
