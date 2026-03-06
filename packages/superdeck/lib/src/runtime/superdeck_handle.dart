@@ -1,11 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:signals/signals.dart';
 
-import '../deck/deck_controller.dart';
-import '../deck/navigation_events.dart';
-import '../deck/slide_configuration.dart';
 import '../export/async_thumbnail.dart';
 import '../export/pdf_export_screen.dart';
+import '../slides/slide_configuration.dart';
+import 'deck_controller.dart';
+import 'navigation/navigation_events.dart';
 
 class SuperDeckHandle {
   DeckController? _controller;

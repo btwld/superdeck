@@ -2,13 +2,13 @@ import 'package:flutter/material.dart' show Icons, Colors, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:remix/remix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/ui/ui.dart';
-import 'package:superdeck/src/utils/constants.dart';
-import 'package:superdeck/src/export/slide_capture_service.dart';
+import '../ui/ui.dart';
+import '../utils/constants.dart';
+import 'slide_capture_service.dart';
 
-import '../rendering/slides/slide_view.dart';
-import '../deck/slide_configuration.dart';
 import '../runtime/superdeck_context.dart';
+import '../slides/slide_configuration.dart';
+import '../rendering/slides/slide_view.dart';
 import 'pdf_controller.dart';
 
 class PdfExportDialogScreen extends StatefulWidget {
@@ -23,8 +23,7 @@ class PdfExportDialogScreen extends StatefulWidget {
     final handle = SuperDeck.of(context);
     showRemixDialog(
       context: context,
-      builder: (context) =>
-          PdfExportDialogScreen(slides: handle.slides.value),
+      builder: (context) => PdfExportDialogScreen(slides: handle.slides.value),
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'background.dart';
-import 'footer.dart';
-import 'header.dart';
+
+import '../rendering/slides/background.dart';
+import '../rendering/slides/footer.dart';
+import '../rendering/slides/header.dart';
 
 class SlideParts {
   const SlideParts({

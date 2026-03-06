@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/deck/deck_controller.dart';
+import 'package:superdeck/src/runtime/deck_controller.dart';
 
 import '../testing_utils.dart';
 

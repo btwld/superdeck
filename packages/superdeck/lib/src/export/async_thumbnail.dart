@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/ui/ui.dart';
-import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
+import '../ui/ui.dart';
+import '../ui/widgets/cache_image_widget.dart';
 
 typedef AsyncFileGenerator =
     Future<Uri?> Function(BuildContext context, {required bool force});

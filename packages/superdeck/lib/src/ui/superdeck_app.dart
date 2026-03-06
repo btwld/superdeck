@@ -5,12 +5,12 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/ui/tokens/colors.dart';
+import 'tokens/colors.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/bundled_deck_service.dart';
-import '../deck/deck_controller.dart';
 import '../runtime/superdeck_runtime.dart';
+import '../runtime/bundled_deck_service.dart';
+import '../runtime/deck_controller.dart';
 import '../runtime/deck_source.dart';
 import '../runtime/superdeck_handle.dart';
 import '../ui/widgets/provider.dart';

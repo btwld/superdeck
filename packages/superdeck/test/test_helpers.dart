@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/styling/styling.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
-import 'package:superdeck/src/deck/widget_definition.dart';
+import 'package:superdeck/src/slides/slide_configuration.dart';
+import 'package:superdeck/src/presentation/widget_definition.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 extension WidgetTesterX on WidgetTester {

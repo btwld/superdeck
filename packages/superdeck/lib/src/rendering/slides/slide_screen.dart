@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 
-import '../../deck/slide_configuration.dart';
+import '../../slides/slide_configuration.dart';
 import '../../ui/widgets/provider.dart';
 import 'slide_view.dart';
 

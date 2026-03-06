@@ -1,7 +1,7 @@
 import 'package:mocktail/mocktail.dart';
-import 'package:superdeck/src/deck/navigation_service.dart';
 import 'package:superdeck/src/export/slide_capture_service.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
+import 'package:superdeck/src/runtime/navigation/navigation_service.dart';
 
 /// Mock for NavigationService - used for testing DeckController navigation
 class MockNavigationService extends Mock implements NavigationService {}

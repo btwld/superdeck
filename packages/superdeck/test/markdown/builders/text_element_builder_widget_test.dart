@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/slides/slide_configuration.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';

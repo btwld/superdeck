@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/widget_definition.dart';
+import '../presentation/widget_definition.dart';
 import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/webview_wrapper.dart';
 

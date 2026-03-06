@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/styling/styling.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/slides/slide_configuration.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 export 'fixtures/slide_fixtures.dart';
 

@@ -1,10 +1,10 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../presentation/deck_presentation.dart';
+import '../presentation/template_resolver.dart';
+import '../presentation/widget_definition.dart';
 import '../widgets/widgets.dart';
 import 'slide_configuration.dart';
-import 'template_resolver.dart';
-import 'widget_definition.dart';
 
 /// Service responsible for transforming raw Slide domain entities
 /// into SlideConfiguration view models ready for rendering.

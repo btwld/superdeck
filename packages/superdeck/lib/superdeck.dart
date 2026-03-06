@@ -3,7 +3,6 @@ library;
 // Rendering
 export 'package:superdeck/src/rendering/blocks/block_widget.dart';
 export 'package:superdeck/src/rendering/blocks/block_provider.dart';
-export 'package:superdeck/src/rendering/slides/slide_parts.dart';
 
 // Utils
 export 'package:superdeck/src/ui/extensions.dart';
@@ -29,12 +28,13 @@ export 'package:superdeck/src/runtime/superdeck_runtime.dart';
 export 'package:superdeck/src/presentation/deck_extension.dart';
 export 'package:superdeck/src/presentation/deck_presentation.dart';
 export 'package:superdeck/src/presentation/presentation_slide_builder.dart';
+export 'package:superdeck/src/presentation/slide_parts.dart';
+export 'package:superdeck/src/presentation/slide_template.dart';
+export 'package:superdeck/src/presentation/template_exception.dart';
+export 'package:superdeck/src/presentation/widget_definition.dart';
 
-// Deck
-export 'package:superdeck/src/deck/slide_configuration.dart';
-export 'package:superdeck/src/deck/slide_template.dart';
-export 'package:superdeck/src/deck/template_exception.dart';
-export 'package:superdeck/src/deck/widget_definition.dart';
+// Slides
+export 'package:superdeck/src/slides/slide_configuration.dart';
 
 // Export
 export 'package:superdeck/src/export/async_thumbnail.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'navigation_events.dart';
-import '../runtime/superdeck_context.dart';
+import '../superdeck_context.dart';
 
 /// Unified widget for handling navigation input from keyboard and gestures
 ///

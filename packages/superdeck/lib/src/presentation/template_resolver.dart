@@ -1,9 +1,9 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../presentation/deck_presentation.dart';
-import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
+import 'deck_presentation.dart';
 import 'slide_template.dart';
+import 'slide_parts.dart';
 import 'template_exception.dart';
 
 /// Result of resolving a slide's template and style configuration.

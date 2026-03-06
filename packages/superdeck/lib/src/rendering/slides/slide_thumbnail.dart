@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/ui/ui.dart';
+import '../../ui/ui.dart';
 
-import '../../deck/slide_configuration.dart';
+import '../../slides/slide_configuration.dart';
 import '../../runtime/superdeck_context.dart';
 import '../../utils/constants.dart';
 

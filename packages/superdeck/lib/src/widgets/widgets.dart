@@ -1,4 +1,4 @@
-import '../deck/widget_definition.dart';
+import '../presentation/widget_definition.dart';
 import 'dartpad_widget.dart';
 import 'image_widget.dart';
 import 'qr_code_widget.dart';

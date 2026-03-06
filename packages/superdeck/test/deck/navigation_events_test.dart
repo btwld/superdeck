@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/navigation_events.dart';
+import 'package:superdeck/src/runtime/navigation/navigation_events.dart';
 
 void main() {
   group('NavigationEvent classes', () {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/widget_definition.dart';
+import '../presentation/widget_definition.dart';
 import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/cache_image_widget.dart';
 import '../utils/converters.dart';

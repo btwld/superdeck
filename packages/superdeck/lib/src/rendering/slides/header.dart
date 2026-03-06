@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import '../../deck/slide_configuration.dart';
+import '../../slides/slide_configuration.dart';
 
 class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
   const HeaderPart({super.key});

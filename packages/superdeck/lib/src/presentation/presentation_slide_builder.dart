@@ -1,8 +1,8 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/slide_configuration.dart';
-import '../deck/slide_configuration_builder.dart';
 import 'deck_presentation.dart';
+import '../slides/slide_configuration.dart';
+import '../slides/slide_configuration_builder.dart';
 
 class PresentationSlideBuilder {
   final DeckConfiguration configuration;

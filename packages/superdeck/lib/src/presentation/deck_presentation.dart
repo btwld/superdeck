@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart' show listEquals, mapEquals;
 
-import '../deck/slide_template.dart';
-import '../deck/widget_definition.dart';
-import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
 import '../utils/collection_hashes.dart';
 import 'deck_extension.dart';
+import 'slide_parts.dart';
+import 'slide_template.dart';
+import 'widget_definition.dart';
 
 class DeckPresentation {
   final SlideStyle? baseStyle;

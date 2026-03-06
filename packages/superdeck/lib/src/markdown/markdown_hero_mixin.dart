@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
-import '../deck/slide_configuration.dart';
+import '../slides/slide_configuration.dart';
 import '../ui/widgets/hero_element.dart';
 
 /// Shared mixin that wraps markdown widgets with hero animations when a hero

@@ -7,11 +7,11 @@ import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
+import '../ui/widgets/provider.dart';
 
 import '../rendering/slides/slide_view.dart';
 import '../utils/constants.dart';
-import '../deck/slide_configuration.dart';
+import '../slides/slide_configuration.dart';
 import 'render_config.dart';
 
 enum SlideCaptureQuality {

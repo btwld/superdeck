@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/ui/ui.dart';
+import '../../ui/ui.dart';
 
-import '../rendering/slides/slide_screen.dart';
-import '../runtime/superdeck_context.dart';
+import '../../rendering/slides/slide_screen.dart';
+import '../superdeck_context.dart';
 
 /// Widget for rendering slide page content
 ///

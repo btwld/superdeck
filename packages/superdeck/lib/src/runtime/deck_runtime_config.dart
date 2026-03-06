@@ -6,11 +6,7 @@ class DeckRuntimeConfig {
   final String? outputDir;
   final String? assetsPath;
 
-  const DeckRuntimeConfig({
-    this.projectDir,
-    this.outputDir,
-    this.assetsPath,
-  });
+  const DeckRuntimeConfig({this.projectDir, this.outputDir, this.assetsPath});
 
   @internal
   DeckConfiguration toDeckConfiguration({String? slidesPath}) {

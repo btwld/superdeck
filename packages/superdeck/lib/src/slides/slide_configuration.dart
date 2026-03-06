@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../rendering/slides/slide_parts.dart';
+import '../presentation/slide_parts.dart';
+import '../presentation/widget_definition.dart';
 import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/collection_hashes.dart';
-import 'widget_definition.dart';
 
 class SlideConfiguration {
   final int slideIndex;

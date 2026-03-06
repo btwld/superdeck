@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart' show mapEquals;
 
-import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
 import '../utils/collection_hashes.dart';
+import 'slide_parts.dart';
 
 /// A reusable slide template that bundles chrome (header, footer, background)
 /// with an isolated style system.

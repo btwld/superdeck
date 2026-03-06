@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart' show Icons, Colors;
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/ui/tokens/colors.dart';
-import 'package:superdeck/src/ui/widgets/icon_button.dart';
+import '../tokens/colors.dart';
+import '../widgets/icon_button.dart';
 
 import 'package:flutter/widgets.dart';
 import '../../runtime/superdeck_context.dart';

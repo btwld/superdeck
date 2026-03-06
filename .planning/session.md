@@ -619,6 +619,23 @@ Agents should read this file before substantive work and update it as work progr
   - remove the public `DeckOptions` leak from style loading
   - align CLI docs with transitional `build` / `build --watch` support
   - remove tracked demo v1 artifact files and small lingering legacy wording/aliases (`comments`, `DeckOptions`, controller-era helper names)
+- Completed the `packages/superdeck/lib/src` organization refactor by ownership:
+  - phase 0: removed all `package:superdeck/src/...` self-imports inside `packages/superdeck/lib/src`
+  - phase 1: moved presentation-owned files into `src/presentation/` (`slide_template`, `template_exception`, `template_resolver`, `widget_definition`, `slide_parts`)
+  - phase 2: created `src/slides/` and moved `slide_configuration` + `slide_configuration_builder`
+  - phase 3: moved runtime-owned files into `src/runtime/` and `src/runtime/navigation/` (`deck_controller`, `bundled_deck_service`, navigation events/input/service, `slide_page_content`)
+  - removed `packages/superdeck/lib/src/deck/` entirely; remaining old `src/deck/` mentions in this file are historical pre-move notes only
+- Updated the public barrel taxonomy in `packages/superdeck/lib/superdeck.dart` to match the new ownership split without changing the public symbol surface.
+- Updated planning refs to the new file layout where they represent current implementation sources:
+  - `.planning/rewrite-v2-feature-matrix.md`
+  - `.planning/rewrite-v2-implementation-audit.md`
+- Validation after the reorg:
+  - `packages/superdeck`: `fvm dart analyze . --fatal-infos`
+  - `packages/superdeck`: `fvm flutter test`
+  - `packages/genui`: `fvm flutter test`
+  - repo: `melos run analyze:dart`
+  - `demo`: `fvm flutter build web --release`
+  - result: all green
 
 ## Update Rules
 - Keep entries concise and factual.

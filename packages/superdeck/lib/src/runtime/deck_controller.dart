@@ -10,13 +10,13 @@ import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
 import '../presentation/deck_extension.dart';
 import '../presentation/deck_presentation.dart';
+import '../slides/slide_configuration.dart';
+import '../slides/slide_configuration_builder.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
-import 'navigation_events.dart';
-import 'navigation_service.dart';
-import 'slide_configuration.dart';
-import 'slide_configuration_builder.dart';
+import 'navigation/navigation_events.dart';
+import 'navigation/navigation_service.dart';
 
 /// Loading state for the deck
 enum DeckLoadingState { idle, loading, loaded, error }

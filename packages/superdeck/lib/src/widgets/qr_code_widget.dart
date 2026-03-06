@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/widget_definition.dart';
+import '../presentation/widget_definition.dart';
 import '../utils/converters.dart';
 
 enum _QrErrorCorrectionToken { low, l, medium, m, high, q, highest, h }

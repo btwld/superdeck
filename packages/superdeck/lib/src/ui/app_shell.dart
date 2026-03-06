@@ -2,18 +2,18 @@ import 'package:flutter/material.dart'
     show Icons, Colors, Scaffold, FloatingActionButtonLocation;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/rendering/slides/scaled_app.dart';
-import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
-import 'package:superdeck/src/ui/extensions.dart';
-import 'package:superdeck/src/ui/panels/notes_panel.dart';
-import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
-import 'package:superdeck/src/ui/widgets/icon_button.dart';
-import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
-import 'package:superdeck/src/utils/constants.dart';
+import '../rendering/slides/scaled_app.dart';
+import '../rendering/slides/slide_thumbnail.dart';
+import 'extensions.dart';
+import 'panels/notes_panel.dart';
+import 'panels/thumbnail_panel.dart';
+import 'widgets/icon_button.dart';
+import 'widgets/loading_indicator.dart';
+import '../utils/constants.dart';
 
-import '../deck/navigation_input_listener.dart';
 import '../runtime/superdeck_context.dart';
 import '../runtime/superdeck_handle.dart';
+import '../runtime/navigation/navigation_input_listener.dart';
 import 'panels/bottom_bar.dart';
 
 /// High-level app shell that toggles between

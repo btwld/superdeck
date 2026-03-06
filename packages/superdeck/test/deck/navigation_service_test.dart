@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/navigation_service.dart';
+import 'package:superdeck/src/runtime/navigation/navigation_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
