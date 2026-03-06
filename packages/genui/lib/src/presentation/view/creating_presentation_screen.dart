@@ -9,7 +9,7 @@ import 'package:superdeck/superdeck.dart';
 import '../../debug_logger.dart';
 import '../../viewmodel_scope.dart';
 import '../../routes.dart';
-import '../../ui/ui.dart';
+import '../../ui/components/sd_components.dart';
 import '../../utils/deck_style_service.dart';
 import './loading.dart';
 import '../../ai/services/generation_progress.dart';

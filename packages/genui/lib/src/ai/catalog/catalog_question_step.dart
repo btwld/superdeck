@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
-import '../../ui/ui.dart';
+import '../../ui/components/sd_components.dart';
+import '../../ui/widgets/catalog_next_button.dart';
 
 /// Shared layout for catalog question widgets with a header, body, and CTA.
 class CatalogQuestionStep extends StatelessWidget {

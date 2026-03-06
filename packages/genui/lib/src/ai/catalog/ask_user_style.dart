@@ -10,7 +10,7 @@ import '../prompts/font_styles.dart';
 import './user_action_dispatch.dart';
 import '../schemas/genui_action_schema.dart';
 import '../schemas/wizard_context_keys.dart';
-import '../../ui/ui.dart';
+import '../../ui/components/sd_components.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';

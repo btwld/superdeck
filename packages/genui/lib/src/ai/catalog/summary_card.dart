@@ -14,7 +14,7 @@ import '../schemas/wizard_context_keys.dart';
 import '../../viewmodel_scope.dart';
 import '../../debug_logger.dart';
 import '../../routes.dart';
-import '../../ui/ui.dart';
+import '../../ui/components/sd_components.dart';
 import '../../utils/color_utils.dart';
 import '../../utils/font_utils.dart';
 import '../../presentation/presentation_viewmodel.dart';

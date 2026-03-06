@@ -31,13 +31,13 @@ extension LoggerX on Logger {
     }
 
     // Print the error message with the source code
-    newLine();
+    info('');
     err('Formatting Error:');
-    newLine();
+    info('');
     info(
       '$message on line ${(start?.line ?? 0) + 1}, column ${(start?.column ?? 0) + 1}',
     );
-    newLine();
+    info('');
 
     final exceptionLineNumber = start?.line ?? 0;
 
@@ -53,16 +53,10 @@ extension LoggerX on Logger {
         info(padline(currentLineContent, i), style: _highlightLine);
         info(padline(arrow), style: _highlightLine);
       } else {
-        _formatCodeBlock(padline(currentLineContent, i));
+        info(padline(currentLineContent, i), style: _formatErrorStyle);
       }
     }
   }
-
-  void _formatCodeBlock(String message) {
-    info(message, style: _formatErrorStyle);
-  }
-
-  void newLine() => info('');
 }
 
 String _createArrow(int column) {

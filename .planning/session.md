@@ -152,6 +152,60 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-06
+- Completed a code-backed review of `.planning/domain-naming-changes.md`:
+  - keep the export-cleanup direction; `package:superdeck/superdeck.dart` still leaks internal runtime/render/core types
+  - `DeckPresentation` -> `DeckTheme` should not be treated as approved-as-written because the type still owns runtime behavior through `extensions`; this conflicts with the existing runtime/API freeze
+  - `DeckRuntimeConfig` should stay as a named public type for now; making it optional is compatible, but inlining it would reopen the frozen bootstrap surface
+  - `BlockConfiguration` rename scope is understated in the proposal; it is part of the documented custom-widget API, not just an internal cleanup
+- Started a review pass on `.planning/domain-naming-changes.md`:
+  - owner: Codex
+  - scope:
+    - validate the approved rename set against current code ownership/public exports
+    - identify migration-risk gaps, naming collisions, and rollout-order issues before implementation starts
+- Completed the final repo-wide indirection / wrapper debt sweep:
+  - removed local CLI logger no-op wrappers:
+    - `LoggerX.newLine()`
+    - `LoggerX._formatCodeBlock()`
+  - removed active production usage of the internal `ui/ui.dart` GenUI barrel:
+    - production imports now point at `src/ui/components/sd_components.dart` and specific widget files
+    - `packages/genui/lib/superdeck_genui.dart` now exports the direct UI files instead of re-exporting `src/ui/ui.dart`
+  - audited and explicitly kept intentional seams:
+    - `DeckBuilderFactory`
+    - `ConversationBuilder`
+    - `SlideCaptureFn`
+    - `StyleYamlLoader`
+    - `GenerationProgressCallback`
+    - `SuperDeckRuntime.forTesting(...)`
+    - `PresentationDeckHost` loader/builder injection points
+    - `DeckToolsService` read/capture/context injection points
+    - `SuperDeckHandle` forwarding contract
+  - deferred one low-value alias cleanup:
+    - `RawSlideMarkdown` remains until a dedicated generated-type/schema cleanup
+  - the temporary sweep matrix has since been removed after completion
+  - validation completed:
+    - `./.fvm/flutter_sdk/bin/dart analyze packages/superdeck packages/genui packages/builder packages/core packages/cli demo --fatal-infos`
+    - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/superdeck`
+    - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/genui`
+    - `../../.fvm/flutter_sdk/bin/dart test` in `packages/builder`
+    - `../.fvm/flutter_sdk/bin/flutter build web --release` in `demo`
+    - `npm run test:smoke` in `demo/e2e`
+  - drift gate after cleanup is clean:
+    - no matches for `DeckOptions`, `DeckController.of(...)`, `resolveConfiguration`, or `ui/ui.dart` in production paths
+- Removed the temporary indirection / wrapper debt sweep planning artifact at user request:
+  - deleted `.planning/indirection-wrapper-debt-sweep.md`
+  - removed the completed sweep from `Current Focus`
+  - kept the session-log record of the completed work and validations
+- Started the final repo-wide indirection / wrapper debt sweep:
+  - owner: Codex
+  - date: 2026-03-06
+  - assumptions:
+    - `PresentationSlideBuilder` is already removed from production `superdeck`; any reappearance is regression
+    - this is a cleanup-only lane, not a behavior/API refactor
+    - any candidate that crosses package boundaries or public behavior should be kept/deferred unless removal is trivial and fully evidenced
+  - immediate plan:
+    - run a non-mutating symbol inventory over `packages/superdeck`, `packages/genui`, `packages/builder`, `packages/core`, `packages/cli`, and `demo`
+    - classify hits into `remove`, `keep`, or `reclassify`
+    - record the matrix in a planning artifact before cleanup waves
 - Started the repo-wide indirection and wrapper cleanup sweep:
   - applying the remaining review-backed cleanup items (`style_builder` narration comments, `SlideConfigurationBuilder` empty guard, `SuperDeckHandle.regenerateThumbnails`, and `AppShell` local simplification)
   - tightening the public `askUserImageStyle` surface so helper-style construction is test-only instead of publicly taught/exported

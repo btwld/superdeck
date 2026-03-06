@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
-import '../../../ui/ui.dart';
+import '../../../ui/components/sd_components.dart';
 import '../../../presentation/view/loading.dart';
 
 /// Initial state displayed before conversation starts.

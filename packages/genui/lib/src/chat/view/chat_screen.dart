@@ -14,7 +14,9 @@ import '../chat_viewmodel.dart';
 import '../../viewmodel_scope.dart';
 import '../../routes.dart';
 import '../../ai/wizard_context.dart';
-import '../../ui/ui.dart';
+import '../../ui/components/sd_components.dart';
+import '../../ui/widgets/header.dart';
+import '../../ui/widgets/wizard_loading_state.dart';
 import '../../presentation/presentation_viewmodel.dart';
 
 /// Main chat screen for the wizard-based presentation builder.

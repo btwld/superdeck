@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remix/remix.dart';
-import '../../../ui/ui.dart';
+import '../../../ui/components/sd_components.dart';
 
 /// Shared chat input widget used by both sidebar and inline views.
 ///

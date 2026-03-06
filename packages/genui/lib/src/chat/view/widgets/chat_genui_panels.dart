@@ -5,7 +5,7 @@ import '../../chat_message.dart';
 import '../../chat_viewmodel.dart';
 import './typing_indicator.dart';
 import '../../../viewmodel_scope.dart';
-import '../../../ui/ui.dart';
+import '../../../ui/components/sd_components.dart';
 
 /// Shared bubble border radius for iOS-style chat bubbles.
 const _bubbleBorderRadius = BorderRadius.only(

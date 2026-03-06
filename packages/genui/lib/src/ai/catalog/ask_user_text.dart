@@ -8,7 +8,7 @@ import 'package:remix/remix.dart';
 
 import '../schemas/genui_action_schema.dart';
 import './user_action_dispatch.dart';
-import '../../ui/ui.dart';
+import '../../ui/components/sd_components.dart';
 
 import 'catalog_question_step.dart';
 

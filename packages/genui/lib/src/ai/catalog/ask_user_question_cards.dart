@@ -6,7 +6,7 @@ import 'package:remix/remix.dart';
 
 import '../prompts/font_styles.dart';
 import '../prompts/image_style_prompts.dart';
-import '../../ui/ui.dart';
+import '../../ui/components/sd_components.dart';
 import '../../utils/color_utils.dart';
 import '../../utils/font_utils.dart';
 

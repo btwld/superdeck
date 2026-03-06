@@ -27,7 +27,10 @@ export 'src/bootstrap/genui_bootstrap.dart';
 export 'src/genui_plugin.dart';
 
 // UI Components
-export 'src/ui/ui.dart';
+export 'src/ui/components/sd_components.dart';
+export 'src/ui/widgets/catalog_next_button.dart';
+export 'src/ui/widgets/header.dart';
+export 'src/ui/widgets/wizard_loading_state.dart';
 
 // Utilities
 export 'src/viewmodel_scope.dart';
