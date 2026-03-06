@@ -50,7 +50,7 @@ class DeckBottomBar extends StatelessWidget {
 
         SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
-          onPressed: () => deck.regenerateThumbnails(context, force: true),
+          onPressed: () => deck.generateThumbnails(context, force: true),
           semanticLabel: 'Regenerate thumbnails',
         ),
         ...extensionActions,

@@ -11,7 +11,8 @@ import 'ask_user_text.dart';
 import 'summary_card.dart';
 
 export 'ask_user_checkbox.dart';
-export 'ask_user_image_style.dart';
+export 'ask_user_image_style.dart'
+    show askUserImageStyle, AskUserImageStyleType;
 export 'ask_user_radio.dart';
 export 'ask_user_slider.dart';
 export 'ask_user_style.dart';

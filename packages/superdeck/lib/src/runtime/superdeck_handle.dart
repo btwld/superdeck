@@ -63,10 +63,6 @@ class SuperDeckHandle {
     _attachedController.generateThumbnails(context, force: force);
   }
 
-  void regenerateThumbnails(BuildContext context, {bool force = true}) {
-    generateThumbnails(context, force: force);
-  }
-
   void exportPdf(BuildContext context) {
     PdfExportDialogScreen.show(context);
   }

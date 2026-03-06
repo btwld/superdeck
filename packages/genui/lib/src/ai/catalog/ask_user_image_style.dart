@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ack/ack.dart';
@@ -49,8 +48,9 @@ final _askUserImageStyleSchema =
 
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
-/// Builds the AskUserImageStyle catalog component.
-CatalogItem buildAskUserImageStyle({
+/// Test-only constructor for AskUserImageStyle with injectable services.
+@visibleForTesting
+CatalogItem buildAskUserImageStyleForTest({
   ImageGeneratorService Function({required String apiKey})?
   imageGeneratorServiceFactory,
 }) {
@@ -89,7 +89,7 @@ CatalogItem buildAskUserImageStyle({
 }
 
 /// AskUserImageStyle catalog component for image style selection with previews.
-final askUserImageStyle = buildAskUserImageStyle();
+final askUserImageStyle = buildAskUserImageStyleForTest();
 
 // ─────────────────────────────────── WIDGET ───────────────────────────────────
 

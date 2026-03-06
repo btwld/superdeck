@@ -9,6 +9,7 @@ import 'package:genui/genui.dart';
 import 'package:remix/remix.dart';
 
 import 'package:superdeck_genui/src/ai/catalog/ask_user_question_cards.dart';
+import 'package:superdeck_genui/src/ai/catalog/ask_user_image_style.dart';
 import 'package:superdeck_genui/src/ai/catalog/catalog.dart';
 import 'package:superdeck_genui/src/ai/prompts/prompt_registry.dart';
 import 'package:superdeck_genui/src/ai/services/image_generator_service.dart';
@@ -126,7 +127,7 @@ void main() {
           _QueuedImageService(secondGen),
         ]);
 
-        final item = buildAskUserImageStyle(
+        final item = buildAskUserImageStyleForTest(
           imageGeneratorServiceFactory: ({required String apiKey}) {
             expect(services, isNotEmpty, reason: 'No fake service queued.');
             return services.removeFirst();
@@ -206,7 +207,7 @@ void main() {
           _QueuedImageService(secondGen),
         ]);
 
-        final item = buildAskUserImageStyle(
+        final item = buildAskUserImageStyleForTest(
           imageGeneratorServiceFactory: ({required String apiKey}) {
             expect(services, isNotEmpty, reason: 'No fake service queued.');
             return services.removeFirst();

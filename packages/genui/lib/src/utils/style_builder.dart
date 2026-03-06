@@ -15,7 +15,6 @@ DeckPresentation buildDeckPresentationFromStyle(DeckStyleType? style) {
   final colors = style.colors;
   final fonts = style.fonts;
 
-  // Extract colors with new semantic names
   final backgroundHex = colors.background;
   final headingHex = colors.heading;
   final bodyHex = colors.body;
@@ -36,7 +35,6 @@ DeckPresentation buildDeckPresentationFromStyle(DeckStyleType? style) {
     return styler;
   }
 
-  // Build body text styler with color and optional font
   TextStyler bodyStyler() {
     var styler = TextStyler().style(TextStyleMix(color: bodyColor));
     if (bodyFontFamily.isNotEmpty) {
@@ -45,9 +43,7 @@ DeckPresentation buildDeckPresentationFromStyle(DeckStyleType? style) {
     return styler;
   }
 
-  // Create style with color and font overrides
   final colorOverrideStyle = SlideStyle(
-    // Headings use primary color + headline font
     h1: headingStyler(),
     h2: headingStyler(),
     h3: headingStyler(),
@@ -55,20 +51,16 @@ DeckPresentation buildDeckPresentationFromStyle(DeckStyleType? style) {
     h5: headingStyler(),
     h6: headingStyler(),
 
-    // Body text uses secondary color + body font
     p: bodyStyler(),
 
-    // Links and emphasis use body/heading colors
     a: TextStyle(color: bodyColor),
     strong: TextStyle(color: headingColor),
 
-    // List styling - bullets and text use body color
     list: MarkdownListStyle(
       bullet: TextStyler().style(TextStyleMix(color: bodyColor)),
       text: bodyStyler(),
     ),
 
-    // Table styling - colors for text, borders, and cell backgrounds
     table: MarkdownTableStyle(
       headStyle: TextStyle(color: headingColor, fontWeight: FontWeight.bold),
       bodyStyle: TextStyle(color: bodyColor),
@@ -77,7 +69,6 @@ DeckPresentation buildDeckPresentationFromStyle(DeckStyleType? style) {
       cellDecoration: BoxDecoration(color: bodyColor.withValues(alpha: 0.1)),
     ),
 
-    // Blockquote styling - left bar uses body color
     blockquote: MarkdownBlockquoteStyle(
       textStyle: TextStyle(color: bodyColor, fontSize: 32),
       padding: const EdgeInsets.only(bottom: 12, left: 30),
@@ -86,12 +77,10 @@ DeckPresentation buildDeckPresentationFromStyle(DeckStyleType? style) {
       ),
     ),
 
-    // Horizontal rule uses body color
     horizontalRuleDecoration: BoxDecoration(
       border: Border(bottom: BorderSide(color: bodyColor, width: 2)),
     ),
 
-    // Slide background color (if specified)
     slideContainer: BoxStyler().color(backgroundColor),
   );
 

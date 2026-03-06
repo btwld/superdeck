@@ -138,27 +138,16 @@ class _SplitViewState extends State<SplitView>
           ? NotesPanel(notes: currentSlide?.notes ?? [])
           : const SizedBox();
 
-      // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
-      // or for a big layout, we might do a column if it's on the SIDE.
-      // This is somewhat reversed based on your preference, so adjust as needed.
       if (widget.isSmallLayout) {
-        // Panel at bottom => put them side-by-side in a Row
-        return Row(
-          children: [
-            !isNotesOpen
-                ? Expanded(child: thumbnailPanel)
-                : Expanded(child: notesPanel),
-          ],
-        );
-      } else {
-        // Panel on the side => put them in a Column
-        return Column(
-          children: [
-            Expanded(flex: 3, child: thumbnailPanel),
-            if (isNotesOpen) Expanded(flex: 1, child: notesPanel),
-          ],
-        );
+        return isNotesOpen ? notesPanel : thumbnailPanel;
       }
+
+      return Column(
+        children: [
+          Expanded(flex: 3, child: thumbnailPanel),
+          if (isNotesOpen) Expanded(flex: 1, child: notesPanel),
+        ],
+      );
     });
   }
 
@@ -193,12 +182,52 @@ class _SplitViewState extends State<SplitView>
   Widget build(BuildContext context) {
     final deck = SuperDeck.of(context);
 
-    // For small layout, the panel is typically at the bottom (vertical),
-    // so we place it in a Column below the main content.
-    // For regular layout, place it on the left in a Row.
     return Watch((context) {
       final isMenuOpen = deck.isMenuOpen.value;
       final isRebuilding = deck.isRebuilding.value;
+      final mainContent = Expanded(
+        child: Center(
+          child: ScaledWidget(targetSize: kResolution, child: widget.child),
+        ),
+      );
+      final panel = _buildPanel(context);
+      final panelTransition = widget.isSmallLayout
+          ? SizeTransition(
+              axis: Axis.vertical,
+              sizeFactor: _curvedAnimation,
+              child: SizedBox(height: 200, child: panel),
+            )
+          : SizeTransition(
+              axis: Axis.horizontal,
+              sizeFactor: _curvedAnimation,
+              child: SizedBox(width: 300, child: panel),
+            );
+      final layout = widget.isSmallLayout
+          ? Column(children: [mainContent, panelTransition])
+          : Row(children: [panelTransition, mainContent]);
+      final rebuildingIndicator = Positioned(
+        top: 16,
+        right: 16,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white24, width: 1),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(width: 16, height: 16, child: IsometricLoading()),
+              SizedBox(width: 8),
+              Text(
+                'Rebuilding...',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      );
 
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
@@ -216,88 +245,7 @@ class _SplitViewState extends State<SplitView>
           child: const DeckBottomBar(),
         ),
 
-        // Body changes layout based on [isSmallLayout].
-        body: Stack(
-          children: [
-            widget.isSmallLayout
-                ? Column(
-                    children: [
-                      // Main slide content
-                      Expanded(
-                        child: Center(
-                          child: ScaledWidget(
-                            targetSize: kResolution,
-                            child: widget.child,
-                          ),
-                        ),
-                      ),
-                      // Animated bottom panel
-                      SizeTransition(
-                        axis: Axis.vertical,
-                        sizeFactor: _curvedAnimation,
-                        child: SizedBox(
-                          height: 200,
-                          child: _buildPanel(context),
-                        ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      // Animated side panel
-                      SizeTransition(
-                        axis: Axis.horizontal,
-                        sizeFactor: _curvedAnimation,
-                        child: SizedBox(
-                          width: 300,
-                          child: _buildPanel(context),
-                        ),
-                      ),
-                      // Main slide content
-                      Expanded(
-                        child: Center(
-                          child: ScaledWidget(
-                            targetSize: kResolution,
-                            child: widget.child,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-            // Loading indicator when rebuilding
-            if (isRebuilding)
-              Positioned(
-                top: 16,
-                right: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white24, width: 1),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: IsometricLoading(),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Rebuilding...',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
+        body: Stack(children: [layout, if (isRebuilding) rebuildingIndicator]),
       );
     });
   }

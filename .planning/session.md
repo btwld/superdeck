@@ -152,6 +152,18 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-06
+- Started the repo-wide indirection and wrapper cleanup sweep:
+  - applying the remaining review-backed cleanup items (`style_builder` narration comments, `SlideConfigurationBuilder` empty guard, `SuperDeckHandle.regenerateThumbnails`, and `AppShell` local simplification)
+  - tightening the public `askUserImageStyle` surface so helper-style construction is test-only instead of publicly taught/exported
+  - running one strict repo-wide pass over local-only typedefs, helper builders/factories, forwarding methods, and stale `@visibleForTesting` seams
+  - keeping only the already-approved intentional seams:
+    - `SuperDeckRuntime.forTesting(...)`
+    - `DeckBuilderFactory`
+    - `ConversationBuilder`
+    - `SlideCaptureFn`
+    - `StyleYamlLoader`
+    - `GenerationProgressCallback`
+    - `GenUiBootstrap.resetForTest()`
 - Started a broader wrapper/delegation review pass:
   - scanning for other `PresentationSlideBuilder`-style patterns across `superdeck`, `genui`, `builder`, and `core`
   - classifying thin wrappers into: real boundary, test seam, shared callback type, or removable forwarding layer
@@ -819,6 +831,31 @@ Agents should read this file before substantive work and update it as work progr
   - repo: `melos run analyze:dart`
   - `demo`: `fvm flutter build web --release`
   - result: all green
+- Started and completed the repo-wide indirection and wrapper cleanup sweep focused on unjustified forwarding seams, local-only typedef noise, and public helper wrappers.
+- Removed the remaining review-backed cleanup items:
+  - deleted narration comments from `packages/genui/lib/src/utils/style_builder.dart`
+  - removed the redundant empty-list guard from `packages/superdeck/lib/src/slides/slide_configuration_builder.dart`
+  - removed `SuperDeckHandle.regenerateThumbnails(...)` and updated `packages/superdeck/lib/src/ui/panels/bottom_bar.dart` to call `generateThumbnails(context, force: true)` directly
+  - simplified `packages/superdeck/lib/src/ui/app_shell.dart` by collapsing duplicated local layout pieces inside `build` without adding new wrapper classes
+- Tightened the public GenUI catalog surface:
+  - `buildAskUserImageStyle(...)` is no longer part of the public catalog export
+  - `packages/genui/lib/src/ai/catalog/catalog.dart` now exports only `askUserImageStyle` and `AskUserImageStyleType` from that file
+  - the configurable constructor path remains source-local as `@visibleForTesting buildAskUserImageStyleForTest(...)`
+  - regression tests now import the source file directly instead of relying on a public helper export
+- Repo-wide sweep result for remaining seam patterns:
+  - kept as intentional: `SuperDeckRuntime.forTesting(...)`, `DeckBuilderFactory`, `ConversationBuilder`, `SlideCaptureFn`, `StyleYamlLoader`, `GenerationProgressCallback`, `GenUiBootstrap.resetForTest()`
+  - kept as intentional public transformations or framework APIs: `buildDeckPresentationFromStyle`, `buildDeckSnapshot`, `buildPromptFromWizardContext`, `buildAvailableImagesContext`, `DeckExtension.build*`
+  - no active production references remain for `regenerateThumbnails(...)`
+- Validation for the sweep:
+  - `packages/superdeck`: `fvm dart analyze . --fatal-infos`
+  - `packages/genui`: `fvm dart analyze . --fatal-infos`
+  - repo: `melos run analyze:dart`
+  - `packages/superdeck`: `fvm flutter test`
+  - `packages/genui`: `fvm flutter test`
+  - targeted regressions: `app_shell_test.dart`, `ask_user_image_style_test.dart`, `catalog_widget_regressions_test.dart`
+  - `demo`: `fvm flutter build web --release`
+  - result: all green; the web build still emits the existing wasm dry-run warnings from upstream deps and the existing icon-font warning, but completes successfully
+- Removed `.claude/reviews/code_review_2026-03-06_1200.md` after reconciling the valid items into code and explicitly classifying the remaining intentional seams in this session file.
 
 ## Update Rules
 - Keep entries concise and factual.

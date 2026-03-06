@@ -23,10 +23,6 @@ class SlideConfigurationBuilder {
     List<Slide> rawSlides,
     DeckPresentation presentation,
   ) {
-    if (rawSlides.isEmpty) {
-      return [];
-    }
-
     final resolver = TemplateResolver(presentation);
 
     return rawSlides.asMap().entries.map((entry) {
