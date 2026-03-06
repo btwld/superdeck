@@ -6,9 +6,10 @@ This is the live session and handoff document for ongoing work in the SuperDeck 
 Agents should read this file before substantive work and update it as work progresses.
 
 ## Current Focus
-- Use the reconciled v2 planning docs as the implementation review checklist.
-- Start implementation with the runtime watch/config contract slice.
-- Preserve the frozen v2 decisions while moving from planning into execution.
+- Implement the API-first v2 reset around the approved runtime/bootstrap surface.
+- Replace the old `SuperDeckApp(options, configuration?)` primary API with `SuperDeckRuntime.create(...)` plus `SuperDeckApp(runtime: ...)`.
+- Keep the old implementation internals only as migration scaffolding where needed to avoid a half-migrated runtime.
+- Start code refactoring only after the planning/docs pass reflects the approved API-first surface.
 
 ## Canonical Planning Docs
 - `.planning/rewrite-v2-full-plan.md`
@@ -19,6 +20,24 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Current State
 - The v2 rewrite plan has been restored locally and reviewed against the current codebase.
+- The API-first v2 direction has now been approved for implementation with these defaults:
+  - primary bootstrap is `SuperDeckRuntime.create(...)`
+  - `SuperDeckApp(runtime: runtime)` is the main widget surface
+  - deck origin is explicit via `DeckSource.local(...)` and `DeckSource.bundle(...)`
+  - runtime/startup config and presentation config are split into separate types
+  - runtime owns the local dev watch/build loop
+  - public CLI scope is reduced to `setup` and `publish`
+  - extensions replace plugins as the behavioral add-on surface
+  - advanced consumers use a narrow `SuperDeckHandle`, not `DeckController` construction
+- The planning/docs reconciliation pass has now been applied before code refactoring:
+  - added `.planning/rewrite-v2-api-surface.md` as the canonical API-surface planning doc
+  - updated the umbrella rewrite docs to treat the runtime-first API as the approved direction
+  - updated public docs/READMEs/getting-started/reference content to teach `SuperDeckRuntime.create(...)`, `DeckSource`, `DeckRuntimeConfig`, and `DeckPresentation`
+  - updated CLI docs to remove `build` / `watch` as the intended public day-to-day workflow
+- The direction has now shifted from implementation-first to API-first design review:
+  - the current planning set is still useful as code-backed inventory and migration context
+  - it should no longer be treated as sufficient proof that the v2 public API was designed from first principles
+  - the next step is to define the intended v2 API surface explicitly before resuming implementation slices
 - A feature validation matrix exists and maps current behavior to:
   - implementation refs
   - v2 ownership
@@ -82,23 +101,33 @@ Agents should read this file before substantive work and update it as work progr
    - revisit external YAML acquisition/strictness in a dedicated later pass, not as a blocker for the current implementation review checklist
 
 ## Recommended Next Steps
-1. Implement the first runtime contract slice:
-   - add `watch` to `DeckConfiguration`
-   - treat `DeckConfiguration.watch` as the canonical v2 embedded watch field
-   - stop treating `DeckOptions.watchForChanges` as part of the intended v2 runtime contract
-2. Wire the runtime behavior to the frozen contract:
-   - `DeckControllerBuilder` should use `DeckConfiguration.watch`
-   - embedded watch remains process-capable/dev-only
-   - bundled runtimes remain consume-only
-3. Implement the thumbnail follow-up after the watch/config slice:
-   - runtime-owned dev thumbnails
-   - `slide key + render signature` invalidation
-   - keep headless/build-time thumbnail generation out of the current rewrite
-4. Revisit external YAML config policy later as an explicit follow-up, not as part of the current implementation slice.
+1. Land the new runtime/bootstrap API:
+   - `SuperDeckRuntime`
+   - `DeckSource`
+   - `DeckRuntimeConfig`
+   - `DeckPresentation`
+   - `DeckExtension`
+   - `SuperDeckHandle`
+2. Rewire `SuperDeckApp` and internal controller bootstrapping around that API while keeping current runtime behavior working.
+3. Reduce the public CLI surface to `setup` and `publish`, with publish using the shared build pipeline internally.
+4. Reconcile tests/docs/migration notes after the code-level public API reset is in place.
 
 ## Session Log
 
 ### 2026-03-05
+- Reconciled planning and public docs before code refactoring:
+  - created `.planning/rewrite-v2-api-surface.md` as the canonical v2 runtime/bootstrap API doc
+  - updated the major rewrite planning docs to treat `SuperDeckRuntime.create(...)` plus `SuperDeckApp(runtime: ...)` as the approved surface
+  - updated public docs and READMEs so they no longer teach `SuperDeckApp.initialize()`, `DeckOptions`, or `superdeck build --watch` as the primary path
+  - code refactoring now starts from the reconciled docs instead of the older intermediate `DeckConfiguration.watch` planning shape
+- Started implementation of the API-first v2 reset:
+  - session handoff updated to move from design review into code changes
+  - execution order is now runtime/bootstrap API first, then public export cleanup, then CLI surface reduction, then tests/docs reconciliation
+  - the existing controller/watch/build code will be reused internally where possible, but it is no longer the intended primary public API
+- Direction reset:
+  - paused the planned runtime watch/config implementation slice
+  - agreed the real goal is an API-first v2 rewrite review, not incremental execution against the current implementation-shaped plan
+  - next step is to define the intended v2 API surface from first principles, using the current planning docs as inventory/constraints rather than as the final interface design
 - Updated the handoff after the planning freeze:
   - the reconciled planning docs are now the implementation review checklist
   - the next concrete implementation step is the runtime watch/config contract slice

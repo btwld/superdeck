@@ -22,6 +22,7 @@ The rewrite is a breaking `v2`, uses a full package reorganization, and excludes
 This file is the umbrella rewrite plan.
 
 Detailed sign-off lives in:
+- `.planning/rewrite-v2-api-surface.md`
 - `.planning/rewrite-v2-feature-matrix.md`
 - `.planning/rewrite-v2-parser-semantics.md`
 - `.planning/rewrite-v2-build-watch-runtime.md`
@@ -34,6 +35,28 @@ Use this file for:
 - risks and acceptance criteria
 
 Do not use this file as the sole source of truth for parser grammar, runtime watch semantics, or migration/public-surface naming.
+Do not use older `DeckOptions` / `DeckConfiguration.watch` planning text as the final API shape; `.planning/rewrite-v2-api-surface.md` now owns that.
+
+## Approved API Reset
+
+The v2 rewrite now has an approved primary runtime/bootstrap surface:
+
+- `SuperDeckRuntime.create(...)` is the canonical bootstrap entrypoint
+- `SuperDeckApp(runtime: runtime)` is the main widget surface
+- deck origin is explicit via `DeckSource.local(...)` and `DeckSource.bundle(...)`
+- startup-only operational config lives in `DeckRuntimeConfig`
+- render composition lives in `DeckPresentation`
+- behavioral add-ons live in `DeckExtension`
+- advanced runtime control lives in `SuperDeckHandle` and `SuperDeck.of(context)`
+- runtime owns local build/watch for local sources
+- the public CLI surface is reduced to `setup` and `publish`
+
+Any older references in this umbrella plan that still discuss:
+- `SuperDeckApp(options: ..., configuration: ...)`
+- `DeckOptions.watchForChanges`
+- `DeckConfiguration.watch`
+
+should be treated as superseded intermediate planning, not the approved v2 API.
 
 ## Current Implementation Context
 
@@ -91,7 +114,7 @@ The rewrite only makes sense if it preserves the real product surface that exist
 - keyboard navigation, touch tap navigation, and swipe navigation
 - slide parts (header/footer/background), styles, templates, and `template: none`
 - built-in widgets `image`, `dartpad`, `qrcode`, with user override by name
-- `StyleConfigLoader` support for merging `styles.yaml` with code-defined `DeckOptions`
+- `StyleConfigLoader` support for merging `styles.yaml` with code-defined presentation styles
 - notes/comments panel, thumbnail panel, plugin actions, floating action slot, rebuild indicator
 - runtime asset caching and thumbnail generation
 - PDF export through slide capture
@@ -772,11 +795,11 @@ Implementations:
 - `BundledDeckRepository`
 
 ### Bootstrap and initialization
-`SuperDeckApp.initialize()` remains the host entry point. v2 bootstrap must:
+`SuperDeckRuntime.create(...)` is the canonical host entry point. v2 bootstrap must:
 - initialize syntax highlighting grammars
 - initialize desktop window management on supported non-web platforms
-- initialize plugins with typed success/failure reporting
-- follow the runtime-local configuration contract already frozen in `.planning/rewrite-v2-build-watch-runtime.md`
+- initialize extensions with typed success/failure reporting
+- follow `.planning/rewrite-v2-api-surface.md` as the canonical runtime/bootstrap contract
 - keep external config-source behavior explicit rather than assuming automatic `styles.yaml` merge or shared `superdeck.yaml` resolution
 
 ### Controller model
@@ -829,9 +852,9 @@ Custom widgets and slide parts remain first-class host APIs. v2 must preserve:
 ### Templates and styles
 Retain concept, simplify ownership.
 
-#### Deck render options
+#### Deck presentation
 ```dart
-final class DeckRenderOptions {
+final class DeckPresentation {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
   final Map<String, WidgetDefinition<Object?>> widgets;
@@ -839,11 +862,12 @@ final class DeckRenderOptions {
   final SlideTemplate? defaultTemplate;
   final SlideParts parts;
   final bool debug;
+  final List<DeckExtension> extensions;
 }
 ```
 
 Policy:
-- `watchForChanges` is removed from the core render options surface and replaced by startup-only `DeckConfiguration.watch`
+- watch/build is removed from the render composition surface and belongs to `DeckSource.local(watch: ...)`
 - external YAML config such as `styles.yaml` remains deferred from the current runtime-local contract
 
 #### Style resolution
@@ -882,22 +906,22 @@ Keep YAML merge behavior:
 - export flow keeps a slide-capture service plus export controller/session with progress, cancellation, and platform-specific save adapters
 - export mode continues to suppress interaction-only behaviors such as hero flights and scroll interactions while capturing
 
-## Plugin Design
-Keep plugins, simplify expectations.
+## Extension Design
+Keep the behavior surface, rename and simplify expectations.
 
 ```dart
-abstract class SuperDeckPluginV2 {
+abstract class DeckExtension {
   String get name;
-  Future<PluginInitResult> initialize();
-  List<RouteBase> buildRoutes();
-  List<Widget> buildActions(BuildContext context);
-  Widget? buildFloatingAction(BuildContext context);
+  Future<ExtensionInitResult> initialize(DeckRuntimeContext context);
+  List<RouteBase> buildRoutes(DeckRuntimeContext context);
+  List<DeckAction> buildActions(DeckRuntimeContext context);
+  Widget? buildFloatingAction(DeckRuntimeContext context);
 }
 ```
 
 Rule:
-- plugin lifecycle must not mutate core deck state directly
-- plugins extend runtime shell, not parser/build engine internals
+- extension lifecycle must not mutate core deck state directly
+- extensions extend runtime shell, not parser/build engine internals
 
 ## CLI Design
 
@@ -907,11 +931,8 @@ Rule:
   - patch pubspec assets
   - optional web template bootstrap
   - optional platform entitlements
-- `build`
-  - one-shot build
-- `watch`
-  - optional/manual orchestration only if retained
 - `publish`
+  - invoke the shared build pipeline as needed
   - build web
   - resolve base-href from repository identity
   - stage worktree
@@ -924,10 +945,9 @@ Rule:
 
 ### Important CLI simplifications
 - local day-to-day dev should be runtime-first (`flutter run` + embedded app watch/build)
-- if CLI watch remains, it should be optional/manual orchestration and not a peer owner of the primary dev loop
 - `publish` should use a scoped `IndexHtmlOverrideSession`
 - all temporary filesystem changes must live inside scoped cleanup objects
-- migrate legacy `DeckOptions.watchForChanges` usage to startup-only `DeckConfiguration.watch`
+- migrate legacy `DeckOptions.watchForChanges` usage to `DeckSource.local(watch: ...)`
 
 ### Publish lifecycle object
 ```dart
@@ -961,7 +981,7 @@ Modes:
 - validate frontmatter as strict YAML map
 - flag unsupported ambiguous constructs
 - rename artifact expectations
-- replace legacy `DeckOptions.watchForChanges` usage with `DeckConfiguration.watch`
+- replace legacy `DeckOptions.watchForChanges` usage with `DeckSource.local(watch: ...)`
 - preserve built-in widget shorthands and `template: none`
 - produce migration report
 
@@ -975,6 +995,7 @@ Modes:
 
 ### Canonical planning docs after reconciliation
 - `.planning/rewrite-v2-full-plan.md`
+- `.planning/rewrite-v2-api-surface.md`
 - `.planning/rewrite-v2-feature-matrix.md`
 - `.planning/rewrite-v2-parser-semantics.md`
 - `.planning/rewrite-v2-build-watch-runtime.md`
@@ -1198,7 +1219,7 @@ Mitigation:
 - code-defined style config overrides YAML-defined style config
 - runtime-first local development uses embedded app watch/build
 - any retained CLI watch surface is optional/manual orchestration only
-- `DeckConfiguration.watch` is the canonical v2 embedded watch field
+- `DeckSource.local(watch: ...)` is the canonical v2 embedded watch surface
 - `superdeck_full` remains a debug/tooling artifact with markdown AST expansion
 - standalone markdown image behavior is preserved; inline-image expansion is not part of the rewrite baseline
 - runtime bootstrap remains a first-class surface, but the final bootstrap/config API should not be inferred from stale assumptions in this umbrella plan

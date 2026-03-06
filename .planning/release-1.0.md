@@ -161,7 +161,7 @@ Non-blocking (document-only for this release):
 - [ ] Clean-room install flow:
   - [ ] `dart pub global activate superdeck_cli`
   - [ ] new app + `flutter pub add superdeck`
-  - [ ] `superdeck setup` + `superdeck build` + `flutter run`
+  - [ ] `superdeck setup` + `flutter run` + `superdeck publish`
 - [ ] Demo web build + Playwright smoke on release artifacts.
 - [ ] Record final completion report and risk status in this file.
 
