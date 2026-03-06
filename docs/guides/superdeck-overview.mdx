@@ -66,13 +66,18 @@ Build presentations with Markdown and Flutter
 Register custom Flutter widgets and use them directly in Markdown:
 
 ```dart
-SuperDeckApp(
-  options: DeckOptions(
+final runtime = await SuperDeckRuntime.create(
+  source: const DeckSource.local(
+    slidesPath: 'slides.md',
+    watch: true,
+  ),
+  runtimeConfig: const DeckRuntimeConfig(),
+  presentation: DeckPresentation(
     widgets: const {
       'twitter': TwitterWidgetDefinition(),
     },
   ),
-)
+);
 ```
 
 Use in Markdown:
@@ -155,7 +160,7 @@ final customStyle = SlideStyle(
 );
 ```
 
-Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above. Use `customStyle` as `DeckOptions.baseStyle` or as a named style variant.
+Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above. Use `customStyle` as `DeckPresentation.baseStyle` or as a named style variant.
 
 **Styleable elements**
 
@@ -175,10 +180,10 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 
 ## How it works
 
-SuperDeck uses a two-stage build pipeline:
+SuperDeck uses a two-stage pipeline:
 
-1. **Build time**: The CLI parses your `slides.md` file, renders Mermaid diagrams to images, and generates asset manifests
-2. **Runtime**: Flutter renders the parsed slide data as widgets with full styling control
+1. **Local runtime build**: `DeckSource.local(...)` parses `slides.md`, renders Mermaid diagrams to images, and generates asset manifests
+2. **Runtime rendering**: Flutter renders the parsed slide data as widgets with full styling control
 
 This approach gives you fast hot-reload during development while ensuring optimized assets in production.
 

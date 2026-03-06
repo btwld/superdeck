@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 
-class CommentsPanel extends StatelessWidget {
-  const CommentsPanel({super.key, required this.comments});
+class NotesPanel extends StatelessWidget {
+  const NotesPanel({super.key, required this.notes});
 
-  final List<String> comments;
+  final List<String> notes;
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +17,12 @@ class CommentsPanel extends StatelessWidget {
       ),
       child: ListView.separated(
         padding: EdgeInsets.zero,
-        itemCount: comments.length,
-        itemBuilder: (context, index) => Text(comments[index]),
+        itemCount: notes.length,
+        itemBuilder: (context, index) => Text(notes[index]),
         separatorBuilder: (context, index) => const SizedBox(height: 10),
       ),
     );
   }
 }
+
+typedef CommentsPanel = NotesPanel;

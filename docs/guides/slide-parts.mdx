@@ -74,7 +74,7 @@ class DeckBackground extends StatelessWidget {
 
 ## Register slide parts
 
-Register your parts in `DeckOptions.parts`.
+Register your parts in `DeckPresentation.parts`.
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -82,19 +82,22 @@ import 'package:superdeck/superdeck.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SuperDeckApp.initialize();
-
-  runApp(
-    SuperDeckApp(
-      options: DeckOptions(
-        parts: SlideParts(
-          header: DeckHeader(),
-          footer: DeckFooter(),
-          background: DeckBackground(),
-        ),
+  final runtime = await SuperDeckRuntime.create(
+    source: const DeckSource.local(
+      slidesPath: 'slides.md',
+      watch: true,
+    ),
+    runtimeConfig: const DeckRuntimeConfig(),
+    presentation: DeckPresentation(
+      parts: SlideParts(
+        header: DeckHeader(),
+        footer: DeckFooter(),
+        background: DeckBackground(),
       ),
     ),
   );
+
+  runApp(SuperDeckApp(runtime: runtime));
 }
 ```
 
@@ -108,10 +111,10 @@ Common fields:
 - `slide.options.title`
 - `slide.options.style`
 - `slide.options.args` (frontmatter extras)
-- `slide.comments` (speaker notes)
+- `slide.notes` (speaker notes)
 
 ## Tips
 
 - Keep parts lightweight; they rebuild on every slide.
 - Handle missing frontmatter (`title` and `style` can be null).
-- Use `DeckOptions(debug: true)` while designing layouts.
+- Use `DeckPresentation(debug: true)` while designing layouts.

@@ -10,21 +10,27 @@ import 'package:superdeck_example/src/style.dart';
 import 'package:superdeck_example/src/templates.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
-String describeDeckControllerState(DeckController? controller) {
-  if (controller == null) {
-    return 'DeckController: null';
+SuperDeckRuntime? _runtime;
+
+String describeDeckState(SuperDeckHandle? handle) {
+  if (handle == null) {
+    return 'SuperDeckHandle: null';
   }
 
   return [
-    'DeckController state:',
-    '  isLoading=${controller.isLoading.value}',
-    '  hasError=${controller.hasError.value}',
-    '  error=${controller.error.value}',
-    '  totalSlides=${controller.totalSlides.value}',
-    '  currentIndex=${controller.currentIndex.value}',
-    '  isMenuOpen=${controller.isMenuOpen.value}',
-    '  isNotesOpen=${controller.isNotesOpen.value}',
+    'SuperDeckHandle state:',
+    '  isLoading=${handle.isLoading.value}',
+    '  hasError=${handle.hasError.value}',
+    '  error=${handle.error.value}',
+    '  totalSlides=${handle.totalSlides.value}',
+    '  currentIndex=${handle.currentIndex.value}',
+    '  isMenuOpen=${handle.isMenuOpen.value}',
+    '  isNotesOpen=${handle.isNotesOpen.value}',
   ].join('\n');
+}
+
+String describeDeckControllerState(SuperDeckHandle? handle) {
+  return describeDeckState(handle);
 }
 
 /// Test app widget that mirrors the production app configuration.
@@ -38,16 +44,23 @@ class TestApp extends StatelessWidget {
     WidgetsFlutterBinding.ensureInitialized();
     SignalsObserver.instance = null;
     WidgetsBinding.instance.ensureSemantics();
-    await SuperDeckApp.initialize();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SuperDeckApp(
-      options: DeckOptions(
+    _runtime = await SuperDeckRuntime.create(
+      source: const DeckSource.local(
+        slidesPath: 'slides.md',
+        watch: false,
+      ),
+      runtimeConfig: const DeckRuntimeConfig(
+        projectDir: '.',
+        outputDir: '.superdeck',
+        assetsPath: 'assets',
+      ),
+      presentation: DeckPresentation(
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
-        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
+        styles: {
+          'announcement': announcementStyle(),
+          'quote': quoteStyle(),
+        },
         templates: {
           'corporate': corporateTemplate(),
           'minimal': minimalTemplate(),
@@ -57,26 +70,37 @@ class TestApp extends StatelessWidget {
           footer: FooterPart(),
           background: BackgroundPart(),
         ),
-        // Integration tests validate runtime behavior, not live file watching.
-        watchForChanges: false,
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final runtime = _runtime;
+    if (runtime == null) {
+      throw StateError('Test runtime was not initialized');
+    }
+    return SuperDeckApp(runtime: runtime);
+  }
 }
 
-/// Finds the DeckController from the widget tree.
+/// Finds the SuperDeckHandle from the widget tree.
 ///
-/// Returns null if the controller cannot be found.
-DeckController? findDeckController(WidgetTester tester) {
+/// Returns null if the handle cannot be found.
+SuperDeckHandle? findDeckHandle(WidgetTester tester) {
   try {
     final scaffoldFinder = find.byType(Scaffold);
     if (scaffoldFinder.evaluate().isEmpty) return null;
 
     final element = tester.element(scaffoldFinder.first);
-    return DeckController.of(element);
+    return SuperDeck.of(element);
   } catch (e) {
     return null;
   }
+}
+
+SuperDeckHandle? findDeckController(WidgetTester tester) {
+  return findDeckHandle(tester);
 }
 
 /// Extension on WidgetTester for common integration test operations.
@@ -121,24 +145,24 @@ extension IntegrationTestExtensions on WidgetTester {
 
   /// Pumps the test app and waits for it to fully load.
   ///
-  /// Returns the DeckController for further assertions.
-  Future<DeckController?> pumpTestApp() async {
+  /// Returns the SuperDeckHandle for further assertions.
+  Future<SuperDeckHandle?> pumpTestApp() async {
     await pumpWidget(const TestApp());
     await pumpFor(const Duration(milliseconds: 200));
 
     await pumpUntil(
-      () => findDeckController(this) != null,
+      () => findDeckHandle(this) != null,
       timeout: const Duration(seconds: 15),
-      debugLabel: 'DeckController to mount',
+      debugLabel: 'SuperDeckHandle to mount',
       onTimeout: () => _startupDiagnostics(),
     );
 
-    final controller = findDeckController(this);
+    final controller = findDeckHandle(this);
     expect(
       controller,
       isNotNull,
       reason:
-          'DeckController was not found after startup.\n'
+          'SuperDeckHandle was not found after startup.\n'
           'Diagnostics:\n${_startupDiagnostics()}',
     );
     if (controller == null) return null;
@@ -148,18 +172,18 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   /// Waits for the app to finish loading slides.
-  Future<void> waitForSlidesLoaded(DeckController controller) async {
+  Future<void> waitForSlidesLoaded(SuperDeckHandle controller) async {
     await pumpUntil(
       () => !controller.isLoading.value,
       timeout: const Duration(seconds: 20),
       debugLabel: 'slides to finish loading',
-      onTimeout: () => describeDeckControllerState(controller),
+      onTimeout: () => describeDeckState(controller),
     );
 
     if (controller.hasError.value) {
       fail(
         'Deck failed to load: ${controller.error.value}\n'
-        '${describeDeckControllerState(controller)}',
+        '${describeDeckState(controller)}',
       );
     }
 
@@ -167,21 +191,21 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   /// Navigates to a specific slide and waits for transition to complete.
-  Future<void> navigateToSlide(DeckController controller, int index) async {
+  Future<void> navigateToSlide(SuperDeckHandle controller, int index) async {
     await controller.goToSlide(index);
     await pumpUntil(
       () => controller.currentIndex.value == index,
       timeout: const Duration(seconds: 5),
       debugLabel: 'navigation to slide $index',
-      onTimeout: () => describeDeckControllerState(controller),
+      onTimeout: () => describeDeckState(controller),
     );
     await pumpFor(const Duration(milliseconds: 200));
   }
 
   String _startupDiagnostics() {
-    final controller = findDeckController(this);
+    final controller = findDeckHandle(this);
     return [
-      describeDeckControllerState(controller),
+      describeDeckState(controller),
       'Scaffold count=${find.byType(Scaffold).evaluate().length}',
       'Error text count=${find.textContaining('Error loading presentation').evaluate().length}',
     ].join('\n');

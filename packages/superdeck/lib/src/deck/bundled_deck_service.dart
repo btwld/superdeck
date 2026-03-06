@@ -11,7 +11,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 class BundledDeckService extends DeckService {
   BundledDeckService({
     required super.configuration,
-    this.deckAssetPath = '.superdeck/superdeck.json',
+    this.deckAssetPath = DeckArtifacts.bundledDeckAssetPath,
   });
 
   final String deckAssetPath;

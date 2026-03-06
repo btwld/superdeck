@@ -1,3 +1,5 @@
+import 'package:superdeck_core/superdeck_core.dart';
+
 import '../path_service.dart';
 
 /// Centralized file and directory path constants.
@@ -37,10 +39,10 @@ abstract final class Paths {
   // ---------------------------------------------------------------------------
 
   /// Assets subdirectory name.
-  static const assetsDir = 'assets';
+  static const assetsDir = DeckArtifacts.assetsDir;
 
   /// Main deck JSON output file name.
-  static const deckJsonFile = 'superdeck.json';
+  static const deckJsonFile = DeckArtifacts.deckJsonFile;
 
   /// Debug file for the last prompt sent to the AI.
   static const lastPromptFile = 'last_prompt.txt';

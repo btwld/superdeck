@@ -6,8 +6,8 @@ import 'package:superdeck/superdeck.dart';
 import 'bootstrap/genui_bootstrap.dart';
 import 'routes.dart';
 
-/// SuperDeck plugin that installs GenUI routes, initialization, and actions.
-class GenUiPlugin extends SuperDeckPlugin {
+/// SuperDeck extension that installs GenUI routes, initialization, and actions.
+class GenUiPlugin extends DeckExtension {
   const GenUiPlugin();
 
   @override

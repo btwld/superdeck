@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 /// Platform-aware path resolution service.
 ///
@@ -49,10 +50,10 @@ class PathService {
   }
 
   /// Full path to assets directory.
-  String get assetsPath => p.join(superdeckDir, 'assets');
+  String get assetsPath => p.join(superdeckDir, DeckArtifacts.assetsDir);
 
   /// Full path to deck JSON file.
-  String get deckJsonPath => p.join(superdeckDir, 'superdeck.json');
+  String get deckJsonPath => p.join(superdeckDir, DeckArtifacts.deckJsonFile);
 
   /// Full path to last prompt file.
   String get lastPromptPath => p.join(superdeckDir, 'last_prompt.txt');

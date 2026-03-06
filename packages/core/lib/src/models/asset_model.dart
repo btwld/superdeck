@@ -80,9 +80,16 @@ class GeneratedAsset {
     'type': Ack.string(),
   });
 
-  static GeneratedAsset thumbnail(String slideKey) {
+  static GeneratedAsset thumbnail(
+    String slideKey, {
+    String? renderSignature,
+  }) {
+    final name = renderSignature == null || renderSignature.isEmpty
+        ? slideKey
+        : '${slideKey}_$renderSignature';
+
     return GeneratedAsset(
-      name: slideKey,
+      name: name,
       extension: AssetExtension.png,
       type: 'thumbnail',
     );

@@ -10,6 +10,7 @@ Agents should read this file before substantive work and update it as work progr
 - Replace the old `SuperDeckApp(options, configuration?)` primary API with `SuperDeckRuntime.create(...)` plus `SuperDeckApp(runtime: ...)`.
 - Keep the old implementation internals only as migration scaffolding where needed to avoid a half-migrated runtime.
 - Start code refactoring only after the planning/docs pass reflects the approved API-first surface.
+- Review cross-codebase drift and file-organization semantics before landing the runtime refactor, so the migration order is explicit.
 
 ## Canonical Planning Docs
 - `.planning/rewrite-v2-full-plan.md`
@@ -34,6 +35,12 @@ Agents should read this file before substantive work and update it as work progr
   - updated the umbrella rewrite docs to treat the runtime-first API as the approved direction
   - updated public docs/READMEs/getting-started/reference content to teach `SuperDeckRuntime.create(...)`, `DeckSource`, `DeckRuntimeConfig`, and `DeckPresentation`
   - updated CLI docs to remove `build` / `watch` as the intended public day-to-day workflow
+- Drift review before refactor has identified the main migration risks:
+  - `DeckOptions` is deeply embedded across runtime internals, tests, demo code, docs, and `packages/genui`, so it is not a safe rename-only candidate
+  - `DeckConfiguration` in `packages/core` currently mixes local path helpers, artifact filenames, and external config discovery semantics, so it should not be renamed in place to the new runtime API
+  - `SuperDeckPlugin` is a good rename-first candidate because it is conceptually close to `DeckExtension`
+  - `comments` -> `notes` and `.v2.json` artifact filename changes are broad cross-package migrations and should be isolated from the initial runtime bootstrap refactor to avoid masking regressions
+  - `packages/superdeck/lib/src/deck/` is semantically overloaded and should be split by responsibility as part of the runtime API reset
 - The direction has now shifted from implementation-first to API-first design review:
   - the current planning set is still useful as code-backed inventory and migration context
   - it should no longer be treated as sufficient proof that the v2 public API was designed from first principles
@@ -115,6 +122,46 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-05
+- Started the code-level v2 rewrite migration from the approved runtime-first API surface:
+  - introduced initial public v2 types in `packages/superdeck`:
+    - `SuperDeckRuntime`
+    - `DeckSource`
+    - `DeckRuntimeConfig`
+    - `DeckPresentation`
+    - `DeckExtension`
+    - `SuperDeckHandle`
+  - rewired `SuperDeckApp` to `SuperDeckApp(runtime: runtime)` and removed `SuperDeckApp.initialize()` from the primary public surface
+  - adapted `DeckControllerBuilder` to consume `SuperDeckRuntime` while keeping controller/watch internals as migration scaffolding
+  - started the contract migration in `packages/core` and `packages/builder`:
+    - canonical slide note field renamed from `comments` to `notes`
+    - canonical block directive normalized through migration to `@block`
+    - shared v2 artifact filename constants added for `.v2.json` outputs
+  - started downstream migration in `demo` and `packages/genui` toward runtime-first bootstrap and away from `package:superdeck/src/...` imports
+  - current known break/fix queue after the first implementation pass:
+    - generated/schema artifacts still need synchronization with the new `notes` / `block` / `.v2.json` contract
+    - tests and fixtures still contain broad legacy references to `comments`, `@column`, `DeckOptions`, and old artifact filenames
+    - public export cleanup has intentionally exposed remaining consumers that still depend on removed v1 primary APIs
+  - next execution order is now:
+    - synchronize core generated/schema outputs
+    - finish consumer/test migration
+    - run codegen, analysis, targeted tests, then full validation
+- Continued the pre-refactor audit to widen the drift map beyond bootstrap-only concerns:
+  - reviewing public barrels, controller ownership, PDF/export surfaces, thumbnail lifecycle, IO/config helpers, and cross-package model/type naming
+  - validating whether any rename-first migrations are safer than adapter-first introduction of the new runtime API
+  - collecting concrete file references so the runtime refactor can be sequenced without drifting back toward the old widget-first/controller-first design
+  - confirmed additional cross-package drift:
+    - `genui` still consumes `DeckOptions`, `DeckConfiguration`, `SuperDeckApp.initialize()`, and even `package:superdeck/src/...` implementation imports for thumbnail/render helpers
+    - demo and integration-test harnesses still teach/find `DeckController` directly, so docs are ahead of executable examples right now
+    - bundled/runtime artifact paths still hardcode legacy names like `superdeck.json` and `generated_assets.json` across `core`, `superdeck`, `cli`, and `genui`
+    - PDF export and thumbnail flows currently reach into `DeckController`/`SlideConfiguration` directly, so they need handle/runtime adapters rather than public controller preservation
+  - migration recommendation is now explicit:
+    - rename-first only for true 1:1 semantics (`SuperDeckPlugin` -> `DeckExtension`, `comments` -> `notes`, artifact filename versioning)
+    - use adapter-first introduction for ownership splits (`DeckOptions`, `DeckConfiguration`, runtime bootstrap, controller access)
+- Ran the pre-refactor drift and organization review:
+  - confirmed the largest semantic mismatch is that `DeckOptions` and `DeckConfiguration` are not simple rename targets; both need ownership changes, not just new names
+  - confirmed `SuperDeckPlugin` -> `DeckExtension` is a cleaner rename-first migration because the concept is already close
+  - confirmed `comments` -> `notes` and `.v2.json` artifact renames touch builder/core/runtime/genui/tests and should be isolated from the bootstrap refactor
+  - confirmed `packages/superdeck/lib/src/deck/` currently mixes public composition types, runtime orchestration, controller state, and navigation internals, so file placement should be cleaned up during the refactor
 - Reconciled planning and public docs before code refactoring:
   - created `.planning/rewrite-v2-api-surface.md` as the canonical v2 runtime/bootstrap API doc
   - updated the major rewrite planning docs to treat `SuperDeckRuntime.create(...)` plus `SuperDeckApp(runtime: ...)` as the approved surface
@@ -379,6 +426,45 @@ Agents should read this file before substantive work and update it as work progr
   - the typed parser contract now explicitly includes block-level `align` / `flex` / `scrollable` fields for both markdown and widget blocks
 - Starting a second audit pass over the rewrite planning docs to verify non-parser runtime, CLI, and API claims against the current implementation.
 - Starting a parser-focused feature audit to validate `.planning/rewrite-v2-parser-semantics.md` against code, tests, and user docs while ignoring package-layout planning for now.
+- Started the v2 rewrite implementation pass against the new runtime-first/public-contract surface.
+- Landed the current package-level migration fixes across `core`, `builder`, `superdeck`, `genui`, and `demo` helpers:
+  - `notes` replaced serialized/runtime `comments` in core models, builders, schemas, fixtures, and UI tests
+  - canonical block type/tests now use `block`; legacy `@column` continues through the builder migration path instead of the canonical parser contract
+  - v2 artifact filenames now flow through shared constants and updated tests (`superdeck.v2.json`, `superdeck_full.v2.json`, `generated_assets.v2.json`, `build_status.v2.json`)
+  - runtime handle gained the missing public-facing control hooks used by the v2 UI (`exportPdf`, thumbnail access/generation helpers, readonly navigation affordances)
+  - `PresentationDeckHost` now has a lightweight runtime-test seam, and `SuperDeckRuntime.forTesting(...)` exists for runtime-first widget tests
+- Fixed a real builder migration hole:
+  - `SlideProcessor` now runs the legacy markdown migrator before section/note parsing so legacy `@column` input is normalized into the canonical v2 builder contract
+- Fixed a runtime/testability issue:
+  - runtime dependency initialization now short-circuits in `FLUTTER_TEST`, avoiding heavyweight syntax/window bootstrap during runtime-first widget tests
+- Validation completed so far:
+  - `fvm dart analyze packages/core packages/builder packages/superdeck packages/genui demo --fatal-infos`
+  - `packages/core`: `fvm dart test`
+  - `packages/builder`: `fvm dart test`
+  - `packages/superdeck`: `fvm flutter test`
+  - `packages/genui`: `fvm flutter test`
+  - result: all of the above are green
+- Remaining validation/work queue:
+  - run repo-level generation/contract/analyze/test commands (`melos run build_runner:build`, `melos run contracts:check`, `melos run analyze`, broader test/integration commands)
+  - continue consumer migration/verification in `cli` and `demo`
+  - remove temporary compatibility shims only after the broader validation pass is green
+- Additional rewrite guardrails locked during implementation:
+  - treat block widget rendering and hero behavior as protected surfaces; avoid deep changes unless a failing test or obvious localized fix requires it
+  - add explicit drift-audit tasks before/after major migration slices
+  - add a full post-migration review/removal audit so legacy consumers/imports/artifact names are deleted carefully only after replacement paths are validated
+- Broader validation/checkpoint after the latest demo + web-path fixes:
+  - non-interactive build-runner pass completed in `packages/builder` and `packages/genui`
+  - `packages/core`: `fvm dart run tool/export_contract_schemas.dart --check` is green
+  - repo analysis: `fvm dart analyze packages/core packages/builder packages/superdeck packages/genui packages/cli demo --fatal-infos` is green
+  - repo unit/widget tests: `fvm flutter pub run melos exec -- fvm flutter test` succeeded
+  - `demo`: `fvm dart run superdeck_cli:main build` succeeded and generated 30 slides
+  - `demo`: `fvm flutter build web --release` succeeded after fixing the demo bootstrap source split
+  - `demo/e2e`: `npm run test:smoke` is green after updating the smoke harness for Flutter web accessibility opt-in
+- Important runtime/demo fix landed from the validation pass:
+  - `demo/lib/main.dart` now uses `DeckSource.bundle()` on web and `DeckSource.local(...)` on non-web, matching the approved runtime contract and fixing web boot failures
+- Remaining environment-level blocker:
+  - CI-default Linux integration command cannot be validated locally because this machine exposes only `macos` and `chrome`, not a Linux device
+  - direct local macOS integration also fails before app startup because Flutter/Xcode request `platform=macOS, arch=arm64` while the available desktop destination on this host is `x86_64` only
 
 ## Update Rules
 - Keep entries concise and factual.

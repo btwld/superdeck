@@ -254,7 +254,7 @@ void main() {
         expect(controller.slides.value, hasLength(1));
         expect(
           controller.slides.value.first.thumbnailFile,
-          'thumbnail_web-config.png',
+          allOf(startsWith('thumbnail_web-config_'), endsWith('.png')),
         );
       });
 
@@ -291,7 +291,10 @@ void main() {
             expect(tempController.slides.value, hasLength(1));
             expect(
               tempController.slides.value.first.thumbnailFile,
-              'thumbnail_service-fallback.png',
+              allOf(
+                startsWith('thumbnail_service-fallback_'),
+                endsWith('.png'),
+              ),
             );
           } finally {
             tempController.dispose();

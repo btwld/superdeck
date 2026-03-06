@@ -12,27 +12,27 @@ void main() {
         expect(slide.key, 'test-key');
         expect(slide.options, isNull);
         expect(slide.sections, isEmpty);
-        expect(slide.comments, isEmpty);
+        expect(slide.notes, isEmpty);
       });
 
       test('creates with all parameters', () {
         final sections = [
           SectionBlock([ContentBlock('Content')]),
         ];
-        final comments = ['Speaker note 1', 'Speaker note 2'];
+        final notes = ['Speaker note 1', 'Speaker note 2'];
         final options = const SlideOptions(title: 'Title', style: 'custom');
 
         final slide = Slide(
           key: 'full-key',
           options: options,
           sections: sections,
-          comments: comments,
+          notes: notes,
         );
 
         expect(slide.key, 'full-key');
         expect(slide.options?.title, 'Title');
         expect(slide.sections.length, 1);
-        expect(slide.comments.length, 2);
+        expect(slide.notes.length, 2);
       });
 
       group('copyWith', () {
@@ -62,11 +62,11 @@ void main() {
           expect(copy.sections.length, 1);
         });
 
-        test('copies with new comments', () {
+        test('copies with new notes', () {
           const original = Slide(key: 'key');
-          final copy = original.copyWith(comments: ['Note 1', 'Note 2']);
+          final copy = original.copyWith(notes: ['Note 1', 'Note 2']);
 
-          expect(copy.comments, ['Note 1', 'Note 2']);
+          expect(copy.notes, ['Note 1', 'Note 2']);
         });
 
         test('preserves values when not specified', () {
@@ -76,14 +76,14 @@ void main() {
             sections: [
               SectionBlock([ContentBlock('Content')]),
             ],
-            comments: ['Note'],
+            notes: ['Note'],
           );
           final copy = original.copyWith();
 
           expect(copy.key, original.key);
           expect(copy.options, original.options);
           expect(copy.sections.length, original.sections.length);
-          expect(copy.comments, original.comments);
+          expect(copy.notes, original.notes);
         });
       });
 
@@ -94,7 +94,7 @@ void main() {
 
           expect(map['key'], 'minimal');
           expect(map['sections'], isEmpty);
-          expect(map['comments'], isEmpty);
+          expect(map['notes'], isEmpty);
           expect(map.containsKey('options'), isFalse);
         });
 
@@ -124,11 +124,11 @@ void main() {
           expect((map['sections'] as List).length, 2);
         });
 
-        test('serializes slide with comments', () {
-          const slide = Slide(key: 'with-comments', comments: ['Note 1']);
+        test('serializes slide with notes', () {
+          const slide = Slide(key: 'with-notes', notes: ['Note 1']);
           final map = slide.toMap();
 
-          expect(map['comments'], ['Note 1']);
+          expect(map['notes'], ['Note 1']);
         });
       });
 
@@ -140,7 +140,7 @@ void main() {
           expect(slide.key, 'from-map');
           expect(slide.options, isNull);
           expect(slide.sections, isEmpty);
-          expect(slide.comments, isEmpty);
+          expect(slide.notes, isEmpty);
         });
 
         test('deserializes map with options', () {
@@ -161,7 +161,7 @@ void main() {
               {
                 'type': 'section',
                 'blocks': [
-                  {'type': 'column', 'content': 'Block content'},
+                  {'type': 'block', 'content': 'Block content'},
                 ],
               },
             ],
@@ -172,14 +172,14 @@ void main() {
           expect(slide.sections[0].blocks.length, 1);
         });
 
-        test('deserializes map with comments', () {
+        test('deserializes map with notes', () {
           final map = {
-            'key': 'comments-key',
-            'comments': ['Comment 1', 'Comment 2'],
+            'key': 'notes-key',
+            'notes': ['Comment 1', 'Comment 2'],
           };
           final slide = Slide.fromMap(map);
 
-          expect(slide.comments, ['Comment 1', 'Comment 2']);
+          expect(slide.notes, ['Comment 1', 'Comment 2']);
         });
 
         test('tolerates null options for legacy payloads', () {
@@ -209,7 +209,7 @@ void main() {
             sections: [
               SectionBlock([ContentBlock('Section content')]),
             ],
-            comments: ['RT Comment'],
+            notes: ['RT Comment'],
           );
 
           final restored = Slide.fromMap(original.toMap());
@@ -217,7 +217,7 @@ void main() {
           expect(restored.key, original.key);
           expect(restored.options?.title, original.options?.title);
           expect(restored.sections.length, original.sections.length);
-          expect(restored.comments, original.comments);
+          expect(restored.notes, original.notes);
         });
       });
 
@@ -237,7 +237,7 @@ void main() {
               // Note: 'blocks' is required to satisfy Google AI schema requirements
               {'type': 'section', 'blocks': []},
             ],
-            'comments': ['Note'],
+            'notes': ['Note'],
           };
           final slide = Slide.parse(map);
 
@@ -314,8 +314,8 @@ void main() {
 
       group('equality', () {
         test('equal slides are equal', () {
-          const slide1 = Slide(key: 'same', comments: ['note']);
-          const slide2 = Slide(key: 'same', comments: ['note']);
+          const slide1 = Slide(key: 'same', notes: ['note']);
+          const slide2 = Slide(key: 'same', notes: ['note']);
 
           expect(slide1, slide2);
           expect(slide1.hashCode, slide2.hashCode);
@@ -358,9 +358,9 @@ void main() {
           expect(slide1, isNot(slide2));
         });
 
-        test('different comments make slides unequal', () {
-          const slide1 = Slide(key: 'key', comments: ['A']);
-          const slide2 = Slide(key: 'key', comments: ['B']);
+        test('different notes make slides unequal', () {
+          const slide1 = Slide(key: 'key', notes: ['A']);
+          const slide2 = Slide(key: 'key', notes: ['B']);
 
           expect(slide1, isNot(slide2));
         });
@@ -377,7 +377,7 @@ void main() {
             'key': 'full',
             'options': {'title': 'T'},
             'sections': [],
-            'comments': ['c'],
+            'notes': ['c'],
           });
           expect(result.isOk, isTrue);
         });

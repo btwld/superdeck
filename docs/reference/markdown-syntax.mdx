@@ -14,7 +14,7 @@ Each slide can include YAML front matter.
 Supported keys:
 
 - `title`: Slide title used in navigation and exports.
-- `style`: Named style variant from `DeckOptions.styles`.
+- `style`: Named style variant from `DeckPresentation.styles`.
 - `template`: Optional template name. Use `none` to opt out of a configured default template.
 - Custom keys: Available through `slide.options.args['keyName']`.
 
@@ -175,7 +175,7 @@ void main() {
 ```
 ````
 
-In the standard `superdeck build` and watch flows, fenced `dart` blocks are reformatted during build before the slide is rendered.
+In the standard local runtime build flow, fenced `dart` blocks are reformatted before the slide is rendered.
 
 When you pass fenced-code options, use the braced header form:
 

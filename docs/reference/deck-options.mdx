@@ -1,92 +1,126 @@
 ---
-title: DeckOptions reference
-description: Complete API reference for configuring SuperDeck presentations
+title: Runtime API reference
+description: Complete API reference for bootstrapping and configuring SuperDeck v2
 ---
 
-# DeckOptions reference
+# Runtime API reference
 
-`DeckOptions` configures `SuperDeckApp` styling, custom widgets, slide parts, and debug visuals.
+SuperDeck v2 is configured through three public types:
 
-## Constructor
+- `DeckSource` for content origin and watch behavior
+- `DeckRuntimeConfig` for startup-only operational paths
+- `DeckPresentation` for render composition, custom widgets, templates, parts, and extensions
+
+The canonical bootstrap shape is:
 
 ```dart
-const DeckOptions({
-  SlideStyle? baseStyle,
-  Map<String, SlideStyle> styles = const {},
-  Map<String, WidgetDefinition> widgets = const {},
-  SlideParts parts = const SlideParts(),
-  bool debug = false,
-  bool watchForChanges = false,
-});
+Future<void> main() async {
+  final runtime = await SuperDeckRuntime.create(
+    source: const DeckSource.local(
+      slidesPath: 'slides.md',
+      watch: true,
+    ),
+    runtimeConfig: const DeckRuntimeConfig(),
+    presentation: DeckPresentation(
+      widgets: const {
+        'twitter': TwitterWidgetDefinition(),
+      },
+      parts: SlideParts(
+        header: CustomHeaderPart(),
+        footer: CustomFooterPart(),
+        background: CustomBackgroundPart(),
+      ),
+      debug: true,
+    ),
+  );
+
+  runApp(SuperDeckApp(runtime: runtime));
+}
 ```
 
-## Properties
+## `DeckSource`
 
-### `baseStyle`
-**Type:** `SlideStyle?` | **Default:** `null`
-
-Base style for all slides.
+### `DeckSource.local`
+Use a local markdown source and optionally watch it for changes.
 
 ```dart
-DeckOptions(
-  baseStyle: SlideStyle(),
+const DeckSource.local(
+  slidesPath: 'slides.md',
+  watch: true,
 )
 ```
 
-### `styles`
-**Type:** `Map<String, SlideStyle>` | **Default:** `{}`
-
-Named style variants for specific slides.
+### `DeckSource.bundle`
+Use prebuilt bundled artifacts.
 
 ```dart
-DeckOptions(
+const DeckSource.bundle(
+  deckAssetPath: '.superdeck/superdeck.v2.json',
+)
+```
+
+## `DeckRuntimeConfig`
+
+Startup-only operational paths:
+
+```dart
+const DeckRuntimeConfig(
+  projectDir: '.',
+  outputDir: '.superdeck',
+  assetsPath: 'assets',
+)
+```
+
+## `DeckPresentation`
+
+Render composition and extension points:
+
+```dart
+DeckPresentation(
+  baseStyle: SlideStyle(),
   styles: {
     'title': SlideStyle(),
   },
+  widgets: const {
+    'twitter': TwitterWidgetDefinition(),
+  },
+  parts: SlideParts(
+    header: CustomHeaderPart(),
+    footer: CustomFooterPart(),
+    background: CustomBackgroundPart(),
+  ),
+  debug: true,
 )
 ```
 
-Use in slides:
+### `baseStyle`
+Base style for all slides.
+
+### `styles`
+Named style variants for frontmatter such as:
+
 ```markdown
 ---
 style: title
 ---
-
-# This slide uses the 'title' style
 ```
 
 ### `widgets`
-**Type:** `Map<String, WidgetDefinition>` | **Default:** `{}`
+Custom widget definitions keyed by widget name.
 
-Custom widget definitions.
+### `parts`
+Slide-wide header, footer, and background parts.
 
-```dart
-DeckOptions(
-  widgets: {
-    'twitter': TwitterWidgetDefinition(),
-  },
-)
-```
+### `templates` and `defaultTemplate`
+Named slide templates and the deck-level fallback template.
 
-Use in Markdown:
+### `debug`
+Enables visual debugging aids for slide layout design.
 
-```markdown
-@widget {
-  name: "twitter"
-  username: "flutterdev"
-  tweetId: "123"
-}
-```
+### `extensions`
+Behavioral/runtime add-ons that replace the old plugin-first surface.
 
-Or shorthand:
-```markdown
-@twitter {
-  username: "flutterdev"
-  tweetId: "123"
-}
-```
-
-#### WidgetDefinition example (simple map args)
+## `WidgetDefinition` example
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -108,99 +142,10 @@ class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
 }
 ```
 
-### `parts`
-**Type:** `SlideParts` | **Default:** `const SlideParts()`
-
-Slide components (header, footer, background).
-
-```dart
-DeckOptions(
-  parts: SlideParts(
-    header: CustomHeaderPart(),     // PreferredSizeWidget
-    footer: CustomFooterPart(),     // PreferredSizeWidget
-    background: CustomBackgroundPart(), // Widget
-  ),
-)
-```
-
-See [Custom Slide Parts Guide](/guides/slide-parts) for examples.
-
-### `debug`
-**Type:** `bool` | **Default:** `false`
-
-Enables visual debugging aids.
-
-```dart
-DeckOptions(
-  debug: true,
-)
-```
-
-### `watchForChanges`
-**Type:** `bool` | **Default:** `false`
-
-Enables file watching for automatic deck rebuilds when supported by your
-runtime flow.
-
-```dart
-DeckOptions(
-  watchForChanges: true,
-)
-```
-
-## Complete configuration example
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:superdeck/superdeck.dart';
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SuperDeckApp(
-      options: DeckOptions(
-        // Custom widgets (registered by name)
-        widgets: const {
-          'twitter': TwitterWidgetDefinition(),
-        },
-
-        // Optional: provide slide chrome (header/footer/background)
-        parts: SlideParts(
-          header: CustomHeaderPart(),
-          footer: CustomFooterPart(),
-          background: CustomBackgroundPart(),
-        ),
-
-        // Debug mode for development
-        debug: kDebugMode,
-      ),
-    );
-  }
-}
-```
-
 ## Best practices
 
-### Styling
-1. Start with `baseStyle` for defaults
-2. Use named styles sparingly
-3. Maintain consistent palette and typography
-4. Test across different screen sizes
-
-### Custom widgets
-1. Validate in `parse()` early
-2. Provide explicit defaults
-3. Throw helpful errors (rendered on-slide)
-4. Keep widgets focused
-
-### Performance
-1. Prefer stateless widgets
-2. Cache expensive operations
-3. Optimize image sizes and formats
-4. Test with real content
-
-### Development
-1. Enable `debug: true` during development
-2. Use hot reload with `superdeck build --watch`
-3. Version control style definitions
-4. Document custom components
+1. Use `DeckSource.local(watch: true)` during development.
+2. Keep `DeckRuntimeConfig` limited to startup-only operational concerns.
+3. Put styles, widgets, parts, templates, and debug visuals on `DeckPresentation`.
+4. Keep behavioral add-ons in `DeckPresentation.extensions`.
+5. Enable `debug: true` while designing layouts.

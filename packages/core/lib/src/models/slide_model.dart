@@ -9,7 +9,7 @@ part 'slide_model.g.dart';
 /// Represents a single slide in a presentation.
 ///
 /// A slide contains sections of content blocks, optional configuration options,
-/// and any speaker notes or comments. Each slide is uniquely identified by a key.
+/// and any speaker notes. Each slide is uniquely identified by a key.
 @AckModel(additionalProperties: true)
 class Slide {
   /// Unique identifier for this slide, typically generated from content hash.
@@ -21,27 +21,27 @@ class Slide {
   /// List of content sections that make up this slide.
   final List<SectionBlock> sections;
 
-  /// Speaker notes or comments associated with this slide.
-  final List<String> comments;
+  /// Speaker notes associated with this slide.
+  final List<String> notes;
 
   const Slide({
     required this.key,
     this.options,
     this.sections = const [],
-    this.comments = const [],
+    this.notes = const [],
   });
 
   Slide copyWith({
     String? key,
     SlideOptions? options,
     List<SectionBlock>? sections,
-    List<String>? comments,
+    List<String>? notes,
   }) {
     return Slide(
       key: key ?? this.key,
       options: options ?? this.options,
       sections: sections ?? this.sections,
-      comments: comments ?? this.comments,
+      notes: notes ?? this.notes,
     );
   }
 
@@ -50,7 +50,7 @@ class Slide {
       'key': key,
       if (options != null) 'options': options!.toMap(),
       'sections': sections.map((s) => s.toMap()).toList(),
-      'comments': comments,
+      'notes': notes,
     };
   }
 
@@ -68,7 +68,7 @@ class Slide {
                 SectionBlock.fromMap(Map<String, Object?>.from(section as Map)),
           )
           .toList(),
-      comments: (map['comments'] as List<dynamic>? ?? const []).cast<String>(),
+      notes: (map['notes'] as List<dynamic>? ?? const []).cast<String>(),
     );
   }
 
@@ -76,7 +76,7 @@ class Slide {
   static final schema = slideSchema.extend({
     'options': SlideOptions.schema.optional(),
     'sections': Ack.list(sectionBlockSchema).optional(),
-    'comments': Ack.list(Ack.string()).optional(),
+    'notes': Ack.list(Ack.string()).optional(),
   });
 
   static Slide parse(Map<String, Object?> map) {
@@ -121,14 +121,14 @@ ${error.toString()}
           key == other.key &&
           options == other.options &&
           const DeepCollectionEquality().equals(sections, other.sections) &&
-          const ListEquality().equals(comments, other.comments);
+          const ListEquality().equals(notes, other.notes);
 
   @override
   int get hashCode => Object.hash(
     key,
     options,
     const DeepCollectionEquality().hash(sections),
-    const ListEquality().hash(comments),
+    const ListEquality().hash(notes),
   );
 }
 

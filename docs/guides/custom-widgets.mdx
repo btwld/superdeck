@@ -5,7 +5,8 @@ description: Learn how to create and use custom Flutter widgets in SuperDeck pre
 
 # Custom widgets guide
 
-Render custom Flutter widgets from Markdown. Register widgets in `DeckOptions.widgets`, then use them in `slides.md`.
+Render custom Flutter widgets from Markdown. Register widgets in
+`DeckPresentation.widgets`, then use them in `slides.md`.
 
 ## Markdown syntax
 
@@ -80,7 +81,7 @@ class TwitterDefinition extends WidgetDefinition<TwitterArgs> {
 }
 ```
 
-## Register widgets in `DeckOptions`
+## Register widgets in `DeckPresentation`
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -88,17 +89,20 @@ import 'package:superdeck/superdeck.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SuperDeckApp.initialize();
-
-  runApp(
-    SuperDeckApp(
-      options: DeckOptions(
-        widgets: const {
-          'twitter': TwitterWidgetDefinition(),
-        },
-      ),
+  final runtime = await SuperDeckRuntime.create(
+    source: const DeckSource.local(
+      slidesPath: 'slides.md',
+      watch: true,
+    ),
+    runtimeConfig: const DeckRuntimeConfig(),
+    presentation: DeckPresentation(
+      widgets: const {
+        'twitter': TwitterWidgetDefinition(),
+      },
     ),
   );
+
+  runApp(SuperDeckApp(runtime: runtime));
 }
 ```
 
@@ -146,7 +150,7 @@ Widget build(BuildContext context, TwitterArgs args) {
 
 ## Troubleshooting
 
-- **"Widget not found"** - Verify the name is registered in `DeckOptions.widgets`
+- **"Widget not found"** - Verify the name is registered in `DeckPresentation.widgets`
 - **Parse/build errors** - SuperDeck renders error details with stack trace on slide
 
 ## Notes

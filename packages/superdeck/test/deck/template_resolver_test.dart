@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck/src/deck/template_resolver.dart';
 import 'package:superdeck/superdeck.dart';
 

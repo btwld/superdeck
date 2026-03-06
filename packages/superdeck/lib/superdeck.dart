@@ -18,18 +18,27 @@ export 'package:superdeck/src/styling/styling.dart';
 export 'package:superdeck/src/ui/superdeck_app.dart';
 export 'package:superdeck/src/ui/app_shell.dart';
 
+// Runtime
+export 'package:superdeck/src/runtime/deck_source.dart';
+export 'package:superdeck/src/runtime/deck_runtime_config.dart';
+export 'package:superdeck/src/runtime/superdeck_context.dart';
+export 'package:superdeck/src/runtime/superdeck_handle.dart';
+export 'package:superdeck/src/runtime/superdeck_runtime.dart';
+
+// Presentation
+export 'package:superdeck/src/presentation/deck_extension.dart';
+export 'package:superdeck/src/presentation/deck_presentation.dart';
+export 'package:superdeck/src/presentation/presentation_slide_builder.dart';
+
 // Deck
-export 'package:superdeck/src/deck/deck_controller.dart';
-export 'package:superdeck/src/deck/deck_options.dart';
-export 'package:superdeck/src/deck/deck_controller_builder.dart';
 export 'package:superdeck/src/deck/slide_configuration.dart';
 export 'package:superdeck/src/deck/slide_template.dart';
-export 'package:superdeck/src/deck/superdeck_plugin.dart';
 export 'package:superdeck/src/deck/template_exception.dart';
 export 'package:superdeck/src/deck/widget_definition.dart';
 
 // Export
 export 'package:superdeck/src/export/async_thumbnail.dart';
+export 'package:superdeck/src/export/slide_capture_service.dart';
 
 // Built-in Widgets
 export 'package:superdeck/src/widgets/widgets.dart';

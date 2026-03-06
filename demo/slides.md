@@ -156,13 +156,7 @@ import 'package:superdeck/superdeck.dart';
 
 void main() {
   runApp(
-    SuperDeckApp(
-      options: DeckOptions(
-        widgets: {
-          'my-widget': MyWidgetDefinition(),
-        },
-      ),
-    ),
+    SuperDeckApp(runtime: runtime),
   );
 }
 ```{.code}

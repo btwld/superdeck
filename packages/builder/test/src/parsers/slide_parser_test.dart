@@ -117,7 +117,7 @@ Final slide
       expect(slides[0].content, equals('Intro content'));
       expect(
         slides[1].content,
-        equals('@section {\n  flex: 2\n}\n@column\nSlide body'),
+        equals('@section {\n  flex: 2\n}\n@block\nSlide body'),
       );
       expect(slides[2].content, equals('Final slide'));
     });

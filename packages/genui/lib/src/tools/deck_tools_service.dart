@@ -3,10 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
-// ignore: implementation_imports
-import 'package:superdeck/src/deck/slide_configuration_builder.dart';
-// ignore: implementation_imports
-import 'package:superdeck/src/export/slide_capture_service.dart';
 import '../ai/schemas/deck_schemas.dart';
 import '../ai/services/slide_key_utils.dart';
 import './deck_document_store.dart';
@@ -21,7 +17,7 @@ typedef BuildContextProvider = BuildContext? Function();
 
 /// Builds the slide configuration used by `readSlide`.
 ///
-/// The default implementation uses `SlideConfigurationBuilder`. Tests can
+/// The default implementation uses `PresentationSlideBuilder`. Tests can
 /// inject a lightweight builder to avoid font/asset side effects.
 typedef ReadSlideConfigurationBuilder =
     SlideConfiguration Function({
@@ -353,10 +349,10 @@ class DeckToolsService {
     required DeckStyleType? style,
     required int index,
   }) {
-    final slideBuilder = SlideConfigurationBuilder(
+    final slideBuilder = PresentationSlideBuilder(
       configuration: configuration,
     );
-    final options = buildDeckOptionsFromStyle(style);
-    return slideBuilder.buildConfigurations([slide], options).single;
+    final presentation = buildDeckPresentationFromStyle(style);
+    return slideBuilder.buildConfigurations([slide], presentation).single;
   }
 }

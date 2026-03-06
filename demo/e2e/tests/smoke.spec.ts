@@ -2,6 +2,26 @@ import {expect, test, type Page} from '@playwright/test';
 
 const appUrl = '/?enable-flutter-web-semantics=true';
 
+async function ensureAccessibilityEnabled(page: Page) {
+  const enableAccessibility = page.getByRole('button', {
+    name: 'Enable accessibility',
+  });
+
+  const accessibilityPromptVisible = await enableAccessibility
+    .waitFor({state: 'visible', timeout: 3_000})
+    .then(() => true)
+    .catch(() => false);
+
+  if (accessibilityPromptVisible) {
+    await enableAccessibility.evaluate((node) => {
+      if (node instanceof HTMLElement) {
+        node.click();
+      }
+    });
+    await enableAccessibility.waitFor({state: 'hidden', timeout: 10_000});
+  }
+}
+
 async function openMenu(page: Page) {
   await page.getByRole('button', {name: 'Open menu'}).click({force: true});
   await expect(page.getByRole('button', {name: 'Close menu'})).toBeVisible();
@@ -44,6 +64,7 @@ async function readSlideCounter(page: Page): Promise<{current: number; total: nu
 
 test('app boots without error UI', async ({page}) => {
   await page.goto(appUrl);
+  await ensureAccessibilityEnabled(page);
 
   const counter = await readSlideCounter(page);
   expect(counter.current).toBe(1);
@@ -53,6 +74,7 @@ test('app boots without error UI', async ({page}) => {
 
 test('keyboard navigation advances slide', async ({page}) => {
   await page.goto(appUrl);
+  await ensureAccessibilityEnabled(page);
   const {total} = await readSlideCounter(page);
 
   await nextSlideByKeyboard(page);
@@ -69,6 +91,7 @@ test('keyboard navigation advances slide', async ({page}) => {
 
 test('panel controls support mouse interactions', async ({page}) => {
   await page.goto(appUrl);
+  await ensureAccessibilityEnabled(page);
   await openMenu(page);
   await expect(page.getByRole('button', {name: 'Open notes panel'})).toBeVisible();
   await expect(page.getByRole('button', {name: 'Export PDF'})).toBeVisible();
@@ -77,6 +100,7 @@ test('panel controls support mouse interactions', async ({page}) => {
 
 test('menu exposes regenerate thumbnails action', async ({page}) => {
   await page.goto(appUrl);
+  await ensureAccessibilityEnabled(page);
   await openMenu(page);
 
   const regenerateButton = page.getByRole('button', {
@@ -103,6 +127,7 @@ test('asset-heavy slide renders without fatal console/network errors', async ({
   });
 
   await page.goto(appUrl);
+  await ensureAccessibilityEnabled(page);
   const {total} = await readSlideCounter(page);
   if (total > 1) {
     await nextSlideByKeyboard(page);

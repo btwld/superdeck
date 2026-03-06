@@ -9,6 +9,8 @@ import 'syntax_highlighter.dart';
 Future<void> initializeDependencies() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  if (kIsTest) return;
+
   await Future.wait([SyntaxHighlight.initialize(), _initializeWindowManager()]);
 }
 

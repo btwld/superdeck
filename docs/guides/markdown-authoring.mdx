@@ -34,7 +34,7 @@ title: My First Slide
 Each slide can have YAML front matter with these options:
 
 - `title` – Slide title (appears in navigation and exports)
-- `style` – Named style variant to apply (defined in `DeckOptions.styles`)
+- `style` – Named style variant to apply (defined in `DeckPresentation.styles`)
 - `template` – Optional slide template name. Use `none` to opt out of a configured default template
 - Custom keys – Access via `slide.options.args['keyName']` in slide parts
 
@@ -155,7 +155,7 @@ For all `@dartpad` arguments, see the [Markdown syntax reference](../reference/m
 
 ### Custom widgets
 
-Register widgets in `DeckOptions.widgets`, then use them with the shorthand syntax:
+Register widgets in `DeckPresentation.widgets`, then use them with the shorthand syntax:
 
 ````markdown
 @metricCard {
@@ -190,7 +190,7 @@ Use headings, lists, tables, and code blocks as you normally would:
 | API     | In Progress |
 ````
 
-In the standard `superdeck build` and watch flows, fenced `dart` blocks are reformatted during build before they are rendered on a slide. If you pass fenced-code options, prefer the braced header form; the current parser also accepts a legacy compatibility form without braces after the language token.
+In the standard local runtime build flow, fenced `dart` blocks are reformatted before they are rendered on a slide. If you pass fenced-code options, prefer the braced header form; the current parser also accepts a legacy compatibility form without braces after the language token.
 
 ### Alerts
 
@@ -231,7 +231,7 @@ graph TD
 ```
 ````
 
-The CLI renders diagrams to images during build. Run `superdeck build` after editing diagrams.
+SuperDeck renders diagrams to images during the local runtime build and publish flows. During development, `DeckSource.local(watch: true)` rebuilds them when `slides.md` changes.
 
 ---
 
@@ -249,7 +249,7 @@ style: recap
 Define styles in your app:
 
 ```dart
-DeckOptions(
+DeckPresentation(
   styles: {
     'recap': SlideStyle(
       h1: TextStyler().style(TextStyleMix(fontSize: 64)),

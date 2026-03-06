@@ -207,7 +207,8 @@ class MarkdownParser {
   }
 
   List<RawSlideMarkdown> parse(String markdown) {
-    final rawSlides = _splitSlides(markdown);
+    final migratedMarkdown = LegacyMarkdownMigrator.migrateToV2(markdown);
+    final rawSlides = _splitSlides(migratedMarkdown);
 
     final slides = <RawSlideMarkdown>[];
     final usedKeys = <String>{};

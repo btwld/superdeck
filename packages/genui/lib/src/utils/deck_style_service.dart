@@ -6,7 +6,7 @@ import '../ai/schemas/deck_schemas.dart';
 import '../constants/paths.dart';
 import '../debug_logger.dart';
 
-/// Service for reading style configuration from superdeck.json.
+/// Service for reading style configuration from the generated deck artifact.
 ///
 /// Provides both async and sync access to the persisted style.
 /// Call [preloadStyle] at app startup to populate the cache,
@@ -17,7 +17,7 @@ class DeckStyleService {
 
   static ReadonlySignal<DeckStyleType?> get style => _styleSignal;
 
-  /// Preloads style from .superdeck/superdeck.json asynchronously.
+  /// Preloads style from the generated v2 deck artifact asynchronously.
   ///
   /// Call this at app startup to populate the cache before routing.
   /// This is non-blocking and won't affect UI thread.

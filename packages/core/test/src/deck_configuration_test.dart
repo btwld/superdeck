@@ -72,7 +72,7 @@ void main() {
           final config = DeckConfiguration();
 
           expect(config.deckJson.path, contains(config.superdeckDir.path));
-          expect(config.deckJson.path, endsWith('superdeck.json'));
+          expect(config.deckJson.path, endsWith('superdeck.v2.json'));
         });
       });
 
@@ -81,7 +81,7 @@ void main() {
           final config = DeckConfiguration();
 
           expect(config.deckFullJson.path, contains(config.superdeckDir.path));
-          expect(config.deckFullJson.path, endsWith('superdeck_full.json'));
+          expect(config.deckFullJson.path, endsWith('superdeck_full.v2.json'));
         });
       });
 
@@ -110,7 +110,10 @@ void main() {
           final config = DeckConfiguration();
 
           expect(config.assetsRefJson.path, contains(config.superdeckDir.path));
-          expect(config.assetsRefJson.path, endsWith('generated_assets.json'));
+          expect(
+            config.assetsRefJson.path,
+            endsWith('generated_assets.v2.json'),
+          );
         });
       });
 
@@ -122,7 +125,7 @@ void main() {
             config.buildStatusJson.path,
             contains(config.superdeckDir.path),
           );
-          expect(config.buildStatusJson.path, endsWith('build_status.json'));
+          expect(config.buildStatusJson.path, endsWith('build_status.v2.json'));
         });
       });
 

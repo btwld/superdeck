@@ -152,3 +152,6 @@ Validation can be:
 1. Use `.planning/rewrite-v2-contract-migration-matrix.md` as the canonical home for renamed artifacts and public API changes.
 2. Link each migration-matrix row to concrete v2 tasks and tests before implementation starts.
 3. Run a final planning consistency audit and use the reconciled docs as the implementation review checklist.
+4. Add a standing drift-audit pass before and after each major migration slice so docs, public barrels, consumers, and artifacts stay aligned with the approved v2 surface.
+5. Treat block widget rendering and hero behavior as protected surfaces during migration and require targeted review/tests for any direct changes there.
+6. Add a post-migration removal audit to verify legacy consumers, imports, artifact names, and serialized field names are removed carefully only after replacement paths are green.

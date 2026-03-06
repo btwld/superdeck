@@ -16,7 +16,7 @@ This rewrite is justified by concrete issues in the current implementation:
 - command flow mixes domain work, process control, IO, and UI concerns
 - some validation paths are intentionally permissive where they should be deterministic
 
-The rewrite is a breaking `v2`, uses a full package reorganization, and excludes `packages/genui` from the rewrite scope.
+The rewrite is a breaking `v2`, keeps the current top-level package layout for `v2.0`, and includes `packages/genui` in the migration scope.
 
 ## Canonical Planning Docs After Reconciliation
 This file is the umbrella rewrite plan.
@@ -49,7 +49,7 @@ The v2 rewrite now has an approved primary runtime/bootstrap surface:
 - behavioral add-ons live in `DeckExtension`
 - advanced runtime control lives in `SuperDeckHandle` and `SuperDeck.of(context)`
 - runtime owns local build/watch for local sources
-- the public CLI surface is reduced to `setup` and `publish`
+- the preferred v2 workflow is runtime-first plus `publish`, while `build` remains public as a transitional `v2.0` command
 
 Any older references in this umbrella plan that still discuss:
 - `SuperDeckApp(options: ..., configuration: ...)`
@@ -70,6 +70,10 @@ The current system is split across:
   - Flutter runtime, controller, rendering, navigation, templates, styles, watcher
 - `packages/cli`
   - setup, build, watch, publish
+- `packages/genui`
+  - AI-assisted authoring/editor flows, deck/style tooling, preview, and thumbnail helpers
+- `demo`
+  - runtime-first example app plus integration/e2e validation surface
 
 ### What is good in the current implementation
 The current codebase already has strong foundations worth preserving:
@@ -163,7 +167,7 @@ The rewrite should therefore focus on simplification, not novelty.
 - preserve user-facing capabilities while simplifying the implementation model
 
 ### Non-goals
-- no AI/genui rewrite in this phase
+- no net-new AI authoring system beyond migrating the existing `genui` consumer to the v2 runtime/contracts
 - no new slide DSL beyond what is needed to normalize existing features
 - no attempt to preserve all internal APIs
 - no dual architecture with old and new systems sharing core internals
@@ -186,13 +190,41 @@ The rewrite should therefore focus on simplification, not novelty.
 - public extension APIs for widgets, slide parts, and plugins
 - CLI setup/build/watch/publish
 - migration tooling from v1 to v2
+- `packages/genui` migration off internal/v1 runtime entrypoints
 
 ### Out of scope
-- `packages/genui`
-- new AI authoring workflows
+- new AI authoring workflows beyond the current `genui` product surface
 - live slide editing UI
 - remote collaboration or cloud sync
 - headless/build-time Flutter thumbnail rendering
+
+## Protected Surfaces And Audit Gates
+
+### Protected surfaces
+These areas are stability-critical and should not be deeply modified unless a failing validation gate or an approved contract change makes the need obvious:
+- block widget rendering/layout internals
+- hero parsing/rendering behavior
+- export-mode behavior tied to hero and interaction suppression
+
+Rewrite rule:
+- prefer changing contracts, adapters, orchestration, and public seams around these surfaces
+- when a change must touch them, keep it localized and pair it with targeted runtime/widget validation
+
+### Required audit gates
+1. Pre-migration drift audit
+- compare approved v2 docs against the live codebase before each major slice
+- explicitly review parser/schema/runtime/bootstrap/CLI/genui/demo/artifact/public-barrel drift
+
+2. Mid-migration protected-surface review
+- confirm block widget and hero behavior were not changed incidentally while surrounding systems moved
+- require focused tests when those surfaces are touched at all
+
+3. Post-migration consumer removal audit
+- after each migration slice, audit old consumers and legacy entrypoints before deleting them
+- explicitly review `DeckOptions`, `DeckControllerBuilder`, `SuperDeckPlugin`, direct controller access, `package:superdeck/src/...` imports, legacy artifact names, and legacy serialized field names
+
+4. Final full-rewrite audit
+- run a full review after migration to confirm no hidden v1 primary surfaces or stale consumers remain
 
 ## Rewrite Principles
 
@@ -1211,8 +1243,8 @@ Mitigation:
 
 ## Explicit Assumptions and Defaults
 - breaking `v2` is accepted
-- full package reorganization is accepted
-- `packages/genui` is excluded
+- current top-level package layout stays for `v2.0`
+- `packages/genui` is in scope and must migrate with the rewrite
 - `@column` is legacy-only and migrated to `@block`
 - frontmatter must be a strict YAML map in v2
 - backtick and tilde fences are both supported uniformly
@@ -1226,4 +1258,5 @@ Mitigation:
 - runtime thumbnails remain dev-mode runtime snapshots, and headless/build-time thumbnail generation stays out of the current rewrite scope
 - bundled runtimes use canonical bundled v2 artifact paths only and remain consume-only
 - external config-source policy for `superdeck.yaml` / `styles.yaml` remains explicitly deferred until the detailed docs freeze it
+- block widget rendering and hero behavior are protected surfaces and should only receive localized, validation-backed changes
 - the rewrite plan document should ultimately be stored at `.planning/rewrite-v2-full-plan.md`

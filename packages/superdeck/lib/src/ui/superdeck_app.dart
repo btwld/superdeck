@@ -1,42 +1,22 @@
 import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 
 import '../deck/deck_controller_builder.dart';
-import '../deck/deck_options.dart';
-import '../deck/superdeck_plugin.dart';
-import '../utils/app_initialization.dart';
+import '../runtime/superdeck_runtime.dart';
 import 'app_shell.dart';
 import 'theme.dart';
 
 class SuperDeckApp extends StatelessWidget {
-  const SuperDeckApp({super.key, required this.options, this.configuration});
+  const SuperDeckApp({super.key, required this.runtime});
 
-  final DeckOptions options;
-  final DeckConfiguration? configuration;
-
-  static Future<void> initialize({
-    List<SuperDeckPlugin> plugins = const <SuperDeckPlugin>[],
-  }) async {
-    await initializeDependencies();
-    for (final plugin in plugins) {
-      try {
-        await plugin.initialize();
-      } catch (e, stack) {
-        debugPrint(
-          'SuperDeckPlugin "${plugin.name}" failed to initialize: $e\n$stack',
-        );
-      }
-    }
-  }
+  final SuperDeckRuntime runtime;
 
   @override
   Widget build(BuildContext context) {
     return DeckControllerBuilder(
-      options: options,
-      configuration: configuration,
+      runtime: runtime,
       builder: (context, router) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,

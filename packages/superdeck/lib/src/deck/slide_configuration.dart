@@ -38,7 +38,7 @@ class SlideConfiguration {
 
   List<SectionBlock> get sections => _slide.sections;
 
-  List<String> get comments => _slide.comments;
+  List<String> get notes => _slide.notes;
 
   WidgetDefinition? getWidgetDefinition(String name) => _widgets[name];
 

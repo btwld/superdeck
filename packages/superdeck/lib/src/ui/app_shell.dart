@@ -123,7 +123,6 @@ class _SplitViewState extends State<SplitView>
       final isNotesOpen = deck.isNotesOpen.value;
       final slides = deck.slides.value;
 
-      // Get current slide from index
       final currentSlide = (currentIndex >= 0 && currentIndex < slides.length)
           ? slides[currentIndex]
           : null;
@@ -139,9 +138,8 @@ class _SplitViewState extends State<SplitView>
         itemCount: slides.length,
       );
 
-      /// Comments panel (shown only if notes are open)
-      final commentsPanel = isNotesOpen
-          ? CommentsPanel(comments: currentSlide?.comments ?? [])
+      final notesPanel = isNotesOpen
+          ? NotesPanel(notes: currentSlide?.notes ?? [])
           : const SizedBox();
 
       // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
@@ -149,19 +147,19 @@ class _SplitViewState extends State<SplitView>
       // This is somewhat reversed based on your preference, so adjust as needed.
       if (widget.isSmallLayout) {
         // Panel at bottom => put them side-by-side in a Row
-        return Row(
-          children: [
-            !isNotesOpen
+          return Row(
+            children: [
+              !isNotesOpen
                 ? Expanded(child: thumbnailPanel)
-                : Expanded(child: commentsPanel),
-          ],
-        );
+                : Expanded(child: notesPanel),
+            ],
+          );
       } else {
         // Panel on the side => put them in a Column
         return Column(
           children: [
             Expanded(flex: 3, child: thumbnailPanel),
-            if (isNotesOpen) Expanded(flex: 1, child: commentsPanel),
+            if (isNotesOpen) Expanded(flex: 1, child: notesPanel),
           ],
         );
       }

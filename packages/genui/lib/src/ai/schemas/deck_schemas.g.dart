@@ -268,9 +268,8 @@ extension type SlideType(Map<String, Object?> _data)
       ? SlideOptionsType(_data['options'] as Map<String, Object?>)
       : null;
 
-  List<String>? get comments => _data['comments'] != null
-      ? _$ackListCast<String>(_data['comments'])
-      : null;
+  List<String>? get notes =>
+      _data['notes'] != null ? _$ackListCast<String>(_data['notes']) : null;
 
   List<SlideSectionType> get sections => (_data['sections'] as List)
       .map((e) => SlideSectionType(e as Map<String, Object?>))
@@ -279,13 +278,13 @@ extension type SlideType(Map<String, Object?> _data)
   SlideType copyWith({
     String? key,
     Map<String, dynamic>? options,
-    List<String>? comments,
+    List<String>? notes,
     List<SlideSectionType>? sections,
   }) {
     return SlideType.parse({
       'key': key ?? this.key,
       'options': options ?? this.options,
-      'comments': comments ?? this.comments,
+      'notes': notes ?? this.notes,
       'sections': sections ?? this.sections,
     });
   }
@@ -316,9 +315,8 @@ extension type CreateSlideType(Map<String, Object?> _data)
       ? SlideOptionsType(_data['options'] as Map<String, Object?>)
       : null;
 
-  List<String>? get comments => _data['comments'] != null
-      ? _$ackListCast<String>(_data['comments'])
-      : null;
+  List<String>? get notes =>
+      _data['notes'] != null ? _$ackListCast<String>(_data['notes']) : null;
 
   List<SlideSectionType> get sections => (_data['sections'] as List)
       .map((e) => SlideSectionType(e as Map<String, Object?>))
@@ -327,13 +325,13 @@ extension type CreateSlideType(Map<String, Object?> _data)
   CreateSlideType copyWith({
     String? key,
     Map<String, dynamic>? options,
-    List<String>? comments,
+    List<String>? notes,
     List<SlideSectionType>? sections,
   }) {
     return CreateSlideType.parse({
       'key': key ?? this.key,
       'options': options ?? this.options,
-      'comments': comments ?? this.comments,
+      'notes': notes ?? this.notes,
       'sections': sections ?? this.sections,
     });
   }

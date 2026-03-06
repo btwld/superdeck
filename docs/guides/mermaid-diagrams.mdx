@@ -143,7 +143,7 @@ Show object-oriented relationships:
 ```mermaid
 classDiagram
   class PresentationController {
-    +DeckOptions options
+    +DeckPresentation presentation
     +List~Slide~ slides
     +int currentIndex
     +initialize()
@@ -156,7 +156,7 @@ classDiagram
     +String key
     +SlideOptions options
     +List~SectionBlock~ sections
-    +List~String~ comments
+    +List~String~ notes
     +render()
   }
   
@@ -311,7 +311,7 @@ erDiagram
 
 ## Styling and theming
 
-SuperDeck renders Mermaid diagrams to PNG during `superdeck build`. By default, the builder uses Mermaid’s `base` theme with a dark set of `themeVariables`.
+SuperDeck renders Mermaid diagrams to PNG during the local runtime build and publish flows. By default, the builder uses Mermaid’s `base` theme with a dark set of `themeVariables`.
 
 Some diagram types (for example, `timeline` in dark mode) fall back to Mermaid’s `default` theme to keep axes and grid lines readable.
 
@@ -388,7 +388,7 @@ flowchart TD
 
 ## Build process
 
-When you run `superdeck build`, mermaid diagrams are automatically:
+When SuperDeck runs a local or publish build, Mermaid diagrams are automatically:
 
 1. **Detected** in your markdown slides
 2. **Rendered** to high-quality PNG images
@@ -410,7 +410,7 @@ Generated images are saved to `.superdeck/assets/` and automatically included in
 Use verbose mode to see detailed build information:
 
 ```bash
-superdeck build --verbose
+superdeck publish --dry-run
 ```
 
 ## Best practices

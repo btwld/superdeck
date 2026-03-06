@@ -2,9 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/export/slide_capture_service.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
+import 'package:superdeck/superdeck.dart';
 
 class _FakeAssetCacheStore implements AssetCacheStore {
   final List<String> callOrder = [];

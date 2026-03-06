@@ -51,7 +51,6 @@ sealed class Block {
     discriminatorKey: 'type',
     schemas: {
       ContentBlock.key: ContentBlock.schema,
-      ContentBlock.legacyKey: ContentBlock.schema, // Backward compatibility
       WidgetBlock.key: WidgetBlock.schema,
     },
   );
@@ -63,7 +62,7 @@ sealed class Block {
     final type = map['type'] as String;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
-      ContentBlock.key || ContentBlock.legacyKey => ContentBlock.fromMap(map),
+      ContentBlock.key => ContentBlock.fromMap(map),
       WidgetBlock.key => WidgetBlock.fromMap(map),
       _ => throw ArgumentError('Unknown block type: $type'),
     };
@@ -140,7 +139,7 @@ class SectionBlock extends Block {
     return fromMap(map);
   }
 
-  /// Creates a section block with a single text column.
+  /// Creates a section block with a single text block.
   static SectionBlock text(String content) {
     return SectionBlock([ContentBlock(content)]);
   }
@@ -184,7 +183,7 @@ class ContentBlock extends Block {
   /// The type identifier for content blocks.
   static const key = 'block';
 
-  /// Legacy key for backward compatibility with existing slides.
+  /// Legacy directive key used by migration helpers for v1 content.
   static const legacyKey = 'column';
 
   /// The markdown content to display.

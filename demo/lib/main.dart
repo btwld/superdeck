@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
@@ -12,7 +13,13 @@ import 'src/widgets/demo_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  const plugins = [GenUiPlugin()];
+  const extensions = [GenUiPlugin()];
+  final source = kIsWeb
+      ? const DeckSource.bundle()
+      : const DeckSource.local(
+          slidesPath: 'slides.md',
+          watch: true,
+        );
 
   // Disable signals logging to reduce console noise
   SignalsObserver.instance = null;
@@ -20,27 +27,38 @@ void main() async {
   // Enable semantics for testing
   WidgetsBinding.instance.ensureSemantics();
 
-  await SuperDeckApp.initialize(plugins: plugins);
-  runApp(
-    SuperDeckApp(
-      options: DeckOptions(
-        baseStyle: borderedStyle(),
-        widgets: {...demoWidgets, 'twitter': const _TwitterWidgetDefinition()},
-        // debug: true,
-        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
-        templates: {
-          'corporate': corporateTemplate(),
-          'minimal': minimalTemplate(),
-        },
-        parts: const SlideParts(
-          header: HeaderPart(),
-          footer: FooterPart(),
-          background: BackgroundPart(),
-        ),
-        watchForChanges: true,
-        plugins: plugins,
-      ),
+  final runtime = await SuperDeckRuntime.create(
+    source: source,
+    runtimeConfig: const DeckRuntimeConfig(
+      projectDir: '.',
+      outputDir: '.superdeck',
+      assetsPath: 'assets',
     ),
+    presentation: DeckPresentation(
+      baseStyle: borderedStyle(),
+      widgets: {
+        ...demoWidgets,
+        'twitter': const _TwitterWidgetDefinition(),
+      },
+      styles: {
+        'announcement': announcementStyle(),
+        'quote': quoteStyle(),
+      },
+      templates: {
+        'corporate': corporateTemplate(),
+        'minimal': minimalTemplate(),
+      },
+      parts: SlideParts(
+        header: HeaderPart(),
+        footer: FooterPart(),
+        background: BackgroundPart(),
+      ),
+      extensions: extensions,
+    ),
+  );
+
+  runApp(
+    SuperDeckApp(runtime: runtime),
   );
 }
 

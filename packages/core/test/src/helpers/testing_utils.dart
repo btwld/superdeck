@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 /// Creates a temporary directory that will be automatically cleaned up
@@ -47,13 +48,32 @@ class MockDeckConfiguration {
   String? get slidesPath => null;
   String? get outputDir => null;
   String? get assetsPath => null;
-  Directory get superdeckDir => Directory(p.join(_tempDir.path, '.superdeck'));
+  Directory get superdeckDir =>
+      Directory(p.join(_tempDir.path, DeckArtifacts.outputDir));
   File get deckJson =>
-      File(p.join(_tempDir.path, '.superdeck', 'superdeck.json'));
+      File(
+        p.join(
+          _tempDir.path,
+          DeckArtifacts.outputDir,
+          DeckArtifacts.deckJsonFile,
+        ),
+      );
   Directory get assetsDir =>
-      Directory(p.join(_tempDir.path, '.superdeck', 'assets'));
+      Directory(
+        p.join(
+          _tempDir.path,
+          DeckArtifacts.outputDir,
+          DeckArtifacts.assetsDir,
+        ),
+      );
   File get assetsRefJson =>
-      File(p.join(_tempDir.path, '.superdeck', 'generated_assets.json'));
+      File(
+        p.join(
+          _tempDir.path,
+          DeckArtifacts.outputDir,
+          DeckArtifacts.generatedAssetsJsonFile,
+        ),
+      );
   File get slidesFile => File(p.join(_tempDir.path, 'slides.md'));
   File get pubspecFile => File(p.join(_tempDir.path, 'pubspec.yaml'));
 }

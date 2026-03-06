@@ -423,7 +423,7 @@ void main() {
 @section
 # Header
 
-@column
+@block
 Column content
 ''',
           'frontmatter': {},
@@ -435,7 +435,7 @@ Column content
         expect(slides[0].sections[0].blocks, hasLength(2));
       });
 
-      test('parses comments from content', () async {
+      test('parses notes from content', () async {
         final rawSlide = RawSlideMarkdown.parse({
           'key': 'slide-1',
           'content': '''
@@ -452,9 +452,9 @@ Content here
 
         final slides = await processor.processAll([rawSlide], [], store);
 
-        expect(slides[0].comments, hasLength(2));
-        expect(slides[0].comments[0], equals('This is a note'));
-        expect(slides[0].comments[1], equals('Another note'));
+        expect(slides[0].notes, hasLength(2));
+        expect(slides[0].notes[0], equals('This is a note'));
+        expect(slides[0].notes[1], equals('Another note'));
       });
 
       test('handles empty frontmatter', () async {
@@ -557,7 +557,7 @@ Symbols: ← → ↑ ↓
 @section
 Normal section
 
-@column
+@block
 Normal column
 
 Some content without tag
@@ -571,7 +571,7 @@ Some content without tag
         expect(slides[0].sections, isNotEmpty);
       });
 
-      test('handles slides with only comments', () async {
+      test('handles slides with only notes', () async {
         final rawSlide = RawSlideMarkdown.parse({
           'key': 'comments-only',
           'content': '''
@@ -585,7 +585,7 @@ Some content without tag
         final slides = await processor.processAll([rawSlide], [], store);
 
         expect(slides, hasLength(1));
-        expect(slides[0].comments, hasLength(3));
+        expect(slides[0].notes, hasLength(3));
       });
 
       test('handles mixed newline types', () async {
@@ -704,13 +704,13 @@ More content.
 @section
 ## Section 1
 
-@column{
+@block{
   flex: 1
   align: center
 }
 Column 1 content
 
-@column{
+@block{
   flex: 2
   align: topLeft
 }
@@ -738,7 +738,7 @@ void example() {
         expect(slides[0].key, equals('complex-slide'));
         expect(slides[0].options?.title, equals('Complex Slide Title'));
         expect(slides[0].sections.length, greaterThanOrEqualTo(1));
-        expect(slides[0].comments.length, greaterThanOrEqualTo(1));
+        expect(slides[0].notes.length, greaterThanOrEqualTo(1));
       });
     });
   });

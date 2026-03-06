@@ -104,7 +104,7 @@ Embeds custom Flutter widgets defined in your app.
 ### `name` (required)
 **Type:** String
 
-Widget name from `DeckOptions.widgets`.
+Widget name from `DeckPresentation.widgets`.
 
 ### Custom arguments
 **Type:** JSON-serializable values
@@ -132,7 +132,20 @@ class CustomChartDefinition extends WidgetDefinition<Map<String, Object?>> {
 }
 
 SuperDeckApp(
-  options: DeckOptions(
+  runtime: runtime,
+);
+```
+
+Where `runtime` was created with:
+
+```dart
+final runtime = await SuperDeckRuntime.create(
+  source: const DeckSource.local(
+    slidesPath: 'slides.md',
+    watch: true,
+  ),
+  runtimeConfig: const DeckRuntimeConfig(),
+  presentation: DeckPresentation(
     widgets: const {
       'customChart': CustomChartDefinition(),
     },
@@ -196,7 +209,8 @@ Generates QR codes.
 
 ### Mermaid diagrams
 
-Use a fenced code block with the `mermaid` language. The CLI renders Mermaid to PNG during `superdeck build`.
+Use a fenced code block with the `mermaid` language. SuperDeck renders Mermaid
+to PNG during the local runtime build and publish flows.
 
 ````markdown
 ```mermaid

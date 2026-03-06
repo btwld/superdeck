@@ -25,15 +25,15 @@
       "items": {
         "additionalProperties": {},
         "properties": {
-          "comments": {
+          "key": {
+            "description": "Unique identifier for this slide, typically generated from content hash.",
+            "type": "string"
+          },
+          "notes": {
             "items": {
               "type": "string"
             },
             "type": "array"
-          },
-          "key": {
-            "description": "Unique identifier for this slide, typically generated from content hash.",
-            "type": "string"
           },
           "options": {
             "additionalProperties": {},
@@ -99,42 +99,6 @@
                           },
                           "type": {
                             "const": "block",
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "type"
-                        ],
-                        "type": "object"
-                      },
-                      {
-                        "additionalProperties": {},
-                        "properties": {
-                          "align": {
-                            "enum": [
-                              "topLeft",
-                              "topCenter",
-                              "topRight",
-                              "centerLeft",
-                              "center",
-                              "centerRight",
-                              "bottomLeft",
-                              "bottomCenter",
-                              "bottomRight"
-                            ],
-                            "type": "string"
-                          },
-                          "content": {
-                            "type": "string"
-                          },
-                          "flex": {
-                            "type": "integer"
-                          },
-                          "scrollable": {
-                            "type": "boolean"
-                          },
-                          "type": {
-                            "const": "column",
                             "type": "string"
                           }
                         },

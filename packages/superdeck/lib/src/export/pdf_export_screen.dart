@@ -4,11 +4,11 @@ import 'package:remix/remix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 import 'package:superdeck/src/utils/constants.dart';
-import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/export/slide_capture_service.dart';
 
 import '../rendering/slides/slide_view.dart';
 import '../deck/slide_configuration.dart';
+import '../runtime/superdeck_context.dart';
 import 'pdf_controller.dart';
 
 class PdfExportDialogScreen extends StatefulWidget {
@@ -20,11 +20,11 @@ class PdfExportDialogScreen extends StatefulWidget {
   State<PdfExportDialogScreen> createState() => _PdfExportDialogScreenState();
 
   static void show(BuildContext context) {
-    final deckController = DeckController.of(context);
+    final handle = SuperDeck.of(context);
     showRemixDialog(
       context: context,
       builder: (context) =>
-          PdfExportDialogScreen(slides: deckController.slides.value),
+          PdfExportDialogScreen(slides: handle.slides.value),
     );
   }
 }

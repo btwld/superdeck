@@ -4,13 +4,13 @@ import 'package:superdeck/superdeck.dart';
 import '../ai/schemas/deck_schemas.dart';
 import './color_utils.dart';
 
-/// Builds [DeckOptions] from AI-generated style configuration.
+/// Builds [DeckPresentation] from AI-generated style configuration.
 ///
 /// Takes the style object from [DeckGenerationResult] and creates
-/// [DeckOptions] with appropriate [SlideStyle] overrides for colors,
+/// [DeckPresentation] with appropriate [SlideStyle] overrides for colors,
 /// fonts, and background.
-DeckOptions buildDeckOptionsFromStyle(DeckStyleType? style) {
-  if (style == null) return const DeckOptions();
+DeckPresentation buildDeckPresentationFromStyle(DeckStyleType? style) {
+  if (style == null) return const DeckPresentation();
 
   final colors = style.colors;
   final fonts = style.fonts;
@@ -95,5 +95,5 @@ DeckOptions buildDeckOptionsFromStyle(DeckStyleType? style) {
     slideContainer: BoxStyler().color(backgroundColor),
   );
 
-  return DeckOptions(baseStyle: colorOverrideStyle);
+  return DeckPresentation(baseStyle: colorOverrideStyle);
 }

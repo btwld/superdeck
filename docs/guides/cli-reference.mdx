@@ -1,11 +1,12 @@
 ---
 title: CLI reference
-description: Complete reference for SuperDeck CLI commands and options
+description: Complete reference for SuperDeck CLI setup and publishing commands
 ---
 
 # CLI reference
 
-The SuperDeck CLI provides tools for setting up, building, and publishing presentations. This reference covers all commands and options.
+The SuperDeck CLI provides project setup and publishing commands. Local slide
+build/watch is owned by the runtime through `DeckSource.local(...)`.
 
 ## Installation
 
@@ -40,34 +41,6 @@ superdeck setup
 |--------|-------|-------------|
 | `--force` | `-f` | Skip confirmation prompts |
 | `--[no-]setup-web` | | Set up a custom `web/index.html` (default: `true`) |
-
-### `superdeck build`
-
-Build presentations from markdown files. Parses `slides.md`, generates presentation data in `.superdeck/superdeck.json`, and creates optimized assets.
-
-```bash
-superdeck build [options]
-```
-
-**Options:**
-
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--watch` | `-w` | Watch for file changes and rebuild automatically |
-| `--skip-pubspec` | | Skip updating pubspec.yaml |
-| `--force-rebuild` | `-f` | Force rebuild all assets |
-
-**Examples:**
-```bash
-# Build once
-superdeck build
-
-# Build and watch for changes (recommended for development)
-superdeck build -w
-
-# Force rebuild everything
-superdeck build -f
-```
 
 ### `superdeck publish`
 
@@ -104,14 +77,6 @@ superdeck publish --no-build
 superdeck publish --dry-run
 ```
 
-### `superdeck version`
-
-Print the SuperDeck CLI version.
-
-```bash
-superdeck version
-```
-
 ## File structure
 
 After running CLI commands, your project will have:
@@ -121,10 +86,10 @@ project/
 ├── slides.md                    # Your presentation content
 ├── pubspec.yaml                 # Updated with asset configuration
 ├── .superdeck/
-│   ├── superdeck.json          # Generated presentation data
-│   ├── superdeck_full.json     # Includes markdown AST JSON (for debugging)
-│   ├── generated_assets.json   # Asset manifest
-│   ├── build_status.json       # Last build status
+│   ├── superdeck.v2.json       # Generated presentation data
+│   ├── superdeck_full.v2.json  # Includes markdown AST JSON (for debugging)
+│   ├── generated_assets.v2.json # Asset manifest
+│   ├── build_status.v2.json    # Last build status
 │   └── assets/                 # Build-generated assets (for example, Mermaid PNGs)
 │       └── mermaid_<hash>.png
 └── web/
@@ -163,36 +128,33 @@ In debug builds, it also enables `com.apple.security.network.server` and `com.ap
 
 ### Development workflow
 
-```bash
-# Terminal 1: Start CLI in watch mode
-superdeck build --watch
+Use runtime-owned local build/watch:
 
-# Terminal 2: Run Flutter app
+```dart
+final runtime = await SuperDeckRuntime.create(
+  source: const DeckSource.local(
+    slidesPath: 'slides.md',
+    watch: true,
+  ),
+  runtimeConfig: const DeckRuntimeConfig(),
+  presentation: const DeckPresentation(),
+);
+```
+
+Then run:
+
+```bash
 flutter run
 ```
 
 ### Publishing workflow
 
 ```bash
-# Build and test locally
-superdeck build
+# Test locally
 flutter run -d web
 
 # Publish to GitHub Pages
 superdeck publish
-```
-
-### Troubleshooting workflow
-
-```bash
-# Verbose output for debugging
-superdeck build --verbose
-
-# Force rebuild if assets are corrupted  
-superdeck build --force-rebuild
-
-# Check what publish would do
-superdeck publish --dry-run
 ```
 
 ## Exit codes
@@ -208,36 +170,28 @@ superdeck publish --dry-run
 
 ## Common issues
 
-### Build fails
-
-**Problem:** `Error: slides.md not found`
-**Solution:** Ensure `slides.md` exists in project root or run `superdeck setup`
-
-**Problem:** `Error: Invalid markdown syntax`  
-**Solution:** Check your markdown syntax, especially block definitions and frontmatter
-
 ### Publish fails
 
 **Problem:** `Error: Not a git repository`
 **Solution:** Initialize git repository: `git init && git add . && git commit -m "Initial commit"`
 
 **Problem:** `Error: No changes to commit`
-**Solution:** This is informational. Make a change (or run `superdeck build --force-rebuild`) and publish again.
+**Solution:** This is informational. Make a change, verify the app locally with `flutter run`, and publish again.
 
-### Watch mode issues
+### Local runtime watch issues
 
 **Problem:** Changes not detected
-**Solution:** Ensure you're editing `slides.md` in the project root
+**Solution:** Ensure you're editing `slides.md` in the project root and that your app uses `DeckSource.local(watch: true)`
 
 **Problem:** Build errors in watch mode
-**Solution:** Fix the error and save again; watch mode will retry automatically
+**Solution:** Fix the error in `slides.md` and save again; the runtime rebuild loop will retry automatically
 
 ## Performance tips
 
-1. **Use watch mode** - `superdeck build --watch` is optimized for development
+1. **Use runtime watch** - `DeckSource.local(watch: true)` is the primary development flow
 2. **Cache remote images** - Remote images are cached at runtime by `cached_network_image`
-3. **Skip pubspec updates** - Use `--skip-pubspec` if you manage assets manually
-4. **Incremental builds** - Only changed assets are rebuilt by default
+3. **Run setup once** - `superdeck setup` keeps `pubspec.yaml` and platform files aligned
+4. **Incremental rebuilds** - Only changed assets are rebuilt by default
 
 ## Integration with CI/CD
 
@@ -256,6 +210,5 @@ jobs:
     - uses: actions/checkout@v4
     - uses: subosito/flutter-action@v2
     - run: dart pub global activate superdeck_cli
-    - run: superdeck build
     - run: superdeck publish
 ```

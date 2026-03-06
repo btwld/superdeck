@@ -12,13 +12,13 @@ class _SlideWithNullBlocks extends Slide {
 
   @override
   Map<String, Object?> toMap() {
-    return {
-      'key': key,
-      'sections': [
-        {'type': 'section', 'blocks': null},
-      ],
-      'comments': const <String>[],
-    };
+      return {
+        'key': key,
+        'sections': [
+          {'type': 'section', 'blocks': null},
+        ],
+        'notes': const <String>[],
+      };
   }
 }
 

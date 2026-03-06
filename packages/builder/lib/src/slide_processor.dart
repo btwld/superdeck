@@ -4,7 +4,7 @@ import 'package:superdeck_builder/src/parsers/raw_slide_schema.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'task_exception.dart';
-import 'parsers/comment_parser.dart' show CommentParser;
+import 'parsers/comment_parser.dart' show NoteParser;
 import 'parsers/section_parser.dart';
 import 'tasks/slide_context.dart';
 import 'tasks/task.dart';
@@ -101,11 +101,15 @@ class SlideProcessor {
 
   /// Builds final Slide from processed context
   Slide _buildSlide(SlideContext result) {
+    final migratedContent = LegacyMarkdownMigrator.migrateToV2(
+      result.slide.content,
+    );
+
     return Slide(
       key: result.slide.key,
       options: SlideOptions.parse(result.slide.frontmatter),
-      sections: SectionParser().parse(result.slide.content),
-      comments: CommentParser().parse(result.slide.content),
+      sections: SectionParser().parse(migratedContent),
+      notes: NoteParser().parse(migratedContent),
     );
   }
 }

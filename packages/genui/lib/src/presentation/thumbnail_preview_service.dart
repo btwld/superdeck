@@ -2,10 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
-// ignore: implementation_imports
-import 'package:superdeck/src/deck/slide_configuration_builder.dart';
-// ignore: implementation_imports
-import 'package:superdeck/src/export/slide_capture_service.dart';
 import '../ai/schemas/deck_schemas.dart';
 import '../debug_logger.dart';
 import '../utils/style_builder.dart';
@@ -71,11 +67,11 @@ class ThumbnailPreviewService {
     if (slides.isEmpty) return [];
 
     final configuration = DeckConfiguration();
-    final options = buildDeckOptionsFromStyle(style);
-    final slideBuilder = SlideConfigurationBuilder(
+    final presentation = buildDeckPresentationFromStyle(style);
+    final slideBuilder = PresentationSlideBuilder(
       configuration: configuration,
     );
-    final slideConfigs = slideBuilder.buildConfigurations(slides, options);
+    final slideConfigs = slideBuilder.buildConfigurations(slides, presentation);
 
     debugLog.log(
       'THUMBNAIL',

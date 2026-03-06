@@ -25,20 +25,27 @@ import 'package:superdeck/superdeck.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SuperDeckApp.initialize();
+  final runtime = await SuperDeckRuntime.create(
+    source: const DeckSource.local(
+      slidesPath: 'slides.md',
+      watch: true,
+    ),
+    runtimeConfig: const DeckRuntimeConfig(),
+    presentation: const DeckPresentation(),
+  );
 
-  runApp(const SuperDeckApp(options: DeckOptions()));
+  runApp(SuperDeckApp(runtime: runtime));
 }
 ```
 
-## Build slides
+## Run slides
 
 ```bash
-superdeck build --watch
 flutter run
 ```
 
-SuperDeck reads slide content from `slides.md` and build output from `.superdeck/`.
+With `DeckSource.local(watch: true)`, SuperDeck builds `slides.md` before the
+first frame and rebuilds it on changes.
 
 ## Write slides
 
@@ -65,7 +72,7 @@ Separate slides with `---`. Use blocks to control layout:
 
 ## Custom widgets
 
-1. Register the widget in `DeckOptions.widgets`.
+1. Register the widget in `DeckPresentation.widgets`.
 2. Reference it by name in Markdown.
 
 See the custom widgets guide:

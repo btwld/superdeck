@@ -185,12 +185,12 @@ void main() {
                     'type': 'section',
                     'flex': 2,
                     'blocks': [
-                      {'type': 'column', 'content': 'Block 1', 'flex': 1},
+                      {'type': 'block', 'content': 'Block 1', 'flex': 1},
                       {'type': 'widget', 'name': 'image', 'src': 'test.png'},
                     ],
                   },
                 ],
-                'comments': ['Speaker note'],
+                'notes': ['Speaker note'],
               },
             ],
             'configuration': <String, dynamic>{},
@@ -203,7 +203,7 @@ void main() {
           expect(slide.options?.title, 'Complex Slide');
           expect(slide.sections.length, 1);
           expect(slide.sections[0].blocks.length, 2);
-          expect(slide.comments, ['Speaker note']);
+          expect(slide.notes, ['Speaker note']);
         });
 
         test(
@@ -310,7 +310,7 @@ void main() {
                 sections: [
                   SectionBlock([ContentBlock('Content')]),
                 ],
-                comments: ['Note'],
+                notes: ['Note'],
               ),
             ],
             configuration: DeckConfiguration(
@@ -357,7 +357,7 @@ void main() {
                     ],
                   },
                 ],
-                'comments': ['Note'],
+                'notes': ['Note'],
               },
             ],
           };
@@ -451,7 +451,7 @@ void main() {
                     ],
                   },
                 ],
-                'comments': ['note'],
+                'notes': ['note'],
               },
             ],
           });

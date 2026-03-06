@@ -40,26 +40,26 @@ void main() {
     return source is ValueSource<TextStyle> ? source.value : null;
   }
 
-  Color? headingColorFrom(DeckOptions options) =>
-      propTextStyle(options.baseStyle?.$strong)?.color;
+  Color? headingColorFrom(DeckPresentation presentation) =>
+      propTextStyle(presentation.baseStyle?.$strong)?.color;
 
-  Color? bodyColorFrom(DeckOptions options) =>
-      propTextStyle(options.baseStyle?.$a)?.color;
+  Color? bodyColorFrom(DeckPresentation presentation) =>
+      propTextStyle(presentation.baseStyle?.$a)?.color;
 
-  group('buildDeckOptionsFromStyle', () {
+  group('buildDeckPresentationFromStyle', () {
     group('null and empty inputs', () {
-      test('returns empty DeckOptions for null style', () {
-        final result = buildDeckOptionsFromStyle(null);
+      test('returns empty DeckPresentation for null style', () {
+        final result = buildDeckPresentationFromStyle(null);
 
         expect(result.baseStyle, isNull);
       });
 
-      test('returns empty DeckOptions when style fails schema parsing', () {
+      test('returns empty DeckPresentation when style fails schema parsing', () {
         final style = DeckStyleType.safeParse({
           'name': 'Invalid Style',
           'colors': {'heading': '#FF0000'},
         }).getOrNull();
-        final result = buildDeckOptionsFromStyle(style);
+        final result = buildDeckPresentationFromStyle(style);
 
         expect(style, isNull);
         expect(result.baseStyle, isNull);
@@ -68,9 +68,9 @@ void main() {
 
     group('valid color configurations', () {
       test(
-        'returns DeckOptions with baseStyle when heading color provided',
+        'returns DeckPresentation with baseStyle when heading color provided',
         () {
-          final result = buildDeckOptionsFromStyle(
+          final result = buildDeckPresentationFromStyle(
             buildStyle(heading: '#FF0000'),
           );
 
@@ -79,8 +79,8 @@ void main() {
         },
       );
 
-      test('returns DeckOptions with baseStyle for heading and body', () {
-        final result = buildDeckOptionsFromStyle(
+      test('returns DeckPresentation with baseStyle for heading and body', () {
+        final result = buildDeckPresentationFromStyle(
           buildStyle(heading: '#FF0000', body: '#00FF00'),
         );
 
@@ -88,8 +88,8 @@ void main() {
         expect(bodyColorFrom(result), equals(const Color(0xFF00FF00)));
       });
 
-      test('returns DeckOptions with baseStyle for all colors', () {
-        final result = buildDeckOptionsFromStyle(
+      test('returns DeckPresentation with baseStyle for all colors', () {
+        final result = buildDeckPresentationFromStyle(
           buildStyle(
             heading: '#FF0000',
             body: '#00FF00',
@@ -103,7 +103,7 @@ void main() {
 
       test('handles invalid hex color gracefully (uses fallback)', () {
         // Invalid hex should still produce a result with fallback gray
-        final result = buildDeckOptionsFromStyle(
+        final result = buildDeckPresentationFromStyle(
           buildStyle(heading: 'invalid'),
         );
 
@@ -112,13 +112,15 @@ void main() {
       });
 
       test('handles hex color without # prefix', () {
-        final result = buildDeckOptionsFromStyle(buildStyle(heading: 'FF0000'));
+        final result = buildDeckPresentationFromStyle(
+          buildStyle(heading: 'FF0000'),
+        );
 
         expect(headingColorFrom(result), equals(const Color(0xFFFF0000)));
       });
 
       test('handles hex color with # prefix', () {
-        final result = buildDeckOptionsFromStyle(
+        final result = buildDeckPresentationFromStyle(
           buildStyle(heading: '#FF0000'),
         );
 
@@ -126,7 +128,7 @@ void main() {
       });
 
       test('handles lowercase hex colors', () {
-        final result = buildDeckOptionsFromStyle(
+        final result = buildDeckPresentationFromStyle(
           buildStyle(heading: '#ff5733'),
         );
 
@@ -136,7 +138,7 @@ void main() {
 
     group('font configurations', () {
       test('handles null fonts gracefully', () {
-        final result = buildDeckOptionsFromStyle(
+        final result = buildDeckPresentationFromStyle(
           buildStyle(heading: '#FF0000'),
         );
 
@@ -166,7 +168,7 @@ void main() {
 
     group('complete style configurations (colors only)', () {
       test('handles complete valid style configuration without fonts', () {
-        final result = buildDeckOptionsFromStyle(
+        final result = buildDeckPresentationFromStyle(
           buildStyle(
             heading: '#FF5733',
             body: '#33FF57',
@@ -179,7 +181,7 @@ void main() {
       });
 
       test('handles realistic AI-generated style without fonts', () {
-        final result = buildDeckOptionsFromStyle(
+        final result = buildDeckPresentationFromStyle(
           buildStyle(
             heading: '#2C3E50',
             body: '#34495E',
@@ -193,7 +195,7 @@ void main() {
     });
 
     group('edge cases', () {
-      test('returns empty DeckOptions when colors have unknown keys', () {
+      test('returns empty DeckPresentation when colors have unknown keys', () {
         final style = DeckStyleType.safeParse({
           'name': 'Invalid Style',
           'colors': {
@@ -204,14 +206,14 @@ void main() {
             'highlight': '#00FFFF',
           },
         }).getOrNull();
-        final result = buildDeckOptionsFromStyle(style);
+        final result = buildDeckPresentationFromStyle(style);
 
         expect(style, isNull);
         expect(result.baseStyle, isNull);
       });
 
       test(
-        'returns empty DeckOptions when style has unknown top-level keys',
+        'returns empty DeckPresentation when style has unknown top-level keys',
         () {
           final style = DeckStyleType.safeParse({
             'name': 'Invalid Style',
@@ -223,7 +225,7 @@ void main() {
             'theme': 'dark',
             'animations': true,
           }).getOrNull();
-          final result = buildDeckOptionsFromStyle(style);
+          final result = buildDeckPresentationFromStyle(style);
 
           expect(style, isNull);
           expect(result.baseStyle, isNull);

@@ -7,18 +7,18 @@ import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('CommentsPanel', () {
+  group('NotesPanel', () {
     testWidgets('renders without errors when empty', (tester) async {
       await tester.pumpWidget(
         MixScope(
           child: MaterialApp(
-            home: Scaffold(body: CommentsPanel(comments: const [])),
+            home: Scaffold(body: NotesPanel(notes: const [])),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(CommentsPanel), findsOneWidget);
+      expect(find.byType(NotesPanel), findsOneWidget);
     });
 
     testWidgets('displays single comment', (tester) async {
@@ -26,7 +26,7 @@ void main() {
         MixScope(
           child: MaterialApp(
             home: Scaffold(
-              body: CommentsPanel(comments: const ['Test comment']),
+              body: NotesPanel(notes: const ['Test comment']),
             ),
           ),
         ),
@@ -41,8 +41,8 @@ void main() {
         MixScope(
           child: MaterialApp(
             home: Scaffold(
-              body: CommentsPanel(
-                comments: const ['Comment 1', 'Comment 2', 'Comment 3'],
+              body: NotesPanel(
+                notes: const ['Comment 1', 'Comment 2', 'Comment 3'],
               ),
             ),
           ),
@@ -60,7 +60,7 @@ void main() {
       await tester.pumpWidget(
         MixScope(
           child: MaterialApp(
-            home: Scaffold(body: CommentsPanel(comments: [longText])),
+            home: Scaffold(body: NotesPanel(notes: [longText])),
           ),
         ),
       );
@@ -74,8 +74,8 @@ void main() {
         MixScope(
           child: MaterialApp(
             home: Scaffold(
-              body: CommentsPanel(
-                comments: const ['Hello! 😀 こんにちは', 'Test & <test>'],
+              body: NotesPanel(
+                notes: const ['Hello! 😀 こんにちは', 'Test & <test>'],
               ),
             ),
           ),
@@ -89,15 +89,15 @@ void main() {
   });
 
   group('Panel Configuration', () {
-    test('CommentsPanel accepts empty list', () {
-      const panel = CommentsPanel(comments: []);
-      expect(panel.comments, isEmpty);
+    test('NotesPanel accepts empty list', () {
+      const panel = NotesPanel(notes: []);
+      expect(panel.notes, isEmpty);
     });
 
-    test('CommentsPanel stores provided comments', () {
-      const comments = ['a', 'b', 'c'];
-      const panel = CommentsPanel(comments: comments);
-      expect(panel.comments, equals(comments));
+    test('NotesPanel stores provided notes', () {
+      const notes = ['a', 'b', 'c'];
+      const panel = NotesPanel(notes: notes);
+      expect(panel.notes, equals(notes));
     });
   });
 

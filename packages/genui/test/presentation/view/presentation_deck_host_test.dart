@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_genui/src/ai/schemas/deck_schemas.dart';
-import 'package:superdeck_genui/src/utils/deck_style_service.dart';
 import 'package:superdeck_genui/src/presentation/view/presentation_deck_host.dart';
+import 'package:superdeck_genui/src/utils/deck_style_service.dart';
 
 void main() {
   setUp(() {
@@ -14,30 +14,33 @@ void main() {
     DeckStyleService.clearCache();
   });
 
-  testWidgets('rebuilds deck options when style notifier changes', (
+  testWidgets('rebuilds deck presentation when style notifier changes', (
     tester,
   ) async {
-    final seenOptions = <DeckOptions>[];
+    final seenRuntimes = <SuperDeckRuntime>[];
 
     await tester.pumpWidget(
       MaterialApp(
         home: PresentationDeckHost(
-          deckAppBuilder: (options) {
-            seenOptions.add(options);
+          deckAppBuilder: (runtime) {
+            seenRuntimes.add(runtime);
             return const SizedBox.shrink();
           },
+          runtimeLoader: (presentation) async =>
+              SuperDeckRuntime.forTesting(presentation: presentation),
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
-    expect(seenOptions, hasLength(1));
-    expect(seenOptions.last.baseStyle, isNull);
+    expect(seenRuntimes, hasLength(1));
+    expect(seenRuntimes.last.presentation.baseStyle, isNull);
 
     DeckStyleService.setStyle(DeckStyleType.parse(_styleMap()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(seenOptions.length, greaterThan(1));
-    expect(seenOptions.last.baseStyle, isNotNull);
+    expect(seenRuntimes.length, greaterThan(1));
+    expect(seenRuntimes.last.presentation.baseStyle, isNotNull);
   });
 }
 

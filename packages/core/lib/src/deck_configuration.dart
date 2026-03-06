@@ -4,6 +4,8 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:path/path.dart' as p;
 
+import 'contracts/deck_artifacts.dart';
+
 part 'deck_configuration.g.dart';
 
 @AckModel()
@@ -53,25 +55,30 @@ final class DeckConfiguration {
   Directory get superdeckDir {
     final validated = _validateRelativePath(
       outputDir,
-      '.superdeck',
+      DeckArtifacts.outputDir,
       'outputDir',
     );
     return Directory(p.normalize(p.join(_baseDir, validated)));
   }
 
-  File get deckJson => File(p.join(superdeckDir.path, 'superdeck.json'));
+  File get deckJson =>
+      File(p.join(superdeckDir.path, DeckArtifacts.deckJsonFile));
   File get deckFullJson =>
-      File(p.join(superdeckDir.path, 'superdeck_full.json'));
+      File(p.join(superdeckDir.path, DeckArtifacts.deckFullJsonFile));
 
   Directory get assetsDir {
-    final validated = _validateRelativePath(assetsPath, 'assets', 'assetsPath');
+    final validated = _validateRelativePath(
+      assetsPath,
+      DeckArtifacts.assetsDir,
+      'assetsPath',
+    );
     return Directory(p.join(superdeckDir.path, validated));
   }
 
   File get assetsRefJson =>
-      File(p.join(superdeckDir.path, 'generated_assets.json'));
+      File(p.join(superdeckDir.path, DeckArtifacts.generatedAssetsJsonFile));
   File get buildStatusJson =>
-      File(p.join(superdeckDir.path, 'build_status.json'));
+      File(p.join(superdeckDir.path, DeckArtifacts.buildStatusJsonFile));
 
   File get slidesFile {
     final validated = _validateRelativePath(

@@ -80,9 +80,9 @@ void main() {
 
     setUp(() {
       // Create minimal test slides using real constructor
-      final slide1 = Slide(key: 'slide-1', sections: [], comments: []);
-      final slide2 = Slide(key: 'slide-2', sections: [], comments: []);
-      final slide3 = Slide(key: 'slide-3', sections: [], comments: []);
+      final slide1 = Slide(key: 'slide-1', sections: [], notes: []);
+      final slide2 = Slide(key: 'slide-2', sections: [], notes: []);
+      final slide3 = Slide(key: 'slide-3', sections: [], notes: []);
 
       testSlides = [
         SlideConfiguration(

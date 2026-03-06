@@ -59,11 +59,21 @@ class SlideConfigurationBuilder {
       }
     }
 
-    // Generate thumbnail asset key using slide key.
-    final thumbnailAsset = GeneratedAsset.thumbnail(slide.key);
-
     // Resolve template, style, and parts
     final resolution = resolver.resolve(slide.options);
+    final renderSignature = GeneratedAsset.buildKey(
+      [
+        slide.hashCode,
+        resolution.style.hashCode,
+        resolution.parts.hashCode,
+        options.debug.hashCode,
+        usedWidgetNames.toList()..sort(),
+      ].join('|'),
+    );
+    final thumbnailAsset = GeneratedAsset.thumbnail(
+      slide.key,
+      renderSignature: renderSignature,
+    );
 
     return SlideConfiguration(
       slideIndex: index,

@@ -1,7 +1,7 @@
 {
   "slides": [
     {
-      "key": "nnHI7Gnw",
+      "key": "twqj0tSm",
       "options": {},
       "sections": [
         {
@@ -22,7 +22,7 @@
       "comments": []
     },
     {
-      "key": "RgCOqyGy",
+      "key": "jzmQg9FF",
       "options": {},
       "sections": [
         {
@@ -50,7 +50,7 @@
       "comments": []
     },
     {
-      "key": "TcStpizi",
+      "key": "N6AMJasO",
       "options": {},
       "sections": [
         {
@@ -76,7 +76,7 @@
       "comments": []
     },
     {
-      "key": "7biToIbl",
+      "key": "qpCfFHU6",
       "options": {},
       "sections": [
         {
@@ -107,7 +107,7 @@
       "comments": []
     },
     {
-      "key": "JP7T137d",
+      "key": "KCzbhSLh",
       "options": {},
       "sections": [
         {
@@ -141,7 +141,7 @@
       "comments": []
     },
     {
-      "key": "JJRQslQK",
+      "key": "nw6lHSjL",
       "options": {},
       "sections": [
         {
@@ -187,7 +187,7 @@
       "comments": []
     },
     {
-      "key": "g7lIjAlr",
+      "key": "lxLJHzO3",
       "options": {},
       "sections": [
         {
@@ -206,7 +206,7 @@
               "type": "block",
               "flex": 3,
               "scrollable": false,
-              "content": "```markdown\n@column {\n  flex: 2\n}\nLeft content here\n\n@column {\n  flex: 3\n}\nRight content here\n```"
+              "content": "```markdown\n@block {\n  flex: 2\n}\nLeft content here\n\n@block {\n  flex: 3\n}\nRight content here\n```"
             }
           ]
         }
@@ -214,7 +214,7 @@
       "comments": []
     },
     {
-      "key": "e9HnvMg9",
+      "key": "6O6VDcHk",
       "options": {},
       "sections": [
         {
@@ -263,7 +263,7 @@
       "comments": []
     },
     {
-      "key": "gVuZG7ua",
+      "key": "EDan4eBQ",
       "options": {},
       "sections": [
         {
@@ -281,7 +281,7 @@
               "type": "block",
               "flex": 2,
               "scrollable": false,
-              "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': MyWidgetDefinition(),\n        },\n      ),\n    ),\n  );\n}\n```{.code}\n\n---\n\n### Mermaid Diagrams {.heading}\n\n@column\n\n```mermaid\nflowchart LR\n    A[Markdown] --> B[Parser]\n    B --> C[Slides]\n    C --> D[Flutter UI]\n    D --> E[PDF Export]\n\n    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff\n```"
+              "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(runtime: runtime),\n  );\n}\n```{.code}\n\n---\n\n### Mermaid Diagrams {.heading}\n\n@block\n\n```mermaid\nflowchart LR\n    A[Markdown] --> B[Parser]\n    B --> C[Slides]\n    C --> D[Flutter UI]\n    D --> E[PDF Export]\n\n    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff\n```"
             }
           ]
         }
@@ -289,7 +289,7 @@
       "comments": []
     },
     {
-      "key": "4CNn7o0N",
+      "key": "SR8ABhsS",
       "options": {},
       "sections": [
         {
@@ -315,7 +315,7 @@
       "comments": []
     },
     {
-      "key": "V7kPb4Lp",
+      "key": "QExThnct",
       "options": {},
       "sections": [
         {
@@ -341,7 +341,7 @@
       "comments": []
     },
     {
-      "key": "dpDlFxBB",
+      "key": "C8r6gb6A",
       "options": {},
       "sections": [
         {
@@ -379,7 +379,7 @@
       "comments": []
     },
     {
-      "key": "0yQFwzmY",
+      "key": "shY8inJJ",
       "options": {},
       "sections": [
         {
@@ -417,7 +417,7 @@
       "comments": []
     },
     {
-      "key": "a5DHlwQO",
+      "key": "KoGyoFYE",
       "options": {},
       "sections": [
         {
@@ -455,7 +455,7 @@
       "comments": []
     },
     {
-      "key": "jDM5LnKe",
+      "key": "pSdPSgnY",
       "options": {},
       "sections": [
         {
@@ -493,7 +493,7 @@
       "comments": []
     },
     {
-      "key": "8S3E7sSK",
+      "key": "gTnFpqec",
       "options": {},
       "sections": [
         {
@@ -519,7 +519,7 @@
       "comments": []
     },
     {
-      "key": "Z2Ux7ll7",
+      "key": "E96dbODN",
       "options": {},
       "sections": [
         {
@@ -539,7 +539,7 @@
       "comments": []
     },
     {
-      "key": "nHvy5Q4p",
+      "key": "eXrJuXLD",
       "options": {},
       "sections": [
         {
@@ -587,7 +587,7 @@
       "comments": []
     },
     {
-      "key": "WLlnZqUO",
+      "key": "P4z1iBd5",
       "options": {},
       "sections": [
         {
@@ -613,7 +613,7 @@
       "comments": []
     },
     {
-      "key": "Z4O0WD4H",
+      "key": "AkehJJKA",
       "options": {},
       "sections": [
         {
@@ -645,7 +645,7 @@
       "comments": []
     },
     {
-      "key": "jtofuW80",
+      "key": "pTQpOnPK",
       "options": {},
       "sections": [
         {
@@ -671,7 +671,7 @@
       "comments": []
     },
     {
-      "key": "XXjcIDlw",
+      "key": "1eM0XiY3",
       "options": {},
       "sections": [
         {
@@ -697,7 +697,7 @@
       "comments": []
     },
     {
-      "key": "9Dvq4KaS",
+      "key": "YCMCADkH",
       "options": {},
       "sections": [
         {
@@ -728,7 +728,7 @@
       "comments": []
     },
     {
-      "key": "PXXVcNne",
+      "key": "jHmU4XO9",
       "options": {},
       "sections": [
         {
@@ -754,7 +754,7 @@
       "comments": []
     },
     {
-      "key": "H3YIHTXR",
+      "key": "D8gwvOnV",
       "options": {
         "template": "corporate"
       },
@@ -777,7 +777,7 @@
       "comments": []
     },
     {
-      "key": "D552GrLc",
+      "key": "zMnR2lH4",
       "options": {
         "style": "highlight",
         "template": "corporate"
@@ -801,7 +801,7 @@
       "comments": []
     },
     {
-      "key": "QKEMAN2B",
+      "key": "bgVDjrnG",
       "options": {
         "template": "minimal"
       },
@@ -824,7 +824,7 @@
       "comments": []
     },
     {
-      "key": "debAcY6g",
+      "key": "MDZPWviz",
       "options": {},
       "sections": [
         {

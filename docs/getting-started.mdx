@@ -50,15 +50,21 @@ Update your `main.dart`:
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SuperDeckApp.initialize();
-  runApp(
-    SuperDeckApp(
-      options: DeckOptions(
-        debug: true, // Enable debug mode during development
-      ),
+  final runtime = await SuperDeckRuntime.create(
+    source: const DeckSource.local(
+      slidesPath: 'slides.md',
+      watch: true,
     ),
+    runtimeConfig: const DeckRuntimeConfig(),
+    presentation: const DeckPresentation(
+      debug: true,
+    ),
+  );
+
+  runApp(
+    SuperDeckApp(runtime: runtime),
   );
 }
 ```
@@ -107,17 +113,7 @@ Use `@block` for markdown content blocks.
 ---
 ```
 
-## Build your presentation
-
-```bash
-# Build once
-superdeck build
-
-# Watch for changes (recommended)
-superdeck build --watch
-```
-
-## Run your app
+## Run your presentation
 
 ```bash
 flutter run
@@ -125,19 +121,20 @@ flutter run
 
 ## Development workflow
 
-Use two terminals:
+Use `DeckSource.local(watch: true)` during development. SuperDeck will:
 
-**Terminal 1** - Watch mode:
-```bash
-superdeck build --watch
-```
+- build `slides.md` before the first frame
+- watch `slides.md` for changes
+- rebuild deck artifacts in `.superdeck/`
 
-**Terminal 2** - Flutter app:
+Run the app with:
+
 ```bash
 flutter run
 ```
 
-Edit `slides.md`, and the CLI rebuilds automatically. Hot reload Flutter to see changes.
+Edit `slides.md`, and SuperDeck rebuilds automatically. Use Flutter hot reload
+for code-side style/widget/template changes.
 
 ## File structure
 
@@ -147,9 +144,9 @@ After setup, your project will have:
 your-flutter-project/
 ├── slides.md                 # Your presentation content
 ├── .superdeck/
-│   ├── superdeck.json        # Generated presentation data
+│   ├── superdeck.v2.json     # Generated presentation data
 │   ├── assets/               # Generated assets
-│   └── generated_assets.json # Asset references
+│   └── generated_assets.v2.json # Asset references
 ├── pubspec.yaml              # Updated with asset configuration
 └── lib/
     └── main.dart             # Your Flutter app
@@ -167,10 +164,11 @@ your-flutter-project/
 - Verify `pubspec.yaml` includes `.superdeck/` and `.superdeck/assets/`
 - Run `superdeck setup` to fix configuration
 
-**SuperDeckApp.initialize() fails**
+**SuperDeckRuntime.create() fails**
 - Call `WidgetsFlutterBinding.ensureInitialized()` first
 - Verify `slides.md` exists and is valid
+- Use `DeckSource.bundle(...)` instead of `DeckSource.local(...)` for bundled/web-only deployments
 
 **Changes not appearing**
-- Confirm CLI watch mode is running
-- Hot reload Flutter after rebuilds complete
+- Confirm `DeckSource.local(watch: true)` is enabled
+- Hot reload Flutter after code-side changes

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:signals/signals_flutter.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck_genui/src/ai/schemas/deck_schemas.dart';
 import 'package:superdeck_genui/src/path_service.dart';
 import 'package:superdeck_genui/src/utils/deck_style_service.dart';
@@ -67,7 +68,7 @@ void main() {
       });
 
       test('returns null from cache when file has no style key', () async {
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString(
           jsonEncode({'slides': [], 'title': 'Test Deck'}),
         );
@@ -80,7 +81,7 @@ void main() {
 
       test('returns style from cache when present in file', () async {
         final expectedStyle = buildStyle();
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString(
           jsonEncode({'slides': [], 'style': expectedStyle}),
         );
@@ -93,7 +94,7 @@ void main() {
       });
 
       test('does not reload if already preloaded', () async {
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString(
           jsonEncode({'style': buildStyle(heading: '#FF0000')}),
         );
@@ -117,7 +118,7 @@ void main() {
       });
 
       test('returns null on JSON parse error', () async {
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString('not valid json {{{');
 
         await DeckStyleService.preloadStyle();
@@ -133,7 +134,7 @@ void main() {
           background: '#FFFFFF',
           fonts: {'headline': 'playfairDisplay', 'body': 'openSans'},
         );
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString(
           jsonEncode({'slides': [], 'style': complexStyle}),
         );
@@ -154,7 +155,7 @@ void main() {
       });
 
       test('returns cached style after preload', () async {
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString(
           jsonEncode({'style': buildStyle(heading: '#FF0000')}),
         );
@@ -232,7 +233,7 @@ void main() {
         );
 
         // Create file with different content
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString(
           jsonEncode({'style': buildStyle(heading: '#FROMFILE')}),
         );
@@ -247,7 +248,7 @@ void main() {
 
     group('clearCache', () {
       test('allows fresh preload after clear', () async {
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
 
         // Write initial style
         await file.writeAsString(
@@ -289,7 +290,7 @@ void main() {
 
     group('cache behavior', () {
       test('cache is shared across calls', () async {
-        final file = File(p.join(superdeckPath, 'superdeck.json'));
+        final file = File(p.join(superdeckPath, DeckArtifacts.deckJsonFile));
         await file.writeAsString(
           jsonEncode({'style': buildStyle(heading: '#FF0000')}),
         );

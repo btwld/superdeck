@@ -28,7 +28,7 @@ Future<void> main(List<String> args) async {
       key: raw.key,
       options: SlideOptions.parse(raw.frontmatter),
       sections: const SectionParser().parse(raw.content),
-      comments: const CommentParser().parse(raw.content),
+      notes: const NoteParser().parse(raw.content),
     );
   }).toList();
 

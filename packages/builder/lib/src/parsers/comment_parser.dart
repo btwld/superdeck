@@ -1,20 +1,22 @@
-class CommentParser {
-  const CommentParser();
+class NoteParser {
+  const NoteParser();
 
   List<String> parse(String content) {
-    final comments = <String>[];
+    final notes = <String>[];
     final pattern = RegExp(r'<!--((?:(?!--).)*?)-->', dotAll: true);
 
     for (final match in pattern.allMatches(content)) {
-      final comment = match.group(1)!.trim();
-      final normalized = comment
+      final note = match.group(1)!.trim();
+      final normalized = note
           .split('\n')
           .map((line) => line.trim())
           .where((line) => line.isNotEmpty)
           .join(' ');
-      comments.add(normalized);
+      notes.add(normalized);
     }
 
-    return comments;
+    return notes;
   }
 }
+
+typedef CommentParser = NoteParser;

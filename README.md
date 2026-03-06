@@ -35,18 +35,27 @@ SuperDeck is a Flutter presentation framework. You write slides in Markdown, and
 
    Future<void> main() async {
      WidgetsFlutterBinding.ensureInitialized();
-     await SuperDeckApp.initialize();
+     final runtime = await SuperDeckRuntime.create(
+       source: const DeckSource.local(
+         slidesPath: 'slides.md',
+         watch: true,
+       ),
+       runtimeConfig: const DeckRuntimeConfig(),
+       presentation: const DeckPresentation(),
+     );
 
-     runApp(const SuperDeckApp(options: DeckOptions()));
+     runApp(SuperDeckApp(runtime: runtime));
    }
    ```
 
-4. Build slides and run the app:
+4. Run the app:
 
    ```bash
-   superdeck build --watch
    flutter run
    ```
+
+   SuperDeck builds `slides.md` on startup and watches it automatically when
+   you use `DeckSource.local(watch: true)`.
 
 ## Write slides
 

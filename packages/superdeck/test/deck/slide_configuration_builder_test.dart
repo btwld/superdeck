@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck/src/deck/slide_configuration_builder.dart';
 import 'package:superdeck/superdeck.dart';
 
@@ -166,7 +167,10 @@ void main() {
 
       final configs = builder.buildConfigurations(slides, options);
 
-      expect(configs.first.thumbnailFile, 'thumbnail_cover.png');
+      expect(
+        configs.first.thumbnailFile,
+        allOf(startsWith('thumbnail_cover_'), endsWith('.png')),
+      );
     });
   });
 }

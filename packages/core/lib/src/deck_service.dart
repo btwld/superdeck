@@ -127,13 +127,8 @@ class DeckService {
     // Save full deck reference with markdown AST JSON
     await _saveFullDeckReference(reference);
 
-    // Generate the asset references for each slide thumbnail
-    final thumbnails = reference.slides.map(
-      (slide) => GeneratedAsset.thumbnail(slide.key),
-    );
-
-    // Combine thumbnail and generated assets, then deduplicate by fileName
-    final allAssets = [...thumbnails, ..._generatedAssets];
+    // Runtime-owned thumbnails are not emitted as build artifacts in v2.
+    final allAssets = [..._generatedAssets];
     final uniqueAssets = <String, GeneratedAsset>{};
     for (final asset in allAssets) {
       uniqueAssets[asset.fileName] = asset;

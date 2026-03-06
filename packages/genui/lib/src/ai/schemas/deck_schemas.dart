@@ -160,7 +160,7 @@ final slideOptionsSchema = _slideOptionsSchema;
 final slideSchema = Ack.object({
   'key': Ack.string().describe('Unique slide identifier using kebab-case'),
   'options': _slideOptionsSchema.optional(),
-  'comments': Ack.list(
+  'notes': Ack.list(
     Ack.string().describe('A speaker note or talking point for this slide'),
   ).optional().describe('Speaker notes'),
   'sections': Ack.list(
@@ -178,7 +178,7 @@ final createSlideSchema = Ack.object({
     'Optional slide identifier. When missing, a key can be generated.',
   ),
   'options': _slideOptionsSchema.optional(),
-  'comments': Ack.list(
+  'notes': Ack.list(
     Ack.string().describe('A speaker note or talking point for this slide'),
   ).optional().describe('Speaker notes'),
   'sections': Ack.list(

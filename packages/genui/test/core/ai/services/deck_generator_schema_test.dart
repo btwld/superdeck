@@ -56,8 +56,8 @@ void main() {
       );
       expect(
         slideRequired,
-        isNot(contains('comments')),
-        reason: 'comments should be optional',
+        isNot(contains('notes')),
+        reason: 'notes should be optional',
       );
 
       // Section level: only 'type' and 'blocks' should be required
@@ -111,7 +111,7 @@ void main() {
 
       // Check that optional fields exist but aren't in required
       expect(slideProps.containsKey('options'), isTrue);
-      expect(slideProps.containsKey('comments'), isTrue);
+      expect(slideProps.containsKey('notes'), isTrue);
     });
 
     test(
@@ -151,7 +151,7 @@ void main() {
         expect(slideItemSchema['description'], equals('A single slide'));
         expect(
           (slideItemSchema['properties'] as Map).keys.toSet(),
-          equals({'key', 'options', 'comments', 'sections'}),
+          equals({'key', 'options', 'notes', 'sections'}),
         );
         expect(
           (slideItemSchema['required'] as List).toSet(),

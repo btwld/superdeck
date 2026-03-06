@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart' show Icons, Colors;
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/export/pdf_export_screen.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/icon_button.dart';
 
 import 'package:flutter/widgets.dart';
-
 import '../../deck/deck_controller.dart';
+import '../../runtime/superdeck_context.dart';
 
 class DeckBottomBar extends StatelessWidget {
   const DeckBottomBar({super.key});
@@ -25,8 +24,9 @@ class DeckBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deck = DeckController.of(context);
-    final pluginActions = deck.plugins
+    final deck = SuperDeck.of(context);
+    final controller = DeckController.of(context);
+    final pluginActions = controller.plugins
         .expand((plugin) => plugin.buildActions(context))
         .toList(growable: false);
 
@@ -48,13 +48,13 @@ class DeckBottomBar extends StatelessWidget {
 
         SDIconButton(
           icon: Icons.save,
-          onPressed: () => PdfExportDialogScreen.show(context),
+          onPressed: () => deck.exportPdf(context),
           semanticLabel: 'Export PDF',
         ),
 
         SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
-          onPressed: () => deck.generateThumbnails(context, force: true),
+          onPressed: () => deck.regenerateThumbnails(context, force: true),
           semanticLabel: 'Regenerate thumbnails',
         ),
         ...pluginActions,

@@ -10,7 +10,7 @@
 part of 'slide_model.dart';
 
 /// Generated schema for Slide
-/// Represents a single slide in a presentation. A slide contains sections of content blocks, optional configuration options, and any speaker notes or comments. Each slide is uniquely identified by a key.
+/// Represents a single slide in a presentation. A slide contains sections of content blocks, optional configuration options, and any speaker notes. Each slide is uniquely identified by a key.
 final slideSchema = Ack.object({
   'key': Ack.string().describe(
     'Unique identifier for this slide, typically generated from content hash.',
@@ -21,9 +21,9 @@ final slideSchema = Ack.object({
   'sections': Ack.list(
     sectionBlockSchema,
   ).describe('List of content sections that make up this slide.'),
-  'comments': Ack.list(
+  'notes': Ack.list(
     Ack.string(),
-  ).describe('Speaker notes or comments associated with this slide.'),
+  ).describe('Speaker notes associated with this slide.'),
 }, additionalProperties: true);
 
 /// Generated schema for SlideOptions
