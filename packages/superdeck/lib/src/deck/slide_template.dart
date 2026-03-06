@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart' show mapEquals;
+
 import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
+import '../utils/collection_hashes.dart';
 
 /// A reusable slide template that bundles chrome (header, footer, background)
 /// with an isolated style system.
@@ -41,8 +44,8 @@ final class SlideTemplate {
           runtimeType == other.runtimeType &&
           parts == other.parts &&
           baseStyle == other.baseStyle &&
-          styles == other.styles;
+          mapEquals(styles, other.styles);
 
   @override
-  int get hashCode => Object.hash(parts, baseStyle, styles);
+  int get hashCode => Object.hash(parts, baseStyle, unorderedMapHash(styles));
 }

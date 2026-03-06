@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/deck_options.dart';
 import '../presentation/deck_presentation.dart';
 import '../utils/app_initialization.dart';
 import '../utils/constants.dart';
@@ -16,7 +15,6 @@ final class SuperDeckRuntime {
   final SuperDeckHandle handle;
 
   final DeckConfiguration _configuration;
-  final DeckOptions _options;
 
   SuperDeckRuntime._({
     required this.source,
@@ -24,9 +22,7 @@ final class SuperDeckRuntime {
     required this.presentation,
     required this.handle,
     required DeckConfiguration configuration,
-    required DeckOptions options,
-  }) : _configuration = configuration,
-       _options = options;
+  }) : _configuration = configuration;
 
   static Future<SuperDeckRuntime> create({
     required DeckSource source,
@@ -88,7 +84,6 @@ final class SuperDeckRuntime {
     final configuration = runtimeConfig.toDeckConfiguration(
       slidesPath: slidesPath,
     );
-    final options = presentation.toDeckOptions();
 
     return SuperDeckRuntime._(
       source: source,
@@ -96,15 +91,11 @@ final class SuperDeckRuntime {
       presentation: presentation,
       handle: handle ?? SuperDeckHandle(),
       configuration: configuration,
-      options: options,
     );
   }
 
   @internal
   DeckConfiguration get configuration => _configuration;
-
-  @internal
-  DeckOptions get options => _options;
 
   @internal
   bool get shouldWatch => switch (source) {

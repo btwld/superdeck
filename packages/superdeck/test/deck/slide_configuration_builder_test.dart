@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck/src/deck/slide_configuration_builder.dart';
 import 'package:superdeck/superdeck.dart';
 
@@ -9,25 +8,25 @@ void main() {
 
   group('SlideConfigurationBuilder', () {
     test('returns empty list for empty slides', () {
-      final result = builder.buildConfigurations([], const DeckOptions());
+      final result = builder.buildConfigurations([], const DeckPresentation());
       expect(result, isEmpty);
     });
 
     test('backward compatibility — no templates, applies deck styles', () {
       final baseStyle = SlideStyle();
-      final options = DeckOptions(baseStyle: baseStyle);
+      final presentation = DeckPresentation(baseStyle: baseStyle);
       final slides = [const Slide(key: 'slide-1')];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
       expect(configs.length, 1);
       expect(configs[0].style, defaultSlideStyle.merge(baseStyle).merge(null));
-      expect(configs[0].parts, options.parts);
+      expect(configs[0].parts, presentation.parts);
     });
 
     test('slide with named style resolves from deck styles', () {
       final namedStyle = SlideStyle();
-      final options = DeckOptions(styles: {'dark': namedStyle});
+      final presentation = DeckPresentation(styles: {'dark': namedStyle});
       final slides = [
         const Slide(
           key: 'styled',
@@ -35,7 +34,7 @@ void main() {
         ),
       ];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
       expect(configs[0].style, defaultSlideStyle.merge(null).merge(namedStyle));
     });
@@ -47,7 +46,7 @@ void main() {
         baseStyle: templateBase,
         parts: templateParts,
       );
-      final options = DeckOptions(templates: {'corporate': template});
+      final presentation = DeckPresentation(templates: {'corporate': template});
       final slides = [
         const Slide(
           key: 'tmpl-slide',
@@ -55,7 +54,7 @@ void main() {
         ),
       ];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
       expect(
         configs[0].style,
@@ -67,7 +66,7 @@ void main() {
     test('slide with template + style uses template style variants', () {
       final variant = SlideStyle();
       final template = SlideTemplate(styles: {'highlight': variant});
-      final options = DeckOptions(templates: {'t': template});
+      final presentation = DeckPresentation(templates: {'t': template});
       final slides = [
         const Slide(
           key: 'variant-slide',
@@ -75,17 +74,17 @@ void main() {
         ),
       ];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
       expect(configs[0].style, defaultSlideStyle.merge(null).merge(variant));
     });
 
     test('defaultTemplate applies to slides without explicit template', () {
       final defaultTemplate = SlideTemplate(baseStyle: SlideStyle());
-      final options = DeckOptions(defaultTemplate: defaultTemplate);
+      final presentation = DeckPresentation(defaultTemplate: defaultTemplate);
       final slides = [const Slide(key: 'default-tmpl')];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
       expect(configs[0].parts, defaultTemplate.parts);
     });
@@ -93,7 +92,7 @@ void main() {
     test('template: "none" opts out of defaultTemplate', () {
       final defaultTemplate = SlideTemplate(baseStyle: SlideStyle());
       final deckBase = SlideStyle();
-      final options = DeckOptions(
+      final presentation = DeckPresentation(
         defaultTemplate: defaultTemplate,
         baseStyle: deckBase,
       );
@@ -104,14 +103,16 @@ void main() {
         ),
       ];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
-      expect(configs[0].parts, options.parts);
+      expect(configs[0].parts, presentation.parts);
       expect(configs[0].style, defaultSlideStyle.merge(deckBase).merge(null));
     });
 
     test('unknown template throws TemplateException', () {
-      final options = DeckOptions(templates: {'real': SlideTemplate()});
+      final presentation = DeckPresentation(
+        templates: {'real': SlideTemplate()},
+      );
       final slides = [
         const Slide(
           key: 'bad',
@@ -120,7 +121,7 @@ void main() {
       ];
 
       expect(
-        () => builder.buildConfigurations(slides, options),
+        () => builder.buildConfigurations(slides, presentation),
         throwsA(isA<TemplateException>()),
       );
     });
@@ -128,7 +129,7 @@ void main() {
     test('mixed slides — some with template, some without', () {
       final template = SlideTemplate(baseStyle: SlideStyle());
       final deckBase = SlideStyle();
-      final options = DeckOptions(
+      final presentation = DeckPresentation(
         baseStyle: deckBase,
         templates: {'t': template},
       );
@@ -140,21 +141,21 @@ void main() {
         ),
       ];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
-      expect(configs[0].parts, options.parts);
+      expect(configs[0].parts, presentation.parts);
       expect(configs[1].parts, template.parts);
     });
 
     test('slideIndex is correctly assigned', () {
-      final options = DeckOptions();
+      const presentation = DeckPresentation();
       final slides = [
         const Slide(key: 'a'),
         const Slide(key: 'b'),
         const Slide(key: 'c'),
       ];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
       expect(configs[0].slideIndex, 0);
       expect(configs[1].slideIndex, 1);
@@ -162,10 +163,10 @@ void main() {
     });
 
     test('thumbnailFile stores generated asset key only', () {
-      final options = DeckOptions();
+      const presentation = DeckPresentation();
       final slides = [const Slide(key: 'cover')];
 
-      final configs = builder.buildConfigurations(slides, options);
+      final configs = builder.buildConfigurations(slides, presentation);
 
       expect(
         configs.first.thumbnailFile,

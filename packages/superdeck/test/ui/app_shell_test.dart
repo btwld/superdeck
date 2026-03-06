@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
-import 'package:superdeck/src/deck/deck_options.dart';
-import 'package:superdeck/src/runtime/superdeck_handle.dart';
-import 'package:superdeck/src/ui/app_shell.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../testing_utils.dart';
 
@@ -25,7 +21,7 @@ void main() {
     final deckService = _StaticDeckService();
     final controller = DeckController(
       deckService: deckService,
-      options: const DeckOptions(),
+      presentation: const DeckPresentation(),
       enableDeckStream: false,
     );
     final initialHandle = SuperDeckHandle()..attach(controller);

@@ -9,10 +9,10 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
 import '../presentation/deck_extension.dart';
+import '../presentation/deck_presentation.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
-import 'deck_options.dart';
 import 'navigation_events.dart';
 import 'navigation_service.dart';
 import 'slide_configuration.dart';
@@ -49,7 +49,9 @@ class DeckController {
   final _loadingState = signal<DeckLoadingState>(DeckLoadingState.idle);
   final _currentDeck = signal<Deck?>(null);
   final _error = signal<Object?>(null);
-  final _options = signal<DeckOptions>(DeckOptions()); // NEVER exposed
+  final _presentation = signal<DeckPresentation>(
+    const DeckPresentation(),
+  ); // NEVER exposed
 
   // UI state
   final _isMenuOpen = signal<bool>(false);
@@ -81,7 +83,7 @@ class DeckController {
     final configuration = _resolveDeckConfiguration(deck);
     return SlideConfigurationBuilder(
       configuration: configuration,
-    ).buildConfigurations(deck.slides, _options.value);
+    ).buildConfigurations(deck.slides, _presentation.value);
   });
 
   late final ReadonlySignal<int> totalSlides = computed(
@@ -126,7 +128,7 @@ class DeckController {
   /// If not provided, default instances are created.
   DeckController({
     required DeckService deckService,
-    required DeckOptions options,
+    required DeckPresentation presentation,
     bool enableDeckStream = !kIsTest,
     NavigationService? navigationService,
     ThumbnailService? thumbnailService,
@@ -140,8 +142,8 @@ class DeckController {
              ),
            ),
        _enableDeckStream = enableDeckStream,
-       _extensions = options.extensions {
-    _options.value = options.copyWith(extensions: _extensions);
+       _extensions = presentation.extensions {
+    _presentation.value = presentation.copyWith(extensions: _extensions);
     final extensionRoutes = _extensions
         .expand((extension) => extension.buildRoutes())
         .toList(growable: false);
@@ -228,16 +230,17 @@ class DeckController {
     }
   }
 
-  /// Updates deck options from runtime/bootstrap state.
+  /// Updates presentation state from runtime/bootstrap state.
   @internal
-  void updateOptions(DeckOptions newOptions) {
+  void updatePresentation(DeckPresentation newPresentation) {
     if (_disposed) return;
-    final normalizedOptions = identical(newOptions.extensions, _extensions)
-        ? newOptions
-        : newOptions.copyWith(extensions: _extensions);
+    final normalizedPresentation =
+        identical(newPresentation.extensions, _extensions)
+        ? newPresentation
+        : newPresentation.copyWith(extensions: _extensions);
 
-    if (_options.value != normalizedOptions) {
-      _options.value = normalizedOptions;
+    if (_presentation.value != normalizedPresentation) {
+      _presentation.value = normalizedPresentation;
     }
   }
 
@@ -400,7 +403,7 @@ class DeckController {
     _loadingState.dispose();
     _currentDeck.dispose();
     _error.dispose();
-    _options.dispose();
+    _presentation.dispose();
     _isMenuOpen.dispose();
     _isNotesOpen.dispose();
     _isRebuilding.dispose();

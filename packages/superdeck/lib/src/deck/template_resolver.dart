@@ -1,8 +1,8 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../presentation/deck_presentation.dart';
 import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
-import 'deck_options.dart';
 import 'slide_template.dart';
 import 'template_exception.dart';
 
@@ -24,17 +24,17 @@ class TemplateResolutionResult {
   });
 }
 
-/// Resolves slide templates and styles from [DeckOptions].
+/// Resolves slide templates and styles from [DeckPresentation].
 ///
 /// Resolution order:
 /// - **With template**: `defaultSlideStyle -> template.baseStyle -> template.styles[style]`
-/// - **Without template**: `defaultSlideStyle -> options.baseStyle -> options.styles[style]`
+/// - **Without template**: `defaultSlideStyle -> presentation.baseStyle -> presentation.styles[style]`
 /// - **With defaultTemplate**: applies when slide has no explicit template
 class TemplateResolver {
-  final DeckOptions _options;
+  final DeckPresentation _presentation;
 
-  TemplateResolver(this._options) {
-    if (_options.templates.containsKey(noneTemplate)) {
+  TemplateResolver(this._presentation) {
+    if (_presentation.templates.containsKey(noneTemplate)) {
       throw ArgumentError.value(
         noneTemplate,
         'templates',
@@ -44,7 +44,7 @@ class TemplateResolver {
     }
   }
 
-  /// Reserved template name that opts out of [DeckOptions.defaultTemplate].
+  /// Reserved template name that opts out of [DeckPresentation.defaultTemplate].
   ///
   /// Use `template: 'none'` in slide options to fall back to deck-level
   /// styles even when a defaultTemplate is configured.
@@ -79,9 +79,9 @@ class TemplateResolver {
       // 'none' explicitly opts out of any template
       if (templateName == noneTemplate) return null;
 
-      final template = _options.templates[templateName];
+      final template = _presentation.templates[templateName];
       if (template == null) {
-        final availableTemplates = _options.templates.keys.toList();
+        final availableTemplates = _presentation.templates.keys.toList();
         final availableMessage = availableTemplates.isEmpty
             ? 'No templates are registered in this deck.'
             : 'Available templates: ${availableTemplates.join(', ')}';
@@ -93,7 +93,7 @@ class TemplateResolver {
       return template;
     }
 
-    return _options.defaultTemplate;
+    return _presentation.defaultTemplate;
   }
 
   TemplateResolutionResult _resolveWithTemplate(
@@ -126,22 +126,22 @@ class TemplateResolver {
   TemplateResolutionResult _resolveWithoutTemplate(String? styleName) {
     SlideStyle? styleOverride;
     if (styleName != null) {
-      styleOverride = _options.styles[styleName];
+      styleOverride = _presentation.styles[styleName];
       if (styleOverride == null) {
         throw TemplateException(
           'Unknown style "$styleName" in deck. '
-          'Available styles: ${_options.styles.keys.join(', ')}',
+          'Available styles: ${_presentation.styles.keys.join(', ')}',
         );
       }
     }
 
     final mergedStyle = defaultSlideStyle
-        .merge(_options.baseStyle)
+        .merge(_presentation.baseStyle)
         .merge(styleOverride);
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: _options.parts,
+      parts: _presentation.parts,
       usingTemplate: false,
     );
   }

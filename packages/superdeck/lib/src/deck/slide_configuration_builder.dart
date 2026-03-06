@@ -1,7 +1,7 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../presentation/deck_presentation.dart';
 import '../widgets/widgets.dart';
-import 'deck_options.dart';
 import 'slide_configuration.dart';
 import 'template_resolver.dart';
 import 'widget_definition.dart';
@@ -21,16 +21,21 @@ class SlideConfigurationBuilder {
   /// Builds a list of SlideConfigurations from raw slides and options.
   List<SlideConfiguration> buildConfigurations(
     List<Slide> rawSlides,
-    DeckOptions options,
+    DeckPresentation presentation,
   ) {
     if (rawSlides.isEmpty) {
       return [];
     }
 
-    final resolver = TemplateResolver(options);
+    final resolver = TemplateResolver(presentation);
 
     return rawSlides.asMap().entries.map((entry) {
-      return _buildConfiguration(entry.key, entry.value, options, resolver);
+      return _buildConfiguration(
+        entry.key,
+        entry.value,
+        presentation,
+        resolver,
+      );
     }).toList();
   }
 
@@ -38,7 +43,7 @@ class SlideConfigurationBuilder {
   SlideConfiguration _buildConfiguration(
     int index,
     Slide slide,
-    DeckOptions options,
+    DeckPresentation presentation,
     TemplateResolver resolver,
   ) {
     // Start with built-in widgets, then add user widgets that are actually used
@@ -53,7 +58,7 @@ class SlideConfigurationBuilder {
 
     // Add user widgets that are used (overriding built-ins if necessary)
     for (final name in usedWidgetNames) {
-      final userWidget = options.widgets[name];
+      final userWidget = presentation.widgets[name];
       if (userWidget != null) {
         widgets[name] = userWidget;
       }
@@ -66,7 +71,7 @@ class SlideConfigurationBuilder {
         slide.hashCode,
         resolution.style.hashCode,
         resolution.parts.hashCode,
-        options.debug.hashCode,
+        presentation.debug.hashCode,
         usedWidgetNames.toList()..sort(),
       ].join('|'),
     );
@@ -82,7 +87,7 @@ class SlideConfigurationBuilder {
       widgets: widgets,
       thumbnailFile: thumbnailAsset.fileName,
       parts: resolution.parts,
-      debug: options.debug,
+      debug: presentation.debug,
     );
   }
 }

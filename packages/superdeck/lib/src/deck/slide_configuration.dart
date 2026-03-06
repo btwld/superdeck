@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
 import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
+import '../utils/collection_hashes.dart';
 import 'widget_definition.dart';
 
 class SlideConfiguration {
@@ -79,7 +81,7 @@ class SlideConfiguration {
           debug == other.debug &&
           parts == other.parts &&
           thumbnailFile == other.thumbnailFile &&
-          _widgets == other._widgets &&
+          mapEquals(_widgets, other._widgets) &&
           isExporting == other.isExporting;
 
   @override
@@ -90,7 +92,7 @@ class SlideConfiguration {
     debug,
     parts,
     thumbnailFile,
-    _widgets,
+    unorderedMapHash(_widgets),
     isExporting,
   );
 }

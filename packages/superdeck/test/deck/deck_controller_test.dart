@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
-import 'package:superdeck/src/deck/deck_options.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../testing_utils.dart';
 
@@ -60,7 +59,7 @@ void main() {
       mockDeckService = MockDeckService();
       controller = DeckController(
         deckService: mockDeckService,
-        options: const DeckOptions(),
+        presentation: const DeckPresentation(),
         enableDeckStream: true,
       );
     });
@@ -217,19 +216,22 @@ void main() {
       });
     });
 
-    group('Options Updates', () {
-      test('updateOptions updates internal options', () {
-        const newOptions = DeckOptions(debug: true);
+    group('Presentation Updates', () {
+      test('updatePresentation updates internal presentation', () {
+        const newPresentation = DeckPresentation(debug: true);
         // Verify options update completes without throwing
-        expect(() => controller.updateOptions(newOptions), returnsNormally);
+        expect(
+          () => controller.updatePresentation(newPresentation),
+          returnsNormally,
+        );
       });
 
-      test('updateOptions does not trigger if options unchanged', () {
-        const options = DeckOptions();
-        // Verify idempotent behavior - calling twice with same options doesn't throw
+      test('updatePresentation does not trigger if presentation unchanged', () {
+        const presentation = DeckPresentation();
+        // Verify idempotent behavior - calling twice with the same presentation doesn't throw
         expect(() {
-          controller.updateOptions(options);
-          controller.updateOptions(options);
+          controller.updatePresentation(presentation);
+          controller.updatePresentation(presentation);
         }, returnsNormally);
       });
     });
@@ -268,7 +270,7 @@ void main() {
           final service = MockDeckService(configuration: serviceConfig);
           final tempController = DeckController(
             deckService: service,
-            options: const DeckOptions(),
+            presentation: const DeckPresentation(),
             enableDeckStream: true,
           );
 
@@ -366,7 +368,7 @@ void main() {
         final disposableService = MockDeckService();
         final disposableController = DeckController(
           deckService: disposableService,
-          options: const DeckOptions(),
+          presentation: const DeckPresentation(),
           enableDeckStream: true,
         );
 

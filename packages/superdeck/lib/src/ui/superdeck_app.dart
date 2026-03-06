@@ -82,7 +82,7 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
 
     _deckController = DeckController(
       deckService: deckService,
-      options: widget.runtime.options,
+      presentation: widget.runtime.presentation,
       enableDeckStream: widget.runtime.usesLocalSource && kCanRunProcess,
     );
     widget.runtime.handle.attach(_deckController);
@@ -111,8 +111,8 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
   @override
   void didUpdateWidget(covariant _RuntimeBootstrap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.runtime.options != oldWidget.runtime.options) {
-      _deckController.updateOptions(widget.runtime.options);
+    if (widget.runtime.presentation != oldWidget.runtime.presentation) {
+      _deckController.updatePresentation(widget.runtime.presentation);
     }
     if (!identical(widget.runtime.handle, oldWidget.runtime.handle)) {
       oldWidget.runtime.handle.detach(_deckController);

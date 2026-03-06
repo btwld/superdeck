@@ -1,8 +1,27 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/src/deck/deck_options.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/styling/schema/style_config.dart';
-import 'package:superdeck/src/styling/components/slide.dart';
+
+class _TestWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
+  const _TestWidgetDefinition();
+
+  @override
+  Map<String, Object?> parse(Map<String, Object?> args) => args;
+
+  @override
+  Widget build(BuildContext context, Map<String, Object?> args) {
+    return const SizedBox.shrink();
+  }
+}
+
+class _TestExtension extends DeckExtension {
+  const _TestExtension(this.name);
+
+  @override
+  final String name;
+}
 
 void main() {
   group('StyleConfigLoader', () {
@@ -11,7 +30,7 @@ void main() {
         final codeStyle = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 96)),
         );
-        final codeOptions = DeckOptions(baseStyle: codeStyle);
+        final codeOptions = DeckPresentation(baseStyle: codeStyle);
 
         final yamlConfig = (baseStyle: null, styles: <String, SlideStyle>{});
 
@@ -29,7 +48,7 @@ void main() {
           styles: <String, SlideStyle>{},
         );
 
-        final codeOptions = const DeckOptions();
+        final codeOptions = const DeckPresentation();
 
         final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
@@ -49,7 +68,7 @@ void main() {
         final codeStyle = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 120)), // override
         );
-        final codeOptions = DeckOptions(baseStyle: codeStyle);
+        final codeOptions = DeckPresentation(baseStyle: codeStyle);
 
         final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
@@ -64,7 +83,7 @@ void main() {
         final codeStyle = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 96)),
         );
-        final codeOptions = DeckOptions(baseStyle: codeStyle);
+        final codeOptions = DeckPresentation(baseStyle: codeStyle);
 
         final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
@@ -87,7 +106,7 @@ void main() {
         final codeSpecialStyle = SlideStyle(
           p: TextStyler().style(TextStyleMix(fontSize: 32)),
         );
-        final codeOptions = DeckOptions(
+        final codeOptions = DeckPresentation(
           styles: {'title': codeTitleStyle, 'special': codeSpecialStyle},
         );
 
@@ -104,7 +123,9 @@ void main() {
         final codeSpecialStyle = SlideStyle(
           p: TextStyler().style(TextStyleMix(fontSize: 32)),
         );
-        final codeOptions = DeckOptions(styles: {'special': codeSpecialStyle});
+        final codeOptions = DeckPresentation(
+          styles: {'special': codeSpecialStyle},
+        );
 
         final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
@@ -120,21 +141,37 @@ void main() {
           styles: <String, SlideStyle>{'title': yamlTitleStyle},
         );
 
-        final codeOptions = const DeckOptions();
+        final codeOptions = const DeckPresentation();
 
         final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
 
         expect(result.styles.containsKey('title'), isTrue);
       });
 
-      test('preserves non-style options from code', () {
+      test('preserves non-style presentation fields from code', () {
         final yamlConfig = (baseStyle: null, styles: <String, SlideStyle>{});
+        final widgetDefinition = const _TestWidgetDefinition();
+        final parts = SlideParts();
+        final defaultTemplate = SlideTemplate(styles: {'hero': SlideStyle()});
+        final extension = const _TestExtension('presenter-tools');
 
-        final codeOptions = DeckOptions(debug: true);
+        final codePresentation = DeckPresentation(
+          widgets: {'custom': widgetDefinition},
+          parts: parts,
+          debug: true,
+          templates: {'main': defaultTemplate},
+          defaultTemplate: defaultTemplate,
+          extensions: [extension],
+        );
 
-        final result = StyleConfigLoader.merge(yamlConfig, codeOptions);
+        final result = StyleConfigLoader.merge(yamlConfig, codePresentation);
 
+        expect(result.widgets, same(codePresentation.widgets));
+        expect(result.parts, same(parts));
         expect(result.debug, isTrue);
+        expect(result.templates, same(codePresentation.templates));
+        expect(result.defaultTemplate, same(defaultTemplate));
+        expect(result.extensions, same(codePresentation.extensions));
       });
     });
 
@@ -143,7 +180,7 @@ void main() {
         final codeStyle = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 96)),
         );
-        final codeOptions = DeckOptions(baseStyle: codeStyle);
+        final codeOptions = DeckPresentation(baseStyle: codeStyle);
 
         final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
@@ -161,7 +198,7 @@ base:
   h1:
     fontSize: 120
 ''';
-          final codeOptions = const DeckOptions();
+          final codeOptions = const DeckPresentation();
 
           final result = await StyleConfigLoader.loadAndMerge(
             codeOptions,
@@ -177,7 +214,7 @@ base:
         final codeStyle = SlideStyle(
           h1: TextStyler().style(TextStyleMix(fontSize: 96)),
         );
-        final codeOptions = DeckOptions(baseStyle: codeStyle);
+        final codeOptions = DeckPresentation(baseStyle: codeStyle);
 
         final result = await StyleConfigLoader.loadAndMerge(
           codeOptions,
@@ -199,7 +236,7 @@ styles:
       fontSize: 120.0
 ''';
         final result = await StyleConfigLoader.loadAndMerge(
-          const DeckOptions(),
+          const DeckPresentation(),
           loader: () async => yaml,
         );
 
@@ -209,7 +246,7 @@ styles:
       });
 
       test('returns code options for empty yaml string', () async {
-        final codeOptions = DeckOptions(
+        final codeOptions = DeckPresentation(
           baseStyle: SlideStyle(
             h1: TextStyler().style(TextStyleMix(fontSize: 96)),
           ),
@@ -224,7 +261,7 @@ styles:
       });
 
       test('returns code options for whitespace-only string', () async {
-        final codeOptions = DeckOptions(
+        final codeOptions = DeckPresentation(
           baseStyle: SlideStyle(
             h1: TextStyler().style(TextStyleMix(fontSize: 96)),
           ),
@@ -245,7 +282,7 @@ base:
   h1:
     fontsize: 96.0
 ''';
-        final codeOptions = DeckOptions(
+        final codeOptions = DeckPresentation(
           baseStyle: SlideStyle(
             h1: TextStyler().style(TextStyleMix(fontSize: 48)),
           ),
@@ -261,7 +298,7 @@ base:
       });
 
       test('returns code options for empty yaml map', () async {
-        final codeOptions = DeckOptions(
+        final codeOptions = DeckPresentation(
           baseStyle: SlideStyle(
             h1: TextStyler().style(TextStyleMix(fontSize: 96)),
           ),

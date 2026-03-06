@@ -8,10 +8,13 @@ Agents should read this file before substantive work and update it as work progr
 ## Current Focus
 - The audit cleanup slice is complete and validated.
 - Keep the rewrite on the approved runtime-first v2 surface without reopening architecture decisions.
-- Run a post-cleanup correctness review across the changed files to catch any remaining drift, subtle regressions, or cleanup mistakes before starting the next internal simplification slice.
+- The internal presentation simplification slice is complete:
+  - `DeckPresentation` is now the only production presentation/config type inside `packages/superdeck`
+  - the old internal `DeckOptions` bridge has been removed
+  - `StyleConfigLoader` now merges into `DeckPresentation`
 - Use the next slice for internal simplification only:
-  - remove the remaining internal `DeckOptions` bridge when runtime/template internals can consume v2 presentation types directly
-  - review whether `StyleConfigLoader` stays as an internal helper or moves into a narrower migration-only home
+  - review whether `StyleConfigLoader` should stay in its current internal home or move into a narrower migration-only/styling utility location
+  - do a final cleanup of internal/test-only migration leftovers
   - keep protected block-widget, hero, and export behavior unchanged unless a failing test forces a minimal fix
 
 ## Canonical Planning Docs
@@ -49,6 +52,11 @@ Agents should read this file before substantive work and update it as work progr
 - A follow-up correctness pass found and fixed one additional runtime-bootstrap issue:
   - `SuperDeckApp` was reusing the existing `_RuntimeBootstrap` state when a new `SuperDeckRuntime` instance was provided, which meant controller/watcher state could stay bound to the old runtime source/configuration
   - `SuperDeckApp` now keys `_RuntimeBootstrap` by runtime identity so a new runtime instance forces a fresh bootstrap, and a targeted regression test covers shared-handle runtime replacement
+- The internal presentation simplification slice has now landed:
+  - removed `packages/superdeck/lib/src/deck/deck_options.dart`
+  - `DeckPresentation` now flows directly through runtime bootstrap, `DeckController`, `TemplateResolver`, `SlideConfigurationBuilder`, and `PresentationSlideBuilder`
+  - `StyleConfigLoader` now accepts and returns `DeckPresentation` while still only merging style concerns
+  - `packages/superdeck` tests were migrated off `DeckOptions`
 - The same review also corrected remaining planning drift:
   - session/audit/build-watch planning docs now consistently describe `build` / `build --watch` as transitional v2.0 support instead of implying an immediate `setup` / `publish`-only CLI surface
 - Full validation for the cleanup slice is green:
@@ -135,14 +143,78 @@ Agents should read this file before substantive work and update it as work progr
    - revisit external YAML acquisition/strictness in a dedicated later pass, not as a blocker for the current implementation review checklist
 
 ## Recommended Next Steps
-1. Remove the remaining internal `DeckOptions` bridge once controller/template internals can consume v2 presentation types directly.
-2. Decide whether `StyleConfigLoader` remains as an internal helper or moves into a narrower migration-only/styling utility surface.
+1. Decide whether `StyleConfigLoader` remains as an internal helper or moves into a narrower migration-only/styling utility surface.
+2. Do a final internal/test-only cleanup pass for remaining `src/` test imports, migration helper wording, and similar non-production leftovers.
 3. Run the integration follow-up in an environment with Linux coverage and a clean macOS/Xcode path.
-4. Do a final internal/test-only cleanup pass for remaining `src/` test imports and explicit migration helpers once the above is stable.
 
 ## Session Log
 
 ### 2026-03-06
+- Started a package-organization review pass for `packages/superdeck/lib/src`:
+  - auditing current folder semantics (`deck`, `presentation`, `runtime`, `widgets`, `rendering`, `ui`, `utils`)
+  - looking for ownership drift and places where file placement still reflects the old controller-era shape instead of the approved v2 semantics
+- Completed the package-organization review pass:
+  - confirmed `packages/superdeck/lib/src/deck/` is still the most overloaded folder and mixes runtime orchestration, navigation/routing, presentation resolution, render-model assembly, and low-level deck loading
+  - confirmed `packages/superdeck/lib/src/presentation/` is too thin to act as the semantic home of the v2 presentation contract, even though `DeckPresentation` is now the canonical public configuration type
+  - identified the cleanest next organization slice as move-only cleanup, not another rewrite:
+    - move template/widget-definition/config-building files under `presentation/`
+    - move routing/loading/controller orchestration under `runtime/`
+    - keep protected rendering and export internals behaviorally unchanged while only fixing placement
+- Started a broader model review pass after the presentation semantics cleanup:
+  - auditing core/runtime model types for equality, copy semantics, and migration drift
+  - checking whether recent collection-equality fixes need to be applied to adjacent model classes as well
+- Completed the broader model review pass:
+  - reviewed the core domain models (`Deck`, `Slide`, `SlideOptions`, blocks, generated asset references) and did not find additional migration-related correctness gaps in their current value semantics
+  - found one adjacent inconsistency in `SlideConfiguration`, where `_widgets` still used shallow map identity for equality/hashCode
+  - fixed `SlideConfiguration` to use Flutter `mapEquals` plus aligned unordered map hashing, and added `packages/superdeck/test/deck/slide_configuration_test.dart`
+  - simplified the recent equality/hash implementation so the unordered map hashing logic now lives in one shared internal utility: `packages/superdeck/lib/src/utils/collection_hashes.dart`
+  - removed the duplicated private `_hashMap(...)` helpers from `DeckPresentation`, `SlideTemplate`, and `SlideConfiguration`
+  - validation for the follow-up:
+    - `dart format` on touched files in `packages/superdeck`
+    - `dart analyze . --fatal-infos` in `packages/superdeck`
+    - `flutter test` in `packages/superdeck`
+- Completed the `DeckPresentation` semantics/test follow-up slice:
+  - updated `DeckPresentation` equality/hashCode to compare collection fields by contents instead of wrapper identity
+  - updated `SlideTemplate` equality/hashCode so template style maps also compare by contents instead of wrapper identity
+  - added `packages/superdeck/test/deck/deck_presentation_test.dart` to cover equivalent rebuilt collection wrappers
+  - strengthened `packages/superdeck/test/styling/schema/style_config_test.dart` so `StyleConfigLoader` explicitly preserves non-style presentation fields (`widgets`, `parts`, `templates`, `defaultTemplate`, `extensions`, and `debug`)
+  - simplified the implementation further per follow-up review:
+    - switched equality checks to Flutter `mapEquals` / `listEquals`
+    - replaced `collection` equality hash helpers with explicit `Object.hashAll` / `Object.hashAllUnordered` helpers so hashing stays aligned with the new equality path
+  - validation for the slice:
+    - `dart format` on touched files in `packages/superdeck`
+    - `dart analyze . --fatal-infos` in `packages/superdeck`
+    - `flutter test` in `packages/superdeck`
+- Started a follow-up semantics/test slice after the final review:
+  - tightening `DeckPresentation` value semantics so equivalent rebuilt collection wrappers are treated consistently
+  - checking whether `SlideTemplate` needs the same collection-equality treatment to make template maps stable under rebuilds
+  - adding explicit regression coverage that `StyleConfigLoader` preserves non-style presentation fields beyond just `debug`
+- Ran an additional detailed review pass over the simplified presentation path:
+  - fresh validation stayed green:
+    - `dart analyze packages/superdeck --fatal-infos`
+    - `flutter test` in `packages/superdeck`
+  - recorded two remaining correctness risks for follow-up, without changing code in this pass:
+    - user confirmed `DeckPresentation.copyWith(...)` should not support null-clearing for nullable fields like `baseStyle` or `defaultTemplate`; treat that as intentional API behavior, not a defect
+    - `DeckPresentation` equality/hashCode still use shallow collection identity for `styles`, `widgets`, `templates`, and `extensions`, so logically equivalent rebuilt presentations are treated as changed and can trigger unnecessary runtime/controller updates
+  - recorded one remaining test gap for follow-up:
+    - `StyleConfigLoader` tests only assert preservation of `debug`, not the other non-style `DeckPresentation` fields that should remain unchanged through YAML merges
+- Completed the internal presentation simplification slice:
+  - removed the remaining production `DeckOptions` bridge so `DeckPresentation` is now the only production presentation/config type inside `packages/superdeck`
+  - updated runtime/bootstrap/controller/template/style-loader production code to consume `DeckPresentation` directly
+  - deleted `packages/superdeck/lib/src/deck/deck_options.dart`
+  - migrated `packages/superdeck` tests off `DeckOptions`
+  - validation for the slice:
+    - `dart analyze packages/superdeck --fatal-infos`
+    - `flutter test` in `packages/superdeck`
+    - `flutter test` in `packages/genui`
+    - workspace `dart analyze --fatal-infos` via `melos run analyze:dart`
+  - validation notes:
+    - no active `DeckOptions` references remain under `packages/` or `demo/`
+    - workspace DCM validation is still blocked by the existing license/tool activation issue
+    - the interactive workspace `melos run test` flow is not a reliable non-interactive validation path on this host; package-level test validation remains green
+- Started the internal presentation simplification slice:
+  - removing the remaining production `DeckOptions` bridge so `DeckPresentation` is the only presentation/config type used through runtime, controller, template resolution, slide configuration building, and internal style merging
+  - keeping the slice behavior-preserving and scoped away from protected block-widget, hero, thumbnail, and export internals
 - Ran another correctness review pass across the runtime/bootstrap surfaces:
   - found that `SuperDeckApp` reused the old `_RuntimeBootstrap` state when given a new `SuperDeckRuntime` instance, which left controller/watch wiring attached to the previous runtime configuration
   - fixed this by keying `_RuntimeBootstrap` with the runtime identity so runtime replacement recreates the controller/watch bootstrap cleanly

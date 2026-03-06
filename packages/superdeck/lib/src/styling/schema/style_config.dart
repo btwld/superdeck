@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../deck/deck_options.dart';
+import '../../presentation/deck_presentation.dart';
 import '../components/slide.dart';
 import 'style_schemas.dart';
 
@@ -33,15 +33,13 @@ typedef StyleYamlLoader = Future<String?> Function();
 ///
 /// ```dart
 /// void main() async {
-///   // Load styles.yaml and merge with code options
-///   final options = await StyleConfigLoader.loadAndMerge(
-///     DeckOptions(
+///   // Load styles.yaml and merge with code presentation styles
+///   final presentation = await StyleConfigLoader.loadAndMerge(
+///     DeckPresentation(
 ///       baseStyle: myCustomStyle,
 ///       styles: {'special': specialStyle},
 ///     ),
 ///   );
-///
-///   runApp(SuperDeckApp(options: options));
 /// }
 /// ```
 class StyleConfigLoader {
@@ -54,19 +52,19 @@ class StyleConfigLoader {
   // PUBLIC API
   // ===========================================================================
 
-  /// Loads YAML configuration and merges it with code-defined options.
+  /// Loads YAML configuration and merges it with code-defined presentation.
   ///
   /// Parameters:
-  /// - [codeOptions]: The code-defined DeckOptions (always preserved)
+  /// - [codePresentation]: The code-defined presentation (always preserved)
   /// - [stylesPath]: Optional custom path to styles.yaml file
   /// - [loader]: Optional custom loader for web/testing
   ///
-  /// Returns [codeOptions] unchanged if:
+  /// Returns [codePresentation] unchanged if:
   /// - No YAML file is found
   /// - YAML parsing fails
   /// - Running on web without a custom loader
-  static Future<DeckOptions> loadAndMerge(
-    DeckOptions codeOptions, {
+  static Future<DeckPresentation> loadAndMerge(
+    DeckPresentation codePresentation, {
     String? stylesPath,
     StyleYamlLoader? loader,
   }) async {
@@ -77,29 +75,32 @@ class StyleConfigLoader {
 
     if (yamlConfig == null) {
       _logger.fine(
-        'No YAML style configuration loaded, using code options only',
+        'No YAML style configuration loaded, using code presentation only',
       );
-      return codeOptions;
+      return codePresentation;
     }
 
-    return merge(yamlConfig, codeOptions);
+    return merge(yamlConfig, codePresentation);
   }
 
-  /// Merges YAML configuration with code options.
+  /// Merges YAML configuration with code presentation.
   ///
-  /// Code options take precedence over YAML options.
-  static DeckOptions merge(
+  /// Code presentation takes precedence over YAML styles.
+  static DeckPresentation merge(
     StyleConfigResult yamlConfig,
-    DeckOptions codeOptions,
+    DeckPresentation codePresentation,
   ) {
     final mergedBaseStyle = _mergeBaseStyle(
       yamlConfig.baseStyle,
-      codeOptions.baseStyle,
+      codePresentation.baseStyle,
     );
 
-    final mergedStyles = _mergeStyleMaps(yamlConfig.styles, codeOptions.styles);
+    final mergedStyles = _mergeStyleMaps(
+      yamlConfig.styles,
+      codePresentation.styles,
+    );
 
-    return codeOptions.copyWith(
+    return codePresentation.copyWith(
       baseStyle: mergedBaseStyle,
       styles: mergedStyles,
     );
