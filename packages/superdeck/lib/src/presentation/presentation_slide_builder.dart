@@ -4,6 +4,8 @@ import 'deck_presentation.dart';
 import '../slides/slide_configuration.dart';
 import '../slides/slide_configuration_builder.dart';
 
+/// Compatibility helper for downstream packages that need to build render-ready
+/// slide models without depending on the lower-level builder directly.
 class PresentationSlideBuilder {
   final DeckConfiguration configuration;
 

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import '../../ui/ui.dart';
 
 import '../../rendering/slides/slide_screen.dart';
+import '../../ui/widgets/button.dart';
+import '../../ui/widgets/loading_indicator.dart';
 import '../superdeck_context.dart';
 
 /// Widget for rendering slide page content
 ///
-/// Handles loading states, errors, and syncing route index with DeckController.
-/// Separated from routing concerns to avoid tight coupling.
+/// Handles loading states, errors, and syncing route index with runtime state
+/// exposed through [SuperDeckHandle].
 class SlidePageContent extends StatelessWidget {
   final int index;
 
@@ -21,7 +22,7 @@ class SlidePageContent extends StatelessWidget {
 
     // Use Watch to react to signals
     return Watch((context) {
-      // Access deck controller state
+      // Access runtime state through the public handle surface.
       final isLoading = handle.isLoading.value;
       final hasError = handle.hasError.value;
       final slides = handle.slides.value;

@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import '../ui/ui.dart';
 import '../ui/widgets/cache_image_widget.dart';
+import '../ui/widgets/error_widgets.dart';
+import '../ui/widgets/loading_indicator.dart';
 
 typedef AsyncFileGenerator =
     Future<Uri?> Function(BuildContext context, {required bool force});

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import '../../ui/ui.dart';
 
-import '../../slides/slide_configuration.dart';
 import '../../runtime/superdeck_context.dart';
+import '../../slides/slide_configuration.dart';
+import '../../ui/widgets/loading_indicator.dart';
 import '../../utils/constants.dart';
 
 class SlideThumbnail extends StatelessWidget {

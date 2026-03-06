@@ -128,7 +128,7 @@ The rewrite only makes sense if it preserves the real product surface that exist
 - `setup` creates sample slides, patches `pubspec.yaml`, writes custom `web/index.html`, and updates macOS entitlements
 - `build` supports watch and force rebuild behavior
 - `publish` builds web with GitHub Pages base-href, uses git worktree flow, writes `.nojekyll`, supports dry-run, and restores temporary mutations
-- `superdeck.yaml` is currently read in both CLI and some runtime flows, but strictness and availability differ by environment today
+- `superdeck.yaml` is currently read by the CLI only; runtime configuration is explicit and does not implicitly resolve local YAML
 
 ### Why a rewrite makes sense
 The rewrite is warranted because the current implementation carries structural complexity that is now shaping behavior:
@@ -711,7 +711,7 @@ Benefit:
 
 ### Simplification 6: centralize runtime bootstrap and operational config
 Current:
-- `superdeck.yaml` resolution, `styles.yaml` loading, syntax highlighter init, window setup, and plugin initialization live in separate runtime utilities
+- CLI `superdeck.yaml` loading, `styles.yaml` loading, syntax highlighter init, window setup, and plugin initialization live in separate utilities
 
 Rewrite:
 - `RuntimeBootstrap` owns operational config loading, style merge, syntax-highlighter init, desktop window init, and plugin initialization

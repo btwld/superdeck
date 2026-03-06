@@ -6,6 +6,8 @@ This is the live session and handoff document for ongoing work in the SuperDeck 
 Agents should read this file before substantive work and update it as work progresses.
 
 ## Current Focus
+- The dead-utility and compatibility cleanup slice is complete at the code/doc level.
+- Full Flutter test/build reruns for this slice are currently blocked by local disk pressure in `/private/var/folders/.../T/flutter_tools.*`.
 - The audit cleanup slice is complete and validated.
 - Keep the rewrite on the approved runtime-first v2 surface without reopening architecture decisions.
 - The internal presentation simplification slice is complete:
@@ -143,13 +145,69 @@ Agents should read this file before substantive work and update it as work progr
    - revisit external YAML acquisition/strictness in a dedicated later pass, not as a blocker for the current implementation review checklist
 
 ## Recommended Next Steps
-1. Decide whether `StyleConfigLoader` remains as an internal helper or moves into a narrower migration-only/styling utility surface.
-2. Do a final internal/test-only cleanup pass for remaining `src/` test imports, migration helper wording, and similar non-production leftovers.
-3. Run the integration follow-up in an environment with Linux coverage and a clean macOS/Xcode path.
+1. Rerun the blocked Flutter-heavy validation paths (`packages/superdeck` tests, `packages/genui` tests, demo web build) in an environment with more writable disk space.
+2. Decide whether `StyleConfigLoader` remains as an internal helper or moves into a narrower migration-only/styling utility surface.
+3. Do a final internal/test-only cleanup pass for remaining `src/` test imports, migration helper wording, and similar non-production leftovers.
+4. Run the integration follow-up in an environment with Linux coverage and a clean macOS/Xcode path.
 
 ## Session Log
 
 ### 2026-03-06
+- Ran one more post-cleanup drift review pass:
+  - no active `packages/superdeck` code references remain for:
+    - `resolveConfiguration(...)`
+    - `DeckController.of(...)`
+    - `RenderConfig`
+    - `packages/superdeck/lib/src/ui/ui.dart`
+  - remaining `ui/ui.dart` hits are only:
+    - `packages/genui`'s own separate UI barrel, which stayed intentionally out of scope for this slice
+    - historical planning/session notes documenting the cleanup work
+  - no new code-level cleanup misses were found in the dead-utility slice after the final review
+- Completed the dead-utility and compatibility cleanup slice:
+  - deleted unused runtime config compatibility helpers:
+    - `packages/superdeck/lib/src/utils/config_resolver.dart`
+    - `packages/superdeck/lib/src/utils/config_resolver_io.dart`
+    - `packages/superdeck/lib/src/utils/config_resolver_stub.dart`
+    - matching tests under `packages/superdeck/test/utils/`
+  - removed the dead `DeckController.of(...)` access shim from `packages/superdeck/lib/src/runtime/deck_controller.dart`
+  - inlined the single-use `RenderConfig` into `packages/superdeck/lib/src/export/slide_capture_service.dart` and deleted `packages/superdeck/lib/src/export/render_config.dart`
+  - deleted the broad internal `packages/superdeck/lib/src/ui/ui.dart` barrel and replaced `superdeck` package-internal usages with direct widget imports
+  - tightened runtime-facing doc comments so `SuperDeck.of(context)` / `SuperDeckHandle` are the only documented context-access surface
+  - updated planning docs so they no longer describe implicit runtime `superdeck.yaml` discovery as active behavior:
+    - `.planning/rewrite-v2-feature-matrix.md`
+    - `.planning/rewrite-v2-build-watch-runtime.md`
+    - `.planning/rewrite-v2-full-plan.md`
+  - validation for the slice:
+    - `./.fvm/flutter_sdk/bin/dart format` on touched `packages/superdeck` files
+    - `../../.fvm/flutter_sdk/bin/dart analyze . --fatal-infos` in `packages/superdeck`
+    - `./.fvm/flutter_sdk/bin/dart run melos run analyze:dart`
+  - validation blocker for the remaining Flutter-heavy checks:
+    - sequential `../../.fvm/flutter_sdk/bin/flutter test` in `packages/superdeck` failed before test execution with `FileSystemException: No space left on device` while Flutter was writing temp compiler outputs under `/private/var/folders/.../T/flutter_tools.*`
+    - because the host data volume is nearly full, re-running `packages/genui` Flutter tests and demo web build for this slice should be treated as environment-blocked until more writable disk space is available
+- Started the dead-utility and compatibility cleanup slice:
+  - removing unused runtime config compatibility helpers (`resolveConfiguration*`)
+  - removing dead controller access compatibility (`DeckController.of`)
+  - inlining single-use `RenderConfig`
+  - deleting the broad internal `packages/superdeck/lib/src/ui/ui.dart` barrel and replacing it with direct imports inside `superdeck`
+- Started a domain-semantics review pass for `packages/superdeck` and adjacent core models:
+  - auditing overlaps between `deck`, `presentation`, `slide`, and `runtime` terminology across public and internal APIs
+  - focusing on developer-facing naming consistency, package ergonomics, and open-source API clarity rather than behavior changes
+- Completed the domain-semantics review pass:
+  - confirmed the strongest public-surface ambiguity is umbrella export leakage: `package:superdeck/superdeck.dart` currently exposes both the approved runtime-first API and lower-level core/build/view-model types (`DeckConfiguration`, `DeckService`, `PresentationSlideBuilder`, `SlideConfiguration`)
+  - confirmed `DeckPresentation` is still semantically overloaded because it owns runtime behavior via `extensions`, even though the rest of the type is presentation/render policy
+  - confirmed `SlideConfiguration` is really a resolved render model, not author/config input, and its public exposure pulls internal rendering semantics into the extension/widget API
+  - confirmed core `Deck` / `DeckConfiguration` / `DeckService` still mix content, artifact-path, and repository/build-store concerns, which is the main contributor-side vocabulary drift beneath the runtime-first surface
+  - recorded lower-priority naming cleanup candidates for a future compatibility pass:
+    - `SlideParts` would read more clearly as a chrome/frame concept
+    - `WidgetDefinition` / `WidgetBlock` still borrow Flutter's `Widget` term for what is effectively a custom block-definition surface
+- Wrote `.planning/domain-naming-notes.md` to capture the low-churn naming recommendation:
+  - keep the public runtime host family as `SuperDeckRuntime` / `SuperDeckApp` / `SuperDeckHandle`
+  - keep public `DeckRuntimeConfig` and `DeckSource`
+  - treat internal `DeckConfiguration` as the real naming problem and prefer renaming it to `DeckWorkspace` (or `DeckWorkspaceConfig` if a config suffix is required)
+  - leave `DeckPresentation` unchanged for now and only revisit it after runtime behavior (`extensions`) is split out
+- Started a follow-up organization/domain review after the `src/` ownership refactor:
+  - auditing whether the remaining folders (`runtime`, `presentation`, `slides`, `ui`, `utils`, `export`) now match their real owners
+  - looking specifically for post-move simplification opportunities and any remaining mixed-responsibility seams
 - Started a package-organization review pass for `packages/superdeck/lib/src`:
   - auditing current folder semantics (`deck`, `presentation`, `runtime`, `widgets`, `rendering`, `ui`, `utils`)
   - looking for ownership drift and places where file placement still reflects the old controller-era shape instead of the approved v2 semantics
@@ -256,6 +314,20 @@ Agents should read this file before substantive work and update it as work progr
   - all non-environment-blocked checks passed
   - Linux integration remains unavailable on this host
   - direct macOS integration remains blocked by a local Xcode/tooling stall before app startup
+- Completed a follow-up organization/domain review after the `src/` ownership refactor:
+  - the folder split is materially better and no new mixed-responsibility folder like the old `src/deck/` remains
+  - the main remaining organization debt is now concentrated in `src/utils/`, which still mixes runtime startup (`app_initialization.dart`), runtime watch/build plumbing (`deck_watcher*.dart`), asset caching (`asset_cache_store*.dart`), config compatibility (`config_resolver*.dart`), rendering support (`syntax_highlighter.dart`), and generic helpers
+  - `config_resolver_io.dart` / `config_resolver_stub.dart` now appear to be dead production compatibility utilities:
+    - repo scan shows no production callers; only their own tests reference `resolveConfiguration(...)`
+    - they still encode implicit `superdeck.yaml` runtime discovery semantics that the approved v2 runtime contract explicitly moved away from
+  - `ui/ui.dart` remains an overly broad internal barrel:
+    - runtime/navigation/export/rendering files import it for a handful of UI controls/loading widgets
+    - it currently re-exports app shell, panels, tokens, widget helpers, and `SuperDeckApp`, which makes internal UI dependencies broader than necessary
+  - `presentation/presentation_slide_builder.dart` is now only a compatibility wrapper around `SlideConfigurationBuilder` for downstream consumers like `genui`; it adds no domain logic and should be treated as a temporary public helper, not a core owner
+  - `export/render_config.dart` is an over-factored single-use helper:
+    - only `SlideCaptureService` uses it
+    - its `copyWith` is unused
+    - it is a good small code-simplifier cleanup candidate rather than a domain type
 
 ### 2026-03-05
 - Started the code-level v2 rewrite migration from the approved runtime-first API surface:

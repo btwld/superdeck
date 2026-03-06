@@ -12,7 +12,6 @@ import '../ui/widgets/provider.dart';
 import '../rendering/slides/slide_view.dart';
 import '../utils/constants.dart';
 import '../slides/slide_configuration.dart';
-import 'render_config.dart';
 
 enum SlideCaptureQuality {
   thumbnail(0.3),
@@ -57,15 +56,11 @@ class SlideCaptureService {
         throw Exception('BuildContext is no longer mounted');
       }
 
-      final config = RenderConfig(
-        pixelRatio: quality.pixelRatio,
-        context: context,
-        targetSize: kResolution,
-      );
-
       final image = await _fromWidgetToImage(
         InheritedData(data: exportingSlide, child: SlideView(exportingSlide)),
-        config,
+        context: context,
+        pixelRatio: quality.pixelRatio,
+        targetSize: kResolution,
       );
 
       return _imageToUint8List(image);
@@ -112,16 +107,18 @@ class SlideCaptureService {
   /// This is NOT a code smell - it's the minimum required complexity for
   /// programmatic widget-to-image conversion in Flutter.
   Future<ui.Image> _fromWidgetToImage(
-    Widget widget,
-    RenderConfig config,
-  ) async {
+    Widget widget, {
+    required BuildContext context,
+    required double pixelRatio,
+    Size? targetSize,
+  }) async {
     try {
       final child = InheritedTheme.captureAll(
-        config.context,
+        context,
         MediaQuery(
-          data: MediaQuery.of(config.context),
+          data: MediaQuery.of(context),
           child: MaterialApp(
-            theme: Theme.of(config.context),
+            theme: Theme.of(context),
             debugShowCheckedModeBanner: false,
             home: Scaffold(body: widget),
           ),
@@ -131,10 +128,9 @@ class SlideCaptureService {
       final repaintBoundary = RenderRepaintBoundary();
       final platformDispatcher = WidgetsBinding.instance.platformDispatcher;
 
-      final view =
-          View.maybeOf(config.context) ?? platformDispatcher.views.first;
+      final view = View.maybeOf(context) ?? platformDispatcher.views.first;
       final logicalSize =
-          config.targetSize ?? view.physicalSize / view.devicePixelRatio;
+          targetSize ?? view.physicalSize / view.devicePixelRatio;
 
       // Retry logic is necessary because Flutter's render pipeline
       // may need multiple frames to complete complex layouts
@@ -153,10 +149,10 @@ class SlideCaptureService {
             maxHeight: logicalSize.height,
           ),
           physicalConstraints: BoxConstraints(
-            maxWidth: logicalSize.width * config.pixelRatio,
-            maxHeight: logicalSize.height * config.pixelRatio,
+            maxWidth: logicalSize.width * pixelRatio,
+            maxHeight: logicalSize.height * pixelRatio,
           ),
-          devicePixelRatio: config.pixelRatio,
+          devicePixelRatio: pixelRatio,
         ),
       );
 
@@ -204,9 +200,7 @@ class SlideCaptureService {
         retryCount--;
       }
 
-      final image = await repaintBoundary.toImage(
-        pixelRatio: config.pixelRatio,
-      );
+      final image = await repaintBoundary.toImage(pixelRatio: pixelRatio);
 
       buildOwner.finalizeTree();
 

@@ -12,7 +12,6 @@ import '../presentation/deck_extension.dart';
 import '../presentation/deck_presentation.dart';
 import '../slides/slide_configuration.dart';
 import '../slides/slide_configuration_builder.dart';
-import '../ui/widgets/provider.dart';
 import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
 import 'navigation/navigation_events.dart';
@@ -419,13 +418,5 @@ class DeckController {
     canGoNext.dispose();
     canGoPrevious.dispose();
     currentSlide.dispose();
-  }
-
-  // ========================================
-  // STATIC ACCESS
-  // ========================================
-
-  static DeckController of(BuildContext context) {
-    return InheritedData.of<DeckController>(context);
   }
 }

@@ -7,6 +7,7 @@ import '../slides/slide_configuration.dart';
 import 'deck_controller.dart';
 import 'navigation/navigation_events.dart';
 
+/// Narrow runtime interaction surface exposed through [SuperDeck.of].
 class SuperDeckHandle {
   DeckController? _controller;
 

@@ -65,16 +65,16 @@ CLI behavior:
 - `BaseCommand.loadConfiguration()` reads `superdeck.yaml`
 - invalid YAML or invalid schema shape is a hard command failure
 
-Runtime IO behavior:
-- `resolveConfiguration()` reads `superdeck.yaml` only when no explicit override is passed
-- malformed YAML, invalid schema, empty files, and comment-only files all fall back to default configuration
+Runtime behavior:
+- `SuperDeckRuntime.create(...)` takes explicit `DeckSource`, `DeckRuntimeConfig`, and `DeckPresentation` inputs
+- runtime does not implicitly read local `superdeck.yaml`
+- bundled runtimes use their explicit runtime/source inputs and bundled deck artifacts only
 
-Runtime web/test behavior:
-- `resolveConfiguration()` does not read local YAML at all
-- bundled runtimes use the explicit override if provided, otherwise default configuration
+So the current system already has an intentionally split policy:
+- CLI config discovery is strict and file-backed
+- runtime config is explicit and does not rely on implicit YAML discovery
 
-So the current system already has different strictness and different configuration availability by runtime.
-That should be revisited later as an external config-source decision, not as a blocker for freezing embedded runtime watch behavior.
+That split should still be revisited later as an external config-source decision, not as a blocker for freezing embedded runtime watch behavior.
 
 ### `styles.yaml`
 `styles.yaml` is currently a separate, opt-in runtime concern and is also deferred from the current runtime sign-off scope.
