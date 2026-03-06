@@ -29,10 +29,6 @@ String describeDeckState(SuperDeckHandle? handle) {
   ].join('\n');
 }
 
-String describeDeckControllerState(SuperDeckHandle? handle) {
-  return describeDeckState(handle);
-}
-
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
   const TestApp({super.key});
@@ -45,10 +41,7 @@ class TestApp extends StatelessWidget {
     SignalsObserver.instance = null;
     WidgetsBinding.instance.ensureSemantics();
     _runtime = await SuperDeckRuntime.create(
-      source: const DeckSource.local(
-        slidesPath: 'slides.md',
-        watch: false,
-      ),
+      source: const DeckSource.local(slidesPath: 'slides.md', watch: false),
       runtimeConfig: const DeckRuntimeConfig(
         projectDir: '.',
         outputDir: '.superdeck',
@@ -57,10 +50,7 @@ class TestApp extends StatelessWidget {
       presentation: DeckPresentation(
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
-        styles: {
-          'announcement': announcementStyle(),
-          'quote': quoteStyle(),
-        },
+        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
         templates: {
           'corporate': corporateTemplate(),
           'minimal': minimalTemplate(),
@@ -97,10 +87,6 @@ SuperDeckHandle? findDeckHandle(WidgetTester tester) {
   } catch (e) {
     return null;
   }
-}
-
-SuperDeckHandle? findDeckController(WidgetTester tester) {
-  return findDeckHandle(tester);
 }
 
 /// Extension on WidgetTester for common integration test operations.

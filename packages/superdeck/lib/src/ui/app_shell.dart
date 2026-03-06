@@ -5,14 +5,15 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/rendering/slides/scaled_app.dart';
 import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
 import 'package:superdeck/src/ui/extensions.dart';
-import 'package:superdeck/src/ui/panels/comments_panel.dart';
+import 'package:superdeck/src/ui/panels/notes_panel.dart';
 import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
 import 'package:superdeck/src/ui/widgets/icon_button.dart';
 import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
 import 'package:superdeck/src/utils/constants.dart';
 
-import '../deck/deck_controller.dart';
 import '../deck/navigation_input_listener.dart';
+import '../runtime/superdeck_context.dart';
+import '../runtime/superdeck_handle.dart';
 import 'panels/bottom_bar.dart';
 
 /// High-level app shell that toggles between
@@ -47,8 +48,8 @@ class _SplitViewState extends State<SplitView>
   static const _animationDuration = Duration(milliseconds: 200);
   late final AnimationController _animationController;
   late final Animation<double> _curvedAnimation;
-  bool _isInitialized = false;
   EffectCleanup? _menuEffectCleanup;
+  SuperDeckHandle? _observedDeck;
 
   @override
   void initState() {
@@ -69,41 +70,36 @@ class _SplitViewState extends State<SplitView>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Only run initialization once
-    if (!_isInitialized) {
-      _isInitialized = true;
+    final deck = SuperDeck.of(context);
+    if (identical(deck, _observedDeck)) {
+      return;
+    }
 
-      final deckController = DeckController.of(context);
+    _observedDeck = deck;
+    _menuEffectCleanup?.call();
 
-      // Set initial animation value based on menu state
-      final initialMenuState = deckController.isMenuOpen.value;
+    _animationController.value = deck.isMenuOpen.value ? 1.0 : 0.0;
 
-      if (initialMenuState) {
-        _animationController.value = 1.0;
+    _menuEffectCleanup = effect(() {
+      if (!mounted) return;
+
+      final isMenuOpen = deck.isMenuOpen.value;
+
+      if (isMenuOpen && _animationController.value != 1.0) {
+        _animationController.forward();
+      } else if (!isMenuOpen && _animationController.value != 0.0) {
+        _animationController.reverse();
       }
 
-      // Use effect to listen to menu state changes
-      _menuEffectCleanup = effect(() {
-        if (!mounted) return;
-
-        final isMenuOpen = deckController.isMenuOpen.value;
-
-        if (isMenuOpen && _animationController.value != 1.0) {
-          _animationController.forward();
-        } else if (!isMenuOpen && _animationController.value != 0.0) {
-          _animationController.reverse();
-        }
-
-        if (isMenuOpen) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted || !deckController.isMenuOpen.value) {
-              return;
-            }
-            deckController.generateThumbnails(context);
-          });
-        }
-      });
-    }
+      if (isMenuOpen) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !deck.isMenuOpen.value) {
+            return;
+          }
+          deck.generateThumbnails(context);
+        });
+      }
+    });
   }
 
   @override
@@ -114,9 +110,9 @@ class _SplitViewState extends State<SplitView>
     super.dispose();
   }
 
-  // Build the panel content (thumbnails + optional comments).
+  // Build the panel content (thumbnails + optional notes).
   Widget _buildPanel(BuildContext context) {
-    final deck = DeckController.of(context);
+    final deck = SuperDeck.of(context);
 
     return Watch((context) {
       final currentIndex = deck.currentIndex.value;
@@ -147,13 +143,13 @@ class _SplitViewState extends State<SplitView>
       // This is somewhat reversed based on your preference, so adjust as needed.
       if (widget.isSmallLayout) {
         // Panel at bottom => put them side-by-side in a Row
-          return Row(
-            children: [
-              !isNotesOpen
+        return Row(
+          children: [
+            !isNotesOpen
                 ? Expanded(child: thumbnailPanel)
                 : Expanded(child: notesPanel),
-            ],
-          );
+          ],
+        );
       } else {
         // Panel on the side => put them in a Column
         return Column(
@@ -168,7 +164,7 @@ class _SplitViewState extends State<SplitView>
 
   Widget? _buildFloatingAction({
     required BuildContext context,
-    required DeckController deckController,
+    required SuperDeckHandle deck,
     required bool isMenuOpen,
   }) {
     if (isMenuOpen) {
@@ -177,46 +173,39 @@ class _SplitViewState extends State<SplitView>
 
     final menuButton = SDIconButton(
       icon: Icons.menu,
-      onPressed: deckController.openMenu,
+      onPressed: deck.openMenu,
       semanticLabel: 'Open menu',
     );
-    Widget? pluginAction;
-    for (final plugin in deckController.plugins) {
-      final action = plugin.buildFloatingAction(context);
-      if (action != null) {
-        pluginAction = action;
-        break;
-      }
-    }
+    final extensionAction = deck.buildFloatingAction(context);
 
-    if (pluginAction == null) {
+    if (extensionAction == null) {
       return menuButton;
     }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: [pluginAction, const SizedBox(height: 12), menuButton],
+      children: [extensionAction, const SizedBox(height: 12), menuButton],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final deckController = DeckController.of(context);
+    final deck = SuperDeck.of(context);
 
     // For small layout, the panel is typically at the bottom (vertical),
     // so we place it in a Column below the main content.
     // For regular layout, place it on the left in a Row.
     return Watch((context) {
-      final isMenuOpen = deckController.isMenuOpen.value;
-      final isRebuilding = deckController.isRebuilding.value;
+      final isMenuOpen = deck.isMenuOpen.value;
+      final isRebuilding = deck.isRebuilding.value;
 
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         floatingActionButton: _buildFloatingAction(
           context: context,
-          deckController: deckController,
+          deck: deck,
           isMenuOpen: isMenuOpen,
         ),
 

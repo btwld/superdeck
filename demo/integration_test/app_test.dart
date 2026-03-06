@@ -45,7 +45,7 @@ void main() {
 
         // The app should be in either loading or loaded state
         // (depending on timing, deck may load very quickly in tests)
-        final controller = findDeckController(tester);
+        final controller = findDeckHandle(tester);
 
         // If controller found early, it may already be loading
         if (controller != null) {
@@ -62,7 +62,7 @@ void main() {
 
         // Controller may be mounted after first frame on slower CI machines.
         await tester.pumpFor(const Duration(seconds: 1));
-        final delayedController = findDeckController(tester);
+        final delayedController = findDeckHandle(tester);
         expect(delayedController, isNotNull);
         await tester.waitForSlidesLoaded(delayedController!);
       });
@@ -76,7 +76,7 @@ void main() {
         await tester.pumpUntil(
           () => controller!.currentSlide.value != null,
           debugLabel: 'current slide availability',
-          onTimeout: () => describeDeckControllerState(controller),
+          onTimeout: () => describeDeckState(controller),
         );
 
         expect(controller!.hasError.value, isFalse);
@@ -109,7 +109,7 @@ void main() {
         await tester.pumpUntil(
           () => controller.currentIndex.value == 1,
           debugLabel: 'menu arrow-forward navigation',
-          onTimeout: () => describeDeckControllerState(controller),
+          onTimeout: () => describeDeckState(controller),
         );
         expect(find.textContaining('2 of $totalSlides'), findsOneWidget);
 
@@ -133,7 +133,7 @@ void main() {
         await tester.pumpUntil(
           () => controller.isNotesOpen.value,
           debugLabel: 'notes panel open from icon',
-          onTimeout: () => describeDeckControllerState(controller),
+          onTimeout: () => describeDeckState(controller),
         );
 
         // Semantics label updates can lag on some macOS runners. Use whichever
@@ -148,14 +148,14 @@ void main() {
         } else {
           fail(
             'Could not find notes toggle button after opening panel.\n'
-            '${describeDeckControllerState(controller)}',
+            '${describeDeckState(controller)}',
           );
         }
 
         await tester.pumpUntil(
           () => !controller.isNotesOpen.value,
           debugLabel: 'notes panel close from icon',
-          onTimeout: () => describeDeckControllerState(controller),
+          onTimeout: () => describeDeckState(controller),
         );
       });
 
@@ -193,7 +193,7 @@ void main() {
             await tester.pumpUntil(
               () => controller.currentIndex.value == 1,
               debugLabel: 'thumbnail navigation to slide 2',
-              onTimeout: () => describeDeckControllerState(controller),
+              onTimeout: () => describeDeckState(controller),
             );
           }
         } else {

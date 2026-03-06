@@ -74,7 +74,7 @@ void main() {
         // animation tags. They do NOT trigger custom Mix styles.
         //
         // The current architecture:
-        // 1. CSS classes are parsed and stored in superdeck.json ✓
+        // 1. CSS classes are parsed and stored in the generated deck artifact ✓
         // 2. At runtime, they are extracted for Hero animation tags ✓
         // 3. They are removed from rendered text ✓
         // 4. They do NOT apply custom styles to the text ✗

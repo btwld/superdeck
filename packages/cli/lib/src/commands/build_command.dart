@@ -112,7 +112,7 @@ class BuildCommand extends SuperDeckCommand {
     // Delete the generated assets reference file
     if (await config.assetsRefJson.exists()) {
       await config.assetsRefJson.delete();
-      logger.detail('Deleted generated_assets.json');
+      logger.detail('Deleted generated assets manifest');
     }
 
     // Run the build (pass through the builder if provided)

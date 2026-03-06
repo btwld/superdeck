@@ -8,7 +8,7 @@ export 'widgets/provider.dart';
 export 'superdeck_app.dart';
 export 'app_shell.dart';
 export 'panels/bottom_bar.dart';
-export 'panels/comments_panel.dart';
+export 'panels/notes_panel.dart';
 export 'panels/thumbnail_panel.dart';
 export 'tokens/colors.dart';
 export 'extensions.dart';

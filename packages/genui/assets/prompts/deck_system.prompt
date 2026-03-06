@@ -68,7 +68,7 @@ Each slide has:
 - `key`: Unique identifier - MUST match the key from the outline if provided
 - `options`: \{ title, style } (optional)
 - `sections`: Array of section blocks (required)
-- `comments`: Speaker notes (optional)
+- `notes`: Speaker notes (optional)
 
 **IMPORTANT**: When generating from an outline, preserve the exact slide keys from the outline. The outline keys (e.g., "intro", "slide-1", "conclusion") are used to link images to slides.
 

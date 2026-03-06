@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import 'deck_controller.dart';
 import 'navigation_events.dart';
+import '../runtime/superdeck_context.dart';
 
 /// Unified widget for handling navigation input from keyboard and gestures
 ///
@@ -46,8 +46,8 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
   void _handleNavigationEvent(NavigationEvent? event) {
     if (event == null) return;
 
-    final deck = DeckController.of(context);
-    deck.handleNavigationEvent(event);
+    final handle = SuperDeck.of(context);
+    handle.handleNavigationEvent(event);
   }
 
   @override

@@ -6,11 +6,13 @@ This is the live session and handoff document for ongoing work in the SuperDeck 
 Agents should read this file before substantive work and update it as work progresses.
 
 ## Current Focus
-- Implement the API-first v2 reset around the approved runtime/bootstrap surface.
-- Replace the old `SuperDeckApp(options, configuration?)` primary API with `SuperDeckRuntime.create(...)` plus `SuperDeckApp(runtime: ...)`.
-- Keep the old implementation internals only as migration scaffolding where needed to avoid a half-migrated runtime.
-- Start code refactoring only after the planning/docs pass reflects the approved API-first surface.
-- Review cross-codebase drift and file-organization semantics before landing the runtime refactor, so the migration order is explicit.
+- The audit cleanup slice is complete and validated.
+- Keep the rewrite on the approved runtime-first v2 surface without reopening architecture decisions.
+- Run a post-cleanup correctness review across the changed files to catch any remaining drift, subtle regressions, or cleanup mistakes before starting the next internal simplification slice.
+- Use the next slice for internal simplification only:
+  - remove the remaining internal `DeckOptions` bridge when runtime/template internals can consume v2 presentation types directly
+  - review whether `StyleConfigLoader` stays as an internal helper or moves into a narrower migration-only home
+  - keep protected block-widget, hero, and export behavior unchanged unless a failing test forces a minimal fix
 
 ## Canonical Planning Docs
 - `.planning/rewrite-v2-full-plan.md`
@@ -27,14 +29,39 @@ Agents should read this file before substantive work and update it as work progr
   - deck origin is explicit via `DeckSource.local(...)` and `DeckSource.bundle(...)`
   - runtime/startup config and presentation config are split into separate types
   - runtime owns the local dev watch/build loop
-  - public CLI scope is reduced to `setup` and `publish`
+  - public CLI docs prefer runtime watch, while `build` / `build --watch` remain transitional v2.0 support
   - extensions replace plugins as the behavioral add-on surface
   - advanced consumers use a narrow `SuperDeckHandle`, not `DeckController` construction
 - The planning/docs reconciliation pass has now been applied before code refactoring:
   - added `.planning/rewrite-v2-api-surface.md` as the canonical API-surface planning doc
   - updated the umbrella rewrite docs to treat the runtime-first API as the approved direction
   - updated public docs/READMEs/getting-started/reference content to teach `SuperDeckRuntime.create(...)`, `DeckSource`, `DeckRuntimeConfig`, and `DeckPresentation`
-  - updated CLI docs to remove `build` / `watch` as the intended public day-to-day workflow
+  - updated CLI docs to keep `build` / `build --watch` as transitional v2.0 support while teaching runtime watch as the preferred workflow
+- The audit cleanup slice has now landed:
+  - removed the public `StyleConfigLoader` export so `DeckOptions` is no longer part of the public styling surface
+  - aligned CLI/docs/demo/genui wording with the approved transitional v2 surface
+  - deleted tracked demo v1 artifact files and kept only `.v2.json` outputs
+  - removed `watchForChanges`, collapsed `DeckControllerBuilder` into a private runtime bootstrap inside `SuperDeckApp`, removed the `SuperDeckPlugin` alias, and moved public-facing widget code onto `SuperDeckHandle`
+  - renamed the notes panel file/surface so runtime/public code no longer exposes `comments_panel.dart`
+- A post-cleanup correctness review found and fixed one runtime issue:
+  - `SplitView` in `AppShell` was caching the first inherited `SuperDeckHandle`, which made the supported runtime-handle swap path unsafe after `SuperDeckApp` updates
+  - `SplitView` now rebinds its menu effect when the inherited handle changes, and a targeted regression test covers that path
+- A follow-up correctness pass found and fixed one additional runtime-bootstrap issue:
+  - `SuperDeckApp` was reusing the existing `_RuntimeBootstrap` state when a new `SuperDeckRuntime` instance was provided, which meant controller/watcher state could stay bound to the old runtime source/configuration
+  - `SuperDeckApp` now keys `_RuntimeBootstrap` by runtime identity so a new runtime instance forces a fresh bootstrap, and a targeted regression test covers shared-handle runtime replacement
+- The same review also corrected remaining planning drift:
+  - session/audit/build-watch planning docs now consistently describe `build` / `build --watch` as transitional v2.0 support instead of implying an immediate `setup` / `publish`-only CLI surface
+- Full validation for the cleanup slice is green:
+  - `packages/builder` and `packages/genui` `build_runner` runs passed
+  - contract schema check passed
+  - workspace analyze passed
+  - package tests for `core`, `builder`, `cli`, `superdeck`, `genui`, and `demo` passed
+  - `demo` CLI build passed
+  - `demo` web release build passed
+  - `demo/e2e` smoke suite passed (5/5)
+- Remaining non-code blocker:
+  - Linux integration still cannot be run locally on this machine
+  - direct macOS integration remains an environment/tooling follow-up because the local run stalls inside Xcode before app startup
 - Drift review before refactor has identified the main migration risks:
   - `DeckOptions` is deeply embedded across runtime internals, tests, demo code, docs, and `packages/genui`, so it is not a safe rename-only candidate
   - `DeckConfiguration` in `packages/core` currently mixes local path helpers, artifact filenames, and external config discovery semantics, so it should not be renamed in place to the new runtime API
@@ -108,18 +135,55 @@ Agents should read this file before substantive work and update it as work progr
    - revisit external YAML acquisition/strictness in a dedicated later pass, not as a blocker for the current implementation review checklist
 
 ## Recommended Next Steps
-1. Land the new runtime/bootstrap API:
-   - `SuperDeckRuntime`
-   - `DeckSource`
-   - `DeckRuntimeConfig`
-   - `DeckPresentation`
-   - `DeckExtension`
-   - `SuperDeckHandle`
-2. Rewire `SuperDeckApp` and internal controller bootstrapping around that API while keeping current runtime behavior working.
-3. Reduce the public CLI surface to `setup` and `publish`, with publish using the shared build pipeline internally.
-4. Reconcile tests/docs/migration notes after the code-level public API reset is in place.
+1. Remove the remaining internal `DeckOptions` bridge once controller/template internals can consume v2 presentation types directly.
+2. Decide whether `StyleConfigLoader` remains as an internal helper or moves into a narrower migration-only/styling utility surface.
+3. Run the integration follow-up in an environment with Linux coverage and a clean macOS/Xcode path.
+4. Do a final internal/test-only cleanup pass for remaining `src/` test imports and explicit migration helpers once the above is stable.
 
 ## Session Log
+
+### 2026-03-06
+- Ran another correctness review pass across the runtime/bootstrap surfaces:
+  - found that `SuperDeckApp` reused the old `_RuntimeBootstrap` state when given a new `SuperDeckRuntime` instance, which left controller/watch wiring attached to the previous runtime configuration
+  - fixed this by keying `_RuntimeBootstrap` with the runtime identity so runtime replacement recreates the controller/watch bootstrap cleanly
+  - added `packages/superdeck/test/ui/superdeck_app_test.dart` to verify a shared handle is rebound to a new controller when the runtime instance changes
+  - verification for the follow-up fix:
+    - `dart analyze packages/superdeck --fatal-infos`
+    - `flutter test packages/superdeck/test/ui/app_shell_test.dart packages/superdeck/test/ui/superdeck_app_test.dart`
+    - `flutter test` in `packages/superdeck`
+- Ran a post-cleanup correctness review on the changed files:
+  - found a handle-lifecycle bug in `packages/superdeck/lib/src/ui/app_shell.dart` where `SplitView` cached the first `SuperDeckHandle` and could keep an effect bound to a detached handle after runtime updates
+  - fixed the bug by rebinding the menu effect when the inherited handle changes
+  - added `packages/superdeck/test/ui/app_shell_test.dart` to cover the handle-swap path
+  - corrected remaining planning doc drift around transitional CLI support in:
+    - `.planning/session.md`
+    - `.planning/rewrite-v2-implementation-audit.md`
+    - `.planning/rewrite-v2-build-watch-runtime.md`
+  - verification for the review fix:
+    - `dart analyze packages/superdeck --fatal-infos`
+    - `flutter test packages/superdeck/test/ui/app_shell_test.dart`
+- Completed the audit cleanup execution slice:
+  - removed the public styling export for `StyleConfigLoader`
+  - aligned CLI/docs/demo/genui wording with the approved transitional v2 surface
+  - deleted tracked demo v1 artifact files
+  - removed `watchForChanges`
+  - collapsed `DeckControllerBuilder` into a private bootstrap inside `SuperDeckApp`
+  - removed the `SuperDeckPlugin` alias
+  - moved public-facing runtime UI/widgets from `DeckController.of(...)` to `SuperDeckHandle`
+  - renamed `comments_panel.dart` to `notes_panel.dart` and removed compatibility aliases in demo integration helpers
+- Ran validation for the cleanup slice:
+  - `packages/builder`: `dart run build_runner build --delete-conflicting-outputs`
+  - `packages/genui`: `dart run build_runner build --delete-conflicting-outputs`
+  - `packages/core`: contract schema check
+  - workspace analyze
+  - package tests for `core`, `builder`, `cli`, `superdeck`, `genui`, and `demo`
+  - `demo`: CLI build
+  - `demo`: web release build
+  - `demo/e2e`: Playwright smoke suite
+- Validation result:
+  - all non-environment-blocked checks passed
+  - Linux integration remains unavailable on this host
+  - direct macOS integration remains blocked by a local Xcode/tooling stall before app startup
 
 ### 2026-03-05
 - Started the code-level v2 rewrite migration from the approved runtime-first API surface:
@@ -464,7 +528,25 @@ Agents should read this file before substantive work and update it as work progr
   - `demo/lib/main.dart` now uses `DeckSource.bundle()` on web and `DeckSource.local(...)` on non-web, matching the approved runtime contract and fixing web boot failures
 - Remaining environment-level blocker:
   - CI-default Linux integration command cannot be validated locally because this machine exposes only `macos` and `chrome`, not a Linux device
-  - direct local macOS integration also fails before app startup because Flutter/Xcode request `platform=macOS, arch=arm64` while the available desktop destination on this host is `x86_64` only
+  - previous macOS arch-mismatch diagnosis is stale and should no longer be used as the blocker explanation
+  - current local macOS integration blocker is that `flutter test integration_test -d macos` stalls in the Xcode build phase after repeated `DVTDeviceOperation` warnings and never reaches app startup during the audit window
+- Completed the rewrite implementation audit:
+  - created `.planning/rewrite-v2-implementation-audit.md` as the canonical implementation review and legacy-cleanup inventory
+  - confirmed the public runtime-first v2 API is materially in place across `superdeck`, `demo`, and `genui`
+  - confirmed protected block-widget and hero surfaces are still covered and showed no unexpected drift in the validation sweep
+  - validated the current rewrite with pinned-SDK codegen, contract check, analyze, package tests, demo CLI build, demo web release build, and Playwright smoke
+- Main audit findings now driving cleanup:
+  - `StyleConfigLoader` still exposes `DeckOptions` through a public exported API, so one v1 type still leaks through the public surface
+  - CLI docs drifted: real CLI + package README still support transitional `build` / `build --watch`, while `docs/guides/cli-reference.mdx` teaches only `setup` / `publish`
+  - tracked demo `.superdeck` artifacts still contain both v1 and `.v2.json` filenames
+  - remaining legacy seams (`DeckControllerBuilder`, `watchForChanges`, direct `DeckController.of(...)`, `SuperDeckPlugin` alias, `SuperDeckRuntime.forTesting(...)`) are now explicitly classified as temporary compatibility or test/migration tooling, not target end state
+- Feature-matrix decisions reopened/updated from the audit:
+  - CLI `build` and `build --watch` are now recorded as transitional public support through v2.0 instead of immediate removals from the public surface
+  - style YAML loading remains opt-in, but its current `DeckOptions`-based public API is now tracked as cleanup-open
+- Next cleanup slice is now explicit:
+  - remove the public `DeckOptions` leak from style loading
+  - align CLI docs with transitional `build` / `build --watch` support
+  - remove tracked demo v1 artifact files and small lingering legacy wording/aliases (`comments`, `DeckOptions`, controller-era helper names)
 
 ## Update Rules
 - Keep entries concise and factual.

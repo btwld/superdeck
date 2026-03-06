@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/src/ui/panels/comments_panel.dart';
+import 'package:superdeck/src/ui/panels/notes_panel.dart';
 import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
 
 void main() {
@@ -21,38 +21,34 @@ void main() {
       expect(find.byType(NotesPanel), findsOneWidget);
     });
 
-    testWidgets('displays single comment', (tester) async {
+    testWidgets('displays single note', (tester) async {
       await tester.pumpWidget(
         MixScope(
           child: MaterialApp(
-            home: Scaffold(
-              body: NotesPanel(notes: const ['Test comment']),
-            ),
+            home: Scaffold(body: NotesPanel(notes: const ['Test note'])),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Test comment'), findsOneWidget);
+      expect(find.text('Test note'), findsOneWidget);
     });
 
-    testWidgets('displays multiple comments', (tester) async {
+    testWidgets('displays multiple notes', (tester) async {
       await tester.pumpWidget(
         MixScope(
           child: MaterialApp(
             home: Scaffold(
-              body: NotesPanel(
-                notes: const ['Comment 1', 'Comment 2', 'Comment 3'],
-              ),
+              body: NotesPanel(notes: const ['Note 1', 'Note 2', 'Note 3']),
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Comment 1'), findsOneWidget);
-      expect(find.text('Comment 2'), findsOneWidget);
-      expect(find.text('Comment 3'), findsOneWidget);
+      expect(find.text('Note 1'), findsOneWidget);
+      expect(find.text('Note 2'), findsOneWidget);
+      expect(find.text('Note 3'), findsOneWidget);
     });
 
     testWidgets('handles long text', (tester) async {

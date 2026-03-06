@@ -1,12 +1,14 @@
 ---
 title: CLI reference
-description: Complete reference for SuperDeck CLI setup and publishing commands
+description: Complete reference for SuperDeck CLI setup, build, and publishing commands
 ---
 
 # CLI reference
 
-The SuperDeck CLI provides project setup and publishing commands. Local slide
-build/watch is owned by the runtime through `DeckSource.local(...)`.
+The SuperDeck CLI provides project setup, build, and publishing commands.
+Local slide build/watch is owned by the runtime through `DeckSource.local(...)`,
+and `superdeck build --watch` remains available through v2.0 as a transitional
+workflow.
 
 ## Installation
 
@@ -41,6 +43,24 @@ superdeck setup
 |--------|-------|-------------|
 | `--force` | `-f` | Skip confirmation prompts |
 | `--[no-]setup-web` | | Set up a custom `web/index.html` (default: `true`) |
+
+### `superdeck build`
+
+Build presentation artifacts from `slides.md`. This is a supported transitional
+v2.0 command. For day-to-day app development, prefer runtime watch with
+`DeckSource.local(watch: true)` and `flutter run`.
+
+```bash
+superdeck build [options]
+```
+
+**Options:**
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--watch` | `-w` | Watch `slides.md` and rebuild on changes |
+| `--skip-pubspec` | | Skip updating `pubspec.yaml` assets |
+| `--force-rebuild` | `-f` | Clear generated assets and rebuild everything |
 
 ### `superdeck publish`
 
@@ -142,6 +162,20 @@ final runtime = await SuperDeckRuntime.create(
 ```
 
 Then run:
+
+```bash
+flutter run
+```
+
+### Transitional CLI build workflow
+
+You can still use the CLI build loop through v2.0:
+
+```bash
+superdeck build --watch
+```
+
+Run the app in a second terminal:
 
 ```bash
 flutter run

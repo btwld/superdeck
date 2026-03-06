@@ -29,7 +29,7 @@ class DeckPresentation {
   });
 
   @internal
-  DeckOptions toDeckOptions({required bool watchForChanges}) {
+  DeckOptions toDeckOptions() {
     return DeckOptions(
       baseStyle: baseStyle,
       styles: styles,
@@ -38,8 +38,7 @@ class DeckPresentation {
       debug: debug,
       templates: templates,
       defaultTemplate: defaultTemplate,
-      watchForChanges: watchForChanges,
-      plugins: extensions,
+      extensions: extensions,
     );
   }
 }

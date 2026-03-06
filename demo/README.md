@@ -12,18 +12,18 @@ dart pub global activate melos
 melos bootstrap
 ```
 
-Terminal 1 (build slides):
-
-```bash
-cd demo
-dart run superdeck_cli:main build --watch
-```
-
-Terminal 2 (run the app):
+Terminal 1 (run the app with runtime-owned watch):
 
 ```bash
 cd demo
 fvm flutter run
+```
+
+Optional transitional CLI watch flow:
+
+```bash
+cd demo
+dart run superdeck_cli:main build --watch
 ```
 
 Edit `demo/slides.md` and hot reload to see changes.

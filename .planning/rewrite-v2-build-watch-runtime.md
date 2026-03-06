@@ -470,7 +470,7 @@ CLI still remains important outside that primary loop for now:
 
 So the simplification is:
 - remove CLI from the primary day-to-day dev watch loop
-- keep CLI focused on setup and publish
+- keep CLI focused on setup, publish, and transitional `build` / `build --watch` support through v2.0
 
 ## Legacy v1 `watchForChanges` Behavior
 

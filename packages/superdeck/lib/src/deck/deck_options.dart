@@ -1,7 +1,7 @@
 import '../rendering/slides/slide_parts.dart';
+import '../presentation/deck_extension.dart';
 import '../styling/styling.dart';
 import 'slide_template.dart';
-import 'superdeck_plugin.dart';
 import 'widget_definition.dart';
 
 class DeckOptions {
@@ -20,15 +20,8 @@ class DeckOptions {
   /// disables applying any template for that slide.
   final SlideTemplate? defaultTemplate;
 
-  /// Whether to watch for file changes and auto-rebuild the deck.
-  ///
-  /// When `true`, starts a CLI watcher process that monitors
-  /// the slides file and rebuilds automatically on changes.
-  /// Defaults to `false`.
-  final bool watchForChanges;
-
-  /// Optional plugin descriptors that extend deck behavior.
-  final List<SuperDeckPlugin> plugins;
+  /// Optional extension descriptors that extend deck behavior.
+  final List<DeckExtension> extensions;
 
   const DeckOptions({
     this.baseStyle,
@@ -38,8 +31,7 @@ class DeckOptions {
     this.debug = false,
     this.templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
-    this.watchForChanges = false,
-    this.plugins = const <SuperDeckPlugin>[],
+    this.extensions = const <DeckExtension>[],
   });
 
   DeckOptions copyWith({
@@ -50,8 +42,7 @@ class DeckOptions {
     bool? debug,
     Map<String, SlideTemplate>? templates,
     SlideTemplate? defaultTemplate,
-    bool? watchForChanges,
-    List<SuperDeckPlugin>? plugins,
+    List<DeckExtension>? extensions,
   }) {
     return DeckOptions(
       baseStyle: baseStyle ?? this.baseStyle,
@@ -61,8 +52,7 @@ class DeckOptions {
       debug: debug ?? this.debug,
       templates: templates ?? this.templates,
       defaultTemplate: defaultTemplate ?? this.defaultTemplate,
-      watchForChanges: watchForChanges ?? this.watchForChanges,
-      plugins: plugins ?? this.plugins,
+      extensions: extensions ?? this.extensions,
     );
   }
 
@@ -78,8 +68,7 @@ class DeckOptions {
           debug == other.debug &&
           templates == other.templates &&
           defaultTemplate == other.defaultTemplate &&
-          watchForChanges == other.watchForChanges &&
-          plugins == other.plugins;
+          extensions == other.extensions;
 
   @override
   int get hashCode => Object.hash(
@@ -90,7 +79,6 @@ class DeckOptions {
     debug,
     templates,
     defaultTemplate,
-    watchForChanges,
-    plugins,
+    extensions,
   );
 }

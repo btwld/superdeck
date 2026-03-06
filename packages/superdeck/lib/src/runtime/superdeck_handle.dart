@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:signals/signals.dart';
 
 import '../deck/deck_controller.dart';
+import '../deck/navigation_events.dart';
 import '../deck/slide_configuration.dart';
 import '../export/async_thumbnail.dart';
 import '../export/pdf_export_screen.dart';
@@ -41,6 +42,10 @@ class SuperDeckHandle {
 
   Future<void> previousSlide() => _attachedController.previousSlide();
 
+  Future<void> handleNavigationEvent(NavigationEvent event) {
+    return _attachedController.handleNavigationEvent(event);
+  }
+
   Future<void> reload() => _attachedController.reloadDeck();
 
   void openMenu() => _attachedController.openMenu();
@@ -63,6 +68,22 @@ class SuperDeckHandle {
 
   void exportPdf(BuildContext context) {
     PdfExportDialogScreen.show(context);
+  }
+
+  List<Widget> buildActions(BuildContext context) {
+    return _attachedController.extensions
+        .expand((extension) => extension.buildActions(context))
+        .toList(growable: false);
+  }
+
+  Widget? buildFloatingAction(BuildContext context) {
+    for (final extension in _attachedController.extensions) {
+      final action = extension.buildFloatingAction(context);
+      if (action != null) {
+        return action;
+      }
+    }
+    return null;
   }
 
   void attach(DeckController controller) {

@@ -15,9 +15,6 @@ class PresentationSlideBuilder {
   ) {
     return SlideConfigurationBuilder(
       configuration: configuration,
-    ).buildConfigurations(
-      slides,
-      presentation.toDeckOptions(watchForChanges: false),
-    );
+    ).buildConfigurations(slides, presentation.toDeckOptions());
   }
 }

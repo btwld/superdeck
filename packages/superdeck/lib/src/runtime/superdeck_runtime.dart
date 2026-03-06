@@ -88,9 +88,7 @@ final class SuperDeckRuntime {
     final configuration = runtimeConfig.toDeckConfiguration(
       slidesPath: slidesPath,
     );
-    final options = presentation.toDeckOptions(
-      watchForChanges: source is LocalDeckSource && source.watch,
-    );
+    final options = presentation.toDeckOptions();
 
     return SuperDeckRuntime._(
       source: source,

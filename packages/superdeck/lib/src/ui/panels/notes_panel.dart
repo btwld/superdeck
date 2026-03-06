@@ -24,5 +24,3 @@ class NotesPanel extends StatelessWidget {
     );
   }
 }
-
-typedef CommentsPanel = NotesPanel;

@@ -12,6 +12,5 @@ export 'components/slide.dart';
 // Default style
 export 'default_style.dart';
 
-// Style Schema (YAML configuration)
-export 'schema/style_config.dart';
+// Style Schema
 export 'schema/style_schemas.dart';

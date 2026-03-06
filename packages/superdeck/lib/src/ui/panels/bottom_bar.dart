@@ -5,7 +5,6 @@ import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/icon_button.dart';
 
 import 'package:flutter/widgets.dart';
-import '../../deck/deck_controller.dart';
 import '../../runtime/superdeck_context.dart';
 
 class DeckBottomBar extends StatelessWidget {
@@ -25,10 +24,7 @@ class DeckBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deck = SuperDeck.of(context);
-    final controller = DeckController.of(context);
-    final pluginActions = controller.plugins
-        .expand((plugin) => plugin.buildActions(context))
-        .toList(growable: false);
+    final extensionActions = deck.buildActions(context);
 
     return FlexBox(
       style: _bottomBarContainer,
@@ -57,7 +53,7 @@ class DeckBottomBar extends StatelessWidget {
           onPressed: () => deck.regenerateThumbnails(context, force: true),
           semanticLabel: 'Regenerate thumbnails',
         ),
-        ...pluginActions,
+        ...extensionActions,
         const Spacer(),
         SDIconButton(
           icon: Icons.arrow_back,

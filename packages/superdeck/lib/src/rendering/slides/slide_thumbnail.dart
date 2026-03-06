@@ -3,8 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 
-import '../../deck/deck_controller.dart';
 import '../../deck/slide_configuration.dart';
+import '../../runtime/superdeck_context.dart';
 import '../../utils/constants.dart';
 
 class SlideThumbnail extends StatelessWidget {
@@ -19,10 +19,10 @@ class SlideThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deck = DeckController.of(context);
+    final handle = SuperDeck.of(context);
 
     return Watch((context) {
-      final asyncThumbnail = deck.getThumbnail(slide.key);
+      final asyncThumbnail = handle.getThumbnail(slide.key);
 
       if (asyncThumbnail == null) {
         return _PreviewContainer(

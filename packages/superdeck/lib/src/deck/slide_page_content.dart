@@ -4,7 +4,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/src/ui/ui.dart';
 
 import '../rendering/slides/slide_screen.dart';
-import 'deck_controller.dart';
+import '../runtime/superdeck_context.dart';
 
 /// Widget for rendering slide page content
 ///
@@ -17,21 +17,18 @@ class SlidePageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deckController = DeckController.of(context);
+    final handle = SuperDeck.of(context);
 
     // Use Watch to react to signals
     return Watch((context) {
       // Access deck controller state
-      final isLoading = deckController.isLoading.value;
-      final hasError = deckController.hasError.value;
-      final slides = deckController.slides.value;
+      final isLoading = handle.isLoading.value;
+      final hasError = handle.hasError.value;
+      final slides = handle.slides.value;
 
       // Render appropriate state
       if (hasError) {
-        return _ErrorScreen(
-          error: deckController.error.value,
-          onRetry: deckController.reloadDeck,
-        );
+        return _ErrorScreen(error: handle.error.value, onRetry: handle.reload);
       }
 
       if (isLoading) {

@@ -8,6 +8,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
+import '../presentation/deck_extension.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
@@ -16,7 +17,6 @@ import 'navigation_events.dart';
 import 'navigation_service.dart';
 import 'slide_configuration.dart';
 import 'slide_configuration_builder.dart';
-import 'superdeck_plugin.dart';
 
 /// Loading state for the deck
 enum DeckLoadingState { idle, loading, loaded, error }
@@ -35,7 +35,7 @@ class DeckController {
   final NavigationService _navigationService;
   final ThumbnailService _thumbnailService;
   final bool _enableDeckStream;
-  final List<SuperDeckPlugin> _plugins;
+  final List<DeckExtension> _extensions;
 
   // Disposal guard to prevent accessing disposed signals
   // ignore: prefer_final_fields
@@ -99,7 +99,7 @@ class DeckController {
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
   ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
   ReadonlySignal<bool> get isRebuilding => _isRebuilding;
-  List<SuperDeckPlugin> get plugins => _plugins;
+  List<DeckExtension> get extensions => _extensions;
 
   // Navigation computeds
   ReadonlySignal<int> get currentIndex => _currentIndex;
@@ -140,16 +140,16 @@ class DeckController {
              ),
            ),
        _enableDeckStream = enableDeckStream,
-       _plugins = options.plugins {
-    _options.value = options.copyWith(plugins: _plugins);
-    final pluginRoutes = _plugins
-        .expand((plugin) => plugin.buildRoutes())
+       _extensions = options.extensions {
+    _options.value = options.copyWith(extensions: _extensions);
+    final extensionRoutes = _extensions
+        .expand((extension) => extension.buildRoutes())
         .toList(growable: false);
 
     // Create router with index change callback
     router = _navigationService.createRouter(
       onIndexChanged: (index) => _updateCurrentIndex(index),
-      additionalRoutes: pluginRoutes,
+      additionalRoutes: extensionRoutes,
     );
 
     // Clamp index when slide count changes (e.g., deck reloads with fewer slides)
@@ -228,13 +228,13 @@ class DeckController {
     }
   }
 
-  /// Updates deck options (called by DeckControllerBuilder)
+  /// Updates deck options from runtime/bootstrap state.
   @internal
   void updateOptions(DeckOptions newOptions) {
     if (_disposed) return;
-    final normalizedOptions = identical(newOptions.plugins, _plugins)
+    final normalizedOptions = identical(newOptions.extensions, _extensions)
         ? newOptions
-        : newOptions.copyWith(plugins: _plugins);
+        : newOptions.copyWith(extensions: _extensions);
 
     if (_options.value != normalizedOptions) {
       _options.value = normalizedOptions;
