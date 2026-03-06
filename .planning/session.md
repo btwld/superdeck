@@ -6,9 +6,9 @@ This is the live session and handoff document for ongoing work in the SuperDeck 
 Agents should read this file before substantive work and update it as work progresses.
 
 ## Current Focus
-- Validate the v2 rewrite plan against the actual current implementation.
-- Preserve the real v1 feature surface before making architecture changes.
-- Keep rewrite planning grounded in code, docs, and tests rather than assumptions.
+- Use the reconciled v2 planning docs as the implementation review checklist.
+- Start implementation with the runtime watch/config contract slice.
+- Preserve the frozen v2 decisions while moving from planning into execution.
 
 ## Canonical Planning Docs
 - `.planning/rewrite-v2-full-plan.md`
@@ -82,13 +82,28 @@ Agents should read this file before substantive work and update it as work progr
    - revisit external YAML acquisition/strictness in a dedicated later pass, not as a blocker for the current implementation review checklist
 
 ## Recommended Next Steps
-1. Re-run a final planning consistency pass across the canonical docs.
-2. Use the reconciled planning set as the implementation review checklist.
-3. Revisit external YAML config policy later as an explicit follow-up, not as part of the current freeze.
+1. Implement the first runtime contract slice:
+   - add `watch` to `DeckConfiguration`
+   - treat `DeckConfiguration.watch` as the canonical v2 embedded watch field
+   - stop treating `DeckOptions.watchForChanges` as part of the intended v2 runtime contract
+2. Wire the runtime behavior to the frozen contract:
+   - `DeckControllerBuilder` should use `DeckConfiguration.watch`
+   - embedded watch remains process-capable/dev-only
+   - bundled runtimes remain consume-only
+3. Implement the thumbnail follow-up after the watch/config slice:
+   - runtime-owned dev thumbnails
+   - `slide key + render signature` invalidation
+   - keep headless/build-time thumbnail generation out of the current rewrite
+4. Revisit external YAML config policy later as an explicit follow-up, not as part of the current implementation slice.
 
 ## Session Log
 
 ### 2026-03-05
+- Updated the handoff after the planning freeze:
+  - the reconciled planning docs are now the implementation review checklist
+  - the next concrete implementation step is the runtime watch/config contract slice
+  - start with `DeckConfiguration.watch` and retire `DeckOptions.watchForChanges` from the intended v2 runtime contract
+  - then follow with the runtime thumbnail invalidation/storage cleanup slice
 - Implemented the final remaining planning freeze pass across the canonical docs:
   - froze one canonical primary barrel per package
   - kept `superdeck_core/asset_cache_store_io.dart` as an explicit platform-specific helper surface
