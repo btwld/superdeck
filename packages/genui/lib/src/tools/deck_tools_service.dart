@@ -13,37 +13,49 @@ import '../utils/deck_style_service.dart';
 import '../utils/style_builder.dart';
 import '../presentation/thumbnail_preview_service.dart';
 
-typedef BuildContextProvider = BuildContext? Function();
-
-/// Builds the slide configuration used by `readSlide`.
-///
-/// The default implementation uses `PresentationSlideBuilder`. Tests can
-/// inject a lightweight builder to avoid font/asset side effects.
-typedef ReadSlideConfigurationBuilder =
+/// In-app deck tooling service for slide CRUD and style updates.
+class DeckToolsService {
+  DeckToolsService({
+    DeckDocumentStore? documentStore,
+    BuildContext? Function()? contextProvider,
+    SlideCaptureFn? captureSlide,
     SlideConfiguration Function({
       required Slide slide,
       required DeckConfiguration configuration,
       required DeckStyleType? style,
       required int index,
-    });
-
-/// In-app deck tooling service for slide CRUD and style updates.
-class DeckToolsService {
-  DeckToolsService({
-    DeckDocumentStore? documentStore,
-    BuildContextProvider? contextProvider,
-    SlideCaptureFn? captureSlide,
-    ReadSlideConfigurationBuilder? buildReadSlideConfiguration,
+    })?
+    buildReadSlideConfiguration,
   }) : _documentStore = documentStore ?? DeckDocumentStore(),
-       _contextProvider = contextProvider ?? _defaultContextProvider,
+       _contextProvider = contextProvider ?? (() => null),
        _captureSlide = captureSlide,
        _buildReadSlideConfiguration =
-           buildReadSlideConfiguration ?? _defaultReadSlideConfigurationBuilder;
+           buildReadSlideConfiguration ??
+           (({
+             required Slide slide,
+             required DeckConfiguration configuration,
+             required DeckStyleType? style,
+             required int index,
+           }) {
+             final slideBuilder = SlideConfigurationBuilder(
+               configuration: configuration,
+             );
+             final presentation = buildDeckPresentationFromStyle(style);
+             return slideBuilder.buildConfigurations([
+               slide,
+             ], presentation).single;
+           });
 
   final DeckDocumentStore _documentStore;
-  final BuildContextProvider _contextProvider;
+  final BuildContext? Function() _contextProvider;
   final SlideCaptureFn? _captureSlide;
-  final ReadSlideConfigurationBuilder _buildReadSlideConfiguration;
+  final SlideConfiguration Function({
+    required Slide slide,
+    required DeckConfiguration configuration,
+    required DeckStyleType? style,
+    required int index,
+  })
+  _buildReadSlideConfiguration;
   static const _invalidSlideSchemaMessage = 'Invalid slide schema payload';
 
   SlideCaptureService? _captureService;
@@ -339,20 +351,5 @@ class DeckToolsService {
       slide: slide,
       context: context,
     );
-  }
-
-  static BuildContext? _defaultContextProvider() => null;
-
-  static SlideConfiguration _defaultReadSlideConfigurationBuilder({
-    required Slide slide,
-    required DeckConfiguration configuration,
-    required DeckStyleType? style,
-    required int index,
-  }) {
-    final slideBuilder = PresentationSlideBuilder(
-      configuration: configuration,
-    );
-    final presentation = buildDeckPresentationFromStyle(style);
-    return slideBuilder.buildConfigurations([slide], presentation).single;
   }
 }

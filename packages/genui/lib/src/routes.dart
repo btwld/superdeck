@@ -64,8 +64,7 @@ List<RouteBase> genUiRoutes({
       _applyStyleFromExtra(state.extra);
 
       final child =
-          presentationBuilder?.call(context, state) ??
-          const PresentationDeckHost();
+          presentationBuilder?.call(context, state) ?? PresentationDeckHost();
       return GenUiBootstrapScope(child: child);
     },
   ),

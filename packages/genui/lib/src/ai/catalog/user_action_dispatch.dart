@@ -1,8 +1,6 @@
 import 'package:genui/genui.dart';
 import '../schemas/genui_action_schema.dart';
 
-typedef CatalogActionContextBuilder = Map<String, dynamic> Function();
-
 /// Dispatches a user action event with merged catalog + component context.
 void dispatchCatalogAction({
   required CatalogItemContext itemContext,
@@ -33,7 +31,7 @@ void submitCatalogActionIfValid({
   required bool canSubmit,
   required CatalogItemContext itemContext,
   required Object? rawAction,
-  required CatalogActionContextBuilder contextBuilder,
+  required Map<String, dynamic> Function() contextBuilder,
 }) {
   if (!canSubmit) return;
   dispatchCatalogAction(

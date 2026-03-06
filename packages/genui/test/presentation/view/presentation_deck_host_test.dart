@@ -14,10 +14,41 @@ void main() {
     DeckStyleService.clearCache();
   });
 
+  testWidgets('does not recreate runtime when presentation is unchanged', (
+    tester,
+  ) async {
+    var loadCount = 0;
+
+    Future<SuperDeckRuntime> loadRuntime(DeckPresentation presentation) async {
+      loadCount++;
+      return SuperDeckRuntime.forTesting(presentation: presentation);
+    }
+
+    Widget buildHost() {
+      return MaterialApp(
+        home: PresentationDeckHost(
+          deckAppBuilder: (_) => const SizedBox.shrink(),
+          runtimeLoader: loadRuntime,
+        ),
+      );
+    }
+
+    await tester.pumpWidget(buildHost());
+    await tester.pumpAndSettle();
+
+    expect(loadCount, equals(1));
+
+    await tester.pumpWidget(buildHost());
+    await tester.pumpAndSettle();
+
+    expect(loadCount, equals(1));
+  });
+
   testWidgets('rebuilds deck presentation when style notifier changes', (
     tester,
   ) async {
     final seenRuntimes = <SuperDeckRuntime>[];
+    var loadCount = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -26,20 +57,24 @@ void main() {
             seenRuntimes.add(runtime);
             return const SizedBox.shrink();
           },
-          runtimeLoader: (presentation) async =>
-              SuperDeckRuntime.forTesting(presentation: presentation),
+          runtimeLoader: (presentation) async {
+            loadCount++;
+            return SuperDeckRuntime.forTesting(presentation: presentation);
+          },
         ),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(seenRuntimes, hasLength(1));
+    expect(loadCount, equals(1));
     expect(seenRuntimes.last.presentation.baseStyle, isNull);
 
     DeckStyleService.setStyle(DeckStyleType.parse(_styleMap()));
     await tester.pumpAndSettle();
 
     expect(seenRuntimes.length, greaterThan(1));
+    expect(loadCount, equals(2));
     expect(seenRuntimes.last.presentation.baseStyle, isNotNull);
   });
 }

@@ -18,5 +18,3 @@ class NoteParser {
     return notes;
   }
 }
-
-typedef CommentParser = NoteParser;

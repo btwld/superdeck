@@ -6,10 +6,6 @@ import '../ai/schemas/deck_schemas.dart';
 import '../debug_logger.dart';
 import '../utils/style_builder.dart';
 
-/// Callback invoked as each slide thumbnail is captured.
-typedef ThumbnailCapturedCallback =
-    void Function(int slideIndex, Uint8List imageBytes);
-
 /// Function signature for capturing a single slide as a PNG image.
 ///
 /// Abstracted to allow test injection without depending on
@@ -59,7 +55,7 @@ class ThumbnailPreviewService {
     required BuildContext context,
     required List<Slide> slides,
     DeckStyleType? style,
-    ThumbnailCapturedCallback? onThumbnailCaptured,
+    void Function(int slideIndex, Uint8List imageBytes)? onThumbnailCaptured,
     bool Function()? isCancelled,
   }) async {
     debugLog.section('Thumbnail Preview Generation');
@@ -68,7 +64,7 @@ class ThumbnailPreviewService {
 
     final configuration = DeckConfiguration();
     final presentation = buildDeckPresentationFromStyle(style);
-    final slideBuilder = PresentationSlideBuilder(
+    final slideBuilder = SlideConfigurationBuilder(
       configuration: configuration,
     );
     final slideConfigs = slideBuilder.buildConfigurations(slides, presentation);

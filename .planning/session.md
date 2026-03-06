@@ -6,6 +6,8 @@ This is the live session and handoff document for ongoing work in the SuperDeck 
 Agents should read this file before substantive work and update it as work progresses.
 
 ## Current Focus
+- Domain naming review is complete. All agreed changes are captured in `.planning/domain-naming-changes.md`.
+- Next implementation slice: execute the 9-step rename/cleanup plan from that document.
 - The dead-utility and compatibility cleanup slice is complete at the code/doc level.
 - Full Flutter test/build reruns for this slice are currently blocked by local disk pressure in `/private/var/folders/.../T/flutter_tools.*`.
 - The audit cleanup slice is complete and validated.
@@ -14,10 +16,6 @@ Agents should read this file before substantive work and update it as work progr
   - `DeckPresentation` is now the only production presentation/config type inside `packages/superdeck`
   - the old internal `DeckOptions` bridge has been removed
   - `StyleConfigLoader` now merges into `DeckPresentation`
-- Use the next slice for internal simplification only:
-  - review whether `StyleConfigLoader` should stay in its current internal home or move into a narrower migration-only/styling utility location
-  - do a final cleanup of internal/test-only migration leftovers
-  - keep protected block-widget, hero, and export behavior unchanged unless a failing test forces a minimal fix
 
 ## Canonical Planning Docs
 - `.planning/rewrite-v2-full-plan.md`
@@ -25,6 +23,7 @@ Agents should read this file before substantive work and update it as work progr
 - `.planning/rewrite-v2-parser-semantics.md`
 - `.planning/rewrite-v2-build-watch-runtime.md`
 - `.planning/rewrite-v2-contract-migration-matrix.md`
+- `.planning/domain-naming-changes.md` — approved domain naming renames and DX cleanup
 
 ## Current State
 - The v2 rewrite plan has been restored locally and reviewed against the current codebase.
@@ -56,7 +55,7 @@ Agents should read this file before substantive work and update it as work progr
   - `SuperDeckApp` now keys `_RuntimeBootstrap` by runtime identity so a new runtime instance forces a fresh bootstrap, and a targeted regression test covers shared-handle runtime replacement
 - The internal presentation simplification slice has now landed:
   - removed `packages/superdeck/lib/src/deck/deck_options.dart`
-  - `DeckPresentation` now flows directly through runtime bootstrap, `DeckController`, `TemplateResolver`, `SlideConfigurationBuilder`, and `PresentationSlideBuilder`
+  - `DeckPresentation` now flows directly through runtime bootstrap, `DeckController`, `TemplateResolver`, and `SlideConfigurationBuilder`
   - `StyleConfigLoader` now accepts and returns `DeckPresentation` while still only merging style concerns
   - `packages/superdeck` tests were migrated off `DeckOptions`
 - The same review also corrected remaining planning drift:
@@ -153,6 +152,118 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-06
+- Started a broader wrapper/delegation review pass:
+  - scanning for other `PresentationSlideBuilder`-style patterns across `superdeck`, `genui`, `builder`, and `core`
+  - classifying thin wrappers into: real boundary, test seam, shared callback type, or removable forwarding layer
+  - targeting only behavior-free forwarding patterns for removal in this pass
+- Completed the broader wrapper/delegation review pass:
+  - removed the last obvious local-only forwarding seam in GenUI catalog actions:
+    - deleted `CatalogActionContextBuilder` from `packages/genui/lib/src/ai/catalog/user_action_dispatch.dart`
+  - confirmed the remaining similarly-shaped items are mostly intentional:
+    - `SlideConfigurationBuilder` is a real owner with render-model assembly logic
+    - `SlideCaptureFn` is a shared callback type used by both `DeckToolsService` and `ThumbnailPreviewService`
+    - `ConversationBuilder` is a real chat test seam with active test usage
+    - `GenerationCallback` is part of `PresentationViewModel` state/retry behavior, not just naming noise
+    - `AsyncFileGenerator` is part of `AsyncThumbnail`'s public construction API
+    - `BundledDeckService` and `PathService` both own real runtime/platform behavior and are not wrapper-only types
+  - the remaining notable smell is different from the wrapper pattern:
+    - `ImageGeneratorServiceFactory` in `ask_user_image_style.dart` is a mutable global test seam, which should be treated as a separate dependency-injection cleanup if revisited
+- Started the `AskUserImageStyle` dependency-injection cleanup:
+  - replacing the mutable global image-generator factory override with explicit per-item construction
+  - keeping the public `askUserImageStyle` item as the default production instance
+  - moving tests to a local fake-factory item instead of global override/reset state
+- Started a follow-up simplification pass around GenUI host/test seams:
+  - removing local-only callback typedef indirection from `PresentationDeckHost`
+  - rechecking whether `PresentationSlideBuilder` is still an intentional public helper or just leftover scaffolding
+  - auditing remaining `forTesting(...)` and similar narrow seams for real consumers before changing anything broader
+- Started the next GenUI tooling seam cleanup:
+  - flattening `DeckToolsService` local-only callback typedefs and default-helper methods
+  - keeping `SlideCaptureFn` because it is shared across tooling and thumbnail preview
+  - avoiding changes to `PresentationSlideBuilder` and `SuperDeckRuntime.forTesting(...)`, which still have real downstream consumers
+- Started the slide-builder boundary cleanup:
+  - removing `PresentationSlideBuilder`, which is only a forwarding wrapper over `SlideConfigurationBuilder`
+  - exporting `SlideConfigurationBuilder` directly from `package:superdeck/superdeck.dart`
+  - updating GenUI tooling to depend on the real builder instead of the compatibility wrapper
+- Completed the slide-builder boundary cleanup:
+  - deleted `packages/superdeck/lib/src/presentation/presentation_slide_builder.dart`
+  - `package:superdeck/superdeck.dart` now exports `SlideConfigurationBuilder` directly
+  - updated GenUI tooling (`DeckToolsService` and `ThumbnailPreviewService`) to use `SlideConfigurationBuilder` directly
+  - revalidated the change with:
+    - `dart analyze --fatal-infos` in `packages/superdeck`
+    - `dart analyze --fatal-infos` in `packages/genui`
+    - `flutter test test/core/tools/deck_tools_service_test.dart` in `packages/genui`
+    - `flutter test test/presentation/thumbnail_preview_service_test.dart` in `packages/genui`
+- Completed the next GenUI tooling seam cleanup:
+  - removed `DeckToolsService` local-only callback typedef indirection for:
+    - `BuildContextProvider`
+    - `ReadSlideConfigurationBuilder`
+  - replaced the old static default helpers with:
+    - inline `contextProvider ?? (() => null)`
+    - one private top-level `_buildDefaultReadSlideConfiguration(...)` helper for the named-parameter default slide-builder path
+  - removed the local-only `ThumbnailCapturedCallback` typedef from `ThumbnailPreviewService` and inlined the callback type directly on `generatePreviews(...)`
+  - revalidated `packages/genui` after the tooling seam cleanup:
+    - `dart analyze --fatal-infos`
+    - `flutter test test/core/tools/deck_tools_service_test.dart`
+    - `flutter test test/presentation/thumbnail_preview_service_test.dart`
+  - current remaining GenUI seams intentionally kept:
+    - `SlideCaptureFn`: shared by tooling and thumbnail preview
+    - `PresentationSlideBuilder`: still the helper consumed by GenUI tooling for render-ready slide models
+    - `SuperDeckRuntime.forTesting(...)`: still used by `superdeck` and `genui` tests
+- Completed the follow-up simplification pass around GenUI host/test seams:
+  - removed the local-only `DeckAppBuilder` and `DeckRuntimeLoader` typedef indirection from `PresentationDeckHost`; the widget now uses inline function types directly
+  - revalidated `packages/genui` after the simplification:
+    - `dart analyze --fatal-infos`
+    - `flutter test test/presentation/view/presentation_deck_host_test.dart`
+  - reviewed `PresentationSlideBuilder` and left it in place intentionally:
+    - it is still the public helper consumed by GenUI tooling (`DeckToolsService` and `ThumbnailPreviewService`)
+    - removing it now would be public/helper churn, not cleanup
+  - reviewed remaining `forTesting(...)` usage and confirmed it is still a real test seam:
+    - current consumers are `packages/superdeck` widget/runtime tests and `packages/genui` host tests
+- Completed the `AskUserImageStyle` dependency-injection cleanup:
+  - removed the mutable global image-generator factory override/reset pattern from `packages/genui/lib/src/ai/catalog/ask_user_image_style.dart`
+  - added `buildAskUserImageStyle(...)` for explicit per-item construction while keeping `askUserImageStyle` as the default production instance
+  - updated catalog regression tests to inject local fake services per test item instead of mutating global factory state
+  - validation completed:
+    - `dart analyze --fatal-infos` in `packages/genui`
+    - `flutter test test/core/ai/catalog/catalog_widget_regressions_test.dart` in `packages/genui`
+    - `flutter test test/core/ai/catalog/ask_user_image_style_test.dart` in `packages/genui`
+- Completed one more same-pattern simplification pass in GenUI:
+  - removed the leftover default-helper wrappers that were only standing in for inline closures:
+    - `_buildDefaultReadSlideConfiguration(...)` from `DeckToolsService`
+    - `_createImageGeneratorService(...)` from `AskUserImageStyle`
+  - `DeckToolsService` and `buildAskUserImageStyle(...)` now inline those defaults directly at the composition point instead of keeping extra helper symbols alive
+  - validation completed:
+    - `dart analyze --fatal-infos` in `packages/genui`
+    - `flutter test test/core/tools/deck_tools_service_test.dart` in `packages/genui`
+    - `flutter test test/core/ai/catalog/catalog_widget_regressions_test.dart` in `packages/genui`
+- Started the validated review follow-up with bridge-conversion cleanup:
+  - fixing the confirmed frontmatter map-vs-list bug in `packages/builder`
+  - fixing `PresentationDeckHost` default source selection and runtime-future caching in `packages/genui`
+  - applying the safe review cleanups only (`NoteParser`, self-import cleanup, nullable asset-generation path cleanup)
+  - removing the bridge-style `DeckRuntimeConfig.toDeckConfiguration(...)` helper while keeping serialization/format helpers untouched
+- Completed the validated review follow-up with bridge-conversion cleanup:
+  - `MarkdownParser` now accepts only YAML maps as frontmatter candidates; YAML lists between `---` separators remain normal slide content
+  - `packages/builder/test/src/parsers/slide_parser_test.dart` now covers the list-content regression
+  - `PresentationDeckHost` now defaults to `DeckSource.bundle()` on non-process runtimes and only uses `DeckSource.local()` when process execution is available
+  - `PresentationDeckHost` is now stateful and caches the runtime future by effective `DeckPresentation`, avoiding redundant runtime recreation on unchanged rebuilds while still recreating the runtime after style changes
+  - follow-up simplification flattened `PresentationDeckHost` further:
+    - removed the temporary helper-method approach for default source/runtime loader selection
+    - dropped the `const` constructor and inlined the default app-builder/runtime-loader logic directly in the constructor initializer
+    - made the constructor-backed `deckAppBuilder` / `runtimeLoader` fields plain public finals instead of hiding them behind private storage
+    - kept only the behavior-facing lifecycle tests for runtime-future caching and style-driven runtime recreation; we intentionally did not add another helper seam just to unit-test the default source branch
+  - `AssetGenerationPipeline` now resolves the matching generator before transformation and no longer carries the dead nullable processing path through `_processCodeBlock(...)`
+  - GenUI block sanitization now reuses one markdown-block normalization helper instead of duplicating the same block-cleanup path
+  - removed the `CommentParser` typedef alias; builder tests now use `NoteParser`
+  - replaced the touched production package self-imports with relative imports, including the remaining builder `SlideContext` self-import uncovered during validation
+  - removed `DeckRuntimeConfig.toDeckConfiguration(...)` and now compose `DeckConfiguration` directly inside `SuperDeckRuntime`
+  - added `packages/superdeck/test/runtime/superdeck_runtime_test.dart` to lock the direct runtime-to-configuration composition path
+  - validation completed:
+    - `dart test test/src/parsers/slide_parser_test.dart` in `packages/builder`
+    - `dart test test/src/assets/asset_generation_pipeline_test.dart` in `packages/builder`
+    - `dart test test/src/parsers/comment_parser_test.dart` in `packages/builder`
+    - `flutter test test/presentation/view/presentation_deck_host_test.dart` in `packages/genui`
+    - `flutter test test/runtime/superdeck_runtime_test.dart` in `packages/superdeck`
+    - `dart analyze --fatal-infos` in `packages/core`, `packages/builder`, `packages/genui`, and `packages/superdeck`
 - Ran one more post-cleanup drift review pass:
   - no active `packages/superdeck` code references remain for:
     - `resolveConfiguration(...)`

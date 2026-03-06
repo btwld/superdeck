@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
-import 'package:path/path.dart' as p;
 import 'package:logging/logging.dart';
-import 'package:superdeck_core/src/markdown_json.dart';
+import 'package:path/path.dart' as p;
+
 import 'deck_configuration.dart';
+import 'markdown_json.dart';
 import 'models/asset_model.dart';
 import 'models/deck_model.dart';
 import 'models/slide_model.dart';

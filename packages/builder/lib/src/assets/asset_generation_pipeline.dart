@@ -59,15 +59,17 @@ class AssetGenerationPipeline {
       content,
       filter: (block) => _findGenerator(block.language) != null,
       transform: (block) async {
+        final generator = _findGenerator(block.language);
+        if (generator == null) {
+          return null;
+        }
+
         try {
-          final processingResult = await _processCodeBlock(block, slideIndex);
-
-          // If null, the block was skipped (no generator found)
-          if (processingResult == null) {
-            return null;
-          }
-
-          final (asset, replacementSyntax) = processingResult;
+          final (asset, replacementSyntax) = await _processCodeBlock(
+            block,
+            slideIndex,
+            generator,
+          );
           generatedAssets.add(asset);
 
           _logger.info(
@@ -102,21 +104,13 @@ class AssetGenerationPipeline {
 
   /// Processes a single code block through the appropriate generator.
   ///
-  /// Returns a record of (GeneratedAsset, replacementSyntax) if successful,
-  /// or null if the block was skipped (no generator found).
+  /// Returns a record of (GeneratedAsset, replacementSyntax) if successful.
   /// Throws an exception if processing fails.
-  Future<(GeneratedAsset, String)?> _processCodeBlock(
+  Future<(GeneratedAsset, String)> _processCodeBlock(
     ParsedFencedCode codeBlock,
     int slideIndex,
+    AssetGenerator generator,
   ) async {
-    final generator = _findGenerator(codeBlock.language);
-    if (generator == null) {
-      _logger.info(
-        'Skipped ${codeBlock.language} block for slide $slideIndex: No generator found',
-      );
-      return null;
-    }
-
     _logger.info(
       'Processing ${codeBlock.language} block at indices ${codeBlock.startIndex}-${codeBlock.endIndex} for slide $slideIndex',
     );

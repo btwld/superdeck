@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/slides/slide_configuration_builder.dart';
 import 'package:superdeck/superdeck.dart';
 
 void main() {

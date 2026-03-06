@@ -42,7 +42,7 @@ final customRouter = GoRouter(
     ...genUiRoutes(
       presentationBuilder: (context, state) {
         return PresentationDeckHost(
-          deckAppBuilder: (options) => MyPresentationApp(options: options),
+          deckAppBuilder: (runtime) => MyPresentationApp(runtime: runtime),
         );
       },
     ),
@@ -52,7 +52,7 @@ final customRouter = GoRouter(
 // Or use individual screens directly
 const GenUiBootstrapScope(child: ChatScreen());
 const GenUiBootstrapScope(child: CreatingPresentationScreen());
-const GenUiBootstrapScope(child: PresentationDeckHost());
+GenUiBootstrapScope(child: PresentationDeckHost());
 ```
 
 ## Related packages

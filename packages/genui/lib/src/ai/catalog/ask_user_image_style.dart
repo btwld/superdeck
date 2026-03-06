@@ -22,23 +22,6 @@ import 'catalog_question_step.dart';
 
 part 'ask_user_image_style.g.dart';
 
-typedef ImageGeneratorServiceFactory =
-    ImageGeneratorService Function({required String apiKey});
-
-ImageGeneratorServiceFactory _defaultImageGeneratorServiceFactory =
-    ({required String apiKey}) {
-      return ImageGeneratorService(apiKey: apiKey);
-    };
-
-@visibleForTesting
-ImageGeneratorServiceFactory imageGeneratorServiceFactory =
-    _defaultImageGeneratorServiceFactory;
-
-@visibleForTesting
-void resetImageGeneratorServiceFactory() {
-  imageGeneratorServiceFactory = _defaultImageGeneratorServiceFactory;
-}
-
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for AskUserImageStyle component.
@@ -66,12 +49,16 @@ final _askUserImageStyleSchema =
 
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
-/// AskUserImageStyle catalog component for image style selection with previews.
-final askUserImageStyle = CatalogItem(
-  name: 'AskUserImageStyle',
-  dataSchema: _askUserImageStyleSchema.toJsonSchemaBuilder(),
-  exampleData: [
-    () => '''
+/// Builds the AskUserImageStyle catalog component.
+CatalogItem buildAskUserImageStyle({
+  ImageGeneratorService Function({required String apiKey})?
+  imageGeneratorServiceFactory,
+}) {
+  return CatalogItem(
+    name: 'AskUserImageStyle',
+    dataSchema: _askUserImageStyleSchema.toJsonSchemaBuilder(),
+    exampleData: [
+      () => '''
       [
         {
           "id": "root",
@@ -87,22 +74,35 @@ final askUserImageStyle = CatalogItem(
         }
       ]
     ''',
-  ],
-  widgetBuilder: (context) {
-    final data = AskUserImageStyleType.parse(context.data);
-    return _AskUserImageStyleContent(data: data, itemContext: context);
-  },
-);
+    ],
+    widgetBuilder: (context) {
+      final data = AskUserImageStyleType.parse(context.data);
+      return _AskUserImageStyleContent(
+        data: data,
+        itemContext: context,
+        imageGeneratorServiceFactory:
+            imageGeneratorServiceFactory ??
+            ({required apiKey}) => ImageGeneratorService(apiKey: apiKey),
+      );
+    },
+  );
+}
+
+/// AskUserImageStyle catalog component for image style selection with previews.
+final askUserImageStyle = buildAskUserImageStyle();
 
 // ─────────────────────────────────── WIDGET ───────────────────────────────────
 
 class _AskUserImageStyleContent extends StatefulWidget {
   final AskUserImageStyleType data;
   final CatalogItemContext itemContext;
+  final ImageGeneratorService Function({required String apiKey})
+  imageGeneratorServiceFactory;
 
   const _AskUserImageStyleContent({
     required this.data,
     required this.itemContext,
+    required this.imageGeneratorServiceFactory,
   });
 
   @override
@@ -189,7 +189,7 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
     }
 
     if (!mounted || !_isCurrentGeneration(generationId)) return;
-    final service = imageGeneratorServiceFactory(
+    final service = widget.imageGeneratorServiceFactory(
       apiKey: EnvConfig.geminiApiKey,
     );
 
@@ -244,7 +244,7 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
 
     if (!mounted || !_isCurrentGeneration(generationId)) return;
     final style = styles[index];
-    final service = imageGeneratorServiceFactory(
+    final service = widget.imageGeneratorServiceFactory(
       apiKey: EnvConfig.geminiApiKey,
     );
     setState(() {

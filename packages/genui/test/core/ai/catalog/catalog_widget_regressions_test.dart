@@ -106,12 +106,7 @@ void main() {
   });
 
   tearDownAll(() {
-    resetImageGeneratorServiceFactory();
     PromptRegistry.instance.reset();
-  });
-
-  tearDown(() {
-    resetImageGeneratorServiceFactory();
   });
 
   group('Catalog widget regressions', () {
@@ -131,14 +126,16 @@ void main() {
           _QueuedImageService(secondGen),
         ]);
 
-        imageGeneratorServiceFactory = ({required String apiKey}) {
-          expect(services, isNotEmpty, reason: 'No fake service queued.');
-          return services.removeFirst();
-        };
+        final item = buildAskUserImageStyle(
+          imageGeneratorServiceFactory: ({required String apiKey}) {
+            expect(services, isNotEmpty, reason: 'No fake service queued.');
+            return services.removeFirst();
+          },
+        );
 
         await tester.pumpWidget(
           _buildCatalogItemWidget(
-            item: askUserImageStyle,
+            item: item,
             data: _imageStyleData(
               subject: 'subject-a',
               imageStyles: ['watercolor', 'minimalist'],
@@ -156,7 +153,7 @@ void main() {
 
         await tester.pumpWidget(
           _buildCatalogItemWidget(
-            item: askUserImageStyle,
+            item: item,
             data: _imageStyleData(
               subject: 'subject-b',
               imageStyles: ['watercolor', 'minimalist'],
@@ -209,14 +206,16 @@ void main() {
           _QueuedImageService(secondGen),
         ]);
 
-        imageGeneratorServiceFactory = ({required String apiKey}) {
-          expect(services, isNotEmpty, reason: 'No fake service queued.');
-          return services.removeFirst();
-        };
+        final item = buildAskUserImageStyle(
+          imageGeneratorServiceFactory: ({required String apiKey}) {
+            expect(services, isNotEmpty, reason: 'No fake service queued.');
+            return services.removeFirst();
+          },
+        );
 
         await tester.pumpWidget(
           _buildCatalogItemWidget(
-            item: askUserImageStyle,
+            item: item,
             data: _imageStyleData(
               subject: 'same-subject',
               imageStyles: ['watercolor', 'minimalist'],
@@ -241,7 +240,7 @@ void main() {
 
         await tester.pumpWidget(
           _buildCatalogItemWidget(
-            item: askUserImageStyle,
+            item: item,
             data: _imageStyleData(
               subject: 'same-subject',
               imageStyles: ['watercolor', 'gradient'],

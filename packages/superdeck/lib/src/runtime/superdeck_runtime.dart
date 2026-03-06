@@ -81,7 +81,10 @@ final class SuperDeckRuntime {
       BundledDeckSource() => null,
     };
 
-    final configuration = runtimeConfig.toDeckConfiguration(
+    final configuration = DeckConfiguration(
+      projectDir: runtimeConfig.projectDir,
+      outputDir: runtimeConfig.outputDir,
+      assetsPath: runtimeConfig.assetsPath,
       slidesPath: slidesPath,
     );
 

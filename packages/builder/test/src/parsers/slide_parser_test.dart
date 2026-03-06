@@ -61,20 +61,27 @@ C
       expect(slides[2].content, equals('C'));
     });
 
-    test('throws when frontmatter is not a map', () {
+    test('treats YAML lists between separators as normal slide content', () {
       const markdown = '''
+First slide
+
 ---
 - item one
 - item two
 ---
 
-Content after non-map frontmatter.
+Last slide
 ''';
 
-      expect(
-        () => markdownParser.parse(markdown),
-        throwsA(isA<FormatException>()),
-      );
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides.length, equals(3));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(slides[0].content, equals('First slide'));
+      expect(slides[1].frontmatter, isEmpty);
+      expect(slides[1].content, equals('- item one\n- item two'));
+      expect(slides[2].frontmatter, isEmpty);
+      expect(slides[2].content, equals('Last slide'));
     });
 
     test('throws when frontmatter is malformed', () {

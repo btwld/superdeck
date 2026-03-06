@@ -2,13 +2,13 @@ import 'package:superdeck_builder/src/parsers/comment_parser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late CommentParser parser;
+  late NoteParser parser;
 
   setUp(() {
-    parser = const CommentParser();
+    parser = const NoteParser();
   });
 
-  group('CommentParser', () {
+  group('NoteParser', () {
     test('parses single line comment correctly', () {
       final input = '<!-- This is a comment -->';
       final result = parser.parse(input);

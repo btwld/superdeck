@@ -153,13 +153,7 @@ Map<String, dynamic>? _sanitizeBlock(dynamic rawBlock) {
   final type = rawType.isEmpty ? 'block' : rawType;
 
   if (type == 'block') {
-    final content = block['content']?.toString().trim() ?? '';
-    if (content.isEmpty) {
-      return null;
-    }
-    block['type'] = 'block';
-    block.remove('name');
-    return block;
+    return _sanitizeMarkdownBlock(block);
   }
 
   if (type == 'widget') {
@@ -172,6 +166,10 @@ Map<String, dynamic>? _sanitizeBlock(dynamic rawBlock) {
     return block;
   }
 
+  return _sanitizeMarkdownBlock(block);
+}
+
+Map<String, dynamic>? _sanitizeMarkdownBlock(Map<String, dynamic> block) {
   final content = block['content']?.toString().trim() ?? '';
   if (content.isEmpty) {
     return null;

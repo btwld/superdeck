@@ -152,7 +152,7 @@ class MarkdownParser {
 
     try {
       final yaml = loadYaml(candidate);
-      return yaml is YamlMap || yaml is YamlList;
+      return yaml is YamlMap;
     } on YamlException {
       return _looksLikeFrontMatterCandidate(candidate);
     } catch (_) {

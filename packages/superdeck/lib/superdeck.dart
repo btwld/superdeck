@@ -27,7 +27,6 @@ export 'package:superdeck/src/runtime/superdeck_runtime.dart';
 // Presentation
 export 'package:superdeck/src/presentation/deck_extension.dart';
 export 'package:superdeck/src/presentation/deck_presentation.dart';
-export 'package:superdeck/src/presentation/presentation_slide_builder.dart';
 export 'package:superdeck/src/presentation/slide_parts.dart';
 export 'package:superdeck/src/presentation/slide_template.dart';
 export 'package:superdeck/src/presentation/template_exception.dart';
@@ -35,6 +34,7 @@ export 'package:superdeck/src/presentation/widget_definition.dart';
 
 // Slides
 export 'package:superdeck/src/slides/slide_configuration.dart';
+export 'package:superdeck/src/slides/slide_configuration_builder.dart';
 
 // Export
 export 'package:superdeck/src/export/async_thumbnail.dart';
