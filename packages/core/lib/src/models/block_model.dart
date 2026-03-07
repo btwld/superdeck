@@ -327,21 +327,3 @@ enum ContentAlignment {
     );
   }
 }
-
-extension StringContentX on String {
-  ContentBlock toBlock() => ContentBlock(this);
-}
-
-extension BlockX on Block {
-  Block flex(int flex) => switch (this) {
-    SectionBlock block => block.copyWith(flex: flex),
-    ContentBlock block => block.copyWith(flex: flex),
-    WidgetBlock block => block.copyWith(flex: flex),
-  };
-
-  Block scrollable([bool scrollable = true]) => switch (this) {
-    SectionBlock block => block.copyWith(scrollable: scrollable),
-    ContentBlock block => block.copyWith(scrollable: scrollable),
-    WidgetBlock block => block.copyWith(scrollable: scrollable),
-  };
-}

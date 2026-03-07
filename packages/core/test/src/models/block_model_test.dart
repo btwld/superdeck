@@ -837,28 +837,7 @@ void main() {
       });
     });
 
-    group('StringContentX extension', () {
-      test('converts string to ContentBlock', () {
-        final block = 'Hello World'.toBlock();
-
-        expect(block, isA<ContentBlock>());
-        expect(block.content, 'Hello World');
-      });
-
-      test('preserves content exactly', () {
-        const content = 'Line 1\nLine 2\n\nLine 4';
-        final block = content.toBlock();
-
-        expect(block.content, content);
-      });
-    });
-
-    // Note: BlockX extension methods (flex(), scrollable()) cannot be tested
-    // directly because they share names with Block properties. Instance members
-    // take precedence over extension methods in Dart. The extension is designed
-    // for use in builder patterns where the type is explicitly Block, not a
-    // subclass. Testing the underlying copyWith functionality instead.
-    group('Block copyWith via extensions pattern', () {
+    group('Block copyWith functionality', () {
       test('copyWith can set flex value', () {
         final original = ContentBlock('Test');
         final modified = original.copyWith(flex: 5);
