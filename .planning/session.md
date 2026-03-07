@@ -167,6 +167,23 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Session Log
 
+### 2026-03-07
+- Started the `SuperDeck v2: Pending Simplification & Naming Cleanup` execution plan:
+  - applying five slices in order (`@internal` annotations, `WidgetDefinition` rename, `DeckConfig` merge, public barrel cleanup, and `StyleConfigLoader` deletion)
+  - running final verification with analyze/tests plus stale-reference grep gates
+- Completed the pending simplification and naming cleanup slices:
+  - added missing `@internal` annotations on `SuperDeckHandle.handleNavigationEvent(...)` and `SuperDeckHandle.exportPdf(...)`
+  - renamed `WidgetDefinition` to `BlockDefinition` (including file rename to `block_definition.dart`) and updated `SlideData.getBlockDefinition(...)`
+  - merged `DeckSource` and `DeckRuntimeConfig` into `DeckConfig` and migrated runtime, app bootstrap, demo, genui, and tests
+  - removed `MeasureSize`, `InheritedData`, and `BuildContextX` from the public `superdeck.dart` barrel
+  - deleted dead `StyleConfigLoader` and `style_config_test.dart`
+- Validation status:
+  - `./.fvm/flutter_sdk/bin/dart analyze packages/core packages/builder packages/superdeck packages/genui packages/cli demo --fatal-infos` passed
+  - `melos run test` passed (`superdeck`, `genui`, and workspace test suites)
+  - stale-reference grep gates for `WidgetDefinition`, `DeckRuntimeConfig`, `DeckSource`, and `StyleConfigLoader` are clean in source/test paths
+  - `demo` web release build passed (`../.fvm/flutter_sdk/bin/flutter build web --release`)
+  - `melos run analyze` remains blocked at the DCM phase because DCM is not activated in this environment
+
 ### 2026-03-06
 - Completed a final broad audit pass on the naming reset:
   - `./.fvm/flutter_sdk/bin/dart pub global run melos run analyze:dart` passed across `superdeck`, `core`, `genui`, `builder`, `cli`, and `demo`
