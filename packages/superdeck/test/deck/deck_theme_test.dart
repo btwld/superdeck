@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 
-class _TestWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const _TestWidgetDefinition();
+class _TestBlockDefinition extends BlockDefinition<Map<String, Object?>> {
+  const _TestBlockDefinition();
 
   @override
   Map<String, Object?> parse(Map<String, Object?> args) => args;
@@ -19,7 +19,7 @@ void main() {
     group('equality', () {
       test('equivalent collection wrappers are equal', () {
         final baseStyle = SlideStyle();
-        final widgetDefinition = const _TestWidgetDefinition();
+        final widgetDefinition = const _TestBlockDefinition();
         final template = SlideTemplate(styles: {'hero': SlideStyle()});
 
         final first = DeckTheme(

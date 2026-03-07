@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/utils/constants.dart'; // kResolution
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
+import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/src/utils/constants.dart'; // kResolution
 import 'package:superdeck/src/utils/syntax_highlighter.dart';
+import 'package:superdeck/superdeck.dart';
 
 /// Lightweight harness for pumping slides with production defaults.
 class SlideTestHarness {
@@ -12,7 +13,7 @@ class SlideTestHarness {
     WidgetTester tester,
     Slide slide, {
     SlideStyle? style,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, BlockDefinition> widgets = const {},
     bool debug = false,
     Size? resolution,
     bool isExporting = false,
@@ -50,7 +51,7 @@ class SlideTestHarness {
   static SlideData createConfiguration(
     Slide slide, {
     SlideStyle? style,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, BlockDefinition> widgets = const {},
     bool debug = false,
     int slideIndex = 0,
     SlideFrame? frame,

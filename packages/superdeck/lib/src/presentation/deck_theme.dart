@@ -4,12 +4,12 @@ import '../styling/styling.dart';
 import '../utils/collection_hashes.dart';
 import 'slide_frame.dart';
 import 'slide_template.dart';
-import 'widget_definition.dart';
+import 'block_definition.dart';
 
 class DeckTheme {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
-  final Map<String, WidgetDefinition> widgets;
+  final Map<String, BlockDefinition> widgets;
   final SlideFrame frame;
   final bool debug;
   final Map<String, SlideTemplate> templates;
@@ -18,7 +18,7 @@ class DeckTheme {
   const DeckTheme({
     this.baseStyle,
     this.styles = const <String, SlideStyle>{},
-    this.widgets = const <String, WidgetDefinition>{},
+    this.widgets = const <String, BlockDefinition>{},
     this.frame = const SlideFrame(),
     this.debug = false,
     this.templates = const <String, SlideTemplate>{},
@@ -28,7 +28,7 @@ class DeckTheme {
   DeckTheme copyWith({
     SlideStyle? baseStyle,
     Map<String, SlideStyle>? styles,
-    Map<String, WidgetDefinition>? widgets,
+    Map<String, BlockDefinition>? widgets,
     SlideFrame? frame,
     bool? debug,
     Map<String, SlideTemplate>? templates,
