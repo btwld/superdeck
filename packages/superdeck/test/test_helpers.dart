@@ -4,7 +4,7 @@ import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/styling/styling.dart';
 import 'package:superdeck/src/slides/slide_data.dart';
-import 'package:superdeck/src/presentation/widget_definition.dart';
+import 'package:superdeck/src/presentation/block_definition.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 extension WidgetTesterX on WidgetTester {
@@ -16,7 +16,7 @@ extension WidgetTesterX on WidgetTester {
     SlideData slide, {
     bool isSnapshot = false,
     SlideStyle? style,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, BlockDefinition> widgets = const {},
     List<GeneratedAsset> assets = const [],
   }) async {
     return pumpWithScaffold(

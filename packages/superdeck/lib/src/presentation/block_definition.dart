@@ -27,7 +27,7 @@ import 'package:flutter/widgets.dart';
 ///   }
 /// }
 ///
-/// class QrCodeWidget extends WidgetDefinition<QrCodeArgs> {
+/// class QrCodeWidget extends BlockDefinition<QrCodeArgs> {
 ///   const QrCodeWidget();
 ///
 ///   @override
@@ -39,8 +39,8 @@ import 'package:flutter/widgets.dart';
 ///   }
 /// }
 /// ```
-abstract class WidgetDefinition<T> {
-  const WidgetDefinition();
+abstract class BlockDefinition<T> {
+  const BlockDefinition();
 
   /// Parses and validates raw arguments into a strongly-typed instance.
   ///

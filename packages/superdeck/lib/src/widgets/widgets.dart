@@ -1,4 +1,4 @@
-import '../presentation/widget_definition.dart';
+import '../presentation/block_definition.dart';
 import 'dartpad_widget.dart';
 import 'image_widget.dart';
 import 'qr_code_widget.dart';
@@ -16,7 +16,7 @@ export 'qr_code_widget.dart';
 ///
 /// Built-in widgets are registered by default but can be overridden
 /// by user-provided widgets with the same name.
-const Map<String, WidgetDefinition> builtInWidgets = {
+const Map<String, BlockDefinition> builtInWidgets = {
   'image': ImageWidget(),
   'dartpad': DartPadWidget(),
   'qrcode': QrCodeWidget(),

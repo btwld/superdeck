@@ -89,7 +89,7 @@ Button variants (solid, soft, outline) with hover/press states.
    ```
 3. **Register it** in the `demoWidgets` map:
    ```dart
-   'mix-your-widget': _SimpleWidgetDefinition(
+   'mix-your-widget': _SimpleBlockDefinition(
      (context, args) => _DemoWrapper(
        child: mix_your_widget.YourWidget(),
      ),
@@ -134,7 +134,7 @@ TextStyleMix(
 Demo widgets receive a raw argument map (`Map<String, Object?>`). Most demo widgets ignore args, but you can read values directly:
 
 ```dart
-'custom-widget': _SimpleWidgetDefinition((context, args) {
+'custom-widget': _SimpleBlockDefinition((context, args) {
   final text = args['text'] as String? ?? 'Hello World';
   final size = (args['size'] as num?)?.toInt() ?? 100;
   final enabled = args['enabled'] as bool? ?? true;

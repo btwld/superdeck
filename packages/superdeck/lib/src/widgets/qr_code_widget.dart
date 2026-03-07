@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../presentation/widget_definition.dart';
+import '../presentation/block_definition.dart';
 import '../utils/converters.dart';
 
 enum _QrErrorCorrectionToken { low, l, medium, m, high, q, highest, h }
@@ -82,7 +82,7 @@ class QrCodeDto {
 /// - `errorCorrection` (optional): Error correction level - low, medium, high, or highest (default: medium)
 /// - `backgroundColor` (optional): Hex color for background (default: white)
 /// - `foregroundColor` (optional): Hex color for QR code (default: black)
-class QrCodeWidget extends WidgetDefinition<QrCodeDto> {
+class QrCodeWidget extends BlockDefinition<QrCodeDto> {
   const QrCodeWidget();
 
   @override

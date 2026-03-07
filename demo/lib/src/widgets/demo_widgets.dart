@@ -21,19 +21,19 @@ import '../examples/button.dart' as remix_button;
 /// ```
 ///
 /// The QR code widget is now a built-in widget available as `@qrcode`.
-Map<String, WidgetDefinition> get demoWidgets => {
+Map<String, BlockDefinition> get demoWidgets => {
   // Mix examples - wrapped in simple widget definitions
-  'mix-simple-box': _SimpleWidgetDefinition(
+  'mix-simple-box': _SimpleBlockDefinition(
     (context, args) => _DemoWrapper(
       child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),
     ),
   ),
-  'mix-variants': _SimpleWidgetDefinition(
+  'mix-variants': _SimpleBlockDefinition(
     (context, args) => _DemoWrapper(
       child: Transform.scale(scale: 3.0, child: mix_variants.Example()),
     ),
   ),
-  'mix-animation': _SimpleWidgetDefinition(
+  'mix-animation': _SimpleBlockDefinition(
     (context, args) => _DemoWrapper(
       child: Transform.scale(
         scale: 3.0,
@@ -43,7 +43,7 @@ Map<String, WidgetDefinition> get demoWidgets => {
   ),
 
   // Naked UI examples
-  'naked-select': _SimpleWidgetDefinition(
+  'naked-select': _SimpleBlockDefinition(
     (context, args) => _DemoWrapper(
       child: Transform.scale(
         scale: 2.0,
@@ -53,7 +53,7 @@ Map<String, WidgetDefinition> get demoWidgets => {
   ),
 
   // Remix examples
-  'remix-button': _SimpleWidgetDefinition(
+  'remix-button': _SimpleBlockDefinition(
     (context, args) => _DemoWrapper(
       child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
     ),
@@ -64,11 +64,11 @@ Map<String, WidgetDefinition> get demoWidgets => {
 ///
 /// Used for demo widgets that don't need argument validation.
 /// Uses raw `Map<String, Object?>` as the argument type (no parsing).
-class _SimpleWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
+class _SimpleBlockDefinition extends BlockDefinition<Map<String, Object?>> {
   final Widget Function(BuildContext context, Map<String, Object?> args)
   _builder;
 
-  const _SimpleWidgetDefinition(this._builder);
+  const _SimpleBlockDefinition(this._builder);
 
   @override
   Map<String, Object?> parse(Map<String, Object?> args) {

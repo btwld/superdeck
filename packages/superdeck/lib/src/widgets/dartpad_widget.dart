@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../presentation/widget_definition.dart';
+import '../presentation/block_definition.dart';
 import '../rendering/blocks/block_context.dart';
 import '../ui/widgets/webview_wrapper.dart';
 
@@ -79,7 +79,7 @@ class DartPadDto {
 /// - `theme` (optional): Theme name (light, dark) - default: light
 /// - `embed` (optional): Whether to embed - default: true
 /// - `run` (optional): Whether to auto-run - default: true
-class DartPadWidget extends WidgetDefinition<DartPadDto> {
+class DartPadWidget extends BlockDefinition<DartPadDto> {
   const DartPadWidget();
 
   @override

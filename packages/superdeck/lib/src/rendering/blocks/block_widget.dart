@@ -111,7 +111,7 @@ class _CustomBlockChild extends StatelessWidget {
   Widget build(BuildContext context) {
     final slide = SlideData.of(context);
     final data = BlockContext.of(context);
-    final widgetDef = slide.getWidgetDefinition(block.name);
+    final widgetDef = slide.getBlockDefinition(block.name);
 
     if (widgetDef == null) {
       return ErrorWidgets.simple('Widget not found: ${block.name}');

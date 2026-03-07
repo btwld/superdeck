@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../presentation/slide_frame.dart';
-import '../presentation/widget_definition.dart';
+import '../presentation/block_definition.dart';
 import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/collection_hashes.dart';
@@ -14,7 +14,7 @@ class SlideData {
   final Slide _slide;
   final bool debug;
   final SlideFrame? frame;
-  final Map<String, WidgetDefinition> _widgets;
+  final Map<String, BlockDefinition> _widgets;
   // Bare thumbnail asset key (for example: thumbnail_intro.png).
   final String thumbnailFile;
 
@@ -27,7 +27,7 @@ class SlideData {
     this.debug = false,
     this.frame,
     required this.thumbnailFile,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, BlockDefinition> widgets = const {},
     this.isExporting = false,
   }) : _slide = slide,
        _widgets = widgets;
@@ -42,7 +42,7 @@ class SlideData {
 
   List<String> get notes => _slide.notes;
 
-  WidgetDefinition? getWidgetDefinition(String name) => _widgets[name];
+  BlockDefinition? getBlockDefinition(String name) => _widgets[name];
 
   static SlideData of(BuildContext context) {
     return InheritedData.of(context);
@@ -55,7 +55,7 @@ class SlideData {
     bool? debug,
     SlideFrame? frame,
     String? thumbnailFile,
-    Map<String, WidgetDefinition>? widgets,
+    Map<String, BlockDefinition>? widgets,
     bool? isExporting,
   }) {
     return SlideData(

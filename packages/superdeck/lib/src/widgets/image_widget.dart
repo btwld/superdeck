@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../presentation/widget_definition.dart';
+import '../presentation/block_definition.dart';
 import '../rendering/blocks/block_context.dart';
 import '../ui/widgets/cache_image_widget.dart';
 import '../utils/converters.dart';
@@ -102,7 +102,7 @@ class ImageDto {
 /// - `fit` (optional): ImageFit enum value (cover, contain, fill, etc.) - default: contain
 /// - `width` (optional): Image width in logical pixels
 /// - `height` (optional): Image height in logical pixels
-class ImageWidget extends WidgetDefinition<ImageDto> {
+class ImageWidget extends BlockDefinition<ImageDto> {
   const ImageWidget();
 
   @override

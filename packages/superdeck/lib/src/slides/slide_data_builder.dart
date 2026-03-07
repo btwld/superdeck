@@ -2,7 +2,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../presentation/deck_theme.dart';
 import '../presentation/template_resolver.dart';
-import '../presentation/widget_definition.dart';
+import '../presentation/block_definition.dart';
 import '../widgets/widgets.dart';
 import 'slide_data.dart';
 
@@ -19,19 +19,11 @@ class SlideDataBuilder {
   const SlideDataBuilder({required this.configuration});
 
   /// Builds a list of SlideData objects from raw slides and theme options.
-  List<SlideData> buildSlides(
-    List<Slide> rawSlides,
-    DeckTheme theme,
-  ) {
+  List<SlideData> buildSlides(List<Slide> rawSlides, DeckTheme theme) {
     final resolver = TemplateResolver(theme);
 
     return rawSlides.asMap().entries.map((entry) {
-      return _buildSlideData(
-        entry.key,
-        entry.value,
-        theme,
-        resolver,
-      );
+      return _buildSlideData(entry.key, entry.value, theme, resolver);
     }).toList();
   }
 
@@ -43,7 +35,7 @@ class SlideDataBuilder {
     TemplateResolver resolver,
   ) {
     // Start with built-in widgets, then add user widgets that are actually used
-    final widgets = Map<String, WidgetDefinition>.from(builtInWidgets);
+    final widgets = Map<String, BlockDefinition>.from(builtInWidgets);
 
     // Collect widget names used in this slide
     final usedWidgetNames = slide.sections
