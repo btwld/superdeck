@@ -24,12 +24,12 @@ class _SlideWithNullBlocks extends Slide {
 
 void main() {
   group('DeckService with LocalDeckReader', () {
-    late MockDeckConfiguration mockConfig;
+    late MockDeckWorkspace mockConfig;
     late DeckService deckService;
 
     setUp(() {
       mockConfig = createMockConfig();
-      final config = DeckConfiguration(projectDir: mockConfig.projectDir);
+      final config = DeckWorkspace(projectDir: mockConfig.projectDir);
       deckService = DeckService(configuration: config);
     });
 
@@ -93,13 +93,13 @@ void main() {
   });
 
   group('DeckService with LocalDeckReader (FileSystem features)', () {
-    late MockDeckConfiguration mockConfig;
-    late DeckConfiguration config;
+    late MockDeckWorkspace mockConfig;
+    late DeckWorkspace config;
     late DeckService deckService;
 
     setUp(() async {
       mockConfig = createMockConfig();
-      config = DeckConfiguration(projectDir: mockConfig.projectDir);
+      config = DeckWorkspace(projectDir: mockConfig.projectDir);
       deckService = DeckService(configuration: config);
 
       // Initialize the deckService for each test

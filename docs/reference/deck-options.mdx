@@ -9,7 +9,7 @@ SuperDeck v2 is configured through three public types:
 
 - `DeckSource` for content origin and watch behavior
 - `DeckRuntimeConfig` for startup-only operational paths
-- `DeckPresentation` for render composition, custom widgets, templates, parts, and extensions
+- `DeckTheme` for render composition, custom widgets, templates, and slide frame widgets
 
 The canonical bootstrap shape is:
 
@@ -21,11 +21,11 @@ Future<void> main() async {
       watch: true,
     ),
     runtimeConfig: const DeckRuntimeConfig(),
-    presentation: DeckPresentation(
+    theme: DeckTheme(
       widgets: const {
         'twitter': TwitterWidgetDefinition(),
       },
-      parts: SlideParts(
+      frame: SlideFrame(
         header: CustomHeaderPart(),
         footer: CustomFooterPart(),
         background: CustomBackgroundPart(),
@@ -71,12 +71,12 @@ const DeckRuntimeConfig(
 )
 ```
 
-## `DeckPresentation`
+## `DeckTheme`
 
-Render composition and extension points:
+Render composition and slide-level composition points:
 
 ```dart
-DeckPresentation(
+DeckTheme(
   baseStyle: SlideStyle(),
   styles: {
     'title': SlideStyle(),
@@ -84,7 +84,7 @@ DeckPresentation(
   widgets: const {
     'twitter': TwitterWidgetDefinition(),
   },
-  parts: SlideParts(
+  frame: SlideFrame(
     header: CustomHeaderPart(),
     footer: CustomFooterPart(),
     background: CustomBackgroundPart(),
@@ -108,8 +108,8 @@ style: title
 ### `widgets`
 Custom widget definitions keyed by widget name.
 
-### `parts`
-Slide-wide header, footer, and background parts.
+### `frame`
+Slide-wide header, footer, and background widgets.
 
 ### `templates` and `defaultTemplate`
 Named slide templates and the deck-level fallback template.
@@ -117,7 +117,7 @@ Named slide templates and the deck-level fallback template.
 ### `debug`
 Enables visual debugging aids for slide layout design.
 
-### `extensions`
+### `SuperDeckRuntime.extensions`
 Behavioral/runtime add-ons that replace the old plugin-first surface.
 
 ## `WidgetDefinition` example
@@ -146,6 +146,6 @@ class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
 
 1. Use `DeckSource.local(watch: true)` during development.
 2. Keep `DeckRuntimeConfig` limited to startup-only operational concerns.
-3. Put styles, widgets, parts, templates, and debug visuals on `DeckPresentation`.
-4. Keep behavioral add-ons in `DeckPresentation.extensions`.
+3. Put styles, widgets, frame widgets, templates, and debug visuals on `DeckTheme`.
+4. Keep behavioral add-ons on `SuperDeckRuntime.extensions`.
 5. Enable `debug: true` while designing layouts.

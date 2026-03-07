@@ -3,7 +3,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
-import '../../rendering/blocks/block_provider.dart';
+import '../../rendering/blocks/block_context.dart';
 import '../../ui/widgets/hero_element.dart';
 import '../markdown_helpers.dart';
 import '../markdown_hero_mixin.dart';
@@ -37,7 +37,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     return StyleSpecBuilder<TextSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
-        final blockData = BlockConfiguration.of(builderContext);
+        final blockData = BlockContext.of(builderContext);
         final transformed = _transformLineBreaks(textContent);
 
         // Avoid empty Heroes (common source of duplicate in-flight painters).
@@ -81,7 +81,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
           heroData: TextElement(
             text: transformed,
             spec: spec,
-            size: BlockConfiguration.of(context).size,
+            size: BlockContext.of(context).size,
           ),
           buildFlight: _buildStableFlight,
         );

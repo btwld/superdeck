@@ -9,7 +9,7 @@ export 'src/models/deck_model.dart';
 export 'src/models/slide_model.dart';
 export 'src/contracts/deck_artifacts.dart';
 export 'src/asset_cache_store.dart';
-export 'src/deck_configuration.dart';
+export 'src/deck_workspace.dart';
 export 'src/deck_service.dart';
 export 'src/deck_format_exception.dart';
 export 'src/tag_tokenizer.dart';

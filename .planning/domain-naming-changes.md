@@ -20,11 +20,11 @@ DX-focused domain review. Changes are ordered by priority (DX impact).
 
 ## Changes
 
-### 1. `SlideConfiguration` -> `SlideData`
+### 1. `SlideData` -> `SlideData`
 
 **Priority**: Highest — touches the most code, causes the most confusion.
 
-**Rationale**: `SlideConfiguration` is not configuration. It is a resolved,
+**Rationale**: `SlideData` is not configuration. It is a resolved,
 render-ready slide produced by merging a parsed `Slide` with presentation
 config (style, parts, widgets, debug flags, thumbnail path, export state).
 
@@ -41,13 +41,13 @@ slide.notes;
 ```
 
 **Also renames**:
-- `SlideConfigurationBuilder` -> `SlideDataBuilder`
+- `SlideDataBuilder` -> `SlideDataBuilder`
 
-**Files**: `packages/superdeck/lib/src/slides/slide_configuration.dart`,
-`packages/superdeck/lib/src/slides/slide_configuration_builder.dart`, and
+**Files**: `packages/superdeck/lib/src/slides/slide_data.dart`,
+`packages/superdeck/lib/src/slides/slide_data_builder.dart`, and
 all consumers.
 
-### 2. `DeckPresentation` -> `DeckTheme`
+### 2. `DeckTheme` -> `DeckTheme`
 
 **Priority**: High — biggest public API clarity win.
 
@@ -73,15 +73,15 @@ final runtime = await SuperDeckRuntime.create(
 );
 ```
 
-**Files**: `packages/superdeck/lib/src/presentation/deck_presentation.dart`
+**Files**: `packages/superdeck/lib/src/presentation/deck_theme.dart`
 and all consumers. The `presentation` parameter on `SuperDeckRuntime.create`
 becomes `theme`.
 
-### 3. `SlideParts` -> `SlideFrame`
+### 3. `SlideFrame` -> `SlideFrame`
 
 **Priority**: Medium — small rename, immediate clarity.
 
-**Rationale**: `SlideParts` holds `header`, `footer`, `background`. In
+**Rationale**: `SlideFrame` holds `header`, `footer`, `background`. In
 presentation software this is the slide chrome/frame — the stuff around
 the content. "Parts" is too vague to communicate this.
 
@@ -99,7 +99,7 @@ DeckTheme(
 **Note**: The parameter name on `DeckTheme` also changes from `parts` to
 `frame`.
 
-**Files**: `packages/superdeck/lib/src/presentation/slide_parts.dart` and
+**Files**: `packages/superdeck/lib/src/presentation/slide_frame.dart` and
 all consumers.
 
 ### 4. `WidgetDefinition` -> `BlockDefinition`
@@ -129,12 +129,12 @@ it to `blocks` risks confusion with the `Block` sealed class hierarchy.
 **Files**: `packages/superdeck/lib/src/presentation/widget_definition.dart`
 and all consumers.
 
-### 5. `DeckConfiguration` -> `DeckWorkspace`
+### 5. `DeckWorkspace` -> `DeckWorkspace`
 
 **Priority**: Medium — fixes the strongest internal naming collision.
 
-**Rationale**: `DeckConfiguration` and `DeckRuntimeConfig` are too similar
-while describing different things. `DeckConfiguration` resolves filesystem
+**Rationale**: `DeckWorkspace` and `DeckRuntimeConfig` are too similar
+while describing different things. `DeckWorkspace` resolves filesystem
 paths (`superdeckDir`, `deckJson`, `slidesFile`, `assetsDir`, `pubspecFile`)
 and validates against directory traversal. It is a workspace/layout object,
 not a generic configuration.
@@ -142,14 +142,14 @@ not a generic configuration.
 `DeckWorkspace` communicates: root directory + source inputs + generated
 outputs + file layout helpers.
 
-**Files**: `packages/core/lib/src/deck_configuration.dart` and all
+**Files**: `packages/core/lib/src/deck_workspace.dart` and all
 consumers across core, superdeck, builder, cli, and tests.
 
-### 6. `BlockConfiguration` -> `BlockContext`
+### 6. `BlockContext` -> `BlockContext`
 
 **Priority**: Low — internal clarity, fewer public consumers.
 
-**Rationale**: `BlockConfiguration` holds `spec`, `size`, `align` — the
+**Rationale**: `BlockContext` holds `spec`, `size`, `align` — the
 ephemeral render-time environment for a block during `build()`. It is not
 configuration (settings); it is context (rendering conditions). Unlike
 `SlideData`, it does not contain the block itself — it contains the
@@ -163,7 +163,7 @@ block.size;
 block.align;
 ```
 
-**Files**: `packages/superdeck/lib/src/rendering/blocks/block_provider.dart`
+**Files**: `packages/superdeck/lib/src/rendering/blocks/block_context.dart`
 and all consumers.
 
 ## Handle Surface Cleanup
@@ -215,10 +215,10 @@ it should at minimum be optional with a default.
 
 Stop exporting internal types from `packages/superdeck/lib/superdeck.dart`:
 - `AppShell` — internal UI, not a user entry point
-- `SlideDataBuilder` (formerly `SlideConfigurationBuilder`) — internal
+- `SlideDataBuilder` (formerly `SlideDataBuilder`) — internal
   render-model assembly, not a user entry point
 - `AsyncThumbnail`, `SlideCaptureService` — export internals
-- `DeckWorkspace` (formerly `DeckConfiguration`) — internal, accessed via
+- `DeckWorkspace` (formerly `DeckWorkspace`) — internal, accessed via
   runtime only
 
 Stop re-exporting all of `superdeck_core` — users see `DeckWorkspace`,
@@ -245,13 +245,13 @@ Stop re-exporting all of `superdeck_core` — users see `DeckWorkspace`,
 ## Implementation Order
 
 1. Make `runtimeConfig` / `presentation` optional on `create()` — free win
-2. `SlideConfiguration` -> `SlideData` — highest code impact
-3. `DeckPresentation` -> `DeckTheme` — highest public API impact
+2. `SlideData` -> `SlideData` — highest code impact
+3. `DeckTheme` -> `DeckTheme` — highest public API impact
 4. Handle surface cleanup (`@internal` annotations)
-5. `SlideParts` -> `SlideFrame`
+5. `SlideFrame` -> `SlideFrame`
 6. `WidgetDefinition` -> `BlockDefinition`
-7. `DeckConfiguration` -> `DeckWorkspace`
-8. `BlockConfiguration` -> `BlockContext`
+7. `DeckWorkspace` -> `DeckWorkspace`
+8. `BlockContext` -> `BlockContext`
 9. Barrel export cleanup
 
 Each rename should be a single focused commit with `refactor:` prefix.

@@ -65,14 +65,14 @@ abstract class WidgetDefinition<T> {
   /// before calling this method, ensuring [args] is always valid and typed.
   ///
   /// The [context] provides access to:
-  /// - `BlockConfiguration.of(context)` - Block spec, size, and alignment
-  /// - `SlideConfiguration.of(context)` - Slide configuration
+  /// - `BlockContext.of(context)` - Block spec, size, and alignment
+  /// - `SlideData.of(context)` - Slide configuration
   ///
   /// Example:
   /// ```dart
   /// @override
   /// Widget build(BuildContext context, QrCodeArgs args) {
-  ///   final data = BlockConfiguration.of(context);
+  ///   final data = BlockContext.of(context);
   ///   return SizedBox(
   ///     width: data.size.width,
   ///     height: data.size.height,

@@ -3,7 +3,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
-import '../../rendering/blocks/block_provider.dart';
+import '../../rendering/blocks/block_context.dart';
 import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/hero_element.dart';
@@ -25,7 +25,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
     // In real rendering, visitElementAfterWithContext will be called instead
     // because isBlockElement() returns true.
     throw UnsupportedError(
-      'ImageElementBuilder requires BuildContext for BlockConfiguration access. '
+      'ImageElementBuilder requires BuildContext for BlockContext access. '
       'Use visitElementAfterWithContext or render through MarkdownBody.',
     );
   }
@@ -53,8 +53,8 @@ class ImageElementBuilder extends MarkdownElementBuilder
 
     final heroTag = element.attributes['hero'];
 
-    // Access BlockConfiguration from the context parameter (available because isBlockElement() is true)
-    final totalSize = BlockConfiguration.of(context).size;
+    // Access BlockContext from the context parameter (available because isBlockElement() is true)
+    final totalSize = BlockContext.of(context).size;
 
     return StyleSpecBuilder<ImageSpec>(
       styleSpec: styleSpec,

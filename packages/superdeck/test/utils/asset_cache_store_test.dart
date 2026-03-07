@@ -8,7 +8,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 void main() {
   group('Asset cache store (io)', () {
     late Directory projectDir;
-    late DeckConfiguration configuration;
+    late DeckWorkspace configuration;
     late AssetCacheStore store;
     late Directory cacheDir;
 
@@ -16,7 +16,7 @@ void main() {
 
     setUp(() async {
       projectDir = await Directory.systemTemp.createTemp('superdeck_asset_');
-      configuration = DeckConfiguration(projectDir: projectDir.path);
+      configuration = DeckWorkspace(projectDir: projectDir.path);
       await configuration.assetsDir.create(recursive: true);
 
       final cacheScope = GeneratedAsset.buildKey(

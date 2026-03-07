@@ -19,9 +19,9 @@ void main() {
   ) async {
     var loadCount = 0;
 
-    Future<SuperDeckRuntime> loadRuntime(DeckPresentation presentation) async {
+    Future<SuperDeckRuntime> loadRuntime(DeckTheme theme) async {
       loadCount++;
-      return SuperDeckRuntime.forTesting(presentation: presentation);
+      return SuperDeckRuntime.forTesting(theme: theme);
     }
 
     Widget buildHost() {
@@ -57,9 +57,9 @@ void main() {
             seenRuntimes.add(runtime);
             return const SizedBox.shrink();
           },
-          runtimeLoader: (presentation) async {
+          runtimeLoader: (theme) async {
             loadCount++;
-            return SuperDeckRuntime.forTesting(presentation: presentation);
+            return SuperDeckRuntime.forTesting(theme: theme);
           },
         ),
       ),
@@ -68,14 +68,14 @@ void main() {
 
     expect(seenRuntimes, hasLength(1));
     expect(loadCount, equals(1));
-    expect(seenRuntimes.last.presentation.baseStyle, isNull);
+    expect(seenRuntimes.last.theme.baseStyle, isNull);
 
     DeckStyleService.setStyle(DeckStyleType.parse(_styleMap()));
     await tester.pumpAndSettle();
 
     expect(seenRuntimes.length, greaterThan(1));
     expect(loadCount, equals(2));
-    expect(seenRuntimes.last.presentation.baseStyle, isNotNull);
+    expect(seenRuntimes.last.theme.baseStyle, isNotNull);
   });
 }
 

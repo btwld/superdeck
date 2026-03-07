@@ -1,7 +1,7 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 AssetCacheStore createAssetCacheStore({
-  required DeckConfiguration configuration,
+  required DeckWorkspace configuration,
 }) {
   return _StubAssetCacheStore();
 }

@@ -7,15 +7,17 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Current Focus
 - Domain naming review is complete. All agreed changes are captured in `.planning/domain-naming-changes.md`.
-- Next implementation slice: execute the 9-step rename/cleanup plan from that document.
+- The naming consistency reset implementation is complete and validated:
+  - `SuperDeckRuntime.create(...)` / `forTesting(...)` now take `theme` plus top-level `extensions`
+  - render/workspace surfaces now use `SlideData`, `SlideFrame`, `BlockContext`, and `DeckWorkspace`
+  - `package:superdeck/superdeck.dart` is narrowed to the approved public API, with `package:superdeck/tooling.dart` added for sibling tooling consumers
 - The dead-utility and compatibility cleanup slice is complete at the code/doc level.
-- Full Flutter test/build reruns for this slice are currently blocked by local disk pressure in `/private/var/folders/.../T/flutter_tools.*`.
 - The audit cleanup slice is complete and validated.
 - Keep the rewrite on the approved runtime-first v2 surface without reopening architecture decisions.
 - The internal presentation simplification slice is complete:
-  - `DeckPresentation` is now the only production presentation/config type inside `packages/superdeck`
+  - `DeckTheme` is now the only production presentation/config type inside `packages/superdeck`
   - the old internal `DeckOptions` bridge has been removed
-  - `StyleConfigLoader` now merges into `DeckPresentation`
+  - `StyleConfigLoader` now merges into `DeckTheme`
 
 ## Canonical Planning Docs
 - `.planning/rewrite-v2-full-plan.md`
@@ -39,7 +41,7 @@ Agents should read this file before substantive work and update it as work progr
 - The planning/docs reconciliation pass has now been applied before code refactoring:
   - added `.planning/rewrite-v2-api-surface.md` as the canonical API-surface planning doc
   - updated the umbrella rewrite docs to treat the runtime-first API as the approved direction
-  - updated public docs/READMEs/getting-started/reference content to teach `SuperDeckRuntime.create(...)`, `DeckSource`, `DeckRuntimeConfig`, and `DeckPresentation`
+  - updated public docs/READMEs/getting-started/reference content to teach `SuperDeckRuntime.create(...)`, `DeckSource`, `DeckRuntimeConfig`, and `DeckTheme`
   - updated CLI docs to keep `build` / `build --watch` as transitional v2.0 support while teaching runtime watch as the preferred workflow
 - The audit cleanup slice has now landed:
   - removed the public `StyleConfigLoader` export so `DeckOptions` is no longer part of the public styling surface
@@ -55,9 +57,23 @@ Agents should read this file before substantive work and update it as work progr
   - `SuperDeckApp` now keys `_RuntimeBootstrap` by runtime identity so a new runtime instance forces a fresh bootstrap, and a targeted regression test covers shared-handle runtime replacement
 - The internal presentation simplification slice has now landed:
   - removed `packages/superdeck/lib/src/deck/deck_options.dart`
-  - `DeckPresentation` now flows directly through runtime bootstrap, `DeckController`, `TemplateResolver`, and `SlideConfigurationBuilder`
-  - `StyleConfigLoader` now accepts and returns `DeckPresentation` while still only merging style concerns
+  - `DeckTheme` now flows directly through runtime bootstrap, `DeckController`, `TemplateResolver`, and `SlideDataBuilder`
+  - `StyleConfigLoader` now accepts and returns `DeckTheme` while still only merging style concerns
   - `packages/superdeck` tests were migrated off `DeckOptions`
+- The naming consistency reset slice has now landed:
+  - `DeckTheme` is appearance/composition only; runtime `extensions` moved to `SuperDeckRuntime`
+  - `DeckController` and `SuperDeckHandle` now speak in `theme` terms, and notes controls expose `openNotes()` / `closeNotes()`
+  - `SlideTemplate.frame`, `SlideData.frame`, and `SlideData.slide` replaced the old `parts` / `data` naming
+  - `packages/core` now exposes `DeckWorkspace`, while `packages/superdeck` exports `SlideData` and `BlockContext` but no longer wildcard re-exports `superdeck_core`
+  - README, docs, demo, and tests were migrated to the renamed API with no compatibility aliases
+- Full validation for the naming reset slice is green:
+  - `./.fvm/flutter_sdk/bin/dart analyze packages/superdeck packages/core packages/genui packages/builder packages/cli demo --fatal-infos`
+  - `../../.fvm/flutter_sdk/bin/dart test` in `packages/core`
+  - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/superdeck`
+  - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/genui`
+  - `../.fvm/flutter_sdk/bin/flutter test` in `demo`
+  - `../.fvm/flutter_sdk/bin/flutter build web --release` in `demo`
+  - repo-wide search gate is clean for `DeckPresentation`, `SlideConfiguration`, `BlockConfiguration`, `SlideParts`, and `DeckConfiguration`
 - The same review also corrected remaining planning drift:
   - session/audit/build-watch planning docs now consistently describe `build` / `build --watch` as transitional v2.0 support instead of implying an immediate `setup` / `publish`-only CLI surface
 - Full validation for the cleanup slice is green:
@@ -73,7 +89,7 @@ Agents should read this file before substantive work and update it as work progr
   - direct macOS integration remains an environment/tooling follow-up because the local run stalls inside Xcode before app startup
 - Drift review before refactor has identified the main migration risks:
   - `DeckOptions` is deeply embedded across runtime internals, tests, demo code, docs, and `packages/genui`, so it is not a safe rename-only candidate
-  - `DeckConfiguration` in `packages/core` currently mixes local path helpers, artifact filenames, and external config discovery semantics, so it should not be renamed in place to the new runtime API
+  - `DeckWorkspace` in `packages/core` currently mixes local path helpers, artifact filenames, and external config discovery semantics, so it should not be renamed in place to the new runtime API
   - `SuperDeckPlugin` is a good rename-first candidate because it is conceptually close to `DeckExtension`
   - `comments` -> `notes` and `.v2.json` artifact filename changes are broad cross-package migrations and should be isolated from the initial runtime bootstrap refactor to avoid masking regressions
   - `packages/superdeck/lib/src/deck/` is semantically overloaded and should be split by responsibility as part of the runtime API reset
@@ -130,7 +146,7 @@ Agents should read this file before substantive work and update it as work progr
   - `.planning/rewrite-v2-contract-migration-matrix.md` is now the canonical home for compatibility and public-surface migration rows
 - The final remaining v2 planning freeze decisions are now documented across the canonical planning set:
   - public package entry surface
-  - embedded watch moved to `DeckConfiguration.watch`
+  - embedded watch moved to `DeckWorkspace.watch`
   - thumbnails are runtime-owned dev snapshots with render-signature invalidation
   - bundled runtimes use canonical bundled v2 paths only
   - external YAML config remains explicitly deferred
@@ -152,11 +168,46 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-06
+- Completed a final broad audit pass on the naming reset:
+  - `./.fvm/flutter_sdk/bin/dart pub global run melos run analyze:dart` passed across `superdeck`, `core`, `genui`, `builder`, `cli`, and `demo`
+  - deleted-path reference scan is clean for the removed pre-rename files (`deck_presentation.dart`, `slide_configuration.dart`, `slide_configuration_builder.dart`, `slide_parts.dart`, `block_provider.dart`, `deck_configuration.dart`)
+  - public-surface/export audit is clean: `package:superdeck/superdeck.dart` has no wildcard `superdeck_core` re-export and `package:superdeck/tooling.dart` remains limited to internal helper consumers
+  - `melos run analyze` is still blocked only at `analyze:dcm` because DCM is not activated on this machine; no code issues were reported before that gate
+- Completed a second verification pass on the naming consistency reset:
+  - reran the previously skipped package tests:
+    - `../../.fvm/flutter_sdk/bin/dart test` in `packages/builder`
+    - `../../.fvm/flutter_sdk/bin/dart test` in `packages/cli`
+  - fixed the remaining non-analyzer consistency drift:
+    - `packages/superdeck/README.md` now teaches `theme:`
+    - runtime/slide-frame docs no longer refer to `DeckTheme.parts` or `DeckTheme.extensions`
+    - the Mermaid class-diagram example now labels the theme field as `theme`
+    - stale test filenames were renamed to `deck_theme_test.dart`, `slide_data_test.dart`, `slide_data_builder_test.dart`, and `deck_workspace_test.dart`
+  - reran validation after the cleanup:
+    - `./.fvm/flutter_sdk/bin/dart analyze packages/core packages/superdeck --fatal-infos`
+    - `../../.fvm/flutter_sdk/bin/dart test` in `packages/core`
+    - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/superdeck`
+  - repo-wide search gate is clean for removed names and old public bootstrap syntax
+- Completed the naming consistency reset implementation:
+  - split runtime behavior out of `DeckTheme`; runtime bootstrap now uses `theme:` plus top-level `extensions:`
+  - renamed the resolved render/workspace vocabulary to `SlideData`, `SlideFrame`, `BlockContext`, and `DeckWorkspace`
+  - narrowed `package:superdeck/superdeck.dart` and added `package:superdeck/tooling.dart` for non-public helper consumers in sibling packages
+  - updated README/docs/demo/tests to the new naming and removed old public symbol usage from the repo
+  - validation passed:
+    - strict analyze for `packages/superdeck`, `packages/core`, `packages/genui`, `packages/builder`, `packages/cli`, and `demo`
+    - tests for `packages/core`, `packages/superdeck`, `packages/genui`, and `demo`
+    - `demo` web release build
+- Started the naming consistency reset implementation:
+  - owner: Codex
+  - scope:
+    - split `DeckTheme` into `DeckTheme` plus top-level runtime `extensions`
+    - rename render/workspace surfaces to `SlideData`, `SlideFrame`, `BlockContext`, and `DeckWorkspace`
+    - narrow `package:superdeck/superdeck.dart` to the approved public API
+    - update docs/demo/tests to the new naming without compatibility aliases
 - Completed a code-backed review of `.planning/domain-naming-changes.md`:
   - keep the export-cleanup direction; `package:superdeck/superdeck.dart` still leaks internal runtime/render/core types
-  - `DeckPresentation` -> `DeckTheme` should not be treated as approved-as-written because the type still owns runtime behavior through `extensions`; this conflicts with the existing runtime/API freeze
+  - `DeckTheme` -> `DeckTheme` should not be treated as approved-as-written because the type still owns runtime behavior through `extensions`; this conflicts with the existing runtime/API freeze
   - `DeckRuntimeConfig` should stay as a named public type for now; making it optional is compatible, but inlining it would reopen the frozen bootstrap surface
-  - `BlockConfiguration` rename scope is understated in the proposal; it is part of the documented custom-widget API, not just an internal cleanup
+  - `BlockContext` rename scope is understated in the proposal; it is part of the documented custom-widget API, not just an internal cleanup
 - Started a review pass on `.planning/domain-naming-changes.md`:
   - owner: Codex
   - scope:
@@ -207,7 +258,7 @@ Agents should read this file before substantive work and update it as work progr
     - classify hits into `remove`, `keep`, or `reclassify`
     - record the matrix in a planning artifact before cleanup waves
 - Started the repo-wide indirection and wrapper cleanup sweep:
-  - applying the remaining review-backed cleanup items (`style_builder` narration comments, `SlideConfigurationBuilder` empty guard, `SuperDeckHandle.regenerateThumbnails`, and `AppShell` local simplification)
+  - applying the remaining review-backed cleanup items (`style_builder` narration comments, `SlideDataBuilder` empty guard, `SuperDeckHandle.regenerateThumbnails`, and `AppShell` local simplification)
   - tightening the public `askUserImageStyle` surface so helper-style construction is test-only instead of publicly taught/exported
   - running one strict repo-wide pass over local-only typedefs, helper builders/factories, forwarding methods, and stale `@visibleForTesting` seams
   - keeping only the already-approved intentional seams:
@@ -226,7 +277,7 @@ Agents should read this file before substantive work and update it as work progr
   - removed the last obvious local-only forwarding seam in GenUI catalog actions:
     - deleted `CatalogActionContextBuilder` from `packages/genui/lib/src/ai/catalog/user_action_dispatch.dart`
   - confirmed the remaining similarly-shaped items are mostly intentional:
-    - `SlideConfigurationBuilder` is a real owner with render-model assembly logic
+    - `SlideDataBuilder` is a real owner with render-model assembly logic
     - `SlideCaptureFn` is a shared callback type used by both `DeckToolsService` and `ThumbnailPreviewService`
     - `ConversationBuilder` is a real chat test seam with active test usage
     - `GenerationCallback` is part of `PresentationViewModel` state/retry behavior, not just naming noise
@@ -247,13 +298,13 @@ Agents should read this file before substantive work and update it as work progr
   - keeping `SlideCaptureFn` because it is shared across tooling and thumbnail preview
   - avoiding changes to `PresentationSlideBuilder` and `SuperDeckRuntime.forTesting(...)`, which still have real downstream consumers
 - Started the slide-builder boundary cleanup:
-  - removing `PresentationSlideBuilder`, which is only a forwarding wrapper over `SlideConfigurationBuilder`
-  - exporting `SlideConfigurationBuilder` directly from `package:superdeck/superdeck.dart`
+  - removing `PresentationSlideBuilder`, which is only a forwarding wrapper over `SlideDataBuilder`
+  - exporting `SlideDataBuilder` directly from `package:superdeck/superdeck.dart`
   - updating GenUI tooling to depend on the real builder instead of the compatibility wrapper
 - Completed the slide-builder boundary cleanup:
   - deleted `packages/superdeck/lib/src/presentation/presentation_slide_builder.dart`
-  - `package:superdeck/superdeck.dart` now exports `SlideConfigurationBuilder` directly
-  - updated GenUI tooling (`DeckToolsService` and `ThumbnailPreviewService`) to use `SlideConfigurationBuilder` directly
+  - `package:superdeck/superdeck.dart` now exports `SlideDataBuilder` directly
+  - updated GenUI tooling (`DeckToolsService` and `ThumbnailPreviewService`) to use `SlideDataBuilder` directly
   - revalidated the change with:
     - `dart analyze --fatal-infos` in `packages/superdeck`
     - `dart analyze --fatal-infos` in `packages/genui`
@@ -262,10 +313,10 @@ Agents should read this file before substantive work and update it as work progr
 - Completed the next GenUI tooling seam cleanup:
   - removed `DeckToolsService` local-only callback typedef indirection for:
     - `BuildContextProvider`
-    - `ReadSlideConfigurationBuilder`
+    - `ReadSlideDataBuilder`
   - replaced the old static default helpers with:
     - inline `contextProvider ?? (() => null)`
-    - one private top-level `_buildDefaultReadSlideConfiguration(...)` helper for the named-parameter default slide-builder path
+    - one private top-level `_buildDefaultReadSlideData(...)` helper for the named-parameter default slide-builder path
   - removed the local-only `ThumbnailCapturedCallback` typedef from `ThumbnailPreviewService` and inlined the callback type directly on `generatePreviews(...)`
   - revalidated `packages/genui` after the tooling seam cleanup:
     - `dart analyze --fatal-infos`
@@ -295,7 +346,7 @@ Agents should read this file before substantive work and update it as work progr
     - `flutter test test/core/ai/catalog/ask_user_image_style_test.dart` in `packages/genui`
 - Completed one more same-pattern simplification pass in GenUI:
   - removed the leftover default-helper wrappers that were only standing in for inline closures:
-    - `_buildDefaultReadSlideConfiguration(...)` from `DeckToolsService`
+    - `_buildDefaultReadSlideData(...)` from `DeckToolsService`
     - `_createImageGeneratorService(...)` from `AskUserImageStyle`
   - `DeckToolsService` and `buildAskUserImageStyle(...)` now inline those defaults directly at the composition point instead of keeping extra helper symbols alive
   - validation completed:
@@ -306,12 +357,12 @@ Agents should read this file before substantive work and update it as work progr
   - fixing the confirmed frontmatter map-vs-list bug in `packages/builder`
   - fixing `PresentationDeckHost` default source selection and runtime-future caching in `packages/genui`
   - applying the safe review cleanups only (`NoteParser`, self-import cleanup, nullable asset-generation path cleanup)
-  - removing the bridge-style `DeckRuntimeConfig.toDeckConfiguration(...)` helper while keeping serialization/format helpers untouched
+  - removing the bridge-style `DeckRuntimeConfig.toDeckWorkspace(...)` helper while keeping serialization/format helpers untouched
 - Completed the validated review follow-up with bridge-conversion cleanup:
   - `MarkdownParser` now accepts only YAML maps as frontmatter candidates; YAML lists between `---` separators remain normal slide content
   - `packages/builder/test/src/parsers/slide_parser_test.dart` now covers the list-content regression
   - `PresentationDeckHost` now defaults to `DeckSource.bundle()` on non-process runtimes and only uses `DeckSource.local()` when process execution is available
-  - `PresentationDeckHost` is now stateful and caches the runtime future by effective `DeckPresentation`, avoiding redundant runtime recreation on unchanged rebuilds while still recreating the runtime after style changes
+  - `PresentationDeckHost` is now stateful and caches the runtime future by effective `DeckTheme`, avoiding redundant runtime recreation on unchanged rebuilds while still recreating the runtime after style changes
   - follow-up simplification flattened `PresentationDeckHost` further:
     - removed the temporary helper-method approach for default source/runtime loader selection
     - dropped the `const` constructor and inlined the default app-builder/runtime-loader logic directly in the constructor initializer
@@ -321,7 +372,7 @@ Agents should read this file before substantive work and update it as work progr
   - GenUI block sanitization now reuses one markdown-block normalization helper instead of duplicating the same block-cleanup path
   - removed the `CommentParser` typedef alias; builder tests now use `NoteParser`
   - replaced the touched production package self-imports with relative imports, including the remaining builder `SlideContext` self-import uncovered during validation
-  - removed `DeckRuntimeConfig.toDeckConfiguration(...)` and now compose `DeckConfiguration` directly inside `SuperDeckRuntime`
+  - removed `DeckRuntimeConfig.toDeckWorkspace(...)` and now compose `DeckWorkspace` directly inside `SuperDeckRuntime`
   - added `packages/superdeck/test/runtime/superdeck_runtime_test.dart` to lock the direct runtime-to-configuration composition path
   - validation completed:
     - `dart test test/src/parsers/slide_parser_test.dart` in `packages/builder`
@@ -370,18 +421,18 @@ Agents should read this file before substantive work and update it as work progr
   - auditing overlaps between `deck`, `presentation`, `slide`, and `runtime` terminology across public and internal APIs
   - focusing on developer-facing naming consistency, package ergonomics, and open-source API clarity rather than behavior changes
 - Completed the domain-semantics review pass:
-  - confirmed the strongest public-surface ambiguity is umbrella export leakage: `package:superdeck/superdeck.dart` currently exposes both the approved runtime-first API and lower-level core/build/view-model types (`DeckConfiguration`, `DeckService`, `PresentationSlideBuilder`, `SlideConfiguration`)
-  - confirmed `DeckPresentation` is still semantically overloaded because it owns runtime behavior via `extensions`, even though the rest of the type is presentation/render policy
-  - confirmed `SlideConfiguration` is really a resolved render model, not author/config input, and its public exposure pulls internal rendering semantics into the extension/widget API
-  - confirmed core `Deck` / `DeckConfiguration` / `DeckService` still mix content, artifact-path, and repository/build-store concerns, which is the main contributor-side vocabulary drift beneath the runtime-first surface
+  - confirmed the strongest public-surface ambiguity is umbrella export leakage: `package:superdeck/superdeck.dart` currently exposes both the approved runtime-first API and lower-level core/build/view-model types (`DeckWorkspace`, `DeckService`, `PresentationSlideBuilder`, `SlideData`)
+  - confirmed `DeckTheme` is still semantically overloaded because it owns runtime behavior via `extensions`, even though the rest of the type is presentation/render policy
+  - confirmed `SlideData` is really a resolved render model, not author/config input, and its public exposure pulls internal rendering semantics into the extension/widget API
+  - confirmed core `Deck` / `DeckWorkspace` / `DeckService` still mix content, artifact-path, and repository/build-store concerns, which is the main contributor-side vocabulary drift beneath the runtime-first surface
   - recorded lower-priority naming cleanup candidates for a future compatibility pass:
-    - `SlideParts` would read more clearly as a chrome/frame concept
+    - `SlideFrame` would read more clearly as a chrome/frame concept
     - `WidgetDefinition` / `WidgetBlock` still borrow Flutter's `Widget` term for what is effectively a custom block-definition surface
 - Wrote `.planning/domain-naming-notes.md` to capture the low-churn naming recommendation:
   - keep the public runtime host family as `SuperDeckRuntime` / `SuperDeckApp` / `SuperDeckHandle`
   - keep public `DeckRuntimeConfig` and `DeckSource`
-  - treat internal `DeckConfiguration` as the real naming problem and prefer renaming it to `DeckWorkspace` (or `DeckWorkspaceConfig` if a config suffix is required)
-  - leave `DeckPresentation` unchanged for now and only revisit it after runtime behavior (`extensions`) is split out
+  - treat internal `DeckWorkspace` as the real naming problem and prefer renaming it to `DeckWorkspace` (or `DeckWorkspaceConfig` if a config suffix is required)
+  - leave `DeckTheme` unchanged for now and only revisit it after runtime behavior (`extensions`) is split out
 - Started a follow-up organization/domain review after the `src/` ownership refactor:
   - auditing whether the remaining folders (`runtime`, `presentation`, `slides`, `ui`, `utils`, `export`) now match their real owners
   - looking specifically for post-move simplification opportunities and any remaining mixed-responsibility seams
@@ -390,7 +441,7 @@ Agents should read this file before substantive work and update it as work progr
   - looking for ownership drift and places where file placement still reflects the old controller-era shape instead of the approved v2 semantics
 - Completed the package-organization review pass:
   - confirmed `packages/superdeck/lib/src/deck/` is still the most overloaded folder and mixes runtime orchestration, navigation/routing, presentation resolution, render-model assembly, and low-level deck loading
-  - confirmed `packages/superdeck/lib/src/presentation/` is too thin to act as the semantic home of the v2 presentation contract, even though `DeckPresentation` is now the canonical public configuration type
+  - confirmed `packages/superdeck/lib/src/presentation/` is too thin to act as the semantic home of the v2 presentation contract, even though `DeckTheme` is now the canonical public configuration type
   - identified the cleanest next organization slice as move-only cleanup, not another rewrite:
     - move template/widget-definition/config-building files under `presentation/`
     - move routing/loading/controller orchestration under `runtime/`
@@ -400,16 +451,16 @@ Agents should read this file before substantive work and update it as work progr
   - checking whether recent collection-equality fixes need to be applied to adjacent model classes as well
 - Completed the broader model review pass:
   - reviewed the core domain models (`Deck`, `Slide`, `SlideOptions`, blocks, generated asset references) and did not find additional migration-related correctness gaps in their current value semantics
-  - found one adjacent inconsistency in `SlideConfiguration`, where `_widgets` still used shallow map identity for equality/hashCode
-  - fixed `SlideConfiguration` to use Flutter `mapEquals` plus aligned unordered map hashing, and added `packages/superdeck/test/deck/slide_configuration_test.dart`
+  - found one adjacent inconsistency in `SlideData`, where `_widgets` still used shallow map identity for equality/hashCode
+  - fixed `SlideData` to use Flutter `mapEquals` plus aligned unordered map hashing, and added `packages/superdeck/test/deck/slide_configuration_test.dart`
   - simplified the recent equality/hash implementation so the unordered map hashing logic now lives in one shared internal utility: `packages/superdeck/lib/src/utils/collection_hashes.dart`
-  - removed the duplicated private `_hashMap(...)` helpers from `DeckPresentation`, `SlideTemplate`, and `SlideConfiguration`
+  - removed the duplicated private `_hashMap(...)` helpers from `DeckTheme`, `SlideTemplate`, and `SlideData`
   - validation for the follow-up:
     - `dart format` on touched files in `packages/superdeck`
     - `dart analyze . --fatal-infos` in `packages/superdeck`
     - `flutter test` in `packages/superdeck`
-- Completed the `DeckPresentation` semantics/test follow-up slice:
-  - updated `DeckPresentation` equality/hashCode to compare collection fields by contents instead of wrapper identity
+- Completed the `DeckTheme` semantics/test follow-up slice:
+  - updated `DeckTheme` equality/hashCode to compare collection fields by contents instead of wrapper identity
   - updated `SlideTemplate` equality/hashCode so template style maps also compare by contents instead of wrapper identity
   - added `packages/superdeck/test/deck/deck_presentation_test.dart` to cover equivalent rebuilt collection wrappers
   - strengthened `packages/superdeck/test/styling/schema/style_config_test.dart` so `StyleConfigLoader` explicitly preserves non-style presentation fields (`widgets`, `parts`, `templates`, `defaultTemplate`, `extensions`, and `debug`)
@@ -421,7 +472,7 @@ Agents should read this file before substantive work and update it as work progr
     - `dart analyze . --fatal-infos` in `packages/superdeck`
     - `flutter test` in `packages/superdeck`
 - Started a follow-up semantics/test slice after the final review:
-  - tightening `DeckPresentation` value semantics so equivalent rebuilt collection wrappers are treated consistently
+  - tightening `DeckTheme` value semantics so equivalent rebuilt collection wrappers are treated consistently
   - checking whether `SlideTemplate` needs the same collection-equality treatment to make template maps stable under rebuilds
   - adding explicit regression coverage that `StyleConfigLoader` preserves non-style presentation fields beyond just `debug`
 - Ran an additional detailed review pass over the simplified presentation path:
@@ -429,13 +480,13 @@ Agents should read this file before substantive work and update it as work progr
     - `dart analyze packages/superdeck --fatal-infos`
     - `flutter test` in `packages/superdeck`
   - recorded two remaining correctness risks for follow-up, without changing code in this pass:
-    - user confirmed `DeckPresentation.copyWith(...)` should not support null-clearing for nullable fields like `baseStyle` or `defaultTemplate`; treat that as intentional API behavior, not a defect
-    - `DeckPresentation` equality/hashCode still use shallow collection identity for `styles`, `widgets`, `templates`, and `extensions`, so logically equivalent rebuilt presentations are treated as changed and can trigger unnecessary runtime/controller updates
+    - user confirmed `DeckTheme.copyWith(...)` should not support null-clearing for nullable fields like `baseStyle` or `defaultTemplate`; treat that as intentional API behavior, not a defect
+    - `DeckTheme` equality/hashCode still use shallow collection identity for `styles`, `widgets`, `templates`, and `extensions`, so logically equivalent rebuilt presentations are treated as changed and can trigger unnecessary runtime/controller updates
   - recorded one remaining test gap for follow-up:
-    - `StyleConfigLoader` tests only assert preservation of `debug`, not the other non-style `DeckPresentation` fields that should remain unchanged through YAML merges
+    - `StyleConfigLoader` tests only assert preservation of `debug`, not the other non-style `DeckTheme` fields that should remain unchanged through YAML merges
 - Completed the internal presentation simplification slice:
-  - removed the remaining production `DeckOptions` bridge so `DeckPresentation` is now the only production presentation/config type inside `packages/superdeck`
-  - updated runtime/bootstrap/controller/template/style-loader production code to consume `DeckPresentation` directly
+  - removed the remaining production `DeckOptions` bridge so `DeckTheme` is now the only production presentation/config type inside `packages/superdeck`
+  - updated runtime/bootstrap/controller/template/style-loader production code to consume `DeckTheme` directly
   - deleted `packages/superdeck/lib/src/deck/deck_options.dart`
   - migrated `packages/superdeck` tests off `DeckOptions`
   - validation for the slice:
@@ -448,7 +499,7 @@ Agents should read this file before substantive work and update it as work progr
     - workspace DCM validation is still blocked by the existing license/tool activation issue
     - the interactive workspace `melos run test` flow is not a reliable non-interactive validation path on this host; package-level test validation remains green
 - Started the internal presentation simplification slice:
-  - removing the remaining production `DeckOptions` bridge so `DeckPresentation` is the only presentation/config type used through runtime, controller, template resolution, slide configuration building, and internal style merging
+  - removing the remaining production `DeckOptions` bridge so `DeckTheme` is the only presentation/config type used through runtime, controller, template resolution, slide configuration building, and internal style merging
   - keeping the slice behavior-preserving and scoped away from protected block-widget, hero, thumbnail, and export internals
 - Ran another correctness review pass across the runtime/bootstrap surfaces:
   - found that `SuperDeckApp` reused the old `_RuntimeBootstrap` state when given a new `SuperDeckRuntime` instance, which left controller/watch wiring attached to the previous runtime configuration
@@ -500,7 +551,7 @@ Agents should read this file before substantive work and update it as work progr
   - `ui/ui.dart` remains an overly broad internal barrel:
     - runtime/navigation/export/rendering files import it for a handful of UI controls/loading widgets
     - it currently re-exports app shell, panels, tokens, widget helpers, and `SuperDeckApp`, which makes internal UI dependencies broader than necessary
-  - `presentation/presentation_slide_builder.dart` is now only a compatibility wrapper around `SlideConfigurationBuilder` for downstream consumers like `genui`; it adds no domain logic and should be treated as a temporary public helper, not a core owner
+  - `presentation/presentation_slide_builder.dart` is now only a compatibility wrapper around `SlideDataBuilder` for downstream consumers like `genui`; it adds no domain logic and should be treated as a temporary public helper, not a core owner
   - `export/render_config.dart` is an over-factored single-use helper:
     - only `SlideCaptureService` uses it
     - its `copyWith` is unused
@@ -512,7 +563,7 @@ Agents should read this file before substantive work and update it as work progr
     - `SuperDeckRuntime`
     - `DeckSource`
     - `DeckRuntimeConfig`
-    - `DeckPresentation`
+    - `DeckTheme`
     - `DeckExtension`
     - `SuperDeckHandle`
   - rewired `SuperDeckApp` to `SuperDeckApp(runtime: runtime)` and removed `SuperDeckApp.initialize()` from the primary public surface
@@ -535,15 +586,15 @@ Agents should read this file before substantive work and update it as work progr
   - validating whether any rename-first migrations are safer than adapter-first introduction of the new runtime API
   - collecting concrete file references so the runtime refactor can be sequenced without drifting back toward the old widget-first/controller-first design
   - confirmed additional cross-package drift:
-    - `genui` still consumes `DeckOptions`, `DeckConfiguration`, `SuperDeckApp.initialize()`, and even `package:superdeck/src/...` implementation imports for thumbnail/render helpers
+    - `genui` still consumes `DeckOptions`, `DeckWorkspace`, `SuperDeckApp.initialize()`, and even `package:superdeck/src/...` implementation imports for thumbnail/render helpers
     - demo and integration-test harnesses still teach/find `DeckController` directly, so docs are ahead of executable examples right now
     - bundled/runtime artifact paths still hardcode legacy names like `superdeck.json` and `generated_assets.json` across `core`, `superdeck`, `cli`, and `genui`
-    - PDF export and thumbnail flows currently reach into `DeckController`/`SlideConfiguration` directly, so they need handle/runtime adapters rather than public controller preservation
+    - PDF export and thumbnail flows currently reach into `DeckController`/`SlideData` directly, so they need handle/runtime adapters rather than public controller preservation
   - migration recommendation is now explicit:
     - rename-first only for true 1:1 semantics (`SuperDeckPlugin` -> `DeckExtension`, `comments` -> `notes`, artifact filename versioning)
-    - use adapter-first introduction for ownership splits (`DeckOptions`, `DeckConfiguration`, runtime bootstrap, controller access)
+    - use adapter-first introduction for ownership splits (`DeckOptions`, `DeckWorkspace`, runtime bootstrap, controller access)
 - Ran the pre-refactor drift and organization review:
-  - confirmed the largest semantic mismatch is that `DeckOptions` and `DeckConfiguration` are not simple rename targets; both need ownership changes, not just new names
+  - confirmed the largest semantic mismatch is that `DeckOptions` and `DeckWorkspace` are not simple rename targets; both need ownership changes, not just new names
   - confirmed `SuperDeckPlugin` -> `DeckExtension` is a cleaner rename-first migration because the concept is already close
   - confirmed `comments` -> `notes` and `.v2.json` artifact renames touch builder/core/runtime/genui/tests and should be isolated from the bootstrap refactor
   - confirmed `packages/superdeck/lib/src/deck/` currently mixes public composition types, runtime orchestration, controller state, and navigation internals, so file placement should be cleaned up during the refactor
@@ -551,7 +602,7 @@ Agents should read this file before substantive work and update it as work progr
   - created `.planning/rewrite-v2-api-surface.md` as the canonical v2 runtime/bootstrap API doc
   - updated the major rewrite planning docs to treat `SuperDeckRuntime.create(...)` plus `SuperDeckApp(runtime: ...)` as the approved surface
   - updated public docs and READMEs so they no longer teach `SuperDeckApp.initialize()`, `DeckOptions`, or `superdeck build --watch` as the primary path
-  - code refactoring now starts from the reconciled docs instead of the older intermediate `DeckConfiguration.watch` planning shape
+  - code refactoring now starts from the reconciled docs instead of the older intermediate `DeckWorkspace.watch` planning shape
 - Started implementation of the API-first v2 reset:
   - session handoff updated to move from design review into code changes
   - execution order is now runtime/bootstrap API first, then public export cleanup, then CLI surface reduction, then tests/docs reconciliation
@@ -563,13 +614,13 @@ Agents should read this file before substantive work and update it as work progr
 - Updated the handoff after the planning freeze:
   - the reconciled planning docs are now the implementation review checklist
   - the next concrete implementation step is the runtime watch/config contract slice
-  - start with `DeckConfiguration.watch` and retire `DeckOptions.watchForChanges` from the intended v2 runtime contract
+  - start with `DeckWorkspace.watch` and retire `DeckOptions.watchForChanges` from the intended v2 runtime contract
   - then follow with the runtime thumbnail invalidation/storage cleanup slice
 - Implemented the final remaining planning freeze pass across the canonical docs:
   - froze one canonical primary barrel per package
   - kept `superdeck_core/asset_cache_store_io.dart` as an explicit platform-specific helper surface
   - removed `superdeck_cli/runner.dart` from the supported public API surface
-  - moved embedded watch to startup-only `DeckConfiguration.watch`
+  - moved embedded watch to startup-only `DeckWorkspace.watch`
   - treated `watchForChanges` as legacy v1 migration terminology only
   - froze thumbnails as runtime-owned dev snapshots, not build artifacts
   - froze thumbnail invalidation to `slide key + render signature`
@@ -608,7 +659,7 @@ Agents should read this file before substantive work and update it as work progr
   - keep each question tied to the current code and planning docs so the remaining open items can be frozen without broad re-exploration
 - Froze the local runtime configuration contract in planning:
   - app-facing local runtime config remains `SuperDeckApp(options, configuration?)`
-  - `DeckConfiguration` owns local path/layout concerns:
+  - `DeckWorkspace` owns local path/layout concerns:
     - `projectDir`
     - `slidesPath`
     - `outputDir`
@@ -619,7 +670,7 @@ Agents should read this file before substantive work and update it as work progr
     - embedded watch control belongs to startup-only runtime/session wiring, not to normal render options
   - mutability is now split explicitly:
     - render composition may update live
-    - operational wiring (`DeckConfiguration`, plugin setup, watch ownership) is startup-only
+    - operational wiring (`DeckWorkspace`, plugin setup, watch ownership) is startup-only
   - external YAML config discovery remains deferred from this contract
 - Froze the initial embedded watch trigger split:
   - automatic deck rebuild/watch is required only for `slides.md` / `configuration.slidesFile`
@@ -629,7 +680,7 @@ Agents should read this file before substantive work and update it as work progr
   - do not treat `styles.yaml` as required for this phase
   - do not block on `superdeck.yaml` strictness/acquisition yet
   - focus first on the runtime-local/in-app configuration contract:
-    - `DeckConfiguration`
+    - `DeckWorkspace`
     - `DeckOptions`
     - startup/default behavior
   - treat external YAML config sources as a later simplification/migration pass
@@ -687,7 +738,7 @@ Agents should read this file before substantive work and update it as work progr
     - CLI force rebuild clears bundled assets but not runtime temp thumbnail cache
     - web runtime cache is memory-only while IO runtime cache persists in temp storage
   - identified one additional contract gap:
-    - bundled deck loading uses a fixed `.superdeck/superdeck.json` path by default while other runtime asset paths still derive from `DeckConfiguration`
+    - bundled deck loading uses a fixed `.superdeck/superdeck.json` path by default while other runtime asset paths still derive from `DeckWorkspace`
 - Expanded `.planning/rewrite-v2-build-watch-runtime.md` with a detailed thumbnail workflow review:
   - separated thumbnail identity, build manifest references, runtime trigger path, cache resolution, and widget-capture generation
   - documented that thumbnails are usually runtime-generated snapshots even though their paths are listed in the generated-assets manifest
@@ -888,7 +939,7 @@ Agents should read this file before substantive work and update it as work progr
 - Started and completed the repo-wide indirection and wrapper cleanup sweep focused on unjustified forwarding seams, local-only typedef noise, and public helper wrappers.
 - Removed the remaining review-backed cleanup items:
   - deleted narration comments from `packages/genui/lib/src/utils/style_builder.dart`
-  - removed the redundant empty-list guard from `packages/superdeck/lib/src/slides/slide_configuration_builder.dart`
+  - removed the redundant empty-list guard from `packages/superdeck/lib/src/slides/slide_data_builder.dart`
   - removed `SuperDeckHandle.regenerateThumbnails(...)` and updated `packages/superdeck/lib/src/ui/panels/bottom_bar.dart` to call `generateThumbnails(context, force: true)` directly
   - simplified `packages/superdeck/lib/src/ui/app_shell.dart` by collapsing duplicated local layout pieces inside `build` without adding new wrapper classes
 - Tightened the public GenUI catalog surface:
@@ -898,7 +949,7 @@ Agents should read this file before substantive work and update it as work progr
   - regression tests now import the source file directly instead of relying on a public helper export
 - Repo-wide sweep result for remaining seam patterns:
   - kept as intentional: `SuperDeckRuntime.forTesting(...)`, `DeckBuilderFactory`, `ConversationBuilder`, `SlideCaptureFn`, `StyleYamlLoader`, `GenerationProgressCallback`, `GenUiBootstrap.resetForTest()`
-  - kept as intentional public transformations or framework APIs: `buildDeckPresentationFromStyle`, `buildDeckSnapshot`, `buildPromptFromWizardContext`, `buildAvailableImagesContext`, `DeckExtension.build*`
+  - kept as intentional public transformations or framework APIs: `buildDeckThemeFromStyle`, `buildDeckSnapshot`, `buildPromptFromWizardContext`, `buildAvailableImagesContext`, `DeckExtension.build*`
   - no active production references remain for `regenerateThumbnails(...)`
 - Validation for the sweep:
   - `packages/superdeck`: `fvm dart analyze . --fatal-infos`
@@ -916,3 +967,9 @@ Agents should read this file before substantive work and update it as work progr
 - Prefer updating this file over leaving important context only in chat history.
 - Do not duplicate full design documents here; link to them.
 - Record decisions, constraints, risks, and next steps that another agent would need to continue cleanly.
+- Started a public model / ownership review after the naming reset:
+  - owner: Codex
+  - scope:
+    - review runtime/public model boundaries for overlap or unnecessary separation
+    - validate whether `DeckSource`, `DeckRuntimeConfig`, and `DeckWorkspace` have clean ownership
+    - identify remaining redundancy or under-specified responsibilities before further API cleanup

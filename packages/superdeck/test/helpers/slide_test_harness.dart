@@ -16,7 +16,7 @@ class SlideTestHarness {
     bool debug = false,
     Size? resolution,
     bool isExporting = false,
-    SlideParts? parts,
+    SlideFrame? frame,
   }) async {
     await SyntaxHighlight.initialize();
     final configuration = createConfiguration(
@@ -25,7 +25,7 @@ class SlideTestHarness {
       widgets: widgets,
       debug: debug,
       isExporting: isExporting,
-      parts: parts,
+      frame: frame,
     );
 
     await tester.pumpWidget(
@@ -46,32 +46,32 @@ class SlideTestHarness {
     await tester.pumpAndSettle();
   }
 
-  /// Creates a [SlideConfiguration] with sensible defaults.
-  static SlideConfiguration createConfiguration(
+  /// Creates a [SlideData] with sensible defaults.
+  static SlideData createConfiguration(
     Slide slide, {
     SlideStyle? style,
     Map<String, WidgetDefinition> widgets = const {},
     bool debug = false,
     int slideIndex = 0,
-    SlideParts? parts,
+    SlideFrame? frame,
     bool isExporting = false,
   }) {
-    return SlideConfiguration(
+    return SlideData(
       slideIndex: slideIndex,
       style: style ?? defaultSlideStyle,
       slide: slide,
       thumbnailFile: 'test-thumbnail.png',
       debug: debug,
       widgets: {...builtInWidgets, ...widgets},
-      parts: parts ?? const SlideParts(),
+      frame: frame ?? const SlideFrame(),
       isExporting: isExporting,
     );
   }
 
-  /// Pumps a pre-built [SlideConfiguration].
+  /// Pumps a pre-built [SlideData].
   static Future<void> pumpConfiguration(
     WidgetTester tester,
-    SlideConfiguration configuration, {
+    SlideData configuration, {
     Size? resolution,
   }) async {
     await SyntaxHighlight.initialize();

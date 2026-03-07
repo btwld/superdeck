@@ -8,7 +8,7 @@ Most projects should depend on `superdeck` (Flutter) and use `superdeck_cli` for
 
 - Deck data models (`Deck`, `Slide`, `SlideOptions`, block models)
 - Canonical deck contract schema (`Deck.schema`)
-- File layout helpers (`DeckConfiguration` for `slides.md` and `.superdeck/`)
+- File layout helpers (`DeckWorkspace` for `slides.md` and `.superdeck/`)
 - Local storage and file watching (`DeckService`)
 - Markdown extensions and parsing helpers
 
@@ -20,7 +20,7 @@ import 'dart:io';
 import 'package:superdeck_core/superdeck_core.dart';
 
 Future<void> main() async {
-  final config = DeckConfiguration(projectDir: Directory.current.path);
+  final config = DeckWorkspace(projectDir: Directory.current.path);
   final service = DeckService(configuration: config);
 
   await service.initialize();

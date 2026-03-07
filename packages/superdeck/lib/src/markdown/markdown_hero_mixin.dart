@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
-import '../slides/slide_configuration.dart';
+import '../slides/slide_data.dart';
 import '../ui/widgets/hero_element.dart';
 
 /// Shared mixin that wraps markdown widgets with hero animations when a hero
@@ -17,7 +17,7 @@ mixin MarkdownHeroMixin on MarkdownElementBuilder {
     required Widget Function(BuildContext, T, T, double) buildFlight,
   }) {
     final shouldAnimate =
-        heroTag != null && !SlideConfiguration.of(context).isExporting;
+        heroTag != null && !SlideData.of(context).isExporting;
 
     if (!shouldAnimate) return child;
 

@@ -9,7 +9,7 @@ import 'deck_watcher_types.dart';
 
 typedef DeckBuilderFactory =
     DeckBuilder Function({
-      required DeckConfiguration configuration,
+      required DeckWorkspace configuration,
       required DeckService store,
     });
 
@@ -24,7 +24,7 @@ bool _isCI() {
 }
 
 DeckBuilder _createStandardBuilder({
-  required DeckConfiguration configuration,
+  required DeckWorkspace configuration,
   required DeckService store,
 }) {
   // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions.
@@ -49,7 +49,7 @@ DeckBuilder _createStandardBuilder({
 
 /// Watches slide file changes and rebuilds with typed build events.
 class DeckWatcher {
-  final DeckConfiguration configuration;
+  final DeckWorkspace configuration;
   final DeckService _store;
   final DeckBuilderFactory _builderFactory;
 

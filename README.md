@@ -41,7 +41,7 @@ SuperDeck is a Flutter presentation framework. You write slides in Markdown, and
          watch: true,
        ),
        runtimeConfig: const DeckRuntimeConfig(),
-       presentation: const DeckPresentation(),
+       theme: const DeckTheme(),
      );
 
      runApp(SuperDeckApp(runtime: runtime));

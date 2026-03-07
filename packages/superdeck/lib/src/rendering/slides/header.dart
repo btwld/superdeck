@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import '../../slides/slide_configuration.dart';
+import '../../slides/slide_data.dart';
 
 class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
   const HeaderPart({super.key});
@@ -9,7 +9,7 @@ class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(context) {
-    final slide = SlideConfiguration.of(context);
+    final slide = SlideData.of(context);
 
     final index = slide.slideIndex;
     return Padding(

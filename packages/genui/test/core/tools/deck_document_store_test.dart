@@ -3,21 +3,21 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck_genui/src/ai/schemas/deck_schemas.dart';
 import 'package:superdeck_genui/src/tools/deck_document_store.dart';
 import 'package:superdeck_genui/src/tools/errors.dart';
 
 void main() {
   late Directory tempDir;
-  late DeckConfiguration configuration;
+  late DeckWorkspace configuration;
   late DeckDocumentStore store;
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp(
       'deck_document_store_test_',
     );
-    configuration = DeckConfiguration(projectDir: tempDir.path);
+    configuration = DeckWorkspace(projectDir: tempDir.path);
     store = DeckDocumentStore(configuration: configuration);
   });
 

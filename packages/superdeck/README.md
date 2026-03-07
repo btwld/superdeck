@@ -31,7 +31,7 @@ Future<void> main() async {
       watch: true,
     ),
     runtimeConfig: const DeckRuntimeConfig(),
-    presentation: const DeckPresentation(),
+    theme: const DeckTheme(),
   );
 
   runApp(SuperDeckApp(runtime: runtime));
@@ -72,7 +72,7 @@ Separate slides with `---`. Use blocks to control layout:
 
 ## Custom widgets
 
-1. Register the widget in `DeckPresentation.widgets`.
+1. Register the widget in `DeckTheme.widgets`.
 2. Reference it by name in Markdown.
 
 See the custom widgets guide:

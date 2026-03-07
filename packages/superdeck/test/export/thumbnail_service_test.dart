@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/src/export/slide_capture_service.dart';
 
 class _FakeAssetCacheStore implements AssetCacheStore {
   final List<String> callOrder = [];
@@ -44,7 +46,7 @@ class _FakeSlideCaptureService extends SlideCaptureService {
   @override
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
-    required SlideConfiguration slide,
+    required SlideData slide,
     required BuildContext context,
   }) async {
     captureCalls += 1;
@@ -52,8 +54,8 @@ class _FakeSlideCaptureService extends SlideCaptureService {
   }
 }
 
-SlideConfiguration _createSlide(String key) {
-  return SlideConfiguration(
+SlideData _createSlide(String key) {
+  return SlideData(
     slideIndex: 0,
     style: SlideStyle(),
     slide: Slide(key: key),

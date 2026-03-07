@@ -2,14 +2,14 @@ import 'package:flutter/material.dart' show Colors;
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../slides/slide_configuration.dart';
+import '../../slides/slide_data.dart';
 import '../../styling/styling.dart';
 import '../../utils/constants.dart';
 import '../blocks/block_widget.dart';
 import 'package:flutter/widgets.dart';
 
 class SlideView extends StatelessWidget {
-  final SlideConfiguration slide;
+  final SlideData slide;
   const SlideView(this.slide, {super.key});
 
   Widget _renderPreferredSize(PreferredSizeWidget? widget) {
@@ -34,7 +34,7 @@ class SlideView extends StatelessWidget {
     );
   }
 
-  Widget _renderSections(SlideConfiguration configuration, Size slideSize) {
+  Widget _renderSections(SlideData configuration, Size slideSize) {
     final sections = configuration.sections;
     if (sections.isEmpty) {
       return const SizedBox.shrink();
@@ -90,15 +90,15 @@ class SlideView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final header = slide.parts?.header;
-    final footer = slide.parts?.footer;
+    final header = slide.frame?.header;
+    final footer = slide.frame?.footer;
 
     final headerHeight = header != null ? header.preferredSize.height : 0.0;
     final footerHeight = footer != null ? footer.preferredSize.height : 0.0;
 
     final footerWidget = _renderPreferredSize(footer);
     final headerWidget = _renderPreferredSize(header);
-    final backgroundWidget = slide.parts?.background ?? const SizedBox.shrink();
+    final backgroundWidget = slide.frame?.background ?? const SizedBox.shrink();
 
     final slideSize = Size(
       kResolution.width,

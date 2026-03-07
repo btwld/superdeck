@@ -1,17 +1,17 @@
 ---
-title: Custom slide parts
+title: Custom slide frame
 description: Add a header, footer, and background to every slide.
 ---
 
-# Custom slide parts
+# Custom slide frame
 
-Use slide parts to render shared UI on every slide:
+Use the slide frame to render shared UI on every slide:
 
 - Header (`PreferredSizeWidget`)
 - Footer (`PreferredSizeWidget`)
 - Background (`Widget`)
 
-## Create slide parts
+## Create frame widgets
 
 Header and footer widgets must implement `PreferredSizeWidget`.
 
@@ -27,7 +27,7 @@ class DeckHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slide = SlideConfiguration.of(context);
+    final slide = SlideData.of(context);
 
     return Container(
       height: preferredSize.height,
@@ -49,7 +49,7 @@ class DeckFooter extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slide = SlideConfiguration.of(context);
+    final slide = SlideData.of(context);
 
     return Container(
       height: preferredSize.height,
@@ -72,9 +72,9 @@ class DeckBackground extends StatelessWidget {
 }
 ```
 
-## Register slide parts
+## Register the slide frame
 
-Register your parts in `DeckPresentation.parts`.
+Register your slide frame in `DeckTheme.frame`.
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -88,8 +88,8 @@ Future<void> main() async {
       watch: true,
     ),
     runtimeConfig: const DeckRuntimeConfig(),
-    presentation: DeckPresentation(
-      parts: SlideParts(
+    theme: DeckTheme(
+      frame: SlideFrame(
         header: DeckHeader(),
         footer: DeckFooter(),
         background: DeckBackground(),
@@ -103,7 +103,7 @@ Future<void> main() async {
 
 ## Read slide data
 
-In any part, call `SlideConfiguration.of(context)`.
+In any part, call `SlideData.of(context)`.
 
 Common fields:
 
@@ -115,6 +115,6 @@ Common fields:
 
 ## Tips
 
-- Keep parts lightweight; they rebuild on every slide.
+- Keep frame widgets lightweight; they rebuild on every slide.
 - Handle missing frontmatter (`title` and `style` can be null).
-- Use `DeckPresentation(debug: true)` while designing layouts.
+- Use `DeckTheme(debug: true)` while designing layouts.

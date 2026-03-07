@@ -15,33 +15,33 @@ class _TestWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
 }
 
 void main() {
-  group('SlideConfiguration', () {
+  group('DeckTheme', () {
     group('equality', () {
-      test('equivalent widget map wrappers are equal', () {
-        final slide = Slide(
-          key: 'intro',
-          sections: [
-            SectionBlock([ContentBlock('Hello')]),
-          ],
-        );
+      test('equivalent collection wrappers are equal', () {
+        final baseStyle = SlideStyle();
         final widgetDefinition = const _TestWidgetDefinition();
+        final template = SlideTemplate(styles: {'hero': SlideStyle()});
 
-        final first = SlideConfiguration(
-          slideIndex: 0,
-          style: SlideStyle(),
-          slide: slide,
-          parts: const SlideParts(),
-          thumbnailFile: 'thumbnail_intro.png',
+        final first = DeckTheme(
+          baseStyle: baseStyle,
+          styles: {'deck': SlideStyle()},
           widgets: {'custom': widgetDefinition},
+          frame: const SlideFrame(),
+          debug: true,
+          templates: {'main': template},
+          defaultTemplate: template,
         );
 
-        final second = SlideConfiguration(
-          slideIndex: 0,
-          style: SlideStyle(),
-          slide: slide,
-          parts: const SlideParts(),
-          thumbnailFile: 'thumbnail_intro.png',
+        final second = DeckTheme(
+          baseStyle: baseStyle,
+          styles: {'deck': SlideStyle()},
           widgets: {'custom': widgetDefinition},
+          frame: const SlideFrame(),
+          debug: true,
+          templates: {
+            'main': SlideTemplate(styles: {'hero': SlideStyle()}),
+          },
+          defaultTemplate: template,
         );
 
         expect(first, equals(second));

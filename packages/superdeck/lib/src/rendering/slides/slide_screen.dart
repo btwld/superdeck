@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 
-import '../../slides/slide_configuration.dart';
+import '../../slides/slide_data.dart';
 import '../../ui/widgets/provider.dart';
 import 'slide_view.dart';
 
 class SlideScreen extends StatelessWidget {
   const SlideScreen(this.configuration, {super.key});
 
-  final SlideConfiguration configuration;
+  final SlideData configuration;
 
   @override
   Widget build(BuildContext context) {

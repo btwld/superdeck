@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+
 import '../ai/schemas/deck_schemas.dart';
 import '../ai/services/style_json_serializer.dart';
 import './errors.dart';
@@ -14,10 +15,10 @@ class DeckDocument {
 }
 
 class DeckDocumentStore {
-  DeckDocumentStore({DeckConfiguration? configuration})
-    : configuration = configuration ?? DeckConfiguration();
+  DeckDocumentStore({DeckWorkspace? configuration})
+    : configuration = configuration ?? DeckWorkspace();
 
-  final DeckConfiguration configuration;
+  final DeckWorkspace configuration;
 
   Future<DeckDocument> readRequired() async {
     final file = configuration.deckJson;

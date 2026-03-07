@@ -1,15 +1,15 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/styling/styling.dart';
-import 'package:superdeck/src/slides/slide_configuration.dart';
+import 'package:superdeck/src/slides/slide_data.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 export 'fixtures/slide_fixtures.dart';
 
 /// Creates a list of test slides for testing navigation and presentation
-List<SlideConfiguration> createTestSlides(int count) {
+List<SlideData> createTestSlides(int count) {
   return List.generate(
     count,
-    (index) => SlideConfiguration(
+    (index) => SlideData(
       slideIndex: index,
       style: SlideStyle(),
       slide: Slide(
@@ -24,13 +24,13 @@ List<SlideConfiguration> createTestSlides(int count) {
 }
 
 /// Creates a test slide configuration with custom content
-SlideConfiguration createTestSlide({
+SlideData createTestSlide({
   required int index,
   String? content,
   SlideStyle? style,
   String? thumbnailFile,
 }) {
-  return SlideConfiguration(
+  return SlideData(
     slideIndex: index,
     style: style ?? SlideStyle(),
     slide: Slide(
@@ -44,7 +44,7 @@ SlideConfiguration createTestSlide({
 }
 
 /// Creates a test deck with the given slides
-Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
+Deck createTestDeck({List<Slide>? slides, DeckWorkspace? config}) {
   final testSlides =
       slides ??
       List.generate(
@@ -61,7 +61,7 @@ Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
 }
 
 /// Creates a mock configuration
-DeckConfiguration createMockConfig() => DeckConfiguration();
+DeckWorkspace createMockConfig() => DeckWorkspace();
 
 /// Pumps a widget and settles all animations
 Future<void> pumpAndSettleWidget(

@@ -4,8 +4,8 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../../ui/widgets/provider.dart';
 import '../../styling/styling.dart';
 
-class BlockConfiguration {
-  const BlockConfiguration({
+class BlockContext {
+  const BlockContext({
     required this.spec,
     required this.size,
     required this.align,
@@ -17,7 +17,7 @@ class BlockConfiguration {
 
   @override
   bool operator ==(Object other) {
-    return other is BlockConfiguration &&
+    return other is BlockContext &&
         other.spec == spec &&
         other.size == size &&
         other.align == align;
@@ -26,15 +26,15 @@ class BlockConfiguration {
   @override
   int get hashCode => spec.hashCode ^ size.hashCode ^ align.hashCode;
 
-  static BlockConfiguration of(BuildContext context) {
-    final data = InheritedData.maybeOf<BlockConfiguration>(context);
+  static BlockContext of(BuildContext context) {
+    final data = InheritedData.maybeOf<BlockContext>(context);
     if (data == null) {
-      throw FlutterError('BlockConfiguration not found');
+      throw FlutterError('BlockContext not found');
     }
     return data;
   }
 
-  static BlockConfiguration? maybeOf(BuildContext context) {
-    return InheritedData.maybeOf<BlockConfiguration>(context);
+  static BlockContext? maybeOf(BuildContext context) {
+    return InheritedData.maybeOf<BlockContext>(context);
   }
 }

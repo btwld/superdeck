@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'package:superdeck/src/slides/slide_configuration.dart';
+import 'package:superdeck/src/slides/slide_data.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
-import 'package:superdeck/src/rendering/blocks/block_provider.dart';
+import 'package:superdeck/src/rendering/blocks/block_context.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -40,16 +40,16 @@ void main() {
       );
     });
 
-    group('BlockConfiguration Access', () {
+    group('BlockContext Access', () {
       testWidgets(
-        'header elements access BlockConfiguration from StyleSpecBuilder context',
+        'header elements access BlockContext from StyleSpecBuilder context',
         (tester) async {
           const markdown = '## Header with Size';
 
           await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
           await tester.pumpAndSettle();
 
-          // Verify rendering completed without BlockConfiguration access errors
+          // Verify rendering completed without BlockContext access errors
           expect(find.text('Header with Size'), findsOneWidget);
 
           // Verify StyleSpecBuilder is in widget tree (indicates proper context)
@@ -62,7 +62,7 @@ void main() {
       );
 
       testWidgets(
-        'header with Hero tag accesses BlockConfiguration for size calculation',
+        'header with Hero tag accesses BlockContext for size calculation',
         (tester) async {
           const markdown = '# Title {.heading}';
 
@@ -72,8 +72,8 @@ void main() {
           // Verify text is rendered (CSS tag stripped by getTagAndContent)
           expect(find.text('Title'), findsOneWidget);
 
-          // Verify no BlockConfiguration access errors occurred
-          // If BlockConfiguration.of(context) failed, widget tree wouldn't render
+          // Verify no BlockContext access errors occurred
+          // If BlockContext.of(context) failed, widget tree wouldn't render
           final allWidgets = tester.allWidgets.toList();
           expect(allWidgets, isNotEmpty);
         },
@@ -82,7 +82,7 @@ void main() {
 
     group('Code Block Rendering', () {
       testWidgets(
-        'code blocks access BlockConfiguration from StyleSpecBuilder context',
+        'code blocks access BlockContext from StyleSpecBuilder context',
         (tester) async {
           const markdown = '''
 ```dart
@@ -98,7 +98,7 @@ void main() {
           // Verify code renders through CodeElementBuilder (uses RichText)
           expect(find.byType(RichText), findsWidgets);
 
-          // Verify StyleSpecBuilder is in widget tree (proves BlockConfiguration access succeeded)
+          // Verify StyleSpecBuilder is in widget tree (proves BlockContext access succeeded)
           final allWidgets = tester.allWidgets.toList();
           final hasStyleSpecBuilder = allWidgets.any(
             (widget) =>
@@ -110,7 +110,7 @@ void main() {
       );
 
       testWidgets(
-        'code blocks with Hero tag access BlockConfiguration for size calculation',
+        'code blocks with Hero tag access BlockContext for size calculation',
         (tester) async {
           const markdown = '''
 ```dart {.code-hero}
@@ -124,8 +124,8 @@ void main() {}
           // Verify code is rendered (uses RichText for syntax highlighting)
           expect(find.byType(RichText), findsWidgets);
 
-          // Verify no BlockConfiguration access errors occurred during size calculation
-          // If BlockConfiguration.of(builderContext) failed, rendering would have thrown
+          // Verify no BlockContext access errors occurred during size calculation
+          // If BlockContext.of(builderContext) failed, rendering would have thrown
           final allWidgets = tester.allWidgets.toList();
           expect(allWidgets, isNotEmpty);
         },
@@ -134,7 +134,7 @@ void main() {}
 
     group('visitText Method', () {
       testWidgets(
-        'text nodes access BlockConfiguration from StyleSpecBuilder context',
+        'text nodes access BlockContext from StyleSpecBuilder context',
         (tester) async {
           const markdown = 'Plain text content';
 
@@ -153,7 +153,7 @@ void main() {}
         },
       );
 
-      testWidgets('text nodes with Hero tag access BlockConfiguration correctly', (
+      testWidgets('text nodes with Hero tag access BlockContext correctly', (
         tester,
       ) async {
         const markdown = 'Text with tag {.text-hero}';
@@ -165,8 +165,8 @@ void main() {}
         // The CSS tag is removed by getTagAndContent in visitText
         expect(find.textContaining('Text with tag'), findsOneWidget);
 
-        // Verify no BlockConfiguration access errors during Hero data creation
-        // If BlockConfiguration.of(context) in visitText failed, rendering would throw
+        // Verify no BlockContext access errors during Hero data creation
+        // If BlockContext.of(context) in visitText failed, rendering would throw
         final allWidgets = tester.allWidgets.toList();
         expect(allWidgets, isNotEmpty);
       });
@@ -178,8 +178,8 @@ void main() {}
 ///
 /// This harness sets up:
 /// - MaterialApp for Flutter widgets
-/// - `InheritedData<SlideConfiguration>` for slide config
-/// - BlockConfiguration with a known size (800x600) for layout
+/// - `InheritedData<SlideData>` for slide config
+/// - BlockContext with a known size (800x600) for layout
 /// - MarkdownRenderScope with registry, styleSheet, and extensionSet
 /// - MarkdownBody with all required syntaxes and builders
 class _MarkdownHarness extends StatelessWidget {
@@ -193,24 +193,24 @@ class _MarkdownHarness extends StatelessWidget {
     final slideSpec = const SlideSpec();
     final registry = SpecMarkdownBuilders(slideSpec);
     final styleSheet = slideSpec.toStyle();
-    final slideConfiguration = SlideConfiguration(
+    final slideConfiguration = SlideData(
       slideIndex: 0,
       style: SlideStyle(),
       slide: const Slide(key: 'test-slide'),
       thumbnailFile: 'thumb.png',
     );
 
-    // Provide BlockConfiguration with a reasonable slide size for testing
-    final blockData = BlockConfiguration(
+    // Provide BlockContext with a reasonable slide size for testing
+    final blockData = BlockContext(
       align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
     );
 
     return MaterialApp(
-      home: InheritedData<SlideConfiguration>(
+      home: InheritedData<SlideData>(
         data: slideConfiguration,
-        child: InheritedData<BlockConfiguration>(
+        child: InheritedData<BlockContext>(
           data: blockData,
           child: Scaffold(
             body: MarkdownRenderScope(

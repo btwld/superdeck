@@ -104,7 +104,7 @@ Embeds custom Flutter widgets defined in your app.
 ### `name` (required)
 **Type:** String
 
-Widget name from `DeckPresentation.widgets`.
+Widget name from `DeckTheme.widgets`.
 
 ### Custom arguments
 **Type:** JSON-serializable values
@@ -145,7 +145,7 @@ final runtime = await SuperDeckRuntime.create(
     watch: true,
   ),
   runtimeConfig: const DeckRuntimeConfig(),
-  presentation: DeckPresentation(
+  theme: DeckTheme(
     widgets: const {
       'customChart': CustomChartDefinition(),
     },

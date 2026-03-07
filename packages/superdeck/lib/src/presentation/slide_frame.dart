@@ -4,8 +4,8 @@ import '../rendering/slides/background.dart';
 import '../rendering/slides/footer.dart';
 import '../rendering/slides/header.dart';
 
-class SlideParts {
-  const SlideParts({
+class SlideFrame {
+  const SlideFrame({
     this.header = const HeaderPart(),
     this.footer = const FooterPart(),
     this.background = const BackgroundPart(),

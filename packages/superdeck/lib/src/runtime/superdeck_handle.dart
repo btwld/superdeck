@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 import 'package:signals/signals.dart';
 
 import '../export/async_thumbnail.dart';
 import '../export/pdf_export_screen.dart';
-import '../slides/slide_configuration.dart';
+import '../slides/slide_data.dart';
 import 'deck_controller.dart';
 import 'navigation/navigation_events.dart';
 
@@ -22,9 +23,9 @@ class SuperDeckHandle {
     return controller;
   }
 
-  ReadonlySignal<List<SlideConfiguration>> get slides =>
+  ReadonlySignal<List<SlideData>> get slides =>
       _attachedController.slides;
-  ReadonlySignal<SlideConfiguration?> get currentSlide =>
+  ReadonlySignal<SlideData?> get currentSlide =>
       _attachedController.currentSlide;
   ReadonlySignal<int> get currentIndex => _attachedController.currentIndex;
   ReadonlySignal<int> get totalSlides => _attachedController.totalSlides;
@@ -53,12 +54,18 @@ class SuperDeckHandle {
 
   void closeMenu() => _attachedController.closeMenu();
 
+  void openNotes() => _attachedController.openNotes();
+
+  void closeNotes() => _attachedController.closeNotes();
+
   void toggleNotes() => _attachedController.toggleNotes();
 
+  @internal
   AsyncThumbnail? getThumbnail(String slideKey) {
     return _attachedController.getThumbnail(slideKey);
   }
 
+  @internal
   void generateThumbnails(BuildContext context, {bool force = true}) {
     _attachedController.generateThumbnails(context, force: force);
   }
@@ -67,12 +74,14 @@ class SuperDeckHandle {
     PdfExportDialogScreen.show(context);
   }
 
+  @internal
   List<Widget> buildActions(BuildContext context) {
     return _attachedController.extensions
         .expand((extension) => extension.buildActions(context))
         .toList(growable: false);
   }
 
+  @internal
   Widget? buildFloatingAction(BuildContext context) {
     for (final extension in _attachedController.extensions) {
       final action = extension.buildFloatingAction(context);
@@ -83,10 +92,12 @@ class SuperDeckHandle {
     return null;
   }
 
+  @internal
   void attach(DeckController controller) {
     _controller = controller;
   }
 
+  @internal
   void detach(DeckController controller) {
     if (identical(_controller, controller)) {
       _controller = null;

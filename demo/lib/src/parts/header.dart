@@ -9,7 +9,7 @@ class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(context) {
-    final slide = SlideConfiguration.of(context);
+    final slide = SlideData.of(context);
 
     final index = slide.slideIndex;
     return Padding(

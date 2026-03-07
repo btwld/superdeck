@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck/src/runtime/deck_controller.dart';
 
 import '../testing_utils.dart';
@@ -12,8 +13,8 @@ class MockDeckService extends DeckService {
   Deck? _currentDeck;
   Object? _errorToEmit;
 
-  MockDeckService({DeckConfiguration? configuration})
-    : super(configuration: configuration ?? DeckConfiguration());
+  MockDeckService({DeckWorkspace? configuration})
+    : super(configuration: configuration ?? DeckWorkspace());
 
   @override
   Future<Deck> loadDeck() async {
@@ -59,7 +60,7 @@ void main() {
       mockDeckService = MockDeckService();
       controller = DeckController(
         deckService: mockDeckService,
-        presentation: const DeckPresentation(),
+        theme: const DeckTheme(),
         enableDeckStream: true,
       );
     });
@@ -92,7 +93,7 @@ void main() {
     });
 
     group('Deck Loading', () {
-      // Note: Tests that emit decks trigger SlideConfigurationBuilder which
+      // Note: Tests that emit decks trigger SlideDataBuilder which
       // accesses defaultSlideStyle, which uses GoogleFonts. In test environments
       // without bundled fonts, this causes failures. These tests are skipped
       // until fonts are bundled in test assets or styles become mockable.
@@ -216,22 +217,22 @@ void main() {
       });
     });
 
-    group('Presentation Updates', () {
-      test('updatePresentation updates internal presentation', () {
-        const newPresentation = DeckPresentation(debug: true);
+    group('Theme Updates', () {
+      test('updateTheme updates internal theme', () {
+        const newTheme = DeckTheme(debug: true);
         // Verify options update completes without throwing
         expect(
-          () => controller.updatePresentation(newPresentation),
+          () => controller.updateTheme(newTheme),
           returnsNormally,
         );
       });
 
-      test('updatePresentation does not trigger if presentation unchanged', () {
-        const presentation = DeckPresentation();
-        // Verify idempotent behavior - calling twice with the same presentation doesn't throw
+      test('updateTheme does not trigger if theme is unchanged', () {
+        const theme = DeckTheme();
+        // Verify idempotent behavior - calling twice with the same theme doesn't throw.
         expect(() {
-          controller.updatePresentation(presentation);
-          controller.updatePresentation(presentation);
+          controller.updateTheme(theme);
+          controller.updateTheme(theme);
         }, returnsNormally);
       });
     });
@@ -247,7 +248,7 @@ void main() {
               ],
             ),
           ],
-          config: DeckConfiguration(outputDir: '.webdeck', assetsPath: 'img'),
+          config: DeckWorkspace(outputDir: '.webdeck', assetsPath: 'img'),
         );
         mockDeckService.emitDeck(deck);
 
@@ -263,14 +264,14 @@ void main() {
       test(
         'falls back to service configuration when deck configuration is empty',
         () async {
-          final serviceConfig = DeckConfiguration(
+          final serviceConfig = DeckWorkspace(
             outputDir: '.service',
             assetsPath: 'svc_assets',
           );
           final service = MockDeckService(configuration: serviceConfig);
           final tempController = DeckController(
             deckService: service,
-            presentation: const DeckPresentation(),
+            theme: const DeckTheme(),
             enableDeckStream: true,
           );
 
@@ -284,7 +285,7 @@ void main() {
                   ],
                 ),
               ],
-              config: DeckConfiguration(),
+              config: DeckWorkspace(),
             );
             service.emitDeck(deck);
 
@@ -368,7 +369,7 @@ void main() {
         final disposableService = MockDeckService();
         final disposableController = DeckController(
           deckService: disposableService,
-          presentation: const DeckPresentation(),
+          theme: const DeckTheme(),
           enableDeckStream: true,
         );
 

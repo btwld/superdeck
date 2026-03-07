@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+
 import '../../debug_logger.dart';
 import '../../viewmodel_scope.dart';
 import '../../routes.dart';
@@ -90,7 +91,7 @@ class _CreatingPresentationScreenState
       if (!generationContext.mounted) return;
       try {
         // Load the deck that was just written by the generation pipeline
-        final configuration = DeckConfiguration();
+        final configuration = DeckWorkspace();
         final deckService = DeckService(configuration: configuration);
         final deck = await deckService.loadDeck();
 

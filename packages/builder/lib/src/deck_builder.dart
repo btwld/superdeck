@@ -14,7 +14,7 @@ import 'tasks/task.dart';
 class DeckBuilder {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;
-  final DeckConfiguration configuration;
+  final DeckWorkspace configuration;
   final DeckService store;
   final Logger _logger = Logger('DeckBuilder');
 

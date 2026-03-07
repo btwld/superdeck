@@ -38,11 +38,11 @@ Future<Directory> createTempDirAsync() async {
 }
 
 /// Mock configuration for testing repositories and file operations
-/// Uses composition instead of inheritance since DeckConfiguration is final
-class MockDeckConfiguration {
+/// Uses composition instead of inheritance since DeckWorkspace is final
+class MockDeckWorkspace {
   final Directory _tempDir;
 
-  MockDeckConfiguration(this._tempDir);
+  MockDeckWorkspace(this._tempDir);
 
   String? get projectDir => _tempDir.path;
   String? get slidesPath => null;
@@ -79,8 +79,8 @@ class MockDeckConfiguration {
 }
 
 /// Creates a mock deck configuration with temporary directory
-MockDeckConfiguration createMockConfig() {
-  return MockDeckConfiguration(createTempDir());
+MockDeckWorkspace createMockConfig() {
+  return MockDeckWorkspace(createTempDir());
 }
 
 /// Verifies that a UUID conforms to the v4 format.

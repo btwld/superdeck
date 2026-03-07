@@ -3,13 +3,13 @@ import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 import '../../runtime/superdeck_context.dart';
-import '../../slides/slide_configuration.dart';
+import '../../slides/slide_data.dart';
 import '../../ui/widgets/loading_indicator.dart';
 import '../../utils/constants.dart';
 
 class SlideThumbnail extends StatelessWidget {
   final bool selected;
-  final SlideConfiguration slide;
+  final SlideData slide;
 
   const SlideThumbnail({
     super.key,

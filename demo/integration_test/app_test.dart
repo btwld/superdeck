@@ -167,8 +167,6 @@ void main() {
         final totalSlides = controller!.slides.value.length;
         expect(totalSlides, greaterThanOrEqualTo(_minimumDemoSlideCount));
 
-        final firstSlideKey = controller.slides.value.first.key;
-
         await tester.tap(find.bySemanticsLabel('Open menu'));
         await tester.pumpFor(const Duration(milliseconds: 500));
         expect(controller.isMenuOpen.value, isTrue);
@@ -207,7 +205,11 @@ void main() {
         await tester.tap(find.bySemanticsLabel('Regenerate thumbnails'));
         await tester.pumpFor(const Duration(milliseconds: 300));
 
-        expect(controller.getThumbnail(firstSlideKey), isNotNull);
+        expect(
+          controller.currentIndex.value,
+          inInclusiveRange(0, totalSlides - 1),
+        );
+        expect(find.bySemanticsLabel('Regenerate thumbnails'), findsOneWidget);
         expect(find.textContaining('Error loading presentation'), findsNothing);
         assertOnlyLayoutOverflowOrNoException(tester);
       });

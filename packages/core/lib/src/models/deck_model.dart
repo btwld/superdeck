@@ -1,16 +1,16 @@
 import 'package:ack/ack.dart';
 import 'package:collection/collection.dart';
 
-import '../deck_configuration.dart';
+import '../deck_workspace.dart';
 import 'slide_model.dart';
 
 class Deck {
   final List<Slide> slides;
-  final DeckConfiguration configuration;
+  final DeckWorkspace configuration;
 
   const Deck({required this.slides, required this.configuration});
 
-  Deck copyWith({List<Slide>? slides, DeckConfiguration? configuration}) {
+  Deck copyWith({List<Slide>? slides, DeckWorkspace? configuration}) {
     return Deck(
       slides: slides ?? this.slides,
       configuration: configuration ?? this.configuration,
@@ -33,17 +33,17 @@ class Deck {
           )
           .toList(),
       configuration: configurationValue is Map
-          ? DeckConfiguration.fromMap(
+          ? DeckWorkspace.fromMap(
               Map<String, Object?>.from(configurationValue),
             )
-          : DeckConfiguration(),
+          : DeckWorkspace(),
     );
   }
 
   /// Ack schema for validating complete deck/presentation JSON.
   static final schema = Ack.object({
     'slides': Ack.list(Slide.schema),
-    'configuration': DeckConfiguration.schema.optional(),
+    'configuration': DeckWorkspace.schema.optional(),
   });
 
   static Deck parse(Map<String, Object?> map) {

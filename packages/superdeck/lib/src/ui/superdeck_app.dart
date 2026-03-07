@@ -71,18 +71,19 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
   void initState() {
     super.initState();
 
-    final configuration = widget.runtime.configuration;
+    final workspace = widget.runtime.workspace;
     final deckService = switch (widget.runtime.source) {
-      LocalDeckSource() => DeckService(configuration: configuration),
+      LocalDeckSource() => DeckService(configuration: workspace),
       BundledDeckSource() => BundledDeckService(
-        configuration: configuration,
+        configuration: workspace,
         deckAssetPath: widget.runtime.bundledDeckAssetPath,
       ),
     };
 
     _deckController = DeckController(
       deckService: deckService,
-      presentation: widget.runtime.presentation,
+      theme: widget.runtime.theme,
+      extensions: widget.runtime.extensions,
       enableDeckStream: widget.runtime.usesLocalSource && kCanRunProcess,
     );
     widget.runtime.handle.attach(_deckController);
@@ -90,7 +91,7 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
     if (widget.runtime.canWatch && widget.runtime.shouldWatch) {
       try {
         _deckWatcher = DeckWatcher(
-          configuration: configuration,
+          configuration: workspace,
           store: deckService,
         );
         unawaited(_deckWatcher!.start());
@@ -111,8 +112,8 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
   @override
   void didUpdateWidget(covariant _RuntimeBootstrap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.runtime.presentation != oldWidget.runtime.presentation) {
-      _deckController.updatePresentation(widget.runtime.presentation);
+    if (widget.runtime.theme != oldWidget.runtime.theme) {
+      _deckController.updateTheme(widget.runtime.theme);
     }
     if (!identical(widget.runtime.handle, oldWidget.runtime.handle)) {
       oldWidget.runtime.handle.detach(_deckController);

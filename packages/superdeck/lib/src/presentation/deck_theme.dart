@@ -1,78 +1,71 @@
-import 'package:flutter/foundation.dart' show listEquals, mapEquals;
+import 'package:flutter/foundation.dart' show mapEquals;
 
 import '../styling/styling.dart';
 import '../utils/collection_hashes.dart';
-import 'deck_extension.dart';
-import 'slide_parts.dart';
+import 'slide_frame.dart';
 import 'slide_template.dart';
 import 'widget_definition.dart';
 
-class DeckPresentation {
+class DeckTheme {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
   final Map<String, WidgetDefinition> widgets;
-  final SlideParts parts;
+  final SlideFrame frame;
   final bool debug;
   final Map<String, SlideTemplate> templates;
   final SlideTemplate? defaultTemplate;
-  final List<DeckExtension> extensions;
 
-  const DeckPresentation({
+  const DeckTheme({
     this.baseStyle,
     this.styles = const <String, SlideStyle>{},
     this.widgets = const <String, WidgetDefinition>{},
-    this.parts = const SlideParts(),
+    this.frame = const SlideFrame(),
     this.debug = false,
     this.templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
-    this.extensions = const <DeckExtension>[],
   });
 
-  DeckPresentation copyWith({
+  DeckTheme copyWith({
     SlideStyle? baseStyle,
     Map<String, SlideStyle>? styles,
     Map<String, WidgetDefinition>? widgets,
-    SlideParts? parts,
+    SlideFrame? frame,
     bool? debug,
     Map<String, SlideTemplate>? templates,
     SlideTemplate? defaultTemplate,
-    List<DeckExtension>? extensions,
   }) {
-    return DeckPresentation(
+    return DeckTheme(
       baseStyle: baseStyle ?? this.baseStyle,
       styles: styles ?? this.styles,
       widgets: widgets ?? this.widgets,
-      parts: parts ?? this.parts,
+      frame: frame ?? this.frame,
       debug: debug ?? this.debug,
       templates: templates ?? this.templates,
       defaultTemplate: defaultTemplate ?? this.defaultTemplate,
-      extensions: extensions ?? this.extensions,
     );
   }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DeckPresentation &&
+      other is DeckTheme &&
           runtimeType == other.runtimeType &&
           baseStyle == other.baseStyle &&
           mapEquals(styles, other.styles) &&
           mapEquals(widgets, other.widgets) &&
-          parts == other.parts &&
+          frame == other.frame &&
           debug == other.debug &&
           mapEquals(templates, other.templates) &&
-          defaultTemplate == other.defaultTemplate &&
-          listEquals(extensions, other.extensions);
+          defaultTemplate == other.defaultTemplate;
 
   @override
   int get hashCode => Object.hash(
     baseStyle,
     unorderedMapHash(styles),
     unorderedMapHash(widgets),
-    parts,
+    frame,
     debug,
     unorderedMapHash(templates),
     defaultTemplate,
-    Object.hashAll(extensions),
   );
 }

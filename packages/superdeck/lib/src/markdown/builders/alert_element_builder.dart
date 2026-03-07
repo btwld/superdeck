@@ -4,7 +4,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
-import '../../rendering/blocks/block_provider.dart';
+import '../../rendering/blocks/block_context.dart';
 import '../../styling/styling.dart';
 import '../markdown_element_builders_registry.dart';
 import '../../rendering/blocks/markdown_render_scope.dart';
@@ -102,7 +102,7 @@ class AlertElementBuilder extends MarkdownElementBuilder {
       AlertType.caution => Icons.dangerous_outlined,
     };
 
-    final blockData = BlockConfiguration.of(context);
+    final blockData = BlockContext.of(context);
     final renderScope = MarkdownRenderScope.maybeOf(context);
     final registry =
         renderScope?.registry ?? SpecMarkdownBuilders(blockData.spec);

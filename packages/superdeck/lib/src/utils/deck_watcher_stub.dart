@@ -5,7 +5,7 @@ import 'deck_watcher_types.dart';
 
 /// No-op watcher for platforms that do not support runtime file watching.
 class DeckWatcher {
-  final DeckConfiguration configuration;
+  final DeckWorkspace configuration;
 
   final _status = signal<DeckWatcherStatus>(DeckWatcherStatus.idle);
   final _error = signal<Object?>(null);

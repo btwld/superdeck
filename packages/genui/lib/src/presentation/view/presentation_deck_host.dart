@@ -14,22 +14,21 @@ class PresentationDeckHost extends StatefulWidget {
   PresentationDeckHost({
     super.key,
     Widget Function(SuperDeckRuntime runtime)? deckAppBuilder,
-    Future<SuperDeckRuntime> Function(DeckPresentation presentation)?
+    Future<SuperDeckRuntime> Function(DeckTheme theme)?
     runtimeLoader,
   }) : deckAppBuilder =
            deckAppBuilder ?? ((runtime) => SuperDeckApp(runtime: runtime)),
        runtimeLoader =
            runtimeLoader ??
-           ((presentation) => SuperDeckRuntime.create(
+           ((theme) => SuperDeckRuntime.create(
              source: _kCanRunProcess
                  ? const DeckSource.local()
                  : const DeckSource.bundle(),
-             runtimeConfig: const DeckRuntimeConfig(),
-             presentation: presentation,
+             theme: theme,
            ));
 
   final Widget Function(SuperDeckRuntime runtime) deckAppBuilder;
-  final Future<SuperDeckRuntime> Function(DeckPresentation presentation)
+  final Future<SuperDeckRuntime> Function(DeckTheme theme)
   runtimeLoader;
 
   @override
@@ -37,27 +36,27 @@ class PresentationDeckHost extends StatefulWidget {
 }
 
 class _PresentationDeckHostState extends State<PresentationDeckHost> {
-  DeckPresentation? _cachedPresentation;
+  DeckTheme? _cachedTheme;
   Future<SuperDeckRuntime>? _runtimeFuture;
 
   @override
   void didUpdateWidget(covariant PresentationDeckHost oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.runtimeLoader, widget.runtimeLoader)) {
-      _cachedPresentation = null;
+      _cachedTheme = null;
       _runtimeFuture = null;
     }
   }
 
-  Future<SuperDeckRuntime> _runtimeFutureFor(DeckPresentation presentation) {
+  Future<SuperDeckRuntime> _runtimeFutureFor(DeckTheme theme) {
     final canReuseFuture =
-        _runtimeFuture != null && _cachedPresentation == presentation;
+        _runtimeFuture != null && _cachedTheme == theme;
     if (canReuseFuture) {
       return _runtimeFuture!;
     }
 
-    _cachedPresentation = presentation;
-    _runtimeFuture = widget.runtimeLoader(presentation);
+    _cachedTheme = theme;
+    _runtimeFuture = widget.runtimeLoader(theme);
     return _runtimeFuture!;
   }
 
@@ -65,9 +64,9 @@ class _PresentationDeckHostState extends State<PresentationDeckHost> {
   Widget build(BuildContext context) {
     return Watch((context) {
       final style = DeckStyleService.style.value;
-      final presentation = buildDeckPresentationFromStyle(style);
+      final theme = buildDeckThemeFromStyle(style);
       return FutureBuilder<SuperDeckRuntime>(
-        future: _runtimeFutureFor(presentation),
+        future: _runtimeFutureFor(theme),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(

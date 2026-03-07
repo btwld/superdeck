@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../slides/slide_configuration.dart';
+import '../slides/slide_data.dart';
 import 'async_thumbnail.dart';
 import 'slide_capture_service.dart';
 
@@ -33,7 +33,7 @@ class ThumbnailService {
   ///
   /// If [force] is true, regenerates all thumbnails even if they exist.
   void generateThumbnails({
-    required List<SlideConfiguration> slides,
+    required List<SlideData> slides,
     required BuildContext context,
     required Map<String, AsyncThumbnail> cache,
     required void Function(Map<String, AsyncThumbnail>) onCacheUpdate,
@@ -65,7 +65,7 @@ class ThumbnailService {
   /// Returns null when nothing can be resolved/generated.
   @visibleForTesting
   Future<Uri?> generateThumbnail({
-    required SlideConfiguration slide,
+    required SlideData slide,
     required BuildContext context,
     required bool force,
   }) async {

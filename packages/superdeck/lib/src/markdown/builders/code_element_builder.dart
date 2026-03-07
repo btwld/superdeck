@@ -3,7 +3,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
-import '../../rendering/blocks/block_provider.dart';
+import '../../rendering/blocks/block_context.dart';
 import '../../styling/styling.dart';
 import '../../ui/widgets/hero_element.dart';
 import '../../ui/widgets/overflow_clip.dart';
@@ -103,11 +103,11 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     return StyleSpecBuilder<MarkdownCodeblockSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
-        // Access BlockConfiguration from StyleSpecBuilder's builderContext (not the method's context parameter).
-        // StyleSpecBuilder wraps our widget in the Mix framework's context, ensuring BlockConfiguration
+        // Access BlockContext from StyleSpecBuilder's builderContext (not the method's context parameter).
+        // StyleSpecBuilder wraps our widget in the Mix framework's context, ensuring BlockContext
         // InheritedWidget is available in the widget tree. The method parameter context comes
         // from flutter_markdown_plus and may not have Mix framework ancestors yet.
-        final blockData = BlockConfiguration.of(builderContext);
+        final blockData = BlockContext.of(builderContext);
 
         // Build the code widget
         Widget codeWidget = Row(

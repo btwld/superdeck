@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/export/pdf_controller.dart';
 import 'package:superdeck/src/export/slide_capture_service.dart';
-import 'package:superdeck/src/slides/slide_configuration.dart';
+import 'package:superdeck/src/slides/slide_data.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 
@@ -76,7 +76,7 @@ void main() {
   group('PdfController', () {
     late PdfController controller;
     late SlideCaptureService slideCaptureService;
-    late List<SlideConfiguration> testSlides;
+    late List<SlideData> testSlides;
 
     setUp(() {
       // Create minimal test slides using real constructor
@@ -85,19 +85,19 @@ void main() {
       final slide3 = Slide(key: 'slide-3', sections: [], notes: []);
 
       testSlides = [
-        SlideConfiguration(
+        SlideData(
           slideIndex: 0,
           style: SlideStyle(),
           slide: slide1,
           thumbnailFile: 'thumb1.png',
         ),
-        SlideConfiguration(
+        SlideData(
           slideIndex: 1,
           style: SlideStyle(),
           slide: slide2,
           thumbnailFile: 'thumb2.png',
         ),
-        SlideConfiguration(
+        SlideData(
           slideIndex: 2,
           style: SlideStyle(),
           slide: slide3,

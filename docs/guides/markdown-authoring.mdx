@@ -34,7 +34,7 @@ title: My First Slide
 Each slide can have YAML front matter with these options:
 
 - `title` – Slide title (appears in navigation and exports)
-- `style` – Named style variant to apply (defined in `DeckPresentation.styles`)
+- `style` – Named style variant to apply (defined in `DeckTheme.styles`)
 - `template` – Optional slide template name. Use `none` to opt out of a configured default template
 - Custom keys – Access via `slide.options.args['keyName']` in slide parts
 
@@ -155,7 +155,7 @@ For all `@dartpad` arguments, see the [Markdown syntax reference](../reference/m
 
 ### Custom widgets
 
-Register widgets in `DeckPresentation.widgets`, then use them with the shorthand syntax:
+Register widgets in `DeckTheme.widgets`, then use them with the shorthand syntax:
 
 ````markdown
 @metricCard {
@@ -249,7 +249,7 @@ style: recap
 Define styles in your app:
 
 ```dart
-DeckPresentation(
+DeckTheme(
   styles: {
     'recap': SlideStyle(
       h1: TextStyler().style(TextStyleMix(fontSize: 64)),

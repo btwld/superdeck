@@ -11,7 +11,7 @@ import '../ui/widgets/provider.dart';
 
 import '../rendering/slides/slide_view.dart';
 import '../utils/constants.dart';
-import '../slides/slide_configuration.dart';
+import '../slides/slide_data.dart';
 
 enum SlideCaptureQuality {
   thumbnail(0.3),
@@ -38,7 +38,7 @@ class SlideCaptureService {
 
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
-    required SlideConfiguration slide,
+    required SlideData slide,
     required BuildContext context,
   }) async {
     final queueKey = shortHash(slide.key + quality.name);

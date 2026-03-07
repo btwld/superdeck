@@ -47,7 +47,7 @@ There are effectively two runtime modes today:
 For the current runtime/build sign-off, the configuration scope is intentionally narrower than the full historical surface.
 
 - freeze the in-app/local runtime configuration model first:
-  - explicit `DeckConfiguration` passed into the app
+  - explicit `DeckWorkspace` passed into the app
   - `DeckOptions` passed into the app
   - runtime defaults when nothing explicit is provided
 - defer external configuration-source policy:
@@ -66,7 +66,7 @@ CLI behavior:
 - invalid YAML or invalid schema shape is a hard command failure
 
 Runtime behavior:
-- `SuperDeckRuntime.create(...)` takes explicit `DeckSource`, `DeckRuntimeConfig`, and `DeckPresentation` inputs
+- `SuperDeckRuntime.create(...)` takes explicit `DeckSource`, `DeckRuntimeConfig`, and `DeckTheme` inputs
 - runtime does not implicitly read local `superdeck.yaml`
 - bundled runtimes use their explicit runtime/source inputs and bundled deck artifacts only
 
@@ -98,7 +98,7 @@ This makes configuration effectively startup-only in the current app lifecycle.
 
 ## Frozen v2 local runtime configuration contract
 
-The older intermediate planning direction that moved watch to `DeckConfiguration.watch`
+The older intermediate planning direction that moved watch to `DeckWorkspace.watch`
 is superseded by the approved API reset in `.planning/rewrite-v2-api-surface.md`.
 
 ### 1. App-facing local runtime surface
@@ -110,7 +110,7 @@ The canonical local runtime surface is now:
 With the runtime created from:
 - `DeckSource.local(...)`
 - `DeckRuntimeConfig(...)`
-- `DeckPresentation(...)`
+- `DeckTheme(...)`
 
 ### 2. `DeckSource` ownership
 `DeckSource` owns content origin and source-side rebuild/watch semantics.
@@ -139,8 +139,8 @@ Rules:
 - do not put style/template/widget/render composition into `DeckRuntimeConfig`
 - do not implicitly read `superdeck.yaml`
 
-### 4. `DeckPresentation` ownership
-`DeckPresentation` owns render composition and presentation extensibility.
+### 4. `DeckTheme` ownership
+`DeckTheme` owns render composition and presentation extensibility.
 
 Its frozen v2 field set is:
 - `baseStyle`
@@ -153,9 +153,9 @@ Its frozen v2 field set is:
 - `extensions`
 
 Rules:
-- keep style/template/widget/chrome/render composition in `DeckPresentation`
-- keep behavioral/runtime add-ons in `DeckPresentation.extensions`
-- do not put source selection or build/watch ownership into `DeckPresentation`
+- keep style/template/widget/chrome/render composition in `DeckTheme`
+- keep behavioral/runtime add-ons in `DeckTheme.extensions`
+- do not put source selection or build/watch ownership into `DeckTheme`
 
 ### 5. Mutability contract
 Startup-only local runtime configuration:
@@ -504,7 +504,7 @@ Thumbnail behavior is part of the same operational surface.
 ### Current thumbnail contract
 - thumbnail file names are deterministic from slide keys
 - `DeckService.saveReferences()` includes thumbnail asset paths in the generated-assets reference
-- `SlideConfigurationBuilder` derives `thumbnailFile` from the slide key
+- `SlideDataBuilder` derives `thumbnailFile` from the slide key
 
 ### Current generation model
 Thumbnail generation is runtime-side today.
@@ -531,7 +531,7 @@ So thumbnail invalidation and rebuild semantics should be planned together, not 
 ## Detailed Thumbnail Workflow
 
 ### 1. Thumbnail identity
-- `SlideConfigurationBuilder` derives `thumbnailFile` as `thumbnail_<slideKey>.png`
+- `SlideDataBuilder` derives `thumbnailFile` as `thumbnail_<slideKey>.png`
 - the slide key is stable for the parsed slide content and duplicate-collision handling, so thumbnail identity currently follows slide identity
 
 ### 2. Build-time output contract
@@ -646,9 +646,9 @@ Examples of likely stale-thumbnail cases:
 - concurrency is capped, which helps memory pressure
 - but the workflow is still eager rather than visible-first or nearby-first
 
-### 6. Bundled runtime path handling is not fully aligned with `DeckConfiguration`
+### 6. Bundled runtime path handling is not fully aligned with `DeckWorkspace`
 - `BundledDeckService` loads deck JSON from a fixed `'.superdeck/superdeck.json'` path by default
-- other runtime pieces still derive asset paths from `DeckConfiguration`
+- other runtime pieces still derive asset paths from `DeckWorkspace`
 - this means custom bundled `outputDir` / `assetsPath` behavior is not clearly one coherent contract today
 
 ### 7. Watch/build failures are not promoted into the main runtime error model

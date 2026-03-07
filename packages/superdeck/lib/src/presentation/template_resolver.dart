@@ -1,40 +1,40 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../styling/styling.dart';
-import 'deck_presentation.dart';
+import 'slide_frame.dart';
 import 'slide_template.dart';
-import 'slide_parts.dart';
 import 'template_exception.dart';
+import 'deck_theme.dart';
 
 /// Result of resolving a slide's template and style configuration.
 class TemplateResolutionResult {
   /// The fully merged style for the slide.
   final SlideStyle style;
 
-  /// The chrome parts (header, footer, background) for the slide.
-  final SlideParts parts;
+  /// The slide frame (header, footer, background) for the slide.
+  final SlideFrame frame;
 
   /// Whether a template was used in the resolution.
   final bool usingTemplate;
 
   const TemplateResolutionResult({
     required this.style,
-    required this.parts,
+    required this.frame,
     required this.usingTemplate,
   });
 }
 
-/// Resolves slide templates and styles from [DeckPresentation].
+/// Resolves slide templates and styles from [DeckTheme].
 ///
 /// Resolution order:
 /// - **With template**: `defaultSlideStyle -> template.baseStyle -> template.styles[style]`
-/// - **Without template**: `defaultSlideStyle -> presentation.baseStyle -> presentation.styles[style]`
+/// - **Without template**: `defaultSlideStyle -> theme.baseStyle -> theme.styles[style]`
 /// - **With defaultTemplate**: applies when slide has no explicit template
 class TemplateResolver {
-  final DeckPresentation _presentation;
+  final DeckTheme _theme;
 
-  TemplateResolver(this._presentation) {
-    if (_presentation.templates.containsKey(noneTemplate)) {
+  TemplateResolver(this._theme) {
+    if (_theme.templates.containsKey(noneTemplate)) {
       throw ArgumentError.value(
         noneTemplate,
         'templates',
@@ -44,7 +44,7 @@ class TemplateResolver {
     }
   }
 
-  /// Reserved template name that opts out of [DeckPresentation.defaultTemplate].
+  /// Reserved template name that opts out of [DeckTheme.defaultTemplate].
   ///
   /// Use `template: 'none'` in slide options to fall back to deck-level
   /// styles even when a defaultTemplate is configured.
@@ -79,9 +79,9 @@ class TemplateResolver {
       // 'none' explicitly opts out of any template
       if (templateName == noneTemplate) return null;
 
-      final template = _presentation.templates[templateName];
+      final template = _theme.templates[templateName];
       if (template == null) {
-        final availableTemplates = _presentation.templates.keys.toList();
+        final availableTemplates = _theme.templates.keys.toList();
         final availableMessage = availableTemplates.isEmpty
             ? 'No templates are registered in this deck.'
             : 'Available templates: ${availableTemplates.join(', ')}';
@@ -93,7 +93,7 @@ class TemplateResolver {
       return template;
     }
 
-    return _presentation.defaultTemplate;
+    return _theme.defaultTemplate;
   }
 
   TemplateResolutionResult _resolveWithTemplate(
@@ -118,7 +118,7 @@ class TemplateResolver {
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: template.parts,
+      frame: template.frame,
       usingTemplate: true,
     );
   }
@@ -126,22 +126,22 @@ class TemplateResolver {
   TemplateResolutionResult _resolveWithoutTemplate(String? styleName) {
     SlideStyle? styleOverride;
     if (styleName != null) {
-      styleOverride = _presentation.styles[styleName];
+      styleOverride = _theme.styles[styleName];
       if (styleOverride == null) {
         throw TemplateException(
           'Unknown style "$styleName" in deck. '
-          'Available styles: ${_presentation.styles.keys.join(', ')}',
+          'Available styles: ${_theme.styles.keys.join(', ')}',
         );
       }
     }
 
     final mergedStyle = defaultSlideStyle
-        .merge(_presentation.baseStyle)
+        .merge(_theme.baseStyle)
         .merge(styleOverride);
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: _presentation.parts,
+      frame: _theme.frame,
       usingTemplate: false,
     );
   }

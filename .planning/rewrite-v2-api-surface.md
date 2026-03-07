@@ -11,7 +11,7 @@ Use it for:
 - public CLI scope
 
 Do not use older planning references to `SuperDeckApp(options, configuration?)`,
-`DeckOptions.watchForChanges`, or `DeckConfiguration.watch` as the v2 source of truth.
+`DeckOptions.watchForChanges`, or `DeckWorkspace.watch` as the v2 source of truth.
 Those were intermediate planning shapes and are superseded by this document.
 
 ## Canonical Bootstrap
@@ -28,7 +28,7 @@ Future<void> main() async {
       outputDir: '.superdeck',
       assetsPath: 'assets',
     ),
-    presentation: DeckPresentation(
+    presentation: DeckTheme(
       baseStyle: baseStyle,
       styles: styles,
       templates: templates,
@@ -67,7 +67,7 @@ Future<void> main() async {
 - does not own styles, templates, widgets, or debug rendering
 - does not implicitly read `superdeck.yaml`
 
-### `DeckPresentation`
+### `DeckTheme`
 - render-time presentation composition
 - owns:
   - `baseStyle`

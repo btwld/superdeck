@@ -14,9 +14,9 @@ abstract class SuperDeckCommand extends Command<int> {
 
   /// Loads the Superdeck configuration from the default file
   /// or returns a default configuration if the file doesn't exist
-  Future<DeckConfiguration> loadConfiguration() async {
+  Future<DeckWorkspace> loadConfiguration() async {
     final progress = logger.progress('Loading configuration...');
-    final configFile = DeckConfiguration.defaultFile;
+    final configFile = DeckWorkspace.defaultFile;
 
     try {
       // Load the configuration file or use defaults if it doesn't exist.
@@ -25,7 +25,7 @@ abstract class SuperDeckCommand extends Command<int> {
           'Configuration file not found. Using default configuration.',
         );
 
-        return DeckConfiguration();
+        return DeckWorkspace();
       }
 
       progress.update('Loading configuration from ${configFile.path}');
@@ -34,11 +34,11 @@ abstract class SuperDeckCommand extends Command<int> {
 
       // Handle empty/comment-only YAML files
       if (yamlData == null) {
-        return DeckConfiguration();
+        return DeckWorkspace();
       }
 
       final yamlConfig = jsonDecode(jsonEncode(yamlData));
-      final config = DeckConfiguration.parse(yamlConfig);
+      final config = DeckWorkspace.parse(yamlConfig);
       progress.complete('Configuration loaded.');
 
       return config;

@@ -3,7 +3,7 @@ import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../presentation/widget_definition.dart';
-import '../rendering/blocks/block_provider.dart';
+import '../rendering/blocks/block_context.dart';
 import '../ui/widgets/cache_image_widget.dart';
 import '../utils/converters.dart';
 
@@ -111,7 +111,7 @@ class ImageWidget extends WidgetDefinition<ImageDto> {
   @override
   Widget build(BuildContext context, ImageDto args) {
     // Access block configuration for styling and sizing
-    final data = BlockConfiguration.of(context);
+    final data = BlockContext.of(context);
     final spec = data.spec;
 
     // Get alignment from block configuration.

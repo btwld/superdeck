@@ -6,16 +6,16 @@ import 'package:path/path.dart' as p;
 
 import 'contracts/deck_artifacts.dart';
 
-part 'deck_configuration.g.dart';
+part 'deck_workspace.g.dart';
 
 @AckModel()
-final class DeckConfiguration {
+final class DeckWorkspace {
   final String? projectDir;
   final String? slidesPath;
   final String? outputDir;
   final String? assetsPath;
 
-  DeckConfiguration({
+  DeckWorkspace({
     this.projectDir,
     this.slidesPath,
     this.outputDir,
@@ -91,13 +91,13 @@ final class DeckConfiguration {
 
   File get pubspecFile => File(p.join(_baseDir, 'pubspec.yaml'));
 
-  DeckConfiguration copyWith({
+  DeckWorkspace copyWith({
     String? projectDir,
     String? slidesPath,
     String? outputDir,
     String? assetsPath,
   }) {
-    return DeckConfiguration(
+    return DeckWorkspace(
       projectDir: projectDir ?? this.projectDir,
       slidesPath: slidesPath ?? this.slidesPath,
       outputDir: outputDir ?? this.outputDir,
@@ -114,8 +114,8 @@ final class DeckConfiguration {
     };
   }
 
-  static DeckConfiguration fromMap(Map<String, Object?> map) {
-    return DeckConfiguration(
+  static DeckWorkspace fromMap(Map<String, Object?> map) {
+    return DeckWorkspace(
       projectDir: map['projectDir'] as String?,
       slidesPath: map['slidesPath'] as String?,
       outputDir: map['outputDir'] as String?,
@@ -123,12 +123,12 @@ final class DeckConfiguration {
     );
   }
 
-  static DeckConfiguration parse(Map<String, Object?> map) {
+  static DeckWorkspace parse(Map<String, Object?> map) {
     schema.parse(map);
     return fromMap(map);
   }
 
-  static final schema = deckConfigurationSchema.extend({
+  static final schema = deckWorkspaceSchema.extend({
     'projectDir': Ack.string().optional(),
     'slidesPath': Ack.string().optional(),
     'outputDir': Ack.string().optional(),
@@ -140,7 +140,7 @@ final class DeckConfiguration {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DeckConfiguration &&
+      other is DeckWorkspace &&
           runtimeType == other.runtimeType &&
           projectDir == other.projectDir &&
           slidesPath == other.slidesPath &&

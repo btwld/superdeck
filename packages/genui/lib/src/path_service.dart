@@ -7,7 +7,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 /// Platform-aware path resolution service.
 ///
 /// Resolves the SuperDeck storage directory to:
-/// - Desktop: cwd/.superdeck (matches SuperDeck viewer's DeckConfiguration)
+/// - Desktop: cwd/.superdeck (matches SuperDeck viewer's DeckWorkspace)
 /// - Mobile/sandboxed: getApplicationSupportDirectory()/.superdeck
 ///
 /// Must be initialized at app startup via [initialize()].

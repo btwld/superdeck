@@ -4,17 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck/src/markdown/builders/image_element_builder.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
-import 'package:superdeck/src/rendering/blocks/block_provider.dart';
+import 'package:superdeck/src/rendering/blocks/block_context.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
-import 'package:superdeck/src/slides/slide_configuration.dart';
+import 'package:superdeck/src/slides/slide_data.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// TDD tests for image element rendering issue.
 ///
 /// These tests verify that images render as block elements with proper
-/// BlockConfiguration context access, ensuring the StyleSpecBuilder builder callback
+/// BlockContext context access, ensuring the StyleSpecBuilder builder callback
 /// executes correctly.
 void main() {
   group('ImageElementBuilder - Block Element Rendering', () {
@@ -27,7 +27,7 @@ void main() {
     });
 
     testWidgets(
-      'image builder callback executes with BlockConfiguration access',
+      'image builder callback executes with BlockContext access',
       (tester) async {
         const markdown = '![test](assets/test.png)';
 
@@ -66,7 +66,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // ASSERTION: The ConstrainedBox should have tight constraints
-      // matching the BlockConfiguration size (800x600)
+      // matching the BlockContext size (800x600)
       final constrainedBoxes = tester.widgetList<ConstrainedBox>(
         find.byType(ConstrainedBox),
       );
@@ -77,7 +77,7 @@ void main() {
         reason: 'Should find ConstrainedBox widgets',
       );
 
-      // Find the image's ConstrainedBox (tight 800x600 from BlockConfiguration)
+      // Find the image's ConstrainedBox (tight 800x600 from BlockContext)
       final imageBox = constrainedBoxes.firstWhere(
         (box) =>
             box.constraints.maxWidth == 800.0 &&
@@ -85,7 +85,7 @@ void main() {
             box.constraints.minWidth == 800.0 &&
             box.constraints.minHeight == 600.0,
         orElse: () => throw TestFailure(
-          'No ConstrainedBox found with tight 800x600 constraints from BlockConfiguration',
+          'No ConstrainedBox found with tight 800x600 constraints from BlockContext',
         ),
       );
 
@@ -182,7 +182,7 @@ void main() {
   });
 }
 
-/// Test harness that provides proper BlockConfiguration and InheritedData context
+/// Test harness that provides proper BlockContext and InheritedData context
 /// for rendering markdown with images.
 ///
 /// Mirrors the setup from markdown_builders_test.dart but specifically
@@ -198,24 +198,24 @@ class _MarkdownHarness extends StatelessWidget {
     final slideSpec = const SlideSpec();
     final registry = SpecMarkdownBuilders(slideSpec);
     final styleSheet = slideSpec.toStyle();
-    final slideConfiguration = SlideConfiguration(
+    final slideConfiguration = SlideData(
       slideIndex: 0,
       style: SlideStyle(),
       slide: const Slide(key: 'slide'),
       thumbnailFile: 'thumb.png',
     );
 
-    // Provide BlockConfiguration with a reasonable slide size for testing
-    final blockData = BlockConfiguration(
+    // Provide BlockContext with a reasonable slide size for testing
+    final blockData = BlockContext(
       align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
     );
 
     return MaterialApp(
-      home: InheritedData<SlideConfiguration>(
+      home: InheritedData<SlideData>(
         data: slideConfiguration,
-        child: InheritedData<BlockConfiguration>(
+        child: InheritedData<BlockContext>(
           data: blockData,
           child: Scaffold(
             body: MarkdownRenderScope(

@@ -2,10 +2,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import 'block_provider.dart';
+import 'block_context.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../slides/slide_configuration.dart';
+import '../../slides/slide_data.dart';
 import '../../styling/styling.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/overflow_clip.dart';
@@ -26,7 +26,7 @@ class _BlockContainer extends StatefulWidget {
 
   final Block block;
   final Size size;
-  final SlideConfiguration configuration;
+  final SlideData configuration;
   final Widget child;
 
   @override
@@ -43,7 +43,7 @@ class _BlockContainerState extends State<_BlockContainer> {
       spec.blockContainer.spec,
     );
 
-    final blockData = BlockConfiguration(
+    final blockData = BlockContext(
       align: widget.block.align,
       spec: spec,
       size: Size(
@@ -88,7 +88,7 @@ class _BlockContainerState extends State<_BlockContainer> {
   }
 }
 
-/// Helper widget for content block children to access BlockConfiguration context.
+/// Helper widget for content block children to access BlockContext context.
 class _ContentBlockChild extends StatelessWidget {
   const _ContentBlockChild({required this.content});
 
@@ -96,12 +96,12 @@ class _ContentBlockChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = BlockConfiguration.of(context);
+    final data = BlockContext.of(context);
     return MarkdownViewer(content: content, spec: data.spec);
   }
 }
 
-/// Helper widget for custom block children to access BlockConfiguration context.
+/// Helper widget for custom block children to access BlockContext context.
 class _CustomBlockChild extends StatelessWidget {
   const _CustomBlockChild({required this.block});
 
@@ -109,8 +109,8 @@ class _CustomBlockChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slide = SlideConfiguration.of(context);
-    final data = BlockConfiguration.of(context);
+    final slide = SlideData.of(context);
+    final data = BlockContext.of(context);
     final widgetDef = slide.getWidgetDefinition(block.name);
 
     if (widgetDef == null) {
@@ -143,7 +143,7 @@ class BlockWidget extends StatelessWidget {
 
   final ContentBlock block;
   final Size size;
-  final SlideConfiguration configuration;
+  final SlideData configuration;
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +167,7 @@ class CustomBlockWidget extends StatelessWidget {
 
   final WidgetBlock block;
   final Size size;
-  final SlideConfiguration configuration;
+  final SlideData configuration;
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +207,7 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
 
   @override
   Widget build(context) {
-    final configuration = SlideConfiguration.of(context);
+    final configuration = SlideData.of(context);
     final flexUnit = size.width / section.totalBlockFlex;
 
     double leftOffset = 0;

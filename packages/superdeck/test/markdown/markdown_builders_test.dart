@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'package:superdeck/src/rendering/blocks/block_provider.dart';
+import 'package:superdeck/src/rendering/blocks/block_context.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/markdown/builders/alert_element_builder.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
-import 'package:superdeck/src/slides/slide_configuration.dart';
+import 'package:superdeck/src/slides/slide_data.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -235,23 +235,23 @@ class _MarkdownHarness extends StatelessWidget {
     final slideSpec = const SlideSpec();
     final registry = SpecMarkdownBuilders(slideSpec);
     final styleSheet = slideSpec.toStyle();
-    final slideConfiguration = SlideConfiguration(
+    final slideConfiguration = SlideData(
       slideIndex: 0,
       style: SlideStyle(),
       slide: const Slide(key: 'slide'),
       thumbnailFile: 'thumb.png',
     );
 
-    final blockData = BlockConfiguration(
+    final blockData = BlockContext(
       align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
     );
 
     return MaterialApp(
-      home: InheritedData<SlideConfiguration>(
+      home: InheritedData<SlideData>(
         data: slideConfiguration,
-        child: InheritedData<BlockConfiguration>(
+        child: InheritedData<BlockContext>(
           data: blockData,
           child: Scaffold(
             body: MarkdownRenderScope(

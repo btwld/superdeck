@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck_genui/src/ai/schemas/deck_schemas.dart';
 import 'package:superdeck_genui/src/ai/services/slide_key_utils.dart';
 import 'package:superdeck_genui/src/tools/deck_document_store.dart';
@@ -16,12 +17,12 @@ import 'package:superdeck_genui/src/utils/deck_style_service.dart';
 
 void main() {
   late Directory tempDir;
-  late DeckConfiguration configuration;
+  late DeckWorkspace configuration;
   late DeckDocumentStore store;
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('deck_tools_service_test_');
-    configuration = DeckConfiguration(projectDir: tempDir.path);
+    configuration = DeckWorkspace(projectDir: tempDir.path);
     store = DeckDocumentStore(configuration: configuration);
     DeckStyleService.clearCache();
   });
@@ -298,7 +299,7 @@ void main() {
       final service = DeckToolsService(
         documentStore: store,
         contextProvider: () => context,
-        buildReadSlideConfiguration: _fakeReadSlideConfigurationBuilder,
+        buildReadSlideData: _fakeReadSlideDataBuilder,
         captureSlide: (slide, context) async => Uint8List.fromList([1, 2, 3]),
       );
 
@@ -323,12 +324,12 @@ void main() {
       );
 
       final context = _StubBuildContext();
-      SlideConfiguration? capturedConfiguration;
+      SlideData? capturedConfiguration;
 
       final service = DeckToolsService(
         documentStore: store,
         contextProvider: () => context,
-        buildReadSlideConfiguration:
+        buildReadSlideData:
             ({
               required slide,
               required configuration,
@@ -336,7 +337,7 @@ void main() {
               required index,
             }) {
               // Simulate a misbehaving builder that always returns index 0.
-              return SlideConfiguration(
+              return SlideData(
                 slideIndex: 0,
                 style: SlideStyle(),
                 slide: slide,
@@ -429,14 +430,14 @@ void main() {
   });
 }
 
-SlideConfiguration _fakeReadSlideConfigurationBuilder({
+SlideData _fakeReadSlideDataBuilder({
   required Slide slide,
-  required DeckConfiguration configuration,
+  required DeckWorkspace configuration,
   required DeckStyleType? style,
   required int index,
 }) {
   final thumbnailNameSuffix = style?.name ?? configuration.projectDir;
-  return SlideConfiguration(
+  return SlideData(
     slideIndex: index,
     style: SlideStyle(),
     slide: slide,
@@ -474,7 +475,7 @@ class _GatedDeckDocumentStore extends DeckDocumentStore {
 }
 
 Future<void> _writeDeck(
-  DeckConfiguration configuration, {
+  DeckWorkspace configuration, {
   required List<Map<String, dynamic>> slides,
   Map<String, Object?>? style,
 }) async {

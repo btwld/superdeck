@@ -72,7 +72,7 @@ final runtime = await SuperDeckRuntime.create(
     watch: true,
   ),
   runtimeConfig: const DeckRuntimeConfig(),
-  presentation: DeckPresentation(
+  theme: DeckTheme(
     widgets: const {
       'twitter': TwitterWidgetDefinition(),
     },
@@ -160,7 +160,7 @@ final customStyle = SlideStyle(
 );
 ```
 
-Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above. Use `customStyle` as `DeckPresentation.baseStyle` or as a named style variant.
+Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above. Use `customStyle` as `DeckTheme.baseStyle` or as a named style variant.
 
 **Styleable elements**
 

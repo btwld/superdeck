@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../presentation/deck_presentation.dart';
+import '../../presentation/deck_theme.dart';
 import '../components/slide.dart';
 import 'style_schemas.dart';
 
@@ -13,7 +13,7 @@ final _logger = Logger('StyleConfigLoader');
 /// Returns the YAML string content, or null if not available.
 typedef StyleYamlLoader = Future<String?> Function();
 
-/// Loads, validates, and merges style configuration from YAML files with code-defined options.
+/// Loads, validates, and merges style configuration from YAML files with code-defined theme.
 ///
 /// This class combines YAML loading with style merging into a single, cohesive API.
 /// It uses [StyleSchemas.styleConfigSchema] which validates and transforms YAML
@@ -33,9 +33,9 @@ typedef StyleYamlLoader = Future<String?> Function();
 ///
 /// ```dart
 /// void main() async {
-///   // Load styles.yaml and merge with code presentation styles
-///   final presentation = await StyleConfigLoader.loadAndMerge(
-///     DeckPresentation(
+///   // Load styles.yaml and merge with a code-defined theme
+///   final theme = await StyleConfigLoader.loadAndMerge(
+///     DeckTheme(
 ///       baseStyle: myCustomStyle,
 ///       styles: {'special': specialStyle},
 ///     ),
@@ -52,19 +52,19 @@ class StyleConfigLoader {
   // PUBLIC API
   // ===========================================================================
 
-  /// Loads YAML configuration and merges it with code-defined presentation.
+  /// Loads YAML configuration and merges it with a code-defined theme.
   ///
   /// Parameters:
-  /// - [codePresentation]: The code-defined presentation (always preserved)
+  /// - [codeTheme]: The code-defined theme (always preserved)
   /// - [stylesPath]: Optional custom path to styles.yaml file
   /// - [loader]: Optional custom loader for web/testing
   ///
-  /// Returns [codePresentation] unchanged if:
+  /// Returns [codeTheme] unchanged if:
   /// - No YAML file is found
   /// - YAML parsing fails
   /// - Running on web without a custom loader
-  static Future<DeckPresentation> loadAndMerge(
-    DeckPresentation codePresentation, {
+  static Future<DeckTheme> loadAndMerge(
+    DeckTheme codeTheme, {
     String? stylesPath,
     StyleYamlLoader? loader,
   }) async {
@@ -75,32 +75,32 @@ class StyleConfigLoader {
 
     if (yamlConfig == null) {
       _logger.fine(
-        'No YAML style configuration loaded, using code presentation only',
+        'No YAML style configuration loaded, using code theme only',
       );
-      return codePresentation;
+      return codeTheme;
     }
 
-    return merge(yamlConfig, codePresentation);
+    return merge(yamlConfig, codeTheme);
   }
 
-  /// Merges YAML configuration with code presentation.
+  /// Merges YAML configuration with a code-defined theme.
   ///
-  /// Code presentation takes precedence over YAML styles.
-  static DeckPresentation merge(
+  /// Code theme takes precedence over YAML styles.
+  static DeckTheme merge(
     StyleConfigResult yamlConfig,
-    DeckPresentation codePresentation,
+    DeckTheme codeTheme,
   ) {
     final mergedBaseStyle = _mergeBaseStyle(
       yamlConfig.baseStyle,
-      codePresentation.baseStyle,
+      codeTheme.baseStyle,
     );
 
     final mergedStyles = _mergeStyleMaps(
       yamlConfig.styles,
-      codePresentation.styles,
+      codeTheme.styles,
     );
 
-    return codePresentation.copyWith(
+    return codeTheme.copyWith(
       baseStyle: mergedBaseStyle,
       styles: mergedStyles,
     );

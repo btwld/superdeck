@@ -2,16 +2,16 @@ import 'package:flutter/foundation.dart' show mapEquals;
 
 import '../styling/styling.dart';
 import '../utils/collection_hashes.dart';
-import 'slide_parts.dart';
+import 'slide_frame.dart';
 
 /// A reusable slide template that bundles chrome (header, footer, background)
 /// with an isolated style system.
 ///
 /// Templates act like Keynote master slides — providing consistent visual
-/// framing across slides without manually applying styles/parts to each slide.
+/// framing across slides without manually applying styles/frame to each slide.
 final class SlideTemplate {
-  /// Chrome parts (header, footer, background) for this template.
-  final SlideParts parts;
+  /// Slide frame (header, footer, background) for this template.
+  final SlideFrame frame;
 
   /// Base style applied to all slides using this template.
   final SlideStyle? baseStyle;
@@ -20,18 +20,18 @@ final class SlideTemplate {
   final Map<String, SlideStyle> styles;
 
   const SlideTemplate({
-    this.parts = const SlideParts(),
+    this.frame = const SlideFrame(),
     this.baseStyle,
     this.styles = const <String, SlideStyle>{},
   });
 
   SlideTemplate copyWith({
-    SlideParts? parts,
+    SlideFrame? frame,
     SlideStyle? baseStyle,
     Map<String, SlideStyle>? styles,
   }) {
     return SlideTemplate(
-      parts: parts ?? this.parts,
+      frame: frame ?? this.frame,
       baseStyle: baseStyle ?? this.baseStyle,
       styles: styles ?? this.styles,
     );
@@ -42,10 +42,10 @@ final class SlideTemplate {
       identical(this, other) ||
       other is SlideTemplate &&
           runtimeType == other.runtimeType &&
-          parts == other.parts &&
+          frame == other.frame &&
           baseStyle == other.baseStyle &&
           mapEquals(styles, other.styles);
 
   @override
-  int get hashCode => Object.hash(parts, baseStyle, unorderedMapHash(styles));
+  int get hashCode => Object.hash(frame, baseStyle, unorderedMapHash(styles));
 }

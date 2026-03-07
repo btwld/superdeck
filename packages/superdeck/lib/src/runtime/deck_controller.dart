@@ -9,9 +9,9 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
 import '../presentation/deck_extension.dart';
-import '../presentation/deck_presentation.dart';
-import '../slides/slide_configuration.dart';
-import '../slides/slide_configuration_builder.dart';
+import '../presentation/deck_theme.dart';
+import '../slides/slide_data.dart';
+import '../slides/slide_data_builder.dart';
 import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
 import 'navigation/navigation_events.dart';
@@ -48,8 +48,8 @@ class DeckController {
   final _loadingState = signal<DeckLoadingState>(DeckLoadingState.idle);
   final _currentDeck = signal<Deck?>(null);
   final _error = signal<Object?>(null);
-  final _presentation = signal<DeckPresentation>(
-    const DeckPresentation(),
+  final _theme = signal<DeckTheme>(
+    const DeckTheme(),
   ); // NEVER exposed
 
   // UI state
@@ -76,13 +76,13 @@ class DeckController {
   // ========================================
 
   // Deck computeds
-  late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
+  late final ReadonlySignal<List<SlideData>> slides = computed(() {
     final deck = _currentDeck.value;
-    if (deck == null) return <SlideConfiguration>[];
-    final configuration = _resolveDeckConfiguration(deck);
-    return SlideConfigurationBuilder(
+    if (deck == null) return <SlideData>[];
+    final configuration = _resolveDeckWorkspace(deck);
+    return SlideDataBuilder(
       configuration: configuration,
-    ).buildConfigurations(deck.slides, _presentation.value);
+    ).buildSlides(deck.slides, _theme.value);
   });
 
   late final ReadonlySignal<int> totalSlides = computed(
@@ -111,7 +111,7 @@ class DeckController {
   late final ReadonlySignal<bool> canGoPrevious = computed(
     () => _currentIndex.value > 0,
   );
-  late final ReadonlySignal<SlideConfiguration?> currentSlide = computed(() {
+  late final ReadonlySignal<SlideData?> currentSlide = computed(() {
     final index = _currentIndex.value;
     final slidesList = slides.value;
     return index >= 0 && index < slidesList.length ? slidesList[index] : null;
@@ -127,7 +127,8 @@ class DeckController {
   /// If not provided, default instances are created.
   DeckController({
     required DeckService deckService,
-    required DeckPresentation presentation,
+    required DeckTheme theme,
+    List<DeckExtension> extensions = const <DeckExtension>[],
     bool enableDeckStream = !kIsTest,
     NavigationService? navigationService,
     ThumbnailService? thumbnailService,
@@ -141,8 +142,8 @@ class DeckController {
              ),
            ),
        _enableDeckStream = enableDeckStream,
-       _extensions = presentation.extensions {
-    _presentation.value = presentation.copyWith(extensions: _extensions);
+       _extensions = extensions {
+    _theme.value = theme;
     final extensionRoutes = _extensions
         .expand((extension) => extension.buildRoutes())
         .toList(growable: false);
@@ -172,14 +173,14 @@ class DeckController {
   // DECK OPERATIONS
   // ========================================
 
-  DeckConfiguration _resolveDeckConfiguration(Deck deck) {
+  DeckWorkspace _resolveDeckWorkspace(Deck deck) {
     final deckConfiguration = deck.configuration;
     return _hasExplicitConfigurationOverrides(deckConfiguration)
         ? deckConfiguration
         : _deckService.configuration;
   }
 
-  bool _hasExplicitConfigurationOverrides(DeckConfiguration configuration) {
+  bool _hasExplicitConfigurationOverrides(DeckWorkspace configuration) {
     return configuration.projectDir != null ||
         configuration.slidesPath != null ||
         configuration.outputDir != null ||
@@ -229,17 +230,12 @@ class DeckController {
     }
   }
 
-  /// Updates presentation state from runtime/bootstrap state.
+  /// Updates theme state from runtime/bootstrap state.
   @internal
-  void updatePresentation(DeckPresentation newPresentation) {
+  void updateTheme(DeckTheme newTheme) {
     if (_disposed) return;
-    final normalizedPresentation =
-        identical(newPresentation.extensions, _extensions)
-        ? newPresentation
-        : newPresentation.copyWith(extensions: _extensions);
-
-    if (_presentation.value != normalizedPresentation) {
-      _presentation.value = normalizedPresentation;
+    if (_theme.value != newTheme) {
+      _theme.value = newTheme;
     }
   }
 
@@ -275,6 +271,8 @@ class DeckController {
 
   void openMenu() => _isMenuOpen.value = true;
   void closeMenu() => _isMenuOpen.value = false;
+  void openNotes() => _isNotesOpen.value = true;
+  void closeNotes() => _isNotesOpen.value = false;
   void toggleNotes() => _isNotesOpen.value = !_isNotesOpen.value;
 
   // ========================================
@@ -402,7 +400,7 @@ class DeckController {
     _loadingState.dispose();
     _currentDeck.dispose();
     _error.dispose();
-    _presentation.dispose();
+    _theme.dispose();
     _isMenuOpen.dispose();
     _isNotesOpen.dispose();
     _isRebuilding.dispose();

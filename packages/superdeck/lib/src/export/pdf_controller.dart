@@ -8,7 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:signals/signals.dart';
 import '../utils/constants.dart';
-import '../slides/slide_configuration.dart';
+import '../slides/slide_data.dart';
 import 'package:universal_html/html.dart' as html;
 
 import 'slide_capture_service.dart';
@@ -92,7 +92,7 @@ class PdfController {
   }
 
   /// The list of slides to export
-  final List<SlideConfiguration> slides;
+  final List<SlideData> slides;
 
   /// Service used to capture slides
   final SlideCaptureService slideCaptureService;
@@ -108,7 +108,7 @@ class PdfController {
   PageController get pageController => _pageController;
 
   /// Gets the [GlobalKey] for a specific slide
-  GlobalKey getSlideKey(SlideConfiguration slide) => _slideKeys[slide.key]!;
+  GlobalKey getSlideKey(SlideData slide) => _slideKeys[slide.key]!;
 
   @visibleForTesting
   Future<void> waitForRenderBoundaryPaint(GlobalKey key) =>

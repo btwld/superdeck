@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck/src/runtime/deck_controller.dart';
+import 'package:superdeck/src/ui/app_shell.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 
 import '../testing_utils.dart';
 
 class _StaticDeckService extends DeckService {
-  _StaticDeckService() : super(configuration: DeckConfiguration());
+  _StaticDeckService() : super(configuration: DeckWorkspace());
 
   @override
   Future<Deck> loadDeck() async => createTestDeck();
@@ -21,7 +23,7 @@ void main() {
     final deckService = _StaticDeckService();
     final controller = DeckController(
       deckService: deckService,
-      presentation: const DeckPresentation(),
+      theme: const DeckTheme(),
       enableDeckStream: false,
     );
     final initialHandle = SuperDeckHandle()..attach(controller);

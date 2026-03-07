@@ -32,7 +32,7 @@ class BackgroundPart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final configuration = SlideConfiguration.of(context);
+    final configuration = SlideData.of(context);
 
     return Stack(
       children: [
@@ -49,7 +49,7 @@ class BackgroundPart extends StatelessWidget {
 
 // animate bwett colors and previous colors in duration
 class _AnimatedSwitcherOMesh extends StatefulWidget {
-  final SlideConfiguration slide;
+  final SlideData slide;
 
   const _AnimatedSwitcherOMesh({required this.slide});
 

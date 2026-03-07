@@ -44,7 +44,7 @@ base class ContentModifierTask extends Task {
 
 /// Mock DeckService for testing
 class MockDeckService extends DeckService {
-  MockDeckService() : super(configuration: DeckConfiguration());
+  MockDeckService() : super(configuration: DeckWorkspace());
 
   @override
   Future<void> initialize() async {}

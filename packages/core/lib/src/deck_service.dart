@@ -6,7 +6,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
-import 'deck_configuration.dart';
+import 'deck_workspace.dart';
 import 'markdown_json.dart';
 import 'models/asset_model.dart';
 import 'models/deck_model.dart';
@@ -21,7 +21,7 @@ import 'utils/pretty_json.dart';
 class DeckService {
   DeckService({required this.configuration});
 
-  final DeckConfiguration configuration;
+  final DeckWorkspace configuration;
   final List<GeneratedAsset> _generatedAssets = [];
   final _logger = Logger('DeckService');
 

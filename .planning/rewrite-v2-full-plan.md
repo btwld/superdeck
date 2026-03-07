@@ -35,7 +35,7 @@ Use this file for:
 - risks and acceptance criteria
 
 Do not use this file as the sole source of truth for parser grammar, runtime watch semantics, or migration/public-surface naming.
-Do not use older `DeckOptions` / `DeckConfiguration.watch` planning text as the final API shape; `.planning/rewrite-v2-api-surface.md` now owns that.
+Do not use older `DeckOptions` / `DeckWorkspace.watch` planning text as the final API shape; `.planning/rewrite-v2-api-surface.md` now owns that.
 
 ## Approved API Reset
 
@@ -45,7 +45,7 @@ The v2 rewrite now has an approved primary runtime/bootstrap surface:
 - `SuperDeckApp(runtime: runtime)` is the main widget surface
 - deck origin is explicit via `DeckSource.local(...)` and `DeckSource.bundle(...)`
 - startup-only operational config lives in `DeckRuntimeConfig`
-- render composition lives in `DeckPresentation`
+- render composition lives in `DeckTheme`
 - behavioral add-ons live in `DeckExtension`
 - advanced runtime control lives in `SuperDeckHandle` and `SuperDeck.of(context)`
 - runtime owns local build/watch for local sources
@@ -54,7 +54,7 @@ The v2 rewrite now has an approved primary runtime/bootstrap surface:
 Any older references in this umbrella plan that still discuss:
 - `SuperDeckApp(options: ..., configuration: ...)`
 - `DeckOptions.watchForChanges`
-- `DeckConfiguration.watch`
+- `DeckWorkspace.watch`
 
 should be treated as superseded intermediate planning, not the approved v2 API.
 
@@ -425,14 +425,14 @@ Supporting artifacts:
 final class DeckV2 {
   final int schemaVersion;
   final List<SlideV2> slides;
-  final DeckConfigurationV2 configuration;
+  final DeckWorkspaceV2 configuration;
   final DeckMetaV2 meta;
 }
 ```
 
 Defaults:
 - `schemaVersion = 2`
-- `configuration = const DeckConfigurationV2()`
+- `configuration = const DeckWorkspaceV2()`
 - `meta = const DeckMetaV2()`
 
 ### Slide contract
@@ -739,7 +739,7 @@ Benefit:
 ### Core types
 ```dart
 final class BuildRequest {
-  final DeckConfigurationV2 configuration;
+  final DeckWorkspaceV2 configuration;
   final BuildMode mode;
   final bool forceRebuild;
 }
@@ -886,13 +886,13 @@ Retain concept, simplify ownership.
 
 #### Deck presentation
 ```dart
-final class DeckPresentation {
+final class DeckTheme {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
   final Map<String, WidgetDefinition<Object?>> widgets;
   final Map<String, SlideTemplate> templates;
   final SlideTemplate? defaultTemplate;
-  final SlideParts parts;
+  final SlideFrame parts;
   final bool debug;
   final List<DeckExtension> extensions;
 }

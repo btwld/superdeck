@@ -45,7 +45,7 @@ class MockDeckService extends DeckService {
   final Directory _tempDir;
   final Map<String, String> _assetPaths = {};
 
-  MockDeckService(this._tempDir) : super(configuration: DeckConfiguration());
+  MockDeckService(this._tempDir) : super(configuration: DeckWorkspace());
 
   @override
   String getGeneratedAssetPath(GeneratedAsset asset) {

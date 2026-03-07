@@ -13,7 +13,7 @@ This directory contains auto-registered widgets that can be used directly in you
 
 1. Example widgets from `../examples/` are imported with namespace aliases
 2. Each is wrapped in `_DemoWrapper` to keep it compact and centered
-3. The `demoWidgets` getter returns a complete map ready for `DeckPresentation.widgets`
+3. The `demoWidgets` getter returns a complete map ready for `DeckTheme.widgets`
 4. In `main.dart`, we spread `...demoWidgets` into the widgets map
 
 ## Available Widgets

@@ -16,10 +16,7 @@ void main() async {
   const extensions = [GenUiPlugin()];
   final source = kIsWeb
       ? const DeckSource.bundle()
-      : const DeckSource.local(
-          slidesPath: 'slides.md',
-          watch: true,
-        );
+      : const DeckSource.local(slidesPath: 'slides.md', watch: true);
 
   // Disable signals logging to reduce console noise
   SignalsObserver.instance = null;
@@ -34,32 +31,24 @@ void main() async {
       outputDir: '.superdeck',
       assetsPath: 'assets',
     ),
-    presentation: DeckPresentation(
+    theme: DeckTheme(
       baseStyle: borderedStyle(),
-      widgets: {
-        ...demoWidgets,
-        'twitter': const _TwitterWidgetDefinition(),
-      },
-      styles: {
-        'announcement': announcementStyle(),
-        'quote': quoteStyle(),
-      },
+      widgets: {...demoWidgets, 'twitter': const _TwitterWidgetDefinition()},
+      styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
       templates: {
         'corporate': corporateTemplate(),
         'minimal': minimalTemplate(),
       },
-      parts: SlideParts(
+      frame: SlideFrame(
         header: HeaderPart(),
         footer: FooterPart(),
         background: BackgroundPart(),
       ),
-      extensions: extensions,
     ),
+    extensions: extensions,
   );
 
-  runApp(
-    SuperDeckApp(runtime: runtime),
-  );
+  runApp(SuperDeckApp(runtime: runtime));
 }
 
 class TwitterWidget extends StatelessWidget {

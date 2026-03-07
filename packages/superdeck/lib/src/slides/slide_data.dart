@@ -2,30 +2,30 @@ import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../presentation/slide_parts.dart';
+import '../presentation/slide_frame.dart';
 import '../presentation/widget_definition.dart';
 import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/collection_hashes.dart';
 
-class SlideConfiguration {
+class SlideData {
   final int slideIndex;
   final SlideStyle style;
   final Slide _slide;
   final bool debug;
-  final SlideParts? parts;
+  final SlideFrame? frame;
   final Map<String, WidgetDefinition> _widgets;
   // Bare thumbnail asset key (for example: thumbnail_intro.png).
   final String thumbnailFile;
 
   final bool isExporting;
 
-  SlideConfiguration({
+  SlideData({
     required this.slideIndex,
     required this.style,
     required Slide slide,
     this.debug = false,
-    this.parts,
+    this.frame,
     required this.thumbnailFile,
     Map<String, WidgetDefinition> widgets = const {},
     this.isExporting = false,
@@ -36,7 +36,7 @@ class SlideConfiguration {
 
   String get key => _slide.key;
 
-  Slide get data => _slide;
+  Slide get slide => _slide;
 
   List<SectionBlock> get sections => _slide.sections;
 
@@ -44,26 +44,26 @@ class SlideConfiguration {
 
   WidgetDefinition? getWidgetDefinition(String name) => _widgets[name];
 
-  static SlideConfiguration of(BuildContext context) {
+  static SlideData of(BuildContext context) {
     return InheritedData.of(context);
   }
 
-  SlideConfiguration copyWith({
+  SlideData copyWith({
     int? slideIndex,
     SlideStyle? style,
     Slide? slide,
     bool? debug,
-    SlideParts? parts,
+    SlideFrame? frame,
     String? thumbnailFile,
     Map<String, WidgetDefinition>? widgets,
     bool? isExporting,
   }) {
-    return SlideConfiguration(
+    return SlideData(
       slideIndex: slideIndex ?? this.slideIndex,
       style: style ?? this.style,
       slide: slide ?? _slide,
       debug: debug ?? this.debug,
-      parts: parts ?? this.parts,
+      frame: frame ?? this.frame,
       thumbnailFile: thumbnailFile ?? this.thumbnailFile,
       widgets: widgets ?? _widgets,
       isExporting: isExporting ?? this.isExporting,
@@ -73,13 +73,13 @@ class SlideConfiguration {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SlideConfiguration &&
+      other is SlideData &&
           runtimeType == other.runtimeType &&
           slideIndex == other.slideIndex &&
           style == other.style &&
           _slide == other._slide &&
           debug == other.debug &&
-          parts == other.parts &&
+          frame == other.frame &&
           thumbnailFile == other.thumbnailFile &&
           mapEquals(_widgets, other._widgets) &&
           isExporting == other.isExporting;
@@ -90,7 +90,7 @@ class SlideConfiguration {
     style,
     _slide,
     debug,
-    parts,
+    frame,
     thumbnailFile,
     unorderedMapHash(_widgets),
     isExporting,

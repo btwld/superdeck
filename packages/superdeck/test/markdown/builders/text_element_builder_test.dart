@@ -80,7 +80,7 @@ void main() {
         // 4. They do NOT apply custom styles to the text ✗
         //
         // To apply custom styles, use:
-        // - SlideStyle configurations in DeckPresentation
+        // - SlideStyle configurations in DeckTheme
         // - Named slide styles via frontmatter (style: hero)
         // - Direct Mix styling in widget configurations
 

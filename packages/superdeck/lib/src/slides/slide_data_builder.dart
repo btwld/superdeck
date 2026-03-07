@@ -1,45 +1,45 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../presentation/deck_presentation.dart';
+import '../presentation/deck_theme.dart';
 import '../presentation/template_resolver.dart';
 import '../presentation/widget_definition.dart';
 import '../widgets/widgets.dart';
-import 'slide_configuration.dart';
+import 'slide_data.dart';
 
 /// Service responsible for transforming raw Slide domain entities
-/// into SlideConfiguration view models ready for rendering.
+/// into SlideData view models ready for rendering.
 ///
 /// This class encapsulates the business logic of:
 /// - Style merging (default → base → slide-specific)
 /// - Widget builder collection
 /// - Thumbnail path generation
-class SlideConfigurationBuilder {
-  final DeckConfiguration configuration;
+class SlideDataBuilder {
+  final DeckWorkspace configuration;
 
-  const SlideConfigurationBuilder({required this.configuration});
+  const SlideDataBuilder({required this.configuration});
 
-  /// Builds a list of SlideConfigurations from raw slides and options.
-  List<SlideConfiguration> buildConfigurations(
+  /// Builds a list of SlideData objects from raw slides and theme options.
+  List<SlideData> buildSlides(
     List<Slide> rawSlides,
-    DeckPresentation presentation,
+    DeckTheme theme,
   ) {
-    final resolver = TemplateResolver(presentation);
+    final resolver = TemplateResolver(theme);
 
     return rawSlides.asMap().entries.map((entry) {
-      return _buildConfiguration(
+      return _buildSlideData(
         entry.key,
         entry.value,
-        presentation,
+        theme,
         resolver,
       );
     }).toList();
   }
 
-  /// Builds a single SlideConfiguration from a Slide and options.
-  SlideConfiguration _buildConfiguration(
+  /// Builds a single SlideData from a Slide and theme options.
+  SlideData _buildSlideData(
     int index,
     Slide slide,
-    DeckPresentation presentation,
+    DeckTheme theme,
     TemplateResolver resolver,
   ) {
     // Start with built-in widgets, then add user widgets that are actually used
@@ -54,20 +54,20 @@ class SlideConfigurationBuilder {
 
     // Add user widgets that are used (overriding built-ins if necessary)
     for (final name in usedWidgetNames) {
-      final userWidget = presentation.widgets[name];
+      final userWidget = theme.widgets[name];
       if (userWidget != null) {
         widgets[name] = userWidget;
       }
     }
 
-    // Resolve template, style, and parts
+    // Resolve template, style, and frame
     final resolution = resolver.resolve(slide.options);
     final renderSignature = GeneratedAsset.buildKey(
       [
         slide.hashCode,
         resolution.style.hashCode,
-        resolution.parts.hashCode,
-        presentation.debug.hashCode,
+        resolution.frame.hashCode,
+        theme.debug.hashCode,
         usedWidgetNames.toList()..sort(),
       ].join('|'),
     );
@@ -76,14 +76,14 @@ class SlideConfigurationBuilder {
       renderSignature: renderSignature,
     );
 
-    return SlideConfiguration(
+    return SlideData(
       slideIndex: index,
       style: resolution.style,
       slide: slide,
       widgets: widgets,
       thumbnailFile: thumbnailAsset.fileName,
-      parts: resolution.parts,
-      debug: presentation.debug,
+      frame: resolution.frame,
+      debug: theme.debug,
     );
   }
 }

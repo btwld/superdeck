@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../presentation/deck_presentation.dart';
+import '../presentation/deck_extension.dart';
+import '../presentation/deck_theme.dart';
 import '../utils/app_initialization.dart';
 import '../utils/constants.dart';
 import 'deck_runtime_config.dart';
@@ -11,23 +12,26 @@ import 'superdeck_handle.dart';
 final class SuperDeckRuntime {
   final DeckSource source;
   final DeckRuntimeConfig runtimeConfig;
-  final DeckPresentation presentation;
+  final DeckTheme theme;
+  final List<DeckExtension> extensions;
   final SuperDeckHandle handle;
 
-  final DeckConfiguration _configuration;
+  final DeckWorkspace _workspace;
 
   SuperDeckRuntime._({
     required this.source,
     required this.runtimeConfig,
-    required this.presentation,
+    required this.theme,
+    required this.extensions,
     required this.handle,
-    required DeckConfiguration configuration,
-  }) : _configuration = configuration;
+    required DeckWorkspace workspace,
+  }) : _workspace = workspace;
 
   static Future<SuperDeckRuntime> create({
     required DeckSource source,
-    required DeckRuntimeConfig runtimeConfig,
-    required DeckPresentation presentation,
+    DeckRuntimeConfig runtimeConfig = const DeckRuntimeConfig(),
+    DeckTheme theme = const DeckTheme(),
+    List<DeckExtension> extensions = const <DeckExtension>[],
   }) async {
     if (kIsWeb && source is LocalDeckSource) {
       throw UnsupportedError(
@@ -37,7 +41,7 @@ final class SuperDeckRuntime {
     }
 
     await initializeDependencies();
-    for (final extension in presentation.extensions) {
+    for (final extension in extensions) {
       try {
         await extension.initialize();
       } catch (error, stackTrace) {
@@ -51,7 +55,8 @@ final class SuperDeckRuntime {
     return _buildRuntime(
       source: source,
       runtimeConfig: runtimeConfig,
-      presentation: presentation,
+      theme: theme,
+      extensions: extensions,
     );
   }
 
@@ -59,13 +64,15 @@ final class SuperDeckRuntime {
   static SuperDeckRuntime forTesting({
     DeckSource source = const DeckSource.bundle(),
     DeckRuntimeConfig runtimeConfig = const DeckRuntimeConfig(),
-    DeckPresentation presentation = const DeckPresentation(),
+    DeckTheme theme = const DeckTheme(),
+    List<DeckExtension> extensions = const <DeckExtension>[],
     SuperDeckHandle? handle,
   }) {
     return _buildRuntime(
       source: source,
       runtimeConfig: runtimeConfig,
-      presentation: presentation,
+      theme: theme,
+      extensions: extensions,
       handle: handle,
     );
   }
@@ -73,7 +80,8 @@ final class SuperDeckRuntime {
   static SuperDeckRuntime _buildRuntime({
     required DeckSource source,
     required DeckRuntimeConfig runtimeConfig,
-    required DeckPresentation presentation,
+    required DeckTheme theme,
+    required List<DeckExtension> extensions,
     SuperDeckHandle? handle,
   }) {
     final slidesPath = switch (source) {
@@ -81,7 +89,7 @@ final class SuperDeckRuntime {
       BundledDeckSource() => null,
     };
 
-    final configuration = DeckConfiguration(
+    final configuration = DeckWorkspace(
       projectDir: runtimeConfig.projectDir,
       outputDir: runtimeConfig.outputDir,
       assetsPath: runtimeConfig.assetsPath,
@@ -91,14 +99,15 @@ final class SuperDeckRuntime {
     return SuperDeckRuntime._(
       source: source,
       runtimeConfig: runtimeConfig,
-      presentation: presentation,
+      theme: theme,
+      extensions: extensions,
       handle: handle ?? SuperDeckHandle(),
-      configuration: configuration,
+      workspace: configuration,
     );
   }
 
   @internal
-  DeckConfiguration get configuration => _configuration;
+  DeckWorkspace get workspace => _workspace;
 
   @internal
   bool get shouldWatch => switch (source) {

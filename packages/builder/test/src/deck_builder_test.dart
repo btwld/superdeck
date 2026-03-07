@@ -34,7 +34,7 @@ final class MockTask extends Task {
 
 /// Mock DeckService for testing
 class TestDeckService extends DeckService {
-  TestDeckService() : super(configuration: DeckConfiguration());
+  TestDeckService() : super(configuration: DeckWorkspace());
 }
 
 void main() {
@@ -47,7 +47,7 @@ void main() {
 
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
-          configuration: DeckConfiguration(),
+          configuration: DeckWorkspace(),
           store: TestDeckService(),
         );
 
@@ -61,7 +61,7 @@ void main() {
       test('completes without error when no tasks', () async {
         final builder = DeckBuilder(
           tasks: [],
-          configuration: DeckConfiguration(),
+          configuration: DeckWorkspace(),
           store: TestDeckService(),
         );
 
@@ -76,7 +76,7 @@ void main() {
 
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
-          configuration: DeckConfiguration(),
+          configuration: DeckWorkspace(),
           store: TestDeckService(),
         );
 
@@ -102,7 +102,7 @@ void main() {
 
         final builder = DeckBuilder(
           tasks: [task],
-          configuration: DeckConfiguration(),
+          configuration: DeckWorkspace(),
           store: TestDeckService(),
         );
 
@@ -121,7 +121,7 @@ void main() {
         expect(
           () => DeckBuilder(
             tasks: [],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
             store: TestDeckService(),
           ),
           returnsNormally,
@@ -132,7 +132,7 @@ void main() {
         expect(
           () => DeckBuilder(
             tasks: [],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
             store: TestDeckService(),
             concurrentSlides: 8,
           ),

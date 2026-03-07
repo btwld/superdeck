@@ -7,10 +7,10 @@
 
 // // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'deck_configuration.dart';
+part of 'deck_workspace.dart';
 
-/// Generated schema for DeckConfiguration
-final deckConfigurationSchema = Ack.object({
+/// Generated schema for DeckWorkspace
+final deckWorkspaceSchema = Ack.object({
   'projectDir': Ack.string().optional().nullable(),
   'slidesPath': Ack.string().optional().nullable(),
   'outputDir': Ack.string().optional().nullable(),

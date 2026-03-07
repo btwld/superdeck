@@ -7,12 +7,12 @@ import 'package:superdeck_genui/src/presentation/thumbnail_preview_service.dart'
 
 void main() {
   group('ThumbnailPreviewService', () {
-    late List<(SlideConfiguration, BuildContext)> capturedCalls;
+    late List<(SlideData, BuildContext)> capturedCalls;
     late ThumbnailPreviewService service;
 
     /// Fake capture function that records calls and returns deterministic bytes.
     Future<Uint8List> fakeCapture(
-      SlideConfiguration slide,
+      SlideData slide,
       BuildContext context,
     ) async {
       capturedCalls.add((slide, context));

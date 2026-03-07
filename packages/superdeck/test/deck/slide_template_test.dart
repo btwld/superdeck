@@ -7,36 +7,36 @@ void main() {
       test('default constructor produces expected field values', () {
         const template = SlideTemplate();
 
-        expect(template.parts, isA<SlideParts>());
+        expect(template.frame, isA<SlideFrame>());
         expect(template.baseStyle, isNull);
         expect(template.styles, isEmpty);
       });
 
       test('all-parameter constructor stores supplied values', () {
-        final parts = SlideParts();
+        final frame = SlideFrame();
         final baseStyle = SlideStyle();
         final variants = <String, SlideStyle>{'dark': SlideStyle()};
 
         final template = SlideTemplate(
-          parts: parts,
+          frame: frame,
           baseStyle: baseStyle,
           styles: variants,
         );
 
-        expect(template.parts, same(parts));
+        expect(template.frame, same(frame));
         expect(template.baseStyle, same(baseStyle));
         expect(template.styles, equals(variants));
       });
     });
 
     group('copyWith', () {
-      test('copies parts field when supplied', () {
+      test('copies frame field when supplied', () {
         const original = SlideTemplate();
-        final newParts = SlideParts();
+        final newFrame = SlideFrame();
 
-        final copy = original.copyWith(parts: newParts);
+        final copy = original.copyWith(frame: newFrame);
 
-        expect(copy.parts, same(newParts));
+        expect(copy.frame, same(newFrame));
         expect(copy.baseStyle, isNull);
         expect(copy.styles, isEmpty);
       });
@@ -48,7 +48,7 @@ void main() {
         final copy = original.copyWith(baseStyle: newStyle);
 
         expect(copy.baseStyle, same(newStyle));
-        expect(copy.parts, isA<SlideParts>());
+        expect(copy.frame, isA<SlideFrame>());
         expect(copy.styles, isEmpty);
       });
 
@@ -62,13 +62,13 @@ void main() {
         expect(copy.baseStyle, isNull);
       });
 
-      test('preserves parts when not specified', () {
-        final parts = SlideParts();
-        final original = SlideTemplate(parts: parts);
+      test('preserves frame when not specified', () {
+        final frame = SlideFrame();
+        final original = SlideTemplate(frame: frame);
 
         final copy = original.copyWith(baseStyle: SlideStyle());
 
-        expect(copy.parts, same(parts));
+        expect(copy.frame, same(frame));
       });
 
       test('preserves baseStyle when not specified', () {
@@ -91,10 +91,10 @@ void main() {
     });
 
     group('equality', () {
-      test('two templates with the same shared parts instance are equal', () {
-        final parts = SlideParts();
-        final a = SlideTemplate(parts: parts);
-        final b = SlideTemplate(parts: parts);
+      test('two templates with the same shared frame instance are equal', () {
+        final frame = SlideFrame();
+        final a = SlideTemplate(frame: frame);
+        final b = SlideTemplate(frame: frame);
 
         expect(a, equals(b));
       });
@@ -105,43 +105,43 @@ void main() {
         expect(template, equals(template));
       });
 
-      test('templates with different parts instances are not equal', () {
-        // SlideParts does not override ==, so distinct instances differ.
-        final a = SlideTemplate(parts: SlideParts());
-        final b = SlideTemplate(parts: SlideParts());
+      test('templates with different frame instances are not equal', () {
+        // SlideFrame does not override ==, so distinct instances differ.
+        final a = SlideTemplate(frame: SlideFrame());
+        final b = SlideTemplate(frame: SlideFrame());
 
         expect(a, isNot(equals(b)));
       });
 
       test('templates with different baseStyles are not equal', () {
-        final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, baseStyle: SlideStyle());
-        final b = SlideTemplate(parts: parts);
+        final frame = SlideFrame();
+        final a = SlideTemplate(frame: frame, baseStyle: SlideStyle());
+        final b = SlideTemplate(frame: frame);
 
         expect(a, isNot(equals(b)));
       });
 
       test('templates with equal baseStyles are equal', () {
         // SlideStyle uses Equatable, so two instances with same args are equal.
-        final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, baseStyle: SlideStyle());
-        final b = SlideTemplate(parts: parts, baseStyle: SlideStyle());
+        final frame = SlideFrame();
+        final a = SlideTemplate(frame: frame, baseStyle: SlideStyle());
+        final b = SlideTemplate(frame: frame, baseStyle: SlideStyle());
 
         expect(a, equals(b));
       });
 
       test('templates with different styles maps are not equal', () {
-        final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
-        final b = SlideTemplate(parts: parts, styles: {});
+        final frame = SlideFrame();
+        final a = SlideTemplate(frame: frame, styles: {'dark': SlideStyle()});
+        final b = SlideTemplate(frame: frame, styles: {});
 
         expect(a, isNot(equals(b)));
       });
 
       test('templates with equivalent styles maps are equal', () {
-        final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
-        final b = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
+        final frame = SlideFrame();
+        final a = SlideTemplate(frame: frame, styles: {'dark': SlideStyle()});
+        final b = SlideTemplate(frame: frame, styles: {'dark': SlideStyle()});
 
         expect(a, equals(b));
       });
@@ -149,17 +149,17 @@ void main() {
 
     group('hashCode', () {
       test('equal templates have the same hashCode', () {
-        final parts = SlideParts();
+        final frame = SlideFrame();
         final baseStyle = SlideStyle();
         final styles = <String, SlideStyle>{'x': SlideStyle()};
 
         final a = SlideTemplate(
-          parts: parts,
+          frame: frame,
           baseStyle: baseStyle,
           styles: styles,
         );
         final b = SlideTemplate(
-          parts: parts,
+          frame: frame,
           baseStyle: baseStyle,
           styles: styles,
         );
@@ -173,12 +173,12 @@ void main() {
         expect(template.hashCode, equals(template.hashCode));
       });
 
-      test('templates that differ in parts have different hashCodes', () {
-        // Different SlideParts instances have different identity-based hashCodes.
-        final a = SlideTemplate(parts: SlideParts());
-        final b = SlideTemplate(parts: SlideParts());
+      test('templates that differ in frame have different hashCodes', () {
+        // Different SlideFrame instances have different identity-based hashCodes.
+        final a = SlideTemplate(frame: SlideFrame());
+        final b = SlideTemplate(frame: SlideFrame());
 
-        // Distinct SlideParts instances will produce distinct hash values
+        // Distinct SlideFrame instances will produce distinct hash values
         // in virtually all cases because Object.hashCode is identity-based.
         expect(a.hashCode, isNot(equals(b.hashCode)));
       });

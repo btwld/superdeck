@@ -23,7 +23,7 @@ bool _isCI() {
 
 /// Creates a [DeckBuilder] with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
-  required DeckConfiguration configuration,
+  required DeckWorkspace configuration,
   required DeckService store,
 }) {
   // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions
@@ -98,7 +98,7 @@ class BuildCommand extends SuperDeckCommand {
   /// one if not provided.
   Future<bool> _cleanAndRebuild(
     DeckService store,
-    DeckConfiguration config, {
+    DeckWorkspace config, {
     DeckBuilder? builder,
   }) async {
     logger.info('Force rebuild: Clearing all generated assets...');
@@ -125,7 +125,7 @@ class BuildCommand extends SuperDeckCommand {
   /// one if not provided.
   Future<bool> _runBuild(
     DeckService store,
-    DeckConfiguration config, {
+    DeckWorkspace config, {
     DeckBuilder? builder,
   }) async {
     // Wait while a build is already running
@@ -352,7 +352,7 @@ class BuildCommand extends SuperDeckCommand {
 }
 
 /// Ensures the pubspec.yaml has the necessary assets configuration.
-Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
+Future<void> _ensurePubspecAssets(DeckWorkspace configuration) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 
   try {

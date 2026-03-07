@@ -22,10 +22,7 @@ SlideTemplate corporateTemplate() {
         ),
       ),
       p: TextStyler().style(
-        TextStyleMix(
-          fontFamily: GoogleFonts.inter().fontFamily,
-          fontSize: 24,
-        ),
+        TextStyleMix(fontFamily: GoogleFonts.inter().fontFamily, fontSize: 24),
       ),
     ),
     styles: {
@@ -51,7 +48,7 @@ SlideTemplate corporateTemplate() {
         ),
       ),
     },
-    parts: const SlideParts(
+    frame: const SlideFrame(
       header: _CorporateHeader(),
       footer: _CorporateFooter(),
     ),
@@ -88,7 +85,7 @@ class _CorporateHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slide = SlideConfiguration.of(context);
+    final slide = SlideData.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Row(
@@ -107,10 +104,7 @@ class _CorporateHeader extends StatelessWidget implements PreferredSizeWidget {
           const Spacer(),
           Text(
             '${slide.slideIndex + 1}',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.white38,
-            ),
+            style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38),
           ),
         ],
       ),

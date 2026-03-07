@@ -6,7 +6,7 @@ import '../utils/constants.dart';
 import 'slide_capture_service.dart';
 
 import '../runtime/superdeck_context.dart';
-import '../slides/slide_configuration.dart';
+import '../slides/slide_data.dart';
 import '../rendering/slides/slide_view.dart';
 import '../ui/widgets/button.dart';
 import '../ui/widgets/loading_indicator.dart';
@@ -16,7 +16,7 @@ import 'pdf_controller.dart';
 class PdfExportDialogScreen extends StatefulWidget {
   const PdfExportDialogScreen({super.key, required this.slides});
 
-  final List<SlideConfiguration> slides;
+  final List<SlideData> slides;
 
   @override
   State<PdfExportDialogScreen> createState() => _PdfExportDialogScreenState();

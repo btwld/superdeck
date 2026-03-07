@@ -3,8 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../../../superdeck.dart';
+import '../styling/styling.dart';
 import 'builders/alert_element_builder.dart';
 import 'builders/code_element_builder.dart';
 import 'builders/image_element_builder.dart';

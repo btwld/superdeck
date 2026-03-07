@@ -47,7 +47,7 @@ class TestApp extends StatelessWidget {
         outputDir: '.superdeck',
         assetsPath: 'assets',
       ),
-      presentation: DeckPresentation(
+      theme: DeckTheme(
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
         styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
@@ -55,7 +55,7 @@ class TestApp extends StatelessWidget {
           'corporate': corporateTemplate(),
           'minimal': minimalTemplate(),
         },
-        parts: const SlideParts(
+        frame: const SlideFrame(
           header: HeaderPart(),
           footer: FooterPart(),
           background: BackgroundPart(),

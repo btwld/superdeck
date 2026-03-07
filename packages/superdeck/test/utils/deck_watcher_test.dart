@@ -37,12 +37,12 @@ Future<void> _flushEvents() async {
 void main() {
   group('DeckWatcher', () {
     late Directory tempDir;
-    late DeckConfiguration configuration;
+    late DeckWorkspace configuration;
     late DeckService store;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('deck_watcher_test_');
-      configuration = DeckConfiguration(projectDir: tempDir.path);
+      configuration = DeckWorkspace(projectDir: tempDir.path);
       store = DeckService(configuration: configuration);
     });
 
@@ -74,7 +74,7 @@ void main() {
           store: store,
           builderFactory:
               ({
-                required DeckConfiguration configuration,
+                required DeckWorkspace configuration,
                 required DeckService store,
               }) {
                 builderFactoryCalls++;
@@ -115,7 +115,7 @@ void main() {
         store: store,
         builderFactory:
             ({
-              required DeckConfiguration configuration,
+              required DeckWorkspace configuration,
               required DeckService store,
             }) {
               return _FakeDeckBuilder(
@@ -149,7 +149,7 @@ void main() {
         store: store,
         builderFactory:
             ({
-              required DeckConfiguration configuration,
+              required DeckWorkspace configuration,
               required DeckService store,
             }) {
               builderFactoryCalls++;
@@ -178,7 +178,7 @@ void main() {
         store: store,
         builderFactory:
             ({
-              required DeckConfiguration configuration,
+              required DeckWorkspace configuration,
               required DeckService store,
             }) {
               return _FakeDeckBuilder(
@@ -212,7 +212,7 @@ void main() {
         store: store,
         builderFactory:
             ({
-              required DeckConfiguration configuration,
+              required DeckWorkspace configuration,
               required DeckService store,
             }) {
               final builder = _FakeDeckBuilder(
@@ -263,7 +263,7 @@ void main() {
         store: store,
         builderFactory:
             ({
-              required DeckConfiguration configuration,
+              required DeckWorkspace configuration,
               required DeckService store,
             }) {
               final builder = _FakeDeckBuilder(

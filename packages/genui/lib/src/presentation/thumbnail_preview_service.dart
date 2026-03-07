@@ -2,6 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/tooling.dart';
+
 import '../ai/schemas/deck_schemas.dart';
 import '../debug_logger.dart';
 import '../utils/style_builder.dart';
@@ -11,11 +14,11 @@ import '../utils/style_builder.dart';
 /// Abstracted to allow test injection without depending on
 /// [SlideCaptureService] (which is not part of SuperDeck's public API).
 typedef SlideCaptureFn =
-    Future<Uint8List> Function(SlideConfiguration slide, BuildContext context);
+    Future<Uint8List> Function(SlideData slide, BuildContext context);
 
 /// Service for generating slide thumbnail previews from slide data.
 ///
-/// Accepts slides directly (no disk I/O), builds [SlideConfiguration]s,
+/// Accepts slides directly (no disk I/O), builds [SlideData]s,
 /// and uses [SlideCaptureService] to render each slide offscreen at
 /// thumbnail quality.
 ///
@@ -29,7 +32,7 @@ class ThumbnailPreviewService {
   /// Lazily created default capture service instance.
   SlideCaptureService? _defaultService;
 
-  Future<Uint8List> _capture(SlideConfiguration slide, BuildContext context) {
+  Future<Uint8List> _capture(SlideData slide, BuildContext context) {
     if (_captureSlide case final fn?) return fn(slide, context);
     _defaultService ??= SlideCaptureService();
     return _defaultService!.capture(
@@ -62,12 +65,10 @@ class ThumbnailPreviewService {
 
     if (slides.isEmpty) return [];
 
-    final configuration = DeckConfiguration();
-    final presentation = buildDeckPresentationFromStyle(style);
-    final slideBuilder = SlideConfigurationBuilder(
-      configuration: configuration,
-    );
-    final slideConfigs = slideBuilder.buildConfigurations(slides, presentation);
+    final configuration = DeckWorkspace();
+    final theme = buildDeckThemeFromStyle(style);
+    final slideBuilder = SlideDataBuilder(configuration: configuration);
+    final slideConfigs = slideBuilder.buildSlides(slides, theme);
 
     debugLog.log(
       'THUMBNAIL',

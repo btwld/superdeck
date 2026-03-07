@@ -6,7 +6,7 @@ description: Learn how to create and use custom Flutter widgets in SuperDeck pre
 # Custom widgets guide
 
 Render custom Flutter widgets from Markdown. Register widgets in
-`DeckPresentation.widgets`, then use them in `slides.md`.
+`DeckTheme.widgets`, then use them in `slides.md`.
 
 ## Markdown syntax
 
@@ -81,7 +81,7 @@ class TwitterDefinition extends WidgetDefinition<TwitterArgs> {
 }
 ```
 
-## Register widgets in `DeckPresentation`
+## Register widgets in `DeckTheme`
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -95,7 +95,7 @@ void main() async {
       watch: true,
     ),
     runtimeConfig: const DeckRuntimeConfig(),
-    presentation: DeckPresentation(
+    theme: DeckTheme(
       widgets: const {
         'twitter': TwitterWidgetDefinition(),
       },
@@ -131,14 +131,14 @@ Explicit:
 
 In `WidgetDefinition.build()`:
 
-- `BlockConfiguration.of(context)` - Block size, alignment, slide spec
-- `SlideConfiguration.of(context)` - Slide index, options, metadata
+- `BlockContext.of(context)` - Block size, alignment, slide spec
+- `SlideData.of(context)` - Slide index, options, metadata
 
 ```dart
 @override
 Widget build(BuildContext context, TwitterArgs args) {
-  final block = BlockConfiguration.of(context);
-  final slide = SlideConfiguration.of(context);
+  final block = BlockContext.of(context);
+  final slide = SlideData.of(context);
 
   return SizedBox(
     width: block.size.width,
@@ -150,7 +150,7 @@ Widget build(BuildContext context, TwitterArgs args) {
 
 ## Troubleshooting
 
-- **"Widget not found"** - Verify the name is registered in `DeckPresentation.widgets`
+- **"Widget not found"** - Verify the name is registered in `DeckTheme.widgets`
 - **Parse/build errors** - SuperDeck renders error details with stack trace on slide
 
 ## Notes

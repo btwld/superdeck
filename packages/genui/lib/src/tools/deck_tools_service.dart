@@ -3,6 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/tooling.dart';
+
 import '../ai/schemas/deck_schemas.dart';
 import '../ai/services/slide_key_utils.dart';
 import './deck_document_store.dart';
@@ -19,43 +22,41 @@ class DeckToolsService {
     DeckDocumentStore? documentStore,
     BuildContext? Function()? contextProvider,
     SlideCaptureFn? captureSlide,
-    SlideConfiguration Function({
+    SlideData Function({
       required Slide slide,
-      required DeckConfiguration configuration,
+      required DeckWorkspace configuration,
       required DeckStyleType? style,
       required int index,
     })?
-    buildReadSlideConfiguration,
+    buildReadSlideData,
   }) : _documentStore = documentStore ?? DeckDocumentStore(),
        _contextProvider = contextProvider ?? (() => null),
        _captureSlide = captureSlide,
-       _buildReadSlideConfiguration =
-           buildReadSlideConfiguration ??
+       _buildReadSlideData =
+           buildReadSlideData ??
            (({
              required Slide slide,
-             required DeckConfiguration configuration,
+             required DeckWorkspace configuration,
              required DeckStyleType? style,
              required int index,
            }) {
-             final slideBuilder = SlideConfigurationBuilder(
-               configuration: configuration,
-             );
-             final presentation = buildDeckPresentationFromStyle(style);
-             return slideBuilder.buildConfigurations([
+             final slideBuilder = SlideDataBuilder(configuration: configuration);
+             final theme = buildDeckThemeFromStyle(style);
+             return slideBuilder.buildSlides([
                slide,
-             ], presentation).single;
+             ], theme).single;
            });
 
   final DeckDocumentStore _documentStore;
   final BuildContext? Function() _contextProvider;
   final SlideCaptureFn? _captureSlide;
-  final SlideConfiguration Function({
+  final SlideData Function({
     required Slide slide,
-    required DeckConfiguration configuration,
+    required DeckWorkspace configuration,
     required DeckStyleType? style,
     required int index,
   })
-  _buildReadSlideConfiguration;
+  _buildReadSlideData;
   static const _invalidSlideSchemaMessage = 'Invalid slide schema payload';
 
   SlideCaptureService? _captureService;
@@ -73,18 +74,18 @@ class DeckToolsService {
     final context = _requireMountedContext();
 
     final slide = document.slides[index];
-    final slideConfiguration = _buildReadSlideConfiguration(
+    final slideConfiguration = _buildReadSlideData(
       slide: slide,
       configuration: _documentStore.configuration,
       style: document.style,
       index: index,
     );
-    final indexedSlideConfiguration = slideConfiguration.copyWith(
+    final indexedSlideData = slideConfiguration.copyWith(
       slideIndex: index,
     );
 
     final imageBytes = await _captureSlideBytes(
-      indexedSlideConfiguration,
+      indexedSlideData,
       // ignore: use_build_context_synchronously
       context,
     );
@@ -338,7 +339,7 @@ class DeckToolsService {
   }
 
   Future<Uint8List> _captureSlideBytes(
-    SlideConfiguration slide,
+    SlideData slide,
     BuildContext context,
   ) {
     if (_captureSlide case final capture?) {

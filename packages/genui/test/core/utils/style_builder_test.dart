@@ -40,26 +40,26 @@ void main() {
     return source is ValueSource<TextStyle> ? source.value : null;
   }
 
-  Color? headingColorFrom(DeckPresentation presentation) =>
+  Color? headingColorFrom(DeckTheme presentation) =>
       propTextStyle(presentation.baseStyle?.$strong)?.color;
 
-  Color? bodyColorFrom(DeckPresentation presentation) =>
+  Color? bodyColorFrom(DeckTheme presentation) =>
       propTextStyle(presentation.baseStyle?.$a)?.color;
 
-  group('buildDeckPresentationFromStyle', () {
+  group('buildDeckThemeFromStyle', () {
     group('null and empty inputs', () {
-      test('returns empty DeckPresentation for null style', () {
-        final result = buildDeckPresentationFromStyle(null);
+      test('returns empty DeckTheme for null style', () {
+        final result = buildDeckThemeFromStyle(null);
 
         expect(result.baseStyle, isNull);
       });
 
-      test('returns empty DeckPresentation when style fails schema parsing', () {
+      test('returns empty DeckTheme when style fails schema parsing', () {
         final style = DeckStyleType.safeParse({
           'name': 'Invalid Style',
           'colors': {'heading': '#FF0000'},
         }).getOrNull();
-        final result = buildDeckPresentationFromStyle(style);
+        final result = buildDeckThemeFromStyle(style);
 
         expect(style, isNull);
         expect(result.baseStyle, isNull);
@@ -68,9 +68,9 @@ void main() {
 
     group('valid color configurations', () {
       test(
-        'returns DeckPresentation with baseStyle when heading color provided',
+        'returns DeckTheme with baseStyle when heading color provided',
         () {
-          final result = buildDeckPresentationFromStyle(
+          final result = buildDeckThemeFromStyle(
             buildStyle(heading: '#FF0000'),
           );
 
@@ -79,8 +79,8 @@ void main() {
         },
       );
 
-      test('returns DeckPresentation with baseStyle for heading and body', () {
-        final result = buildDeckPresentationFromStyle(
+      test('returns DeckTheme with baseStyle for heading and body', () {
+        final result = buildDeckThemeFromStyle(
           buildStyle(heading: '#FF0000', body: '#00FF00'),
         );
 
@@ -88,8 +88,8 @@ void main() {
         expect(bodyColorFrom(result), equals(const Color(0xFF00FF00)));
       });
 
-      test('returns DeckPresentation with baseStyle for all colors', () {
-        final result = buildDeckPresentationFromStyle(
+      test('returns DeckTheme with baseStyle for all colors', () {
+        final result = buildDeckThemeFromStyle(
           buildStyle(
             heading: '#FF0000',
             body: '#00FF00',
@@ -103,7 +103,7 @@ void main() {
 
       test('handles invalid hex color gracefully (uses fallback)', () {
         // Invalid hex should still produce a result with fallback gray
-        final result = buildDeckPresentationFromStyle(
+        final result = buildDeckThemeFromStyle(
           buildStyle(heading: 'invalid'),
         );
 
@@ -112,7 +112,7 @@ void main() {
       });
 
       test('handles hex color without # prefix', () {
-        final result = buildDeckPresentationFromStyle(
+        final result = buildDeckThemeFromStyle(
           buildStyle(heading: 'FF0000'),
         );
 
@@ -120,7 +120,7 @@ void main() {
       });
 
       test('handles hex color with # prefix', () {
-        final result = buildDeckPresentationFromStyle(
+        final result = buildDeckThemeFromStyle(
           buildStyle(heading: '#FF0000'),
         );
 
@@ -128,7 +128,7 @@ void main() {
       });
 
       test('handles lowercase hex colors', () {
-        final result = buildDeckPresentationFromStyle(
+        final result = buildDeckThemeFromStyle(
           buildStyle(heading: '#ff5733'),
         );
 
@@ -138,7 +138,7 @@ void main() {
 
     group('font configurations', () {
       test('handles null fonts gracefully', () {
-        final result = buildDeckPresentationFromStyle(
+        final result = buildDeckThemeFromStyle(
           buildStyle(heading: '#FF0000'),
         );
 
@@ -168,7 +168,7 @@ void main() {
 
     group('complete style configurations (colors only)', () {
       test('handles complete valid style configuration without fonts', () {
-        final result = buildDeckPresentationFromStyle(
+        final result = buildDeckThemeFromStyle(
           buildStyle(
             heading: '#FF5733',
             body: '#33FF57',
@@ -181,7 +181,7 @@ void main() {
       });
 
       test('handles realistic AI-generated style without fonts', () {
-        final result = buildDeckPresentationFromStyle(
+        final result = buildDeckThemeFromStyle(
           buildStyle(
             heading: '#2C3E50',
             body: '#34495E',
@@ -195,7 +195,7 @@ void main() {
     });
 
     group('edge cases', () {
-      test('returns empty DeckPresentation when colors have unknown keys', () {
+      test('returns empty DeckTheme when colors have unknown keys', () {
         final style = DeckStyleType.safeParse({
           'name': 'Invalid Style',
           'colors': {
@@ -206,14 +206,14 @@ void main() {
             'highlight': '#00FFFF',
           },
         }).getOrNull();
-        final result = buildDeckPresentationFromStyle(style);
+        final result = buildDeckThemeFromStyle(style);
 
         expect(style, isNull);
         expect(result.baseStyle, isNull);
       });
 
       test(
-        'returns empty DeckPresentation when style has unknown top-level keys',
+        'returns empty DeckTheme when style has unknown top-level keys',
         () {
           final style = DeckStyleType.safeParse({
             'name': 'Invalid Style',
@@ -225,7 +225,7 @@ void main() {
             'theme': 'dark',
             'animations': true,
           }).getOrNull();
-          final result = buildDeckPresentationFromStyle(style);
+          final result = buildDeckThemeFromStyle(style);
 
           expect(style, isNull);
           expect(result.baseStyle, isNull);

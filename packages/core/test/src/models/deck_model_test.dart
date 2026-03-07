@@ -1,5 +1,5 @@
 import 'package:ack/ack.dart';
-import 'package:superdeck_core/src/deck_configuration.dart';
+import 'package:superdeck_core/src/deck_workspace.dart';
 import 'package:superdeck_core/src/models/block_model.dart';
 import 'package:superdeck_core/src/models/deck_model.dart';
 import 'package:superdeck_core/src/models/slide_model.dart';
@@ -30,7 +30,7 @@ void main() {
   group('Deck Model', () {
     group('Deck', () {
       test('creates with required parameters', () {
-        final deck = Deck(slides: const [], configuration: DeckConfiguration());
+        final deck = Deck(slides: const [], configuration: DeckWorkspace());
 
         expect(deck.slides, isEmpty);
         expect(deck.configuration, isNotNull);
@@ -41,7 +41,7 @@ void main() {
           const Slide(key: 'slide-1'),
           const Slide(key: 'slide-2'),
         ];
-        final deck = Deck(slides: slides, configuration: DeckConfiguration());
+        final deck = Deck(slides: slides, configuration: DeckWorkspace());
 
         expect(deck.slides.length, 2);
         expect(deck.slides[0].key, 'slide-1');
@@ -52,7 +52,7 @@ void main() {
         test('copies with new slides', () {
           final original = Deck(
             slides: const [Slide(key: 'original')],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
           );
           final copy = original.copyWith(slides: const [Slide(key: 'new')]);
 
@@ -62,10 +62,10 @@ void main() {
         test('copies with new configuration', () {
           final original = Deck(
             slides: const [],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
           );
           final copy = original.copyWith(
-            configuration: DeckConfiguration(projectDir: '/new'),
+            configuration: DeckWorkspace(projectDir: '/new'),
           );
 
           expect(copy.configuration.projectDir, '/new');
@@ -74,7 +74,7 @@ void main() {
         test('preserves values when not specified', () {
           final original = Deck(
             slides: const [Slide(key: 'keep')],
-            configuration: DeckConfiguration(projectDir: '/keep'),
+            configuration: DeckWorkspace(projectDir: '/keep'),
           );
           final copy = original.copyWith();
 
@@ -87,7 +87,7 @@ void main() {
         test('serializes empty deck', () {
           final deck = Deck(
             slides: const [],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
           );
           final map = deck.toMap();
 
@@ -105,7 +105,7 @@ void main() {
                 ],
               ),
             ],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
           );
           final map = deck.toMap();
 
@@ -117,7 +117,7 @@ void main() {
         test('serializes deck with configuration', () {
           final deck = Deck(
             slides: const [],
-            configuration: DeckConfiguration(
+            configuration: DeckWorkspace(
               projectDir: '/project',
               slidesPath: 'slides.md',
             ),
@@ -313,7 +313,7 @@ void main() {
                 notes: ['Note'],
               ),
             ],
-            configuration: DeckConfiguration(
+            configuration: DeckWorkspace(
               projectDir: '/rt-project',
               slidesPath: 'slides.md',
             ),
@@ -535,11 +535,11 @@ void main() {
         test('equal decks are equal', () {
           final deck1 = Deck(
             slides: const [Slide(key: 'same')],
-            configuration: DeckConfiguration(projectDir: '/same'),
+            configuration: DeckWorkspace(projectDir: '/same'),
           );
           final deck2 = Deck(
             slides: const [Slide(key: 'same')],
-            configuration: DeckConfiguration(projectDir: '/same'),
+            configuration: DeckWorkspace(projectDir: '/same'),
           );
 
           expect(deck1, deck2);
@@ -549,11 +549,11 @@ void main() {
         test('different slides make decks unequal', () {
           final deck1 = Deck(
             slides: const [Slide(key: 'a')],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
           );
           final deck2 = Deck(
             slides: const [Slide(key: 'b')],
-            configuration: DeckConfiguration(),
+            configuration: DeckWorkspace(),
           );
 
           expect(deck1, isNot(deck2));
@@ -562,11 +562,11 @@ void main() {
         test('different configuration makes decks unequal', () {
           final deck1 = Deck(
             slides: const [],
-            configuration: DeckConfiguration(projectDir: '/a'),
+            configuration: DeckWorkspace(projectDir: '/a'),
           );
           final deck2 = Deck(
             slides: const [],
-            configuration: DeckConfiguration(projectDir: '/b'),
+            configuration: DeckWorkspace(projectDir: '/b'),
           );
 
           expect(deck1, isNot(deck2));
