@@ -1,6 +1,13 @@
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-sealed class DeckConfig {
+part 'deck_config.mapper.dart';
+
+@MappableClass(
+  discriminatorKey: 'type',
+  includeSubClasses: [LocalDeckConfig, BundledDeckConfig],
+)
+sealed class DeckConfig with DeckConfigMappable {
   final String? projectDir;
   final String? outputDir;
   final String? assetsPath;
@@ -21,9 +28,15 @@ sealed class DeckConfig {
     String? outputDir,
     String? assetsPath,
   }) = BundledDeckConfig;
+
+  factory DeckConfig.fromMap(Map<String, dynamic> map) =>
+      DeckConfigMapper.fromMap(map);
+
+  factory DeckConfig.fromJson(String json) => DeckConfigMapper.fromJson(json);
 }
 
-final class LocalDeckConfig extends DeckConfig {
+@MappableClass(discriminatorValue: 'local')
+final class LocalDeckConfig extends DeckConfig with LocalDeckConfigMappable {
   final String slidesPath;
   final bool watch;
 
@@ -36,7 +49,9 @@ final class LocalDeckConfig extends DeckConfig {
   });
 }
 
-final class BundledDeckConfig extends DeckConfig {
+@MappableClass(discriminatorValue: 'bundle')
+final class BundledDeckConfig extends DeckConfig
+    with BundledDeckConfigMappable {
   final String deckAssetPath;
 
   const BundledDeckConfig({

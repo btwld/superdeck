@@ -1,10 +1,15 @@
+import 'package:dart_mappable/dart_mappable.dart';
+
 import './schemas/wizard_context_keys.dart';
+
+part 'wizard_context.mapper.dart';
 
 /// Typed representation of wizard context data used for generation.
 ///
 /// Keeps dynamic maps at the AI boundary while providing type safety
 /// in domain/business logic.
-class WizardContext {
+@MappableClass(ignoreNull: true)
+class WizardContext with WizardContextMappable {
   final String? topic;
   final String? audience;
   final String? approach;
@@ -33,37 +38,6 @@ class WizardContext {
     this.imageStyleDescription,
   });
 
-  WizardContext copyWith({
-    String? topic,
-    String? audience,
-    String? approach,
-    List<String>? emphasis,
-    int? slideCount,
-    String? style,
-    List<String>? colors,
-    String? headlineFont,
-    String? bodyFont,
-    String? imageStyleId,
-    String? imageStyleName,
-    String? imageStyleDescription,
-  }) {
-    return WizardContext(
-      topic: topic ?? this.topic,
-      audience: audience ?? this.audience,
-      approach: approach ?? this.approach,
-      emphasis: emphasis ?? this.emphasis,
-      slideCount: slideCount ?? this.slideCount,
-      style: style ?? this.style,
-      colors: colors ?? this.colors,
-      headlineFont: headlineFont ?? this.headlineFont,
-      bodyFont: bodyFont ?? this.bodyFont,
-      imageStyleId: imageStyleId ?? this.imageStyleId,
-      imageStyleName: imageStyleName ?? this.imageStyleName,
-      imageStyleDescription:
-          imageStyleDescription ?? this.imageStyleDescription,
-    );
-  }
-
   /// Merge [other] into this context, preferring non-null values from [other].
   WizardContext merge(WizardContext other) {
     return WizardContext(
@@ -84,6 +58,7 @@ class WizardContext {
   }
 
   /// Convert to a map using [WizardContextKeys].
+  @override
   Map<String, dynamic> toMap() {
     final map = <String, dynamic>{};
 
@@ -112,22 +87,40 @@ class WizardContext {
 
   /// Parse a [WizardContext] from a loose map.
   factory WizardContext.fromMap(Map<String, dynamic> map) {
-    return WizardContext(
-      topic: _stringOrNull(map[WizardContextKeys.topic]),
-      audience: _stringOrNull(map[WizardContextKeys.audience]),
-      approach: _stringOrNull(map[WizardContextKeys.approach]),
-      emphasis: _stringListOrNull(map[WizardContextKeys.emphasis]),
-      slideCount: _intOrNull(map[WizardContextKeys.slideCount]),
-      style: _stringOrNull(map[WizardContextKeys.style]),
-      colors: _stringListOrNull(map[WizardContextKeys.colors]),
-      headlineFont: _stringOrNull(map[WizardContextKeys.headlineFont]),
-      bodyFont: _stringOrNull(map[WizardContextKeys.bodyFont]),
-      imageStyleId: _stringOrNull(map[WizardContextKeys.imageStyleId]),
-      imageStyleName: _stringOrNull(map[WizardContextKeys.imageStyleName]),
-      imageStyleDescription: _stringOrNull(
+    return WizardContextMapper.fromMap({
+      WizardContextKeys.topic: _stringOrNull(map[WizardContextKeys.topic]),
+      WizardContextKeys.audience: _stringOrNull(
+        map[WizardContextKeys.audience],
+      ),
+      WizardContextKeys.approach: _stringOrNull(
+        map[WizardContextKeys.approach],
+      ),
+      WizardContextKeys.emphasis: _stringListOrNull(
+        map[WizardContextKeys.emphasis],
+      ),
+      WizardContextKeys.slideCount: _intOrNull(
+        map[WizardContextKeys.slideCount],
+      ),
+      WizardContextKeys.style: _stringOrNull(map[WizardContextKeys.style]),
+      WizardContextKeys.colors: _stringListOrNull(
+        map[WizardContextKeys.colors],
+      ),
+      WizardContextKeys.headlineFont: _stringOrNull(
+        map[WizardContextKeys.headlineFont],
+      ),
+      WizardContextKeys.bodyFont: _stringOrNull(
+        map[WizardContextKeys.bodyFont],
+      ),
+      WizardContextKeys.imageStyleId: _stringOrNull(
+        map[WizardContextKeys.imageStyleId],
+      ),
+      WizardContextKeys.imageStyleName: _stringOrNull(
+        map[WizardContextKeys.imageStyleName],
+      ),
+      WizardContextKeys.imageStyleDescription: _stringOrNull(
         map[WizardContextKeys.imageStyleDescription],
       ),
-    );
+    });
   }
 }
 

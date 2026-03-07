@@ -168,6 +168,30 @@ Agents should read this file before substantive work and update it as work progr
 ## Session Log
 
 ### 2026-03-07
+- Started the `dart_mappable` data-model migration slice:
+  - scope limited to concrete DTOs/configuration models in `packages/core`, `packages/genui`, and `packages/superdeck`
+  - ACK remains the schema/validation layer; widget-bearing presentation/runtime types stay out of scope
+  - migration strategy is incremental with compatibility wrappers kept where existing parse/toMap behavior must remain stable
+- Completed the `dart_mappable` data-model migration slice:
+  - migrated `packages/core` deck/workspace/slide/asset/block data models to `dart_mappable` while preserving existing ACK parse/schema entrypoints and custom wire-shape helpers
+  - migrated `WizardContext`, `UserActionPayload`, and runtime `DeckConfig` sealed configs to `dart_mappable`
+  - kept custom decode paths where generated mapping would have changed behavior (`SlideOptions.args`, `WidgetBlock.args`, `WizardContext` normalization)
+  - added direct regression coverage for `WizardContext` mapping and `DeckConfig` discriminator round-tripping
+- Follow-up cleanup on the `dart_mappable` slice:
+  - replaced remaining `static fromMap(...)` wrappers on migrated DTOs with named factory constructors where possible
+  - removed redundant manual `toMap()` overrides on standard DTO/config types so they now use generated mapper output directly
+  - kept the remaining custom block mapping paths only where they still preserve non-standard wire behavior
+  - did one additional simplification pass to collapse more standard DTO decode paths onto direct generated mapper decoding (`Slide`, generated asset references, and similar non-custom shapes)
+- Validation status for the `dart_mappable` slice:
+  - `../../.fvm/flutter_sdk/bin/dart run build_runner build --delete-conflicting-outputs` in `packages/core`
+  - `../../.fvm/flutter_sdk/bin/flutter pub run build_runner build --delete-conflicting-outputs` in `packages/genui`
+  - `../../.fvm/flutter_sdk/bin/flutter pub run build_runner build --delete-conflicting-outputs` in `packages/superdeck`
+  - `../../.fvm/flutter_sdk/bin/dart analyze lib test --fatal-infos` in `packages/core`
+  - `../../.fvm/flutter_sdk/bin/flutter analyze lib test --fatal-infos` in `packages/genui`
+  - `../../.fvm/flutter_sdk/bin/flutter analyze lib test --fatal-infos` in `packages/superdeck`
+  - `../../.fvm/flutter_sdk/bin/dart test` in `packages/core`
+  - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/genui`
+  - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/superdeck`
 - Started the `SuperDeck v2: Pending Simplification & Naming Cleanup` execution plan:
   - applying five slices in order (`@internal` annotations, `WidgetDefinition` rename, `DeckConfig` merge, public barrel cleanup, and `StyleConfigLoader` deletion)
   - running final verification with analyze/tests plus stale-reference grep gates

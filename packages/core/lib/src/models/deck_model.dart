@@ -1,43 +1,30 @@
 import 'package:ack/ack.dart';
-import 'package:collection/collection.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 
 import '../deck_workspace.dart';
 import 'slide_model.dart';
 
-class Deck {
+part 'deck_model.mapper.dart';
+
+@MappableClass()
+class Deck with DeckMappable {
   final List<Slide> slides;
   final DeckWorkspace configuration;
 
   const Deck({required this.slides, required this.configuration});
 
-  Deck copyWith({List<Slide>? slides, DeckWorkspace? configuration}) {
-    return Deck(
-      slides: slides ?? this.slides,
-      configuration: configuration ?? this.configuration,
-    );
-  }
-
-  Map<String, Object?> toMap() {
-    return {
-      'slides': slides.map((s) => s.toMap()).toList(),
-      'configuration': configuration.toMap(),
-    };
-  }
-
-  static Deck fromMap(Map<String, Object?> map) {
+  factory Deck.fromMap(Map<String, Object?> map) {
     final configurationValue = map['configuration'];
-    return Deck(
-      slides: (map['slides'] as List<dynamic>? ?? const [])
+    return DeckMapper.fromMap({
+      'slides': (map['slides'] as List<dynamic>? ?? const [])
           .map(
             (slide) => Slide.fromMap(Map<String, Object?>.from(slide as Map)),
           )
           .toList(),
-      configuration: configurationValue is Map
-          ? DeckWorkspace.fromMap(
-              Map<String, Object?>.from(configurationValue),
-            )
+      'configuration': configurationValue is Map
+          ? DeckWorkspace.fromMap(Map<String, Object?>.from(configurationValue))
           : DeckWorkspace(),
-    );
+    });
   }
 
   /// Ack schema for validating complete deck/presentation JSON.
@@ -48,18 +35,6 @@ class Deck {
 
   static Deck parse(Map<String, Object?> map) {
     final payload = schema.parse(map) as Map<String, Object?>;
-    return fromMap(payload);
+    return Deck.fromMap(payload);
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Deck &&
-          runtimeType == other.runtimeType &&
-          const DeepCollectionEquality().equals(slides, other.slides) &&
-          configuration == other.configuration;
-
-  @override
-  int get hashCode =>
-      Object.hash(const DeepCollectionEquality().hash(slides), configuration);
 }

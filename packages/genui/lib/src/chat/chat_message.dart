@@ -1,5 +1,9 @@
 import 'dart:convert';
 
+import 'package:dart_mappable/dart_mappable.dart';
+
+part 'chat_message.mapper.dart';
+
 /// Sealed class hierarchy for chat messages in the SuperDeck AI application.
 ///
 /// Uses sealed classes for exhaustive pattern matching on message types.
@@ -62,7 +66,8 @@ final class SuperdeckJsonDebugMessage extends SuperdeckChatMessage {
 ///   }
 /// }
 /// ```
-class UserActionPayload {
+@MappableClass()
+class UserActionPayload with UserActionPayloadMappable {
   final String actionName;
   final Map<String, dynamic> context;
 
@@ -90,7 +95,10 @@ class UserActionPayload {
           ? context
           : <String, dynamic>{};
 
-      return UserActionPayload(actionName: name, context: contextMap);
+      return UserActionPayloadMapper.fromMap({
+        'actionName': name,
+        'context': contextMap,
+      });
     } catch (_) {
       return null;
     }

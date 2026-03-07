@@ -2,14 +2,17 @@ import 'dart:io';
 
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:path/path.dart' as p;
 
 import 'contracts/deck_artifacts.dart';
 
 part 'deck_workspace.g.dart';
+part 'deck_workspace.mapper.dart';
 
 @AckModel()
-final class DeckWorkspace {
+@MappableClass(ignoreNull: true)
+final class DeckWorkspace with DeckWorkspaceMappable {
   final String? projectDir;
   final String? slidesPath;
   final String? outputDir;
@@ -91,41 +94,13 @@ final class DeckWorkspace {
 
   File get pubspecFile => File(p.join(_baseDir, 'pubspec.yaml'));
 
-  DeckWorkspace copyWith({
-    String? projectDir,
-    String? slidesPath,
-    String? outputDir,
-    String? assetsPath,
-  }) {
-    return DeckWorkspace(
-      projectDir: projectDir ?? this.projectDir,
-      slidesPath: slidesPath ?? this.slidesPath,
-      outputDir: outputDir ?? this.outputDir,
-      assetsPath: assetsPath ?? this.assetsPath,
-    );
-  }
-
-  Map<String, Object?> toMap() {
-    return {
-      if (projectDir != null) 'projectDir': projectDir,
-      if (slidesPath != null) 'slidesPath': slidesPath,
-      if (outputDir != null) 'outputDir': outputDir,
-      if (assetsPath != null) 'assetsPath': assetsPath,
-    };
-  }
-
-  static DeckWorkspace fromMap(Map<String, Object?> map) {
-    return DeckWorkspace(
-      projectDir: map['projectDir'] as String?,
-      slidesPath: map['slidesPath'] as String?,
-      outputDir: map['outputDir'] as String?,
-      assetsPath: map['assetsPath'] as String?,
-    );
+  factory DeckWorkspace.fromMap(Map<String, Object?> map) {
+    return DeckWorkspaceMapper.fromMap(Map<String, dynamic>.from(map));
   }
 
   static DeckWorkspace parse(Map<String, Object?> map) {
     schema.parse(map);
-    return fromMap(map);
+    return DeckWorkspace.fromMap(map);
   }
 
   static final schema = deckWorkspaceSchema.extend({
@@ -136,18 +111,4 @@ final class DeckWorkspace {
   }).passthrough();
 
   static File get defaultFile => File('superdeck.yaml');
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DeckWorkspace &&
-          runtimeType == other.runtimeType &&
-          projectDir == other.projectDir &&
-          slidesPath == other.slidesPath &&
-          outputDir == other.outputDir &&
-          assetsPath == other.assetsPath;
-
-  @override
-  int get hashCode =>
-      Object.hash(projectDir, slidesPath, outputDir, assetsPath);
 }

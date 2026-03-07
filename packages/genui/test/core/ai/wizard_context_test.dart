@@ -31,4 +31,32 @@ void main() {
       expect(parseSlideCount(0), isNull);
     });
   });
+
+  group('WizardContext mapping', () {
+    test('toMap omits null fields and preserves populated values', () {
+      const context = WizardContext(
+        topic: 'Launch plan',
+        slideCount: 12,
+        colors: ['#111111', '#eeeeee'],
+      );
+
+      expect(context.toMap(), {
+        WizardContextKeys.topic: 'Launch plan',
+        WizardContextKeys.slideCount: 12,
+        WizardContextKeys.colors: ['#111111', '#eeeeee'],
+      });
+    });
+
+    test('fromMap normalizes values before materializing the model', () {
+      final context = WizardContext.fromMap({
+        WizardContextKeys.topic: '  Demo  ',
+        WizardContextKeys.slideCount: '8',
+        WizardContextKeys.emphasis: 'clarity',
+      });
+
+      expect(context.topic, 'Demo');
+      expect(context.slideCount, 8);
+      expect(context.emphasis, ['clarity']);
+    });
+  });
 }

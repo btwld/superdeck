@@ -1,17 +1,19 @@
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
-import 'package:collection/collection.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 
 import 'block_model.dart';
 
 part 'slide_model.g.dart';
+part 'slide_model.mapper.dart';
 
 /// Represents a single slide in a presentation.
 ///
 /// A slide contains sections of content blocks, optional configuration options,
 /// and any speaker notes. Each slide is uniquely identified by a key.
 @AckModel(additionalProperties: true)
-class Slide {
+@MappableClass(ignoreNull: true)
+class Slide with SlideMappable {
   /// Unique identifier for this slide, typically generated from content hash.
   final String key;
 
@@ -31,46 +33,8 @@ class Slide {
     this.notes = const [],
   });
 
-  Slide copyWith({
-    String? key,
-    SlideOptions? options,
-    List<SectionBlock>? sections,
-    List<String>? notes,
-  }) {
-    return Slide(
-      key: key ?? this.key,
-      options: options ?? this.options,
-      sections: sections ?? this.sections,
-      notes: notes ?? this.notes,
-    );
-  }
-
-  Map<String, Object?> toMap() {
-    return {
-      'key': key,
-      if (options != null) 'options': options!.toMap(),
-      'sections': sections.map((s) => s.toMap()).toList(),
-      'notes': notes,
-    };
-  }
-
-  static Slide fromMap(Map<String, Object?> map) {
-    final optionsValue = map['options'];
-
-    return Slide(
-      key: map['key'] as String,
-      options: optionsValue is Map
-          ? SlideOptions.fromMap(Map<String, Object?>.from(optionsValue))
-          : null,
-      sections: (map['sections'] as List<dynamic>? ?? const [])
-          .map(
-            (section) =>
-                SectionBlock.fromMap(Map<String, Object?>.from(section as Map)),
-          )
-          .toList(),
-      notes: (map['notes'] as List<dynamic>? ?? const []).cast<String>(),
-    );
-  }
+  factory Slide.fromMap(Map<String, Object?> map) =>
+      SlideMapper.fromMap(Map<String, dynamic>.from(map));
 
   /// Validation schema for slide data.
   static final schema = slideSchema.extend({
@@ -81,7 +45,7 @@ class Slide {
 
   static Slide parse(Map<String, Object?> map) {
     final payload = schema.parse(map) as Map<String, Object?>;
-    return fromMap(payload);
+    return Slide.fromMap(payload);
   }
 
   /// Creates an error slide to display errors in the presentation.
@@ -112,31 +76,14 @@ ${error.toString()}
       ],
     );
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Slide &&
-          runtimeType == other.runtimeType &&
-          key == other.key &&
-          options == other.options &&
-          const DeepCollectionEquality().equals(sections, other.sections) &&
-          const ListEquality().equals(notes, other.notes);
-
-  @override
-  int get hashCode => Object.hash(
-    key,
-    options,
-    const DeepCollectionEquality().hash(sections),
-    const ListEquality().hash(notes),
-  );
 }
 
 /// Configuration options for a slide.
 ///
 /// Provides metadata and styling information for individual slides.
 @AckModel(additionalProperties: true, additionalPropertiesField: 'args')
-class SlideOptions {
+@MappableClass(ignoreNull: true, hook: UnmappedPropertiesHook('args'))
+class SlideOptions with SlideOptionsMappable {
   /// The title of the slide, if any.
   final String? title;
 
@@ -159,41 +106,8 @@ class SlideOptions {
     this.args = const {},
   });
 
-  SlideOptions copyWith({
-    String? title,
-    String? style,
-    String? template,
-    Map<String, Object?>? args,
-  }) {
-    return SlideOptions(
-      title: title ?? this.title,
-      style: style ?? this.style,
-      template: template ?? this.template,
-      args: args ?? this.args,
-    );
-  }
-
-  Map<String, Object?> toMap() {
-    return {
-      if (title != null) 'title': title,
-      if (style != null) 'style': style,
-      if (template != null) 'template': template,
-      ...args,
-    };
-  }
-
-  static SlideOptions fromMap(Map<String, Object?> map) {
-    final args = Map<String, Object?>.from(map)
-      ..remove('title')
-      ..remove('style')
-      ..remove('template');
-
-    return SlideOptions(
-      title: map['title'] as String?,
-      style: map['style'] as String?,
-      template: map['template'] as String?,
-      args: args,
-    );
+  factory SlideOptions.fromMap(Map<String, Object?> map) {
+    return SlideOptionsMapper.fromMap(Map<String, dynamic>.from(map));
   }
 
   /// Validation schema for slide options.
@@ -205,20 +119,6 @@ class SlideOptions {
 
   static SlideOptions parse(Map<String, Object?> map) {
     final payload = schema.parse(map) as Map<String, Object?>;
-    return fromMap(payload);
+    return SlideOptions.fromMap(payload);
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SlideOptions &&
-          runtimeType == other.runtimeType &&
-          title == other.title &&
-          style == other.style &&
-          template == other.template &&
-          const MapEquality().equals(args, other.args);
-
-  @override
-  int get hashCode =>
-      Object.hash(title, style, template, const MapEquality().hash(args));
 }
