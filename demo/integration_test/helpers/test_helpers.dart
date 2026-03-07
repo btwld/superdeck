@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
-
 import 'package:superdeck_example/src/parts/background.dart';
 import 'package:superdeck_example/src/parts/footer.dart';
 import 'package:superdeck_example/src/parts/header.dart';
@@ -41,8 +40,9 @@ class TestApp extends StatelessWidget {
     SignalsObserver.instance = null;
     WidgetsBinding.instance.ensureSemantics();
     _runtime = await SuperDeckRuntime.create(
-      source: const DeckSource.local(slidesPath: 'slides.md', watch: false),
-      runtimeConfig: const DeckRuntimeConfig(
+      config: const DeckConfig.local(
+        slidesPath: 'slides.md',
+        watch: false,
         projectDir: '.',
         outputDir: '.superdeck',
         assetsPath: 'assets',

@@ -5,19 +5,19 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'tokens/colors.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../runtime/superdeck_runtime.dart';
 import '../runtime/bundled_deck_service.dart';
+import '../runtime/deck_config.dart';
 import '../runtime/deck_controller.dart';
-import '../runtime/deck_source.dart';
 import '../runtime/superdeck_handle.dart';
+import '../runtime/superdeck_runtime.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/constants.dart';
 import '../utils/deck_watcher.dart';
 import 'app_shell.dart';
 import 'theme.dart';
+import 'tokens/colors.dart';
 
 class SuperDeckApp extends StatelessWidget {
   const SuperDeckApp({super.key, required this.runtime});
@@ -72,9 +72,9 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
     super.initState();
 
     final workspace = widget.runtime.workspace;
-    final deckService = switch (widget.runtime.source) {
-      LocalDeckSource() => DeckService(configuration: workspace),
-      BundledDeckSource() => BundledDeckService(
+    final deckService = switch (widget.runtime.config) {
+      LocalDeckConfig() => DeckService(configuration: workspace),
+      BundledDeckConfig() => BundledDeckService(
         configuration: workspace,
         deckAssetPath: widget.runtime.bundledDeckAssetPath,
       ),
@@ -104,8 +104,8 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
       } catch (error) {
         _logger.warning('Deck watcher failed to start: $error');
       }
-    } else if (!widget.runtime.shouldWatch) {
-      _logger.info('Deck watcher disabled via DeckSource.local(watch: false)');
+    } else if (widget.runtime.config is LocalDeckConfig) {
+      _logger.info('Deck watcher disabled via DeckConfig.local(watch: false)');
     }
   }
 

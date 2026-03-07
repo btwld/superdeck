@@ -14,9 +14,19 @@ import 'src/widgets/demo_widgets.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   const extensions = [GenUiPlugin()];
-  final source = kIsWeb
-      ? const DeckSource.bundle()
-      : const DeckSource.local(slidesPath: 'slides.md', watch: true);
+  final config = kIsWeb
+      ? const DeckConfig.bundle(
+          projectDir: '.',
+          outputDir: '.superdeck',
+          assetsPath: 'assets',
+        )
+      : const DeckConfig.local(
+          slidesPath: 'slides.md',
+          watch: true,
+          projectDir: '.',
+          outputDir: '.superdeck',
+          assetsPath: 'assets',
+        );
 
   // Disable signals logging to reduce console noise
   SignalsObserver.instance = null;
@@ -25,15 +35,10 @@ void main() async {
   WidgetsBinding.instance.ensureSemantics();
 
   final runtime = await SuperDeckRuntime.create(
-    source: source,
-    runtimeConfig: const DeckRuntimeConfig(
-      projectDir: '.',
-      outputDir: '.superdeck',
-      assetsPath: 'assets',
-    ),
+    config: config,
     theme: DeckTheme(
       baseStyle: borderedStyle(),
-      widgets: {...demoWidgets, 'twitter': const _TwitterWidgetDefinition()},
+      widgets: {...demoWidgets, 'twitter': const _TwitterBlockDefinition()},
       styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
       templates: {
         'corporate': corporateTemplate(),
@@ -79,8 +84,8 @@ class TwitterWidget extends StatelessWidget {
   }
 }
 
-class _TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const _TwitterWidgetDefinition();
+class _TwitterBlockDefinition extends BlockDefinition<Map<String, Object?>> {
+  const _TwitterBlockDefinition();
 
   @override
   Map<String, Object?> parse(Map<String, Object?> args) {

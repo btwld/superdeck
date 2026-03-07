@@ -8,7 +8,7 @@ void main() {
       final sharedHandle = SuperDeckHandle();
       final initialRuntime = SuperDeckRuntime.forTesting(
         handle: sharedHandle,
-        runtimeConfig: const DeckRuntimeConfig(outputDir: '.superdeck-a'),
+        config: const DeckConfig.bundle(outputDir: '.superdeck-a'),
       );
 
       await tester.pumpWidget(SuperDeckApp(runtime: initialRuntime));
@@ -18,7 +18,7 @@ void main() {
 
       final replacementRuntime = SuperDeckRuntime.forTesting(
         handle: sharedHandle,
-        runtimeConfig: const DeckRuntimeConfig(outputDir: '.superdeck-b'),
+        config: const DeckConfig.bundle(outputDir: '.superdeck-b'),
       );
 
       await tester.pumpWidget(SuperDeckApp(runtime: replacementRuntime));

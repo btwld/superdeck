@@ -14,22 +14,20 @@ class PresentationDeckHost extends StatefulWidget {
   PresentationDeckHost({
     super.key,
     Widget Function(SuperDeckRuntime runtime)? deckAppBuilder,
-    Future<SuperDeckRuntime> Function(DeckTheme theme)?
-    runtimeLoader,
+    Future<SuperDeckRuntime> Function(DeckTheme theme)? runtimeLoader,
   }) : deckAppBuilder =
            deckAppBuilder ?? ((runtime) => SuperDeckApp(runtime: runtime)),
        runtimeLoader =
            runtimeLoader ??
            ((theme) => SuperDeckRuntime.create(
-             source: _kCanRunProcess
-                 ? const DeckSource.local()
-                 : const DeckSource.bundle(),
+             config: _kCanRunProcess
+                 ? const DeckConfig.local()
+                 : const DeckConfig.bundle(),
              theme: theme,
            ));
 
   final Widget Function(SuperDeckRuntime runtime) deckAppBuilder;
-  final Future<SuperDeckRuntime> Function(DeckTheme theme)
-  runtimeLoader;
+  final Future<SuperDeckRuntime> Function(DeckTheme theme) runtimeLoader;
 
   @override
   State<PresentationDeckHost> createState() => _PresentationDeckHostState();
@@ -49,8 +47,7 @@ class _PresentationDeckHostState extends State<PresentationDeckHost> {
   }
 
   Future<SuperDeckRuntime> _runtimeFutureFor(DeckTheme theme) {
-    final canReuseFuture =
-        _runtimeFuture != null && _cachedTheme == theme;
+    final canReuseFuture = _runtimeFuture != null && _cachedTheme == theme;
     if (canReuseFuture) {
       return _runtimeFuture!;
     }

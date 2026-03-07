@@ -5,13 +5,11 @@ import '../presentation/deck_extension.dart';
 import '../presentation/deck_theme.dart';
 import '../utils/app_initialization.dart';
 import '../utils/constants.dart';
-import 'deck_runtime_config.dart';
-import 'deck_source.dart';
+import 'deck_config.dart';
 import 'superdeck_handle.dart';
 
 final class SuperDeckRuntime {
-  final DeckSource source;
-  final DeckRuntimeConfig runtimeConfig;
+  final DeckConfig config;
   final DeckTheme theme;
   final List<DeckExtension> extensions;
   final SuperDeckHandle handle;
@@ -19,8 +17,7 @@ final class SuperDeckRuntime {
   final DeckWorkspace _workspace;
 
   SuperDeckRuntime._({
-    required this.source,
-    required this.runtimeConfig,
+    required this.config,
     required this.theme,
     required this.extensions,
     required this.handle,
@@ -28,15 +25,14 @@ final class SuperDeckRuntime {
   }) : _workspace = workspace;
 
   static Future<SuperDeckRuntime> create({
-    required DeckSource source,
-    DeckRuntimeConfig runtimeConfig = const DeckRuntimeConfig(),
+    required DeckConfig config,
     DeckTheme theme = const DeckTheme(),
     List<DeckExtension> extensions = const <DeckExtension>[],
   }) async {
-    if (kIsWeb && source is LocalDeckSource) {
+    if (kIsWeb && config is LocalDeckConfig) {
       throw UnsupportedError(
-        'DeckSource.local is not supported on web runtimes. '
-        'Use DeckSource.bundle(...) instead.',
+        'DeckConfig.local is not supported on web runtimes. '
+        'Use DeckConfig.bundle(...) instead.',
       );
     }
 
@@ -52,25 +48,18 @@ final class SuperDeckRuntime {
       }
     }
 
-    return _buildRuntime(
-      source: source,
-      runtimeConfig: runtimeConfig,
-      theme: theme,
-      extensions: extensions,
-    );
+    return _buildRuntime(config: config, theme: theme, extensions: extensions);
   }
 
   @visibleForTesting
   static SuperDeckRuntime forTesting({
-    DeckSource source = const DeckSource.bundle(),
-    DeckRuntimeConfig runtimeConfig = const DeckRuntimeConfig(),
+    DeckConfig config = const DeckConfig.bundle(),
     DeckTheme theme = const DeckTheme(),
     List<DeckExtension> extensions = const <DeckExtension>[],
     SuperDeckHandle? handle,
   }) {
     return _buildRuntime(
-      source: source,
-      runtimeConfig: runtimeConfig,
+      config: config,
       theme: theme,
       extensions: extensions,
       handle: handle,
@@ -78,27 +67,25 @@ final class SuperDeckRuntime {
   }
 
   static SuperDeckRuntime _buildRuntime({
-    required DeckSource source,
-    required DeckRuntimeConfig runtimeConfig,
+    required DeckConfig config,
     required DeckTheme theme,
     required List<DeckExtension> extensions,
     SuperDeckHandle? handle,
   }) {
-    final slidesPath = switch (source) {
-      LocalDeckSource(:final slidesPath) => slidesPath,
-      BundledDeckSource() => null,
+    final slidesPath = switch (config) {
+      LocalDeckConfig(:final slidesPath) => slidesPath,
+      BundledDeckConfig() => null,
     };
 
     final configuration = DeckWorkspace(
-      projectDir: runtimeConfig.projectDir,
-      outputDir: runtimeConfig.outputDir,
-      assetsPath: runtimeConfig.assetsPath,
+      projectDir: config.projectDir,
+      outputDir: config.outputDir,
+      assetsPath: config.assetsPath,
       slidesPath: slidesPath,
     );
 
     return SuperDeckRuntime._(
-      source: source,
-      runtimeConfig: runtimeConfig,
+      config: config,
       theme: theme,
       extensions: extensions,
       handle: handle ?? SuperDeckHandle(),
@@ -110,20 +97,20 @@ final class SuperDeckRuntime {
   DeckWorkspace get workspace => _workspace;
 
   @internal
-  bool get shouldWatch => switch (source) {
-    LocalDeckSource(:final watch) => watch,
-    BundledDeckSource() => false,
+  bool get shouldWatch => switch (config) {
+    LocalDeckConfig(:final watch) => watch,
+    BundledDeckConfig() => false,
   };
 
   @internal
-  bool get canWatch => source is LocalDeckSource && kCanRunProcess;
+  bool get canWatch => config is LocalDeckConfig && kCanRunProcess;
 
   @internal
-  bool get usesLocalSource => source is LocalDeckSource;
+  bool get usesLocalSource => config is LocalDeckConfig;
 
   @internal
-  String get bundledDeckAssetPath => switch (source) {
-    BundledDeckSource(:final deckAssetPath) => deckAssetPath,
+  String get bundledDeckAssetPath => switch (config) {
+    BundledDeckConfig(:final deckAssetPath) => deckAssetPath,
     _ => DeckArtifacts.bundledDeckAssetPath,
   };
 }
