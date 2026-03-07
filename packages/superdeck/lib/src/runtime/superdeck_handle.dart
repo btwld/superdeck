@@ -23,8 +23,7 @@ class SuperDeckHandle {
     return controller;
   }
 
-  ReadonlySignal<List<SlideData>> get slides =>
-      _attachedController.slides;
+  ReadonlySignal<List<SlideData>> get slides => _attachedController.slides;
   ReadonlySignal<SlideData?> get currentSlide =>
       _attachedController.currentSlide;
   ReadonlySignal<int> get currentIndex => _attachedController.currentIndex;
@@ -44,6 +43,7 @@ class SuperDeckHandle {
 
   Future<void> previousSlide() => _attachedController.previousSlide();
 
+  @internal
   Future<void> handleNavigationEvent(NavigationEvent event) {
     return _attachedController.handleNavigationEvent(event);
   }
@@ -70,6 +70,7 @@ class SuperDeckHandle {
     _attachedController.generateThumbnails(context, force: force);
   }
 
+  @internal
   void exportPdf(BuildContext context) {
     PdfExportDialogScreen.show(context);
   }
