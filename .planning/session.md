@@ -167,6 +167,14 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Session Log
 
+### 2026-03-07 (simplification pass)
+- Completed repo-wide simplification pass after `dart_mappable` migration:
+  - **Phase 1**: Removed dead `BuildContextX` getters (`theme`, `textTheme`, `colorScheme`) from `packages/superdeck/lib/src/ui/extensions.dart`; kept `isSmall`.
+  - **Phase 2**: Removed `toJson()` from `DartPadTheme`, `ImageFit`, `ContentAlignment`, `AssetExtension` (all had zero production call sites; `fromJson()` kept for all three block enums since used in production parsing). Removed `AssetExtension.fromJson()` (no production callers; `tryParse` is the preferred path).
+  - **Phase 3**: Replaced hand-written delegation wrappers (`GeneratedAsset.fromMap`, `GeneratedAssetsReference.fromMap`, `DeckConfig.fromMap/fromJson`) with zero-copy static field aliases pointing to the mapper entry points (e.g. `static final fromMap = GeneratedAssetMapper.fromMap`). Call sites unchanged.
+  - **Dead extensions confirmed removed**: `StringContentX.toBlock()` and `BlockX.flex()/scrollable()` (already removed in prior session) have zero call sites confirmed.
+  - Validation: `dart analyze lib test --fatal-infos` clean for both `packages/core` and `packages/superdeck`; 711 core tests + 631 superdeck tests all pass.
+
 ### 2026-03-07
 - Started the `dart_mappable` data-model migration slice:
   - scope limited to concrete DTOs/configuration models in `packages/core`, `packages/genui`, and `packages/superdeck`
@@ -1014,3 +1022,25 @@ Agents should read this file before substantive work and update it as work progr
     - review runtime/public model boundaries for overlap or unnecessary separation
     - validate whether `DeckSource`, `DeckRuntimeConfig`, and `DeckWorkspace` have clean ownership
     - identify remaining redundancy or under-specified responsibilities before further API cleanup
+
+### 2026-03-07 (local folder usage audit)
+- Reviewed local root folders and hidden tooling state requested by user (`.tasks`, `.specify`, `specs/`, `.claude/*`).
+- Findings:
+  - `.tasks` is empty (`0B`) and has no references in repo code/docs/config.
+  - `.specify` contains only empty placeholder directories (`memory/`, `scripts/bash/`, `templates/`) and has no references in repo code/docs/config.
+  - `specs/001-multi-presentation-support/contracts` exists as an empty directory tree and has no references in repo code/docs/config.
+  - `.claude` contains local assistant metadata (`settings.local.json`) plus empty `commands/` and `reviews/` folders; it is local tooling state and not part of project runtime/build.
+- Cleanup guidance: safe to remove `.tasks`, `.specify`, and `specs/` if these local workflows are no longer needed.
+
+### 2026-03-07 (dart_mappable simplification pass — completed)
+- Completed the repo-wide cleanup after the dart_mappable migration:
+  - Phase 1: Removed unused `BuildContextX` getters (`theme`, `textTheme`, `colorScheme`) from `packages/superdeck/lib/src/ui/extensions.dart`; kept `isSmall` (active use in `app_shell.dart`)
+  - Phase 2: Removed dead `toJson()` methods from `DartPadTheme`, `ImageFit`, `ContentAlignment` enums and `AssetExtension.toJson/fromJson`; kept all `fromJson()` enum methods (active production use in widget deserialization)
+  - Phase 3: Replaced delegation factory wrappers with zero-copy static field aliases (`static final fromMap = Mapper.fromMap`) on `GeneratedAsset`, `GeneratedAssetsReference`, and `DeckConfig`; call sites remain at model level, not mapper level
+  - Full audit follow-up: Deleted `DeckConfig.fromJson` (0 call sites) and `Deck.parse` (0 production call sites, test-only); migrated duplicate test coverage into existing `fromMap` / `schema` groups; removed the duplicate `configuration null-field parsing` test group
+- Left intentionally unchanged: `Slide.fromMap`, `SlideOptions.fromMap`, `DeckWorkspace.fromMap` (genuine type-coercion wrappers with production call sites)
+- Validation: `dart analyze --fatal-infos` passes on both `packages/core` and `packages/superdeck`; core 706 tests pass, superdeck 631 tests pass
+- Completed local cleanup requested after the folder-usage audit:
+  - removed `.tasks`, `.specify`, and `specs/` from the repository root
+  - rationale: all three were empty/unreferenced local placeholders from prior spec-kit style workflow
+  - kept `.claude/` intact because it still contains active local assistant settings (`settings.local.json`)

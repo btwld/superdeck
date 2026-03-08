@@ -199,8 +199,6 @@ enum DartPadTheme {
 
   static final schema = ackEnum(values);
 
-  String toJson() => name;
-
   static DartPadTheme fromJson(Object value) {
     if (value is DartPadTheme) return value;
     if (value is! String) {
@@ -225,8 +223,6 @@ enum ImageFit {
   scaleDown;
 
   static final schema = ackEnum(values);
-
-  String toJson() => name;
 
   static ImageFit fromJson(Object value) {
     if (value is ImageFit) return value;
@@ -312,8 +308,6 @@ enum ContentAlignment {
   bottomRight;
 
   static final schema = ackEnum(values);
-
-  String toJson() => name;
 
   static ContentAlignment fromJson(Object value) {
     if (value is ContentAlignment) return value;

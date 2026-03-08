@@ -1,4 +1,3 @@
-import 'package:ack/ack.dart';
 import 'package:superdeck_core/src/deck_workspace.dart';
 import 'package:superdeck_core/src/models/block_model.dart';
 import 'package:superdeck_core/src/models/deck_model.dart';
@@ -85,10 +84,7 @@ void main() {
 
       group('toMap', () {
         test('serializes empty deck', () {
-          final deck = Deck(
-            slides: const [],
-            configuration: DeckWorkspace(),
-          );
+          final deck = Deck(slides: const [], configuration: DeckWorkspace());
           final map = deck.toMap();
 
           expect(map['slides'], isEmpty);
@@ -278,28 +274,6 @@ void main() {
         });
       });
 
-      group('configuration null-field parsing', () {
-        test(
-          'Deck.parse throws AckException when configuration optional fields are explicitly null',
-          () {
-            for (final field in [
-              'projectDir',
-              'slidesPath',
-              'outputDir',
-              'assetsPath',
-            ]) {
-              expect(
-                () => Deck.parse({
-                  'slides': <dynamic>[],
-                  'configuration': {field: null},
-                }),
-                throwsA(isA<AckException>()),
-              );
-            }
-          },
-        );
-      });
-
       group('round-trip serialization', () {
         test('preserves data through toMap/fromMap', () {
           final original = Deck(
@@ -330,44 +304,8 @@ void main() {
         });
       });
 
-      group('parse', () {
-        test('parses valid map', () {
-          final map = {
-            'slides': [
-              {'key': 'parsed'},
-            ],
-          };
-          final deck = Deck.parse(map);
-
-          expect(deck.slides.length, 1);
-          expect(deck.slides[0].key, 'parsed');
-        });
-
-        test('parses map with all fields', () {
-          final map = {
-            'slides': [
-              {
-                'key': 'full',
-                'options': {'title': 'Title'},
-                'sections': [
-                  {
-                    'type': 'section',
-                    'blocks': [
-                      {'type': 'block', 'content': 'Content'},
-                    ],
-                  },
-                ],
-                'notes': ['Note'],
-              },
-            ],
-          };
-          final deck = Deck.parse(map);
-
-          expect(deck.slides[0].key, 'full');
-          expect(deck.slides[0].options?.title, 'Title');
-        });
-
-        test('parses deck with widget blocks', () {
+      group('fromMap widget blocks', () {
+        test('deserializes deck with widget blocks', () {
           final map = {
             'slides': [
               {
@@ -388,35 +326,13 @@ void main() {
               },
             ],
           };
-          final deck = Deck.parse(map);
+          final deck = Deck.fromMap(map);
 
           expect(deck.slides.length, 1);
           final section = deck.slides[0].sections[0];
           expect(section.blocks.length, 1);
           expect(section.blocks[0], isA<WidgetBlock>());
           expect((section.blocks[0] as WidgetBlock).name, 'image');
-        });
-
-        test('throws when slides is missing', () {
-          expect(
-            () => Deck.parse({}),
-            throwsA(
-              isA<AckException>().having(
-                (error) => error.toJson(),
-                'message',
-                contains('slides'),
-              ),
-            ),
-          );
-        });
-
-        test('throws when unsupported legacy schemaVersion is present', () {
-          final map = <String, dynamic>{
-            'schemaVersion': 1,
-            'slides': <dynamic>[],
-          };
-
-          expect(() => Deck.parse(map), throwsA(isA<AckException>()));
         });
       });
 

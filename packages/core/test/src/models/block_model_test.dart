@@ -4,16 +4,6 @@ import 'package:test/test.dart';
 void main() {
   group('Block Model', () {
     group('DartPadTheme', () {
-      group('toJson', () {
-        test('dark returns "dark"', () {
-          expect(DartPadTheme.dark.toJson(), 'dark');
-        });
-
-        test('light returns "light"', () {
-          expect(DartPadTheme.light.toJson(), 'light');
-        });
-      });
-
       group('fromJson', () {
         test('parses "dark"', () {
           expect(DartPadTheme.fromJson('dark'), DartPadTheme.dark);
@@ -53,18 +43,6 @@ void main() {
     });
 
     group('ImageFit', () {
-      group('toJson', () {
-        test('returns correct name for each value', () {
-          expect(ImageFit.fill.toJson(), 'fill');
-          expect(ImageFit.contain.toJson(), 'contain');
-          expect(ImageFit.cover.toJson(), 'cover');
-          expect(ImageFit.fitWidth.toJson(), 'fitWidth');
-          expect(ImageFit.fitHeight.toJson(), 'fitHeight');
-          expect(ImageFit.none.toJson(), 'none');
-          expect(ImageFit.scaleDown.toJson(), 'scaleDown');
-        });
-      });
-
       group('fromJson', () {
         test('parses all values', () {
           expect(ImageFit.fromJson('fill'), ImageFit.fill);
@@ -130,20 +108,6 @@ void main() {
     });
 
     group('ContentAlignment', () {
-      group('toJson', () {
-        test('returns correct name for each value', () {
-          expect(ContentAlignment.topLeft.toJson(), 'topLeft');
-          expect(ContentAlignment.topCenter.toJson(), 'topCenter');
-          expect(ContentAlignment.topRight.toJson(), 'topRight');
-          expect(ContentAlignment.centerLeft.toJson(), 'centerLeft');
-          expect(ContentAlignment.center.toJson(), 'center');
-          expect(ContentAlignment.centerRight.toJson(), 'centerRight');
-          expect(ContentAlignment.bottomLeft.toJson(), 'bottomLeft');
-          expect(ContentAlignment.bottomCenter.toJson(), 'bottomCenter');
-          expect(ContentAlignment.bottomRight.toJson(), 'bottomRight');
-        });
-      });
-
       group('fromJson', () {
         test('parses all values', () {
           expect(

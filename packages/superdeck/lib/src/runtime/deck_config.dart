@@ -29,10 +29,7 @@ sealed class DeckConfig with DeckConfigMappable {
     String? assetsPath,
   }) = BundledDeckConfig;
 
-  factory DeckConfig.fromMap(Map<String, dynamic> map) =>
-      DeckConfigMapper.fromMap(map);
-
-  factory DeckConfig.fromJson(String json) => DeckConfigMapper.fromJson(json);
+  static final fromMap = DeckConfigMapper.fromMap;
 }
 
 @MappableClass(discriminatorValue: 'local')

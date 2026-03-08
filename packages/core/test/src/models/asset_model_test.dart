@@ -48,41 +48,6 @@ void main() {
       });
     });
 
-    group('toJson', () {
-      test('returns enum name as string', () {
-        expect(AssetExtension.png.toJson(), 'png');
-        expect(AssetExtension.jpeg.toJson(), 'jpeg');
-        expect(AssetExtension.gif.toJson(), 'gif');
-        expect(AssetExtension.webp.toJson(), 'webp');
-        expect(AssetExtension.svg.toJson(), 'svg');
-      });
-    });
-
-    group('fromJson', () {
-      test('parses valid enum names', () {
-        expect(AssetExtension.fromJson('png'), AssetExtension.png);
-        expect(AssetExtension.fromJson('jpeg'), AssetExtension.jpeg);
-        expect(AssetExtension.fromJson('gif'), AssetExtension.gif);
-        expect(AssetExtension.fromJson('webp'), AssetExtension.webp);
-        expect(AssetExtension.fromJson('svg'), AssetExtension.svg);
-      });
-
-      test('throws ArgumentError for invalid value', () {
-        expect(
-          () => AssetExtension.fromJson('invalid'),
-          throwsA(isA<ArgumentError>()),
-        );
-      });
-
-      test('throws for jpg (not aliased in fromJson)', () {
-        // Note: fromJson expects exact enum names, not the aliased 'jpg'
-        expect(
-          () => AssetExtension.fromJson('jpg'),
-          throwsA(isA<ArgumentError>()),
-        );
-      });
-    });
-
     group('schema', () {
       test('validates all enum values', () {
         expect(AssetExtension.schema.safeParse('png').isOk, isTrue);

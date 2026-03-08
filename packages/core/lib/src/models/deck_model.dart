@@ -32,9 +32,4 @@ class Deck with DeckMappable {
     'slides': Ack.list(Slide.schema),
     'configuration': DeckWorkspace.schema.optional(),
   });
-
-  static Deck parse(Map<String, Object?> map) {
-    final payload = schema.parse(map) as Map<String, Object?>;
-    return Deck.fromMap(payload);
-  }
 }

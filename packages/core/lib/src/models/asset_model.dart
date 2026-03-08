@@ -24,19 +24,6 @@ enum AssetExtension {
         ? AssetExtension.jpeg
         : AssetExtension.values.firstWhereOrNull((e) => e.name == extension);
   }
-
-  String toJson() => name;
-
-  static AssetExtension fromJson(Object value) {
-    if (value is AssetExtension) return value;
-    if (value is! String) {
-      throw ArgumentError('Invalid AssetExtension: $value');
-    }
-    return AssetExtension.values.firstWhere(
-      (e) => e.name == value,
-      orElse: () => throw ArgumentError('Invalid AssetExtension: $value'),
-    );
-  }
 }
 
 @MappableClass()
@@ -55,8 +42,7 @@ class GeneratedAsset with GeneratedAssetMappable {
 
   static String buildKey(String valueToHash) => generateValueHash(valueToHash);
 
-  factory GeneratedAsset.fromMap(Map<String, Object?> map) =>
-      GeneratedAssetMapper.fromMap(Map<String, dynamic>.from(map));
+  static final fromMap = GeneratedAssetMapper.fromMap;
 
   static final schema = Ack.object({
     'name': Ack.string(),
@@ -101,6 +87,5 @@ class GeneratedAssetsReference with GeneratedAssetsReferenceMappable {
 
   GeneratedAssetsReference({required this.lastModified, required this.files});
 
-  factory GeneratedAssetsReference.fromMap(Map<String, Object?> map) =>
-      GeneratedAssetsReferenceMapper.fromMap(Map<String, dynamic>.from(map));
+  static final fromMap = GeneratedAssetsReferenceMapper.fromMap;
 }
