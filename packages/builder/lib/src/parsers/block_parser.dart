@@ -18,6 +18,7 @@ class ParsedBlock {
       SectionBlock.key ||
       ContentBlock.key ||
       WidgetBlock.key => {..._data, 'type': type},
+      'column' => {..._data, 'type': ContentBlock.key},
       _ => {..._data, 'name': type, 'type': WidgetBlock.key},
     };
   }
@@ -29,7 +30,7 @@ class ParsedBlock {
 /// - `@section` or `@section{flex: 1}`
 /// - `@block{align: center, flex: 2}`
 ///
-/// Legacy v1 directives should be migrated before they reach this parser.
+/// `@column` is accepted as a compatibility alias for `@block`.
 ///
 /// **Why regex instead of markdown package BlockSyntax?**
 /// - These are build-time directives, not markdown syntax

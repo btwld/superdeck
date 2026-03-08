@@ -475,6 +475,18 @@ More content
       expect(blocks[1].data['flex'], 2);
     });
 
+    test('@column is a compatibility alias for @block', () {
+      const textColumn = '@column{flex: 1}';
+      const textBlock = '@block{flex: 1}';
+
+      final blocksColumn = const BlockParser().parse(textColumn);
+      final blocksBlock = const BlockParser().parse(textBlock);
+
+      expect(blocksColumn[0].data['type'], equals(blocksBlock[0].data['type']));
+      expect(blocksColumn[0].data['type'], equals('block'));
+      expect(blocksColumn[0].data['flex'], equals(blocksBlock[0].data['flex']));
+    });
+
     test('normalizes widget shorthand tags to widget blocks', () {
       const text = '''
 @metricCard {

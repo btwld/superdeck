@@ -4,13 +4,13 @@ import 'block_parser.dart';
 
 /// Stage 2 of 3-stage parsing: Converts slide markdown into structured layout.
 ///
-/// Parses custom @section/@column directives to create a tree of [SectionBlock]
+/// Parses custom @section/@block directives to create a tree of [SectionBlock]
 /// objects representing the slide's layout structure. This is build-time processing
-/// specific to SuperDeck's layout DSL.
+/// specific to SuperDeck's layout DSL. `@column` is accepted as an alias for `@block`.
 ///
 /// See also:
 /// - [MarkdownParser] - Stage 1: Splits presentation into slides
-/// - [BlockParser] - Parses individual @section/@column directives
+/// - [BlockParser] - Parses individual @section/@block directives
 class SectionParser {
   const SectionParser();
 

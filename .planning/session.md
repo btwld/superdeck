@@ -7,7 +7,11 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Current Focus
 - Domain naming review is complete. All agreed changes are captured in `.planning/domain-naming-changes.md`.
-- Compatibility cleanup audit is in progress for migration/contract/schema surfaces that may now be removable because backward compatibility is no longer required.
+- Compatibility cleanup audit is complete. All migration/compat surfaces identified and resolved:
+  - `LegacyMarkdownMigrator` and `migrations/` directory deleted; `@column` handled via parse-time alias in `BlockParser`
+  - `.v2.json` suffix removed from all artifact constants (`DeckArtifacts`) and user-facing docs
+  - `logging_utils.dart` removed; `package:logging` now a direct dependency where needed
+  - `@column` doc-comments updated to reflect alias-only status
 - The naming consistency reset implementation is complete and validated:
   - `SuperDeckRuntime.create(...)` / `forTesting(...)` now take `theme` plus top-level `extensions`
   - render/workspace surfaces now use `SlideData`, `SlideFrame`, `BlockContext`, and `DeckWorkspace`
@@ -1055,3 +1059,14 @@ Agents should read this file before substantive work and update it as work progr
   - removed `.tasks`, `.specify`, and `specs/` from the repository root
   - rationale: all three were empty/unreferenced local placeholders from prior spec-kit style workflow
   - kept `.claude/` intact because it still contains active local assistant settings (`settings.local.json`)
+
+### 2026-03-07 (compat cleanup — completed)
+- Removed `migrations/` directory and `LegacyMarkdownMigrator` class entirely
+- Added `'column'` as a parse-time alias in `ParsedBlock.data` (`block_parser.dart`) → maps to `ContentBlock.key`; no migrator class needed
+- Removed `.v2.` suffix from all four `DeckArtifacts` filename constants (`superdeck.json`, `superdeck_full.json`, `generated_assets.json`, `build_status.json`) and updated all test assertions
+- Deleted `logging_utils.dart` (unused re-export of `package:logging`); added direct `logging: ^1.3.0` dependency to `packages/superdeck/pubspec.yaml` and explicit imports where needed; removed `hide logger, Logger, Level` clauses from CLI imports
+- Updated stale `@column` doc-comments in `block_parser.dart`, `section_parser.dart`, `markdown_parser.dart`
+- Updated user-facing docs: `docs/getting-started.mdx`, `docs/guides/cli-reference.mdx`, `docs/reference/deck-options.mdx`, `docs/reference/contracts.mdx`
+- Deleted empty `packages/core/test/src/contracts/` directory
+- Added `@column` compat test to `block_parser_test.dart`; removed legacy test that relied on deleted migrator class
+- Validation: `dart analyze` clean, builder 206 tests pass, superdeck 631 tests pass
