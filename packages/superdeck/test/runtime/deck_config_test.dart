@@ -22,7 +22,7 @@ void main() {
 
     test('serializes and deserializes bundled config with discriminator', () {
       const config = DeckConfig.bundle(
-        deckAssetPath: '.superdeck/superdeck.v2.json',
+        deckAssetPath: '.superdeck/superdeck.json',
         outputDir: '.superdeck',
       );
 

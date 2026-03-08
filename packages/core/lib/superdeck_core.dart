@@ -15,12 +15,10 @@ export 'src/deck_format_exception.dart';
 export 'src/tag_tokenizer.dart';
 export 'src/markdown_syntaxes.dart';
 export 'src/hero_tag_helpers.dart';
-export 'src/migrations/legacy_markdown_migrator.dart';
 // Utils
 export 'src/utils/extensions.dart';
 export 'src/utils/file_watcher.dart';
 export 'src/utils/generate_hash.dart';
-export 'src/utils/logging_utils.dart';
 export 'src/utils/pretty_json.dart';
 export 'src/utils/code_fence.dart';
 export 'src/utils/yaml_utils.dart';

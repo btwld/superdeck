@@ -147,9 +147,6 @@ class ContentBlock extends Block with ContentBlockMappable {
   /// The type identifier for content blocks.
   static const key = 'block';
 
-  /// Legacy directive key used by migration helpers for v1 content.
-  static const legacyKey = 'column';
-
   /// The markdown content to display.
   final String content;
 

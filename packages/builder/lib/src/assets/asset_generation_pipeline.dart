@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// Asset-based [DeckService] implementation for runtimes without file processes.

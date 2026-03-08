@@ -475,22 +475,6 @@ More content
       expect(blocks[1].data['flex'], 2);
     });
 
-    test('legacy @column can be migrated to the canonical @block tag', () {
-      const textColumn = '@column{flex: 1}';
-      const textBlock = '@block{flex: 1}';
-
-      final migratedColumn = LegacyMarkdownMigrator.migrateToV2(textColumn);
-      final blocksColumn = const BlockParser().parse(migratedColumn);
-      final blocksBlock = const BlockParser().parse(textBlock);
-
-      expect(blocksColumn[0].data['type'], blocksBlock[0].data['type']);
-      expect(
-        blocksColumn[0].data['type'],
-        'block',
-      ); // Both normalize to ContentBlock.key
-      expect(blocksColumn[0].data['flex'], blocksBlock[0].data['flex']);
-    });
-
     test('normalizes widget shorthand tags to widget blocks', () {
       const text = '''
 @metricCard {

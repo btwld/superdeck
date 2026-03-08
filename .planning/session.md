@@ -7,6 +7,7 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Current Focus
 - Domain naming review is complete. All agreed changes are captured in `.planning/domain-naming-changes.md`.
+- Compatibility cleanup audit is in progress for migration/contract/schema surfaces that may now be removable because backward compatibility is no longer required.
 - The naming consistency reset implementation is complete and validated:
   - `SuperDeckRuntime.create(...)` / `forTesting(...)` now take `theme` plus top-level `extensions`
   - render/workspace surfaces now use `SlideData`, `SlideFrame`, `BlockContext`, and `DeckWorkspace`
@@ -166,6 +167,16 @@ Agents should read this file before substantive work and update it as work progr
 4. Run the integration follow-up in an environment with Linux coverage and a clean macOS/Xcode path.
 
 ## Session Log
+
+### 2026-03-08
+- Started a repo-wide compatibility cleanup audit focused on migration folders, contract/schema compatibility layers, and other legacy transition artifacts that may now be obsolete.
+- Goal: produce a concrete removal plan with file-level evidence (call sites, ownership, and risk notes) before deleting anything.
+- Completed the audit classification:
+  - `packages/core/lib/src/migrations/legacy_markdown_migrator.dart` is the only migration-folder production artifact and is now a clean removal candidate if `@column` compatibility is intentionally dropped.
+  - `packages/core/lib/src/contracts/deck_artifacts.dart`, `packages/core/schema/superdeck.deck.schema.json`, and `packages/core/tool/export_contract_schemas.dart` remain active contract/tooling surfaces with production/dev usage and should not be removed as "dead compatibility" files.
+  - additional backward-compatibility behavior still exists outside the migration folder (`SummaryItem.kind` fallback in GenUI, lenient legacy `fromMap` tests in core models, and legacy fenced-code option syntax in docs/parser behavior).
+- Validation note:
+  - `melos run analyze:dcm:unused-files --no-select` cannot complete in this environment because DCM is not activated, so dead-file confirmation relied on call-site tracing and repository-wide symbol search.
 
 ### 2026-03-07 (simplification pass)
 - Completed repo-wide simplification pass after `dart_mappable` migration:

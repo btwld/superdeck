@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'parsers/raw_slide_schema.dart';
@@ -101,15 +102,13 @@ class SlideProcessor {
 
   /// Builds final Slide from processed context
   Slide _buildSlide(SlideContext result) {
-    final migratedContent = LegacyMarkdownMigrator.migrateToV2(
-      result.slide.content,
-    );
+    final content = result.slide.content;
 
     return Slide(
       key: result.slide.key,
       options: SlideOptions.parse(result.slide.frontmatter),
-      sections: SectionParser().parse(migratedContent),
-      notes: NoteParser().parse(migratedContent),
+      sections: SectionParser().parse(content),
+      notes: NoteParser().parse(content),
     );
   }
 }

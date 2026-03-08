@@ -144,7 +144,7 @@ void main() {
       expect(map.keys.toSet(), {'slides'});
     });
 
-    test('writes to project-relative superdeck.v2.json', () async {
+    test('writes to project-relative superdeck.json', () async {
       final slide = Slide.parse(_slideMap(key: 'slide-1'));
       await store.writeCanonical(slides: [slide], style: null);
 

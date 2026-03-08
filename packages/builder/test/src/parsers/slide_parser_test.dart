@@ -110,7 +110,7 @@ Intro content
 @section {
   flex: 2
 }
-@column
+@block
 Slide body
 
 ---

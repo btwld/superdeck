@@ -57,10 +57,7 @@ void main() {
         });
 
         test('combines projectDir and outputDir', () {
-          final config = DeckWorkspace(
-            projectDir: '/base',
-            outputDir: 'out',
-          );
+          final config = DeckWorkspace(projectDir: '/base', outputDir: 'out');
 
           expect(config.superdeckDir.path, contains('/base'));
           expect(config.superdeckDir.path, contains('out'));
@@ -72,7 +69,7 @@ void main() {
           final config = DeckWorkspace();
 
           expect(config.deckJson.path, contains(config.superdeckDir.path));
-          expect(config.deckJson.path, endsWith('superdeck.v2.json'));
+          expect(config.deckJson.path, endsWith('superdeck.json'));
         });
       });
 
@@ -81,7 +78,7 @@ void main() {
           final config = DeckWorkspace();
 
           expect(config.deckFullJson.path, contains(config.superdeckDir.path));
-          expect(config.deckFullJson.path, endsWith('superdeck_full.v2.json'));
+          expect(config.deckFullJson.path, endsWith('superdeck_full.json'));
         });
       });
 
@@ -110,10 +107,7 @@ void main() {
           final config = DeckWorkspace();
 
           expect(config.assetsRefJson.path, contains(config.superdeckDir.path));
-          expect(
-            config.assetsRefJson.path,
-            endsWith('generated_assets.v2.json'),
-          );
+          expect(config.assetsRefJson.path, endsWith('generated_assets.json'));
         });
       });
 
@@ -125,7 +119,7 @@ void main() {
             config.buildStatusJson.path,
             contains(config.superdeckDir.path),
           );
-          expect(config.buildStatusJson.path, endsWith('build_status.v2.json'));
+          expect(config.buildStatusJson.path, endsWith('build_status.json'));
         });
       });
 
