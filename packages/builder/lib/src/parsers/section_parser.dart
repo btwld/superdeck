@@ -6,7 +6,7 @@ import 'block_parser.dart';
 ///
 /// Parses custom @section/@block directives to create a tree of [SectionBlock]
 /// objects representing the slide's layout structure. This is build-time processing
-/// specific to SuperDeck's layout DSL. `@column` is accepted as an alias for `@block`.
+/// specific to SuperDeck's layout DSL.
 ///
 /// See also:
 /// - [MarkdownParser] - Stage 1: Splits presentation into slides

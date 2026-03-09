@@ -97,14 +97,14 @@ class User {
 }
 ```
 
-@column
+@widget
 ''';
 
       final tokens = const TagTokenizer().tokenize(text);
 
       expect(tokens, hasLength(2));
       expect(tokens[0].name, 'section');
-      expect(tokens[1].name, 'column');
+      expect(tokens[1].name, 'widget');
       // @AckType should be ignored because it's inside the code block
     });
 

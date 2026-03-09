@@ -128,10 +128,7 @@ void main() {
         final task1 = ContentModifierTask('[Task1]');
         final task2 = ContentModifierTask('[Task2]');
 
-        final slides = await processor.processAll(
-          [rawSlide],
-          [task1, task2],
-        );
+        final slides = await processor.processAll([rawSlide], [task1, task2]);
 
         expect(slides, hasLength(1));
         // Content should be modified by both tasks in order
@@ -226,9 +223,7 @@ void main() {
         );
 
         final task = MockTask('TestTask');
-        final slides = await customProcessor.processAll(rawSlides, [
-          task,
-        ]);
+        final slides = await customProcessor.processAll(rawSlides, [task]);
 
         expect(slides, hasLength(5));
         expect(task.executedSlides, hasLength(5));
@@ -557,11 +552,11 @@ Some content without tag
 
       test('handles slides with only notes', () async {
         final rawSlide = RawSlideMarkdown.parse({
-          'key': 'comments-only',
+          'key': 'notes-only',
           'content': '''
-<!-- Comment 1 -->
-<!-- Comment 2 -->
-<!-- Comment 3 -->
+<!-- Note 1 -->
+<!-- Note 2 -->
+<!-- Note 3 -->
 ''',
           'frontmatter': {},
         });

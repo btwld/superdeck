@@ -64,6 +64,37 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Session Log
 
+### 2026-03-09 (review: release-next vs main in progress)
+- Started a code review of `release/next` against `main` using merge base `5fc2298e7580b9ef47d45cc29bc5a801d42bd622`.
+- Review focus: concrete regressions only, prioritized by user-visible/runtime impact, with verification against diff context and existing tests/call sites.
+- Review findings captured:
+  - serialized deck JSON compatibility regressed for legacy content blocks using `type: "column"`; loads now fail instead of normalizing to `block`
+  - serialized slide-note compatibility regressed for legacy `comments` payloads; notes now drop silently unless artifacts are regenerated/migrated
+  - live theme changes keep stale thumbnail generators because thumbnail cache identity is keyed only by `slide.key`
+
+### 2026-03-09 (implementation: breaking cleanup + thumbnail cache invalidation)
+- Started the follow-up implementation pass with explicit breaking changes:
+  - remove `@column` support and make it fail fast with a direct `use @block` error
+  - standardize internal/user-facing speaker-note naming on `notes`
+  - re-key runtime thumbnail caching and lookup to `SlideData.thumbnailFile`
+- Scope includes parser/runtime updates plus targeted docs, fixtures, and regression tests; no legacy migration or fallback compatibility will be kept.
+- Completed the breaking cleanup + thumbnail invalidation pass:
+  - `BlockParser` now throws a targeted `DeckFormatException` for `@column` with `use @block instead`
+  - legacy `@column` references were removed from active tests/fixtures, and the stale `packages/superdeck/test/fixtures/deck_reference.json` fixture was deleted
+  - builder note helper paths were renamed from `comment_parser` to `note_parser`, and note-oriented test naming/docs wording were aligned
+  - runtime thumbnail cache identity and lookup now use `SlideData.thumbnailFile`, and `AppShell` regenerates thumbnails when theme-driven asset keys change while the menu is open
+- Validation for this pass:
+  - targeted builder tests passed:
+    - `test/src/parsers/block_parser_test.dart`
+    - `test/src/parsers/note_parser_test.dart`
+    - `test/src/parsers/slide_parser_test.dart`
+    - `test/src/parsers/tag_tokenizer_test.dart`
+    - `test/src/slide_processor_test.dart`
+  - targeted superdeck tests passed:
+    - `test/export/thumbnail_service_test.dart`
+    - `test/ui/app_shell_test.dart`
+  - targeted analyze for changed builder/superdeck files returned no errors
+
 ### 2026-03-09 (docs cleanup)
 - Removed user-facing "legacy" wording from markdown docs to keep guidance strictly canonical.
 - Updated docs to reference only canonical `@block` directive on the user surface.
@@ -1138,3 +1169,45 @@ Agents should read this file before substantive work and update it as work progr
 - Notes:
   - `melos run test --no-select` emitted transient Flutter startup-lock waiting lines while packages started in parallel; the overall run still passed
   - macOS integration emitted the usual non-fatal `DVTBuildVersion` warnings during Xcode build and still passed
+
+### 2026-03-09 (implementation: breaking cleanup + thumbnail cache invalidation)
+- Completed the requested breaking cleanup pass for builder/runtime contracts:
+  - removed `@column` authoring support in `packages/builder/lib/src/parsers/block_parser.dart`
+  - parser now fails fast with a targeted message: use `@block` instead
+  - updated markdown docs and builder tests so `@block` is the only documented markdown-content directive
+- Standardized speaker-note terminology on `notes` in the builder layer:
+  - renamed `comment_parser.dart` to `note_parser.dart`
+  - updated imports/tests/docs to describe HTML comment delimiters as note syntax
+  - kept the data contract as `notes` only; no `comments` compatibility path was added
+- Fixed stale thumbnail reuse after theme/style changes:
+  - thumbnail caches are now keyed by `SlideData.thumbnailFile` in `ThumbnailService` and `DeckController`
+  - `SlideThumbnail` now resolves cached thumbnails by asset key instead of logical slide key
+  - `AppShell` now regenerates thumbnails when the menu is open and the controller-reported thumbnail asset-key hash changes
+  - kept the derivation of thumbnail identity in `DeckController` so the widget only reacts to a controller-owned change token
+- Additional cleanup:
+  - deleted unused `packages/superdeck/test/fixtures/deck_reference.json` because it still contained stale `column` block fixtures and had no remaining references
+- Validation:
+  - `dart analyze` on changed builder/superdeck files via Dart MCP: clean
+  - full `packages/builder` test suite: passed
+  - full `packages/superdeck` test suite: passed
+  - targeted regressions added and passing:
+    - `packages/builder/test/src/parsers/block_parser_test.dart` for `@column` failure message
+    - `packages/superdeck/test/export/thumbnail_service_test.dart` for asset-key cache identity
+    - `packages/superdeck/test/ui/app_shell_test.dart` for theme-change thumbnail regeneration while menu is open
+
+### 2026-03-09 (final review + workflow documentation in progress)
+- Started a final pass before commit/push focused on the builder flow and thumbnail flow as separate ownership boundaries.
+- Goal for this slice:
+  - confirm the build pipeline (`DeckBuilder` → `SlideProcessor` → parsers/tasks → saved deck artifacts) remains clean after the breaking changes
+  - confirm thumbnail identity/invalidation is controller-owned and not leaking derivation back into widgets
+  - add a Mermaid workflow document to explain build/config/runtime/thumbnail flow for future handoff
+- Review conclusion:
+  - builder ownership remains clean: `DeckBuilder` orchestrates deck-level work, `SlideProcessor` owns per-slide task execution and final `Slide` assembly, parser responsibilities remain explicit
+  - thumbnail ownership remains clean: `SlideDataBuilder` defines thumbnail identity, `DeckController` owns change detection and stale-entry cleanup, `ThumbnailService` owns cache entry creation/reuse, widgets only trigger generation when the menu is visible
+- Added `.planning/build-config-thumbnail-workflow.md` with Mermaid diagrams for:
+  - build pipeline
+  - config/runtime loading flow
+  - thumbnail generation and invalidation flow
+- Final validation before commit/push:
+  - full `packages/builder` test suite: passed
+  - full `packages/superdeck` test suite: passed

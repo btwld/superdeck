@@ -1,3 +1,7 @@
+/// Extracts speaker notes written with HTML comment delimiters.
+///
+/// Example:
+/// `<!-- Mention migration risks here -->`
 class NoteParser {
   const NoteParser();
 

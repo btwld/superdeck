@@ -12,6 +12,7 @@ import '../presentation/deck_theme.dart';
 import '../slides/slide_data.dart';
 import '../slides/slide_data_builder.dart';
 import '../utils/asset_cache_store.dart';
+import '../utils/collection_hashes.dart';
 import 'navigation/navigation_events.dart';
 import 'navigation/navigation_service.dart';
 
@@ -51,6 +52,11 @@ class DeckController {
 
   late final ReadonlySignal<int> totalSlides = computed(
     () => slides.value.length,
+  );
+
+  @internal
+  late final ReadonlySignal<int> thumbnailAssetKeyHash = computed(
+    () => orderedIterableHash(slides.value.map((slide) => slide.thumbnailFile)),
   );
 
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
@@ -209,11 +215,13 @@ class DeckController {
     if (_disposed) return;
 
     final currentSlides = slides.value;
-    final currentSlideKeys = currentSlides.map((slide) => slide.key).toSet();
+    final currentThumbnailFiles = currentSlides
+        .map((slide) => slide.thumbnailFile)
+        .toSet();
 
     final currentCache = _thumbnails.value;
     final staleKeys = currentCache.keys
-        .where((key) => !currentSlideKeys.contains(key))
+        .where((key) => !currentThumbnailFiles.contains(key))
         .toList(growable: false);
 
     if (staleKeys.isNotEmpty) {
@@ -239,8 +247,8 @@ class DeckController {
     );
   }
 
-  AsyncThumbnail? getThumbnail(String slideKey) {
-    return _thumbnails.value[slideKey];
+  AsyncThumbnail? getThumbnailByAssetKey(String thumbnailFile) {
+    return _thumbnails.value[thumbnailFile];
   }
 
   void dispose() {
@@ -258,6 +266,7 @@ class DeckController {
     currentSlide.dispose();
     canGoPrevious.dispose();
     canGoNext.dispose();
+    thumbnailAssetKeyHash.dispose();
     totalSlides.dispose();
     slides.dispose();
 

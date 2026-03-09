@@ -345,11 +345,11 @@ Test content 2
       ),
     ],
   },
-  // does not match {@column}
+  // does not match braced tag syntax
   {
-    'description': 'Test Case 10: Does not match @column',
+    'description': 'Test Case 10: Does not match braced tag syntax',
     'input': '''
-{@column}
+{@block}
 ''',
     'expectedBlocks': [],
   },
@@ -475,16 +475,21 @@ More content
       expect(blocks[1].data['flex'], 2);
     });
 
-    test('@column is a compatibility alias for @block', () {
-      const textColumn = '@column{flex: 1}';
-      const textBlock = '@block{flex: 1}';
+    test('throws a targeted error for @column', () {
+      const text = '@column{flex: 1}';
 
-      final blocksColumn = const BlockParser().parse(textColumn);
-      final blocksBlock = const BlockParser().parse(textBlock);
-
-      expect(blocksColumn[0].data['type'], equals(blocksBlock[0].data['type']));
-      expect(blocksColumn[0].data['type'], equals('block'));
-      expect(blocksColumn[0].data['flex'], equals(blocksBlock[0].data['flex']));
+      expect(
+        () => const BlockParser().parse(text),
+        throwsA(
+          isA<DeckFormatException>()
+              .having(
+                (e) => e.message,
+                'message',
+                contains('Use `@block` instead'),
+              )
+              .having((e) => e.offset, 'offset', 0),
+        ),
+      );
     });
 
     test('normalizes widget shorthand tags to widget blocks', () {

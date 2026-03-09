@@ -85,6 +85,7 @@ class _SplitViewState extends State<SplitView>
       if (!mounted) return;
 
       final isMenuOpen = deck.isMenuOpen.value;
+      final thumbnailAssetKeyHash = deck.thumbnailAssetKeyHash.value;
 
       if (isMenuOpen && _animationController.value != 1.0) {
         _animationController.forward();
@@ -95,6 +96,10 @@ class _SplitViewState extends State<SplitView>
       if (isMenuOpen) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted || !deck.isMenuOpen.value) {
+            return;
+          }
+          final currentHash = deck.thumbnailAssetKeyHash.value;
+          if (currentHash != thumbnailAssetKeyHash) {
             return;
           }
           deck.generateThumbnails(context);

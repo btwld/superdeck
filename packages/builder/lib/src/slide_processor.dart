@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+import 'parsers/note_parser.dart' show NoteParser;
 import 'parsers/raw_slide_schema.dart';
 import 'task_exception.dart';
-import 'parsers/comment_parser.dart' show NoteParser;
 import 'parsers/section_parser.dart';
 import 'tasks/task_context.dart';
 import 'tasks/task.dart';

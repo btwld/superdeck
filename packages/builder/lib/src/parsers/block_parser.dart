@@ -1,5 +1,8 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
+const unsupportedColumnDirectiveMessage =
+    '`@column` is no longer supported. Use `@block` instead.';
+
 class ParsedBlock {
   final String type;
   final int startIndex;
@@ -18,7 +21,6 @@ class ParsedBlock {
       SectionBlock.key ||
       ContentBlock.key ||
       WidgetBlock.key => {..._data, 'type': type},
-      'column' => {..._data, 'type': ContentBlock.key},
       _ => {..._data, 'name': type, 'type': WidgetBlock.key},
     };
   }
@@ -29,8 +31,6 @@ class ParsedBlock {
 /// Extracts custom directives like:
 /// - `@section` or `@section{flex: 1}`
 /// - `@block{align: center, flex: 2}`
-///
-/// `@column` is accepted as a compatibility alias for `@block`.
 ///
 /// **Why regex instead of markdown package BlockSyntax?**
 /// - These are build-time directives, not markdown syntax
@@ -45,6 +45,16 @@ class BlockParser {
 
   List<ParsedBlock> parse(String text) {
     final tokens = const TagTokenizer().tokenize(text);
+
+    for (final token in tokens) {
+      if (token.name == 'column') {
+        throw DeckFormatException(
+          unsupportedColumnDirectiveMessage,
+          text,
+          token.startIndex,
+        );
+      }
+    }
 
     return tokens
         .map(

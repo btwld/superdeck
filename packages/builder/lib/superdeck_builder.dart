@@ -12,10 +12,10 @@ export 'package:superdeck_core/superdeck_core.dart' show DeckFormatException;
 export 'src/task_exception.dart';
 // Export parsers
 export 'src/parsers/block_parser.dart';
-export 'src/parsers/comment_parser.dart';
 export 'src/parsers/fenced_code_parser.dart';
 export 'src/parsers/front_matter_parser.dart';
 export 'src/parsers/markdown_parser.dart';
+export 'src/parsers/note_parser.dart';
 export 'src/parsers/section_parser.dart';
 // Export builders and processors
 export 'src/deck_builder.dart';

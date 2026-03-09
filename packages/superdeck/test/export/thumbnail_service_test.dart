@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/export/async_thumbnail.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -60,6 +61,18 @@ SlideData _createSlide(String key) {
     style: SlideStyle(),
     slide: Slide(key: key),
     thumbnailFile: 'thumbnail_$key.png',
+  );
+}
+
+SlideData _createSlideWithThumbnail({
+  required String key,
+  required String thumbnailFile,
+}) {
+  return SlideData(
+    slideIndex: 0,
+    style: SlideStyle(),
+    slide: Slide(key: key),
+    thumbnailFile: thumbnailFile,
   );
 }
 
@@ -177,6 +190,43 @@ void main() {
           'resolve:thumbnail_missing.png',
           'write:thumbnail_missing.png',
         ]),
+      );
+    });
+
+    testWidgets('keys cache entries by thumbnail asset key', (tester) async {
+      final context = await _pumpContext(tester);
+      final store = _FakeAssetCacheStore(
+        resolvedUri: null,
+        writeUri: Uri.parse('file:///tmp/generated-thumb.png'),
+      );
+      final capture = _FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
+
+      late Map<String, AsyncThumbnail> updatedCache;
+      service.generateThumbnails(
+        slides: [
+          _createSlideWithThumbnail(
+            key: 'shared',
+            thumbnailFile: 'thumbnail_shared_a.png',
+          ),
+          _createSlideWithThumbnail(
+            key: 'shared',
+            thumbnailFile: 'thumbnail_shared_b.png',
+          ),
+        ],
+        context: context,
+        cache: <String, AsyncThumbnail>{},
+        onCacheUpdate: (cache) {
+          updatedCache = cache;
+        },
+      );
+
+      expect(
+        updatedCache.keys,
+        unorderedEquals(['thumbnail_shared_a.png', 'thumbnail_shared_b.png']),
       );
     });
   });

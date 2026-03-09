@@ -491,9 +491,9 @@ Inside code
     });
   });
 
-  // Group test notes from comments
-  group('Correctly parses slide notes from markdown comments', () {
-    test('parses notes from markdown comments', () async {
+  // Group test notes from HTML comment delimiters
+  group('Correctly parses slide notes from HTML comment delimiters', () {
+    test('parses notes from HTML comment delimiters', () async {
       const markdown = '''
 ---
 title: Slide 1
@@ -523,7 +523,7 @@ Content for slide 2
       expect(slides[1].content, equals('Content for slide 2'));
     });
 
-    test('parses multiple notes from markdown comments', () async {
+    test('parses multiple notes from HTML comment delimiters', () async {
       const markdown = '''
 ---
 title: Slide 1

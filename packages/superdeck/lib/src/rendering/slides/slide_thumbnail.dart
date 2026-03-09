@@ -22,7 +22,7 @@ class SlideThumbnail extends StatelessWidget {
     final handle = SuperDeck.of(context);
 
     return Watch((context) {
-      final asyncThumbnail = handle.getThumbnail(slide.key);
+      final asyncThumbnail = handle.getThumbnailByAssetKey(slide.thumbnailFile);
 
       if (asyncThumbnail == null) {
         return _PreviewContainer(
