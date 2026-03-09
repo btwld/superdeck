@@ -1,77 +1,72 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
+import 'package:signals/signals.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-import 'package:superdeck/src/runtime/deck_controller.dart';
 
-import '../testing_utils.dart';
+/// Creates a test DeckDataState with controllable signals.
+({
+  DeckDataState dataState,
+  Signal<Deck?> deck,
+  Signal<DeckLoadingState> loadingState,
+  Signal<Object?> error,
+  Signal<bool> isRebuilding,
+  int Function() reloadCount,
+}) createTestDataState({Deck? initialDeck}) {
+  final deck = signal<Deck?>(initialDeck);
+  final loadingState = signal<DeckLoadingState>(
+    initialDeck != null ? DeckLoadingState.loaded : DeckLoadingState.loading,
+  );
+  final error = signal<Object?>(null);
+  final isRebuilding = signal<bool>(false);
+  var reloads = 0;
 
-/// Mock DeckService that allows controlled deck emission for testing
-class MockDeckService extends DeckService {
-  StreamController<Deck>? _streamController;
-  Deck? _currentDeck;
-  Object? _errorToEmit;
+  final dataState = DeckDataState(
+    deck: deck,
+    loadingState: loadingState,
+    error: error,
+    isRebuilding: isRebuilding,
+    workspace: DeckWorkspace(),
+    reload: () async {
+      reloads++;
+    },
+  );
 
-  MockDeckService({DeckWorkspace? configuration})
-    : super(configuration: configuration ?? DeckWorkspace());
-
-  @override
-  Future<Deck> loadDeck() async {
-    if (_currentDeck != null) return _currentDeck!;
-    return createTestDeck();
-  }
-
-  @override
-  Stream<Deck> loadDeckStream() {
-    if (_errorToEmit != null) {
-      return Stream.error(_errorToEmit!);
-    }
-    // Create a new controller each time to allow re-listening after reload
-    _streamController?.close();
-    _streamController = StreamController<Deck>.broadcast();
-    return _streamController!.stream;
-  }
-
-  void emitDeck(Deck deck) {
-    _currentDeck = deck;
-    _streamController?.add(deck);
-  }
-
-  void emitError(Object error) {
-    _streamController?.addError(error);
-  }
-
-  void setErrorToEmit(Object error) {
-    _errorToEmit = error;
-  }
-
-  void dispose() {
-    _streamController?.close();
-  }
+  return (
+    dataState: dataState,
+    deck: deck,
+    loadingState: loadingState,
+    error: error,
+    isRebuilding: isRebuilding,
+    reloadCount: () => reloads,
+  );
 }
 
 void main() {
   group('DeckController', () {
-    late MockDeckService mockDeckService;
     late DeckController controller;
+    late Signal<DeckLoadingState> loadingStateSignal;
+    late Signal<Object?> errorSignal;
+    late Signal<bool> isRebuildingSignal;
+    late int Function() reloadCount;
 
     setUp(() {
-      mockDeckService = MockDeckService();
+      final testState = createTestDataState();
+      loadingStateSignal = testState.loadingState;
+      errorSignal = testState.error;
+      isRebuildingSignal = testState.isRebuilding;
+      reloadCount = testState.reloadCount;
       controller = DeckController(
-        deckService: mockDeckService,
+        dataState: testState.dataState,
         theme: const DeckTheme(),
-        enableDeckStream: true,
       );
     });
 
     tearDown(() {
       controller.dispose();
-      mockDeckService.dispose();
     });
 
     group('Initialization', () {
-      test('initializes with loading state', () {
+      test('reflects loading state from DeckDataState', () {
         expect(controller.isLoading.value, isTrue);
         expect(controller.hasError.value, isFalse);
       });
@@ -92,99 +87,28 @@ void main() {
       });
     });
 
-    group('Deck Loading', () {
-      // Note: Tests that emit decks trigger SlideDataBuilder which
-      // accesses defaultSlideStyle, which uses GoogleFonts. In test environments
-      // without bundled fonts, this causes failures. These tests are skipped
-      // until fonts are bundled in test assets or styles become mockable.
-      test(
-        'transitions to loaded state when deck is emitted',
-        () async {
-          final deck = createTestDeck();
-          mockDeckService.emitDeck(deck);
+    group('Reactive Data State', () {
+      test('transitions to loaded when data state changes', () {
+        loadingStateSignal.value = DeckLoadingState.loaded;
+        expect(controller.isLoading.value, isFalse);
+        expect(controller.hasError.value, isFalse);
+      });
 
-          // Allow stream to propagate
-          await Future.delayed(Duration.zero);
-
-          expect(controller.isLoading.value, isFalse);
-          expect(controller.hasError.value, isFalse);
-        },
-        skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-      );
-
-      test('transitions to error state on stream error', () async {
-        mockDeckService.emitError(Exception('Test error'));
-
-        await Future.delayed(Duration.zero);
-
+      test('transitions to error when data state has error', () {
+        errorSignal.value = Exception('Test error');
+        loadingStateSignal.value = DeckLoadingState.error;
         expect(controller.hasError.value, isTrue);
         expect(controller.error.value, isNotNull);
       });
 
-      test(
-        'slides signal reflects loaded deck',
-        () async {
-          final slides = [
-            Slide(
-              key: 'slide-0',
-              sections: [
-                SectionBlock([ContentBlock('Content 0')]),
-              ],
-            ),
-            Slide(
-              key: 'slide-1',
-              sections: [
-                SectionBlock([ContentBlock('Content 1')]),
-              ],
-            ),
-          ];
-          final deck = createTestDeck(slides: slides);
-          mockDeckService.emitDeck(deck);
-
-          await Future.delayed(Duration.zero);
-
-          expect(controller.slides.value.length, 2);
-          expect(controller.totalSlides.value, 2);
-        },
-        skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-      );
+      test('isRebuilding reflects data state signal', () {
+        expect(controller.isRebuilding.value, isFalse);
+        isRebuildingSignal.value = true;
+        expect(controller.isRebuilding.value, isTrue);
+        isRebuildingSignal.value = false;
+        expect(controller.isRebuilding.value, isFalse);
+      });
     });
-
-    // Skip: These tests emit decks which trigger style loading with GoogleFonts
-    group(
-      'Computed Navigation Properties',
-      () {
-        setUp(() async {
-          // Load a deck with 5 slides
-          final slides = List.generate(
-            5,
-            (i) => Slide(
-              key: 'slide-$i',
-              sections: [
-                SectionBlock([ContentBlock('Content $i')]),
-              ],
-            ),
-          );
-          mockDeckService.emitDeck(createTestDeck(slides: slides));
-          await Future.delayed(Duration.zero);
-        });
-
-        test('canGoNext is true when not at last slide', () {
-          // currentIndex starts at 0, totalSlides is 5
-          expect(controller.canGoNext.value, isTrue);
-        });
-
-        test('canGoPrevious is false when at first slide', () {
-          expect(controller.canGoPrevious.value, isFalse);
-        });
-
-        test('currentSlide returns correct slide', () {
-          expect(controller.currentSlide.value, isNotNull);
-          expect(controller.currentSlide.value!.slideIndex, 0);
-        });
-      },
-      skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-    );
 
     group('UI State Toggles', () {
       test('openMenu sets isMenuOpen to true', () {
@@ -207,20 +131,11 @@ void main() {
         controller.toggleNotes();
         expect(controller.isNotesOpen.value, isFalse);
       });
-
-      test('setRebuilding updates isRebuilding', () {
-        expect(controller.isRebuilding.value, isFalse);
-        controller.setRebuilding(true);
-        expect(controller.isRebuilding.value, isTrue);
-        controller.setRebuilding(false);
-        expect(controller.isRebuilding.value, isFalse);
-      });
     });
 
     group('Theme Updates', () {
       test('updateTheme updates internal theme', () {
         const newTheme = DeckTheme(debug: true);
-        // Verify options update completes without throwing
         expect(
           () => controller.updateTheme(newTheme),
           returnsNormally,
@@ -229,7 +144,6 @@ void main() {
 
       test('updateTheme does not trigger if theme is unchanged', () {
         const theme = DeckTheme();
-        // Verify idempotent behavior - calling twice with the same theme doesn't throw.
         expect(() {
           controller.updateTheme(theme);
           controller.updateTheme(theme);
@@ -237,144 +151,25 @@ void main() {
       });
     });
 
-    group('Configuration Resolution', () {
-      test('uses deck configuration when building slide thumbnails', () async {
-        final deck = createTestDeck(
-          slides: [
-            Slide(
-              key: 'web-config',
-              sections: [
-                SectionBlock([ContentBlock('Slide')]),
-              ],
-            ),
-          ],
-          config: DeckWorkspace(outputDir: '.webdeck', assetsPath: 'img'),
-        );
-        mockDeckService.emitDeck(deck);
-
-        await Future.delayed(Duration.zero);
-
-        expect(controller.slides.value, hasLength(1));
-        expect(
-          controller.slides.value.first.thumbnailFile,
-          allOf(startsWith('thumbnail_web-config_'), endsWith('.png')),
-        );
+    group('Reload', () {
+      test('reload delegates to DeckDataState', () async {
+        expect(reloadCount(), 0);
+        await controller.reload();
+        expect(reloadCount(), 1);
+        await controller.reload();
+        expect(reloadCount(), 2);
       });
-
-      test(
-        'falls back to service configuration when deck configuration is empty',
-        () async {
-          final serviceConfig = DeckWorkspace(
-            outputDir: '.service',
-            assetsPath: 'svc_assets',
-          );
-          final service = MockDeckService(configuration: serviceConfig);
-          final tempController = DeckController(
-            deckService: service,
-            theme: const DeckTheme(),
-            enableDeckStream: true,
-          );
-
-          try {
-            final deck = createTestDeck(
-              slides: [
-                Slide(
-                  key: 'service-fallback',
-                  sections: [
-                    SectionBlock([ContentBlock('Slide')]),
-                  ],
-                ),
-              ],
-              config: DeckWorkspace(),
-            );
-            service.emitDeck(deck);
-
-            await Future.delayed(Duration.zero);
-
-            expect(tempController.slides.value, hasLength(1));
-            expect(
-              tempController.slides.value.first.thumbnailFile,
-              allOf(
-                startsWith('thumbnail_service-fallback_'),
-                endsWith('.png'),
-              ),
-            );
-          } finally {
-            tempController.dispose();
-            service.dispose();
-          }
-        },
-      );
     });
-
-    group(
-      'Edge Cases',
-      () {
-        test('handles empty slides deck', () async {
-          final emptyDeck = createTestDeck(slides: []);
-          mockDeckService.emitDeck(emptyDeck);
-
-          await Future.delayed(Duration.zero);
-
-          expect(controller.slides.value, isEmpty);
-          expect(controller.totalSlides.value, 0);
-          expect(controller.canGoNext.value, isFalse);
-          expect(controller.canGoPrevious.value, isFalse);
-          expect(controller.currentSlide.value, isNull);
-        });
-
-        test('handles single slide deck', () async {
-          final singleDeck = createTestDeck(
-            slides: [
-              Slide(
-                key: 'single',
-                sections: [
-                  SectionBlock([ContentBlock('Single slide')]),
-                ],
-              ),
-            ],
-          );
-          mockDeckService.emitDeck(singleDeck);
-
-          await Future.delayed(Duration.zero);
-
-          expect(controller.totalSlides.value, 1);
-          expect(controller.canGoNext.value, isFalse);
-          expect(controller.canGoPrevious.value, isFalse);
-        });
-      },
-      skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-    );
-
-    group(
-      'Deck Reload',
-      () {
-        test('reloadDeck restarts the stream', () async {
-          final deck1 = createTestDeck();
-          mockDeckService.emitDeck(deck1);
-          await Future.delayed(Duration.zero);
-
-          expect(controller.isLoading.value, isFalse);
-
-          // Reload should complete without error
-          await expectLater(controller.reloadDeck(), completes);
-        });
-      },
-      skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-    );
 
     group('Disposal', () {
       test('dispose completes without error', () {
-        // Create a fresh controller for disposal test
-        final disposableService = MockDeckService();
+        final testState = createTestDataState();
         final disposableController = DeckController(
-          deckService: disposableService,
+          dataState: testState.dataState,
           theme: const DeckTheme(),
-          enableDeckStream: true,
         );
 
         expect(() => disposableController.dispose(), returnsNormally);
-        disposableService.dispose();
       });
     });
   });

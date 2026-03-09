@@ -12,7 +12,7 @@ import 'widgets/loading_indicator.dart';
 import '../utils/constants.dart';
 
 import '../runtime/superdeck_context.dart';
-import '../runtime/superdeck_handle.dart';
+import '../runtime/deck_controller.dart';
 import '../runtime/navigation/navigation_input_listener.dart';
 import 'panels/bottom_bar.dart';
 
@@ -49,7 +49,7 @@ class _SplitViewState extends State<SplitView>
   late final AnimationController _animationController;
   late final Animation<double> _curvedAnimation;
   EffectCleanup? _menuEffectCleanup;
-  SuperDeckHandle? _observedDeck;
+  DeckController? _observedDeck;
 
   @override
   void initState() {
@@ -153,7 +153,7 @@ class _SplitViewState extends State<SplitView>
 
   Widget? _buildFloatingAction({
     required BuildContext context,
-    required SuperDeckHandle deck,
+    required DeckController deck,
     required bool isMenuOpen,
   }) {
     if (isMenuOpen) {

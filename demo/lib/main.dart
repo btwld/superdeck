@@ -12,7 +12,6 @@ import 'src/templates.dart';
 import 'src/widgets/demo_widgets.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   const extensions = [GenUiPlugin()];
   final config = kIsWeb
       ? const DeckConfig.bundle(
@@ -34,26 +33,33 @@ void main() async {
   // Enable semantics for testing
   WidgetsBinding.instance.ensureSemantics();
 
-  final runtime = await SuperDeckRuntime.create(
-    config: config,
-    theme: DeckTheme(
-      baseStyle: borderedStyle(),
-      widgets: {...demoWidgets, 'twitter': const _TwitterBlockDefinition()},
-      styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
-      templates: {
-        'corporate': corporateTemplate(),
-        'minimal': minimalTemplate(),
-      },
-      frame: SlideFrame(
-        header: HeaderPart(),
-        footer: FooterPart(),
-        background: BackgroundPart(),
+  await initializeSuperDeck(extensions: extensions);
+
+  runApp(
+    SuperDeckProvider(
+      config: config,
+      child: SuperDeckApp(
+        theme: DeckTheme(
+          baseStyle: borderedStyle(),
+          widgets: {
+            ...demoWidgets,
+            'twitter': const _TwitterBlockDefinition(),
+          },
+          styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
+          templates: {
+            'corporate': corporateTemplate(),
+            'minimal': minimalTemplate(),
+          },
+          frame: SlideFrame(
+            header: HeaderPart(),
+            footer: FooterPart(),
+            background: BackgroundPart(),
+          ),
+        ),
+        extensions: extensions,
       ),
     ),
-    extensions: extensions,
   );
-
-  runApp(SuperDeckApp(runtime: runtime));
 }
 
 class TwitterWidget extends StatelessWidget {

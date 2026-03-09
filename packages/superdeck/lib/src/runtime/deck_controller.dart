@@ -1,61 +1,45 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meta/meta.dart';
 import 'package:signals/signals.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../export/async_thumbnail.dart';
+import '../export/pdf_export_screen.dart';
 import '../export/thumbnail_service.dart';
 import '../presentation/deck_extension.dart';
 import '../presentation/deck_theme.dart';
 import '../slides/slide_data.dart';
 import '../slides/slide_data_builder.dart';
 import '../utils/asset_cache_store.dart';
-import '../utils/constants.dart';
+import 'superdeck_provider.dart';
 import 'navigation/navigation_events.dart';
 import 'navigation/navigation_service.dart';
 
-/// Loading state for the deck
-enum DeckLoadingState { idle, loading, loaded, error }
-
-/// Unified facade for all deck state and operations
+/// Presentation controller for deck navigation, UI state, and thumbnails.
 ///
-/// Manages reactive state with signals and delegates operations to
-/// stateless services. Consolidates deck, navigation, and thumbnail
-/// concerns under a single controller.
+/// Receives reactive deck data from [DeckDataState] (provided by
+/// [SuperDeckProvider]) and manages presentation concerns only.
 class DeckController {
   // ========================================
-  // DEPENDENCIES (Private Services)
+  // DEPENDENCIES
   // ========================================
 
-  final DeckService _deckService;
+  final DeckDataState _dataState;
   final NavigationService _navigationService;
   final ThumbnailService _thumbnailService;
-  final bool _enableDeckStream;
   final List<DeckExtension> _extensions;
 
-  // Disposal guard to prevent accessing disposed signals
-  // ignore: prefer_final_fields
   bool _disposed = false;
 
   // ========================================
   // INTERNAL STATE (Private Signals)
   // ========================================
 
-  // Deck state
-  final _loadingState = signal<DeckLoadingState>(DeckLoadingState.idle);
-  final _currentDeck = signal<Deck?>(null);
-  final _error = signal<Object?>(null);
-  final _theme = signal<DeckTheme>(
-    const DeckTheme(),
-  ); // NEVER exposed
+  final _theme = signal<DeckTheme>(const DeckTheme());
 
   // UI state
   final _isMenuOpen = signal<bool>(false);
   final _isNotesOpen = signal<bool>(false);
-  final _isRebuilding = signal<bool>(false);
 
   // Navigation state
   final _currentIndex = signal<int>(0);
@@ -67,8 +51,6 @@ class DeckController {
   // Router (required by MaterialApp)
   late final GoRouter router;
 
-  // Stream subscription
-  StreamSubscription<Deck>? _deckSubscription;
   EffectCleanup? _indexClampEffect;
 
   // ========================================
@@ -77,29 +59,30 @@ class DeckController {
 
   // Deck computeds
   late final ReadonlySignal<List<SlideData>> slides = computed(() {
-    final deck = _currentDeck.value;
+    final deck = _dataState.deck.value;
     if (deck == null) return <SlideData>[];
-    final configuration = _resolveDeckWorkspace(deck);
     return SlideDataBuilder(
-      configuration: configuration,
+      configuration: _dataState.workspace,
     ).buildSlides(deck.slides, _theme.value);
   });
 
   late final ReadonlySignal<int> totalSlides = computed(
     () => slides.value.length,
   );
+
+  // Data state pass-throughs
   late final ReadonlySignal<bool> isLoading = computed(
-    () => _loadingState.value == DeckLoadingState.loading,
+    () => _dataState.loadingState.value == DeckLoadingState.loading,
   );
   late final ReadonlySignal<bool> hasError = computed(
-    () => _loadingState.value == DeckLoadingState.error,
+    () => _dataState.loadingState.value == DeckLoadingState.error,
   );
-  ReadonlySignal<Object?> get error => _error;
+  ReadonlySignal<Object?> get error => _dataState.error;
+  ReadonlySignal<bool> get isRebuilding => _dataState.isRebuilding;
 
   // UI computeds
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
   ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
-  ReadonlySignal<bool> get isRebuilding => _isRebuilding;
   List<DeckExtension> get extensions => _extensions;
 
   // Navigation computeds
@@ -126,22 +109,20 @@ class DeckController {
   /// [navigationService] and [thumbnailService] can be injected for testing.
   /// If not provided, default instances are created.
   DeckController({
-    required DeckService deckService,
+    required DeckDataState dataState,
     required DeckTheme theme,
     List<DeckExtension> extensions = const <DeckExtension>[],
-    bool enableDeckStream = !kIsTest,
     NavigationService? navigationService,
     ThumbnailService? thumbnailService,
-  }) : _deckService = deckService,
+  }) : _dataState = dataState,
        _navigationService = navigationService ?? NavigationService(),
        _thumbnailService =
            thumbnailService ??
            ThumbnailService(
              cacheStore: createAssetCacheStore(
-               configuration: deckService.configuration,
+               configuration: dataState.workspace,
              ),
            ),
-       _enableDeckStream = enableDeckStream,
        _extensions = extensions {
     _theme.value = theme;
     final extensionRoutes = _extensions
@@ -164,73 +145,13 @@ class DeckController {
         _currentIndex.value = clamped;
       }
     });
-
-    // Start deck loading
-    _startDeckStream();
   }
 
   // ========================================
   // DECK OPERATIONS
   // ========================================
 
-  DeckWorkspace _resolveDeckWorkspace(Deck deck) {
-    final deckConfiguration = deck.configuration;
-    return _hasExplicitConfigurationOverrides(deckConfiguration)
-        ? deckConfiguration
-        : _deckService.configuration;
-  }
-
-  bool _hasExplicitConfigurationOverrides(DeckWorkspace configuration) {
-    return configuration.projectDir != null ||
-        configuration.slidesPath != null ||
-        configuration.outputDir != null ||
-        configuration.assetsPath != null;
-  }
-
-  void _startDeckStream() {
-    _loadingState.value = DeckLoadingState.loading;
-
-    if (!_enableDeckStream) {
-      unawaited(_loadDeckOnce());
-      return;
-    }
-
-    _deckSubscription = _deckService.loadDeckStream().listen(
-      (deck) {
-        if (_disposed) return;
-        _currentDeck.value = deck;
-        _loadingState.value = DeckLoadingState.loaded;
-        _error.value = null;
-      },
-      onError: (e) {
-        if (_disposed) return;
-        _error.value = e;
-        _loadingState.value = DeckLoadingState.error;
-      },
-      onDone: () {
-        if (_disposed) return;
-        // Stream completed unexpectedly - this shouldn't happen during normal
-        // operation as the deck stream is a file watcher. Log for debugging.
-        debugPrint('[DeckController] Deck stream completed unexpectedly');
-      },
-    );
-  }
-
-  Future<void> _loadDeckOnce() async {
-    try {
-      final deck = await _deckService.loadDeck();
-      if (_disposed) return;
-      _currentDeck.value = deck;
-      _loadingState.value = DeckLoadingState.loaded;
-      _error.value = null;
-    } catch (e) {
-      if (_disposed) return;
-      _error.value = e;
-      _loadingState.value = DeckLoadingState.error;
-    }
-  }
-
-  /// Updates theme state from runtime/bootstrap state.
+  /// Updates theme state from the app layer.
   @internal
   void updateTheme(DeckTheme newTheme) {
     if (_disposed) return;
@@ -239,31 +160,8 @@ class DeckController {
     }
   }
 
-  /// Sets rebuilding state (called by DeckWatcher)
-  @internal
-  void setRebuilding(bool value) {
-    if (_disposed) return;
-    _isRebuilding.value = value;
-  }
-
-  /// Forces the deck stream to restart (used for retry flows)
-  Future<void> reloadDeck() async {
-    if (_disposed) return;
-
-    // Clear error and set loading state BEFORE cancellation to prevent race conditions
-    _error.value = null;
-    _loadingState.value = DeckLoadingState.loading;
-
-    if (!_enableDeckStream) {
-      await _loadDeckOnce();
-      return;
-    }
-
-    await _deckSubscription?.cancel();
-    _deckSubscription = null;
-
-    _startDeckStream();
-  }
+  /// Delegates to [DeckDataState.reload] to restart deck loading.
+  Future<void> reload() => _dataState.reload();
 
   // ========================================
   // UI ACTIONS
@@ -274,6 +172,27 @@ class DeckController {
   void openNotes() => _isNotesOpen.value = true;
   void closeNotes() => _isNotesOpen.value = false;
   void toggleNotes() => _isNotesOpen.value = !_isNotesOpen.value;
+
+  @internal
+  List<Widget> buildActions(BuildContext context) {
+    return _extensions
+        .expand((extension) => extension.buildActions(context))
+        .toList(growable: false);
+  }
+
+  @internal
+  Widget? buildFloatingAction(BuildContext context) {
+    for (final extension in _extensions) {
+      final action = extension.buildFloatingAction(context);
+      if (action != null) return action;
+    }
+    return null;
+  }
+
+  @internal
+  void exportPdf(BuildContext context) {
+    PdfExportDialogScreen.show(context);
+  }
 
   // ========================================
   // NAVIGATION ACTIONS
@@ -376,17 +295,10 @@ class DeckController {
   // ========================================
 
   void dispose() {
-    // Guard against double disposal
     if (_disposed) return;
     _disposed = true;
 
-    // Stop effects before disposing signals
     _indexClampEffect?.call();
-
-    // Cancel stream subscription - use unawaited since dispose() is sync
-    // The subscription may emit events during cancellation, but _disposed
-    // flag prevents signal access after disposal
-    unawaited(_deckSubscription?.cancel());
 
     // Dispose router (GoRouter implements ChangeNotifier)
     router.dispose();
@@ -396,14 +308,10 @@ class DeckController {
       thumbnail.dispose();
     }
 
-    // Dispose signals
-    _loadingState.dispose();
-    _currentDeck.dispose();
-    _error.dispose();
+    // Dispose owned signals
     _theme.dispose();
     _isMenuOpen.dispose();
     _isNotesOpen.dispose();
-    _isRebuilding.dispose();
     _currentIndex.dispose();
     _isTransitioning.dispose();
     _thumbnails.dispose();

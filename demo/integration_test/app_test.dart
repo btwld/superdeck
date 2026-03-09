@@ -47,7 +47,7 @@ void main() {
 
         // The app should be in either loading or loaded state
         // (depending on timing, deck may load very quickly in tests)
-        final controller = findDeckHandle(tester);
+        final controller = findDeckController(tester);
 
         // If controller found early, it may already be loading
         if (controller != null) {
@@ -64,7 +64,7 @@ void main() {
 
         // Controller may be mounted after first frame on slower CI machines.
         await tester.pumpFor(const Duration(seconds: 1));
-        final delayedController = findDeckHandle(tester);
+        final delayedController = findDeckController(tester);
         expect(delayedController, isNotNull);
         await tester.waitForSlidesLoaded(delayedController!);
       });
@@ -493,12 +493,17 @@ void main() {
   });
 
   group('Live Edit', () {
-    late SuperDeckRuntime watchRuntime;
+    const watchConfig = LocalDeckConfig(
+      slidesPath: 'slides.md',
+      watch: true,
+      projectDir: '.',
+      outputDir: '.superdeck',
+      assetsPath: 'assets',
+    );
     late String originalContent;
 
     setUpAll(() async {
       originalContent = await slidesFile.readAsString();
-      watchRuntime = await createTestRuntime(watch: true);
     });
 
     tearDown(() async {
@@ -512,7 +517,7 @@ void main() {
     testWidgets('modifying slides.md updates the presentation', (
       tester,
     ) async {
-      final controller = await tester.pumpTestApp(runtime: watchRuntime);
+      final controller = await tester.pumpTestApp(config: watchConfig);
       expect(controller, isNotNull);
 
       final initialSlideCount = controller!.totalSlides.value;

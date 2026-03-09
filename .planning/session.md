@@ -6,19 +6,17 @@ This is the live session and handoff document for ongoing work in the SuperDeck 
 Agents should read this file before substantive work and update it as work progresses.
 
 ## Current Focus
+- **DeckProvider/DeckDataState separation is complete and validated.** The deck data loading lifecycle has been separated from presentation concerns:
+  - `DeckProvider` widget owns config resolution, service selection, deck loading (stream/one-shot), and `DeckWatcher` lifecycle
+  - `DeckDataState` provides reactive signals: `deck`, `loadingState`, `error`, `isRebuilding`, `workspace`, `reload()`
+  - `SuperDeckApp` is now a pure presentation widget that reads `DeckDataState` from `DeckProvider.of(context)` and creates `DeckController` internally
+  - `DeckController` no longer has data-loading concerns — receives pre-loaded reactive data from `DeckDataState`
+  - `SuperDeckHandle` deleted (was pure forwarding); `SuperDeck.of(context)` returns `DeckController` directly
+  - `SuperDeckRuntime` deleted; responsibilities split between `DeckProvider` and `SuperDeckApp`
+  - Standalone `initializeSuperDeck()` replaces `SuperDeckRuntime.create()` for async initialization
+  - Demo, GenUI, and all tests migrated to the new API
+  - Validation: `melos run analyze:dart` clean, superdeck 632/632 tests pass, genui 423/431 pass (8 pre-existing failures in `deck_tools_service_test.dart`), core 706+ pass
 - Domain naming review is complete. All agreed changes are captured in `.planning/domain-naming-changes.md`.
-- Compatibility cleanup audit is complete. All migration/compat surfaces identified and resolved:
-  - `LegacyMarkdownMigrator` and `migrations/` directory deleted; `@column` handled via parse-time alias in `BlockParser`
-  - `.v2.json` suffix removed from all artifact constants (`DeckArtifacts`) and user-facing docs
-  - `logging_utils.dart` removed; `package:logging` now a direct dependency where needed
-  - `@column` doc-comments updated to reflect alias-only status
-- The naming consistency reset implementation is complete and validated:
-  - `SuperDeckRuntime.create(...)` / `forTesting(...)` now take `theme` plus top-level `extensions`
-  - render/workspace surfaces now use `SlideData`, `SlideFrame`, `BlockContext`, and `DeckWorkspace`
-  - `package:superdeck/superdeck.dart` is narrowed to the approved public API, with `package:superdeck/tooling.dart` added for sibling tooling consumers
-- The dead-utility and compatibility cleanup slice is complete at the code/doc level.
-- The audit cleanup slice is complete and validated.
-- Keep the rewrite on the approved runtime-first v2 surface without reopening architecture decisions.
 - The internal presentation simplification slice is complete:
   - `DeckTheme` is now the only production presentation/config type inside `packages/superdeck`
   - the old internal `DeckOptions` bridge has been removed
@@ -33,16 +31,14 @@ Agents should read this file before substantive work and update it as work progr
 - `.planning/domain-naming-changes.md` — approved domain naming renames and DX cleanup
 
 ## Current State
-- The v2 rewrite plan has been restored locally and reviewed against the current codebase.
-- The API-first v2 direction has now been approved for implementation with these defaults:
-  - primary bootstrap is `SuperDeckRuntime.create(...)`
-  - `SuperDeckApp(runtime: runtime)` is the main widget surface
-  - deck origin is explicit via `DeckSource.local(...)` and `DeckSource.bundle(...)`
-  - runtime/startup config and presentation config are split into separate types
-  - runtime owns the local dev watch/build loop
-  - public CLI docs prefer runtime watch, while `build` / `build --watch` remain transitional v2.0 support
+- The DeckProvider separation has replaced the previous `SuperDeckRuntime`-based bootstrap:
+  - primary bootstrap is `initializeSuperDeck()` + `DeckProvider(config: ..., child: SuperDeckApp(theme: ..., extensions: ...))`
+  - `DeckProvider` owns the data loading lifecycle; `SuperDeckApp` owns presentation
+  - deck origin is explicit via `DeckConfig.local(...)` and `DeckConfig.bundle(...)`
+  - data/loading state is available via `DeckProvider.of(context)` → `DeckDataState`
+  - presentation controller is available via `SuperDeck.of(context)` → `DeckController`
+  - runtime owns the local dev watch/build loop (via `DeckWatcher` inside `DeckProvider`)
   - extensions replace plugins as the behavioral add-on surface
-  - advanced consumers use a narrow `SuperDeckHandle`, not `DeckController` construction
 - The planning/docs reconciliation pass has now been applied before code refactoring:
   - added `.planning/rewrite-v2-api-surface.md` as the canonical API-surface planning doc
   - updated the umbrella rewrite docs to treat the runtime-first API as the approved direction
@@ -176,6 +172,18 @@ Agents should read this file before substantive work and update it as work progr
 - Removed user-facing "legacy" wording from markdown docs to keep guidance strictly canonical.
 - Updated docs to reference only canonical `@block` directive on the user surface.
 - Kept fenced-code guidance canonical by preferring braced options form without legacy framing.
+
+### 2026-03-09 (pure-renderer separation review in progress)
+- Started a focused architecture/code review of the uncommitted runtime split toward provider-owned loading/build concerns and renderer-only `DeckController`.
+- Review criteria: Dart/Flutter API ownership clarity, operational safety for watch/rebuild lifecycle, and overengineering reduction per `code-simplifier`.
+- Review findings snapshot:
+  - Keep direction: separating deck loading/watch lifecycle from `DeckController` remains sound and aligns with pure-renderer ownership.
+  - Must address before implementation: provider-owned loading/error UI cannot assume `MaterialApp` exists when `SuperDeckProvider` is mounted at `runApp(...)` root.
+  - Additional risk to capture in the implementation plan: thumbnail cache identity currently keys only by `slide.key`, which can retain stale thumbnail generators across theme/style changes.
+- Detailed simplifier feedback delivered for this plan:
+  - prefer minimal API delta (remove loading/error/reload from `DeckController` first; defer thumbnail/export extraction unless actively blocking ownership)
+  - if extraction proceeds, avoid callback-bag `DeckTooling` shape and keep one concrete, method-based owner with explicit dependencies
+  - keep loading/error/rebuilding rendering inside a guaranteed app/material context, not in provider root
 
 ### 2026-03-09 (macOS validation pass)
 - Focused on validating the local macOS implementation path for release readiness.

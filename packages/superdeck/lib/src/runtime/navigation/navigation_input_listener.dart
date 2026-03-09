@@ -7,7 +7,7 @@ import '../superdeck_context.dart';
 ///
 /// This widget wraps the application content and listens to both keyboard
 /// and gesture inputs, converting them to navigation events that are then
-/// processed by the runtime through [SuperDeckHandle].
+/// processed by the runtime through [DeckController].
 ///
 /// Supported inputs:
 /// - Keyboard: Meta + Arrow keys (previous/next slide)

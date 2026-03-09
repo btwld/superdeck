@@ -1,157 +1,81 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
-import 'package:go_router/go_router.dart';
-import 'package:logging/logging.dart';
 import 'package:mix/mix.dart';
-import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
-import '../runtime/bundled_deck_service.dart';
-import '../runtime/deck_config.dart';
+import '../presentation/deck_extension.dart';
+import '../presentation/deck_theme.dart';
 import '../runtime/deck_controller.dart';
-import '../runtime/superdeck_handle.dart';
-import '../runtime/superdeck_runtime.dart';
+import '../runtime/superdeck_provider.dart';
 import '../ui/widgets/provider.dart';
-import '../utils/constants.dart';
-import '../utils/deck_watcher.dart';
 import 'app_shell.dart';
 import 'theme.dart';
 import 'tokens/colors.dart';
 
-class SuperDeckApp extends StatelessWidget {
-  const SuperDeckApp({super.key, required this.runtime});
-
-  final SuperDeckRuntime runtime;
-
-  @override
-  Widget build(BuildContext context) {
-    return _RuntimeBootstrap(
-      key: ObjectKey(runtime),
-      runtime: runtime,
-      builder: (context, router) {
-        return MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          title: 'Superdeck',
-          routerConfig: router,
-          builder: (context, child) {
-            return MixScope(
-              colors: SDColors.colorMap,
-              child: AppShell(child: child!),
-            );
-          },
-          theme: theme,
-        );
-      },
-    );
-  }
-}
-
-class _RuntimeBootstrap extends StatefulWidget {
-  const _RuntimeBootstrap({
+class SuperDeckApp extends StatefulWidget {
+  const SuperDeckApp({
     super.key,
-    required this.runtime,
-    required this.builder,
+    this.theme = const DeckTheme(),
+    this.extensions = const <DeckExtension>[],
   });
 
-  final SuperDeckRuntime runtime;
-  final Widget Function(BuildContext context, GoRouter router) builder;
+  final DeckTheme theme;
+  final List<DeckExtension> extensions;
 
   @override
-  State<_RuntimeBootstrap> createState() => _RuntimeBootstrapState();
+  State<SuperDeckApp> createState() => _SuperDeckAppState();
 }
 
-class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
-  late final DeckController _deckController;
-  DeckWatcher? _deckWatcher;
-  EffectCleanup? _deckWatcherEffect;
-  final _logger = Logger('SuperDeckRuntimeBootstrap');
+class _SuperDeckAppState extends State<SuperDeckApp> {
+  DeckController? _deckController;
+  DeckDataState? _dataState;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    final runtime = widget.runtime;
-    final workspace = runtime.workspace;
-
-    final (deckService, enableDeckStream) = switch (runtime.config) {
-      LocalDeckConfig(:final watch) => (
-        DeckService(configuration: workspace),
-        kCanRunProcess || watch,
-      ),
-      BundledDeckConfig(:final deckAssetPath) => (
-        BundledDeckService(
-          configuration: workspace,
-          deckAssetPath: deckAssetPath,
-        ),
-        false,
-      ),
-    };
-
-    _deckController = DeckController(
-      deckService: deckService,
-      theme: runtime.theme,
-      extensions: runtime.extensions,
-      enableDeckStream: enableDeckStream,
-    );
-    runtime.handle.attach(_deckController);
-
-    if (runtime.config case LocalDeckConfig(watch: true)) {
-      try {
-        _deckWatcher = DeckWatcher(
-          configuration: workspace,
-          deckService: deckService,
-        );
-        unawaited(_deckWatcher!.start());
-        _logger.info('Deck watcher started');
-
-        _deckWatcherEffect = effect(() {
-          final isRebuilding = _deckWatcher!.isRebuilding.value;
-          _deckController.setRebuilding(isRebuilding);
-        });
-      } catch (error) {
-        _logger.warning('Deck watcher failed to start: $error');
-      }
-    } else if (runtime.config is LocalDeckConfig) {
-      _logger.info(
-        'Deck watcher disabled via DeckConfig.local(watch: false)',
+    final dataState = SuperDeckProvider.of(context);
+    if (_dataState != dataState) {
+      _deckController?.dispose();
+      _dataState = dataState;
+      _deckController = DeckController(
+        dataState: dataState,
+        theme: widget.theme,
+        extensions: widget.extensions,
       );
     }
   }
 
   @override
-  void didUpdateWidget(covariant _RuntimeBootstrap oldWidget) {
+  void didUpdateWidget(covariant SuperDeckApp oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.runtime.theme != oldWidget.runtime.theme) {
-      _deckController.updateTheme(widget.runtime.theme);
-    }
-    if (!identical(widget.runtime.handle, oldWidget.runtime.handle)) {
-      oldWidget.runtime.handle.detach(_deckController);
-      widget.runtime.handle.attach(_deckController);
+    if (widget.theme != oldWidget.theme) {
+      _deckController?.updateTheme(widget.theme);
     }
   }
 
   @override
   void dispose() {
-    _deckWatcherEffect?.call();
-    _deckWatcher?.dispose();
-    widget.runtime.handle.detach(_deckController);
-    _deckController.dispose();
+    _deckController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return InheritedData<SuperDeckHandle>(
-      data: widget.runtime.handle,
-      child: InheritedData(
-        data: _deckController,
-        child: Builder(
-          builder: (context) {
-            return widget.builder(context, _deckController.router);
-          },
-        ),
+    final controller = _deckController!;
+
+    return InheritedData<DeckController>(
+      data: controller,
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'Superdeck',
+        routerConfig: controller.router,
+        builder: (context, child) {
+          return MixScope(
+            colors: SDColors.colorMap,
+            child: AppShell(child: child!),
+          );
+        },
+        theme: theme,
       ),
     );
   }

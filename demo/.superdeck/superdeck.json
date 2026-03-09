@@ -971,7 +971,34 @@
         }
       ],
       "notes": []
+    },
+    {
+      "key": "MjT3Riut",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "# Watch Test Slide",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
     }
   ],
-  "configuration": {}
+  "configuration": {
+    "projectDir": ".",
+    "slidesPath": "slides.md",
+    "outputDir": ".superdeck",
+    "assetsPath": "assets"
+  }
 }

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.fvm/flutter_sdk/bin/dart analyze packages/superdeck)"
+    ]
+  }
+}

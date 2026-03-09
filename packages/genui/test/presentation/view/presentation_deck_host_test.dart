@@ -14,68 +14,64 @@ void main() {
     DeckStyleService.clearCache();
   });
 
-  testWidgets('does not recreate runtime when presentation is unchanged', (
+  testWidgets('does not rebuild app when presentation is unchanged', (
     tester,
   ) async {
-    var loadCount = 0;
-
-    Future<SuperDeckRuntime> loadRuntime(DeckTheme theme) async {
-      loadCount++;
-      return SuperDeckRuntime.forTesting(theme: theme);
-    }
-
-    Widget buildHost() {
-      return MaterialApp(
-        home: PresentationDeckHost(
-          deckAppBuilder: (_) => const SizedBox.shrink(),
-          runtimeLoader: loadRuntime,
-        ),
-      );
-    }
-
-    await tester.pumpWidget(buildHost());
-    await tester.pumpAndSettle();
-
-    expect(loadCount, equals(1));
-
-    await tester.pumpWidget(buildHost());
-    await tester.pumpAndSettle();
-
-    expect(loadCount, equals(1));
-  });
-
-  testWidgets('rebuilds deck presentation when style notifier changes', (
-    tester,
-  ) async {
-    final seenRuntimes = <SuperDeckRuntime>[];
-    var loadCount = 0;
+    var buildCount = 0;
 
     await tester.pumpWidget(
       MaterialApp(
         home: PresentationDeckHost(
-          deckAppBuilder: (runtime) {
-            seenRuntimes.add(runtime);
+          config: const DeckConfig.bundle(),
+          appBuilder: (theme) {
+            buildCount++;
             return const SizedBox.shrink();
-          },
-          runtimeLoader: (theme) async {
-            loadCount++;
-            return SuperDeckRuntime.forTesting(theme: theme);
           },
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(seenRuntimes, hasLength(1));
-    expect(loadCount, equals(1));
-    expect(seenRuntimes.last.theme.baseStyle, isNull);
+    final initialCount = buildCount;
+
+    // Pump without rebuilding the widget tree — signals unchanged,
+    // so the Watch builder should not fire again.
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(buildCount, equals(initialCount));
+
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('rebuilds deck presentation when style notifier changes', (
+    tester,
+  ) async {
+    final seenThemes = <DeckTheme>[];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PresentationDeckHost(
+          config: const DeckConfig.bundle(),
+          appBuilder: (theme) {
+            seenThemes.add(theme);
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(seenThemes, hasLength(1));
+    expect(seenThemes.last.baseStyle, isNull);
 
     DeckStyleService.setStyle(DeckStyleType.parse(_styleMap()));
     await tester.pumpAndSettle();
 
-    expect(seenRuntimes.length, greaterThan(1));
-    expect(loadCount, equals(2));
-    expect(seenRuntimes.last.theme.baseStyle, isNotNull);
+    expect(seenThemes.length, greaterThan(1));
+    expect(seenThemes.last.baseStyle, isNotNull);
+
+    await tester.pumpWidget(const SizedBox());
   });
 }
 

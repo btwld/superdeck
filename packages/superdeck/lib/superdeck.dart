@@ -12,9 +12,10 @@ export 'package:superdeck/src/rendering/blocks/block_context.dart';
 export 'package:superdeck/src/rendering/blocks/block_widget.dart';
 // Runtime
 export 'package:superdeck/src/runtime/deck_config.dart';
+export 'package:superdeck/src/runtime/deck_controller.dart';
+export 'package:superdeck/src/runtime/superdeck_provider.dart';
 export 'package:superdeck/src/runtime/superdeck_context.dart';
-export 'package:superdeck/src/runtime/superdeck_handle.dart';
-export 'package:superdeck/src/runtime/superdeck_runtime.dart';
+export 'package:superdeck/src/runtime/superdeck_init.dart';
 // Slides
 export 'package:superdeck/src/slides/slide_data.dart';
 // Styling

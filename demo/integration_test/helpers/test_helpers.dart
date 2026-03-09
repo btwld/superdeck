@@ -24,8 +24,6 @@ class _TwitterBlockDefinition extends BlockDefinition<Map<String, Object?>> {
   }
 }
 
-SuperDeckRuntime? _runtime;
-
 /// The slides.md file used by the demo app.
 final slidesFile = File('slides.md');
 
@@ -52,59 +50,51 @@ DeckTheme _testTheme() => DeckTheme(
   ),
 );
 
-/// Creates a test runtime with the given watch setting.
-Future<SuperDeckRuntime> createTestRuntime({bool watch = false}) {
-  final config = watch ? _testConfig.copyWith(watch: true) : _testConfig;
-  return SuperDeckRuntime.create(config: config, theme: _testTheme());
-}
-
-String describeDeckState(SuperDeckHandle? handle) {
-  if (handle == null) {
-    return 'SuperDeckHandle: null';
+String describeDeckState(DeckController? controller) {
+  if (controller == null) {
+    return 'DeckController: null';
   }
 
   return [
-    'SuperDeckHandle state:',
-    '  isLoading=${handle.isLoading.value}',
-    '  hasError=${handle.hasError.value}',
-    '  error=${handle.error.value}',
-    '  totalSlides=${handle.totalSlides.value}',
-    '  currentIndex=${handle.currentIndex.value}',
-    '  isMenuOpen=${handle.isMenuOpen.value}',
-    '  isNotesOpen=${handle.isNotesOpen.value}',
+    'DeckController state:',
+    '  isLoading=${controller.isLoading.value}',
+    '  hasError=${controller.hasError.value}',
+    '  error=${controller.error.value}',
+    '  totalSlides=${controller.totalSlides.value}',
+    '  currentIndex=${controller.currentIndex.value}',
+    '  isMenuOpen=${controller.isMenuOpen.value}',
+    '  isNotesOpen=${controller.isNotesOpen.value}',
   ].join('\n');
 }
 
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
-  const TestApp({super.key, this.runtime});
+  const TestApp({super.key, this.config});
 
-  final SuperDeckRuntime? runtime;
+  final DeckConfig? config;
 
-  /// Initializes the shared non-watch runtime for testing.
+  /// Initializes the shared dependencies for testing.
   ///
   /// Should be called in setUpAll() before any tests run.
   static Future<void> initialize() async {
-    WidgetsFlutterBinding.ensureInitialized();
     SignalsObserver.instance = null;
     WidgetsBinding.instance.ensureSemantics();
-    _runtime = await createTestRuntime();
+    await initializeSuperDeck();
   }
 
   @override
   Widget build(BuildContext context) {
-    final rt = runtime ?? _runtime;
-    if (rt == null) {
-      throw StateError('Test runtime was not initialized');
-    }
-    return SuperDeckApp(runtime: rt);
+    return SuperDeckProvider(
+      config: config ?? _testConfig,
+      child: SuperDeckApp(theme: _testTheme()),
+    );
   }
 }
 
-/// Finds the SuperDeckHandle from the widget tree.
+/// Finds the DeckController from the widget tree.
 ///
-/// Returns null if the handle cannot be found.
-SuperDeckHandle? findDeckHandle(WidgetTester tester) {
+/// Returns null if the controller cannot be found.
+DeckController? findDeckController(WidgetTester tester) {
   try {
     final scaffoldFinder = find.byType(Scaffold);
     if (scaffoldFinder.evaluate().isEmpty) return null;
@@ -158,12 +148,12 @@ extension IntegrationTestExtensions on WidgetTester {
 
   /// Pumps the test app and waits for it to fully load.
   ///
-  /// Returns the SuperDeckHandle for further assertions.
-  Future<SuperDeckHandle?> pumpTestApp({SuperDeckRuntime? runtime}) async {
-    final widget = runtime != null
-        ? TestApp(runtime: runtime)
+  /// Returns the DeckController for further assertions.
+  Future<DeckController?> pumpTestApp({DeckConfig? config}) async {
+    final widget = config != null
+        ? TestApp(config: config)
         : const TestApp();
-    final mountTimeout = runtime != null
+    final mountTimeout = config != null
         ? const Duration(seconds: 30)
         : const Duration(seconds: 15);
 
@@ -171,18 +161,18 @@ extension IntegrationTestExtensions on WidgetTester {
     await pumpFor(const Duration(milliseconds: 200));
 
     await pumpUntil(
-      () => findDeckHandle(this) != null,
+      () => findDeckController(this) != null,
       timeout: mountTimeout,
-      debugLabel: 'SuperDeckHandle to mount',
+      debugLabel: 'DeckController to mount',
       onTimeout: () => _startupDiagnostics(),
     );
 
-    final controller = findDeckHandle(this);
+    final controller = findDeckController(this);
     expect(
       controller,
       isNotNull,
       reason:
-          'SuperDeckHandle was not found after startup.\n'
+          'DeckController was not found after startup.\n'
           'Diagnostics:\n${_startupDiagnostics()}',
     );
     if (controller == null) return null;
@@ -192,7 +182,7 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   /// Waits for the app to finish loading slides.
-  Future<void> waitForSlidesLoaded(SuperDeckHandle controller) async {
+  Future<void> waitForSlidesLoaded(DeckController controller) async {
     await pumpUntil(
       () => !controller.isLoading.value,
       timeout: const Duration(seconds: 20),
@@ -211,7 +201,7 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   /// Navigates to a specific slide and waits for transition to complete.
-  Future<void> navigateToSlide(SuperDeckHandle controller, int index) async {
+  Future<void> navigateToSlide(DeckController controller, int index) async {
     await controller.goToSlide(index);
     await pumpUntil(
       () => controller.currentIndex.value == index,
@@ -223,7 +213,7 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   String _startupDiagnostics() {
-    final controller = findDeckHandle(this);
+    final controller = findDeckController(this);
     return [
       describeDeckState(controller),
       'Scaffold count=${find.byType(Scaffold).evaluate().length}',

@@ -10,7 +10,7 @@ import '../superdeck_context.dart';
 /// Widget for rendering slide page content
 ///
 /// Handles loading states, errors, and syncing route index with runtime state
-/// exposed through [SuperDeckHandle].
+/// exposed through [DeckController].
 class SlidePageContent extends StatelessWidget {
   final int index;
 
