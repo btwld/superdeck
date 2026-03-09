@@ -32,13 +32,13 @@ This matters because it changes what the app is allowed to do:
 There are effectively two runtime modes today:
 
 1. Process-capable runtime mode
-- `DeckControllerBuilder` uses `DeckService`
-- `DeckController` can subscribe to `DeckService.loadDeckStream()`
-- if `DeckSource.local(watch: true)` is configured, `DeckWatcher` starts a build/watch loop inside the app
+- `SuperDeckProvider` uses `DeckService`
+- provider subscribes to `DeckService.loadDeckStream()`
+- if `DeckConfig.local(watch: true)` is configured, `DeckWatcher` starts a build/watch loop inside the app
 
 2. Bundled runtime mode
-- `DeckControllerBuilder` uses `BundledDeckService`
-- `DeckController` loads deck data once from bundled assets
+- `SuperDeckProvider` uses `BundledDeckService`
+- provider loads deck data once from bundled assets
 - no file-backed watch/build path exists in this mode
 
 ## Current Configuration Inputs
@@ -66,9 +66,9 @@ CLI behavior:
 - invalid YAML or invalid schema shape is a hard command failure
 
 Runtime behavior:
-- `SuperDeckRuntime.create(...)` takes explicit `DeckSource`, `DeckRuntimeConfig`, and `DeckTheme` inputs
+- `initializeSuperDeck(...)`, `DeckConfig`, `SuperDeckProvider`, and `DeckTheme` define the current app bootstrap inputs
 - runtime does not implicitly read local `superdeck.yaml`
-- bundled runtimes use their explicit runtime/source inputs and bundled deck artifacts only
+- bundled runtimes use their explicit app config inputs and bundled deck artifacts only
 
 So the current system already has an intentionally split policy:
 - CLI config discovery is strict and file-backed
@@ -87,14 +87,14 @@ That split should still be revisited later as an external config-source decision
 That means `styles.yaml` changes are not part of the current watch contract unless an app explicitly builds that behavior itself.
 
 ### Configuration lifecycle inside the app
-`DeckControllerBuilder` currently resolves configuration only during `initState()`.
+`SuperDeckProvider` currently resolves `DeckConfig` only during `initState()`.
 
 - it creates the deck service once
 - it creates the optional runtime watcher once
-- `didUpdateWidget()` updates only `DeckOptions`
-- changing `configuration` after the controller is created does not rebuild the service/watcher graph
+- `SuperDeckApp` receives live `Deck` and `DeckTheme` updates
+- changing provider config after creation requires recreating the provider rather than mutating the service/watcher graph in place
 
-This makes configuration effectively startup-only in the current app lifecycle.
+This keeps source/runtime wiring effectively startup-only in the current app lifecycle.
 
 ## Frozen v2 local runtime configuration contract
 
@@ -104,39 +104,30 @@ is superseded by the approved API reset in `.planning/rewrite-v2-api-surface.md`
 ### 1. App-facing local runtime surface
 The canonical local runtime surface is now:
 
-- `SuperDeckRuntime.create(...)`
-- `SuperDeckApp(runtime: runtime)`
+- `initializeSuperDeck(...)`
+- `SuperDeckProvider(config: ..., builder: ...)`
+- `SuperDeckApp(deck: ..., theme: ..., extensions: ...)`
 
-With the runtime created from:
-- `DeckSource.local(...)`
-- `DeckRuntimeConfig(...)`
+With the app configured from:
+- `DeckConfig.local(...)`
 - `DeckTheme(...)`
+- `DeckExtension`s
 
-### 2. `DeckSource` ownership
-`DeckSource` owns content origin and source-side rebuild/watch semantics.
+### 2. `DeckConfig` ownership
+`DeckConfig` owns content origin, source-side rebuild/watch semantics, and
+startup-only local path configuration.
 
 Frozen v2 source forms:
-- `DeckSource.local(slidesPath, watch)`
-- `DeckSource.bundle(deckAssetPath)`
+- `DeckConfig.local(slidesPath, watch, projectDir, outputDir, assetsPath)`
+- `DeckConfig.bundle(deckAssetPath, projectDir, outputDir, assetsPath)`
 
 Rules:
-- local source is explicit rather than inferred
-- bundle source is explicit rather than inferred
-- source rebuild/watch enablement belongs to `DeckSource.local(watch: ...)`
+- local config is explicit rather than inferred
+- bundle config is explicit rather than inferred
+- source rebuild/watch enablement belongs to `DeckConfig.local(watch: ...)`
 - source selection is startup-only, not a live render option
-
-### 3. `DeckRuntimeConfig` ownership
-`DeckRuntimeConfig` owns startup-only operational paths and runtime policy.
-
-Its frozen v2 field set is:
-- `projectDir`
-- `outputDir`
-- `assetsPath`
-
-Rules:
 - keep path values relative/path-safe local configuration
-- keep file/layout/runtime wiring in `DeckRuntimeConfig`
-- do not put style/template/widget/render composition into `DeckRuntimeConfig`
+- do not put style/template/widget/render composition into `DeckConfig`
 - do not implicitly read `superdeck.yaml`
 
 ### 4. `DeckTheme` ownership
@@ -146,28 +137,26 @@ Its frozen v2 field set is:
 - `baseStyle`
 - `styles`
 - `widgets`
-- `parts`
+- `frame`
 - `debug`
 - `templates`
 - `defaultTemplate`
-- `extensions`
 
 Rules:
 - keep style/template/widget/chrome/render composition in `DeckTheme`
-- keep behavioral/runtime add-ons in `DeckTheme.extensions`
+- keep behavioral/runtime add-ons on `SuperDeckApp.extensions`
 - do not put source selection or build/watch ownership into `DeckTheme`
 
 ### 5. Mutability contract
 Startup-only local runtime configuration:
-- `DeckSource`
-- all of `DeckRuntimeConfig`
+- `DeckConfig`
 - extension set / extension initialization
 
 Live-update-capable presentation configuration:
 - `baseStyle`
 - `styles`
 - `widgets`
-- `parts`
+- `frame`
 - `debug`
 - `templates`
 - `defaultTemplate`
@@ -186,7 +175,7 @@ Default local runtime configuration remains:
 
 Default local source behavior:
 - runtime performs an initial one-shot local build before app render
-- embedded rebuild/watch is off unless `DeckSource.local(watch: true)` is used
+- embedded rebuild/watch is off unless `DeckConfig.local(watch: true)` is used
 
 ### 7. Deferred from this contract
 The following are intentionally deferred:
@@ -345,12 +334,12 @@ This is the current end-to-end flow when source content changes in a process-cap
 
 1. Configuration is chosen
 - from explicit runtime bootstrap input, or
-- from runtime-created `DeckRuntimeConfig` + `DeckSource`, or
+- from explicit `DeckConfig`, or
 - from CLI `loadConfiguration()`
 
 2. A build is triggered
 - by CLI watch, or
-- by runtime `DeckWatcher` when `DeckSource.local(watch: true)` is enabled
+- by runtime `DeckWatcher` when `DeckConfig.local(watch: true)` is enabled
 
 3. The builder rebuilds from `slides.md`
 - `DeckBuilder` parses markdown
@@ -421,7 +410,7 @@ For v2, the runtime-mode contract is:
 This freezes the mode boundary itself.
 What remains distinct is the runtime-mode behavior inside the process-capable mode, not the API placement.
 
-### 1. Process-capable runtime with `DeckSource.local(watch: false)`
+### 1. Process-capable runtime with `DeckConfig.local(watch: false)`
 This is the frozen v2 "consume built artifacts only" mode.
 
 - the app uses `DeckService`
@@ -429,7 +418,7 @@ This is the frozen v2 "consume built artifacts only" mode.
 - the app does not rebuild source markdown itself
 - this is the current compatibility mode for "external build flow rewrites artifacts, app live-reloads them"
 
-### 2. Process-capable runtime with `DeckSource.local(watch: true)`
+### 2. Process-capable runtime with `DeckConfig.local(watch: true)`
 This is the frozen v2 embedded build/watch mode and the intended first-class dev watch mode.
 
 - the app uses `DeckService`
@@ -476,7 +465,7 @@ So the simplification is:
 
 `DeckOptions.watchForChanges` was the old app-level flag for runtime-triggered watch/build behavior on process-capable runtimes.
 
-In the approved v2 API surface, this behavior moves to `DeckSource.local(watch: ...)`.
+In the approved v2 API surface, this behavior moves to `DeckConfig.local(watch: ...)`.
 
 What it meant in practice:
 - if disabled, the app still loads and streams the generated deck artifact when file-backed deck loading is active

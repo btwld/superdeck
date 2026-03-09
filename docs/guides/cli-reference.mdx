@@ -6,7 +6,7 @@ description: Complete reference for SuperDeck CLI setup, build, and publishing c
 # CLI reference
 
 The SuperDeck CLI provides project setup, build, and publishing commands.
-Local slide build/watch is owned by the runtime through `DeckSource.local(...)`,
+Local slide build/watch is owned by the app through `DeckConfig.local(...)`,
 and `superdeck build --watch` remains available through v2.0 as a transitional
 workflow.
 
@@ -47,8 +47,8 @@ superdeck setup
 ### `superdeck build`
 
 Build presentation artifacts from `slides.md`. This is a supported transitional
-v2.0 command. For day-to-day app development, prefer runtime watch with
-`DeckSource.local(watch: true)` and `flutter run`.
+v2.0 command. For day-to-day app development, prefer app-owned watch with
+`DeckConfig.local(watch: true)` and `flutter run`.
 
 ```bash
 superdeck build [options]
@@ -148,17 +148,15 @@ In debug builds, it also enables `com.apple.security.network.server` and `com.ap
 
 ### Development workflow
 
-Use runtime-owned local build/watch:
+Use app-owned local build/watch:
 
 ```dart
-final runtime = await SuperDeckRuntime.create(
-  source: const DeckSource.local(
-    slidesPath: 'slides.md',
-    watch: true,
-  ),
-  runtimeConfig: const DeckRuntimeConfig(),
-  theme: const DeckTheme(),
-);
+final config = kIsWeb
+    ? const DeckConfig.bundle()
+    : const DeckConfig.local(
+        slidesPath: 'slides.md',
+        watch: true,
+      );
 ```
 
 Then run:
@@ -215,14 +213,14 @@ superdeck publish
 ### Local runtime watch issues
 
 **Problem:** Changes not detected
-**Solution:** Ensure you're editing `slides.md` in the project root and that your app uses `DeckSource.local(watch: true)`
+**Solution:** Ensure you're editing `slides.md` in the project root and that your app uses `DeckConfig.local(watch: true)`
 
 **Problem:** Build errors in watch mode
 **Solution:** Fix the error in `slides.md` and save again; the runtime rebuild loop will retry automatically
 
 ## Performance tips
 
-1. **Use runtime watch** - `DeckSource.local(watch: true)` is the primary development flow
+1. **Use app watch** - `DeckConfig.local(watch: true)` is the primary development flow
 2. **Cache remote images** - Remote images are cached at runtime by `cached_network_image`
 3. **Run setup once** - `superdeck setup` keeps `pubspec.yaml` and platform files aligned
 4. **Incremental rebuilds** - Only changed assets are rebuilt by default

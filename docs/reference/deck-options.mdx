@@ -1,133 +1,165 @@
 ---
 title: Runtime API reference
-description: Complete API reference for bootstrapping and configuring SuperDeck v2
+description: Complete API reference for bootstrapping and configuring SuperDeck
 ---
 
 # Runtime API reference
 
-SuperDeck v2 is configured through three public types:
+The current SuperDeck bootstrap surface is:
 
-- `DeckSource` for content origin and watch behavior
-- `DeckRuntimeConfig` for startup-only operational paths
-- `DeckTheme` for render composition, custom widgets, templates, and slide frame widgets
+- `initializeSuperDeck()` for one-time startup work
+- `DeckConfig` for deck origin and watch behavior
+- `SuperDeckProvider` for loading, rebuild, and error ownership
+- `SuperDeckApp` for rendering a loaded `Deck`
+- `DeckTheme` for render composition
+- `DeckExtension` for behavior and extra UI
 
-The canonical bootstrap shape is:
+## Canonical bootstrap
 
 ```dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
 Future<void> main() async {
-  final runtime = await SuperDeckRuntime.create(
-    source: const DeckSource.local(
-      slidesPath: 'slides.md',
-      watch: true,
-    ),
-    runtimeConfig: const DeckRuntimeConfig(),
-    theme: DeckTheme(
-      widgets: const {
-        'twitter': TwitterWidgetDefinition(),
-      },
-      frame: SlideFrame(
-        header: CustomHeaderPart(),
-        footer: CustomFooterPart(),
-        background: CustomBackgroundPart(),
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeSuperDeck();
+
+  final config = kIsWeb
+      ? const DeckConfig.bundle()
+      : const DeckConfig.local(
+          slidesPath: 'slides.md',
+          watch: true,
+        );
+
+  runApp(
+    SuperDeckProvider(
+      config: config,
+      builder: (context, deck) => SuperDeckApp(
+        deck: deck,
+        theme: DeckTheme(
+          widgets: const {
+            'twitter': TwitterBlockDefinition(),
+          },
+          frame: SlideFrame(
+            header: CustomHeaderPart(),
+            footer: CustomFooterPart(),
+            background: CustomBackgroundPart(),
+          ),
+          debug: true,
+        ),
       ),
-      debug: true,
     ),
   );
-
-  runApp(SuperDeckApp(runtime: runtime));
 }
 ```
 
-## `DeckSource`
+## `initializeSuperDeck()`
 
-### `DeckSource.local`
-Use a local markdown source and optionally watch it for changes.
+Runs one-time startup work before `runApp()`.
+
+Use it to:
+
+- initialize framework dependencies
+- initialize `DeckExtension`s
+- keep startup concerns out of widget constructors
+
+## `DeckConfig`
+
+`DeckConfig` selects where the deck comes from.
+
+### `DeckConfig.local`
+
+Use a local `slides.md` source and optionally watch it for changes.
 
 ```dart
-const DeckSource.local(
+const DeckConfig.local(
   slidesPath: 'slides.md',
   watch: true,
-)
-```
-
-### `DeckSource.bundle`
-Use prebuilt bundled artifacts.
-
-```dart
-const DeckSource.bundle(
-  deckAssetPath: '.superdeck/superdeck.json',
-)
-```
-
-## `DeckRuntimeConfig`
-
-Startup-only operational paths:
-
-```dart
-const DeckRuntimeConfig(
   projectDir: '.',
   outputDir: '.superdeck',
   assetsPath: 'assets',
 )
 ```
 
-## `DeckTheme`
+### `DeckConfig.bundle`
 
-Render composition and slide-level composition points:
+Use bundled deck artifacts for web/test/release-style runtimes.
 
 ```dart
-DeckTheme(
-  baseStyle: SlideStyle(),
-  styles: {
-    'title': SlideStyle(),
-  },
-  widgets: const {
-    'twitter': TwitterWidgetDefinition(),
-  },
-  frame: SlideFrame(
-    header: CustomHeaderPart(),
-    footer: CustomFooterPart(),
-    background: CustomBackgroundPart(),
-  ),
-  debug: true,
+const DeckConfig.bundle(
+  deckAssetPath: '.superdeck/superdeck.json',
+  projectDir: '.',
+  outputDir: '.superdeck',
+  assetsPath: 'assets',
 )
 ```
 
-### `baseStyle`
-Base style for all slides.
+## `SuperDeckProvider`
 
-### `styles`
-Named style variants for frontmatter such as:
+`SuperDeckProvider` owns:
 
-```markdown
----
-style: title
----
-```
+- deck loading
+- local file-watch rebuilds
+- loading/error/rebuild UI
 
-### `widgets`
-Custom widget definitions keyed by widget name.
-
-### `frame`
-Slide-wide header, footer, and background widgets.
-
-### `templates` and `defaultTemplate`
-Named slide templates and the deck-level fallback template.
-
-### `debug`
-Enables visual debugging aids for slide layout design.
-
-### `SuperDeckRuntime.extensions`
-Behavioral/runtime add-ons that replace the old plugin-first surface.
-
-## `WidgetDefinition` example
+It calls `builder` only when a loaded `Deck` is available.
 
 ```dart
-import 'package:flutter/widgets.dart';
-import 'package:superdeck/superdeck.dart';
+SuperDeckProvider(
+  config: config,
+  builder: (context, deck) => SuperDeckApp(
+    deck: deck,
+    theme: const DeckTheme(),
+  ),
+)
+```
 
-class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const TwitterWidgetDefinition();
+## `SuperDeckApp`
+
+`SuperDeckApp` is the render/runtime shell for a loaded deck.
+
+```dart
+SuperDeckApp(
+  deck: deck,
+  theme: DeckTheme(
+    baseStyle: SlideStyle(),
+    styles: {
+      'title': SlideStyle(),
+    },
+    widgets: const {
+      'twitter': TwitterBlockDefinition(),
+    },
+    frame: SlideFrame(
+      header: CustomHeaderPart(),
+      footer: CustomFooterPart(),
+      background: CustomBackgroundPart(),
+    ),
+    debug: true,
+  ),
+  extensions: const [
+    PresenterToolsExtension(),
+  ],
+)
+```
+
+## `DeckTheme`
+
+`DeckTheme` owns render composition:
+
+- `baseStyle`
+- `styles`
+- `widgets`
+- `frame`
+- `templates`
+- `defaultTemplate`
+- `debug`
+
+Custom widget blocks are registered as `BlockDefinition`s keyed by name.
+
+```dart
+class TwitterBlockDefinition extends BlockDefinition<Map<String, Object?>> {
+  const TwitterBlockDefinition();
 
   @override
   Map<String, Object?> parse(Map<String, Object?> args) => args;
@@ -136,7 +168,6 @@ class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
   Widget build(BuildContext context, Map<String, Object?> args) {
     final username = args['username'] as String? ?? '';
     final tweetId = args['tweetId'] as String? ?? '';
-
     return Text('Twitter: @$username ($tweetId)');
   }
 }
@@ -144,8 +175,8 @@ class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
 
 ## Best practices
 
-1. Use `DeckSource.local(watch: true)` during development.
-2. Keep `DeckRuntimeConfig` limited to startup-only operational concerns.
-3. Put styles, widgets, frame widgets, templates, and debug visuals on `DeckTheme`.
-4. Keep behavioral add-ons on `SuperDeckRuntime.extensions`.
-5. Enable `debug: true` while designing layouts.
+1. Use `DeckConfig.local(watch: true)` during local development.
+2. Use `DeckConfig.bundle()` for bundled/web-style deployments.
+3. Keep loading/build/watch ownership in `SuperDeckProvider`.
+4. Keep styles, widgets, templates, and slide frame parts on `DeckTheme`.
+5. Keep behavioral add-ons on `DeckExtension`.

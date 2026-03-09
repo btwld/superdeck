@@ -66,16 +66,24 @@ Build presentations with Markdown and Flutter
 Register custom Flutter widgets and use them directly in Markdown:
 
 ```dart
-final runtime = await SuperDeckRuntime.create(
-  source: const DeckSource.local(
-    slidesPath: 'slides.md',
-    watch: true,
-  ),
-  runtimeConfig: const DeckRuntimeConfig(),
-  theme: DeckTheme(
-    widgets: const {
-      'twitter': TwitterWidgetDefinition(),
-    },
+final config = kIsWeb
+    ? const DeckConfig.bundle()
+    : const DeckConfig.local(
+        slidesPath: 'slides.md',
+        watch: true,
+      );
+
+runApp(
+  SuperDeckProvider(
+    config: config,
+    builder: (context, deck) => SuperDeckApp(
+      deck: deck,
+      theme: DeckTheme(
+        widgets: const {
+          'twitter': TwitterBlockDefinition(),
+        },
+      ),
+    ),
   ),
 );
 ```
@@ -89,7 +97,7 @@ Use in Markdown:
 }
 ````
 
-SuperDeck calls `WidgetDefinition.parse()` with the block's arguments and then `WidgetDefinition.build()` to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
+SuperDeck calls `BlockDefinition.parse()` with the block's arguments and then `BlockDefinition.build()` to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
 
 ### Markdown extensions
 
@@ -182,7 +190,7 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 
 SuperDeck uses a two-stage pipeline:
 
-1. **Local runtime build**: `DeckSource.local(...)` parses `slides.md`, renders Mermaid diagrams to images, and generates asset manifests
+1. **Local runtime build**: `DeckConfig.local(...)` parses `slides.md`, renders Mermaid diagrams to images, and generates asset manifests
 2. **Runtime rendering**: Flutter renders the parsed slide data as widgets with full styling control
 
 This approach gives you fast hot-reload during development while ensuring optimized assets in production.

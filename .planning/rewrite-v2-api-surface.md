@@ -1,71 +1,89 @@
 # SuperDeck V2 API Surface
 
 ## Purpose
-This document is the canonical planning source for the v2 public runtime/bootstrap API.
+This document is the canonical planning source for the implemented v2 public bootstrap API.
 
 Use it for:
 - the primary Flutter bootstrap surface
-- source selection and watch semantics
-- runtime vs presentation configuration boundaries
+- deck source selection and watch semantics
+- provider vs renderer ownership
 - extension and advanced-control APIs
-- public CLI scope
+- public CLI/runtime language
 
-Do not use older planning references to `SuperDeckApp(options, configuration?)`,
-`DeckOptions.watchForChanges`, or `DeckWorkspace.watch` as the v2 source of truth.
-Those were intermediate planning shapes and are superseded by this document.
+Do not use older planning references to `SuperDeckRuntime`, `DeckSource`,
+`DeckRuntimeConfig`, or `SuperDeckApp(runtime: ...)` as the current
+implementation surface. Those were intermediate planning shapes and are now
+historical only.
 
 ## Canonical Bootstrap
 
 ```dart
 Future<void> main() async {
-  final runtime = await SuperDeckRuntime.create(
-    source: DeckSource.local(
-      slidesPath: 'slides.md',
-      watch: true,
-    ),
-    runtimeConfig: const DeckRuntimeConfig(
-      projectDir: '.',
-      outputDir: '.superdeck',
-      assetsPath: 'assets',
-    ),
-    presentation: DeckTheme(
-      baseStyle: baseStyle,
-      styles: styles,
-      templates: templates,
-      defaultTemplate: defaultTemplate,
-      widgets: widgets,
-      parts: parts,
-      debug: true,
-      extensions: [presenterTools],
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeSuperDeck(extensions: [presenterTools]);
+
+  final config = kIsWeb
+      ? const DeckConfig.bundle(
+          projectDir: '.',
+          outputDir: '.superdeck',
+          assetsPath: 'assets',
+        )
+      : const DeckConfig.local(
+          slidesPath: 'slides.md',
+          watch: true,
+          projectDir: '.',
+          outputDir: '.superdeck',
+          assetsPath: 'assets',
+        );
+
+  runApp(
+    SuperDeckProvider(
+      config: config,
+      builder: (context, deck) => SuperDeckApp(
+        deck: deck,
+        theme: DeckTheme(
+          baseStyle: baseStyle,
+          styles: styles,
+          templates: templates,
+          defaultTemplate: defaultTemplate,
+          widgets: widgets,
+          frame: frame,
+          debug: true,
+        ),
+        extensions: const [presenterTools],
+      ),
     ),
   );
-
-  runApp(SuperDeckApp(runtime: runtime));
 }
 ```
 
 ## Public Types
 
-### `SuperDeckRuntime`
-- canonical async bootstrap result
-- owns startup work before `runApp()`
-- owns initial local build when using a local source
-- exposes `handle` for advanced control
+### `initializeSuperDeck`
+- canonical async startup entrypoint before `runApp()`
+- owns dependency initialization and `DeckExtension.initialize()`
 
-### `DeckSource`
-- explicit content origin
-- `DeckSource.local(slidesPath, watch)`
-- `DeckSource.bundle(deckAssetPath)`
-- local source is the only mode that can trigger source rebuild/watch behavior
+### `DeckConfig`
+- explicit deck origin and watch policy
+- `DeckConfig.local(slidesPath, watch, projectDir, outputDir, assetsPath)`
+- `DeckConfig.bundle(deckAssetPath, projectDir, outputDir, assetsPath)`
+- local config is the only mode that can trigger source rebuild/watch behavior
 
-### `DeckRuntimeConfig`
-- startup-only operational paths and runtime policy
+### `SuperDeckProvider`
+- canonical deck-loading lifecycle owner
 - owns:
-  - `projectDir`
-  - `outputDir`
-  - `assetsPath`
-- does not own styles, templates, widgets, or debug rendering
-- does not implicitly read `superdeck.yaml`
+  - deck loading
+  - rebuild/watch state
+  - loading/error/rebuild UI
+- calls `builder` only when a loaded `Deck` is available
+
+### `SuperDeckApp`
+- canonical render/runtime widget surface
+- takes explicit `deck`, `theme`, and `extensions`
+- owns:
+  - controller creation
+  - routing/navigation wiring
+  - presentation shell
 
 ### `DeckTheme`
 - render-time presentation composition
@@ -75,43 +93,36 @@ Future<void> main() async {
   - `templates`
   - `defaultTemplate`
   - `widgets`
-  - `parts`
+  - `frame`
   - `debug`
-  - `extensions`
 
 ### `DeckExtension`
 - behavioral/runtime add-on surface
-- replaces plugins as the canonical v2 concept
 - owns:
   - async initialization
   - extra routes
   - action contributions
   - optional floating action contribution
 
-### `SuperDeckHandle`
-- narrow advanced-control surface
-- available as:
-  - `runtime.handle`
-  - `SuperDeck.of(context)`
+### `DeckController`
+- narrow advanced-control surface available from `SuperDeck.of(context)`
 - supports:
   - navigation
-  - reload
-  - export entrypoints
-  - readonly runtime state access
+  - readonly render state
+  - export and thumbnail entrypoints
 
 ## Runtime Semantics
 
-### Local source
-- local source is explicit, not inferred from environment
-- runtime owns the primary local parse/build/watch loop
-- runtime performs an initial one-shot build before `runApp()`
+### Local config
+- local config is explicit, not inferred from environment
+- `SuperDeckProvider` owns the local parse/build/watch loop
 - `watch: true` enables source rebuild/watch after startup
-- runtime keeps the last good deck visible on rebuild failures
+- the last good deck remains visible while rebuilds are in progress or fail
 
-### Bundle source
-- bundle source is explicit, not inferred from environment
+### Bundle config
+- bundle config is explicit, not inferred from environment
 - bundle mode is consume-only
-- bundle mode loads only versioned generated deck artifacts
+- bundle mode loads bundled generated deck artifacts
 
 ### Deferred configuration
 - do not implicitly read `superdeck.yaml`
@@ -122,12 +133,10 @@ Future<void> main() async {
 - public initial v2 CLI scope is:
   - `setup`
   - `publish`
-- `setup` remains responsible for starter files and project wiring
-- `publish` remains responsible for deployment-oriented flows
-- build/watch survive as internal pipeline responsibilities, not as public day-to-day CLI commands
+- `build` / `build --watch` remain supported transitional commands through v2.0
+- the preferred local development flow is app-owned watch via `DeckConfig.local(watch: true)`
 
 ## Migration Defaults
 - `comments` becomes `notes`
 - `@column` becomes `@block`
-- runtime/build artifacts use explicit `.v2.json` filenames
-- `DeckOptions`, `SuperDeckPlugin`, and `SuperDeckApp.initialize()` are no longer canonical public APIs
+- `DeckOptions`, `SuperDeckPlugin`, `SuperDeckRuntime`, `DeckSource`, and `DeckRuntimeConfig` are not canonical public APIs

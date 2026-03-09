@@ -3,8 +3,9 @@
 The SuperDeck CLI sets up your Flutter project, builds slide artifacts from
 `slides.md`, and can publish a web build to GitHub Pages. In v2.0, the
 preferred development loop is runtime watch via
-`DeckSource.local(watch: true)` plus `flutter run`, while `superdeck build`
-and `superdeck build --watch` remain supported transitional commands.
+`DeckConfig.local(watch: true)` inside `SuperDeckProvider` plus `flutter run`,
+while `superdeck build` and `superdeck build --watch` remain supported
+transitional commands.
 
 ## Features
 
@@ -94,7 +95,7 @@ cd my_presentation
 # Set up SuperDeck
 superdeck setup
 
-# Run your app with runtime-owned watch
+# Run your app with `DeckConfig.local(watch: true)` in your bootstrap
 flutter run
 ```
 

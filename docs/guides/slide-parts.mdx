@@ -82,22 +82,26 @@ import 'package:superdeck/superdeck.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final runtime = await SuperDeckRuntime.create(
-    source: const DeckSource.local(
-      slidesPath: 'slides.md',
-      watch: true,
-    ),
-    runtimeConfig: const DeckRuntimeConfig(),
-    theme: DeckTheme(
-      frame: SlideFrame(
-        header: DeckHeader(),
-        footer: DeckFooter(),
-        background: DeckBackground(),
+  await initializeSuperDeck();
+
+  runApp(
+    SuperDeckProvider(
+      config: const DeckConfig.local(
+        slidesPath: 'slides.md',
+        watch: true,
+      ),
+      builder: (context, deck) => SuperDeckApp(
+        deck: deck,
+        theme: DeckTheme(
+          frame: SlideFrame(
+            header: DeckHeader(),
+            footer: DeckFooter(),
+            background: DeckBackground(),
+          ),
+        ),
       ),
     ),
   );
-
-  runApp(SuperDeckApp(runtime: runtime));
 }
 ```
 

@@ -286,7 +286,7 @@
       "notes": []
     },
     {
-      "key": "EDan4eBQ",
+      "key": "e7w84ObC",
       "options": {},
       "sections": [
         {
@@ -299,7 +299,7 @@
               "type": "block"
             },
             {
-              "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(runtime: runtime),\n  );\n}\n```{.code}\n\n---\n\n### Mermaid Diagrams {.heading}\n\n@block\n\n```mermaid\nflowchart LR\n    A[Markdown] --> B[Parser]\n    B --> C[Slides]\n    C --> D[Flutter UI]\n    D --> E[PDF Export]\n\n    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff\n```",
+              "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckProvider(\n      config: const DeckConfig.local(watch: true),\n      builder: (context, deck) => SuperDeckApp(deck: deck),\n    ),\n  );\n}\n```{.code}\n\n---\n\n### Mermaid Diagrams {.heading}\n\n@block\n\n```mermaid\nflowchart LR\n    A[Markdown] --> B[Parser]\n    B --> C[Slides]\n    C --> D[Flutter UI]\n    D --> E[PDF Export]\n\n    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff\n```",
               "align": null,
               "flex": 2,
               "scrollable": false,

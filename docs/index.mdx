@@ -18,7 +18,7 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
 ### Key components
 
 - **CLI Tool** - Set up, build, and publish presentations
-- **Runtime Bootstrap** - Explicit local or bundled deck sources
+- **Runtime Bootstrap** - Explicit provider/app bootstrap with local or bundled deck configuration
 - **Flutter Package** - UI components and presentation runtime
 - **Block System** - Flexible layouts with 3 core block types
 - **Mix Styling** - Comprehensive theming system
@@ -63,21 +63,28 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
 
 4. **Initialize your app**:
    ```dart
+   import 'package:flutter/foundation.dart';
    import 'package:flutter/widgets.dart';
    import 'package:superdeck/superdeck.dart';
 
    Future<void> main() async {
      WidgetsFlutterBinding.ensureInitialized();
-     final runtime = await SuperDeckRuntime.create(
-       source: const DeckSource.local(
-         slidesPath: 'slides.md',
-         watch: true,
-       ),
-       runtimeConfig: const DeckRuntimeConfig(),
-       theme: const DeckTheme(),
-     );
+     await initializeSuperDeck();
 
-     runApp(SuperDeckApp(runtime: runtime));
+     final config = kIsWeb
+         ? const DeckConfig.bundle()
+         : const DeckConfig.local(
+             slidesPath: 'slides.md',
+             watch: true,
+           );
+
+     runApp(
+       SuperDeckProvider(
+         config: config,
+         builder: (context, deck) =>
+             SuperDeckApp(deck: deck, theme: const DeckTheme()),
+       ),
+     );
    }
 ```
 

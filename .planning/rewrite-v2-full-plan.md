@@ -39,24 +39,21 @@ Do not use older `DeckOptions` / `DeckWorkspace.watch` planning text as the fina
 
 ## Approved API Reset
 
-The v2 rewrite now has an approved primary runtime/bootstrap surface:
+The v2 rewrite now has an approved primary bootstrap surface:
 
-- `SuperDeckRuntime.create(...)` is the canonical bootstrap entrypoint
-- `SuperDeckApp(runtime: runtime)` is the main widget surface
-- deck origin is explicit via `DeckSource.local(...)` and `DeckSource.bundle(...)`
-- startup-only operational config lives in `DeckRuntimeConfig`
+- `initializeSuperDeck(...)` is the canonical async startup entrypoint
+- `SuperDeckProvider(config: ..., builder: ...)` is the canonical lifecycle owner
+- `SuperDeckApp(deck: ..., theme: ..., extensions: ...)` is the main render widget surface
+- deck origin is explicit via `DeckConfig.local(...)` and `DeckConfig.bundle(...)`
 - render composition lives in `DeckTheme`
 - behavioral add-ons live in `DeckExtension`
-- advanced runtime control lives in `SuperDeckHandle` and `SuperDeck.of(context)`
-- runtime owns local build/watch for local sources
-- the preferred v2 workflow is runtime-first plus `publish`, while `build` remains public as a transitional `v2.0` command
+- advanced runtime control lives in `DeckController` and `SuperDeck.of(context)`
+- `SuperDeckProvider` owns local build/watch for local sources
+- the preferred v2 workflow is app-owned watch plus `publish`, while `build` remains public as a transitional `v2.0` command
 
-Any older references in this umbrella plan that still discuss:
-- `SuperDeckApp(options: ..., configuration: ...)`
-- `DeckOptions.watchForChanges`
-- `DeckWorkspace.watch`
-
-should be treated as superseded intermediate planning, not the approved v2 API.
+Any older references in this umbrella plan that still discuss deleted
+runtime-first shapes should be treated as superseded intermediate planning, not
+the approved v2 API.
 
 ## Current Implementation Context
 
@@ -827,7 +824,8 @@ Implementations:
 - `BundledDeckRepository`
 
 ### Bootstrap and initialization
-`SuperDeckRuntime.create(...)` is the canonical host entry point. v2 bootstrap must:
+`initializeSuperDeck(...)` followed by `SuperDeckProvider(config: ..., builder: ...)`
+and `SuperDeckApp(deck: ...)` is the canonical host entry point. v2 bootstrap must:
 - initialize syntax highlighting grammars
 - initialize desktop window management on supported non-web platforms
 - initialize extensions with typed success/failure reporting
@@ -864,7 +862,7 @@ final class DeckLoadError extends DeckControllerState {
 
 Includes:
 - resolved style
-- resolved parts
+- resolved frame
 - widget registry subset
 - thumbnail key
 - export mode flag
@@ -889,17 +887,16 @@ Retain concept, simplify ownership.
 final class DeckTheme {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
-  final Map<String, WidgetDefinition<Object?>> widgets;
+  final Map<String, BlockDefinition<Object?>> widgets;
   final Map<String, SlideTemplate> templates;
   final SlideTemplate? defaultTemplate;
-  final SlideFrame parts;
+  final SlideFrame frame;
   final bool debug;
-  final List<DeckExtension> extensions;
 }
 ```
 
 Policy:
-- watch/build is removed from the render composition surface and belongs to `DeckSource.local(watch: ...)`
+- watch/build is removed from the render composition surface and belongs to `DeckConfig.local(watch: ...)`
 - external YAML config such as `styles.yaml` remains deferred from the current runtime-local contract
 
 #### Style resolution
@@ -979,7 +976,7 @@ Rule:
 - local day-to-day dev should be runtime-first (`flutter run` + embedded app watch/build)
 - `publish` should use a scoped `IndexHtmlOverrideSession`
 - all temporary filesystem changes must live inside scoped cleanup objects
-- migrate legacy `DeckOptions.watchForChanges` usage to `DeckSource.local(watch: ...)`
+- migrate legacy `DeckOptions.watchForChanges` usage to `DeckConfig.local(watch: ...)`
 
 ### Publish lifecycle object
 ```dart
@@ -1013,7 +1010,7 @@ Modes:
 - validate frontmatter as strict YAML map
 - flag unsupported ambiguous constructs
 - rename artifact expectations
-- replace legacy `DeckOptions.watchForChanges` usage with `DeckSource.local(watch: ...)`
+- replace legacy `DeckOptions.watchForChanges` usage with `DeckConfig.local(watch: ...)`
 - preserve built-in widget shorthands and `template: none`
 - produce migration report
 
@@ -1251,7 +1248,7 @@ Mitigation:
 - code-defined style config overrides YAML-defined style config
 - runtime-first local development uses embedded app watch/build
 - any retained CLI watch surface is optional/manual orchestration only
-- `DeckSource.local(watch: ...)` is the canonical v2 embedded watch surface
+- `DeckConfig.local(watch: ...)` is the canonical v2 embedded watch surface
 - `superdeck_full` remains a debug/tooling artifact with markdown AST expansion
 - standalone markdown image behavior is preserved; inline-image expansion is not part of the rewrite baseline
 - runtime bootstrap remains a first-class surface, but the final bootstrap/config API should not be inferred from stale assumptions in this umbrella plan

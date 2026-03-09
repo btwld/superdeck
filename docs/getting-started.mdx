@@ -47,24 +47,29 @@ flutter pub add superdeck
 Update your `main.dart`:
 
 ```dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final runtime = await SuperDeckRuntime.create(
-    source: const DeckSource.local(
-      slidesPath: 'slides.md',
-      watch: true,
-    ),
-    runtimeConfig: const DeckRuntimeConfig(),
-    theme: const DeckTheme(
-      debug: true,
-    ),
-  );
+  await initializeSuperDeck();
+
+  final config = kIsWeb
+      ? const DeckConfig.bundle()
+      : const DeckConfig.local(
+          slidesPath: 'slides.md',
+          watch: true,
+        );
 
   runApp(
-    SuperDeckApp(runtime: runtime),
+    SuperDeckProvider(
+      config: config,
+      builder: (context, deck) => SuperDeckApp(
+        deck: deck,
+        theme: const DeckTheme(debug: true),
+      ),
+    ),
   );
 }
 ```
@@ -121,7 +126,7 @@ flutter run
 
 ## Development workflow
 
-Use `DeckSource.local(watch: true)` during development. SuperDeck will:
+Use `DeckConfig.local(watch: true)` during development. SuperDeck will:
 
 - build `slides.md` before the first frame
 - watch `slides.md` for changes
@@ -164,11 +169,11 @@ your-flutter-project/
 - Verify `pubspec.yaml` includes `.superdeck/` and `.superdeck/assets/`
 - Run `superdeck setup` to fix configuration
 
-**SuperDeckRuntime.create() fails**
+**App bootstrap fails**
 - Call `WidgetsFlutterBinding.ensureInitialized()` first
 - Verify `slides.md` exists and is valid
-- Use `DeckSource.bundle(...)` instead of `DeckSource.local(...)` for bundled/web-only deployments
+- Use `DeckConfig.bundle(...)` instead of `DeckConfig.local(...)` for bundled/web-only deployments
 
 **Changes not appearing**
-- Confirm `DeckSource.local(watch: true)` is enabled
+- Confirm `DeckConfig.local(watch: true)` is enabled
 - Hot reload Flutter after code-side changes

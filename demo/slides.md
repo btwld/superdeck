@@ -156,7 +156,10 @@ import 'package:superdeck/superdeck.dart';
 
 void main() {
   runApp(
-    SuperDeckApp(runtime: runtime),
+    SuperDeckProvider(
+      config: const DeckConfig.local(watch: true),
+      builder: (context, deck) => SuperDeckApp(deck: deck),
+    ),
   );
 }
 ```{.code}

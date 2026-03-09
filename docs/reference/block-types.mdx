@@ -116,8 +116,8 @@ All additional properties pass to the widget builder.
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
-class CustomChartDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const CustomChartDefinition();
+class CustomChartBlockDefinition extends BlockDefinition<Map<String, Object?>> {
+  const CustomChartBlockDefinition();
 
   @override
   Map<String, Object?> parse(Map<String, Object?> args) => args;
@@ -131,29 +131,27 @@ class CustomChartDefinition extends WidgetDefinition<Map<String, Object?>> {
   }
 }
 
-SuperDeckApp(
-  runtime: runtime,
-);
-```
+await initializeSuperDeck();
 
-Where `runtime` was created with:
-
-```dart
-final runtime = await SuperDeckRuntime.create(
-  source: const DeckSource.local(
-    slidesPath: 'slides.md',
-    watch: true,
-  ),
-  runtimeConfig: const DeckRuntimeConfig(),
-  theme: DeckTheme(
-    widgets: const {
-      'customChart': CustomChartDefinition(),
-    },
+runApp(
+  SuperDeckProvider(
+    config: const DeckConfig.local(
+      slidesPath: 'slides.md',
+      watch: true,
+    ),
+    builder: (context, deck) => SuperDeckApp(
+      deck: deck,
+      theme: DeckTheme(
+        widgets: const {
+          'customChart': CustomChartBlockDefinition(),
+        },
+      ),
+    ),
   ),
 );
 ```
 
-**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to `WidgetDefinition.parse()` as `Map<String, Object?>`.
+**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to `BlockDefinition.parse()` as `Map<String, Object?>`.
 
 ## Built-in widgets
 

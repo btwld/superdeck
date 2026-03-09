@@ -36,24 +36,14 @@ final router = GoRouter(
   routes: [...genUiRoutes()],
 );
 
-// Optional: override default route screens (for custom host integration)
-final customRouter = GoRouter(
-  routes: [
-    ...genUiRoutes(
-      presentationBuilder: (context, state) {
-        return PresentationDeckHost(
-          deckAppBuilder: (runtime) => MyPresentationApp(runtime: runtime),
-        );
-      },
-    ),
-  ],
-);
-
 // Or use individual screens directly
 const GenUiBootstrapScope(child: ChatScreen());
 const GenUiBootstrapScope(child: CreatingPresentationScreen());
-GenUiBootstrapScope(child: PresentationDeckHost());
 ```
+
+`genUiRoutes()` owns the default presentation preview wiring. If you override
+`presentationBuilder`, you are taking full control of that route and should
+build your own `SuperDeckProvider`/`SuperDeckApp` composition.
 
 ## Related packages
 

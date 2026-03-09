@@ -19,7 +19,6 @@ export 'src/ai/prompts/examples_loader.dart';
 // Presentation
 export 'src/presentation/presentation_viewmodel.dart';
 export 'src/presentation/view/creating_presentation_screen.dart';
-export 'src/presentation/view/presentation_deck_host.dart';
 
 // Routes
 export 'src/routes.dart';

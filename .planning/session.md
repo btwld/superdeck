@@ -6,16 +6,18 @@ This is the live session and handoff document for ongoing work in the SuperDeck 
 Agents should read this file before substantive work and update it as work progresses.
 
 ## Current Focus
-- **DeckProvider/DeckDataState separation is complete and validated.** The deck data loading lifecycle has been separated from presentation concerns:
-  - `DeckProvider` widget owns config resolution, service selection, deck loading (stream/one-shot), and `DeckWatcher` lifecycle
-  - `DeckDataState` provides reactive signals: `deck`, `loadingState`, `error`, `isRebuilding`, `workspace`, `reload()`
-  - `SuperDeckApp` is now a pure presentation widget that reads `DeckDataState` from `DeckProvider.of(context)` and creates `DeckController` internally
-  - `DeckController` no longer has data-loading concerns — receives pre-loaded reactive data from `DeckDataState`
-  - `SuperDeckHandle` deleted (was pure forwarding); `SuperDeck.of(context)` returns `DeckController` directly
-  - `SuperDeckRuntime` deleted; responsibilities split between `DeckProvider` and `SuperDeckApp`
-  - Standalone `initializeSuperDeck()` replaces `SuperDeckRuntime.create()` for async initialization
-  - Demo, GenUI, and all tests migrated to the new API
-  - Validation: `melos run analyze:dart` clean, superdeck 632/632 tests pass, genui 423/431 pass (8 pre-existing failures in `deck_tools_service_test.dart`), core 706+ pass
+- **Provider/app bootstrap cleanup is complete and validated.** The implemented runtime surface is now:
+  - `initializeSuperDeck()` for async startup
+  - `DeckConfig.local(...)` / `DeckConfig.bundle(...)` for deck origin and watch policy
+  - `SuperDeckProvider(config: ..., builder: ...)` as the lifecycle owner for loading, errors, rebuilds, and watch orchestration
+  - `SuperDeckApp(deck: ..., theme: ..., extensions: ...)` as the pure render/runtime shell for a loaded `Deck`
+  - `SuperDeck.of(context)` returning `DeckController` as the advanced-control surface
+  - `DeckController` keeping render/navigation/UI state plus thumbnails/export for now
+- The `PresentationDeckHost` removal + documentation/planning reconciliation pass is complete:
+  - `PresentationDeckHost` is deleted from `genui`
+  - default presentation composition now lives privately in `genUiRoutes()`
+  - public docs/READMEs teach only the current provider/app bootstrap surface
+  - active planning docs no longer present runtime-first/bootstrap-wrapper APIs as current implementation
 - Domain naming review is complete. All agreed changes are captured in `.planning/domain-naming-changes.md`.
 - The internal presentation simplification slice is complete:
   - `DeckTheme` is now the only production presentation/config type inside `packages/superdeck`
@@ -31,129 +33,23 @@ Agents should read this file before substantive work and update it as work progr
 - `.planning/domain-naming-changes.md` — approved domain naming renames and DX cleanup
 
 ## Current State
-- The DeckProvider separation has replaced the previous `SuperDeckRuntime`-based bootstrap:
-  - primary bootstrap is `initializeSuperDeck()` + `DeckProvider(config: ..., child: SuperDeckApp(theme: ..., extensions: ...))`
-  - `DeckProvider` owns the data loading lifecycle; `SuperDeckApp` owns presentation
-  - deck origin is explicit via `DeckConfig.local(...)` and `DeckConfig.bundle(...)`
-  - data/loading state is available via `DeckProvider.of(context)` → `DeckDataState`
-  - presentation controller is available via `SuperDeck.of(context)` → `DeckController`
-  - runtime owns the local dev watch/build loop (via `DeckWatcher` inside `DeckProvider`)
-  - extensions replace plugins as the behavioral add-on surface
-- The planning/docs reconciliation pass has now been applied before code refactoring:
-  - added `.planning/rewrite-v2-api-surface.md` as the canonical API-surface planning doc
-  - updated the umbrella rewrite docs to treat the runtime-first API as the approved direction
-  - updated public docs/READMEs/getting-started/reference content to teach `SuperDeckRuntime.create(...)`, `DeckSource`, `DeckRuntimeConfig`, and `DeckTheme`
-  - updated CLI docs to keep `build` / `build --watch` as transitional v2.0 support while teaching runtime watch as the preferred workflow
-- The audit cleanup slice has now landed:
-  - removed the public `StyleConfigLoader` export so `DeckOptions` is no longer part of the public styling surface
-  - aligned CLI/docs/demo/genui wording with the approved transitional v2 surface
-  - deleted tracked demo v1 artifact files and kept only `.v2.json` outputs
-  - removed `watchForChanges`, collapsed `DeckControllerBuilder` into a private runtime bootstrap inside `SuperDeckApp`, removed the `SuperDeckPlugin` alias, and moved public-facing widget code onto `SuperDeckHandle`
-  - renamed the notes panel file/surface so runtime/public code no longer exposes `comments_panel.dart`
-- A post-cleanup correctness review found and fixed one runtime issue:
-  - `SplitView` in `AppShell` was caching the first inherited `SuperDeckHandle`, which made the supported runtime-handle swap path unsafe after `SuperDeckApp` updates
-  - `SplitView` now rebinds its menu effect when the inherited handle changes, and a targeted regression test covers that path
-- A follow-up correctness pass found and fixed one additional runtime-bootstrap issue:
-  - `SuperDeckApp` was reusing the existing `_RuntimeBootstrap` state when a new `SuperDeckRuntime` instance was provided, which meant controller/watcher state could stay bound to the old runtime source/configuration
-  - `SuperDeckApp` now keys `_RuntimeBootstrap` by runtime identity so a new runtime instance forces a fresh bootstrap, and a targeted regression test covers shared-handle runtime replacement
-- The internal presentation simplification slice has now landed:
-  - removed `packages/superdeck/lib/src/deck/deck_options.dart`
-  - `DeckTheme` now flows directly through runtime bootstrap, `DeckController`, `TemplateResolver`, and `SlideDataBuilder`
-  - `StyleConfigLoader` now accepts and returns `DeckTheme` while still only merging style concerns
-  - `packages/superdeck` tests were migrated off `DeckOptions`
-- The naming consistency reset slice has now landed:
-  - `DeckTheme` is appearance/composition only; runtime `extensions` moved to `SuperDeckRuntime`
-  - `DeckController` and `SuperDeckHandle` now speak in `theme` terms, and notes controls expose `openNotes()` / `closeNotes()`
-  - `SlideTemplate.frame`, `SlideData.frame`, and `SlideData.slide` replaced the old `parts` / `data` naming
-  - `packages/core` now exposes `DeckWorkspace`, while `packages/superdeck` exports `SlideData` and `BlockContext` but no longer wildcard re-exports `superdeck_core`
-  - README, docs, demo, and tests were migrated to the renamed API with no compatibility aliases
-- Full validation for the naming reset slice is green:
-  - `./.fvm/flutter_sdk/bin/dart analyze packages/superdeck packages/core packages/genui packages/builder packages/cli demo --fatal-infos`
-  - `../../.fvm/flutter_sdk/bin/dart test` in `packages/core`
-  - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/superdeck`
-  - `../../.fvm/flutter_sdk/bin/flutter test` in `packages/genui`
-  - `../.fvm/flutter_sdk/bin/flutter test` in `demo`
-  - `../.fvm/flutter_sdk/bin/flutter build web --release` in `demo`
-  - repo-wide search gate is clean for `DeckPresentation`, `SlideConfiguration`, `BlockConfiguration`, `SlideParts`, and `DeckConfiguration`
-- The same review also corrected remaining planning drift:
-  - session/audit/build-watch planning docs now consistently describe `build` / `build --watch` as transitional v2.0 support instead of implying an immediate `setup` / `publish`-only CLI surface
-- Full validation for the cleanup slice is green:
-  - `packages/builder` and `packages/genui` `build_runner` runs passed
-  - contract schema check passed
-  - workspace analyze passed
-  - package tests for `core`, `builder`, `cli`, `superdeck`, `genui`, and `demo` passed
-  - `demo` CLI build passed
-  - `demo` web release build passed
-  - `demo/e2e` smoke suite passed (5/5)
-- Remaining non-code blocker:
-  - Linux integration still cannot be run locally on this machine
-  - macOS integration is now validated locally (2026-03-09 pass); non-fatal Xcode warnings remain observed in logs
-- Drift review before refactor has identified the main migration risks:
-  - `DeckOptions` is deeply embedded across runtime internals, tests, demo code, docs, and `packages/genui`, so it is not a safe rename-only candidate
-  - `DeckWorkspace` in `packages/core` currently mixes local path helpers, artifact filenames, and external config discovery semantics, so it should not be renamed in place to the new runtime API
-  - `SuperDeckPlugin` is a good rename-first candidate because it is conceptually close to `DeckExtension`
-  - `comments` -> `notes` and `.v2.json` artifact filename changes are broad cross-package migrations and should be isolated from the initial runtime bootstrap refactor to avoid masking regressions
-  - `packages/superdeck/lib/src/deck/` is semantically overloaded and should be split by responsibility as part of the runtime API reset
-- The direction has now shifted from implementation-first to API-first design review:
-  - the current planning set is still useful as code-backed inventory and migration context
-  - it should no longer be treated as sufficient proof that the v2 public API was designed from first principles
-  - the next step is to define the intended v2 API surface explicitly before resuming implementation slices
-- A feature validation matrix exists and maps current behavior to:
-  - implementation refs
-  - v2 ownership
-  - parity decision
-  - validation gate
-  - migration notes
-- `AGENTS.md` now requires agents to use:
-  - `dart-flutter` for repository work
-  - `code-simplifier` for code changes, reviews, refactors, and rewrite work
-- `.planning/rewrite-v2-parser-semantics.md` now exists and freezes the parser-level v2 contract from current code/tests.
-- `.planning/rewrite-v2-build-watch-runtime.md` now exists and captures the current operational/runtime semantics for:
-  - build execution
-  - watch ownership and trigger surface
-  - `kCanRunProcess` runtime mode split
-  - runtime deck consumption vs source rebuild loops
-  - thumbnail lifecycle
-- Parser-level decisions now frozen:
-  - frontmatter must be YAML-map-only
-  - invalid YAML and missing frontmatter closing delimiters are hard errors
-  - canonical markdown block syntax is `@block`
-  - canonical semantic note field is `notes`
-  - HTML comments are authoring notes, not retained renderable markdown semantics
-- `.planning/rewrite-v2-feature-matrix.md` has been updated so frontmatter extraction and comment extraction are no longer `covered-open`.
-- Planning docs have now been spot-audited against implementation again.
-- Two stale claims were corrected:
-  - fenced-code handling was overstated as backtick/tilde-inconsistent even though opener/closer parsing is already mostly shared
-  - error-deck fallback was overstated as the general build-failure path even though build failures usually leave the last good deck in place and only update `build_status.json`
-- A second audit pass corrected additional runtime-surface wording:
-  - file-backed deck loading is gated by `kCanRunProcess` (`debug && !web && !test`), not by generic process capability
-  - `styles.yaml` merge exists via `StyleConfigLoader`, but is not automatic runtime startup behavior today
-- `.planning/rewrite-v2-parser-semantics.md` now includes a feature validation audit that distinguishes:
-  - code+test validated features
-  - code/test features with docs drift
-  - implemented features that still lack direct parser fixtures
-  - implemented features that still lack authoring docs
-- The parser validation audit has been expanded into a stage-by-stage feature inventory tied to concrete test suites and implementation files.
-- Authoring docs have been realigned with the parser audit:
-  - `template` frontmatter is now documented
-  - escaped directives via `_@` are now documented
-  - HTML-comment speaker notes are now documented
-  - `@block` is now the only public markdown-block syntax taught in docs/examples/templates
-  - `@qrcode` argument docs were corrected to match the implementation
-- High-level docs, starter templates, READMEs, and demo decks now teach only `@block` on the public/user-facing surface.
-- The planning docs have now been reconciled into a clearer authority model:
-  - `.planning/rewrite-v2-full-plan.md` is the umbrella rewrite plan
-  - `.planning/rewrite-v2-feature-matrix.md`, `.planning/rewrite-v2-parser-semantics.md`, and `.planning/rewrite-v2-build-watch-runtime.md` are the detailed sign-off docs
-  - `.planning/rewrite-v2-contract-migration-matrix.md` is now the canonical home for compatibility and public-surface migration rows
-- The final remaining v2 planning freeze decisions are now documented across the canonical planning set:
-  - public package entry surface
-  - embedded watch moved to `DeckWorkspace.watch`
-  - thumbnails are runtime-owned dev snapshots with render-signature invalidation
-  - bundled runtimes use canonical bundled v2 paths only
-  - external YAML config remains explicitly deferred
-- The legacy template-feature planning doc has been removed:
-  - template behavior is already covered by the canonical rewrite docs
-  - `.planning/README.md` now points at the current canonical planning set instead of stale one-off feature docs
+- Canonical implemented bootstrap:
+  - `initializeSuperDeck()`
+  - `DeckConfig.local(...)` / `DeckConfig.bundle(...)`
+  - `SuperDeckProvider(config: ..., builder: (context, deck) => SuperDeckApp(deck: deck, theme: ..., extensions: ...))`
+- Canonical implemented ownership:
+  - provider owns deck loading, loading/error/rebuild UI, and local `DeckWatcher` orchestration
+  - app owns `DeckController`, router wiring, and presentation shell
+  - `DeckController` owns render/navigation/UI state plus thumbnails/export for now
+- Canonical context access:
+  - `SuperDeck.of(context)` returns `DeckController`
+  - there is no public lifecycle container or handle layer
+- Active planning authority:
+  - `.planning/rewrite-v2-api-surface.md` for public bootstrap/API naming
+  - `.planning/rewrite-v2-build-watch-runtime.md` for watch/runtime ownership
+  - `.planning/rewrite-v2-feature-matrix.md` for current product-surface coverage
+  - `.planning/rewrite-v2-contract-migration-matrix.md` for migration and compatibility decisions
+- Historical implementation detail lives in the session log below; active guidance should not target deleted runtime-first or wrapper-based APIs.
 
 ## Deferred Follow-Up
 1. External config source policy:
@@ -1211,3 +1107,34 @@ Agents should read this file before substantive work and update it as work progr
 - Gaps noted for follow-up:
   - add a real widget test for provider wiring/theme update behavior instead of constructor-only tests
   - reconcile docs and consider renaming `appBuilder` to a normal `builder` shape if the override hook remains public
+
+### 2026-03-09 (implementation: remove PresentationDeckHost and canonize provider/app API)
+- Started the direct-break cleanup to remove `PresentationDeckHost` from `genui` and make the current `initializeSuperDeck()` + `DeckConfig` + `SuperDeckProvider` + `SuperDeckApp(deck: ...)` surface the only canonical public story.
+- Scope for this pass:
+  - delete `PresentationDeckHost` and inline the default presentation composition in `genUiRoutes()`
+  - remove host exports/tests/docs
+  - rewrite stale `superdeck` and `genui` docs/examples away from `SuperDeckRuntime`, `DeckSource`, and `DeckRuntimeConfig`
+  - reconcile planning docs that still describe deleted runtime-first bootstrap as current implementation
+
+### 2026-03-09 (implementation: remove PresentationDeckHost and canonize provider/app API — complete)
+- Completed the direct-break cleanup:
+  - deleted `packages/genui/lib/src/presentation/view/presentation_deck_host.dart`
+  - removed the public barrel export and deleted the constructor-only host test
+  - inlined the default presentation composition privately in `packages/genui/lib/src/routes.dart`
+  - kept `genUiRoutes(..., presentationBuilder: ...)` as the only customization seam
+- Added route-level widget coverage in `packages/genui/test/routes_test.dart` for:
+  - default presentation route config selection on the current test runtime
+  - full-route override through `presentationBuilder`
+  - style extra application before presentation rendering
+- Reconciled current public docs and planning docs to the implemented bootstrap:
+  - canonical surface is now documented as `initializeSuperDeck()` + `DeckConfig` + `SuperDeckProvider` + `SuperDeckApp(deck: ...)`
+  - current examples use `BlockDefinition` terminology for custom widget blocks
+  - internal planning docs now treat `SuperDeckRuntime`, `DeckSource`, `DeckRuntimeConfig`, `DeckDataState`, `SuperDeckHandle`, and `PresentationDeckHost` as historical/non-canonical surfaces
+- Validation results for this slice:
+  - `./.fvm/flutter_sdk/bin/dart analyze packages/superdeck packages/genui demo --fatal-infos`
+  - `./.fvm/flutter_sdk/bin/dart run melos run test --no-select`
+  - `./.fvm/flutter_sdk/bin/dart run melos run test:integration:macos --no-select`
+  - all passed locally
+- Notes:
+  - `melos run test --no-select` emitted transient Flutter startup-lock waiting lines while packages started in parallel; the overall run still passed
+  - macOS integration emitted the usual non-fatal `DVTBuildVersion` warnings during Xcode build and still passed

@@ -1,11 +1,39 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:signals/signals_flutter.dart';
+import 'package:superdeck/superdeck.dart';
 
+import 'bootstrap/genui_bootstrap.dart';
 import 'chat/view/chat_screen.dart';
 import 'presentation/view/creating_presentation_screen.dart';
-import 'presentation/view/presentation_deck_host.dart';
-import 'bootstrap/genui_bootstrap.dart';
 import 'utils/deck_style_service.dart';
+import 'utils/style_builder.dart';
+
+const _kCanRunProcess =
+    kDebugMode && !kIsWeb && !bool.fromEnvironment('FLUTTER_TEST');
+
+const _kDefaultPresentationConfig = _kCanRunProcess
+    ? DeckConfig.local()
+    : DeckConfig.bundle();
+
+class _DefaultPresentationDeck extends StatelessWidget {
+  const _DefaultPresentationDeck();
+
+  @override
+  Widget build(BuildContext context) {
+    return SuperDeckProvider(
+      config: _kDefaultPresentationConfig,
+      builder: (context, deck) {
+        return Watch((context) {
+          final style = DeckStyleService.style.value;
+          final theme = buildDeckThemeFromStyle(style);
+          return SuperDeckApp(deck: deck, theme: theme);
+        });
+      },
+    );
+  }
+}
 
 void _applyStyleFromExtra(Object? extra) {
   if (extra case {'style': final rawStyle}) {
@@ -64,7 +92,8 @@ List<RouteBase> genUiRoutes({
       _applyStyleFromExtra(state.extra);
 
       final child =
-          presentationBuilder?.call(context, state) ?? PresentationDeckHost();
+          presentationBuilder?.call(context, state) ??
+          const _DefaultPresentationDeck();
       return GenUiBootstrapScope(child: child);
     },
   ),

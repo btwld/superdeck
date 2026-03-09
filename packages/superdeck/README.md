@@ -20,21 +20,28 @@ flutter pub add superdeck
 In `lib/main.dart`:
 
 ```dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final runtime = await SuperDeckRuntime.create(
-    source: const DeckSource.local(
-      slidesPath: 'slides.md',
-      watch: true,
-    ),
-    runtimeConfig: const DeckRuntimeConfig(),
-    theme: const DeckTheme(),
-  );
+  await initializeSuperDeck();
 
-  runApp(SuperDeckApp(runtime: runtime));
+  final config = kIsWeb
+      ? const DeckConfig.bundle()
+      : const DeckConfig.local(
+          slidesPath: 'slides.md',
+          watch: true,
+        );
+
+  runApp(
+    SuperDeckProvider(
+      config: config,
+      builder: (context, deck) =>
+          SuperDeckApp(deck: deck, theme: const DeckTheme()),
+    ),
+  );
 }
 ```
 
@@ -44,7 +51,7 @@ Future<void> main() async {
 flutter run
 ```
 
-With `DeckSource.local(watch: true)`, SuperDeck builds `slides.md` before the
+With `DeckConfig.local(watch: true)`, SuperDeck builds `slides.md` before the
 first frame and rebuilds it on changes.
 
 ## Write slides
