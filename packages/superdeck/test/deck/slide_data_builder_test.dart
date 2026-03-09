@@ -13,7 +13,7 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('backward compatibility — no templates, applies deck styles', () {
+    test('without templates, applies deck base style', () {
       final baseStyle = SlideStyle();
       final theme = DeckTheme(baseStyle: baseStyle);
       final slides = [const Slide(key: 'slide-1')];

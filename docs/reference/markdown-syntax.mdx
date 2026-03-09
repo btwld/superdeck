@@ -38,6 +38,8 @@ SuperDeck supports three core block types.
 | `@block` | Render markdown content | `flex`, `align`, `scrollable` |
 | `@widget` | Embed custom Flutter widgets | `name` + custom args |
 
+`@block` is the canonical markdown-content directive.
+
 Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@widget`.
 
 ## Common block properties
@@ -187,7 +189,7 @@ void main() {
 ```
 ````
 
-The current parser also accepts a legacy compatibility form without braces after the language token, but the braced form is the canonical syntax.
+The parser also accepts an unbraced form without options after the language token, but the braced form is the canonical syntax.
 
 ### Mermaid blocks
 

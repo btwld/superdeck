@@ -91,7 +91,7 @@ Agents should read this file before substantive work and update it as work progr
   - `demo/e2e` smoke suite passed (5/5)
 - Remaining non-code blocker:
   - Linux integration still cannot be run locally on this machine
-  - direct macOS integration remains an environment/tooling follow-up because the local run stalls inside Xcode before app startup
+  - macOS integration is now validated locally (2026-03-09 pass); non-fatal Xcode warnings remain observed in logs
 - Drift review before refactor has identified the main migration risks:
   - `DeckOptions` is deeply embedded across runtime internals, tests, demo code, docs, and `packages/genui`, so it is not a safe rename-only candidate
   - `DeckWorkspace` in `packages/core` currently mixes local path helpers, artifact filenames, and external config discovery semantics, so it should not be renamed in place to the new runtime API
@@ -171,6 +171,44 @@ Agents should read this file before substantive work and update it as work progr
 4. Run the integration follow-up in an environment with Linux coverage and a clean macOS/Xcode path.
 
 ## Session Log
+
+### 2026-03-09 (docs cleanup)
+- Removed user-facing "legacy" wording from markdown docs to keep guidance strictly canonical.
+- Updated docs to reference only canonical `@block` directive on the user surface.
+- Kept fenced-code guidance canonical by preferring braced options form without legacy framing.
+
+### 2026-03-09 (macOS validation pass)
+- Focused on validating the local macOS implementation path for release readiness.
+- Ran `fvm flutter devices` and confirmed `macos` desktop target availability.
+- Ran `fvm flutter pub run melos run test:integration:macos --no-select`.
+- Result: `superdeck_example` integration suite passed (20/20).
+- Observed non-fatal `xcodebuild` `DVTBuildVersion` warnings and a transient "Failed to foreground app" message; test execution still completed successfully.
+- Remaining release blockers are now non-mac specific (`superdeck_genui` test failures, Linux CI integration gate, publish/post-publish phases).
+
+### 2026-03-09 (verification pass)
+- Ran an additional drift-verification pass for release readiness tracking.
+- Confirmed no active-source drift for legacy artifact names in `packages/` and `docs/`.
+- Confirmed `@column` appears only as compatibility-only guidance in docs.
+- Corrected checklist status drift in `.planning/release-1.0.md` so checkboxes now match current run-log evidence:
+  - `melos run test --no-select` remains pending (currently failing in `superdeck_genui`)
+  - `Invalid SDK hash` cleanliness gate remains pending
+  - "all unit/widget tests pass" remains pending until monorepo tests are green
+
+### 2026-03-09 (implementation: drift-proof readiness cleanup)
+- Started implementation of the 1.0 drift-proof readiness plan.
+- Re-baselined local gates and package dry-runs:
+  - `melos run analyze:dart --no-select` passed (analyzer clean across packages)
+  - `melos run test --no-select` failed in `superdeck_genui`
+  - targeted rerun `cd packages/genui && ../../.fvm/flutter_sdk/bin/flutter test` confirmed 8 failures in `test/core/tools/deck_tools_service_test.dart` with schema-validation exceptions
+  - package dry-runs completed for `core`, `builder`, `cli`, and `superdeck` and warning categories were classified
+- Applied low-risk drift cleanups:
+  - updated stale planning wording in `.planning/rewrite-v2-build-watch-runtime.md` from `watchForChanges` to canonical `DeckSource.local(watch: true)` ownership wording
+  - renamed misleading compatibility phrasing in `packages/superdeck/test/deck/slide_data_builder_test.dart`
+  - tightened markdown docs to keep `@block` canonical and `@column` compatibility-only in `docs/guides/markdown-authoring.mdx` and `docs/reference/markdown-syntax.mdx`
+- Hardened release checklist freshness policy and evidence in `.planning/release-1.0.md`:
+  - added 2026-03-09 run-log entries
+  - added anti-drift freshness policy section and approved warning-category constraints
+  - documented P2 watcher risk with tracking reference
 
 ### 2026-03-09 (implementation)
 - Started implementation of the pending cleanup execution plan.

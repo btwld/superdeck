@@ -55,6 +55,8 @@ Use these block types when you compose slides:
 - `@block` for markdown content.
 - `@widget` for custom Flutter widgets.
 
+Use `@block` as the canonical markdown-content directive.
+
 For the full syntax and argument reference, see the [Markdown syntax reference](../reference/markdown-syntax).
 
 ---
@@ -190,7 +192,7 @@ Use headings, lists, tables, and code blocks as you normally would:
 | API     | In Progress |
 ````
 
-In the standard local runtime build flow, fenced `dart` blocks are reformatted before they are rendered on a slide. If you pass fenced-code options, prefer the braced header form; the current parser also accepts a legacy compatibility form without braces after the language token.
+In the standard local runtime build flow, fenced `dart` blocks are reformatted before they are rendered on a slide. If you pass fenced-code options, prefer the braced header form; the parser also accepts an unbraced form without options after the language token.
 
 ### Alerts
 

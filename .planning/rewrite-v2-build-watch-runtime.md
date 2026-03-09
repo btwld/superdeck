@@ -34,7 +34,7 @@ There are effectively two runtime modes today:
 1. Process-capable runtime mode
 - `DeckControllerBuilder` uses `DeckService`
 - `DeckController` can subscribe to `DeckService.loadDeckStream()`
-- if `DeckOptions.watchForChanges` is enabled, `DeckWatcher` may also start a build/watch loop inside the app
+- if `DeckSource.local(watch: true)` is configured, `DeckWatcher` starts a build/watch loop inside the app
 
 2. Bundled runtime mode
 - `DeckControllerBuilder` uses `BundledDeckService`
@@ -350,7 +350,7 @@ This is the current end-to-end flow when source content changes in a process-cap
 
 2. A build is triggered
 - by CLI watch, or
-- by runtime `DeckWatcher` when `watchForChanges` is enabled
+- by runtime `DeckWatcher` when `DeckSource.local(watch: true)` is enabled
 
 3. The builder rebuilds from `slides.md`
 - `DeckBuilder` parses markdown
@@ -472,18 +472,18 @@ So the simplification is:
 - remove CLI from the primary day-to-day dev watch loop
 - keep CLI focused on setup, publish, and transitional `build` / `build --watch` support through v2.0
 
-## Legacy v1 `watchForChanges` Behavior
+## Legacy v1 watchForChanges behavior
 
-`DeckOptions.watchForChanges` currently behaves like an app-level flag that allows runtime-triggered watch/build behavior on process-capable runtimes.
+`DeckOptions.watchForChanges` was the old app-level flag for runtime-triggered watch/build behavior on process-capable runtimes.
 
 In the approved v2 API surface, this behavior moves to `DeckSource.local(watch: ...)`.
 
-What it currently means in practice:
+What it meant in practice:
 - if disabled, the app still loads and streams the generated deck artifact when file-backed deck loading is active
 - if enabled and `kCanRunProcess` is true, the app also starts `DeckWatcher`, which can rebuild the deck from markdown and update rebuilding state
 
-So `watchForChanges` is not just a UI flag.
-It is currently a runtime/build orchestration flag.
+So `watchForChanges` was not just a UI flag.
+It was a runtime/build orchestration flag.
 
 That is why it needs a more explicit v2 definition than “compatibility shim or hard removal”.
 
