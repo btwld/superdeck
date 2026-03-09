@@ -11,7 +11,7 @@ import '../utils/app_initialization.dart';
 /// runApp(
 ///   SuperDeckProvider(
 ///     config: DeckConfig.local(watch: true),
-///     child: SuperDeckApp(theme: theme),
+///     builder: (context, deck) => SuperDeckApp(deck: deck, theme: theme),
 ///   ),
 /// );
 /// ```

@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck/tooling.dart';
 
 import '../ai/schemas/deck_schemas.dart';
@@ -65,9 +64,8 @@ class ThumbnailPreviewService {
 
     if (slides.isEmpty) return [];
 
-    final configuration = DeckWorkspace();
     final theme = buildDeckThemeFromStyle(style);
-    final slideBuilder = SlideDataBuilder(configuration: configuration);
+    final slideBuilder = const SlideDataBuilder();
     final slideConfigs = slideBuilder.buildSlides(slides, theme);
 
     debugLog.log(

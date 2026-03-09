@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.fvm/flutter_sdk/bin/dart analyze packages/superdeck)"
+      "Bash(.fvm/flutter_sdk/bin/dart analyze packages/superdeck)",
+      "Bash(./.fvm/flutter_sdk/bin/dart analyze packages/superdeck packages/genui demo --fatal-infos)",
+      "Bash(.fvm/flutter_sdk/bin/dart analyze packages/superdeck packages/genui demo --fatal-infos)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
     ]
   }
 }

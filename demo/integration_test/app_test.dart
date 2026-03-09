@@ -35,7 +35,10 @@ void main() {
         expect(controller, isNotNull);
 
         // Verify no error screen is shown
-        expect(find.textContaining('Error loading presentation'), findsNothing);
+        expect(
+          find.textContaining('Failed to load presentation'),
+          findsNothing,
+        );
         assertOnlyLayoutOverflowOrNoException(tester);
       });
 
@@ -44,25 +47,13 @@ void main() {
 
         // Immediately after pump, check initial state
         await tester.pump();
-
-        // The app should be in either loading or loaded state
-        // (depending on timing, deck may load very quickly in tests)
         final controller = findDeckController(tester);
 
-        // If controller found early, it may already be loading
         if (controller != null) {
-          // Early frames may be either still loading or already loaded.
-          expect(
-            controller.isLoading.value || controller.totalSlides.value > 0,
-            isTrue,
-            reason: 'App should be loading or have slides available',
-          );
           await tester.waitForSlidesLoaded(controller);
-          expect(controller.isLoading.value, isFalse);
           return;
         }
 
-        // Controller may be mounted after first frame on slower CI machines.
         await tester.pumpFor(const Duration(seconds: 1));
         final delayedController = findDeckController(tester);
         expect(delayedController, isNotNull);
@@ -74,21 +65,24 @@ void main() {
       testWidgets('first slide is available after load', (tester) async {
         final controller = await tester.pumpTestApp();
         expect(controller, isNotNull);
+        final loadedController = controller!;
 
         await tester.pumpUntil(
-          () => controller!.currentSlide.value != null,
+          () => loadedController.currentSlide.value != null,
           debugLabel: 'current slide availability',
-          onTimeout: () => describeDeckState(controller),
+          onTimeout: () => describeDeckState(loadedController),
         );
 
-        expect(controller!.hasError.value, isFalse);
         expect(
-          controller.totalSlides.value,
+          loadedController.totalSlides.value,
           greaterThanOrEqualTo(_minimumDemoSlideCount),
         );
-        expect(controller.currentIndex.value, 0);
-        expect(controller.currentSlide.value, isNotNull);
-        expect(find.textContaining('Error loading presentation'), findsNothing);
+        expect(loadedController.currentIndex.value, 0);
+        expect(loadedController.currentSlide.value, isNotNull);
+        expect(
+          find.textContaining('Failed to load presentation'),
+          findsNothing,
+        );
         assertOnlyLayoutOverflowOrNoException(tester);
       });
 
@@ -212,7 +206,10 @@ void main() {
           inInclusiveRange(0, totalSlides - 1),
         );
         expect(find.bySemanticsLabel('Regenerate thumbnails'), findsOneWidget);
-        expect(find.textContaining('Error loading presentation'), findsNothing);
+        expect(
+          find.textContaining('Failed to load presentation'),
+          findsNothing,
+        );
         assertOnlyLayoutOverflowOrNoException(tester);
       });
     });
@@ -231,8 +228,10 @@ void main() {
 
         await tester.navigateToSlide(controller, targetIndex);
         expect(controller.currentIndex.value, targetIndex);
-        expect(controller.hasError.value, isFalse);
-        expect(find.textContaining('Error loading presentation'), findsNothing);
+        expect(
+          find.textContaining('Failed to load presentation'),
+          findsNothing,
+        );
         assertOnlyLayoutOverflowOrNoException(tester);
       });
 
@@ -413,10 +412,7 @@ void main() {
         final controller = await tester.pumpTestApp();
         expect(controller, isNotNull);
         expect(controller!.currentIndex.value, 0);
-        expect(
-          controller.totalSlides.value,
-          greaterThanOrEqualTo(2),
-        );
+        expect(controller.totalSlides.value, greaterThanOrEqualTo(2));
 
         await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
         await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
@@ -433,9 +429,7 @@ void main() {
         assertOnlyLayoutOverflowOrNoException(tester);
       });
 
-      testWidgets('Meta+ArrowLeft navigates to previous slide', (
-        tester,
-      ) async {
+      testWidgets('Meta+ArrowLeft navigates to previous slide', (tester) async {
         final controller = await tester.pumpTestApp();
         expect(controller, isNotNull);
 
@@ -489,7 +483,6 @@ void main() {
         assertOnlyLayoutOverflowOrNoException(tester);
       });
     });
-
   });
 
   group('Live Edit', () {
@@ -514,17 +507,12 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 500));
     });
 
-    testWidgets('modifying slides.md updates the presentation', (
-      tester,
-    ) async {
+    testWidgets('modifying slides.md updates the presentation', (tester) async {
       final controller = await tester.pumpTestApp(config: watchConfig);
       expect(controller, isNotNull);
 
       final initialSlideCount = controller!.totalSlides.value;
-      expect(
-        initialSlideCount,
-        greaterThanOrEqualTo(_minimumDemoSlideCount),
-      );
+      expect(initialSlideCount, greaterThanOrEqualTo(_minimumDemoSlideCount));
 
       // Append a simple new slide (no mermaid/external tools)
       final modifiedContent = '$originalContent\n---\n\n# Watch Test Slide\n';
@@ -532,23 +520,34 @@ void main() {
 
       // Wait for the full pipeline: FileWatcher detects change →
       // DeckBuilder rebuilds deck.json → DeckService stream emits →
-      // DeckController updates signals
+      // DeckController updates signals.
+      //
+      // Re-find the controller on each poll iteration because a live-reload
+      // may dispose and recreate the DeckController instance.
       await tester.pumpUntil(
-        () => controller.totalSlides.value > initialSlideCount,
+        () {
+          final current = findDeckController(tester);
+          return current != null &&
+              current.totalSlides.value > initialSlideCount;
+        },
         timeout: const Duration(seconds: 30),
         debugLabel: 'live-edit slide count increase',
-        onTimeout: () => [
-          describeDeckState(controller),
-          'Expected totalSlides > $initialSlideCount',
-        ].join('\n'),
+        onTimeout: () {
+          final current = findDeckController(tester);
+          return [
+            describeDeckState(current),
+            'Expected totalSlides > $initialSlideCount',
+          ].join('\n');
+        },
       );
 
+      final updatedController = findDeckController(tester);
+      expect(updatedController, isNotNull);
       expect(
-        controller.totalSlides.value,
+        updatedController!.totalSlides.value,
         initialSlideCount + 1,
         reason: 'Appending one slide separator should add exactly one slide',
       );
-      expect(controller.hasError.value, isFalse);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
   });

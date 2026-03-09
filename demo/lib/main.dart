@@ -38,26 +38,32 @@ void main() async {
   runApp(
     SuperDeckProvider(
       config: config,
-      child: SuperDeckApp(
-        theme: DeckTheme(
-          baseStyle: borderedStyle(),
-          widgets: {
-            ...demoWidgets,
-            'twitter': const _TwitterBlockDefinition(),
-          },
-          styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
-          templates: {
-            'corporate': corporateTemplate(),
-            'minimal': minimalTemplate(),
-          },
-          frame: SlideFrame(
-            header: HeaderPart(),
-            footer: FooterPart(),
-            background: BackgroundPart(),
+      builder: (context, deck) {
+        return SuperDeckApp(
+          deck: deck,
+          theme: DeckTheme(
+            baseStyle: borderedStyle(),
+            widgets: {
+              ...demoWidgets,
+              'twitter': const _TwitterBlockDefinition(),
+            },
+            styles: {
+              'announcement': announcementStyle(),
+              'quote': quoteStyle(),
+            },
+            templates: {
+              'corporate': corporateTemplate(),
+              'minimal': minimalTemplate(),
+            },
+            frame: SlideFrame(
+              header: HeaderPart(),
+              footer: FooterPart(),
+              background: BackgroundPart(),
+            ),
           ),
-        ),
-        extensions: extensions,
-      ),
+          extensions: extensions,
+        );
+      },
     ),
   );
 }

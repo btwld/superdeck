@@ -1,62 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:signals/signals.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
-/// Creates a test DeckDataState with controllable signals.
-({
-  DeckDataState dataState,
-  Signal<Deck?> deck,
-  Signal<DeckLoadingState> loadingState,
-  Signal<Object?> error,
-  Signal<bool> isRebuilding,
-  int Function() reloadCount,
-}) createTestDataState({Deck? initialDeck}) {
-  final deck = signal<Deck?>(initialDeck);
-  final loadingState = signal<DeckLoadingState>(
-    initialDeck != null ? DeckLoadingState.loaded : DeckLoadingState.loading,
-  );
-  final error = signal<Object?>(null);
-  final isRebuilding = signal<bool>(false);
-  var reloads = 0;
-
-  final dataState = DeckDataState(
-    deck: deck,
-    loadingState: loadingState,
-    error: error,
-    isRebuilding: isRebuilding,
-    workspace: DeckWorkspace(),
-    reload: () async {
-      reloads++;
-    },
-  );
-
-  return (
-    dataState: dataState,
-    deck: deck,
-    loadingState: loadingState,
-    error: error,
-    isRebuilding: isRebuilding,
-    reloadCount: () => reloads,
-  );
-}
+import '../testing_utils.dart';
 
 void main() {
   group('DeckController', () {
     late DeckController controller;
-    late Signal<DeckLoadingState> loadingStateSignal;
-    late Signal<Object?> errorSignal;
-    late Signal<bool> isRebuildingSignal;
-    late int Function() reloadCount;
 
     setUp(() {
-      final testState = createTestDataState();
-      loadingStateSignal = testState.loadingState;
-      errorSignal = testState.error;
-      isRebuildingSignal = testState.isRebuilding;
-      reloadCount = testState.reloadCount;
       controller = DeckController(
-        dataState: testState.dataState,
+        deck: createTestDeck(),
         theme: const DeckTheme(),
       );
     });
@@ -66,9 +19,9 @@ void main() {
     });
 
     group('Initialization', () {
-      test('reflects loading state from DeckDataState', () {
-        expect(controller.isLoading.value, isTrue);
-        expect(controller.hasError.value, isFalse);
+      test('initializes with deck-backed slide data', () {
+        expect(controller.totalSlides.value, 3);
+        expect(controller.currentSlide.value, isNotNull);
       });
 
       test('initializes with default navigation values', () {
@@ -79,7 +32,6 @@ void main() {
       test('initializes with default UI state', () {
         expect(controller.isMenuOpen.value, isFalse);
         expect(controller.isNotesOpen.value, isFalse);
-        expect(controller.isRebuilding.value, isFalse);
       });
 
       test('router is initialized', () {
@@ -87,26 +39,14 @@ void main() {
       });
     });
 
-    group('Reactive Data State', () {
-      test('transitions to loaded when data state changes', () {
-        loadingStateSignal.value = DeckLoadingState.loaded;
-        expect(controller.isLoading.value, isFalse);
-        expect(controller.hasError.value, isFalse);
-      });
+    group('Reactive Deck State', () {
+      test('updates slides when deck changes', () {
+        controller.updateDeck(createTestDeck(slides: [
+          createSlideFromBlocks([createContentBlock('Single slide')]),
+        ]));
 
-      test('transitions to error when data state has error', () {
-        errorSignal.value = Exception('Test error');
-        loadingStateSignal.value = DeckLoadingState.error;
-        expect(controller.hasError.value, isTrue);
-        expect(controller.error.value, isNotNull);
-      });
-
-      test('isRebuilding reflects data state signal', () {
-        expect(controller.isRebuilding.value, isFalse);
-        isRebuildingSignal.value = true;
-        expect(controller.isRebuilding.value, isTrue);
-        isRebuildingSignal.value = false;
-        expect(controller.isRebuilding.value, isFalse);
+        expect(controller.totalSlides.value, 1);
+        expect(controller.currentSlide.value, isNotNull);
       });
     });
 
@@ -136,13 +76,10 @@ void main() {
     group('Theme Updates', () {
       test('updateTheme updates internal theme', () {
         const newTheme = DeckTheme(debug: true);
-        expect(
-          () => controller.updateTheme(newTheme),
-          returnsNormally,
-        );
+        expect(() => controller.updateTheme(newTheme), returnsNormally);
       });
 
-      test('updateTheme does not trigger if theme is unchanged', () {
+      test('updateTheme does not throw when unchanged', () {
         const theme = DeckTheme();
         expect(() {
           controller.updateTheme(theme);
@@ -151,21 +88,10 @@ void main() {
       });
     });
 
-    group('Reload', () {
-      test('reload delegates to DeckDataState', () async {
-        expect(reloadCount(), 0);
-        await controller.reload();
-        expect(reloadCount(), 1);
-        await controller.reload();
-        expect(reloadCount(), 2);
-      });
-    });
-
     group('Disposal', () {
       test('dispose completes without error', () {
-        final testState = createTestDataState();
         final disposableController = DeckController(
-          dataState: testState.dataState,
+          deck: createTestDeck(),
           theme: const DeckTheme(),
         );
 
@@ -174,3 +100,4 @@ void main() {
     });
   });
 }
+

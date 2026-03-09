@@ -185,6 +185,24 @@ Agents should read this file before substantive work and update it as work progr
   - if extraction proceeds, avoid callback-bag `DeckTooling` shape and keep one concrete, method-based owner with explicit dependencies
   - keep loading/error/rebuilding rendering inside a guaranteed app/material context, not in provider root
 
+### 2026-03-09 (implementation: provider-builder + pure renderer split)
+- Implemented the selected runtime API changes:
+  - `SuperDeckProvider` is now builder-only (`builder: (context, deck) => ...`) and no longer exposes `SuperDeckProvider.of(...)` or `DeckDataState`
+  - `SuperDeckApp` is now prop-driven with required `deck`
+  - `DeckController` no longer exposes loading/error/rebuilding/reload pass-throughs
+  - loading/error/rebuilding fallbacks moved into provider-owned, root-safe widgets
+- Kept thumbnails/export in `DeckController` for this pass (deferred extraction).
+- Removed dead `SlideDataBuilder.configuration` state and migrated call sites.
+- Migrated consumer entrypoints (`demo`, `genui`) and affected tests/helpers to builder + deck-prop flow.
+- Validation results for this slice:
+  - `dart analyze packages/superdeck packages/genui demo --fatal-infos` passed
+  - `flutter test` in `packages/superdeck` passed (full suite)
+  - targeted `packages/genui` tests for presentation host API passed
+  - `flutter test` in `demo` passed
+- Known local validation blockers:
+  - `demo/integration_test` cannot run on this machine due macOS destination arch mismatch (`flutter test -d macos` requests `arm64`, only `x86_64` destination available)
+  - existing `packages/genui/test/core/tools/deck_tools_service_test.dart` schema-validation failures remain (pre-existing baseline issue)
+
 ### 2026-03-09 (macOS validation pass)
 - Focused on validating the local macOS implementation path for release readiness.
 - Ran `fvm flutter devices` and confirmed `macos` desktop target availability.
@@ -1162,3 +1180,34 @@ Agents should read this file before substantive work and update it as work progr
 - Deleted empty `packages/core/test/src/contracts/` directory
 - Added `@column` compat test to `block_parser_test.dart`; removed legacy test that relied on deleted migrator class
 - Validation: `dart analyze` clean, builder 206 tests pass, superdeck 631 tests pass
+
+### 2026-03-09 (final local validation pass in progress)
+- Started a full local verification pass for the builder-only provider + prop-driven app refactor.
+- Validation scope: analyze, package tests, demo tests, and macOS integration (`melos run test:integration:macos --no-select`).
+- Regression under active fix: provider rebuild overlay used root-level `Stack` default directional alignment, which can throw `No Directionality widget found` before `MaterialApp`.
+- Planned fix: set non-directional root stack alignment and rerun full validation gates.
+
+### 2026-03-09 (final local validation pass complete)
+- Completed end-to-end local validation for the provider-builder/pure-renderer refactor.
+- Fixed provider root rebuild regression by keeping the loaded-state root widget stable across rebuild toggles:
+  - `SuperDeckProvider` now always returns a `Stack` in loaded state and conditionally inserts `_RootRebuildingIndicator`.
+  - This prevents `SuperDeckApp` disposal/remount churn during watch rebuilds.
+- Confirmed and fixed a separate tooling/schema round-trip issue that blocked monorepo green tests:
+  - `Slide.toMap()` can include `null` fields that fail strict ACK schema re-parse in GenUI tooling flows.
+  - Added `packages/genui/lib/src/tools/json_normalization.dart` and now strip null fields before:
+    - writing canonical deck JSON (`DeckDocumentStore.writeCanonical`)
+    - returning read-slide schema payload (`DeckToolsService.readSlide`)
+- Validation results (all passing locally):
+  - `./.fvm/flutter_sdk/bin/dart analyze packages/superdeck packages/genui demo --fatal-infos`
+  - `./.fvm/flutter_sdk/bin/dart run melos run test --no-select`
+  - `./.fvm/flutter_sdk/bin/dart run melos run test:integration:macos --no-select`
+- macOS integration live-edit test now passes without disposed-controller read warnings.
+
+### 2026-03-09 (PresentationDeckHost review)
+- Reviewed `packages/genui/lib/src/presentation/view/presentation_deck_host.dart` as a public convenience surface.
+- Conclusion:
+  - the wrapper is not strictly necessary for runtime correctness, but it does provide one coherent convenience seam for GenUI presentation bootstrapping (`DeckConfig` defaulting + style-signal to `DeckTheme` mapping + `SuperDeckProvider`/`SuperDeckApp` wiring)
+  - the current public API is not fully Flutter-idiomatic because `appBuilder` omits `BuildContext` and the README example is stale
+- Gaps noted for follow-up:
+  - add a real widget test for provider wiring/theme update behavior instead of constructor-only tests
+  - reconcile docs and consider renaming `appBuilder` to a normal `builder` shape if the override hook remains public

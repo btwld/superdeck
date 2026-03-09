@@ -39,10 +39,7 @@ DeckTheme _testTheme() => DeckTheme(
   baseStyle: borderedStyle(),
   widgets: {...demoWidgets, 'twitter': const _TwitterBlockDefinition()},
   styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
-  templates: {
-    'corporate': corporateTemplate(),
-    'minimal': minimalTemplate(),
-  },
+  templates: {'corporate': corporateTemplate(), 'minimal': minimalTemplate()},
   frame: const SlideFrame(
     header: HeaderPart(),
     footer: FooterPart(),
@@ -57,9 +54,6 @@ String describeDeckState(DeckController? controller) {
 
   return [
     'DeckController state:',
-    '  isLoading=${controller.isLoading.value}',
-    '  hasError=${controller.hasError.value}',
-    '  error=${controller.error.value}',
     '  totalSlides=${controller.totalSlides.value}',
     '  currentIndex=${controller.currentIndex.value}',
     '  isMenuOpen=${controller.isMenuOpen.value}',
@@ -86,7 +80,7 @@ class TestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return SuperDeckProvider(
       config: config ?? _testConfig,
-      child: SuperDeckApp(theme: _testTheme()),
+      builder: (context, deck) => SuperDeckApp(deck: deck, theme: _testTheme()),
     );
   }
 }
@@ -150,9 +144,7 @@ extension IntegrationTestExtensions on WidgetTester {
   ///
   /// Returns the DeckController for further assertions.
   Future<DeckController?> pumpTestApp({DeckConfig? config}) async {
-    final widget = config != null
-        ? TestApp(config: config)
-        : const TestApp();
+    final widget = config != null ? TestApp(config: config) : const TestApp();
     final mountTimeout = config != null
         ? const Duration(seconds: 30)
         : const Duration(seconds: 15);
@@ -181,23 +173,14 @@ extension IntegrationTestExtensions on WidgetTester {
     return controller;
   }
 
-  /// Waits for the app to finish loading slides.
+  /// Waits for the app to settle after startup.
   Future<void> waitForSlidesLoaded(DeckController controller) async {
-    await pumpUntil(
-      () => !controller.isLoading.value,
-      timeout: const Duration(seconds: 20),
-      debugLabel: 'slides to finish loading',
-      onTimeout: () => describeDeckState(controller),
-    );
-
-    if (controller.hasError.value) {
-      fail(
-        'Deck failed to load: ${controller.error.value}\n'
-        '${describeDeckState(controller)}',
-      );
-    }
-
     await pumpFor(const Duration(milliseconds: 200));
+    expect(
+      controller.totalSlides.value,
+      greaterThan(0),
+      reason: 'Slides should be loaded after startup settle',
+    );
   }
 
   /// Navigates to a specific slide and waits for transition to complete.
@@ -217,7 +200,7 @@ extension IntegrationTestExtensions on WidgetTester {
     return [
       describeDeckState(controller),
       'Scaffold count=${find.byType(Scaffold).evaluate().length}',
-      'Error text count=${find.textContaining('Error loading presentation').evaluate().length}',
+      'Error text count=${find.textContaining('Failed to load presentation').evaluate().length}',
     ].join('\n');
   }
 }

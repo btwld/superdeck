@@ -12,6 +12,7 @@ import './deck_document_store.dart';
 import './deck_mutation_helpers.dart' as mutation;
 import './deck_tools_schemas.dart';
 import './errors.dart';
+import './json_normalization.dart';
 import '../utils/deck_style_service.dart';
 import '../utils/style_builder.dart';
 import '../presentation/thumbnail_preview_service.dart';
@@ -40,11 +41,9 @@ class DeckToolsService {
              required DeckStyleType? style,
              required int index,
            }) {
-             final slideBuilder = SlideDataBuilder(configuration: configuration);
+             final slideBuilder = const SlideDataBuilder();
              final theme = buildDeckThemeFromStyle(style);
-             return slideBuilder.buildSlides([
-               slide,
-             ], theme).single;
+             return slideBuilder.buildSlides([slide], theme).single;
            });
 
   final DeckDocumentStore _documentStore;
@@ -80,9 +79,7 @@ class DeckToolsService {
       style: document.style,
       index: index,
     );
-    final indexedSlideData = slideConfiguration.copyWith(
-      slideIndex: index,
-    );
+    final indexedSlideData = slideConfiguration.copyWith(slideIndex: index);
 
     final imageBytes = await _captureSlideBytes(
       indexedSlideData,
@@ -98,7 +95,7 @@ class DeckToolsService {
       'slide': {
         'index': index,
         'key': slide.key,
-        'schema': slide.toMap(),
+        'schema': stripNullsFromJsonMap(slide.toMap()),
         'thumbnail': base64Encode(imageBytes),
       },
       'deck': snapshot.toJson(),
@@ -338,10 +335,7 @@ class DeckToolsService {
     return context;
   }
 
-  Future<Uint8List> _captureSlideBytes(
-    SlideData slide,
-    BuildContext context,
-  ) {
+  Future<Uint8List> _captureSlideBytes(SlideData slide, BuildContext context) {
     if (_captureSlide case final capture?) {
       return capture(slide, context);
     }

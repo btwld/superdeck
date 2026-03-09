@@ -1,11 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/slides/slide_data_builder.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
-  final config = DeckWorkspace();
-  final builder = SlideDataBuilder(configuration: config);
+  final builder = const SlideDataBuilder();
 
   group('SlideDataBuilder', () {
     test('returns empty list for empty slides', () {

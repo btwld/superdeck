@@ -3,39 +3,20 @@ import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 import '../../rendering/slides/slide_screen.dart';
-import '../../ui/widgets/button.dart';
-import '../../ui/widgets/loading_indicator.dart';
 import '../superdeck_context.dart';
 
-/// Widget for rendering slide page content
-///
-/// Handles loading states, errors, and syncing route index with runtime state
-/// exposed through [DeckController].
+/// Widget for rendering slide page content.
 class SlidePageContent extends StatelessWidget {
-  final int index;
-
   const SlidePageContent({super.key, required this.index});
+
+  final int index;
 
   @override
   Widget build(BuildContext context) {
     final handle = SuperDeck.of(context);
 
-    // Use Watch to react to signals
     return Watch((context) {
-      // Access runtime state through the public handle surface.
-      final isLoading = handle.isLoading.value;
-      final hasError = handle.hasError.value;
       final slides = handle.slides.value;
-
-      // Render appropriate state
-      if (hasError) {
-        return _ErrorScreen(error: handle.error.value, onRetry: handle.reload);
-      }
-
-      if (isLoading) {
-        return const _LoadingScreen();
-      }
-
       if (slides.isEmpty) {
         return const _NoSlidesScreen();
       }
@@ -47,51 +28,6 @@ class SlidePageContent extends StatelessWidget {
         child: SlideScreen(slides[safeIndex]),
       );
     });
-  }
-}
-
-class _LoadingScreen extends StatelessWidget {
-  const _LoadingScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IsometricLoading(),
-            SizedBox(height: 16),
-            Text('Loading presentation...'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorScreen extends StatelessWidget {
-  final Object? error;
-  final VoidCallback onRetry;
-
-  const _ErrorScreen({required this.error, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text('Error loading presentation: $error'),
-            const SizedBox(height: 16),
-            SDButton(onPressed: onRetry, label: 'Retry'),
-          ],
-        ),
-      ),
-    );
   }
 }
 

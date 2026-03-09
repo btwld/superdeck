@@ -6,6 +6,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../ai/schemas/deck_schemas.dart';
 import '../ai/services/style_json_serializer.dart';
 import './errors.dart';
+import './json_normalization.dart';
 
 class DeckDocument {
   const DeckDocument({required this.slides, required this.style});
@@ -92,7 +93,9 @@ class DeckDocumentStore {
   }) async {
     final file = configuration.deckJson;
     final payload = {
-      'slides': slides.map((slide) => slide.toMap()).toList(),
+      'slides': slides
+          .map((slide) => stripNullsFromJsonMap(slide.toMap()))
+          .toList(),
       if (style != null) 'style': serializeDeckStyleForJson(style),
     };
 

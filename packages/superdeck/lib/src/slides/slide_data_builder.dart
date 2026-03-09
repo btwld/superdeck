@@ -1,8 +1,8 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../presentation/block_definition.dart';
 import '../presentation/deck_theme.dart';
 import '../presentation/template_resolver.dart';
-import '../presentation/block_definition.dart';
 import '../widgets/widgets.dart';
 import 'slide_data.dart';
 
@@ -14,9 +14,7 @@ import 'slide_data.dart';
 /// - Widget builder collection
 /// - Thumbnail path generation
 class SlideDataBuilder {
-  final DeckWorkspace configuration;
-
-  const SlideDataBuilder({required this.configuration});
+  const SlideDataBuilder();
 
   /// Builds a list of SlideData objects from raw slides and theme options.
   List<SlideData> buildSlides(List<Slide> rawSlides, DeckTheme theme) {
@@ -34,17 +32,14 @@ class SlideDataBuilder {
     DeckTheme theme,
     TemplateResolver resolver,
   ) {
-    // Start with built-in widgets, then add user widgets that are actually used
     final widgets = Map<String, BlockDefinition>.from(builtInWidgets);
 
-    // Collect widget names used in this slide
     final usedWidgetNames = slide.sections
         .expand((section) => section.blocks)
         .whereType<WidgetBlock>()
         .map((block) => block.name)
         .toSet();
 
-    // Add user widgets that are used (overriding built-ins if necessary)
     for (final name in usedWidgetNames) {
       final userWidget = theme.widgets[name];
       if (userWidget != null) {
@@ -52,7 +47,6 @@ class SlideDataBuilder {
       }
     }
 
-    // Resolve template, style, and frame
     final resolution = resolver.resolve(slide.options);
     final renderSignature = GeneratedAsset.buildKey(
       [
@@ -63,6 +57,7 @@ class SlideDataBuilder {
         usedWidgetNames.toList()..sort(),
       ].join('|'),
     );
+
     final thumbnailAsset = GeneratedAsset.thumbnail(
       slide.key,
       renderSignature: renderSignature,

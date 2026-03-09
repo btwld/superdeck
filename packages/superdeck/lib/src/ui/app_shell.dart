@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart'
-    show Icons, Colors, Scaffold, FloatingActionButtonLocation;
+    show Icons, Scaffold, FloatingActionButtonLocation;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+
 import '../rendering/slides/scaled_app.dart';
 import '../rendering/slides/slide_thumbnail.dart';
+import '../runtime/deck_controller.dart';
+import '../runtime/navigation/navigation_input_listener.dart';
+import '../runtime/superdeck_context.dart';
+import '../utils/constants.dart';
 import 'extensions.dart';
+import 'panels/bottom_bar.dart';
 import 'panels/notes_panel.dart';
 import 'panels/thumbnail_panel.dart';
 import 'widgets/icon_button.dart';
-import 'widgets/loading_indicator.dart';
-import '../utils/constants.dart';
-
-import '../runtime/superdeck_context.dart';
-import '../runtime/deck_controller.dart';
-import '../runtime/navigation/navigation_input_listener.dart';
-import 'panels/bottom_bar.dart';
 
 /// High-level app shell that toggles between
 /// small layout (bottom panel) or regular layout (side panel).
@@ -48,6 +47,7 @@ class _SplitViewState extends State<SplitView>
   static const _animationDuration = Duration(milliseconds: 200);
   late final AnimationController _animationController;
   late final Animation<double> _curvedAnimation;
+
   EffectCleanup? _menuEffectCleanup;
   DeckController? _observedDeck;
 
@@ -58,8 +58,9 @@ class _SplitViewState extends State<SplitView>
     _animationController = AnimationController(
       duration: _animationDuration,
       vsync: this,
-      value: 0.0, // Will be set in didChangeDependencies
+      value: 0.0,
     );
+
     _curvedAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
@@ -104,13 +105,11 @@ class _SplitViewState extends State<SplitView>
 
   @override
   void dispose() {
-    // Cleanup effect
     _menuEffectCleanup?.call();
     _animationController.dispose();
     super.dispose();
   }
 
-  // Build the panel content (thumbnails + optional notes).
   Widget _buildPanel(BuildContext context) {
     final deck = SuperDeck.of(context);
 
@@ -123,7 +122,6 @@ class _SplitViewState extends State<SplitView>
           ? slides[currentIndex]
           : null;
 
-      /// Common content for thumbnails
       final thumbnailPanel = ThumbnailPanel(
         scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
         onItemTap: deck.goToSlide,
@@ -165,8 +163,8 @@ class _SplitViewState extends State<SplitView>
       onPressed: deck.openMenu,
       semanticLabel: 'Open menu',
     );
-    final extensionAction = deck.buildFloatingAction(context);
 
+    final extensionAction = deck.buildFloatingAction(context);
     if (extensionAction == null) {
       return menuButton;
     }
@@ -184,13 +182,15 @@ class _SplitViewState extends State<SplitView>
 
     return Watch((context) {
       final isMenuOpen = deck.isMenuOpen.value;
-      final isRebuilding = deck.isRebuilding.value;
+
       final mainContent = Expanded(
         child: Center(
           child: ScaledWidget(targetSize: kResolution, child: widget.child),
         ),
       );
+
       final panel = _buildPanel(context);
+
       final panelTransition = widget.isSmallLayout
           ? SizeTransition(
               axis: Axis.vertical,
@@ -202,32 +202,10 @@ class _SplitViewState extends State<SplitView>
               sizeFactor: _curvedAnimation,
               child: SizedBox(width: 300, child: panel),
             );
+
       final layout = widget.isSmallLayout
           ? Column(children: [mainContent, panelTransition])
           : Row(children: [panelTransition, mainContent]);
-      final rebuildingIndicator = Positioned(
-        top: 16,
-        right: 16,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.black87,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white24, width: 1),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(width: 16, height: 16, child: IsometricLoading()),
-              SizedBox(width: 8),
-              Text(
-                'Rebuilding...',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-      );
 
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
@@ -237,15 +215,12 @@ class _SplitViewState extends State<SplitView>
           deck: deck,
           isMenuOpen: isMenuOpen,
         ),
-
-        // Only show bottom bar on small layout (uncomment if needed):
         bottomNavigationBar: SizeTransition(
           axis: Axis.vertical,
           sizeFactor: _curvedAnimation,
           child: const DeckBottomBar(),
         ),
-
-        body: Stack(children: [layout, if (isRebuilding) rebuildingIndicator]),
+        body: layout,
       );
     });
   }
