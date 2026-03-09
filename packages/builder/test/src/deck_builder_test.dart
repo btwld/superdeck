@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:superdeck_builder/src/deck_builder.dart';
-import 'package:superdeck_builder/src/tasks/slide_context.dart';
 import 'package:superdeck_builder/src/tasks/task.dart';
+import 'package:superdeck_builder/src/tasks/task_context.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
@@ -16,7 +16,7 @@ final class MockTask extends Task {
     : super('MockTask');
 
   @override
-  FutureOr<void> run(SlideContext context) {
+  FutureOr<void> run(TaskContext context) {
     // No-op for testing
   }
 
@@ -48,7 +48,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
           configuration: DeckWorkspace(),
-          store: TestDeckService(),
+          deckService: TestDeckService(),
         );
 
         await builder.dispose();
@@ -62,7 +62,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [],
           configuration: DeckWorkspace(),
-          store: TestDeckService(),
+          deckService: TestDeckService(),
         );
 
         await expectLater(builder.dispose(), completes);
@@ -77,7 +77,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
           configuration: DeckWorkspace(),
-          store: TestDeckService(),
+          deckService: TestDeckService(),
         );
 
         final stopwatch = Stopwatch()..start();
@@ -103,7 +103,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [task],
           configuration: DeckWorkspace(),
-          store: TestDeckService(),
+          deckService: TestDeckService(),
         );
 
         // First dispose
@@ -122,7 +122,7 @@ void main() {
           () => DeckBuilder(
             tasks: [],
             configuration: DeckWorkspace(),
-            store: TestDeckService(),
+            deckService: TestDeckService(),
           ),
           returnsNormally,
         );
@@ -133,7 +133,7 @@ void main() {
           () => DeckBuilder(
             tasks: [],
             configuration: DeckWorkspace(),
-            store: TestDeckService(),
+            deckService: TestDeckService(),
             concurrentSlides: 8,
           ),
           returnsNormally,

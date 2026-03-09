@@ -13,7 +13,7 @@ class _FakeDeckBuilder extends DeckBuilder {
 
   _FakeDeckBuilder({
     required super.configuration,
-    required super.store,
+    required super.deckService,
     required Stream<BuildEvent> events,
   }) : _events = events,
        super(tasks: const []);
@@ -38,12 +38,12 @@ void main() {
   group('DeckWatcher', () {
     late Directory tempDir;
     late DeckWorkspace configuration;
-    late DeckService store;
+    late DeckService deckService;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('deck_watcher_test_');
       configuration = DeckWorkspace(projectDir: tempDir.path);
-      store = DeckService(configuration: configuration);
+      deckService = DeckService(configuration: configuration);
     });
 
     tearDown(() async {
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('initial status is idle', () {
-      final watcher = DeckWatcher(configuration: configuration, store: store);
+      final watcher = DeckWatcher(configuration: configuration, deckService: deckService);
 
       expect(watcher.status.value, DeckWatcherStatus.idle);
       expect(watcher.error.value, isNull);
@@ -71,16 +71,16 @@ void main() {
 
         final watcher = DeckWatcher(
           configuration: configuration,
-          store: store,
+          deckService: deckService,
           builderFactory:
               ({
                 required DeckWorkspace configuration,
-                required DeckService store,
+                required DeckService deckService,
               }) {
                 builderFactoryCalls++;
                 fakeBuilder = _FakeDeckBuilder(
                   configuration: configuration,
-                  store: store,
+                  deckService: deckService,
                   events: events.stream,
                 );
                 return fakeBuilder!;
@@ -112,15 +112,15 @@ void main() {
       final events = StreamController<BuildEvent>();
       final watcher = DeckWatcher(
         configuration: configuration,
-        store: store,
+        deckService: deckService,
         builderFactory:
             ({
               required DeckWorkspace configuration,
-              required DeckService store,
+              required DeckService deckService,
             }) {
               return _FakeDeckBuilder(
                 configuration: configuration,
-                store: store,
+                deckService: deckService,
                 events: events.stream,
               );
             },
@@ -146,16 +146,16 @@ void main() {
 
       final watcher = DeckWatcher(
         configuration: configuration,
-        store: store,
+        deckService: deckService,
         builderFactory:
             ({
               required DeckWorkspace configuration,
-              required DeckService store,
+              required DeckService deckService,
             }) {
               builderFactoryCalls++;
               return _FakeDeckBuilder(
                 configuration: configuration,
-                store: store,
+                deckService: deckService,
                 events: events.stream,
               );
             },
@@ -175,15 +175,15 @@ void main() {
       final events = StreamController<BuildEvent>();
       final watcher = DeckWatcher(
         configuration: configuration,
-        store: store,
+        deckService: deckService,
         builderFactory:
             ({
               required DeckWorkspace configuration,
-              required DeckService store,
+              required DeckService deckService,
             }) {
               return _FakeDeckBuilder(
                 configuration: configuration,
-                store: store,
+                deckService: deckService,
                 events: events.stream,
               );
             },
@@ -209,15 +209,15 @@ void main() {
 
       final watcher = DeckWatcher(
         configuration: configuration,
-        store: store,
+        deckService: deckService,
         builderFactory:
             ({
               required DeckWorkspace configuration,
-              required DeckService store,
+              required DeckService deckService,
             }) {
               final builder = _FakeDeckBuilder(
                 configuration: configuration,
-                store: store,
+                deckService: deckService,
                 events: eventStreams[builderFactoryCalls],
               );
               builderFactoryCalls++;
@@ -260,15 +260,15 @@ void main() {
 
       final watcher = DeckWatcher(
         configuration: configuration,
-        store: store,
+        deckService: deckService,
         builderFactory:
             ({
               required DeckWorkspace configuration,
-              required DeckService store,
+              required DeckService deckService,
             }) {
               final builder = _FakeDeckBuilder(
                 configuration: configuration,
-                store: store,
+                deckService: deckService,
                 events: eventStreams[builderFactoryCalls],
               );
               builderFactoryCalls++;
@@ -297,7 +297,7 @@ void main() {
     });
 
     test('multiple dispose calls are safe', () {
-      final watcher = DeckWatcher(configuration: configuration, store: store);
+      final watcher = DeckWatcher(configuration: configuration, deckService: deckService);
 
       expect(() {
         watcher.dispose();

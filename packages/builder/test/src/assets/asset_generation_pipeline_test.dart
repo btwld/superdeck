@@ -105,17 +105,17 @@ class InMemoryAssetCacheStore implements AssetCacheStore {
 void main() {
   group('AssetGenerationPipeline', () {
     late AssetGenerationPipeline pipeline;
-    late MockDeckService mockStore;
+    late MockDeckService mockDeckService;
     late MockAssetGenerator mockGenerator;
     late Directory tempDir;
 
     setUp(() {
       tempDir = Directory.systemTemp.createTempSync('asset_pipeline_test');
-      mockStore = MockDeckService(tempDir);
+      mockDeckService = MockDeckService(tempDir);
       mockGenerator = MockAssetGenerator('mermaid', [1, 2, 3, 4, 5]);
       pipeline = AssetGenerationPipeline(
         generators: [mockGenerator],
-        store: mockStore,
+        deckService: mockDeckService,
         cacheStore: IoAssetCacheStore(
           cacheDir: Directory('${tempDir.path}/assets'),
         ),
@@ -241,7 +241,7 @@ graph TD
         );
         final customPipeline = AssetGenerationPipeline(
           generators: [mockGenerator],
-          store: mockStore,
+          deckService: mockDeckService,
           cacheStore: cacheStore,
         );
 
@@ -269,7 +269,7 @@ graph TD
         );
         final customPipeline = AssetGenerationPipeline(
           generators: [mockGenerator],
-          store: mockStore,
+          deckService: mockDeckService,
           cacheStore: cacheStore,
         );
 
@@ -297,7 +297,7 @@ graph TD
         );
         final mismatchedPipeline = AssetGenerationPipeline(
           generators: [mockGenerator],
-          store: mockStore,
+          deckService: mockDeckService,
           cacheStore: mismatchedCache,
         );
 

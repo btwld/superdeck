@@ -7,7 +7,7 @@ import 'parsers/raw_slide_schema.dart';
 import 'task_exception.dart';
 import 'parsers/comment_parser.dart' show NoteParser;
 import 'parsers/section_parser.dart';
-import 'tasks/slide_context.dart';
+import 'tasks/task_context.dart';
 import 'tasks/task.dart';
 
 /// Processes raw slide markdown into final Slide objects through a task pipeline.
@@ -24,7 +24,6 @@ class SlideProcessor {
   Future<List<Slide>> processAll(
     List<RawSlideMarkdown> rawSlides,
     List<Task> tasks,
-    DeckService store,
   ) async {
     _logger.info(
       'Processing ${rawSlides.length} slides with $_concurrentSlides concurrent workers',
@@ -39,7 +38,7 @@ class SlideProcessor {
           : rawSlides.length;
 
       final batch = rawSlides.sublist(i, end);
-      final futures = <Future<SlideContext>>[];
+      final futures = <Future<TaskContext>>[];
 
       for (var j = 0; j < batch.length; j++) {
         final index = i + j;
@@ -49,7 +48,7 @@ class SlideProcessor {
           'DeckBuilder: Processing slide $index (key: ${rawSlide.key})',
         );
 
-        futures.add(_processSlide(SlideContext(index, rawSlide, store), tasks));
+        futures.add(_processSlide(TaskContext(index, rawSlide), tasks));
       }
 
       // Wait for this batch to complete
@@ -63,8 +62,8 @@ class SlideProcessor {
   }
 
   /// Processes an individual slide by executing all tasks sequentially.
-  Future<SlideContext> _processSlide(
-    SlideContext context,
+  Future<TaskContext> _processSlide(
+    TaskContext context,
     List<Task> tasks,
   ) async {
     for (final task in tasks) {
@@ -74,7 +73,7 @@ class SlideProcessor {
   }
 
   /// Run a single task with timing and error handling
-  Future<void> _runTask(Task task, SlideContext context) async {
+  Future<void> _runTask(Task task, TaskContext context) async {
     final stopwatch = Stopwatch()..start();
     _logger.info(
       'DeckBuilder: Running task "${task.name}" on slide ${context.slideIndex}',
@@ -101,7 +100,7 @@ class SlideProcessor {
   }
 
   /// Builds final Slide from processed context
-  Slide _buildSlide(SlideContext result) {
+  Slide _buildSlide(TaskContext result) {
     final content = result.slide.content;
 
     return Slide(

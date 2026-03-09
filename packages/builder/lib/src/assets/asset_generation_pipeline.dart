@@ -30,19 +30,19 @@ class AssetGenerationResult {
 /// replaces the content with asset references.
 class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
-  final DeckService _store;
+  final DeckService _deckService;
   final AssetCacheStore _cache;
   final _logger = Logger('AssetGenerationPipeline');
 
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
-    required DeckService store,
+    required DeckService deckService,
     AssetCacheStore? cacheStore,
   }) : _generators = generators,
-       _store = store,
+       _deckService = deckService,
        _cache =
            cacheStore ??
-           IoAssetCacheStore(cacheDir: store.configuration.assetsDir);
+           IoAssetCacheStore(cacheDir: deckService.configuration.assetsDir);
 
   /// Processes all assets in the given slide content.
   ///
@@ -119,7 +119,7 @@ class AssetGenerationPipeline {
     // Let the generator create its own asset reference
     final generatedAsset = generator.createAssetReference(codeBlock.content);
 
-    final assetPath = _store.getGeneratedAssetPath(generatedAsset);
+    final assetPath = _deckService.getGeneratedAssetPath(generatedAsset);
     var resolvedUri = await _cache.resolve(generatedAsset.fileName);
     if (resolvedUri != null) {
       _logger.info(
@@ -148,7 +148,7 @@ class AssetGenerationPipeline {
     );
 
     // Create replacement syntax with relative path from project directory
-    final projectDir = _store.configuration.superdeckDir.parent.path;
+    final projectDir = _deckService.configuration.superdeckDir.parent.path;
     final relativePath = path.relative(assetPath, from: projectDir);
     final replacementSyntax = '![${generator.type}_asset]($relativePath)';
 

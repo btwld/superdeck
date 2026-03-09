@@ -24,7 +24,7 @@ bool _isCI() {
 /// Creates a [DeckBuilder] with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckWorkspace configuration,
-  required DeckService store,
+  required DeckService deckService,
 }) {
   // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions
   final browserLaunchOptions = _isCI()
@@ -37,12 +37,12 @@ DeckBuilder _createStandardBuilder({
     tasks: [
       DartFormatterTask(),
       AssetGenerationTask.withDefaults(
-        store: store,
+        deckService: deckService,
         browserLaunchOptions: browserLaunchOptions,
       ),
     ],
     configuration: configuration,
-    store: store,
+    deckService: deckService,
   );
 }
 
@@ -97,7 +97,7 @@ class BuildCommand extends SuperDeckCommand {
   /// Uses the provided [builder] for the build, or creates and disposes a new
   /// one if not provided.
   Future<bool> _cleanAndRebuild(
-    DeckService store,
+    DeckService deckService,
     DeckWorkspace config, {
     DeckBuilder? builder,
   }) async {
@@ -116,7 +116,7 @@ class BuildCommand extends SuperDeckCommand {
     }
 
     // Run the build (pass through the builder if provided)
-    return _runBuild(store, config, builder: builder);
+    return _runBuild(deckService, config, builder: builder);
   }
 
   /// Runs the build process with proper error handling and progress reporting.
@@ -124,7 +124,7 @@ class BuildCommand extends SuperDeckCommand {
   /// Uses the provided [builder] for the build, or creates and disposes a new
   /// one if not provided.
   Future<bool> _runBuild(
-    DeckService store,
+    DeckService deckService,
     DeckWorkspace config, {
     DeckBuilder? builder,
   }) async {
@@ -138,7 +138,7 @@ class BuildCommand extends SuperDeckCommand {
 
     // Track if we created the builder (and thus need to dispose it)
     final ownsBuilder = builder == null;
-    builder ??= _createStandardBuilder(configuration: config, store: store);
+    builder ??= _createStandardBuilder(configuration: config, deckService: deckService);
 
     try {
       // Run the build process
@@ -161,7 +161,7 @@ class BuildCommand extends SuperDeckCommand {
       progress.fail('Build failed');
       logger.err('File system error: ${e.message}');
       logger.err('Path: ${e.path ?? 'Unknown'}');
-      await store.saveBuildStatus(
+      await deckService.saveBuildStatus(
         status: 'failure',
         error: e,
         stackTrace: StackTrace.current,
@@ -171,7 +171,7 @@ class BuildCommand extends SuperDeckCommand {
     } on FormatException catch (e) {
       progress.fail('Format error');
       logger.err(e.message);
-      await store.saveBuildStatus(
+      await deckService.saveBuildStatus(
         status: 'failure',
         error: e,
         stackTrace: StackTrace.current,
@@ -181,7 +181,7 @@ class BuildCommand extends SuperDeckCommand {
     } catch (e, stackTrace) {
       progress.fail('Build failed');
       _logBuildFailure(e, stackTrace);
-      await store.saveBuildStatus(
+      await deckService.saveBuildStatus(
         status: 'failure',
         error: e,
         stackTrace: stackTrace,
@@ -199,7 +199,7 @@ class BuildCommand extends SuperDeckCommand {
 
   @override
   Future<int> run() async {
-    DeckService? store;
+    DeckService? deckService;
     try {
       final deckConfig = await loadConfiguration();
 
@@ -213,9 +213,9 @@ class BuildCommand extends SuperDeckCommand {
         return ExitCode.unavailable.code;
       }
 
-      // Create the data store using the consolidated repository
-      store = DeckService(configuration: deckConfig);
-      await store.initialize();
+      // Create the deck service
+      deckService = DeckService(configuration: deckConfig);
+      await deckService.initialize();
 
       // Log if force rebuild is enabled
       if (boolArg('force-rebuild')) {
@@ -237,8 +237,7 @@ class BuildCommand extends SuperDeckCommand {
       }
 
       // Run the build process initially
-      final repository = store;
-      final success = await _runBuild(repository, deckConfig);
+      final success = await _runBuild(deckService, deckConfig);
 
       if (!success && !boolArg('watch')) {
         return ExitCode.software.code;
@@ -260,9 +259,10 @@ class BuildCommand extends SuperDeckCommand {
         logger.info('');
 
         // Create a builder that will handle watching and rebuilding
+        final ds = deckService;
         final builder = _createStandardBuilder(
           configuration: deckConfig,
-          store: repository,
+          deckService: ds,
         );
 
         // Listen to stdin for interactive commands
@@ -279,7 +279,7 @@ class BuildCommand extends SuperDeckCommand {
                     logger.info('Manual rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
-                      _runBuild(repository, deckConfig, builder: builder),
+                      _runBuild(ds, deckConfig, builder: builder),
                     );
                     break;
                   case 'f':
@@ -288,7 +288,7 @@ class BuildCommand extends SuperDeckCommand {
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
                       _cleanAndRebuild(
-                        repository,
+                        ds,
                         deckConfig,
                         builder: builder,
                       ),
@@ -334,7 +334,7 @@ class BuildCommand extends SuperDeckCommand {
     } catch (e, stackTrace) {
       logger.err('Build failed before the deck could be generated.');
       _logBuildFailure(e, stackTrace);
-      await store?.saveBuildStatus(
+      await deckService?.saveBuildStatus(
         status: 'failure',
         error: e,
         stackTrace: stackTrace,

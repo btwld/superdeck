@@ -13,7 +13,7 @@ class DeckWatcher {
 
   bool _disposed = false;
 
-  DeckWatcher({required this.configuration, DeckService? store});
+  DeckWatcher({required this.configuration, DeckService? deckService});
 
   ReadonlySignal<DeckWatcherStatus> get status => _status;
   ReadonlySignal<Object?> get error => _error;

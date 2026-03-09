@@ -93,7 +93,7 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
       try {
         _deckWatcher = DeckWatcher(
           configuration: workspace,
-          store: deckService,
+          deckService: deckService,
         );
         unawaited(_deckWatcher!.start());
         _logger.info('Deck watcher started');

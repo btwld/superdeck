@@ -5,7 +5,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../assets/asset_generation_pipeline.dart';
 import '../assets/asset_generator.dart';
 import '../assets/mermaid_generator.dart';
-import 'slide_context.dart';
+import 'task_context.dart';
 import 'task.dart';
 
 /// Task that processes slide assets through the AssetGenerationPipeline.
@@ -17,19 +17,19 @@ final class AssetGenerationTask extends Task {
 
   AssetGenerationTask({
     required List<AssetGenerator> generators,
-    required DeckService store,
+    required DeckService deckService,
     AssetCacheStore? cacheStore,
     Map<String, Object?> configuration = const {},
   }) : _pipeline = AssetGenerationPipeline(
          generators: generators,
-         store: store,
+         deckService: deckService,
          cacheStore: cacheStore,
        ),
        super('asset_generation', configuration: configuration);
 
   /// Factory constructor that creates a default asset pipeline with standard generators.
   factory AssetGenerationTask.withDefaults({
-    required DeckService store,
+    required DeckService deckService,
     Map<String, Object?>? browserLaunchOptions,
     AssetCacheStore? cacheStore,
     Map<String, Object?> configuration = const {},
@@ -40,14 +40,14 @@ final class AssetGenerationTask extends Task {
 
     return AssetGenerationTask(
       generators: generators,
-      store: store,
+      deckService: deckService,
       cacheStore: cacheStore,
       configuration: configuration,
     );
   }
 
   @override
-  Future<void> run(SlideContext context) async {
+  Future<void> run(TaskContext context) async {
     logger.info('Generating assets for slide ${context.slideIndex}');
 
     try {

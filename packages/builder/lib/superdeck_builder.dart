@@ -23,7 +23,7 @@ export 'src/slide_processor.dart';
 // Export tasks
 export 'src/tasks/asset_generation_task.dart';
 export 'src/tasks/dart_formatter_task.dart';
-export 'src/tasks/slide_context.dart';
+export 'src/tasks/task_context.dart';
 export 'src/tasks/task.dart';
 // Export utilities
 export 'src/markdown_utils.dart';

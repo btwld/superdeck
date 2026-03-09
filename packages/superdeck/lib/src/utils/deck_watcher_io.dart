@@ -11,7 +11,7 @@ import 'deck_watcher_types.dart';
 typedef DeckBuilderFactory =
     DeckBuilder Function({
       required DeckWorkspace configuration,
-      required DeckService store,
+      required DeckService deckService,
     });
 
 /// Returns whether the process is running in a CI environment.
@@ -26,7 +26,7 @@ bool _isCI() {
 
 DeckBuilder _createStandardBuilder({
   required DeckWorkspace configuration,
-  required DeckService store,
+  required DeckService deckService,
 }) {
   // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions.
   final browserLaunchOptions = _isCI()
@@ -39,19 +39,19 @@ DeckBuilder _createStandardBuilder({
     tasks: [
       DartFormatterTask(),
       AssetGenerationTask.withDefaults(
-        store: store,
+        deckService: deckService,
         browserLaunchOptions: browserLaunchOptions,
       ),
     ],
     configuration: configuration,
-    store: store,
+    deckService: deckService,
   );
 }
 
 /// Watches slide file changes and rebuilds with typed build events.
 class DeckWatcher {
   final DeckWorkspace configuration;
-  final DeckService _store;
+  final DeckService _deckService;
   final DeckBuilderFactory _builderFactory;
 
   final _logger = Logger('DeckWatcher');
@@ -66,9 +66,9 @@ class DeckWatcher {
 
   DeckWatcher({
     required this.configuration,
-    DeckService? store,
+    DeckService? deckService,
     DeckBuilderFactory? builderFactory,
-  }) : _store = store ?? DeckService(configuration: configuration),
+  }) : _deckService = deckService ?? DeckService(configuration: configuration),
        _builderFactory = builderFactory ?? _createStandardBuilder;
 
   ReadonlySignal<DeckWatcherStatus> get status => _status;
@@ -107,12 +107,12 @@ class DeckWatcher {
     _error.value = null;
 
     try {
-      await _store.initialize();
+      await _deckService.initialize();
       if (_disposed) return;
 
       final builder = _builderFactory(
         configuration: configuration,
-        store: _store,
+        deckService: _deckService,
       );
       if (_disposed) {
         await builder.dispose();

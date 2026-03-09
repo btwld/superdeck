@@ -172,6 +172,52 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Session Log
 
+### 2026-03-09 (implementation)
+- Started implementation of the pending cleanup execution plan.
+- Scope for this pass: align demo generated artifacts from `*.v2.json` to canonical `*.json` names while preserving `@column` compatibility alias behavior unchanged.
+- Initial verification confirmed only `demo/.superdeck/` still contains legacy `*.v2.json` artifact files; active code/docs/constants are already on canonical names.
+- Completed demo artifact alignment:
+  - regenerated demo artifacts via CLI build (`dart run ../packages/cli/bin/main.dart build` from `demo/`)
+  - removed stale legacy files from `demo/.superdeck/`:
+    - `superdeck.v2.json`
+    - `superdeck_full.v2.json`
+    - `generated_assets.v2.json`
+    - `build_status.v2.json`
+  - canonical files now present:
+    - `superdeck.json`
+    - `superdeck_full.json`
+    - `generated_assets.json`
+    - `build_status.json`
+- Validation after implementation:
+  - targeted tests passed (24/24):
+    - `packages/builder/test/src/parsers/block_parser_test.dart`
+    - `packages/core/test/src/deck_workspace_test.dart`
+    - `packages/genui/test/core/tools/deck_document_store_test.dart`
+    - `packages/superdeck/test/runtime/deck_config_test.dart`
+  - analyze passed:
+    - `./.fvm/flutter_sdk/bin/dart analyze packages/builder packages/core packages/genui packages/superdeck --fatal-infos`
+  - stale-name grep gate is clean in active surfaces (`packages`, `docs`, `demo`) for:
+    - `superdeck.v2.json`
+    - `superdeck_full.v2.json`
+    - `generated_assets.v2.json`
+    - `build_status.v2.json`
+
+### 2026-03-09
+- Ran a fresh completion check for the pending cleanup acceptance criteria before proceeding with new work.
+- Verified compatibility behavior is active in code/tests:
+  - `@column` is normalized to `ContentBlock.key` in `packages/builder/lib/src/parsers/block_parser.dart`.
+  - parser comments in `block_parser.dart` and `section_parser.dart` describe `@column` as compatibility alias-only.
+  - explicit parser test exists in `packages/builder/test/src/parsers/block_parser_test.dart`.
+- Verified artifact naming cleanup is complete in active code/docs:
+  - `DeckArtifacts` constants use plain `.json` names.
+  - docs output trees/examples reference `superdeck.json`, `superdeck_full.json`, `generated_assets.json`, and `build_status.json`.
+  - repo grep gate is clean for `*.v2.json` artifact names.
+- Ran targeted validation gates:
+  - targeted tests passed for builder parser, core deck workspace, genui deck document store, and superdeck deck config.
+  - `dart analyze` across affected packages (`builder`, `core`, `genui`, `superdeck`) passed with no issues.
+- Noted one residual legacy fixture occurrence:
+  - `packages/superdeck/test/fixtures/deck_reference.json` still contains `{@column}` in embedded markdown content and appears to be an old compatibility fixture.
+
 ### 2026-03-08
 - Started a repo-wide compatibility cleanup audit focused on migration folders, contract/schema compatibility layers, and other legacy transition artifacts that may now be obsolete.
 - Goal: produce a concrete removal plan with file-level evidence (call sites, ownership, and risk notes) before deleting anything.

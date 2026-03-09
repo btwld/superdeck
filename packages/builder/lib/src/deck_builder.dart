@@ -16,7 +16,7 @@ class DeckBuilder {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;
   final DeckWorkspace configuration;
-  final DeckService store;
+  final DeckService deckService;
   final Logger _logger = Logger('DeckBuilder');
 
   late final SlideProcessor _processor;
@@ -24,7 +24,7 @@ class DeckBuilder {
   DeckBuilder({
     required this.tasks,
     required this.configuration,
-    required this.store,
+    required this.deckService,
     int concurrentSlides = 4,
   }) {
     _processor = SlideProcessor(concurrentSlides: concurrentSlides);
@@ -43,7 +43,7 @@ class DeckBuilder {
       final slides = await build();
       yield BuildCompleted(slides.toList());
     } catch (e, stackTrace) {
-      await store.saveBuildStatus(
+      await deckService.saveBuildStatus(
         status: 'failure',
         error: e,
         stackTrace: stackTrace,
@@ -59,7 +59,7 @@ class DeckBuilder {
         final slides = await build();
         yield BuildCompleted(slides.toList());
       } catch (e, stackTrace) {
-        await store.saveBuildStatus(
+        await deckService.saveBuildStatus(
           status: 'failure',
           error: e,
           stackTrace: stackTrace,
@@ -71,17 +71,17 @@ class DeckBuilder {
 
   Future<Iterable<Slide>> build() async {
     _logger.info('DeckBuilder: Starting build()...');
-    await store.initialize();
+    await deckService.initialize();
 
     // Write building status at the start
-    await store.saveBuildStatus(status: 'building');
+    await deckService.saveBuildStatus(status: 'building');
 
     // Clear generated assets from previous builds
-    store.clearGeneratedAssets();
+    deckService.clearGeneratedAssets();
 
     // Load raw markdown content
     _logger.info('DeckBuilder: Loading markdown content...');
-    final markdownRaw = await store.readDeckMarkdown();
+    final markdownRaw = await deckService.readDeckMarkdown();
     _logger.info(
       'DeckBuilder: Loaded ${markdownRaw.length} characters of markdown content',
     );
@@ -99,14 +99,13 @@ class DeckBuilder {
     final processedSlides = await _processor.processAll(
       rawSlides,
       tasks,
-      store,
     );
 
     // Save the processed slides
-    await store.saveReferences(
+    await deckService.saveReferences(
       Deck(slides: processedSlides, configuration: configuration),
     );
-    await store.saveBuildStatus(
+    await deckService.saveBuildStatus(
       status: 'success',
       slideCount: processedSlides.length,
     );

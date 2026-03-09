@@ -1,7 +1,7 @@
 import 'package:superdeck_builder/src/parsers/raw_slide_schema.dart';
 import 'package:superdeck_builder/src/slide_processor.dart';
 import 'package:superdeck_builder/src/task_exception.dart';
-import 'package:superdeck_builder/src/tasks/slide_context.dart';
+import 'package:superdeck_builder/src/tasks/task_context.dart';
 import 'package:superdeck_builder/src/tasks/task.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
@@ -15,7 +15,7 @@ base class MockTask extends Task {
   MockTask(super.name, {this.shouldFail = false, this.exceptionToThrow});
 
   @override
-  Future<void> run(SlideContext context) async {
+  Future<void> run(TaskContext context) async {
     executedSlides.add(context.slideIndex);
     if (shouldFail) {
       throw exceptionToThrow ?? Exception('Task failed');
@@ -32,7 +32,7 @@ base class ContentModifierTask extends Task {
   ContentModifierTask(this.prefix) : super('ContentModifier');
 
   @override
-  Future<void> run(SlideContext context) async {
+  Future<void> run(TaskContext context) async {
     final updated = RawSlideMarkdown.parse({
       'key': context.slide.key,
       'content': '$prefix${context.slide.content}',
@@ -42,27 +42,12 @@ base class ContentModifierTask extends Task {
   }
 }
 
-/// Mock DeckService for testing
-class MockDeckService extends DeckService {
-  MockDeckService() : super(configuration: DeckWorkspace());
-
-  @override
-  Future<void> initialize() async {}
-
-  @override
-  String getGeneratedAssetPath(GeneratedAsset asset) {
-    return '/mock/path/${asset.fileName}';
-  }
-}
-
 void main() {
   group('SlideProcessor', () {
     late SlideProcessor processor;
-    late MockDeckService store;
 
     setUp(() {
       processor = SlideProcessor();
-      store = MockDeckService();
     });
 
     group('Basic Processing', () {
@@ -74,7 +59,7 @@ void main() {
         });
 
         final task = MockTask('TestTask');
-        final slides = await processor.processAll([rawSlide], [task], store);
+        final slides = await processor.processAll([rawSlide], [task]);
 
         expect(slides, hasLength(1));
         expect(slides[0].key, equals('slide-1'));
@@ -101,7 +86,7 @@ void main() {
         ];
 
         final task = MockTask('TestTask');
-        final slides = await processor.processAll(rawSlides, [task], store);
+        final slides = await processor.processAll(rawSlides, [task]);
 
         expect(slides, hasLength(3));
         expect(slides[0].key, equals('slide-1'));
@@ -112,7 +97,7 @@ void main() {
 
       test('processes empty slide list', () async {
         final task = MockTask('TestTask');
-        final slides = await processor.processAll([], [task], store);
+        final slides = await processor.processAll([], [task]);
 
         expect(slides, isEmpty);
         expect(task.executedSlides, isEmpty);
@@ -125,7 +110,7 @@ void main() {
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].key, equals('slide-1'));
@@ -146,7 +131,6 @@ void main() {
         final slides = await processor.processAll(
           [rawSlide],
           [task1, task2],
-          store,
         );
 
         expect(slides, hasLength(1));
@@ -171,7 +155,7 @@ void main() {
         final task2 = MockTask('Task2');
         final task3 = MockTask('Task3');
 
-        await processor.processAll(rawSlides, [task1, task2, task3], store);
+        await processor.processAll(rawSlides, [task1, task2, task3]);
 
         // Each task should process all slides
         expect(task1.executedSlides, equals([0, 1, 2]));
@@ -193,7 +177,7 @@ void main() {
           }),
         ];
 
-        SlideContext? capturedContext;
+        TaskContext? capturedContext;
         final task = createMockTask(
           'ContextCaptureTask',
           run: (context) async {
@@ -203,7 +187,7 @@ void main() {
           },
         );
 
-        await processor.processAll(rawSlides, [task], store);
+        await processor.processAll(rawSlides, [task]);
 
         expect(capturedContext, isNotNull);
         expect(capturedContext!.slideIndex, equals(1));
@@ -224,7 +208,7 @@ void main() {
         );
 
         final task = MockTask('TestTask');
-        final slides = await processor.processAll(rawSlides, [task], store);
+        final slides = await processor.processAll(rawSlides, [task]);
 
         expect(slides, hasLength(10));
         expect(task.executedSlides, hasLength(10));
@@ -244,7 +228,7 @@ void main() {
         final task = MockTask('TestTask');
         final slides = await customProcessor.processAll(rawSlides, [
           task,
-        ], store);
+        ]);
 
         expect(slides, hasLength(5));
         expect(task.executedSlides, hasLength(5));
@@ -262,7 +246,7 @@ void main() {
         );
 
         final task = MockTask('TestTask');
-        final slides = await processor2.processAll(rawSlides, [task], store);
+        final slides = await processor2.processAll(rawSlides, [task]);
 
         expect(slides, hasLength(3));
         // All slides should be processed regardless of batching
@@ -285,7 +269,7 @@ void main() {
         );
 
         expect(
-          () => processor.processAll([rawSlide], [failingTask], store),
+          () => processor.processAll([rawSlide], [failingTask]),
           throwsA(
             isA<TaskException>()
                 .having((e) => e.taskName, 'taskName', 'FailingTask')
@@ -324,7 +308,7 @@ void main() {
         );
 
         try {
-          await processor.processAll(rawSlides, [conditionalFailTask], store);
+          await processor.processAll(rawSlides, [conditionalFailTask]);
           fail('Should have thrown TaskException');
         } on TaskException catch (e) {
           expect(e.slideIndex, equals(1));
@@ -347,7 +331,7 @@ void main() {
         );
 
         try {
-          await processor.processAll([rawSlide], [failingTask], store);
+          await processor.processAll([rawSlide], [failingTask]);
           fail('Should have thrown TaskException');
         } on TaskException catch (e) {
           expect(e.originalException, equals(customException));
@@ -380,7 +364,7 @@ void main() {
           await processor.processAll(rawSlides, [
             failOnThirdTask,
             trackingTask,
-          ], store);
+          ]);
           fail('Should have thrown TaskException');
         } on TaskException catch (e) {
           expect(e.slideIndex, equals(2));
@@ -398,7 +382,7 @@ void main() {
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides[0].key, equals('custom-key'));
       });
@@ -410,7 +394,7 @@ void main() {
           'frontmatter': {'title': 'Test Title', 'style': 'dark'},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides[0].options?.title, equals('Test Title'));
         expect(slides[0].options?.style, equals('dark'));
@@ -429,7 +413,7 @@ Column content
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides[0].sections, isNotEmpty);
         expect(slides[0].sections[0].blocks, hasLength(2));
@@ -450,7 +434,7 @@ Content here
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides[0].notes, hasLength(2));
         expect(slides[0].notes[0], equals('This is a note'));
@@ -464,7 +448,7 @@ Content here
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].key, equals('slide-1'));
@@ -477,7 +461,7 @@ Content here
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].sections, isNotEmpty);
@@ -496,7 +480,7 @@ Content here
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].key, equals('empty-slide'));
@@ -516,7 +500,7 @@ Symbols: ← → ↑ ↓
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].sections[0].blocks[0].content, contains('émojis 🎉'));
@@ -531,7 +515,7 @@ Symbols: ← → ↑ ↓
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].sections[0].blocks[0].content, contains('Line 999'));
@@ -544,7 +528,7 @@ Symbols: ← → ↑ ↓
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].key, equals('whitespace-slide'));
@@ -565,7 +549,7 @@ Some content without tag
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].sections, isNotEmpty);
@@ -582,7 +566,7 @@ Some content without tag
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].notes, hasLength(3));
@@ -595,7 +579,7 @@ Some content without tag
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].sections, isNotEmpty);
@@ -618,7 +602,7 @@ More content.
           'frontmatter': {},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(
@@ -640,7 +624,7 @@ More content.
           },
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].options?.title, equals('Complex Slide'));
@@ -667,7 +651,7 @@ More content.
           task1,
           task2,
           task3,
-        ], store);
+        ]);
 
         expect(slides, hasLength(6));
         expect(task1.executedSlides, hasLength(6));
@@ -686,7 +670,7 @@ More content.
         );
 
         final task = MockTask('TestTask');
-        final slides = await processor.processAll(rawSlides, [task], store);
+        final slides = await processor.processAll(rawSlides, [task]);
 
         for (var i = 0; i < 10; i++) {
           expect(slides[i].key, equals('slide-$i'));
@@ -732,7 +716,7 @@ void example() {
           'frontmatter': {'title': 'Complex Slide Title', 'style': 'dark'},
         });
 
-        final slides = await processor.processAll([rawSlide], [], store);
+        final slides = await processor.processAll([rawSlide], []);
 
         expect(slides, hasLength(1));
         expect(slides[0].key, equals('complex-slide'));
@@ -747,18 +731,18 @@ void example() {
 /// Helper for creating simple mock tasks
 Task createMockTask(
   String name, {
-  required Future<void> Function(SlideContext) run,
+  required Future<void> Function(TaskContext) run,
 }) {
   return _SimpleMockTask(name, run);
 }
 
 base class _SimpleMockTask extends Task {
-  final Future<void> Function(SlideContext) _run;
+  final Future<void> Function(TaskContext) _run;
 
   _SimpleMockTask(super.name, this._run);
 
   @override
-  Future<void> run(SlideContext context) => _run(context);
+  Future<void> run(TaskContext context) => _run(context);
 }
 
 extension on Block {

@@ -5,15 +5,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 2,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "align": "center",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -43,9 +36,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 2,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -55,15 +56,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "align": "center",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -93,13 +87,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
-              "align": "centerLeft",
+              },
+              "align": "center",
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -153,9 +147,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "centerLeft",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -165,14 +167,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -191,12 +187,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -294,9 +291,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -306,20 +311,21 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
+              "align": null,
               "flex": 1,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "align": "center",
-              "flex": 5,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -338,14 +344,30 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "center",
+              "flex": 5,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
+              "align": null,
               "flex": 1,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -355,14 +377,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -381,20 +397,21 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            }
-          ]
-        },
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "block",
-              "align": "topCenter",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -417,9 +434,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "topCenter",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -429,14 +454,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -455,12 +474,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -548,9 +568,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -560,14 +588,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -596,9 +618,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -608,15 +638,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "align": "centerRight",
-              "flex": 2,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -635,12 +658,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "centerRight",
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 3,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -667,9 +691,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -679,15 +711,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "align": "center",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -706,20 +731,21 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            }
-          ]
-        },
-        {
-          "type": "section",
-          "flex": 2,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "block",
+              },
               "align": "center",
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -738,20 +764,21 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            }
-          ]
-        },
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "block",
+              },
               "align": "center",
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 2,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -770,9 +797,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -782,14 +817,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -808,12 +837,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 2,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -840,9 +870,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -852,14 +890,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -878,12 +910,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -906,9 +939,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -918,14 +959,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -944,12 +979,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -967,9 +1003,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -979,14 +1023,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1005,12 +1043,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 2,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1037,21 +1076,38 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
               "align": "center",
               "flex": 3,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "widget",
+              "name": "mix-simple-box",
+              "args": {},
+              "align": null,
               "flex": 1,
               "scrollable": false,
-              "name": "mix-simple-box"
+              "type": "widget"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1061,14 +1117,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1087,12 +1137,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 2,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1110,21 +1161,38 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
               "align": "center",
               "flex": 3,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "widget",
+              "name": "mix-variants",
+              "args": {},
+              "align": null,
               "flex": 1,
               "scrollable": false,
-              "name": "mix-variants"
+              "type": "widget"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1134,14 +1202,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1160,12 +1222,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 2,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1183,21 +1246,38 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
               "align": "center",
               "flex": 3,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "widget",
+              "name": "remix-button",
+              "args": {},
+              "align": null,
               "flex": 1,
               "scrollable": false,
-              "name": "remix-button"
+              "type": "widget"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1207,14 +1287,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1233,12 +1307,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 2,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1256,21 +1331,38 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
               "align": "center",
               "flex": 3,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "widget",
+              "name": "mix-animation",
+              "args": {},
+              "align": null,
               "flex": 1,
               "scrollable": false,
-              "name": "mix-animation"
+              "type": "widget"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1280,14 +1372,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1306,12 +1392,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -1329,9 +1416,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1341,14 +1436,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": true,
               "content": {
                 "type": "document",
                 "children": [
@@ -1386,9 +1475,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": true,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1398,14 +1495,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1424,12 +1515,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -1456,9 +1548,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1470,14 +1570,8 @@
       },
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1501,9 +1595,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1513,14 +1615,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1539,12 +1635,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -1567,9 +1664,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1579,14 +1684,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1605,12 +1704,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 2,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1674,12 +1774,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "flex": 3,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1706,9 +1807,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1718,14 +1827,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1744,12 +1847,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -1773,9 +1877,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1785,14 +1897,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1811,12 +1917,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -1890,9 +1997,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -1902,20 +2017,21 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
+              "align": null,
               "flex": 1,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
-              "align": "center",
-              "flex": 3,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -1990,14 +2106,30 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
             },
             {
-              "type": "block",
+              "content": {
+                "type": "document",
+                "children": [],
+                "linkReferences": {},
+                "footnoteLabels": [],
+                "footnoteReferences": {}
+              },
+              "align": null,
               "flex": 1,
-              "scrollable": false
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -2007,14 +2139,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -2033,12 +2159,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -2084,9 +2211,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -2098,15 +2233,8 @@
       },
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "align": "center",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -2149,9 +2277,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -2164,15 +2300,8 @@
       },
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "align": "center",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -2201,9 +2330,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -2215,15 +2352,8 @@
       },
       "sections": [
         {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "align": "center",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -2252,9 +2382,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []
@@ -2264,15 +2402,8 @@
       "options": {},
       "sections": [
         {
-          "type": "section",
-          "align": "bottomCenter",
-          "flex": 2,
-          "scrollable": false,
           "blocks": [
             {
-              "type": "block",
-              "flex": 1,
-              "scrollable": false,
               "content": {
                 "type": "document",
                 "children": [
@@ -2291,19 +2422,21 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            }
-          ]
-        },
-        {
-          "type": "section",
-          "flex": 1,
-          "scrollable": false,
-          "blocks": [
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": "bottomCenter",
+          "flex": 2,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -2321,18 +2454,21 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "widget",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
-              "name": "leoafarias"
+              "type": "block"
             },
             {
-              "type": "block",
+              "name": "leoafarias",
+              "args": {},
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "widget"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -2350,12 +2486,13 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
-            },
-            {
-              "type": "block",
+              },
+              "align": null,
               "flex": 1,
               "scrollable": false,
+              "type": "block"
+            },
+            {
               "content": {
                 "type": "document",
                 "children": [
@@ -2393,9 +2530,17 @@
                 "linkReferences": {},
                 "footnoteLabels": [],
                 "footnoteReferences": {}
-              }
+              },
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
             }
-          ]
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
         }
       ],
       "notes": []

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 
-import 'slide_context.dart';
+import 'task_context.dart';
 
 /// Base class representing a task in the slide processing builder.
 /// Each concrete task should extend this class and implement the [run] method to perform its specific operation.
@@ -18,8 +18,8 @@ abstract base class Task {
 
   Task(this.name, {this.configuration = const {}});
 
-  /// Executes the task using the provided [SlideContext].
-  FutureOr<void> run(SlideContext context);
+  /// Executes the task using the provided [TaskContext].
+  FutureOr<void> run(TaskContext context);
 
   /// Disposes of any resources held by the task.
   /// Override if the task holds resources that need explicit disposal.

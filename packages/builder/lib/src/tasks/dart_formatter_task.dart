@@ -3,7 +3,7 @@ import 'dart:math' as math;
 
 import '../dart_code_utils.dart';
 import '../markdown_utils.dart';
-import 'slide_context.dart';
+import 'task_context.dart';
 import 'task.dart';
 
 /// Processes and formats Dart code blocks in slides
@@ -17,7 +17,7 @@ final class DartFormatterTask extends Task {
        super('dart_formatter', configuration: configuration);
 
   @override
-  Future<void> run(SlideContext context) async {
+  Future<void> run(TaskContext context) async {
     final lineLength = configuration['lineLength'] as int?;
     final fix = configuration['fix'] as bool? ?? true;
 

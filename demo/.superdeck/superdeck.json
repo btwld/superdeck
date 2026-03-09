@@ -1,0 +1,977 @@
+{
+  "slides": [
+    {
+      "key": "twqj0tSm",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "# SuperDeck {.heading}\n# Build presentations with Flutter {.subheading}",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 2,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "jzmQg9FF",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n\n#### Leo Farias {.heading}\n#### @leoafarias {.subheading}\n",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "- Founder/CEO/CTO\n- Open Source Contributor (fvm, mix, superdeck, others..)\n- Flutter & Dart GDE\n- Passionate about UI/UX/DX",
+              "align": "centerLeft",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "N6AMJasO",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## What is SuperDeck? {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "- Write slides in **Markdown**\n- Render with **Flutter**\n- Use **custom widgets** in your slides\n- Export to **PDF**",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "qpCfFHU6",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "\n### A developer-first presentation framework that combines the simplicity of Markdown with the power of Flutter. {.heading}\n",
+              "align": "center",
+              "flex": 5,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "KCzbhSLh",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Key Features {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
+              "content": "![mermaid_asset](.superdeck/assets/mermaid_sjKdIahN.png)",
+              "align": "topCenter",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "nw6lHSjL",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Markdown-First {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "Write your presentations in familiar Markdown syntax:\n\n- Headers and text formatting\n- Code blocks with syntax highlighting\n- Lists and blockquotes\n- Mermaid diagrams\n- Custom widgets via `@widget` syntax",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "MClcEqCK",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Slide Layouts {.heading}\n\nSuperDeck supports flexible layouts using sections and columns.",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "lxLJHzO3",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n### Two Columns {.heading}\n",
+              "align": "centerRight",
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "```markdown\n@block {\n  flex: 2\n}\nLeft content here\n\n@block {\n  flex: 3\n}\nRight content here\n```",
+              "align": null,
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "6O6VDcHk",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n### Top Section\n",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
+              "content": "\n### Middle Section (flex: 2)\n",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 2,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
+              "content": "### Bottom Section",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "EDan4eBQ",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Code Blocks {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(runtime: runtime),\n  );\n}\n```{.code}\n\n---\n\n### Mermaid Diagrams {.heading}\n\n@block\n\n```mermaid\nflowchart LR\n    A[Markdown] --> B[Parser]\n    B --> C[Slides]\n    C --> D[Flutter UI]\n    D --> E[PDF Export]\n\n    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff\n```",
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "SR8ABhsS",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Sequence Diagrams {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "![mermaid_asset](.superdeck/assets/mermaid_c9oXzHsh.png)",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "QExThnct",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Custom Widgets {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "Embed interactive Flutter widgets directly in your slides!",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "C8r6gb6A",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Mix Box Example {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "\n\n```markdown\n@mix-simple-box\n```\n",
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "name": "mix-simple-box",
+              "args": {},
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "widget"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "shY8inJJ",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Interactive Variants {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "\n\nHover and press interactions using Mix variants.\n",
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "name": "mix-variants",
+              "args": {},
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "widget"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "KoGyoFYE",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Remix Buttons {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "\n\nDesign system components with Remix.\n",
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "name": "remix-button",
+              "args": {},
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "widget"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "pSdPSgnY",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Animations {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "\n\nImplicit and keyframe animations with Mix.\n",
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "name": "mix-animation",
+              "args": {},
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "widget"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "gTnFpqec",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Styling Options {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "SuperDeck supports custom themes and per-slide styling.",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "E96dbODN",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Style Configuration\n\n```yaml\n# superdeck.yaml\nstyles:\n  default:\n    background: '#1a1a2e'\n    primaryColor: '#4CAF50'\n\n  code:\n    background: '#0f0f23'\n\n  quote:\n    background: 'linear-gradient(...)'\n```",
+              "align": null,
+              "flex": 1,
+              "scrollable": true,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "eXrJuXLD",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Per-Slide Styles\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "```markdown\n---\nstyle: quote\n---\n\n> Your quote here\n```",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "Mhd9VSys",
+      "options": {
+        "style": "quote"
+      },
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "> SuperDeck makes presentations feel like coding - simple, version-controlled, and powerful.",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "P4z1iBd5",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Architecture {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "![mermaid_asset](.superdeck/assets/mermaid_pPsidI1N.png)",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "AkehJJKA",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Getting Started {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "\n\n1. Add SuperDeck to your project\n2. Create `slides.md`\n3. Run the CLI\n4. Present!\n",
+              "align": null,
+              "flex": 2,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "```bash\n# Add dependency\nflutter pub add superdeck\n\n# Build slides\ndart run superdeck_cli:main build\n\n# Run presentation\nflutter run\n```",
+              "align": null,
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "pTQpOnPK",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "### Project Structure {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "```\nmy_presentation/\n├── lib/\n│   └── main.dart\n├── slides.md\n├── superdeck.yaml\n└── pubspec.yaml\n```",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "1eM0XiY3",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Export Options {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "- **PDF Export** - Generate PDF for sharing\n- **Thumbnails** - Auto-generated slide previews\n- **Web Deploy** - Build for web hosting",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "YCMCADkH",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "\n### Why SuperDeck? {.heading}\n\n- Version control your presentations\n- Use your favorite editor\n- Leverage Flutter's ecosystem\n- Hot reload while editing\n- Cross-platform output\n",
+              "align": "center",
+              "flex": 3,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "jHmU4XO9",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "## Slide Templates {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "Templates bundle **chrome** (header, footer, background) with an **isolated style system** — like Keynote master slides.",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "D8gwvOnV",
+      "options": {
+        "template": "corporate"
+      },
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "# Corporate Template {.heading}\n\nThis slide uses the `corporate` template with branded header and footer.",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "zMnR2lH4",
+      "options": {
+        "style": "highlight",
+        "template": "corporate"
+      },
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "# Highlight Style {.heading}\n\nTemplates can have their own named style variants.",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "bgVDjrnG",
+      "options": {
+        "template": "minimal"
+      },
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "# Minimal Template {.heading}\n\nA clean, typography-focused template with no chrome distractions.",
+              "align": "center",
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "key": "MDZPWviz",
+      "options": {},
+      "sections": [
+        {
+          "blocks": [
+            {
+              "content": "\n# Thank You {.heading}\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": "bottomCenter",
+          "flex": 2,
+          "scrollable": false,
+          "type": "section"
+        },
+        {
+          "blocks": [
+            {
+              "content": "\nLeo Farias\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "name": "leoafarias",
+              "args": {},
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "widget"
+            },
+            {
+              "content": "\n(GitHub, Twitter/X)\n",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            },
+            {
+              "content": "#### Source Code\nhttps://github.com/leoafarias/superdeck",
+              "align": null,
+              "flex": 1,
+              "scrollable": false,
+              "type": "block"
+            }
+          ],
+          "align": null,
+          "flex": 1,
+          "scrollable": false,
+          "type": "section"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "configuration": {}
+}
