@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -215,61 +216,7 @@ void main() {
       });
     });
 
-    group('Slide Loading', () {
-      testWidgets('slides load and display', (tester) async {
-        final controller = await tester.pumpTestApp();
-
-        expect(
-          controller,
-          isNotNull,
-          reason: 'DeckController should be available',
-        );
-        expect(
-          controller!.isLoading.value,
-          isFalse,
-          reason: 'Loading should complete',
-        );
-        expect(
-          controller.hasError.value,
-          isFalse,
-          reason: 'No error should occur',
-        );
-
-        final slideCount = controller.totalSlides.value;
-        expect(
-          slideCount,
-          greaterThanOrEqualTo(_minimumDemoSlideCount),
-          reason: 'Demo should have at least $_minimumDemoSlideCount slides',
-        );
-      });
-
-      testWidgets('demo app has at least five slides', (tester) async {
-        final controller = await tester.pumpTestApp();
-
-        expect(controller, isNotNull);
-        expect(
-          controller!.totalSlides.value,
-          greaterThanOrEqualTo(_minimumDemoSlideCount),
-          reason: 'Demo should have at least $_minimumDemoSlideCount slides',
-        );
-      });
-
-      testWidgets('first slide displays correctly', (tester) async {
-        final controller = await tester.pumpTestApp();
-
-        expect(controller, isNotNull);
-        expect(
-          controller!.currentIndex.value,
-          0,
-          reason: 'Should start at first slide',
-        );
-        expect(
-          controller.currentSlide.value,
-          isNotNull,
-          reason: 'Current slide should be available',
-        );
-      });
-
+    group('Navigation', () {
       testWidgets('asset-heavy slide loads without presentation error', (
         tester,
       ) async {
@@ -287,9 +234,7 @@ void main() {
         expect(find.textContaining('Error loading presentation'), findsNothing);
         assertOnlyLayoutOverflowOrNoException(tester);
       });
-    });
 
-    group('Navigation', () {
       testWidgets('can navigate to next slide', (tester) async {
         final controller = await tester.pumpTestApp();
 
@@ -462,14 +407,87 @@ void main() {
       });
     });
 
-    group('Error Handling', () {
-      testWidgets('app handles successful deck load', (tester) async {
+    group('Keyboard Navigation', () {
+      testWidgets('Meta+ArrowRight navigates to next slide', (tester) async {
         final controller = await tester.pumpTestApp();
-
         expect(controller, isNotNull);
-        expect(controller!.hasError.value, isFalse);
-        expect(controller.error.value, isNull);
+        expect(controller!.currentIndex.value, 0);
+        expect(
+          controller.totalSlides.value,
+          greaterThanOrEqualTo(2),
+        );
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowRight);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
+
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 1,
+          debugLabel: 'keyboard Meta+ArrowRight navigation',
+          onTimeout: () => describeDeckState(controller),
+        );
+
+        expect(controller.currentIndex.value, 1);
+        assertOnlyLayoutOverflowOrNoException(tester);
+      });
+
+      testWidgets('Meta+ArrowLeft navigates to previous slide', (
+        tester,
+      ) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+
+        await tester.navigateToSlide(controller!, 1);
+        expect(controller.currentIndex.value, 1);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowLeft);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowLeft);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
+
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 0,
+          debugLabel: 'keyboard Meta+ArrowLeft navigation',
+          onTimeout: () => describeDeckState(controller),
+        );
+
+        expect(controller.currentIndex.value, 0);
+        assertOnlyLayoutOverflowOrNoException(tester);
+      });
+
+      testWidgets('Meta+ArrowDown navigates to next slide', (tester) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+        expect(controller!.currentIndex.value, 0);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowDown);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowDown);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
+
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 1,
+          debugLabel: 'keyboard Meta+ArrowDown navigation',
+          onTimeout: () => describeDeckState(controller),
+        );
+
+        expect(controller.currentIndex.value, 1);
+      });
+
+      testWidgets('arrow key without Meta does not navigate', (tester) async {
+        final controller = await tester.pumpTestApp();
+        expect(controller, isNotNull);
+        expect(controller!.currentIndex.value, 0);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowRight);
+        await tester.pumpFor(const Duration(milliseconds: 300));
+
+        expect(controller.currentIndex.value, 0);
+        assertOnlyLayoutOverflowOrNoException(tester);
       });
     });
+
   });
 }

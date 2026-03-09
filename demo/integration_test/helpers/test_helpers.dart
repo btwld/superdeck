@@ -9,6 +9,19 @@ import 'package:superdeck_example/src/style.dart';
 import 'package:superdeck_example/src/templates.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
+class _TwitterBlockDefinition extends BlockDefinition<Map<String, Object?>> {
+  const _TwitterBlockDefinition();
+
+  @override
+  Map<String, Object?> parse(Map<String, Object?> args) => args;
+
+  @override
+  Widget build(BuildContext context, Map<String, Object?> args) {
+    final username = args['username'] as String? ?? '';
+    return Center(child: Text('Twitter: $username'));
+  }
+}
+
 SuperDeckRuntime? _runtime;
 
 String describeDeckState(SuperDeckHandle? handle) {
@@ -49,7 +62,7 @@ class TestApp extends StatelessWidget {
       ),
       theme: DeckTheme(
         baseStyle: borderedStyle(),
-        widgets: demoWidgets,
+        widgets: {...demoWidgets, 'twitter': const _TwitterBlockDefinition()},
         styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
         templates: {
           'corporate': corporateTemplate(),

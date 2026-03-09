@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/slides/slide_data_builder.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-import 'package:superdeck/src/slides/slide_data_builder.dart';
 
 void main() {
   final config = DeckWorkspace();
@@ -111,9 +111,7 @@ void main() {
     });
 
     test('unknown template throws TemplateException', () {
-      final theme = DeckTheme(
-        templates: {'real': SlideTemplate()},
-      );
+      final theme = DeckTheme(templates: {'real': SlideTemplate()});
       final slides = [
         const Slide(
           key: 'bad',
@@ -130,10 +128,7 @@ void main() {
     test('mixed slides — some with template, some without', () {
       final template = SlideTemplate(baseStyle: SlideStyle());
       final deckBase = SlideStyle();
-      final theme = DeckTheme(
-        baseStyle: deckBase,
-        templates: {'t': template},
-      );
+      final theme = DeckTheme(baseStyle: deckBase, templates: {'t': template});
       final slides = [
         const Slide(key: 'plain'),
         const Slide(
