@@ -72,24 +72,32 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
   void initState() {
     super.initState();
 
-    final workspace = widget.runtime.workspace;
-    final deckService = switch (widget.runtime.config) {
-      LocalDeckConfig() => DeckService(configuration: workspace),
-      BundledDeckConfig() => BundledDeckService(
-        configuration: workspace,
-        deckAssetPath: widget.runtime.bundledDeckAssetPath,
+    final runtime = widget.runtime;
+    final workspace = runtime.workspace;
+
+    final (deckService, enableDeckStream) = switch (runtime.config) {
+      LocalDeckConfig(:final watch) => (
+        DeckService(configuration: workspace),
+        kCanRunProcess || watch,
+      ),
+      BundledDeckConfig(:final deckAssetPath) => (
+        BundledDeckService(
+          configuration: workspace,
+          deckAssetPath: deckAssetPath,
+        ),
+        false,
       ),
     };
 
     _deckController = DeckController(
       deckService: deckService,
-      theme: widget.runtime.theme,
-      extensions: widget.runtime.extensions,
-      enableDeckStream: widget.runtime.usesLocalSource && kCanRunProcess,
+      theme: runtime.theme,
+      extensions: runtime.extensions,
+      enableDeckStream: enableDeckStream,
     );
-    widget.runtime.handle.attach(_deckController);
+    runtime.handle.attach(_deckController);
 
-    if (widget.runtime.canWatch && widget.runtime.shouldWatch) {
+    if (runtime.config case LocalDeckConfig(watch: true)) {
       try {
         _deckWatcher = DeckWatcher(
           configuration: workspace,
@@ -105,8 +113,10 @@ class _RuntimeBootstrapState extends State<_RuntimeBootstrap> {
       } catch (error) {
         _logger.warning('Deck watcher failed to start: $error');
       }
-    } else if (widget.runtime.config is LocalDeckConfig) {
-      _logger.info('Deck watcher disabled via DeckConfig.local(watch: false)');
+    } else if (runtime.config is LocalDeckConfig) {
+      _logger.info(
+        'Deck watcher disabled via DeckConfig.local(watch: false)',
+      );
     }
   }
 

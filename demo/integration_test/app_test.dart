@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:superdeck/superdeck.dart';
 
 import 'helpers/test_helpers.dart';
 
@@ -489,5 +490,61 @@ void main() {
       });
     });
 
+  });
+
+  group('Live Edit', () {
+    late SuperDeckRuntime watchRuntime;
+    late String originalContent;
+
+    setUpAll(() async {
+      originalContent = await slidesFile.readAsString();
+      watchRuntime = await createTestRuntime(watch: true);
+    });
+
+    tearDown(() async {
+      // Always restore original slides.md content after each test
+      await slidesFile.writeAsString(originalContent);
+      // Allow the file watcher debounce to settle so subsequent tests
+      // start from a clean state.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('modifying slides.md updates the presentation', (
+      tester,
+    ) async {
+      final controller = await tester.pumpTestApp(runtime: watchRuntime);
+      expect(controller, isNotNull);
+
+      final initialSlideCount = controller!.totalSlides.value;
+      expect(
+        initialSlideCount,
+        greaterThanOrEqualTo(_minimumDemoSlideCount),
+      );
+
+      // Append a simple new slide (no mermaid/external tools)
+      final modifiedContent = '$originalContent\n---\n\n# Watch Test Slide\n';
+      await slidesFile.writeAsString(modifiedContent);
+
+      // Wait for the full pipeline: FileWatcher detects change →
+      // DeckBuilder rebuilds deck.json → DeckService stream emits →
+      // DeckController updates signals
+      await tester.pumpUntil(
+        () => controller.totalSlides.value > initialSlideCount,
+        timeout: const Duration(seconds: 30),
+        debugLabel: 'live-edit slide count increase',
+        onTimeout: () => [
+          describeDeckState(controller),
+          'Expected totalSlides > $initialSlideCount',
+        ].join('\n'),
+      );
+
+      expect(
+        controller.totalSlides.value,
+        initialSlideCount + 1,
+        reason: 'Appending one slide separator should add exactly one slide',
+      );
+      expect(controller.hasError.value, isFalse);
+      assertOnlyLayoutOverflowOrNoException(tester);
+    });
   });
 }

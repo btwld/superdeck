@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -24,6 +26,38 @@ class _TwitterBlockDefinition extends BlockDefinition<Map<String, Object?>> {
 
 SuperDeckRuntime? _runtime;
 
+/// The slides.md file used by the demo app.
+final slidesFile = File('slides.md');
+
+const _testConfig = LocalDeckConfig(
+  slidesPath: 'slides.md',
+  watch: false,
+  projectDir: '.',
+  outputDir: '.superdeck',
+  assetsPath: 'assets',
+);
+
+DeckTheme _testTheme() => DeckTheme(
+  baseStyle: borderedStyle(),
+  widgets: {...demoWidgets, 'twitter': const _TwitterBlockDefinition()},
+  styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
+  templates: {
+    'corporate': corporateTemplate(),
+    'minimal': minimalTemplate(),
+  },
+  frame: const SlideFrame(
+    header: HeaderPart(),
+    footer: FooterPart(),
+    background: BackgroundPart(),
+  ),
+);
+
+/// Creates a test runtime with the given watch setting.
+Future<SuperDeckRuntime> createTestRuntime({bool watch = false}) {
+  final config = watch ? _testConfig.copyWith(watch: true) : _testConfig;
+  return SuperDeckRuntime.create(config: config, theme: _testTheme());
+}
+
 String describeDeckState(SuperDeckHandle? handle) {
   if (handle == null) {
     return 'SuperDeckHandle: null';
@@ -43,47 +77,27 @@ String describeDeckState(SuperDeckHandle? handle) {
 
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
-  const TestApp({super.key});
+  const TestApp({super.key, this.runtime});
 
-  /// Initializes dependencies for testing.
+  final SuperDeckRuntime? runtime;
+
+  /// Initializes the shared non-watch runtime for testing.
   ///
   /// Should be called in setUpAll() before any tests run.
   static Future<void> initialize() async {
     WidgetsFlutterBinding.ensureInitialized();
     SignalsObserver.instance = null;
     WidgetsBinding.instance.ensureSemantics();
-    _runtime = await SuperDeckRuntime.create(
-      config: const DeckConfig.local(
-        slidesPath: 'slides.md',
-        watch: false,
-        projectDir: '.',
-        outputDir: '.superdeck',
-        assetsPath: 'assets',
-      ),
-      theme: DeckTheme(
-        baseStyle: borderedStyle(),
-        widgets: {...demoWidgets, 'twitter': const _TwitterBlockDefinition()},
-        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
-        templates: {
-          'corporate': corporateTemplate(),
-          'minimal': minimalTemplate(),
-        },
-        frame: const SlideFrame(
-          header: HeaderPart(),
-          footer: FooterPart(),
-          background: BackgroundPart(),
-        ),
-      ),
-    );
+    _runtime = await createTestRuntime();
   }
 
   @override
   Widget build(BuildContext context) {
-    final runtime = _runtime;
-    if (runtime == null) {
+    final rt = runtime ?? _runtime;
+    if (rt == null) {
       throw StateError('Test runtime was not initialized');
     }
-    return SuperDeckApp(runtime: runtime);
+    return SuperDeckApp(runtime: rt);
   }
 }
 
@@ -145,13 +159,20 @@ extension IntegrationTestExtensions on WidgetTester {
   /// Pumps the test app and waits for it to fully load.
   ///
   /// Returns the SuperDeckHandle for further assertions.
-  Future<SuperDeckHandle?> pumpTestApp() async {
-    await pumpWidget(const TestApp());
+  Future<SuperDeckHandle?> pumpTestApp({SuperDeckRuntime? runtime}) async {
+    final widget = runtime != null
+        ? TestApp(runtime: runtime)
+        : const TestApp();
+    final mountTimeout = runtime != null
+        ? const Duration(seconds: 30)
+        : const Duration(seconds: 15);
+
+    await pumpWidget(widget);
     await pumpFor(const Duration(milliseconds: 200));
 
     await pumpUntil(
       () => findDeckHandle(this) != null,
-      timeout: const Duration(seconds: 15),
+      timeout: mountTimeout,
       debugLabel: 'SuperDeckHandle to mount',
       onTimeout: () => _startupDiagnostics(),
     );

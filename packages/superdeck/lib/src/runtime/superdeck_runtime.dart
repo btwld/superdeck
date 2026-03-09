@@ -4,7 +4,6 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../presentation/deck_extension.dart';
 import '../presentation/deck_theme.dart';
 import '../utils/app_initialization.dart';
-import '../utils/constants.dart';
 import 'deck_config.dart';
 import 'superdeck_handle.dart';
 
@@ -96,21 +95,4 @@ final class SuperDeckRuntime {
   @internal
   DeckWorkspace get workspace => _workspace;
 
-  @internal
-  bool get shouldWatch => switch (config) {
-    LocalDeckConfig(:final watch) => watch,
-    BundledDeckConfig() => false,
-  };
-
-  @internal
-  bool get canWatch => config is LocalDeckConfig && kCanRunProcess;
-
-  @internal
-  bool get usesLocalSource => config is LocalDeckConfig;
-
-  @internal
-  String get bundledDeckAssetPath => switch (config) {
-    BundledDeckConfig(:final deckAssetPath) => deckAssetPath,
-    _ => DeckArtifacts.bundledDeckAssetPath,
-  };
 }
