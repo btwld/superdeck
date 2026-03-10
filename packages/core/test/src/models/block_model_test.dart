@@ -760,6 +760,14 @@ void main() {
           expect((block as WidgetBlock).name, 'Test');
         });
 
+        test('normalizes legacy column type to block', () {
+          final map = {'type': 'column', 'content': 'Legacy content'};
+          final block = Block.fromMap(map);
+
+          expect(block, isA<ContentBlock>());
+          expect((block as ContentBlock).content, 'Legacy content');
+        });
+
         test('throws for unknown type', () {
           final map = {'type': 'unknown'};
           expect(() => Block.fromMap(map), throwsArgumentError);

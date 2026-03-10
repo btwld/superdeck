@@ -182,6 +182,25 @@ void main() {
           expect(slide.notes, ['Comment 1', 'Comment 2']);
         });
 
+        test('migrates legacy comments field to notes', () {
+          final slide = Slide.fromMap({
+            'key': 'legacy',
+            'comments': ['Old comment 1', 'Old comment 2'],
+          });
+
+          expect(slide.notes, ['Old comment 1', 'Old comment 2']);
+        });
+
+        test('prefers notes over comments when both present', () {
+          final slide = Slide.fromMap({
+            'key': 'both',
+            'notes': ['New note'],
+            'comments': ['Old comment'],
+          });
+
+          expect(slide.notes, ['New note']);
+        });
+
         test('tolerates null options for legacy payloads', () {
           final slide = Slide.fromMap({'key': 'legacy-slide', 'options': null});
 

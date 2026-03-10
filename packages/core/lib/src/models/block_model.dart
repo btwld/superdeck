@@ -62,7 +62,9 @@ sealed class Block with BlockMappable {
   );
 
   factory Block.fromMap(Map<String, Object?> map) {
-    final type = map['type'] as String;
+    var type = map['type'] as String;
+    // Normalize legacy 'column' type to 'block'.
+    if (type == 'column') type = ContentBlock.key;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
       ContentBlock.key => ContentBlock.fromMap(map),

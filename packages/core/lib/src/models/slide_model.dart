@@ -33,8 +33,14 @@ class Slide with SlideMappable {
     this.notes = const [],
   });
 
-  factory Slide.fromMap(Map<String, Object?> map) =>
-      SlideMapper.fromMap(Map<String, dynamic>.from(map));
+  factory Slide.fromMap(Map<String, Object?> map) {
+    final normalized = Map<String, dynamic>.from(map);
+    // Migrate legacy 'comments' field to 'notes'.
+    if (normalized.containsKey('comments') && !normalized.containsKey('notes')) {
+      normalized['notes'] = normalized.remove('comments');
+    }
+    return SlideMapper.fromMap(normalized);
+  }
 
   /// Validation schema for slide data.
   static final schema = slideSchema.extend({
