@@ -24,7 +24,7 @@ bool _isCI() {
 /// Creates a [DeckBuilder] with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckConfiguration configuration,
-  required DeckService store,
+  required DeckBuildStore store,
 }) {
   // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions
   final browserLaunchOptions = _isCI()
@@ -97,7 +97,7 @@ class BuildCommand extends SuperDeckCommand {
   /// Uses the provided [builder] for the build, or creates and disposes a new
   /// one if not provided.
   Future<bool> _cleanAndRebuild(
-    DeckService store,
+    DeckBuildStore store,
     DeckConfiguration config, {
     DeckBuilder? builder,
   }) async {
@@ -124,7 +124,7 @@ class BuildCommand extends SuperDeckCommand {
   /// Uses the provided [builder] for the build, or creates and disposes a new
   /// one if not provided.
   Future<bool> _runBuild(
-    DeckService store,
+    DeckBuildStore store,
     DeckConfiguration config, {
     DeckBuilder? builder,
   }) async {
@@ -162,7 +162,7 @@ class BuildCommand extends SuperDeckCommand {
       logger.err('File system error: ${e.message}');
       logger.err('Path: ${e.path ?? 'Unknown'}');
       await store.saveBuildStatus(
-        status: 'failure',
+        phase: DeckBuildPhase.failure,
         error: e,
         stackTrace: StackTrace.current,
       );
@@ -172,7 +172,7 @@ class BuildCommand extends SuperDeckCommand {
       progress.fail('Format error');
       logger.err(e.message);
       await store.saveBuildStatus(
-        status: 'failure',
+        phase: DeckBuildPhase.failure,
         error: e,
         stackTrace: StackTrace.current,
       );
@@ -182,7 +182,7 @@ class BuildCommand extends SuperDeckCommand {
       progress.fail('Build failed');
       _logBuildFailure(e, stackTrace);
       await store.saveBuildStatus(
-        status: 'failure',
+        phase: DeckBuildPhase.failure,
         error: e,
         stackTrace: stackTrace,
       );
@@ -199,7 +199,7 @@ class BuildCommand extends SuperDeckCommand {
 
   @override
   Future<int> run() async {
-    DeckService? store;
+    DeckBuildStore? store;
     try {
       final deckConfig = await loadConfiguration();
 
@@ -214,7 +214,7 @@ class BuildCommand extends SuperDeckCommand {
       }
 
       // Create the data store using the consolidated repository
-      store = DeckService(configuration: deckConfig);
+      store = DeckBuildStore(configuration: deckConfig);
       await store.initialize();
 
       // Log if force rebuild is enabled
@@ -335,7 +335,7 @@ class BuildCommand extends SuperDeckCommand {
       logger.err('Build failed before the deck could be generated.');
       _logBuildFailure(e, stackTrace);
       await store?.saveBuildStatus(
-        status: 'failure',
+        phase: DeckBuildPhase.failure,
         error: e,
         stackTrace: stackTrace,
       );

@@ -15,7 +15,7 @@ class DeckBuilder {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;
   final DeckConfiguration configuration;
-  final DeckService store;
+  final DeckBuildStore store;
   final Logger _logger = Logger('DeckBuilder');
 
   late final SlideProcessor _processor;
@@ -43,7 +43,7 @@ class DeckBuilder {
       yield BuildCompleted(slides.toList());
     } catch (e, stackTrace) {
       await store.saveBuildStatus(
-        status: 'failure',
+        phase: DeckBuildPhase.failure,
         error: e,
         stackTrace: stackTrace,
       );
@@ -59,7 +59,7 @@ class DeckBuilder {
         yield BuildCompleted(slides.toList());
       } catch (e, stackTrace) {
         await store.saveBuildStatus(
-          status: 'failure',
+          phase: DeckBuildPhase.failure,
           error: e,
           stackTrace: stackTrace,
         );
@@ -73,7 +73,7 @@ class DeckBuilder {
     await store.initialize();
 
     // Write building status at the start
-    await store.saveBuildStatus(status: 'building');
+    await store.saveBuildStatus(phase: DeckBuildPhase.building);
 
     // Clear generated assets from previous builds
     store.clearGeneratedAssets();
@@ -106,7 +106,7 @@ class DeckBuilder {
       Deck(slides: processedSlides, configuration: configuration),
     );
     await store.saveBuildStatus(
-      status: 'success',
+      phase: DeckBuildPhase.success,
       slideCount: processedSlides.length,
     );
 

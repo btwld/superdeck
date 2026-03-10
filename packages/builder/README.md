@@ -1,14 +1,19 @@
 # superdeck_builder
 
-Build logic and asset generation for SuperDeck presentations.
+Build-time engine for SuperDeck presentations.
 
-Most projects should use `superdeck_cli` to run builds. Use `superdeck_builder` directly when you need programmatic access to the build pipeline.
+Most projects should run builds through `superdeck_cli`.
+Use `superdeck_builder` directly only when you need programmatic control of the build pipeline.
 
-## What it provides
+## What It Does
 
-- Markdown-to-JSON slide processing
-- Asset generation pipeline (for example, Mermaid diagrams)
-- Schema code generation via `build_runner`
+- Parses `slides.md` into deck output
+- Runs build tasks and asset generation (for example Mermaid)
+- Writes build artifacts consumed by the runtime
+
+## Typical Workflow
+
+Use `superdeck build --watch` in one terminal and `flutter run` in another.
 
 ## Related packages
 

@@ -7,26 +7,12 @@ import 'package:path/path.dart' as p;
 import 'package:superdeck_core/src/markdown_json.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-/// Service for managing deck data from the local file system.
-///
-/// Provides functionality for loading, watching, and saving decks,
-/// as well as managing generated assets.
+/// Runtime service for loading deck data and watching build status updates.
 class DeckService {
   DeckService({required this.configuration});
 
   final DeckConfiguration configuration;
-  final List<GeneratedAsset> _generatedAssets = [];
   final Logger _logger = Logger('DeckService');
-
-  /// Initializes the repository by creating necessary directories and files.
-  Future<void> initialize() async {
-    await configuration.assetsDir.ensureExists();
-    await configuration.deckJson.ensureExists(content: '{}');
-    await configuration.buildStatusJson.ensureExists(
-      content: prettyJson({'status': 'unknown'}),
-    );
-    await configuration.slidesFile.ensureExists(content: '');
-  }
 
   /// Loads the current deck reference.
   Future<Deck> loadDeck() async {
@@ -47,93 +33,242 @@ class DeckService {
     }
   }
 
-  /// Provides a stream of deck updates.
-  ///
-  /// Watches the deck JSON file and emits updates when it changes.
-  /// This only watches the JSON output; the caller is responsible for
-  /// running the DeckBuilder to generate the JSON from markdown.
-  Stream<Deck> loadDeckStream() async* {
-    _logger.info('Loading deck stream...');
+  /// Emits only fresh build status updates observed after watching starts.
+  Stream<DeckBuildStatus> watchBuildStatus() {
+    final statusFile = configuration.buildStatusJson;
+    final parentDir = statusFile.parent;
+    final projectDir = Directory(configuration.projectDir ?? '.');
 
-    // Emit the current deck immediately with timeout for initial load
-    try {
-      yield await loadDeck().timeout(const Duration(seconds: 10));
-    } catch (e) {
-      _logger.severe('Initial deck loading failed: $e');
-      yield _createErrorDeck(
-        'Deck Loading Timeout',
-        'Failed to load deck within 10 seconds',
-        e,
-      );
+    late final StreamController<DeckBuildStatus> controller;
+    StreamSubscription<FileSystemEvent>? activeWatch;
+    Completer<void>? activeWait;
+    var cancelled = false;
+    String? lastTimestamp;
+
+    Future<void> emitIfFresh() async {
+      try {
+        if (!await statusFile.exists()) {
+          return;
+        }
+
+        final content = await statusFile.readAsString();
+        final decoded = jsonDecode(content);
+        final parsed = DeckBuildStatus.fromObject(decoded);
+
+        if (parsed == null) {
+          return;
+        }
+
+        final timestampKey = parsed.timestamp.toIso8601String();
+        if (timestampKey == lastTimestamp) {
+          return;
+        }
+
+        lastTimestamp = timestampKey;
+        if (!controller.isClosed) {
+          controller.add(parsed);
+        }
+      } on Exception catch (error) {
+        _logger.fine('Ignoring transient build status parse failure: $error');
+      }
     }
 
-    // Watch the deck JSON for changes
-    _logger.info('Watching for deck changes...');
+    Future<void> waitForDirectoryCreation() async {
+      if (cancelled || await parentDir.exists()) {
+        return;
+      }
 
-    try {
-      // If the file doesn't exist yet, wait for it to be created
-      if (!await configuration.deckJson.exists()) {
-        _logger.info('Deck file does not exist, waiting for creation...');
-        await for (final event in configuration.deckJson.parent.watch(
-          events: FileSystemEvent.create,
-        )) {
-          if (event.path == configuration.deckJson.path) {
-            _logger.info('Deck file created, loading...');
-            yield await loadDeck();
-            break;
-          }
+      final wait = Completer<void>();
+      activeWait = wait;
+      activeWatch = projectDir
+          .watch(events: FileSystemEvent.create, recursive: true)
+          .listen(
+            (_) async {
+              if (cancelled || wait.isCompleted) {
+                return;
+              }
+
+              if (await parentDir.exists() && !wait.isCompleted) {
+                wait.complete();
+              }
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (!wait.isCompleted) {
+                wait.complete();
+              }
+
+              if (error is! FileSystemException && !controller.isClosed) {
+                controller.addError(error, stackTrace);
+              }
+            },
+            onDone: () {
+              if (!wait.isCompleted) {
+                wait.complete();
+              }
+            },
+          );
+
+      if (await parentDir.exists() && !wait.isCompleted) {
+        wait.complete();
+      }
+
+      await wait.future;
+      activeWait = null;
+      await activeWatch?.cancel();
+      activeWatch = null;
+    }
+
+    Future<void> waitForStatusChanges() async {
+      final wait = Completer<void>();
+      final statusPath = p.normalize(statusFile.path);
+      activeWait = wait;
+      activeWatch = parentDir
+          .watch(events: FileSystemEvent.create | FileSystemEvent.modify)
+          .listen(
+            (event) async {
+              if (cancelled || p.normalize(event.path) != statusPath) {
+                return;
+              }
+
+              await emitIfFresh();
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (!wait.isCompleted) {
+                wait.complete();
+              }
+
+              if (error is! FileSystemException && !controller.isClosed) {
+                controller.addError(error, stackTrace);
+              }
+            },
+            onDone: () {
+              if (!wait.isCompleted) {
+                wait.complete();
+              }
+            },
+          );
+
+      await wait.future;
+      activeWait = null;
+      await activeWatch?.cancel();
+      activeWatch = null;
+    }
+
+    Future<void> watchLoop() async {
+      if (await parentDir.exists() && await statusFile.exists()) {
+        try {
+          final existingContent = await statusFile.readAsString();
+          final existingDecoded = jsonDecode(existingContent);
+          final existingStatus = DeckBuildStatus.fromObject(existingDecoded);
+          lastTimestamp = existingStatus?.timestamp.toIso8601String();
+        } on Exception {
+          // Ignore invalid startup content and continue watching fresh writes.
         }
       }
 
-      // Now watch for modifications to the existing file
-      await for (final _ in configuration.deckJson.watch(
-        events: FileSystemEvent.modify,
-      )) {
-        _logger.info('Deck updated, reloading...');
-        yield await loadDeck();
+      while (!cancelled && !controller.isClosed) {
+        if (!await parentDir.exists()) {
+          await waitForDirectoryCreation();
+          continue;
+        }
+
+        await emitIfFresh();
+        if (cancelled || controller.isClosed) {
+          return;
+        }
+
+        await waitForStatusChanges();
       }
-    } catch (e) {
-      _logger.severe('Error in file watching: $e');
-      rethrow;
     }
+
+    controller = StreamController<DeckBuildStatus>(
+      onListen: () {
+        unawaited(watchLoop());
+      },
+      onCancel: () async {
+        cancelled = true;
+        if (!(activeWait?.isCompleted ?? true)) {
+          activeWait!.complete();
+        }
+
+        await activeWatch?.cancel();
+        activeWatch = null;
+      },
+    );
+
+    return controller.stream;
   }
 
-  /// Clears the generated assets list.
-  ///
-  /// Should be called at the start of each build to prevent accumulation
-  /// of assets from previous builds.
+  /// Creates an error deck with the specified details.
+  Deck _createErrorDeck(String title, String message, Object error) {
+    return Deck(
+      slides: [
+        Slide.error(
+          title: title,
+          message: message,
+          error: error is Exception ? error : Exception(error.toString()),
+        ),
+      ],
+      configuration: configuration,
+    );
+  }
+}
+
+/// Build-side store used by CLI and builder commands.
+///
+/// This type intentionally stays colocated with [DeckService] because both are
+/// file-system storage primitives over the same deck workspace layout, while
+/// domain data contracts live in model files.
+class DeckBuildStore {
+  DeckBuildStore({required this.configuration});
+
+  final DeckConfiguration configuration;
+  final List<GeneratedAsset> _generatedAssets = [];
+  final Logger _logger = Logger('DeckBuildStore');
+
+  Future<void> initialize() async {
+    await configuration.assetsDir.ensureExists();
+    await configuration.deckJson.ensureExists(content: '{}');
+    await configuration.buildStatusJson.ensureExists(
+      content: prettyJson(
+        DeckBuildStatus(
+          phase: DeckBuildPhase.unknown,
+          timestamp: DateTime.now(),
+        ).toMap(),
+      ),
+    );
+    await configuration.slidesFile.ensureExists(content: '');
+  }
+
+  Future<String> readDeckMarkdown() async {
+    return configuration.slidesFile.readAsString();
+  }
+
   void clearGeneratedAssets() {
     _generatedAssets.clear();
   }
 
-  /// Gets the file path for a generated asset.
   String getGeneratedAssetPath(GeneratedAsset asset) {
     _generatedAssets.add(asset);
     return p.join(configuration.assetsDir.path, asset.fileName);
   }
 
-  /// Saves the deck reference and manages generated assets.
   Future<void> saveReferences(Deck reference) async {
-    // Save deck reference
     final deckJson = prettyJson(reference.toMap());
     await configuration.deckJson.writeAsString(deckJson);
 
-    // Save full deck reference with markdown AST JSON
     await _saveFullDeckReference(reference);
 
-    // Generate the asset references for each slide thumbnail
     final thumbnails = reference.slides.map(
       (slide) => GeneratedAsset.thumbnail(slide.key),
     );
 
-    // Combine thumbnail and generated assets, then deduplicate by fileName
     final allAssets = [...thumbnails, ..._generatedAssets];
     final uniqueAssets = <String, GeneratedAsset>{};
     for (final asset in allAssets) {
       uniqueAssets[asset.fileName] = asset;
     }
 
-    // Map asset references to their corresponding file paths
     final assetPaths = uniqueAssets.values
         .map((asset) => p.join(configuration.assetsDir.path, asset.fileName))
         .toList();
@@ -158,55 +293,28 @@ class DeckService {
     await _cleanupGeneratedAssets(assetsRef);
   }
 
-  /// Persists the result of the most recent build without replacing existing decks.
-  ///
-  /// The [status] parameter should be one of: 'building', 'success', 'failure', 'unknown'.
   Future<void> saveBuildStatus({
-    required String status,
+    required DeckBuildPhase phase,
     int? slideCount,
     Object? error,
     StackTrace? stackTrace,
   }) async {
-    final statusData = <String, Object?>{
-      'status': status,
-      'timestamp': DateTime.now().toIso8601String(),
-      if (slideCount != null) 'slideCount': slideCount,
-    };
-
-    if (status == 'failure' && error != null) {
-      statusData['error'] = {
-        'type': error.runtimeType.toString(),
-        'message': error.toString(),
-        if (stackTrace != null) 'stackTrace': stackTrace.toString(),
-      };
-    }
-
-    await configuration.buildStatusJson.ensureWrite(prettyJson(statusData));
-  }
-
-  /// Reads the markdown content of the slides file.
-  Future<String> readDeckMarkdown() async {
-    return await configuration.slidesFile.readAsString();
-  }
-
-  /// Creates an error deck with the specified details.
-  Deck _createErrorDeck(String title, String message, Object error) {
-    return Deck(
-      slides: [
-        Slide.error(
-          title: title,
-          message: message,
-          error: error is Exception ? error : Exception(error.toString()),
-        ),
-      ],
-      configuration: configuration,
+    final status = DeckBuildStatus(
+      phase: phase,
+      timestamp: DateTime.now(),
+      slideCount: slideCount,
+      error: phase == DeckBuildPhase.failure && error != null
+          ? DeckBuildError(
+              type: error.runtimeType.toString(),
+              message: error.toString(),
+              stackTrace: stackTrace?.toString(),
+            )
+          : null,
     );
+
+    await configuration.buildStatusJson.ensureWrite(prettyJson(status.toMap()));
   }
 
-  /// Saves the full deck reference with markdown AST JSON for each slide content.
-  ///
-  /// Replaces the `content` field (string) with the parsed markdown AST (object)
-  /// for all ColumnBlocks that contain markdown content.
   Future<void> _saveFullDeckReference(Deck reference) async {
     final converter = MarkdownAstConverter(
       extensionSet: md.ExtensionSet.gitHubWeb,

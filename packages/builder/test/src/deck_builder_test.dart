@@ -32,9 +32,9 @@ final class MockTask extends Task {
   }
 }
 
-/// Mock DeckService for testing
-class TestDeckService extends DeckService {
-  TestDeckService() : super(configuration: DeckConfiguration());
+/// Mock DeckBuildStore for testing
+class TestDeckStore extends DeckBuildStore {
+  TestDeckStore() : super(configuration: DeckConfiguration());
 }
 
 void main() {
@@ -48,7 +48,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
           configuration: DeckConfiguration(),
-          store: TestDeckService(),
+          store: TestDeckStore(),
         );
 
         await builder.dispose();
@@ -62,7 +62,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [],
           configuration: DeckConfiguration(),
-          store: TestDeckService(),
+          store: TestDeckStore(),
         );
 
         await expectLater(builder.dispose(), completes);
@@ -77,7 +77,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
           configuration: DeckConfiguration(),
-          store: TestDeckService(),
+          store: TestDeckStore(),
         );
 
         final stopwatch = Stopwatch()..start();
@@ -103,7 +103,7 @@ void main() {
         final builder = DeckBuilder(
           tasks: [task],
           configuration: DeckConfiguration(),
-          store: TestDeckService(),
+          store: TestDeckStore(),
         );
 
         // First dispose
@@ -122,7 +122,7 @@ void main() {
           () => DeckBuilder(
             tasks: [],
             configuration: DeckConfiguration(),
-            store: TestDeckService(),
+            store: TestDeckStore(),
           ),
           returnsNormally,
         );
@@ -133,7 +133,7 @@ void main() {
           () => DeckBuilder(
             tasks: [],
             configuration: DeckConfiguration(),
-            store: TestDeckService(),
+            store: TestDeckStore(),
             concurrentSlides: 8,
           ),
           returnsNormally,

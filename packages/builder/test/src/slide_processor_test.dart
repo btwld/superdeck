@@ -42,27 +42,19 @@ base class ContentModifierTask extends Task {
   }
 }
 
-/// Mock DeckService for testing
-class MockDeckService extends DeckService {
-  MockDeckService() : super(configuration: DeckConfiguration());
-
-  @override
-  Future<void> initialize() async {}
-
-  @override
-  String getGeneratedAssetPath(GeneratedAsset asset) {
-    return '/mock/path/${asset.fileName}';
-  }
+/// Mock DeckBuildStore for testing
+class MockDeckStore extends DeckBuildStore {
+  MockDeckStore() : super(configuration: DeckConfiguration());
 }
 
 void main() {
   group('SlideProcessor', () {
     late SlideProcessor processor;
-    late MockDeckService store;
+    late MockDeckStore store;
 
     setUp(() {
       processor = SlideProcessor();
-      store = MockDeckService();
+      store = MockDeckStore();
     });
 
     group('Basic Processing', () {

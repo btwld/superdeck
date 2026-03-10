@@ -40,12 +40,13 @@ class MockAssetGenerator implements AssetGenerator {
   Future<void> dispose() async {}
 }
 
-/// Mock DeckService for testing
-class MockDeckService extends DeckService {
+/// Mock DeckBuildStore for testing
+class MockDeckStore extends DeckBuildStore {
   final Directory _tempDir;
   final Map<String, String> _assetPaths = {};
 
-  MockDeckService(this._tempDir) : super(configuration: DeckConfiguration());
+  MockDeckStore(this._tempDir)
+    : super(configuration: DeckConfiguration(projectDir: _tempDir.path));
 
   @override
   String getGeneratedAssetPath(GeneratedAsset asset) {
@@ -64,12 +65,18 @@ class MockDeckService extends DeckService {
 class InMemoryAssetCacheStore implements AssetCacheStore {
   final Directory _cacheDir;
   final Map<String, List<int>> _bytesByKey = {};
+  int resolveCallCount = 0;
+  int writeCallCount = 0;
+  String? lastResolvedKey;
+  String? lastWrittenKey;
 
   InMemoryAssetCacheStore(this._cacheDir);
 
   @override
   Future<Uri?> resolve(String assetKey) async {
+    resolveCallCount++;
     final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
+    lastResolvedKey = normalizedKey;
     final bytes = _bytesByKey[normalizedKey];
     if (bytes == null || bytes.isEmpty) {
       return null;
@@ -79,7 +86,9 @@ class InMemoryAssetCacheStore implements AssetCacheStore {
 
   @override
   Future<Uri?> write(String assetKey, List<int> bytes) async {
+    writeCallCount++;
     final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
+    lastWrittenKey = normalizedKey;
     if (bytes.isEmpty) {
       return null;
     }
@@ -97,17 +106,17 @@ class InMemoryAssetCacheStore implements AssetCacheStore {
 void main() {
   group('AssetGenerationPipeline', () {
     late AssetGenerationPipeline pipeline;
-    late MockDeckService mockStore;
+    late MockDeckStore mockDeckStore;
     late MockAssetGenerator mockGenerator;
     late Directory tempDir;
 
     setUp(() {
       tempDir = Directory.systemTemp.createTempSync('asset_pipeline_test');
-      mockStore = MockDeckService(tempDir);
+      mockDeckStore = MockDeckStore(tempDir);
       mockGenerator = MockAssetGenerator('mermaid', [1, 2, 3, 4, 5]);
       pipeline = AssetGenerationPipeline(
         generators: [mockGenerator],
-        store: mockStore,
+        store: mockDeckStore,
         cacheStore: IoAssetCacheStore(
           cacheDir: Directory('${tempDir.path}/assets'),
         ),
@@ -226,6 +235,62 @@ graph TD
     });
 
     test(
+      'writes generated assets through injected cache store on cache miss',
+      () async {
+        final cacheStore = InMemoryAssetCacheStore(
+          Directory('${tempDir.path}/assets'),
+        );
+        final customPipeline = AssetGenerationPipeline(
+          generators: [mockGenerator],
+          store: mockDeckStore,
+          cacheStore: cacheStore,
+        );
+
+        const content = '''
+```mermaid
+graph TD
+  A --> B
+```
+''';
+
+        await customPipeline.processSlideContent(content, 0);
+
+        expect(cacheStore.resolveCallCount, equals(1));
+        expect(cacheStore.writeCallCount, equals(1));
+        expect(cacheStore.lastResolvedKey, isNotNull);
+        expect(cacheStore.lastWrittenKey, equals(cacheStore.lastResolvedKey));
+      },
+    );
+
+    test(
+      'uses injected cache store to skip regeneration on cache hit',
+      () async {
+        final cacheStore = InMemoryAssetCacheStore(
+          Directory('${tempDir.path}/assets'),
+        );
+        final customPipeline = AssetGenerationPipeline(
+          generators: [mockGenerator],
+          store: mockDeckStore,
+          cacheStore: cacheStore,
+        );
+
+        const content = '''
+```mermaid
+graph TD
+  A --> B
+```
+''';
+
+        await customPipeline.processSlideContent(content, 0);
+        await customPipeline.processSlideContent(content, 1);
+
+        expect(cacheStore.resolveCallCount, equals(2));
+        expect(cacheStore.writeCallCount, equals(1));
+        expect(mockGenerator.generateCallCount, equals(1));
+      },
+    );
+
+    test(
       'throws when cache resolves to a different path than deck assets',
       () async {
         final mismatchedCache = InMemoryAssetCacheStore(
@@ -233,7 +298,7 @@ graph TD
         );
         final mismatchedPipeline = AssetGenerationPipeline(
           generators: [mockGenerator],
-          store: mockStore,
+          store: mockDeckStore,
           cacheStore: mismatchedCache,
         );
 

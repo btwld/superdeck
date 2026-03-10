@@ -17,7 +17,7 @@ final class AssetGenerationTask extends Task {
 
   AssetGenerationTask({
     required List<AssetGenerator> generators,
-    required DeckService store,
+    required DeckBuildStore store,
     AssetCacheStore? cacheStore,
     Map<String, Object?> configuration = const {},
   }) : _pipeline = AssetGenerationPipeline(
@@ -29,7 +29,7 @@ final class AssetGenerationTask extends Task {
 
   /// Factory constructor that creates a default asset pipeline with standard generators.
   factory AssetGenerationTask.withDefaults({
-    required DeckService store,
+    required DeckBuildStore store,
     Map<String, Object?>? browserLaunchOptions,
     AssetCacheStore? cacheStore,
     Map<String, Object?> configuration = const {},

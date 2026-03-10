@@ -16,7 +16,6 @@ const DeckOptions({
   Map<String, WidgetDefinition> widgets = const {},
   SlideParts parts = const SlideParts(),
   bool debug = false,
-  bool watchForChanges = false,
 });
 ```
 
@@ -136,18 +135,6 @@ DeckOptions(
 )
 ```
 
-### `watchForChanges`
-**Type:** `bool` | **Default:** `false`
-
-Enables file watching for automatic deck rebuilds when supported by your
-runtime flow.
-
-```dart
-DeckOptions(
-  watchForChanges: true,
-)
-```
-
 ## Complete configuration example
 
 ```dart
@@ -201,6 +188,6 @@ class MyApp extends StatelessWidget {
 
 ### Development
 1. Enable `debug: true` during development
-2. Use hot reload with `superdeck build --watch`
+2. Use `superdeck build --watch` in one terminal and `flutter run` in another
 3. Version control style definitions
 4. Document custom components

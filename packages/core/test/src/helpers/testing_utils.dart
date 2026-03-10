@@ -54,6 +54,8 @@ class MockDeckConfiguration {
       Directory(p.join(_tempDir.path, '.superdeck', 'assets'));
   File get assetsRefJson =>
       File(p.join(_tempDir.path, '.superdeck', 'generated_assets.json'));
+  File get buildStatusJson =>
+      File(p.join(_tempDir.path, '.superdeck', 'build_status.json'));
   File get slidesFile => File(p.join(_tempDir.path, 'slides.md'));
   File get pubspecFile => File(p.join(_tempDir.path, 'pubspec.yaml'));
 }

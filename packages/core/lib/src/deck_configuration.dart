@@ -63,9 +63,28 @@ final class DeckConfiguration {
   File get deckFullJson =>
       File(p.join(superdeckDir.path, 'superdeck_full.json'));
 
+  /// Path for reading deck JSON from bundled Flutter assets.
+  ///
+  /// This intentionally ignores [projectDir] because runtime asset keys are
+  /// always relative to the app bundle root.
+  String get bundledDeckJsonPath {
+    final outDir = _validateRelativePath(outputDir, '.superdeck', 'outputDir');
+    return _normalizeBundledPath(p.join(outDir, 'superdeck.json'));
+  }
+
   Directory get assetsDir {
     final validated = _validateRelativePath(assetsPath, 'assets', 'assetsPath');
     return Directory(p.join(superdeckDir.path, validated));
+  }
+
+  /// Path for reading generated assets from bundled Flutter assets.
+  ///
+  /// This intentionally ignores [projectDir] because runtime asset keys are
+  /// always relative to the app bundle root.
+  String get bundledAssetsPath {
+    final outDir = _validateRelativePath(outputDir, '.superdeck', 'outputDir');
+    final assets = _validateRelativePath(assetsPath, 'assets', 'assetsPath');
+    return _normalizeBundledPath(p.join(outDir, assets));
   }
 
   File get assetsRefJson =>
@@ -129,6 +148,11 @@ final class DeckConfiguration {
   }).passthrough();
 
   static File get defaultFile => File('superdeck.yaml');
+
+  static String _normalizeBundledPath(String path) {
+    final normalized = p.posix.normalize(path.replaceAll('\\', '/'));
+    return normalized.startsWith('./') ? normalized.substring(2) : normalized;
+  }
 
   @override
   bool operator ==(Object other) =>

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -8,37 +9,15 @@ import 'package:test/test.dart';
 import 'helpers/testing_utils.dart';
 
 void main() {
-  group('DeckService with LocalDeckReader', () {
+  group('DeckService runtime API', () {
     late MockDeckConfiguration mockConfig;
     late DeckService deckService;
+    late DeckConfiguration config;
 
     setUp(() {
       mockConfig = createMockConfig();
-      final config = DeckConfiguration(projectDir: mockConfig.projectDir);
+      config = DeckConfiguration(projectDir: mockConfig.projectDir);
       deckService = DeckService(configuration: config);
-    });
-
-    test(
-      'initialize creates necessary files and directories for LocalDeckReader',
-      () async {
-        await deckService.initialize();
-
-        expect(mockConfig.deckJson.existsSync(), isTrue);
-        expect(mockConfig.slidesFile.existsSync(), isTrue);
-        expect(mockConfig.assetsDir.existsSync(), isTrue);
-      },
-    );
-
-    test('getGeneratedAssetPath returns the correct path', () {
-      final asset = GeneratedAsset(
-        name: 'test',
-        extension: AssetExtension.png,
-        type: 'image',
-      );
-
-      final path = deckService.getGeneratedAssetPath(asset);
-
-      expect(path, equals(p.join(mockConfig.assetsDir.path, 'image_test.png')));
     });
 
     test('loadDeck loads deck from file', () async {
@@ -64,70 +43,174 @@ void main() {
       expect(reference.slides.first.key, equals('error'));
     });
 
-    test('loadDeckStream emits deck', () async {
-      await mockConfig.deckJson.parent.create(recursive: true);
-      await mockConfig.deckJson.writeAsString(
-        '{"slides":[],"configuration":{}}',
-      );
+    test(
+      'watchBuildStatus emits only fresh statuses and ignores existing file at startup',
+      () async {
+        await config.superdeckDir.create(recursive: true);
+        await config.buildStatusJson.writeAsString(
+          '{"status":"building","timestamp":"2026-03-10T10:00:00.000Z"}',
+        );
 
-      final stream = deckService.loadDeckStream();
+        final events = <DeckBuildStatus>[];
+        final subscription = deckService.watchBuildStatus().listen(events.add);
+        addTearDown(subscription.cancel);
 
-      // Take only the first emission and cancel to prevent file watcher errors
-      await expectLater(stream.take(1), emits(isA<Deck>()));
-    });
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+        expect(events, isEmpty);
+
+        await config.buildStatusJson.writeAsString(
+          '{"status":"success","timestamp":"2026-03-10T10:00:01.000Z","slideCount":3}',
+        );
+
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        expect(events, hasLength(1));
+        expect(events.first.phase, DeckBuildPhase.success);
+        expect(events.first.slideCount, 3);
+      },
+    );
+
+    test(
+      'watchBuildStatus ignores invalid or partial writes and dedupes by timestamp',
+      () async {
+        await config.superdeckDir.create(recursive: true);
+
+        final events = <DeckBuildStatus>[];
+        final subscription = deckService.watchBuildStatus().listen(events.add);
+        addTearDown(subscription.cancel);
+
+        await config.buildStatusJson.writeAsString('{"status":"building"');
+        await config.buildStatusJson.writeAsString(
+          '{"status":"building","timestamp":"not-a-date"}',
+        );
+
+        await config.buildStatusJson.writeAsString(
+          '{"status":"building","timestamp":"2026-03-10T10:10:00.000Z"}',
+        );
+        await config.buildStatusJson.writeAsString(
+          '{"status":"building","timestamp":"2026-03-10T10:10:00.000Z"}',
+        );
+
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        expect(events, hasLength(1));
+        expect(events.first.phase, DeckBuildPhase.building);
+      },
+    );
+
+    test(
+      'watchBuildStatus recovers when output directory is created after startup',
+      () async {
+        final events = <DeckBuildStatus>[];
+        final subscription = deckService.watchBuildStatus().listen(events.add);
+        addTearDown(subscription.cancel);
+
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(events, isEmpty);
+
+        await config.superdeckDir.create(recursive: true);
+        await config.buildStatusJson.writeAsString(
+          '{"status":"success","timestamp":"2026-03-10T10:20:00.000Z","slideCount":4}',
+        );
+
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        expect(events, hasLength(1));
+        expect(events.first.phase, DeckBuildPhase.success);
+        expect(events.first.slideCount, 4);
+      },
+    );
+
+    test(
+      'watchBuildStatus recovers when nested output directory is created in steps',
+      () async {
+        final nestedConfig = DeckConfiguration(
+          projectDir: mockConfig.projectDir,
+          outputDir: 'build/output/slides',
+        );
+        final nestedDeckService = DeckService(configuration: nestedConfig);
+        final events = <DeckBuildStatus>[];
+        final subscription = nestedDeckService.watchBuildStatus().listen(
+          events.add,
+        );
+        addTearDown(subscription.cancel);
+        final projectDir = mockConfig.projectDir!;
+
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        expect(events, isEmpty);
+
+        await Directory(p.join(projectDir, 'build')).create();
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+        await Directory(p.join(projectDir, 'build', 'output')).create();
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+        await nestedConfig.superdeckDir.create();
+        await nestedConfig.buildStatusJson.writeAsString(
+          '{"status":"success","timestamp":"2026-03-10T10:30:00.000Z","slideCount":2}',
+        );
+
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        expect(events, hasLength(1));
+        expect(events.first.phase, DeckBuildPhase.success);
+        expect(events.first.slideCount, 2);
+      },
+    );
   });
 
-  group('DeckService with LocalDeckReader (FileSystem features)', () {
+  group('DeckBuildStore build-side API', () {
     late MockDeckConfiguration mockConfig;
     late DeckConfiguration config;
-    late DeckService deckService;
+    late DeckBuildStore store;
 
     setUp(() async {
       mockConfig = createMockConfig();
       config = DeckConfiguration(projectDir: mockConfig.projectDir);
-      deckService = DeckService(configuration: config);
-
-      // Initialize the deckService for each test
-      await deckService.initialize();
+      store = DeckBuildStore(configuration: config);
+      await store.initialize();
     });
 
-    test(
-      'initialize creates necessary files and directories for LocalDeckReader',
-      () async {
-        await deckService.initialize();
+    test('initialize creates necessary files and directories', () async {
+      expect(mockConfig.deckJson.existsSync(), isTrue);
+      expect(mockConfig.slidesFile.existsSync(), isTrue);
+      expect(mockConfig.assetsDir.existsSync(), isTrue);
+      expect(mockConfig.buildStatusJson.existsSync(), isTrue);
+    });
 
-        expect(mockConfig.deckJson.existsSync(), isTrue);
-        expect(mockConfig.slidesFile.existsSync(), isTrue);
-        expect(mockConfig.assetsDir.existsSync(), isTrue);
-      },
-    );
-
-    test('getGeneratedAssetPath adds asset to internal list', () async {
-      // Create the asset directory first
-      await mockConfig.assetsDir.create(recursive: true);
-
+    test('getGeneratedAssetPath returns the correct path', () {
       final asset = GeneratedAsset(
         name: 'test',
         extension: AssetExtension.png,
         type: 'image',
       );
 
-      final path = deckService.getGeneratedAssetPath(asset);
+      final path = store.getGeneratedAssetPath(asset);
+
       expect(path, equals(p.join(mockConfig.assetsDir.path, 'image_test.png')));
+    });
 
-      // Save references to ensure the asset is processed
-      await deckService.saveReferences(Deck(slides: [], configuration: config));
+    test('saveBuildStatus writes expected JSON wire format', () async {
+      await store.saveBuildStatus(phase: DeckBuildPhase.building);
+      var decoded =
+          jsonDecode(await config.buildStatusJson.readAsString())
+              as Map<String, Object?>;
+      expect(decoded['status'], 'building');
 
-      // Now verify the assets_ref.json file exists
-      expect(mockConfig.assetsRefJson.existsSync(), isTrue);
+      await store.saveBuildStatus(phase: DeckBuildPhase.success, slideCount: 5);
+      decoded =
+          jsonDecode(await config.buildStatusJson.readAsString())
+              as Map<String, Object?>;
+      expect(decoded['status'], 'success');
+      expect(decoded['slideCount'], 5);
 
-      // Read the content to check if it contains our asset filename
-      final content = await mockConfig.assetsRefJson.readAsString();
-      expect(content, contains('image_test.png'));
+      await store.saveBuildStatus(
+        phase: DeckBuildPhase.failure,
+        error: StateError('boom'),
+      );
+      decoded =
+          jsonDecode(await config.buildStatusJson.readAsString())
+              as Map<String, Object?>;
+      expect(decoded['status'], 'failure');
+      expect(decoded['error'], isA<Map<String, Object?>>());
     });
 
     test('saveReferences saves deck reference and assets reference', () async {
-      await deckService.saveReferences(Deck(slides: [], configuration: config));
+      await store.saveReferences(Deck(slides: [], configuration: config));
 
       expect(mockConfig.deckJson.existsSync(), isTrue);
       expect(mockConfig.assetsRefJson.existsSync(), isTrue);
@@ -148,7 +231,7 @@ void main() {
           configuration: config,
         );
 
-        await deckService.saveReferences(deck);
+        await store.saveReferences(deck);
         final initialJson =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
@@ -157,7 +240,7 @@ void main() {
         // Delay to ensure DateTime.now would differ if rewriting happens.
         await Future<void>.delayed(const Duration(milliseconds: 5));
 
-        await deckService.saveReferences(deck);
+        await store.saveReferences(deck);
         final subsequentJson =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
@@ -169,37 +252,9 @@ void main() {
     test('readDeckMarkdown reads the content of the slides file', () async {
       await mockConfig.slidesFile.writeAsString('# Test slides');
 
-      final content = await deckService.readDeckMarkdown();
+      final content = await store.readDeckMarkdown();
 
       expect(content, equals('# Test slides'));
     });
-
-    test(
-      'loadDeckStream emits a reference when file changes',
-      () async {
-        final streamController = StreamController<Deck>();
-        final future = deckService.loadDeckStream().take(2).toList();
-
-        // Wait a bit to ensure the stream is listening
-        await Future.delayed(Duration(milliseconds: 100));
-
-        // Modify the deck.json file to trigger a new emission
-        await mockConfig.deckJson.writeAsString(
-          '{"slides":[],"configuration":{}}',
-        );
-
-        final results = await future.timeout(
-          Duration(seconds: 2),
-          onTimeout: () => [],
-        );
-
-        // Should receive at least 1 event (the initial state)
-        expect(results, isNotEmpty);
-
-        streamController.close();
-      },
-      skip:
-          'This test is flaky due to file watching behavior and might need platform-specific adjustments',
-    );
   });
 }

@@ -20,13 +20,6 @@ class DeckOptions {
   /// disables applying any template for that slide.
   final SlideTemplate? defaultTemplate;
 
-  /// Whether to watch for file changes and auto-rebuild the deck.
-  ///
-  /// When `true`, starts a CLI watcher process that monitors
-  /// the slides file and rebuilds automatically on changes.
-  /// Defaults to `false`.
-  final bool watchForChanges;
-
   /// Optional plugin descriptors that extend deck behavior.
   final List<SuperDeckPlugin> plugins;
 
@@ -38,7 +31,6 @@ class DeckOptions {
     this.debug = false,
     this.templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
-    this.watchForChanges = false,
     this.plugins = const <SuperDeckPlugin>[],
   });
 
@@ -50,7 +42,6 @@ class DeckOptions {
     bool? debug,
     Map<String, SlideTemplate>? templates,
     SlideTemplate? defaultTemplate,
-    bool? watchForChanges,
     List<SuperDeckPlugin>? plugins,
   }) {
     return DeckOptions(
@@ -61,7 +52,6 @@ class DeckOptions {
       debug: debug ?? this.debug,
       templates: templates ?? this.templates,
       defaultTemplate: defaultTemplate ?? this.defaultTemplate,
-      watchForChanges: watchForChanges ?? this.watchForChanges,
       plugins: plugins ?? this.plugins,
     );
   }
@@ -78,7 +68,6 @@ class DeckOptions {
           debug == other.debug &&
           templates == other.templates &&
           defaultTemplate == other.defaultTemplate &&
-          watchForChanges == other.watchForChanges &&
           plugins == other.plugins;
 
   @override
@@ -90,7 +79,6 @@ class DeckOptions {
     debug,
     templates,
     defaultTemplate,
-    watchForChanges,
     plugins,
   );
 }

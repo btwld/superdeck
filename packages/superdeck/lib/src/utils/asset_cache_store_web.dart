@@ -6,7 +6,9 @@ import 'package:superdeck_core/superdeck_core.dart';
 AssetCacheStore createAssetCacheStore({
   required DeckConfiguration configuration,
 }) {
-  return _WebAssetCacheStore(bundledAssetsPath: configuration.assetsDir.path);
+  return _WebAssetCacheStore(
+    bundledAssetsPath: configuration.bundledAssetsPath,
+  );
 }
 
 class _WebAssetCacheStore implements AssetCacheStore {

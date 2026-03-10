@@ -126,6 +126,37 @@ void main() {
         });
       });
 
+      group('bundledDeckJsonPath', () {
+        test('uses default outputDir path without projectDir prefix', () {
+          final config = DeckConfiguration(projectDir: '/abs/project');
+
+          expect(config.bundledDeckJsonPath, '.superdeck/superdeck.json');
+        });
+
+        test('uses custom outputDir', () {
+          final config = DeckConfiguration(outputDir: 'generated');
+
+          expect(config.bundledDeckJsonPath, 'generated/superdeck.json');
+        });
+      });
+
+      group('bundledAssetsPath', () {
+        test('uses defaults without projectDir prefix', () {
+          final config = DeckConfiguration(projectDir: '/abs/project');
+
+          expect(config.bundledAssetsPath, '.superdeck/assets');
+        });
+
+        test('uses custom outputDir and assetsPath', () {
+          final config = DeckConfiguration(
+            outputDir: 'generated',
+            assetsPath: 'media',
+          );
+
+          expect(config.bundledAssetsPath, 'generated/media');
+        });
+      });
+
       group('slidesFile', () {
         test('uses default slides.md when slidesPath is null', () {
           final config = DeckConfiguration();

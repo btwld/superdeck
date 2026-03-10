@@ -9,23 +9,14 @@ import 'package:superdeck_core/superdeck_core.dart';
 /// The standard [DeckService] relies on local file I/O and file watchers.
 /// In web and release-like runtimes, deck data is read from bundled assets.
 class BundledDeckService extends DeckService {
-  BundledDeckService({
-    required super.configuration,
-    this.deckAssetPath = '.superdeck/superdeck.json',
-  });
-
-  final String deckAssetPath;
-  final Logger _logger = Logger('BundledDeckService');
-
-  @override
-  Future<void> initialize() async {
-    // No-op: bundled assets are generated ahead of time by the CLI.
-  }
+  BundledDeckService({required super.configuration});
 
   @override
   Future<Deck> loadDeck() async {
     try {
-      final content = await rootBundle.loadString(deckAssetPath);
+      final content = await rootBundle.loadString(
+        configuration.bundledDeckJsonPath,
+      );
       final data = jsonDecode(content) as Map<String, dynamic>;
       return Deck.fromMap(data);
     } on Object catch (error) {
@@ -33,7 +24,7 @@ class BundledDeckService extends DeckService {
         slides: [
           Slide.error(
             title: 'Superdeck reference error',
-            message: deckAssetPath,
+            message: configuration.bundledDeckJsonPath,
             error: error is Exception ? error : Exception(error.toString()),
           ),
         ],
@@ -43,8 +34,7 @@ class BundledDeckService extends DeckService {
   }
 
   @override
-  Stream<Deck> loadDeckStream() async* {
-    _logger.info('Loading bundled deck from assets...');
-    yield await loadDeck();
+  Stream<DeckBuildStatus> watchBuildStatus() {
+    return const Stream<DeckBuildStatus>.empty();
   }
 }

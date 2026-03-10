@@ -27,7 +27,6 @@ dependencies:
   remix: ^0.1.0-beta.2
   flutter_markdown_plus: ^1.0.5
   superdeck_core: ^1.0.0
-  superdeck_builder: ^1.0.0
   markdown: ^7.3.0
   web: ^1.1.0
   file_saver: ^0.2.14

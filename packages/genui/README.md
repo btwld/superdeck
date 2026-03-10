@@ -1,64 +1,38 @@
 # superdeck_genui
 
-AI-powered presentation wizard for SuperDeck using GenUI and Gemini.
+AI-powered presentation creation flow for SuperDeck.
 
-This package provides a chat-based wizard that guides users through creating
-presentations with AI assistance. It handles the full generation pipeline:
-wizard conversation → outline → images → final deck.
+This package provides chat-driven generation for outlines, assets, and final deck content.
 
-## What it provides
+## What It Includes
 
-- **Chat wizard UI** — 8-step GenUI conversation with radio, checkbox, slider, and style selectors
-- **AI generation pipeline** — 3-phase deck generation (outline → images → final deck) using Gemini
-- **Composable routes** — `genUiRoutes()` function for integration into any GoRouter setup
-- **Presentation preview** — Thumbnail generation and deck hosting screens
+- Chat wizard screens and flow
+- AI generation pipeline (outline, images, final deck)
+- Route integration via `genUiRoutes()`
+- Deck hosting and preview screens
 
 ## Configuration
 
-Set your Gemini API key via either method:
+Set the Gemini API key with `--dart-define=GOOGLE_AI_API_KEY=...`.
 
-1. **Build-time** (recommended): `--dart-define=GOOGLE_AI_API_KEY=xxx`
-2. **Runtime** (dev only): Create a `.env` file with `GOOGLE_AI_API_KEY=xxx`
-
-`genUiRoutes()` automatically initializes GenUI runtime dependencies
-(paths, prompt assets, examples, and optional `.env` loading).
+For local development, `.env` can be used when supported by the host integration.
 
 ## Usage
 
 ```dart
 import 'package:superdeck_genui/superdeck_genui.dart';
 
-// Optional (recommended for custom/manual integration)
-await initializeGenUi();
-
-// Add routes to your GoRouter
 final router = GoRouter(
   routes: [...genUiRoutes()],
 );
-
-// Optional: override default route screens (for custom host integration)
-final customRouter = GoRouter(
-  routes: [
-    ...genUiRoutes(
-      presentationBuilder: (context, state) {
-        return PresentationDeckHost(
-          deckAppBuilder: (options) => MyPresentationApp(options: options),
-        );
-      },
-    ),
-  ],
-);
-
-// Or use individual screens directly
-const GenUiBootstrapScope(child: ChatScreen());
-const GenUiBootstrapScope(child: CreatingPresentationScreen());
-const GenUiBootstrapScope(child: PresentationDeckHost());
 ```
 
 ## Related packages
 
-| Package | Description |
-|---------|-------------|
-| `superdeck` | Flutter presentation framework |
-| `superdeck_core` | Core models and parsing |
-| `superdeck_cli` | CLI tool for building decks |
+- `superdeck` - Flutter presentation runtime
+- `superdeck_core` - core models and contracts
+- `superdeck_cli` - project setup and build workflow
+
+## License
+
+BSD 3-Clause. See `LICENSE`.

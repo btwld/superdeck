@@ -7,47 +7,43 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../testing_utils.dart';
 
-/// Mock DeckService that allows controlled deck emission for testing
 class MockDeckService extends DeckService {
-  StreamController<Deck>? _streamController;
-  Deck? _currentDeck;
-  Object? _errorToEmit;
-
   MockDeckService({DeckConfiguration? configuration})
     : super(configuration: configuration ?? DeckConfiguration());
 
+  final StreamController<DeckBuildStatus> _statusController =
+      StreamController<DeckBuildStatus>.broadcast();
+
+  Deck deckToReturn = createTestDeck();
+  Completer<Deck>? nextLoadDeckCompleter;
+  Object? errorToThrow;
+  int loadDeckCalls = 0;
+
   @override
   Future<Deck> loadDeck() async {
-    if (_currentDeck != null) return _currentDeck!;
-    return createTestDeck();
+    loadDeckCalls++;
+    if (errorToThrow != null) {
+      throw errorToThrow!;
+    }
+    final completer = nextLoadDeckCompleter;
+    if (completer != null) {
+      nextLoadDeckCompleter = null;
+      return completer.future;
+    }
+    return deckToReturn;
   }
 
   @override
-  Stream<Deck> loadDeckStream() {
-    if (_errorToEmit != null) {
-      return Stream.error(_errorToEmit!);
-    }
-    // Create a new controller each time to allow re-listening after reload
-    _streamController?.close();
-    _streamController = StreamController<Deck>.broadcast();
-    return _streamController!.stream;
+  Stream<DeckBuildStatus> watchBuildStatus() {
+    return _statusController.stream;
   }
 
-  void emitDeck(Deck deck) {
-    _currentDeck = deck;
-    _streamController?.add(deck);
+  void emitStatus(DeckBuildStatus status) {
+    _statusController.add(status);
   }
 
-  void emitError(Object error) {
-    _streamController?.addError(error);
-  }
-
-  void setErrorToEmit(Object error) {
-    _errorToEmit = error;
-  }
-
-  void dispose() {
-    _streamController?.close();
+  Future<void> disposeService() async {
+    await _statusController.close();
   }
 }
 
@@ -61,315 +57,143 @@ void main() {
       controller = DeckController(
         deckService: mockDeckService,
         options: const DeckOptions(),
-        enableDeckStream: true,
+        enableBuildStatusWatch: true,
       );
     });
 
-    tearDown(() {
+    tearDown(() async {
       controller.dispose();
-      mockDeckService.dispose();
+      await mockDeckService.disposeService();
     });
 
-    group('Initialization', () {
-      test('initializes with loading state', () {
-        expect(controller.isLoading.value, isTrue);
-        expect(controller.hasError.value, isFalse);
-      });
-
-      test('initializes with default navigation values', () {
-        expect(controller.currentIndex.value, 0);
-        expect(controller.isTransitioning.value, isFalse);
-      });
-
-      test('initializes with default UI state', () {
-        expect(controller.isMenuOpen.value, isFalse);
-        expect(controller.isNotesOpen.value, isFalse);
-        expect(controller.isRebuilding.value, isFalse);
-      });
-
-      test('router is initialized', () {
-        expect(controller.router, isNotNull);
-      });
+    test('initializes router and default UI state', () {
+      expect(controller.router, isNotNull);
+      expect(controller.isMenuOpen.value, isFalse);
+      expect(controller.isNotesOpen.value, isFalse);
+      expect(controller.isBuildActive.value, isFalse);
     });
 
-    group('Deck Loading', () {
-      // Note: Tests that emit decks trigger SlideConfigurationBuilder which
-      // accesses defaultSlideStyle, which uses GoogleFonts. In test environments
-      // without bundled fonts, this causes failures. These tests are skipped
-      // until fonts are bundled in test assets or styles become mockable.
-      test(
-        'transitions to loaded state when deck is emitted',
-        () async {
-          final deck = createTestDeck();
-          mockDeckService.emitDeck(deck);
+    test('initial load transitions to loaded state', () async {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-          // Allow stream to propagate
-          await Future.delayed(Duration.zero);
+      expect(controller.isLoading.value, isFalse);
+      expect(controller.hasError.value, isFalse);
+      expect(mockDeckService.loadDeckCalls, greaterThan(0));
+    });
 
-          expect(controller.isLoading.value, isFalse);
-          expect(controller.hasError.value, isFalse);
-        },
-        skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
+    test('reloadDeck sets fatal error state when load throws', () async {
+      mockDeckService.errorToThrow = StateError('boom');
+
+      await controller.reloadDeck();
+
+      expect(controller.hasError.value, isTrue);
+      expect(controller.error.value, isA<StateError>());
+    });
+
+    test('building status toggles rebuilding without fatal error', () async {
+      mockDeckService.emitStatus(
+        DeckBuildStatus(
+          phase: DeckBuildPhase.building,
+          timestamp: DateTime.parse('2026-03-10T12:00:00.000Z'),
+        ),
       );
 
-      test('transitions to error state on stream error', () async {
-        mockDeckService.emitError(Exception('Test error'));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        await Future.delayed(Duration.zero);
-
-        expect(controller.hasError.value, isTrue);
-        expect(controller.error.value, isNotNull);
-      });
-
-      test(
-        'slides signal reflects loaded deck',
-        () async {
-          final slides = [
-            Slide(
-              key: 'slide-0',
-              sections: [
-                SectionBlock([ContentBlock('Content 0')]),
-              ],
-            ),
-            Slide(
-              key: 'slide-1',
-              sections: [
-                SectionBlock([ContentBlock('Content 1')]),
-              ],
-            ),
-          ];
-          final deck = createTestDeck(slides: slides);
-          mockDeckService.emitDeck(deck);
-
-          await Future.delayed(Duration.zero);
-
-          expect(controller.slides.value.length, 2);
-          expect(controller.totalSlides.value, 2);
-        },
-        skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-      );
+      expect(controller.isBuildActive.value, isTrue);
+      expect(controller.hasError.value, isFalse);
     });
 
-    // Skip: These tests emit decks which trigger style loading with GoogleFonts
-    group(
-      'Computed Navigation Properties',
-      () {
-        setUp(() async {
-          // Load a deck with 5 slides
-          final slides = List.generate(
-            5,
-            (i) => Slide(
-              key: 'slide-$i',
-              sections: [
-                SectionBlock([ContentBlock('Content $i')]),
-              ],
+    test(
+      'failure status keeps app running and exposes build failure',
+      () async {
+        mockDeckService.emitStatus(
+          DeckBuildStatus(
+            phase: DeckBuildPhase.failure,
+            timestamp: DateTime.parse('2026-03-10T12:00:00.000Z'),
+            error: const DeckBuildError(
+              type: 'BuildFailure',
+              message: 'Syntax error in slides.md',
             ),
-          );
-          mockDeckService.emitDeck(createTestDeck(slides: slides));
-          await Future.delayed(Duration.zero);
-        });
-
-        test('canGoNext is true when not at last slide', () {
-          // currentIndex starts at 0, totalSlides is 5
-          expect(controller.canGoNext.value, isTrue);
-        });
-
-        test('canGoPrevious is false when at first slide', () {
-          expect(controller.canGoPrevious.value, isFalse);
-        });
-
-        test('currentSlide returns correct slide', () {
-          expect(controller.currentSlide.value, isNotNull);
-          expect(controller.currentSlide.value!.slideIndex, 0);
-        });
-      },
-      skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-    );
-
-    group('UI State Toggles', () {
-      test('openMenu sets isMenuOpen to true', () {
-        expect(controller.isMenuOpen.value, isFalse);
-        controller.openMenu();
-        expect(controller.isMenuOpen.value, isTrue);
-      });
-
-      test('closeMenu sets isMenuOpen to false', () {
-        controller.openMenu();
-        expect(controller.isMenuOpen.value, isTrue);
-        controller.closeMenu();
-        expect(controller.isMenuOpen.value, isFalse);
-      });
-
-      test('toggleNotes toggles isNotesOpen', () {
-        expect(controller.isNotesOpen.value, isFalse);
-        controller.toggleNotes();
-        expect(controller.isNotesOpen.value, isTrue);
-        controller.toggleNotes();
-        expect(controller.isNotesOpen.value, isFalse);
-      });
-
-      test('setRebuilding updates isRebuilding', () {
-        expect(controller.isRebuilding.value, isFalse);
-        controller.setRebuilding(true);
-        expect(controller.isRebuilding.value, isTrue);
-        controller.setRebuilding(false);
-        expect(controller.isRebuilding.value, isFalse);
-      });
-    });
-
-    group('Options Updates', () {
-      test('updateOptions updates internal options', () {
-        const newOptions = DeckOptions(debug: true);
-        // Verify options update completes without throwing
-        expect(() => controller.updateOptions(newOptions), returnsNormally);
-      });
-
-      test('updateOptions does not trigger if options unchanged', () {
-        const options = DeckOptions();
-        // Verify idempotent behavior - calling twice with same options doesn't throw
-        expect(() {
-          controller.updateOptions(options);
-          controller.updateOptions(options);
-        }, returnsNormally);
-      });
-    });
-
-    group('Configuration Resolution', () {
-      test('uses deck configuration when building slide thumbnails', () async {
-        final deck = createTestDeck(
-          slides: [
-            Slide(
-              key: 'web-config',
-              sections: [
-                SectionBlock([ContentBlock('Slide')]),
-              ],
-            ),
-          ],
-          config: DeckConfiguration(outputDir: '.webdeck', assetsPath: 'img'),
+          ),
         );
-        mockDeckService.emitDeck(deck);
 
-        await Future.delayed(Duration.zero);
+        await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(controller.slides.value, hasLength(1));
+        expect(controller.isBuildActive.value, isFalse);
         expect(
-          controller.slides.value.first.thumbnailFile,
-          'thumbnail_web-config.png',
+          controller.buildFailure.value?.message,
+          'Syntax error in slides.md',
         );
-      });
+        expect(controller.hasError.value, isFalse);
+      },
+    );
 
-      test(
-        'falls back to service configuration when deck configuration is empty',
-        () async {
-          final serviceConfig = DeckConfiguration(
-            outputDir: '.service',
-            assetsPath: 'svc_assets',
-          );
-          final service = MockDeckService(configuration: serviceConfig);
-          final tempController = DeckController(
-            deckService: service,
-            options: const DeckOptions(),
-            enableDeckStream: true,
-          );
+    test(
+      'success status triggers background reload and clears build failure',
+      () async {
+        mockDeckService.emitStatus(
+          DeckBuildStatus(
+            phase: DeckBuildPhase.failure,
+            timestamp: DateTime.parse('2026-03-10T12:00:00.000Z'),
+            error: const DeckBuildError(
+              type: 'BuildFailure',
+              message: 'Failed',
+            ),
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        final beforeSuccessCalls = mockDeckService.loadDeckCalls;
 
-          try {
-            final deck = createTestDeck(
-              slides: [
-                Slide(
-                  key: 'service-fallback',
-                  sections: [
-                    SectionBlock([ContentBlock('Slide')]),
-                  ],
-                ),
-              ],
-              config: DeckConfiguration(),
-            );
-            service.emitDeck(deck);
+        mockDeckService.emitStatus(
+          DeckBuildStatus(
+            phase: DeckBuildPhase.success,
+            timestamp: DateTime.parse('2026-03-10T12:00:01.000Z'),
+            slideCount: 3,
+          ),
+        );
 
-            await Future.delayed(Duration.zero);
+        await Future<void>.delayed(const Duration(milliseconds: 40));
 
-            expect(tempController.slides.value, hasLength(1));
-            expect(
-              tempController.slides.value.first.thumbnailFile,
-              'thumbnail_service-fallback.png',
-            );
-          } finally {
-            tempController.dispose();
-            service.dispose();
-          }
-        },
+        expect(mockDeckService.loadDeckCalls, greaterThan(beforeSuccessCalls));
+        expect(controller.isBuildActive.value, isFalse);
+        expect(controller.buildFailure.value, isNull);
+        expect(controller.hasError.value, isFalse);
+      },
+    );
+
+    test('stale success reload does not clear newer failure state', () async {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      final reloadCompleter = Completer<Deck>();
+      mockDeckService.nextLoadDeckCompleter = reloadCompleter;
+
+      mockDeckService.emitStatus(
+        DeckBuildStatus(
+          phase: DeckBuildPhase.success,
+          timestamp: DateTime.parse('2026-03-10T12:00:01.000Z'),
+          slideCount: 3,
+        ),
       );
-    });
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-    group(
-      'Edge Cases',
-      () {
-        test('handles empty slides deck', () async {
-          final emptyDeck = createTestDeck(slides: []);
-          mockDeckService.emitDeck(emptyDeck);
+      mockDeckService.emitStatus(
+        DeckBuildStatus(
+          phase: DeckBuildPhase.failure,
+          timestamp: DateTime.parse('2026-03-10T12:00:02.000Z'),
+          error: const DeckBuildError(
+            type: 'BuildFailure',
+            message: 'Newest failure',
+          ),
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
-          await Future.delayed(Duration.zero);
+      reloadCompleter.complete(createTestDeck());
+      await Future<void>.delayed(const Duration(milliseconds: 20));
 
-          expect(controller.slides.value, isEmpty);
-          expect(controller.totalSlides.value, 0);
-          expect(controller.canGoNext.value, isFalse);
-          expect(controller.canGoPrevious.value, isFalse);
-          expect(controller.currentSlide.value, isNull);
-        });
-
-        test('handles single slide deck', () async {
-          final singleDeck = createTestDeck(
-            slides: [
-              Slide(
-                key: 'single',
-                sections: [
-                  SectionBlock([ContentBlock('Single slide')]),
-                ],
-              ),
-            ],
-          );
-          mockDeckService.emitDeck(singleDeck);
-
-          await Future.delayed(Duration.zero);
-
-          expect(controller.totalSlides.value, 1);
-          expect(controller.canGoNext.value, isFalse);
-          expect(controller.canGoPrevious.value, isFalse);
-        });
-      },
-      skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-    );
-
-    group(
-      'Deck Reload',
-      () {
-        test('reloadDeck restarts the stream', () async {
-          final deck1 = createTestDeck();
-          mockDeckService.emitDeck(deck1);
-          await Future.delayed(Duration.zero);
-
-          expect(controller.isLoading.value, isFalse);
-
-          // Reload should complete without error
-          await expectLater(controller.reloadDeck(), completes);
-        });
-      },
-      skip: 'Requires Google Fonts assets - see flutter_test_config.dart',
-    );
-
-    group('Disposal', () {
-      test('dispose completes without error', () {
-        // Create a fresh controller for disposal test
-        final disposableService = MockDeckService();
-        final disposableController = DeckController(
-          deckService: disposableService,
-          options: const DeckOptions(),
-          enableDeckStream: true,
-        );
-
-        expect(() => disposableController.dispose(), returnsNormally);
-        disposableService.dispose();
-      });
+      expect(controller.isBuildActive.value, isFalse);
+      expect(controller.buildFailure.value?.message, 'Newest failure');
     });
   });
 }

@@ -211,7 +211,8 @@ class _SplitViewState extends State<SplitView>
     // For regular layout, place it on the left in a Row.
     return Watch((context) {
       final isMenuOpen = deckController.isMenuOpen.value;
-      final isRebuilding = deckController.isRebuilding.value;
+      final isBuildActive = deckController.isBuildActive.value;
+      final buildFailure = deckController.buildFailure.value;
 
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
@@ -277,12 +278,12 @@ class _SplitViewState extends State<SplitView>
                       ),
                     ],
                   ),
-            // Loading indicator when rebuilding
-            if (isRebuilding)
+            if (isBuildActive || buildFailure != null)
               Positioned(
                 top: 16,
                 right: 16,
                 child: Container(
+                  constraints: const BoxConstraints(maxWidth: 320),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
@@ -290,23 +291,56 @@ class _SplitViewState extends State<SplitView>
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white24, width: 1),
+                    border: Border.all(
+                      color: buildFailure == null
+                          ? Colors.white24
+                          : Colors.redAccent.withValues(alpha: 0.8),
+                      width: 1,
+                    ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: IsometricLoading(),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Rebuilding...',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
+                  child: isBuildActive
+                      ? const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: IsometricLoading(),
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Rebuilding...',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Build failed',
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              buildFailure!.message,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
           ],

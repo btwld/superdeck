@@ -37,7 +37,6 @@ void main() async {
           footer: FooterPart(),
           background: BackgroundPart(),
         ),
-        watchForChanges: true,
         plugins: plugins,
       ),
     ),

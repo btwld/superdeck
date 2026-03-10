@@ -57,8 +57,6 @@ class TestApp extends StatelessWidget {
           footer: FooterPart(),
           background: BackgroundPart(),
         ),
-        // Integration tests validate runtime behavior, not live file watching.
-        watchForChanges: false,
       ),
     );
   }

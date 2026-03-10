@@ -26,13 +26,13 @@ class AssetGenerationResult {
 /// replaces the content with asset references.
 class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
-  final DeckService _store;
+  final DeckBuildStore _store;
   final AssetCacheStore _cache;
   final Logger _logger = Logger('AssetGenerationPipeline');
 
   AssetGenerationPipeline({
     required List<AssetGenerator> generators,
-    required DeckService store,
+    required DeckBuildStore store,
     AssetCacheStore? cacheStore,
   }) : _generators = generators,
        _store = store,
