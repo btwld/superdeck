@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:path/path.dart' as p;
 
 part 'deck_configuration.g.dart';
+part 'deck_configuration.mapper.dart';
 
 @AckModel()
-final class DeckConfiguration {
+@MappableClass()
+final class DeckConfiguration with DeckConfigurationMappable {
   final String? projectDir;
   final String? slidesPath;
   final String? outputDir;
@@ -84,20 +87,6 @@ final class DeckConfiguration {
 
   File get pubspecFile => File(p.join(_baseDir, 'pubspec.yaml'));
 
-  DeckConfiguration copyWith({
-    String? projectDir,
-    String? slidesPath,
-    String? outputDir,
-    String? assetsPath,
-  }) {
-    return DeckConfiguration(
-      projectDir: projectDir ?? this.projectDir,
-      slidesPath: slidesPath ?? this.slidesPath,
-      outputDir: outputDir ?? this.outputDir,
-      assetsPath: assetsPath ?? this.assetsPath,
-    );
-  }
-
   Map<String, Object?> toMap() {
     return {
       if (projectDir != null) 'projectDir': projectDir,
@@ -129,18 +118,4 @@ final class DeckConfiguration {
   }).passthrough();
 
   static File get defaultFile => File('superdeck.yaml');
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DeckConfiguration &&
-          runtimeType == other.runtimeType &&
-          projectDir == other.projectDir &&
-          slidesPath == other.slidesPath &&
-          outputDir == other.outputDir &&
-          assetsPath == other.assetsPath;
-
-  @override
-  int get hashCode =>
-      Object.hash(projectDir, slidesPath, outputDir, assetsPath);
 }

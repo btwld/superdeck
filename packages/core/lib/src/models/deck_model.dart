@@ -1,21 +1,18 @@
 import 'package:ack/ack.dart';
-import 'package:collection/collection.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 
 import '../deck_configuration.dart';
 import 'slide_model.dart';
 
-class Deck {
+part 'deck_model.mapper.dart';
+
+@MappableClass()
+class Deck with DeckMappable {
   final List<Slide> slides;
   final DeckConfiguration configuration;
 
-  const Deck({required this.slides, required this.configuration});
-
-  Deck copyWith({List<Slide>? slides, DeckConfiguration? configuration}) {
-    return Deck(
-      slides: slides ?? this.slides,
-      configuration: configuration ?? this.configuration,
-    );
-  }
+  Deck({required List<Slide> slides, required this.configuration})
+    : slides = List.unmodifiable(slides);
 
   Map<String, Object?> toMap() {
     return {
@@ -25,9 +22,21 @@ class Deck {
   }
 
   static Deck fromMap(Map<String, Object?> map) {
-    final payload = schema.parse(map) as Map<String, Object?>;
+    final configurationValue = map['configuration'];
 
-    return _fromPayload(payload);
+    return Deck(
+      slides: (map['slides'] as List<dynamic>)
+          .map(
+            (slide) =>
+                Slide.fromMap(Map<String, Object?>.from(slide as Map)),
+          )
+          .toList(),
+      configuration: configurationValue == null
+          ? DeckConfiguration()
+          : DeckConfiguration.fromMap(
+              Map<String, Object?>.from(configurationValue as Map),
+            ),
+    );
   }
 
   /// Ack schema for validating complete deck/presentation JSON.
@@ -36,35 +45,5 @@ class Deck {
     'configuration': DeckConfiguration.schema.optional(),
   });
 
-  /// Alias for [fromMap].
-  static Deck parse(Map<String, Object?> map) => fromMap(map);
-
-  static Deck _fromPayload(Map<String, Object?> payload) {
-    final configurationValue = payload['configuration'];
-    return Deck(
-      slides: (payload['slides'] as List<dynamic>)
-          .map(
-            (slide) =>
-                Slide.fromValidatedMap(Map<String, Object?>.from(slide as Map)),
-          )
-          .toList(),
-      configuration: configurationValue == null
-          ? DeckConfiguration()
-          : DeckConfiguration.parse(
-              Map<String, Object?>.from(configurationValue as Map),
-            ),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Deck &&
-          runtimeType == other.runtimeType &&
-          const DeepCollectionEquality().equals(slides, other.slides) &&
-          configuration == other.configuration;
-
-  @override
-  int get hashCode =>
-      Object.hash(const DeepCollectionEquality().hash(slides), configuration);
+  static Deck parse(Map<String, Object?> map) => fromMap(schema.parse(map)!);
 }

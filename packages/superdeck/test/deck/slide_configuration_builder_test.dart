@@ -15,7 +15,7 @@ void main() {
     test('backward compatibility — no templates, applies deck styles', () {
       final baseStyle = SlideStyle();
       final options = DeckOptions(baseStyle: baseStyle);
-      final slides = [const Slide(key: 'slide-1')];
+      final slides = [Slide(key: 'slide-1')];
 
       final configs = builder.buildConfigurations(slides, options);
 
@@ -28,7 +28,7 @@ void main() {
       final namedStyle = SlideStyle();
       final options = DeckOptions(styles: {'dark': namedStyle});
       final slides = [
-        const Slide(
+        Slide(
           key: 'styled',
           options: SlideOptions(style: 'dark'),
         ),
@@ -48,7 +48,7 @@ void main() {
       );
       final options = DeckOptions(templates: {'corporate': template});
       final slides = [
-        const Slide(
+        Slide(
           key: 'tmpl-slide',
           options: SlideOptions(template: 'corporate'),
         ),
@@ -68,7 +68,7 @@ void main() {
       final template = SlideTemplate(styles: {'highlight': variant});
       final options = DeckOptions(templates: {'t': template});
       final slides = [
-        const Slide(
+        Slide(
           key: 'variant-slide',
           options: SlideOptions(template: 't', style: 'highlight'),
         ),
@@ -82,7 +82,7 @@ void main() {
     test('defaultTemplate applies to slides without explicit template', () {
       final defaultTemplate = SlideTemplate(baseStyle: SlideStyle());
       final options = DeckOptions(defaultTemplate: defaultTemplate);
-      final slides = [const Slide(key: 'default-tmpl')];
+      final slides = [Slide(key: 'default-tmpl')];
 
       final configs = builder.buildConfigurations(slides, options);
 
@@ -97,7 +97,7 @@ void main() {
         baseStyle: deckBase,
       );
       final slides = [
-        const Slide(
+        Slide(
           key: 'no-tmpl',
           options: SlideOptions(template: 'none'),
         ),
@@ -112,7 +112,7 @@ void main() {
     test('unknown template throws TemplateException', () {
       final options = DeckOptions(templates: {'real': SlideTemplate()});
       final slides = [
-        const Slide(
+        Slide(
           key: 'bad',
           options: SlideOptions(template: 'fake'),
         ),
@@ -132,8 +132,8 @@ void main() {
         templates: {'t': template},
       );
       final slides = [
-        const Slide(key: 'plain'),
-        const Slide(
+        Slide(key: 'plain'),
+        Slide(
           key: 'templated',
           options: SlideOptions(template: 't'),
         ),
@@ -147,11 +147,7 @@ void main() {
 
     test('slideIndex is correctly assigned', () {
       final options = DeckOptions();
-      final slides = [
-        const Slide(key: 'a'),
-        const Slide(key: 'b'),
-        const Slide(key: 'c'),
-      ];
+      final slides = [Slide(key: 'a'), Slide(key: 'b'), Slide(key: 'c')];
 
       final configs = builder.buildConfigurations(slides, options);
 
@@ -162,7 +158,7 @@ void main() {
 
     test('thumbnailFile stores generated asset key only', () {
       final options = DeckOptions();
-      final slides = [const Slide(key: 'cover')];
+      final slides = [Slide(key: 'cover')];
 
       final configs = builder.buildConfigurations(slides, options);
 

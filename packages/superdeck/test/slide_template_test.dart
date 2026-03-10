@@ -8,7 +8,7 @@ import 'test_helpers.dart';
 
 void main() {
   group('SimpleTemplate', () {
-    const slide = Slide(key: 'simple-slide');
+    final slide = Slide(key: 'simple-slide');
     final config = SlideConfiguration(
       slide: slide,
       slideIndex: 0,

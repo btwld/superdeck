@@ -37,7 +37,7 @@ class DeckService {
       }
       final content = await file.readAsString();
       final data = jsonDecode(content) as Map<String, dynamic>;
-      return Deck.fromMap(data);
+      return Deck.parse(data);
     } on Exception catch (e) {
       return _createErrorDeck(
         'Superdeck reference error',

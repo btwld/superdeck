@@ -27,7 +27,7 @@ class BundledDeckService extends DeckService {
     try {
       final content = await rootBundle.loadString(deckAssetPath);
       final data = jsonDecode(content) as Map<String, dynamic>;
-      return Deck.fromMap(data);
+      return Deck.parse(data);
     } on Object catch (error) {
       return Deck(
         slides: [

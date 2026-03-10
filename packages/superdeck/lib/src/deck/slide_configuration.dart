@@ -30,7 +30,7 @@ class SlideConfiguration {
   }) : _slide = slide,
        _widgets = widgets;
 
-  SlideOptions get options => _slide.options ?? const SlideOptions();
+  SlideOptions get options => _slide.options ?? SlideOptions();
 
   String get key => _slide.key;
 

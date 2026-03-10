@@ -37,10 +37,7 @@ void main() {
       });
 
       test('creates with slides', () {
-        final slides = [
-          const Slide(key: 'slide-1'),
-          const Slide(key: 'slide-2'),
-        ];
+        final slides = [Slide(key: 'slide-1'), Slide(key: 'slide-2')];
         final deck = Deck(slides: slides, configuration: DeckConfiguration());
 
         expect(deck.slides.length, 2);
@@ -48,13 +45,25 @@ void main() {
         expect(deck.slides[1].key, 'slide-2');
       });
 
+      test('slides is unmodifiable', () {
+        final deck = Deck(
+          slides: [Slide(key: 'slide-1')],
+          configuration: DeckConfiguration(),
+        );
+
+        expect(
+          () => (deck.slides as List).add(Slide(key: 'slide-2')),
+          throwsUnsupportedError,
+        );
+      });
+
       group('copyWith', () {
         test('copies with new slides', () {
           final original = Deck(
-            slides: const [Slide(key: 'original')],
+            slides: [Slide(key: 'original')],
             configuration: DeckConfiguration(),
           );
-          final copy = original.copyWith(slides: const [Slide(key: 'new')]);
+          final copy = original.copyWith(slides: [Slide(key: 'new')]);
 
           expect(copy.slides[0].key, 'new');
         });
@@ -73,7 +82,7 @@ void main() {
 
         test('preserves values when not specified', () {
           final original = Deck(
-            slides: const [Slide(key: 'keep')],
+            slides: [Slide(key: 'keep')],
             configuration: DeckConfiguration(projectDir: '/keep'),
           );
           final copy = original.copyWith();
@@ -239,12 +248,12 @@ void main() {
             'slides': <dynamic>[],
           };
 
-          expect(() => Deck.fromMap(map), throwsA(isA<AckException>()));
+          expect(() => Deck.parse(map), throwsA(isA<AckException>()));
         });
 
         test('throws when slides is missing', () {
           expect(
-            () => Deck.fromMap({}),
+            () => Deck.parse({}),
             throwsA(
               isA<AckException>().having(
                 (error) => error.toJson(),
@@ -265,7 +274,7 @@ void main() {
               'assetsPath',
             ]) {
               expect(
-                () => Deck.fromMap({
+                () => Deck.parse({
                   'slides': <dynamic>[],
                   'configuration': {field: null},
                 }),
@@ -304,7 +313,7 @@ void main() {
             slides: [
               Slide(
                 key: 'rt-slide',
-                options: const SlideOptions(title: 'RT Title'),
+                options: SlideOptions(title: 'RT Title'),
                 sections: [
                   SectionBlock([ContentBlock('Content')]),
                 ],
@@ -532,11 +541,11 @@ void main() {
       group('equality', () {
         test('equal decks are equal', () {
           final deck1 = Deck(
-            slides: const [Slide(key: 'same')],
+            slides: [Slide(key: 'same')],
             configuration: DeckConfiguration(projectDir: '/same'),
           );
           final deck2 = Deck(
-            slides: const [Slide(key: 'same')],
+            slides: [Slide(key: 'same')],
             configuration: DeckConfiguration(projectDir: '/same'),
           );
 
@@ -546,11 +555,11 @@ void main() {
 
         test('different slides make decks unequal', () {
           final deck1 = Deck(
-            slides: const [Slide(key: 'a')],
+            slides: [Slide(key: 'a')],
             configuration: DeckConfiguration(),
           );
           final deck2 = Deck(
-            slides: const [Slide(key: 'b')],
+            slides: [Slide(key: 'b')],
             configuration: DeckConfiguration(),
           );
 

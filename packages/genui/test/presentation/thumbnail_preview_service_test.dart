@@ -54,9 +54,9 @@ void main() {
 
       final context = tester.element(find.byType(SizedBox));
       final slides = [
-        const Slide(key: 'slide_0'),
-        const Slide(key: 'slide_1'),
-        const Slide(key: 'slide_2'),
+        Slide(key: 'slide_0'),
+        Slide(key: 'slide_1'),
+        Slide(key: 'slide_2'),
       ];
 
       final result = await service.generatePreviews(
@@ -85,7 +85,7 @@ void main() {
       );
 
       final context = tester.element(find.byType(SizedBox));
-      final slides = [const Slide(key: 'slide_0'), const Slide(key: 'slide_1')];
+      final slides = [Slide(key: 'slide_0'), Slide(key: 'slide_1')];
       final captured = <(int, Uint8List)>[];
 
       await service.generatePreviews(
@@ -112,9 +112,9 @@ void main() {
 
       final context = tester.element(find.byType(SizedBox));
       final slides = [
-        const Slide(key: 'slide_0'),
-        const Slide(key: 'slide_1'),
-        const Slide(key: 'slide_2'),
+        Slide(key: 'slide_0'),
+        Slide(key: 'slide_1'),
+        Slide(key: 'slide_2'),
       ];
 
       var cancelAfter = 1;
@@ -140,9 +140,9 @@ void main() {
 
       final context = tester.element(find.byType(SizedBox));
       final slides = [
-        const Slide(key: 'slide_0'),
-        const Slide(key: 'slide_1'),
-        const Slide(key: 'slide_2'),
+        Slide(key: 'slide_0'),
+        Slide(key: 'slide_1'),
+        Slide(key: 'slide_2'),
       ];
 
       var callCount = 0;
@@ -182,7 +182,7 @@ void main() {
       );
 
       final context = tester.element(find.byType(SizedBox));
-      final slides = [const Slide(key: 'slide_0'), const Slide(key: 'slide_1')];
+      final slides = [Slide(key: 'slide_0'), Slide(key: 'slide_1')];
       final captured = <(int, Uint8List)>[];
 
       final failingService = ThumbnailPreviewService(

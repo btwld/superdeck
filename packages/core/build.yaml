@@ -1,0 +1,10 @@
+global_options:
+  dart_mappable_builder:
+    options:
+      caseStyle: none
+      enumCaseStyle: none
+      generateMethods:
+        - decode
+        - copy
+        - stringify
+        - equals

@@ -7,7 +7,7 @@ void main() {
   group('Slide Model', () {
     group('Slide', () {
       test('creates with required key only', () {
-        const slide = Slide(key: 'test-key');
+        final slide = Slide(key: 'test-key');
 
         expect(slide.key, 'test-key');
         expect(slide.options, isNull);
@@ -20,7 +20,7 @@ void main() {
           SectionBlock([ContentBlock('Content')]),
         ];
         final comments = ['Speaker note 1', 'Speaker note 2'];
-        final options = const SlideOptions(title: 'Title', style: 'custom');
+        final options = SlideOptions(title: 'Title', style: 'custom');
 
         final slide = Slide(
           key: 'full-key',
@@ -35,25 +35,48 @@ void main() {
         expect(slide.comments.length, 2);
       });
 
+      test('sections is unmodifiable', () {
+        final slide = Slide(
+          key: 'immutable-sections',
+          sections: [
+            SectionBlock([ContentBlock('A')]),
+          ],
+        );
+
+        expect(
+          () => (slide.sections as List).add(SectionBlock([])),
+          throwsUnsupportedError,
+        );
+      });
+
+      test('comments is unmodifiable', () {
+        final slide = Slide(key: 'immutable-comments', comments: ['note']);
+
+        expect(
+          () => (slide.comments as List).add('another'),
+          throwsUnsupportedError,
+        );
+      });
+
       group('copyWith', () {
         test('copies with new key', () {
-          const original = Slide(key: 'original');
+          final original = Slide(key: 'original');
           final copy = original.copyWith(key: 'new-key');
 
           expect(copy.key, 'new-key');
         });
 
         test('copies with new options', () {
-          const original = Slide(key: 'key');
+          final original = Slide(key: 'key');
           final copy = original.copyWith(
-            options: const SlideOptions(title: 'New Title'),
+            options: SlideOptions(title: 'New Title'),
           );
 
           expect(copy.options?.title, 'New Title');
         });
 
         test('copies with new sections', () {
-          const original = Slide(key: 'key');
+          final original = Slide(key: 'key');
           final newSections = [
             SectionBlock([ContentBlock('New')]),
           ];
@@ -63,7 +86,7 @@ void main() {
         });
 
         test('copies with new comments', () {
-          const original = Slide(key: 'key');
+          final original = Slide(key: 'key');
           final copy = original.copyWith(comments: ['Note 1', 'Note 2']);
 
           expect(copy.comments, ['Note 1', 'Note 2']);
@@ -72,7 +95,7 @@ void main() {
         test('preserves values when not specified', () {
           final original = Slide(
             key: 'key',
-            options: const SlideOptions(title: 'Title'),
+            options: SlideOptions(title: 'Title'),
             sections: [
               SectionBlock([ContentBlock('Content')]),
             ],
@@ -89,7 +112,7 @@ void main() {
 
       group('toMap', () {
         test('serializes minimal slide', () {
-          const slide = Slide(key: 'minimal');
+          final slide = Slide(key: 'minimal');
           final map = slide.toMap();
 
           expect(map['key'], 'minimal');
@@ -101,7 +124,7 @@ void main() {
         test('serializes slide with options', () {
           final slide = Slide(
             key: 'with-opts',
-            options: const SlideOptions(title: 'My Title', style: 'dark'),
+            options: SlideOptions(title: 'My Title', style: 'dark'),
           );
           final map = slide.toMap();
 
@@ -125,7 +148,7 @@ void main() {
         });
 
         test('serializes slide with comments', () {
-          const slide = Slide(key: 'with-comments', comments: ['Note 1']);
+          final slide = Slide(key: 'with-comments', comments: ['Note 1']);
           final map = slide.toMap();
 
           expect(map['comments'], ['Note 1']);
@@ -187,7 +210,7 @@ void main() {
           () {
             for (final field in ['title', 'style', 'template']) {
               expect(
-                () => Slide.fromMap({
+                () => Slide.parse({
                   'key': 'invalid-options',
                   'options': {field: null},
                 }),
@@ -202,11 +225,9 @@ void main() {
         test('preserves data through toMap/fromMap', () {
           final original = Slide(
             key: 'roundtrip',
-            options: const SlideOptions(title: 'RT Title', style: 'rt-style'),
+            options: SlideOptions(title: 'RT Title', style: 'rt-style'),
             sections: [
-              SectionBlock([
-                ContentBlock('Section content'),
-              ]),
+              SectionBlock([ContentBlock('Section content')]),
             ],
             comments: ['RT Comment'],
           );
@@ -294,16 +315,16 @@ void main() {
 
       group('equality', () {
         test('equal slides are equal', () {
-          const slide1 = Slide(key: 'same', comments: ['note']);
-          const slide2 = Slide(key: 'same', comments: ['note']);
+          final slide1 = Slide(key: 'same', comments: ['note']);
+          final slide2 = Slide(key: 'same', comments: ['note']);
 
           expect(slide1, slide2);
           expect(slide1.hashCode, slide2.hashCode);
         });
 
         test('different keys make slides unequal', () {
-          const slide1 = Slide(key: 'key1');
-          const slide2 = Slide(key: 'key2');
+          final slide1 = Slide(key: 'key1');
+          final slide2 = Slide(key: 'key2');
 
           expect(slide1, isNot(slide2));
         });
@@ -311,11 +332,11 @@ void main() {
         test('different options make slides unequal', () {
           final slide1 = Slide(
             key: 'key',
-            options: const SlideOptions(title: 'A'),
+            options: SlideOptions(title: 'A'),
           );
           final slide2 = Slide(
             key: 'key',
-            options: const SlideOptions(title: 'B'),
+            options: SlideOptions(title: 'B'),
           );
 
           expect(slide1, isNot(slide2));
@@ -339,8 +360,8 @@ void main() {
         });
 
         test('different comments make slides unequal', () {
-          const slide1 = Slide(key: 'key', comments: ['A']);
-          const slide2 = Slide(key: 'key', comments: ['B']);
+          final slide1 = Slide(key: 'key', comments: ['A']);
+          final slide2 = Slide(key: 'key', comments: ['B']);
 
           expect(slide1, isNot(slide2));
         });
@@ -385,7 +406,7 @@ void main() {
 
     group('SlideOptions', () {
       test('creates with default values', () {
-        const options = SlideOptions();
+        final options = SlideOptions();
 
         expect(options.title, isNull);
         expect(options.style, isNull);
@@ -393,7 +414,7 @@ void main() {
       });
 
       test('creates with all parameters', () {
-        const options = SlideOptions(
+        final options = SlideOptions(
           title: 'Title',
           style: 'dark',
           args: {'custom': 'value'},
@@ -404,8 +425,17 @@ void main() {
         expect(options.args['custom'], 'value');
       });
 
+      test('args is unmodifiable', () {
+        final options = SlideOptions(args: {'custom': 'value'});
+
+        expect(
+          () => options.args['newKey'] = 'newValue',
+          throwsUnsupportedError,
+        );
+      });
+
       test('creates with template parameter', () {
-        const options = SlideOptions(template: 'my-template');
+        final options = SlideOptions(template: 'my-template');
 
         expect(options.template, 'my-template');
         expect(options.title, isNull);
@@ -413,42 +443,42 @@ void main() {
       });
 
       test('template defaults to null', () {
-        const options = SlideOptions();
+        final options = SlideOptions();
 
         expect(options.template, isNull);
       });
 
       group('copyWith', () {
         test('copies with new title', () {
-          const original = SlideOptions(title: 'Original');
+          final original = SlideOptions(title: 'Original');
           final copy = original.copyWith(title: 'New');
 
           expect(copy.title, 'New');
         });
 
         test('copies with new style', () {
-          const original = SlideOptions(style: 'light');
+          final original = SlideOptions(style: 'light');
           final copy = original.copyWith(style: 'dark');
 
           expect(copy.style, 'dark');
         });
 
         test('copies with new args', () {
-          const original = SlideOptions(args: {'a': 1});
+          final original = SlideOptions(args: {'a': 1});
           final copy = original.copyWith(args: {'b': 2});
 
           expect(copy.args, {'b': 2});
         });
 
         test('copies with new template', () {
-          const original = SlideOptions(template: 'original-template');
+          final original = SlideOptions(template: 'original-template');
           final copy = original.copyWith(template: 'new-template');
 
           expect(copy.template, 'new-template');
         });
 
         test('preserves values when not specified', () {
-          const original = SlideOptions(
+          final original = SlideOptions(
             title: 'T',
             style: 'S',
             template: 'tmpl',
@@ -465,7 +495,7 @@ void main() {
 
       group('toMap', () {
         test('serializes empty options', () {
-          const options = SlideOptions();
+          final options = SlideOptions();
           final map = options.toMap();
 
           expect(map.containsKey('title'), isFalse);
@@ -473,7 +503,7 @@ void main() {
         });
 
         test('serializes title and style', () {
-          const options = SlideOptions(title: 'T', style: 'S');
+          final options = SlideOptions(title: 'T', style: 'S');
           final map = options.toMap();
 
           expect(map['title'], 'T');
@@ -481,21 +511,21 @@ void main() {
         });
 
         test('serializes template when present', () {
-          const options = SlideOptions(template: 'my-template');
+          final options = SlideOptions(template: 'my-template');
           final map = options.toMap();
 
           expect(map['template'], 'my-template');
         });
 
         test('omits template when null', () {
-          const options = SlideOptions(title: 'T');
+          final options = SlideOptions(title: 'T');
           final map = options.toMap();
 
           expect(map.containsKey('template'), isFalse);
         });
 
         test('spreads args into map', () {
-          const options = SlideOptions(
+          final options = SlideOptions(
             title: 'T',
             args: {'custom1': 'val1', 'custom2': 42},
           );
@@ -504,6 +534,26 @@ void main() {
           expect(map['title'], 'T');
           expect(map['custom1'], 'val1');
           expect(map['custom2'], 42);
+        });
+
+        test('reserved fields win when args contain colliding keys', () {
+          final options = SlideOptions(
+            title: 'Reserved title',
+            style: 'reserved-style',
+            template: 'reserved-template',
+            args: {
+              'title': 'arg-title',
+              'style': 'arg-style',
+              'template': 'arg-template',
+              'custom': 'value',
+            },
+          );
+          final map = options.toMap();
+
+          expect(map['title'], 'Reserved title');
+          expect(map['style'], 'reserved-style');
+          expect(map['template'], 'reserved-template');
+          expect(map['custom'], 'value');
         });
       });
 
@@ -553,11 +603,25 @@ void main() {
           expect(options.args['anotherKey'], 123);
           expect(options.args.containsKey('title'), isFalse);
         });
+
+        test('strips all reserved keys from args', () {
+          final options = SlideOptions.fromMap({
+            'title': 'T',
+            'style': 'S',
+            'template': 'tmpl',
+            'extra': 'value',
+          });
+
+          expect(options.args.containsKey('title'), isFalse);
+          expect(options.args.containsKey('style'), isFalse);
+          expect(options.args.containsKey('template'), isFalse);
+          expect(options.args['extra'], 'value');
+        });
       });
 
       group('round-trip serialization', () {
         test('preserves data through toMap/fromMap', () {
-          const original = SlideOptions(
+          final original = SlideOptions(
             title: 'RT',
             style: 'rt-style',
             args: {'k': 'v'},
@@ -571,7 +635,7 @@ void main() {
         });
 
         test('preserves template through toMap/fromMap', () {
-          const original = SlideOptions(title: 'RT', template: 'rt-template');
+          final original = SlideOptions(title: 'RT', template: 'rt-template');
 
           final restored = SlideOptions.fromMap(original.toMap());
 
@@ -608,44 +672,44 @@ void main() {
 
       group('equality', () {
         test('equal options are equal', () {
-          const opt1 = SlideOptions(title: 'T', args: {'a': 1});
-          const opt2 = SlideOptions(title: 'T', args: {'a': 1});
+          final opt1 = SlideOptions(title: 'T', args: {'a': 1});
+          final opt2 = SlideOptions(title: 'T', args: {'a': 1});
 
           expect(opt1, opt2);
           expect(opt1.hashCode, opt2.hashCode);
         });
 
         test('different title makes options unequal', () {
-          const opt1 = SlideOptions(title: 'A');
-          const opt2 = SlideOptions(title: 'B');
+          final opt1 = SlideOptions(title: 'A');
+          final opt2 = SlideOptions(title: 'B');
 
           expect(opt1, isNot(opt2));
         });
 
         test('different style makes options unequal', () {
-          const opt1 = SlideOptions(style: 'light');
-          const opt2 = SlideOptions(style: 'dark');
+          final opt1 = SlideOptions(style: 'light');
+          final opt2 = SlideOptions(style: 'dark');
 
           expect(opt1, isNot(opt2));
         });
 
         test('different args make options unequal', () {
-          const opt1 = SlideOptions(args: {'a': 1});
-          const opt2 = SlideOptions(args: {'a': 2});
+          final opt1 = SlideOptions(args: {'a': 1});
+          final opt2 = SlideOptions(args: {'a': 2});
 
           expect(opt1, isNot(opt2));
         });
 
         test('different template makes options unequal', () {
-          const opt1 = SlideOptions(template: 'template-a');
-          const opt2 = SlideOptions(template: 'template-b');
+          final opt1 = SlideOptions(template: 'template-a');
+          final opt2 = SlideOptions(template: 'template-b');
 
           expect(opt1, isNot(opt2));
         });
 
         test('template present vs absent makes options unequal', () {
-          const opt1 = SlideOptions(template: 'some-template');
-          const opt2 = SlideOptions();
+          final opt1 = SlideOptions(template: 'some-template');
+          final opt2 = SlideOptions();
 
           expect(opt1, isNot(opt2));
         });

@@ -1,6 +1,11 @@
 import 'package:collection/collection.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+
+part 'asset_model.mapper.dart';
+
+@MappableEnum()
 enum AssetExtension {
   png,
   jpeg,
@@ -32,7 +37,8 @@ enum AssetExtension {
   }
 }
 
-class GeneratedAsset {
+@MappableClass()
+class GeneratedAsset with GeneratedAssetMappable {
   final String name;
   final AssetExtension extension;
   final String type;
@@ -46,18 +52,6 @@ class GeneratedAsset {
   String get fileName => '${type}_$name.${extension.name}';
 
   static String buildKey(String valueToHash) => generateValueHash(valueToHash);
-
-  GeneratedAsset copyWith({
-    String? name,
-    AssetExtension? extension,
-    String? type,
-  }) {
-    return GeneratedAsset(
-      name: name ?? this.name,
-      extension: extension ?? this.extension,
-      type: type ?? this.type,
-    );
-  }
 
   Map<String, Object?> toMap() {
     return {'name': name, 'extension': extension.name, 'type': type};
@@ -76,6 +70,9 @@ class GeneratedAsset {
     "extension": AssetExtension.schema,
     "type": Ack.string(),
   });
+
+  static GeneratedAsset parse(Map<String, Object?> map) =>
+      fromMap(schema.parse(map)!);
 
   static GeneratedAsset thumbnail(String slideKey) {
     return GeneratedAsset(
@@ -100,35 +97,18 @@ class GeneratedAsset {
       type: 'image',
     );
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GeneratedAsset &&
-          runtimeType == other.runtimeType &&
-          name == other.name &&
-          extension == other.extension &&
-          type == other.type;
-
-  @override
-  int get hashCode => Object.hash(name, extension, type);
 }
 
-class GeneratedAssetsReference {
+@MappableClass()
+class GeneratedAssetsReference with GeneratedAssetsReferenceMappable {
+  @MappableField(key: 'last_modified')
   final DateTime lastModified;
   final List<String> files;
 
-  GeneratedAssetsReference({required this.lastModified, required this.files});
-
-  GeneratedAssetsReference copyWith({
-    DateTime? lastModified,
-    List<String>? files,
-  }) {
-    return GeneratedAssetsReference(
-      lastModified: lastModified ?? this.lastModified,
-      files: files ?? this.files,
-    );
-  }
+  GeneratedAssetsReference({
+    required this.lastModified,
+    required List<String> files,
+  }) : files = List.unmodifiable(files);
 
   Map<String, Object?> toMap() {
     return {'last_modified': lastModified.toIso8601String(), 'files': files};
@@ -143,15 +123,11 @@ class GeneratedAssetsReference {
     );
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GeneratedAssetsReference &&
-          runtimeType == other.runtimeType &&
-          lastModified == other.lastModified &&
-          const ListEquality().equals(files, other.files);
+  static final schema = Ack.object({
+    'last_modified': Ack.string(),
+    'files': Ack.list(Ack.string()),
+  });
 
-  @override
-  int get hashCode =>
-      Object.hash(lastModified, const ListEquality().hash(files));
+  static GeneratedAssetsReference parse(Map<String, Object?> map) =>
+      fromMap(schema.parse(map)!);
 }
