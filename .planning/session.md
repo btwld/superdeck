@@ -64,6 +64,14 @@ Agents should read this file before substantive work and update it as work progr
 
 ## Session Log
 
+### 2026-03-10 (backward-compat blocker fixes)
+- Implemented three backward-compatibility fixes identified during code review:
+  - B1: `Slide.fromMap()` now migrates legacy `comments` field to `notes` (prevents silent data loss for old JSON payloads)
+  - B2: `Block.fromMap()` now normalizes legacy `type: "column"` to `ContentBlock.key` (prevents runtime crash for old serialized data)
+  - B3: Added 3 regression tests: legacy comments migration, notes-over-comments precedence, legacy column type normalization
+- Validation: all 709 core tests pass (3 new + 706 existing)
+- Committed and pushed to `claude/general-session-jBtv7`
+
 ### 2026-03-09 (review: release-next vs main in progress)
 - Started a code review of `release/next` against `main` using merge base `5fc2298e7580b9ef47d45cc29bc5a801d42bd622`.
 - Review focus: concrete regressions only, prioritized by user-visible/runtime impact, with verification against diff context and existing tests/call sites.
