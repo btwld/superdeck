@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_genui/superdeck_genui.dart';
 
 import 'src/parts/background.dart';
 import 'src/parts/footer.dart';
@@ -12,7 +11,6 @@ import 'src/widgets/demo_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  const plugins = [GenUiPlugin()];
 
   // Disable signals logging to reduce console noise
   SignalsObserver.instance = null;
@@ -20,7 +18,7 @@ void main() async {
   // Enable semantics for testing
   WidgetsBinding.instance.ensureSemantics();
 
-  await SuperDeckApp.initialize(plugins: plugins);
+  await SuperDeckApp.initialize();
   runApp(
     SuperDeckApp(
       options: DeckOptions(
@@ -37,7 +35,6 @@ void main() async {
           footer: FooterPart(),
           background: BackgroundPart(),
         ),
-        plugins: plugins,
       ),
     ),
   );
