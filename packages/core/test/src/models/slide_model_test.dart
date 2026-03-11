@@ -184,7 +184,7 @@ void main() {
               {
                 'type': 'section',
                 'blocks': [
-                  {'type': 'column', 'content': 'Block content'},
+                  {'type': 'block', 'content': 'Block content'},
                 ],
               },
             ],

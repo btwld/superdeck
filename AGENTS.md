@@ -130,7 +130,7 @@ The project uses Signals for reactive state management. `DeckController` is the 
 
 ### Block System
 Slides are composed of "blocks" defined by `@blockname` annotations in Markdown:
-- `@column` - Layout columns
+- `@block` - Markdown content blocks
 - `@image` - Image blocks
 - `@code` - Syntax-highlighted code
 - `@mermaid` - Mermaid diagrams

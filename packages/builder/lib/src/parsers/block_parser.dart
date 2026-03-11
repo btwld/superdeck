@@ -14,29 +14,20 @@ class ParsedBlock {
   }) : _data = data;
 
   Map<String, Object?> get data {
-    // Normalize legacy @column to the current ContentBlock key.
-    final normalizedType =
-        type == ContentBlock.legacyKey || type == ContentBlock.key
-        ? ContentBlock.key
-        : type;
-
-    return switch (normalizedType) {
+    return switch (type) {
       SectionBlock.key ||
       ContentBlock.key ||
-      WidgetBlock.key => {..._data, 'type': normalizedType},
+      WidgetBlock.key => {..._data, 'type': type},
       _ => {..._data, 'name': type, 'type': WidgetBlock.key},
     };
   }
 }
 
-/// Parses build-time layout directives (@section, @column, @block) with YAML-style options.
+/// Parses build-time layout directives (@section, @block) with YAML-style options.
 ///
 /// Extracts custom directives like:
 /// - `@section` or `@section{flex: 1}`
-/// - `@column{align: center, flex: 2}` or `@block{align: center, flex: 2}`
-///
-/// Both `@column` and `@block` tags create [ContentBlock] instances.
-/// The `@column` tag is legacy and normalized to `@block` for backward compatibility.
+/// - `@block{align: center, flex: 2}`
 ///
 /// **Why regex instead of markdown package BlockSyntax?**
 /// - These are build-time directives, not markdown syntax
@@ -52,15 +43,21 @@ class BlockParser {
   List<ParsedBlock> parse(String text) {
     final tokens = const TagTokenizer().tokenize(text);
 
-    return tokens
-        .map(
-          (token) => ParsedBlock(
-            type: token.name,
-            data: token.options,
-            startIndex: token.startIndex,
-            endIndex: token.endIndex,
-          ),
-        )
-        .toList();
+    return tokens.map((token) {
+      if (token.name == 'column') {
+        throw DeckFormatException(
+          'Unsupported @column directive. Use @block instead.',
+          text,
+          token.startIndex,
+        );
+      }
+
+      return ParsedBlock(
+        type: token.name,
+        data: token.options,
+        startIndex: token.startIndex,
+        endIndex: token.endIndex,
+      );
+    }).toList();
   }
 }

@@ -1,15 +1,13 @@
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'mappers.dart';
-
 part 'block_model.mapper.dart';
 
 /// Base class for all content blocks in a slide.
 ///
 /// Blocks are the fundamental building units of slide content. They can be
 /// arranged in sections and support alignment, flexible sizing, and scrolling.
-@MappableClass(discriminatorKey: 'type', hook: BlockDiscriminatorHook())
+@MappableClass(discriminatorKey: 'type')
 sealed class Block with BlockMappable {
   /// The type identifier for this block.
   final String type;
@@ -52,7 +50,6 @@ sealed class Block with BlockMappable {
     discriminatorKey: 'type',
     schemas: {
       ContentBlock.key: ContentBlock.schema,
-      ContentBlock.legacyKey: ContentBlock.schema, // Backward compatibility
       WidgetBlock.key: WidgetBlock.schema,
     },
   );
@@ -63,7 +60,7 @@ sealed class Block with BlockMappable {
     final type = map['type'] as String;
     return switch (type) {
       SectionBlock.key => SectionBlock.fromMap(map),
-      ContentBlock.key || ContentBlock.legacyKey => ContentBlock.fromMap(map),
+      ContentBlock.key => ContentBlock.fromMap(map),
       WidgetBlock.key => WidgetBlock.fromMap(map),
       _ => throw ArgumentError('Unknown block type: $type'),
     };
@@ -118,7 +115,7 @@ class SectionBlock extends Block with SectionBlockMappable {
   static SectionBlock parse(Map<String, Object?> map) =>
       fromMap(schema.parse(map)!);
 
-  /// Creates a section block with a single text column.
+  /// Creates a section block with a single text block.
   static SectionBlock text(String content) {
     return SectionBlock([ContentBlock(content)]);
   }
@@ -143,9 +140,6 @@ class ContentBlock extends Block with ContentBlockMappable {
   /// The type identifier for content blocks.
   static const key = 'block';
 
-  /// Legacy key for backward compatibility with existing slides.
-  static const legacyKey = 'column';
-
   /// The markdown content to display.
   final String content;
 
@@ -165,6 +159,11 @@ class ContentBlock extends Block with ContentBlockMappable {
   }
 
   static ContentBlock fromMap(Map<String, Object?> map) {
+    final type = map['type'];
+    if (type != null && type != key) {
+      throw ArgumentError('Unknown block type: $type');
+    }
+
     return ContentBlock(
       map['content'] as String?,
       align: map['align'] != null
@@ -177,6 +176,7 @@ class ContentBlock extends Block with ContentBlockMappable {
 
   /// Validation schema for content blocks.
   static final schema = Ack.object({
+    'type': Ack.literal(key).optional(),
     'align': ContentAlignment.schema.optional(),
     'flex': Ack.integer().optional(),
     'scrollable': Ack.boolean().optional(),

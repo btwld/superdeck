@@ -46,13 +46,13 @@ class SetupCommand extends SuperDeckCommand {
     try {
       const content = '''---
 
-@column
+@block
 
 # Welcome to SuperDeck
 
 Your awesome slides start here!
 
-@column
+@block
 
 - Create beautiful slides using markdown
 - Arrange content using the block-based system
@@ -60,14 +60,14 @@ Your awesome slides start here!
 
 ---
 
-@column
+@block
 
 ## Example of a multi-column slide
 
 - This content appears in the left column
 - Add more items here
 
-@column {
+@block {
   align: centerRight
 }
 
@@ -77,7 +77,7 @@ This content appears in the right column.
 
 ---
 
-@column {
+@block {
   align: center
 }
 

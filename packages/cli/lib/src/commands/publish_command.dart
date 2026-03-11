@@ -648,11 +648,7 @@ class PublishCommand extends Command<int> {
       if (worktreeCreated && tempDir != null) {
         try {
           final removeWorktreeArgs = ['worktree', 'remove', '--force', tempDir];
-          await _runGitCommand(
-            currentDir,
-            removeWorktreeArgs,
-            dryRun: dryRun,
-          );
+          await _runGitCommand(currentDir, removeWorktreeArgs, dryRun: dryRun);
         } catch (e) {
           _logger.warn('Failed to clean up temporary git worktree: $e');
         }

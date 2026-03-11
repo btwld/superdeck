@@ -18,7 +18,7 @@ Use this for opening slides, section dividers, or any slide where you want the t
   flex: 2
 }
 
-@column {
+@block {
   align: center
 }
 
@@ -40,18 +40,18 @@ Use this for comparisons, pros/cons lists, or showing two related concepts side-
 ```markdown
 @section
 
-@column {
+@block {
   flex: 2
   align: centerLeft
 }
 
 ### Generative UI
 
-@column
+@block
 
 ### VS
 
-@column {
+@block {
   flex: 2
 }
 
@@ -72,7 +72,7 @@ Use this for comparisons, pros/cons lists, or showing two related concepts side-
 Use this when demonstrating code snippets, API usage, or implementation details.
 
 ````markdown
-@column
+@block
 
 ```dart
 Column(
@@ -99,7 +99,7 @@ Column(
 ### Complex schema definition
 
 ````markdown
-@column
+@block
 
 ```dart
 final schema = Schema.object(properties: {
@@ -128,7 +128,7 @@ final schema = Schema.object(properties: {
 ### Image with cover fit
 
 ```markdown
-@column
+@block
 
 ![Screenshot](https://picsum.photos/800/1400) {.cover}
 
@@ -145,7 +145,7 @@ final schema = Schema.object(properties: {
 ````markdown
 @section
 
-@column
+@block
 
 ```mermaid
 graph TD
@@ -155,7 +155,7 @@ graph TD
     D --> E[End]
 ```
 
-@column
+@block
 
 ![Screenshot](https://picsum.photos/800/1400) {.cover}
 
@@ -172,7 +172,7 @@ graph TD
 ### DartPad integration
 
 ```markdown
-@column
+@block
 
 ![Screenshot](https://picsum.photos/800/1400) {.cover}
 
@@ -182,7 +182,7 @@ graph TD
   run: true
 }
 
-@column
+@block
 
 ## Interactive Demo
 
@@ -222,7 +222,7 @@ graph TD
   flex: 2
 }
 
-@column {
+@block {
   align: center
   flex: 1
 }
@@ -241,7 +241,7 @@ Column(
 )
 ```
 
-@column
+@block
 
 ![Screenshot](https://picsum.photos/800/1400) {.cover}
 
@@ -258,14 +258,14 @@ Column(
 ```markdown
 @section
 
-@column {
+@block {
   align: centerRight
 }
 
 #### Leo Farias
 @leoafarias
 
-@column {
+@block {
   align: centerLeft
 }
 
@@ -287,7 +287,7 @@ Column(
 ### GitHub-style alerts
 
 ```markdown
-@column {
+@block {
   align: centerLeft
   flex: 2
 }
@@ -324,10 +324,10 @@ Column(
 ```markdown
 @section
 
-@column
+@block
 Try the interactive counter:
 
-@column
+@block
 
 @widget {
   name: "counter"
@@ -347,7 +347,7 @@ Try the interactive counter:
 ### Process flow
 
 ````markdown
-@column
+@block
 
 ```mermaid
 graph TD
@@ -398,7 +398,7 @@ void main() {
 ### Feature announcement
 
 ```markdown
-@column {
+@block {
   flex: 3
   align: center
 }
@@ -409,7 +409,7 @@ void main() {
 Built for any screen: Ideal for generating
 adaptive UIs across devices and platforms.
 
-@column
+@block
 
 ---
 ```
@@ -419,11 +419,11 @@ adaptive UIs across devices and platforms.
 ````markdown
 @section
 
-@column
+@block
 
 ### Structured Output
 
-@column
+@block
 
 ```dart
 final schema = Schema.array(

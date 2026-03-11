@@ -3,12 +3,7 @@ import 'package:dart_mappable/dart_mappable.dart';
 part 'deck_build_status.mapper.dart';
 
 @MappableEnum()
-enum DeckBuildPhase {
-  unknown,
-  building,
-  success,
-  failure,
-}
+enum DeckBuildPhase { unknown, building, success, failure }
 
 @MappableClass()
 final class DeckBuildError with DeckBuildErrorMappable {

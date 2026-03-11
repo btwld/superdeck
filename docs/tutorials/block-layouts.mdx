@@ -18,7 +18,7 @@ Blocks automatically arrange themselves:
 ## Common blocks
 
 ```markdown
-@column        # Markdown content (most common)
+@block        # Markdown content (most common)
 @section       # Container for horizontal layouts
 @image         # Images with fit options
 @dartpad       # Interactive code examples
@@ -41,10 +41,10 @@ More content below.
 ```markdown
 @section
 
-@column
+@block
 Left side content
 
-@column  
+@block  
 Right side content
 ```
 
@@ -52,12 +52,12 @@ Right side content
 ```markdown
 @section
 
-@column {
+@block {
   flex: 2
 }
 Takes 2/3 of the space
 
-@column {
+@block {
   flex: 1
 }
 Takes 1/3 of the space
@@ -67,7 +67,7 @@ Takes 1/3 of the space
 ```markdown
 @section
 
-@column
+@block
 ## Text Content
 - Point one
 - Point two
@@ -87,7 +87,7 @@ All blocks support these properties:
 - **`scrollable`** - Enable scrolling (default: false)
 
 ```markdown
-@column {
+@block {
   flex: 2
   align: center
   scrollable: true
@@ -100,7 +100,7 @@ All blocks support these properties:
 ```markdown
 @section
 
-@column {
+@block {
   align: center
 }
 # Big Title
@@ -111,13 +111,13 @@ All blocks support these properties:
 ```markdown
 @section
 
-@column {
+@block {
   flex: 2
 }
 ## Feature Description
 Detailed explanation...
 
-@column
+@block
 ![Feature Screenshot](image.png)
 ```
 
@@ -125,19 +125,19 @@ Detailed explanation...
 ```markdown
 @section
 
-@column
+@block
 ### Option A
 
-@column  
+@block  
 ### Option B
 
-@column
+@block
 ### Option C
 ```
 
 ## Key takeaways
 
-- Start with `@column` blocks
+- Start with `@block` blocks
 - Use `@section` for side-by-side layouts
 - Control sizing with `flex`
 - Mix content types freely

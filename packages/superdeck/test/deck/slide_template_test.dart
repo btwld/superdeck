@@ -115,10 +115,7 @@ void main() {
 
       test('templates with different baseStyles are not equal', () {
         final parts = SlideParts();
-        final a = SlideTemplate(
-          parts: parts,
-          baseStyle: SlideStyle(),
-        );
+        final a = SlideTemplate(parts: parts, baseStyle: SlideStyle());
         final b = SlideTemplate(parts: parts);
 
         expect(a, isNot(equals(b)));
@@ -135,10 +132,7 @@ void main() {
 
       test('templates with different styles maps are not equal', () {
         final parts = SlideParts();
-        final a = SlideTemplate(
-          parts: parts,
-          styles: {'dark': SlideStyle()},
-        );
+        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
         final b = SlideTemplate(parts: parts, styles: {});
 
         expect(a, isNot(equals(b)));

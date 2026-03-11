@@ -45,7 +45,7 @@ SuperDeck reads slide content from `slides.md` and build output from `.superdeck
 Separate slides with `---`. Use blocks to control layout:
 
 - `@section` groups blocks horizontally.
-- `@column` renders Markdown content.
+- `@block` renders Markdown content.
 - `@widget` renders a registered Flutter widget.
 
 ```md
@@ -53,10 +53,10 @@ Separate slides with `---`. Use blocks to control layout:
 
 @section
 
-@column
+@block
 # Title
 
-@column
+@block
 - Point one
 - Point two
 
