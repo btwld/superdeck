@@ -28,7 +28,7 @@ docs/         # User-facing documentation (MDX format)
 
 ### Key Package Responsibilities
 
-- **core**: Markdown processing, slide/block configuration, style schemas, YAML validation (no Flutter dependency)
+- **core**: Markdown processing, slide/block configuration, shared model/schema validation, YAML utilities (no Flutter dependency)
 - **superdeck**: Flutter widgets, DeckController, navigation, PDF export, theme system
 - **cli**: CLI commands for project setup and building slides
 - **builder**: build_runner generators for code generation
@@ -137,7 +137,7 @@ Slides use `@tag` directives in Markdown to define layout and content:
 - Any unrecognized `@name` becomes a `WidgetBlock` (e.g., `@image`, `@code`, `@mermaid`)
 
 ### Style System
-Styles are defined in YAML and validated against schemas. See `packages/core` for style schema definitions.
+Styles are defined in Dart through `SlideStyle`, `DeckOptions.baseStyle`, and `DeckOptions.styles`.
 
 ## Documentation Locations
 

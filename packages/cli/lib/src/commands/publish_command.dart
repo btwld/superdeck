@@ -5,9 +5,27 @@ import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 
-import '../utils/flutter_resolver.dart';
 import '../utils/logger.dart';
 import '../utils/templates.dart';
+
+/// Resolves the Flutter binary, preferring an FVM-managed SDK when available.
+String resolveFlutterBinary(String workingDirectory, {bool? isWindows}) {
+  final binaryName = (isWindows ?? Platform.isWindows)
+      ? 'flutter.bat'
+      : 'flutter';
+  var dir = Directory(path.absolute(workingDirectory));
+
+  while (true) {
+    final candidate = File(
+      path.join(dir.path, '.fvm', 'flutter_sdk', 'bin', binaryName),
+    );
+    if (candidate.existsSync()) return candidate.path;
+
+    final parent = dir.parent;
+    if (parent.path == dir.path) return 'flutter';
+    dir = parent;
+  }
+}
 
 /// Command to publish a Superdeck app to GitHub Pages
 class PublishCommand extends Command<int> {

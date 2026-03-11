@@ -352,6 +352,30 @@ void main() {
         expect(config.projectDir, '/parsed');
         expect(config.slidesPath, 'parsed.md');
       });
+
+      test('rejects invalid typed known fields', () {
+        for (final field in [
+          'projectDir',
+          'slidesPath',
+          'outputDir',
+          'assetsPath',
+        ]) {
+          expect(
+            () => DeckConfiguration.parse({field: 42}),
+            throwsA(isA<Exception>()),
+          );
+        }
+      });
+
+      test('ignores unknown keys after validation', () {
+        final config = DeckConfiguration.parse({
+          'slidesPath': 'parsed.md',
+          'extra': {'keep': 'passthrough'},
+        });
+
+        expect(config.slidesPath, 'parsed.md');
+        expect(config.toMap().containsKey('extra'), isFalse);
+      });
     });
 
     group('schema', () {
@@ -387,6 +411,15 @@ void main() {
           final result = DeckConfiguration.schema.safeParse({field: null});
           expect(result.isOk, isFalse);
         }
+      });
+
+      test('allows unknown keys while validating known fields', () {
+        final result = DeckConfiguration.schema.safeParse({
+          'projectDir': '/project',
+          'extra': {'nested': true},
+        });
+
+        expect(result.isOk, isTrue);
       });
     });
 
