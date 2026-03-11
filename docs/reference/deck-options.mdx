@@ -37,6 +37,9 @@ DeckOptions(
 
 Named style variants for specific slides.
 
+SuperDeck styles are configured in app code through `DeckOptions.baseStyle`
+and `DeckOptions.styles`. There is no separate `styles.yaml` file to load.
+
 ```dart
 DeckOptions(
   styles: {
@@ -189,5 +192,5 @@ class MyApp extends StatelessWidget {
 ### Development
 1. Enable `debug: true` during development
 2. Use `superdeck build --watch` in one terminal and `flutter run` in another
-3. Version control style definitions
+3. Version control your `SlideStyle` definitions alongside app code
 4. Document custom components

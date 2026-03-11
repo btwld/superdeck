@@ -196,10 +196,6 @@ Non-blocking (document-only for this release):
   - Disposition: keep skipped.
   - Rationale: non-strict YAML logging path not exposed in this harness; covered by parser unit tests.
 
-- `packages/core/test/src/deck_service_test.dart` (skip):
-  - Disposition: keep skipped.
-  - Rationale: filesystem watch stream timing is flaky across environments; covered by integration/runtime validation.
-
 - `packages/core/test/src/helpers/watcher_test.dart` (skip):
   - Disposition: keep skipped.
   - Rationale: CI/event-loop variability can hang file watch assertions.
