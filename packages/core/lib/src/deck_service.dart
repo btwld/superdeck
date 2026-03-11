@@ -91,16 +91,16 @@ class DeckBuildStore {
     Object? error,
     StackTrace? stackTrace,
   }) async {
+    if (phase == DeckBuildPhase.failure && error != null) {
+      _logger.severe('Build failed: $error', error, stackTrace);
+    }
+
     final status = DeckBuildStatus(
       phase: phase,
       timestamp: DateTime.now(),
       slideCount: slideCount,
       error: phase == DeckBuildPhase.failure && error != null
-          ? DeckBuildError(
-              type: error.runtimeType.toString(),
-              message: error.toString(),
-              stackTrace: stackTrace?.toString(),
-            )
+          ? DeckBuildError(message: error.toString())
           : null,
     );
 

@@ -13,11 +13,7 @@ void main() {
 
   group('DeckBuildError', () {
     test('toMap/fromObject round-trip', () {
-      const error = DeckBuildError(
-        type: 'StateError',
-        message: 'Build failed',
-        stackTrace: 'stack',
-      );
+      const error = DeckBuildError(message: 'Build failed');
 
       final parsed = DeckBuildError.fromObject(error.toMap());
 

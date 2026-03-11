@@ -242,6 +242,8 @@ class BlockMapper extends ClassMapperBase<Block> {
     #flex: _f$flex,
     #scrollable: _f$scrollable,
   };
+  @override
+  final bool ignoreNull = true;
 
   static Block _instantiate(DecodingData data) {
     throw MapperException.missingSubclass(
@@ -264,6 +266,8 @@ class BlockMapper extends ClassMapperBase<Block> {
 }
 
 mixin BlockMappable {
+  String toJson();
+  Map<String, dynamic> toMap();
   BlockCopyWith<Block, Block, Block> get copyWith;
 }
 
@@ -330,6 +334,8 @@ class SectionBlockMapper extends SubClassMapperBase<SectionBlock> {
     #scrollable: _f$scrollable,
     #type: _f$type,
   };
+  @override
+  final bool ignoreNull = true;
 
   @override
   final String discriminatorKey = 'type';
@@ -360,6 +366,18 @@ class SectionBlockMapper extends SubClassMapperBase<SectionBlock> {
 }
 
 mixin SectionBlockMappable {
+  String toJson() {
+    return SectionBlockMapper.ensureInitialized().encodeJson<SectionBlock>(
+      this as SectionBlock,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return SectionBlockMapper.ensureInitialized().encodeMap<SectionBlock>(
+      this as SectionBlock,
+    );
+  }
+
   SectionBlockCopyWith<SectionBlock, SectionBlock, SectionBlock> get copyWith =>
       _SectionBlockCopyWithImpl<SectionBlock, SectionBlock>(
         this as SectionBlock,
@@ -507,6 +525,8 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
     #scrollable: _f$scrollable,
     #type: _f$type,
   };
+  @override
+  final bool ignoreNull = true;
 
   @override
   final String discriminatorKey = 'type';
@@ -537,6 +557,18 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
 }
 
 mixin ContentBlockMappable {
+  String toJson() {
+    return ContentBlockMapper.ensureInitialized().encodeJson<ContentBlock>(
+      this as ContentBlock,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return ContentBlockMapper.ensureInitialized().encodeMap<ContentBlock>(
+      this as ContentBlock,
+    );
+  }
+
   ContentBlockCopyWith<ContentBlock, ContentBlock, ContentBlock> get copyWith =>
       _ContentBlockCopyWithImpl<ContentBlock, ContentBlock>(
         this as ContentBlock,
@@ -680,6 +712,8 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
     #scrollable: _f$scrollable,
     #type: _f$type,
   };
+  @override
+  final bool ignoreNull = true;
 
   @override
   final String discriminatorKey = 'type';
@@ -713,6 +747,18 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
 }
 
 mixin WidgetBlockMappable {
+  String toJson() {
+    return WidgetBlockMapper.ensureInitialized().encodeJson<WidgetBlock>(
+      this as WidgetBlock,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return WidgetBlockMapper.ensureInitialized().encodeMap<WidgetBlock>(
+      this as WidgetBlock,
+    );
+  }
+
   WidgetBlockCopyWith<WidgetBlock, WidgetBlock, WidgetBlock> get copyWith =>
       _WidgetBlockCopyWithImpl<WidgetBlock, WidgetBlock>(
         this as WidgetBlock,

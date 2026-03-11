@@ -118,7 +118,11 @@ void main() {
           expect(map['key'], 'minimal');
           expect(map['sections'], isEmpty);
           expect(map['comments'], isEmpty);
-          expect(map.containsKey('options'), isFalse);
+          expect(
+            map.containsKey('options'),
+            isFalse,
+            reason: 'ignoreNull strips null options',
+          );
         });
 
         test('serializes slide with options', () {

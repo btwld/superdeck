@@ -52,17 +52,7 @@ class GeneratedAsset with GeneratedAssetMappable {
 
   static String buildKey(String valueToHash) => generateValueHash(valueToHash);
 
-  Map<String, Object?> toMap() {
-    return {'name': name, 'extension': extension.name, 'type': type};
-  }
-
-  static GeneratedAsset fromMap(Map<String, Object?> map) {
-    return GeneratedAsset(
-      name: map['name'] as String,
-      extension: AssetExtension.fromJson(map['extension']!),
-      type: map['type'] as String,
-    );
-  }
+  static final fromMap = GeneratedAssetMapper.fromMap;
 
   static final schema = Ack.object({
     "name": Ack.string(),
@@ -109,18 +99,7 @@ class GeneratedAssetsReference with GeneratedAssetsReferenceMappable {
     required List<String> files,
   }) : files = List.unmodifiable(files);
 
-  Map<String, Object?> toMap() {
-    return {'last_modified': lastModified.toIso8601String(), 'files': files};
-  }
-
-  static GeneratedAssetsReference fromMap(Map<String, Object?> map) {
-    return GeneratedAssetsReference(
-      lastModified: DateTime.parse(map['last_modified'] as String),
-      files: (map['files'] as List<dynamic>)
-          .map((path) => path as String)
-          .toList(),
-    );
-  }
+  static final fromMap = GeneratedAssetsReferenceMapper.fromMap;
 
   static final schema = Ack.object({
     'last_modified': Ack.string(),

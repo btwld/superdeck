@@ -54,6 +54,8 @@ class DeckConfigurationMapper extends ClassMapperBase<DeckConfiguration> {
     #outputDir: _f$outputDir,
     #assetsPath: _f$assetsPath,
   };
+  @override
+  final bool ignoreNull = true;
 
   static DeckConfiguration _instantiate(DecodingData data) {
     return DeckConfiguration(
@@ -77,6 +79,16 @@ class DeckConfigurationMapper extends ClassMapperBase<DeckConfiguration> {
 }
 
 mixin DeckConfigurationMappable {
+  String toJson() {
+    return DeckConfigurationMapper.ensureInitialized()
+        .encodeJson<DeckConfiguration>(this as DeckConfiguration);
+  }
+
+  Map<String, dynamic> toMap() {
+    return DeckConfigurationMapper.ensureInitialized()
+        .encodeMap<DeckConfiguration>(this as DeckConfiguration);
+  }
+
   DeckConfigurationCopyWith<
     DeckConfiguration,
     DeckConfiguration,

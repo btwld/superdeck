@@ -76,33 +76,17 @@ class DeckBuildErrorMapper extends ClassMapperBase<DeckBuildError> {
   @override
   final String id = 'DeckBuildError';
 
-  static String _$type(DeckBuildError v) => v.type;
-  static const Field<DeckBuildError, String> _f$type = Field('type', _$type);
   static String _$message(DeckBuildError v) => v.message;
   static const Field<DeckBuildError, String> _f$message = Field(
     'message',
     _$message,
   );
-  static String? _$stackTrace(DeckBuildError v) => v.stackTrace;
-  static const Field<DeckBuildError, String> _f$stackTrace = Field(
-    'stackTrace',
-    _$stackTrace,
-    opt: true,
-  );
 
   @override
-  final MappableFields<DeckBuildError> fields = const {
-    #type: _f$type,
-    #message: _f$message,
-    #stackTrace: _f$stackTrace,
-  };
+  final MappableFields<DeckBuildError> fields = const {#message: _f$message};
 
   static DeckBuildError _instantiate(DecodingData data) {
-    return DeckBuildError(
-      type: data.dec(_f$type),
-      message: data.dec(_f$message),
-      stackTrace: data.dec(_f$stackTrace),
-    );
+    return DeckBuildError(message: data.dec(_f$message));
   }
 
   @override
@@ -118,6 +102,18 @@ class DeckBuildErrorMapper extends ClassMapperBase<DeckBuildError> {
 }
 
 mixin DeckBuildErrorMappable {
+  String toJson() {
+    return DeckBuildErrorMapper.ensureInitialized().encodeJson<DeckBuildError>(
+      this as DeckBuildError,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return DeckBuildErrorMapper.ensureInitialized().encodeMap<DeckBuildError>(
+      this as DeckBuildError,
+    );
+  }
+
   DeckBuildErrorCopyWith<DeckBuildError, DeckBuildError, DeckBuildError>
   get copyWith => _DeckBuildErrorCopyWithImpl<DeckBuildError, DeckBuildError>(
     this as DeckBuildError,
@@ -155,7 +151,7 @@ extension DeckBuildErrorValueCopy<$R, $Out>
 
 abstract class DeckBuildErrorCopyWith<$R, $In extends DeckBuildError, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
-  $R call({String? type, String? message, String? stackTrace});
+  $R call({String? message});
   DeckBuildErrorCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
     Then<$Out2, $R2> t,
   );
@@ -170,20 +166,11 @@ class _DeckBuildErrorCopyWithImpl<$R, $Out>
   late final ClassMapperBase<DeckBuildError> $mapper =
       DeckBuildErrorMapper.ensureInitialized();
   @override
-  $R call({String? type, String? message, Object? stackTrace = $none}) =>
-      $apply(
-        FieldCopyWithData({
-          if (type != null) #type: type,
-          if (message != null) #message: message,
-          if (stackTrace != $none) #stackTrace: stackTrace,
-        }),
-      );
+  $R call({String? message}) =>
+      $apply(FieldCopyWithData({if (message != null) #message: message}));
   @override
-  DeckBuildError $make(CopyWithData data) => DeckBuildError(
-    type: data.get(#type, or: $value.type),
-    message: data.get(#message, or: $value.message),
-    stackTrace: data.get(#stackTrace, or: $value.stackTrace),
-  );
+  DeckBuildError $make(CopyWithData data) =>
+      DeckBuildError(message: data.get(#message, or: $value.message));
 
   @override
   DeckBuildErrorCopyWith<$R2, DeckBuildError, $Out2> $chain<$R2, $Out2>(
@@ -261,6 +248,17 @@ class DeckBuildStatusMapper extends ClassMapperBase<DeckBuildStatus> {
 }
 
 mixin DeckBuildStatusMappable {
+  String toJson() {
+    return DeckBuildStatusMapper.ensureInitialized()
+        .encodeJson<DeckBuildStatus>(this as DeckBuildStatus);
+  }
+
+  Map<String, dynamic> toMap() {
+    return DeckBuildStatusMapper.ensureInitialized().encodeMap<DeckBuildStatus>(
+      this as DeckBuildStatus,
+    );
+  }
+
   DeckBuildStatusCopyWith<DeckBuildStatus, DeckBuildStatus, DeckBuildStatus>
   get copyWith =>
       _DeckBuildStatusCopyWithImpl<DeckBuildStatus, DeckBuildStatus>(

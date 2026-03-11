@@ -30,6 +30,7 @@ class DeckMapper extends ClassMapperBase<Deck> {
   static const Field<Deck, DeckConfiguration> _f$configuration = Field(
     'configuration',
     _$configuration,
+    opt: true,
   );
 
   @override
@@ -58,6 +59,14 @@ class DeckMapper extends ClassMapperBase<Deck> {
 }
 
 mixin DeckMappable {
+  String toJson() {
+    return DeckMapper.ensureInitialized().encodeJson<Deck>(this as Deck);
+  }
+
+  Map<String, dynamic> toMap() {
+    return DeckMapper.ensureInitialized().encodeMap<Deck>(this as Deck);
+  }
+
   DeckCopyWith<Deck, Deck, Deck> get copyWith =>
       _DeckCopyWithImpl<Deck, Deck>(this as Deck, $identity, $identity);
   @override
@@ -105,13 +114,13 @@ class _DeckCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Deck, $Out>
       );
   @override
   DeckConfigurationCopyWith<$R, DeckConfiguration, DeckConfiguration>
-  get configuration =>
-      $value.configuration.copyWith.$chain((v) => call(configuration: v));
+  get configuration => ($value.configuration as DeckConfiguration).copyWith
+      .$chain((v) => call(configuration: v));
   @override
-  $R call({List<Slide>? slides, DeckConfiguration? configuration}) => $apply(
+  $R call({List<Slide>? slides, Object? configuration = $none}) => $apply(
     FieldCopyWithData({
       if (slides != null) #slides: slides,
-      if (configuration != null) #configuration: configuration,
+      if (configuration != $none) #configuration: configuration,
     }),
   );
   @override

@@ -7,14 +7,12 @@ import 'block_model.dart';
 part 'slide_model.g.dart';
 part 'slide_model.mapper.dart';
 
-const _knownSlideOptionFields = <String>{'title', 'style', 'template'};
-
 /// Represents a single slide in a presentation.
 ///
 /// A slide contains sections of content blocks, optional configuration options,
 /// and any speaker notes or comments. Each slide is uniquely identified by a key.
 @AckModel(additionalProperties: true)
-@MappableClass()
+@MappableClass(ignoreNull: true)
 class Slide with SlideMappable {
   /// Unique identifier for this slide, typically generated from content hash.
   final String key;
@@ -36,32 +34,7 @@ class Slide with SlideMappable {
   }) : sections = List.unmodifiable(sections),
        comments = List.unmodifiable(comments);
 
-  Map<String, Object?> toMap() {
-    return {
-      'key': key,
-      if (options != null) 'options': options!.toMap(),
-      'sections': sections.map((s) => s.toMap()).toList(),
-      'comments': comments,
-    };
-  }
-
-  static Slide fromMap(Map<String, Object?> map) {
-    final optionsPayload = map['options'] as Map<String, Object?>?;
-
-    return Slide(
-      key: map['key'] as String,
-      options: optionsPayload == null
-          ? null
-          : SlideOptions.fromMap(optionsPayload),
-      sections: (map['sections'] as List<dynamic>? ?? const [])
-          .map(
-            (section) =>
-                SectionBlock.fromMap(Map<String, Object?>.from(section as Map)),
-          )
-          .toList(),
-      comments: (map['comments'] as List<dynamic>? ?? const []).cast<String>(),
-    );
-  }
+  static final fromMap = SlideMapper.fromMap;
 
   /// Validation schema for slide data.
   static final schema = slideSchema.extend({
@@ -78,8 +51,10 @@ class Slide with SlideMappable {
 ///
 /// Provides metadata and styling information for individual slides.
 @AckModel(additionalProperties: true, additionalPropertiesField: 'args')
-@MappableClass(hook: UnmappedPropertiesHook('args'))
+@MappableClass(hook: UnmappedPropertiesHook('args'), ignoreNull: true)
 class SlideOptions with SlideOptionsMappable {
+  static const _knownFields = {'title', 'style', 'template'};
+
   /// The title of the slide, if any.
   final String? title;
 
@@ -100,31 +75,13 @@ class SlideOptions with SlideOptionsMappable {
     this.style,
     this.template,
     Map<String, Object?> args = const {},
-  }) : args = Map.unmodifiable(args);
+  }) : args = Map.unmodifiable(
+         Map.fromEntries(
+           args.entries.where((e) => !_knownFields.contains(e.key)),
+         ),
+       );
 
-  Map<String, Object?> toMap() {
-    return {
-      ...args,
-      if (title != null) 'title': title,
-      if (style != null) 'style': style,
-      if (template != null) 'template': template,
-    };
-  }
-
-  static SlideOptions fromMap(Map<String, Object?> map) {
-    final args = Map<String, Object?>.fromEntries(
-      map.entries.where(
-        (entry) => !_knownSlideOptionFields.contains(entry.key),
-      ),
-    );
-
-    return SlideOptions(
-      title: map['title'] as String?,
-      style: map['style'] as String?,
-      template: map['template'] as String?,
-      args: args,
-    );
-  }
+  static final fromMap = SlideOptionsMapper.fromMap;
 
   /// Validation schema for slide options.
   static final schema = slideOptionsSchema.extend({

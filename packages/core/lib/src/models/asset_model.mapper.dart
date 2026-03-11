@@ -119,6 +119,18 @@ class GeneratedAssetMapper extends ClassMapperBase<GeneratedAsset> {
 }
 
 mixin GeneratedAssetMappable {
+  String toJson() {
+    return GeneratedAssetMapper.ensureInitialized().encodeJson<GeneratedAsset>(
+      this as GeneratedAsset,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return GeneratedAssetMapper.ensureInitialized().encodeMap<GeneratedAsset>(
+      this as GeneratedAsset,
+    );
+  }
+
   GeneratedAssetCopyWith<GeneratedAsset, GeneratedAsset, GeneratedAsset>
   get copyWith => _GeneratedAssetCopyWithImpl<GeneratedAsset, GeneratedAsset>(
     this as GeneratedAsset,
@@ -243,6 +255,16 @@ class GeneratedAssetsReferenceMapper
 }
 
 mixin GeneratedAssetsReferenceMappable {
+  String toJson() {
+    return GeneratedAssetsReferenceMapper.ensureInitialized()
+        .encodeJson<GeneratedAssetsReference>(this as GeneratedAssetsReference);
+  }
+
+  Map<String, dynamic> toMap() {
+    return GeneratedAssetsReferenceMapper.ensureInitialized()
+        .encodeMap<GeneratedAssetsReference>(this as GeneratedAssetsReference);
+  }
+
   GeneratedAssetsReferenceCopyWith<
     GeneratedAssetsReference,
     GeneratedAssetsReference,

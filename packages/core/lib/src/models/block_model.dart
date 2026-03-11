@@ -7,7 +7,7 @@ part 'block_model.mapper.dart';
 ///
 /// Blocks are the fundamental building units of slide content. They can be
 /// arranged in sections and support alignment, flexible sizing, and scrolling.
-@MappableClass(discriminatorKey: 'type')
+@MappableClass(discriminatorKey: 'type', ignoreNull: true)
 sealed class Block with BlockMappable {
   /// The type identifier for this block.
   final String type;
@@ -54,17 +54,7 @@ sealed class Block with BlockMappable {
     },
   );
 
-  Map<String, Object?> toMap();
-
-  static Block fromMap(Map<String, Object?> map) {
-    final type = map['type'] as String;
-    return switch (type) {
-      SectionBlock.key => SectionBlock.fromMap(map),
-      ContentBlock.key => ContentBlock.fromMap(map),
-      WidgetBlock.key => WidgetBlock.fromMap(map),
-      _ => throw ArgumentError('Unknown block type: $type'),
-    };
-  }
+  static final fromMap = BlockMapper.fromMap;
 }
 
 /// A block that contains multiple child blocks arranged horizontally.
@@ -87,29 +77,7 @@ class SectionBlock extends Block with SectionBlockMappable {
     return blocks.fold(0, (total, block) => total + block.flex);
   }
 
-  @override
-  Map<String, Object?> toMap() {
-    return {
-      'type': type,
-      if (align != null) 'align': align!.name,
-      'flex': flex,
-      'scrollable': scrollable,
-      if (blocks.isNotEmpty) 'blocks': blocks.map((b) => b.toMap()).toList(),
-    };
-  }
-
-  static SectionBlock fromMap(Map<String, Object?> map) {
-    return SectionBlock(
-      (map['blocks'] as List<dynamic>?)
-          ?.map((e) => Block.fromMap(Map<String, Object?>.from(e as Map)))
-          .toList(),
-      align: map['align'] != null
-          ? ContentAlignment.fromJson(map['align']!)
-          : null,
-      flex: (map['flex'] as num?)?.toInt() ?? 1,
-      scrollable: map['scrollable'] as bool? ?? false,
-    );
-  }
+  static final fromMap = SectionBlockMapper.fromMap;
 
   /// Parses a section block from a JSON map.
   static SectionBlock parse(Map<String, Object?> map) =>
@@ -147,32 +115,7 @@ class ContentBlock extends Block with ContentBlockMappable {
     : content = content ?? '',
       super(type: key);
 
-  @override
-  Map<String, Object?> toMap() {
-    return {
-      'type': type,
-      if (align != null) 'align': align!.name,
-      'flex': flex,
-      'scrollable': scrollable,
-      if (content.isNotEmpty) 'content': content,
-    };
-  }
-
-  static ContentBlock fromMap(Map<String, Object?> map) {
-    final type = map['type'];
-    if (type != null && type != key) {
-      throw ArgumentError('Unknown block type: $type');
-    }
-
-    return ContentBlock(
-      map['content'] as String?,
-      align: map['align'] != null
-          ? ContentAlignment.fromJson(map['align']!)
-          : null,
-      flex: (map['flex'] as num?)?.toInt() ?? 1,
-      scrollable: map['scrollable'] as bool? ?? false,
-    );
-  }
+  static final fromMap = ContentBlockMapper.fromMap;
 
   /// Validation schema for content blocks.
   static final schema = Ack.object({
@@ -254,50 +197,16 @@ class WidgetBlock extends Block with WidgetBlockMappable {
     super.align,
     super.flex,
     super.scrollable,
-  }) : args = args == null ? const {} : Map.unmodifiable(args),
-       super(type: key) {
-    final collision = this.args.keys.where(_reservedKeys.contains).toList();
-    if (collision.isNotEmpty) {
-      throw ArgumentError(
-        'WidgetBlock args must not contain reserved keys: $collision',
-      );
-    }
-  }
+  }) : args = args == null
+           ? const {}
+           : Map.unmodifiable(
+               Map.fromEntries(
+                 args.entries.where((e) => !_reservedKeys.contains(e.key)),
+               ),
+             ),
+       super(type: key);
 
-  @override
-  Map<String, Object?> toMap() {
-    return {
-      ...args,
-      'type': type,
-      if (align != null) 'align': align!.name,
-      'flex': flex,
-      'scrollable': scrollable,
-      'name': name,
-    };
-  }
-
-  static WidgetBlock fromMap(Map<String, Object?> map) {
-    final name = map['name'] as String;
-    final align = map['align'] != null
-        ? ContentAlignment.fromJson(map['align']!)
-        : null;
-    final flex = (map['flex'] as num?)?.toInt() ?? 1;
-    final scrollable = map['scrollable'] as bool? ?? false;
-    final args = Map<String, Object?>.from(map)
-      ..remove('type')
-      ..remove('align')
-      ..remove('flex')
-      ..remove('scrollable')
-      ..remove('name');
-
-    return WidgetBlock(
-      name: name,
-      args: args,
-      align: align,
-      flex: flex,
-      scrollable: scrollable,
-    );
-  }
+  static final fromMap = WidgetBlockMapper.fromMap;
 
   static final schema = Ack.object({
     'align': ContentAlignment.schema.optional(),

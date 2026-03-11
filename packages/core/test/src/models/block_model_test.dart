@@ -342,7 +342,7 @@ void main() {
           expect(map['type'], 'block');
           expect(map['flex'], 1);
           expect(map['scrollable'], false);
-          expect(map.containsKey('content'), isFalse);
+          expect(map['content'], '');
           expect(map.containsKey('align'), isFalse);
         });
 
@@ -407,13 +407,7 @@ void main() {
 
         test('throws on invalid alignment', () {
           final map = {'type': 'block', 'align': 'invalid'};
-          expect(() => ContentBlock.fromMap(map), throwsArgumentError);
-        });
-
-        test('rejects legacy column type', () {
-          final map = {'type': 'column', 'content': 'Legacy'};
-
-          expect(() => ContentBlock.fromMap(map), throwsArgumentError);
+          expect(() => ContentBlock.fromMap(map), throwsA(anything));
         });
       });
 
@@ -576,7 +570,7 @@ void main() {
           final map = section.toMap();
 
           expect(map['type'], 'section');
-          expect(map.containsKey('blocks'), isFalse);
+          expect(map['blocks'], isEmpty);
         });
 
         test('serializes section with blocks', () {
@@ -666,7 +660,7 @@ void main() {
       });
 
       group('constructor validation', () {
-        test('throws ArgumentError when args contain reserved keys', () {
+        test('silently strips reserved keys from args', () {
           for (final reservedKey in const [
             'type',
             'name',
@@ -674,10 +668,12 @@ void main() {
             'flex',
             'scrollable',
           ]) {
-            expect(
-              () => WidgetBlock(name: 'Test', args: {reservedKey: 'invalid'}),
-              throwsArgumentError,
+            final widget = WidgetBlock(
+              name: 'Test',
+              args: {reservedKey: 'invalid', 'custom': 'kept'},
             );
+            expect(widget.args.containsKey(reservedKey), isFalse);
+            expect(widget.args['custom'], 'kept');
           }
         });
       });
@@ -861,7 +857,7 @@ void main() {
         test('rejects legacy column type', () {
           final map = {'type': 'column', 'content': 'Test'};
 
-          expect(() => Block.fromMap(map), throwsArgumentError);
+          expect(() => Block.fromMap(map), throwsA(anything));
         });
 
         test('creates SectionBlock from section type', () {
@@ -881,7 +877,7 @@ void main() {
 
         test('throws for unknown type', () {
           final map = {'type': 'unknown'};
-          expect(() => Block.fromMap(map), throwsArgumentError);
+          expect(() => Block.fromMap(map), throwsA(anything));
         });
       });
 

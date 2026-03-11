@@ -7,23 +7,11 @@ enum DeckBuildPhase { unknown, building, success, failure }
 
 @MappableClass()
 final class DeckBuildError with DeckBuildErrorMappable {
-  final String type;
   final String message;
-  final String? stackTrace;
 
-  const DeckBuildError({
-    required this.type,
-    required this.message,
-    this.stackTrace,
-  });
+  const DeckBuildError({required this.message});
 
-  Map<String, dynamic> toMap() {
-    return DeckBuildErrorMapper.ensureInitialized().encodeMap(this);
-  }
-
-  static DeckBuildError fromMap(Map<String, dynamic> map) {
-    return DeckBuildErrorMapper.fromMap(map);
-  }
+  static final fromMap = DeckBuildErrorMapper.fromMap;
 
   static DeckBuildError? fromObject(Object? value) {
     if (value is! Map) return null;
@@ -50,13 +38,7 @@ final class DeckBuildStatus with DeckBuildStatusMappable {
     this.error,
   });
 
-  Map<String, dynamic> toMap() {
-    return DeckBuildStatusMapper.ensureInitialized().encodeMap(this);
-  }
-
-  static DeckBuildStatus fromMap(Map<String, dynamic> map) {
-    return DeckBuildStatusMapper.fromMap(map);
-  }
+  static final fromMap = DeckBuildStatusMapper.fromMap;
 
   static DeckBuildStatus? fromObject(Object? value) {
     if (value is! Map) return null;

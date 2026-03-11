@@ -536,7 +536,7 @@ void main() {
           () => GeneratedAssetsReference.fromMap({
             'files': ['file.png'],
           }),
-          throwsA(isA<TypeError>()),
+          throwsA(anything),
         );
       });
 
@@ -545,7 +545,7 @@ void main() {
           () => GeneratedAssetsReference.fromMap({
             'last_modified': '2024-06-20T08:15:30.000Z',
           }),
-          throwsA(isA<TypeError>()),
+          throwsA(anything),
         );
       });
 

@@ -11,32 +11,11 @@ class Deck with DeckMappable {
   final List<Slide> slides;
   final DeckConfiguration configuration;
 
-  Deck({required List<Slide> slides, required this.configuration})
-    : slides = List.unmodifiable(slides);
+  Deck({required List<Slide> slides, DeckConfiguration? configuration})
+    : slides = List.unmodifiable(slides),
+      configuration = configuration ?? DeckConfiguration();
 
-  Map<String, Object?> toMap() {
-    return {
-      'slides': slides.map((s) => s.toMap()).toList(),
-      'configuration': configuration.toMap(),
-    };
-  }
-
-  static Deck fromMap(Map<String, Object?> map) {
-    final configurationValue = map['configuration'];
-
-    return Deck(
-      slides: (map['slides'] as List<dynamic>)
-          .map(
-            (slide) => Slide.fromMap(Map<String, Object?>.from(slide as Map)),
-          )
-          .toList(),
-      configuration: configurationValue == null
-          ? DeckConfiguration()
-          : DeckConfiguration.fromMap(
-              Map<String, Object?>.from(configurationValue as Map),
-            ),
-    );
-  }
+  static final fromMap = DeckMapper.fromMap;
 
   /// Ack schema for validating complete deck/presentation JSON.
   static final schema = Ack.object({

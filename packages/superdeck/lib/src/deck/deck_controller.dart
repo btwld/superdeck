@@ -186,7 +186,7 @@ class DeckController {
           _isBuildActive.value = false;
           _buildFailure.value = error is DeckBuildError
               ? error
-              : DeckBuildError(type: 'BuildFailure', message: message);
+              : DeckBuildError(message: message);
         } else {
           _error.value = error ?? message;
           _isLoading.value = false;

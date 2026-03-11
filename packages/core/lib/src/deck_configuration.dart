@@ -9,7 +9,7 @@ part 'deck_configuration.g.dart';
 part 'deck_configuration.mapper.dart';
 
 @AckModel()
-@MappableClass()
+@MappableClass(ignoreNull: true)
 final class DeckConfiguration with DeckConfigurationMappable {
   final String? projectDir;
   final String? slidesPath;
@@ -60,18 +60,7 @@ final class DeckConfiguration with DeckConfigurationMappable {
 
   File get pubspecFile => File(p.join(_baseDir, 'pubspec.yaml'));
 
-  Map<String, Object?> toMap() {
-    return {
-      if (projectDir != null) 'projectDir': projectDir,
-      if (slidesPath != null) 'slidesPath': slidesPath,
-      if (outputDir != null) 'outputDir': outputDir,
-      if (assetsPath != null) 'assetsPath': assetsPath,
-    };
-  }
-
-  static DeckConfiguration fromMap(Map<String, dynamic> map) {
-    return DeckConfigurationMapper.fromMap(map);
-  }
+  static final fromMap = DeckConfigurationMapper.fromMap;
 
   static DeckConfiguration parse(Map<String, Object?> map) {
     schema.parse(map);

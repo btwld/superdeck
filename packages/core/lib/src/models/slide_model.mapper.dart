@@ -54,6 +54,8 @@ class SlideMapper extends ClassMapperBase<Slide> {
     #sections: _f$sections,
     #comments: _f$comments,
   };
+  @override
+  final bool ignoreNull = true;
 
   static Slide _instantiate(DecodingData data) {
     return Slide(
@@ -77,6 +79,14 @@ class SlideMapper extends ClassMapperBase<Slide> {
 }
 
 mixin SlideMappable {
+  String toJson() {
+    return SlideMapper.ensureInitialized().encodeJson<Slide>(this as Slide);
+  }
+
+  Map<String, dynamic> toMap() {
+    return SlideMapper.ensureInitialized().encodeMap<Slide>(this as Slide);
+  }
+
   SlideCopyWith<Slide, Slide, Slide> get copyWith =>
       _SlideCopyWithImpl<Slide, Slide>(this as Slide, $identity, $identity);
   @override
@@ -220,6 +230,8 @@ class SlideOptionsMapper extends ClassMapperBase<SlideOptions> {
     #template: _f$template,
     #args: _f$args,
   };
+  @override
+  final bool ignoreNull = true;
 
   @override
   final MappingHook hook = const UnmappedPropertiesHook('args');
@@ -245,6 +257,18 @@ class SlideOptionsMapper extends ClassMapperBase<SlideOptions> {
 }
 
 mixin SlideOptionsMappable {
+  String toJson() {
+    return SlideOptionsMapper.ensureInitialized().encodeJson<SlideOptions>(
+      this as SlideOptions,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return SlideOptionsMapper.ensureInitialized().encodeMap<SlideOptions>(
+      this as SlideOptions,
+    );
+  }
+
   SlideOptionsCopyWith<SlideOptions, SlideOptions, SlideOptions> get copyWith =>
       _SlideOptionsCopyWithImpl<SlideOptions, SlideOptions>(
         this as SlideOptions,
