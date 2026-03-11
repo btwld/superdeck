@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
-import 'package:superdeck_cli/src/commands/publish_command.dart';
+import 'package:superdeck_cli/src/commands/publish/build_support.dart';
 import 'package:test/test.dart';
 
 import '../testing_utils.dart';

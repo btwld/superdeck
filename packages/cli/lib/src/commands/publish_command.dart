@@ -1,33 +1,14 @@
 import 'dart:io';
 
-import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 
 import '../utils/logger.dart';
-import '../utils/templates.dart';
+import 'publish/build_support.dart';
+import 'publish/git_support.dart';
 
-/// Resolves the Flutter binary, preferring an FVM-managed SDK when available.
-String resolveFlutterBinary(String workingDirectory, {bool? isWindows}) {
-  final binaryName = (isWindows ?? Platform.isWindows)
-      ? 'flutter.bat'
-      : 'flutter';
-  var dir = Directory(path.absolute(workingDirectory));
-
-  while (true) {
-    final candidate = File(
-      path.join(dir.path, '.fvm', 'flutter_sdk', 'bin', binaryName),
-    );
-    if (candidate.existsSync()) return candidate.path;
-
-    final parent = dir.parent;
-    if (parent.path == dir.path) return 'flutter';
-    dir = parent;
-  }
-}
-
-/// Command to publish a Superdeck app to GitHub Pages
+/// Command to publish a Superdeck app to GitHub Pages.
 class PublishCommand extends Command<int> {
   @override
   final String name = 'publish';
@@ -36,17 +17,6 @@ class PublishCommand extends Command<int> {
   final String description = 'Publish Superdeck app to GitHub Pages';
 
   final Logger _logger;
-
-  static final RegExp _httpsRepositoryPattern = RegExp(
-    r'https://github\.com/([^/]+)/([^/.]+)(\.git)?',
-  );
-  static final RegExp _sshRepositoryPattern = RegExp(
-    r'git@github\.com:([^/]+)/([^/.]+)(\.git)?',
-  );
-  // Valid git branch name pattern (alphanumeric, dots, hyphens, underscores, slashes)
-  static final RegExp _validBranchNamePattern = RegExp(
-    r'^[a-zA-Z0-9][a-zA-Z0-9._/-]*$',
-  );
 
   PublishCommand({Logger? loggerOverride})
     : _logger = loggerOverride ?? logger {
@@ -91,351 +61,18 @@ class PublishCommand extends Command<int> {
       );
   }
 
-  /// Runs a git command that only needs the result without throwing.
-  ///
-  /// Returns null if git is not available or the command fails to execute.
-  /// Logs the error for debugging purposes.
-  Future<ProcessResult?> _runGitQuery(
-    String repoPath,
-    List<String> args,
-  ) async {
-    try {
-      return await Process.run('git', args, workingDirectory: repoPath);
-    } on ProcessException catch (e) {
-      _logger.detail('Git command failed: ${args.join(' ')} - ${e.message}');
-      return null;
-    } on IOException catch (e) {
-      _logger.detail('Git I/O error: ${args.join(' ')} - $e');
-      return null;
-    }
-  }
-
-  /// Checks if the current directory is a git repository
-  Future<bool> _isGitRepository(String repoPath) async {
-    const args = ['rev-parse', '--is-inside-work-tree'];
-    final result = await _runGitQuery(repoPath, args);
-
-    return result != null &&
-        result.exitCode == 0 &&
-        result.stdout.toString().trim() == 'true';
-  }
-
-  /// Validates a git branch name to prevent command injection
-  bool _isValidBranchName(String branch) {
-    // Reject empty names
-    if (branch.isEmpty) return false;
-
-    // Reject names with path traversal
-    if (branch.contains('..')) return false;
-
-    // Reject names starting with hyphen (could be interpreted as flags)
-    if (branch.startsWith('-')) return false;
-
-    // Reject names with control characters or spaces
-    if (branch.contains(RegExp(r'[\s\x00-\x1f\x7f]'))) return false;
-
-    // Must match valid git branch name pattern
-    return _validBranchNamePattern.hasMatch(branch);
-  }
-
-  /// Gets the current branch name
-  Future<String> _getCurrentBranch(String repoPath) async {
-    const args = ['symbolic-ref', '--short', 'HEAD'];
-    final result = await _runGitQuery(repoPath, args);
-
-    if (result == null || result.exitCode != 0) {
-      return '';
-    }
-
-    return result.stdout.toString().trim();
-  }
-
-  /// Gets the repository name from the remote URL
-  Future<String?> _getRepositoryName(String repoPath) async {
-    final String? remoteUrl = await _getRepositoryUrl(repoPath);
-    if (remoteUrl == null) return null;
-
-    // Extract repository name from different URL formats
-    // Handle HTTPS URL: https://github.com/username/repo.git
-    final httpsMatch = _httpsRepositoryPattern.firstMatch(remoteUrl);
-    if (httpsMatch != null) {
-      return httpsMatch.group(2);
-    }
-
-    // Handle SSH URL: git@github.com:username/repo.git
-    final sshMatch = _sshRepositoryPattern.firstMatch(remoteUrl);
-    if (sshMatch != null) {
-      return sshMatch.group(2);
-    }
-
-    return null;
-  }
-
-  /// Set up a custom index.html with loading indicator before build.
-  /// Returns the backup file path if a backup was created, null otherwise.
-  Future<String?> _setupCustomIndexHtml(String repoDir, bool isDryRun) async {
-    final progress = _logger.progress('Setting up custom index.html');
-    String? backupPath;
-    try {
-      if (!isDryRun) {
-        final webDir = path.join(
-          repoDir,
-          argResults!['example-dir'] as String,
-          'web',
-        );
-        final indexHtmlPath = path.join(webDir, 'index.html');
-
-        // Create a backup of the original index.html if it exists
-        if (File(indexHtmlPath).existsSync()) {
-          backupPath = path.join(webDir, 'index.html.bak');
-          await File(indexHtmlPath).copy(backupPath);
-          _logger.detail('Created backup of original index.html');
-        }
-
-        // Write custom index.html with loading indicator
-        await File(indexHtmlPath).writeAsString(customIndexHtml);
-        _logger.info('Created custom index.html with loading indicator');
-      } else {
-        _logger.info('Would replace index.html with custom template');
-      }
-
-      progress.complete('Custom index.html setup complete');
-      return backupPath;
-    } catch (e) {
-      progress.fail('Failed to set up custom index.html');
-      _logger.err('Error setting up custom index.html: $e');
-      rethrow;
-    }
-  }
-
-  /// Restores the original index.html from backup if it exists.
-  Future<void> _restoreIndexHtmlBackup(String? backupPath) async {
-    if (backupPath == null) return;
-
-    final backupFile = File(backupPath);
-    if (!backupFile.existsSync()) return;
-
-    final indexHtmlPath = backupPath.replaceAll('.bak', '');
-    try {
-      await backupFile.copy(indexHtmlPath);
-      await backupFile.delete();
-      _logger.detail('Restored original index.html from backup');
-    } catch (e) {
-      _logger.warn('Failed to restore index.html backup: $e');
-    }
-  }
-
-  /// Builds the web app with appropriate base href
-  Future<bool> _buildWebApp(
-    String workingDirectory, {
-    String? baseHref,
-    String? outputDirectory,
-    bool dryRun = false,
-  }) async {
-    if (dryRun) {
-      if (baseHref != null) {
-        _logger.info('Would build web app with base-href: $baseHref');
-      } else {
-        _logger.info('Would build web app with default base-href');
-      }
-
-      if (outputDirectory != null) {
-        _logger.info('Would write build output to: $outputDirectory');
-      }
-
-      return true;
-    }
-
-    final progress = _logger.progress('Building Flutter web app');
-
-    try {
-      // Use the example directory for building
-      final exampleDir = path.join(
-        workingDirectory,
-        argResults!['example-dir'] as String,
-      );
-
-      // Verify example directory exists
-      if (!Directory(exampleDir).existsSync()) {
-        progress.fail('Example directory not found: $exampleDir');
-        _logger.err('Example directory not found: $exampleDir');
-
-        return false;
-      }
-
-      final List<String> buildArgs = ['build', 'web', '--release'];
-
-      // Add base-href if provided
-      if (baseHref != null) {
-        buildArgs.add('--base-href=$baseHref');
-      }
-
-      if (outputDirectory != null) {
-        buildArgs.add('--output=$outputDirectory');
-      }
-
-      final flutterBin = resolveFlutterBinary(exampleDir);
-      _logger.detail('Using Flutter binary: $flutterBin');
-
-      final ProcessResult result = await Process.run(
-        flutterBin,
-        buildArgs,
-        workingDirectory: exampleDir,
-      );
-
-      if (result.exitCode == 0) {
-        progress.complete('Web build completed successfully');
-
-        return true;
-      }
-      progress.fail('Web build failed');
-      _logger.err(result.stderr.toString());
-
-      return false;
-    } catch (e) {
-      progress.fail('Web build failed');
-      _logger.err('Error during build: $e');
-
-      return false;
-    }
-  }
-
-  /// Checks if a branch exists
-  Future<bool> _branchExists(String repoPath, String branch) async {
-    final args = ['show-ref', '--verify', '--quiet', 'refs/heads/$branch'];
-    final result = await _runGitQuery(repoPath, args);
-
-    return result?.exitCode == 0;
-  }
-
-  /// Checks if there are any changes to commit
-  Future<bool> _hasChangesToCommit(String repoPath) async {
-    const args = ['status', '--porcelain'];
-    final result = await _runGitQuery(repoPath, args);
-
-    return result?.stdout.toString().trim().isNotEmpty ?? false;
-  }
-
-  /// Runs a git command
-  Future<ProcessResult> _runGitCommand(
-    String workingDirectory,
-    List<String> arguments, {
-    bool dryRun = false,
-  }) async {
-    if (dryRun) {
-      _logger.info('Would run: git ${arguments.join(' ')}');
-
-      return ProcessResult(0, 0, '', '');
-    }
-
-    final ProcessResult result = await Process.run(
-      'git',
-      arguments,
-      workingDirectory: workingDirectory,
-    );
-
-    if (result.exitCode != 0) {
-      throw Exception(
-        'Git command failed: git ${arguments.join(' ')}\n${result.stderr}',
-      );
-    }
-
-    return result;
-  }
-
-  /// Copies directories recursively
-  Future<void> _copyDirectory(
-    String source,
-    String destination, {
-    bool dryRun = false,
-  }) async {
-    if (dryRun) {
-      _logger.info('Would copy files from $source to $destination');
-
-      return;
-    }
-
-    final Directory sourceDir = Directory(source);
-    if (!await sourceDir.exists()) {
-      throw Exception('Source directory does not exist: $source');
-    }
-
-    await Directory(destination).create(recursive: true);
-
-    await for (final entity in sourceDir.list(recursive: false)) {
-      final String newPath = path.join(destination, path.basename(entity.path));
-
-      if (entity is Directory) {
-        await _copyDirectory(entity.path, newPath);
-      } else if (entity is File) {
-        await entity.copy(newPath);
-      }
-    }
-  }
-
-  /// Gets the remote URL for the repository
-  Future<String?> _getRepositoryUrl(String repoPath) async {
-    const args = ['remote', 'get-url', 'origin'];
-    final result = await _runGitQuery(repoPath, args);
-
-    if (result != null && result.exitCode == 0) {
-      return result.stdout.toString().trim();
-    }
-
-    return null;
-  }
-
-  /// Converts a git remote URL to a GitHub Pages URL
-  String _getGitHubPagesUrl(String remoteUrl, String branch) {
-    // Extract username and repository from different URL formats
-    String? username;
-    String? repository;
-
-    // Handle HTTPS URL: https://github.com/username/repo.git
-    final httpsMatch = _httpsRepositoryPattern.firstMatch(remoteUrl);
-    if (httpsMatch != null) {
-      username = httpsMatch.group(1);
-      repository = httpsMatch.group(2);
-    }
-    // Handle SSH URL: git@github.com:username/repo.git
-    else {
-      final sshMatch = _sshRepositoryPattern.firstMatch(remoteUrl);
-      if (sshMatch != null) {
-        username = sshMatch.group(1);
-        repository = sshMatch.group(2);
-      }
-    }
-
-    if (username != null && repository != null) {
-      // Default GitHub Pages URL format
-      if (branch == 'gh-pages') {
-        return 'https://$username.github.io/$repository/';
-      }
-      // For username.github.io repositories with main branch
-      else if (repository == '$username.github.io' &&
-          (branch == 'main' || branch == 'master')) {
-        return 'https://$username.github.io/';
-      }
-    }
-
-    // Fallback if we couldn't determine the URL format
-    return 'https://<username>.github.io/<repository>/';
-  }
-
   @override
   Future<int> run() async {
-    final ArgResults args = argResults!;
+    final args = argResults!;
+    final targetBranch = args['branch'] as String;
+    final commitMessage = args['message'] as String;
+    final shouldPush = args['push'] as bool;
+    final dryRun = args['dry-run'] as bool;
+    final shouldBuild = args['build'] as bool;
+    final exampleDirArg = args['example-dir'] as String;
+    final buildDirArg = args['build-dir'] as String;
 
-    final String targetBranch = args['branch'] as String;
-    final String commitMessage = args['message'] as String;
-    final bool shouldPush = args['push'] as bool;
-    final bool dryRun = args['dry-run'] as bool;
-    final bool shouldBuild = args['build'] as bool;
-    final String exampleDirArg = args['example-dir'] as String;
-    final String buildDirArg = args['build-dir'] as String;
-
-    // Validate branch name to prevent command injection
-    if (!_isValidBranchName(targetBranch)) {
+    if (!isValidBranchName(targetBranch)) {
       _logger.err(
         'Invalid branch name: "$targetBranch". '
         'Branch names must start with alphanumeric and contain only '
@@ -448,56 +85,52 @@ class PublishCommand extends Command<int> {
       _logger.info('Running in dry-run mode. No changes will be made.');
     }
 
-    // Get current directory
-    final String currentDir = Directory.current.path;
-
-    final String exampleDir = path.normalize(
-      path.join(currentDir, exampleDirArg),
-    );
-    final String buildDir = path.normalize(
+    final currentDir = Directory.current.path;
+    final exampleDir = path.normalize(path.join(currentDir, exampleDirArg));
+    final buildDir = path.normalize(
       path.isAbsolute(buildDirArg)
           ? buildDirArg
           : path.join(exampleDir, buildDirArg),
     );
 
-    // Check if we're in a git repository
-    if (!await _isGitRepository(currentDir)) {
+    if (!await isGitRepository(_logger, currentDir)) {
       _logger.err(
         'Not a git repository. Please run this command in a git repository.',
       );
-
       return ExitCode.usage.code;
     }
 
-    // Get the current branch
-    final String currentBranch = await _getCurrentBranch(currentDir);
+    final currentBranch = await getCurrentBranch(_logger, currentDir);
     if (currentBranch.isEmpty) {
       _logger.err('Failed to determine current branch.');
-
       return ExitCode.software.code;
     }
 
-    // Auto-detect base-href for GitHub Pages
     String? baseHref;
     if (shouldBuild) {
-      final String? repoName = await _getRepositoryName(currentDir);
+      final repoName = await getRepositoryName(_logger, currentDir);
       if (repoName != null) {
         baseHref = '/$repoName/';
         _logger.info('Auto-detected base-href: $baseHref');
       }
     }
 
-    // Setup custom index.html before building (track backup for restoration)
     String? indexHtmlBackupPath;
     if (shouldBuild) {
-      indexHtmlBackupPath = await _setupCustomIndexHtml(currentDir, dryRun);
+      indexHtmlBackupPath = await setupCustomIndexHtml(
+        _logger,
+        repoDir: currentDir,
+        exampleDir: exampleDirArg,
+        isDryRun: dryRun,
+      );
     }
 
-    // Build the web app if requested
     if (shouldBuild) {
       _logger.info('Building web app...');
-      final bool buildSuccessful = await _buildWebApp(
+      final buildSuccessful = await buildWebApp(
+        _logger,
         currentDir,
+        exampleDir: exampleDirArg,
         baseHref: baseHref,
         outputDirectory: buildDir,
         dryRun: dryRun,
@@ -505,30 +138,25 @@ class PublishCommand extends Command<int> {
 
       if (!buildSuccessful && !dryRun) {
         _logger.err('Web build failed. Publication aborted.');
-        await _restoreIndexHtmlBackup(indexHtmlBackupPath);
-
+        await restoreIndexHtmlBackup(_logger, indexHtmlBackupPath);
         return ExitCode.software.code;
       }
     }
 
-    // Check build directory exists
     if (!dryRun && !Directory(buildDir).existsSync()) {
       _logger.err('Build directory not found: $buildDir');
       _logger.info(
         'Please make sure your web app is built before publishing or use the default --build flag.',
       );
-
       return ExitCode.usage.code;
     }
 
-    // Publish to GitHub Pages
     _logger.info('Publishing to GitHub Pages...');
     final progress = _logger.progress('Publishing to $targetBranch branch');
     String? tempDir;
     var worktreeCreated = false;
 
     try {
-      // Create a temporary git worktree for the target branch
       tempDir = path.join(
         Directory.systemTemp.path,
         'superdeck_publish_${DateTime.now().millisecondsSinceEpoch}',
@@ -540,35 +168,38 @@ class PublishCommand extends Command<int> {
         _logger.info('Would create temporary directory at $tempDir');
       }
 
-      // Use git worktree to handle the branch switching without affecting the working directory
-      if (await _branchExists(currentDir, targetBranch)) {
-        // If branch exists, add a worktree for it
-        final addWorktreeArgs = [
+      if (await branchExists(_logger, currentDir, targetBranch)) {
+        await runGitCommand(_logger, currentDir, [
           'worktree',
           'add',
           '-f',
           tempDir,
           targetBranch,
-        ];
-        await _runGitCommand(currentDir, addWorktreeArgs, dryRun: dryRun);
+        ], dryRun: dryRun);
         worktreeCreated = !dryRun;
       } else {
-        // If branch doesn't exist, create it as an orphan branch
-        final detachWorktreeArgs = ['worktree', 'add', '--detach', tempDir];
-        await _runGitCommand(currentDir, detachWorktreeArgs, dryRun: dryRun);
+        await runGitCommand(_logger, currentDir, [
+          'worktree',
+          'add',
+          '--detach',
+          tempDir,
+        ], dryRun: dryRun);
         worktreeCreated = !dryRun;
 
-        final checkoutArgs = ['checkout', '--orphan', targetBranch];
-        await _runGitCommand(tempDir, checkoutArgs, dryRun: dryRun);
-
-        // Clean out any files in the new branch
-        const rmArgs = ['rm', '-rf', '.'];
-        await _runGitCommand(tempDir, rmArgs, dryRun: dryRun);
+        await runGitCommand(_logger, tempDir, [
+          'checkout',
+          '--orphan',
+          targetBranch,
+        ], dryRun: dryRun);
+        await runGitCommand(_logger, tempDir, const [
+          'rm',
+          '-rf',
+          '.',
+        ], dryRun: dryRun);
       }
 
       if (!dryRun) {
-        // Clear existing content in the worktree (except .git)
-        final List<FileSystemEntity> entities = Directory(tempDir)
+        final entities = Directory(tempDir)
             .listSync()
             .where((entity) => path.basename(entity.path) != '.git')
             .toList();
@@ -583,10 +214,7 @@ class PublishCommand extends Command<int> {
           }
         }
 
-        // Copy build directory contents to the worktree
-        await _copyDirectory(buildDir, tempDir);
-
-        // Create a .nojekyll file to bypass Jekyll processing
+        await copyDirectory(_logger, buildDir, tempDir);
         File(path.join(tempDir, '.nojekyll')).createSync();
       } else {
         _logger.info('Would clear and update content in $targetBranch branch');
@@ -594,25 +222,22 @@ class PublishCommand extends Command<int> {
         _logger.info('Would create .nojekyll file to bypass Jekyll processing');
       }
 
-      // Stage and commit changes
-      const addArgs = ['add', '.'];
-      await _runGitCommand(tempDir, addArgs, dryRun: dryRun);
+      await runGitCommand(_logger, tempDir, const ['add', '.'], dryRun: dryRun);
 
-      // Only commit if there are changes
-      final bool hasChanges = dryRun || await _hasChangesToCommit(tempDir);
-
+      final hasChanges = dryRun || await hasChangesToCommit(_logger, tempDir);
       if (hasChanges) {
-        final commitArgs = [
+        await runGitCommand(_logger, tempDir, [
           'commit',
           '-m',
           '$commitMessage\n\nPublished from branch $currentBranch',
-        ];
-        await _runGitCommand(tempDir, commitArgs, dryRun: dryRun);
+        ], dryRun: dryRun);
 
-        // Push if requested
         if (shouldPush) {
-          final pushArgs = ['push', 'origin', targetBranch];
-          await _runGitCommand(tempDir, pushArgs, dryRun: dryRun);
+          await runGitCommand(_logger, tempDir, [
+            'push',
+            'origin',
+            targetBranch,
+          ], dryRun: dryRun);
         }
       } else {
         _logger.info(
@@ -630,27 +255,22 @@ class PublishCommand extends Command<int> {
       }
 
       if (!dryRun && shouldPush) {
-        final String? remoteUrl = await _getRepositoryUrl(currentDir);
-        String pagesUrl = 'https://<username>.github.io/<repository>/';
-
-        if (remoteUrl != null) {
-          pagesUrl = _getGitHubPagesUrl(remoteUrl, targetBranch);
-        }
+        final remoteUrl = await getRepositoryUrl(_logger, currentDir);
+        final pagesUrl = remoteUrl != null
+            ? getGitHubPagesUrl(remoteUrl, targetBranch)
+            : 'https://<username>.github.io/<repository>/';
 
         _logger.info('\nYour Superdeck app is now published to GitHub Pages!');
         _logger.info('Your site is available at: $pagesUrl');
-
-        // Add note about delay
         _logger.info(
           '\nNote: It may take a few minutes for GitHub to build and deploy your site.',
         );
       } else if (!dryRun) {
-        // Show the URL even when not pushing
-        final String? remoteUrl = await _getRepositoryUrl(currentDir);
+        final remoteUrl = await getRepositoryUrl(_logger, currentDir);
         if (remoteUrl != null) {
-          final String pagesUrl = _getGitHubPagesUrl(remoteUrl, targetBranch);
           _logger.info(
-            '\nWhen pushed, your site will be available at: $pagesUrl',
+            '\nWhen pushed, your site will be available at: '
+            '${getGitHubPagesUrl(remoteUrl, targetBranch)}',
           );
         }
       }
@@ -660,17 +280,18 @@ class PublishCommand extends Command<int> {
       progress.fail('Publication failed');
       _logger.err('Error during publication: $e');
       _logger.detail('$stackTrace');
-
       return ExitCode.software.code;
     } finally {
-      // Always restore index.html if we backed it up before build.
-      await _restoreIndexHtmlBackup(indexHtmlBackupPath);
+      await restoreIndexHtmlBackup(_logger, indexHtmlBackupPath);
 
-      // Always remove temporary worktree if it was created.
       if (worktreeCreated && tempDir != null) {
         try {
-          final removeWorktreeArgs = ['worktree', 'remove', '--force', tempDir];
-          await _runGitCommand(currentDir, removeWorktreeArgs, dryRun: dryRun);
+          await runGitCommand(_logger, currentDir, [
+            'worktree',
+            'remove',
+            '--force',
+            tempDir,
+          ], dryRun: dryRun);
         } catch (e) {
           _logger.warn('Failed to clean up temporary git worktree: $e');
         }
