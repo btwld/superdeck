@@ -10,6 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     name: Test
     steps:
       - uses: actions/checkout@v2
@@ -58,6 +59,7 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: Integration Tests
     steps:
       - uses: actions/checkout@v2
@@ -112,6 +114,7 @@ jobs:
 
   web-smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: Web Smoke (Playwright)
     steps:
       - uses: actions/checkout@v4
