@@ -58,6 +58,22 @@ void main() {
       expect(controller.currentIndex.value, 0);
     });
 
+    testWidgets('Meta+ArrowUp goes to previous slide', (tester) async {
+      final controller = await tester.pumpTestApp();
+      if (controller.totalSlides.value <= 1) return;
+
+      await tester.navigateToSlide(controller, 1);
+
+      await tester.sendMetaKey(LogicalKeyboardKey.arrowUp);
+      await tester.pumpUntil(
+        () => controller.currentIndex.value == 0,
+        timeout: const Duration(seconds: 5),
+        debugLabel: 'Meta+ArrowUp navigation',
+        onTimeout: () => describeDeckControllerState(controller),
+      );
+      expect(controller.currentIndex.value, 0);
+    });
+
     testWidgets('arrow keys without Meta do not navigate', (tester) async {
       final controller = await tester.pumpTestApp();
       if (controller.totalSlides.value <= 1) return;
@@ -72,9 +88,7 @@ void main() {
       expect(controller.currentIndex.value, 0);
     });
 
-    testWidgets('Meta+ArrowRight on last slide stays on last', (
-      tester,
-    ) async {
+    testWidgets('Meta+ArrowRight on last slide stays on last', (tester) async {
       final controller = await tester.pumpTestApp();
       final lastIndex = controller.totalSlides.value - 1;
       await tester.navigateToSlide(controller, lastIndex);

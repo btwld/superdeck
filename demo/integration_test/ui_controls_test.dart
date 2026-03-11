@@ -33,6 +33,14 @@ void main() {
           onTimeout: () => describeDeckControllerState(controller),
         );
         expect(find.textContaining('2 of $totalSlides'), findsOneWidget);
+
+        await tester.tapByLabel('Previous slide');
+        await tester.pumpUntil(
+          () => controller.currentIndex.value == 0,
+          debugLabel: 'menu arrow-back navigation',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+        expect(find.textContaining('1 of $totalSlides'), findsOneWidget);
       }
 
       await tester.tapByLabel('Close menu');
@@ -71,8 +79,8 @@ void main() {
       final toggleFinder = closeLabel.evaluate().isNotEmpty
           ? closeLabel
           : openLabel.evaluate().isNotEmpty
-              ? openLabel
-              : null;
+          ? openLabel
+          : null;
 
       if (toggleFinder == null) {
         fail(

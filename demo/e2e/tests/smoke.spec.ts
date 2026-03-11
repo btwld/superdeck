@@ -2,35 +2,64 @@ import {expect, test, type Page} from '@playwright/test';
 
 const appUrl = '/?enable-flutter-web-semantics=true';
 
+async function waitForAppReady(page: Page) {
+  await expect(page.getByRole('button', {name: 'Open menu'})).toBeVisible();
+  await expect(
+    page.getByRole('group', {name: /\d+ of \d+/}).first(),
+  ).toBeVisible();
+  await expect(page.getByText('Error loading presentation')).toHaveCount(0);
+}
+
+async function openApp(page: Page) {
+  await page.goto(appUrl, {waitUntil: 'domcontentloaded'});
+  await waitForAppReady(page);
+  await page.waitForTimeout(250);
+}
+
+async function clickSemanticsButton(page: Page, label: string) {
+  await page.evaluate((semanticLabel) => {
+    const query =
+      `flt-semantics[aria-label="${semanticLabel}"] > flt-semantics[flt-tappable]`;
+    const node = document.querySelector(query);
+    if (!(node instanceof HTMLElement)) {
+      throw new Error(
+        `Could not find tappable semantics node for "${semanticLabel}"`,
+      );
+    }
+    node.click();
+  }, label);
+  await page.waitForTimeout(500);
+}
+
+async function hasSemanticsLabel(page: Page, label: string) {
+  return page.evaluate((semanticLabel) => {
+    return document.querySelector(`flt-semantics[aria-label="${semanticLabel}"]`) !== null;
+  }, label);
+}
+
 async function openMenu(page: Page) {
   await page.getByRole('button', {name: 'Open menu'}).click({force: true});
   await expect(page.getByRole('button', {name: 'Close menu'})).toBeVisible();
   await expect(page.getByRole('button', {name: 'Next slide'})).toBeVisible();
-}
-
-async function nextSlideByKeyboard(page: Page) {
-  await page.keyboard.down('Meta');
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.up('Meta');
-}
-
-async function previousSlideByKeyboard(page: Page) {
-  await page.keyboard.down('Meta');
-  await page.keyboard.press('ArrowUp');
-  await page.keyboard.up('Meta');
+  await page.waitForTimeout(250);
 }
 
 async function expectSlideCounter(page: Page, slideNumber: number) {
-  await expect(
-    page.getByRole('group', {name: new RegExp(`${slideNumber} of \\d+`)}),
-  ).toBeVisible();
+  await expect
+    .poll(async () => (await readSlideCounter(page)).current)
+    .toBe(slideNumber);
 }
 
-async function readSlideCounter(page: Page): Promise<{current: number; total: number}> {
-  const counter = page.getByRole('group', {name: /\d+ of \d+/}).first();
-  await expect(counter).toBeVisible();
-
-  const label = (await counter.getAttribute('aria-label')) ?? (await counter.textContent()) ?? '';
+async function readSlideCounter(
+  page: Page,
+): Promise<{current: number; total: number}> {
+  const label = await page.evaluate(() => {
+    const nodes = Array.from(document.querySelectorAll('flt-semantics[aria-label]'));
+    const matches = nodes
+      .map((node) => node.getAttribute('aria-label') ?? '')
+      .filter((value) => /\d+\s+of\s+\d+/i.test(value));
+    return matches.at(-1) ?? '';
+  });
   const match = label.match(/(\d+)\s+of\s+(\d+)/i);
   if (!match) {
     throw new Error(`Could not parse slide counter from "${label}"`);
@@ -43,7 +72,7 @@ async function readSlideCounter(page: Page): Promise<{current: number; total: nu
 }
 
 test('app boots without error UI', async ({page}) => {
-  await page.goto(appUrl);
+  await openApp(page);
 
   const counter = await readSlideCounter(page);
   expect(counter.current).toBe(1);
@@ -51,15 +80,16 @@ test('app boots without error UI', async ({page}) => {
   await expect(page.getByText('Error loading presentation')).toHaveCount(0);
 });
 
-test('keyboard navigation advances slide', async ({page}) => {
-  await page.goto(appUrl);
+test('menu navigation advances slide', async ({page}) => {
+  await openApp(page);
   const {total} = await readSlideCounter(page);
+  await openMenu(page);
 
-  await nextSlideByKeyboard(page);
   if (total > 1) {
+    await clickSemanticsButton(page, 'Next slide');
     await expectSlideCounter(page, 2);
 
-    await previousSlideByKeyboard(page);
+    await clickSemanticsButton(page, 'Previous slide');
     await expectSlideCounter(page, 1);
     return;
   }
@@ -68,22 +98,35 @@ test('keyboard navigation advances slide', async ({page}) => {
 });
 
 test('panel controls support mouse interactions', async ({page}) => {
-  await page.goto(appUrl);
+  await openApp(page);
   await openMenu(page);
-  await expect(page.getByRole('button', {name: 'Open notes panel'})).toBeVisible();
+
+  const openNotesButton = page.getByRole('button', {name: 'Open notes panel'});
+  await expect(openNotesButton).toBeVisible();
   await expect(page.getByRole('button', {name: 'Export PDF'})).toBeVisible();
   await expect(page.getByRole('button', {name: 'Close menu'})).toBeVisible();
+
+  await clickSemanticsButton(page, 'Open notes panel');
+
+  await expect.poll(() => hasSemanticsLabel(page, 'Close notes panel')).toBe(
+    true,
+  );
+  await clickSemanticsButton(page, 'Close notes panel');
+  await expect.poll(() => hasSemanticsLabel(page, 'Open notes panel')).toBe(
+    true,
+  );
 });
 
 test('menu exposes regenerate thumbnails action', async ({page}) => {
-  await page.goto(appUrl);
+  await openApp(page);
   await openMenu(page);
 
   const regenerateButton = page.getByRole('button', {
     name: 'Regenerate thumbnails',
   });
   await expect(regenerateButton).toBeVisible();
-  await regenerateButton.dispatchEvent('click');
+  await clickSemanticsButton(page, 'Regenerate thumbnails');
+  await expect(page.getByText('Error loading presentation')).toHaveCount(0);
 });
 
 test('asset-heavy slide renders without fatal console/network errors', async ({
@@ -102,10 +145,11 @@ test('asset-heavy slide renders without fatal console/network errors', async ({
     failedRequests.push(request.url());
   });
 
-  await page.goto(appUrl);
+  await openApp(page);
   const {total} = await readSlideCounter(page);
   if (total > 1) {
-    await nextSlideByKeyboard(page);
+    await openMenu(page);
+    await clickSemanticsButton(page, 'Next slide');
     await expectSlideCounter(page, 2);
   } else {
     await expectSlideCounter(page, 1);
