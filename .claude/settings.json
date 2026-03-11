@@ -1,5 +1,25 @@
 {
   "permissions": {
-    "allow": ["Bash(fvm dart:*)", "Bash(fvm flutter:*)"]
+    "allow": [
+      "Bash(fvm dart:*)",
+      "Bash(fvm flutter:*)",
+      "Bash(melos:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(ls:*)",
+      "Bash(tree:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(test:*)",
+      "Bash(sort:*)",
+      "Bash(wc:*)",
+      "Bash(dcm:*)",
+      "Read(//Users/leofarias/.pub-cache/**)"
+    ]
   }
 }

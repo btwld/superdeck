@@ -19,7 +19,7 @@ This is a Melos monorepo with the following packages:
 packages/
   core/       # Rendering primitives, Markdown parsing, schema validation (Dart-only)
   superdeck/  # Flutter widgets and presentation components
-  cli/        # superdeck CLI tool (setup, build, watch)
+  cli/        # superdeck CLI tool (setup, build, publish, version)
   builder/    # Code generators and build_runner integration
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
@@ -35,7 +35,7 @@ docs/         # User-facing documentation (MDX format)
 
 ## Environment Setup
 
-This project uses FVM (Flutter Version Management) pinned via `.fvmrc`:
+This project uses FVM (Flutter Version Management) configured via `.fvmrc` (tracks `stable` channel):
 
 ```bash
 fvm use --force
@@ -117,6 +117,7 @@ melos run clean            # Clean all Flutter build artifacts
 
 ## Key Dependencies
 
+- **dart_mappable**: Model serialization and discriminated unions
 - **mix/remix**: UI styling framework used throughout
 - **signals/signals_flutter**: Reactive state management
 - **ack**: Schema validation for YAML configuration
@@ -129,12 +130,11 @@ melos run clean            # Clean all Flutter build artifacts
 The project uses Signals for reactive state management. `DeckController` is the central state manager for presentations.
 
 ### Block System
-Slides are composed of "blocks" defined by `@blockname` annotations in Markdown:
-- `@block` - Markdown content blocks
-- `@image` - Image blocks
-- `@code` - Syntax-highlighted code
-- `@mermaid` - Mermaid diagrams
-- `@widget` - Custom Flutter widgets
+Slides use `@tag` directives in Markdown to define layout and content:
+- `@section` - Groups child blocks into a horizontal section
+- `@block` - Markdown content block
+- `@widget` - Named Flutter widget block
+- Any unrecognized `@name` becomes a `WidgetBlock` (e.g., `@image`, `@code`, `@mermaid`)
 
 ### Style System
 Styles are defined in YAML and validated against schemas. See `packages/core` for style schema definitions.
