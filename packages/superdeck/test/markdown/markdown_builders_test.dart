@@ -238,7 +238,7 @@ class _MarkdownHarness extends StatelessWidget {
     final slideConfiguration = SlideConfiguration(
       slideIndex: 0,
       style: SlideStyle(),
-      slide: const Slide(key: 'slide'),
+      slide: Slide(key: 'slide'),
       thumbnailFile: 'thumb.png',
     );
 

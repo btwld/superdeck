@@ -415,6 +415,27 @@ void main() {
         expect(GeneratedAsset.schema.safeParse(invalid).isOk, isFalse);
       });
     });
+
+    group('parse', () {
+      test('parses valid input', () {
+        final asset = GeneratedAsset.parse({
+          'name': 'test',
+          'extension': 'png',
+          'type': 'thumbnail',
+        });
+
+        expect(asset.name, 'test');
+        expect(asset.extension, AssetExtension.png);
+        expect(asset.type, 'thumbnail');
+      });
+
+      test('throws AckException when required fields are missing', () {
+        expect(
+          () => GeneratedAsset.parse({'extension': 'png', 'type': 'thumbnail'}),
+          throwsA(isA<AckException>()),
+        );
+      });
+    });
   });
 
   group('GeneratedAssetsReference', () {
@@ -430,6 +451,18 @@ void main() {
 
         expect(ref.lastModified, lastModified);
         expect(ref.files, files);
+      });
+
+      test('files is unmodifiable', () {
+        final ref = GeneratedAssetsReference(
+          lastModified: DateTime(2024, 1, 1),
+          files: ['file1.png'],
+        );
+
+        expect(
+          () => (ref.files as List).add('file2.png'),
+          throwsUnsupportedError,
+        );
       });
     });
 
@@ -498,6 +531,24 @@ void main() {
         expect(ref.files, ['file1.png', 'file2.jpeg']);
       });
 
+      test('fromMap throws when last_modified is missing', () {
+        expect(
+          () => GeneratedAssetsReference.fromMap({
+            'files': ['file.png'],
+          }),
+          throwsA(isA<TypeError>()),
+        );
+      });
+
+      test('fromMap throws when files is missing', () {
+        expect(
+          () => GeneratedAssetsReference.fromMap({
+            'last_modified': '2024-06-20T08:15:30.000Z',
+          }),
+          throwsA(isA<TypeError>()),
+        );
+      });
+
       test('round-trip serialization preserves data', () {
         final original = GeneratedAssetsReference(
           lastModified: DateTime.utc(2024, 12, 25, 23, 59, 59),
@@ -520,6 +571,66 @@ void main() {
         final restored = GeneratedAssetsReference.fromMap(ref.toMap());
 
         expect(restored.files, isEmpty);
+      });
+    });
+
+    group('schema', () {
+      test('validates correct structure', () {
+        expect(
+          GeneratedAssetsReference.schema.safeParse({
+            'last_modified': '2024-06-20T08:15:30.000Z',
+            'files': ['file1.png', 'file2.jpeg'],
+          }).isOk,
+          isTrue,
+        );
+      });
+
+      test('rejects missing last_modified', () {
+        expect(
+          GeneratedAssetsReference.schema.safeParse({
+            'files': ['file1.png'],
+          }).isOk,
+          isFalse,
+        );
+      });
+
+      test('rejects missing files', () {
+        expect(
+          GeneratedAssetsReference.schema.safeParse({
+            'last_modified': '2024-06-20T08:15:30.000Z',
+          }).isOk,
+          isFalse,
+        );
+      });
+    });
+
+    group('parse', () {
+      test('parses valid input', () {
+        final ref = GeneratedAssetsReference.parse({
+          'last_modified': '2024-06-20T08:15:30.000Z',
+          'files': ['file1.png', 'file2.jpeg'],
+        });
+
+        expect(ref.lastModified, DateTime.utc(2024, 6, 20, 8, 15, 30));
+        expect(ref.files, ['file1.png', 'file2.jpeg']);
+      });
+
+      test('throws AckException when last_modified is missing', () {
+        expect(
+          () => GeneratedAssetsReference.parse({
+            'files': ['file1.png'],
+          }),
+          throwsA(isA<AckException>()),
+        );
+      });
+
+      test('throws AckException when files is missing', () {
+        expect(
+          () => GeneratedAssetsReference.parse({
+            'last_modified': '2024-06-20T08:15:30.000Z',
+          }),
+          throwsA(isA<AckException>()),
+        );
       });
     });
 

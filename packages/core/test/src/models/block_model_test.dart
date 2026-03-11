@@ -407,7 +407,7 @@ void main() {
 
         test('throws on invalid alignment', () {
           final map = {'type': 'column', 'align': 'invalid'};
-          expect(() => ContentBlock.fromMap(map), throwsException);
+          expect(() => ContentBlock.fromMap(map), throwsArgumentError);
         });
       });
 
@@ -489,6 +489,15 @@ void main() {
 
         expect(section.blocks.length, 2);
         expect((section.blocks[0] as ContentBlock).content, 'A');
+      });
+
+      test('blocks is unmodifiable', () {
+        final section = SectionBlock([ContentBlock('A')]);
+
+        expect(
+          () => (section.blocks as List).add(ContentBlock('B')),
+          throwsUnsupportedError,
+        );
       });
 
       test('creates with all parameters', () {
@@ -641,6 +650,23 @@ void main() {
         expect(() => widget.args['newKey'] = 'fail', throwsUnsupportedError);
       });
 
+      group('constructor validation', () {
+        test('throws ArgumentError when args contain reserved keys', () {
+          for (final reservedKey in const [
+            'type',
+            'name',
+            'align',
+            'flex',
+            'scrollable',
+          ]) {
+            expect(
+              () => WidgetBlock(name: 'Test', args: {reservedKey: 'invalid'}),
+              throwsArgumentError,
+            );
+          }
+        });
+      });
+
       group('copyWith', () {
         test('copies with new name', () {
           final original = WidgetBlock(name: 'Original');
@@ -695,6 +721,24 @@ void main() {
           expect(map['customKey'], 'customValue');
           expect(map['count'], 5);
         });
+
+        test('serializes reserved fields and custom args together', () {
+          final widget = WidgetBlock(
+            name: 'ReservedName',
+            align: ContentAlignment.center,
+            flex: 2,
+            scrollable: true,
+            args: {'custom': 'value'},
+          );
+          final map = widget.toMap();
+
+          expect(map['type'], 'widget');
+          expect(map['name'], 'ReservedName');
+          expect(map['align'], 'center');
+          expect(map['flex'], 2);
+          expect(map['scrollable'], true);
+          expect(map['custom'], 'value');
+        });
       });
 
       group('fromMap', () {
@@ -727,6 +771,24 @@ void main() {
           expect(widget.args['otherKey'], 123);
           expect(widget.args.containsKey('type'), isFalse);
           expect(widget.args.containsKey('name'), isFalse);
+        });
+
+        test('strips reserved fields from args', () {
+          final widget = WidgetBlock.fromMap({
+            'type': 'widget',
+            'name': 'MyWidget',
+            'align': 'center',
+            'flex': 3,
+            'scrollable': true,
+            'custom': 'value',
+          });
+
+          expect(widget.args.containsKey('type'), isFalse);
+          expect(widget.args.containsKey('name'), isFalse);
+          expect(widget.args.containsKey('align'), isFalse);
+          expect(widget.args.containsKey('flex'), isFalse);
+          expect(widget.args.containsKey('scrollable'), isFalse);
+          expect(widget.args['custom'], 'value');
         });
       });
 

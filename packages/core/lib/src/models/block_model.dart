@@ -1,11 +1,16 @@
-import 'package:collection/collection.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+
+import 'mappers.dart';
+
+part 'block_model.mapper.dart';
 
 /// Base class for all content blocks in a slide.
 ///
 /// Blocks are the fundamental building units of slide content. They can be
 /// arranged in sections and support alignment, flexible sizing, and scrolling.
-sealed class Block {
+@MappableClass(discriminatorKey: 'type', hook: BlockDiscriminatorHook())
+sealed class Block with BlockMappable {
   /// The type identifier for this block.
   final String type;
 
@@ -36,10 +41,8 @@ sealed class Block {
   /// Parses a block from a JSON map.
   ///
   /// Automatically determines the block type from the discriminator key.
-  static Block parse(Map<String, Object?> map) {
-    discriminatedSchema.parse(map);
-    return fromMap(map);
-  }
+  static Block parse(Map<String, Object?> map) =>
+      fromMap(discriminatedSchema.parse(map)!);
 
   /// Schema for discriminated union of block types.
   ///
@@ -55,7 +58,6 @@ sealed class Block {
   );
 
   Map<String, Object?> toMap();
-  Block copyWith({ContentAlignment? align, int? flex, bool? scrollable});
 
   static Block fromMap(Map<String, Object?> map) {
     final type = map['type'] as String;
@@ -66,18 +68,13 @@ sealed class Block {
       _ => throw ArgumentError('Unknown block type: $type'),
     };
   }
-
-  @override
-  bool operator ==(Object other);
-
-  @override
-  int get hashCode;
 }
 
 /// A block that contains multiple child blocks arranged horizontally.
 ///
 /// Sections are used to create multi-column layouts within a slide.
-class SectionBlock extends Block {
+@MappableClass(discriminatorValue: SectionBlock.key)
+class SectionBlock extends Block with SectionBlockMappable {
   /// The child blocks contained in this section.
   final List<Block> blocks;
 
@@ -85,27 +82,12 @@ class SectionBlock extends Block {
   static const key = 'section';
 
   SectionBlock(List<Block>? blocks, {super.align, super.flex, super.scrollable})
-    : blocks = blocks ?? [],
+    : blocks = List.unmodifiable(blocks ?? const []),
       super(type: key);
 
   /// The total flex value of all child blocks.
   int get totalBlockFlex {
     return blocks.fold(0, (total, block) => total + block.flex);
-  }
-
-  @override
-  SectionBlock copyWith({
-    List<Block>? blocks,
-    ContentAlignment? align,
-    int? flex,
-    bool? scrollable,
-  }) {
-    return SectionBlock(
-      blocks ?? this.blocks,
-      align: align ?? this.align,
-      flex: flex ?? this.flex,
-      scrollable: scrollable ?? this.scrollable,
-    );
   }
 
   @override
@@ -122,7 +104,7 @@ class SectionBlock extends Block {
   static SectionBlock fromMap(Map<String, Object?> map) {
     return SectionBlock(
       (map['blocks'] as List<dynamic>?)
-          ?.map((e) => Block.fromMap(e as Map<String, Object?>))
+          ?.map((e) => Block.fromMap(Map<String, Object?>.from(e as Map)))
           .toList(),
       align: map['align'] != null
           ? ContentAlignment.fromJson(map['align']!)
@@ -133,10 +115,8 @@ class SectionBlock extends Block {
   }
 
   /// Parses a section block from a JSON map.
-  static SectionBlock parse(Map<String, Object?> map) {
-    schema.parse(map);
-    return fromMap(map);
-  }
+  static SectionBlock parse(Map<String, Object?> map) =>
+      fromMap(schema.parse(map)!);
 
   /// Creates a section block with a single text column.
   static SectionBlock text(String content) {
@@ -150,26 +130,6 @@ class SectionBlock extends Block {
     'scrollable': Ack.boolean().optional(),
     'blocks': Ack.list(Block.discriminatedSchema).optional(),
   }, additionalProperties: true);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SectionBlock &&
-          runtimeType == other.runtimeType &&
-          type == other.type &&
-          align == other.align &&
-          flex == other.flex &&
-          scrollable == other.scrollable &&
-          const DeepCollectionEquality().equals(blocks, other.blocks);
-
-  @override
-  int get hashCode => Object.hash(
-    type,
-    align,
-    flex,
-    scrollable,
-    const DeepCollectionEquality().hash(blocks),
-  );
 }
 
 /// Alias used by generated Ack model schemas for [SectionBlock] references.
@@ -178,7 +138,8 @@ final sectionBlockSchema = SectionBlock.schema;
 /// A block that displays markdown content.
 ///
 /// This is the most common block type, used for text and markdown content.
-class ContentBlock extends Block {
+@MappableClass(discriminatorValue: ContentBlock.key)
+class ContentBlock extends Block with ContentBlockMappable {
   /// The type identifier for content blocks.
   static const key = 'block';
 
@@ -193,21 +154,6 @@ class ContentBlock extends Block {
       super(type: key);
 
   @override
-  ContentBlock copyWith({
-    String? content,
-    ContentAlignment? align,
-    int? flex,
-    bool? scrollable,
-  }) {
-    return ContentBlock(
-      content ?? this.content,
-      align: align ?? this.align,
-      flex: flex ?? this.flex,
-      scrollable: scrollable ?? this.scrollable,
-    );
-  }
-
-  @override
   Map<String, Object?> toMap() {
     return {
       'type': type,
@@ -219,18 +165,14 @@ class ContentBlock extends Block {
   }
 
   static ContentBlock fromMap(Map<String, Object?> map) {
-    try {
-      return ContentBlock(
-        map['content'] as String?,
-        align: map['align'] != null
-            ? ContentAlignment.fromJson(map['align']!)
-            : null,
-        flex: (map['flex'] as num?)?.toInt() ?? 1,
-        scrollable: map['scrollable'] as bool? ?? false,
-      );
-    } catch (e) {
-      throw Exception('Failed to parse ContentBlock: $e');
-    }
+    return ContentBlock(
+      map['content'] as String?,
+      align: map['align'] != null
+          ? ContentAlignment.fromJson(map['align']!)
+          : null,
+      flex: (map['flex'] as num?)?.toInt() ?? 1,
+      scrollable: map['scrollable'] as bool? ?? false,
+    );
   }
 
   /// Validation schema for content blocks.
@@ -241,21 +183,12 @@ class ContentBlock extends Block {
     'content': Ack.string().optional(),
   }, additionalProperties: true);
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ContentBlock &&
-          runtimeType == other.runtimeType &&
-          type == other.type &&
-          align == other.align &&
-          flex == other.flex &&
-          scrollable == other.scrollable &&
-          content == other.content;
-
-  @override
-  int get hashCode => Object.hash(type, align, flex, scrollable, content);
+  /// Parses a content block from a JSON map with schema validation.
+  static ContentBlock parse(Map<String, Object?> map) =>
+      fromMap(schema.parse(map)!);
 }
 
+@MappableEnum()
 enum DartPadTheme {
   dark,
   light;
@@ -277,6 +210,7 @@ enum DartPadTheme {
   }
 }
 
+@MappableEnum()
 enum ImageFit {
   fill,
   contain,
@@ -303,8 +237,14 @@ enum ImageFit {
   }
 }
 
-class WidgetBlock extends Block {
+@MappableClass(
+  discriminatorValue: WidgetBlock.key,
+  hook: UnmappedPropertiesHook('args'),
+)
+class WidgetBlock extends Block with WidgetBlockMappable {
   static const key = 'widget';
+  static const _reservedKeys = {'type', 'name', 'align', 'flex', 'scrollable'};
+
   final Map<String, Object?> args;
   final String name;
 
@@ -315,53 +255,40 @@ class WidgetBlock extends Block {
     super.flex,
     super.scrollable,
   }) : args = args == null ? const {} : Map.unmodifiable(args),
-       super(type: key);
-
-  @override
-  WidgetBlock copyWith({
-    String? name,
-    Map<String, Object?>? args,
-    ContentAlignment? align,
-    int? flex,
-    bool? scrollable,
-  }) {
-    return WidgetBlock(
-      name: name ?? this.name,
-      args: args ?? this.args,
-      align: align ?? this.align,
-      flex: flex ?? this.flex,
-      scrollable: scrollable ?? this.scrollable,
-    );
+       super(type: key) {
+    final collision = this.args.keys.where(_reservedKeys.contains).toList();
+    if (collision.isNotEmpty) {
+      throw ArgumentError(
+        'WidgetBlock args must not contain reserved keys: $collision',
+      );
+    }
   }
 
   @override
   Map<String, Object?> toMap() {
     return {
+      ...args,
       'type': type,
       if (align != null) 'align': align!.name,
       'flex': flex,
       'scrollable': scrollable,
       'name': name,
-      ...args, // Unmapped properties hook: spread args into the map
     };
   }
 
   static WidgetBlock fromMap(Map<String, Object?> map) {
-    // Extract known fields
     final name = map['name'] as String;
     final align = map['align'] != null
         ? ContentAlignment.fromJson(map['align']!)
         : null;
     final flex = (map['flex'] as num?)?.toInt() ?? 1;
     final scrollable = map['scrollable'] as bool? ?? false;
-
-    // Everything else goes into args (implementing UnmappedPropertiesHook behavior)
-    final args = Map<String, Object?>.from(map);
-    args.remove('type');
-    args.remove('align');
-    args.remove('flex');
-    args.remove('scrollable');
-    args.remove('name');
+    final args = Map<String, Object?>.from(map)
+      ..remove('type')
+      ..remove('align')
+      ..remove('flex')
+      ..remove('scrollable')
+      ..remove('name');
 
     return WidgetBlock(
       name: name,
@@ -379,29 +306,12 @@ class WidgetBlock extends Block {
     'name': Ack.string(),
   }, additionalProperties: true);
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is WidgetBlock &&
-          runtimeType == other.runtimeType &&
-          type == other.type &&
-          align == other.align &&
-          flex == other.flex &&
-          scrollable == other.scrollable &&
-          name == other.name &&
-          const MapEquality().equals(args, other.args);
-
-  @override
-  int get hashCode => Object.hash(
-    type,
-    align,
-    flex,
-    scrollable,
-    name,
-    const MapEquality().hash(args),
-  );
+  /// Parses a widget block from a JSON map with schema validation.
+  static WidgetBlock parse(Map<String, Object?> map) =>
+      fromMap(schema.parse(map)!);
 }
 
+@MappableEnum()
 enum ContentAlignment {
   topLeft,
   topCenter,

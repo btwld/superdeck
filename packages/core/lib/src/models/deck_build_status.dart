@@ -1,3 +1,8 @@
+import 'package:dart_mappable/dart_mappable.dart';
+
+part 'deck_build_status.mapper.dart';
+
+@MappableEnum()
 enum DeckBuildPhase {
   unknown,
   building,
@@ -23,7 +28,8 @@ enum DeckBuildPhase {
   }
 }
 
-final class DeckBuildError {
+@MappableClass()
+final class DeckBuildError with DeckBuildErrorMappable {
   final String type;
   final String message;
   final String? stackTrace;
@@ -42,40 +48,39 @@ final class DeckBuildError {
     };
   }
 
+  static DeckBuildError fromMap(Map<String, Object?> map) {
+    return DeckBuildErrorMapper.fromMap(map.cast<String, dynamic>());
+  }
+
   static DeckBuildError? fromObject(Object? value) {
-    if (value is! Map<String, Object?>) {
+    if (value is! Map) {
       return null;
     }
 
-    final type = value['type'];
-    final message = value['message'];
+    final map = Map<String, Object?>.from(value);
+    final type = map['type'];
+    final message = map['message'];
+    final stackTrace = map['stackTrace'];
 
     if (type is! String || message is! String) {
       return null;
     }
 
-    final stackTrace = value['stackTrace'];
-    return DeckBuildError(
-      type: type,
-      message: message,
-      stackTrace: stackTrace is String ? stackTrace : null,
-    );
+    try {
+      return fromMap({
+        'type': type,
+        'message': message,
+        if (stackTrace is String) 'stackTrace': stackTrace,
+      });
+    } on Object {
+      return null;
+    }
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DeckBuildError &&
-          runtimeType == other.runtimeType &&
-          type == other.type &&
-          message == other.message &&
-          stackTrace == other.stackTrace;
-
-  @override
-  int get hashCode => Object.hash(type, message, stackTrace);
 }
 
-final class DeckBuildStatus {
+@MappableClass()
+final class DeckBuildStatus with DeckBuildStatusMappable {
+  @MappableField(key: 'status')
   final DeckBuildPhase phase;
   final DateTime timestamp;
   final int? slideCount;
@@ -97,12 +102,18 @@ final class DeckBuildStatus {
     };
   }
 
+  static DeckBuildStatus fromMap(Map<String, Object?> map) {
+    return DeckBuildStatusMapper.fromMap(map.cast<String, dynamic>());
+  }
+
   static DeckBuildStatus? fromObject(Object? value) {
-    if (value is! Map<String, Object?>) {
+    if (value is! Map) {
       return null;
     }
 
-    final timestampRaw = value['timestamp'];
+    final map = Map<String, Object?>.from(value);
+
+    final timestampRaw = map['timestamp'];
     if (timestampRaw is! String) {
       return null;
     }
@@ -112,27 +123,20 @@ final class DeckBuildStatus {
       return null;
     }
 
-    final slideCountRaw = value['slideCount'];
+    final slideCountRaw = map['slideCount'];
     final slideCount = slideCountRaw is int ? slideCountRaw : null;
 
-    return DeckBuildStatus(
-      phase: DeckBuildPhase.fromWireValue(value['status']),
-      timestamp: timestamp,
-      slideCount: slideCount,
-      error: DeckBuildError.fromObject(value['error']),
-    );
+    final parsedError = DeckBuildError.fromObject(map['error']);
+
+    try {
+      return fromMap({
+        'status': DeckBuildPhase.fromWireValue(map['status']).name,
+        'timestamp': timestamp.toIso8601String(),
+        if (slideCount != null) 'slideCount': slideCount,
+        if (parsedError != null) 'error': parsedError.toMap(),
+      });
+    } on Object {
+      return null;
+    }
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DeckBuildStatus &&
-          runtimeType == other.runtimeType &&
-          phase == other.phase &&
-          timestamp == other.timestamp &&
-          slideCount == other.slideCount &&
-          error == other.error;
-
-  @override
-  int get hashCode => Object.hash(phase, timestamp, slideCount, error);
 }

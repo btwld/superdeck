@@ -82,7 +82,7 @@ void main() {
       'saveReferences retains last_modified when asset files are unchanged',
       () async {
         final deck = Deck(
-          slides: [const Slide(key: 'intro')],
+          slides: [Slide(key: 'intro')],
           configuration: config,
         );
 
