@@ -33,7 +33,7 @@ export 'package:superdeck/src/deck/widget_definition.dart';
 export 'package:superdeck/src/export/async_thumbnail.dart';
 
 // Built-in Widgets
-export 'package:superdeck/src/widgets/widgets.dart';
+export 'package:superdeck/src/builtins/widgets.dart';
 
 // Core
 export 'package:superdeck_core/superdeck_core.dart';

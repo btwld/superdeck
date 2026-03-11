@@ -1,6 +1,6 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../widgets/widgets.dart';
+import '../builtins/widgets.dart';
 import 'deck_options.dart';
 import 'slide_configuration.dart';
 import 'template_resolver.dart';
