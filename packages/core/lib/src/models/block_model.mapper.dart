@@ -243,8 +243,6 @@ class BlockMapper extends ClassMapperBase<Block> {
     #scrollable: _f$scrollable,
   };
 
-  @override
-  final MappingHook hook = const BlockDiscriminatorHook();
   static Block _instantiate(DecodingData data) {
     throw MapperException.missingSubclass(
       'Block',
@@ -339,9 +337,6 @@ class SectionBlockMapper extends SubClassMapperBase<SectionBlock> {
   final dynamic discriminatorValue = SectionBlock.key;
   @override
   late final ClassMapperBase superMapper = BlockMapper.ensureInitialized();
-
-  @override
-  final MappingHook superHook = const BlockDiscriminatorHook();
 
   static SectionBlock _instantiate(DecodingData data) {
     return SectionBlock(
@@ -520,9 +515,6 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
   @override
   late final ClassMapperBase superMapper = BlockMapper.ensureInitialized();
 
-  @override
-  final MappingHook superHook = const BlockDiscriminatorHook();
-
   static ContentBlock _instantiate(DecodingData data) {
     return ContentBlock(
       data.dec(_f$content),
@@ -698,9 +690,6 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
 
   @override
   final MappingHook hook = const UnmappedPropertiesHook('args');
-  @override
-  final MappingHook superHook = const BlockDiscriminatorHook();
-
   static WidgetBlock _instantiate(DecodingData data) {
     return WidgetBlock(
       name: data.dec(_f$name),

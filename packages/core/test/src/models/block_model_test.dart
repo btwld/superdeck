@@ -365,7 +365,7 @@ void main() {
 
       group('fromMap', () {
         test('deserializes minimal map', () {
-          final map = {'type': 'column'};
+          final map = {'type': 'block'};
           final block = ContentBlock.fromMap(map);
 
           expect(block.content, '');
@@ -376,7 +376,7 @@ void main() {
 
         test('deserializes full map', () {
           final map = {
-            'type': 'column',
+            'type': 'block',
             'content': 'Content',
             'align': 'center',
             'flex': 2,
@@ -399,14 +399,20 @@ void main() {
         });
 
         test('handles numeric flex as double', () {
-          final map = {'type': 'column', 'flex': 2.0};
+          final map = {'type': 'block', 'flex': 2.0};
           final block = ContentBlock.fromMap(map);
 
           expect(block.flex, 2);
         });
 
         test('throws on invalid alignment', () {
-          final map = {'type': 'column', 'align': 'invalid'};
+          final map = {'type': 'block', 'align': 'invalid'};
+          expect(() => ContentBlock.fromMap(map), throwsArgumentError);
+        });
+
+        test('rejects legacy column type', () {
+          final map = {'type': 'column', 'content': 'Legacy'};
+
           expect(() => ContentBlock.fromMap(map), throwsArgumentError);
         });
       });
@@ -454,7 +460,7 @@ void main() {
         test('validates minimal block', () {
           // Note: 'content' is required to satisfy Google AI schema requirements
           final result = ContentBlock.schema.safeParse({
-            'type': 'column',
+            'type': 'block',
             'content': '',
           });
           expect(result.isOk, isTrue);
@@ -462,13 +468,22 @@ void main() {
 
         test('validates full block', () {
           final result = ContentBlock.schema.safeParse({
-            'type': 'column',
+            'type': 'block',
             'content': 'Content',
             'align': 'center',
             'flex': 2,
             'scrollable': true,
           });
           expect(result.isOk, isTrue);
+        });
+
+        test('rejects legacy column type', () {
+          final result = ContentBlock.schema.safeParse({
+            'type': 'column',
+            'content': 'Content',
+          });
+
+          expect(result.isOk, isFalse);
         });
       });
     });
@@ -586,7 +601,7 @@ void main() {
           final map = {
             'type': 'section',
             'blocks': [
-              {'type': 'column', 'content': 'Test'},
+              {'type': 'block', 'content': 'Test'},
             ],
           };
           final section = SectionBlock.fromMap(map);
@@ -835,12 +850,18 @@ void main() {
 
     group('Block', () {
       group('fromMap', () {
-        test('creates ContentBlock from column type', () {
-          final map = {'type': 'column', 'content': 'Test'};
+        test('creates ContentBlock from block type', () {
+          final map = {'type': 'block', 'content': 'Test'};
           final block = Block.fromMap(map);
 
           expect(block, isA<ContentBlock>());
           expect((block as ContentBlock).content, 'Test');
+        });
+
+        test('rejects legacy column type', () {
+          final map = {'type': 'column', 'content': 'Test'};
+
+          expect(() => Block.fromMap(map), throwsArgumentError);
         });
 
         test('creates SectionBlock from section type', () {
@@ -866,10 +887,16 @@ void main() {
 
       group('parse', () {
         test('parses ContentBlock', () {
-          final map = {'type': 'column', 'content': 'Parsed'};
+          final map = {'type': 'block', 'content': 'Parsed'};
           final block = Block.parse(map);
 
           expect(block, isA<ContentBlock>());
+        });
+
+        test('rejects legacy column type', () {
+          final map = {'type': 'column', 'content': 'Parsed'};
+
+          expect(() => Block.parse(map), throwsA(anything));
         });
 
         test('parses WidgetBlock', () {
@@ -881,9 +908,9 @@ void main() {
       });
 
       group('schema', () {
-        test('validates column block', () {
+        test('validates content block', () {
           final result = Block.schema.safeParse({
-            'type': 'column',
+            'type': 'block',
             'content': 'Test',
           });
           expect(result.isOk, isTrue);

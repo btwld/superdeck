@@ -194,7 +194,7 @@ void main() {
                     'type': 'section',
                     'flex': 2,
                     'blocks': [
-                      {'type': 'column', 'content': 'Block 1', 'flex': 1},
+                      {'type': 'block', 'content': 'Block 1', 'flex': 1},
                       {'type': 'widget', 'name': 'image', 'src': 'test.png'},
                     ],
                   },

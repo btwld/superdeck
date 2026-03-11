@@ -29,7 +29,7 @@ String _uniquifyKey(
 /// runtime by flutter_markdown_plus, not during the build phase.
 ///
 /// See also:
-/// - [SectionParser] - Stage 2: Parses @section/@column directives into layout structure
+/// - [SectionParser] - Stage 2: Parses @section/@block directives into layout structure
 class MarkdownParser {
   const MarkdownParser();
 

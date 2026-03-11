@@ -28,9 +28,8 @@ final class DeckConfiguration with DeckConfigurationMappable {
   String get _assets => assetsPath ?? 'assets';
   String get _slides => slidesPath ?? 'slides.md';
 
-  late final superdeckDir = Directory(
-    p.normalize(p.join(_baseDir, _outputDir)),
-  );
+  Directory get superdeckDir =>
+      Directory(p.normalize(p.join(_baseDir, _outputDir)));
 
   File get deckJson => File(p.join(superdeckDir.path, 'superdeck.json'));
   File get deckFullJson =>

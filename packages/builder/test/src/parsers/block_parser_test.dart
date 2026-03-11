@@ -345,11 +345,11 @@ Test content 2
       ),
     ],
   },
-  // does not match {@column}
+  // does not match {@block}
   {
-    'description': 'Test Case 10: Does not match @column',
+    'description': 'Test Case 10: Does not match @block',
     'input': '''
-{@column}
+{@block}
 ''',
     'expectedBlocks': [],
   },
@@ -448,7 +448,7 @@ void main() {
       );
     });
 
-    test('normalizes @block tag to ContentBlock key', () {
+    test('@block produces a ContentBlock', () {
       const text = '''
 @block
 Some markdown content
@@ -464,30 +464,29 @@ More content
 
       expect(blocks.length, 2);
 
-      // First @block block
-      expect(blocks[0].type, 'block'); // Original type
-      expect(blocks[0].data['type'], 'block'); // Normalized to ContentBlock.key
-
-      // Second @block block with options
+      expect(blocks[0].type, 'block');
+      expect(blocks[0].data['type'], 'block');
       expect(blocks[1].type, 'block');
       expect(blocks[1].data['type'], 'block');
       expect(blocks[1].data['align'], 'center');
       expect(blocks[1].data['flex'], 2);
     });
 
-    test('both @column and @block produce same ContentBlock type', () {
-      const textColumn = '@column{flex: 1}';
-      const textBlock = '@block{flex: 1}';
+    test('rejects legacy @column directives', () {
+      const text = '@column{flex: 1}';
 
-      final blocksColumn = const BlockParser().parse(textColumn);
-      final blocksBlock = const BlockParser().parse(textBlock);
-
-      expect(blocksColumn[0].data['type'], blocksBlock[0].data['type']);
       expect(
-        blocksColumn[0].data['type'],
-        'block',
-      ); // Both normalize to ContentBlock.key
-      expect(blocksColumn[0].data['flex'], blocksBlock[0].data['flex']);
+        () => const BlockParser().parse(text),
+        throwsA(
+          isA<DeckFormatException>()
+              .having(
+                (e) => e.message,
+                'message',
+                contains('Unsupported @column directive'),
+              )
+              .having((e) => e.offset, 'offset', 0),
+        ),
+      );
     });
   });
 }

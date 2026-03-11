@@ -415,7 +415,7 @@ void main() {
 @section
 # Header
 
-@column
+@block
 Column content
 ''',
           'frontmatter': {},
@@ -549,7 +549,7 @@ Symbols: ← → ↑ ↓
 @section
 Normal section
 
-@column
+@block
 Normal column
 
 Some content without tag
@@ -696,13 +696,13 @@ More content.
 @section
 ## Section 1
 
-@column{
+@block{
   flex: 1
   align: center
 }
 Column 1 content
 
-@column{
+@block{
   flex: 2
   align: topLeft
 }

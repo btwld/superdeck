@@ -18,7 +18,7 @@ A basic slide with a title and content:
 title: My First Slide
 ---
 
-@column
+@block
 
 # Welcome to SuperDeck
 
@@ -51,7 +51,7 @@ style: overview
 Use these block types when you compose slides:
 
 - `@section` for horizontal layout containers.
-- `@column` for markdown content.
+- `@block` for markdown content.
 - `@widget` for custom Flutter widgets.
 
 For the full syntax and argument reference, see the [Markdown syntax reference](../reference/markdown-syntax).
@@ -71,12 +71,12 @@ Groups blocks horizontally. Use sections to create multi-column layouts.
 }
 ````
 
-### `@column`
+### `@block`
 
 Renders markdown content. Most slides use one or more columns.
 
 ````markdown
-@column {
+@block {
   flex: 2
   align: topLeft
 }
@@ -154,7 +154,7 @@ The widget name becomes the block type (`@metricCard`), and all properties are p
 Use headings, lists, tables, and code blocks as you normally would:
 
 ````markdown
-@column
+@block
 
 # Slide Title
 

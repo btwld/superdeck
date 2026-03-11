@@ -3,7 +3,7 @@
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 # SuperDeck {.heading}
@@ -13,7 +13,7 @@
 
 ## What is SuperDeck? {.heading}
 
-@column
+@block
 
 SuperDeck is a presentation framework that transforms how developers create slides.
 
@@ -24,13 +24,13 @@ SuperDeck is a presentation framework that transforms how developers create slid
 
 ---
 
-@column {
+@block {
   flex: 2
   align: centerLeft
 }
 ### Traditional Tools {.heading}
 
-@column {
+@block {
   flex: 3
 }
 
@@ -53,7 +53,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 ## "Write once, present anywhere. Version control everything." {.heading}
@@ -62,7 +62,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 
 ---
 
-@column {
+@block {
   flex: 2
   align: centerLeft
 }
@@ -70,7 +70,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 
 Edit your slides and see changes instantly - no rebuild needed.
 
-@column {
+@block {
   flex: 3
 }
 
@@ -83,7 +83,7 @@ Edit your slides and see changes instantly - no rebuild needed.
 
 ### Markdown Syntax {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
@@ -92,7 +92,7 @@ Edit your slides and see changes instantly - no rebuild needed.
 
 ## Slide Title {.heading}
 
-@column
+@block
 
 Your content here with **bold**
 and *italic* text.
@@ -108,7 +108,7 @@ and *italic* text.
 
 @section
 
-@column {
+@block {
   flex: 1
 }
 ## Layout System {.heading}
@@ -120,7 +120,7 @@ How SuperDeck organizes content on slides.
   align: topLeft
 }
 
-@column {
+@block {
   flex: 1
 }
 #### Sections
@@ -133,7 +133,7 @@ Horizontal rows that divide the slide vertically.
 }
 ```
 
-@column {
+@block {
   flex: 1
 }
 #### Columns
@@ -141,13 +141,13 @@ Horizontal rows that divide the slide vertically.
 Vertical divisions within sections.
 
 ```markdown
-@column {
+@block {
   flex: 3
   align: center
 }
 ```
 
-@column {
+@block {
   flex: 1
 }
 #### Blocks
@@ -164,7 +164,7 @@ Content containers with markdown or widgets.
 
 ## Layout Types {.heading}
 
-@column
+@block
 
 | Layout | Structure | Best For |
 |--------|-----------|----------|
@@ -180,11 +180,11 @@ Content containers with markdown or widgets.
 
 ### The Block System {.heading}
 
-@column
+@block
 
 SuperDeck uses three core block types:
 
-- **Content Blocks** (`@column`) - Render markdown text, lists, tables
+- **Content Blocks** (`@block`) - Render markdown text, lists, tables
 - **Widget Blocks** (`@widget`) - Embed custom Flutter components
 - **Built-in Widgets** (`@image`, `@dartpad`, `@qrcode`) - Pre-configured widgets
 
@@ -197,7 +197,7 @@ Each block supports:
 
 ### Build Pipeline {.heading}
 
-@column
+@block
 
 ```mermaid
 flowchart LR
@@ -220,13 +220,13 @@ The CLI processes your markdown through multiple stages:
 
 ---
 
-@column {
+@block {
   flex: 2
   align: centerLeft
 }
 ### Getting Started {.heading}
 
-@column {
+@block {
   flex: 3
 }
 
@@ -257,7 +257,7 @@ flutter run -d macos  # or chrome, windows, linux
   flex: 3
 }
 
-@column {
+@block {
   flex: 1
 }
 
@@ -272,7 +272,7 @@ styles:
     primaryColor: '#4CAF50'
 ```
 
-@column {
+@block {
   flex: 1
 }
 
@@ -292,7 +292,7 @@ style: quote
 
 ## Advanced Features {.heading}
 
-@column
+@block
 
 - **Mermaid Diagrams** - Flowcharts, sequences, mind maps
 - **Code Highlighting** - Syntax-aware formatting
@@ -306,7 +306,7 @@ style: quote
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 ## "The best presentation tool is the one that gets out of your way." {.heading}
@@ -324,7 +324,7 @@ style: quote
 
 @section
 
-@column {
+@block {
   align: center
 }
 MIT License | Flutter & Dart

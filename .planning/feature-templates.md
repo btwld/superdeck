@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-Templates provide reusable **chrome configurations** (background, header, footer) bundled with **isolated style systems** for consistent slide presentation. Templates are like Keynote master slides - they define the visual frame and default styling, while users continue writing markdown content using `@section`/`@column` directives normally.
+Templates provide reusable **chrome configurations** (background, header, footer) bundled with **isolated style systems** for consistent slide presentation. Templates are like Keynote master slides - they define the visual frame and default styling, while users continue writing markdown content using `@section`/`@block` directives normally.
 
-**Key Principle:** Templates control the **decorative layer** (chrome + styling), not the content layout. The existing `@section`/`@column` system remains unchanged.
+**Key Principle:** Templates control the **decorative layer** (chrome + styling), not the content layout. The existing `@section`/`@block` system remains unchanged.
 
 ---
 
@@ -12,7 +12,7 @@ Templates provide reusable **chrome configurations** (background, header, footer
 
 ### 1. Template Scope: Chrome Only
 - **Chrome Elements:** Background, header, footer (via `SlideParts`)
-- **NOT in scope:** Slot definitions, layout restructuring, replacing `@section`/`@column`
+- **NOT in scope:** Slot definitions, layout restructuring, replacing `@section`/`@block`
 - **Rationale:** Keep templates simple, focused, and non-invasive to existing markdown authoring
 
 ### 2. Isolated Style Systems
@@ -257,7 +257,7 @@ SlideConfiguration
 SlideView
   ├─ config.parts.background (from template or deck)
   ├─ config.parts.header (from template or deck)
-  ├─ @section/@column content (styled with config.style)
+  ├─ @section/@block content (styled with config.style)
   └─ config.parts.footer (from template or deck)
 ```
 
@@ -634,7 +634,7 @@ Available styles: announcement, quote, emphasis
 
 **1. Keep Templates Focused**
 - Templates should define chrome (visual frame)
-- Let content flow naturally using `@section`/`@column`
+- Let content flow naturally using `@section`/`@block`
 - Don't try to control content layout from templates
 
 **2. Provide Sensible Defaults**
@@ -737,7 +737,7 @@ Available styles: announcement, quote, emphasis
 ## Open Questions (Resolved)
 
 ### ~~Q1: Slot mapping strategy?~~
-**Resolved:** Templates do NOT define slots. Users continue using `@section`/`@column` normally. Templates only affect chrome (background, header, footer).
+**Resolved:** Templates do NOT define slots. Users continue using `@section`/`@block` normally. Templates only affect chrome (background, header, footer).
 
 ### ~~Q2: Template helper return type?~~
 **Resolved:** Not applicable - templates are simple data classes, not helpers/builders.

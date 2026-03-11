@@ -124,42 +124,6 @@
                             ],
                             "type": "string"
                           },
-                          "content": {
-                            "type": "string"
-                          },
-                          "flex": {
-                            "type": "integer"
-                          },
-                          "scrollable": {
-                            "type": "boolean"
-                          },
-                          "type": {
-                            "const": "column",
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "type"
-                        ],
-                        "type": "object"
-                      },
-                      {
-                        "additionalProperties": {},
-                        "properties": {
-                          "align": {
-                            "enum": [
-                              "topLeft",
-                              "topCenter",
-                              "topRight",
-                              "centerLeft",
-                              "center",
-                              "centerRight",
-                              "bottomLeft",
-                              "bottomCenter",
-                              "bottomRight"
-                            ],
-                            "type": "string"
-                          },
                           "flex": {
                             "type": "integer"
                           },
