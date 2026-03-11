@@ -22,10 +22,7 @@ SlideTemplate corporateTemplate() {
         ),
       ),
       p: TextStyler().style(
-        TextStyleMix(
-          fontFamily: GoogleFonts.inter().fontFamily,
-          fontSize: 24,
-        ),
+        TextStyleMix(fontFamily: GoogleFonts.inter().fontFamily, fontSize: 24),
       ),
     ),
     styles: {
@@ -107,10 +104,7 @@ class _CorporateHeader extends StatelessWidget implements PreferredSizeWidget {
           const Spacer(),
           Text(
             '${slide.slideIndex + 1}',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.white38,
-            ),
+            style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38),
           ),
         ],
       ),

@@ -47,9 +47,7 @@ class FileDeckLoader extends DeckLoader {
           _controller.add(DeckRebuildingEvent());
         case DeckBuildPhase.failure:
           final message = status.error?.message ?? 'Deck build failed';
-          _controller.add(
-            DeckErrorEvent(message, error: Exception(message)),
-          );
+          _controller.add(DeckErrorEvent(message, error: Exception(message)));
         case DeckBuildPhase.success:
           try {
             final deckJson = jsonDecode(await _deckFile.readAsString());
@@ -68,10 +66,12 @@ class FileDeckLoader extends DeckLoader {
             }
           } on Object catch (error) {
             if (_isActive) {
-              _controller.add(DeckErrorEvent(
-                'Superdeck reference error',
-                error: _asException(error),
-              ));
+              _controller.add(
+                DeckErrorEvent(
+                  'Superdeck reference error',
+                  error: _asException(error),
+                ),
+              );
             }
           }
         case DeckBuildPhase.unknown:
@@ -79,10 +79,9 @@ class FileDeckLoader extends DeckLoader {
       }
     } on Object catch (error) {
       if (_isActive) {
-        _controller.add(DeckErrorEvent(
-          'Build status error',
-          error: _asException(error),
-        ));
+        _controller.add(
+          DeckErrorEvent('Build status error', error: _asException(error)),
+        );
       }
     }
   }
@@ -101,20 +100,22 @@ class FileDeckLoader extends DeckLoader {
     StreamSubscription<FileSystemEvent>? sub;
 
     try {
-      sub = dir.watch(events: events, recursive: recursive).listen(
-        (event) {
-          if (_disposed || wait.isCompleted) return;
-          if (!matcher(event)) return;
-          matched = true;
-          if (!wait.isCompleted) wait.complete();
-        },
-        onError: (_, __) {
-          if (!wait.isCompleted) wait.complete();
-        },
-        onDone: () {
-          if (!wait.isCompleted) wait.complete();
-        },
-      );
+      sub = dir
+          .watch(events: events, recursive: recursive)
+          .listen(
+            (event) {
+              if (_disposed || wait.isCompleted) return;
+              if (!matcher(event)) return;
+              matched = true;
+              if (!wait.isCompleted) wait.complete();
+            },
+            onError: (_, __) {
+              if (!wait.isCompleted) wait.complete();
+            },
+            onDone: () {
+              if (!wait.isCompleted) wait.complete();
+            },
+          );
 
       await Future.any<void>([wait.future, _disposeSignal.future]);
       return matched;
@@ -178,10 +179,9 @@ class FileDeckLoader extends DeckLoader {
     if (_runTask == null && !_disposed) {
       _runTask = _run().catchError((Object error) {
         if (_isActive) {
-          _controller.add(DeckErrorEvent(
-            'Build status error',
-            error: _asException(error),
-          ));
+          _controller.add(
+            DeckErrorEvent('Build status error', error: _asException(error)),
+          );
         }
       });
     }
