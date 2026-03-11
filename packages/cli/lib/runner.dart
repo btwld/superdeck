@@ -8,7 +8,6 @@ import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 import 'src/commands/build_command.dart';
 import 'src/commands/publish_command.dart';
 import 'src/commands/setup_command.dart';
-import 'src/commands/version_command.dart';
 import 'src/utils/constants.dart';
 import 'src/utils/logger.dart';
 
@@ -44,7 +43,6 @@ class SuperDeckRunner extends CommandRunner<int> {
     addCommand(BuildCommand());
     addCommand(PublishCommand());
     addCommand(SetupCommand());
-    addCommand(VersionCommand());
   }
 
   @override

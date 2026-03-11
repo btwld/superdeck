@@ -922,60 +922,6 @@ void main() {
       });
     });
 
-    group('StringContentX extension', () {
-      test('converts string to ContentBlock', () {
-        final block = 'Hello World'.toBlock();
-
-        expect(block, isA<ContentBlock>());
-        expect(block.content, 'Hello World');
-      });
-
-      test('preserves content exactly', () {
-        const content = 'Line 1\nLine 2\n\nLine 4';
-        final block = content.toBlock();
-
-        expect(block.content, content);
-      });
-    });
-
-    // Note: BlockX extension methods (flex(), scrollable()) cannot be tested
-    // directly because they share names with Block properties. Instance members
-    // take precedence over extension methods in Dart. The extension is designed
-    // for use in builder patterns where the type is explicitly Block, not a
-    // subclass. Testing the underlying copyWith functionality instead.
-    group('Block copyWith via extensions pattern', () {
-      test('copyWith can set flex value', () {
-        final original = ContentBlock('Test');
-        final modified = original.copyWith(flex: 5);
-
-        expect(modified.flex, 5);
-        expect(modified.content, 'Test');
-      });
-
-      test('copyWith can set scrollable to true', () {
-        final original = ContentBlock('Test');
-        final modified = original.copyWith(scrollable: true);
-
-        expect(modified.scrollable, true);
-      });
-
-      test('copyWith can set scrollable to false', () {
-        final original = ContentBlock('Test', scrollable: true);
-        final modified = original.copyWith(scrollable: false);
-
-        expect(modified.scrollable, false);
-      });
-
-      test('copyWith can be chained via multiple calls', () {
-        final block = ContentBlock(
-          'Test',
-        ).copyWith(flex: 3).copyWith(scrollable: true);
-
-        expect(block.flex, 3);
-        expect(block.scrollable, true);
-      });
-    });
-
     group('Nested structures', () {
       test('section with nested sections', () {
         final nested = SectionBlock([

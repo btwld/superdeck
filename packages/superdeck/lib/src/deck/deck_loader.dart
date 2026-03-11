@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
 Exception _asException(Object error) {
@@ -86,27 +85,19 @@ class FileDeckLoader extends DeckLoader {
     }
   }
 
-  /// Watches [dir] for file-system events and returns whether [matcher] matched.
-  ///
-  /// Returns `false` if disposed or a [FileSystemException] occurs.
-  Future<bool> _waitForFsEvent(
-    Directory dir, {
-    required int events,
-    bool recursive = false,
-    required bool Function(FileSystemEvent event) matcher,
-  }) async {
-    final wait = Completer<void>();
-    var matched = false;
-    StreamSubscription<FileSystemEvent>? sub;
+  /// Waits for the status parent directory to be created.
+  Future<void> _waitForDirectoryCreation() async {
+    if (_disposed || await _statusParentDir.exists()) return;
 
+    final wait = Completer<void>();
+    StreamSubscription<FileSystemEvent>? sub;
     try {
-      sub = dir
-          .watch(events: events, recursive: recursive)
+      sub = _projectDir
+          .watch(events: FileSystemEvent.create, recursive: true)
           .listen(
-            (event) {
-              if (_disposed || wait.isCompleted) return;
-              if (!matcher(event)) return;
-              matched = true;
+            // Any create event could be the directory — wake up and let the
+            // main loop re-check rather than risking a race condition.
+            (_) {
               if (!wait.isCompleted) wait.complete();
             },
             onError: (_, __) {
@@ -116,39 +107,34 @@ class FileDeckLoader extends DeckLoader {
               if (!wait.isCompleted) wait.complete();
             },
           );
-
       await Future.any<void>([wait.future, _disposeSignal.future]);
-      return matched;
     } on FileSystemException {
-      return false;
+      // Directory may not exist yet
     } finally {
       await sub?.cancel();
     }
   }
 
-  Future<void> _waitForDirectoryCreation() async {
-    if (_disposed || await _statusParentDir.exists()) return;
-
-    await _waitForFsEvent(
-      _projectDir,
-      events: FileSystemEvent.create,
-      recursive: true,
-      matcher: (_) {
-        // Any create event could be the directory — recheck asynchronously
-        // would be racy, so we just wake up and let the main loop re-check.
-        return true;
-      },
-    );
-  }
-
+  /// Waits for the status file to change using [FileWatcher].
+  ///
+  /// Returns `true` if a change was detected, `false` if disposed.
   Future<bool> _waitForStatusChange() async {
-    final statusPath = p.normalize(_statusFile.path);
-
-    return _waitForFsEvent(
-      _statusParentDir,
+    final watcher = FileWatcher(
+      _statusFile,
       events: FileSystemEvent.create | FileSystemEvent.modify,
-      matcher: (event) => p.normalize(event.path) == statusPath,
     );
+
+    final changed = Completer<void>();
+    final sub = watcher.watch().listen((_) {
+      if (!changed.isCompleted) changed.complete();
+    });
+
+    try {
+      await Future.any<void>([changed.future, _disposeSignal.future]);
+      return changed.isCompleted;
+    } finally {
+      await sub.cancel();
+    }
   }
 
   Future<void> _run() async {
@@ -156,21 +142,17 @@ class FileDeckLoader extends DeckLoader {
       _controller.add(DeckLoadingEvent('Loading deck…'));
     }
 
-    var shouldReadStatus = true;
-
     while (_isActive) {
       if (!await _statusParentDir.exists()) {
         await _waitForDirectoryCreation();
-        shouldReadStatus = true;
         continue;
       }
 
-      if (shouldReadStatus) {
-        await _processStatus();
-      }
+      await _processStatus();
       if (!_isActive) return;
 
-      shouldReadStatus = await _waitForStatusChange();
+      final changed = await _waitForStatusChange();
+      if (!changed) return;
     }
   }
 

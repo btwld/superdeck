@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:superdeck_core/superdeck_core.dart';
@@ -16,53 +15,44 @@ void main() {
       watcher = FileWatcher(testFile);
     });
 
-    tearDown(() {
-      // Ensure watcher is stopped after each test
-      watcher.stopWatching();
-    });
-
     test('initializes with file reference', () {
       expect(watcher.file, equals(testFile));
-      expect(watcher.isWatching, isFalse);
     });
 
-    test('startWatching begins watching file', () {
-      watcher.startWatching(() {});
-      expect(watcher.isWatching, isTrue);
+    test('accepts custom events parameter', () {
+      final customWatcher = FileWatcher(
+        testFile,
+        events: FileSystemEvent.create | FileSystemEvent.modify,
+      );
+      expect(customWatcher.file, equals(testFile));
+      expect(customWatcher.events, FileSystemEvent.create | FileSystemEvent.modify);
     });
 
-    test('stopWatching stops watching file', () {
-      watcher.startWatching(() {});
-      expect(watcher.isWatching, isTrue);
-
-      watcher.stopWatching();
-      expect(watcher.isWatching, isFalse);
+    test('defaults to modify events', () {
+      expect(watcher.events, FileSystemEvent.modify);
     });
 
     // Skip the file change detection test since it's flaky in CI environments
     test(
-      'detects file changes and triggers callback',
+      'detects file changes via watch() stream',
       () async {
-        int callbackCount = 0;
+        int changeCount = 0;
 
-        // Start watching and count callbacks
-        watcher.startWatching(() {
-          callbackCount++;
+        final sub = watcher.watch().listen((_) {
+          changeCount++;
         });
+        addTearDown(sub.cancel);
 
         // Ensure initial baseline is set
         await Future.delayed(Duration(seconds: 1));
 
-        // Modify the file significantly
+        // Modify the file
         await testFile.writeAsString('new content ${DateTime.now()}');
 
-        // Ensure we give enough time for the change to be detected
+        // Give enough time for the change to be detected
         await Future.delayed(Duration(seconds: 2));
 
-        expect(callbackCount, equals(1));
-
-        // Just verify the watcher is still active and test doesn't hang
-        expect(watcher.isWatching, isTrue);
+        expect(changeCount, equals(1));
       },
       skip:
           "File watching tests are flaky in CI environments and can lead to test hangs",
