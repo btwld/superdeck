@@ -103,13 +103,13 @@ scripts:
       dirExists: test
 
   test:integration:
-    run: fvm flutter pub run melos exec -- fvm flutter test integration_test -d linux --fail-fast --timeout 5m
+    run: fvm flutter pub run melos exec -- fvm flutter test integration_test/all_tests.dart -d linux --fail-fast --timeout 5m
     description: Run flutter integration tests on Linux (CI default)
     packageFilters:
       dirExists: integration_test
 
   test:integration:macos:
-    run: fvm flutter pub run melos exec -- fvm flutter test integration_test -d macos --fail-fast --timeout 5m
+    run: fvm flutter pub run melos exec -- fvm flutter test integration_test/all_tests.dart -d macos --fail-fast --timeout 5m
     description: Run flutter integration tests on macOS (local)
     packageFilters:
       dirExists: integration_test

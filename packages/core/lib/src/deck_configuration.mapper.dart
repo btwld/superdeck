@@ -46,6 +46,12 @@ class DeckConfigurationMapper extends ClassMapperBase<DeckConfiguration> {
     _$assetsPath,
     opt: true,
   );
+  static Directory _$superdeckDir(DeckConfiguration v) => v.superdeckDir;
+  static const Field<DeckConfiguration, Directory> _f$superdeckDir = Field(
+    'superdeckDir',
+    _$superdeckDir,
+    mode: FieldMode.member,
+  );
 
   @override
   final MappableFields<DeckConfiguration> fields = const {
@@ -53,6 +59,7 @@ class DeckConfigurationMapper extends ClassMapperBase<DeckConfiguration> {
     #slidesPath: _f$slidesPath,
     #outputDir: _f$outputDir,
     #assetsPath: _f$assetsPath,
+    #superdeckDir: _f$superdeckDir,
   };
   @override
   final bool ignoreNull = true;
