@@ -7,63 +7,67 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../testing_utils.dart';
 
-class MockDeckService extends DeckService {
-  MockDeckService({DeckConfiguration? configuration})
+class MockDeckLoader extends DeckLoader {
+  MockDeckLoader({DeckConfiguration? configuration})
     : super(configuration: configuration ?? DeckConfiguration());
 
-  final StreamController<DeckBuildStatus> _statusController =
-      StreamController<DeckBuildStatus>.broadcast();
+  final StreamController<DeckEvent> _eventController =
+      StreamController<DeckEvent>.broadcast();
 
-  Deck deckToReturn = createTestDeck();
-  Completer<Deck>? nextLoadDeckCompleter;
-  Object? errorToThrow;
-  int loadDeckCalls = 0;
+  int loadCalls = 0;
 
   @override
-  Future<Deck> loadDeck() async {
-    loadDeckCalls++;
-    if (errorToThrow != null) {
-      throw errorToThrow!;
+  Stream<DeckEvent> load() {
+    loadCalls++;
+    // Immediately emit loading + loaded for default behavior
+    if (_autoLoad) {
+      Future.microtask(() {
+        _eventController.add(DeckLoadingEvent('Loading…'));
+        _eventController.add(DeckLoadedEvent(_deckToReturn));
+      });
     }
-    final completer = nextLoadDeckCompleter;
-    if (completer != null) {
-      nextLoadDeckCompleter = null;
-      return completer.future;
-    }
-    return deckToReturn;
+    return _eventController.stream;
+  }
+
+  bool _autoLoad = true;
+  final Deck _deckToReturn = createTestDeck();
+  var _disposed = false;
+
+  /// Disable auto-loading so events must be emitted manually.
+  void disableAutoLoad() {
+    _autoLoad = false;
+  }
+
+  void emitEvent(DeckEvent event) {
+    _eventController.add(event);
   }
 
   @override
-  Stream<DeckBuildStatus> watchBuildStatus() {
-    return _statusController.stream;
-  }
-
-  void emitStatus(DeckBuildStatus status) {
-    _statusController.add(status);
-  }
-
-  Future<void> disposeService() async {
-    await _statusController.close();
+  Future<void> dispose() {
+    if (_disposed) return Future<void>.value();
+    _disposed = true;
+    return _eventController.close();
   }
 }
 
 void main() {
   group('DeckController', () {
-    late MockDeckService mockDeckService;
+    late MockDeckLoader mockDeckLoader;
     late DeckController controller;
 
     setUp(() {
-      mockDeckService = MockDeckService();
+      final configuration = DeckConfiguration();
+      mockDeckLoader = MockDeckLoader(configuration: configuration);
       controller = DeckController(
-        deckService: mockDeckService,
+        configuration: configuration,
+        deckLoader: mockDeckLoader,
         options: const DeckOptions(),
-        enableBuildStatusWatch: true,
       );
     });
 
     tearDown(() async {
       controller.dispose();
-      await mockDeckService.disposeService();
+      await mockDeckLoader.dispose();
     });
 
     test('initializes router and default UI state', () {
@@ -78,25 +82,63 @@ void main() {
 
       expect(controller.isLoading.value, isFalse);
       expect(controller.hasError.value, isFalse);
-      expect(mockDeckService.loadDeckCalls, greaterThan(0));
+      expect(mockDeckLoader.loadCalls, greaterThan(0));
     });
 
-    test('reloadDeck sets fatal error state when load throws', () async {
-      mockDeckService.errorToThrow = StateError('boom');
+    test(
+      'reloadDeck with existing deck treats DeckErrorEvent as build failure',
+      () async {
+        // Wait for initial auto-load to complete
+        await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      await controller.reloadDeck();
+        // Disable auto-load for reload, then manually emit error
+        mockDeckLoader.disableAutoLoad();
+        await controller.reloadDeck();
 
-      expect(controller.hasError.value, isTrue);
-      expect(controller.error.value, isA<StateError>());
+        // After reload, auto-load is off, so emit events manually
+        mockDeckLoader.emitEvent(DeckLoadingEvent('Reloading…'));
+        mockDeckLoader.emitEvent(
+          DeckErrorEvent('boom', error: StateError('boom')),
+        );
+
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(controller.hasError.value, isFalse);
+        expect(controller.isLoading.value, isFalse);
+        expect(controller.isBuildActive.value, isFalse);
+        expect(controller.buildFailure.value?.message, 'boom');
+      },
+    );
+
+    test('DeckErrorEvent is fatal when no deck has been loaded yet', () async {
+      final configuration = DeckConfiguration();
+      final loader = MockDeckLoader(configuration: configuration);
+      loader.disableAutoLoad();
+
+      final ctrl = DeckController(
+        configuration: configuration,
+        deckLoader: loader,
+        options: const DeckOptions(),
+      );
+      addTearDown(() async {
+        ctrl.dispose();
+        await loader.dispose();
+      });
+
+      // Emit loading then error (no deck loaded yet)
+      loader.emitEvent(DeckLoadingEvent('Loading…'));
+      loader.emitEvent(DeckErrorEvent('boom', error: StateError('boom')));
+
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(ctrl.hasError.value, isTrue);
+      expect(ctrl.error.value, isA<StateError>());
     });
 
     test('building status toggles rebuilding without fatal error', () async {
-      mockDeckService.emitStatus(
-        DeckBuildStatus(
-          phase: DeckBuildPhase.building,
-          timestamp: DateTime.parse('2026-03-10T12:00:00.000Z'),
-        ),
-      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      mockDeckLoader.emitEvent(DeckRebuildingEvent());
 
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
@@ -107,14 +149,12 @@ void main() {
     test(
       'failure status keeps app running and exposes build failure',
       () async {
-        mockDeckService.emitStatus(
-          DeckBuildStatus(
-            phase: DeckBuildPhase.failure,
-            timestamp: DateTime.parse('2026-03-10T12:00:00.000Z'),
-            error: const DeckBuildError(
-              type: 'BuildFailure',
-              message: 'Syntax error in slides.md',
-            ),
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        mockDeckLoader.emitEvent(
+          DeckErrorEvent(
+            'Syntax error in slides.md',
+            error: Exception('Syntax error in slides.md'),
           ),
         );
 
@@ -129,68 +169,34 @@ void main() {
       },
     );
 
-    test(
-      'success status triggers background reload and clears build failure',
-      () async {
-        mockDeckService.emitStatus(
-          DeckBuildStatus(
-            phase: DeckBuildPhase.failure,
-            timestamp: DateTime.parse('2026-03-10T12:00:00.000Z'),
-            error: const DeckBuildError(
-              type: 'BuildFailure',
-              message: 'Failed',
-            ),
-          ),
-        );
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-        final beforeSuccessCalls = mockDeckService.loadDeckCalls;
-
-        mockDeckService.emitStatus(
-          DeckBuildStatus(
-            phase: DeckBuildPhase.success,
-            timestamp: DateTime.parse('2026-03-10T12:00:01.000Z'),
-            slideCount: 3,
-          ),
-        );
-
-        await Future<void>.delayed(const Duration(milliseconds: 40));
-
-        expect(mockDeckService.loadDeckCalls, greaterThan(beforeSuccessCalls));
-        expect(controller.isBuildActive.value, isFalse);
-        expect(controller.buildFailure.value, isNull);
-        expect(controller.hasError.value, isFalse);
-      },
-    );
-
-    test('stale success reload does not clear newer failure state', () async {
+    test('success event clears build failure', () async {
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      final reloadCompleter = Completer<Deck>();
-      mockDeckService.nextLoadDeckCompleter = reloadCompleter;
-
-      mockDeckService.emitStatus(
-        DeckBuildStatus(
-          phase: DeckBuildPhase.success,
-          timestamp: DateTime.parse('2026-03-10T12:00:01.000Z'),
-          slideCount: 3,
-        ),
+      // First, create a build failure
+      mockDeckLoader.emitEvent(
+        DeckErrorEvent('Failed', error: Exception('Failed')),
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(controller.buildFailure.value, isNotNull);
 
-      mockDeckService.emitStatus(
-        DeckBuildStatus(
-          phase: DeckBuildPhase.failure,
-          timestamp: DateTime.parse('2026-03-10T12:00:02.000Z'),
-          error: const DeckBuildError(
-            type: 'BuildFailure',
-            message: 'Newest failure',
-          ),
-        ),
-      );
+      // Then success clears it
+      mockDeckLoader.emitEvent(DeckLoadedEvent(createTestDeck()));
+
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      reloadCompleter.complete(createTestDeck());
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(controller.isBuildActive.value, isFalse);
+      expect(controller.buildFailure.value, isNull);
+      expect(controller.hasError.value, isFalse);
+    });
+
+    test('stale success after newer failure leaves failure state', () async {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      // Emit a failure
+      mockDeckLoader.emitEvent(
+        DeckErrorEvent('Newest failure', error: Exception('Newest failure')),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
 
       expect(controller.isBuildActive.value, isFalse);
       expect(controller.buildFailure.value?.message, 'Newest failure');

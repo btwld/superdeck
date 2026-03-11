@@ -22,6 +22,7 @@ export 'package:superdeck/src/ui/app_shell.dart';
 export 'package:superdeck/src/deck/deck_controller.dart';
 export 'package:superdeck/src/deck/deck_options.dart';
 export 'package:superdeck/src/deck/deck_controller_builder.dart';
+export 'package:superdeck/src/deck/deck_loader.dart';
 export 'package:superdeck/src/deck/slide_configuration.dart';
 export 'package:superdeck/src/deck/slide_template.dart';
 export 'package:superdeck/src/deck/superdeck_plugin.dart';

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -9,150 +8,6 @@ import 'package:test/test.dart';
 import 'helpers/testing_utils.dart';
 
 void main() {
-  group('DeckService runtime API', () {
-    late MockDeckConfiguration mockConfig;
-    late DeckService deckService;
-    late DeckConfiguration config;
-
-    setUp(() {
-      mockConfig = createMockConfig();
-      config = DeckConfiguration(projectDir: mockConfig.projectDir);
-      deckService = DeckService(configuration: config);
-    });
-
-    test('loadDeck loads deck from file', () async {
-      await mockConfig.deckJson.parent.create(recursive: true);
-      await mockConfig.deckJson.writeAsString(
-        '{"slides":[],"configuration":{}}',
-      );
-
-      final reference = await deckService.loadDeck();
-
-      expect(reference, isA<Deck>());
-      expect(reference.slides, isEmpty);
-    });
-
-    test('loadDeck returns error slide when file is invalid', () async {
-      await mockConfig.deckJson.parent.create(recursive: true);
-      await mockConfig.deckJson.writeAsString('invalid json');
-
-      final reference = await deckService.loadDeck();
-
-      expect(reference, isA<Deck>());
-      expect(reference.slides, hasLength(1));
-      expect(reference.slides.first.key, equals('error'));
-    });
-
-    test(
-      'watchBuildStatus emits only fresh statuses and ignores existing file at startup',
-      () async {
-        await config.superdeckDir.create(recursive: true);
-        await config.buildStatusJson.writeAsString(
-          '{"status":"building","timestamp":"2026-03-10T10:00:00.000Z"}',
-        );
-
-        final events = <DeckBuildStatus>[];
-        final subscription = deckService.watchBuildStatus().listen(events.add);
-        addTearDown(subscription.cancel);
-
-        await Future<void>.delayed(const Duration(milliseconds: 120));
-        expect(events, isEmpty);
-
-        await config.buildStatusJson.writeAsString(
-          '{"status":"success","timestamp":"2026-03-10T10:00:01.000Z","slideCount":3}',
-        );
-
-        await Future<void>.delayed(const Duration(milliseconds: 150));
-        expect(events, hasLength(1));
-        expect(events.first.phase, DeckBuildPhase.success);
-        expect(events.first.slideCount, 3);
-      },
-    );
-
-    test(
-      'watchBuildStatus ignores invalid or partial writes and dedupes by timestamp',
-      () async {
-        await config.superdeckDir.create(recursive: true);
-
-        final events = <DeckBuildStatus>[];
-        final subscription = deckService.watchBuildStatus().listen(events.add);
-        addTearDown(subscription.cancel);
-
-        await config.buildStatusJson.writeAsString('{"status":"building"');
-        await config.buildStatusJson.writeAsString(
-          '{"status":"building","timestamp":"not-a-date"}',
-        );
-
-        await config.buildStatusJson.writeAsString(
-          '{"status":"building","timestamp":"2026-03-10T10:10:00.000Z"}',
-        );
-        await config.buildStatusJson.writeAsString(
-          '{"status":"building","timestamp":"2026-03-10T10:10:00.000Z"}',
-        );
-
-        await Future<void>.delayed(const Duration(milliseconds: 150));
-        expect(events, hasLength(1));
-        expect(events.first.phase, DeckBuildPhase.building);
-      },
-    );
-
-    test(
-      'watchBuildStatus recovers when output directory is created after startup',
-      () async {
-        final events = <DeckBuildStatus>[];
-        final subscription = deckService.watchBuildStatus().listen(events.add);
-        addTearDown(subscription.cancel);
-
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-        expect(events, isEmpty);
-
-        await config.superdeckDir.create(recursive: true);
-        await config.buildStatusJson.writeAsString(
-          '{"status":"success","timestamp":"2026-03-10T10:20:00.000Z","slideCount":4}',
-        );
-
-        await Future<void>.delayed(const Duration(milliseconds: 200));
-        expect(events, hasLength(1));
-        expect(events.first.phase, DeckBuildPhase.success);
-        expect(events.first.slideCount, 4);
-      },
-    );
-
-    test(
-      'watchBuildStatus recovers when nested output directory is created in steps',
-      () async {
-        final nestedConfig = DeckConfiguration(
-          projectDir: mockConfig.projectDir,
-          outputDir: 'build/output/slides',
-        );
-        final nestedDeckService = DeckService(configuration: nestedConfig);
-        final events = <DeckBuildStatus>[];
-        final subscription = nestedDeckService.watchBuildStatus().listen(
-          events.add,
-        );
-        addTearDown(subscription.cancel);
-        final projectDir = mockConfig.projectDir!;
-
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-        expect(events, isEmpty);
-
-        await Directory(p.join(projectDir, 'build')).create();
-        await Future<void>.delayed(const Duration(milliseconds: 30));
-        await Directory(p.join(projectDir, 'build', 'output')).create();
-        await Future<void>.delayed(const Duration(milliseconds: 30));
-        await nestedConfig.superdeckDir.create();
-        await nestedConfig.buildStatusJson.writeAsString(
-          '{"status":"success","timestamp":"2026-03-10T10:30:00.000Z","slideCount":2}',
-        );
-
-        await Future<void>.delayed(const Duration(milliseconds: 250));
-        expect(events, hasLength(1));
-        expect(events.first.phase, DeckBuildPhase.success);
-        expect(events.first.slideCount, 2);
-      },
-    );
-  });
-
   group('DeckBuildStore build-side API', () {
     late MockDeckConfiguration mockConfig;
     late DeckConfiguration config;
@@ -237,7 +92,6 @@ void main() {
                 as Map<String, dynamic>;
         final initialLastModified = initialJson['last_modified'] as String;
 
-        // Delay to ensure DateTime.now would differ if rewriting happens.
         await Future<void>.delayed(const Duration(milliseconds: 5));
 
         await store.saveReferences(deck);

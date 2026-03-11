@@ -5,7 +5,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/config_resolver.dart';
 import '../utils/constants.dart';
-import 'bundled_deck_service.dart';
+import 'deck_loader.dart';
 import 'deck_controller.dart';
 import 'deck_options.dart';
 
@@ -37,14 +37,14 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
     super.initState();
 
     final configuration = resolveConfiguration(widget.configuration);
-    final deckService = kCanRunProcess
-        ? DeckService(configuration: configuration)
-        : BundledDeckService(configuration: configuration);
+    final deckLoader = kCanRunProcess
+        ? FileDeckLoader(configuration: configuration)
+        : BundledDeckLoader(configuration: configuration);
 
     _deckController = DeckController(
-      deckService: deckService,
+      configuration: configuration,
+      deckLoader: deckLoader,
       options: widget.options,
-      enableBuildStatusWatch: kCanRunProcess,
     );
   }
 

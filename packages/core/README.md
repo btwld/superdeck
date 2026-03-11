@@ -10,7 +10,7 @@ Use `superdeck_core` when you need SuperDeck contracts and storage primitives in
 - Deck and slide models
 - Deck contract schema
 - Project path/configuration helpers (`DeckConfiguration`)
-- Runtime deck reader (`DeckService`)
+- Runtime deck loader contracts (`DeckLoader`, `DeckEvent`)
 - Build-side storage primitives (`DeckBuildStore`)
 - Markdown parsing helpers
 

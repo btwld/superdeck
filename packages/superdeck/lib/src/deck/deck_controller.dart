@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:meta/meta.dart';
 import 'package:signals/signals.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -10,7 +10,6 @@ import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/asset_cache_store.dart';
-import '../utils/constants.dart';
 import 'deck_options.dart';
 import 'navigation_events.dart';
 import 'navigation_service.dart';
@@ -18,39 +17,38 @@ import 'slide_configuration.dart';
 import 'slide_configuration_builder.dart';
 import 'superdeck_plugin.dart';
 
-/// Loading state for the deck
-enum DeckLoadingState { idle, loading, loaded, error }
-
 /// Unified facade for all deck state and operations
 ///
-/// Manages reactive state with signals and delegates operations to
-/// stateless services. Consolidates deck, navigation, and thumbnail
-/// concerns under a single controller.
+/// Manages reactive state with signals and delegates navigation and
+/// thumbnails to focused collaborators. Subscribes directly to a
+/// [DeckLoader.load] stream for deck loading and rebuild watching.
 class DeckController {
   // ========================================
-  // DEPENDENCIES (Private Services)
+  // DEPENDENCIES
   // ========================================
 
-  final DeckService _deckService;
+  final DeckConfiguration _configuration;
+  final DeckLoader _deckLoader;
   final NavigationService _navigationService;
   final ThumbnailService _thumbnailService;
-  final bool _enableBuildStatusWatch;
   final List<SuperDeckPlugin> _plugins;
 
-  // Disposal guard to prevent accessing disposed signals
-  // ignore: prefer_final_fields
   bool _disposed = false;
+  StreamSubscription<DeckEvent>? _subscription;
 
   // ========================================
   // INTERNAL STATE (Private Signals)
   // ========================================
 
   // Deck state
-  final _loadingState = signal<DeckLoadingState>(DeckLoadingState.idle);
   final _currentDeck = signal<Deck?>(null);
+  final _isLoading = signal<bool>(true);
   final _error = signal<Object?>(null);
-  final _buildStatus = signal<DeckBuildStatus?>(null);
-  final _options = signal<DeckOptions>(DeckOptions()); // NEVER exposed
+  final _isBuildActive = signal<bool>(false);
+  final _buildFailure = signal<DeckBuildError?>(null);
+
+  // Deck options
+  final _options = signal<DeckOptions>(DeckOptions());
 
   // UI state
   final _isMenuOpen = signal<bool>(false);
@@ -66,8 +64,6 @@ class DeckController {
   // Router (required by MaterialApp)
   late final GoRouter router;
 
-  // Stream subscription
-  StreamSubscription<DeckBuildStatus>? _buildStatusSubscription;
   EffectCleanup? _indexClampEffect;
 
   // ========================================
@@ -87,34 +83,17 @@ class DeckController {
   late final ReadonlySignal<int> totalSlides = computed(
     () => slides.value.length,
   );
-  late final ReadonlySignal<bool> isLoading = computed(
-    () => _loadingState.value == DeckLoadingState.loading,
-  );
+  ReadonlySignal<bool> get isLoading => _isLoading;
   late final ReadonlySignal<bool> hasError = computed(
-    () => _loadingState.value == DeckLoadingState.error,
+    () => _error.value != null && _currentDeck.value == null,
   );
   ReadonlySignal<Object?> get error => _error;
-  late final ReadonlySignal<DeckBuildError?> buildFailure = computed(() {
-    final status = _buildStatus.value;
-    if (status == null || status.phase != DeckBuildPhase.failure) {
-      return null;
-    }
-
-    return status.error ??
-        const DeckBuildError(
-          type: 'BuildFailure',
-          message: 'Deck build failed',
-        );
-  });
+  ReadonlySignal<DeckBuildError?> get buildFailure => _buildFailure;
 
   // UI computeds
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
   ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
-  late final ReadonlySignal<bool> isBuildActive = computed(() {
-    final status = _buildStatus.value;
-    return status?.phase == DeckBuildPhase.building ||
-        status?.phase == DeckBuildPhase.success;
-  });
+  ReadonlySignal<bool> get isBuildActive => _isBuildActive;
   List<SuperDeckPlugin> get plugins => _plugins;
 
   // Navigation computeds
@@ -136,39 +115,31 @@ class DeckController {
   // CONSTRUCTOR
   // ========================================
 
-  /// Creates a DeckController with the given dependencies.
-  ///
-  /// [navigationService] and [thumbnailService] can be injected for testing.
-  /// If not provided, default instances are created.
   DeckController({
-    required DeckService deckService,
+    required DeckConfiguration configuration,
+    required DeckLoader deckLoader,
     required DeckOptions options,
-    bool enableBuildStatusWatch = !kIsTest,
     NavigationService? navigationService,
     ThumbnailService? thumbnailService,
-  }) : _deckService = deckService,
+  }) : _configuration = configuration,
+       _deckLoader = deckLoader,
        _navigationService = navigationService ?? NavigationService(),
        _thumbnailService =
            thumbnailService ??
            ThumbnailService(
-             cacheStore: createAssetCacheStore(
-               configuration: deckService.configuration,
-             ),
+             cacheStore: createAssetCacheStore(configuration: configuration),
            ),
-       _enableBuildStatusWatch = enableBuildStatusWatch,
        _plugins = options.plugins {
     _options.value = options.copyWith(plugins: _plugins);
     final pluginRoutes = _plugins
         .expand((plugin) => plugin.buildRoutes())
         .toList(growable: false);
 
-    // Create router with index change callback
     router = _navigationService.createRouter(
       onIndexChanged: (index) => _updateCurrentIndex(index),
       additionalRoutes: pluginRoutes,
     );
 
-    // Clamp index when slide count changes (e.g., deck reloads with fewer slides)
     _indexClampEffect = effect(() {
       final total = totalSlides.value;
       final maxIndex = total > 0 ? total - 1 : 0;
@@ -179,9 +150,49 @@ class DeckController {
       }
     });
 
-    unawaited(_loadInitialDeck());
-    if (_enableBuildStatusWatch) {
-      _startBuildStatusWatch();
+    _subscribe();
+  }
+
+  // ========================================
+  // DECK LOADER EVENT HANDLING
+  // ========================================
+
+  void _subscribe() {
+    _subscription = _deckLoader.load().listen(
+      _handleEvent,
+      onError: (Object error, StackTrace stackTrace) {
+        if (_disposed) return;
+        debugPrint('[DeckController] Loader stream error: $error');
+      },
+    );
+  }
+
+  void _handleEvent(DeckEvent event) {
+    if (_disposed) return;
+
+    switch (event) {
+      case DeckLoadingEvent():
+        _isLoading.value = true;
+        _error.value = null;
+      case DeckLoadedEvent(:final deck):
+        _currentDeck.value = deck;
+        _isLoading.value = false;
+        _error.value = null;
+        _isBuildActive.value = false;
+        _buildFailure.value = null;
+      case DeckErrorEvent(:final message, :final error):
+        if (_currentDeck.value != null) {
+          _isLoading.value = false;
+          _isBuildActive.value = false;
+          _buildFailure.value = error is DeckBuildError
+              ? error
+              : DeckBuildError(type: 'BuildFailure', message: message);
+        } else {
+          _error.value = error ?? message;
+          _isLoading.value = false;
+        }
+      case DeckRebuildingEvent():
+        _isBuildActive.value = true;
     }
   }
 
@@ -193,7 +204,7 @@ class DeckController {
     final deckConfiguration = deck.configuration;
     return _hasExplicitConfigurationOverrides(deckConfiguration)
         ? deckConfiguration
-        : _deckService.configuration;
+        : _configuration;
   }
 
   bool _hasExplicitConfigurationOverrides(DeckConfiguration configuration) {
@@ -203,98 +214,6 @@ class DeckController {
         configuration.assetsPath != null;
   }
 
-  Future<void> _loadInitialDeck() async {
-    _loadingState.value = DeckLoadingState.loading;
-    _buildStatus.value = null;
-
-    try {
-      final deck = await _deckService.loadDeck();
-      if (_disposed) return;
-
-      _currentDeck.value = deck;
-      _loadingState.value = DeckLoadingState.loaded;
-      _error.value = null;
-    } catch (e) {
-      if (_disposed) return;
-      _error.value = e;
-      _loadingState.value = DeckLoadingState.error;
-    }
-  }
-
-  void _startBuildStatusWatch() {
-    _buildStatusSubscription = _deckService.watchBuildStatus().listen(
-      _handleBuildStatus,
-      onError: (Object error, StackTrace stackTrace) {
-        if (_disposed) return;
-        debugPrint('[DeckController] Build status watcher failed: $error');
-      },
-    );
-  }
-
-  Future<void> _reloadDeckInBackground(DeckBuildStatus triggerStatus) async {
-    try {
-      final deck = await _deckService.loadDeck();
-      if (!_canApplyReloadResult(triggerStatus)) return;
-
-      if (_isErrorDeck(deck)) {
-        _buildStatus.value = DeckBuildStatus(
-          phase: DeckBuildPhase.failure,
-          timestamp: DateTime.now(),
-          error: const DeckBuildError(
-            type: 'DeckLoadError',
-            message: 'Failed to load updated deck from superdeck.json',
-          ),
-        );
-        return;
-      }
-
-      _currentDeck.value = deck;
-      _buildStatus.value = null;
-    } catch (e) {
-      if (!_canApplyReloadResult(triggerStatus)) return;
-      _buildStatus.value = DeckBuildStatus(
-        phase: DeckBuildPhase.failure,
-        timestamp: DateTime.now(),
-        error: DeckBuildError(
-          type: e.runtimeType.toString(),
-          message: e.toString(),
-        ),
-      );
-    }
-  }
-
-  bool _isErrorDeck(Deck deck) {
-    return deck.slides.length == 1 && deck.slides.first.key == 'error';
-  }
-
-  bool _canApplyReloadResult(DeckBuildStatus triggerStatus) {
-    return !_disposed && _buildStatus.value == triggerStatus;
-  }
-
-  void _handleBuildStatus(DeckBuildStatus status) {
-    if (_disposed) return;
-
-    switch (status.phase) {
-      case DeckBuildPhase.building:
-        _buildStatus.value = status;
-        return;
-      case DeckBuildPhase.success:
-        _buildStatus.value = status;
-        unawaited(_reloadDeckInBackground(status));
-        return;
-      case DeckBuildPhase.failure:
-        _buildStatus.value = status;
-        return;
-      case DeckBuildPhase.unknown:
-        // Ignore unknown statuses except to stop active build UI.
-        if (isBuildActive.peek()) {
-          _buildStatus.value = null;
-        }
-        return;
-    }
-  }
-
-  /// Updates deck options (called by DeckControllerBuilder)
   @internal
   void updateOptions(DeckOptions newOptions) {
     if (_disposed) return;
@@ -307,15 +226,14 @@ class DeckController {
     }
   }
 
-  /// Reloads deck and updates full-screen loading/error state.
   Future<void> reloadDeck() async {
     if (_disposed) return;
-
+    await _subscription?.cancel();
     _error.value = null;
-    _buildStatus.value = null;
-    _loadingState.value = DeckLoadingState.loading;
-
-    await _loadInitialDeck();
+    _buildFailure.value = null;
+    _isBuildActive.value = false;
+    _isLoading.value = true;
+    _subscribe();
   }
 
   // ========================================
@@ -355,7 +273,6 @@ class DeckController {
     }
   }
 
-  /// Handles navigation events from input handlers (internal)
   @internal
   Future<void> handleNavigationEvent(NavigationEvent event) async {
     switch (event) {
@@ -368,7 +285,6 @@ class DeckController {
     }
   }
 
-  /// Updates current index from router (internal, called by NavigationService)
   void _updateCurrentIndex(int index) {
     if (_disposed) return;
 
@@ -390,7 +306,6 @@ class DeckController {
     final currentSlides = slides.value;
     final currentSlideKeys = currentSlides.map((s) => s.key).toSet();
 
-    // Clean up stale thumbnails for removed slides to prevent memory leaks
     final currentCache = _thumbnails.value;
     final staleKeys = currentCache.keys
         .where((k) => !currentSlideKeys.contains(k))
@@ -427,29 +342,26 @@ class DeckController {
   // ========================================
 
   void dispose() {
-    // Guard against double disposal
     if (_disposed) return;
     _disposed = true;
 
-    // Stop effects before disposing signals
     _indexClampEffect?.call();
 
-    // Cancel stream subscription - use unawaited since dispose() is sync.
-    unawaited(_buildStatusSubscription?.cancel());
+    unawaited(_subscription?.cancel());
+    unawaited(_deckLoader.dispose());
 
-    // Dispose router (GoRouter implements ChangeNotifier)
     router.dispose();
 
-    // Dispose thumbnails
     for (final thumbnail in _thumbnails.value.values) {
       thumbnail.dispose();
     }
 
     // Dispose signals
-    _loadingState.dispose();
     _currentDeck.dispose();
+    _isLoading.dispose();
     _error.dispose();
-    _buildStatus.dispose();
+    _isBuildActive.dispose();
+    _buildFailure.dispose();
     _options.dispose();
     _isMenuOpen.dispose();
     _isNotesOpen.dispose();
@@ -460,10 +372,7 @@ class DeckController {
     // Dispose computed signals
     slides.dispose();
     totalSlides.dispose();
-    isLoading.dispose();
     hasError.dispose();
-    buildFailure.dispose();
-    isBuildActive.dispose();
     canGoNext.dispose();
     canGoPrevious.dispose();
     currentSlide.dispose();
