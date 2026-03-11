@@ -6,7 +6,7 @@ export 'src/asset_cache_store.dart';
 export 'src/deck_configuration.dart';
 export 'src/deck_format_exception.dart';
 export 'src/deck_loader.dart';
-export 'src/deck_service.dart';
+export 'src/deck_build_store.dart';
 export 'src/hero_tag_helpers.dart';
 export 'src/markdown_syntaxes.dart';
 // Domain Models
