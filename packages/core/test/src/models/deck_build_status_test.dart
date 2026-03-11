@@ -3,13 +3,11 @@ import 'package:test/test.dart';
 
 void main() {
   group('DeckBuildPhase', () {
-    test('serializes and parses wire values', () {
-      expect(DeckBuildPhase.building.wireValue, 'building');
-      expect(DeckBuildPhase.fromWireValue('failure'), DeckBuildPhase.failure);
-      expect(
-        DeckBuildPhase.fromWireValue('unexpected'),
-        DeckBuildPhase.unknown,
-      );
+    test('enum names match expected wire values', () {
+      expect(DeckBuildPhase.building.name, 'building');
+      expect(DeckBuildPhase.success.name, 'success');
+      expect(DeckBuildPhase.failure.name, 'failure');
+      expect(DeckBuildPhase.unknown.name, 'unknown');
     });
   });
 
@@ -41,14 +39,13 @@ void main() {
       expect(parsed, status);
     });
 
-    test('parses unknown phase as unknown', () {
+    test('returns null for unknown phase', () {
       final parsed = DeckBuildStatus.fromObject({
         'status': 'not-a-phase',
         'timestamp': '2026-03-10T12:00:00.000Z',
       });
 
-      expect(parsed, isNotNull);
-      expect(parsed!.phase, DeckBuildPhase.unknown);
+      expect(parsed, isNull);
     });
 
     test('returns null when timestamp is missing or invalid', () {
