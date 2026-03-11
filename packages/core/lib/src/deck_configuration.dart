@@ -28,7 +28,7 @@ final class DeckConfiguration with DeckConfigurationMappable {
   String get _assets => assetsPath ?? 'assets';
   String get _slides => slidesPath ?? 'slides.md';
 
-  late final superdeckDir = Directory(
+  Directory get superdeckDir => Directory(
     p.normalize(p.join(_baseDir, _outputDir)),
   );
 
@@ -69,10 +69,10 @@ final class DeckConfiguration with DeckConfigurationMappable {
   }
 
   static final schema = deckConfigurationSchema.extend({
-    'projectDir': Ack.string().optional(),
-    'slidesPath': Ack.string().optional(),
-    'outputDir': Ack.string().optional(),
-    'assetsPath': Ack.string().optional(),
+    'projectDir': Ack.string().strictParsing().optional(),
+    'slidesPath': Ack.string().strictParsing().optional(),
+    'outputDir': Ack.string().strictParsing().optional(),
+    'assetsPath': Ack.string().strictParsing().optional(),
   }).passthrough();
 
   static File get defaultFile => File('superdeck.yaml');

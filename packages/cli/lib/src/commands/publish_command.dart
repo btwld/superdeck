@@ -5,6 +5,7 @@ import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 
+import '../utils/flutter_resolver.dart';
 import '../utils/logger.dart';
 import '../utils/templates.dart';
 
@@ -255,8 +256,11 @@ class PublishCommand extends Command<int> {
         buildArgs.add('--output=$outputDirectory');
       }
 
+      final flutterBin = resolveFlutterBinary(exampleDir);
+      _logger.detail('Using Flutter binary: $flutterBin');
+
       final ProcessResult result = await Process.run(
-        'flutter',
+        flutterBin,
         buildArgs,
         workingDirectory: exampleDir,
       );
