@@ -340,12 +340,3 @@ enum ContentAlignment {
   }
 }
 
-extension StringContentX on String {
-  ContentBlock toBlock() => ContentBlock(this);
-}
-
-extension BlockX on Block {
-  Block flex(int flex) => copyWith(flex: flex);
-  Block scrollable([bool scrollable = true]) =>
-      copyWith(scrollable: scrollable);
-}

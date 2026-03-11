@@ -434,6 +434,15 @@ void main() {
         );
       });
 
+      test('throws ArgumentError when args contain reserved keys', () {
+        for (final reservedKey in const ['title', 'style', 'template']) {
+          expect(
+            () => SlideOptions(args: {reservedKey: 'invalid'}),
+            throwsArgumentError,
+          );
+        }
+      });
+
       test('creates with template parameter', () {
         final options = SlideOptions(template: 'my-template');
 
@@ -536,24 +545,14 @@ void main() {
           expect(map['custom2'], 42);
         });
 
-        test('reserved fields win when args contain colliding keys', () {
-          final options = SlideOptions(
-            title: 'Reserved title',
-            style: 'reserved-style',
-            template: 'reserved-template',
-            args: {
-              'title': 'arg-title',
-              'style': 'arg-style',
-              'template': 'arg-template',
-              'custom': 'value',
-            },
+        test('rejects args that contain reserved keys', () {
+          expect(
+            () => SlideOptions(
+              title: 'Reserved title',
+              args: {'title': 'arg-title', 'custom': 'value'},
+            ),
+            throwsArgumentError,
           );
-          final map = options.toMap();
-
-          expect(map['title'], 'Reserved title');
-          expect(map['style'], 'reserved-style');
-          expect(map['template'], 'reserved-template');
-          expect(map['custom'], 'value');
         });
       });
 

@@ -130,7 +130,15 @@ class SlideOptions with SlideOptionsMappable {
     this.style,
     this.template,
     Map<String, Object?> args = const {},
-  }) : args = Map.unmodifiable(args);
+  }) : args = Map.unmodifiable(args) {
+    final collision =
+        this.args.keys.where(_knownSlideOptionFields.contains).toList();
+    if (collision.isNotEmpty) {
+      throw ArgumentError(
+        'SlideOptions args must not contain reserved keys: $collision',
+      );
+    }
+  }
 
   Map<String, Object?> toMap() {
     return {
