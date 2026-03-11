@@ -1,3 +1,8 @@
+## Next
+
+- Remove the unused `Slide.error(...)` factory from the public API; deck loading
+  errors continue through `DeckErrorEvent`.
+
 ## 1.0.0
 
 - First stable release of superdeck_core

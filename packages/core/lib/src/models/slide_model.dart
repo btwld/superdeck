@@ -72,35 +72,6 @@ class Slide with SlideMappable {
 
   /// Validates [map] against the schema and constructs a [Slide].
   static Slide parse(Map<String, Object?> map) => fromMap(schema.parse(map)!);
-
-  /// Creates an error slide to display errors in the presentation.
-  ///
-  /// This slide is automatically generated when there are parsing errors
-  /// or other issues loading the presentation.
-  static Slide error({
-    required String title,
-    required String message,
-    required Exception error,
-  }) {
-    return Slide(
-      key: 'error',
-      sections: [
-        SectionBlock([
-          ContentBlock('''
-> [!CAUTION]
-> $title
-> $message
-
-
-```dart
-${error.toString()}
-```
-'''),
-          ContentBlock(''),
-        ]),
-      ],
-    );
-  }
 }
 
 /// Configuration options for a slide.

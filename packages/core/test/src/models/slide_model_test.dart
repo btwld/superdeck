@@ -266,53 +266,6 @@ void main() {
         });
       });
 
-      group('error factory', () {
-        test('creates error slide with correct key', () {
-          final slide = Slide.error(
-            title: 'Error Title',
-            message: 'Error message',
-            error: Exception('Test error'),
-          );
-
-          expect(slide.key, 'error');
-        });
-
-        test('includes title and message in content', () {
-          final slide = Slide.error(
-            title: 'Parse Error',
-            message: 'Could not parse slide',
-            error: Exception('Details'),
-          );
-
-          final content = (slide.sections[0].blocks[0] as ContentBlock).content;
-          expect(content.contains('Parse Error'), isTrue);
-          expect(content.contains('Could not parse slide'), isTrue);
-        });
-
-        test('includes error details in code block', () {
-          final slide = Slide.error(
-            title: 'Error',
-            message: 'Message',
-            error: Exception('Detailed error info'),
-          );
-
-          final content = (slide.sections[0].blocks[0] as ContentBlock).content;
-          expect(content.contains('Detailed error info'), isTrue);
-          expect(content.contains('```dart'), isTrue);
-        });
-
-        test('creates section with two content blocks', () {
-          final slide = Slide.error(
-            title: 'E',
-            message: 'M',
-            error: Exception('X'),
-          );
-
-          expect(slide.sections.length, 1);
-          expect(slide.sections[0].blocks.length, 2);
-        });
-      });
-
       group('equality', () {
         test('equal slides are equal', () {
           final slide1 = Slide(key: 'same', comments: ['note']);
