@@ -421,6 +421,73 @@ void main() {
 
         expect(result.isOk, isTrue);
       });
+
+      group('path validation', () {
+        for (final field in ['slidesPath', 'outputDir', 'assetsPath']) {
+          group(field, () {
+            test('accepts simple relative path', () {
+              final result = DeckConfiguration.schema.safeParse({
+                field: 'my_file.md',
+              });
+              expect(result.isOk, isTrue);
+            });
+
+            test('accepts nested relative path', () {
+              final result = DeckConfiguration.schema.safeParse({
+                field: 'sub/dir/file.md',
+              });
+              expect(result.isOk, isTrue);
+            });
+
+            test('accepts filename containing ".."', () {
+              final result = DeckConfiguration.schema.safeParse({
+                field: 'my..file.md',
+              });
+              expect(result.isOk, isTrue);
+            });
+
+            test('accepts dot-prefixed relative path', () {
+              final result = DeckConfiguration.schema.safeParse({
+                field: '.superdeck',
+              });
+              expect(result.isOk, isTrue);
+            });
+
+            test('rejects absolute path', () {
+              final result = DeckConfiguration.schema.safeParse({
+                field: '/etc/passwd',
+              });
+              expect(result.isOk, isFalse);
+            });
+
+            test('rejects ".." traversal segment', () {
+              final result = DeckConfiguration.schema.safeParse({
+                field: '../outside',
+              });
+              expect(result.isOk, isFalse);
+            });
+
+            test('rejects nested ".." traversal segment', () {
+              final result = DeckConfiguration.schema.safeParse({
+                field: 'sub/../../outside',
+              });
+              expect(result.isOk, isFalse);
+            });
+
+            test('rejects bare ".." path', () {
+              final result = DeckConfiguration.schema.safeParse({field: '..'});
+              expect(result.isOk, isFalse);
+            });
+          });
+        }
+
+        test('projectDir still allows absolute paths', () {
+          final result = DeckConfiguration.schema.safeParse({
+            'projectDir': '/absolute/project',
+          });
+          expect(result.isOk, isTrue);
+        });
+      });
     });
 
     group('defaultFile', () {

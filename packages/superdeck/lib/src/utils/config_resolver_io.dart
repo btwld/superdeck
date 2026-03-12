@@ -28,7 +28,7 @@ DeckConfiguration resolveConfiguration(DeckConfiguration? override) {
       _logger.info('Resolved configuration from ${file.path}');
     }
     return configuration;
-  } on Object catch (error, stackTrace) {
+  } on Exception catch (error, stackTrace) {
     _logger.warning(
       'Failed to resolve configuration from superdeck.yaml. Using default configuration',
       error,

@@ -1,4 +1,4 @@
-import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
+import 'parsers/fenced_code_parser.dart';
 
 /// Transforms fenced code blocks in markdown content.
 ///

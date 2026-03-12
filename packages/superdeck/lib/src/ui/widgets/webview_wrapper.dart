@@ -2,7 +2,7 @@ import 'dart:convert' show jsonEncode;
 
 import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
-import 'package:superdeck/src/ui/widgets/icon_button.dart';
+import 'icon_button.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewWrapper extends StatefulWidget {

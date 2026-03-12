@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:superdeck_builder/src/parsers/raw_slide_schema.dart';
+import 'parsers/raw_slide_schema.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'task_exception.dart';

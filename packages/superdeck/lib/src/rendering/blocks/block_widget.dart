@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/src/rendering/blocks/block_provider.dart';
+import 'block_provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';

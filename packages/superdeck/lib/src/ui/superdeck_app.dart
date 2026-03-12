@@ -2,7 +2,7 @@ import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-import 'package:superdeck/src/ui/tokens/colors.dart';
+import 'tokens/colors.dart';
 
 import '../deck/deck_controller_builder.dart';
 import '../deck/deck_options.dart';

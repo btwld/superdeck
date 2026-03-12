@@ -62,12 +62,28 @@ final class DeckConfiguration with DeckConfigurationMappable {
   static DeckConfiguration parse(Map<String, Object?> map) =>
       fromMap(Map<String, dynamic>.from(schema.parse(map)!));
 
+  static final _safePath = Ack.string().strictParsing().refine(
+    _isRelativeWithoutTraversal,
+    message:
+        'must be a relative path without ".." traversal segments'
+        ' (absolute paths and parent-directory traversal are not allowed)',
+  );
+
   static final schema = Ack.object({
     'projectDir': Ack.string().strictParsing().optional(),
-    'slidesPath': Ack.string().strictParsing().optional(),
-    'outputDir': Ack.string().strictParsing().optional(),
-    'assetsPath': Ack.string().strictParsing().optional(),
+    'slidesPath': _safePath.optional(),
+    'outputDir': _safePath.optional(),
+    'assetsPath': _safePath.optional(),
   }).passthrough();
+
+  /// Returns `true` when [value] is a relative path that does not contain
+  /// `..` as a path segment. Filenames that happen to contain `..` (e.g.
+  /// `my..file.md`) are allowed because `p.split` only yields `..` for an
+  /// actual traversal segment.
+  static bool _isRelativeWithoutTraversal(String value) {
+    if (p.isAbsolute(value)) return false;
+    return !p.split(value).contains('..');
+  }
 
   static File get defaultFile => File('superdeck.yaml');
 

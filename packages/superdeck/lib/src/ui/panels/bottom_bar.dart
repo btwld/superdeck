@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart' show Icons, Colors;
+import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/export/pdf_export_screen.dart';
-import 'package:superdeck/src/ui/tokens/colors.dart';
-import 'package:superdeck/src/ui/widgets/icon_button.dart';
-
-import 'package:flutter/widgets.dart';
 
 import '../../deck/deck_controller.dart';
+import '../../export/pdf_export_screen.dart';
+import '../tokens/colors.dart';
+import '../widgets/icon_button.dart';
 
 class DeckBottomBar extends StatelessWidget {
   const DeckBottomBar({super.key});
