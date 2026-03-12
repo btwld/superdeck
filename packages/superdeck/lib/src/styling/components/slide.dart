@@ -10,16 +10,11 @@ import 'markdown_codeblock.dart';
 import 'markdown_list.dart';
 import 'markdown_table.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Root specification for slide styling containing all markdown element styles.
 ///
 /// This is the main spec that aggregates all markdown styling including headings,
 /// text, alerts, lists, tables, code blocks, and more.
 final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
-  // Heading styles
   final StyleSpec<TextSpec>? h1;
   final StyleSpec<TextSpec>? h2;
   final StyleSpec<TextSpec>? h3;
@@ -28,7 +23,6 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
   final StyleSpec<TextSpec>? h6;
   final StyleSpec<TextSpec>? p;
 
-  // Inline text styles
   final TextStyle? a;
   final TextStyle? em;
   final TextStyle? strong;
@@ -36,10 +30,8 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
   final TextStyle? img;
   final TextStyle? link;
 
-  // Scale factor
   final TextScaler? textScaleFactor;
 
-  // Complex markdown elements
   final StyleSpec<MarkdownAlertSpec> alert;
   final BoxDecoration? horizontalRuleDecoration;
   final StyleSpec<MarkdownBlockquoteSpec>? blockquote;
@@ -48,7 +40,6 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
   final StyleSpec<MarkdownCodeblockSpec>? code;
   final StyleSpec<MarkdownCheckboxSpec>? checkbox;
 
-  // Layout
   final StyleSpec<BoxSpec> blockContainer;
   final StyleSpec<BoxSpec> slideContainer;
   final StyleSpec<ImageSpec> image;
@@ -187,35 +178,22 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
   /// the relevant properties and converting them to the expected format.
   MarkdownStyleSheet toStyle() {
     return MarkdownStyleSheet(
-      // Headings
       h1: h1?.spec.style,
       h2: h2?.spec.style,
       h3: h3?.spec.style,
       h4: h4?.spec.style,
       h5: h5?.spec.style,
       h6: h6?.spec.style,
-
-      // Paragraph
       p: p?.spec.style,
-
-      // Links
       a: link,
-
-      // Lists
       listBullet: list?.spec.bullet?.spec.style,
       orderedListAlign: list?.spec.orderedAlignment ?? WrapAlignment.start,
       unorderedListAlign: list?.spec.unorderedAlignment ?? WrapAlignment.start,
-
-      // Blockquotes
       blockquote: blockquote?.spec.textStyle,
       blockquotePadding: blockquote?.spec.padding,
       blockquoteDecoration: blockquote?.spec.decoration,
       blockquoteAlign: blockquote?.spec.alignment ?? WrapAlignment.start,
-
-      // Horizontal rules
       horizontalRuleDecoration: horizontalRuleDecoration,
-
-      // Tables
       tableHead: table?.spec.headStyle,
       tableBody: table?.spec.bodyStyle,
       tableHeadAlign: table?.spec.headAlignment,
@@ -226,8 +204,6 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       tableCellsDecoration: table?.spec.cellDecoration,
       tableVerticalAlignment:
           table?.spec.verticalAlignment ?? TableCellVerticalAlignment.middle,
-
-      // Checkboxes
       checkbox: checkbox?.spec.textStyle,
     );
   }
@@ -285,10 +261,6 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
   ];
 }
 
-// ============================================================
-// STYLE
-// ============================================================
-
 /// Root style class for configuring [SlideSpec] properties.
 ///
 /// This is the main style that controls all markdown element styling
@@ -299,7 +271,6 @@ final class SlideStyle extends Style<SlideSpec>
         WidgetModifierStyleMixin<SlideStyle, SlideSpec>,
         VariantStyleMixin<SlideStyle, SlideSpec>,
         AnimationStyleMixin<SlideStyle, SlideSpec> {
-  // Heading Props
   final Prop<StyleSpec<TextSpec>>? $h1;
   final Prop<StyleSpec<TextSpec>>? $h2;
   final Prop<StyleSpec<TextSpec>>? $h3;
@@ -308,7 +279,6 @@ final class SlideStyle extends Style<SlideSpec>
   final Prop<StyleSpec<TextSpec>>? $h6;
   final Prop<StyleSpec<TextSpec>>? $p;
 
-  // Inline text style Props
   final Prop<TextStyle>? $a;
   final Prop<TextStyle>? $em;
   final Prop<TextStyle>? $strong;
@@ -316,10 +286,8 @@ final class SlideStyle extends Style<SlideSpec>
   final Prop<TextStyle>? $img;
   final Prop<TextStyle>? $link;
 
-  // Scale factor
   final Prop<TextScaler>? $textScaleFactor;
 
-  // Complex markdown element Props
   final Prop<StyleSpec<MarkdownAlertSpec>>? $alert;
   final Prop<BoxDecoration>? $horizontalRuleDecoration;
   final Prop<StyleSpec<MarkdownBlockquoteSpec>>? $blockquote;
@@ -328,7 +296,6 @@ final class SlideStyle extends Style<SlideSpec>
   final Prop<StyleSpec<MarkdownCodeblockSpec>>? $code;
   final Prop<StyleSpec<MarkdownCheckboxSpec>>? $checkbox;
 
-  // Layout Props
   final Prop<StyleSpec<BoxSpec>>? $blockContainer;
   final Prop<StyleSpec<BoxSpec>>? $slideContainer;
   final Prop<StyleSpec<ImageSpec>>? $image;
@@ -461,8 +428,7 @@ final class SlideStyle extends Style<SlideSpec>
 
   @override
   StyleSpec<SlideSpec> resolve(BuildContext context) {
-    // Resolve required StyleSpec fields with fallback defaults
-    // These fields are non-nullable in SlideSpec and must always have a value
+    // [SlideSpec] requires concrete defaults for these non-nullable fields.
     final resolvedAlert =
         MixOps.resolve(context, $alert) ??
         const StyleSpec(spec: MarkdownAlertSpec());

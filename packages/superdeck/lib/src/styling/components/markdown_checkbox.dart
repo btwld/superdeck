@@ -2,10 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for markdown checkbox styling properties.
 ///
 /// Defines styling for checkbox elements including text style and icon.
@@ -48,10 +44,6 @@ final class MarkdownCheckboxSpec extends Spec<MarkdownCheckboxSpec>
   @override
   List<Object?> get props => [textStyle, icon];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownCheckboxSpec] properties.
 final class MarkdownCheckboxStyle extends Style<MarkdownCheckboxSpec>

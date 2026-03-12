@@ -45,7 +45,6 @@ FrontMatter parseFrontMatter(String input) {
     return (yaml: '', markdown: markdownLines.join('\n').trim());
   }
 
-  // Extract yaml (between delimiters) and markdown (after second delimiter)
   final yamlLines = lines.sublist(firstDelimiterLine + 1, secondDelimiterLine);
   final markdownLines = lines.sublist(secondDelimiterLine + 1);
 

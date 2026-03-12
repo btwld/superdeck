@@ -22,10 +22,6 @@ import 'hero_tag_helpers.dart';
 /// );
 /// ```
 
-// ============================================================================
-// Public API
-// ============================================================================
-
 /// Creates block-level syntaxes for hero tag support.
 /// Includes header and fenced code block parsing.
 List<md.BlockSyntax> createHeroBlockSyntaxes() => const [
@@ -36,10 +32,6 @@ List<md.BlockSyntax> createHeroBlockSyntaxes() => const [
 /// Creates inline-level syntaxes for hero tag support.
 /// Currently includes image parsing.
 List<md.InlineSyntax> createHeroInlineSyntaxes() => [ImageHeroSyntax()];
-
-// ============================================================================
-// Syntax Implementations
-// ============================================================================
 
 /// Header syntax that extracts trailing `{.hero}` markers.
 ///
@@ -120,7 +112,6 @@ class ImageHeroSyntax extends md.ImageSyntax {
     String? tag,
     required List<md.Node> Function() getChildren,
   }) {
-    // Let parent handle standard image parsing
     final nodes = super.close(
       parser,
       opener,
@@ -129,7 +120,6 @@ class ImageHeroSyntax extends md.ImageSyntax {
       getChildren: getChildren,
     );
 
-    // Validate we got an image element
     if (nodes == null || nodes.isEmpty) return nodes;
 
     final element = nodes.firstOrNull;
@@ -161,10 +151,8 @@ class HeroFencedCodeBlockSyntax extends md.FencedCodeBlockSyntax {
     final openingLine = parser.current.content;
     final hero = extractHeroFromFenceInfo(openingLine);
 
-    // Let parent handle actual code block parsing
     final node = super.parse(parser);
 
-    // Apply hero attribute to the <code> element if we found one
     if (hero != null && node is md.Element) {
       final codeElement = node.children
           ?.whereType<md.Element>()

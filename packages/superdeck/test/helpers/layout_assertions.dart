@@ -4,8 +4,6 @@ import 'package:superdeck/superdeck.dart';
 
 /// Layout assertion helpers for SuperDeck widget tests.
 extension LayoutAssertions on WidgetTester {
-  // ---------- Flex distribution ----------
-
   void expectFlexRatio(
     Finder finder1,
     Finder finder2,
@@ -62,8 +60,6 @@ extension LayoutAssertions on WidgetTester {
     }
   }
 
-  // ---------- Scrollable ----------
-
   void expectScrollable(Finder finder) {
     final scrollView = find.descendant(
       of: finder,
@@ -79,8 +75,6 @@ extension LayoutAssertions on WidgetTester {
     );
     expect(scrollView, findsNothing, reason: 'Expected non-scrollable content');
   }
-
-  // ---------- Structure ----------
 
   void expectSectionCount(int count) {
     expect(

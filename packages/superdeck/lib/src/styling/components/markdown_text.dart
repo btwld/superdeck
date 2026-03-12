@@ -2,10 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for markdown text styling properties.
 ///
 /// Defines styling for regular markdown text including text style,
@@ -54,10 +50,6 @@ final class MarkdownTextSpec extends Spec<MarkdownTextSpec>
   @override
   List<Object?> get props => [textStyle, padding, alignment];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownTextSpec] properties.
 ///

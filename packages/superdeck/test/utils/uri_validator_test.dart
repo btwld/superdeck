@@ -124,7 +124,6 @@ void main() {
     });
 
     group('validate - path traversal prevention', () {
-      // === BASIC TRAVERSAL TESTS ===
       test('throws on .. in file path', () {
         expect(
           () => UriValidator.validate('file:///../../../etc/passwd'),
@@ -164,7 +163,6 @@ void main() {
         );
       });
 
-      // === BACKSLASH TRAVERSAL TESTS ===
       test('throws on backslash traversal', () {
         expect(
           () => UriValidator.validate(r'..\..\..\secrets.txt'),
@@ -206,7 +204,6 @@ void main() {
         );
       });
 
-      // === PERCENT-ENCODED SEPARATOR TESTS ===
       test('throws on percent-encoded forward slash traversal', () {
         // %2f is URL-encoded /
         expect(
@@ -263,7 +260,6 @@ void main() {
         );
       });
 
-      // === PERCENT-ENCODED DOT TESTS ===
       test('throws on mixed case percent-encoded traversal', () {
         // Mixed case: %2E%2e (uppercase E, lowercase e)
         expect(
@@ -320,7 +316,6 @@ void main() {
         );
       });
 
-      // === HTTP/HTTPS EXEMPTION TESTS ===
       test('allows .. in HTTP URL path (intentionally permissive)', () {
         // HTTP URLs are exempt from traversal checks because:
         // 1. The server controls what path resolves to
@@ -340,7 +335,6 @@ void main() {
         expect(uri!.scheme, 'https');
       });
 
-      // === SAFE DOUBLE-DOT FILENAME TESTS ===
       test('allows filenames containing double dots', () {
         // Filenames like '..config.png' should be allowed
         final uri = UriValidator.validate('assets/..config.png');
@@ -380,7 +374,6 @@ void main() {
         expect(uri!.path, '/tmp/..hidden/..config.txt');
       });
 
-      // === SAFE PATH TESTS ===
       test('allows normal file path', () {
         final uri = UriValidator.validate('file:///tmp/cache/image.png');
         expect(uri, isNotNull);

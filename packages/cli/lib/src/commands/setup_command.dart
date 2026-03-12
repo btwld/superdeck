@@ -284,7 +284,6 @@ Built with SuperDeck
         logger.info('slides.md file already exists');
       }
 
-      // Set up web support with custom index.html if requested
       final setupWeb = argResults?['setup-web'] as bool? ?? true;
       if (setupWeb) {
         try {
@@ -297,7 +296,6 @@ Built with SuperDeck
         }
       }
 
-      // Setup pubspec.yaml for SuperDeck
       try {
         final pubspecFile = deckConfig.pubspecFile;
         if (await pubspecFile.exists()) {

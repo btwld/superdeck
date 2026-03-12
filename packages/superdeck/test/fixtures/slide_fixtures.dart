@@ -4,8 +4,6 @@ import 'package:superdeck/superdeck.dart';
 ///
 /// All keys are deterministic (no timestamps) to keep tests stable.
 class SlideFixtures {
-  // ---------- Basic layouts ----------
-
   /// Single column, single section, center aligned.
   static Slide singleColumn({String content = '# Hello World'}) {
     return _slide('fixture-single-column', [
@@ -64,8 +62,6 @@ class SlideFixtures {
     ]);
   }
 
-  // ---------- Multi-section layouts ----------
-
   /// Two stacked sections with equal flex (1:1).
   static Slide twoSectionEqual() {
     return _slide('fixture-two-section-equal', [
@@ -105,8 +101,6 @@ class SlideFixtures {
       SectionBlock([ContentBlock('Bottom Single')], flex: 1),
     ]);
   }
-
-  // ---------- Alignment variations ----------
 
   /// Single block with a specific alignment.
   static Slide withAlignment(ContentAlignment align) {
@@ -148,8 +142,6 @@ class SlideFixtures {
           .toList(),
     );
   }
-
-  // ---------- Special content ----------
 
   /// Scrollable block with long content to exercise SingleChildScrollView path.
   static Slide scrollableBlock({int lineCount = 50}) {
@@ -212,8 +204,6 @@ void main() {
       ]),
     ]);
   }
-
-  // ---------- Helpers ----------
 
   static Slide _slide(String key, List<SectionBlock> sections) {
     return Slide(key: key, sections: sections);

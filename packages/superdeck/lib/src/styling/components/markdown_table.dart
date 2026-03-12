@@ -3,10 +3,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for markdown table styling properties.
 ///
 /// Defines styling for tables including head/body text styles, alignment,
@@ -109,10 +105,6 @@ final class MarkdownTableSpec extends Spec<MarkdownTableSpec>
     verticalAlignment,
   ];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownTableSpec] properties.
 ///

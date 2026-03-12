@@ -62,7 +62,6 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
 
   @override
   Widget? visitText(md.Text text, TextStyle? preferredStyle) {
-    // Extract tag from inline text and strip it from content.
     final (:tag, :content) = getTagAndContent(text.text);
 
     return StyleSpecBuilder<TextSpec>(

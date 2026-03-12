@@ -11,7 +11,6 @@ class ConverterHelper {
     final padding = spec.padding ?? EdgeInsets.zero;
     final margin = spec.margin ?? EdgeInsets.zero;
 
-    // Extract border dimensions if present
     final borderDimensions = spec.decoration is BoxDecoration
         ? (spec.decoration as BoxDecoration).border?.dimensions
         : null;

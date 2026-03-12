@@ -8,21 +8,18 @@ import 'styling.dart';
 /// Safely loads a Google Font, falling back to platform default when runtime
 /// fetching is disabled (e.g., in tests).
 TextStyle _safeGoogleFont(TextStyle Function() fontLoader) {
-  // When runtime fetching is disabled (typically in tests), Google Fonts
-  // requires bundled font assets. Since we don't bundle fonts for tests,
-  // use platform default instead.
+  // Tests don't bundle Google Fonts assets, so fall back to the platform
+  // default when runtime fetching is disabled.
   if (!GoogleFonts.config.allowRuntimeFetching) {
     return const TextStyle();
   }
   return fontLoader();
 }
 
-// Base text style for the presentation
 TextStyle get _baseTextStyle => _safeGoogleFont(
   GoogleFonts.poppins,
 ).copyWith(fontSize: 24, color: Colors.white);
 
-// Custom variants for different block types
 const onGist = NamedVariant('gist');
 const onDebug = NamedVariant('debug');
 const onImage = NamedVariant('image');
@@ -30,18 +27,8 @@ const onImage = NamedVariant('image');
 WidgetModifierConfig _pad(EdgeInsetsGeometryMix value) =>
     WidgetModifierConfig.padding(value);
 
-/// Creates the default base slide style with all typography, alerts, code blocks, etc.
-///
-/// This provides the foundation styling for all slides including:
-/// - Typography (headings h1-h6, paragraphs)
-/// - Alerts (note, tip, important, warning, caution)
-/// - Code blocks
-/// - Tables
-/// - Blockquotes
-/// - Lists
-/// - Layout containers
+/// Creates the base [SlideStyle] used before user overrides are applied.
 SlideStyle _createDefaultSlideStyle() {
-  // Create a helper for alert type styling to reduce repetition
   MarkdownAlertTypeStyle createAlertType(Color color) {
     return MarkdownAlertTypeStyle(
       heading: TextStyler()
@@ -80,7 +67,6 @@ SlideStyle _createDefaultSlideStyle() {
   }
 
   return SlideStyle(
-    // Typography - Headings
     h1: TextStyler()
         .style(
           TextStyleMix(
@@ -153,7 +139,6 @@ SlideStyle _createDefaultSlideStyle() {
         )
         .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 3))),
 
-    // Paragraph
     p: TextStyler()
         .style(
           TextStyleMix(
@@ -165,10 +150,8 @@ SlideStyle _createDefaultSlideStyle() {
         )
         .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 12))),
 
-    // Inline text styles
     link: _baseTextStyle.copyWith(color: const Color.fromARGB(255, 66, 82, 96)),
 
-    // Alerts - using helper function for each type
     alert: MarkdownAlertStyle(
       note: createAlertType(Colors.blue),
       tip: createAlertType(Colors.green),
@@ -177,7 +160,6 @@ SlideStyle _createDefaultSlideStyle() {
       caution: createAlertType(Colors.redAccent),
     ),
 
-    // Code blocks
     code: MarkdownCodeblockStyle(
       textStyle: _safeGoogleFont(
         () => GoogleFonts.jetBrainsMono(fontSize: 18),
@@ -191,7 +173,6 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ),
 
-    // Tables
     table: MarkdownTableStyle(
       headStyle: _baseTextStyle.copyWith(fontWeight: FontWeight.bold),
       bodyStyle: _baseTextStyle,
@@ -202,7 +183,6 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ),
 
-    // Blockquotes
     blockquote: MarkdownBlockquoteStyle(
       textStyle: _baseTextStyle.copyWith(fontSize: 32),
       padding: const EdgeInsets.only(bottom: 12, left: 30),
@@ -213,7 +193,6 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ),
 
-    // Lists
     list: MarkdownListStyle(
       bullet: TextStyler().style(
         TextStyleMix(
@@ -234,14 +213,10 @@ SlideStyle _createDefaultSlideStyle() {
           .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 8))),
     ),
 
-    // Checkbox
     checkbox: MarkdownCheckboxStyle(textStyle: _baseTextStyle),
 
-    // Block container with variants for different block types
     blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
-      // Image variant - no padding
       VariantStyle(onImage, BoxStyler(padding: EdgeInsetsGeometryMix.all(0))),
-      // Gist variant - no padding or margin
       VariantStyle(
         onGist,
         BoxStyler(
@@ -251,10 +226,8 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ]),
 
-    // Slide container - wraps entire slide content
     slideContainer: BoxStyler(),
 
-    // Horizontal rule
     horizontalRuleDecoration: BoxDecoration(
       border: Border(
         bottom: BorderSide(color: _baseTextStyle.color!, width: 2),
@@ -263,8 +236,5 @@ SlideStyle _createDefaultSlideStyle() {
   );
 }
 
-/// Default base slide style - created once and reused.
-///
-/// This style is ALWAYS applied as the foundation, then user-provided
-/// styles are merged on top of it.
+/// The shared base [SlideStyle] applied before user overrides.
 final defaultSlideStyle = _createDefaultSlideStyle();

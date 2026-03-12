@@ -7,7 +7,6 @@ import 'package:superdeck_builder/src/markdown_utils.dart';
 import 'package:test/test.dart';
 
 void main() {
-  // Setup logging to capture all messages
   Logger.root.level = Level.ALL;
   final logMessages = <LogRecord>[];
 

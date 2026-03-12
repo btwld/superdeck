@@ -29,7 +29,6 @@ void main() {
       'metadata_examples': <String, dynamic>{},
     };
 
-    // Generate all categories systematically
     _generateHeadings(reference['block_elements'] as Map<String, dynamic>);
     _generateParagraphs(reference['block_elements'] as Map<String, dynamic>);
     _generateBlockquotes(reference['block_elements'] as Map<String, dynamic>);
@@ -107,15 +106,9 @@ void _convertAndStore(
   };
 }
 
-// ============================================================================
-// BLOCK ELEMENTS
-// ============================================================================
-
 void _generateHeadings(Map<String, dynamic> block) {
   block['headings'] = <String, dynamic>{};
   final headings = block['headings'] as Map<String, dynamic>;
-
-  // ATX headings (# syntax)
   _convertAndStore(
     headings,
     'h1_atx',
@@ -158,7 +151,6 @@ void _generateHeadings(Map<String, dynamic> block) {
     description: 'Level 6 heading using ATX syntax',
   );
 
-  // Heading with inline formatting
   _convertAndStore(
     headings,
     'heading_with_emphasis',
@@ -166,7 +158,6 @@ void _generateHeadings(Map<String, dynamic> block) {
     description: 'Heading containing inline formatting elements',
   );
 
-  // Heading with auto-generated ID (GitHub Web extension)
   _convertAndStore(
     headings,
     'heading_with_id',
@@ -174,7 +165,6 @@ void _generateHeadings(Map<String, dynamic> block) {
     description: 'Heading that generates an automatic ID for linking',
   );
 
-  // Setext headings
   _convertAndStore(
     headings,
     'h1_setext',
@@ -253,7 +243,6 @@ void _generateLists(Map<String, dynamic> block) {
   block['lists'] = <String, dynamic>{};
   final lists = block['lists'] as Map<String, dynamic>;
 
-  // Unordered lists
   _convertAndStore(
     lists,
     'unordered_list_dash',
@@ -275,7 +264,6 @@ void _generateLists(Map<String, dynamic> block) {
     description: 'Unordered list using plus (+) markers',
   );
 
-  // Ordered lists
   _convertAndStore(
     lists,
     'ordered_list',
@@ -290,7 +278,6 @@ void _generateLists(Map<String, dynamic> block) {
     description: 'Ordered list starting at number 5',
   );
 
-  // Nested lists
   _convertAndStore(
     lists,
     'nested_list',
@@ -305,7 +292,6 @@ void _generateLists(Map<String, dynamic> block) {
     description: 'Mixed ordered and unordered nested lists',
   );
 
-  // Task lists (GitHub extension)
   _convertAndStore(
     lists,
     'task_list',
@@ -313,7 +299,6 @@ void _generateLists(Map<String, dynamic> block) {
     description: 'Task list with checked and unchecked items',
   );
 
-  // List with multiple paragraphs
   _convertAndStore(
     lists,
     'list_with_paragraphs',
@@ -321,7 +306,6 @@ void _generateLists(Map<String, dynamic> block) {
     description: 'List items containing multiple paragraphs',
   );
 
-  // List with code blocks
   _convertAndStore(
     lists,
     'list_with_code',
@@ -334,7 +318,6 @@ void _generateCodeBlocks(Map<String, dynamic> block) {
   block['code_blocks'] = <String, dynamic>{};
   final codeBlocks = block['code_blocks'] as Map<String, dynamic>;
 
-  // Indented code blocks
   _convertAndStore(
     codeBlocks,
     'indented_code',
@@ -342,7 +325,6 @@ void _generateCodeBlocks(Map<String, dynamic> block) {
     description: 'Code block using 4-space indentation',
   );
 
-  // Fenced code blocks
   _convertAndStore(
     codeBlocks,
     'fenced_code_backtick',
@@ -357,7 +339,6 @@ void _generateCodeBlocks(Map<String, dynamic> block) {
     description: 'Fenced code block using tildes',
   );
 
-  // With language identifier
   _convertAndStore(
     codeBlocks,
     'fenced_code_dart',
@@ -384,7 +365,6 @@ void _generateTables(Map<String, dynamic> block) {
   block['tables'] = <String, dynamic>{};
   final tables = block['tables'] as Map<String, dynamic>;
 
-  // Simple table
   _convertAndStore(
     tables,
     'simple_table',
@@ -392,7 +372,6 @@ void _generateTables(Map<String, dynamic> block) {
     description: 'Simple table with headers and two rows',
   );
 
-  // Table with alignment
   _convertAndStore(
     tables,
     'table_with_alignment',
@@ -400,7 +379,6 @@ void _generateTables(Map<String, dynamic> block) {
     description: 'Table with left, center, and right alignment',
   );
 
-  // Table with inline formatting
   _convertAndStore(
     tables,
     'table_with_formatting',
@@ -408,7 +386,6 @@ void _generateTables(Map<String, dynamic> block) {
     description: 'Table cells containing inline formatting',
   );
 
-  // Table with links and images
   _convertAndStore(
     tables,
     'table_with_links',
@@ -497,15 +474,9 @@ void _generateHorizontalRules(Map<String, dynamic> block) {
   );
 }
 
-// ============================================================================
-// INLINE ELEMENTS
-// ============================================================================
-
 void _generateTextFormatting(Map<String, dynamic> inline) {
   inline['text_formatting'] = <String, dynamic>{};
   final formatting = inline['text_formatting'] as Map<String, dynamic>;
-
-  // Plain text
   _convertAndStore(
     formatting,
     'plain_text',
@@ -513,7 +484,6 @@ void _generateTextFormatting(Map<String, dynamic> inline) {
     description: 'Plain text node without formatting',
   );
 
-  // Strong (bold)
   _convertAndStore(
     formatting,
     'strong_asterisk',
@@ -528,7 +498,6 @@ void _generateTextFormatting(Map<String, dynamic> inline) {
     description: 'Strong/bold using double underscores',
   );
 
-  // Emphasis (italic)
   _convertAndStore(
     formatting,
     'em_asterisk',
@@ -543,7 +512,6 @@ void _generateTextFormatting(Map<String, dynamic> inline) {
     description: 'Emphasis/italic using single underscores',
   );
 
-  // Combined strong and emphasis
   _convertAndStore(
     formatting,
     'strong_and_em',
@@ -565,7 +533,6 @@ void _generateTextFormatting(Map<String, dynamic> inline) {
     description: 'Bold nested within italic',
   );
 
-  // Strikethrough (GitHub extension)
   _convertAndStore(
     formatting,
     'strikethrough',
@@ -573,7 +540,6 @@ void _generateTextFormatting(Map<String, dynamic> inline) {
     description: 'Strikethrough/deleted text',
   );
 
-  // Combined formatting
   _convertAndStore(
     formatting,
     'all_formatting',
@@ -586,7 +552,6 @@ void _generateLinks(Map<String, dynamic> inline) {
   inline['links'] = <String, dynamic>{};
   final links = inline['links'] as Map<String, dynamic>;
 
-  // Inline links
   _convertAndStore(
     links,
     'inline_link',
@@ -601,7 +566,6 @@ void _generateLinks(Map<String, dynamic> inline) {
     description: 'Inline link with URL and title attribute',
   );
 
-  // Reference links
   _convertAndStore(
     links,
     'reference_link',
@@ -626,7 +590,6 @@ void _generateLinks(Map<String, dynamic> inline) {
     includeMetadata: true,
   );
 
-  // Autolinks
   _convertAndStore(
     links,
     'autolink',
@@ -641,7 +604,6 @@ void _generateLinks(Map<String, dynamic> inline) {
     description: 'Email autolink',
   );
 
-  // Link with formatting
   _convertAndStore(
     links,
     'link_with_emphasis',
@@ -649,7 +611,6 @@ void _generateLinks(Map<String, dynamic> inline) {
     description: 'Link text containing bold formatting',
   );
 
-  // Naked URL (GitHub extension)
   _convertAndStore(
     links,
     'naked_url',
@@ -670,7 +631,6 @@ void _generateImages(Map<String, dynamic> inline) {
   inline['images'] = <String, dynamic>{};
   final images = inline['images'] as Map<String, dynamic>;
 
-  // Inline images
   _convertAndStore(
     images,
     'inline_image',
@@ -685,7 +645,6 @@ void _generateImages(Map<String, dynamic> inline) {
     description: 'Inline image with alt text and title',
   );
 
-  // Reference images
   _convertAndStore(
     images,
     'reference_image',
@@ -702,7 +661,6 @@ void _generateImages(Map<String, dynamic> inline) {
     includeMetadata: true,
   );
 
-  // Image as link
   _convertAndStore(
     images,
     'linked_image',
@@ -805,10 +763,6 @@ void _generateInlineHtml(Map<String, dynamic> inline) {
     description: 'Inline HTML preserved by the inline HTML syntax',
   );
 }
-
-// ============================================================================
-// SPECIAL CASES
-// ============================================================================
 
 void _generateEmptyElements(Map<String, dynamic> special) {
   special['empty_elements'] = <String, dynamic>{};
@@ -916,10 +870,6 @@ void _generateEscapedCharacters(Map<String, dynamic> special) {
   );
 }
 
-// ============================================================================
-// COMPLEX NESTED STRUCTURES
-// ============================================================================
-
 void _generateNestedStructures(Map<String, dynamic> complex) {
   complex['nested_structures'] = <String, dynamic>{};
   final nested = complex['nested_structures'] as Map<String, dynamic>;
@@ -1009,10 +959,6 @@ void _generateFootnotes(Map<String, dynamic> complex) {
     includeMetadata: true,
   );
 }
-
-// ============================================================================
-// METADATA EXAMPLES
-// ============================================================================
 
 void _generateMetadataExamples(Map<String, dynamic> metadata) {
   _convertAndStore(

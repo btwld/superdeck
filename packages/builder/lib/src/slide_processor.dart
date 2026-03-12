@@ -51,10 +51,8 @@ class SlideProcessor {
         futures.add(_processSlide(SlideContext(index, rawSlide, store), tasks));
       }
 
-      // Wait for this batch to complete
       final results = await Future.wait(futures);
 
-      // Extract processed slides using functional approach
       final slidesToAdd = await Future.wait(
         results.map((result) => _buildSlide(result)),
       );

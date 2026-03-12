@@ -13,7 +13,7 @@ import 'package:universal_html/html.dart' as html;
 
 import 'slide_capture_service.dart';
 
-/// Status of the export process
+/// Status values for PDF export.
 enum PdfExportStatus {
   /// Initial state, no export in progress
   idle,
@@ -34,10 +34,10 @@ enum PdfExportStatus {
   failed,
 }
 
-/// Controller for exporting slides to PDF
+/// Exports slides to a PDF document.
 ///
-/// Handles capturing slides as images and combining them into a PDF document.
-/// Supports both web and native platforms.
+/// This controller captures each slide as an image and combines the results
+/// into a PDF on web and native platforms.
 class PdfController {
   static const _kPollInterval = Duration(milliseconds: 10);
   static const _kRetryDelay = Duration(milliseconds: 100);
@@ -45,11 +45,10 @@ class PdfController {
   static const _kCaptureAnimationDuration = Duration(milliseconds: 1);
   static const _kRenderAttachmentTimeout = Duration(seconds: 5);
 
-  /// Creates a new [PdfController]
+  /// Creates a controller that exports [slides] with [slideCaptureService].
   ///
-  /// [slides] - List of slides to export
-  /// [slideCaptureService] - Service used to capture slide images
-  /// [waitDuration] - Duration to wait between operations
+  /// The controller waits [waitDuration] between export stages and gives each
+  /// render boundary up to [renderAttachmentTimeout] to attach.
   PdfController({
     required this.slides,
     required this.slideCaptureService,
@@ -67,12 +66,10 @@ class PdfController {
   bool _disposed = false;
   bool _cancelled = false;
 
-  // Reactive state - Signals
   final _exportStatus = signal<PdfExportStatus>(PdfExportStatus.idle);
   final _capturedCount = signal<int>(0);
   final _exportError = signal<String?>(null);
 
-  // Computed signals
   late final progress = computed(() {
     if (_slideKeys.isEmpty) return 0.0;
     return _capturedCount.value / _slideKeys.length;
@@ -82,7 +79,6 @@ class PdfController {
     return (_capturedCount.value, _slideKeys.length);
   });
 
-  // Readonly accessors
   ReadonlySignal<PdfExportStatus> get exportStatus => _exportStatus;
   ReadonlySignal<String?> get exportError => _exportError;
 
@@ -91,30 +87,29 @@ class PdfController {
     if (_cancelled) throw _ExportCancelledException();
   }
 
-  /// The list of slides to export
+  /// The slides to export.
   final List<SlideConfiguration> slides;
 
-  /// Service used to capture slides
+  /// The service used to capture slides.
   final SlideCaptureService slideCaptureService;
 
-  /// Duration used to wait between operations
   final Duration _waitDuration;
   final Duration _renderAttachmentTimeout;
 
   /// Whether this controller has been disposed
   bool get disposed => _disposed;
 
-  /// Page controller for navigating between slides
+  /// The page controller used during export.
   PageController get pageController => _pageController;
 
-  /// Gets the [GlobalKey] for a specific slide
+  /// The [GlobalKey] for [slide].
   GlobalKey getSlideKey(SlideConfiguration slide) => _slideKeys[slide.key]!;
 
   @visibleForTesting
   Future<void> waitForRenderBoundaryPaint(GlobalKey key) =>
       _waitForRenderBoundaryPaint(key);
 
-  /// Waits for a render boundary widget to be painted
+  /// Waits for [key]'s render boundary to attach.
   Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
     var elapsed = Duration.zero;
     var hasSeenContext = false;
@@ -142,7 +137,7 @@ class PdfController {
     );
   }
 
-  /// Captures an image from a [GlobalKey] with retry logic
+  /// Captures [key] with retry logic.
   Future<Uint8List> _captureImageWithRetry(GlobalKey key) async {
     const maxAttempts = 3;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -161,10 +156,9 @@ class PdfController {
     throw Exception('Failed to capture image after $maxAttempts attempts.');
   }
 
-  /// Prepares slides for export by ensuring they are properly rendered
+  /// Prepares slides for export by ensuring they are rendered.
   Future<void> _prepare() async {
     for (var i = 0; i < _slideKeys.length; i++) {
-      // just return if cancelled
       if (_cancelled) return;
       final slide = slides[i];
       final key = _slideKeys[slide.key]!;
@@ -179,9 +173,7 @@ class PdfController {
     }
   }
 
-  /// Starts the export process
-  ///
-  /// Captures slides as images and combines them into a PDF document.
+  /// Captures each slide and writes the resulting PDF.
   Future<void> export() async {
     _cancelled = false;
     _capturedCount.value = 0;
@@ -194,7 +186,7 @@ class PdfController {
       _exportStatus.value = PdfExportStatus.capturing;
 
       for (var i = 0; i < _slideKeys.length; i++) {
-        _checkExportAllowed(); // check before starting this iteration
+        _checkExportAllowed();
 
         final slide = slides[i];
         final key = _slideKeys[slide.key]!;
@@ -230,17 +222,12 @@ class PdfController {
       _images.clear();
       _capturedCount.value = 0;
     } on _ExportCancelledException catch (e) {
-      // Handle cancellation: update status.
       _exportStatus.value = PdfExportStatus.idle;
-
-      // Optionally, log the cancellation.
       log(e.toString());
     }
   }
 
-  /// Saves the generated PDF file
-  ///
-  /// Uses different approaches for web and native platforms
+  /// Saves [pdf] using the current platform's download flow.
   Future<void> _savePdf(Uint8List pdf) async {
     try {
       if (kIsWeb) {
@@ -286,7 +273,7 @@ class PdfController {
   }
 }
 
-/// Builds a PDF document from a list of images
+/// Builds a PDF document from [images].
 ///
 /// This runs on a separate isolate via [compute]
 Future<Uint8List> _buildPdf(List<Uint8List> images) async {

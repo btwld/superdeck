@@ -36,7 +36,6 @@ class _SwitchAnimationState extends State<SwitchAnimation> {
 
   @override
   Widget build(BuildContext context) {
-    // Simple implicit animation for the container
     final containerStyle = BoxStyler()
         .color(_trigger.value ? Colors.deepPurpleAccent : Colors.grey.shade300)
         .height(30)
@@ -47,7 +46,6 @@ class _SwitchAnimationState extends State<SwitchAnimation> {
         )
         .animate(AnimationConfig.easeOut(300.ms));
 
-    // Complex keyframe animation for the thumb
     final thumbStyle = BoxStyler()
         .height(30)
         .width(40)

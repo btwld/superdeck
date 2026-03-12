@@ -56,14 +56,12 @@ class SimpleSelectExample extends StatefulWidget {
 class _SimpleSelectExampleState extends State<SimpleSelectExample> {
   String? _selectedValue;
 
-  // Available fruits
   static const fruits = [
     Fruit(value: 'apple', label: 'Apple', emoji: '🍎'),
     Fruit(value: 'banana', label: 'Banana', emoji: '🍌'),
     Fruit(value: 'orange', label: 'Orange', emoji: '🍊'),
   ];
 
-  // Get selected fruit label for display
   String? get _selectedLabel {
     if (_selectedValue == null) return null;
     return fruits.firstWhere((f) => f.value == _selectedValue).label;

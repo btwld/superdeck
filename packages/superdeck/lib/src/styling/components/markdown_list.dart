@@ -2,10 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for markdown list styling properties.
 ///
 /// Defines styling for ordered and unordered lists including bullet and text styles.
@@ -70,10 +66,6 @@ final class MarkdownListSpec extends Spec<MarkdownListSpec>
     unorderedAlignment,
   ];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownListSpec] properties.
 final class MarkdownListStyle extends Style<MarkdownListSpec>

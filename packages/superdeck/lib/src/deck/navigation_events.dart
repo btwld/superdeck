@@ -1,10 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
-// ============================================================================
-// Navigation Events
-// ============================================================================
-
 /// Navigation events representing user actions in the presentation
 ///
 /// This sealed class hierarchy defines all possible navigation events
@@ -25,10 +21,6 @@ class GoToSlideEvent extends NavigationEvent {
   GoToSlideEvent(this.index);
 }
 
-// ============================================================================
-// Keyboard Navigation Handler
-// ============================================================================
-
 /// Handles keyboard input and converts it to navigation events
 ///
 /// This handler is responsible for mapping keyboard keys to navigation events.
@@ -41,10 +33,7 @@ class KeyboardNavigationHandler {
   /// Requires Meta key + arrow keys for navigation.
   /// Returns null if the key doesn't correspond to a navigation action.
   NavigationEvent? handleKey(KeyEvent event) {
-    // Only handle key down events to avoid double-triggering
     if (event is! KeyDownEvent) return null;
-
-    // Require meta key to be pressed for navigation
     if (!HardwareKeyboard.instance.isMetaPressed) return null;
 
     return switch (event.logicalKey) {
@@ -56,10 +45,6 @@ class KeyboardNavigationHandler {
     };
   }
 }
-
-// ============================================================================
-// Gesture Navigation Handler
-// ============================================================================
 
 /// Handles gesture input and converts it to navigation events
 ///
@@ -84,7 +69,6 @@ class GestureNavigationHandler {
   ///
   /// Only responds to touch input; ignores mouse clicks on desktop.
   NavigationEvent? handleTap(TapUpDetails details, Size size) {
-    // Ignore mouse input - only respond to actual touch
     if (details.kind == PointerDeviceKind.mouse) return null;
 
     final tapX = details.localPosition.dx;
@@ -107,7 +91,6 @@ class GestureNavigationHandler {
   ///
   /// Only responds to touch input; ignores mouse drags on desktop.
   NavigationEvent? handleSwipe(DragEndDetails details) {
-    // Ignore mouse input - only respond to actual touch
     if (_dragDeviceKind == PointerDeviceKind.mouse) {
       _dragDeviceKind = null;
       return null;
@@ -115,14 +98,11 @@ class GestureNavigationHandler {
 
     final velocity = details.velocity.pixelsPerSecond.dx;
 
-    // Require minimum velocity to avoid accidental navigation
     if (velocity.abs() < minSwipeVelocity) {
       _dragDeviceKind = null;
       return null;
     }
 
-    // Positive velocity = swipe right = previous slide
-    // Negative velocity = swipe left = next slide
     _dragDeviceKind = null;
     return velocity > 0 ? PreviousSlideEvent() : NextSlideEvent();
   }

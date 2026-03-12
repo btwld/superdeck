@@ -5,10 +5,6 @@ import 'package:superdeck_core/src/hero_tag_helpers.dart';
 import 'package:superdeck_core/src/markdown_syntaxes.dart';
 
 void main() {
-  // ============================================================================
-  // Unit Tests - Hero tag helpers
-  // ============================================================================
-
   group('stripTrailingHeroMarker', () {
     test('extracts hero from simple text', () {
       final result = stripTrailingHeroMarker('Hello World {.hero}');
@@ -118,10 +114,6 @@ void main() {
       expect(hero, isNull);
     });
   });
-
-  // ============================================================================
-  // Syntax Tests - HeaderTagSyntax
-  // ============================================================================
 
   group('HeaderTagSyntax', () {
     test('parses h1 header with hero tag', () {
@@ -245,10 +237,6 @@ void main() {
     });
   });
 
-  // ============================================================================
-  // Syntax Tests - ImageHeroSyntax
-  // ============================================================================
-
   group('ImageHeroSyntax', () {
     test('parses image with hero tag', () {
       final html = md.markdownToHtml(
@@ -325,14 +313,9 @@ void main() {
         'Regular [link](url) {.hero}',
         inlineSyntaxes: createHeroInlineSyntaxes(),
       );
-      // Hero marker should remain as text since not after image
       expect(html, contains('{.hero}'));
     });
   });
-
-  // ============================================================================
-  // Syntax Tests - HeroFencedCodeBlockSyntax
-  // ============================================================================
 
   group('HeroFencedCodeBlockSyntax', () {
     test('parses code block with hero tag', () {
@@ -433,10 +416,6 @@ String test = "hello {.world}";
     });
   });
 
-  // ============================================================================
-  // Integration Tests
-  // ============================================================================
-
   group('Integration with ExtensionSet', () {
     test('works with gitHubFlavored extension set', () {
       final markdown = '''
@@ -494,10 +473,6 @@ print('Hello');
     });
   });
 
-  // ============================================================================
-  // Edge Cases
-  // ============================================================================
-
   group('Edge Cases', () {
     test('handles empty hero tag brackets', () {
       final result = stripTrailingHeroMarker('Text {}');
@@ -547,10 +522,6 @@ print('Hello');
       expect(result.hero, 'hero');
     });
   });
-
-  // ============================================================================
-  // Pattern Validation Tests
-  // ============================================================================
 
   group('Pattern Validation', () {
     test('validId accepts valid CSS identifiers', () {
