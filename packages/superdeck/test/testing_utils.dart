@@ -93,10 +93,6 @@ void expectWidgetNotFound(Finder finder) {
   expect(finder, findsNothing);
 }
 
-// ---------------------------------------------------------------------------
-// Additional helpers (additive; backward compatible)
-// ---------------------------------------------------------------------------
-
 int _testSlideId = 0;
 
 String _nextKey(String prefix) => '$prefix-${_testSlideId++}';

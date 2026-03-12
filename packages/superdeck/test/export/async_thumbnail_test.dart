@@ -52,8 +52,6 @@ void main() {
             throw UnimplementedError('Should not be called');
           },
         );
-
-        // Should not throw
         thumbnail.dispose();
       });
 
@@ -65,7 +63,6 @@ void main() {
         );
 
         thumbnail.dispose();
-        // Second dispose should not throw
         thumbnail.dispose();
       });
     });

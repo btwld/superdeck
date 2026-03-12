@@ -174,10 +174,10 @@ void main() {
       );
       expect(nestedImage?.first.attributes['src'], equals('small.png'));
 
-      // NOTE: When rendered, TextElementBuilder will call element.textContent
-      // which flattens this <img> to empty string, so it won't display.
-      // To fix this would require modifying TextElementBuilder to preserve
-      // inline children using Text.rich with WidgetSpan. See REPORT.md.
+      // [TextElementBuilder] flattens inline children through
+      // [md.Element.textContent], so nested <img> nodes disappear today.
+      // Supporting them would require preserving inline children with
+      // `Text.rich` and `WidgetSpan`. See REPORT.md.
     });
   });
 }

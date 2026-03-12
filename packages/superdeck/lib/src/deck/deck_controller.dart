@@ -23,10 +23,6 @@ import 'superdeck_plugin.dart';
 /// thumbnails to focused collaborators. Subscribes directly to a
 /// [DeckLoader.load] stream for deck loading and rebuild watching.
 class DeckController {
-  // ========================================
-  // DEPENDENCIES
-  // ========================================
-
   final DeckConfiguration _configuration;
   final DeckLoader _deckLoader;
   final NavigationService _navigationService;
@@ -36,41 +32,25 @@ class DeckController {
   bool _disposed = false;
   StreamSubscription<DeckEvent>? _subscription;
 
-  // ========================================
-  // INTERNAL STATE (Private Signals)
-  // ========================================
-
-  // Deck state
   final _currentDeck = signal<Deck?>(null);
   final _isLoading = signal<bool>(true);
   final _error = signal<Object?>(null);
   final _isBuildActive = signal<bool>(false);
   final _buildFailure = signal<DeckBuildError?>(null);
 
-  // Deck options
   final _options = signal<DeckOptions>(DeckOptions());
 
-  // UI state
   final _isMenuOpen = signal<bool>(false);
   final _isNotesOpen = signal<bool>(false);
 
-  // Navigation state
   final _currentIndex = signal<int>(0);
   final _isTransitioning = signal<bool>(false);
 
-  // Thumbnail state
   final _thumbnails = signal<Map<String, AsyncThumbnail>>({});
 
-  // Router (required by MaterialApp)
   late final GoRouter router;
 
   EffectCleanup? _indexClampEffect;
-
-  // ========================================
-  // COMPUTED STATE (Read-Only Public API)
-  // ========================================
-
-  // Deck computeds
   late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
     final deck = _currentDeck.value;
     if (deck == null) return <SlideConfiguration>[];
@@ -90,13 +70,11 @@ class DeckController {
   ReadonlySignal<Object?> get error => _error;
   ReadonlySignal<DeckBuildError?> get buildFailure => _buildFailure;
 
-  // UI computeds
   ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
   ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
   ReadonlySignal<bool> get isBuildActive => _isBuildActive;
   List<SuperDeckPlugin> get plugins => _plugins;
 
-  // Navigation computeds
   ReadonlySignal<int> get currentIndex => _currentIndex;
   ReadonlySignal<bool> get isTransitioning => _isTransitioning;
   late final ReadonlySignal<bool> canGoNext = computed(
@@ -110,10 +88,6 @@ class DeckController {
     final slidesList = slides.value;
     return index >= 0 && index < slidesList.length ? slidesList[index] : null;
   });
-
-  // ========================================
-  // CONSTRUCTOR
-  // ========================================
 
   DeckController({
     required DeckConfiguration configuration,
@@ -152,10 +126,6 @@ class DeckController {
 
     _subscribe();
   }
-
-  // ========================================
-  // DECK LOADER EVENT HANDLING
-  // ========================================
 
   void _subscribe() {
     _subscription = _deckLoader.load().listen(
@@ -196,10 +166,6 @@ class DeckController {
     }
   }
 
-  // ========================================
-  // DECK OPERATIONS
-  // ========================================
-
   DeckConfiguration _resolveDeckConfiguration(Deck deck) {
     final deckConfiguration = deck.configuration;
     return _hasExplicitConfigurationOverrides(deckConfiguration)
@@ -236,17 +202,9 @@ class DeckController {
     _subscribe();
   }
 
-  // ========================================
-  // UI ACTIONS
-  // ========================================
-
   void openMenu() => _isMenuOpen.value = true;
   void closeMenu() => _isMenuOpen.value = false;
   void toggleNotes() => _isNotesOpen.value = !_isNotesOpen.value;
-
-  // ========================================
-  // NAVIGATION ACTIONS
-  // ========================================
 
   Future<void> goToSlide(int index) async {
     await _navigationService.goToSlide(
@@ -296,10 +254,6 @@ class DeckController {
     }
   }
 
-  // ========================================
-  // THUMBNAIL ACTIONS
-  // ========================================
-
   void generateThumbnails(BuildContext context, {bool force = false}) {
     if (_disposed) return;
 
@@ -337,10 +291,6 @@ class DeckController {
     return _thumbnails.value[slideKey];
   }
 
-  // ========================================
-  // LIFECYCLE
-  // ========================================
-
   void dispose() {
     if (_disposed) return;
     _disposed = true;
@@ -356,7 +306,6 @@ class DeckController {
       thumbnail.dispose();
     }
 
-    // Dispose signals
     _currentDeck.dispose();
     _isLoading.dispose();
     _error.dispose();
@@ -369,7 +318,6 @@ class DeckController {
     _isTransitioning.dispose();
     _thumbnails.dispose();
 
-    // Dispose computed signals
     slides.dispose();
     totalSlides.dispose();
     hasError.dispose();
@@ -377,10 +325,6 @@ class DeckController {
     canGoPrevious.dispose();
     currentSlide.dispose();
   }
-
-  // ========================================
-  // STATIC ACCESS
-  // ========================================
 
   static DeckController of(BuildContext context) {
     return InheritedData.of<DeckController>(context);

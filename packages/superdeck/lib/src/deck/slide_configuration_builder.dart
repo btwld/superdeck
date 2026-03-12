@@ -6,19 +6,13 @@ import 'slide_configuration.dart';
 import 'template_resolver.dart';
 import 'widget_definition.dart';
 
-/// Service responsible for transforming raw Slide domain entities
-/// into SlideConfiguration view models ready for rendering.
-///
-/// This class encapsulates the business logic of:
-/// - Style merging (default → base → slide-specific)
-/// - Widget builder collection
-/// - Thumbnail path generation
+/// Builds [SlideConfiguration] view models from [Slide]s and [DeckOptions].
 class SlideConfigurationBuilder {
   final DeckConfiguration configuration;
 
   const SlideConfigurationBuilder({required this.configuration});
 
-  /// Builds a list of SlideConfigurations from raw slides and options.
+  /// Builds [SlideConfiguration]s from [rawSlides] using [options].
   List<SlideConfiguration> buildConfigurations(
     List<Slide> rawSlides,
     DeckOptions options,
@@ -34,24 +28,20 @@ class SlideConfigurationBuilder {
     }).toList();
   }
 
-  /// Builds a single SlideConfiguration from a Slide and options.
   SlideConfiguration _buildConfiguration(
     int index,
     Slide slide,
     DeckOptions options,
     TemplateResolver resolver,
   ) {
-    // Start with built-in widgets, then add user widgets that are actually used
     final widgets = Map<String, WidgetDefinition>.from(builtInWidgets);
 
-    // Collect widget names used in this slide
     final usedWidgetNames = slide.sections
         .expand((section) => section.blocks)
         .whereType<WidgetBlock>()
         .map((block) => block.name)
         .toSet();
 
-    // Add user widgets that are used (overriding built-ins if necessary)
     for (final name in usedWidgetNames) {
       final userWidget = options.widgets[name];
       if (userWidget != null) {
@@ -59,10 +49,8 @@ class SlideConfigurationBuilder {
       }
     }
 
-    // Generate thumbnail asset key using slide key.
     final thumbnailAsset = GeneratedAsset.thumbnail(slide.key);
 
-    // Resolve template, style, and parts
     final resolution = resolver.resolve(slide.options);
 
     return SlideConfiguration(

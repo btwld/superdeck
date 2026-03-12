@@ -12,25 +12,18 @@ typedef AsyncFileGenerator =
 
 enum AsyncFileStatus { idle, loading, done, error }
 
-/// A model that asynchronously loads an image and uses Signals for reactivity.
+/// An asynchronously loaded thumbnail backed by signals.
 class AsyncThumbnail {
-  /// The generator function that asynchronously returns an Image.
   final AsyncFileGenerator _generator;
 
-  // Signals for reactive state
   final _status = signal<AsyncFileStatus>(AsyncFileStatus.idle);
   final _imageUri = signal<Uri?>(null);
   final _error = signal<Object?>(null);
   ImageProvider<Object>? _cachedProvider;
 
-  // Non-reactive internal state
   bool _disposed = false;
   bool _isGenerating = false;
   bool _pendingForce = false;
-
-  // Readonly accessors
-  ReadonlySignal<AsyncFileStatus> get status => _status;
-  ReadonlySignal<Object?> get error => _error;
 
   AsyncThumbnail({required AsyncFileGenerator generator})
     : _generator = generator;
@@ -92,8 +85,6 @@ class AsyncThumbnail {
     _disposed = true;
     _pendingForce = false;
     _cachedProvider = null;
-
-    // Dispose signals
     _status.dispose();
     _imageUri.dispose();
     _error.dispose();
@@ -125,9 +116,10 @@ class AsyncThumbnail {
     );
   }
 
-  /// Returns the resolved image provider when the file has loaded.
-  ///
-  /// Returns null if the file has not been generated yet.
+  ReadonlySignal<AsyncFileStatus> get status => _status;
+  ReadonlySignal<Object?> get error => _error;
+
+  /// The cached image provider, or `null` before loading completes.
   ImageProvider<Object>? get imageProvider {
     return _cachedProvider;
   }
