@@ -25,11 +25,24 @@ class ThumbnailService {
   }) : _cacheStore = cacheStore,
        _slideCaptureService = slideCaptureService ?? SlideCaptureService();
 
+  AsyncThumbnail _createThumbnail(
+    SlideConfiguration slide,
+    Map<String, AsyncThumbnail> cache,
+  ) {
+    final thumbnail = AsyncThumbnail(
+      thumbnailKey: slide.thumbnailKey,
+      generator: (ctx, {required force}) =>
+          generateThumbnail(slide: slide, context: ctx, force: force),
+    );
+    cache[slide.key] = thumbnail;
+    return thumbnail;
+  }
+
   /// Generates thumbnails for all slides, updating the cache as needed.
   ///
   /// For each slide, either reuses an existing [AsyncThumbnail] from [cache]
-  /// or creates a new one. Calls [onCacheUpdate] with the updated cache
-  /// after processing all slides.
+  /// or replaces it when the runtime thumbnail key changes. Calls
+  /// [onCacheUpdate] with the updated cache after processing all slides.
   ///
   /// If [force] is true, regenerates all thumbnails even if they exist.
   void generateThumbnails({
@@ -42,13 +55,17 @@ class ThumbnailService {
     final updatedCache = Map<String, AsyncThumbnail>.from(cache);
 
     for (final slide in slides) {
-      final thumbnail = updatedCache.putIfAbsent(
-        slide.key,
-        () => AsyncThumbnail(
-          generator: (ctx, {required force}) =>
-              generateThumbnail(slide: slide, context: ctx, force: force),
-        ),
-      );
+      final existing = updatedCache[slide.key];
+      late final AsyncThumbnail thumbnail;
+      if (existing == null) {
+        thumbnail = _createThumbnail(slide, updatedCache);
+      } else if (existing.thumbnailKey == slide.thumbnailKey) {
+        thumbnail = existing;
+      } else {
+        existing.dispose();
+        thumbnail = _createThumbnail(slide, updatedCache);
+      }
+
       thumbnail.load(context, force);
     }
 
@@ -58,7 +75,7 @@ class ThumbnailService {
   /// Generates a single thumbnail for a slide.
   ///
   /// Resolve order:
-  /// 1. Cache store resolve (app cache first, then bundled fallback by platform)
+  /// 1. Cache store resolve for the exact runtime key
   /// 2. Capture/generate fresh
   /// 3. Cache store write
   ///
@@ -69,13 +86,19 @@ class ThumbnailService {
     required BuildContext context,
     required bool force,
   }) async {
+    final stopwatch = Stopwatch()..start();
+
     if (!force) {
-      final resolvedUri = await _cacheStore.resolve(slide.thumbnailFile);
+      final resolvedUri = await _cacheStore.resolve(slide.thumbnailKey);
       if (resolvedUri != null) {
+        stopwatch.stop();
+        debugPrint(
+          '[ThumbnailService] Thumbnail cache hit [${slide.thumbnailKey}] in ${stopwatch.elapsedMilliseconds}ms',
+        );
         return resolvedUri;
       }
     } else {
-      await _cacheStore.delete(slide.thumbnailFile);
+      await _cacheStore.delete(slide.thumbnailKey);
     }
 
     final imageData = await _slideCaptureService.capture(
@@ -84,6 +107,13 @@ class ThumbnailService {
       context: context,
     );
 
-    return _cacheStore.write(slide.thumbnailFile, imageData);
+    final uri = await _cacheStore.write(slide.thumbnailKey, imageData);
+
+    stopwatch.stop();
+    debugPrint(
+      '[ThumbnailService] Thumbnail ${force ? "force-" : ""}generated [${slide.thumbnailKey}] in ${stopwatch.elapsedMilliseconds}ms',
+    );
+
+    return uri;
   }
 }

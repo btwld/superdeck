@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 import 'dart:ui' as ui;
 
@@ -6,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import '../ui/widgets/provider.dart';
 
 import '../rendering/slides/slide_view.dart';
@@ -35,7 +33,6 @@ class SlideCaptureService {
   /// Maximum concurrent generations to prevent memory pressure.
   static const _maxConcurrentGenerations = 3;
   static const _kQueuePollInterval = Duration(milliseconds: 50);
-  static const _kRenderSettleDelay = Duration(milliseconds: 100);
 
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
@@ -101,16 +98,10 @@ class SlideCaptureService {
     return byteData!.buffer.asUint8List();
   }
 
-  /// Converts a Flutter widget to a ui.Image for slide capture
+  /// Converts a Flutter widget to a [ui.Image] via an isolated render pipeline.
   ///
-  /// This method is inherently complex due to Flutter's rendering pipeline requirements.
-  /// The complexity comes from the need to:
-  /// 1. Set up a complete render context (theme, media query, material app)
-  /// 2. Create and configure the render pipeline (view, owner, boundary)
-  /// 3. Handle async rendering with retry logic for dirty state
-  ///
-  /// This is NOT a code smell - it's the minimum required complexity for
-  /// programmatic widget-to-image conversion in Flutter.
+  /// Sets up a complete render context (theme, media query, material app),
+  /// builds and lays out the tree in a single pass, then rasterises.
   Future<ui.Image> _fromWidgetToImage(
     Widget widget,
     RenderConfig config,
@@ -136,11 +127,6 @@ class SlideCaptureService {
       final logicalSize =
           config.targetSize ?? view.physicalSize / view.devicePixelRatio;
 
-      // Retry logic is necessary because Flutter's render pipeline
-      // may need multiple frames to complete complex layouts
-      int retryCount = 10;
-      bool isDirty = false;
-
       final renderView = RenderView(
         view: view,
         child: RenderPositionedBox(
@@ -160,18 +146,8 @@ class SlideCaptureService {
         ),
       );
 
-      final pipelineOwner = PipelineOwner(
-        onNeedVisualUpdate: () {
-          isDirty = true;
-        },
-      );
-
-      final buildOwner = BuildOwner(
-        focusManager: FocusManager(),
-        onBuildScheduled: () {
-          isDirty = true;
-        },
-      );
+      final pipelineOwner = PipelineOwner();
+      final buildOwner = BuildOwner(focusManager: FocusManager());
 
       pipelineOwner.rootNode = renderView;
       renderView.prepareInitialFrame();
@@ -181,28 +157,14 @@ class SlideCaptureService {
         child: Directionality(textDirection: TextDirection.ltr, child: child),
       ).attachToRenderTree(buildOwner);
 
-      while (retryCount > 0) {
-        isDirty = false;
-        buildOwner
-          ..buildScope(rootElement)
-          ..finalizeTree();
+      buildOwner
+        ..buildScope(rootElement)
+        ..finalizeTree();
 
-        pipelineOwner
-          ..flushLayout()
-          ..flushCompositingBits()
-          ..flushPaint();
-
-        await Future.delayed(_kRenderSettleDelay);
-
-        if (!isDirty) {
-          log('Image generation completed.');
-          break;
-        }
-
-        log('Image generation.. waiting...');
-
-        retryCount--;
-      }
+      pipelineOwner
+        ..flushLayout()
+        ..flushCompositingBits()
+        ..flushPaint();
 
       final image = await repaintBoundary.toImage(
         pixelRatio: config.pixelRatio,

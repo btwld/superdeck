@@ -53,12 +53,19 @@ class _FakeSlideCaptureService extends SlideCaptureService {
   }
 }
 
-SlideConfiguration _createSlide(String key) {
+String _thumbnailKey(String key, {String? suffix}) {
+  if (suffix == null) {
+    return 'thumbnail_$key.png';
+  }
+  return 'thumbnail_${key}_$suffix.png';
+}
+
+SlideConfiguration _createSlide(String key, {String? thumbnailKey}) {
   return SlideConfiguration(
     slideIndex: 0,
     style: SlideStyle(),
     slide: Slide(key: key),
-    thumbnailFile: 'thumbnail_$key.png',
+    thumbnailKey: thumbnailKey ?? _thumbnailKey(key),
   );
 }
 
@@ -94,7 +101,7 @@ void main() {
 
       expect(result, equals(Uri.parse('file:///tmp/cache-thumb.png')));
       expect(capture.captureCalls, 0);
-      expect(store.callOrder, equals(['resolve:thumbnail_intro.png']));
+      expect(store.callOrder, equals(["resolve:${_thumbnailKey('intro')}"]));
     });
 
     testWidgets('captures and writes when cache misses', (tester) async {
@@ -120,7 +127,10 @@ void main() {
       expect(store.writtenBytes, equals([7, 8, 9]));
       expect(
         store.callOrder,
-        equals(['resolve:thumbnail_agenda.png', 'write:thumbnail_agenda.png']),
+        equals([
+          "resolve:${_thumbnailKey('agenda')}",
+          "write:${_thumbnailKey('agenda')}",
+        ]),
       );
     });
 
@@ -146,10 +156,13 @@ void main() {
 
       expect(result, equals(Uri.parse('file:///tmp/new-thumb.png')));
       expect(capture.captureCalls, 1);
-      expect(store.deletedKey, equals('thumbnail_force.png'));
+      expect(store.deletedKey, equals(_thumbnailKey('force')));
       expect(
         store.callOrder,
-        equals(['delete:thumbnail_force.png', 'write:thumbnail_force.png']),
+        equals([
+          "delete:${_thumbnailKey('force')}",
+          "write:${_thumbnailKey('force')}",
+        ]),
       );
     });
 
@@ -173,9 +186,50 @@ void main() {
       expect(
         store.callOrder,
         equals([
-          'resolve:thumbnail_missing.png',
-          'write:thumbnail_missing.png',
+          "resolve:${_thumbnailKey('missing')}",
+          "write:${_thumbnailKey('missing')}",
         ]),
+      );
+    });
+
+    testWidgets('replaces cached async thumbnail when thumbnail key changes', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final store = _FakeAssetCacheStore(
+        resolvedUri: Uri.parse('file:///tmp/updated-thumb.png'),
+      );
+      final capture = _FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
+      final oldThumbnail = AsyncThumbnail(
+        thumbnailKey: _thumbnailKey('same', suffix: 'old'),
+        generator: (ctx, {required force}) async =>
+            Uri.parse('file:///tmp/old-thumb.png'),
+      );
+
+      Map<String, AsyncThumbnail>? updatedCache;
+      service.generateThumbnails(
+        slides: [
+          _createSlide(
+            'same',
+            thumbnailKey: _thumbnailKey('same', suffix: 'new'),
+          ),
+        ],
+        context: context,
+        cache: {'same': oldThumbnail},
+        onCacheUpdate: (cache) {
+          updatedCache = cache;
+        },
+      );
+
+      expect(updatedCache, isNotNull);
+      expect(updatedCache!['same'], isNot(same(oldThumbnail)));
+      expect(
+        updatedCache!['same']!.thumbnailKey,
+        _thumbnailKey('same', suffix: 'new'),
       );
     });
   });

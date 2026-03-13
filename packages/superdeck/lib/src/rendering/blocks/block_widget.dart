@@ -97,7 +97,12 @@ class _ContentBlockChild extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
-    return MarkdownViewer(content: content, spec: data.spec);
+    final isExporting = SlideConfiguration.of(context).isExporting;
+    return MarkdownViewer(
+      content: content,
+      spec: data.spec,
+      duration: isExporting ? Duration.zero : const Duration(milliseconds: 250),
+    );
   }
 }
 

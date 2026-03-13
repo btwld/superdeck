@@ -20,6 +20,7 @@ void main() {
     group('initialization', () {
       test('initializes with idle status', () {
         final thumbnail = AsyncThumbnail(
+          thumbnailKey: 'thumbnail_idle.png',
           generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
@@ -34,6 +35,7 @@ void main() {
 
       test('imageProvider returns null when no file loaded', () {
         final thumbnail = AsyncThumbnail(
+          thumbnailKey: 'thumbnail_empty.png',
           generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
@@ -48,6 +50,7 @@ void main() {
     group('disposal', () {
       test('can be disposed without loading', () {
         final thumbnail = AsyncThumbnail(
+          thumbnailKey: 'thumbnail_dispose.png',
           generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
@@ -57,6 +60,7 @@ void main() {
 
       test('double dispose does not throw', () {
         final thumbnail = AsyncThumbnail(
+          thumbnailKey: 'thumbnail_double_dispose.png',
           generator: (context, {required force}) async {
             throw UnimplementedError('Should not be called');
           },
@@ -78,6 +82,7 @@ void main() {
         var calls = 0;
 
         final thumbnail = AsyncThumbnail(
+          thumbnailKey: 'thumbnail_queue_force.png',
           generator: (context, {required force}) {
             forceValues.add(force);
             calls += 1;

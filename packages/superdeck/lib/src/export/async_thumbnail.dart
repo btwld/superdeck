@@ -14,6 +14,7 @@ enum AsyncFileStatus { idle, loading, done, error }
 
 /// An asynchronously loaded thumbnail backed by signals.
 class AsyncThumbnail {
+  final String thumbnailKey;
   final AsyncFileGenerator _generator;
 
   final _status = signal<AsyncFileStatus>(AsyncFileStatus.idle);
@@ -25,8 +26,10 @@ class AsyncThumbnail {
   bool _isGenerating = false;
   bool _pendingForce = false;
 
-  AsyncThumbnail({required AsyncFileGenerator generator})
-    : _generator = generator;
+  AsyncThumbnail({
+    required this.thumbnailKey,
+    required AsyncFileGenerator generator,
+  }) : _generator = generator;
 
   Future<void> _generate(BuildContext context, {required bool force}) async {
     if (_disposed || _isGenerating) return;

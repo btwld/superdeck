@@ -89,19 +89,19 @@ void main() {
           slideIndex: 0,
           style: SlideStyle(),
           slide: slide1,
-          thumbnailFile: 'thumb1.png',
+          thumbnailKey: 'thumb1.png',
         ),
         SlideConfiguration(
           slideIndex: 1,
           style: SlideStyle(),
           slide: slide2,
-          thumbnailFile: 'thumb2.png',
+          thumbnailKey: 'thumb2.png',
         ),
         SlideConfiguration(
           slideIndex: 2,
           style: SlideStyle(),
           slide: slide3,
-          thumbnailFile: 'thumb3.png',
+          thumbnailKey: 'thumb3.png',
         ),
       ];
 
