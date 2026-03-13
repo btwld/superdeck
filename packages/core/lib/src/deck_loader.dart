@@ -34,6 +34,7 @@ abstract class DeckLoader {
   const DeckLoader({required this.configuration});
 
   Stream<DeckEvent> load();
+  Future<void> reload();
 
   Future<void> dispose();
 }

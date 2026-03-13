@@ -8,22 +8,20 @@ import 'widget_definition.dart';
 
 /// Builds [SlideConfiguration] view models from [Slide]s and [DeckOptions].
 class SlideConfigurationBuilder {
-  final DeckConfiguration configuration;
+  const SlideConfigurationBuilder();
 
-  const SlideConfigurationBuilder({required this.configuration});
-
-  /// Builds [SlideConfiguration]s from [rawSlides] using [options].
+  /// Builds [SlideConfiguration]s for [slides] using [options].
   List<SlideConfiguration> buildConfigurations(
-    List<Slide> rawSlides,
+    List<Slide> slides,
     DeckOptions options,
   ) {
-    if (rawSlides.isEmpty) {
+    if (slides.isEmpty) {
       return [];
     }
 
     final resolver = TemplateResolver(options);
 
-    return rawSlides.asMap().entries.map((entry) {
+    return slides.asMap().entries.map((entry) {
       return _buildConfiguration(entry.key, entry.value, options, resolver);
     }).toList();
   }
@@ -49,8 +47,6 @@ class SlideConfigurationBuilder {
       }
     }
 
-    final thumbnailAsset = GeneratedAsset.thumbnail(slide.key);
-
     final resolution = resolver.resolve(slide.options);
 
     return SlideConfiguration(
@@ -58,7 +54,7 @@ class SlideConfigurationBuilder {
       style: resolution.style,
       slide: slide,
       widgets: widgets,
-      thumbnailFile: thumbnailAsset.fileName,
+      thumbnailKey: buildThumbnailKey(slide.key),
       parts: resolution.parts,
       debug: options.debug,
     );

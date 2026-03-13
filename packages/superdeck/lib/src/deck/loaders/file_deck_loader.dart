@@ -10,25 +10,51 @@ import 'package:superdeck_core/superdeck_core.dart';
 /// 1. Emits [DeckLoadingEvent].
 /// 2. Emits all subsequent events from `build_status.json`.
 class FileDeckLoader extends DeckLoader {
-  FileDeckLoader({required super.configuration});
-
-  var _controller = StreamController<DeckEvent>();
+  final _controller = StreamController<DeckEvent>();
   var _cancelSignal = Completer<void>();
   Future<void>? _runTask;
   var _disposed = false;
+  var _started = false;
+
+  FileDeckLoader({required super.configuration});
 
   File get _deckFile => configuration.deckJson;
   File get _statusFile => configuration.buildStatusJson;
   Directory get _statusParentDir => _statusFile.parent;
   Directory get _projectDir => Directory(configuration.projectDir ?? '.');
 
-  bool _isCycleActive(
-    StreamController<DeckEvent> ctrl,
-    Completer<void> cancel,
-  ) =>
-      !_disposed && !ctrl.isClosed && !cancel.isCompleted;
+  bool _isCycleActive(Completer<void> cancel) {
+    return !_disposed &&
+        !_controller.isClosed &&
+        identical(cancel, _cancelSignal) &&
+        !cancel.isCompleted;
+  }
 
-  Future<void> _processStatus(StreamController<DeckEvent> ctrl, Completer<void> cancel) async {
+  void _emit(DeckEvent event, Completer<void> cancel) {
+    if (_isCycleActive(cancel)) {
+      _controller.add(event);
+    }
+  }
+
+  Future<void> _emitLoadedDeck(Completer<void> cancel) async {
+    try {
+      final deckJson = jsonDecode(await _deckFile.readAsString());
+      if (deckJson is! Map) {
+        throw Exception(
+          'Expected JSON object at ${_deckFile.path}, '
+          'got ${deckJson.runtimeType}',
+        );
+      }
+      _emit(
+        DeckLoadedEvent(Deck.parse(Map<String, Object?>.from(deckJson))),
+        cancel,
+      );
+    } on Exception catch (error) {
+      _emit(DeckErrorEvent('Superdeck reference error', error: error), cancel);
+    }
+  }
+
+  Future<void> _processStatus(Completer<void> cancel) async {
     if (!await _statusFile.exists()) return;
 
     try {
@@ -38,49 +64,26 @@ class FileDeckLoader extends DeckLoader {
         Map<String, dynamic>.from(decoded),
       );
 
-      if (!_isCycleActive(ctrl, cancel)) return;
+      if (!_isCycleActive(cancel)) return;
 
       switch (status.phase) {
         case DeckBuildPhase.building:
-          ctrl.add(DeckRebuildingEvent());
+          _emit(DeckRebuildingEvent(), cancel);
+          return;
         case DeckBuildPhase.failure:
-          final message = status.error?.message ?? 'Deck build failed';
-          ctrl.add(DeckErrorEvent(message, error: Exception(message)));
+          final buildError =
+              status.error ??
+              const DeckBuildError(message: 'Deck build failed');
+          _emit(DeckErrorEvent(buildError.message, error: buildError), cancel);
+          return;
         case DeckBuildPhase.success:
-          try {
-            final deckJson = jsonDecode(await _deckFile.readAsString());
-            if (deckJson is! Map) {
-              throw Exception(
-                'Expected JSON object at ${_deckFile.path}, '
-                'got ${deckJson.runtimeType}',
-              );
-            }
-            if (_isCycleActive(ctrl, cancel)) {
-              ctrl.add(
-                DeckLoadedEvent(
-                  Deck.parse(Map<String, Object?>.from(deckJson)),
-                ),
-              );
-            }
-          } on Exception catch (error) {
-            if (_isCycleActive(ctrl, cancel)) {
-              ctrl.add(
-                DeckErrorEvent(
-                  'Superdeck reference error',
-                  error: error,
-                ),
-              );
-            }
-          }
+          await _emitLoadedDeck(cancel);
+          return;
         case DeckBuildPhase.unknown:
-          break;
+          return;
       }
     } on Exception catch (error) {
-      if (_isCycleActive(ctrl, cancel)) {
-        ctrl.add(
-          DeckErrorEvent('Build status error', error: error),
-        );
-      }
+      _emit(DeckErrorEvent('Build status error', error: error), cancel);
     }
   }
 
@@ -138,19 +141,44 @@ class FileDeckLoader extends DeckLoader {
     }
   }
 
-  Future<void> _run(StreamController<DeckEvent> ctrl, Completer<void> cancel) async {
-    if (_isCycleActive(ctrl, cancel)) {
-      ctrl.add(DeckLoadingEvent('Loading deck…'));
+  void _startCycle() {
+    final cancel = _cancelSignal;
+    _runTask = _run(cancel).catchError((Object error) {
+      final exception = error is Exception
+          ? error
+          : Exception(error.toString());
+      _emit(DeckErrorEvent('Build status error', error: exception), cancel);
+    });
+  }
+
+  Future<void> _restartCycle() async {
+    if (!_cancelSignal.isCompleted) {
+      _cancelSignal.complete();
     }
 
-    while (_isCycleActive(ctrl, cancel)) {
+    final previousRunTask = _runTask;
+    _runTask = null;
+    if (previousRunTask != null) {
+      await previousRunTask;
+    }
+
+    if (_disposed) return;
+
+    _cancelSignal = Completer<void>();
+    _startCycle();
+  }
+
+  Future<void> _run(Completer<void> cancel) async {
+    _emit(DeckLoadingEvent('Loading deck…'), cancel);
+
+    while (_isCycleActive(cancel)) {
       if (!await _statusParentDir.exists()) {
         await _waitForDirectoryCreation(cancel);
         continue;
       }
 
-      await _processStatus(ctrl, cancel);
-      if (!_isCycleActive(ctrl, cancel)) return;
+      await _processStatus(cancel);
+      if (!_isCycleActive(cancel)) return;
 
       final changed = await _waitForStatusChange(cancel);
       if (!changed) return;
@@ -159,39 +187,34 @@ class FileDeckLoader extends DeckLoader {
 
   @override
   Stream<DeckEvent> load() {
-    if (_disposed) return _controller.stream;
-
-    // Abort any in-flight _run() cycle.
-    if (_runTask != null) {
-      if (!_cancelSignal.isCompleted) _cancelSignal.complete();
-      _controller.close();
-      _cancelSignal = Completer<void>();
-      _controller = StreamController<DeckEvent>();
-      _runTask = null;
+    if (_disposed) {
+      return _controller.stream;
     }
-
-    final ctrl = _controller;
-    final cancel = _cancelSignal;
-    _runTask = _run(ctrl, cancel).catchError((Object error) {
-      if (_isCycleActive(ctrl, cancel)) {
-        final exception =
-            error is Exception ? error : Exception(error.toString());
-        ctrl.add(
-          DeckErrorEvent('Build status error', error: exception),
-        );
-      }
-    });
+    if (!_started) {
+      _started = true;
+      _startCycle();
+    }
 
     return _controller.stream;
   }
 
   @override
-  Future<void> dispose() {
+  Future<void> reload() async {
+    if (_disposed) return;
+    if (!_started) {
+      _started = true;
+      _startCycle();
+      return;
+    }
+    await _restartCycle();
+  }
+
+  @override
+  Future<void> dispose() async {
     if (_disposed) return Future<void>.value();
     _disposed = true;
     if (!_cancelSignal.isCompleted) _cancelSignal.complete();
-    final runFuture = _runTask ?? Future<void>.value();
-    final closeFuture = _controller.close();
-    return Future.wait<void>([runFuture, closeFuture]).then((_) {});
+    await (_runTask ?? Future<void>.value());
+    await _controller.close();
   }
 }

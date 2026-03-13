@@ -239,7 +239,7 @@ class _MarkdownHarness extends StatelessWidget {
       slideIndex: 0,
       style: SlideStyle(),
       slide: Slide(key: 'slide'),
-      thumbnailFile: 'thumb.png',
+      thumbnailKey: 'thumb.png',
     );
 
     final blockData = BlockConfiguration(

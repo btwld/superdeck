@@ -60,7 +60,7 @@ class SlideTestHarness {
       slideIndex: slideIndex,
       style: style ?? defaultSlideStyle,
       slide: slide,
-      thumbnailFile: 'test-thumbnail.png',
+      thumbnailKey: 'test-thumbnail.png',
       debug: debug,
       widgets: {...builtInWidgets, ...widgets},
       parts: parts ?? const SlideParts(),

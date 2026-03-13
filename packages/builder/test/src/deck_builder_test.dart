@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:superdeck_builder/src/deck_builder.dart';
 import 'package:superdeck_builder/src/tasks/slide_context.dart';
@@ -34,11 +36,69 @@ final class MockTask extends Task {
 
 /// Mock DeckBuildStore for testing
 class TestDeckStore extends DeckBuildStore {
-  TestDeckStore() : super(configuration: DeckConfiguration());
+  TestDeckStore([DeckConfiguration? configuration])
+    : super(configuration: configuration ?? DeckConfiguration());
 }
 
 void main() {
   group('DeckBuilder', () {
+    group('build', () {
+      late Directory tempDir;
+      late DeckConfiguration configuration;
+      late DeckBuildStore store;
+
+      setUp(() async {
+        tempDir = await Directory.systemTemp.createTemp('superdeck_builder_');
+        configuration = DeckConfiguration(projectDir: tempDir.path);
+        store = DeckBuildStore(configuration: configuration);
+      });
+
+      tearDown(() async {
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      });
+
+      test('deck json omits revision metadata', () async {
+        const markdown = '# First Slide\n\n---\n\n# Second Slide';
+        final builder = DeckBuilder(
+          tasks: [],
+          configuration: configuration,
+          store: store,
+        );
+        addTearDown(builder.dispose);
+
+        await configuration.slidesFile.writeAsString(markdown);
+        await builder.build();
+
+        final deckJson =
+            jsonDecode(await configuration.deckJson.readAsString())
+                as Map<String, dynamic>;
+
+        expect(deckJson.containsKey('revision'), isFalse);
+        expect(deckJson['slides'], isA<List<dynamic>>());
+      });
+
+      test('generated assets metadata excludes runtime thumbnails', () async {
+        const markdown = '# First Slide\n\n---\n\n# Second Slide';
+        final builder = DeckBuilder(
+          tasks: [],
+          configuration: configuration,
+          store: store,
+        );
+        addTearDown(builder.dispose);
+
+        await configuration.slidesFile.writeAsString(markdown);
+        await builder.build();
+
+        final assetsRef =
+            jsonDecode(await configuration.assetsRefJson.readAsString())
+                as Map<String, dynamic>;
+
+        expect(assetsRef['files'], isEmpty);
+      });
+    });
+
     group('dispose', () {
       test('disposes all tasks', () async {
         final task1 = MockTask();

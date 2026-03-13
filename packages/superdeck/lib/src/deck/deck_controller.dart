@@ -23,7 +23,8 @@ import 'superdeck_plugin.dart';
 /// thumbnails to focused collaborators. Subscribes directly to a
 /// [DeckLoader.load] stream for deck loading and rebuild watching.
 class DeckController {
-  final DeckConfiguration _configuration;
+  late final GoRouter router;
+
   final DeckLoader _deckLoader;
   final NavigationService _navigationService;
   final ThumbnailService _thumbnailService;
@@ -48,16 +49,15 @@ class DeckController {
 
   final _thumbnails = signal<Map<String, AsyncThumbnail>>({});
 
-  late final GoRouter router;
-
   EffectCleanup? _indexClampEffect;
+
   late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
     final deck = _currentDeck.value;
     if (deck == null) return <SlideConfiguration>[];
-    final configuration = _resolveDeckConfiguration(deck);
-    return SlideConfigurationBuilder(
-      configuration: configuration,
-    ).buildConfigurations(deck.slides, _options.value);
+    return const SlideConfigurationBuilder().buildConfigurations(
+      deck.slides,
+      _options.value,
+    );
   });
 
   late final ReadonlySignal<int> totalSlides = computed(
@@ -95,8 +95,7 @@ class DeckController {
     required DeckOptions options,
     NavigationService? navigationService,
     ThumbnailService? thumbnailService,
-  }) : _configuration = configuration,
-       _deckLoader = deckLoader,
+  }) : _deckLoader = deckLoader,
        _navigationService = navigationService ?? NavigationService(),
        _thumbnailService =
            thumbnailService ??
@@ -115,10 +114,8 @@ class DeckController {
     );
 
     _indexClampEffect = effect(() {
-      final total = totalSlides.value;
-      final maxIndex = total > 0 ? total - 1 : 0;
       final currentIdx = _currentIndex.peek();
-      final clamped = currentIdx.clamp(0, maxIndex);
+      final clamped = _clampIndex(currentIdx);
       if (_currentIndex.value != clamped) {
         _currentIndex.value = clamped;
       }
@@ -163,21 +160,8 @@ class DeckController {
         }
       case DeckRebuildingEvent():
         _isBuildActive.value = true;
+        _buildFailure.value = null;
     }
-  }
-
-  DeckConfiguration _resolveDeckConfiguration(Deck deck) {
-    final deckConfiguration = deck.configuration;
-    return _hasExplicitConfigurationOverrides(deckConfiguration)
-        ? deckConfiguration
-        : _configuration;
-  }
-
-  bool _hasExplicitConfigurationOverrides(DeckConfiguration configuration) {
-    return configuration.projectDir != null ||
-        configuration.slidesPath != null ||
-        configuration.outputDir != null ||
-        configuration.assetsPath != null;
   }
 
   @internal
@@ -194,12 +178,11 @@ class DeckController {
 
   Future<void> reloadDeck() async {
     if (_disposed) return;
-    await _subscription?.cancel();
     _error.value = null;
     _buildFailure.value = null;
     _isBuildActive.value = false;
     _isLoading.value = true;
-    _subscribe();
+    await _deckLoader.reload();
   }
 
   void openMenu() => _isMenuOpen.value = true;
@@ -245,13 +228,17 @@ class DeckController {
 
   void _updateCurrentIndex(int index) {
     if (_disposed) return;
-
-    final maxIndex = totalSlides.value > 0 ? totalSlides.value - 1 : 0;
-    final clampedIndex = index.clamp(0, maxIndex);
+    final clampedIndex = _clampIndex(index);
 
     if (_currentIndex.value != clampedIndex) {
       _currentIndex.value = clampedIndex;
     }
+  }
+
+  int _clampIndex(int index) {
+    final total = totalSlides.value;
+    final maxIndex = total > 0 ? total - 1 : 0;
+    return index.clamp(0, maxIndex);
   }
 
   void generateThumbnails(BuildContext context, {bool force = false}) {

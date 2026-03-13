@@ -1,6 +1,9 @@
 import 'package:collection/collection.dart';
+import 'package:ack/ack.dart';
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+
+import '../utils/extensions.dart';
+import '../utils/generate_hash.dart';
 
 part 'asset_model.mapper.dart';
 
@@ -62,14 +65,6 @@ class GeneratedAsset with GeneratedAssetMappable {
 
   static GeneratedAsset parse(Map<String, Object?> map) =>
       fromMap(schema.parse(map)!);
-
-  static GeneratedAsset thumbnail(String slideKey) {
-    return GeneratedAsset(
-      name: slideKey,
-      extension: AssetExtension.png,
-      type: 'thumbnail',
-    );
-  }
 
   static GeneratedAsset mermaid(String syntax) {
     return GeneratedAsset(

@@ -78,7 +78,7 @@ void main() {
 
     test('does not load deck at startup without success status', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString('{"slides":[],"configuration":{}}');
+      await config.deckJson.writeAsString(_validDeckJson);
 
       final events = <DeckEvent>[];
       final subscription = deckLoader.load().listen(events.add);
@@ -92,7 +92,7 @@ void main() {
 
     test('processes existing startup success status', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString('{"slides":[],"configuration":{}}');
+      await config.deckJson.writeAsString(_validDeckJson);
       await config.buildStatusJson.writeAsString(
         '{"status":"success","timestamp":"2026-03-10T10:00:00.000Z"}',
       );
@@ -125,7 +125,7 @@ void main() {
 
     test('does not dedupe updates that share the same timestamp', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString('{"slides":[],"configuration":{}}');
+      await config.deckJson.writeAsString(_validDeckJson);
 
       final events = <DeckEvent>[];
       final subscription = deckLoader.load().listen(events.add);
@@ -178,7 +178,7 @@ void main() {
       expect(errorEvents.last.error, isA<Exception>());
     });
 
-    test('failure status emits DeckErrorEvent with Exception', () async {
+    test('failure status emits DeckErrorEvent with DeckBuildError', () async {
       await config.superdeckDir.create(recursive: true);
 
       final events = <DeckEvent>[];
@@ -200,8 +200,7 @@ void main() {
           .toList();
 
       expect(syntaxErrors, isNotEmpty);
-      expect(syntaxErrors.last.error, isA<Exception>());
-      expect(syntaxErrors.last.error, isNot(isA<DeckBuildError>()));
+      expect(syntaxErrors.last.error, isA<DeckBuildError>());
     });
 
     test('success status invalid deck emits error and then recovers', () async {
@@ -220,7 +219,7 @@ void main() {
 
       await Future<void>.delayed(const Duration(milliseconds: 180));
 
-      await config.deckJson.writeAsString('{"slides":[],"configuration":{}}');
+      await config.deckJson.writeAsString(_validDeckJson);
       await config.buildStatusJson.writeAsString(
         '{"status":"success","timestamp":"2026-03-10T10:00:02.000Z"}',
       );
@@ -258,7 +257,7 @@ void main() {
       await streamDone.future.timeout(const Duration(seconds: 1));
 
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString('{"slides":[],"configuration":{}}');
+      await config.deckJson.writeAsString(_validDeckJson);
       await config.buildStatusJson.writeAsString(
         '{"status":"success","timestamp":"2026-03-10T11:30:00.000Z"}',
       );
@@ -291,42 +290,34 @@ void main() {
 
     test(
       'reload when .superdeck/ does not exist yet: '
-      'second load() picks up files created after first was canceled',
+      'reload() picks up files created after the previous cycle is canceled',
       () async {
-        // First cycle — no .superdeck/ dir, so it just emits loading.
-        final events1 = <DeckEvent>[];
-        final sub1 = deckLoader.load().listen(events1.add);
+        final events = <DeckEvent>[];
+        final sub = deckLoader.load().listen(events.add);
+        addTearDown(sub.cancel);
 
-        await _waitForEvent<DeckLoadingEvent>(events1);
-        expect(events1, hasLength(1));
+        await _waitForEvent<DeckLoadingEvent>(events);
+        expect(events.whereType<DeckLoadingEvent>(), hasLength(1));
 
-        // Cancel first subscription before starting second cycle.
-        await sub1.cancel();
+        await deckLoader.reload();
 
-        // Second cycle — still no .superdeck/ dir initially.
-        final events2 = <DeckEvent>[];
-        final sub2 = deckLoader.load().listen(events2.add);
-        addTearDown(sub2.cancel);
+        await _waitUntil(
+          () => events.whereType<DeckLoadingEvent>().length == 2,
+        );
 
-        await _waitForEvent<DeckLoadingEvent>(events2);
-
-        // Now create the output files — only the second cycle should see them.
         await config.superdeckDir.create(recursive: true);
         await config.deckJson.writeAsString(_validDeckJson);
         await config.buildStatusJson.writeAsString(
           _buildStatusJson('success', seq: 1),
         );
 
-        await _waitForEvent<DeckLoadedEvent>(events2);
-        expect(events2.whereType<DeckLoadedEvent>(), hasLength(1));
-
-        // The first cycle's events should NOT have received anything extra.
-        expect(events1.whereType<DeckLoadedEvent>(), isEmpty);
+        await _waitForEvent<DeckLoadedEvent>(events);
+        expect(events.whereType<DeckLoadedEvent>(), hasLength(1));
       },
     );
 
     test('reload after prior successful load: '
-        'second load() starts cleanly and processes new status', () async {
+        'reload() starts cleanly and processes new status', () async {
       // Set up files for a successful first load.
       await config.superdeckDir.create(recursive: true);
       await config.deckJson.writeAsString(_validDeckJson);
@@ -334,28 +325,25 @@ void main() {
         _buildStatusJson('success', seq: 0),
       );
 
-      final events1 = <DeckEvent>[];
-      final sub1 = deckLoader.load().listen(events1.add);
+      final events = <DeckEvent>[];
+      final sub = deckLoader.load().listen(events.add);
+      addTearDown(sub.cancel);
 
-      await _waitForEvent<DeckLoadedEvent>(events1);
-      expect(events1.whereType<DeckLoadedEvent>(), hasLength(1));
+      await _waitForEvent<DeckLoadedEvent>(events);
+      expect(events.whereType<DeckLoadedEvent>(), hasLength(1));
 
-      await sub1.cancel();
+      await deckLoader.reload();
+      await _waitUntil(() => events.whereType<DeckLoadingEvent>().length == 2);
 
-      // Second cycle.
-      final events2 = <DeckEvent>[];
-      final sub2 = deckLoader.load().listen(events2.add);
-      addTearDown(sub2.cancel);
-
-      await _waitForEvent<DeckLoadingEvent>(events2);
-
-      // Write a new status update to trigger a reload in the second cycle.
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 2),
       );
 
-      await _waitForEvent<DeckLoadedEvent>(events2);
-      expect(events2.whereType<DeckLoadedEvent>(), isNotEmpty);
+      await _waitUntil(() => events.whereType<DeckLoadedEvent>().length >= 2);
+      expect(
+        events.whereType<DeckLoadedEvent>().length,
+        greaterThanOrEqualTo(2),
+      );
     });
 
     test('dispose after reload: stops watching, no late events', () async {
@@ -365,38 +353,31 @@ void main() {
         _buildStatusJson('success', seq: 0),
       );
 
-      // First cycle — loads successfully.
-      final events1 = <DeckEvent>[];
-      final sub1 = deckLoader.load().listen(events1.add);
-      await _waitForEvent<DeckLoadedEvent>(events1);
-      await sub1.cancel();
-
-      // Second cycle.
-      final events2 = <DeckEvent>[];
+      final events = <DeckEvent>[];
       final streamDone = Completer<void>();
-      final sub2 = deckLoader.load().listen(
-        events2.add,
+      final sub = deckLoader.load().listen(
+        events.add,
         onDone: () {
           if (!streamDone.isCompleted) streamDone.complete();
         },
       );
-      addTearDown(sub2.cancel);
+      addTearDown(sub.cancel);
 
-      await _waitForEvent<DeckLoadingEvent>(events2);
+      await _waitForEvent<DeckLoadedEvent>(events);
+      await deckLoader.reload();
+      await _waitUntil(() => events.whereType<DeckLoadingEvent>().length == 2);
 
-      // Dispose while second cycle is active.
       await deckLoader.dispose();
       await streamDone.future.timeout(const Duration(seconds: 2));
 
-      final snapshot = events2.length;
+      final snapshot = events.length;
 
-      // Write new status — should NOT produce any more events.
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 3),
       );
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
-      expect(events2, hasLength(snapshot));
+      expect(events, hasLength(snapshot));
     });
 
     test('event ordering: loading before loaded', () async {

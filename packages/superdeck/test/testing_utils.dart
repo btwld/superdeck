@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/styling/styling.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/styling/styling.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 export 'fixtures/slide_fixtures.dart';
 
@@ -18,7 +18,7 @@ List<SlideConfiguration> createTestSlides(int count) {
           SectionBlock([ContentBlock('Test slide $index content')]),
         ],
       ),
-      thumbnailFile: 'thumbnail-$index.png',
+      thumbnailKey: buildThumbnailKey('slide-$index'),
     ),
   );
 }
@@ -28,18 +28,19 @@ SlideConfiguration createTestSlide({
   required int index,
   String? content,
   SlideStyle? style,
-  String? thumbnailFile,
+  String? thumbnailKey,
 }) {
+  final slideKey = 'slide-$index';
   return SlideConfiguration(
     slideIndex: index,
     style: style ?? SlideStyle(),
     slide: Slide(
-      key: 'slide-$index',
+      key: slideKey,
       sections: [
         SectionBlock([ContentBlock(content ?? 'Test slide $index content')]),
       ],
     ),
-    thumbnailFile: thumbnailFile ?? 'thumbnail-$index.png',
+    thumbnailKey: thumbnailKey ?? buildThumbnailKey(slideKey),
   );
 }
 

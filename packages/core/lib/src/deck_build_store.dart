@@ -50,14 +50,8 @@ class DeckBuildStore {
     await configuration.deckJson.writeAsString(deckJson);
 
     await _saveFullDeckReference(reference);
-
-    final thumbnails = reference.slides.map(
-      (slide) => GeneratedAsset.thumbnail(slide.key),
-    );
-
-    final allAssets = [...thumbnails, ..._generatedAssets];
     final uniqueAssets = <String, GeneratedAsset>{};
-    for (final asset in allAssets) {
+    for (final asset in _generatedAssets) {
       uniqueAssets[asset.fileName] = asset;
     }
 

@@ -1,14 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/slide_configuration_builder.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/deck/slide_configuration_builder.dart';
 
 void main() {
-  final config = DeckConfiguration();
-  final builder = SlideConfigurationBuilder(configuration: config);
+  final builder = SlideConfigurationBuilder();
 
   group('SlideConfigurationBuilder', () {
     test('returns empty list for empty slides', () {
-      final result = builder.buildConfigurations([], const DeckOptions());
+      final result = builder.buildConfigurations(const [], const DeckOptions());
       expect(result, isEmpty);
     });
 
@@ -156,13 +155,13 @@ void main() {
       expect(configs[2].slideIndex, 2);
     });
 
-    test('thumbnailFile stores generated asset key only', () {
+    test('thumbnailKey stores generated runtime cache key', () {
       final options = DeckOptions();
       final slides = [Slide(key: 'cover')];
 
       final configs = builder.buildConfigurations(slides, options);
 
-      expect(configs.first.thumbnailFile, 'thumbnail_cover.png');
+      expect(configs.first.thumbnailKey, 'thumbnail_cover.png');
     });
   });
 }

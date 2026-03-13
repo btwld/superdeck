@@ -13,7 +13,7 @@ void main() {
       slide: slide,
       slideIndex: 0,
       style: SlideStyle(),
-      thumbnailFile: '',
+      thumbnailKey: '',
     );
     testWidgets('builds content', (WidgetTester tester) async {
       await tester.pumpSlide(config);

@@ -6,6 +6,10 @@ import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
 import 'widget_definition.dart';
 
+String buildThumbnailKey(String slideKey) {
+  return 'thumbnail_$slideKey.png';
+}
+
 class SlideConfiguration {
   final int slideIndex;
   final SlideStyle style;
@@ -13,8 +17,8 @@ class SlideConfiguration {
   final bool debug;
   final SlideParts? parts;
   final Map<String, WidgetDefinition> _widgets;
-  // Bare thumbnail asset key (for example: thumbnail_intro.png).
-  final String thumbnailFile;
+  // Runtime thumbnail cache key (for example: thumbnail_intro.png).
+  final String thumbnailKey;
 
   final bool isExporting;
 
@@ -24,7 +28,7 @@ class SlideConfiguration {
     required Slide slide,
     this.debug = false,
     this.parts,
-    required this.thumbnailFile,
+    required this.thumbnailKey,
     Map<String, WidgetDefinition> widgets = const {},
     this.isExporting = false,
   }) : _slide = slide,
@@ -52,7 +56,7 @@ class SlideConfiguration {
     Slide? slide,
     bool? debug,
     SlideParts? parts,
-    String? thumbnailFile,
+    String? thumbnailKey,
     Map<String, WidgetDefinition>? widgets,
     bool? isExporting,
   }) {
@@ -62,7 +66,7 @@ class SlideConfiguration {
       slide: slide ?? _slide,
       debug: debug ?? this.debug,
       parts: parts ?? this.parts,
-      thumbnailFile: thumbnailFile ?? this.thumbnailFile,
+      thumbnailKey: thumbnailKey ?? this.thumbnailKey,
       widgets: widgets ?? _widgets,
       isExporting: isExporting ?? this.isExporting,
     );
@@ -78,7 +82,7 @@ class SlideConfiguration {
           _slide == other._slide &&
           debug == other.debug &&
           parts == other.parts &&
-          thumbnailFile == other.thumbnailFile &&
+          thumbnailKey == other.thumbnailKey &&
           _widgets == other._widgets &&
           isExporting == other.isExporting;
 
@@ -89,7 +93,7 @@ class SlideConfiguration {
     _slide,
     debug,
     parts,
-    thumbnailFile,
+    thumbnailKey,
     _widgets,
     isExporting,
   );

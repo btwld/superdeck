@@ -197,7 +197,7 @@ class _MarkdownHarness extends StatelessWidget {
       slideIndex: 0,
       style: SlideStyle(),
       slide: Slide(key: 'test-slide'),
-      thumbnailFile: 'thumb.png',
+      thumbnailKey: 'thumb.png',
     );
 
     // Provide BlockConfiguration with a reasonable slide size for testing

@@ -8,30 +8,40 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../testing_utils.dart';
 
 class MockDeckLoader extends DeckLoader {
+  final StreamController<DeckEvent> _eventController =
+      StreamController<DeckEvent>.broadcast();
+  final Deck _deckToReturn = createTestDeck();
+
+  bool _autoLoad = true;
+  var _disposed = false;
+
   MockDeckLoader({DeckConfiguration? configuration})
     : super(configuration: configuration ?? DeckConfiguration());
 
-  final StreamController<DeckEvent> _eventController =
-      StreamController<DeckEvent>.broadcast();
-
   int loadCalls = 0;
+  int reloadCalls = 0;
 
   @override
   Stream<DeckEvent> load() {
     loadCalls++;
-    // Immediately emit loading + loaded for default behavior
+    _scheduleAutoLoad();
+    return _eventController.stream;
+  }
+
+  @override
+  Future<void> reload() async {
+    reloadCalls++;
+    _scheduleAutoLoad();
+  }
+
+  void _scheduleAutoLoad() {
     if (_autoLoad) {
       Future.microtask(() {
         _eventController.add(DeckLoadingEvent('Loading…'));
         _eventController.add(DeckLoadedEvent(_deckToReturn));
       });
     }
-    return _eventController.stream;
   }
-
-  bool _autoLoad = true;
-  final Deck _deckToReturn = createTestDeck();
-  var _disposed = false;
 
   /// Disable auto-loading so events must be emitted manually.
   void disableAutoLoad() {
@@ -144,6 +154,22 @@ void main() {
 
       expect(controller.isBuildActive.value, isTrue);
       expect(controller.hasError.value, isFalse);
+    });
+
+    test('rebuilding clears stale build failure', () async {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      mockDeckLoader.emitEvent(
+        DeckErrorEvent('Old failure', error: Exception('Old failure')),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(controller.buildFailure.value?.message, 'Old failure');
+
+      mockDeckLoader.emitEvent(DeckRebuildingEvent());
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(controller.isBuildActive.value, isTrue);
+      expect(controller.buildFailure.value, isNull);
     });
 
     test(

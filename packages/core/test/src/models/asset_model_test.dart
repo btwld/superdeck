@@ -153,14 +153,6 @@ void main() {
     });
 
     group('factory methods', () {
-      test('thumbnail creates png asset with thumbnail type', () {
-        final asset = GeneratedAsset.thumbnail('slide_key_123');
-
-        expect(asset.name, 'slide_key_123');
-        expect(asset.extension, AssetExtension.png);
-        expect(asset.type, 'thumbnail');
-      });
-
       test('mermaid creates png asset with mermaid type', () {
         const syntax = 'graph TD; A-->B;';
         final asset = GeneratedAsset.mermaid(syntax);

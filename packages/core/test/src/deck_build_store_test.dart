@@ -103,6 +103,27 @@ void main() {
       },
     );
 
+    test(
+      'saveReferences excludes runtime thumbnails from generated assets',
+      () async {
+        await store.saveReferences(
+          Deck(
+            slides: [
+              Slide(key: 'intro'),
+              Slide(key: 'agenda'),
+            ],
+            configuration: config,
+          ),
+        );
+
+        final assetsRef =
+            jsonDecode(await mockConfig.assetsRefJson.readAsString())
+                as Map<String, dynamic>;
+
+        expect(assetsRef['files'], isEmpty);
+      },
+    );
+
     test('readDeckMarkdown reads the content of the slides file', () async {
       await mockConfig.slidesFile.writeAsString('# Test slides');
 
