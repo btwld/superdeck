@@ -1,84 +1,66 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 AssetCacheStore createAssetCacheStore({
   required DeckConfiguration configuration,
 }) {
-  final cacheScope = GeneratedAsset.buildKey(
+  final cacheScope = generateValueHash(
     configuration.superdeckDir.absolute.path,
   );
-  final cacheDir = Directory(
-    p.join(Directory.systemTemp.path, 'superdeck', 'asset_cache', cacheScope),
-  );
 
-  return _IoRuntimeAssetCacheStore(
-    cacheStore: IoAssetCacheStore(cacheDir: cacheDir),
-    bundledAssetsDir: configuration.assetsDir,
-  );
+  return _IoRuntimeAssetCacheStore(cacheScope: cacheScope);
 }
 
 class _IoRuntimeAssetCacheStore implements AssetCacheStore {
-  final IoAssetCacheStore _cacheStore;
-  final Directory _bundledAssetsDir;
+  final String _cacheScope;
+  Future<IoAssetCacheStore>? _cacheStoreFuture;
 
-  _IoRuntimeAssetCacheStore({
-    required IoAssetCacheStore cacheStore,
-    required Directory bundledAssetsDir,
-  }) : _cacheStore = cacheStore,
-       _bundledAssetsDir = bundledAssetsDir;
+  _IoRuntimeAssetCacheStore({required String cacheScope})
+    : _cacheScope = cacheScope;
+
+  Future<IoAssetCacheStore> _cacheStore() {
+    final existingFuture = _cacheStoreFuture;
+    if (existingFuture != null) {
+      return existingFuture;
+    }
+
+    final future = _createCacheStore();
+    _cacheStoreFuture = future;
+    return future.catchError((Object error, StackTrace stackTrace) {
+      if (identical(_cacheStoreFuture, future)) {
+        _cacheStoreFuture = null;
+      }
+      throw error;
+    });
+  }
+
+  Future<IoAssetCacheStore> _createCacheStore() async {
+    final cacheRoot = await getApplicationCacheDirectory();
+    final cacheDir = Directory(
+      p.join(cacheRoot.path, 'superdeck', 'asset_cache', _cacheScope),
+    );
+    return IoAssetCacheStore(cacheDir: cacheDir);
+  }
 
   @override
   Future<Uri?> resolve(String assetKey) async {
     final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
-
-    final appCacheUri = await _cacheStore.resolve(normalizedKey);
-    final bundledFile = File(p.join(_bundledAssetsDir.path, normalizedKey));
-    if (appCacheUri == null) {
-      if (!await bundledFile.exists()) {
-        return null;
-      }
-      if (await bundledFile.length() == 0) {
-        return null;
-      }
-
-      return bundledFile.uri;
-    }
-
-    if (!await bundledFile.exists()) {
-      return appCacheUri;
-    }
-    if (await bundledFile.length() == 0) {
-      return appCacheUri;
-    }
-
-    try {
-      final appCacheLastModified = await File.fromUri(
-        appCacheUri,
-      ).lastModified();
-      final bundledLastModified = await bundledFile.lastModified();
-
-      if (bundledLastModified.isAfter(appCacheLastModified)) {
-        return bundledFile.uri;
-      }
-
-      return appCacheUri;
-    } on FileSystemException {
-      return bundledFile.uri;
-    }
+    return (await _cacheStore()).resolve(normalizedKey);
   }
 
   @override
-  Future<Uri?> write(String assetKey, List<int> bytes) {
+  Future<Uri?> write(String assetKey, List<int> bytes) async {
     final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
-    return _cacheStore.write(normalizedKey, bytes);
+    return (await _cacheStore()).write(normalizedKey, bytes);
   }
 
   @override
-  Future<void> delete(String assetKey) {
+  Future<void> delete(String assetKey) async {
     final normalizedKey = AssetCacheStore.validateAssetKey(assetKey);
-    return _cacheStore.delete(normalizedKey);
+    return (await _cacheStore()).delete(normalizedKey);
   }
 }
