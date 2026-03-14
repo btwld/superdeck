@@ -1,6 +1,4 @@
-/// Main export file for superdeck_builder library
-library superdeck_builder;
-
+// Main export file for superdeck_builder.
 // Export assets
 export 'src/assets/asset_generation_pipeline.dart';
 export 'src/assets/asset_generator.dart';

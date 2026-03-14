@@ -5,7 +5,7 @@ import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../testing_utils.dart';
+import '../helpers/test_helpers.dart';
 
 class MockDeckLoader extends DeckLoader {
   final StreamController<DeckEvent> _eventController =

@@ -42,7 +42,7 @@ print('hello');
         ),
       );
 
-      print('\n' + '=' * 80);
+      print('\n${'=' * 80}');
       print('TEST 1: Invalid YAML in code block options');
       print('=' * 80);
       print(
@@ -81,7 +81,7 @@ print('test 2 with more content to trigger preview truncation - adding lots of t
         expect(errorMessage, contains('Content preview:'));
         expect(errorMessage, contains('Simulated transform failure'));
 
-        print('\n' + '=' * 80);
+        print('\n${'=' * 80}');
         print('TEST 2: Transform error with detailed context');
         print('=' * 80);
         print('Error message:');

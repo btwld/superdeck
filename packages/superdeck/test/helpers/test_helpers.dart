@@ -1,11 +1,15 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/deck/widget_definition.dart';
+import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/styling/styling.dart';
+import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-export 'fixtures/slide_fixtures.dart';
 
-/// Creates a list of test slides for testing navigation and presentation
+export '../fixtures/slide_fixtures.dart';
+
+/// Creates a list of test slides for testing navigation and presentation.
 List<SlideConfiguration> createTestSlides(int count) {
   return List.generate(
     count,
@@ -23,7 +27,7 @@ List<SlideConfiguration> createTestSlides(int count) {
   );
 }
 
-/// Creates a test slide configuration with custom content
+/// Creates a test slide configuration with custom content.
 SlideConfiguration createTestSlide({
   required int index,
   String? content,
@@ -44,7 +48,7 @@ SlideConfiguration createTestSlide({
   );
 }
 
-/// Creates a test deck with the given slides
+/// Creates a test deck with the given slides.
 Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
   final testSlides =
       slides ??
@@ -61,10 +65,10 @@ Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
   return Deck(slides: testSlides, configuration: config ?? createMockConfig());
 }
 
-/// Creates a mock configuration
+/// Creates a mock configuration.
 DeckConfiguration createMockConfig() => DeckConfiguration();
 
-/// Pumps a widget and settles all animations
+/// Pumps a widget and settles all animations.
 Future<void> pumpAndSettleWidget(
   WidgetTester tester,
   Widget widget, {
@@ -78,18 +82,18 @@ Future<void> pumpAndSettleWidget(
   }
 }
 
-/// Finds a widget by its key
+/// Finds a widget by its key.
 Finder findByKey(String key) => find.byKey(Key(key));
 
-/// Finds a widget by its text content
+/// Finds a widget by its text content.
 Finder findByText(String text) => find.text(text);
 
-/// Verifies that a widget exists and is visible
+/// Verifies that a widget exists and is visible.
 void expectWidgetVisible(Finder finder) {
   expect(finder, findsOneWidget);
 }
 
-/// Verifies that a widget does not exist
+/// Verifies that a widget does not exist.
 void expectWidgetNotFound(Finder finder) {
   expect(finder, findsNothing);
 }
@@ -136,4 +140,22 @@ ContentBlock createContentBlock(
     align: align,
     scrollable: scrollable,
   );
+}
+
+extension WidgetTesterX on WidgetTester {
+  Future<void> pumpWithScaffold(Widget widget) async {
+    await pumpWidget(MaterialApp(home: Scaffold(body: widget)));
+  }
+
+  Future<void> pumpSlide(
+    SlideConfiguration slide, {
+    bool isSnapshot = false,
+    SlideStyle? style,
+    Map<String, WidgetDefinition> widgets = const {},
+    List<GeneratedAsset> assets = const [],
+  }) async {
+    return pumpWithScaffold(
+      InheritedData(data: slide, child: SlideView(slide)),
+    );
+  }
 }

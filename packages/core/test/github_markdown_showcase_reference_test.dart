@@ -4,14 +4,16 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck_core/src/markdown_json.dart';
 import 'package:test/test.dart';
 
-import 'test_utils/json_snapshot_utils.dart';
+import 'helpers/json_snapshot_utils.dart';
 
 /// Generates `github_markdown_ref.json` from the showcase markdown document.
 void main() {
   test('Generate GitHub Markdown showcase reference', () {
-    final sourceFile = File('test/data/github_web_markdown_showcase.md');
+    final sourceFile = File(
+      'test/fixtures/markdown/github_web_markdown_showcase.md',
+    );
     final markdown = sourceFile.readAsStringSync();
-    final outputFile = File('github_markdown_ref.json');
+    final outputFile = File('test/fixtures/markdown/github_markdown_ref.json');
 
     final converter = MarkdownAstConverter(
       extensionSet: md.ExtensionSet.gitHubWeb,
@@ -40,7 +42,8 @@ void main() {
       isUpToDate,
       isTrue,
       reason:
-          'Snapshot out of date. Regenerate github_markdown_ref.json and commit updates.',
+          'Snapshot out of date. Regenerate '
+          'test/fixtures/markdown/github_markdown_ref.json and commit updates.',
     );
   });
 }

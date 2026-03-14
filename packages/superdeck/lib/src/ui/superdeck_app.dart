@@ -9,7 +9,7 @@ import '../deck/deck_options.dart';
 import '../deck/superdeck_plugin.dart';
 import '../utils/app_initialization.dart';
 import 'app_shell.dart';
-import 'theme.dart';
+import 'app_theme.dart';
 
 class SuperDeckApp extends StatelessWidget {
   const SuperDeckApp({super.key, required this.options, this.configuration});

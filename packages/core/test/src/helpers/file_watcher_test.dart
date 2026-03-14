@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
-import 'testing_utils.dart';
+import '../../helpers/testing_utils.dart';
 
 void main() {
   group('FileWatcher', () {
@@ -25,7 +25,10 @@ void main() {
         events: FileSystemEvent.create | FileSystemEvent.modify,
       );
       expect(customWatcher.file, equals(testFile));
-      expect(customWatcher.events, FileSystemEvent.create | FileSystemEvent.modify);
+      expect(
+        customWatcher.events,
+        FileSystemEvent.create | FileSystemEvent.modify,
+      );
     });
 
     test('defaults to modify events', () {
@@ -44,13 +47,13 @@ void main() {
         addTearDown(sub.cancel);
 
         // Ensure initial baseline is set
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
 
         // Modify the file
         await testFile.writeAsString('new content ${DateTime.now()}');
 
         // Give enough time for the change to be detected
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
         expect(changeCount, equals(1));
       },

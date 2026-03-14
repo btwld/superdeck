@@ -101,6 +101,14 @@ melos run clean            # Clean all Flutter build artifacts
 - Regenerate with `melos run build_runner:build` before testing
 - Commit generated files when they change and keep them synchronized with source updates
 
+### Repository Conventions
+- Use `docs/` for maintainer-facing documentation that should not live under `lib/`
+- Use `test/helpers/` for reusable Dart test support code
+- Use `test/fixtures/` for static test inputs, snapshots, and reference artifacts
+- Use `snake_case` for repo-owned non-standard filenames
+- Prefer `.yaml` for repo-owned configuration and fixture files
+- Keep ecosystem-standard names as-is, including `README.md`, `CHANGELOG.md`, generated platform files, and existing GitHub workflow `.yml` files
+
 ## Testing Guidelines
 
 - Unit tests live under each package's `test/` directory

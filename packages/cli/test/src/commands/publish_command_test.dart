@@ -4,7 +4,7 @@ import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/src/commands/publish/build_support.dart';
 import 'package:test/test.dart';
 
-import '../testing_utils.dart';
+import '../../helpers/test_helpers.dart';
 
 void main() {
   group('resolveFlutterBinary', () {

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
-import '../testing_utils.dart';
+import '../../helpers/test_helpers.dart';
 
 void main() {
   group('FileExt', () {

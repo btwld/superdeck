@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 
-import '../fixtures/slide_fixtures.dart';
 import '../helpers/layout_assertions.dart';
 import '../helpers/slide_test_harness.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +36,26 @@ void main() {
         );
         expect(find.byType(SlideView), findsOneWidget);
         expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('renders the provided slide configuration instance', (
+        tester,
+      ) async {
+        final slide = Slide(key: 'simple-slide');
+        final config = SlideConfiguration(
+          slide: slide,
+          slideIndex: 0,
+          style: SlideStyle(),
+          thumbnailKey: '',
+        );
+
+        await tester.pumpWithScaffold(
+          InheritedData(data: config, child: SlideView(config)),
+        );
+
+        final finder = find.byType(SlideView);
+        expect(finder, findsOneWidget);
+        expect(tester.widget<SlideView>(finder).slide, same(config));
       });
     });
 

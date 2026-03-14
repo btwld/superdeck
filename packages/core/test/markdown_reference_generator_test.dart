@@ -4,7 +4,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck_core/src/markdown_json.dart';
 import 'package:test/test.dart';
 
-import 'test_utils/json_snapshot_utils.dart';
+import 'helpers/json_snapshot_utils.dart';
 
 final _converter = MarkdownAstConverter(
   extensionSet: md.ExtensionSet.gitHubWeb,
@@ -13,12 +13,13 @@ final _converter = MarkdownAstConverter(
 /// Comprehensive markdown reference generator that systematically creates
 /// JSON output for every possible markdown node type.
 ///
-/// This test generates a complete reference document (`markdown_ref.json`)
-/// demonstrating the AST structure for all markdown elements supported by
-/// the markdown package v7.3.0 with GitHub Web extensions.
+/// This test generates a complete reference document
+/// (`test/fixtures/markdown/markdown_ref.json`) demonstrating the AST
+/// structure for all markdown elements supported by the markdown package
+/// v7.3.0 with GitHub Web extensions.
 void main() {
   test('Generate comprehensive markdown reference', () {
-    final file = File('markdown_ref.json');
+    final file = File('test/fixtures/markdown/markdown_ref.json');
 
     final reference = <String, dynamic>{
       'metadata': <String, dynamic>{}, // populated by writeJsonIfChanged
@@ -86,7 +87,8 @@ void main() {
       isUpToDate,
       isTrue,
       reason:
-          'Snapshot out of date. Regenerate markdown_ref.json and commit updates.',
+          'Snapshot out of date. Regenerate '
+          'test/fixtures/markdown/markdown_ref.json and commit updates.',
     );
   });
 }

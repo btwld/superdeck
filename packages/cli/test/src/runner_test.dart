@@ -5,7 +5,7 @@ import 'package:superdeck_cli/runner.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
 import 'package:test/test.dart';
 
-import 'testing_utils.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
   group('SuperDeckRunner', () {
@@ -31,10 +31,7 @@ void main() {
         final exitCode = await runner.run(['--version']);
 
         expect(exitCode, ExitCode.success.code);
-        expect(
-          mockLogger.infoMessages,
-          contains(contains(packageVersion)),
-        );
+        expect(mockLogger.infoMessages, contains(contains(packageVersion)));
       });
     });
 
@@ -43,18 +40,15 @@ void main() {
         final exitCode = await runner.run(['version']);
 
         expect(exitCode, ExitCode.success.code);
-        expect(
-          mockLogger.infoMessages,
-          contains(contains(packageVersion)),
-        );
+        expect(mockLogger.infoMessages, contains(contains(packageVersion)));
       });
     });
 
     group('invalid config path', () {
       test('reports configuration error for absolute slidesPath', () async {
-        File('superdeck.yaml').writeAsStringSync(
-          'slidesPath: /etc/absolute.md\n',
-        );
+        File(
+          'superdeck.yaml',
+        ).writeAsStringSync('slidesPath: /etc/absolute.md\n');
 
         final exitCode = await runner.run(['build']);
 
@@ -62,9 +56,7 @@ void main() {
       });
 
       test('reports configuration error for traversal outputDir', () async {
-        File('superdeck.yaml').writeAsStringSync(
-          'outputDir: ../outside\n',
-        );
+        File('superdeck.yaml').writeAsStringSync('outputDir: ../outside\n');
 
         final exitCode = await runner.run(['build']);
 
