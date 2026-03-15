@@ -1,8 +1,8 @@
 import 'package:markdown/markdown.dart' as md;
 import 'package:test/test.dart';
 
-import 'package:superdeck_core/src/hero_tag_helpers.dart';
-import 'package:superdeck_core/src/markdown_syntaxes.dart';
+import 'package:superdeck_core/src/markdown/hero_tag_helpers.dart';
+import 'package:superdeck_core/src/markdown/markdown_syntaxes.dart';
 
 void main() {
   group('stripTrailingHeroMarker', () {

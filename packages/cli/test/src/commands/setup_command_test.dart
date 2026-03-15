@@ -5,7 +5,7 @@ import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/src/commands/setup_command.dart';
 import 'package:test/test.dart';
 
-import '../helpers/test_helpers.dart';
+import '../../helpers/test_helpers.dart';
 
 void main() {
   group('SetupCommand', () {

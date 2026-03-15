@@ -101,6 +101,29 @@ melos run clean            # Clean all Flutter build artifacts
 - Regenerate with `melos run build_runner:build` before testing
 - Commit generated files when they change and keep them synchronized with source updates
 
+### File Organization Convention
+
+**Feature/domain folders** — group `lib/src/` files by the domain they belong to, not by type:
+```
+lib/src/
+  deck/           # Domain: configuration, models, loading, storage
+  markdown/       # Domain: parsing, syntaxes, helpers
+  cache/          # Domain: caching stores
+  rendering/      # Domain: slide/block rendering (Flutter)
+  ui/             # Domain: app shell, panels, widgets (Flutter)
+  utils/          # Cross-cutting utilities
+```
+
+**Co-locate models with their domain** — no separate `models/` folder. Place `deck_model.dart` in `deck/`, not in a shared `models/` directory.
+
+**Earned role suffixes** — use `_model`, `_service`, `_controller`, `_view`, `_widget`, `_store`, `_parser` only when the file's role would be ambiguous without the suffix. Don't force a suffix when the name is already clear (e.g., `background.dart`, `constants.dart`).
+
+**Tests mirror `lib/src/`** — test file paths match source paths. If source is `lib/src/deck/deck_loader.dart`, test is `test/src/deck/deck_loader_test.dart`.
+
+**Relative imports** within a package — use relative imports for intra-package references, package imports only for cross-package dependencies.
+
+**Single barrel file** per package — one entry-point file (e.g., `superdeck_core.dart`) using relative exports.
+
 ### Repository Conventions
 - Use `docs/` for maintainer-facing documentation that should not live under `lib/`
 - Use `test/helpers/` for reusable Dart test support code

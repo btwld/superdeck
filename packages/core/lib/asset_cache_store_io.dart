@@ -1,1 +1,1 @@
-export 'src/asset_cache_store_io.dart';
+export 'src/cache/asset_cache_store_io.dart';

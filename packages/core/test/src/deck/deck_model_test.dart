@@ -1,8 +1,8 @@
 import 'package:ack/ack.dart';
-import 'package:superdeck_core/src/deck_configuration.dart';
-import 'package:superdeck_core/src/models/block_model.dart';
-import 'package:superdeck_core/src/models/deck_model.dart';
-import 'package:superdeck_core/src/models/slide_model.dart';
+import 'package:superdeck_core/src/deck/deck_configuration.dart';
+import 'package:superdeck_core/src/deck/block_model.dart';
+import 'package:superdeck_core/src/deck/deck_model.dart';
+import 'package:superdeck_core/src/deck/slide_model.dart';
 import 'package:test/test.dart';
 
 Map<String, Object?> _propertySchema(

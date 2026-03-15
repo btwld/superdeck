@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'build_event.dart';
-import 'parsers/markdown_parser.dart';
+import '../parsers/markdown_parser.dart';
 import 'slide_processor.dart';
-import 'tasks/task.dart';
+import '../tasks/task.dart';
 
 /// Builds decks from markdown content by processing slides through a series of tasks.
 ///

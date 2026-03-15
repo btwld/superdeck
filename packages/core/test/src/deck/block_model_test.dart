@@ -1,4 +1,4 @@
-import 'package:superdeck_core/src/models/block_model.dart';
+import 'package:superdeck_core/src/deck/block_model.dart';
 import 'package:test/test.dart';
 
 void main() {

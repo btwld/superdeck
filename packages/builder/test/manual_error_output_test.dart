@@ -3,7 +3,7 @@
 
 import 'package:logging/logging.dart';
 import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
-import 'package:superdeck_builder/src/markdown_utils.dart';
+import 'package:superdeck_builder/src/utils/markdown_utils.dart';
 import 'package:test/test.dart';
 
 void main() {

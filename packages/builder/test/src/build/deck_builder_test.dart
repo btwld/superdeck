@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:superdeck_builder/src/deck_builder.dart';
+import 'package:superdeck_builder/src/build/deck_builder.dart';
 import 'package:superdeck_builder/src/tasks/slide_context.dart';
 import 'package:superdeck_builder/src/tasks/task.dart';
 import 'package:superdeck_core/superdeck_core.dart';

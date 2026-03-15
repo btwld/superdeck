@@ -1,4 +1,4 @@
-import 'package:superdeck_core/src/deck_configuration.dart';
+import 'package:superdeck_core/src/deck/deck_configuration.dart';
 import 'package:test/test.dart';
 
 void main() {

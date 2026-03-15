@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'utils/process_utils.dart';
+import 'process_utils.dart';
 
 /// Format Dart code using dart format
 Future<String> formatDartCode(

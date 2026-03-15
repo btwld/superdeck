@@ -1,7 +1,7 @@
 import 'package:ack/ack.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 
-import '../deck_configuration.dart';
+import 'deck_configuration.dart';
 import 'slide_model.dart';
 
 part 'deck_model.mapper.dart';

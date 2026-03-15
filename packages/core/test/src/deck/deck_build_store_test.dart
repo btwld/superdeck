@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
-import '../helpers/testing_utils.dart';
+import '../../helpers/testing_utils.dart';
 
 void main() {
   group('DeckBuildStore build-side API', () {

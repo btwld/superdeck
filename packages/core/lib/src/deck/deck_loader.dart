@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
 import 'deck_configuration.dart';
-import 'models/deck_model.dart';
+import 'deck_model.dart';
 
 sealed class DeckEvent {}
 

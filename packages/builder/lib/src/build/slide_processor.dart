@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'parsers/raw_slide_schema.dart';
+import '../parsers/raw_slide_schema.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'task_exception.dart';
-import 'parsers/comment_parser.dart' show CommentParser;
-import 'parsers/section_parser.dart';
-import 'tasks/slide_context.dart';
-import 'tasks/task.dart';
+import '../parsers/comment_parser.dart' show CommentParser;
+import '../parsers/section_parser.dart';
+import '../tasks/slide_context.dart';
+import '../tasks/task.dart';
 
 /// Processes raw slide markdown into final Slide objects through a task pipeline.
 ///

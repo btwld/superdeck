@@ -1,6 +1,6 @@
 import 'package:superdeck_builder/src/parsers/raw_slide_schema.dart';
-import 'package:superdeck_builder/src/slide_processor.dart';
-import 'package:superdeck_builder/src/task_exception.dart';
+import 'package:superdeck_builder/src/build/slide_processor.dart';
+import 'package:superdeck_builder/src/build/task_exception.dart';
 import 'package:superdeck_builder/src/tasks/slide_context.dart';
 import 'package:superdeck_builder/src/tasks/task.dart';
 import 'package:superdeck_core/superdeck_core.dart';

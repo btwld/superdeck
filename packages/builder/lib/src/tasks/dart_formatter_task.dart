@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import '../dart_code_utils.dart';
-import '../markdown_utils.dart';
+import '../utils/dart_code_utils.dart';
+import '../utils/markdown_utils.dart';
 import 'slide_context.dart';
 import 'task.dart';
 

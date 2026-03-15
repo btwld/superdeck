@@ -2,20 +2,22 @@ library;
 
 export 'package:ack/ack.dart';
 
-export 'src/asset_cache_store.dart';
-export 'src/deck_configuration.dart';
-export 'src/deck_format_exception.dart';
-export 'src/deck_loader.dart';
-export 'src/deck_build_store.dart';
-export 'src/hero_tag_helpers.dart';
-export 'src/markdown_syntaxes.dart';
-// Domain Models
-export 'src/models/asset_model.dart';
-export 'src/models/block_model.dart';
-export 'src/models/deck_build_status.dart';
-export 'src/models/deck_model.dart';
-export 'src/models/slide_model.dart';
-export 'src/tag_tokenizer.dart';
+// Cache
+export 'src/cache/asset_cache_store.dart';
+// Deck
+export 'src/deck/asset_model.dart';
+export 'src/deck/block_model.dart';
+export 'src/deck/deck_build_status.dart';
+export 'src/deck/deck_build_store.dart';
+export 'src/deck/deck_configuration.dart';
+export 'src/deck/deck_format_exception.dart';
+export 'src/deck/deck_loader.dart';
+export 'src/deck/deck_model.dart';
+export 'src/deck/slide_model.dart';
+// Markdown
+export 'src/markdown/hero_tag_helpers.dart';
+export 'src/markdown/markdown_syntaxes.dart';
+export 'src/markdown/tag_tokenizer.dart';
 // Utils
 export 'src/utils/extensions.dart';
 export 'src/utils/file_watcher.dart';

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
 import 'package:path/path.dart' as p;
-import 'markdown_json.dart';
+import '../markdown/markdown_json.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 /// Build-side store used by CLI and builder commands.

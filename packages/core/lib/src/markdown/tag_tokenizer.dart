@@ -1,7 +1,7 @@
 import 'package:yaml/yaml.dart';
 
-import 'deck_format_exception.dart';
-import 'utils/yaml_utils.dart';
+import '../deck/deck_format_exception.dart';
+import '../utils/yaml_utils.dart';
 
 class TagToken {
   final String name;

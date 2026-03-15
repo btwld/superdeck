@@ -1,4 +1,4 @@
-import 'package:superdeck_builder/src/task_exception.dart';
+import 'package:superdeck_builder/src/build/task_exception.dart';
 import 'package:test/test.dart';
 
 void main() {
