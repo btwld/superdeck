@@ -83,6 +83,9 @@ String _mapToYaml(Map<String, dynamic> map, [int indent = 0]) {
       for (final item in entry.value as List) {
         buffer.writeln('$spaces  - $item');
       }
+    } else if (entry.value is String) {
+      final value = (entry.value as String).replaceAll("'", "''");
+      buffer.writeln(" '$value'");
     } else {
       buffer.writeln(' ${entry.value}');
     }

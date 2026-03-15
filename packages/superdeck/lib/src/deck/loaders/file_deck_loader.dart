@@ -16,7 +16,8 @@ class FileDeckLoader extends DeckLoader {
   var _disposed = false;
   var _started = false;
 
-  FileDeckLoader({required super.configuration});
+  FileDeckLoader({DeckConfiguration? configuration})
+    : super(configuration: configuration ?? DeckConfiguration());
 
   File get _deckFile => configuration.deckJson;
   File get _statusFile => configuration.buildStatusJson;

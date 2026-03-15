@@ -155,7 +155,7 @@ class AssetGenerationPipeline {
     }
 
     // Create replacement syntax with relative path from project directory
-    final projectDir = _store.configuration.superdeckDir.parent.path;
+    final projectDir = _store.configuration.projectDirectory.path;
     final relativePath = path.relative(assetPath, from: projectDir);
     final replacementSyntax = '![${generator.type}_asset]($relativePath)';
 

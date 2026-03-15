@@ -7,8 +7,7 @@ void main() {
 
   group('BundledDeckLoader', () {
     test('missing bundled asset emits DeckErrorEvent', () async {
-      final configuration = DeckConfiguration();
-      final loader = BundledDeckLoader(configuration: configuration);
+      final loader = BundledDeckLoader();
       final events = <DeckEvent>[];
       final subscription = loader.load().listen(events.add);
 
@@ -27,8 +26,7 @@ void main() {
     });
 
     test('reload replays bundled load cycle', () async {
-      final configuration = DeckConfiguration();
-      final loader = BundledDeckLoader(configuration: configuration);
+      final loader = BundledDeckLoader();
       final events = <DeckEvent>[];
       final subscription = loader.load().listen(events.add);
 

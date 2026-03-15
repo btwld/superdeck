@@ -295,18 +295,15 @@ SuperDeck supports custom themes and per-slide styling.
 
 ### Style Configuration
 
-```yaml
-# superdeck.yaml
-styles:
-  default:
-    background: '#1a1a2e'
-    primaryColor: '#4CAF50'
-
-  code:
-    background: '#0f0f23'
-
-  quote:
-    background: 'linear-gradient(...)'
+```dart
+SuperDeckApp(
+  options: DeckOptions(
+    styles: {
+      'default': borderedStyle(),
+      'quote': quoteStyle(),
+    },
+  ),
+)
 ```
 
 ---
@@ -339,7 +336,6 @@ style: quote
 graph TB
     subgraph Input
         A[slides.md]
-        B[superdeck.yaml]
     end
 
     subgraph Processing
@@ -354,7 +350,6 @@ graph TB
     end
 
     A --> C
-    B --> C
     C --> D
     D --> E
     E --> F
@@ -400,7 +395,6 @@ my_presentation/
 ├── lib/
 │   └── main.dart
 ├── slides.md
-├── superdeck.yaml
 └── pubspec.yaml
 ```
 

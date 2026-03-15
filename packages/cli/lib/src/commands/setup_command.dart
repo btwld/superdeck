@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
+import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 
 import '../utils/extensions.dart';
 import '../utils/logger.dart';
@@ -41,7 +42,7 @@ class SetupCommand extends SuperDeckCommand {
 
   /// Create a basic slides.md file with a simple example
   Future<void> _createEmptySlides(File slidesFile) async {
-    final progress = logger.progress('Creating slides.md file...');
+    final progress = logger.progress('Creating ${slidesFile.path}...');
 
     try {
       const content = '''---
@@ -93,9 +94,9 @@ Built with SuperDeck
       }
 
       await slidesFile.writeAsString(content);
-      progress.complete('Created slides.md file');
+      progress.complete('Created ${slidesFile.path}');
     } catch (e) {
-      progress.fail('Failed to create slides.md file');
+      progress.fail('Failed to create ${slidesFile.path}');
       rethrow;
     }
   }
@@ -255,7 +256,7 @@ Built with SuperDeck
   @override
   Future<int> run() async {
     try {
-      final deckConfig = await loadConfiguration();
+      final deckConfig = DeckConfiguration();
 
       int successCount = 0;
       int warningCount = 0;
@@ -266,22 +267,22 @@ Built with SuperDeck
       if (!await slidesFile.exists()) {
         final createSlides =
             boolArg('force') ||
-            _confirmAction('Create slides.md file?', defaultValue: true);
+            _confirmAction('Create ${slidesFile.path}?', defaultValue: true);
 
         if (createSlides) {
           try {
             await _createEmptySlides(slidesFile);
             successCount++;
           } catch (e) {
-            logger.err('Failed to create slides.md file: $e');
+            logger.err('Failed to create ${slidesFile.path}: $e');
             errorCount++;
           }
         } else {
-          logger.info('Skipped creating slides.md file');
+          logger.info('Skipped creating ${slidesFile.path}');
           warningCount++;
         }
       } else {
-        logger.info('slides.md file already exists');
+        logger.info('${slidesFile.path} already exists');
       }
 
       final setupWeb = argResults?['setup-web'] as bool? ?? true;

@@ -147,7 +147,8 @@ class BuildCommand extends SuperDeckCommand {
       if (slides.isEmpty) {
         progress.update('No slides found.');
         logger.warn(
-          'No slides found in your slides.md file. Make sure it exists and has proper content.',
+          'No slides found in ${config.slidesFile.path}. Make sure it exists '
+          'and has proper content.',
         );
         progress.complete('Build completed with warnings.');
 
@@ -201,7 +202,7 @@ class BuildCommand extends SuperDeckCommand {
   Future<int> run() async {
     DeckBuildStore? store;
     try {
-      final deckConfig = await loadConfiguration();
+      final deckConfig = DeckConfiguration();
 
       // Check if slides file exists
       if (!await deckConfig.slidesFile.exists()) {

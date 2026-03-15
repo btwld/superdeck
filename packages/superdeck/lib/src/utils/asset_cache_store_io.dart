@@ -5,11 +5,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-AssetCacheStore createAssetCacheStore({
-  required DeckConfiguration configuration,
-}) {
+AssetCacheStore createAssetCacheStore({DeckConfiguration? configuration}) {
+  final resolvedConfiguration = configuration ?? DeckConfiguration();
   final cacheScope = generateValueHash(
-    configuration.superdeckDir.absolute.path,
+    resolvedConfiguration.superdeckDir.absolute.path,
   );
 
   return _IoRuntimeAssetCacheStore(cacheScope: cacheScope);

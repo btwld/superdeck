@@ -1,5 +1,4 @@
 import 'package:ack/ack.dart';
-import 'package:superdeck_core/src/deck/deck_configuration.dart';
 import 'package:superdeck_core/src/deck/block_model.dart';
 import 'package:superdeck_core/src/deck/deck_model.dart';
 import 'package:superdeck_core/src/deck/slide_model.dart';
@@ -30,17 +29,15 @@ void _expectSchemaIsNotNullable(Map<String, Object?> schema) {
 
 void main() {
   group('Deck', () {
-    test('creates with slides and configuration', () {
+    test('creates with slides', () {
       final deck = Deck(
         slides: [
           Slide(key: 'slide-1'),
           Slide(key: 'slide-2'),
         ],
-        configuration: DeckConfiguration(projectDir: '/project'),
       );
 
       expect(deck.slides, hasLength(2));
-      expect(deck.configuration.projectDir, '/project');
     });
 
     test('slides list is unmodifiable', () {
@@ -53,28 +50,21 @@ void main() {
     });
 
     test('copyWith updates values and preserves unspecified fields', () {
-      final original = Deck(
-        slides: [Slide(key: 'original')],
-        configuration: DeckConfiguration(projectDir: '/keep'),
-      );
+      final original = Deck(slides: [Slide(key: 'original')]);
 
       final copy = original.copyWith(slides: [Slide(key: 'updated')]);
 
       expect(copy.slides.single.key, 'updated');
-      expect(copy.configuration.projectDir, '/keep');
     });
 
-    test('toMap serializes slides and configuration without revision', () {
-      final deck = Deck(
-        slides: [Slide(key: 'slide-1')],
-        configuration: DeckConfiguration(projectDir: '/project'),
-      );
+    test('toMap serializes slides without runtime configuration', () {
+      final deck = Deck(slides: [Slide(key: 'slide-1')]);
 
       final map = deck.toMap();
 
       expect(map.containsKey('revision'), isFalse);
       expect((map['slides'] as List).single, containsPair('key', 'slide-1'));
-      expect(map['configuration'], isA<Map>());
+      expect(map.containsKey('configuration'), isFalse);
     });
 
     test('fromMap deserializes minimal map', () {
@@ -85,7 +75,6 @@ void main() {
       });
 
       expect(deck.slides.single.key, 'slide-1');
-      expect(deck.configuration, isNotNull);
     });
 
     test('parse preserves slide template and custom args', () {
@@ -130,21 +119,15 @@ void main() {
       );
     });
 
-    test('parse rejects explicit null configuration fields', () {
-      for (final field in [
-        'projectDir',
-        'slidesPath',
-        'outputDir',
-        'assetsPath',
-      ]) {
-        expect(
-          () => Deck.parse({
-            'slides': <dynamic>[],
-            'configuration': {field: null},
-          }),
-          throwsA(isA<AckException>()),
-        );
-      }
+    test('parse ignores legacy configuration payloads', () {
+      final deck = Deck.parse({
+        'slides': [
+          {'key': 'slide-1'},
+        ],
+        'configuration': {'projectDir': '/old', 'slidesPath': 'custom.md'},
+      });
+
+      expect(deck.slides.single.key, 'slide-1');
     });
 
     test('round-trips through toMap/fromMap', () {
@@ -159,10 +142,6 @@ void main() {
             comments: ['Note'],
           ),
         ],
-        configuration: DeckConfiguration(
-          projectDir: '/rt-project',
-          slidesPath: 'slides.md',
-        ),
       );
 
       final restored = Deck.fromMap(original.toMap());
@@ -177,13 +156,6 @@ void main() {
     test('json schema keeps optional fields non-nullable', () {
       final jsonSchema = Deck.schema.toJsonSchema();
 
-      final configurationSchema = _propertySchema(jsonSchema, 'configuration');
-      final configurationProjectDirSchema = _propertySchema(
-        configurationSchema,
-        'projectDir',
-      );
-      _expectSchemaIsNotNullable(configurationProjectDirSchema);
-
       final slidesSchema = _propertySchema(jsonSchema, 'slides');
       final slideItemSchema = Map<String, Object?>.from(
         slidesSchema['items'] as Map,
@@ -196,19 +168,10 @@ void main() {
       _expectSchemaIsNotNullable(slideOptionsTitleSchema);
     });
 
-    test('equality tracks slides and configuration', () {
-      final deck1 = Deck(
-        slides: [Slide(key: 'same')],
-        configuration: DeckConfiguration(projectDir: '/same'),
-      );
-      final deck2 = Deck(
-        slides: [Slide(key: 'same')],
-        configuration: DeckConfiguration(projectDir: '/same'),
-      );
-      final deck3 = Deck(
-        slides: [Slide(key: 'different')],
-        configuration: DeckConfiguration(projectDir: '/same'),
-      );
+    test('equality tracks slides', () {
+      final deck1 = Deck(slides: [Slide(key: 'same')]);
+      final deck2 = Deck(slides: [Slide(key: 'same')]);
+      final deck3 = Deck(slides: [Slide(key: 'different')]);
 
       expect(deck1, deck2);
       expect(deck1.hashCode, deck2.hashCode);

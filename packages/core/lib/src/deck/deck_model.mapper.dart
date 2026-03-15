@@ -16,7 +16,6 @@ class DeckMapper extends ClassMapperBase<Deck> {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = DeckMapper._());
       SlideMapper.ensureInitialized();
-      DeckConfigurationMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -26,24 +25,12 @@ class DeckMapper extends ClassMapperBase<Deck> {
 
   static List<Slide> _$slides(Deck v) => v.slides;
   static const Field<Deck, List<Slide>> _f$slides = Field('slides', _$slides);
-  static DeckConfiguration _$configuration(Deck v) => v.configuration;
-  static const Field<Deck, DeckConfiguration> _f$configuration = Field(
-    'configuration',
-    _$configuration,
-    opt: true,
-  );
 
   @override
-  final MappableFields<Deck> fields = const {
-    #slides: _f$slides,
-    #configuration: _f$configuration,
-  };
+  final MappableFields<Deck> fields = const {#slides: _f$slides};
 
   static Deck _instantiate(DecodingData data) {
-    return Deck(
-      slides: data.dec(_f$slides),
-      configuration: data.dec(_f$configuration),
-    );
+    return Deck(slides: data.dec(_f$slides));
   }
 
   @override
@@ -93,9 +80,7 @@ extension DeckValueCopy<$R, $Out> on ObjectCopyWith<$R, Deck, $Out> {
 abstract class DeckCopyWith<$R, $In extends Deck, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
   ListCopyWith<$R, Slide, SlideCopyWith<$R, Slide, Slide>> get slides;
-  DeckConfigurationCopyWith<$R, DeckConfiguration, DeckConfiguration>
-  get configuration;
-  $R call({List<Slide>? slides, DeckConfiguration? configuration});
+  $R call({List<Slide>? slides});
   DeckCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
 
@@ -113,21 +98,11 @@ class _DeckCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Deck, $Out>
         (v) => call(slides: v),
       );
   @override
-  DeckConfigurationCopyWith<$R, DeckConfiguration, DeckConfiguration>
-  get configuration => ($value.configuration as DeckConfiguration).copyWith
-      .$chain((v) => call(configuration: v));
+  $R call({List<Slide>? slides}) =>
+      $apply(FieldCopyWithData({if (slides != null) #slides: slides}));
   @override
-  $R call({List<Slide>? slides, Object? configuration = $none}) => $apply(
-    FieldCopyWithData({
-      if (slides != null) #slides: slides,
-      if (configuration != $none) #configuration: configuration,
-    }),
-  );
-  @override
-  Deck $make(CopyWithData data) => Deck(
-    slides: data.get(#slides, or: $value.slides),
-    configuration: data.get(#configuration, or: $value.configuration),
-  );
+  Deck $make(CopyWithData data) =>
+      Deck(slides: data.get(#slides, or: $value.slides));
 
   @override
   DeckCopyWith<$R2, Deck, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t) =>

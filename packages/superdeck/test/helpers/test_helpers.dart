@@ -49,7 +49,7 @@ SlideConfiguration createTestSlide({
 }
 
 /// Creates a test deck with the given slides.
-Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
+Deck createTestDeck({List<Slide>? slides}) {
   final testSlides =
       slides ??
       List.generate(
@@ -62,11 +62,8 @@ Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
         ),
       );
 
-  return Deck(slides: testSlides, configuration: config ?? createMockConfig());
+  return Deck(slides: testSlides);
 }
-
-/// Creates a mock configuration.
-DeckConfiguration createMockConfig() => DeckConfiguration();
 
 /// Pumps a widget and settles all animations.
 Future<void> pumpAndSettleWidget(

@@ -490,14 +490,6 @@ void main() {
       });
     });
 
-    group('defaultFile', () {
-      test('returns file named superdeck.yaml', () {
-        final file = DeckConfiguration.defaultFile;
-
-        expect(file.path, 'superdeck.yaml');
-      });
-    });
-
     group('equality', () {
       test('equal configs are equal', () {
         final config1 = DeckConfiguration(projectDir: '/same');

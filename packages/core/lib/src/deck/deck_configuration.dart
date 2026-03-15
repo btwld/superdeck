@@ -25,6 +25,8 @@ final class DeckConfiguration with DeckConfigurationMappable {
   String get _assets => assetsPath ?? 'assets';
   String get _slides => slidesPath ?? 'slides.md';
 
+  Directory get projectDirectory => Directory(p.normalize(_baseDir));
+
   Directory get superdeckDir =>
       Directory(p.normalize(p.join(_baseDir, _outputDir)));
 
@@ -84,8 +86,6 @@ final class DeckConfiguration with DeckConfigurationMappable {
     if (p.isAbsolute(value)) return false;
     return !p.split(value).contains('..');
   }
-
-  static File get defaultFile => File('superdeck.yaml');
 
   static String _normalizeBundledPath(String path) {
     final normalized = p.posix.normalize(path.replaceAll('\\', '/'));

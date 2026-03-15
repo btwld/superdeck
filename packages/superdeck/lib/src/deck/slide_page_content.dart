@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_screen.dart';
 import '../ui/widgets/button.dart';
@@ -103,7 +104,12 @@ class _NoSlidesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final defaultConfiguration = DeckConfiguration();
+    final slidesPath = defaultConfiguration.slidesFile.path.startsWith('./')
+        ? defaultConfiguration.slidesFile.path.substring(2)
+        : defaultConfiguration.slidesFile.path;
+
+    return Scaffold(
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(32),
@@ -120,8 +126,9 @@ class _NoSlidesScreen extends StatelessWidget {
               ),
               SizedBox(height: 12),
               Text(
-                'Add slides to your deck (slides.md) and rebuild to start presenting.',
-                style: TextStyle(fontSize: 16),
+                'Add slides to your deck ($slidesPath) and rebuild to start '
+                'presenting.',
+                style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ],

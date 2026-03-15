@@ -1,9 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../ui/widgets/provider.dart';
-import '../utils/config_resolver.dart';
 import '../utils/constants.dart';
 import 'deck_loader.dart';
 import 'deck_controller.dart';
@@ -15,13 +13,11 @@ import 'deck_options.dart';
 /// including optional runtime build-status watching in debug IO runtimes.
 class DeckControllerBuilder extends StatefulWidget {
   final DeckOptions options;
-  final DeckConfiguration? configuration;
   final Widget Function(BuildContext context, GoRouter router) builder;
 
   const DeckControllerBuilder({
     super.key,
     required this.options,
-    this.configuration,
     required this.builder,
   });
 
@@ -36,13 +32,9 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   void initState() {
     super.initState();
 
-    final configuration = resolveConfiguration(widget.configuration);
-    final deckLoader = kCanRunProcess
-        ? FileDeckLoader(configuration: configuration)
-        : BundledDeckLoader(configuration: configuration);
+    final deckLoader = kCanRunProcess ? FileDeckLoader() : BundledDeckLoader();
 
     _deckController = DeckController(
-      configuration: configuration,
       deckLoader: deckLoader,
       options: widget.options,
     );

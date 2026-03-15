@@ -60,45 +60,38 @@ void main() {
       });
     });
 
-    group('run() - configuration loading', () {
-      test('returns error code when slides file does not exist', () async {
-        // Create a config file but no slides file
-        final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
-        await configFile.writeAsString('slides_path: slides.md');
-
-        final runner = createTestRunner(command);
-        final result = await runner.run(['build']);
-
-        // Should fail due to configuration error
-        expect(
-          result,
-          anyOf(
-            equals(ExitCode.unavailable.code),
-            equals(ExitCode.software.code),
-          ),
-        );
-      });
-
+    group('run() - defaults-only configuration', () {
       test(
-        'loads default configuration when config file does not exist',
+        'ignores superdeck.yaml when default slides.md is missing',
         () async {
-          // Create slides file without config
-          final slidesFile = File(path.join(tempDir.path, 'slides.md'));
-          await slidesFile.writeAsString('# Test Slide\n\nContent');
+          final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
+          await configFile.writeAsString('slidesPath: custom.md');
+          await File(
+            path.join(tempDir.path, 'custom.md'),
+          ).writeAsString('# Test');
 
           final runner = createTestRunner(command);
           final result = await runner.run(['build']);
 
-          // Should succeed with default config
-          expect(
-            result,
-            anyOf(
-              equals(ExitCode.success.code),
-              equals(ExitCode.software.code),
-            ),
-          );
+          expect(result, ExitCode.unavailable.code);
         },
       );
+
+      test('ignores malformed superdeck.yaml when slides.md exists', () async {
+        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        await slidesFile.writeAsString('# Test Slide\n\nContent');
+        final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
+        await configFile.writeAsString('invalid: yaml: content:');
+        createTestPubspec(tempDir);
+
+        final runner = createTestRunner(command);
+        final result = await runner.run(['build']);
+
+        expect(
+          result,
+          anyOf(equals(ExitCode.success.code), equals(ExitCode.software.code)),
+        );
+      });
     });
 
     group('run() - basic build execution', () {
@@ -200,22 +193,6 @@ version: 1.0.0
     });
 
     group('run() - error handling', () {
-      test('handles invalid YAML in config file', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
-        await slidesFile.writeAsString('# Test');
-
-        final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
-        await configFile.writeAsString('invalid: yaml: content:');
-
-        createTestPubspec(tempDir);
-
-        final runner = createTestRunner(command);
-        final result = await runner.run(['build']);
-
-        // Should handle gracefully
-        expect(result, isA<int>());
-      });
-
       test('handles malformed markdown gracefully', () async {
         final slidesFile = File(path.join(tempDir.path, 'slides.md'));
         await slidesFile.writeAsString('''

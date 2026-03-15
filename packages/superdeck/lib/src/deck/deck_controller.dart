@@ -90,7 +90,6 @@ class DeckController {
   });
 
   DeckController({
-    required DeckConfiguration configuration,
     required DeckLoader deckLoader,
     required DeckOptions options,
     NavigationService? navigationService,
@@ -99,9 +98,7 @@ class DeckController {
        _navigationService = navigationService ?? NavigationService(),
        _thumbnailService =
            thumbnailService ??
-           ThumbnailService(
-             cacheStore: createAssetCacheStore(configuration: configuration),
-           ),
+           ThumbnailService(cacheStore: createAssetCacheStore()),
        _plugins = options.plugins {
     _options.value = options.copyWith(plugins: _plugins);
     final pluginRoutes = _plugins

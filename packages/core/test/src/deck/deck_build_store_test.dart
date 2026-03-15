@@ -65,7 +65,7 @@ void main() {
     });
 
     test('saveReferences saves deck reference and assets reference', () async {
-      await store.saveReferences(Deck(slides: [], configuration: config));
+      await store.saveReferences(Deck(slides: []));
 
       expect(mockConfig.deckJson.existsSync(), isTrue);
       expect(mockConfig.assetsRefJson.existsSync(), isTrue);
@@ -81,10 +81,7 @@ void main() {
     test(
       'saveReferences retains last_modified when asset files are unchanged',
       () async {
-        final deck = Deck(
-          slides: [Slide(key: 'intro')],
-          configuration: config,
-        );
+        final deck = Deck(slides: [Slide(key: 'intro')]);
 
         await store.saveReferences(deck);
         final initialJson =
@@ -112,7 +109,6 @@ void main() {
               Slide(key: 'intro'),
               Slide(key: 'agenda'),
             ],
-            configuration: config,
           ),
         );
 

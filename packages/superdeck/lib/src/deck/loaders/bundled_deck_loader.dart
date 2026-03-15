@@ -15,7 +15,8 @@ class BundledDeckLoader extends DeckLoader {
   var _disposed = false;
   var _started = false;
 
-  BundledDeckLoader({required super.configuration});
+  BundledDeckLoader({DeckConfiguration? configuration})
+    : super(configuration: configuration ?? DeckConfiguration());
 
   Future<void> _emitLoad() async {
     if (_disposed || _controller.isClosed) return;

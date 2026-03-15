@@ -66,10 +66,8 @@ void main() {
     late DeckController controller;
 
     setUp(() {
-      final configuration = DeckConfiguration();
-      mockDeckLoader = MockDeckLoader(configuration: configuration);
+      mockDeckLoader = MockDeckLoader();
       controller = DeckController(
-        configuration: configuration,
         deckLoader: mockDeckLoader,
         options: const DeckOptions(),
       );
@@ -121,12 +119,10 @@ void main() {
     );
 
     test('DeckErrorEvent is fatal when no deck has been loaded yet', () async {
-      final configuration = DeckConfiguration();
-      final loader = MockDeckLoader(configuration: configuration);
+      final loader = MockDeckLoader();
       loader.disableAutoLoad();
 
       final ctrl = DeckController(
-        configuration: configuration,
         deckLoader: loader,
         options: const DeckOptions(),
       );

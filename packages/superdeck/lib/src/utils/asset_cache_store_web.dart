@@ -6,9 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:web/web.dart' as web;
 
-AssetCacheStore createAssetCacheStore({
-  required DeckConfiguration configuration,
-}) {
+AssetCacheStore createAssetCacheStore({DeckConfiguration? configuration}) {
   return _WebAssetCacheStore();
 }
 
