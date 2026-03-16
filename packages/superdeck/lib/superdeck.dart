@@ -18,7 +18,7 @@ export 'src/styling/styling.dart';
 export 'src/ui/superdeck_app.dart';
 export 'src/ui/app_shell.dart';
 
-// Deck
+// Presentation
 export 'src/deck/deck_controller.dart';
 export 'src/deck/deck_options.dart';
 export 'src/deck/deck_controller_builder.dart';

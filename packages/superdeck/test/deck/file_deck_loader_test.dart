@@ -5,8 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-const _validDeckJson = '{"slides":[]}';
-
+const _validSlidesJson = '[]';
 String _buildStatusJson(
   String status, {
   required int seq,
@@ -33,8 +32,8 @@ Future<void> _waitUntil(
   }
 }
 
-Future<void> _waitForEvent<T extends DeckEvent>(
-  List<DeckEvent> events, {
+Future<void> _waitForEvent<T extends SlidesEvent>(
+  List<SlidesEvent> events, {
   bool Function(T)? where,
   Duration timeout = const Duration(seconds: 2),
 }) {
@@ -65,46 +64,47 @@ void main() {
       });
     });
 
-    test('emits DeckLoadingEvent first', () async {
-      final events = <DeckEvent>[];
+    test('emits SlidesLoadingEvent first', () async {
+      final events = <SlidesEvent>[];
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
       await Future<void>.delayed(const Duration(milliseconds: 80));
 
       expect(events, hasLength(1));
-      expect(events.first, isA<DeckLoadingEvent>());
+      expect(events.first, isA<SlidesLoadingEvent>());
     });
 
-    test('does not load deck at startup without success status', () async {
+    test('does not load slides at startup without success status', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
       await Future<void>.delayed(const Duration(milliseconds: 120));
 
-      expect(events.first, isA<DeckLoadingEvent>());
-      expect(events.whereType<DeckLoadedEvent>(), isEmpty);
+      expect(events.first, isA<SlidesLoadingEvent>());
+      expect(events.whereType<SlidesLoadedEvent>(), isEmpty);
     });
 
     test('processes existing startup success status', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
       await config.buildStatusJson.writeAsString(
         '{"status":"success","timestamp":"2026-03-10T10:00:00.000Z"}',
       );
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
-      expect(events.first, isA<DeckLoadingEvent>());
-      expect(events.whereType<DeckLoadedEvent>(), hasLength(1));
+      expect(events.first, isA<SlidesLoadingEvent>());
+      expect(events.whereType<SlidesLoadedEvent>(), hasLength(1));
+      expect(events.whereType<SlidesLoadedEvent>().single.slides, isEmpty);
     });
 
     test('processes existing startup building status', () async {
@@ -113,21 +113,21 @@ void main() {
         '{"status":"building","timestamp":"2026-03-10T10:00:00.000Z"}',
       );
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
       await Future<void>.delayed(const Duration(milliseconds: 150));
 
-      expect(events.whereType<DeckRebuildingEvent>(), isNotEmpty);
-      expect(events.whereType<DeckLoadedEvent>(), isEmpty);
+      expect(events.whereType<SlidesRebuildingEvent>(), isNotEmpty);
+      expect(events.whereType<SlidesLoadedEvent>(), isEmpty);
     });
 
     test('does not dedupe updates that share the same timestamp', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
@@ -136,7 +136,7 @@ void main() {
       await config.buildStatusJson.writeAsString(
         '{"status":"building","timestamp":"2026-03-10T12:00:00.000Z"}',
       );
-      await _waitForEvent<DeckRebuildingEvent>(events);
+      await _waitForEvent<SlidesRebuildingEvent>(events);
 
       await Future<void>.delayed(const Duration(milliseconds: 180));
       await config.buildStatusJson.writeAsString(
@@ -144,14 +144,14 @@ void main() {
         '"error":{"type":"BuildFailure","message":"same timestamp failure"}}',
       );
 
-      await _waitForEvent<DeckErrorEvent>(
+      await _waitForEvent<SlidesErrorEvent>(
         events,
         where: (e) => e.message == 'same timestamp failure',
       );
 
-      final rebuildEvents = events.whereType<DeckRebuildingEvent>().toList();
+      final rebuildEvents = events.whereType<SlidesRebuildingEvent>().toList();
       final failureEvents = events
-          .whereType<DeckErrorEvent>()
+          .whereType<SlidesErrorEvent>()
           .where((event) => event.message == 'same timestamp failure')
           .toList();
 
@@ -159,10 +159,10 @@ void main() {
       expect(failureEvents, isNotEmpty);
     });
 
-    test('invalid status json emits DeckErrorEvent with Exception', () async {
+    test('invalid status json emits SlidesErrorEvent with Exception', () async {
       await config.superdeckDir.create(recursive: true);
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
@@ -172,16 +172,16 @@ void main() {
 
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
-      final errorEvents = events.whereType<DeckErrorEvent>().toList();
+      final errorEvents = events.whereType<SlidesErrorEvent>().toList();
       expect(errorEvents, isNotEmpty);
       expect(errorEvents.last.message, 'Build status error');
       expect(errorEvents.last.error, isA<Exception>());
     });
 
-    test('failure status emits DeckErrorEvent with DeckBuildError', () async {
+    test('failure status emits SlidesErrorEvent with DeckBuildError', () async {
       await config.superdeckDir.create(recursive: true);
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
@@ -195,7 +195,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
       final syntaxErrors = events
-          .whereType<DeckErrorEvent>()
+          .whereType<SlidesErrorEvent>()
           .where((event) => event.message == 'Syntax error')
           .toList();
 
@@ -203,42 +203,8 @@ void main() {
       expect(syntaxErrors.last.error, isA<DeckBuildError>());
     });
 
-    test('success status invalid deck emits error and then recovers', () async {
-      await config.superdeckDir.create(recursive: true);
-
-      final events = <DeckEvent>[];
-      final subscription = deckLoader.load().listen(events.add);
-      addTearDown(subscription.cancel);
-
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-
-      await config.deckJson.writeAsString('[]');
-      await config.buildStatusJson.writeAsString(
-        '{"status":"success","timestamp":"2026-03-10T10:00:01.000Z"}',
-      );
-
-      await Future<void>.delayed(const Duration(milliseconds: 180));
-
-      await config.deckJson.writeAsString(_validDeckJson);
-      await config.buildStatusJson.writeAsString(
-        '{"status":"success","timestamp":"2026-03-10T10:00:02.000Z"}',
-      );
-
-      await Future<void>.delayed(const Duration(milliseconds: 220));
-
-      final referenceErrors = events
-          .whereType<DeckErrorEvent>()
-          .where((event) => event.message == 'Superdeck reference error')
-          .toList();
-      final loaded = events.whereType<DeckLoadedEvent>().toList();
-
-      expect(referenceErrors, isNotEmpty);
-      expect(referenceErrors.last.error, isA<Exception>());
-      expect(loaded, hasLength(1));
-    });
-
     test('dispose stops watching and closes the stream', () async {
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final streamDone = Completer<void>();
       final subscription = deckLoader.load().listen(
         events.add,
@@ -257,7 +223,7 @@ void main() {
       await streamDone.future.timeout(const Duration(seconds: 1));
 
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
       await config.buildStatusJson.writeAsString(
         '{"status":"success","timestamp":"2026-03-10T11:30:00.000Z"}',
       );
@@ -292,27 +258,27 @@ void main() {
       'reload when .superdeck/ does not exist yet: '
       'reload() picks up files created after the previous cycle is canceled',
       () async {
-        final events = <DeckEvent>[];
+        final events = <SlidesEvent>[];
         final sub = deckLoader.load().listen(events.add);
         addTearDown(sub.cancel);
 
-        await _waitForEvent<DeckLoadingEvent>(events);
-        expect(events.whereType<DeckLoadingEvent>(), hasLength(1));
+        await _waitForEvent<SlidesLoadingEvent>(events);
+        expect(events.whereType<SlidesLoadingEvent>(), hasLength(1));
 
         await deckLoader.reload();
 
         await _waitUntil(
-          () => events.whereType<DeckLoadingEvent>().length == 2,
+          () => events.whereType<SlidesLoadingEvent>().length == 2,
         );
 
         await config.superdeckDir.create(recursive: true);
-        await config.deckJson.writeAsString(_validDeckJson);
+        await config.deckJson.writeAsString(_validSlidesJson);
         await config.buildStatusJson.writeAsString(
           _buildStatusJson('success', seq: 1),
         );
 
-        await _waitForEvent<DeckLoadedEvent>(events);
-        expect(events.whereType<DeckLoadedEvent>(), hasLength(1));
+        await _waitForEvent<SlidesLoadedEvent>(events);
+        expect(events.whereType<SlidesLoadedEvent>(), hasLength(1));
       },
     );
 
@@ -320,40 +286,42 @@ void main() {
         'reload() starts cleanly and processes new status', () async {
       // Set up files for a successful first load.
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 0),
       );
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final sub = deckLoader.load().listen(events.add);
       addTearDown(sub.cancel);
 
-      await _waitForEvent<DeckLoadedEvent>(events);
-      expect(events.whereType<DeckLoadedEvent>(), hasLength(1));
+      await _waitForEvent<SlidesLoadedEvent>(events);
+      expect(events.whereType<SlidesLoadedEvent>(), hasLength(1));
 
       await deckLoader.reload();
-      await _waitUntil(() => events.whereType<DeckLoadingEvent>().length == 2);
+      await _waitUntil(
+        () => events.whereType<SlidesLoadingEvent>().length == 2,
+      );
 
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 2),
       );
 
-      await _waitUntil(() => events.whereType<DeckLoadedEvent>().length >= 2);
+      await _waitUntil(() => events.whereType<SlidesLoadedEvent>().length >= 2);
       expect(
-        events.whereType<DeckLoadedEvent>().length,
+        events.whereType<SlidesLoadedEvent>().length,
         greaterThanOrEqualTo(2),
       );
     });
 
     test('dispose after reload: stops watching, no late events', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 0),
       );
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final streamDone = Completer<void>();
       final sub = deckLoader.load().listen(
         events.add,
@@ -363,9 +331,11 @@ void main() {
       );
       addTearDown(sub.cancel);
 
-      await _waitForEvent<DeckLoadedEvent>(events);
+      await _waitForEvent<SlidesLoadedEvent>(events);
       await deckLoader.reload();
-      await _waitUntil(() => events.whereType<DeckLoadingEvent>().length == 2);
+      await _waitUntil(
+        () => events.whereType<SlidesLoadingEvent>().length == 2,
+      );
 
       await deckLoader.dispose();
       await streamDone.future.timeout(const Duration(seconds: 2));
@@ -382,19 +352,19 @@ void main() {
 
     test('event ordering: loading before loaded', () async {
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 0),
       );
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final sub = deckLoader.load().listen(events.add);
       addTearDown(sub.cancel);
 
-      await _waitForEvent<DeckLoadedEvent>(events);
+      await _waitForEvent<SlidesLoadedEvent>(events);
 
-      final loadingIdx = events.indexWhere((e) => e is DeckLoadingEvent);
-      final loadedIdx = events.indexWhere((e) => e is DeckLoadedEvent);
+      final loadingIdx = events.indexWhere((e) => e is SlidesLoadingEvent);
+      final loadedIdx = events.indexWhere((e) => e is SlidesLoadedEvent);
       expect(loadingIdx, lessThan(loadedIdx));
     });
 
@@ -404,14 +374,14 @@ void main() {
         _buildStatusJson('building', seq: 0),
       );
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final sub = deckLoader.load().listen(events.add);
       addTearDown(sub.cancel);
 
-      await _waitForEvent<DeckRebuildingEvent>(events);
+      await _waitForEvent<SlidesRebuildingEvent>(events);
 
-      final loadingIdx = events.indexWhere((e) => e is DeckLoadingEvent);
-      final rebuildIdx = events.indexWhere((e) => e is DeckRebuildingEvent);
+      final loadingIdx = events.indexWhere((e) => e is SlidesLoadingEvent);
+      final rebuildIdx = events.indexWhere((e) => e is SlidesRebuildingEvent);
       expect(loadingIdx, lessThan(rebuildIdx));
     });
 
@@ -421,14 +391,14 @@ void main() {
         _buildStatusJson('failure', seq: 0, errorMessage: 'bad'),
       );
 
-      final events = <DeckEvent>[];
+      final events = <SlidesEvent>[];
       final sub = deckLoader.load().listen(events.add);
       addTearDown(sub.cancel);
 
-      await _waitForEvent<DeckErrorEvent>(events);
+      await _waitForEvent<SlidesErrorEvent>(events);
 
-      final loadingIdx = events.indexWhere((e) => e is DeckLoadingEvent);
-      final errorIdx = events.indexWhere((e) => e is DeckErrorEvent);
+      final loadingIdx = events.indexWhere((e) => e is SlidesLoadingEvent);
+      final errorIdx = events.indexWhere((e) => e is SlidesErrorEvent);
       expect(loadingIdx, lessThan(errorIdx));
     });
   });

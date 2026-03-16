@@ -6,7 +6,7 @@ import 'package:superdeck/src/deck/deck_loader.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-const _validDeckJson = '{"slides":[]}';
+const _validSlidesJson = '[]';
 
 String _buildStatusJson(String status, {required int seq}) {
   return '{"status":"$status","timestamp":"2026-03-10T10:00:0$seq.000Z"}';
@@ -66,7 +66,7 @@ void main() {
 
         // Now create the output directory and files.
         await config.superdeckDir.create(recursive: true);
-        await config.deckJson.writeAsString(_validDeckJson);
+        await config.deckJson.writeAsString(_validSlidesJson);
         await config.buildStatusJson.writeAsString(
           _buildStatusJson('success', seq: 1),
         );
@@ -83,7 +83,7 @@ void main() {
     test('reloadDeck() does not surface a fatal loader-stream error', () async {
       // Create files for an initial successful load.
       await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validDeckJson);
+      await config.deckJson.writeAsString(_validSlidesJson);
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 0),
       );

@@ -48,10 +48,9 @@ SlideConfiguration createTestSlide({
   );
 }
 
-/// Creates a test deck with the given slides.
-Deck createTestDeck({List<Slide>? slides}) {
-  final testSlides =
-      slides ??
+/// Creates a test slide payload with the given slides.
+List<Slide> createTestSlidesPayload({List<Slide>? slides}) {
+  return slides ??
       List.generate(
         3,
         (index) => Slide(
@@ -61,8 +60,6 @@ Deck createTestDeck({List<Slide>? slides}) {
           ],
         ),
       );
-
-  return Deck(slides: testSlides);
 }
 
 /// Pumps a widget and settles all animations.

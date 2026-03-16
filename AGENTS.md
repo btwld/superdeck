@@ -114,7 +114,7 @@ lib/src/
   utils/          # Cross-cutting utilities
 ```
 
-**Co-locate models with their domain** — no separate `models/` folder. Place `deck_model.dart` in `deck/`, not in a shared `models/` directory.
+**Co-locate models with their domain** — no separate `models/` folder. Place `slide_model.dart` in `deck/`, not in a shared `models/` directory.
 
 **Earned role suffixes** — use `_model`, `_service`, `_controller`, `_view`, `_widget`, `_store`, `_parser` only when the file's role would be ambiguous without the suffix. Don't force a suffix when the name is already clear (e.g., `background.dart`, `constants.dart`).
 

@@ -31,9 +31,9 @@ class DeckController {
   final List<SuperDeckPlugin> _plugins;
 
   bool _disposed = false;
-  StreamSubscription<DeckEvent>? _subscription;
+  StreamSubscription<SlidesEvent>? _subscription;
 
-  final _currentDeck = signal<Deck?>(null);
+  final _loadedSlides = signal<List<Slide>?>(null);
   final _isLoading = signal<bool>(true);
   final _error = signal<Object?>(null);
   final _isBuildActive = signal<bool>(false);
@@ -52,10 +52,10 @@ class DeckController {
   EffectCleanup? _indexClampEffect;
 
   late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
-    final deck = _currentDeck.value;
-    if (deck == null) return <SlideConfiguration>[];
+    final loadedSlides = _loadedSlides.value;
+    if (loadedSlides == null) return <SlideConfiguration>[];
     return const SlideConfigurationBuilder().buildConfigurations(
-      deck.slides,
+      loadedSlides,
       _options.value,
     );
   });
@@ -65,7 +65,7 @@ class DeckController {
   );
   ReadonlySignal<bool> get isLoading => _isLoading;
   late final ReadonlySignal<bool> hasError = computed(
-    () => _error.value != null && _currentDeck.value == null,
+    () => _error.value != null && _loadedSlides.value == null,
   );
   ReadonlySignal<Object?> get error => _error;
   ReadonlySignal<DeckBuildError?> get buildFailure => _buildFailure;
@@ -131,21 +131,21 @@ class DeckController {
     );
   }
 
-  void _handleEvent(DeckEvent event) {
+  void _handleEvent(SlidesEvent event) {
     if (_disposed) return;
 
     switch (event) {
-      case DeckLoadingEvent():
+      case SlidesLoadingEvent():
         _isLoading.value = true;
         _error.value = null;
-      case DeckLoadedEvent(:final deck):
-        _currentDeck.value = deck;
+      case SlidesLoadedEvent(:final slides):
+        _loadedSlides.value = List<Slide>.unmodifiable(slides);
         _isLoading.value = false;
         _error.value = null;
         _isBuildActive.value = false;
         _buildFailure.value = null;
-      case DeckErrorEvent(:final message, :final error):
-        if (_currentDeck.value != null) {
+      case SlidesErrorEvent(:final message, :final error):
+        if (_loadedSlides.value != null) {
           _isLoading.value = false;
           _isBuildActive.value = false;
           _buildFailure.value = error is DeckBuildError
@@ -155,7 +155,7 @@ class DeckController {
           _error.value = error ?? message;
           _isLoading.value = false;
         }
-      case DeckRebuildingEvent():
+      case SlidesRebuildingEvent():
         _isBuildActive.value = true;
         _buildFailure.value = null;
     }
@@ -290,7 +290,7 @@ class DeckController {
       thumbnail.dispose();
     }
 
-    _currentDeck.dispose();
+    _loadedSlides.dispose();
     _isLoading.dispose();
     _error.dispose();
     _isBuildActive.dispose();

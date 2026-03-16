@@ -7,10 +7,10 @@ import 'package:superdeck_core/superdeck_core.dart';
 /// File-based [DeckLoader] implementation for debug IO runtimes.
 ///
 /// [load] returns a long-lived stream:
-/// 1. Emits [DeckLoadingEvent].
+/// 1. Emits [SlidesLoadingEvent].
 /// 2. Emits all subsequent events from `build_status.json`.
 class FileDeckLoader extends DeckLoader {
-  final _controller = StreamController<DeckEvent>();
+  final _controller = StreamController<SlidesEvent>();
   var _cancelSignal = Completer<void>();
   Future<void>? _runTask;
   var _disposed = false;
@@ -22,7 +22,7 @@ class FileDeckLoader extends DeckLoader {
   File get _deckFile => configuration.deckJson;
   File get _statusFile => configuration.buildStatusJson;
   Directory get _statusParentDir => _statusFile.parent;
-  Directory get _projectDir => Directory(configuration.projectDir ?? '.');
+  Directory get _projectDir => configuration.projectDirectory;
 
   bool _isCycleActive(Completer<void> cancel) {
     return !_disposed &&
@@ -31,27 +31,27 @@ class FileDeckLoader extends DeckLoader {
         !cancel.isCompleted;
   }
 
-  void _emit(DeckEvent event, Completer<void> cancel) {
+  void _emit(SlidesEvent event, Completer<void> cancel) {
     if (_isCycleActive(cancel)) {
       _controller.add(event);
     }
   }
 
-  Future<void> _emitLoadedDeck(Completer<void> cancel) async {
+  Future<void> _emitLoadedSlides(Completer<void> cancel) async {
     try {
-      final deckJson = jsonDecode(await _deckFile.readAsString());
-      if (deckJson is! Map) {
+      final slidesJson = jsonDecode(await _deckFile.readAsString());
+      if (slidesJson is! List) {
         throw Exception(
-          'Expected JSON object at ${_deckFile.path}, '
-          'got ${deckJson.runtimeType}',
+          'Expected JSON array at ${_deckFile.path}, '
+          'got ${slidesJson.runtimeType}',
         );
       }
+      _emit(SlidesLoadedEvent(parseSlidesContract(slidesJson)), cancel);
+    } on Exception catch (error) {
       _emit(
-        DeckLoadedEvent(Deck.parse(Map<String, Object?>.from(deckJson))),
+        SlidesErrorEvent('Superdeck reference error', error: error),
         cancel,
       );
-    } on Exception catch (error) {
-      _emit(DeckErrorEvent('Superdeck reference error', error: error), cancel);
     }
   }
 
@@ -69,22 +69,25 @@ class FileDeckLoader extends DeckLoader {
 
       switch (status.phase) {
         case DeckBuildPhase.building:
-          _emit(DeckRebuildingEvent(), cancel);
+          _emit(SlidesRebuildingEvent(), cancel);
           return;
         case DeckBuildPhase.failure:
           final buildError =
               status.error ??
-              const DeckBuildError(message: 'Deck build failed');
-          _emit(DeckErrorEvent(buildError.message, error: buildError), cancel);
+              const DeckBuildError(message: 'Presentation build failed');
+          _emit(
+            SlidesErrorEvent(buildError.message, error: buildError),
+            cancel,
+          );
           return;
         case DeckBuildPhase.success:
-          await _emitLoadedDeck(cancel);
+          await _emitLoadedSlides(cancel);
           return;
         case DeckBuildPhase.unknown:
           return;
       }
     } on Exception catch (error) {
-      _emit(DeckErrorEvent('Build status error', error: error), cancel);
+      _emit(SlidesErrorEvent('Build status error', error: error), cancel);
     }
   }
 
@@ -148,7 +151,7 @@ class FileDeckLoader extends DeckLoader {
       final exception = error is Exception
           ? error
           : Exception(error.toString());
-      _emit(DeckErrorEvent('Build status error', error: exception), cancel);
+      _emit(SlidesErrorEvent('Build status error', error: exception), cancel);
     });
   }
 
@@ -170,7 +173,7 @@ class FileDeckLoader extends DeckLoader {
   }
 
   Future<void> _run(Completer<void> cancel) async {
-    _emit(DeckLoadingEvent('Loading deck…'), cancel);
+    _emit(SlidesLoadingEvent('Loading slides…'), cancel);
 
     while (_isCycleActive(cancel)) {
       if (!await _statusParentDir.exists()) {
@@ -187,7 +190,7 @@ class FileDeckLoader extends DeckLoader {
   }
 
   @override
-  Stream<DeckEvent> load() {
+  Stream<SlidesEvent> load() {
     if (_disposed) {
       return _controller.stream;
     }

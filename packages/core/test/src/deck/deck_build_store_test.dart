@@ -15,7 +15,7 @@ void main() {
 
     setUp(() async {
       mockConfig = createMockConfig();
-      config = DeckConfiguration(projectDir: mockConfig.projectDir);
+      config = mockConfig.configuration;
       store = DeckBuildStore(configuration: config);
       await store.initialize();
     });
@@ -64,16 +64,22 @@ void main() {
       expect(decoded['error'], isA<Map<String, Object?>>());
     });
 
-    test('saveReferences saves deck reference and assets reference', () async {
-      await store.saveReferences(Deck(slides: []));
+    test('saveReferences saves slide references as arrays', () async {
+      await store.saveReferences(const []);
 
       expect(mockConfig.deckJson.existsSync(), isTrue);
+      expect(mockConfig.deckFullJson.existsSync(), isTrue);
       expect(mockConfig.assetsRefJson.existsSync(), isTrue);
 
-      final deckJson = await mockConfig.deckJson.readAsString();
+      final deckJson =
+          jsonDecode(await mockConfig.deckJson.readAsString()) as List<dynamic>;
+      final fullDeckJson =
+          jsonDecode(await mockConfig.deckFullJson.readAsString())
+              as List<dynamic>;
       final assetsRefJson = await mockConfig.assetsRefJson.readAsString();
 
-      expect(deckJson, contains('slides'));
+      expect(deckJson, isEmpty);
+      expect(fullDeckJson, isEmpty);
       expect(assetsRefJson, contains('last_modified'));
       expect(assetsRefJson, contains('files'));
     });
@@ -81,9 +87,9 @@ void main() {
     test(
       'saveReferences retains last_modified when asset files are unchanged',
       () async {
-        final deck = Deck(slides: [Slide(key: 'intro')]);
+        final slides = [Slide(key: 'intro')];
 
-        await store.saveReferences(deck);
+        await store.saveReferences(slides);
         final initialJson =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
@@ -91,7 +97,7 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 5));
 
-        await store.saveReferences(deck);
+        await store.saveReferences(slides);
         final subsequentJson =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
@@ -103,20 +109,39 @@ void main() {
     test(
       'saveReferences excludes runtime thumbnails from generated assets',
       () async {
-        await store.saveReferences(
-          Deck(
-            slides: [
-              Slide(key: 'intro'),
-              Slide(key: 'agenda'),
-            ],
-          ),
-        );
+        await store.saveReferences([Slide(key: 'intro'), Slide(key: 'agenda')]);
 
         final assetsRef =
             jsonDecode(await mockConfig.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
 
         expect(assetsRef['files'], isEmpty);
+      },
+    );
+
+    test(
+      'saveReferences writes slide data directly to both JSON files',
+      () async {
+        final slides = [
+          Slide(
+            key: 'intro',
+            sections: [
+              SectionBlock([ContentBlock('# Hello')]),
+            ],
+          ),
+        ];
+
+        await store.saveReferences(slides);
+
+        final deckJson =
+            jsonDecode(await mockConfig.deckJson.readAsString())
+                as List<dynamic>;
+        final fullDeckJson =
+            jsonDecode(await mockConfig.deckFullJson.readAsString())
+                as List<dynamic>;
+
+        expect(deckJson.single, containsPair('key', 'intro'));
+        expect(fullDeckJson.single, containsPair('key', 'intro'));
       },
     );
 

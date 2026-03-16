@@ -1,31 +1,31 @@
 import 'package:meta/meta.dart';
 
 import 'deck_configuration.dart';
-import 'deck_model.dart';
+import 'slide_model.dart';
 
-sealed class DeckEvent {}
+sealed class SlidesEvent {}
 
-class DeckLoadingEvent extends DeckEvent {
+class SlidesLoadingEvent extends SlidesEvent {
   final String message;
 
-  DeckLoadingEvent(this.message);
+  SlidesLoadingEvent(this.message);
 }
 
-class DeckLoadedEvent extends DeckEvent {
-  final Deck deck;
+class SlidesLoadedEvent extends SlidesEvent {
+  final List<Slide> slides;
 
-  DeckLoadedEvent(this.deck);
+  SlidesLoadedEvent(this.slides);
 }
 
-class DeckErrorEvent extends DeckEvent {
+class SlidesErrorEvent extends SlidesEvent {
   final String message;
   final Object? error;
 
-  DeckErrorEvent(this.message, {this.error});
+  SlidesErrorEvent(this.message, {this.error});
 }
 
-class DeckRebuildingEvent extends DeckEvent {
-  DeckRebuildingEvent();
+class SlidesRebuildingEvent extends SlidesEvent {
+  SlidesRebuildingEvent();
 }
 
 abstract class DeckLoader {
@@ -33,7 +33,7 @@ abstract class DeckLoader {
   final DeckConfiguration configuration;
   const DeckLoader({required this.configuration});
 
-  Stream<DeckEvent> load();
+  Stream<SlidesEvent> load();
   Future<void> reload();
 
   Future<void> dispose();

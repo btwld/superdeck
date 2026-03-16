@@ -102,7 +102,7 @@ class DeckBuilder {
     );
 
     // Save the processed slides
-    await store.saveReferences(Deck(slides: processedSlides));
+    await store.saveReferences(processedSlides);
     await store.saveBuildStatus(
       phase: DeckBuildPhase.success,
       slideCount: processedSlides.length,

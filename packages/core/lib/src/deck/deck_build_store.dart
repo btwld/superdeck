@@ -3,8 +3,15 @@ import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
 import 'package:path/path.dart' as p;
+
 import '../markdown/markdown_json.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import '../utils/extensions.dart';
+import '../utils/logging_utils.dart';
+import '../utils/pretty_json.dart';
+import 'asset_model.dart';
+import 'deck_build_status.dart';
+import 'deck_configuration.dart';
+import 'slide_model.dart';
 
 /// Build-side store used by CLI and builder commands.
 ///
@@ -20,7 +27,7 @@ class DeckBuildStore {
 
   Future<void> initialize() async {
     await configuration.assetsDir.ensureExists();
-    await configuration.deckJson.ensureExists(content: '{}');
+    await configuration.deckJson.ensureExists(content: '[]');
     await configuration.buildStatusJson.ensureExists(
       content: prettyJson(
         DeckBuildStatus(
@@ -45,11 +52,13 @@ class DeckBuildStore {
     return p.join(configuration.assetsDir.path, asset.fileName);
   }
 
-  Future<void> saveReferences(Deck reference) async {
-    final deckJson = prettyJson(reference.toMap());
+  Future<void> saveReferences(List<Slide> slides) async {
+    final deckJson = prettyJson(
+      slides.map((slide) => slide.toMap()).toList(growable: false),
+    );
     await configuration.deckJson.writeAsString(deckJson);
 
-    await _saveFullDeckReference(reference);
+    await _saveFullDeckReference(slides);
     final uniqueAssets = <String, GeneratedAsset>{};
     for (final asset in _generatedAssets) {
       uniqueAssets[asset.fileName] = asset;
@@ -101,12 +110,12 @@ class DeckBuildStore {
     await configuration.buildStatusJson.ensureWrite(prettyJson(status.toMap()));
   }
 
-  Future<void> _saveFullDeckReference(Deck reference) async {
+  Future<void> _saveFullDeckReference(List<Slide> slides) async {
     final converter = MarkdownAstConverter(
       extensionSet: md.ExtensionSet.gitHubWeb,
     );
 
-    final slidesWithMarkdownJson = reference.slides.map((slide) {
+    final slidesWithMarkdownJson = slides.map((slide) {
       final slideMap = slide.toMap();
 
       // Process each section's blocks to replace content with markdown AST
@@ -141,10 +150,7 @@ class DeckBuildStore {
       return slideMap;
     }).toList();
 
-    final fullDeckMap = reference.toMap();
-    fullDeckMap['slides'] = slidesWithMarkdownJson;
-
-    final fullDeckJson = prettyJson(fullDeckMap);
+    final fullDeckJson = prettyJson(slidesWithMarkdownJson);
     await configuration.deckFullJson.writeAsString(fullDeckJson);
   }
 

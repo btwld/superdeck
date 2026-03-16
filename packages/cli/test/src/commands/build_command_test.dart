@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/src/commands/build_command.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -12,9 +13,11 @@ void main() {
     late BuildCommand command;
     late Directory tempDir;
     late Directory previousDir;
+    late DeckConfiguration deckConfig;
 
     setUp(() async {
       tempDir = await createTempDirAsync();
+      deckConfig = DeckConfiguration(projectDir: tempDir.path);
       command = BuildCommand();
       previousDir = Directory.current;
       Directory.current = tempDir;
@@ -78,7 +81,7 @@ void main() {
       );
 
       test('ignores malformed superdeck.yaml when slides.md exists', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        final slidesFile = deckConfig.slidesFile;
         await slidesFile.writeAsString('# Test Slide\n\nContent');
         final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
         await configFile.writeAsString('invalid: yaml: content:');
@@ -96,7 +99,7 @@ void main() {
 
     group('run() - basic build execution', () {
       test('successfully builds when slides file exists', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        final slidesFile = deckConfig.slidesFile;
         await slidesFile.writeAsString('''
 # Test Slide
 
@@ -115,7 +118,7 @@ This is test content.
       });
 
       test('creates assets directory if it does not exist', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        final slidesFile = deckConfig.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
 
         createTestPubspec(tempDir);
@@ -124,14 +127,12 @@ This is test content.
         await runner.run(['build']);
 
         // Assets directory should be created
-        final assetsDir = Directory(
-          path.join(tempDir.path, '.superdeck', 'assets'),
-        );
+        final assetsDir = deckConfig.assetsDir;
         expect(assetsDir.existsSync(), isTrue);
       });
 
       test('handles empty slides file gracefully', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        final slidesFile = deckConfig.slidesFile;
         await slidesFile.writeAsString('');
 
         createTestPubspec(tempDir);
@@ -149,15 +150,13 @@ This is test content.
 
     group('run() - flag behavior', () {
       test('force-rebuild flag clears assets directory', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        final slidesFile = deckConfig.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
 
         createTestPubspec(tempDir);
 
         // Create a pre-existing asset
-        final assetsDir = Directory(
-          path.join(tempDir.path, '.superdeck', 'assets'),
-        );
+        final assetsDir = deckConfig.assetsDir;
         await assetsDir.create(recursive: true);
         final oldAsset = File(path.join(assetsDir.path, 'old_asset.txt'));
         await oldAsset.writeAsString('old content');
@@ -172,11 +171,11 @@ This is test content.
       });
 
       test('skip-pubspec flag skips pubspec update', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        final slidesFile = deckConfig.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
 
         // Create minimal pubspec
-        final pubspecFile = File(path.join(tempDir.path, 'pubspec.yaml'));
+        final pubspecFile = deckConfig.pubspecFile;
         final originalContent = '''
 name: test_project
 version: 1.0.0
@@ -194,7 +193,7 @@ version: 1.0.0
 
     group('run() - error handling', () {
       test('handles malformed markdown gracefully', () async {
-        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        final slidesFile = deckConfig.slidesFile;
         await slidesFile.writeAsString('''
 # Malformed
 

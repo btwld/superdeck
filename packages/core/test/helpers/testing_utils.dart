@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 /// Creates a temporary directory that will be automatically cleaned up
@@ -39,25 +40,25 @@ Future<Directory> createTempDirAsync() async {
 /// Mock configuration for testing repositories and file operations
 /// Uses composition instead of inheritance since DeckConfiguration is final
 class MockDeckConfiguration {
-  final Directory _tempDir;
+  final DeckConfiguration _configuration;
 
-  MockDeckConfiguration(this._tempDir);
+  MockDeckConfiguration(Directory tempDir)
+    : _configuration = DeckConfiguration(projectDir: tempDir.path);
 
-  String? get projectDir => _tempDir.path;
-  String? get slidesPath => null;
-  String? get outputDir => null;
-  String? get assetsPath => null;
-  Directory get superdeckDir => Directory(p.join(_tempDir.path, '.superdeck'));
-  File get deckJson =>
-      File(p.join(_tempDir.path, '.superdeck', 'superdeck.json'));
-  Directory get assetsDir =>
-      Directory(p.join(_tempDir.path, '.superdeck', 'assets'));
-  File get assetsRefJson =>
-      File(p.join(_tempDir.path, '.superdeck', 'generated_assets.json'));
-  File get buildStatusJson =>
-      File(p.join(_tempDir.path, '.superdeck', 'build_status.json'));
-  File get slidesFile => File(p.join(_tempDir.path, 'slides.md'));
-  File get pubspecFile => File(p.join(_tempDir.path, 'pubspec.yaml'));
+  DeckConfiguration get configuration => _configuration;
+  String? get projectDir => _configuration.projectDir;
+  String? get slidesPath => _configuration.slidesPath;
+  String? get outputDir => _configuration.outputDir;
+  String? get assetsPath => _configuration.assetsPath;
+  Directory get projectDirectory => _configuration.projectDirectory;
+  Directory get superdeckDir => _configuration.superdeckDir;
+  File get deckJson => _configuration.deckJson;
+  File get deckFullJson => _configuration.deckFullJson;
+  Directory get assetsDir => _configuration.assetsDir;
+  File get assetsRefJson => _configuration.assetsRefJson;
+  File get buildStatusJson => _configuration.buildStatusJson;
+  File get slidesFile => _configuration.slidesFile;
+  File get pubspecFile => _configuration.pubspecFile;
 }
 
 /// Creates a mock deck configuration with temporary directory

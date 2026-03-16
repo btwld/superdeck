@@ -59,7 +59,7 @@ void main() {
         }
       });
 
-      test('deck json omits revision metadata', () async {
+      test('deck json writes a raw slide array', () async {
         const markdown = '# First Slide\n\n---\n\n# Second Slide';
         final builder = DeckBuilder(
           tasks: [],
@@ -73,10 +73,30 @@ void main() {
 
         final deckJson =
             jsonDecode(await configuration.deckJson.readAsString())
-                as Map<String, dynamic>;
+                as List<dynamic>;
 
-        expect(deckJson.containsKey('revision'), isFalse);
-        expect(deckJson['slides'], isA<List<dynamic>>());
+        expect(deckJson, hasLength(2));
+        expect(deckJson.first, containsPair('key', isA<String>()));
+      });
+
+      test('full deck json also writes a raw slide array', () async {
+        const markdown = '# First Slide\n\n---\n\n# Second Slide';
+        final builder = DeckBuilder(
+          tasks: [],
+          configuration: configuration,
+          store: store,
+        );
+        addTearDown(builder.dispose);
+
+        await configuration.slidesFile.writeAsString(markdown);
+        await builder.build();
+
+        final fullDeckJson =
+            jsonDecode(await configuration.deckFullJson.readAsString())
+                as List<dynamic>;
+
+        expect(fullDeckJson, hasLength(2));
+        expect(fullDeckJson.first, containsPair('key', isA<String>()));
       });
 
       test('generated assets metadata excludes runtime thumbnails', () async {

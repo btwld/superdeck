@@ -3,12 +3,12 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
-/// Updates the 'assets' section of a pubspec.yaml file with superdeck paths.
+/// Updates the 'assets' section of a pubspec.yaml file with configuration paths.
 ///
 /// This function takes a [yamlContent] string representing the contents of a
-/// pubspec.yaml file. It parses the YAML, adds the '.superdeck/' and
-/// '.superdeck/assets/' paths to the 'assets' section under the 'flutter' key
-/// if they don't already exist, and returns the updated YAML as a string.
+/// pubspec.yaml file. It parses the YAML, adds the configured build output and
+/// generated assets paths to the 'assets' section under the 'flutter' key if
+/// they don't already exist, and returns the updated YAML as a string.
 ///
 /// Returns the updated pubspec YAML content as a string.
 String updatePubspecAssets(
