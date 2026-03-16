@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -182,7 +183,7 @@ extension IntegrationTestExtensions on WidgetTester {
 
   /// Navigates to a specific slide and waits for transition to complete.
   Future<void> navigateToSlide(DeckController controller, int index) async {
-    await controller.goToSlide(index);
+    unawaited(controller.goToSlide(index));
     await pumpUntil(
       () => controller.currentIndex.value == index,
       timeout: const Duration(seconds: 5),
