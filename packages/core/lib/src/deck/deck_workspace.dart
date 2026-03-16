@@ -4,31 +4,29 @@ import 'package:ack/ack.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:path/path.dart' as p;
 
-part 'deck_configuration.mapper.dart';
+part 'deck_workspace.mapper.dart';
 
-@MappableClass(ignoreNull: true)
-final class DeckConfiguration with DeckConfigurationMappable {
-  final String? projectDir;
-  final String? slidesPath;
-  final String? outputDir;
-  final String? assetsPath;
+@MappableClass()
+final class DeckWorkspace with DeckWorkspaceMappable {
+  final String projectDir;
+  final String slidesPath;
+  final String outputDir;
+  final String assetsPath;
 
-  DeckConfiguration({
-    this.projectDir,
-    this.slidesPath,
-    this.outputDir,
-    this.assetsPath,
-  });
+  DeckWorkspace({
+    String? projectDir,
+    String? slidesPath,
+    String? outputDir,
+    String? assetsPath,
+  }) : projectDir = projectDir ?? '.',
+       slidesPath = slidesPath ?? 'slides.md',
+       outputDir = outputDir ?? '.superdeck',
+       assetsPath = assetsPath ?? 'assets';
 
-  String get _baseDir => projectDir ?? '.';
-  String get _outputDir => outputDir ?? '.superdeck';
-  String get _assets => assetsPath ?? 'assets';
-  String get _slides => slidesPath ?? 'slides.md';
-
-  Directory get projectDirectory => Directory(p.normalize(_baseDir));
+  Directory get projectDirectory => Directory(p.normalize(projectDir));
 
   Directory get superdeckDir =>
-      Directory(p.normalize(p.join(_baseDir, _outputDir)));
+      Directory(p.normalize(p.join(projectDir, outputDir)));
 
   File get deckJson => File(p.join(superdeckDir.path, 'superdeck.json'));
   File get deckFullJson =>
@@ -39,29 +37,29 @@ final class DeckConfiguration with DeckConfigurationMappable {
   /// This intentionally ignores [projectDir] because runtime asset keys are
   /// always relative to the app bundle root.
   String get bundledDeckJsonPath =>
-      _normalizeBundledPath(p.join(_outputDir, 'superdeck.json'));
+      _normalizeBundledPath(p.join(outputDir, 'superdeck.json'));
 
-  Directory get assetsDir => Directory(p.join(superdeckDir.path, _assets));
+  Directory get assetsDir => Directory(p.join(superdeckDir.path, assetsPath));
 
   /// Path for reading generated assets from bundled Flutter assets.
   ///
   /// This intentionally ignores [projectDir] because runtime asset keys are
   /// always relative to the app bundle root.
   String get bundledAssetsPath =>
-      _normalizeBundledPath(p.join(_outputDir, _assets));
+      _normalizeBundledPath(p.join(outputDir, assetsPath));
 
   File get assetsRefJson =>
       File(p.join(superdeckDir.path, 'generated_assets.json'));
   File get buildStatusJson =>
       File(p.join(superdeckDir.path, 'build_status.json'));
 
-  File get slidesFile => File(p.join(_baseDir, _slides));
+  File get slidesFile => File(p.join(projectDir, slidesPath));
 
-  File get pubspecFile => File(p.join(_baseDir, 'pubspec.yaml'));
+  File get pubspecFile => File(p.join(projectDir, 'pubspec.yaml'));
 
-  static final fromMap = DeckConfigurationMapper.fromMap;
+  static final fromMap = DeckWorkspaceMapper.fromMap;
 
-  static DeckConfiguration parse(Map<String, Object?> map) =>
+  static DeckWorkspace parse(Map<String, Object?> map) =>
       fromMap(Map<String, dynamic>.from(schema.parse(map)!));
 
   static final _safePath = Ack.string().strictParsing().refine(

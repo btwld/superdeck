@@ -44,7 +44,7 @@ base class ContentModifierTask extends Task {
 
 /// Mock DeckBuildStore for testing
 class MockDeckStore extends DeckBuildStore {
-  MockDeckStore() : super(configuration: DeckConfiguration());
+  MockDeckStore() : super(workspace: DeckWorkspace());
 }
 
 void main() {

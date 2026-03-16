@@ -15,8 +15,8 @@ class BundledDeckLoader extends DeckLoader {
   var _disposed = false;
   var _started = false;
 
-  BundledDeckLoader({DeckConfiguration? configuration})
-    : super(configuration: configuration ?? DeckConfiguration());
+  BundledDeckLoader({DeckWorkspace? workspace})
+    : super(workspace: workspace ?? DeckWorkspace());
 
   Future<void> _emitLoad() async {
     if (_disposed || _controller.isClosed) return;
@@ -24,13 +24,13 @@ class BundledDeckLoader extends DeckLoader {
     _controller.add(SlidesLoadingEvent('Loading bundled slides…'));
     try {
       final content = await rootBundle.loadString(
-        configuration.bundledDeckJsonPath,
+        workspace.bundledDeckJsonPath,
       );
       final decoded = jsonDecode(content);
       if (decoded is! List) {
         throw Exception(
           'Expected JSON array in bundled slides at '
-          '${configuration.bundledDeckJsonPath}, got ${decoded.runtimeType}',
+          '${workspace.bundledDeckJsonPath}, got ${decoded.runtimeType}',
         );
       }
       if (_disposed || _controller.isClosed) return;

@@ -1,20 +1,6 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-
-Future<void> _mockAsset(String key, String content) async {
-  final bytes = ByteData.sublistView(Uint8List.fromList(utf8.encode(content)));
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMessageHandler('flutter/assets', (message) async {
-        if (message == null) return null;
-        final requestedKey = utf8.decode(message.buffer.asUint8List());
-        return requestedKey == key ? bytes : null;
-      });
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

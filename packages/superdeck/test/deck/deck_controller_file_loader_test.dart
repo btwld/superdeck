@@ -27,7 +27,7 @@ Future<void> _waitUntil(
 void main() {
   group('DeckController with real FileDeckLoader', () {
     late Directory tempDir;
-    late DeckConfiguration config;
+    late DeckWorkspace config;
     late FileDeckLoader loader;
     late DeckController controller;
 
@@ -35,8 +35,8 @@ void main() {
       tempDir = await Directory.systemTemp.createTemp(
         'superdeck_ctrl_file_test_',
       );
-      config = DeckConfiguration(projectDir: tempDir.path);
-      loader = FileDeckLoader(configuration: config);
+      config = DeckWorkspace(projectDir: tempDir.path);
+      loader = FileDeckLoader(workspace: config);
       controller = DeckController(
         deckLoader: loader,
         options: const DeckOptions(),

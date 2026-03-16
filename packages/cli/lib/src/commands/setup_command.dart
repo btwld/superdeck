@@ -256,14 +256,14 @@ Built with SuperDeck
   @override
   Future<int> run() async {
     try {
-      final deckConfig = DeckConfiguration();
+      final deckWorkspace = DeckWorkspace();
 
       int successCount = 0;
       int warningCount = 0;
       int errorCount = 0;
 
       // Check if slides.md exists, if not create it
-      final slidesFile = deckConfig.slidesFile;
+      final slidesFile = deckWorkspace.slidesFile;
       if (!await slidesFile.exists()) {
         final createSlides =
             boolArg('force') ||
@@ -298,11 +298,11 @@ Built with SuperDeck
       }
 
       try {
-        final pubspecFile = deckConfig.pubspecFile;
+        final pubspecFile = deckWorkspace.pubspecFile;
         if (await pubspecFile.exists()) {
           final pubspecContents = await pubspecFile.readAsString();
           final updatedPubspec = updatePubspecAssets(
-            deckConfig,
+            deckWorkspace,
             pubspecContents,
           );
 

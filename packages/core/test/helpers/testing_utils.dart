@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 /// Creates a temporary directory that will be automatically cleaned up
@@ -35,35 +34,6 @@ Future<Directory> createTempDirAsync() async {
     }
   });
   return tempDir;
-}
-
-/// Mock configuration for testing repositories and file operations
-/// Uses composition instead of inheritance since DeckConfiguration is final
-class MockDeckConfiguration {
-  final DeckConfiguration _configuration;
-
-  MockDeckConfiguration(Directory tempDir)
-    : _configuration = DeckConfiguration(projectDir: tempDir.path);
-
-  DeckConfiguration get configuration => _configuration;
-  String? get projectDir => _configuration.projectDir;
-  String? get slidesPath => _configuration.slidesPath;
-  String? get outputDir => _configuration.outputDir;
-  String? get assetsPath => _configuration.assetsPath;
-  Directory get projectDirectory => _configuration.projectDirectory;
-  Directory get superdeckDir => _configuration.superdeckDir;
-  File get deckJson => _configuration.deckJson;
-  File get deckFullJson => _configuration.deckFullJson;
-  Directory get assetsDir => _configuration.assetsDir;
-  File get assetsRefJson => _configuration.assetsRefJson;
-  File get buildStatusJson => _configuration.buildStatusJson;
-  File get slidesFile => _configuration.slidesFile;
-  File get pubspecFile => _configuration.pubspecFile;
-}
-
-/// Creates a mock deck configuration with temporary directory
-MockDeckConfiguration createMockConfig() {
-  return MockDeckConfiguration(createTempDir());
 }
 
 /// Verifies that a UUID conforms to the v4 format.

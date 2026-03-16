@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 
@@ -9,22 +10,22 @@ import '../../helpers/testing_utils.dart';
 
 void main() {
   group('DeckBuildStore build-side API', () {
-    late MockDeckConfiguration mockConfig;
-    late DeckConfiguration config;
+    late Directory tempDir;
+    late DeckWorkspace workspace;
     late DeckBuildStore store;
 
     setUp(() async {
-      mockConfig = createMockConfig();
-      config = mockConfig.configuration;
-      store = DeckBuildStore(configuration: config);
+      tempDir = createTempDir();
+      workspace = DeckWorkspace(projectDir: tempDir.path);
+      store = DeckBuildStore(workspace: workspace);
       await store.initialize();
     });
 
     test('initialize creates necessary files and directories', () async {
-      expect(mockConfig.deckJson.existsSync(), isTrue);
-      expect(mockConfig.slidesFile.existsSync(), isTrue);
-      expect(mockConfig.assetsDir.existsSync(), isTrue);
-      expect(mockConfig.buildStatusJson.existsSync(), isTrue);
+      expect(workspace.deckJson.existsSync(), isTrue);
+      expect(workspace.slidesFile.existsSync(), isTrue);
+      expect(workspace.assetsDir.existsSync(), isTrue);
+      expect(workspace.buildStatusJson.existsSync(), isTrue);
     });
 
     test('getGeneratedAssetPath returns the correct path', () {
@@ -36,19 +37,19 @@ void main() {
 
       final path = store.getGeneratedAssetPath(asset);
 
-      expect(path, equals(p.join(mockConfig.assetsDir.path, 'image_test.png')));
+      expect(path, equals(p.join(workspace.assetsDir.path, 'image_test.png')));
     });
 
     test('saveBuildStatus writes expected JSON wire format', () async {
       await store.saveBuildStatus(phase: DeckBuildPhase.building);
       var decoded =
-          jsonDecode(await config.buildStatusJson.readAsString())
+          jsonDecode(await workspace.buildStatusJson.readAsString())
               as Map<String, Object?>;
       expect(decoded['status'], 'building');
 
       await store.saveBuildStatus(phase: DeckBuildPhase.success, slideCount: 5);
       decoded =
-          jsonDecode(await config.buildStatusJson.readAsString())
+          jsonDecode(await workspace.buildStatusJson.readAsString())
               as Map<String, Object?>;
       expect(decoded['status'], 'success');
       expect(decoded['slideCount'], 5);
@@ -58,7 +59,7 @@ void main() {
         error: StateError('boom'),
       );
       decoded =
-          jsonDecode(await config.buildStatusJson.readAsString())
+          jsonDecode(await workspace.buildStatusJson.readAsString())
               as Map<String, Object?>;
       expect(decoded['status'], 'failure');
       expect(decoded['error'], isA<Map<String, Object?>>());
@@ -67,16 +68,16 @@ void main() {
     test('saveReferences saves slide references as arrays', () async {
       await store.saveReferences(const []);
 
-      expect(mockConfig.deckJson.existsSync(), isTrue);
-      expect(mockConfig.deckFullJson.existsSync(), isTrue);
-      expect(mockConfig.assetsRefJson.existsSync(), isTrue);
+      expect(workspace.deckJson.existsSync(), isTrue);
+      expect(workspace.deckFullJson.existsSync(), isTrue);
+      expect(workspace.assetsRefJson.existsSync(), isTrue);
 
       final deckJson =
-          jsonDecode(await mockConfig.deckJson.readAsString()) as List<dynamic>;
+          jsonDecode(await workspace.deckJson.readAsString()) as List<dynamic>;
       final fullDeckJson =
-          jsonDecode(await mockConfig.deckFullJson.readAsString())
+          jsonDecode(await workspace.deckFullJson.readAsString())
               as List<dynamic>;
-      final assetsRefJson = await mockConfig.assetsRefJson.readAsString();
+      final assetsRefJson = await workspace.assetsRefJson.readAsString();
 
       expect(deckJson, isEmpty);
       expect(fullDeckJson, isEmpty);
@@ -91,7 +92,7 @@ void main() {
 
         await store.saveReferences(slides);
         final initialJson =
-            jsonDecode(await mockConfig.assetsRefJson.readAsString())
+            jsonDecode(await workspace.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
         final initialLastModified = initialJson['last_modified'] as String;
 
@@ -99,7 +100,7 @@ void main() {
 
         await store.saveReferences(slides);
         final subsequentJson =
-            jsonDecode(await mockConfig.assetsRefJson.readAsString())
+            jsonDecode(await workspace.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
 
         expect(subsequentJson['last_modified'], equals(initialLastModified));
@@ -112,7 +113,7 @@ void main() {
         await store.saveReferences([Slide(key: 'intro'), Slide(key: 'agenda')]);
 
         final assetsRef =
-            jsonDecode(await mockConfig.assetsRefJson.readAsString())
+            jsonDecode(await workspace.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
 
         expect(assetsRef['files'], isEmpty);
@@ -134,10 +135,10 @@ void main() {
         await store.saveReferences(slides);
 
         final deckJson =
-            jsonDecode(await mockConfig.deckJson.readAsString())
+            jsonDecode(await workspace.deckJson.readAsString())
                 as List<dynamic>;
         final fullDeckJson =
-            jsonDecode(await mockConfig.deckFullJson.readAsString())
+            jsonDecode(await workspace.deckFullJson.readAsString())
                 as List<dynamic>;
 
         expect(deckJson.single, containsPair('key', 'intro'));
@@ -146,7 +147,7 @@ void main() {
     );
 
     test('readDeckMarkdown reads the content of the slides file', () async {
-      await mockConfig.slidesFile.writeAsString('# Test slides');
+      await workspace.slidesFile.writeAsString('# Test slides');
 
       final content = await store.readDeckMarkdown();
 

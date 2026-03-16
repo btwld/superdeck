@@ -46,13 +46,13 @@ Future<void> _waitForEvent<T extends SlidesEvent>(
 void main() {
   group('FileDeckLoader status-only stream API', () {
     late Directory tempDir;
-    late DeckConfiguration config;
+    late DeckWorkspace config;
     late FileDeckLoader deckLoader;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('superdeck_loader_test_');
-      config = DeckConfiguration(projectDir: tempDir.path);
-      deckLoader = FileDeckLoader(configuration: config);
+      config = DeckWorkspace(projectDir: tempDir.path);
+      deckLoader = FileDeckLoader(workspace: config);
 
       addTearDown(() async {
         await deckLoader.dispose();
@@ -236,13 +236,13 @@ void main() {
 
   group('FileDeckLoader reload cycle', () {
     late Directory tempDir;
-    late DeckConfiguration config;
+    late DeckWorkspace config;
     late FileDeckLoader deckLoader;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('superdeck_reload_test_');
-      config = DeckConfiguration(projectDir: tempDir.path);
-      deckLoader = FileDeckLoader(configuration: config);
+      config = DeckWorkspace(projectDir: tempDir.path);
+      deckLoader = FileDeckLoader(workspace: config);
 
       addTearDown(() async {
         await deckLoader.dispose();

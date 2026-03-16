@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-import 'deck_configuration.dart';
+import 'deck_workspace.dart';
 import 'slide_model.dart';
 
 sealed class SlidesEvent {}
@@ -30,8 +30,8 @@ class SlidesRebuildingEvent extends SlidesEvent {
 
 abstract class DeckLoader {
   @protected
-  final DeckConfiguration configuration;
-  const DeckLoader({required this.configuration});
+  final DeckWorkspace workspace;
+  const DeckLoader({required this.workspace});
 
   Stream<SlidesEvent> load();
   Future<void> reload();

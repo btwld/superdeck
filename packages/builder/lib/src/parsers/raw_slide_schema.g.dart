@@ -7,41 +7,18 @@
 
 part of 'raw_slide_schema.dart';
 
-T _$ackParse<T extends Object>(
-  dynamic schema,
-  Object? data,
-  T Function(Object?) wrap,
-) {
-  final validated = schema.parse(data);
-  return wrap(validated);
-}
-
-SchemaResult<T> _$ackSafeParse<T extends Object>(
-  dynamic schema,
-  Object? data,
-  T Function(Object?) wrap,
-) {
-  final result = schema.safeParse(data);
-  if (result.isOk) {
-    return SchemaResult.ok(wrap(result.getOrNull()));
-  }
-  return SchemaResult.fail(result.getError()!);
-}
-
 /// Extension type for RawSlideFrontmatter
 extension type RawSlideFrontmatterType(Map<String, Object?> _data)
     implements Map<String, Object?> {
   static RawSlideFrontmatterType parse(Object? data) {
-    return _$ackParse<RawSlideFrontmatterType>(
-      rawSlideFrontmatterSchema,
+    return rawSlideFrontmatterSchema.parseAs(
       data,
       (validated) => RawSlideFrontmatterType(validated as Map<String, Object?>),
     );
   }
 
   static SchemaResult<RawSlideFrontmatterType> safeParse(Object? data) {
-    return _$ackSafeParse<RawSlideFrontmatterType>(
-      rawSlideFrontmatterSchema,
+    return rawSlideFrontmatterSchema.safeParseAs(
       data,
       (validated) => RawSlideFrontmatterType(validated as Map<String, Object?>),
     );
@@ -56,16 +33,14 @@ extension type RawSlideFrontmatterType(Map<String, Object?> _data)
 extension type RawSlideMarkdownType(Map<String, Object?> _data)
     implements Map<String, Object?> {
   static RawSlideMarkdownType parse(Object? data) {
-    return _$ackParse<RawSlideMarkdownType>(
-      rawSlideMarkdownSchema,
+    return rawSlideMarkdownSchema.parseAs(
       data,
       (validated) => RawSlideMarkdownType(validated as Map<String, Object?>),
     );
   }
 
   static SchemaResult<RawSlideMarkdownType> safeParse(Object? data) {
-    return _$ackSafeParse<RawSlideMarkdownType>(
-      rawSlideMarkdownSchema,
+    return rawSlideMarkdownSchema.safeParseAs(
       data,
       (validated) => RawSlideMarkdownType(validated as Map<String, Object?>),
     );

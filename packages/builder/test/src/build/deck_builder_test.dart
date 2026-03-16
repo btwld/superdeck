@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import '../../helpers/testing_utils.dart';
 import 'package:superdeck_builder/src/build/deck_builder.dart';
 import 'package:superdeck_builder/src/tasks/slide_context.dart';
 import 'package:superdeck_builder/src/tasks/task.dart';
@@ -34,45 +35,33 @@ final class MockTask extends Task {
   }
 }
 
-/// Mock DeckBuildStore for testing
-class TestDeckStore extends DeckBuildStore {
-  TestDeckStore([DeckConfiguration? configuration])
-    : super(configuration: configuration ?? DeckConfiguration());
-}
-
 void main() {
   group('DeckBuilder', () {
     group('build', () {
       late Directory tempDir;
-      late DeckConfiguration configuration;
+      late DeckWorkspace workspace;
       late DeckBuildStore store;
 
-      setUp(() async {
-        tempDir = await Directory.systemTemp.createTemp('superdeck_builder_');
-        configuration = DeckConfiguration(projectDir: tempDir.path);
-        store = DeckBuildStore(configuration: configuration);
-      });
-
-      tearDown(() async {
-        if (await tempDir.exists()) {
-          await tempDir.delete(recursive: true);
-        }
+      setUp(() {
+        tempDir = createTempDir();
+        workspace = createTestWorkspace(tempDir);
+        store = DeckBuildStore(workspace: workspace);
       });
 
       test('deck json writes a raw slide array', () async {
         const markdown = '# First Slide\n\n---\n\n# Second Slide';
         final builder = DeckBuilder(
           tasks: [],
-          configuration: configuration,
+          workspace: workspace,
           store: store,
         );
         addTearDown(builder.dispose);
 
-        await configuration.slidesFile.writeAsString(markdown);
+        await workspace.slidesFile.writeAsString(markdown);
         await builder.build();
 
         final deckJson =
-            jsonDecode(await configuration.deckJson.readAsString())
+            jsonDecode(await workspace.deckJson.readAsString())
                 as List<dynamic>;
 
         expect(deckJson, hasLength(2));
@@ -83,16 +72,16 @@ void main() {
         const markdown = '# First Slide\n\n---\n\n# Second Slide';
         final builder = DeckBuilder(
           tasks: [],
-          configuration: configuration,
+          workspace: workspace,
           store: store,
         );
         addTearDown(builder.dispose);
 
-        await configuration.slidesFile.writeAsString(markdown);
+        await workspace.slidesFile.writeAsString(markdown);
         await builder.build();
 
         final fullDeckJson =
-            jsonDecode(await configuration.deckFullJson.readAsString())
+            jsonDecode(await workspace.deckFullJson.readAsString())
                 as List<dynamic>;
 
         expect(fullDeckJson, hasLength(2));
@@ -103,16 +92,16 @@ void main() {
         const markdown = '# First Slide\n\n---\n\n# Second Slide';
         final builder = DeckBuilder(
           tasks: [],
-          configuration: configuration,
+          workspace: workspace,
           store: store,
         );
         addTearDown(builder.dispose);
 
-        await configuration.slidesFile.writeAsString(markdown);
+        await workspace.slidesFile.writeAsString(markdown);
         await builder.build();
 
         final assetsRef =
-            jsonDecode(await configuration.assetsRefJson.readAsString())
+            jsonDecode(await workspace.assetsRefJson.readAsString())
                 as Map<String, dynamic>;
 
         expect(assetsRef['files'], isEmpty);
@@ -127,8 +116,8 @@ void main() {
 
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
-          configuration: DeckConfiguration(),
-          store: TestDeckStore(),
+          workspace: DeckWorkspace(),
+          store: DeckBuildStore(workspace: DeckWorkspace()),
         );
 
         await builder.dispose();
@@ -141,8 +130,8 @@ void main() {
       test('completes without error when no tasks', () async {
         final builder = DeckBuilder(
           tasks: [],
-          configuration: DeckConfiguration(),
-          store: TestDeckStore(),
+          workspace: DeckWorkspace(),
+          store: DeckBuildStore(workspace: DeckWorkspace()),
         );
 
         await expectLater(builder.dispose(), completes);
@@ -156,8 +145,8 @@ void main() {
 
         final builder = DeckBuilder(
           tasks: [task1, task2, task3],
-          configuration: DeckConfiguration(),
-          store: TestDeckStore(),
+          workspace: DeckWorkspace(),
+          store: DeckBuildStore(workspace: DeckWorkspace()),
         );
 
         final stopwatch = Stopwatch()..start();
@@ -182,8 +171,8 @@ void main() {
 
         final builder = DeckBuilder(
           tasks: [task],
-          configuration: DeckConfiguration(),
-          store: TestDeckStore(),
+          workspace: DeckWorkspace(),
+          store: DeckBuildStore(workspace: DeckWorkspace()),
         );
 
         // First dispose
@@ -201,8 +190,8 @@ void main() {
         expect(
           () => DeckBuilder(
             tasks: [],
-            configuration: DeckConfiguration(),
-            store: TestDeckStore(),
+            workspace: DeckWorkspace(),
+            store: DeckBuildStore(workspace: DeckWorkspace()),
           ),
           returnsNormally,
         );
@@ -212,8 +201,8 @@ void main() {
         expect(
           () => DeckBuilder(
             tasks: [],
-            configuration: DeckConfiguration(),
-            store: TestDeckStore(),
+            workspace: DeckWorkspace(),
+            store: DeckBuildStore(workspace: DeckWorkspace()),
             concurrentSlides: 8,
           ),
           returnsNormally,

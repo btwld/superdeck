@@ -3,9 +3,9 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final deckConfig = DeckConfiguration();
-  final superdeckPath = '${deckConfig.superdeckDir.path}/';
-  final assetsPath = '${deckConfig.assetsDir.path}/';
+  final deckWorkspace = DeckWorkspace();
+  final superdeckPath = '${deckWorkspace.superdeckDir.path}/';
+  final assetsPath = '${deckWorkspace.assetsDir.path}/';
   group('updatePubspecAssets', () {
     test('adds superdeck assets to empty pubspec', () {
       final input = '''
@@ -14,7 +14,7 @@ description: A test app
 version: 1.0.0
 ''';
 
-      final result = updatePubspecAssets(deckConfig, input);
+      final result = updatePubspecAssets(deckWorkspace, input);
       expect(result.contains(superdeckPath), isTrue);
       expect(result.contains(assetsPath), isTrue);
     });
@@ -25,7 +25,7 @@ name: test_app
 flutter:
   uses-material-design: true
 ''';
-      final result = updatePubspecAssets(deckConfig, input);
+      final result = updatePubspecAssets(deckWorkspace, input);
       expect(result.contains(superdeckPath), isTrue);
       expect(result.contains(assetsPath), isTrue);
       expect(result.contains('uses-material-design: true'), isTrue);
@@ -39,7 +39,7 @@ flutter:
     - assets/images/
     - assets/fonts/
 ''';
-      final result = updatePubspecAssets(deckConfig, input);
+      final result = updatePubspecAssets(deckWorkspace, input);
       expect(result.contains('assets/images/'), isTrue);
       expect(result.contains('assets/fonts/'), isTrue);
       expect(result.contains(superdeckPath), isTrue);
@@ -55,7 +55,7 @@ flutter:
     - $superdeckPath
     - $assetsPath
 ''';
-      final result = updatePubspecAssets(deckConfig, input);
+      final result = updatePubspecAssets(deckWorkspace, input);
 
       // Should not duplicate - still only 2 total occurrences
       expect(result.split(superdeckPath).length - 1, equals(2));
@@ -72,7 +72,7 @@ flutter:
       fonts:
         - asset: fonts/CustomFont-Regular.ttf
 ''';
-      final result = updatePubspecAssets(deckConfig, input);
+      final result = updatePubspecAssets(deckWorkspace, input);
       expect(result.contains('uses-material-design: true'), isTrue);
       expect(result.contains('family: CustomFont'), isTrue);
       expect(result.contains('fonts/CustomFont-Regular.ttf'), isTrue);
@@ -86,7 +86,7 @@ name: test_app
 flutter:
   uses-material-design: true
 ''';
-      final result = updatePubspecAssets(deckConfig, input);
+      final result = updatePubspecAssets(deckWorkspace, input);
 
       // Should have exactly the paths we want
       expect(result.contains(superdeckPath), isTrue);
@@ -105,14 +105,14 @@ flutter:
     - assets/
 ''';
       // Run setup first time
-      final firstRun = updatePubspecAssets(deckConfig, input);
+      final firstRun = updatePubspecAssets(deckWorkspace, input);
 
       // Verify correct paths were added
       expect(firstRun.contains(superdeckPath), isTrue);
       expect(firstRun.contains(assetsPath), isTrue);
 
       // Run setup second time on the result
-      final secondRun = updatePubspecAssets(deckConfig, firstRun);
+      final secondRun = updatePubspecAssets(deckWorkspace, firstRun);
 
       // Should be identical - no new duplicates added
       expect(firstRun, equals(secondRun));

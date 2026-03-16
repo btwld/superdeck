@@ -15,8 +15,8 @@ class MockDeckLoader extends DeckLoader {
   bool _autoLoad = true;
   var _disposed = false;
 
-  MockDeckLoader({DeckConfiguration? configuration})
-    : super(configuration: configuration ?? DeckConfiguration());
+  MockDeckLoader({DeckWorkspace? workspace})
+    : super(workspace: workspace ?? DeckWorkspace());
 
   int loadCalls = 0;
   int reloadCalls = 0;

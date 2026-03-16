@@ -16,13 +16,13 @@ class FileDeckLoader extends DeckLoader {
   var _disposed = false;
   var _started = false;
 
-  FileDeckLoader({DeckConfiguration? configuration})
-    : super(configuration: configuration ?? DeckConfiguration());
+  FileDeckLoader({DeckWorkspace? workspace})
+    : super(workspace: workspace ?? DeckWorkspace());
 
-  File get _deckFile => configuration.deckJson;
-  File get _statusFile => configuration.buildStatusJson;
+  File get _deckFile => workspace.deckJson;
+  File get _statusFile => workspace.buildStatusJson;
   Directory get _statusParentDir => _statusFile.parent;
-  Directory get _projectDir => configuration.projectDirectory;
+  Directory get _projectDir => workspace.projectDirectory;
 
   bool _isCycleActive(Completer<void> cancel) {
     return !_disposed &&

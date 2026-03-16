@@ -37,8 +37,7 @@ class AssetGenerationPipeline {
   }) : _generators = generators,
        _store = store,
        _cache =
-           cacheStore ??
-           IoAssetCacheStore(cacheDir: store.configuration.assetsDir);
+           cacheStore ?? IoAssetCacheStore(cacheDir: store.workspace.assetsDir);
 
   /// Processes all assets in the given slide content.
   ///
@@ -155,7 +154,7 @@ class AssetGenerationPipeline {
     }
 
     // Create replacement syntax with relative path from project directory
-    final projectDir = _store.configuration.projectDirectory.path;
+    final projectDir = _store.workspace.projectDirectory.path;
     final relativePath = path.relative(assetPath, from: projectDir);
     final replacementSyntax = '![${generator.type}_asset]($relativePath)';
 
@@ -175,7 +174,7 @@ class AssetGenerationPipeline {
       throw StateError(
         'Asset cache path mismatch for "$assetKey". Expected '
         '"$normalizedExpectedPath" but resolved "$resolvedPath". '
-        'Configure cacheStore to use configuration.assetsDir.',
+        'Configure cacheStore to use workspace.assetsDir.',
       );
     }
   }

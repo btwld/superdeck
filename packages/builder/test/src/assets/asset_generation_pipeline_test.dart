@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../helpers/testing_utils.dart';
 import 'package:superdeck_builder/src/assets/asset_generation_pipeline.dart';
 import 'package:superdeck_builder/src/assets/asset_generator.dart';
 import 'package:superdeck_core/asset_cache_store_io.dart';
@@ -46,7 +47,7 @@ class MockDeckStore extends DeckBuildStore {
   final Map<String, String> _assetPaths = {};
 
   MockDeckStore(this._tempDir)
-    : super(configuration: DeckConfiguration(projectDir: _tempDir.path));
+    : super(workspace: createTestWorkspace(_tempDir));
 
   @override
   String getGeneratedAssetPath(GeneratedAsset asset) {
@@ -111,7 +112,7 @@ void main() {
     late Directory tempDir;
 
     setUp(() {
-      tempDir = Directory.systemTemp.createTempSync('asset_pipeline_test');
+      tempDir = createTempDir(prefix: 'asset_pipeline_test');
       mockDeckStore = MockDeckStore(tempDir);
       mockGenerator = MockAssetGenerator('mermaid', [1, 2, 3, 4, 5]);
       pipeline = AssetGenerationPipeline(
@@ -121,12 +122,6 @@ void main() {
           cacheDir: Directory('${tempDir.path}/assets'),
         ),
       );
-    });
-
-    tearDown(() {
-      if (tempDir.existsSync()) {
-        tempDir.deleteSync(recursive: true);
-      }
     });
 
     test('processes slide content with no asset blocks', () async {

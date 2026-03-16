@@ -13,11 +13,11 @@ void main() {
     late BuildCommand command;
     late Directory tempDir;
     late Directory previousDir;
-    late DeckConfiguration deckConfig;
+    late DeckWorkspace deckWorkspace;
 
     setUp(() async {
       tempDir = await createTempDirAsync();
-      deckConfig = DeckConfiguration(projectDir: tempDir.path);
+      deckWorkspace = DeckWorkspace(projectDir: tempDir.path);
       command = BuildCommand();
       previousDir = Directory.current;
       Directory.current = tempDir;
@@ -63,7 +63,7 @@ void main() {
       });
     });
 
-    group('run() - defaults-only configuration', () {
+    group('run() - defaults-only workspace', () {
       test(
         'ignores superdeck.yaml when default slides.md is missing',
         () async {
@@ -81,7 +81,7 @@ void main() {
       );
 
       test('ignores malformed superdeck.yaml when slides.md exists', () async {
-        final slidesFile = deckConfig.slidesFile;
+        final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test Slide\n\nContent');
         final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
         await configFile.writeAsString('invalid: yaml: content:');
@@ -99,7 +99,7 @@ void main() {
 
     group('run() - basic build execution', () {
       test('successfully builds when slides file exists', () async {
-        final slidesFile = deckConfig.slidesFile;
+        final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('''
 # Test Slide
 
@@ -118,7 +118,7 @@ This is test content.
       });
 
       test('creates assets directory if it does not exist', () async {
-        final slidesFile = deckConfig.slidesFile;
+        final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
 
         createTestPubspec(tempDir);
@@ -127,12 +127,12 @@ This is test content.
         await runner.run(['build']);
 
         // Assets directory should be created
-        final assetsDir = deckConfig.assetsDir;
+        final assetsDir = deckWorkspace.assetsDir;
         expect(assetsDir.existsSync(), isTrue);
       });
 
       test('handles empty slides file gracefully', () async {
-        final slidesFile = deckConfig.slidesFile;
+        final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('');
 
         createTestPubspec(tempDir);
@@ -150,13 +150,13 @@ This is test content.
 
     group('run() - flag behavior', () {
       test('force-rebuild flag clears assets directory', () async {
-        final slidesFile = deckConfig.slidesFile;
+        final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
 
         createTestPubspec(tempDir);
 
         // Create a pre-existing asset
-        final assetsDir = deckConfig.assetsDir;
+        final assetsDir = deckWorkspace.assetsDir;
         await assetsDir.create(recursive: true);
         final oldAsset = File(path.join(assetsDir.path, 'old_asset.txt'));
         await oldAsset.writeAsString('old content');
@@ -170,12 +170,30 @@ This is test content.
         expect(oldAsset.existsSync(), isFalse);
       });
 
+      test('force-rebuild flag replaces stale generated_assets.json', () async {
+        final slidesFile = deckWorkspace.slidesFile;
+        await slidesFile.writeAsString('# Test\n\nContent');
+        createTestPubspec(tempDir);
+
+        await deckWorkspace.superdeckDir.create(recursive: true);
+        await deckWorkspace.assetsRefJson.writeAsString('{"stale":true}');
+
+        final runner = createTestRunner(command);
+        await runner.run(['build', '--force-rebuild']);
+
+        final assetsRefContents = await deckWorkspace.assetsRefJson
+            .readAsString();
+        expect(assetsRefContents, isNot('{"stale":true}'));
+        expect(assetsRefContents, contains('last_modified'));
+        expect(assetsRefContents, contains('files'));
+      });
+
       test('skip-pubspec flag skips pubspec update', () async {
-        final slidesFile = deckConfig.slidesFile;
+        final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
 
         // Create minimal pubspec
-        final pubspecFile = deckConfig.pubspecFile;
+        final pubspecFile = deckWorkspace.pubspecFile;
         final originalContent = '''
 name: test_project
 version: 1.0.0
@@ -193,7 +211,7 @@ version: 1.0.0
 
     group('run() - error handling', () {
       test('handles malformed markdown gracefully', () async {
-        final slidesFile = deckConfig.slidesFile;
+        final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('''
 # Malformed
 

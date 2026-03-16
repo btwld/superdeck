@@ -1,20 +1,34 @@
-import 'package:superdeck_core/src/deck/deck_configuration.dart';
+import 'package:superdeck_core/src/deck/deck_workspace.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('DeckConfiguration', () {
+  group('DeckWorkspace', () {
     group('constructor', () {
-      test('creates with all null values', () {
-        final config = DeckConfiguration();
+      test('creates with default values', () {
+        final config = DeckWorkspace();
 
-        expect(config.projectDir, isNull);
-        expect(config.slidesPath, isNull);
-        expect(config.outputDir, isNull);
-        expect(config.assetsPath, isNull);
+        expect(config.projectDir, '.');
+        expect(config.slidesPath, 'slides.md');
+        expect(config.outputDir, '.superdeck');
+        expect(config.assetsPath, 'assets');
+      });
+
+      test('normalizes explicit null values to defaults', () {
+        final config = DeckWorkspace(
+          projectDir: null,
+          slidesPath: null,
+          outputDir: null,
+          assetsPath: null,
+        );
+
+        expect(config.projectDir, '.');
+        expect(config.slidesPath, 'slides.md');
+        expect(config.outputDir, '.superdeck');
+        expect(config.assetsPath, 'assets');
       });
 
       test('creates with all parameters', () {
-        final config = DeckConfiguration(
+        final config = DeckWorkspace(
           projectDir: '/project',
           slidesPath: 'presentation.md',
           outputDir: 'build',
@@ -29,38 +43,35 @@ void main() {
     });
 
     group('computed paths', () {
-      test('uses default baseDir when projectDir is null', () {
-        final config = DeckConfiguration();
+      test('uses default baseDir when projectDir is not provided', () {
+        final config = DeckWorkspace();
 
         expect(config.slidesFile.path, contains('slides.md'));
         expect(config.pubspecFile.path, contains('pubspec.yaml'));
       });
 
       test('uses projectDir as baseDir when provided', () {
-        final config = DeckConfiguration(projectDir: '/my/project');
+        final config = DeckWorkspace(projectDir: '/my/project');
 
         expect(config.slidesFile.path, contains('/my/project'));
         expect(config.pubspecFile.path, contains('/my/project'));
       });
 
       group('superdeckDir', () {
-        test('uses default .superdeck when outputDir is null', () {
-          final config = DeckConfiguration();
+        test('uses default .superdeck when outputDir is not provided', () {
+          final config = DeckWorkspace();
 
           expect(config.superdeckDir.path, contains('.superdeck'));
         });
 
         test('uses custom outputDir when provided', () {
-          final config = DeckConfiguration(outputDir: 'custom-output');
+          final config = DeckWorkspace(outputDir: 'custom-output');
 
           expect(config.superdeckDir.path, contains('custom-output'));
         });
 
         test('combines projectDir and outputDir', () {
-          final config = DeckConfiguration(
-            projectDir: '/base',
-            outputDir: 'out',
-          );
+          final config = DeckWorkspace(projectDir: '/base', outputDir: 'out');
 
           expect(config.superdeckDir.path, contains('/base'));
           expect(config.superdeckDir.path, contains('out'));
@@ -69,7 +80,7 @@ void main() {
 
       group('deckJson', () {
         test('is inside superdeckDir', () {
-          final config = DeckConfiguration();
+          final config = DeckWorkspace();
 
           expect(config.deckJson.path, contains(config.superdeckDir.path));
           expect(config.deckJson.path, endsWith('superdeck.json'));
@@ -78,7 +89,7 @@ void main() {
 
       group('deckFullJson', () {
         test('is inside superdeckDir', () {
-          final config = DeckConfiguration();
+          final config = DeckWorkspace();
 
           expect(config.deckFullJson.path, contains(config.superdeckDir.path));
           expect(config.deckFullJson.path, endsWith('superdeck_full.json'));
@@ -86,20 +97,20 @@ void main() {
       });
 
       group('assetsDir', () {
-        test('uses default assets when assetsPath is null', () {
-          final config = DeckConfiguration();
+        test('uses default assets when assetsPath is not provided', () {
+          final config = DeckWorkspace();
 
           expect(config.assetsDir.path, contains('assets'));
         });
 
         test('uses custom assetsPath when provided', () {
-          final config = DeckConfiguration(assetsPath: 'custom-assets');
+          final config = DeckWorkspace(assetsPath: 'custom-assets');
 
           expect(config.assetsDir.path, contains('custom-assets'));
         });
 
         test('is inside superdeckDir', () {
-          final config = DeckConfiguration();
+          final config = DeckWorkspace();
 
           expect(config.assetsDir.path, contains(config.superdeckDir.path));
         });
@@ -107,7 +118,7 @@ void main() {
 
       group('assetsRefJson', () {
         test('is inside superdeckDir', () {
-          final config = DeckConfiguration();
+          final config = DeckWorkspace();
 
           expect(config.assetsRefJson.path, contains(config.superdeckDir.path));
           expect(config.assetsRefJson.path, endsWith('generated_assets.json'));
@@ -116,7 +127,7 @@ void main() {
 
       group('buildStatusJson', () {
         test('is inside superdeckDir', () {
-          final config = DeckConfiguration();
+          final config = DeckWorkspace();
 
           expect(
             config.buildStatusJson.path,
@@ -128,13 +139,13 @@ void main() {
 
       group('bundledDeckJsonPath', () {
         test('uses default outputDir path without projectDir prefix', () {
-          final config = DeckConfiguration(projectDir: '/abs/project');
+          final config = DeckWorkspace(projectDir: '/abs/project');
 
           expect(config.bundledDeckJsonPath, '.superdeck/superdeck.json');
         });
 
         test('uses custom outputDir', () {
-          final config = DeckConfiguration(outputDir: 'generated');
+          final config = DeckWorkspace(outputDir: 'generated');
 
           expect(config.bundledDeckJsonPath, 'generated/superdeck.json');
         });
@@ -142,13 +153,13 @@ void main() {
 
       group('bundledAssetsPath', () {
         test('uses defaults without projectDir prefix', () {
-          final config = DeckConfiguration(projectDir: '/abs/project');
+          final config = DeckWorkspace(projectDir: '/abs/project');
 
           expect(config.bundledAssetsPath, '.superdeck/assets');
         });
 
         test('uses custom outputDir and assetsPath', () {
-          final config = DeckConfiguration(
+          final config = DeckWorkspace(
             outputDir: 'generated',
             assetsPath: 'media',
           );
@@ -158,20 +169,20 @@ void main() {
       });
 
       group('slidesFile', () {
-        test('uses default slides.md when slidesPath is null', () {
-          final config = DeckConfiguration();
+        test('uses default slides.md when slidesPath is not provided', () {
+          final config = DeckWorkspace();
 
           expect(config.slidesFile.path, endsWith('slides.md'));
         });
 
         test('uses custom slidesPath when provided', () {
-          final config = DeckConfiguration(slidesPath: 'custom.md');
+          final config = DeckWorkspace(slidesPath: 'custom.md');
 
           expect(config.slidesFile.path, endsWith('custom.md'));
         });
 
         test('combines projectDir and slidesPath', () {
-          final config = DeckConfiguration(
+          final config = DeckWorkspace(
             projectDir: '/project',
             slidesPath: 'deck.md',
           );
@@ -183,7 +194,7 @@ void main() {
 
       group('pubspecFile', () {
         test('is always pubspec.yaml in baseDir', () {
-          final config = DeckConfiguration(projectDir: '/my/app');
+          final config = DeckWorkspace(projectDir: '/my/app');
 
           expect(config.pubspecFile.path, contains('/my/app'));
           expect(config.pubspecFile.path, endsWith('pubspec.yaml'));
@@ -193,35 +204,35 @@ void main() {
 
     group('copyWith', () {
       test('copies with new projectDir', () {
-        final original = DeckConfiguration(projectDir: '/old');
+        final original = DeckWorkspace(projectDir: '/old');
         final copy = original.copyWith(projectDir: '/new');
 
         expect(copy.projectDir, '/new');
       });
 
       test('copies with new slidesPath', () {
-        final original = DeckConfiguration(slidesPath: 'old.md');
+        final original = DeckWorkspace(slidesPath: 'old.md');
         final copy = original.copyWith(slidesPath: 'new.md');
 
         expect(copy.slidesPath, 'new.md');
       });
 
       test('copies with new outputDir', () {
-        final original = DeckConfiguration(outputDir: 'old-out');
+        final original = DeckWorkspace(outputDir: 'old-out');
         final copy = original.copyWith(outputDir: 'new-out');
 
         expect(copy.outputDir, 'new-out');
       });
 
       test('copies with new assetsPath', () {
-        final original = DeckConfiguration(assetsPath: 'old-assets');
+        final original = DeckWorkspace(assetsPath: 'old-assets');
         final copy = original.copyWith(assetsPath: 'new-assets');
 
         expect(copy.assetsPath, 'new-assets');
       });
 
       test('preserves values when not specified', () {
-        final original = DeckConfiguration(
+        final original = DeckWorkspace(
           projectDir: '/project',
           slidesPath: 'slides.md',
           outputDir: 'output',
@@ -237,25 +248,28 @@ void main() {
     });
 
     group('toMap', () {
-      test('serializes empty config', () {
-        final config = DeckConfiguration();
+      test('serializes default values', () {
+        final config = DeckWorkspace();
         final map = config.toMap();
 
-        expect(map, isEmpty);
+        expect(map['projectDir'], '.');
+        expect(map['slidesPath'], 'slides.md');
+        expect(map['outputDir'], '.superdeck');
+        expect(map['assetsPath'], 'assets');
       });
 
-      test('serializes only non-null values', () {
-        final config = DeckConfiguration(projectDir: '/project');
+      test('serializes updated values alongside defaults', () {
+        final config = DeckWorkspace(projectDir: '/project');
         final map = config.toMap();
 
         expect(map['projectDir'], '/project');
-        expect(map.containsKey('slidesPath'), isFalse);
-        expect(map.containsKey('outputDir'), isFalse);
-        expect(map.containsKey('assetsPath'), isFalse);
+        expect(map['slidesPath'], 'slides.md');
+        expect(map['outputDir'], '.superdeck');
+        expect(map['assetsPath'], 'assets');
       });
 
       test('serializes all values when present', () {
-        final config = DeckConfiguration(
+        final config = DeckWorkspace(
           projectDir: '/project',
           slidesPath: 'slides.md',
           outputDir: 'output',
@@ -272,28 +286,42 @@ void main() {
 
     group('fromMap', () {
       test('deserializes empty map', () {
-        final config = DeckConfiguration.fromMap({});
+        final config = DeckWorkspace.fromMap({});
 
-        expect(config.projectDir, isNull);
-        expect(config.slidesPath, isNull);
-        expect(config.outputDir, isNull);
-        expect(config.assetsPath, isNull);
+        expect(config.projectDir, '.');
+        expect(config.slidesPath, 'slides.md');
+        expect(config.outputDir, '.superdeck');
+        expect(config.assetsPath, 'assets');
+      });
+
+      test('deserializes null values using constructor defaults', () {
+        final config = DeckWorkspace.fromMap({
+          'projectDir': null,
+          'slidesPath': null,
+          'outputDir': null,
+          'assetsPath': null,
+        });
+
+        expect(config.projectDir, '.');
+        expect(config.slidesPath, 'slides.md');
+        expect(config.outputDir, '.superdeck');
+        expect(config.assetsPath, 'assets');
       });
 
       test('deserializes partial map', () {
-        final config = DeckConfiguration.fromMap({
+        final config = DeckWorkspace.fromMap({
           'projectDir': '/project',
           'slidesPath': 'deck.md',
         });
 
         expect(config.projectDir, '/project');
         expect(config.slidesPath, 'deck.md');
-        expect(config.outputDir, isNull);
-        expect(config.assetsPath, isNull);
+        expect(config.outputDir, '.superdeck');
+        expect(config.assetsPath, 'assets');
       });
 
       test('deserializes full map', () {
-        final config = DeckConfiguration.fromMap({
+        final config = DeckWorkspace.fromMap({
           'projectDir': '/project',
           'slidesPath': 'slides.md',
           'outputDir': 'output',
@@ -309,42 +337,45 @@ void main() {
 
     group('round-trip serialization', () {
       test('preserves data through toMap/fromMap', () {
-        final original = DeckConfiguration(
+        final original = DeckWorkspace(
           projectDir: '/roundtrip',
           slidesPath: 'rt.md',
           outputDir: 'rt-out',
           assetsPath: 'rt-assets',
         );
 
-        final restored = DeckConfiguration.fromMap(original.toMap());
+        final restored = DeckWorkspace.fromMap(original.toMap());
 
         expect(restored, original);
       });
 
       test('handles partial config round-trip', () {
-        final original = DeckConfiguration(
+        final original = DeckWorkspace(
           projectDir: '/partial',
           outputDir: 'out',
         );
 
-        final restored = DeckConfiguration.fromMap(original.toMap());
+        final restored = DeckWorkspace.fromMap(original.toMap());
 
         expect(restored.projectDir, '/partial');
         expect(restored.outputDir, 'out');
-        expect(restored.slidesPath, isNull);
-        expect(restored.assetsPath, isNull);
+        expect(restored.slidesPath, 'slides.md');
+        expect(restored.assetsPath, 'assets');
       });
     });
 
     group('parse', () {
       test('parses empty map', () {
-        final config = DeckConfiguration.parse({});
+        final config = DeckWorkspace.parse({});
 
-        expect(config.projectDir, isNull);
+        expect(config.projectDir, '.');
+        expect(config.slidesPath, 'slides.md');
+        expect(config.outputDir, '.superdeck');
+        expect(config.assetsPath, 'assets');
       });
 
       test('parses valid map', () {
-        final config = DeckConfiguration.parse({
+        final config = DeckWorkspace.parse({
           'projectDir': '/parsed',
           'slidesPath': 'parsed.md',
         });
@@ -361,14 +392,14 @@ void main() {
           'assetsPath',
         ]) {
           expect(
-            () => DeckConfiguration.parse({field: 42}),
+            () => DeckWorkspace.parse({field: 42}),
             throwsA(isA<Exception>()),
           );
         }
       });
 
       test('ignores unknown keys after validation', () {
-        final config = DeckConfiguration.parse({
+        final config = DeckWorkspace.parse({
           'slidesPath': 'parsed.md',
           'extra': {'keep': 'passthrough'},
         });
@@ -380,12 +411,12 @@ void main() {
 
     group('schema', () {
       test('validates empty map', () {
-        final result = DeckConfiguration.schema.safeParse({});
+        final result = DeckWorkspace.schema.safeParse({});
         expect(result.isOk, isTrue);
       });
 
       test('validates all string fields', () {
-        final result = DeckConfiguration.schema.safeParse({
+        final result = DeckWorkspace.schema.safeParse({
           'projectDir': '/project',
           'slidesPath': 'slides.md',
           'outputDir': 'output',
@@ -395,7 +426,7 @@ void main() {
       });
 
       test('validates partial map', () {
-        final result = DeckConfiguration.schema.safeParse({
+        final result = DeckWorkspace.schema.safeParse({
           'projectDir': '/only-project',
         });
         expect(result.isOk, isTrue);
@@ -408,13 +439,13 @@ void main() {
           'outputDir',
           'assetsPath',
         ]) {
-          final result = DeckConfiguration.schema.safeParse({field: null});
+          final result = DeckWorkspace.schema.safeParse({field: null});
           expect(result.isOk, isFalse);
         }
       });
 
       test('allows unknown keys while validating known fields', () {
-        final result = DeckConfiguration.schema.safeParse({
+        final result = DeckWorkspace.schema.safeParse({
           'projectDir': '/project',
           'extra': {'nested': true},
         });
@@ -426,63 +457,63 @@ void main() {
         for (final field in ['slidesPath', 'outputDir', 'assetsPath']) {
           group(field, () {
             test('accepts simple relative path', () {
-              final result = DeckConfiguration.schema.safeParse({
+              final result = DeckWorkspace.schema.safeParse({
                 field: 'my_file.md',
               });
               expect(result.isOk, isTrue);
             });
 
             test('accepts nested relative path', () {
-              final result = DeckConfiguration.schema.safeParse({
+              final result = DeckWorkspace.schema.safeParse({
                 field: 'sub/dir/file.md',
               });
               expect(result.isOk, isTrue);
             });
 
             test('accepts filename containing ".."', () {
-              final result = DeckConfiguration.schema.safeParse({
+              final result = DeckWorkspace.schema.safeParse({
                 field: 'my..file.md',
               });
               expect(result.isOk, isTrue);
             });
 
             test('accepts dot-prefixed relative path', () {
-              final result = DeckConfiguration.schema.safeParse({
+              final result = DeckWorkspace.schema.safeParse({
                 field: '.superdeck',
               });
               expect(result.isOk, isTrue);
             });
 
             test('rejects absolute path', () {
-              final result = DeckConfiguration.schema.safeParse({
+              final result = DeckWorkspace.schema.safeParse({
                 field: '/etc/passwd',
               });
               expect(result.isOk, isFalse);
             });
 
             test('rejects ".." traversal segment', () {
-              final result = DeckConfiguration.schema.safeParse({
+              final result = DeckWorkspace.schema.safeParse({
                 field: '../outside',
               });
               expect(result.isOk, isFalse);
             });
 
             test('rejects nested ".." traversal segment', () {
-              final result = DeckConfiguration.schema.safeParse({
+              final result = DeckWorkspace.schema.safeParse({
                 field: 'sub/../../outside',
               });
               expect(result.isOk, isFalse);
             });
 
             test('rejects bare ".." path', () {
-              final result = DeckConfiguration.schema.safeParse({field: '..'});
+              final result = DeckWorkspace.schema.safeParse({field: '..'});
               expect(result.isOk, isFalse);
             });
           });
         }
 
         test('projectDir still allows absolute paths', () {
-          final result = DeckConfiguration.schema.safeParse({
+          final result = DeckWorkspace.schema.safeParse({
             'projectDir': '/absolute/project',
           });
           expect(result.isOk, isTrue);
@@ -492,44 +523,44 @@ void main() {
 
     group('equality', () {
       test('equal configs are equal', () {
-        final config1 = DeckConfiguration(projectDir: '/same');
-        final config2 = DeckConfiguration(projectDir: '/same');
+        final config1 = DeckWorkspace(projectDir: '/same');
+        final config2 = DeckWorkspace(projectDir: '/same');
 
         expect(config1, config2);
         expect(config1.hashCode, config2.hashCode);
       });
 
       test('different projectDir makes configs unequal', () {
-        final config1 = DeckConfiguration(projectDir: '/a');
-        final config2 = DeckConfiguration(projectDir: '/b');
+        final config1 = DeckWorkspace(projectDir: '/a');
+        final config2 = DeckWorkspace(projectDir: '/b');
 
         expect(config1, isNot(config2));
       });
 
       test('different slidesPath makes configs unequal', () {
-        final config1 = DeckConfiguration(slidesPath: 'a.md');
-        final config2 = DeckConfiguration(slidesPath: 'b.md');
+        final config1 = DeckWorkspace(slidesPath: 'a.md');
+        final config2 = DeckWorkspace(slidesPath: 'b.md');
 
         expect(config1, isNot(config2));
       });
 
       test('different outputDir makes configs unequal', () {
-        final config1 = DeckConfiguration(outputDir: 'a');
-        final config2 = DeckConfiguration(outputDir: 'b');
+        final config1 = DeckWorkspace(outputDir: 'a');
+        final config2 = DeckWorkspace(outputDir: 'b');
 
         expect(config1, isNot(config2));
       });
 
       test('different assetsPath makes configs unequal', () {
-        final config1 = DeckConfiguration(assetsPath: 'a');
-        final config2 = DeckConfiguration(assetsPath: 'b');
+        final config1 = DeckWorkspace(assetsPath: 'a');
+        final config2 = DeckWorkspace(assetsPath: 'b');
 
         expect(config1, isNot(config2));
       });
 
-      test('null vs non-null makes configs unequal', () {
-        final config1 = DeckConfiguration();
-        final config2 = DeckConfiguration(projectDir: '/project');
+      test('default and custom values make configs unequal', () {
+        final config1 = DeckWorkspace();
+        final config2 = DeckWorkspace(projectDir: '/project');
 
         expect(config1, isNot(config2));
       });

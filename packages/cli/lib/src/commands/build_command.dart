@@ -23,7 +23,7 @@ bool _isCI() {
 
 /// Creates a [DeckBuilder] with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
-  required DeckConfiguration configuration,
+  required DeckWorkspace workspace,
   required DeckBuildStore store,
 }) {
   // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions
@@ -41,7 +41,7 @@ DeckBuilder _createStandardBuilder({
         browserLaunchOptions: browserLaunchOptions,
       ),
     ],
-    configuration: configuration,
+    workspace: workspace,
     store: store,
   );
 }
@@ -92,31 +92,33 @@ class BuildCommand extends SuperDeckCommand {
     }
   }
 
+  Future<void> _clearGeneratedAssets(DeckWorkspace workspace) async {
+    if (await workspace.assetsDir.exists()) {
+      await workspace.assetsDir.delete(recursive: true);
+    }
+    await workspace.assetsDir.create(recursive: true);
+
+    if (await workspace.assetsRefJson.exists()) {
+      await workspace.assetsRefJson.delete();
+      logger.detail('Deleted generated_assets.json');
+    }
+  }
+
   /// Cleans all generated assets and runs a full rebuild.
   ///
   /// Uses the provided [builder] for the build, or creates and disposes a new
   /// one if not provided.
   Future<bool> _cleanAndRebuild(
     DeckBuildStore store,
-    DeckConfiguration config, {
+    DeckWorkspace workspace, {
     DeckBuilder? builder,
   }) async {
     logger.info('Force rebuild: Clearing all generated assets...');
 
-    // Delete and recreate assets directory
-    if (await config.assetsDir.exists()) {
-      await config.assetsDir.delete(recursive: true);
-    }
-    await config.assetsDir.create(recursive: true);
-
-    // Delete the generated assets reference file
-    if (await config.assetsRefJson.exists()) {
-      await config.assetsRefJson.delete();
-      logger.detail('Deleted generated_assets.json');
-    }
+    await _clearGeneratedAssets(workspace);
 
     // Run the build (pass through the builder if provided)
-    return _runBuild(store, config, builder: builder);
+    return _runBuild(store, workspace, builder: builder);
   }
 
   /// Runs the build process with proper error handling and progress reporting.
@@ -125,7 +127,7 @@ class BuildCommand extends SuperDeckCommand {
   /// one if not provided.
   Future<bool> _runBuild(
     DeckBuildStore store,
-    DeckConfiguration config, {
+    DeckWorkspace workspace, {
     DeckBuilder? builder,
   }) async {
     // Wait while a build is already running
@@ -138,7 +140,7 @@ class BuildCommand extends SuperDeckCommand {
 
     // Track if we created the builder (and thus need to dispose it)
     final ownsBuilder = builder == null;
-    builder ??= _createStandardBuilder(configuration: config, store: store);
+    builder ??= _createStandardBuilder(workspace: workspace, store: store);
 
     try {
       // Run the build process
@@ -147,7 +149,7 @@ class BuildCommand extends SuperDeckCommand {
       if (slides.isEmpty) {
         progress.update('No slides found.');
         logger.warn(
-          'No slides found in ${config.slidesFile.path}. Make sure it exists '
+          'No slides found in ${workspace.slidesFile.path}. Make sure it exists '
           'and has proper content.',
         );
         progress.complete('Build completed with warnings.');
@@ -202,11 +204,11 @@ class BuildCommand extends SuperDeckCommand {
   Future<int> run() async {
     DeckBuildStore? store;
     try {
-      final deckConfig = DeckConfiguration();
+      final deckWorkspace = DeckWorkspace();
 
       // Check if slides file exists
-      if (!await deckConfig.slidesFile.exists()) {
-        logger.err('Slides file not found: ${deckConfig.slidesFile.path}');
+      if (!await deckWorkspace.slidesFile.exists()) {
+        logger.err('Slides file not found: ${deckWorkspace.slidesFile.path}');
         logger.info(
           'Run `superdeck setup` to create a sample slides file, or create your own.',
         );
@@ -215,23 +217,19 @@ class BuildCommand extends SuperDeckCommand {
       }
 
       // Create the data store using the consolidated repository
-      store = DeckBuildStore(configuration: deckConfig);
+      store = DeckBuildStore(workspace: deckWorkspace);
       await store.initialize();
 
       // Log if force rebuild is enabled
       if (boolArg('force-rebuild')) {
         logger.info('Force rebuild enabled. All assets will be regenerated.');
-        // Clean assets directory
-        if (await deckConfig.assetsDir.exists()) {
-          await deckConfig.assetsDir.delete(recursive: true);
-          await deckConfig.assetsDir.create(recursive: true);
-        }
+        await _clearGeneratedAssets(deckWorkspace);
       }
 
       // Update pubspec assets unless skipped
       if (!boolArg('skip-pubspec')) {
         try {
-          await _ensurePubspecAssets(deckConfig);
+          await _ensurePubspecAssets(deckWorkspace);
         } catch (e) {
           logger.warn('Failed to update pubspec assets: $e');
         }
@@ -239,7 +237,7 @@ class BuildCommand extends SuperDeckCommand {
 
       // Run the build process initially
       final repository = store;
-      final success = await _runBuild(repository, deckConfig);
+      final success = await _runBuild(repository, deckWorkspace);
 
       if (!success && !boolArg('watch')) {
         return ExitCode.software.code;
@@ -262,7 +260,7 @@ class BuildCommand extends SuperDeckCommand {
 
         // Create a builder that will handle watching and rebuilding
         final builder = _createStandardBuilder(
-          configuration: deckConfig,
+          workspace: deckWorkspace,
           store: repository,
         );
 
@@ -280,7 +278,7 @@ class BuildCommand extends SuperDeckCommand {
                     logger.info('Manual rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
-                      _runBuild(repository, deckConfig, builder: builder),
+                      _runBuild(repository, deckWorkspace, builder: builder),
                     );
                     break;
                   case 'f':
@@ -290,7 +288,7 @@ class BuildCommand extends SuperDeckCommand {
                     unawaited(
                       _cleanAndRebuild(
                         repository,
-                        deckConfig,
+                        deckWorkspace,
                         builder: builder,
                       ),
                     );
@@ -353,11 +351,11 @@ class BuildCommand extends SuperDeckCommand {
 }
 
 /// Ensures the pubspec.yaml has the necessary assets configuration.
-Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
+Future<void> _ensurePubspecAssets(DeckWorkspace workspace) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 
   try {
-    final pubspecFile = configuration.pubspecFile;
+    final pubspecFile = workspace.pubspecFile;
 
     if (!await pubspecFile.exists()) {
       progress.fail('pubspec.yaml not found');
@@ -368,7 +366,7 @@ Future<void> _ensurePubspecAssets(DeckConfiguration configuration) async {
 
     final pubspecContents = await pubspecFile.readAsString();
     final updatedPubspecContents = updatePubspecAssets(
-      configuration,
+      workspace,
       pubspecContents,
     );
 
