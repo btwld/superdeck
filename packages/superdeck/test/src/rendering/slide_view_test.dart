@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 
-import '../helpers/layout_assertions.dart';
-import '../helpers/slide_test_harness.dart';
-import '../helpers/test_helpers.dart';
+import '../../helpers/layout_assertions.dart';
+import '../../helpers/slide_test_harness.dart';
+import '../../helpers/test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -3,8 +3,15 @@ import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
 import 'package:path/path.dart' as p;
+
 import '../markdown/markdown_json.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import '../utils/extensions.dart';
+import '../utils/logging_utils.dart';
+import '../utils/pretty_json.dart';
+import 'asset_model.dart';
+import 'deck_build_status.dart';
+import 'deck_configuration.dart';
+import 'deck_model.dart';
 
 /// Build-side store used by CLI and builder commands.
 ///

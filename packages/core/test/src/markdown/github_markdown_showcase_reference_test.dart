@@ -4,7 +4,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck_core/src/markdown/markdown_json.dart';
 import 'package:test/test.dart';
 
-import 'helpers/json_snapshot_utils.dart';
+import '../../helpers/json_snapshot_utils.dart';
 
 /// Generates `github_markdown_ref.json` from the showcase markdown document.
 void main() {

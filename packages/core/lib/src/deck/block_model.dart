@@ -1,5 +1,7 @@
+import 'package:ack/ack.dart';
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+
+import '../utils/extensions.dart';
 
 part 'block_model.mapper.dart';
 

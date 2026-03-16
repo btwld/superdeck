@@ -2,9 +2,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 
-import '../fixtures/slide_fixtures.dart';
-import '../helpers/layout_assertions.dart';
-import '../helpers/slide_test_harness.dart';
+import '../../fixtures/slide_fixtures.dart';
+import '../../helpers/layout_assertions.dart';
+import '../../helpers/slide_test_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

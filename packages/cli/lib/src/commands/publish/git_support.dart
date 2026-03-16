@@ -4,10 +4,10 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 
 final _httpsRepositoryPattern = RegExp(
-  r'https://github\.com/([^/]+)/([^/.]+)(\.git)?',
+  r'https://github\.com/([^/]+)/([^/]+?)(\.git)?$',
 );
 final _sshRepositoryPattern = RegExp(
-  r'git@github\.com:([^/]+)/([^/.]+)(\.git)?',
+  r'git@github\.com:([^/]+)/([^/]+?)(\.git)?$',
 );
 final _validBranchNamePattern = RegExp(r'^[a-zA-Z0-9][a-zA-Z0-9._/-]*$');
 
@@ -84,9 +84,14 @@ Future<String?> getRepositoryName(Logger logger, String repoPath) async {
 }
 
 Future<bool> branchExists(Logger logger, String repoPath, String branch) async {
-  final args = ['show-ref', '--verify', '--quiet', 'refs/heads/$branch'];
-  final result = await runGitQuery(logger, repoPath, args);
+  // Check local branch first
+  var args = ['show-ref', '--verify', '--quiet', 'refs/heads/$branch'];
+  var result = await runGitQuery(logger, repoPath, args);
+  if (result?.exitCode == 0) return true;
 
+  // Fall back to remote tracking branch
+  args = ['show-ref', '--verify', '--quiet', 'refs/remotes/origin/$branch'];
+  result = await runGitQuery(logger, repoPath, args);
   return result?.exitCode == 0;
 }
 

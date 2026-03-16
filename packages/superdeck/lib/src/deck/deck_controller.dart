@@ -157,6 +157,8 @@ class DeckController {
         } else {
           _error.value = error ?? message;
           _isLoading.value = false;
+          _isBuildActive.value = false;
+          _buildFailure.value = null;
         }
       case DeckRebuildingEvent():
         _isBuildActive.value = true;
