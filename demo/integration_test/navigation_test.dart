@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -21,7 +23,7 @@ void main() {
       }
 
       expect(controller.canGoNext.value, isTrue);
-      await controller.nextSlide();
+      unawaited(controller.nextSlide());
       await tester.pumpUntil(
         () => controller.currentIndex.value == 1,
         timeout: const Duration(seconds: 5),
@@ -37,7 +39,7 @@ void main() {
       await tester.navigateToSlide(controller, 1);
       expect(controller.canGoPrevious.value, isTrue);
 
-      await controller.previousSlide();
+      unawaited(controller.previousSlide());
       await tester.pumpUntil(
         () => controller.currentIndex.value == 0,
         timeout: const Duration(seconds: 5),

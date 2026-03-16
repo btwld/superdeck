@@ -10,8 +10,8 @@ import '../utils/logging_utils.dart';
 import '../utils/pretty_json.dart';
 import 'asset_model.dart';
 import 'deck_build_status.dart';
-import 'deck_configuration.dart';
-import 'deck_model.dart';
+import 'deck_workspace.dart';
+import 'slide_model.dart';
 
 /// Build-side store used by CLI and builder commands.
 ///
@@ -19,16 +19,16 @@ import 'deck_model.dart';
 /// as the build-side storage primitive over the same workspace layout, while
 /// domain data contracts live in model files.
 class DeckBuildStore {
-  DeckBuildStore({required this.configuration});
+  DeckBuildStore({required this.workspace});
 
-  final DeckConfiguration configuration;
+  final DeckWorkspace workspace;
   final List<GeneratedAsset> _generatedAssets = [];
   final Logger _logger = Logger('DeckBuildStore');
 
   Future<void> initialize() async {
-    await configuration.assetsDir.ensureExists();
-    await configuration.deckJson.ensureExists(content: '{}');
-    await configuration.buildStatusJson.ensureExists(
+    await workspace.assetsDir.ensureExists();
+    await workspace.deckJson.ensureExists(content: '[]');
+    await workspace.buildStatusJson.ensureExists(
       content: prettyJson(
         DeckBuildStatus(
           phase: DeckBuildPhase.unknown,
@@ -36,11 +36,11 @@ class DeckBuildStore {
         ).toMap(),
       ),
     );
-    await configuration.slidesFile.ensureExists(content: '');
+    await workspace.slidesFile.ensureExists(content: '');
   }
 
   Future<String> readDeckMarkdown() async {
-    return configuration.slidesFile.readAsString();
+    return workspace.slidesFile.readAsString();
   }
 
   void clearGeneratedAssets() {
@@ -49,21 +49,23 @@ class DeckBuildStore {
 
   String getGeneratedAssetPath(GeneratedAsset asset) {
     _generatedAssets.add(asset);
-    return p.join(configuration.assetsDir.path, asset.fileName);
+    return p.join(workspace.assetsDir.path, asset.fileName);
   }
 
-  Future<void> saveReferences(Deck reference) async {
-    final deckJson = prettyJson(reference.toMap());
-    await configuration.deckJson.writeAsString(deckJson);
+  Future<void> saveReferences(List<Slide> slides) async {
+    final deckJson = prettyJson(
+      slides.map((slide) => slide.toMap()).toList(growable: false),
+    );
+    await workspace.deckJson.writeAsString(deckJson);
 
-    await _saveFullDeckReference(reference);
+    await _saveFullDeckReference(slides);
     final uniqueAssets = <String, GeneratedAsset>{};
     for (final asset in _generatedAssets) {
       uniqueAssets[asset.fileName] = asset;
     }
 
     final assetPaths = uniqueAssets.values
-        .map((asset) => p.join(configuration.assetsDir.path, asset.fileName))
+        .map((asset) => p.join(workspace.assetsDir.path, asset.fileName))
         .toList();
 
     final previousAssetsRef = await _readExistingAssetsReference();
@@ -80,7 +82,7 @@ class DeckBuildStore {
 
     if (!filesUnchanged) {
       final assetsJson = prettyJson(assetsRef.toMap());
-      await configuration.assetsRefJson.writeAsString(assetsJson);
+      await workspace.assetsRefJson.writeAsString(assetsJson);
     }
 
     await _cleanupGeneratedAssets(assetsRef);
@@ -105,15 +107,15 @@ class DeckBuildStore {
           : null,
     );
 
-    await configuration.buildStatusJson.ensureWrite(prettyJson(status.toMap()));
+    await workspace.buildStatusJson.ensureWrite(prettyJson(status.toMap()));
   }
 
-  Future<void> _saveFullDeckReference(Deck reference) async {
+  Future<void> _saveFullDeckReference(List<Slide> slides) async {
     final converter = MarkdownAstConverter(
       extensionSet: md.ExtensionSet.gitHubWeb,
     );
 
-    final slidesWithMarkdownJson = reference.slides.map((slide) {
+    final slidesWithMarkdownJson = slides.map((slide) {
       final slideMap = slide.toMap();
 
       // Process each section's blocks to replace content with markdown AST
@@ -148,18 +150,15 @@ class DeckBuildStore {
       return slideMap;
     }).toList();
 
-    final fullDeckMap = reference.toMap();
-    fullDeckMap['slides'] = slidesWithMarkdownJson;
-
-    final fullDeckJson = prettyJson(fullDeckMap);
-    await configuration.deckFullJson.writeAsString(fullDeckJson);
+    final fullDeckJson = prettyJson(slidesWithMarkdownJson);
+    await workspace.deckFullJson.writeAsString(fullDeckJson);
   }
 
   /// Removes generated assets that are no longer referenced.
   Future<void> _cleanupGeneratedAssets(
     GeneratedAssetsReference assetsReference,
   ) async {
-    final existingFiles = await configuration.assetsDir
+    final existingFiles = await workspace.assetsDir
         .list(recursive: true)
         .where((e) => e is File)
         .map((e) => e as File)
@@ -186,7 +185,7 @@ class DeckBuildStore {
   }
 
   Future<GeneratedAssetsReference?> _readExistingAssetsReference() async {
-    final file = configuration.assetsRefJson;
+    final file = workspace.assetsRefJson;
     if (!await file.exists()) {
       return null;
     }

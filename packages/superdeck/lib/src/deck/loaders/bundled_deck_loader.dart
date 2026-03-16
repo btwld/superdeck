@@ -6,46 +6,46 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 /// Asset-based [DeckLoader] implementation for runtimes without file processes.
 ///
-/// [load] returns a stable stream that emits [DeckLoadingEvent] followed by
-/// [DeckLoadedEvent] (on success) or [DeckErrorEvent] (on failure).
+/// [load] returns a stable stream that emits [SlidesLoadingEvent] followed by
+/// [SlidesLoadedEvent] (on success) or [SlidesErrorEvent] (on failure).
 /// [reload] replays that bundled load cycle without any file watching.
 class BundledDeckLoader extends DeckLoader {
-  final _controller = StreamController<DeckEvent>();
+  final _controller = StreamController<SlidesEvent>();
   Future<void>? _loadTask;
   var _disposed = false;
   var _started = false;
 
-  BundledDeckLoader({required super.configuration});
+  BundledDeckLoader({DeckWorkspace? workspace})
+    : super(workspace: workspace ?? DeckWorkspace());
 
   Future<void> _emitLoad() async {
     if (_disposed || _controller.isClosed) return;
 
-    _controller.add(DeckLoadingEvent('Loading bundled deck…'));
+    _controller.add(SlidesLoadingEvent('Loading bundled slides…'));
     try {
       final content = await rootBundle.loadString(
-        configuration.bundledDeckJsonPath,
+        workspace.bundledDeckJsonPath,
       );
       final decoded = jsonDecode(content);
-      if (decoded is! Map) {
+      if (decoded is! List) {
         throw Exception(
-          'Expected JSON object in bundled deck at '
-          '${configuration.bundledDeckJsonPath}, got ${decoded.runtimeType}',
+          'Expected JSON array in bundled slides at '
+          '${workspace.bundledDeckJsonPath}, got ${decoded.runtimeType}',
         );
       }
       if (_disposed || _controller.isClosed) return;
 
-      final data = Map<String, Object?>.from(decoded);
-      _controller.add(DeckLoadedEvent(Deck.parse(data)));
+      _controller.add(SlidesLoadedEvent(parseSlidesContract(decoded)));
     } on Exception catch (error) {
       if (_disposed || _controller.isClosed) return;
       _controller.add(
-        DeckErrorEvent('Superdeck reference error', error: error),
+        SlidesErrorEvent('Superdeck reference error', error: error),
       );
     } on Error catch (error) {
       // rootBundle.loadString throws FlutterError (an Error, not Exception)
       if (_disposed || _controller.isClosed) return;
       _controller.add(
-        DeckErrorEvent(
+        SlidesErrorEvent(
           'Superdeck reference error',
           error: Exception(error.toString()),
         ),
@@ -54,7 +54,7 @@ class BundledDeckLoader extends DeckLoader {
   }
 
   @override
-  Stream<DeckEvent> load() {
+  Stream<SlidesEvent> load() {
     if (_disposed) {
       return _controller.stream;
     }

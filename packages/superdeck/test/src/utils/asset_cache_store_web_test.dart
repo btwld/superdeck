@@ -2,7 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/utils/asset_cache_store_web.dart';
+import 'package:superdeck/src/utils/asset_cache_store.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -10,8 +10,8 @@ void main() {
     late AssetCacheStore store;
 
     setUp(() {
-      store = createAssetCacheStore(
-        configuration: DeckConfiguration(projectDir: '/tmp/fake'),
+      store = RuntimeAssetCacheStore(
+        workspace: DeckWorkspace(projectDir: '/tmp/fake'),
       );
     });
 
@@ -61,19 +61,21 @@ void main() {
       );
     });
 
-    test('survives reload: new store resolves previously written key',
-        () async {
-      const key = 'persist_test.png';
-      await store.write(key, [10, 20, 30]);
+    test(
+      'survives reload: new store resolves previously written key',
+      () async {
+        const key = 'persist_test.png';
+        await store.write(key, [10, 20, 30]);
 
-      // Simulate reload: new store instance, empty memory cache
-      final freshStore = createAssetCacheStore(
-        configuration: DeckConfiguration(projectDir: '/tmp/fake'),
-      );
+        // Simulate reload: new store instance, empty memory cache
+        final freshStore = RuntimeAssetCacheStore(
+          workspace: DeckWorkspace(projectDir: '/tmp/fake'),
+        );
 
-      final resolved = await freshStore.resolve(key);
-      expect(resolved, isNotNull);
-      expect(resolved!.scheme, 'data');
-    });
+        final resolved = await freshStore.resolve(key);
+        expect(resolved, isNotNull);
+        expect(resolved!.scheme, 'data');
+      },
+    );
   });
 }

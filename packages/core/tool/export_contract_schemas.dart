@@ -9,10 +9,10 @@ Future<void> main(List<String> args) async {
   final schemaDir = Directory(p.join(Directory.current.path, 'schema'));
 
   final artifacts = <String, Map<String, Object?>>{
-    'superdeck.deck.schema.json': _decorateSchema(
-      id: 'https://superdeck.dev/schema/superdeck.deck.schema.json',
-      title: 'SuperDeck Deck Contract',
-      schema: Deck.schema.toJsonSchema(),
+    'superdeck.slides.schema.json': _decorateSchema(
+      id: 'https://superdeck.dev/schema/superdeck.slides.schema.json',
+      title: 'Slides Contract',
+      schema: slidesContractSchema.toJsonSchema(),
     ),
   };
 

@@ -1,12 +1,8 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
-AssetCacheStore createAssetCacheStore({
-  required DeckConfiguration configuration,
-}) {
-  return _StubAssetCacheStore();
-}
+class RuntimeAssetCacheStore implements AssetCacheStore {
+  RuntimeAssetCacheStore({DeckWorkspace? workspace});
 
-class _StubAssetCacheStore implements AssetCacheStore {
   @override
   Future<Uri?> resolve(String assetKey) async => null;
 

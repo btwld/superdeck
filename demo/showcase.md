@@ -263,13 +263,16 @@ flutter run -d macos  # or chrome, windows, linux
 
 #### Global Themes
 
-Define in `superdeck.yaml`:
+Define in `DeckOptions.styles`:
 
-```yaml
-styles:
-  default:
-    background: '#1a1a2e'
-    primaryColor: '#4CAF50'
+```dart
+SuperDeckApp(
+  options: DeckOptions(
+    styles: {
+      'default': borderedStyle(),
+    },
+  ),
+)
 ```
 
 @block {

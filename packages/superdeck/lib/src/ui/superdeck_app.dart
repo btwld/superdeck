@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 import 'tokens/colors.dart';
 
 import '../deck/deck_controller_builder.dart';
@@ -12,10 +11,9 @@ import 'app_shell.dart';
 import 'app_theme.dart';
 
 class SuperDeckApp extends StatelessWidget {
-  const SuperDeckApp({super.key, required this.options, this.configuration});
+  const SuperDeckApp({super.key, required this.options});
 
   final DeckOptions options;
-  final DeckConfiguration? configuration;
 
   static Future<void> initialize({
     List<SuperDeckPlugin> plugins = const <SuperDeckPlugin>[],
@@ -36,7 +34,6 @@ class SuperDeckApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DeckControllerBuilder(
       options: options,
-      configuration: configuration,
       builder: (context, router) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,

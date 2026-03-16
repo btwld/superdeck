@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -172,7 +173,7 @@ extension IntegrationTestExtensions on WidgetTester {
 
     if (controller.hasError.value) {
       fail(
-        'Deck failed to load: ${controller.error.value}\n'
+        'Presentation failed to load: ${controller.error.value}\n'
         '${describeDeckControllerState(controller)}',
       );
     }
@@ -182,7 +183,7 @@ extension IntegrationTestExtensions on WidgetTester {
 
   /// Navigates to a specific slide and waits for transition to complete.
   Future<void> navigateToSlide(DeckController controller, int index) async {
-    await controller.goToSlide(index);
+    unawaited(controller.goToSlide(index));
     await pumpUntil(
       () => controller.currentIndex.value == index,
       timeout: const Duration(seconds: 5),
@@ -196,7 +197,11 @@ extension IntegrationTestExtensions on WidgetTester {
   /// Uses `warnIfMissed: false` to handle edge-of-screen widgets (e.g. bottom bar).
   Future<void> tapByLabel(String label) async {
     final finder = find.bySemanticsLabel(label);
-    expect(finder, findsWidgets, reason: 'Could not find widget with label "$label"');
+    expect(
+      finder,
+      findsWidgets,
+      reason: 'Could not find widget with label "$label"',
+    );
     await ensureVisible(finder.first);
     await pumpFor(const Duration(milliseconds: 100));
     await tap(finder.first, warnIfMissed: false);

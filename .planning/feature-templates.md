@@ -292,7 +292,7 @@ TemplateException: Style "titl" not found in template "corporate".
 Available styles: title, content, closing
 ```
 
-**3. Unknown Style in Deck (no template)**
+**3. Unknown Style in Presentation (no template)**
 ```markdown
 ---
 style: announement  # Typo
@@ -619,7 +619,7 @@ Available styles: title, emphasis, closing
 ```
 **Fix:** Check style name spelling, ensure style is defined in `template.styles`
 
-### Unknown Style in Deck
+### Unknown Style in Presentation
 ```
 TemplateException: Style "announement" not found in deck.
 Available styles: announcement, quote, emphasis
@@ -656,7 +656,7 @@ Available styles: announcement, quote, emphasis
 - With default: all slides use template unless overridden
 - Recommendation: start without default, add later if needed
 
-**2. Be Consistent Within Deck**
+**2. Be Consistent Within a Presentation**
 - Use 2-3 templates max per presentation
 - Reserve template switching for major section changes
 

@@ -1,31 +1,32 @@
 ---
 title: Contracts and Schemas
-description: Canonical SuperDeck deck JSON contract for tooling and runtime consumers
+description: Canonical SuperDeck slides JSON contract for tooling and runtime consumers
 ---
 
 # Contracts and schemas
 
 `superdeck_core` is the canonical contract package for `superdeck.json`.
 
-## Root deck contract (`superdeck.json`)
+## Root slides contract (`superdeck.json`)
 
-`Deck` is the root model and contract surface.
+The compiled payload is a raw top-level `List<Slide>`.
 
-Root fields:
+Top-level shape:
 
-- `slides` (required)
-- `configuration` (optional operational config map)
+- JSON array of slide objects
+- No root object wrapper
+- No root `configuration` payload
 
 ## Compatibility note
 
 Contract compatibility is not frozen yet.
-Breaking changes to deck contract shape may happen as SuperDeck finalizes the tooling surface.
+Breaking changes to the slides contract shape may happen as SuperDeck finalizes the tooling surface.
 
 ## Machine-readable schema artifacts
 
 Canonical JSON Schema artifacts are exported to:
 
-- `packages/core/schema/superdeck.deck.schema.json`
+- `packages/core/schema/superdeck.slides.schema.json`
 
 Commands:
 

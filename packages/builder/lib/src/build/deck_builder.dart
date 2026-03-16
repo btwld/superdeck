@@ -14,7 +14,7 @@ import '../tasks/task.dart';
 class DeckBuilder {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;
-  final DeckConfiguration configuration;
+  final DeckWorkspace workspace;
   final DeckBuildStore store;
   final Logger _logger = Logger('DeckBuilder');
 
@@ -22,7 +22,7 @@ class DeckBuilder {
 
   DeckBuilder({
     required this.tasks,
-    required this.configuration,
+    required this.workspace,
     required this.store,
     int concurrentSlides = 4,
   }) {
@@ -51,7 +51,7 @@ class DeckBuilder {
     }
 
     // Watch for changes to the slides file
-    final fileWatcher = FileWatcher(configuration.slidesFile);
+    final fileWatcher = FileWatcher(workspace.slidesFile);
     await for (final _ in fileWatcher.watch()) {
       yield const BuildStarted();
       try {
@@ -102,9 +102,7 @@ class DeckBuilder {
     );
 
     // Save the processed slides
-    await store.saveReferences(
-      Deck(slides: processedSlides, configuration: configuration),
-    );
+    await store.saveReferences(processedSlides);
     await store.saveBuildStatus(
       phase: DeckBuildPhase.success,
       slideCount: processedSlides.length,

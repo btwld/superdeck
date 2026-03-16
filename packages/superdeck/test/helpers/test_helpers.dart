@@ -48,10 +48,9 @@ SlideConfiguration createTestSlide({
   );
 }
 
-/// Creates a test deck with the given slides.
-Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
-  final testSlides =
-      slides ??
+/// Creates a test slide payload with the given slides.
+List<Slide> createTestSlidesPayload({List<Slide>? slides}) {
+  return slides ??
       List.generate(
         3,
         (index) => Slide(
@@ -61,12 +60,7 @@ Deck createTestDeck({List<Slide>? slides, DeckConfiguration? config}) {
           ],
         ),
       );
-
-  return Deck(slides: testSlides, configuration: config ?? createMockConfig());
 }
-
-/// Creates a mock configuration.
-DeckConfiguration createMockConfig() => DeckConfiguration();
 
 /// Pumps a widget and settles all animations.
 Future<void> pumpAndSettleWidget(

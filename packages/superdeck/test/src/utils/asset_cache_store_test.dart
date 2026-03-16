@@ -35,7 +35,7 @@ void main() {
   group('Asset cache store (io)', () {
     late Directory projectDir;
     late Directory appCacheRoot;
-    late DeckConfiguration configuration;
+    late DeckWorkspace workspace;
     late AssetCacheStore store;
     late Directory cacheDir;
     late PathProviderPlatform originalPlatform;
@@ -47,20 +47,20 @@ void main() {
       appCacheRoot = await Directory.systemTemp.createTemp(
         'superdeck_app_cache_',
       );
-      configuration = DeckConfiguration(projectDir: projectDir.path);
+      workspace = DeckWorkspace(projectDir: projectDir.path);
       originalPlatform = PathProviderPlatform.instance;
       PathProviderPlatform.instance = _FakePathProviderPlatform(
         applicationCachePath: appCacheRoot.path,
       );
 
       final cacheScope = generateValueHash(
-        configuration.superdeckDir.absolute.path,
+        workspace.superdeckDir.absolute.path,
       );
       cacheDir = Directory(
         p.join(appCacheRoot.path, 'superdeck', 'asset_cache', cacheScope),
       );
 
-      store = createAssetCacheStore(configuration: configuration);
+      store = RuntimeAssetCacheStore(workspace: workspace);
     });
 
     tearDown(() async {
@@ -113,7 +113,7 @@ void main() {
           applicationCachePath: appCacheRoot.path,
         );
         PathProviderPlatform.instance = flakyPlatform;
-        store = createAssetCacheStore(configuration: configuration);
+        store = RuntimeAssetCacheStore(workspace: workspace);
 
         await expectLater(store.resolve(assetKey), throwsA(isA<Exception>()));
 
