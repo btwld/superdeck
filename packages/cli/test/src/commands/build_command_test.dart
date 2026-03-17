@@ -63,24 +63,21 @@ void main() {
       });
     });
 
-    group('run() - defaults-only workspace', () {
-      test(
-        'ignores superdeck.yaml when default slides.md is missing',
-        () async {
-          final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
-          await configFile.writeAsString('slidesPath: custom.md');
-          await File(
-            path.join(tempDir.path, 'custom.md'),
-          ).writeAsString('# Test');
+    group('run() - unsupported workspace config', () {
+      test('fails fast when superdeck.yaml points to custom slides', () async {
+        final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
+        await configFile.writeAsString('slidesPath: custom.md');
+        await File(
+          path.join(tempDir.path, 'custom.md'),
+        ).writeAsString('# Test');
 
-          final runner = createTestRunner(command);
-          final result = await runner.run(['build']);
+        final runner = createTestRunner(command);
+        final result = await runner.run(['build']);
 
-          expect(result, ExitCode.unavailable.code);
-        },
-      );
+        expect(result, ExitCode.data.code);
+      });
 
-      test('ignores malformed superdeck.yaml when slides.md exists', () async {
+      test('fails fast when malformed superdeck.yaml exists', () async {
         final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test Slide\n\nContent');
         final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
@@ -90,10 +87,7 @@ void main() {
         final runner = createTestRunner(command);
         final result = await runner.run(['build']);
 
-        expect(
-          result,
-          anyOf(equals(ExitCode.success.code), equals(ExitCode.software.code)),
-        );
+        expect(result, ExitCode.data.code);
       });
     });
 

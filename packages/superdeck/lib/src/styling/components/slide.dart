@@ -174,8 +174,8 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
 
   /// Converts this SlideSpec to a MarkdownStyleSheet for flutter_markdown.
   ///
-  /// This method maintains compatibility with flutter_markdown by extracting
-  /// the relevant properties and converting them to the expected format.
+  /// This method extracts the relevant properties and converts them to the
+  /// format expected by flutter_markdown.
   MarkdownStyleSheet toStyle() {
     return MarkdownStyleSheet(
       h1: h1?.spec.style,

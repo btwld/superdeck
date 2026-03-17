@@ -4,6 +4,11 @@ import 'dart:io';
 
 import 'package:superdeck_core/superdeck_core.dart';
 
+const missingBuildOutputMessage =
+    'No SuperDeck build output found. '
+    'SuperDeck uses the default workspace layout. '
+    'Run `superdeck build --watch` in one terminal and `flutter run` in another.';
+
 /// File-based [DeckLoader] implementation for debug IO runtimes.
 ///
 /// [load] returns a long-lived stream:
@@ -15,6 +20,7 @@ class FileDeckLoader extends DeckLoader {
   Future<void>? _runTask;
   var _disposed = false;
   var _started = false;
+  var _didEmitMissingBuildOutput = false;
 
   FileDeckLoader({DeckWorkspace? workspace})
     : super(workspace: workspace ?? DeckWorkspace());
@@ -37,6 +43,12 @@ class FileDeckLoader extends DeckLoader {
     }
   }
 
+  void _emitMissingBuildOutput(Completer<void> cancel) {
+    if (_didEmitMissingBuildOutput) return;
+    _didEmitMissingBuildOutput = true;
+    _emit(SlidesErrorEvent(missingBuildOutputMessage), cancel);
+  }
+
   Future<void> _emitLoadedSlides(Completer<void> cancel) async {
     try {
       final slidesJson = jsonDecode(await _deckFile.readAsString());
@@ -46,6 +58,7 @@ class FileDeckLoader extends DeckLoader {
           'got ${slidesJson.runtimeType}',
         );
       }
+      _didEmitMissingBuildOutput = false;
       _emit(SlidesLoadedEvent(parseSlidesContract(slidesJson)), cancel);
     } on Exception catch (error) {
       _emit(
@@ -56,7 +69,10 @@ class FileDeckLoader extends DeckLoader {
   }
 
   Future<void> _processStatus(Completer<void> cancel) async {
-    if (!await _statusFile.exists()) return;
+    if (!await _statusFile.exists()) {
+      _emitMissingBuildOutput(cancel);
+      return;
+    }
 
     try {
       final decoded = jsonDecode(await _statusFile.readAsString());
@@ -69,9 +85,11 @@ class FileDeckLoader extends DeckLoader {
 
       switch (status.phase) {
         case DeckBuildPhase.building:
+          _didEmitMissingBuildOutput = false;
           _emit(SlidesRebuildingEvent(), cancel);
           return;
         case DeckBuildPhase.failure:
+          _didEmitMissingBuildOutput = false;
           final buildError =
               status.error ??
               const DeckBuildError(message: 'Presentation build failed');
@@ -84,6 +102,7 @@ class FileDeckLoader extends DeckLoader {
           await _emitLoadedSlides(cancel);
           return;
         case DeckBuildPhase.unknown:
+          _emitMissingBuildOutput(cancel);
           return;
       }
     } on Exception catch (error) {
@@ -173,10 +192,12 @@ class FileDeckLoader extends DeckLoader {
   }
 
   Future<void> _run(Completer<void> cancel) async {
+    _didEmitMissingBuildOutput = false;
     _emit(SlidesLoadingEvent('Loading slides…'), cancel);
 
     while (_isCycleActive(cancel)) {
       if (!await _statusParentDir.exists()) {
+        _emitMissingBuildOutput(cancel);
         await _waitForDirectoryCreation(cancel);
         continue;
       }

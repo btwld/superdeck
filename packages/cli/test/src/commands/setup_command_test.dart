@@ -66,5 +66,21 @@ void main() {
         Directory.current = previousDir;
       }
     });
+
+    test('fails fast when superdeck.yaml exists', () async {
+      final previousDir = Directory.current;
+      Directory.current = tempDir;
+
+      try {
+        final configFile = File(path.join(tempDir.path, 'superdeck.yaml'));
+        await configFile.writeAsString('slidesPath: custom.md');
+
+        final result = await runner.run(['setup', '--force']);
+
+        expect(result, 65);
+      } finally {
+        Directory.current = previousDir;
+      }
+    });
   });
 }

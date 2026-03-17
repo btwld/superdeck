@@ -98,7 +98,11 @@ class DeckController {
        _navigationService = navigationService ?? NavigationService(),
        _thumbnailService =
            thumbnailService ??
-           ThumbnailService(cacheStore: RuntimeAssetCacheStore()),
+           ThumbnailService(
+             cacheStore: RuntimeAssetCacheStore(
+               workspace: deckLoader.workspace,
+             ),
+           ),
        _plugins = options.plugins {
     _options.value = options.copyWith(plugins: _plugins);
     final pluginRoutes = _plugins

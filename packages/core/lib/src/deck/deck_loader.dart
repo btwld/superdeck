@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import 'deck_workspace.dart';
 import 'slide_model.dart';
 
@@ -29,7 +27,6 @@ class SlidesRebuildingEvent extends SlidesEvent {
 }
 
 abstract class DeckLoader {
-  @protected
   final DeckWorkspace workspace;
   const DeckLoader({required this.workspace});
 

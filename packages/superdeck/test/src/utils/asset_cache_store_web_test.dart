@@ -77,5 +77,23 @@ void main() {
         expect(resolved!.scheme, 'data');
       },
     );
+
+    test('keeps persisted keys isolated across workspace scopes', () async {
+      const key = 'scoped_persist_test.png';
+      final storeA = RuntimeAssetCacheStore(
+        workspace: DeckWorkspace(projectDir: '/tmp/deck-a'),
+      );
+      final storeB = RuntimeAssetCacheStore(
+        workspace: DeckWorkspace(projectDir: '/tmp/deck-b'),
+      );
+
+      await storeA.delete(key);
+      await storeB.delete(key);
+
+      await storeA.write(key, [42, 24, 12]);
+
+      expect(await storeA.resolve(key), isNotNull);
+      expect(await storeB.resolve(key), isNull);
+    });
   });
 }

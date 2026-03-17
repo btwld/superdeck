@@ -11,7 +11,7 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('backward compatibility — no templates, applies deck styles', () {
+    test('when no template is set, applies deck styles', () {
       final baseStyle = SlideStyle();
       final options = DeckOptions(baseStyle: baseStyle);
       final slides = [Slide(key: 'slide-1')];

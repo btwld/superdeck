@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:ui' as ui;
 
@@ -33,6 +34,9 @@ class SlideCaptureService {
   /// Maximum concurrent generations to prevent memory pressure.
   static const _maxConcurrentGenerations = 3;
   static const _kQueuePollInterval = Duration(milliseconds: 50);
+  static const _kRenderSettleDelay = Duration(milliseconds: 32);
+  static const _kMaxRenderPasses = 10;
+  static const _kRequiredStablePasses = 2;
 
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
@@ -101,7 +105,7 @@ class SlideCaptureService {
   /// Converts a Flutter widget to a [ui.Image] via an isolated render pipeline.
   ///
   /// Sets up a complete render context (theme, media query, material app),
-  /// builds and lays out the tree in a single pass, then rasterises.
+  /// drives a bounded settle loop for async/delayed widgets, then rasterises.
   Future<ui.Image> _fromWidgetToImage(
     Widget widget,
     RenderConfig config,
@@ -146,8 +150,14 @@ class SlideCaptureService {
         ),
       );
 
-      final pipelineOwner = PipelineOwner();
-      final buildOwner = BuildOwner(focusManager: FocusManager());
+      var isDirty = false;
+      final pipelineOwner = PipelineOwner(
+        onNeedVisualUpdate: () => isDirty = true,
+      );
+      final buildOwner = BuildOwner(
+        focusManager: FocusManager(),
+        onBuildScheduled: () => isDirty = true,
+      );
 
       pipelineOwner.rootNode = renderView;
       renderView.prepareInitialFrame();
@@ -157,14 +167,39 @@ class SlideCaptureService {
         child: Directionality(textDirection: TextDirection.ltr, child: child),
       ).attachToRenderTree(buildOwner);
 
-      buildOwner
-        ..buildScope(rootElement)
-        ..finalizeTree();
+      var settled = false;
+      var stablePasses = 0;
+      for (var pass = 0; pass < _kMaxRenderPasses; pass++) {
+        isDirty = false;
 
-      pipelineOwner
-        ..flushLayout()
-        ..flushCompositingBits()
-        ..flushPaint();
+        buildOwner
+          ..buildScope(rootElement)
+          ..finalizeTree();
+
+        pipelineOwner
+          ..flushLayout()
+          ..flushCompositingBits()
+          ..flushPaint();
+
+        await Future<void>.delayed(_kRenderSettleDelay);
+
+        if (isDirty) {
+          stablePasses = 0;
+          continue;
+        }
+
+        stablePasses++;
+        if (stablePasses >= _kRequiredStablePasses) {
+          settled = true;
+          break;
+        }
+      }
+
+      if (!settled) {
+        log(
+          'Slide capture reached the settle limit. Capturing the last rendered frame.',
+        );
+      }
 
       final image = await repaintBoundary.toImage(
         pixelRatio: config.pixelRatio,

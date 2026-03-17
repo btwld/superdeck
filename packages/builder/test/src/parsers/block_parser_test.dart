@@ -472,7 +472,7 @@ More content
       expect(blocks[1].data['flex'], 2);
     });
 
-    test('rejects legacy @column directives', () {
+    test('rejects unsupported @column directives', () {
       const text = '@column{flex: 1}';
 
       expect(

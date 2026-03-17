@@ -7,14 +7,29 @@ import 'package:superdeck_core/superdeck_core.dart';
 import 'package:web/web.dart' as web;
 
 class RuntimeAssetCacheStore implements AssetCacheStore {
-  static const _dbName = 'superdeck_asset_cache';
+  static const _dbNamePrefix = 'superdeck_asset_cache';
   static const _storeName = 'assets';
   static const _dbVersion = 1;
 
+  final String _dbName;
   final Map<String, Uint8List> _cache = {};
   Future<web.IDBDatabase?>? _dbFuture;
 
-  RuntimeAssetCacheStore({DeckWorkspace? workspace});
+  RuntimeAssetCacheStore({DeckWorkspace? workspace})
+    : _dbName = _buildDbName(workspace ?? DeckWorkspace());
+
+  static String _buildDbName(DeckWorkspace workspace) {
+    final workspacePath = p.posix.normalize(
+      workspace.superdeckDir.path.replaceAll('\\', '/'),
+    );
+    final basePath = p.posix.normalize(
+      Uri.base.removeFragment().path.isEmpty
+          ? '/'
+          : Uri.base.removeFragment().path,
+    );
+    final scope = generateValueHash('$workspacePath::$basePath');
+    return '${_dbNamePrefix}_$scope';
+  }
 
   /// Opens the IndexedDB database, reusing a cached future on success.
   /// On failure, clears the cached future so the next call retries.

@@ -404,7 +404,7 @@ final template = SlideTemplate(
 - [ ] File: `packages/superdeck/test/deck/slide_configuration_builder_test.dart`
 - [ ] Test builder with templates
 - [ ] Test builder with defaultTemplate
-- [ ] Test builder without templates (backward compatibility)
+- [ ] Test builder without templates
 - [ ] Test parts resolution from template
 
 **3.4 Update Existing Tests**
@@ -435,7 +435,7 @@ final template = SlideTemplate(
 - [ ] File: `demo/slides.md`
 - [ ] Add slides using different templates
 - [ ] Show template + style combinations
-- [ ] Show slide without template (backward compatibility)
+- [ ] Show slide without template
 
 **4.4 Update Documentation**
 - [ ] This file: Complete implementation details
@@ -462,7 +462,7 @@ final template = SlideTemplate(
 - [ ] Test template with custom header/footer
 - [ ] Test defaultTemplate behavior
 - [ ] Test error messages (unknown template, unknown style)
-- [ ] Test backward compatibility (slides without templates)
+- [ ] Test slides without templates
 
 **5.3 Performance Check**
 - [ ] Verify build time is not impacted
@@ -666,15 +666,15 @@ Available styles: announcement, quote, emphasis
 
 ---
 
-## Backward Compatibility
+## Behavior Without Templates
 
 ### Existing Slides Without Templates
-- **Status:** ✅ Fully compatible, no changes required
+- **Status:** ✅ Unchanged
 - **Behavior:** Render exactly as before using deck-level styles and parts
 
 ### Existing Code Using SlideOptions
-- **Status:** ✅ Compatible, `template` field is optional
-- **Migration:** None required, existing code continues to work
+- **Status:** ✅ `template` remains optional
+- **Behavior:** Existing code continues to work without setting `template`
 
 ### Existing Style System
 - **Status:** ✅ Unchanged, deck-level styles work as before
@@ -724,7 +724,7 @@ Available styles: announcement, quote, emphasis
 
 ## Success Criteria
 
-- [ ] All existing tests pass (backward compatibility verified)
+- [ ] All existing tests pass
 - [ ] New tests cover all resolution paths and error cases
 - [ ] Demo app showcases 3+ different templates
 - [ ] Error messages are clear and actionable

@@ -69,25 +69,53 @@ void main() {
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
-      await Future<void>.delayed(const Duration(milliseconds: 80));
+      await _waitForEvent<SlidesLoadingEvent>(events);
 
-      expect(events, hasLength(1));
       expect(events.first, isA<SlidesLoadingEvent>());
     });
 
-    test('does not load slides at startup without success status', () async {
-      await config.superdeckDir.create(recursive: true);
-      await config.deckJson.writeAsString(_validSlidesJson);
+    test(
+      'emits missing build output error when .superdeck/ is absent',
+      () async {
+        final events = <SlidesEvent>[];
+        final subscription = deckLoader.load().listen(events.add);
+        addTearDown(subscription.cancel);
 
-      final events = <SlidesEvent>[];
-      final subscription = deckLoader.load().listen(events.add);
-      addTearDown(subscription.cancel);
+        await _waitForEvent<SlidesErrorEvent>(
+          events,
+          where: (event) => event.message == missingBuildOutputMessage,
+        );
 
-      await Future<void>.delayed(const Duration(milliseconds: 120));
+        final missingOutputError = events.whereType<SlidesErrorEvent>().last;
+        expect(events.first, isA<SlidesLoadingEvent>());
+        expect(missingOutputError.message, missingBuildOutputMessage);
+        expect(missingOutputError.error, isNull);
+      },
+    );
 
-      expect(events.first, isA<SlidesLoadingEvent>());
-      expect(events.whereType<SlidesLoadedEvent>(), isEmpty);
-    });
+    test(
+      'emits missing build output error when status file is absent',
+      () async {
+        await config.superdeckDir.create(recursive: true);
+        await config.deckJson.writeAsString(_validSlidesJson);
+
+        final events = <SlidesEvent>[];
+        final subscription = deckLoader.load().listen(events.add);
+        addTearDown(subscription.cancel);
+
+        await _waitForEvent<SlidesErrorEvent>(
+          events,
+          where: (event) => event.message == missingBuildOutputMessage,
+        );
+
+        expect(events.first, isA<SlidesLoadingEvent>());
+        expect(
+          events.whereType<SlidesErrorEvent>().last.message,
+          missingBuildOutputMessage,
+        );
+        expect(events.whereType<SlidesLoadedEvent>(), isEmpty);
+      },
+    );
 
     test('processes existing startup success status', () async {
       await config.superdeckDir.create(recursive: true);
@@ -264,6 +292,10 @@ void main() {
 
         await _waitForEvent<SlidesLoadingEvent>(events);
         expect(events.whereType<SlidesLoadingEvent>(), hasLength(1));
+        await _waitForEvent<SlidesErrorEvent>(
+          events,
+          where: (event) => event.message == missingBuildOutputMessage,
+        );
 
         await deckLoader.reload();
 
@@ -401,5 +433,29 @@ void main() {
       final errorIdx = events.indexWhere((e) => e is SlidesErrorEvent);
       expect(loadingIdx, lessThan(errorIdx));
     });
+
+    test(
+      'recovers from missing build output once success status appears',
+      () async {
+        final events = <SlidesEvent>[];
+        final sub = deckLoader.load().listen(events.add);
+        addTearDown(sub.cancel);
+
+        await _waitForEvent<SlidesErrorEvent>(
+          events,
+          where: (event) => event.message == missingBuildOutputMessage,
+        );
+
+        await config.superdeckDir.create(recursive: true);
+        await config.deckJson.writeAsString(_validSlidesJson);
+        await config.buildStatusJson.writeAsString(
+          _buildStatusJson('success', seq: 4),
+        );
+
+        await _waitForEvent<SlidesLoadedEvent>(events);
+
+        expect(events.whereType<SlidesLoadedEvent>(), hasLength(1));
+      },
+    );
   });
 }

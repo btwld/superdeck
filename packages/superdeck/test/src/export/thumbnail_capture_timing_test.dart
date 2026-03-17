@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
@@ -26,6 +28,57 @@ class _InMemoryCacheStore implements AssetCacheStore {
   }
 }
 
+class _DelayedWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
+  final Duration delay;
+  final Completer<void> settled;
+
+  const _DelayedWidgetDefinition({required this.delay, required this.settled});
+
+  @override
+  Map<String, Object?> parse(Map<String, Object?> args) => args;
+
+  @override
+  Widget build(BuildContext context, Map<String, Object?> args) {
+    return _DelayedWidget(delay: delay, settled: settled);
+  }
+}
+
+class _DelayedWidget extends StatefulWidget {
+  final Duration delay;
+  final Completer<void> settled;
+
+  const _DelayedWidget({required this.delay, required this.settled});
+
+  @override
+  State<_DelayedWidget> createState() => _DelayedWidgetState();
+}
+
+class _DelayedWidgetState extends State<_DelayedWidget> {
+  late final Future<void> _future = Future<void>.delayed(widget.delay).then((
+    _,
+  ) {
+    if (!widget.settled.isCompleted) {
+      widget.settled.complete();
+    }
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _future,
+      builder: (context, snapshot) {
+        return Center(
+          child: Text(
+            snapshot.connectionState == ConnectionState.done
+                ? 'Delayed widget settled'
+                : 'Waiting for delayed widget',
+          ),
+        );
+      },
+    );
+  }
+}
+
 SlideConfiguration _slide(String key, String content) {
   return SlideConfiguration(
     slideIndex: 0,
@@ -40,18 +93,58 @@ SlideConfiguration _slide(String key, String content) {
   );
 }
 
+SlideConfiguration _delayedSlide({
+  required Duration delay,
+  required Completer<void> settled,
+}) {
+  return SlideConfiguration(
+    slideIndex: 0,
+    style: SlideStyle(),
+    slide: Slide(
+      key: 'delayed',
+      sections: [
+        SectionBlock([WidgetBlock(name: 'delayed', args: const {})]),
+      ],
+    ),
+    widgets: {
+      'delayed': _DelayedWidgetDefinition(delay: delay, settled: settled),
+    },
+    thumbnailKey: 'thumbnail_delayed.png',
+  );
+}
+
 Future<BuildContext> _pumpContext(WidgetTester tester) async {
   final key = GlobalKey();
-  await tester.pumpWidget(
-    MaterialApp(
-      home: SizedBox(key: key),
-    ),
-  );
+  await tester.pumpWidget(MaterialApp(home: SizedBox(key: key)));
   return key.currentContext!;
 }
 
 void main() {
   group('Thumbnail capture timing', () {
+    testWidgets('waits for delayed widget content before capture completes', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final settled = Completer<void>();
+      final slide = _delayedSlide(
+        delay: const Duration(milliseconds: 40),
+        settled: settled,
+      );
+
+      await tester.runAsync(() async {
+        final stopwatch = Stopwatch()..start();
+        final bytes = await SlideCaptureService().capture(
+          slide: slide,
+          context: context,
+        );
+        stopwatch.stop();
+
+        expect(bytes, isNotEmpty);
+        expect(settled.isCompleted, isTrue);
+        expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(40));
+      });
+    });
+
     testWidgets('measures real capture and cache times', (tester) async {
       final context = await _pumpContext(tester);
       final cacheStore = _InMemoryCacheStore();
@@ -137,8 +230,9 @@ void main() {
       });
     });
 
-    testWidgets('measures concurrent batch generation (20 slides)',
-        (tester) async {
+    testWidgets('measures concurrent batch generation (20 slides)', (
+      tester,
+    ) async {
       final context = await _pumpContext(tester);
       final cacheStore = _InMemoryCacheStore();
       final service = ThumbnailService(
@@ -194,11 +288,15 @@ void main() {
         // ignore: avoid_print
         print('\n=== Concurrent Batch Timing (${slides.length} slides) ===');
         // ignore: avoid_print
-        print('Generate all: ${batchMs}ms  (${(batchMs / slides.length).toStringAsFixed(0)}ms/slide wall-clock)');
+        print(
+          'Generate all: ${batchMs}ms  (${(batchMs / slides.length).toStringAsFixed(0)}ms/slide wall-clock)',
+        );
         // ignore: avoid_print
         print('Cache hit all: ${hitMs}ms');
         // ignore: avoid_print
-        print('Force regen all: ${forceMs}ms  (${(forceMs / slides.length).toStringAsFixed(0)}ms/slide wall-clock)');
+        print(
+          'Force regen all: ${forceMs}ms  (${(forceMs / slides.length).toStringAsFixed(0)}ms/slide wall-clock)',
+        );
         // ignore: avoid_print
         print('=============================================\n');
 

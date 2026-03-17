@@ -170,3 +170,4 @@ class _DeckWorkspaceCopyWithImpl<$R, $Out>
     Then<$Out2, $R2> t,
   ) => _DeckWorkspaceCopyWithImpl<$R2, $Out2>($value, $cast, t);
 }
+

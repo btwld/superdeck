@@ -471,7 +471,7 @@ void main() {
           expect(result.isOk, isTrue);
         });
 
-        test('rejects legacy column type', () {
+        test('rejects unsupported column type', () {
           final result = ContentBlock.schema.safeParse({
             'type': 'column',
             'content': 'Content',
@@ -854,7 +854,7 @@ void main() {
           expect((block as ContentBlock).content, 'Test');
         });
 
-        test('rejects legacy column type', () {
+        test('rejects unsupported column type', () {
           final map = {'type': 'column', 'content': 'Test'};
 
           expect(() => Block.fromMap(map), throwsA(anything));
@@ -889,7 +889,7 @@ void main() {
           expect(block, isA<ContentBlock>());
         });
 
-        test('rejects legacy column type', () {
+        test('rejects unsupported column type', () {
           final map = {'type': 'column', 'content': 'Parsed'};
 
           expect(() => Block.parse(map), throwsA(anything));

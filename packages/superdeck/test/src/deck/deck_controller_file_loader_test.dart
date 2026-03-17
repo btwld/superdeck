@@ -37,14 +37,6 @@ void main() {
       );
       config = DeckWorkspace(projectDir: tempDir.path);
       loader = FileDeckLoader(workspace: config);
-      controller = DeckController(
-        deckLoader: loader,
-        options: const DeckOptions(),
-      );
-
-      addTearDown(() async {
-        controller.dispose();
-      });
       addTearDown(() async {
         if (await tempDir.exists()) {
           await tempDir.delete(recursive: true);
@@ -52,27 +44,36 @@ void main() {
       });
     });
 
-    test(
-      'reloadDeck() succeeds after initial load with no .superdeck/',
-      () async {
-        // Controller starts with load(), which waits for .superdeck/ dir.
-        // It should be in loading state.
-        await _waitUntil(() => controller.isLoading.value);
-        expect(controller.isLoading.value, isTrue);
-        expect(controller.hasError.value, isFalse);
+    DeckController createController() {
+      controller = DeckController(
+        deckLoader: loader,
+        options: const DeckOptions(),
+      );
+      addTearDown(controller.dispose);
+      return controller;
+    }
 
-        // Reload while still waiting — this replaces the active cycle.
+    test(
+      'surfaces missing build output at startup and clears on reload',
+      () async {
+        createController();
+
+        await _waitUntil(() => controller.hasError.value);
+        expect(controller.isLoading.value, isFalse);
+        expect(controller.hasError.value, isTrue);
+        expect(controller.error.value, missingBuildOutputMessage);
+
         await controller.reloadDeck();
 
-        // Now create the output directory and files.
         await config.superdeckDir.create(recursive: true);
         await config.deckJson.writeAsString(_validSlidesJson);
         await config.buildStatusJson.writeAsString(
           _buildStatusJson('success', seq: 1),
         );
 
-        // Controller should reach a loaded, non-error state.
-        await _waitUntil(() => !controller.isLoading.value);
+        await _waitUntil(
+          () => !controller.isLoading.value && !controller.hasError.value,
+        );
 
         expect(controller.isLoading.value, isFalse);
         expect(controller.hasError.value, isFalse);
@@ -80,23 +81,45 @@ void main() {
       },
     );
 
-    test('reloadDeck() does not surface a fatal loader-stream error', () async {
-      // Create files for an initial successful load.
+    test(
+      'clears startup error automatically when build output appears',
+      () async {
+        createController();
+
+        await _waitUntil(() => controller.hasError.value);
+        expect(controller.error.value, missingBuildOutputMessage);
+
+        await config.superdeckDir.create(recursive: true);
+        await config.deckJson.writeAsString(_validSlidesJson);
+        await config.buildStatusJson.writeAsString(
+          _buildStatusJson('success', seq: 2),
+        );
+
+        await _waitUntil(
+          () => !controller.isLoading.value && !controller.hasError.value,
+        );
+
+        expect(controller.isLoading.value, isFalse);
+        expect(controller.hasError.value, isFalse);
+        expect(controller.error.value, isNull);
+      },
+    );
+
+    test('reloadDeck() stays healthy after a prior successful load', () async {
       await config.superdeckDir.create(recursive: true);
       await config.deckJson.writeAsString(_validSlidesJson);
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 0),
       );
 
+      createController();
+
       await _waitUntil(() => !controller.isLoading.value);
       expect(controller.hasError.value, isFalse);
 
-      // Reload.
       await controller.reloadDeck();
-
-      // Write a new success status.
       await config.buildStatusJson.writeAsString(
-        _buildStatusJson('success', seq: 2),
+        _buildStatusJson('success', seq: 3),
       );
 
       await _waitUntil(() => !controller.isLoading.value);

@@ -256,6 +256,10 @@ Built with SuperDeck
   @override
   Future<int> run() async {
     try {
+      if (!ensureNoUnsupportedWorkspaceConfig()) {
+        return ExitCode.data.code;
+      }
+
       final deckWorkspace = DeckWorkspace();
 
       int successCount = 0;
