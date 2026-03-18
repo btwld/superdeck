@@ -92,10 +92,6 @@ class TestApp extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Live-reload test helpers
-// ---------------------------------------------------------------------------
-
 /// Builds a minimal [Slide] with a single content block.
 Slide makeSlide(String key, String content) {
   return Slide(
@@ -137,12 +133,9 @@ Future<void> simulateBuildFailure(
   int seq,
 ) async {
   await ws.superdeckDir.create(recursive: true);
+  final errorMap = {'type': 'BuildFailure', 'message': message};
   await ws.buildStatusJson.writeAsString(
-    _statusJson(
-      'failure',
-      seq,
-      errorJson: '{"type":"BuildFailure","message":"$message"}',
-    ),
+    _statusJson('failure', seq, errorJson: jsonEncode(errorMap)),
   );
 }
 

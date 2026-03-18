@@ -13,18 +13,20 @@ void main() {
     late Directory tempDir;
     late DeckWorkspace workspace;
     late FileDeckLoader loader;
+    var loaderCreated = false;
 
     setUpAll(() async {
       await TestApp.initialize();
     });
 
     setUp(() async {
+      loaderCreated = false;
       tempDir = await Directory.systemTemp.createTemp('sd_reload_test_');
       workspace = DeckWorkspace(projectDir: tempDir.path);
     });
 
     tearDown(() async {
-      await loader.dispose();
+      if (loaderCreated) await loader.dispose();
       if (await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
@@ -34,6 +36,7 @@ void main() {
       final initialSlides = [makeSlide('s1', '# Initial')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
       loader = FileDeckLoader(workspace: workspace);
+      loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
       expect(controller.totalSlides.value, 1);
@@ -46,6 +49,15 @@ void main() {
       );
 
       expect(find.textContaining('Rebuilding'), findsOneWidget);
+
+      // Verify overlay disappears after successful rebuild
+      await simulateBuildSuccess(workspace, initialSlides, 3);
+      await tester.pumpUntil(
+        () => !controller.isBuildActive.value,
+        debugLabel: 'isBuildActive to clear after success',
+        onTimeout: () => describeDeckControllerState(controller),
+      );
+      expect(find.textContaining('Rebuilding'), findsNothing);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
 
@@ -55,6 +67,7 @@ void main() {
       final initialSlides = [makeSlide('s1', '# Working')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
       loader = FileDeckLoader(workspace: workspace);
+      loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
       expect(controller.totalSlides.value, 1);
@@ -80,6 +93,7 @@ void main() {
       final initialSlides = [makeSlide('s1', '# Working')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
       loader = FileDeckLoader(workspace: workspace);
+      loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
 
@@ -110,6 +124,7 @@ void main() {
       final initialSlides = [makeSlide('s1', '# Slide One')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
       loader = FileDeckLoader(workspace: workspace);
+      loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
       expect(controller.totalSlides.value, 1);
@@ -150,6 +165,7 @@ void main() {
       ];
       await simulateBuildSuccess(workspace, initialSlides, 1);
       loader = FileDeckLoader(workspace: workspace);
+      loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
       expect(controller.totalSlides.value, 3);
@@ -179,11 +195,7 @@ void main() {
       );
       await tester.pumpFor(const Duration(milliseconds: 200));
 
-      expect(
-        controller.currentIndex.value,
-        lessThanOrEqualTo(1),
-        reason: 'Index should clamp to last valid slide',
-      );
+      expect(controller.currentIndex.value, 1);
       expect(find.textContaining('2 of 2'), findsOneWidget);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
@@ -194,6 +206,7 @@ void main() {
       final slides1 = [makeSlide('s1', '# Version 1')];
       await simulateBuildSuccess(workspace, slides1, 1);
       loader = FileDeckLoader(workspace: workspace);
+      loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
       expect(controller.totalSlides.value, 1);
