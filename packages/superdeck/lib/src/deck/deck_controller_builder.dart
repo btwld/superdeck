@@ -1,23 +1,24 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../ui/widgets/provider.dart';
-import '../utils/constants.dart';
-import 'deck_loader.dart';
 import 'deck_controller.dart';
 import 'deck_options.dart';
 
-/// Builder widget that creates and manages the DeckController
+/// Builder widget that creates and manages the DeckController.
 ///
-/// Provides the DeckController via InheritedData and manages its lifecycle
-/// including optional runtime build-status watching in debug IO runtimes.
+/// Provides the DeckController via InheritedData and manages its lifecycle.
+/// The [deckLoader] is immutable after mount — only read in [initState].
 class DeckControllerBuilder extends StatefulWidget {
   final DeckOptions options;
+  final DeckLoader deckLoader;
   final Widget Function(BuildContext context, GoRouter router) builder;
 
   const DeckControllerBuilder({
     super.key,
     required this.options,
+    required this.deckLoader,
     required this.builder,
   });
 
@@ -32,10 +33,8 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   void initState() {
     super.initState();
 
-    final deckLoader = kCanRunProcess ? FileDeckLoader() : BundledDeckLoader();
-
     _deckController = DeckController(
-      deckLoader: deckLoader,
+      deckLoader: widget.deckLoader,
       options: widget.options,
     );
   }

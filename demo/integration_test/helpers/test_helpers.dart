@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -53,7 +54,9 @@ int clampSlideIndex(DeckController controller, int target) {
 
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
-  const TestApp({super.key});
+  const TestApp({super.key, this.deckLoader});
+
+  final DeckLoader? deckLoader;
 
   static bool _initialized = false;
 
@@ -70,6 +73,7 @@ class TestApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SuperDeckApp(
+      deckLoader: deckLoader,
       options: DeckOptions(
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
@@ -86,6 +90,66 @@ class TestApp extends StatelessWidget {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Live-reload test helpers
+// ---------------------------------------------------------------------------
+
+/// Builds a minimal [Slide] with a single content block.
+Slide makeSlide(String key, String content) {
+  return Slide(
+    key: key,
+    sections: [SectionBlock([ContentBlock(content)])],
+  );
+}
+
+/// Serializes slides to a JSON string suitable for `superdeck.json`.
+String buildSlideJson(List<Slide> slides) {
+  return jsonEncode(slides.map((s) => s.toMap()).toList());
+}
+
+String _statusJson(String status, int seq, {String? errorJson}) {
+  final ts = '2026-03-10T10:00:${seq.toString().padLeft(2, '0')}.000Z';
+  final buf = StringBuffer('{"status":"$status","timestamp":"$ts"');
+  if (errorJson != null) {
+    buf.write(',"error":$errorJson');
+  }
+  buf.write('}');
+  return buf.toString();
+}
+
+/// Writes `superdeck.json` then `build_status.json` with `success` status.
+Future<void> simulateBuildSuccess(
+  DeckWorkspace ws,
+  List<Slide> slides,
+  int seq,
+) async {
+  await ws.superdeckDir.create(recursive: true);
+  await ws.deckJson.writeAsString(buildSlideJson(slides));
+  await ws.buildStatusJson.writeAsString(_statusJson('success', seq));
+}
+
+/// Writes `build_status.json` with `failure` status and an error message.
+Future<void> simulateBuildFailure(
+  DeckWorkspace ws,
+  String message,
+  int seq,
+) async {
+  await ws.superdeckDir.create(recursive: true);
+  await ws.buildStatusJson.writeAsString(
+    _statusJson(
+      'failure',
+      seq,
+      errorJson: '{"type":"BuildFailure","message":"$message"}',
+    ),
+  );
+}
+
+/// Writes `build_status.json` with `building` status.
+Future<void> simulateBuilding(DeckWorkspace ws, int seq) async {
+  await ws.superdeckDir.create(recursive: true);
+  await ws.buildStatusJson.writeAsString(_statusJson('building', seq));
 }
 
 /// Finds the DeckController from the widget tree.
@@ -141,6 +205,23 @@ extension IntegrationTestExtensions on WidgetTester {
       'Timed out waiting for $debugLabel after ${timeout.inSeconds}s\n'
       'Diagnostics:\n$diagnostics',
     );
+  }
+
+  /// Pumps a [TestApp] with the given [DeckLoader], waits for slides to load.
+  Future<DeckController> pumpTestAppWithLoader(DeckLoader loader) async {
+    await pumpWidget(TestApp(deckLoader: loader));
+    await pumpFor(const Duration(milliseconds: 200));
+
+    await pumpUntil(
+      () => findDeckController(this) != null,
+      timeout: const Duration(seconds: 15),
+      debugLabel: 'DeckController to mount (with loader)',
+      onTimeout: () => _startupDiagnostics(),
+    );
+
+    final controller = findDeckController(this)!;
+    await waitForSlidesLoaded(controller);
+    return controller;
   }
 
   /// Pumps the test app, waits for it to fully load, and returns the controller.
