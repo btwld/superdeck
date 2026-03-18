@@ -370,6 +370,29 @@ not closed''';
         expect(tokens, hasLength(1));
         expect(tokens[0].name, 'before');
       });
+
+      test('tilde code block at end without closing is handled', () {
+        final result = tokenizer.tokenize(
+          '~~~\n@ignored\n',
+        );
+        expect(result, isEmpty);
+      });
+
+      test('ignores tags inside tilde code blocks', () {
+        final result = tokenizer.tokenize(
+          '~~~\n@ignored { key: value }\n~~~\n@visible { key: value }',
+        );
+        expect(result, hasLength(1));
+        expect(result.first.name, 'visible');
+      });
+
+      test('ignores tags inside tilde code blocks with language', () {
+        final result = tokenizer.tokenize(
+          '~~~dart\n@ignored\n~~~\n@visible',
+        );
+        expect(result, hasLength(1));
+        expect(result.first.name, 'visible');
+      });
     });
 
     group('error handling', () {

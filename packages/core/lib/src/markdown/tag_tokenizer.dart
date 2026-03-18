@@ -28,16 +28,27 @@ class TagTokenizer {
 
   static final _tagPattern = RegExp(r'^\s*@([\w-]+)', multiLine: true);
   static final _codeBlockPattern = RegExp(
-    r'^```.*?^```',
+    r'^(`{3,}|~{3,}).*?^\1',
     multiLine: true,
     dotAll: true,
   );
+  static final _fenceOpenPattern = RegExp(r'^(`{3,}|~{3,})', multiLine: true);
 
   List<TagToken> tokenize(String text) {
-    // Find all code block ranges to exclude from tag matching
+    // Find all closed code block ranges to exclude from tag matching.
     final codeBlockRanges = <_Range>[];
     for (final match in _codeBlockPattern.allMatches(text)) {
       codeBlockRanges.add(_Range(match.start, match.end));
+    }
+
+    // Also protect unclosed fences: any fence open not covered by a closed
+    // range extends to the end of the document.
+    for (final match in _fenceOpenPattern.allMatches(text)) {
+      if (!_isInsideCodeBlock(match.start, codeBlockRanges)) {
+        codeBlockRanges.add(_Range(match.start, text.length));
+        // Only the first unclosed fence matters; subsequent ones are inside it.
+        break;
+      }
     }
 
     final tokens = <TagToken>[];
