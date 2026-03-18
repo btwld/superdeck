@@ -241,10 +241,13 @@ class BuildCommand extends SuperDeckCommand {
 
       // Run the build process initially
       final repository = store;
-      final success = await _runBuild(repository, deckWorkspace);
 
-      if (!success && !boolArg('watch')) {
-        return ExitCode.software.code;
+      if (!boolArg('watch')) {
+        final success = await _runBuild(repository, deckWorkspace);
+
+        if (!success) {
+          return ExitCode.software.code;
+        }
       }
 
       // Watch mode
