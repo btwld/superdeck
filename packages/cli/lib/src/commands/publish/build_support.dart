@@ -30,21 +30,26 @@ Future<String?> setupCustomIndexHtml(
   required String repoDir,
   required String exampleDir,
   required bool isDryRun,
+  Future<void> Function(File file, String content)? writeFile,
 }) async {
   final progress = logger.progress('Setting up custom index.html');
   String? backupPath;
+  final writeIndexHtml =
+      writeFile ??
+      (File file, String content) => file.writeAsString(content);
   try {
     if (!isDryRun) {
       final webDir = path.join(repoDir, exampleDir, 'web');
       final indexHtmlPath = path.join(webDir, 'index.html');
+      final indexHtmlFile = File(indexHtmlPath);
 
-      if (File(indexHtmlPath).existsSync()) {
+      if (indexHtmlFile.existsSync()) {
         backupPath = path.join(webDir, 'index.html.bak');
-        await File(indexHtmlPath).copy(backupPath);
+        await indexHtmlFile.copy(backupPath);
         logger.detail('Created backup of original index.html');
       }
 
-      await File(indexHtmlPath).writeAsString(customIndexHtml);
+      await writeIndexHtml(indexHtmlFile, customIndexHtml);
       logger.info('Created custom index.html with loading indicator');
     } else {
       logger.info('Would replace index.html with custom template');
@@ -55,7 +60,33 @@ Future<String?> setupCustomIndexHtml(
   } catch (e) {
     progress.fail('Failed to set up custom index.html');
     logger.err('Error setting up custom index.html: $e');
+    await restoreIndexHtmlBackup(logger, backupPath);
     rethrow;
+  }
+}
+
+/// Applies the custom build-time index.html template and always restores
+/// the original backup after [action] completes.
+Future<T> withTemporaryCustomIndexHtml<T>(
+  Logger logger, {
+  required String repoDir,
+  required String exampleDir,
+  required bool isDryRun,
+  required Future<T> Function() action,
+  Future<void> Function(File file, String content)? writeFile,
+}) async {
+  final backupPath = await setupCustomIndexHtml(
+    logger,
+    repoDir: repoDir,
+    exampleDir: exampleDir,
+    isDryRun: isDryRun,
+    writeFile: writeFile,
+  );
+
+  try {
+    return await action();
+  } finally {
+    await restoreIndexHtmlBackup(logger, backupPath);
   }
 }
 

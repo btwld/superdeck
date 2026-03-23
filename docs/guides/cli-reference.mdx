@@ -28,7 +28,7 @@ These options work with all commands:
 
 ### `superdeck setup`
 
-Initialize SuperDeck in a Flutter project. Creates a sample `slides.md` file, updates `pubspec.yaml` with asset configuration, sets up macOS entitlements for network access, and configures a custom `index.html` for web.
+Initialize SuperDeck in a Flutter project. Creates a sample `slides.md` file, updates `pubspec.yaml` with asset configuration, and configures a custom `web/index.html` for web.
 
 ```bash
 superdeck setup
@@ -145,19 +145,6 @@ flutter:
     - .superdeck/
     - .superdeck/assets/
 ```
-
-### macOS entitlements
-
-For macOS projects, `superdeck setup` updates `macos/Runner/Release.entitlements` and `macos/Runner/DebugProfile.entitlements` to allow network access (required for remote images and DartPad):
-
-```xml
-<key>com.apple.security.app-sandbox</key>
-<false/>
-<key>com.apple.security.network.client</key>
-<true/>
-```
-
-In debug builds, it also enables `com.apple.security.network.server` and `com.apple.security.cs.allow-jit`.
 
 ## Common workflows
 

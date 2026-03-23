@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:superdeck_builder/src/assets/mermaid_generator.dart';
 import 'package:test/test.dart';
 
@@ -152,6 +154,45 @@ void main() {
         // Verify default configuration has theme settings
         expect(generator.configuration['theme'], equals('base'));
         expect(generator.configuration['themeVariables'], isNotEmpty);
+      });
+
+      test('partial configuration retains default dark theme settings', () {
+        final generator = MermaidGenerator(
+          configuration: const {
+            'themeVariables': {'primaryColor': '#ff00ff'},
+          },
+        );
+
+        final themeVariables = Map<String, Object?>.from(
+          generator.configuration['themeVariables']! as Map,
+        );
+
+        expect(generator.configuration['theme'], equals('base'));
+        expect(generator.configuration['themeCSS'], contains('font-family'));
+        expect(themeVariables['primaryColor'], equals('#ff00ff'));
+        expect(themeVariables['darkMode'], equals(true));
+      });
+
+      test('HTML payload encodes theme strings as JS-safe literals', () {
+        const theme = 'ba"se';
+        const look = 'classic\'; window.__broken = true; \'';
+        const securityLevel = 'strict"\nwindow.__broken = true;';
+        final generator = MermaidGenerator(
+          configuration: const {
+            'theme': theme,
+            'look': look,
+            'securityLevel': securityLevel,
+          },
+        );
+
+        final html = generator.buildHtmlContentForTesting('graph TD; A-->B');
+
+        expect(html, contains('const theme          = ${jsonEncode(theme)};'));
+        expect(html, contains('const look           = ${jsonEncode(look)};'));
+        expect(
+          html,
+          contains('const securityLevel  = ${jsonEncode(securityLevel)};'),
+        );
       });
     });
 

@@ -76,7 +76,19 @@ class FileDeckLoader extends DeckLoader {
 
     try {
       final decoded = jsonDecode(await _statusFile.readAsString());
-      if (decoded is! Map) return;
+      if (decoded is! Map) {
+        _emit(
+          SlidesErrorEvent(
+            'Build status error',
+            error: Exception(
+              'Expected JSON object in ${_statusFile.path}, '
+              'got ${decoded.runtimeType}',
+            ),
+          ),
+          cancel,
+        );
+        return;
+      }
       final status = DeckBuildStatus.fromMap(
         Map<String, dynamic>.from(decoded),
       );

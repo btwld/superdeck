@@ -55,7 +55,7 @@ class BuildCommand extends SuperDeckCommand {
   bool _isRunning = false;
 
   /// Creates a new [BuildCommand].
-  BuildCommand() {
+  BuildCommand({super.loggerOverride}) {
     argParser
       ..addFlag(
         'watch',
@@ -78,16 +78,16 @@ class BuildCommand extends SuperDeckCommand {
 
   void _logBuildFailure(Object error, [StackTrace? stackTrace]) {
     if (error is DeckFormatException) {
-      logger.formatError(error);
+      this.logger.formatError(error);
     } else {
-      logger.err('${error.runtimeType}: $error');
+      this.logger.err('${error.runtimeType}: $error');
     }
 
     if (stackTrace != null) {
       final trace = stackTrace.toString().trim();
       if (trace.isNotEmpty) {
-        logger.err('Stack trace:');
-        logger.err(trace);
+        this.logger.err('Stack trace:');
+        this.logger.err(trace);
       }
     }
   }
@@ -100,7 +100,7 @@ class BuildCommand extends SuperDeckCommand {
 
     if (await workspace.assetsRefJson.exists()) {
       await workspace.assetsRefJson.delete();
-      logger.detail('Deleted generated_assets.json');
+      this.logger.detail('Deleted generated_assets.json');
     }
   }
 
@@ -113,7 +113,7 @@ class BuildCommand extends SuperDeckCommand {
     DeckWorkspace workspace, {
     DeckBuilder? builder,
   }) async {
-    logger.info('Force rebuild: Clearing all generated assets...');
+    this.logger.info('Force rebuild: Clearing all generated assets...');
 
     await _clearGeneratedAssets(workspace);
 
@@ -136,7 +136,7 @@ class BuildCommand extends SuperDeckCommand {
     }
 
     _isRunning = true;
-    final progress = logger.progress('Generating slides...');
+    final progress = this.logger.progress('Generating slides...');
 
     // Track if we created the builder (and thus need to dispose it)
     final ownsBuilder = builder == null;
@@ -148,7 +148,7 @@ class BuildCommand extends SuperDeckCommand {
 
       if (slides.isEmpty) {
         progress.update('No slides found.');
-        logger.warn(
+        this.logger.warn(
           'No slides found in ${workspace.slidesFile.path}. Make sure it exists '
           'and has proper content.',
         );
@@ -162,8 +162,8 @@ class BuildCommand extends SuperDeckCommand {
       return true;
     } on FileSystemException catch (e) {
       progress.fail('Build failed');
-      logger.err('File system error: ${e.message}');
-      logger.err('Path: ${e.path ?? 'Unknown'}');
+      this.logger.err('File system error: ${e.message}');
+      this.logger.err('Path: ${e.path ?? 'Unknown'}');
       await store.saveBuildStatus(
         phase: DeckBuildPhase.failure,
         error: e,
@@ -173,7 +173,7 @@ class BuildCommand extends SuperDeckCommand {
       return false;
     } on FormatException catch (e) {
       progress.fail('Format error');
-      logger.err(e.message);
+      this.logger.err(e.message);
       await store.saveBuildStatus(
         phase: DeckBuildPhase.failure,
         error: e,
@@ -212,8 +212,10 @@ class BuildCommand extends SuperDeckCommand {
 
       // Check if slides file exists
       if (!await deckWorkspace.slidesFile.exists()) {
-        logger.err('Slides file not found: ${deckWorkspace.slidesFile.path}');
-        logger.info(
+        this.logger.err(
+          'Slides file not found: ${deckWorkspace.slidesFile.path}',
+        );
+        this.logger.info(
           'Run `superdeck setup` to create a sample slides file, or create your own.',
         );
 
@@ -226,16 +228,18 @@ class BuildCommand extends SuperDeckCommand {
 
       // Log if force rebuild is enabled
       if (boolArg('force-rebuild')) {
-        logger.info('Force rebuild enabled. All assets will be regenerated.');
+        this.logger.info(
+          'Force rebuild enabled. All assets will be regenerated.',
+        );
         await _clearGeneratedAssets(deckWorkspace);
       }
 
       // Update pubspec assets unless skipped
       if (!boolArg('skip-pubspec')) {
         try {
-          await _ensurePubspecAssets(deckWorkspace);
+          await _ensurePubspecAssets(deckWorkspace, this.logger);
         } catch (e) {
-          logger.warn('Failed to update pubspec assets: $e');
+          this.logger.warn('Failed to update pubspec assets: $e');
         }
       }
 
@@ -252,18 +256,18 @@ class BuildCommand extends SuperDeckCommand {
 
       // Watch mode
       if (boolArg('watch')) {
-        logger.info('');
-        logger.info(
+        this.logger.info('');
+        this.logger.info(
           'Watch mode enabled. Listening for changes in slides file.',
         );
-        logger.info('');
-        logger.info('Commands:');
-        logger.info('  r - Rebuild presentation');
-        logger.info('  f - Force rebuild (clear all assets and rebuild)');
-        logger.info('  q - Quit watch mode');
-        logger.info('');
-        logger.info('Press Ctrl+C to stop watching.');
-        logger.info('');
+        this.logger.info('');
+        this.logger.info('Commands:');
+        this.logger.info('  r - Rebuild presentation');
+        this.logger.info('  f - Force rebuild (clear all assets and rebuild)');
+        this.logger.info('  q - Quit watch mode');
+        this.logger.info('');
+        this.logger.info('Press Ctrl+C to stop watching.');
+        this.logger.info('');
 
         // Create a builder that will handle watching and rebuilding
         final builder = _createStandardBuilder(
@@ -282,7 +286,7 @@ class BuildCommand extends SuperDeckCommand {
                 switch (command) {
                   case 'r':
                   case 'rebuild':
-                    logger.info('Manual rebuild triggered...');
+                    this.logger.info('Manual rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
                       _runBuild(repository, deckWorkspace, builder: builder),
@@ -290,7 +294,7 @@ class BuildCommand extends SuperDeckCommand {
                     break;
                   case 'f':
                   case 'force-rebuild':
-                    logger.info('Force rebuild triggered...');
+                    this.logger.info('Force rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
                       _cleanAndRebuild(
@@ -302,13 +306,13 @@ class BuildCommand extends SuperDeckCommand {
                     break;
                   case 'q':
                   case 'quit':
-                    logger.info('Exiting watch mode...');
+                    this.logger.info('Exiting watch mode...');
                     await stdinSubscription?.cancel();
                     await builder.dispose();
                     exit(ExitCode.success.code);
                   default:
-                    logger.warn('Unknown command: "$command"');
-                    logger.info(
+                    this.logger.warn('Unknown command: "$command"');
+                    this.logger.info(
                       'Available commands: r (rebuild), f (force-rebuild), q (quit)',
                     );
                 }
@@ -318,15 +322,17 @@ class BuildCommand extends SuperDeckCommand {
           await for (final event in builder.watchAndBuild()) {
             switch (event) {
               case BuildStarted():
-                logger.info('File change detected. Rebuilding presentation...');
+                this.logger.info(
+                  'File change detected. Rebuilding presentation...',
+                );
               case BuildCompleted(:final slides):
                 if (slides.isEmpty) {
-                  logger.warn('No slides found in the deck.');
+                  this.logger.warn('No slides found in the deck.');
                 } else {
-                  logger.success('Generated ${slides.length} slides.');
+                  this.logger.success('Generated ${slides.length} slides.');
                 }
               case BuildFailed(:final error, :final stackTrace):
-                logger.err('Error processing slides during watch.');
+                this.logger.err('Error processing slides during watch.');
                 _logBuildFailure(error, stackTrace);
             }
           }
@@ -338,7 +344,7 @@ class BuildCommand extends SuperDeckCommand {
 
       return ExitCode.success.code;
     } catch (e, stackTrace) {
-      logger.err('Build failed before the deck could be generated.');
+      this.logger.err('Build failed before the deck could be generated.');
       _logBuildFailure(e, stackTrace);
       await store?.saveBuildStatus(
         phase: DeckBuildPhase.failure,
@@ -358,7 +364,10 @@ class BuildCommand extends SuperDeckCommand {
 }
 
 /// Ensures the pubspec.yaml has the necessary assets configuration.
-Future<void> _ensurePubspecAssets(DeckWorkspace workspace) async {
+Future<void> _ensurePubspecAssets(
+  DeckWorkspace workspace,
+  Logger logger,
+) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 
   try {

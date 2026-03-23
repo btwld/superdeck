@@ -128,5 +128,27 @@ void main() {
       expect(controller.hasError.value, isFalse);
       expect(controller.error.value, isNull);
     });
+
+    test('exits loading when build status payload is not a map', () async {
+      await config.superdeckDir.create(recursive: true);
+      await config.buildStatusJson.writeAsString('[]');
+
+      createController();
+
+      await _waitUntil(
+        () => !controller.isLoading.value && controller.hasError.value,
+      );
+
+      expect(controller.isLoading.value, isFalse);
+      expect(controller.hasError.value, isTrue);
+      expect(
+        controller.error.value,
+        isA<Exception>().having(
+          (error) => error.toString(),
+          'message',
+          contains('Expected JSON object'),
+        ),
+      );
+    });
   });
 }

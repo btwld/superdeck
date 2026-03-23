@@ -82,5 +82,52 @@ void main() {
         Directory.current = previousDir;
       }
     });
+
+    test('does not modify existing macOS entitlements files', () async {
+      final previousDir = Directory.current;
+      Directory.current = tempDir;
+
+      try {
+        createTestPubspec(tempDir);
+
+        final runnerDir = Directory(path.join(tempDir.path, 'macos', 'Runner'));
+        await runnerDir.create(recursive: true);
+
+        const originalEntitlements = '''
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>com.apple.developer.team-identifier</key>
+  <string>TEAM123</string>
+</dict>
+</plist>
+''';
+
+        final releaseEntitlements = File(
+          path.join(runnerDir.path, 'Release.entitlements'),
+        );
+        final debugEntitlements = File(
+          path.join(runnerDir.path, 'DebugProfile.entitlements'),
+        );
+
+        await releaseEntitlements.writeAsString(originalEntitlements);
+        await debugEntitlements.writeAsString(originalEntitlements);
+
+        final result = await runner.run(['setup', '--force', '--no-setup-web']);
+
+        expect(result, equals(0));
+        expect(
+          await releaseEntitlements.readAsString(),
+          equals(originalEntitlements),
+        );
+        expect(
+          await debugEntitlements.readAsString(),
+          equals(originalEntitlements),
+        );
+      } finally {
+        Directory.current = previousDir;
+      }
+    });
   });
 }

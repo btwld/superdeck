@@ -41,9 +41,9 @@ class SuperDeckRunner extends CommandRunner<int> {
       );
 
     // Add commands
-    addCommand(BuildCommand());
-    addCommand(PublishCommand());
-    addCommand(SetupCommand());
+    addCommand(BuildCommand(loggerOverride: _logger));
+    addCommand(PublishCommand(loggerOverride: _logger));
+    addCommand(SetupCommand(loggerOverride: _logger));
     addCommand(VersionCommand(loggerOverride: loggerOverride));
   }
 

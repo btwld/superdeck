@@ -5,7 +5,6 @@ import 'package:path/path.dart' as path;
 import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 
 import '../utils/extensions.dart';
-import '../utils/logger.dart';
 import '../utils/templates.dart';
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
@@ -14,12 +13,11 @@ import 'base_command.dart';
 ///
 /// This command ensures that:
 /// 1. The pubspec.yaml has the necessary assets configuration
-/// 2. If macOS is present, the entitlements files are properly configured
-/// 3. A basic slides.md file is created if none exists
-/// 4. Custom index.html is set up with a loading indicator for web
+/// 2. A basic slides.md file is created if none exists
+/// 3. Custom index.html is set up with a loading indicator for web
 class SetupCommand extends SuperDeckCommand {
   /// Creates a new [SetupCommand] instance
-  SetupCommand() {
+  SetupCommand({super.loggerOverride}) {
     argParser.addFlag(
       'force',
       abbr: 'f',
@@ -139,120 +137,6 @@ Built with SuperDeck
     }
   }
 
-  /// Configure macOS entitlements
-  Future<void> _setupMacOSEntitlements(Directory macosDir) async {
-    final progress = logger.progress('Configuring macOS entitlements...');
-
-    try {
-      // Release.entitlements
-      final releaseEntitlements = File(
-        path.join(macosDir.path, 'Runner', 'Release.entitlements'),
-      );
-      if (await releaseEntitlements.exists()) {
-        await _updateEntitlements(
-          releaseEntitlements,
-          appSandbox: false,
-          networkClient: true,
-        );
-      } else {
-        progress.update('Release.entitlements not found');
-        logger.warn(
-          'Release.entitlements not found at ${releaseEntitlements.path}',
-        );
-      }
-
-      // DebugProfile.entitlements
-      final debugEntitlements = File(
-        path.join(macosDir.path, 'Runner', 'DebugProfile.entitlements'),
-      );
-      if (await debugEntitlements.exists()) {
-        await _updateEntitlements(
-          debugEntitlements,
-          appSandbox: false,
-          networkClient: true,
-          networkServer: true,
-          allowJit: true,
-        );
-      } else {
-        progress.update('DebugProfile.entitlements not found');
-        logger.warn(
-          'DebugProfile.entitlements not found at ${debugEntitlements.path}',
-        );
-      }
-
-      progress.complete('macOS entitlements configured');
-    } catch (e) {
-      progress.fail('Failed to configure macOS entitlements');
-      rethrow;
-    }
-  }
-
-  /// Update entitlements file
-  Future<void> _updateEntitlements(
-    File file, {
-    required bool appSandbox,
-    bool networkClient = false,
-    bool networkServer = false,
-    bool allowJit = false,
-  }) async {
-    final content = await file.readAsString();
-
-    // Create new entitlements content
-    final updatedContent = _generateEntitlementsXml(
-      appSandbox: appSandbox,
-      networkClient: networkClient,
-      networkServer: networkServer,
-      allowJit: allowJit,
-    );
-
-    // Only update if content is different
-    if (content.trim() != updatedContent.trim()) {
-      await file.writeAsString(updatedContent);
-      logger.success('Updated ${file.path}');
-    } else {
-      logger.info('${file.path} already configured correctly');
-    }
-  }
-
-  /// Generate XML content for entitlements file
-  String _generateEntitlementsXml({
-    required bool appSandbox,
-    bool networkClient = false,
-    bool networkServer = false,
-    bool allowJit = false,
-  }) {
-    final buffer = StringBuffer();
-    buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
-    buffer.writeln(
-      '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
-    );
-    buffer.writeln('<plist version="1.0">');
-    buffer.writeln('<dict>');
-
-    buffer.writeln('   <key>com.apple.security.app-sandbox</key>');
-    buffer.writeln('   <${appSandbox ? 'true' : 'false'}/>');
-
-    if (networkClient) {
-      buffer.writeln('   <key>com.apple.security.network.client</key>');
-      buffer.writeln('   <true/>');
-    }
-
-    if (networkServer) {
-      buffer.writeln('   <key>com.apple.security.network.server</key>');
-      buffer.writeln('   <true/>');
-    }
-
-    if (allowJit) {
-      buffer.writeln('   <key>com.apple.security.cs.allow-jit</key>');
-      buffer.writeln('   <true/>');
-    }
-
-    buffer.writeln('</dict>');
-    buffer.writeln('</plist>');
-
-    return buffer.toString();
-  }
-
   @override
   Future<int> run() async {
     try {
@@ -336,20 +220,6 @@ Built with SuperDeck
       } catch (e) {
         logger.err('Error updating pubspec.yaml: $e');
         errorCount++;
-      }
-
-      // Check for macOS support and configure entitlements if needed
-      final macosDir = Directory('macos');
-      if (await macosDir.exists()) {
-        try {
-          await _setupMacOSEntitlements(macosDir);
-          successCount++;
-        } catch (e) {
-          logger.err('Failed to configure macOS entitlements: $e');
-          errorCount++;
-        }
-      } else {
-        logger.info('macOS directory not found, skipping entitlements setup');
       }
 
       // Print summary

@@ -49,9 +49,9 @@ class MermaidGenerator implements AssetGenerator {
 
       // Safe, decoded inputs from Dart
       const graph          = atob('__GRAPH_B64__');
-      const theme          = '__THEME__';          // usually 'base'
-      const look           = '__LOOK__';           // 'classic' | 'handDrawn'
-      const securityLevel  = '__SECURITY_LEVEL__'; // 'strict' (default), 'loose', etc.
+      const theme          = __THEME_JSON__;          // usually 'base'
+      const look           = __LOOK_JSON__;           // 'classic' | 'handDrawn'
+      const securityLevel  = __SECURITY_LEVEL_JSON__; // 'strict' (default), 'loose', etc.
       const themeVariables = __THEME_VARIABLES__;  // JSON from Dart
       const themeCSS       = atob('__THEME_CSS_B64__');
       const handDrawnSeed  = __HAND_DRAWN_SEED__;  // number
@@ -107,7 +107,12 @@ class MermaidGenerator implements AssetGenerator {
     Map<String, Object?>? launchOptions,
     Map<String, Object?>? configuration,
   }) : _launchOptions = launchOptions ?? {},
-       configuration = configuration ?? _defaultConfiguration;
+       configuration = Map.unmodifiable(
+         _mergeConfiguration(
+           _defaultConfiguration,
+           configuration ?? const <String, Object?>{},
+         ),
+       );
 
   /// Default CSS theme styling - colors come from theme variables.
   static const _defaultThemeCSS = '''
@@ -292,6 +297,29 @@ class MermaidGenerator implements AssetGenerator {
     'timeout': _defaultTimeout,
     'extraCSS': '', // Optional extra CSS
   };
+
+  static Map<String, Object?> _mergeConfiguration(
+    Map<String, Object?> defaults,
+    Map<String, Object?> overrides,
+  ) {
+    final merged = Map<String, Object?>.from(defaults);
+
+    for (final entry in overrides.entries) {
+      final current = merged[entry.key];
+      final override = entry.value;
+
+      if (current is Map && override is Map) {
+        merged[entry.key] = _mergeConfiguration(
+          Map<String, Object?>.from(current),
+          Map<String, Object?>.from(override),
+        );
+      } else {
+        merged[entry.key] = override;
+      }
+    }
+
+    return merged;
+  }
 
   @override
   String get type => 'mermaid';
@@ -591,14 +619,22 @@ class MermaidGenerator implements AssetGenerator {
 
     return _mermaidHtmlTemplate
         .replaceAll('__GRAPH_B64__', graphB64)
-        .replaceAll('__THEME__', config.theme)
-        .replaceAll('__LOOK__', config.look)
-        .replaceAll('__SECURITY_LEVEL__', config.securityLevel)
+        .replaceAll('__THEME_JSON__', jsonEncode(config.theme))
+        .replaceAll('__LOOK_JSON__', jsonEncode(config.look))
+        .replaceAll('__SECURITY_LEVEL_JSON__', jsonEncode(config.securityLevel))
         .replaceAll('__THEME_VARIABLES__', jsonEncode(config.themeVariables))
         .replaceAll('__THEME_CSS_B64__', themeCSSB64)
         .replaceAll('__HAND_DRAWN_SEED__', config.handDrawnSeed.toString())
         .replaceAll('__EXTRA_CSS_B64__', extraCSSB64)
         .replaceAll('__DIAGRAM_CONFIGS__', jsonEncode(config.diagramConfigs));
+  }
+
+  /// Exposes the resolved HTML payload for unit tests.
+  String buildHtmlContentForTesting(String graphDefinition) {
+    return _buildHtmlContent(
+      _resolveRenderConfig(graphDefinition),
+      graphDefinition,
+    );
   }
 
   /// The timeout for waiting on browser initialization during dispose.

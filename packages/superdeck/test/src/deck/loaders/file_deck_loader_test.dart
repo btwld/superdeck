@@ -206,6 +206,45 @@ void main() {
       expect(errorEvents.last.error, isA<Exception>());
     });
 
+    for (final scenario in [
+      (
+        description: 'array payload',
+        payload: '[]',
+        decodedType: 'List<dynamic>',
+      ),
+      (
+        description: 'string payload',
+        payload: '"building"',
+        decodedType: 'String',
+      ),
+      (description: 'number payload', payload: '42', decodedType: 'int'),
+    ]) {
+      test(
+        'non-map status json (${scenario.description}) emits SlidesErrorEvent',
+        () async {
+          await config.superdeckDir.create(recursive: true);
+          await config.buildStatusJson.writeAsString(scenario.payload);
+
+          final events = <SlidesEvent>[];
+          final subscription = deckLoader.load().listen(events.add);
+          addTearDown(subscription.cancel);
+
+          await _waitForEvent<SlidesErrorEvent>(
+            events,
+            where: (event) => event.message == 'Build status error',
+          );
+
+          final errorEvent = events.whereType<SlidesErrorEvent>().last;
+          expect(events.first, isA<SlidesLoadingEvent>());
+          expect(errorEvent.message, 'Build status error');
+          expect(errorEvent.error, isA<Exception>());
+          expect(errorEvent.error.toString(), contains('Expected JSON object'));
+          expect(errorEvent.error.toString(), contains(scenario.decodedType));
+          expect(events.whereType<SlidesLoadedEvent>(), isEmpty);
+        },
+      );
+    }
+
     test('failure status emits SlidesErrorEvent with DeckBuildError', () async {
       await config.superdeckDir.create(recursive: true);
 
