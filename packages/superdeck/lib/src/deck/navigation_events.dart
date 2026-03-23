@@ -69,7 +69,7 @@ class GestureNavigationHandler {
   ///
   /// Only responds to touch input; ignores mouse clicks on desktop.
   NavigationEvent? handleTap(TapUpDetails details, Size size) {
-    if (details.kind == PointerDeviceKind.mouse) return null;
+    if (!_isTouchLike(details.kind)) return null;
 
     final tapX = details.localPosition.dx;
     final rightHalf = tapX > size.width / 2;
@@ -91,7 +91,7 @@ class GestureNavigationHandler {
   ///
   /// Only responds to touch input; ignores mouse drags on desktop.
   NavigationEvent? handleSwipe(DragEndDetails details) {
-    if (_dragDeviceKind == PointerDeviceKind.mouse) {
+    if (!_isTouchLike(_dragDeviceKind)) {
       _dragDeviceKind = null;
       return null;
     }
@@ -105,5 +105,14 @@ class GestureNavigationHandler {
 
     _dragDeviceKind = null;
     return velocity > 0 ? PreviousSlideEvent() : NextSlideEvent();
+  }
+
+  static bool _isTouchLike(PointerDeviceKind? kind) {
+    return switch (kind) {
+      PointerDeviceKind.touch ||
+      PointerDeviceKind.stylus ||
+      PointerDeviceKind.invertedStylus => true,
+      _ => false,
+    };
   }
 }

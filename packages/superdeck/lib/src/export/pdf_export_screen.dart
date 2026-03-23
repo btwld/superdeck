@@ -23,8 +23,12 @@ class PdfExportDialogScreen extends StatefulWidget {
 
   static void show(BuildContext context) {
     final deckController = DeckController.of(context);
+    final dialogContext =
+        deckController.router.routerDelegate.navigatorKey.currentContext ??
+        context;
+
     showRemixDialog(
-      context: context,
+      context: dialogContext,
       builder: (context) =>
           PdfExportDialogScreen(slides: deckController.slides.value),
     );
@@ -56,10 +60,8 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
     try {
       await _exportController.export();
     } finally {
-      if (context.mounted) {
-        // ignore: use_build_context_synchronously
-        Navigator.of(context).pop();
-      }
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
@@ -177,7 +179,7 @@ class _PdfExportBar extends StatelessWidget {
             SDButton(
               onPressed: () {
                 exportController.cancel();
-                Navigator.of(context).pop();
+                Navigator.of(context, rootNavigator: true).pop();
               },
               label: 'Cancel',
               icon: Icons.cancel,

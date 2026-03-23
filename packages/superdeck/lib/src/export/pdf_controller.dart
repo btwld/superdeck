@@ -7,10 +7,9 @@ import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:signals/signals.dart';
-import '../utils/constants.dart';
-import '../deck/slide_configuration.dart';
-import 'package:universal_html/html.dart' as html;
 
+import '../deck/slide_configuration.dart';
+import '../utils/constants.dart';
 import 'slide_capture_service.dart';
 
 /// Status values for PDF export.
@@ -216,11 +215,11 @@ class PdfController {
       final pdf = await compute(_buildPdf, [..._images]);
       _checkExportAllowed();
 
-      _savePdf(pdf);
-
-      _exportStatus.value = PdfExportStatus.complete;
       _images.clear();
       _capturedCount.value = 0;
+      if (!await _savePdf(pdf)) return;
+
+      _exportStatus.value = PdfExportStatus.complete;
     } on _ExportCancelledException catch (e) {
       _exportStatus.value = PdfExportStatus.idle;
       log(e.toString());
@@ -228,17 +227,17 @@ class PdfController {
   }
 
   /// Saves [pdf] using the current platform's download flow.
-  Future<void> _savePdf(Uint8List pdf) async {
+  Future<bool> _savePdf(Uint8List pdf) async {
     try {
       if (kIsWeb) {
-        final blob = html.Blob([pdf], 'application/pdf');
-        final url = html.Url.createObjectUrlFromBlob(blob);
+        await FileSaver.instance.saveFile(
+          name: 'superdeck',
+          bytes: pdf,
+          ext: 'pdf',
+          mimeType: MimeType.pdf,
+        );
 
-        html.AnchorElement(href: url)
-          ..setAttribute('download', 'superdeck.pdf')
-          ..click();
-
-        return;
+        return true;
       }
 
       log('Saving pdf');
@@ -249,10 +248,12 @@ class PdfController {
         mimeType: MimeType.pdf,
       );
       log('Save result: $result');
+      return true;
     } catch (e) {
       log('Error saving pdf: $e');
       _exportError.value = 'Failed to save PDF: $e';
       _exportStatus.value = PdfExportStatus.failed;
+      return false;
     }
   }
 

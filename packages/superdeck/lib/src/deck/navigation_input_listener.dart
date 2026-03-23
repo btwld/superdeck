@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 
 import 'deck_controller.dart';
 import 'navigation_events.dart';
@@ -53,6 +54,7 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final deck = DeckController.of(context);
 
     return Focus(
       focusNode: _focusNode,
@@ -66,21 +68,31 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
             ? KeyEventResult.handled
             : KeyEventResult.ignored;
       },
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTapUp: (details) {
-          final event = _gestureHandler.handleTap(details, size);
-          _handleNavigationEvent(event);
-        },
-        onHorizontalDragStart: (details) {
-          _gestureHandler.handleDragStart(details);
-        },
-        onHorizontalDragEnd: (details) {
-          final event = _gestureHandler.handleSwipe(details);
-          _handleNavigationEvent(event);
-        },
-        child: widget.child,
-      ),
+      child: Watch((context) {
+        final isMenuOpen = deck.isMenuOpen.value;
+
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTapUp: isMenuOpen
+              ? null
+              : (details) {
+                  final event = _gestureHandler.handleTap(details, size);
+                  _handleNavigationEvent(event);
+                },
+          onHorizontalDragStart: isMenuOpen
+              ? null
+              : (details) {
+                  _gestureHandler.handleDragStart(details);
+                },
+          onHorizontalDragEnd: isMenuOpen
+              ? null
+              : (details) {
+                  final event = _gestureHandler.handleSwipe(details);
+                  _handleNavigationEvent(event);
+                },
+          child: widget.child,
+        );
+      }),
     );
   }
 }

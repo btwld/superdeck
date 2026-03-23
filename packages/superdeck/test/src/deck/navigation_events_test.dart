@@ -247,6 +247,17 @@ void main() {
         expect(result, isNull);
       });
 
+      test('unknown tap returns null (filtered)', () {
+        final details = TapUpDetails(
+          kind: PointerDeviceKind.unknown,
+          localPosition: const Offset(600, 300),
+          globalPosition: const Offset(600, 300),
+        );
+
+        final result = handler.handleTap(details, const Size(800, 600));
+        expect(result, isNull);
+      });
+
       test('stylus tap is processed', () {
         final details = TapUpDetails(
           kind: PointerDeviceKind.stylus,
@@ -391,6 +402,19 @@ void main() {
         expect(result, isNull);
       });
 
+      test('unknown drag returns null (filtered)', () {
+        handler.handleDragStart(
+          DragStartDetails(kind: PointerDeviceKind.unknown),
+        );
+
+        final details = DragEndDetails(
+          velocity: const Velocity(pixelsPerSecond: Offset(-600, 0)),
+        );
+
+        final result = handler.handleSwipe(details);
+        expect(result, isNull);
+      });
+
       test('stylus drag is processed', () {
         handler.handleDragStart(
           DragStartDetails(kind: PointerDeviceKind.stylus),
@@ -416,13 +440,13 @@ void main() {
         );
 
         // Second swipe without handleDragStart should work
-        // because _dragDeviceKind is null (not mouse)
+        // because _dragDeviceKind is reset to null and null is filtered.
         final result = handler.handleSwipe(
           DragEndDetails(
             velocity: const Velocity(pixelsPerSecond: Offset(-600, 0)),
           ),
         );
-        expect(result, isA<NextSlideEvent>());
+        expect(result, isNull);
       });
 
       test('multiple swipes in sequence work correctly', () {
