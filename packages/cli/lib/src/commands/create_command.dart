@@ -24,7 +24,7 @@ class CreateCommand extends SuperDeckCommand {
     argParser.addFlag(
       'force',
       abbr: 'f',
-      help: 'Overwrite managed files without prompting',
+      help: 'Refresh starter files without prompting',
       negatable: false,
     );
   }
@@ -39,7 +39,7 @@ class CreateCommand extends SuperDeckCommand {
 
   @override
   String get description =>
-      'Create a SuperDeck starter app or refresh managed SuperDeck files';
+      'Create a SuperDeck starter app or refresh starter files';
 
   @override
   String get name => 'create';
@@ -77,8 +77,8 @@ class CreateCommand extends SuperDeckCommand {
       final managedPaths = describeRefreshChanges(targetDir);
       final confirmed = _confirmAction(
         'Target directory is not empty.\n'
-        'This will refresh managed SuperDeck files: $managedPaths\n'
-        'It will keep these paths untouched: ${describeRefreshPreserved()}\n'
+        'This will refresh these SuperDeck starter files: $managedPaths\n'
+        'It will keep your app code and platform folders untouched: ${describeRefreshPreserved()}\n'
         'Continue?',
         defaultValue: false,
       );
@@ -124,7 +124,7 @@ class CreateCommand extends SuperDeckCommand {
     }
 
     if (isExistingNonEmptyDir) {
-      logger.success('Refreshed managed SuperDeck files in ${targetDir.path}');
+      logger.success('Refreshed SuperDeck starter files in ${targetDir.path}');
     } else {
       logger.success('Created SuperDeck app at ${targetDir.path}');
     }

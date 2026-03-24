@@ -29,7 +29,18 @@ void main() {
       expect(result, 0);
       expect(
         await File(path.join(targetDir.path, 'README.md')).readAsString(),
-        contains('My Talk'),
+        allOf(
+          contains('My Talk'),
+          contains('Build slides in `slides.md`'),
+          isNot(contains('Remove the marker')),
+        ),
+      );
+      expect(
+        await File(path.join(targetDir.path, 'slides.md')).readAsString(),
+        allOf(
+          contains('Sample widget'),
+          isNot(contains('WidgetFactory')),
+        ),
       );
       expect(
         await File(path.join(targetDir.path, 'pubspec.yaml')).readAsString(),
@@ -96,14 +107,14 @@ void main() {
         File(path.join(targetDir.path, legacyWorkspaceConfigPath)).existsSync(),
         isFalse,
       );
-      expect(confirmationMessage, contains('README.md (generated only)'));
+      expect(confirmationMessage, contains('README.md (starter copy only)'));
       expect(confirmationMessage, contains('pubspec.yaml'));
       expect(confirmationMessage, contains('lib/'));
       expect(confirmationMessage, contains('android/'));
     });
 
     test(
-      'force refresh preserves app code and only updates managed overlay files',
+      'force refresh preserves app code and only updates starter overlay files',
       () async {
         final targetDir = Directory(path.join(tempDir.path, 'existing_app'));
         await targetDir.create(recursive: true);
@@ -205,7 +216,11 @@ void main() {
         expect(result, 0);
         expect(await readmeFile.readAsString(), contains('Existing App'));
         expect(await readmeFile.readAsString(), isNot(contains('old readme')));
-        expect(await slidesFile.readAsString(), contains('WidgetFactory'));
+        expect(
+          await readmeFile.readAsString(),
+          isNot(contains('Remove the marker')),
+        );
+        expect(await slidesFile.readAsString(), contains('Sample widget'));
         expect(await slidesFile.readAsString(), isNot(contains('old slides')));
       },
     );
@@ -313,13 +328,16 @@ Future<Directory> _createFakeScaffold(
       'src',
       'main',
       'kotlin',
-      ...bindings.bundleId.split('.'),
+      'com',
+      'example',
+      bindings.projectName.replaceAll('_', ''),
       'MainActivity.kt',
     ]),
   );
   await mainActivity.parent.create(recursive: true);
   await mainActivity.writeAsString(
-    'package ${bindings.bundleId}\nclass MainActivity {}',
+    'package com.example.${bindings.projectName.replaceAll('_', '')}\n'
+    'class MainActivity {}',
   );
 
   await Directory(path.join(scaffoldDir.path, 'ios')).create(recursive: true);

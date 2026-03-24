@@ -30,8 +30,8 @@ const createScaffoldPaths = <String>[
 const refreshManagedPaths = <String>[
   '.superdeck/',
   'pubspec.yaml',
-  'README.md (generated only)',
-  'slides.md (generated only)',
+  'README.md (starter copy only)',
+  'slides.md (starter copy only)',
   'web/index.html',
   'web/superdeck_loader.svg',
 ];
@@ -61,23 +61,19 @@ typedef CreateScaffoldBuilder =
 class CreateBindings {
   final String projectName;
   final String displayName;
-  final String bundleId;
 
   const CreateBindings({
     required this.projectName,
     required this.displayName,
-    required this.bundleId,
   });
 
   factory CreateBindings.fromTargetName(String targetName) {
     final projectName = _sanitizeProjectName(targetName);
     final displayName = _displayNameFor(projectName);
-    final bundleSegment = _bundleSegmentFor(projectName);
 
     return CreateBindings(
       projectName: projectName,
       displayName: displayName,
-      bundleId: 'com.example.$bundleSegment',
     );
   }
 }
@@ -144,7 +140,7 @@ Future<void> refreshManagedOverlay(
   final pubspecFile = File(path.join(targetDir.path, 'pubspec.yaml'));
   if (!pubspecFile.existsSync()) {
     throw FileSystemException(
-      'Failed to refresh managed SuperDeck files: pubspec.yaml not found.',
+      'Failed to refresh SuperDeck starter files: pubspec.yaml not found.',
       pubspecFile.path,
     );
   }
@@ -155,7 +151,7 @@ Future<void> refreshManagedOverlay(
   final indexHtmlFile = File(path.join(targetDir.path, 'web', 'index.html'));
   if (!indexHtmlFile.existsSync()) {
     throw const FormatException(
-      'Failed to refresh managed web files: expected web/index.html in the target app.',
+      'Failed to refresh starter web files: expected web/index.html in the target app.',
     );
   }
   await indexHtmlFile.writeAsString(
@@ -548,35 +544,23 @@ String _displayNameFor(String projectName) {
   return words.join(' ');
 }
 
-String _bundleSegmentFor(String projectName) {
-  final alphanumeric = projectName.replaceAll(RegExp(r'[^a-z0-9]'), '');
-  final bundleSegment = alphanumeric.isEmpty ? 'presentation' : alphanumeric;
-  if (RegExp(r'^[0-9]').hasMatch(bundleSegment)) {
-    return 'app$bundleSegment';
-  }
-  return bundleSegment;
-}
-
 String _readme(CreateBindings bindings) =>
     '''$generatedReadmeMarker
 # ${bindings.displayName}
 
-This starter app was created with `superdeck create`.
+Build slides in `slides.md` and render them with Flutter.
 
-Remove the marker at the top of this file if you do not want future
-`superdeck create .` refreshes to replace this README.
-
-## Get started
+## Start here
 
 1. Run `flutter pub get`
 2. Run `dart run superdeck_cli:main build`
 3. Run `flutter run`
 
-## Edit your deck
+## Customize it
 
 - Update `slides.md`
-- Add or remove custom widgets in `lib/widgets/`
-- Tweak the web loader in `web/` if you want a branded boot experience
+- Replace `lib/widgets/note_card.dart` with your own widget
+- Update `web/` if you want a different loading screen
 ''';
 
 String _slides(CreateBindings bindings) =>
@@ -598,8 +582,8 @@ Build presentations with Markdown, Flutter, and SuperDeck.
 ---
 
 @note-card {
-  title: "WidgetFactory"
-  message: "Register custom widgets with Map<String, WidgetFactory> and use them directly from your slides."
+  title: "Sample widget"
+  message: "Replace lib/widgets/note_card.dart with your own widget when you need custom UI."
 }
 
 ---
@@ -666,7 +650,7 @@ Widget noteCardWidget(Map<String, Object?> args) {
   final title = args['title'] as String? ?? 'Custom Widget';
   final message =
       args['message'] as String? ??
-      'Use WidgetFactory entries to render custom widgets from slides.';
+      'Replace lib/widgets/note_card.dart with your own widget.';
 
   return NoteCard(title: title, message: message);
 }
