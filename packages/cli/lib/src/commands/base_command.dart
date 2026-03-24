@@ -9,7 +9,8 @@ const unsupportedWorkspaceConfigMessage =
     'SuperDeck uses the default workspace layout: `slides.md` in the project '
     'root and `.superdeck/` for generated output.\n'
     'Remove `superdeck.yaml`, move your files to the default paths, then use '
-    '`superdeck build --watch` in one terminal and `flutter run` in another.';
+    '`dart run superdeck_cli:main build --watch` in one terminal and '
+    '`flutter run` in another.';
 
 /// Base class for SuperDeck commands with common functionality
 abstract class SuperDeckCommand extends Command<int> {

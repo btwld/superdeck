@@ -207,19 +207,19 @@ class PublishCommand extends Command<int> {
           await copyDirectory(_logger, buildDir, tempDir);
           File(path.join(tempDir, '.nojekyll')).createSync();
         } else {
-          _logger.info('Would clear and update content in $targetBranch branch');
+          _logger.info(
+            'Would clear and update content in $targetBranch branch',
+          );
           _logger.info('Would copy web build files to the branch');
           _logger.info(
             'Would create .nojekyll file to bypass Jekyll processing',
           );
         }
 
-        await runGitCommand(
-          _logger,
-          tempDir,
-          const ['add', '.'],
-          dryRun: dryRun,
-        );
+        await runGitCommand(_logger, tempDir, const [
+          'add',
+          '.',
+        ], dryRun: dryRun);
 
         final hasChanges = dryRun || await hasChangesToCommit(_logger, tempDir);
         if (hasChanges) {
@@ -296,16 +296,6 @@ class PublishCommand extends Command<int> {
           _logger.info('Would clean up the temporary git worktree at $tempDir');
         }
       }
-    }
-
-    if (shouldBuild) {
-      return withTemporaryCustomIndexHtml(
-        _logger,
-        repoDir: currentDir,
-        exampleDir: exampleDirArg,
-        isDryRun: dryRun,
-        action: runPublication,
-      );
     }
 
     return runPublication();

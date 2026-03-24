@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/runner.dart';
+import 'package:superdeck_cli/src/commands/build_command.dart';
+import 'package:superdeck_cli/src/commands/create/create_support.dart';
+import 'package:superdeck_cli/src/commands/create_command.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
 import 'package:test/test.dart';
 
@@ -15,7 +18,14 @@ void main() {
 
     setUp(() {
       mockLogger = _CapturingLogger();
-      runner = SuperDeckRunner(loggerOverride: mockLogger);
+      runner = SuperDeckRunner(
+        loggerOverride: mockLogger,
+        buildCommand: BuildCommand(loggerOverride: mockLogger),
+        createCommand: CreateCommand(
+          loggerOverride: mockLogger,
+          scaffoldBuilder: _createFakeScaffold,
+        ),
+      );
     });
 
     group('--version flag', () {
@@ -37,70 +47,137 @@ void main() {
     });
 
     group('shared logger propagation', () {
-      test('passes quiet logging to setup', () async {
+      test('passes quiet logging to create', () async {
         final tempDir = await createTempDirAsync();
-        final previousDir = Directory.current;
-        Directory.current = tempDir;
+        final exitCode = await runner.run([
+          '--quiet',
+          'create',
+          path.join(tempDir.path, 'my_talk'),
+          '--force',
+        ]);
 
-        try {
-          await File(
-            path.join(tempDir.path, 'superdeck.yaml'),
-          ).writeAsString('slidesPath: custom.md');
-
-          final exitCode = await runner.run(['--quiet', 'setup', '--force']);
-
-          expect(exitCode, ExitCode.data.code);
-          expect(
-            mockLogger.errMessages,
-            contains(contains('Unsupported configuration file')),
-          );
-          expect(mockLogger.infoMessages, isEmpty);
-        } finally {
-          Directory.current = previousDir;
-        }
+        expect(exitCode, ExitCode.success.code);
+        expect(mockLogger.infoMessages, isEmpty);
       });
 
       test('passes verbose logging to build', () async {
         final tempDir = await createTempDirAsync();
-        final previousDir = Directory.current;
-        Directory.current = tempDir;
+        runner = SuperDeckRunner(
+          loggerOverride: mockLogger,
+          buildCommand: BuildCommand(
+            loggerOverride: mockLogger,
+            projectDir: tempDir.path,
+          ),
+          createCommand: CreateCommand(
+            loggerOverride: mockLogger,
+            scaffoldBuilder: _createFakeScaffold,
+          ),
+        );
 
-        try {
-          await File(
-            path.join(tempDir.path, 'slides.md'),
-          ).writeAsString('# Test Slide\n\nContent');
-          createTestPubspec(tempDir);
+        await File(
+          path.join(tempDir.path, 'slides.md'),
+        ).writeAsString('# Test Slide\n\nContent');
+        createTestPubspec(tempDir);
 
-          final superdeckDir = Directory(path.join(tempDir.path, '.superdeck'));
-          await superdeckDir.create(recursive: true);
-          await File(
-            path.join(superdeckDir.path, 'generated_assets.json'),
-          ).writeAsString('{"stale":true}');
+        final superdeckDir = Directory(path.join(tempDir.path, '.superdeck'));
+        await superdeckDir.create(recursive: true);
+        await File(
+          path.join(superdeckDir.path, 'generated_assets.json'),
+        ).writeAsString('{"stale":true}');
 
-          final exitCode = await runner.run([
-            '--verbose',
-            'build',
-            '--force-rebuild',
-            '--skip-pubspec',
-          ]);
+        final exitCode = await runner.run([
+          '--verbose',
+          'build',
+          '--force-rebuild',
+          '--skip-pubspec',
+        ]);
 
-          expect(
-            exitCode,
-            anyOf(
-              equals(ExitCode.success.code),
-              equals(ExitCode.software.code),
-            ),
-          );
-          expect(
-            mockLogger.detailMessages,
-            contains('Deleted generated_assets.json'),
-          );
-        } finally {
-          Directory.current = previousDir;
-        }
+        expect(
+          exitCode,
+          anyOf(equals(ExitCode.success.code), equals(ExitCode.software.code)),
+        );
+        expect(
+          mockLogger.detailMessages,
+          contains('Deleted generated_assets.json'),
+        );
       });
     });
   });
+}
+
+Future<Directory> _createFakeScaffold(
+  Directory tempRoot,
+  CreateBindings bindings,
+) async {
+  final scaffoldDir = Directory(path.join(tempRoot.path, bindings.projectName));
+  await scaffoldDir.create(recursive: true);
+
+  await File(
+    path.join(scaffoldDir.path, '.gitignore'),
+  ).writeAsString('.dart_tool/\n');
+  await File(
+    path.join(scaffoldDir.path, 'analysis_options.yaml'),
+  ).writeAsString('include: package:flutter_lints/flutter.yaml\n');
+  await File(path.join(scaffoldDir.path, 'pubspec.yaml')).writeAsString('''
+name: ${bindings.projectName}
+description: A new Flutter project.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+''');
+  await File(
+    path.join(scaffoldDir.path, 'lib', 'main.dart'),
+  ).create(recursive: true);
+  await File(
+    path.join(scaffoldDir.path, 'lib', 'main.dart'),
+  ).writeAsString('void main() {}\n');
+  await File(
+    path.join(scaffoldDir.path, 'test', 'widget_test.dart'),
+  ).create(recursive: true);
+  await File(
+    path.join(scaffoldDir.path, 'test', 'widget_test.dart'),
+  ).writeAsString('void main() {}\n');
+  await File(
+    path.join(scaffoldDir.path, 'web', 'index.html'),
+  ).create(recursive: true);
+  await File(path.join(scaffoldDir.path, 'web', 'index.html')).writeAsString('''
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="\$FLUTTER_BASE_HREF">
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
+''');
+  await File(
+    path.join(scaffoldDir.path, 'README.md'),
+  ).writeAsString('# placeholder');
+  await Directory(
+    path.join(scaffoldDir.path, 'android'),
+  ).create(recursive: true);
+  await Directory(path.join(scaffoldDir.path, 'ios')).create(recursive: true);
+  await Directory(path.join(scaffoldDir.path, 'linux')).create(recursive: true);
+  await Directory(path.join(scaffoldDir.path, 'macos')).create(recursive: true);
+  await Directory(
+    path.join(scaffoldDir.path, 'windows'),
+  ).create(recursive: true);
+
+  return scaffoldDir;
 }
 
 class _CapturingLogger extends Logger {

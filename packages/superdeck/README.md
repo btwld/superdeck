@@ -11,8 +11,10 @@ In your Flutter project:
 
 ```bash
 dart pub global activate superdeck_cli
-superdeck setup
-flutter pub add superdeck
+superdeck create my_presentation
+cd my_presentation
+flutter pub get
+dart run superdeck_cli:main build
 ```
 
 ## Initialize
@@ -34,7 +36,7 @@ Future<void> main() async {
 ## Build slides
 
 ```bash
-superdeck build --watch
+dart run superdeck_cli:main build --watch
 flutter run
 ```
 
@@ -42,13 +44,15 @@ SuperDeck reads slide content from `slides.md` and build output from `.superdeck
 
 ## Write slides
 
-Separate slides with `---`. Use blocks to control layout:
+Separate slides with frontmatter fences. Use blocks to control layout:
 
 - `@section` groups blocks horizontally.
 - `@block` renders Markdown content.
 - `@widget` renders a registered Flutter widget.
 
 ```md
+---
+title: Welcome
 ---
 
 @section
@@ -60,6 +64,7 @@ Separate slides with `---`. Use blocks to control layout:
 - Point one
 - Point two
 
+---
 ---
 ```
 

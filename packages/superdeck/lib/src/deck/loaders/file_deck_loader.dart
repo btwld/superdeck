@@ -7,7 +7,8 @@ import 'package:superdeck_core/superdeck_core.dart';
 const missingBuildOutputMessage =
     'No SuperDeck build output found. '
     'SuperDeck uses the default workspace layout. '
-    'Run `superdeck build --watch` in one terminal and `flutter run` in another.';
+    'Run `dart run superdeck_cli:main build --watch` in one terminal and '
+    '`flutter run` in another.';
 
 /// File-based [DeckLoader] implementation for debug IO runtimes.
 ///

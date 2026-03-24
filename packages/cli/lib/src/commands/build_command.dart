@@ -53,9 +53,11 @@ DeckBuilder _createStandardBuilder({
 class BuildCommand extends SuperDeckCommand {
   /// Whether a build is currently in progress.
   bool _isRunning = false;
+  final String? _projectDir;
 
   /// Creates a new [BuildCommand].
-  BuildCommand({super.loggerOverride}) {
+  BuildCommand({super.loggerOverride, String? projectDir})
+    : _projectDir = projectDir {
     argParser
       ..addFlag(
         'watch',
@@ -208,7 +210,7 @@ class BuildCommand extends SuperDeckCommand {
         return ExitCode.data.code;
       }
 
-      final deckWorkspace = DeckWorkspace();
+      final deckWorkspace = DeckWorkspace(projectDir: _projectDir);
 
       // Check if slides file exists
       if (!await deckWorkspace.slidesFile.exists()) {
@@ -216,7 +218,7 @@ class BuildCommand extends SuperDeckCommand {
           'Slides file not found: ${deckWorkspace.slidesFile.path}',
         );
         this.logger.info(
-          'Run `superdeck setup` to create a sample slides file, or create your own.',
+          'Create a new app with `superdeck create my_presentation`, or add your own slides.md in the project root. If this app was originally scaffolded by SuperDeck, rerun `superdeck create .` to refresh managed SuperDeck files.',
         );
 
         return ExitCode.unavailable.code;

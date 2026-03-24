@@ -311,7 +311,7 @@ erDiagram
 
 ## Styling and theming
 
-SuperDeck renders Mermaid diagrams to PNG during `superdeck build`. By default, the builder uses Mermaid’s `base` theme with a dark set of `themeVariables`.
+SuperDeck renders Mermaid diagrams to PNG during `dart run superdeck_cli:main build`. By default, the builder uses Mermaid’s `base` theme with a dark set of `themeVariables`.
 
 Some diagram types (for example, `timeline` in dark mode) fall back to Mermaid’s `default` theme to keep axes and grid lines readable.
 
@@ -388,7 +388,7 @@ flowchart TD
 
 ## Build process
 
-When you run `superdeck build`, mermaid diagrams are automatically:
+When you run `dart run superdeck_cli:main build`, Mermaid diagrams are automatically:
 
 1. **Detected** in your markdown slides
 2. **Rendered** to high-quality PNG images
@@ -410,7 +410,7 @@ Generated images are saved to `.superdeck/assets/` and automatically included in
 Use verbose mode to see detailed build information:
 
 ```bash
-superdeck build --verbose
+dart run superdeck_cli:main build --verbose
 ```
 
 ## Best practices

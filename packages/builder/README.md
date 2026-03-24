@@ -13,7 +13,7 @@ Use `superdeck_builder` directly only when you need programmatic control of the 
 
 ## Typical Workflow
 
-Use `superdeck build --watch` in one terminal and `flutter run` in another.
+Use `dart run superdeck_cli:main build --watch` in one terminal and `flutter run` in another.
 
 ## Related packages
 

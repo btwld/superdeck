@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/src/commands/publish/build_support.dart';
 import 'package:test/test.dart';
@@ -59,77 +58,5 @@ void main() {
 
       expect(resolved, flutterBinary.path);
     });
-  });
-
-  group('temporary index.html handling', () {
-    late Directory tempDir;
-    late Directory webDir;
-    late File indexFile;
-    late File backupFile;
-    late Logger logger;
-
-    setUp(() async {
-      tempDir = await createTempDirAsync();
-      webDir = createWebDirectory(tempDir);
-      indexFile = File(path.join(webDir.path, 'index.html'));
-      backupFile = File(path.join(webDir.path, 'index.html.bak'));
-      logger = Logger(level: Level.quiet);
-    });
-
-    test(
-      'restores original index.html if setup fails after creating a backup',
-      () async {
-        const originalContent = '<html><body>Original</body></html>';
-        await indexFile.writeAsString(originalContent);
-        var sawBackupBeforeFailure = false;
-
-        await expectLater(
-          setupCustomIndexHtml(
-            logger,
-            repoDir: tempDir.path,
-            exampleDir: '.',
-            isDryRun: false,
-            writeFile: (file, content) async {
-              sawBackupBeforeFailure = backupFile.existsSync();
-              throw StateError('write failed');
-            },
-          ),
-          throwsStateError,
-        );
-
-        expect(sawBackupBeforeFailure, isTrue);
-        expect(await indexFile.readAsString(), originalContent);
-        expect(backupFile.existsSync(), isFalse);
-      },
-    );
-
-    test(
-      'restores original index.html when publication action fails',
-      () async {
-        const originalContent = '<html><body>Original</body></html>';
-        await indexFile.writeAsString(originalContent);
-
-        await expectLater(
-          withTemporaryCustomIndexHtml<void>(
-            logger,
-            repoDir: tempDir.path,
-            exampleDir: '.',
-            isDryRun: false,
-            action: () async {
-              expect(
-                await indexFile.readAsString(),
-                contains('loading-container'),
-              );
-              expect(backupFile.existsSync(), isTrue);
-              throw StateError('publish failed');
-            },
-          ),
-          throwsStateError,
-        );
-
-        expect(await indexFile.readAsString(), originalContent);
-        expect(backupFile.existsSync(), isFalse);
-      },
-    );
   });
 }

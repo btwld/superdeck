@@ -97,21 +97,21 @@ flutter:
       expect(result.contains('./$assetsPath'), isFalse);
     });
 
-    test('running setup multiple times does not create duplicates', () {
+    test('running the updater multiple times does not create duplicates', () {
       final input = '''
 name: test_app
 flutter:
   assets:
     - assets/
 ''';
-      // Run setup first time
+      // Run the updater the first time.
       final firstRun = updatePubspecAssets(deckWorkspace, input);
 
       // Verify correct paths were added
       expect(firstRun.contains(superdeckPath), isTrue);
       expect(firstRun.contains(assetsPath), isTrue);
 
-      // Run setup second time on the result
+      // Run the updater a second time on the result.
       final secondRun = updatePubspecAssets(deckWorkspace, firstRun);
 
       // Should be identical - no new duplicates added

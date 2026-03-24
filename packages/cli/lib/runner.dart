@@ -6,8 +6,8 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 
 import 'src/commands/build_command.dart';
+import 'src/commands/create_command.dart';
 import 'src/commands/publish_command.dart';
-import 'src/commands/setup_command.dart';
 import 'src/commands/version_command.dart';
 import 'src/utils/constants.dart';
 import 'src/utils/logger.dart';
@@ -20,7 +20,11 @@ class SuperDeckRunner extends CommandRunner<int> {
   late final Logger _logger;
 
   /// Creates a new [SuperDeckRunner] instance
-  SuperDeckRunner({Logger? loggerOverride}) : super(cliName, cliDescription) {
+  SuperDeckRunner({
+    Logger? loggerOverride,
+    BuildCommand? buildCommand,
+    CreateCommand? createCommand,
+  }) : super(cliName, cliDescription) {
     // Use provided logger or global instance
     _logger = loggerOverride ?? logger;
 
@@ -41,9 +45,9 @@ class SuperDeckRunner extends CommandRunner<int> {
       );
 
     // Add commands
-    addCommand(BuildCommand(loggerOverride: _logger));
+    addCommand(buildCommand ?? BuildCommand(loggerOverride: _logger));
+    addCommand(createCommand ?? CreateCommand(loggerOverride: _logger));
     addCommand(PublishCommand(loggerOverride: _logger));
-    addCommand(SetupCommand(loggerOverride: _logger));
     addCommand(VersionCommand(loggerOverride: loggerOverride));
   }
 
