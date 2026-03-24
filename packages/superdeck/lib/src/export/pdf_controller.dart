@@ -136,6 +136,26 @@ class PdfController {
     );
   }
 
+  Future<void> _waitForPageControllerAttachment() async {
+    var elapsed = Duration.zero;
+
+    while (elapsed < _renderAttachmentTimeout) {
+      _checkExportAllowed();
+
+      if (_pageController.hasClients) {
+        await WidgetsBinding.instance.endOfFrame;
+        return;
+      }
+
+      await Future.delayed(_kPollInterval);
+      elapsed += _kPollInterval;
+    }
+
+    throw StateError(
+      'PageController not attached within $_renderAttachmentTimeout',
+    );
+  }
+
   /// Captures [key] with retry logic.
   Future<Uint8List> _captureImageWithRetry(GlobalKey key) async {
     const maxAttempts = 3;
@@ -162,6 +182,7 @@ class PdfController {
       final slide = slides[i];
       final key = _slideKeys[slide.key]!;
 
+      await _waitForPageControllerAttachment();
       await _pageController.animateToPage(
         i,
         duration: _kPrepareAnimationDuration,
@@ -190,6 +211,7 @@ class PdfController {
         final slide = slides[i];
         final key = _slideKeys[slide.key]!;
 
+        await _waitForPageControllerAttachment();
         await _pageController.animateToPage(
           i,
           duration: _kCaptureAnimationDuration,

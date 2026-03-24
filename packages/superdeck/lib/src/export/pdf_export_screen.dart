@@ -52,16 +52,30 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _handleExport();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _handleExport();
+      });
     });
   }
 
   Future<void> _handleExport() async {
+    Object? error;
+    StackTrace? stackTrace;
+
     try {
       await _exportController.export();
-    } finally {
-      if (!mounted) return;
+    } catch (caughtError, caughtStackTrace) {
+      error = caughtError;
+      stackTrace = caughtStackTrace;
+    }
+
+    if (mounted) {
       Navigator.of(context, rootNavigator: true).pop();
+    }
+
+    if (error != null) {
+      Error.throwWithStackTrace(error, stackTrace!);
     }
   }
 
