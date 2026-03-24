@@ -50,6 +50,11 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
       slideCaptureService: SlideCaptureService(),
     );
 
+    _scheduleExportAfterMount();
+  }
+
+  void _scheduleExportAfterMount() {
+    // Wait until the dialog and PageView are both mounted before capture.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -100,7 +105,6 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
       child: SizedBox.fromSize(
         size: kResolution,
         child: Watch((context) {
-          // Watch the export status signal to trigger rebuilds
           _exportController.exportStatus.value;
 
           return Stack(
@@ -109,7 +113,6 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
                 controller: _exportController.pageController,
                 itemCount: _exportController.slides.length,
                 itemBuilder: (context, index) {
-                  // Set to exporting true
                   final slide = _exportController.slides[index].copyWith(
                     isExporting: true,
                     debug: false,

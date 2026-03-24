@@ -42,12 +42,10 @@ void main() async {
 
 class TwitterWidget extends StatelessWidget {
   final String username;
-  final String tweetId;
 
   const TwitterWidget({
     super.key,
     required this.username,
-    required this.tweetId,
   });
 
   @override
@@ -70,6 +68,5 @@ class TwitterWidget extends StatelessWidget {
 
 Widget _twitterWidget(Map<String, Object?> args) {
   final username = args['username'] as String? ?? '';
-  final tweetId = args['tweetId'] as String? ?? '';
-  return TwitterWidget(username: username, tweetId: tweetId);
+  return TwitterWidget(username: username);
 }

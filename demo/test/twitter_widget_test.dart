@@ -6,7 +6,7 @@ void main() {
   testWidgets('TwitterWidget renders username', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
-        home: TwitterWidget(username: 'alice', tweetId: '123'),
+        home: TwitterWidget(username: 'alice'),
       ),
     );
 
