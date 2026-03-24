@@ -28,7 +28,7 @@ These options work with all commands:
 
 ### `superdeck create`
 
-Create a SuperDeck starter app or refresh managed SuperDeck files in an existing app. Existing-app refreshes update SuperDeck-owned files and safe web/pubspec patches without replacing app code or platform scaffolds.
+Create a SuperDeck starter app or refresh starter files in an existing app. Existing-app refreshes update the starter deck content, `pubspec.yaml`, and the web loader without replacing your app code or platform folders.
 
 ```bash
 superdeck create my_presentation
@@ -197,7 +197,7 @@ superdeck publish --dry-run
 ### Build fails
 
 **Problem:** `Error: slides.md not found`
-**Solution:** Ensure `slides.md` exists in project root. If this app was created with SuperDeck, run `superdeck create .` to refresh managed SuperDeck files.
+**Solution:** Ensure `slides.md` exists in project root. If this app was created with SuperDeck, run `superdeck create .` to restore the starter deck files and web loader.
 
 **Problem:** `Error: Invalid markdown syntax`  
 **Solution:** Check your markdown syntax, especially block definitions and frontmatter

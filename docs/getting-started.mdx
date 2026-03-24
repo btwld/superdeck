@@ -149,8 +149,8 @@ your-flutter-project/
 
 **Asset errors during build**
 - Verify `pubspec.yaml` includes `.superdeck/` and `.superdeck/assets/`
-- If this app was originally created with SuperDeck, run `superdeck create .` to refresh managed SuperDeck files
-- `superdeck create .` refreshes only managed SuperDeck files and safe web/pubspec patches; it does not replace app code or platform scaffolds
+- If this app was originally created with SuperDeck, run `superdeck create .` to restore the starter slides, README, web loader, and `pubspec.yaml` entries
+- `superdeck create .` keeps your app code and platform folders untouched
 
 **SuperDeckApp.initialize() fails**
 - Call `WidgetsFlutterBinding.ensureInitialized()` first

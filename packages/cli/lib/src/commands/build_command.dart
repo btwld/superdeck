@@ -218,7 +218,7 @@ class BuildCommand extends SuperDeckCommand {
           'Slides file not found: ${deckWorkspace.slidesFile.path}',
         );
         this.logger.info(
-          'Create a new app with `superdeck create my_presentation`, or add your own slides.md in the project root. If this app was originally scaffolded by SuperDeck, rerun `superdeck create .` to refresh managed SuperDeck files.',
+          'Create a new app with `superdeck create my_presentation`, or add your own slides.md in the project root. If this app started from `superdeck create`, rerun `superdeck create .` to restore the starter deck files, web loader, and pubspec entries.',
         );
 
         return ExitCode.unavailable.code;

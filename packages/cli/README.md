@@ -2,11 +2,11 @@
 
 Command-line workflow for SuperDeck projects.
 
-Use `superdeck_cli` to create a project, refresh managed SuperDeck files, build deck artifacts, and publish web output.
+Use `superdeck_cli` to create a project, refresh starter files in an existing app, build deck artifacts, and publish web output.
 
 ## Main Commands
 
-- `superdeck create` - Scaffolds a starter app or refreshes managed SuperDeck files
+- `superdeck create` - Scaffolds a starter app or refreshes starter files
 - `superdeck build` - Builds deck output from `slides.md`
 - `superdeck build --watch` - Rebuilds on slide changes during development
 - `superdeck publish` - Publishes web builds (for example, GitHub Pages)
