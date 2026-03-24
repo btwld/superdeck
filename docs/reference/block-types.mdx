@@ -116,31 +116,23 @@ All additional properties pass to the widget builder.
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
-class CustomChartDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const CustomChartDefinition();
+Widget customChart(Map<String, Object?> args) {
+  final title = args['title'] as String? ?? 'Untitled Chart';
+  final data = (args['data'] as List?)?.cast<Object?>() ?? const [];
 
-  @override
-  Map<String, Object?> parse(Map<String, Object?> args) => args;
-
-  @override
-  Widget build(BuildContext context, Map<String, Object?> args) {
-    final title = args['title'] as String? ?? 'Untitled Chart';
-    final data = (args['data'] as List?)?.cast<Object?>() ?? const [];
-
-    return Text('$title (${data.length} points)');
-  }
+  return Text('$title (${data.length} points)');
 }
 
 SuperDeckApp(
   options: DeckOptions(
-    widgets: const {
-      'customChart': CustomChartDefinition(),
+    widgets: {
+      'customChart': customChart,
     },
   ),
 );
 ```
 
-**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to `WidgetDefinition.parse()` as `Map<String, Object?>`.
+**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to your `WidgetFactory` as `Map<String, Object?>`.
 
 ## Built-in widgets
 
@@ -196,7 +188,7 @@ Generates QR codes.
 
 ### Mermaid diagrams
 
-Use a fenced code block with the `mermaid` language. The CLI renders Mermaid to PNG during `superdeck build`.
+Use a fenced code block with the `mermaid` language. The CLI renders Mermaid to PNG during `dart run superdeck_cli:main build`.
 
 ````markdown
 ```mermaid

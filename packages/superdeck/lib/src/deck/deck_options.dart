@@ -2,12 +2,12 @@ import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
 import 'slide_template.dart';
 import 'superdeck_plugin.dart';
-import 'widget_definition.dart';
+import 'widget_factory.dart';
 
 class DeckOptions {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
-  final Map<String, WidgetDefinition> widgets;
+  final Map<String, WidgetFactory> widgets;
   final SlideParts parts;
   final bool debug;
 
@@ -26,7 +26,7 @@ class DeckOptions {
   const DeckOptions({
     this.baseStyle,
     this.styles = const <String, SlideStyle>{},
-    this.widgets = const <String, WidgetDefinition>{},
+    this.widgets = const <String, WidgetFactory>{},
     this.parts = const SlideParts(),
     this.debug = false,
     this.templates = const <String, SlideTemplate>{},
@@ -37,7 +37,7 @@ class DeckOptions {
   DeckOptions copyWith({
     SlideStyle? baseStyle,
     Map<String, SlideStyle>? styles,
-    Map<String, WidgetDefinition>? widgets,
+    Map<String, WidgetFactory>? widgets,
     SlideParts? parts,
     bool? debug,
     Map<String, SlideTemplate>? templates,

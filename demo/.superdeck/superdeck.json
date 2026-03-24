@@ -114,7 +114,7 @@
     "comments": []
   },
   {
-    "key": "36QBcXi1",
+    "key": "qYdspw67",
     "options": {},
     "sections": [
       {
@@ -126,7 +126,7 @@
             "type": "block"
           },
           {
-            "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': MyWidgetDefinition(),\n        },\n      ),\n    ),\n  );\n}\n```{.code}",
+            "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': myWidgetFactory,\n        },\n      ),\n    ),\n  );\n}\n```{.code}",
             "flex": 2,
             "scrollable": false,
             "type": "block"

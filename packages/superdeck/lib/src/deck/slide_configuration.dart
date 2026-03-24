@@ -4,7 +4,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 import '../rendering/slides/slide_parts.dart';
 import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
-import 'widget_definition.dart';
+import 'widget_factory.dart';
 
 String buildThumbnailKey(String slideKey) {
   return 'thumbnail_$slideKey.png';
@@ -16,7 +16,7 @@ class SlideConfiguration {
   final Slide _slide;
   final bool debug;
   final SlideParts? parts;
-  final Map<String, WidgetDefinition> _widgets;
+  final Map<String, WidgetFactory> _widgets;
   // Runtime thumbnail cache key (for example: thumbnail_intro.png).
   final String thumbnailKey;
 
@@ -29,7 +29,7 @@ class SlideConfiguration {
     this.debug = false,
     this.parts,
     required this.thumbnailKey,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, WidgetFactory> widgets = const {},
     this.isExporting = false,
   }) : _slide = slide,
        _widgets = widgets;
@@ -44,7 +44,7 @@ class SlideConfiguration {
 
   List<String> get comments => _slide.comments;
 
-  WidgetDefinition? getWidgetDefinition(String name) => _widgets[name];
+  WidgetFactory? getWidgetFactory(String name) => _widgets[name];
 
   static SlideConfiguration of(BuildContext context) {
     return InheritedData.of(context);
@@ -57,7 +57,7 @@ class SlideConfiguration {
     bool? debug,
     SlideParts? parts,
     String? thumbnailKey,
-    Map<String, WidgetDefinition>? widgets,
+    Map<String, WidgetFactory>? widgets,
     bool? isExporting,
   }) {
     return SlideConfiguration(

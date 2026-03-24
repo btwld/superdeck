@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/widget_definition.dart';
 import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/cache_image_widget.dart';
 import '../utils/converters.dart';
@@ -102,37 +101,33 @@ class ImageDto {
 /// - `fit` (optional): ImageFit enum value (cover, contain, fill, etc.) - default: contain
 /// - `width` (optional): Image width in logical pixels
 /// - `height` (optional): Image height in logical pixels
-class ImageWidget extends WidgetDefinition<ImageDto> {
-  const ImageWidget();
+class ImageWidget extends StatelessWidget {
+  final ImageDto _data;
+
+  ImageWidget(Map<String, Object?> args, {super.key})
+    : _data = ImageDto.parse(args);
 
   @override
-  ImageDto parse(Map<String, Object?> args) => ImageDto.parse(args);
-
-  @override
-  Widget build(BuildContext context, ImageDto args) {
-    // Access block configuration for styling and sizing
+  Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
     final spec = data.spec;
-
-    // Get alignment from block configuration.
     final alignment = data.align;
 
     final image = CachedImage(
-      uri: args.src,
+      uri: _data.src,
       targetSize: data.size,
       styleSpec: StyleSpec(
         spec: spec.image.spec.copyWith(
-          fit: ConverterHelper.toBoxFit(args.fit),
+          fit: ConverterHelper.toBoxFit(_data.fit),
           alignment: ConverterHelper.toAlignment(alignment),
         ),
       ),
     );
 
-    final constrained = (args.width != null || args.height != null)
-        ? SizedBox(width: args.width, height: args.height, child: image)
+    final constrained = (_data.width != null || _data.height != null)
+        ? SizedBox(width: _data.width, height: _data.height, child: image)
         : image;
 
-    // Align within the block when the image is smaller than the available space.
     return Align(
       alignment: ConverterHelper.toAlignment(alignment),
       child: constrained,

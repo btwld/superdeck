@@ -159,7 +159,7 @@ void main() {
     SuperDeckApp(
       options: DeckOptions(
         widgets: {
-          'my-widget': MyWidgetDefinition(),
+          'my-widget': myWidgetFactory,
         },
       ),
     ),

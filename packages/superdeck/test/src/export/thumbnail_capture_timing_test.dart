@@ -28,19 +28,11 @@ class _InMemoryCacheStore implements AssetCacheStore {
   }
 }
 
-class _DelayedWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
-  final Duration delay;
-  final Completer<void> settled;
-
-  const _DelayedWidgetDefinition({required this.delay, required this.settled});
-
-  @override
-  Map<String, Object?> parse(Map<String, Object?> args) => args;
-
-  @override
-  Widget build(BuildContext context, Map<String, Object?> args) {
-    return _DelayedWidget(delay: delay, settled: settled);
-  }
+WidgetFactory _delayedWidgetFactory({
+  required Duration delay,
+  required Completer<void> settled,
+}) {
+  return (_) => _DelayedWidget(delay: delay, settled: settled);
 }
 
 class _DelayedWidget extends StatefulWidget {
@@ -106,9 +98,7 @@ SlideConfiguration _delayedSlide({
         SectionBlock([WidgetBlock(name: 'delayed', args: const {})]),
       ],
     ),
-    widgets: {
-      'delayed': _DelayedWidgetDefinition(delay: delay, settled: settled),
-    },
+    widgets: {'delayed': _delayedWidgetFactory(delay: delay, settled: settled)},
     thumbnailKey: 'thumbnail_delayed.png',
   );
 }

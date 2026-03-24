@@ -116,18 +116,14 @@ class _CustomBlockChild extends StatelessWidget {
   Widget build(BuildContext context) {
     final slide = SlideConfiguration.of(context);
     final data = BlockConfiguration.of(context);
-    final widgetDef = slide.getWidgetDefinition(block.name);
+    final factory = slide.getWidgetFactory(block.name);
 
-    if (widgetDef == null) {
+    if (factory == null) {
       return ErrorWidgets.simple('Widget not found: ${block.name}');
     }
 
     try {
-      final typedArgs = widgetDef.parse(block.args);
-      return SizedBox(
-        height: data.size.height,
-        child: widgetDef.build(context, typedArgs),
-      );
+      return SizedBox(height: data.size.height, child: factory(block.args));
     } catch (e, stackTrace) {
       return ErrorWidgets.detailed(
         'Error building widget: ${block.name}',

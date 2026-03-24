@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../deck/widget_definition.dart';
 import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/webview_wrapper.dart';
 
@@ -79,17 +78,15 @@ class DartPadDto {
 /// - `theme` (optional): Theme name (light, dark) - default: light
 /// - `embed` (optional): Whether to embed - default: true
 /// - `run` (optional): Whether to auto-run - default: true
-class DartPadWidget extends WidgetDefinition<DartPadDto> {
-  const DartPadWidget();
+class DartPadWidget extends StatelessWidget {
+  final DartPadDto _data;
+
+  DartPadWidget(Map<String, Object?> args, {super.key})
+    : _data = DartPadDto.parse(args);
 
   @override
-  DartPadDto parse(Map<String, Object?> args) => DartPadDto.parse(args);
-
-  @override
-  Widget build(BuildContext context, DartPadDto args) {
-    // Access block configuration for sizing
+  Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
-
-    return WebViewWrapper(size: data.size, url: args.toUrl());
+    return WebViewWrapper(size: data.size, url: _data.toUrl());
   }
 }

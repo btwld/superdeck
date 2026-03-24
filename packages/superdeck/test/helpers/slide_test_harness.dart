@@ -12,7 +12,7 @@ class SlideTestHarness {
     WidgetTester tester,
     Slide slide, {
     SlideStyle? style,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     Size? resolution,
     bool isExporting = false,
@@ -50,7 +50,7 @@ class SlideTestHarness {
   static SlideConfiguration createConfiguration(
     Slide slide, {
     SlideStyle? style,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     int slideIndex = 0,
     SlideParts? parts,

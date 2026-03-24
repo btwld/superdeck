@@ -66,10 +66,18 @@ Build presentations with Markdown and Flutter
 Register custom Flutter widgets and use them directly in Markdown:
 
 ```dart
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
+Widget twitterWidget(Map<String, Object?> args) {
+  final username = args['username'] as String? ?? '';
+  return Text('@$username');
+}
+
 SuperDeckApp(
   options: DeckOptions(
-    widgets: const {
-      'twitter': TwitterWidgetDefinition(),
+    widgets: {
+      'twitter': twitterWidget,
     },
   ),
 )
@@ -84,7 +92,7 @@ Use in Markdown:
 }
 ````
 
-SuperDeck calls `WidgetDefinition.parse()` with the block's arguments and then `WidgetDefinition.build()` to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
+SuperDeck calls the `WidgetFactory` function with the block's arguments to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
 
 ### Markdown extensions
 

@@ -4,7 +4,7 @@ import '../builtins/widgets.dart';
 import 'deck_options.dart';
 import 'slide_configuration.dart';
 import 'template_resolver.dart';
-import 'widget_definition.dart';
+import 'widget_factory.dart';
 
 /// Builds [SlideConfiguration] view models from [Slide]s and [DeckOptions].
 class SlideConfigurationBuilder {
@@ -32,7 +32,7 @@ class SlideConfigurationBuilder {
     DeckOptions options,
     TemplateResolver resolver,
   ) {
-    final widgets = Map<String, WidgetDefinition>.from(builtInWidgets);
+    final widgets = Map<String, WidgetFactory>.from(builtInWidgets);
 
     final usedWidgetNames = slide.sections
         .expand((section) => section.blocks)

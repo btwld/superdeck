@@ -28,7 +28,7 @@ export 'src/deck/slide_configuration.dart';
 export 'src/deck/slide_template.dart';
 export 'src/deck/superdeck_plugin.dart';
 export 'src/deck/template_exception.dart';
-export 'src/deck/widget_definition.dart';
+export 'src/deck/widget_factory.dart';
 
 // Export
 export 'src/export/async_thumbnail.dart';

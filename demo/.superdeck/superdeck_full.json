@@ -375,7 +375,7 @@
     "comments": []
   },
   {
-    "key": "36QBcXi1",
+    "key": "qYdspw67",
     "options": {},
     "sections": [
       {
@@ -421,7 +421,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "text": "import 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': MyWidgetDefinition(),\n        },\n      ),\n    ),\n  );\n}\n```{.code}\n"
+                          "text": "import 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': myWidgetFactory,\n        },\n      ),\n    ),\n  );\n}\n```{.code}\n"
                         }
                       ]
                     }
