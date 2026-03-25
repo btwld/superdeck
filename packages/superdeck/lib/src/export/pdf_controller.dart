@@ -245,6 +245,10 @@ class PdfController {
     } on _ExportCancelledException catch (e) {
       _exportStatus.value = PdfExportStatus.idle;
       log(e.toString());
+    } catch (e) {
+      _exportError.value = 'Export failed: $e';
+      _exportStatus.value = PdfExportStatus.failed;
+      rethrow;
     }
   }
 

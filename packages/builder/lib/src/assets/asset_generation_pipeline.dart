@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:path/path.dart' as path;
-import 'package:superdeck_builder/superdeck_builder.dart';
+import 'asset_generator.dart';
+import '../parsers/fenced_code_parser.dart';
+import '../utils/markdown_utils.dart';
 import 'package:superdeck_core/asset_cache_store_io.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 

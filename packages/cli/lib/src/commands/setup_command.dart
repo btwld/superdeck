@@ -1,13 +1,10 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:mason_logger/mason_logger.dart';
 
 import 'setup/setup_support.dart';
 import 'base_command.dart';
-
-const _successCode = 0;
-const _dataErrorCode = 65;
-const _ioErrorCode = 74;
 
 class SetupCommand extends SuperDeckCommand {
   final String? _projectDir;
@@ -36,20 +33,20 @@ class SetupCommand extends SuperDeckCommand {
 
     final projectDir = Directory(_projectDir ?? Directory.current.path);
     if (!isWorkspaceConfigValid(projectDir: projectDir.path)) {
-      return _dataErrorCode;
+      return ExitCode.data.code;
     }
 
     try {
       await applySetup(projectDir, logger);
     } on FormatException catch (error) {
       logger.err(error.message);
-      return _dataErrorCode;
+      return ExitCode.data.code;
     } on FileSystemException catch (error) {
       logger.err(error.message);
       if (error.path != null) {
         logger.err('Path: ${error.path}');
       }
-      return _ioErrorCode;
+      return ExitCode.ioError.code;
     }
 
     logger.success('Configured SuperDeck in ${projectDir.path}');
@@ -61,6 +58,6 @@ class SetupCommand extends SuperDeckCommand {
     logger.info('  dart run superdeck_cli:main build');
     logger.info('  flutter run');
 
-    return _successCode;
+    return ExitCode.success.code;
   }
 }

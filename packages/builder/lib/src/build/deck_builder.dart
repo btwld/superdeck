@@ -36,8 +36,17 @@ class DeckBuilder {
   ///
   /// The stream continues indefinitely, rebuilding on file changes.
   Stream<BuildEvent> watchAndBuild() async* {
-    // Initial build
     yield const BuildStarted();
+    yield* _buildAndEmit();
+
+    final fileWatcher = FileWatcher(workspace.slidesFile);
+    await for (final _ in fileWatcher.watch()) {
+      yield const BuildStarted();
+      yield* _buildAndEmit();
+    }
+  }
+
+  Stream<BuildEvent> _buildAndEmit() async* {
     try {
       final slides = await build();
       yield BuildCompleted(slides.toList());
@@ -49,27 +58,10 @@ class DeckBuilder {
       );
       yield BuildFailed(e, stackTrace);
     }
-
-    // Watch for changes to the slides file
-    final fileWatcher = FileWatcher(workspace.slidesFile);
-    await for (final _ in fileWatcher.watch()) {
-      yield const BuildStarted();
-      try {
-        final slides = await build();
-        yield BuildCompleted(slides.toList());
-      } catch (e, stackTrace) {
-        await store.saveBuildStatus(
-          phase: DeckBuildPhase.failure,
-          error: e,
-          stackTrace: stackTrace,
-        );
-        yield BuildFailed(e, stackTrace);
-      }
-    }
   }
 
   Future<Iterable<Slide>> build() async {
-    _logger.info('DeckBuilder: Starting build()...');
+    _logger.info('Starting build()...');
     await store.initialize();
 
     // Write building status at the start
@@ -79,20 +71,20 @@ class DeckBuilder {
     store.clearGeneratedAssets();
 
     // Load raw markdown content
-    _logger.info('DeckBuilder: Loading markdown content...');
+    _logger.info('Loading markdown content...');
     final markdownRaw = await store.readDeckMarkdown();
     _logger.info(
-      'DeckBuilder: Loaded ${markdownRaw.length} characters of markdown content',
+      'Loaded ${markdownRaw.length} characters of markdown content',
     );
 
     // Initialize the markdown parser
-    _logger.info('DeckBuilder: Initializing markdown parser...');
+    _logger.info('Initializing markdown parser...');
     final markdownParser = MarkdownParser();
 
     // Parse the raw markdown into individual raw slides
-    _logger.info('DeckBuilder: Parsing markdown into slides...');
+    _logger.info('Parsing markdown into slides...');
     final rawSlides = markdownParser.parse(markdownRaw);
-    _logger.info('DeckBuilder: Parsed ${rawSlides.length} raw slides');
+    _logger.info('Parsed ${rawSlides.length} raw slides');
 
     // Process all slides through the processor
     final processedSlides = await _processor.processAll(

@@ -45,7 +45,7 @@ class SlideProcessor {
         final rawSlide = batch[j];
 
         _logger.info(
-          'DeckBuilder: Processing slide $index (key: ${rawSlide.key})',
+          'Processing slide $index (key: ${rawSlide.key})',
         );
 
         futures.add(_processSlide(SlideContext(index, rawSlide, store), tasks));
@@ -78,20 +78,20 @@ class SlideProcessor {
   Future<void> _runTask(Task task, SlideContext context) async {
     final stopwatch = Stopwatch()..start();
     _logger.info(
-      'DeckBuilder: Running task "${task.name}" on slide ${context.slideIndex}',
+      'Running task "${task.name}" on slide ${context.slideIndex}',
     );
     try {
       await task.run(context);
       stopwatch.stop();
       _logger.info(
-        'DeckBuilder: Task "${task.name}" completed for slide ${context.slideIndex} in ${stopwatch.elapsed}',
+        'Task "${task.name}" completed for slide ${context.slideIndex} in ${stopwatch.elapsed}',
       );
     } on Exception catch (e, stackTrace) {
       stopwatch.stop();
       _logger.severe(
-        'DeckBuilder: Task "${task.name}" failed for slide ${context.slideIndex}: $e',
+        'Task "${task.name}" failed for slide ${context.slideIndex}: $e',
       );
-      _logger.severe('DeckBuilder: Stack trace: $stackTrace');
+      _logger.severe('Stack trace: $stackTrace');
 
       // Wrap and rethrow the exception with additional context.
       Error.throwWithStackTrace(

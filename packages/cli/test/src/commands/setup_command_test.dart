@@ -5,14 +5,11 @@ import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/src/commands/setup/setup_asset_support.dart';
 import 'package:superdeck_cli/src/commands/setup/setup_support.dart';
 import 'package:superdeck_cli/src/commands/setup_command.dart';
+import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
 import 'package:test/test.dart';
 
 import '../../helpers/test_helpers.dart';
-
-const _successCode = 0;
-const _dataErrorCode = 65;
-const _ioErrorCode = 74;
 
 void main() {
   group('SetupCommand', () {
@@ -64,7 +61,7 @@ void main() {
 
         final result = await runner.run(['setup']);
 
-        expect(result, _successCode);
+        expect(result, ExitCode.success.code);
         expect(
           await mainFile.readAsString(),
           'void main() => print("keep");\n',
@@ -136,8 +133,8 @@ void main() {
         includeMacos: true,
       );
 
-      expect(await runner.run(['setup']), _successCode);
-      expect(await runner.run(['setup']), _successCode);
+      expect(await runner.run(['setup']), ExitCode.success.code);
+      expect(await runner.run(['setup']), ExitCode.success.code);
 
       final pubspecContents = await File(
         path.join(tempDir.path, 'pubspec.yaml'),
@@ -168,7 +165,7 @@ void main() {
 
       final result = await runner.run(['setup']);
 
-      expect(result, _successCode);
+      expect(result, ExitCode.success.code);
       expect(
         Directory(path.join(tempDir.path, '.superdeck', 'assets')).existsSync(),
         isTrue,
@@ -204,7 +201,7 @@ void main() {
 
       final result = await runner.run(['setup']);
 
-      expect(result, _dataErrorCode);
+      expect(result, ExitCode.data.code);
       expect(
         File(
           path.join(tempDir.path, 'web', 'flutter_bootstrap.js'),
@@ -225,7 +222,7 @@ void main() {
 
       final result = await runner.run(['setup']);
 
-      expect(result, _ioErrorCode);
+      expect(result, ExitCode.ioError.code);
     });
 
     test(
@@ -262,7 +259,7 @@ void main() {
     test('fails when pubspec.yaml is missing', () async {
       final result = await runner.run(['setup']);
 
-      expect(result, _ioErrorCode);
+      expect(result, ExitCode.ioError.code);
     });
 
     test('fails when pubspec has no Flutter dependency', () async {
@@ -279,7 +276,7 @@ dependencies:
 
       final result = await runner.run(['setup']);
 
-      expect(result, _ioErrorCode);
+      expect(result, ExitCode.ioError.code);
       expect(
         Directory(path.join(tempDir.path, '.superdeck')).existsSync(),
         isFalse,
@@ -296,7 +293,7 @@ dependencies:
 
       final result = await runner.run(['setup']);
 
-      expect(result, _dataErrorCode);
+      expect(result, ExitCode.data.code);
       expect(
         Directory(path.join(tempDir.path, '.superdeck')).existsSync(),
         isFalse,

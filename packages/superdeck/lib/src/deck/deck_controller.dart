@@ -115,9 +115,10 @@ class DeckController {
     );
 
     _indexClampEffect = effect(() {
+      totalSlides.value; // explicit trigger on slide count change
       final currentIdx = _currentIndex.peek();
       final clamped = _clampIndex(currentIdx);
-      if (_currentIndex.value != clamped) {
+      if (currentIdx != clamped) {
         _currentIndex.value = clamped;
       }
     });
