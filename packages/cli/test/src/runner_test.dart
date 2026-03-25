@@ -6,6 +6,7 @@ import 'package:superdeck_cli/runner.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
 import 'package:superdeck_cli/src/commands/setup_command.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
+import 'package:superdeck_core/superdeck_core.dart' hide Logger, Level;
 import 'package:test/test.dart';
 
 import '../helpers/test_helpers.dart';
@@ -76,11 +77,9 @@ void main() {
         ).writeAsString('# Test Slide\n\nContent');
         createTestPubspec(tempDir);
 
-        final superdeckDir = Directory(path.join(tempDir.path, '.superdeck'));
-        await superdeckDir.create(recursive: true);
-        await File(
-          path.join(superdeckDir.path, 'generated_assets.json'),
-        ).writeAsString('{"stale":true}');
+        final workspace = DeckWorkspace(projectDir: tempDir.path);
+        await workspace.superdeckDir.create(recursive: true);
+        await workspace.assetsRefJson.writeAsString('{"stale":true}');
 
         final exitCode = await runner.run([
           '--verbose',

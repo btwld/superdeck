@@ -7,7 +7,7 @@ import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
 
 import '../utils/extensions.dart';
-import '../utils/logger.dart';
+import '../utils/logger.dart' show LoggerX;
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 

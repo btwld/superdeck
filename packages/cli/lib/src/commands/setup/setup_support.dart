@@ -114,7 +114,10 @@ String patchSetupPubspec(String pubspecContents) {
   return YamlWriter(allowUnquotedStrings: true).write(pubspec);
 }
 
-Future<String> patchSetupIndexHtml(String indexHtml) async {
+Future<String> patchSetupIndexHtml(
+  String indexHtml, {
+  required String assetsRoot,
+}) async {
   final hasManagedStyle = indexHtml.contains(_managedLoaderStyleStart);
   final hasManagedBody = indexHtml.contains(_managedLoaderBodyStart);
   if (hasManagedStyle && hasManagedBody) {
@@ -134,7 +137,6 @@ Future<String> patchSetupIndexHtml(String indexHtml) async {
     );
   }
 
-  final assetsRoot = await resolveSetupAssetsRoot();
   final loaderStyle = await File(
     path.join(assetsRoot, 'web', 'loader_style.html'),
   ).readAsString();
@@ -238,6 +240,7 @@ Future<void> _applyWebSetup(Directory projectDir) async {
   );
   final patchedIndexHtml = await patchSetupIndexHtml(
     await indexHtmlFile.readAsString(),
+    assetsRoot: assetsRoot,
   );
   await _ensureBootstrapIsManagedOrMissing(bootstrapFile);
 
