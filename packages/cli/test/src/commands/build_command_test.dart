@@ -77,6 +77,37 @@ void main() {
         expect(result, ExitCode.data.code);
       });
 
+      test('checks unsupported config in projectDir instead of cwd', () async {
+        final cwdDir = await createTempDirAsync();
+        final projectDir = await createTempDirAsync();
+        final projectWorkspace = DeckWorkspace(projectDir: projectDir.path);
+
+        await File(
+          path.join(cwdDir.path, 'superdeck.yaml'),
+        ).writeAsString('slidesPath: custom.md');
+        await projectWorkspace.slidesFile.writeAsString('# Test Slide');
+        createTestPubspec(projectDir);
+
+        final previousDir = Directory.current;
+        Directory.current = cwdDir;
+        try {
+          final runner = createTestRunner(
+            BuildCommand(projectDir: projectDir.path),
+          );
+          final result = await runner.run(['build', '--skip-pubspec']);
+
+          expect(
+            result,
+            anyOf(
+              equals(ExitCode.success.code),
+              equals(ExitCode.software.code),
+            ),
+          );
+        } finally {
+          Directory.current = previousDir;
+        }
+      });
+
       test('fails fast when malformed superdeck.yaml exists', () async {
         final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test Slide\n\nContent');

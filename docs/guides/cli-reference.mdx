@@ -5,7 +5,7 @@ description: Complete reference for SuperDeck CLI commands and options
 
 # CLI reference
 
-The SuperDeck CLI provides tools for creating, building, and publishing presentations. This reference covers all commands and options.
+The SuperDeck CLI provides tools for configuring, building, and publishing presentations. This reference covers all commands and options.
 
 ## Installation
 
@@ -26,19 +26,14 @@ These options work with all commands:
 
 ## Commands
 
-### `superdeck create`
+### `superdeck setup`
 
-Create a SuperDeck starter app or refresh starter files in an existing app. Existing-app refreshes update the starter deck content, `pubspec.yaml`, and the web loader without replacing your app code or platform folders.
+Configure the current Flutter app for SuperDeck. This patches `pubspec.yaml`, creates `.superdeck/`, adds the web loader when `web/` exists, and patches macOS entitlements when `macos/` exists.
 
 ```bash
-superdeck create my_presentation
+cd my_presentation
+superdeck setup
 ```
-
-**Options:**
-
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--force` | `-f` | Skip the refresh confirmation prompt |
 
 ### `superdeck build`
 
@@ -127,7 +122,9 @@ project/
 │   └── assets/                 # Build-generated assets (for example, Mermaid PNGs)
 │       └── mermaid_<hash>.png
 └── web/
-    └── index.html              # Starter web shell with loader
+    ├── index.html              # Flutter web shell patched with loader markup
+    ├── flutter_bootstrap.js    # SuperDeck-managed loader lifecycle
+    └── superdeck_loader.svg    # Loader artwork
 ```
 
 Runtime slide thumbnails are referenced by key (`thumbnail_<slideKey>.png`) and cached by the app at runtime (OS application cache on native platforms, in-memory data URIs on web).
@@ -197,7 +194,7 @@ superdeck publish --dry-run
 ### Build fails
 
 **Problem:** `Error: slides.md not found`
-**Solution:** Ensure `slides.md` exists in project root. If this app was created with SuperDeck, run `superdeck create .` to restore the starter deck files and web loader.
+**Solution:** Ensure `slides.md` exists in the project root. Run `superdeck setup` if the app still needs SuperDeck pubspec entries, web loader setup, or macOS entitlements.
 
 **Problem:** `Error: Invalid markdown syntax`  
 **Solution:** Check your markdown syntax, especially block definitions and frontmatter

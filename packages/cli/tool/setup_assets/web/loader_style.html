@@ -1,0 +1,51 @@
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    #flutter-loader {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at top, #17314d 0%, #09121b 45%, #05080d 100%);
+      opacity: 1;
+      transition: opacity 180ms ease-out, visibility 180ms ease-out;
+      z-index: 9999;
+    }
+
+    #flutter-loader.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    #flutter-loader img {
+      width: min(144px, 22vw);
+      height: auto;
+      display: block;
+    }
+
+    #flutter-loader-copy {
+      margin: 18px 0 0;
+      color: rgba(255, 255, 255, 0.82);
+      font:
+        500 15px/1.4 system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+
+    #flutter-loader-copy.is-error {
+      color: #ffe7e0;
+      max-width: 24rem;
+    }
+  </style>

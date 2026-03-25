@@ -11,8 +11,9 @@ In your Flutter project:
 
 ```bash
 dart pub global activate superdeck_cli
-superdeck create my_presentation
+flutter create my_presentation
 cd my_presentation
+superdeck setup
 flutter pub get
 dart run superdeck_cli:main build
 ```

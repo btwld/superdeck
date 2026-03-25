@@ -4,8 +4,7 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/runner.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
-import 'package:superdeck_cli/src/commands/create/create_support.dart';
-import 'package:superdeck_cli/src/commands/create_command.dart';
+import 'package:superdeck_cli/src/commands/setup_command.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
 import 'package:test/test.dart';
 
@@ -21,10 +20,7 @@ void main() {
       runner = SuperDeckRunner(
         loggerOverride: mockLogger,
         buildCommand: BuildCommand(loggerOverride: mockLogger),
-        createCommand: CreateCommand(
-          loggerOverride: mockLogger,
-          scaffoldBuilder: _createFakeScaffold,
-        ),
+        setupCommand: SetupCommand(loggerOverride: mockLogger),
       );
     });
 
@@ -47,14 +43,18 @@ void main() {
     });
 
     group('shared logger propagation', () {
-      test('passes quiet logging to create', () async {
+      test('passes quiet logging to setup', () async {
         final tempDir = await createTempDirAsync();
-        final exitCode = await runner.run([
-          '--quiet',
-          'create',
-          path.join(tempDir.path, 'my_talk'),
-          '--force',
-        ]);
+        await _createMinimalFlutterApp(tempDir);
+        runner = SuperDeckRunner(
+          loggerOverride: mockLogger,
+          buildCommand: BuildCommand(loggerOverride: mockLogger),
+          setupCommand: SetupCommand(
+            loggerOverride: mockLogger,
+            projectDir: tempDir.path,
+          ),
+        );
+        final exitCode = await runner.run(['--quiet', 'setup']);
 
         expect(exitCode, ExitCode.success.code);
         expect(mockLogger.infoMessages, isEmpty);
@@ -68,10 +68,7 @@ void main() {
             loggerOverride: mockLogger,
             projectDir: tempDir.path,
           ),
-          createCommand: CreateCommand(
-            loggerOverride: mockLogger,
-            scaffoldBuilder: _createFakeScaffold,
-          ),
+          setupCommand: SetupCommand(loggerOverride: mockLogger),
         );
 
         await File(
@@ -105,21 +102,9 @@ void main() {
   });
 }
 
-Future<Directory> _createFakeScaffold(
-  Directory tempRoot,
-  CreateBindings bindings,
-) async {
-  final scaffoldDir = Directory(path.join(tempRoot.path, bindings.projectName));
-  await scaffoldDir.create(recursive: true);
-
-  await File(
-    path.join(scaffoldDir.path, '.gitignore'),
-  ).writeAsString('.dart_tool/\n');
-  await File(
-    path.join(scaffoldDir.path, 'analysis_options.yaml'),
-  ).writeAsString('include: package:flutter_lints/flutter.yaml\n');
-  await File(path.join(scaffoldDir.path, 'pubspec.yaml')).writeAsString('''
-name: ${bindings.projectName}
+Future<void> _createMinimalFlutterApp(Directory projectDir) async {
+  await File(path.join(projectDir.path, 'pubspec.yaml')).writeAsString('''
+name: runner_test_app
 description: A new Flutter project.
 version: 1.0.0+1
 
@@ -139,21 +124,9 @@ flutter:
   uses-material-design: true
 ''');
   await File(
-    path.join(scaffoldDir.path, 'lib', 'main.dart'),
+    path.join(projectDir.path, 'web', 'index.html'),
   ).create(recursive: true);
-  await File(
-    path.join(scaffoldDir.path, 'lib', 'main.dart'),
-  ).writeAsString('void main() {}\n');
-  await File(
-    path.join(scaffoldDir.path, 'test', 'widget_test.dart'),
-  ).create(recursive: true);
-  await File(
-    path.join(scaffoldDir.path, 'test', 'widget_test.dart'),
-  ).writeAsString('void main() {}\n');
-  await File(
-    path.join(scaffoldDir.path, 'web', 'index.html'),
-  ).create(recursive: true);
-  await File(path.join(scaffoldDir.path, 'web', 'index.html')).writeAsString('''
+  await File(path.join(projectDir.path, 'web', 'index.html')).writeAsString('''
 <!DOCTYPE html>
 <html>
 <head>
@@ -165,19 +138,17 @@ flutter:
 </html>
 ''');
   await File(
-    path.join(scaffoldDir.path, 'README.md'),
-  ).writeAsString('# placeholder');
-  await Directory(
-    path.join(scaffoldDir.path, 'android'),
+    path.join(projectDir.path, 'macos', 'Runner', 'DebugProfile.entitlements'),
   ).create(recursive: true);
-  await Directory(path.join(scaffoldDir.path, 'ios')).create(recursive: true);
-  await Directory(path.join(scaffoldDir.path, 'linux')).create(recursive: true);
-  await Directory(path.join(scaffoldDir.path, 'macos')).create(recursive: true);
-  await Directory(
-    path.join(scaffoldDir.path, 'windows'),
+  await File(
+    path.join(projectDir.path, 'macos', 'Runner', 'DebugProfile.entitlements'),
+  ).writeAsString('<plist version="1.0"><dict></dict></plist>');
+  await File(
+    path.join(projectDir.path, 'macos', 'Runner', 'Release.entitlements'),
   ).create(recursive: true);
-
-  return scaffoldDir;
+  await File(
+    path.join(projectDir.path, 'macos', 'Runner', 'Release.entitlements'),
+  ).writeAsString('<plist version="1.0"><dict></dict></plist>');
 }
 
 class _CapturingLogger extends Logger {

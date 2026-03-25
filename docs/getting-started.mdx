@@ -1,11 +1,11 @@
 ---
 title: Getting started
-description: Create a SuperDeck app and build your first presentation
+description: Configure a Flutter app for SuperDeck and build your first presentation
 ---
 
 # Getting started
 
-Create a SuperDeck app and build your first presentation.
+Configure a Flutter app for SuperDeck and build your first presentation.
 
 ## Prerequisites
 
@@ -24,15 +24,15 @@ dart pub global activate superdeck_cli
 ### Create your project
 
 ```bash
-superdeck create my_presentation
+flutter create my_presentation
 cd my_presentation
+superdeck setup
 ```
 
-This creates a starter Flutter app with:
-- Sample `slides.md`
-- A preconfigured SuperDeck `main.dart`
-- A startup loader in `web/`
-- Platform shells for web and desktop/mobile Flutter targets
+This configures your Flutter app with:
+- `.superdeck/` asset folders and `pubspec.yaml` entries
+- A startup loader in `web/` when the web platform is present
+- Required macOS entitlements when the macOS platform is present
 
 ### Install dependencies
 
@@ -40,11 +40,27 @@ This creates a starter Flutter app with:
 flutter pub get
 ```
 
-Generated apps keep the SDK constraint emitted by your installed `flutter create` toolchain.
+SuperDeck keeps the SDK constraint emitted by your installed `flutter create` toolchain.
+
+## Initialize SuperDeck
+
+Update `lib/main.dart`:
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SuperDeckApp.initialize();
+
+  runApp(const SuperDeckApp(options: DeckOptions()));
+}
+```
 
 ## Your first presentation
 
-Edit the generated `slides.md` file:
+Create `slides.md` in the project root:
 
 ```markdown
 ---
@@ -124,7 +140,7 @@ Edit `slides.md`, and the CLI rebuilds automatically. Hot reload Flutter to see 
 
 ## File structure
 
-After creation, your project will have:
+After setup, your project will have:
 
 ```
 your-flutter-project/
@@ -136,7 +152,7 @@ your-flutter-project/
 │   └── generated_assets.json # Asset references
 ├── pubspec.yaml              # Updated with asset configuration
 └── lib/
-    └── main.dart             # Your Flutter app
+    └── main.dart             # Your Flutter app (configure SuperDeck here)
 ```
 
 ## Next steps
@@ -149,8 +165,7 @@ your-flutter-project/
 
 **Asset errors during build**
 - Verify `pubspec.yaml` includes `.superdeck/` and `.superdeck/assets/`
-- If this app was originally created with SuperDeck, run `superdeck create .` to restore the starter slides, README, web loader, and `pubspec.yaml` entries
-- `superdeck create .` keeps your app code and platform folders untouched
+- Run `superdeck setup` to add the required pubspec entries, web loader, and macOS entitlements
 
 **SuperDeckApp.initialize() fails**
 - Call `WidgetsFlutterBinding.ensureInitialized()` first

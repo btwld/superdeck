@@ -19,15 +19,30 @@ SuperDeck is a Flutter presentation framework. You write slides in Markdown, and
    dart pub global activate superdeck_cli
    ```
 
-2. Create a starter presentation app and install dependencies:
+2. Create a Flutter app and configure SuperDeck:
 
    ```bash
-   superdeck create your_presentation
+   flutter create your_presentation
    cd your_presentation
+   superdeck setup
    flutter pub get
    ```
 
-3. Build slides and run the app:
+3. Initialize SuperDeck in `lib/main.dart`:
+
+   ```dart
+   import 'package:flutter/widgets.dart';
+   import 'package:superdeck/superdeck.dart';
+
+   Future<void> main() async {
+     WidgetsFlutterBinding.ensureInitialized();
+     await SuperDeckApp.initialize();
+
+     runApp(const SuperDeckApp(options: DeckOptions()));
+   }
+   ```
+
+4. Add `slides.md`, then build slides and run the app:
 
    ```bash
    dart run superdeck_cli:main build --watch
@@ -36,7 +51,6 @@ SuperDeck is a Flutter presentation framework. You write slides in Markdown, and
 
 ## Write slides
 
-The starter app already includes `lib/main.dart` and a sample `slides.md`.
 Use paired frontmatter fences to separate slides.
 
 ```md
