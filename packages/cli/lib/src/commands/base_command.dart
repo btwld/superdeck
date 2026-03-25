@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
+import 'package:path/path.dart' as path;
 
 const unsupportedWorkspaceConfigFileName = 'superdeck.yaml';
 const unsupportedWorkspaceConfigMessage =
@@ -12,15 +13,17 @@ const unsupportedWorkspaceConfigMessage =
     '`dart run superdeck_cli:main build --watch` in one terminal and '
     '`flutter run` in another.';
 
-/// Base class for SuperDeck commands with common functionality
 abstract class SuperDeckCommand extends Command<int> {
   final Logger logger;
 
   SuperDeckCommand({Logger? loggerOverride})
     : logger = loggerOverride ?? Logger();
 
-  bool ensureNoUnsupportedWorkspaceConfig() {
-    final configFile = File(unsupportedWorkspaceConfigFileName);
+  bool isWorkspaceConfigValid({String? projectDir}) {
+    final configPath = projectDir == null
+        ? unsupportedWorkspaceConfigFileName
+        : path.join(projectDir, unsupportedWorkspaceConfigFileName);
+    final configFile = File(configPath);
     if (!configFile.existsSync()) {
       return true;
     }

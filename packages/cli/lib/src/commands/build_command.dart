@@ -206,7 +206,7 @@ class BuildCommand extends SuperDeckCommand {
   Future<int> run() async {
     DeckBuildStore? store;
     try {
-      if (!ensureNoUnsupportedWorkspaceConfig()) {
+      if (!isWorkspaceConfigValid(projectDir: _projectDir)) {
         return ExitCode.data.code;
       }
 
@@ -218,7 +218,9 @@ class BuildCommand extends SuperDeckCommand {
           'Slides file not found: ${deckWorkspace.slidesFile.path}',
         );
         this.logger.info(
-          'Create a new app with `superdeck create my_presentation`, or add your own slides.md in the project root. If this app started from `superdeck create`, rerun `superdeck create .` to restore the starter deck files, web loader, and pubspec entries.',
+          'Add a slides.md file in the project root. If this app has not been '
+          'configured for SuperDeck yet, run `superdeck setup` first to add '
+          'the required pubspec entries, web loader, and macOS entitlements.',
         );
 
         return ExitCode.unavailable.code;
