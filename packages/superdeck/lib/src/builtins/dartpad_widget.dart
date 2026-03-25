@@ -6,16 +6,12 @@ import '../ui/widgets/webview_wrapper.dart';
 
 /// Strongly-typed data transfer object for DartPad widget.
 class DartPadDto {
-  /// DartPad snippet ID.
   final String id;
 
-  /// Theme (light or dark).
   final DartPadTheme? theme;
 
-  /// Whether to embed.
   final bool embed;
 
-  /// Whether to auto-run.
   final bool run;
 
   const DartPadDto({

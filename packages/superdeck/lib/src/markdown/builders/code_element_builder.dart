@@ -128,7 +128,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
 
         final containerSpec = spec.container?.spec;
         final codeOffset = containerSpec != null
-            ? ConverterHelper.calculateBlockOffset(containerSpec)
+            ? containerSpec.calculateBlockOffset
             : Offset.zero;
 
         final totalSize = Size(

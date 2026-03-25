@@ -6,7 +6,7 @@ import 'package:superdeck_cli/runner.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
 import 'package:superdeck_cli/src/commands/setup_command.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
-import 'package:superdeck_core/superdeck_core.dart' hide Logger, Level;
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 import '../helpers/test_helpers.dart';

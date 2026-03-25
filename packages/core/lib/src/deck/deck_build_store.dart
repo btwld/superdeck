@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 
 import '../markdown/markdown_json.dart';
 import '../utils/extensions.dart';
-import '../utils/logging_utils.dart';
+import 'package:logging/logging.dart';
 import '../utils/pretty_json.dart';
 import 'asset_model.dart';
 import 'deck_build_status.dart';
@@ -118,7 +118,6 @@ class DeckBuildStore {
     final slidesWithMarkdownJson = slides.map((slide) {
       final slideMap = slide.toMap();
 
-      // Process each section's blocks to replace content with markdown AST
       final sections = slideMap['sections'] as List<dynamic>;
       final processedSections = sections.map((section) {
         final sectionMap = Map<String, Object?>.from(section as Map);
@@ -127,7 +126,6 @@ class DeckBuildStore {
         final processedBlocks = blocks.map((block) {
           final blockMap = Map<String, Object?>.from(block as Map);
 
-          // If the block has content, replace it with parsed markdown AST
           if (blockMap.containsKey('content') &&
               blockMap['content'] is String) {
             final contentString = blockMap['content'] as String;
@@ -135,7 +133,6 @@ class DeckBuildStore {
               contentString,
               includeMetadata: true,
             );
-            // Replace the string content with the parsed AST object
             blockMap['content'] = markdownAst;
           }
 

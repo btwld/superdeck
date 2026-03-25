@@ -191,10 +191,6 @@ bool isValidHeroTag(String value) =>
     !value.startsWith('--') &&
     heroValidIdentifierPattern.hasMatch(value);
 
-/// Returns the first valid hero tag present in [classList], or `null` if none.
-String? firstHeroTagInClassList(String classList) =>
-    _extractFirstHero(classList);
-
 // Classes that should be ignored as hero tags
 const Set<String> _ignoredHeroClasses = {'no-select'};
 
@@ -218,11 +214,6 @@ String? _extractFirstHero(String classList) {
 /// Matches `{.class}` markers at the end of a line.
 final RegExp heroTrailingPattern = RegExp(
   r'\{\s*((?:\.[^\s}]+(?:\s+\.[^\s}]+)*)?)\s*\}\s*$',
-);
-
-/// Matches `{.class}` markers at the start of a string.
-final RegExp heroLeadingPattern = RegExp(
-  r'^\s*\{\s*((?:\.[^\s}]+(?:\s+\.[^\s}]+)*)?)\s*\}',
 );
 
 /// Matches fence opener with optional info string.

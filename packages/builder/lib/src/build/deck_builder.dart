@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'build_event.dart';
@@ -61,44 +62,30 @@ class DeckBuilder {
   }
 
   Future<Iterable<Slide>> build() async {
-    _logger.info('Starting build()...');
+    _logger.info('Starting build...');
     await store.initialize();
 
-    // Write building status at the start
     await store.saveBuildStatus(phase: DeckBuildPhase.building);
 
-    // Clear generated assets from previous builds
     store.clearGeneratedAssets();
 
-    // Load raw markdown content
-    _logger.info('Loading markdown content...');
     final markdownRaw = await store.readDeckMarkdown();
-    _logger.info(
-      'Loaded ${markdownRaw.length} characters of markdown content',
-    );
-
-    // Initialize the markdown parser
-    _logger.info('Initializing markdown parser...');
     final markdownParser = MarkdownParser();
-
-    // Parse the raw markdown into individual raw slides
-    _logger.info('Parsing markdown into slides...');
     final rawSlides = markdownParser.parse(markdownRaw);
-    _logger.info('Parsed ${rawSlides.length} raw slides');
 
-    // Process all slides through the processor
     final processedSlides = await _processor.processAll(
       rawSlides,
       tasks,
       store,
     );
 
-    // Save the processed slides
     await store.saveReferences(processedSlides);
     await store.saveBuildStatus(
       phase: DeckBuildPhase.success,
       slideCount: processedSlides.length,
     );
+
+    _logger.info('Build completed: ${processedSlides.length} slides processed');
 
     return processedSlides;
   }

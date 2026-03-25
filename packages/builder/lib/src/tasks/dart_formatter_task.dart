@@ -21,57 +21,42 @@ final class DartFormatterTask extends Task {
     final lineLength = configuration['lineLength'] as int?;
     final fix = configuration['fix'] as bool? ?? true;
 
-    logger.info('DartFormatterTask: Processing slide ${context.slideIndex}');
-
-    try {
-      final updatedContent = await processFencedCodeBlocks(
-        context.slide.content,
-        filter: (block) => block.language == 'dart',
-        transform: (block) async {
-          logger.info(
-            'Formatting dart block at indices ${block.startIndex}-${block.endIndex} for slide ${context.slideIndex}',
+    final updatedContent = await processFencedCodeBlocks(
+      context.slide.content,
+      filter: (block) => block.language == 'dart',
+      transform: (block) async {
+        try {
+          final formattedCode = await formatDartCode(
+            block.content,
+            lineLength: lineLength,
+            fix: fix,
+            environmentOverrides: _environmentOverrides,
           );
 
-          try {
-            final formattedCode = await formatDartCode(
-              block.content,
-              lineLength: lineLength,
-              fix: fix,
-              environmentOverrides: _environmentOverrides,
-            );
+          return '```dart\n$formattedCode\n```';
+        } catch (e, stackTrace) {
+          final codePreview = block.content.length > 100
+              ? '${block.content.substring(0, math.min(100, block.content.length))}...'
+              : block.content;
 
-            logger.info('Formatted dart block for slide ${context.slideIndex}');
+          logger.severe(
+            'Failed to format Dart code block for slide ${context.slideIndex}. '
+            'Code preview: "$codePreview". '
+            'Error: $e',
+            e,
+            stackTrace,
+          );
 
-            return '```dart\n$formattedCode\n```';
-          } catch (e, stackTrace) {
-            final codePreview = block.content.length > 100
-                ? '${block.content.substring(0, math.min(100, block.content.length))}...'
-                : block.content;
+          logger.warning(
+            'Skipping unformatted Dart code block on slide ${context.slideIndex}. '
+            'Fix syntax errors and rebuild.',
+          );
+          // Return null to skip this block on error
+          return null;
+        }
+      },
+    );
 
-            logger.severe(
-              'Failed to format Dart code block for slide ${context.slideIndex}. '
-              'Code preview: "$codePreview". '
-              'Error: $e',
-              e,
-              stackTrace,
-            );
-
-            logger.warning(
-              '⚠️  SKIPPING unformatted Dart code block on slide ${context.slideIndex}. '
-              'Your presentation will contain UNFORMATTED code! Fix syntax errors and rebuild.',
-            );
-            // Return null to skip this block on error
-            return null;
-          }
-        },
-      );
-
-      context.slide = context.slide.copyWith(content: updatedContent);
-    } catch (e) {
-      logger.severe(
-        'Failed to process Dart formatting for slide ${context.slideIndex}: $e',
-      );
-      rethrow;
-    }
+    context.slide = context.slide.copyWith(content: updatedContent);
   }
 }

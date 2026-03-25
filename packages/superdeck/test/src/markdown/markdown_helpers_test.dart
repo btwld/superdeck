@@ -460,26 +460,5 @@ void main() {
         }
       });
     });
-
-    group('lerpString helper', () {
-      test('returns only text without fade information', () {
-        final result = lerpString('Hello', 'World', 0.5);
-
-        expect(result, isA<String>());
-        expect(result, isEmpty); // At t=0.5, only common prefix (none) is shown
-      });
-
-      test('matches lerpStringWithFade text output', () {
-        const start = 'Hello';
-        const end = 'World';
-
-        for (var t = 0.0; t <= 1.0; t += 0.25) {
-          final simpleResult = lerpString(start, end, t);
-          final fullResult = lerpStringWithFade(start, end, t);
-
-          expect(simpleResult, equals(fullResult.text));
-        }
-      });
-    });
   });
 }

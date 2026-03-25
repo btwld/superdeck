@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:ack/ack.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 
-import '../utils/extensions.dart';
 import '../utils/generate_hash.dart';
 
 part 'asset_model.mapper.dart';
@@ -15,7 +14,7 @@ enum AssetExtension {
   webp,
   svg;
 
-  static final schema = ackEnum(values);
+  static final schema = Ack.enumValues(values);
 
   static AssetExtension? tryParse(String value) {
     final extension = value.toLowerCase();

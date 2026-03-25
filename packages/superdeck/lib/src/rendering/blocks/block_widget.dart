@@ -39,9 +39,7 @@ class _BlockContainerState extends State<_BlockContainer> {
     // Get the resolved SlideSpec (provided by SlideView)
     final spec = SlideSpec.of(context);
 
-    final blockOffset = ConverterHelper.calculateBlockOffset(
-      spec.blockContainer.spec,
-    );
+    final blockOffset = spec.blockContainer.spec.calculateBlockOffset;
 
     final blockData = BlockConfiguration(
       align: widget.block.align,
@@ -64,7 +62,7 @@ class _BlockContainerState extends State<_BlockContainer> {
 
     // Apply alignment
     content = Align(
-      alignment: ConverterHelper.toAlignment(widget.block.align),
+      alignment: widget.block.align?.toAlignment ?? Alignment.center,
       child: content,
     );
 

@@ -131,34 +131,3 @@ List<TextSpan> splitTextSpansByLines(List<TextSpan> spans) {
   // Convert each line's list of TextSpans into a single TextSpan.
   return lines.map((lineSpans) => TextSpan(children: lineSpans)).toList();
 }
-
-List<int> parseLineNumbers(String input) {
-  final regExp = RegExp(r'\{(.*?)\}');
-  final match = regExp.firstMatch(input);
-  if (match == null) return [];
-  var content = match.group(1) ?? '';
-  var lineNumbers = <int>{};
-  var elements = content.split(',');
-  for (var element in elements) {
-    element = element.trim();
-    if (element.isEmpty) {
-      continue;
-    }
-
-    if (element.contains('-')) {
-      var rangeParts = element.split('-');
-      var start = int.parse(rangeParts[0].trim());
-      var end = int.parse(rangeParts[1].trim());
-
-      for (var i = start; i <= end; i++) {
-        lineNumbers.add(i);
-      }
-    } else {
-      lineNumbers.add(int.parse(element));
-    }
-  }
-
-  var lineNumberList = lineNumbers.toList();
-  lineNumberList.sort();
-  return lineNumberList;
-}

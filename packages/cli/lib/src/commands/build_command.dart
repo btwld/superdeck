@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
-import 'package:superdeck_core/superdeck_core.dart' hide logger, Logger, Level;
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../utils/extensions.dart';
 import '../utils/logger.dart' show LoggerX;
@@ -51,11 +51,9 @@ DeckBuilder _createStandardBuilder({
 /// Parses and processes the slides.md file, generating all required assets
 /// and outputs for the presentation.
 class BuildCommand extends SuperDeckCommand {
-  /// Whether a build is currently in progress.
   bool _isRunning = false;
   final String? _projectDir;
 
-  /// Creates a new [BuildCommand].
   BuildCommand({super.loggerOverride, String? projectDir})
     : _projectDir = projectDir {
     argParser
@@ -119,7 +117,6 @@ class BuildCommand extends SuperDeckCommand {
 
     await _clearGeneratedAssets(workspace);
 
-    // Run the build (pass through the builder if provided)
     return _runBuild(store, workspace, builder: builder);
   }
 
@@ -132,7 +129,6 @@ class BuildCommand extends SuperDeckCommand {
     DeckWorkspace workspace, {
     DeckBuilder? builder,
   }) async {
-    // Wait while a build is already running
     while (_isRunning) {
       await Future.delayed(const Duration(milliseconds: 100));
     }
@@ -140,12 +136,10 @@ class BuildCommand extends SuperDeckCommand {
     _isRunning = true;
     final progress = logger.progress('Generating slides...');
 
-    // Track if we created the builder (and thus need to dispose it)
     final ownsBuilder = builder == null;
     builder ??= _createStandardBuilder(workspace: workspace, store: store);
 
     try {
-      // Run the build process
       final slides = await builder.build();
 
       if (slides.isEmpty) {
@@ -212,7 +206,6 @@ class BuildCommand extends SuperDeckCommand {
 
       final deckWorkspace = DeckWorkspace(projectDir: _projectDir);
 
-      // Check if slides file exists
       if (!await deckWorkspace.slidesFile.exists()) {
         logger.err(
           'Slides file not found: ${deckWorkspace.slidesFile.path}',
@@ -226,11 +219,9 @@ class BuildCommand extends SuperDeckCommand {
         return ExitCode.unavailable.code;
       }
 
-      // Create the data store using the consolidated repository
       store = DeckBuildStore(workspace: deckWorkspace);
       await store.initialize();
 
-      // Log if force rebuild is enabled
       if (boolArg('force-rebuild')) {
         logger.info(
           'Force rebuild enabled. All assets will be regenerated.',
@@ -238,7 +229,6 @@ class BuildCommand extends SuperDeckCommand {
         await _clearGeneratedAssets(deckWorkspace);
       }
 
-      // Update pubspec assets unless skipped
       if (!boolArg('skip-pubspec')) {
         try {
           await _ensurePubspecAssets(deckWorkspace, logger);
@@ -247,11 +237,8 @@ class BuildCommand extends SuperDeckCommand {
         }
       }
 
-      // Run the build process initially
-      final repository = store;
-
       if (!boolArg('watch')) {
-        final success = await _runBuild(repository, deckWorkspace);
+        final success = await _runBuild(store, deckWorkspace);
 
         if (!success) {
           return ExitCode.software.code;
@@ -276,7 +263,7 @@ class BuildCommand extends SuperDeckCommand {
         // Create a builder that will handle watching and rebuilding
         final builder = _createStandardBuilder(
           workspace: deckWorkspace,
-          store: repository,
+          store: store,
         );
 
         // Listen to stdin for interactive commands
@@ -293,7 +280,7 @@ class BuildCommand extends SuperDeckCommand {
                     logger.info('Manual rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
-                      _runBuild(repository, deckWorkspace, builder: builder),
+                      _runBuild(store!, deckWorkspace, builder: builder),
                     );
                     break;
                   case 'f':
@@ -302,7 +289,7 @@ class BuildCommand extends SuperDeckCommand {
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
                       _cleanAndRebuild(
-                        repository,
+                        store!,
                         deckWorkspace,
                         builder: builder,
                       ),
@@ -322,7 +309,6 @@ class BuildCommand extends SuperDeckCommand {
                 }
               });
 
-          // Start watching for changes and rebuilding when needed
           await for (final event in builder.watchAndBuild()) {
             switch (event) {
               case BuildStarted():
@@ -374,31 +360,24 @@ Future<void> _ensurePubspecAssets(
 ) async {
   final progress = logger.progress('Checking pubspec.yaml assets...');
 
-  try {
-    final pubspecFile = workspace.pubspecFile;
+  final pubspecFile = workspace.pubspecFile;
 
-    if (!await pubspecFile.exists()) {
-      progress.fail('pubspec.yaml not found');
-      logger.warn('pubspec.yaml not found at ${pubspecFile.path}');
+  if (!await pubspecFile.exists()) {
+    progress.fail('pubspec.yaml not found');
 
-      return;
-    }
+    return;
+  }
 
-    final pubspecContents = await pubspecFile.readAsString();
-    final updatedPubspecContents = updatePubspecAssets(
-      workspace,
-      pubspecContents,
-    );
+  final pubspecContents = await pubspecFile.readAsString();
+  final updatedPubspecContents = updatePubspecAssets(
+    workspace,
+    pubspecContents,
+  );
 
-    if (updatedPubspecContents != pubspecContents) {
-      await pubspecFile.writeAsString(updatedPubspecContents);
-      progress.complete('Pubspec assets updated');
-    } else {
-      progress.complete('Pubspec assets already configured');
-    }
-  } catch (e) {
-    progress.fail('Failed to update pubspec assets');
-    logger.warn('Error updating pubspec: $e');
-    rethrow;
+  if (updatedPubspecContents != pubspecContents) {
+    await pubspecFile.writeAsString(updatedPubspecContents);
+    progress.complete('Pubspec assets updated');
+  } else {
+    progress.complete('Pubspec assets already configured');
   }
 }

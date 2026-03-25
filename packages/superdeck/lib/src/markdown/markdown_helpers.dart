@@ -31,9 +31,6 @@ import 'package:superdeck_core/superdeck_core.dart'
   return result;
 }
 
-/// Re-exported convenience wrapper so existing imports keep working.
-bool isValidHeroTag(String value) => core.isValidHeroTag(value);
-
 class LerpStringResult {
   const LerpStringResult({
     required this.text, // fully visible prefix
@@ -172,6 +169,3 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
     ghostSuffix: ghostSuffixG.join(),
   );
 }
-
-String lerpString(String start, String end, double t) =>
-    lerpStringWithFade(start, end, t).text;

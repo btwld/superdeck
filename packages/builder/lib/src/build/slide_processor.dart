@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
+
 import '../parsers/raw_slide_schema.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -19,7 +21,6 @@ class SlideProcessor {
   SlideProcessor({int concurrentSlides = 4})
     : _concurrentSlides = concurrentSlides;
 
-  /// Processes all raw slides through the task pipeline with concurrency control.
   Future<List<Slide>> processAll(
     List<RawSlideMarkdown> rawSlides,
     List<Task> tasks,
@@ -44,10 +45,6 @@ class SlideProcessor {
         final index = i + j;
         final rawSlide = batch[j];
 
-        _logger.info(
-          'Processing slide $index (key: ${rawSlide.key})',
-        );
-
         futures.add(_processSlide(SlideContext(index, rawSlide, store), tasks));
       }
 
@@ -63,7 +60,6 @@ class SlideProcessor {
     return processedSlides;
   }
 
-  /// Processes an individual slide by executing all tasks sequentially.
   Future<SlideContext> _processSlide(
     SlideContext context,
     List<Task> tasks,
@@ -74,20 +70,10 @@ class SlideProcessor {
     return context;
   }
 
-  /// Run a single task with timing and error handling
   Future<void> _runTask(Task task, SlideContext context) async {
-    final stopwatch = Stopwatch()..start();
-    _logger.info(
-      'Running task "${task.name}" on slide ${context.slideIndex}',
-    );
     try {
       await task.run(context);
-      stopwatch.stop();
-      _logger.info(
-        'Task "${task.name}" completed for slide ${context.slideIndex} in ${stopwatch.elapsed}',
-      );
     } on Exception catch (e, stackTrace) {
-      stopwatch.stop();
       _logger.severe(
         'Task "${task.name}" failed for slide ${context.slideIndex}: $e',
       );
@@ -101,7 +87,6 @@ class SlideProcessor {
     }
   }
 
-  /// Builds final Slide from processed context
   Future<Slide> _buildSlide(SlideContext result) async {
     return Slide(
       key: result.slide.key,

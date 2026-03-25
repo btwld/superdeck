@@ -3,9 +3,6 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'process_utils.dart';
-
-/// Format Dart code using dart format
 Future<String> formatDartCode(
   String code, {
   int? lineLength,
@@ -32,9 +29,10 @@ Future<String> formatDartCode(
     }
     args.add(tempFile.path);
 
-    final result = await runDartCommand(
+    final result = await Process.run(
+      'dart',
       args,
-      environmentOverrides: environmentOverrides,
+      environment: environmentOverrides,
     );
 
     if (result.exitCode != 0) {

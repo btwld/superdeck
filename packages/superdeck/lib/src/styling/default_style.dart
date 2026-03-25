@@ -21,7 +21,6 @@ TextStyle get _baseTextStyle => _safeGoogleFont(
 ).copyWith(fontSize: 24, color: Colors.white);
 
 const onGist = NamedVariant('gist');
-const onDebug = NamedVariant('debug');
 const onImage = NamedVariant('image');
 
 WidgetModifierConfig _pad(EdgeInsetsGeometryMix value) =>

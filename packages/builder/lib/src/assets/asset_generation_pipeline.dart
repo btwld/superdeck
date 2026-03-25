@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'asset_generator.dart';
 import '../parsers/fenced_code_parser.dart';
@@ -68,10 +69,6 @@ class AssetGenerationPipeline {
           final (asset, replacementSyntax) = processingResult;
           generatedAssets.add(asset);
 
-          _logger.info(
-            'Replaced ${block.language} block with asset reference for slide $slideIndex',
-          );
-
           return replacementSyntax;
         } catch (error) {
           _logger.severe(
@@ -81,6 +78,12 @@ class AssetGenerationPipeline {
         }
       },
     );
+
+    if (generatedAssets.isNotEmpty) {
+      _logger.info(
+        'Slide $slideIndex: generated ${generatedAssets.length} assets',
+      );
+    }
 
     return AssetGenerationResult(
       updatedContent: updatedContent,
@@ -110,15 +113,8 @@ class AssetGenerationPipeline {
   ) async {
     final generator = _findGenerator(codeBlock.language);
     if (generator == null) {
-      _logger.info(
-        'Skipped ${codeBlock.language} block for slide $slideIndex: No generator found',
-      );
       return null;
     }
-
-    _logger.info(
-      'Processing ${codeBlock.language} block at indices ${codeBlock.startIndex}-${codeBlock.endIndex} for slide $slideIndex',
-    );
 
     // Let the generator create its own asset reference
     final generatedAsset = generator.createAssetReference(codeBlock.content);
@@ -131,12 +127,7 @@ class AssetGenerationPipeline {
         expectedPath: assetPath,
         assetKey: generatedAsset.fileName,
       );
-      _logger.info(
-        '${generator.type} asset already exists for slide $slideIndex',
-      );
     } else {
-      _logger.info('Generating ${generator.type} asset for slide $slideIndex');
-
       final assetData = await generator.generateAsset(
         codeBlock.content,
         assetPath,

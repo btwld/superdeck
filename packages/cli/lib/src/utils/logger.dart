@@ -2,9 +2,7 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 
 final logger = Logger(
-  // Optionally, specify a custom `LogTheme` to override log styles.
   theme: LogTheme(),
-  // Optionally, specify a log level (defaults to Level.info).
   level: Level.info,
 );
 
@@ -30,7 +28,6 @@ extension LoggerX on Logger {
       return ' $pageNumber | ${line.padRight(longestLine + 2)}';
     }
 
-    // Print the error message with the source code
     newLine();
     err('Formatting Error:');
     newLine();

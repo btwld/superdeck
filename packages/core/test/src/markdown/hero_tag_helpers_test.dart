@@ -49,43 +49,6 @@ void main() {
       });
     });
 
-    group('firstHeroTagInClassList', () {
-      test('extracts first valid tag from single class', () {
-        expect(firstHeroTagInClassList('hero'), 'hero');
-        expect(firstHeroTagInClassList('.hero'), 'hero');
-      });
-
-      test('extracts first valid tag from multiple classes', () {
-        expect(firstHeroTagInClassList('hero second'), 'hero');
-        expect(firstHeroTagInClassList('.hero .second'), 'hero');
-      });
-
-      test('returns null for empty input', () {
-        expect(firstHeroTagInClassList(''), isNull);
-        expect(firstHeroTagInClassList('   '), isNull);
-      });
-
-      test('skips ignored classes (no-select)', () {
-        expect(firstHeroTagInClassList('no-select hero'), 'hero');
-        expect(firstHeroTagInClassList('.no-select .hero'), 'hero');
-      });
-
-      test('returns null if only ignored classes', () {
-        expect(firstHeroTagInClassList('no-select'), isNull);
-        expect(firstHeroTagInClassList('.no-select'), isNull);
-      });
-
-      test('skips invalid tags', () {
-        expect(firstHeroTagInClassList('--invalid hero'), 'hero');
-        expect(firstHeroTagInClassList('123 hero'), 'hero');
-      });
-
-      test('returns null if no valid tags', () {
-        expect(firstHeroTagInClassList('--invalid'), isNull);
-        expect(firstHeroTagInClassList('123'), isNull);
-      });
-    });
-
     group('extractHeroAndContent', () {
       test('extracts hero tag from simple text', () {
         final result = extractHeroAndContent('Hello {.hero}');
@@ -362,20 +325,6 @@ void main() {
 
         test('does not match marker in middle', () {
           expect(heroTrailingPattern.hasMatch('{.hero} text'), isFalse);
-        });
-      });
-
-      group('heroLeadingPattern', () {
-        test('matches marker at start', () {
-          expect(heroLeadingPattern.hasMatch('{.hero} text'), isTrue);
-        });
-
-        test('matches with leading whitespace', () {
-          expect(heroLeadingPattern.hasMatch('  {.hero} text'), isTrue);
-        });
-
-        test('does not match marker at end', () {
-          expect(heroLeadingPattern.hasMatch('text {.hero}'), isFalse);
         });
       });
 

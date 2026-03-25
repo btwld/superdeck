@@ -86,38 +86,10 @@ class MarkdownAstConverter {
   }
 }
 
-/// Converts a single markdown AST node to a Map.
+/// Converts a markdown AST [md.Node] into a `Map<String, Object?>`.
 ///
-/// Supports three node types from the markdown package:
-/// - [md.Element]: Named tags that can contain other nodes (e.g., paragraphs, headings)
-/// - [md.Text]: Plain text nodes
-/// - [md.UnparsedContent]: Inline content not yet parsed into nodes
-///
-/// For Element nodes, the returned Map includes:
-/// - `type`: Always 'element'
-/// - `tag`: The HTML tag name (e.g., 'p', 'h1', 'strong')
-/// - `children`: (optional) List of child nodes
-/// - `attributes`: (optional) Map of HTML attributes
-/// - `generatedId`: (optional) Auto-generated ID for headings
-/// - `footnoteLabel`: (optional) Footnote label
-/// - `isEmpty`: (optional) true for self-closing elements like `<br/>` or `<hr/>`
-///
-/// For Text nodes:
-/// - `type`: Always 'text'
-/// - `text`: The text content
-///
-/// For UnparsedContent nodes:
-/// - `type`: Always 'unparsed'
-/// - `text`: The unparsed text content
-///
-/// Throws [UnimplementedError] if the node type is not one of the above.
-///
-/// Example:
-/// ```dart
-/// final element = md.Element('p', [md.Text('Hello')]);
-/// final map = nodeToMap(element);
-/// // Returns: {type: 'element', tag: 'p', children: [{type: 'text', text: 'Hello'}]}
-/// ```
+/// Handles [md.Element], [md.Text], and [md.UnparsedContent] node types.
+/// Throws [UnimplementedError] for unrecognized node types.
 Map<String, Object?> nodeToMap(md.Node node) {
   if (node is md.Element) {
     return _elementToMap(node);

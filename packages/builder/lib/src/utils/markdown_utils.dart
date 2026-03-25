@@ -29,16 +29,10 @@ Future<String> processFencedCodeBlocks(
   required Future<String?> Function(ParsedFencedCode block) transform,
   FencedCodeParser parser = const FencedCodeParser(),
 }) async {
-  // Parse all fenced code blocks
   final blocks = parser.parse(content);
-
-  // Filter blocks based on criteria
   final matchingBlocks = blocks.where(filter).toList();
-
-  // Sort in reverse order (end to beginning) to prevent index shifting
   final sortedBlocks = matchingBlocks.sortedForReplacement();
 
-  // Process each block and replace in content
   String result = content;
   for (final block in sortedBlocks) {
     try {

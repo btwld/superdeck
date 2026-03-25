@@ -48,27 +48,12 @@ final class AssetGenerationTask extends Task {
 
   @override
   Future<void> run(SlideContext context) async {
-    logger.info('Generating assets for slide ${context.slideIndex}');
+    final result = await _pipeline.processSlideContent(
+      context.slide.content,
+      context.slideIndex,
+    );
 
-    try {
-      final result = await _pipeline.processSlideContent(
-        context.slide.content,
-        context.slideIndex,
-      );
-
-      // Update the slide content with asset references
-      context.slide = context.slide.copyWith(content: result.updatedContent);
-
-      logger.info(
-        'Asset generation completed for slide ${context.slideIndex}. '
-        'Generated ${result.generatedAssets.length} assets.',
-      );
-    } catch (e) {
-      logger.severe(
-        'Asset generation failed for slide ${context.slideIndex}: $e',
-      );
-      rethrow;
-    }
+    context.slide = context.slide.copyWith(content: result.updatedContent);
   }
 
   @override

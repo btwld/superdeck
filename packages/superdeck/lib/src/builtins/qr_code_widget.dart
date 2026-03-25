@@ -8,19 +8,14 @@ enum _QrErrorCorrectionToken { low, l, medium, m, high, q, highest, h }
 
 /// Strongly-typed data transfer object for QR code widget.
 class QrCodeDto {
-  /// The data to encode in the QR code.
   final String text;
 
-  /// Size of the QR code in logical pixels.
   final double size;
 
-  /// Error correction level (low, medium, high, or highest).
   final String errorCorrection;
 
-  /// Hex color for background.
   final String? backgroundColor;
 
-  /// Hex color for QR code.
   final String? foregroundColor;
 
   const QrCodeDto({

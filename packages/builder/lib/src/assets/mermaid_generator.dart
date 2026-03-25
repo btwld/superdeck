@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:logging/logging.dart';
 import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -278,17 +279,6 @@ class MermaidGenerator implements AssetGenerator {
 
     // Class diagram (v11 supports htmlLabels here too)
     'class': {'htmlLabels': true},
-
-    // State diagrams
-    'state': {},
-
-    // Gantt
-    'gantt': {},
-
-    // Optional: pie/timeline/journey
-    'pie': {},
-    'timeline': {},
-    'journey': {},
 
     // Rendering mechanics for the browser page
     'viewportWidth': _defaultViewportWidth,

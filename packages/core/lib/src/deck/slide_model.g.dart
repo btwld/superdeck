@@ -13,12 +13,8 @@ final slideSchema = Ack.object({
   'key': Ack.string().describe(
     'Unique identifier for this slide, typically generated from content hash.',
   ),
-  'options': slideOptionsSchema.optional().nullable().describe(
-    'Optional configuration options for this slide such as title and style.',
-  ),
-  'sections': Ack.list(
-    sectionBlockSchema,
-  ).describe('List of content sections that make up this slide.'),
+  'options': slideOptionsSchema.optional().nullable(),
+  'sections': Ack.list(sectionBlockSchema),
   'comments': Ack.list(
     Ack.string(),
   ).describe('Speaker notes or comments associated with this slide.'),
@@ -27,9 +23,7 @@ final slideSchema = Ack.object({
 /// Generated schema for SlideOptions
 /// Configuration options for a slide. Provides metadata and styling information for individual slides.
 final slideOptionsSchema = Ack.object({
-  'title': Ack.string().optional().nullable().describe(
-    'The title of the slide, if any.',
-  ),
+  'title': Ack.string().optional().nullable(),
   'style': Ack.string().optional().nullable().describe(
     'The style variant to apply to this slide.',
   ),

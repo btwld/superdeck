@@ -17,10 +17,8 @@ class Slide with SlideMappable {
   /// Unique identifier for this slide, typically generated from content hash.
   final String key;
 
-  /// Optional configuration options for this slide such as title and style.
   final SlideOptions? options;
 
-  /// List of content sections that make up this slide.
   final List<SectionBlock> sections;
 
   /// Speaker notes or comments associated with this slide.
@@ -36,7 +34,6 @@ class Slide with SlideMappable {
 
   static final fromMap = SlideMapper.fromMap;
 
-  /// Validation schema for slide data.
   static final schema = slideSchema.extend({
     'options': SlideOptions.schema.optional(),
     'sections': Ack.list(sectionBlockSchema).optional(),
@@ -55,7 +52,6 @@ class Slide with SlideMappable {
 class SlideOptions with SlideOptionsMappable {
   static const _knownFields = {'title', 'style', 'template'};
 
-  /// The title of the slide, if any.
   final String? title;
 
   /// The style variant to apply to this slide.
@@ -67,7 +63,6 @@ class SlideOptions with SlideOptionsMappable {
   /// application for the slide when a deck-level default template is configured.
   final String? template;
 
-  /// Additional arguments passed to the slide.
   final Map<String, Object?> args;
 
   SlideOptions({
@@ -83,7 +78,6 @@ class SlideOptions with SlideOptionsMappable {
 
   static final fromMap = SlideOptionsMapper.fromMap;
 
-  /// Validation schema for slide options.
   static final schema = slideOptionsSchema.extend({
     'title': Ack.string().optional(),
     'style': Ack.string().optional(),

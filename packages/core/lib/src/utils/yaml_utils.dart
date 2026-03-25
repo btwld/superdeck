@@ -1,28 +1,7 @@
-import 'dart:io';
-
 import 'package:logging/logging.dart';
-import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
 final _logger = Logger('YamlUtils');
-
-/// Loads a YAML file and returns the parsed content
-Future<dynamic> loadYamlFile(String path) async {
-  final file = File(path);
-
-  if (!await file.exists()) {
-    throw FileSystemException('YAML file not found', path);
-  }
-
-  final content = await file.readAsString();
-  return loadYaml(content);
-}
-
-/// Checks if a file is a YAML file based on its extension
-bool isYamlFile(String path) {
-  final extension = p.extension(path).toLowerCase();
-  return extension == '.yaml' || extension == '.yml';
-}
 
 /// Converts YAML string to a `Map<String, Object?>`
 ///
@@ -56,7 +35,6 @@ Map<String, Object?> convertYamlToMap(
       stackTrace,
     );
     if (strict) rethrow;
-    // Return empty map on parse error
     return {};
   }
 }
@@ -73,51 +51,4 @@ dynamic _deepConvert(dynamic value) {
     return value.map(_deepConvert).toList();
   }
   return value;
-}
-
-/// Normalizes a YAML block by trimming surrounding empty lines and
-/// removing the minimum common indentation.
-String normalizeYamlBlock(String text) {
-  if (text.isEmpty) return '';
-
-  final lines = text.split('\n');
-
-  int firstContent = 0;
-  while (firstContent < lines.length && lines[firstContent].trim().isEmpty) {
-    firstContent++;
-  }
-
-  int lastContent = lines.length - 1;
-  while (lastContent >= firstContent && lines[lastContent].trim().isEmpty) {
-    lastContent--;
-  }
-
-  if (firstContent > lastContent) {
-    return '';
-  }
-
-  final trimmedLines = lines.sublist(firstContent, lastContent + 1);
-
-  int? indent;
-  for (final line in trimmedLines) {
-    if (line.trim().isEmpty) continue;
-    final lineIndent = line.length - line.trimLeft().length;
-    if (indent == null || lineIndent < indent) {
-      indent = lineIndent;
-    }
-    if (indent == 0) break;
-  }
-
-  final dedent = indent ?? 0;
-
-  return trimmedLines
-      .map((line) {
-        if (line.trim().isEmpty) return '';
-        if (dedent == 0) return line;
-        if (line.length <= dedent) {
-          return line.trimLeft();
-        }
-        return line.substring(dedent);
-      })
-      .join('\n');
 }

@@ -1,8 +1,6 @@
 import 'package:ack/ack.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 
-import '../utils/extensions.dart';
-
 part 'block_model.mapper.dart';
 
 /// Base class for all content blocks in a slide.
@@ -11,16 +9,9 @@ part 'block_model.mapper.dart';
 /// arranged in sections and support alignment, flexible sizing, and scrolling.
 @MappableClass(discriminatorKey: 'type', ignoreNull: true)
 sealed class Block with BlockMappable {
-  /// The type identifier for this block.
   final String type;
-
-  /// The alignment of content within this block.
   final ContentAlignment? align;
-
-  /// The flex weight for this block when in a flexible layout.
   final int flex;
-
-  /// Whether this block's content is scrollable.
   final bool scrollable;
 
   Block({
@@ -64,10 +55,8 @@ sealed class Block with BlockMappable {
 /// Sections are used to create multi-column layouts within a slide.
 @MappableClass(discriminatorValue: SectionBlock.key)
 class SectionBlock extends Block with SectionBlockMappable {
-  /// The child blocks contained in this section.
   final List<Block> blocks;
 
-  /// The type identifier for section blocks.
   static const key = 'section';
 
   SectionBlock(List<Block>? blocks, {super.align, super.flex, super.scrollable})
@@ -107,10 +96,8 @@ final sectionBlockSchema = SectionBlock.schema;
 /// This is the most common block type, used for text and markdown content.
 @MappableClass(discriminatorValue: ContentBlock.key)
 class ContentBlock extends Block with ContentBlockMappable {
-  /// The type identifier for content blocks.
   static const key = 'block';
 
-  /// The markdown content to display.
   final String content;
 
   ContentBlock(String? content, {super.align, super.flex, super.scrollable})
@@ -138,7 +125,7 @@ enum DartPadTheme {
   dark,
   light;
 
-  static final schema = ackEnum(values);
+  static final schema = Ack.enumValues(values);
 
   String toJson() => name;
 
@@ -165,7 +152,7 @@ enum ImageFit {
   none,
   scaleDown;
 
-  static final schema = ackEnum(values);
+  static final schema = Ack.enumValues(values);
 
   String toJson() => name;
 
@@ -234,7 +221,7 @@ enum ContentAlignment {
   bottomCenter,
   bottomRight;
 
-  static final schema = ackEnum(values);
+  static final schema = Ack.enumValues(values);
 
   String toJson() => name;
 
