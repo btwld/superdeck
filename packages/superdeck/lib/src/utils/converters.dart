@@ -17,10 +17,7 @@ extension BoxSpecOffsetExtension on BoxSpec {
     final borderX = borderDimensions?.horizontal ?? 0.0;
     final borderY = borderDimensions?.vertical ?? 0.0;
 
-    return Offset(
-      paddingX + marginX + borderX,
-      paddingY + marginY + borderY,
-    );
+    return Offset(paddingX + marginX + borderX, paddingY + marginY + borderY);
   }
 }
 
@@ -53,32 +50,88 @@ extension ContentAlignmentExtension on ContentAlignment {
     };
   }
 
-  (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis) toFlexAlignment(Axis axis) {
+  (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis) toFlexAlignment(
+    Axis axis,
+  ) {
     final isHorizontal = axis == Axis.horizontal;
 
     if (isHorizontal) {
       return switch (this) {
-        ContentAlignment.topLeft => (MainAxisAlignment.start, CrossAxisAlignment.start),
-        ContentAlignment.topCenter => (MainAxisAlignment.center, CrossAxisAlignment.start),
-        ContentAlignment.topRight => (MainAxisAlignment.end, CrossAxisAlignment.start),
-        ContentAlignment.centerLeft => (MainAxisAlignment.start, CrossAxisAlignment.center),
-        ContentAlignment.center => (MainAxisAlignment.center, CrossAxisAlignment.center),
-        ContentAlignment.centerRight => (MainAxisAlignment.end, CrossAxisAlignment.center),
-        ContentAlignment.bottomLeft => (MainAxisAlignment.start, CrossAxisAlignment.end),
-        ContentAlignment.bottomCenter => (MainAxisAlignment.center, CrossAxisAlignment.end),
-        ContentAlignment.bottomRight => (MainAxisAlignment.end, CrossAxisAlignment.end),
+        ContentAlignment.topLeft => (
+          MainAxisAlignment.start,
+          CrossAxisAlignment.start,
+        ),
+        ContentAlignment.topCenter => (
+          MainAxisAlignment.center,
+          CrossAxisAlignment.start,
+        ),
+        ContentAlignment.topRight => (
+          MainAxisAlignment.end,
+          CrossAxisAlignment.start,
+        ),
+        ContentAlignment.centerLeft => (
+          MainAxisAlignment.start,
+          CrossAxisAlignment.center,
+        ),
+        ContentAlignment.center => (
+          MainAxisAlignment.center,
+          CrossAxisAlignment.center,
+        ),
+        ContentAlignment.centerRight => (
+          MainAxisAlignment.end,
+          CrossAxisAlignment.center,
+        ),
+        ContentAlignment.bottomLeft => (
+          MainAxisAlignment.start,
+          CrossAxisAlignment.end,
+        ),
+        ContentAlignment.bottomCenter => (
+          MainAxisAlignment.center,
+          CrossAxisAlignment.end,
+        ),
+        ContentAlignment.bottomRight => (
+          MainAxisAlignment.end,
+          CrossAxisAlignment.end,
+        ),
       };
     } else {
       return switch (this) {
-        ContentAlignment.topLeft => (MainAxisAlignment.start, CrossAxisAlignment.start),
-        ContentAlignment.topCenter => (MainAxisAlignment.start, CrossAxisAlignment.center),
-        ContentAlignment.topRight => (MainAxisAlignment.start, CrossAxisAlignment.end),
-        ContentAlignment.centerLeft => (MainAxisAlignment.center, CrossAxisAlignment.start),
-        ContentAlignment.center => (MainAxisAlignment.center, CrossAxisAlignment.center),
-        ContentAlignment.centerRight => (MainAxisAlignment.center, CrossAxisAlignment.end),
-        ContentAlignment.bottomLeft => (MainAxisAlignment.end, CrossAxisAlignment.start),
-        ContentAlignment.bottomCenter => (MainAxisAlignment.end, CrossAxisAlignment.center),
-        ContentAlignment.bottomRight => (MainAxisAlignment.end, CrossAxisAlignment.end),
+        ContentAlignment.topLeft => (
+          MainAxisAlignment.start,
+          CrossAxisAlignment.start,
+        ),
+        ContentAlignment.topCenter => (
+          MainAxisAlignment.start,
+          CrossAxisAlignment.center,
+        ),
+        ContentAlignment.topRight => (
+          MainAxisAlignment.start,
+          CrossAxisAlignment.end,
+        ),
+        ContentAlignment.centerLeft => (
+          MainAxisAlignment.center,
+          CrossAxisAlignment.start,
+        ),
+        ContentAlignment.center => (
+          MainAxisAlignment.center,
+          CrossAxisAlignment.center,
+        ),
+        ContentAlignment.centerRight => (
+          MainAxisAlignment.center,
+          CrossAxisAlignment.end,
+        ),
+        ContentAlignment.bottomLeft => (
+          MainAxisAlignment.end,
+          CrossAxisAlignment.start,
+        ),
+        ContentAlignment.bottomCenter => (
+          MainAxisAlignment.end,
+          CrossAxisAlignment.center,
+        ),
+        ContentAlignment.bottomRight => (
+          MainAxisAlignment.end,
+          CrossAxisAlignment.end,
+        ),
       };
     }
   }

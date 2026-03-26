@@ -1,8 +1,8 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import 'block_provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';
@@ -11,6 +11,7 @@ import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/overflow_clip.dart';
 import '../../ui/widgets/provider.dart';
 import '../../utils/converters.dart';
+import 'block_provider.dart';
 import 'markdown_viewer.dart';
 
 /// Private container widget that provides shared block infrastructure.
