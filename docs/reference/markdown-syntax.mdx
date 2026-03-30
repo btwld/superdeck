@@ -15,6 +15,7 @@ Supported keys:
 
 - `title`: Slide title used in navigation and exports.
 - `style`: Named style variant from `DeckOptions.styles`.
+- `template`: Named template from `DeckOptions.templates` (`'none'` to opt out).
 - Custom keys: Available through `slide.options.args['keyName']`.
 
 Example:
@@ -105,16 +106,17 @@ Example:
 
 ````markdown
 @qrcode {
-  value: "https://superdeck.dev"
+  text: "https://superdeck.dev"
   size: 220
 }
 ````
 
 Arguments:
 
-- `value` (required): content to encode.
-- `size`: number.
-- `padding`: number.
+- `text` (required): content to encode.
+- `size`: size in logical pixels (default: `200`).
+- `errorCorrection`: `low`, `medium`, `high`, or `highest` (default: `medium`).
+- `backgroundColor`, `foregroundColor`: hex colors (for example, `#ffffff`).
 
 ## Markdown extensions
 

@@ -1,3 +1,6 @@
+/// Code generators and build pipeline for SuperDeck presentations.
+library;
+
 export 'src/assets/asset_generation_pipeline.dart';
 export 'src/assets/asset_generator.dart';
 export 'src/assets/mermaid_generator.dart';

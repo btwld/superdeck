@@ -11,7 +11,6 @@ Configure a Flutter app for SuperDeck and build your first presentation.
 
 - **Flutter SDK** version 3.38.1 or higher
 - Use the Dart SDK bundled with your Flutter installation
-- Flutter SDK available on your machine
 
 ## Installation
 
@@ -140,20 +139,7 @@ Edit `slides.md`, and the CLI rebuilds automatically. Hot reload Flutter to see 
 
 ## File structure
 
-After setup, your project will have:
-
-```
-your-flutter-project/
-├── slides.md                 # Your presentation content
-├── web/                      # Loader and bootstrap shell
-├── .superdeck/
-│   ├── superdeck.json        # Generated presentation data
-│   ├── assets/               # Generated assets
-│   └── generated_assets.json # Asset references
-├── pubspec.yaml              # Updated with asset configuration
-└── lib/
-    └── main.dart             # Your Flutter app (configure SuperDeck here)
-```
+The CLI generates a `.superdeck/` directory containing compiled presentation data and assets. See the [CLI Reference](/guides/cli-reference) for a full breakdown of the generated file structure.
 
 ## Next steps
 

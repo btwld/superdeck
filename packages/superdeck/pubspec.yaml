@@ -2,6 +2,7 @@ name: superdeck
 description: A Flutter presentation framework that renders slides written in Markdown.
 version: 1.0.0
 homepage: https://github.com/leoafarias/superdeck
+documentation: https://docs.page/leoafarias/superdeck
 
 environment:
   sdk: ">=3.10.0 <4.0.0"

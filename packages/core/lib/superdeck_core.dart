@@ -1,3 +1,4 @@
+/// Rendering primitives, Markdown parsing, and schema validation for SuperDeck.
 library;
 
 export 'package:ack/ack.dart';

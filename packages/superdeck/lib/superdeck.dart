@@ -1,3 +1,4 @@
+/// Flutter widgets and presentation components for SuperDeck.
 library;
 
 // Rendering
