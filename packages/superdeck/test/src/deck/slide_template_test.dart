@@ -146,6 +146,14 @@ void main() {
 
         expect(a, equals(b));
       });
+
+      test('templates with same-content styles maps are not equal', () {
+        final parts = SlideParts();
+        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
+        final b = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
+
+        expect(a, isNot(equals(b)));
+      });
     });
 
     group('hashCode', () {
