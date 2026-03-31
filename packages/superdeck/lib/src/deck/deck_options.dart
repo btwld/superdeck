@@ -1,10 +1,16 @@
+import 'package:flutter/widgets.dart';
+import 'package:dart_mappable/dart_mappable.dart';
+
 import '../rendering/slides/slide_parts.dart';
 import '../styling/styling.dart';
 import 'slide_template.dart';
 import 'superdeck_plugin.dart';
 import 'widget_factory.dart';
 
-class DeckOptions {
+part 'deck_options.mapper.dart';
+
+@MappableClass()
+class DeckOptions with DeckOptionsMappable {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
   final Map<String, WidgetFactory> widgets;
@@ -23,62 +29,17 @@ class DeckOptions {
   /// Optional plugin descriptors that extend deck behavior.
   final List<SuperDeckPlugin> plugins;
 
-  const DeckOptions({
+  DeckOptions({
     this.baseStyle,
-    this.styles = const <String, SlideStyle>{},
-    this.widgets = const <String, WidgetFactory>{},
+    Map<String, SlideStyle> styles = const <String, SlideStyle>{},
+    Map<String, WidgetFactory> widgets = const <String, WidgetFactory>{},
     this.parts = const SlideParts(),
     this.debug = false,
-    this.templates = const <String, SlideTemplate>{},
+    Map<String, SlideTemplate> templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
-    this.plugins = const <SuperDeckPlugin>[],
-  });
-
-  DeckOptions copyWith({
-    SlideStyle? baseStyle,
-    Map<String, SlideStyle>? styles,
-    Map<String, WidgetFactory>? widgets,
-    SlideParts? parts,
-    bool? debug,
-    Map<String, SlideTemplate>? templates,
-    SlideTemplate? defaultTemplate,
-    List<SuperDeckPlugin>? plugins,
-  }) {
-    return DeckOptions(
-      baseStyle: baseStyle ?? this.baseStyle,
-      styles: styles ?? this.styles,
-      widgets: widgets ?? this.widgets,
-      parts: parts ?? this.parts,
-      debug: debug ?? this.debug,
-      templates: templates ?? this.templates,
-      defaultTemplate: defaultTemplate ?? this.defaultTemplate,
-      plugins: plugins ?? this.plugins,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DeckOptions &&
-          runtimeType == other.runtimeType &&
-          baseStyle == other.baseStyle &&
-          styles == other.styles &&
-          widgets == other.widgets &&
-          parts == other.parts &&
-          debug == other.debug &&
-          templates == other.templates &&
-          defaultTemplate == other.defaultTemplate &&
-          plugins == other.plugins;
-
-  @override
-  int get hashCode => Object.hash(
-    baseStyle,
-    styles,
-    widgets,
-    parts,
-    debug,
-    templates,
-    defaultTemplate,
-    plugins,
-  );
+    List<SuperDeckPlugin> plugins = const <SuperDeckPlugin>[],
+  }) : styles = Map.unmodifiable(styles),
+       widgets = Map.unmodifiable(widgets),
+       templates = Map.unmodifiable(templates),
+       plugins = List.unmodifiable(plugins);
 }
