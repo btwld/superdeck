@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/export/pdf_controller.dart';
@@ -76,7 +76,6 @@ class _KeyReadState {
   int readCount = 0;
 }
 
-const _fileSaverChannel = MethodChannel('file_saver');
 final _testPngBytes = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGP4DwQACfsD/fteaysAAAAASUVORK5CYII=',
 );
@@ -96,11 +95,6 @@ Widget _buildExportHarness(PdfController controller) {
       ),
     ),
   );
-}
-
-void _mockFileSaverChannel(Future<Object?> Function(MethodCall call) handler) {
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(_fileSaverChannel, handler);
 }
 
 Future<Object?> _runExportAndPump(
@@ -186,24 +180,25 @@ void main() {
     });
 
     group('Export flow', () {
-      PdfController createExportController() {
+      PdfController createExportController({PdfSaver? pdfSaver}) {
         final c = PdfController(
           slides: [testSlides.first],
           slideCaptureService: FakeSlideCaptureService(_testPngBytes),
           waitDuration: Duration.zero,
+          pdfSaver: pdfSaver,
         );
         addTearDown(c.dispose);
-        addTearDown(() => _mockFileSaverChannel((_) async => null));
         return c;
       }
 
       testWidgets('successful save completes export', (tester) async {
-        final exportController = createExportController();
-
-        _mockFileSaverChannel((call) async {
-          expect(call.method, 'saveAs');
-          return '/tmp/superdeck.pdf';
-        });
+        Uint8List? savedPdf;
+        final exportController = createExportController(
+          pdfSaver: (pdf) async {
+            savedPdf = pdf;
+            return true;
+          },
+        );
 
         await tester.pumpWidget(_buildExportHarness(exportController));
         await tester.pump();
@@ -213,15 +208,13 @@ void main() {
         expect(error, isNull);
         expect(exportController.exportStatus.value, PdfExportStatus.complete);
         expect(exportController.exportError.value, isNull);
+        expect(savedPdf, isNotNull);
       });
 
       testWidgets('cancelled save returns export to idle', (tester) async {
-        final exportController = createExportController();
-
-        _mockFileSaverChannel((call) async {
-          expect(call.method, 'saveAs');
-          return null;
-        });
+        final exportController = createExportController(
+          pdfSaver: (pdf) async => false,
+        );
 
         await tester.pumpWidget(_buildExportHarness(exportController));
         await tester.pump();
@@ -234,21 +227,18 @@ void main() {
       });
 
       testWidgets('save failure marks export as failed', (tester) async {
-        final exportController = createExportController();
-
-        _mockFileSaverChannel((call) async {
-          expect(call.method, 'saveAs');
-          throw PlatformException(code: 'save_failed', message: 'disk full');
-        });
+        final exportController = createExportController(
+          pdfSaver: (pdf) async => throw Exception('disk full'),
+        );
 
         await tester.pumpWidget(_buildExportHarness(exportController));
         await tester.pump();
 
         final error = await _runExportAndPump(tester, exportController);
 
-        expect(error, isA<PlatformException>());
+        expect(error, isA<Exception>());
         expect(exportController.exportStatus.value, PdfExportStatus.failed);
-        expect(exportController.exportError.value, contains('save_failed'));
+        expect(exportController.exportError.value, contains('disk full'));
       });
     });
 

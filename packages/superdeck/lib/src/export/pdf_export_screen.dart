@@ -14,14 +14,19 @@ import 'pdf_controller.dart';
 import 'slide_capture_service.dart';
 
 class PdfExportDialogScreen extends StatefulWidget {
-  const PdfExportDialogScreen({super.key, required this.slides});
+  const PdfExportDialogScreen({
+    super.key,
+    required this.slides,
+    this.pdfSaver,
+  });
 
   final List<SlideConfiguration> slides;
+  final PdfSaver? pdfSaver;
 
   @override
   State<PdfExportDialogScreen> createState() => _PdfExportDialogScreenState();
 
-  static void show(BuildContext context) {
+  static void show(BuildContext context, {PdfSaver? pdfSaver}) {
     final deckController = DeckController.of(context);
     final dialogContext =
         deckController.router.routerDelegate.navigatorKey.currentContext ??
@@ -29,8 +34,10 @@ class PdfExportDialogScreen extends StatefulWidget {
 
     showRemixDialog(
       context: dialogContext,
-      builder: (context) =>
-          PdfExportDialogScreen(slides: deckController.slides.value),
+      builder: (context) => PdfExportDialogScreen(
+        slides: deckController.slides.value,
+        pdfSaver: pdfSaver,
+      ),
     );
   }
 }
@@ -48,6 +55,7 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
     _exportController = PdfController(
       slides: widget.slides,
       slideCaptureService: SlideCaptureService(),
+      pdfSaver: widget.pdfSaver,
     );
 
     _scheduleExportAfterMount();

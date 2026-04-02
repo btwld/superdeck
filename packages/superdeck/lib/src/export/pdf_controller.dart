@@ -12,6 +12,11 @@ import '../deck/slide_configuration.dart';
 import '../utils/constants.dart';
 import 'slide_capture_service.dart';
 
+/// Signature for a function that persists PDF bytes.
+///
+/// Returns `true` if the save succeeded, `false` if the user cancelled.
+typedef PdfSaver = Future<bool> Function(Uint8List pdf);
+
 /// Status values for PDF export.
 enum PdfExportStatus {
   /// Initial state, no export in progress
@@ -51,9 +56,11 @@ class PdfController {
   PdfController({
     required this.slides,
     required this.slideCaptureService,
+    PdfSaver? pdfSaver,
     Duration waitDuration = const Duration(milliseconds: 100),
     Duration renderAttachmentTimeout = _kRenderAttachmentTimeout,
-  }) : _waitDuration = waitDuration,
+  }) : _pdfSaver = pdfSaver ?? _defaultPdfSaver,
+       _waitDuration = waitDuration,
        _renderAttachmentTimeout = renderAttachmentTimeout {
     _pageController = PageController(initialPage: 0);
     _slideKeys = {for (var slide in slides) slide.key: GlobalKey()};
@@ -61,6 +68,7 @@ class PdfController {
 
   late final PageController _pageController;
   late final Map<String, GlobalKey> _slideKeys;
+  final PdfSaver _pdfSaver;
   final List<Uint8List> _images = [];
   bool _disposed = false;
   bool _cancelled = false;
@@ -255,33 +263,8 @@ class PdfController {
     }
   }
 
-  /// Saves [pdf] using the current platform's download flow.
-  Future<bool> _savePdf(Uint8List pdf) async {
-    if (kIsWeb) {
-      await FileSaver.instance.saveFile(
-        name: 'superdeck',
-        bytes: pdf,
-        ext: 'pdf',
-        mimeType: MimeType.pdf,
-      );
-
-      return true;
-    }
-
-    log('Saving pdf');
-    final result = await FileSaver.instance.saveAs(
-      name: 'superdeck',
-      bytes: pdf,
-      ext: 'pdf',
-      mimeType: MimeType.pdf,
-    );
-    if (result == null) {
-      log('Save cancelled by user');
-      return false;
-    }
-    log('Save result: $result');
-    return true;
-  }
+  /// Saves [pdf] using the injected [PdfSaver].
+  Future<bool> _savePdf(Uint8List pdf) => _pdfSaver(pdf);
 
   void cancel() {
     _cancelled = true;
@@ -298,6 +281,29 @@ class PdfController {
     _capturedCount.dispose();
     _exportError.dispose();
   }
+}
+
+/// Default [PdfSaver] that uses [FileSaver] to save via platform dialog.
+Future<bool> _defaultPdfSaver(Uint8List pdf) async {
+  final saver = FileSaver.instance;
+  const name = 'superdeck';
+  const ext = 'pdf';
+  const mime = MimeType.pdf;
+
+  // Web doesn't support saveAs (throws UnimplementedError),
+  // so use saveFile which triggers a browser download.
+  if (kIsWeb) {
+    await saver.saveFile(name: name, bytes: pdf, ext: ext, mimeType: mime);
+    return true;
+  }
+
+  final result = await saver.saveAs(
+    name: name,
+    bytes: pdf,
+    ext: ext,
+    mimeType: mime,
+  );
+  return result != null;
 }
 
 /// Builds a PDF document from [images].
