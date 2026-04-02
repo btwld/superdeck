@@ -43,10 +43,7 @@ void main() async {
 class TwitterWidget extends StatelessWidget {
   final String username;
 
-  const TwitterWidget({
-    super.key,
-    required this.username,
-  });
+  const TwitterWidget({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {

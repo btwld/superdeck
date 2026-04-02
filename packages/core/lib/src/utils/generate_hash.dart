@@ -2,6 +2,9 @@
 ///
 /// Uses a custom (non-cryptographic) algorithm that is consistent across platforms,
 /// unlike Dart's built-in `hashCode`.
+///
+/// Internal utility — not part of the stable 1.0 API surface. May change
+/// without a major version bump.
 String generateValueHash(String valueToHash) {
   const characters =
       'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

@@ -26,15 +26,18 @@ void main() {
     });
 
     group('unmodifiable collections', () {
-      test('modifying original map after construction does not affect stored map', () {
-        final styles = <String, SlideStyle>{'a': SlideStyle()};
-        final options = DeckOptions(styles: styles);
+      test(
+        'modifying original map after construction does not affect stored map',
+        () {
+          final styles = <String, SlideStyle>{'a': SlideStyle()};
+          final options = DeckOptions(styles: styles);
 
-        styles['b'] = SlideStyle();
+          styles['b'] = SlideStyle();
 
-        expect(options.styles.length, 1);
-        expect(options.styles.containsKey('b'), isFalse);
-      });
+          expect(options.styles.length, 1);
+          expect(options.styles.containsKey('b'), isFalse);
+        },
+      );
 
       test('mutation attempt on styles throws UnsupportedError', () {
         final options = DeckOptions(styles: {'a': SlideStyle()});
@@ -69,10 +72,7 @@ void main() {
         // reaching the unmodifiable guard.
         final list = options.plugins;
 
-        expect(
-          () => list.clear(),
-          throwsUnsupportedError,
-        );
+        expect(() => list.clear(), throwsUnsupportedError);
       });
     });
 
@@ -101,13 +101,16 @@ void main() {
         expect(copy.defaultTemplate, same(template));
       });
 
-      test('copyWith(defaultTemplate: null) clears a previously set defaultTemplate', () {
-        const template = SlideTemplate();
-        final options = DeckOptions(defaultTemplate: template);
-        final copy = options.copyWith(defaultTemplate: null);
+      test(
+        'copyWith(defaultTemplate: null) clears a previously set defaultTemplate',
+        () {
+          const template = SlideTemplate();
+          final options = DeckOptions(defaultTemplate: template);
+          final copy = options.copyWith(defaultTemplate: null);
 
-        expect(copy.defaultTemplate, isNull);
-      });
+          expect(copy.defaultTemplate, isNull);
+        },
+      );
     });
   });
 }

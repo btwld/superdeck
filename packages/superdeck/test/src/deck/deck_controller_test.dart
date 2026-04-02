@@ -1,64 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../../helpers/mock_deck_loader.dart';
 import '../../helpers/test_helpers.dart';
-
-class MockDeckLoader extends DeckLoader {
-  final StreamController<SlidesEvent> _eventController =
-      StreamController<SlidesEvent>.broadcast();
-  final List<Slide> _slidesToReturn = createTestSlidesPayload();
-
-  bool _autoLoad = true;
-  var _disposed = false;
-
-  MockDeckLoader({DeckWorkspace? workspace})
-    : super(workspace: workspace ?? DeckWorkspace());
-
-  int loadCalls = 0;
-  int reloadCalls = 0;
-
-  @override
-  Stream<SlidesEvent> load() {
-    loadCalls++;
-    _scheduleAutoLoad();
-    return _eventController.stream;
-  }
-
-  @override
-  Future<void> reload() async {
-    reloadCalls++;
-    _scheduleAutoLoad();
-  }
-
-  void _scheduleAutoLoad() {
-    if (_autoLoad) {
-      Future.microtask(() {
-        _eventController.add(SlidesLoadingEvent('Loading…'));
-        _eventController.add(SlidesLoadedEvent(_slidesToReturn));
-      });
-    }
-  }
-
-  /// Disable auto-loading so events must be emitted manually.
-  void disableAutoLoad() {
-    _autoLoad = false;
-  }
-
-  void emitEvent(SlidesEvent event) {
-    _eventController.add(event);
-  }
-
-  @override
-  Future<void> dispose() {
-    if (_disposed) return Future<void>.value();
-    _disposed = true;
-    return _eventController.close();
-  }
-}
 
 void main() {
   group('DeckController', () {
@@ -69,7 +15,7 @@ void main() {
       mockDeckLoader = MockDeckLoader();
       controller = DeckController(
         deckLoader: mockDeckLoader,
-        options: const DeckOptions(),
+        options: DeckOptions(),
       );
     });
 
@@ -125,10 +71,7 @@ void main() {
         final loader = MockDeckLoader();
         loader.disableAutoLoad();
 
-        final ctrl = DeckController(
-          deckLoader: loader,
-          options: const DeckOptions(),
-        );
+        final ctrl = DeckController(deckLoader: loader, options: DeckOptions());
         addTearDown(() async {
           ctrl.dispose();
           await loader.dispose();
@@ -240,5 +183,65 @@ void main() {
       expect(controller.totalSlides.value, 0);
       expect(controller.currentSlide.value, isNull);
     });
+
+    test(
+      'stream error sets hasError when no slides have been loaded',
+      () async {
+        final loader = MockDeckLoader();
+        loader.disableAutoLoad();
+
+        final ctrl = DeckController(deckLoader: loader, options: DeckOptions());
+        addTearDown(() async {
+          ctrl.dispose();
+          await loader.dispose();
+        });
+
+        loader.emitError(StateError('stream broke'));
+
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(ctrl.hasError.value, isTrue);
+        expect(ctrl.error.value, isA<StateError>());
+        expect(ctrl.isLoading.value, isFalse);
+        expect(ctrl.isBuildActive.value, isFalse);
+        expect(ctrl.buildFailure.value, isNull);
+      },
+    );
+
+    test(
+      'stream error sets buildFailure when slides are already loaded',
+      () async {
+        // Wait for initial auto-load to complete
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(controller.totalSlides.value, 3);
+
+        mockDeckLoader.emitError(StateError('stream broke'));
+
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(controller.hasError.value, isFalse);
+        expect(controller.isBuildActive.value, isFalse);
+        expect(controller.buildFailure.value, isNotNull);
+        expect(
+          controller.buildFailure.value?.message,
+          contains('stream broke'),
+        );
+      },
+    );
+
+    test(
+      'stream error with DeckBuildError preserves it as buildFailure',
+      () async {
+        // Wait for initial auto-load to complete
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        mockDeckLoader.emitError(DeckBuildError(message: 'build failed'));
+
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(controller.buildFailure.value, isA<DeckBuildError>());
+        expect(controller.buildFailure.value?.message, 'build failed');
+      },
+    );
   });
 }

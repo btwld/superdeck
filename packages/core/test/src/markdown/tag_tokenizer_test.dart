@@ -372,9 +372,7 @@ not closed''';
       });
 
       test('tilde code block at end without closing is handled', () {
-        final result = tokenizer.tokenize(
-          '~~~\n@ignored\n',
-        );
+        final result = tokenizer.tokenize('~~~\n@ignored\n');
         expect(result, isEmpty);
       });
 
@@ -387,9 +385,7 @@ not closed''';
       });
 
       test('ignores tags inside tilde code blocks with language', () {
-        final result = tokenizer.tokenize(
-          '~~~dart\n@ignored\n~~~\n@visible',
-        );
+        final result = tokenizer.tokenize('~~~dart\n@ignored\n~~~\n@visible');
         expect(result, hasLength(1));
         expect(result.first.name, 'visible');
       });

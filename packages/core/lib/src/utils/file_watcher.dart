@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+/// Internal utility — not part of the stable 1.0 API surface. May change
+/// without a major version bump.
 class FileWatcher {
   final File file;
   final int events;
@@ -23,22 +25,24 @@ class FileWatcher {
     late final StreamController<void> controller;
     controller = StreamController<void>(
       onListen: () {
-        subscription = directory.watch(events: events).listen(
-          (event) {
-            final eventPath = p.normalize(event.path);
+        subscription = directory
+            .watch(events: events)
+            .listen(
+              (event) {
+                final eventPath = p.normalize(event.path);
 
-            if (eventPath == targetPath && !_isProcessing) {
-              _isProcessing = true;
-              controller.add(null);
-              throttleTimer?.cancel();
-              throttleTimer = Timer(const Duration(milliseconds: 100), () {
-                _isProcessing = false;
-              });
-            }
-          },
-          onError: controller.addError,
-          onDone: controller.close,
-        );
+                if (eventPath == targetPath && !_isProcessing) {
+                  _isProcessing = true;
+                  controller.add(null);
+                  throttleTimer?.cancel();
+                  throttleTimer = Timer(const Duration(milliseconds: 100), () {
+                    _isProcessing = false;
+                  });
+                }
+              },
+              onError: controller.addError,
+              onDone: controller.close,
+            );
       },
       onCancel: () async {
         throttleTimer?.cancel();

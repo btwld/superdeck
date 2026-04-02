@@ -660,21 +660,40 @@ void main() {
       });
 
       group('constructor validation', () {
-        test('silently strips reserved keys from args', () {
+        test('throws ArgumentError when args contain reserved keys', () {
           for (final reservedKey in const [
-            'type',
             'name',
             'align',
             'flex',
             'scrollable',
           ]) {
-            final widget = WidgetBlock(
-              name: 'Test',
-              args: {reservedKey: 'invalid', 'custom': 'kept'},
+            expect(
+              () => WidgetBlock(
+                name: 'Test',
+                args: {reservedKey: 'invalid', 'custom': 'kept'},
+              ),
+              throwsArgumentError,
             );
-            expect(widget.args.containsKey(reservedKey), isFalse);
-            expect(widget.args['custom'], 'kept');
           }
+        });
+
+        test('silently strips type key leaked by deserialization hook', () {
+          final widget = WidgetBlock(
+            name: 'Test',
+            args: {'type': 'widget', 'custom': 'kept'},
+          );
+
+          expect(widget.args.containsKey('type'), isFalse);
+          expect(widget.args['custom'], 'kept');
+        });
+
+        test('non-reserved keys pass through unchanged', () {
+          final widget = WidgetBlock(
+            name: 'Test',
+            args: {'custom': 'value', 'count': 42, 'flag': true},
+          );
+
+          expect(widget.args, {'custom': 'value', 'count': 42, 'flag': true});
         });
       });
 

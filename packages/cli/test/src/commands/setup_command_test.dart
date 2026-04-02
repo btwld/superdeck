@@ -1,13 +1,14 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/src/commands/setup/setup_asset_support.dart';
 import 'package:superdeck_cli/src/commands/setup/setup_support.dart';
 import 'package:superdeck_cli/src/commands/setup_command.dart';
-import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
 import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -22,7 +23,7 @@ void main() {
     });
 
     test('resolves packaged setup assets', () async {
-      final assetsRoot = await resolveSetupAssetsRoot();
+      final assetsRoot = resolveSetupAssetsRoot();
 
       expect(
         File(path.join(assetsRoot, 'web', 'superdeck_loader.svg')).existsSync(),
@@ -125,6 +126,100 @@ void main() {
         );
       },
     );
+
+    test(
+      'configures the app when project has a package config without superdeck_cli',
+      () async {
+        await _createMinimalFlutterApp(
+          tempDir,
+          includeWeb: true,
+          includeMacos: false,
+        );
+        await _writeAppPackageConfig(tempDir);
+
+        final result = await runner.run(['setup']);
+
+        expect(result, ExitCode.success.code);
+        expect(
+          await File(
+            path.join(tempDir.path, 'web', 'flutter_bootstrap.js'),
+          ).readAsString(),
+          contains('superdeck:managed bootstrap'),
+        );
+        expect(
+          File(
+            path.join(tempDir.path, 'web', 'superdeck_loader.svg'),
+          ).existsSync(),
+          isTrue,
+        );
+      },
+    );
+
+    test('adds default dependencies when missing', () {
+      final patched = patchSetupPubspec(_fakePubspec('existing_app'));
+      final dependencies = _pubspecSection(patched, 'dependencies');
+      final devDependencies = _pubspecSection(patched, 'dev_dependencies');
+
+      expect(dependencies['superdeck'], '^$packageVersion');
+      expect(devDependencies['superdeck_cli'], '^$packageVersion');
+    });
+
+    test('preserves an existing pinned superdeck dependency', () {
+      final patched = patchSetupPubspec('''
+name: existing_app
+dependencies:
+  flutter:
+    sdk: flutter
+  superdeck: 1.2.3
+flutter:
+  uses-material-design: true
+''');
+
+      final dependencies = _pubspecSection(patched, 'dependencies');
+
+      expect(dependencies['superdeck'], '1.2.3');
+    });
+
+    test('preserves an existing path-based superdeck dependency', () {
+      final patched = patchSetupPubspec('''
+name: existing_app
+dependencies:
+  flutter:
+    sdk: flutter
+  superdeck:
+    path: ../superdeck
+flutter:
+  uses-material-design: true
+''');
+
+      final dependencies = _pubspecSection(patched, 'dependencies');
+      final superdeck = dependencies['superdeck'] as YamlMap;
+
+      expect(superdeck['path'], '../superdeck');
+    });
+
+    test('preserves an existing git-based superdeck_cli dev dependency', () {
+      final patched = patchSetupPubspec('''
+name: existing_app
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  superdeck_cli:
+    git:
+      url: https://github.com/leoafarias/superdeck.git
+      path: packages/cli
+flutter:
+  uses-material-design: true
+''');
+
+      final devDependencies = _pubspecSection(patched, 'dev_dependencies');
+      final superdeckCli = devDependencies['superdeck_cli'] as YamlMap;
+      final git = superdeckCli['git'] as YamlMap;
+
+      expect(git['url'], 'https://github.com/leoafarias/superdeck.git');
+      expect(git['path'], 'packages/cli');
+    });
 
     test('rerunning setup is idempotent', () async {
       await _createMinimalFlutterApp(
@@ -263,9 +358,7 @@ void main() {
     });
 
     test('fails when pubspec has no Flutter dependency', () async {
-      await File(
-        path.join(tempDir.path, 'pubspec.yaml'),
-      ).writeAsString('''
+      await File(path.join(tempDir.path, 'pubspec.yaml')).writeAsString('''
 name: dart_only_pkg
 version: 1.0.0
 environment:
@@ -312,36 +405,21 @@ Future<void> _createMinimalFlutterApp(
   ).writeAsString(_fakePubspec(path.basename(projectDir.path)));
 
   if (includeWeb) {
+    final webDir = Directory(path.join(projectDir.path, 'web'));
+    await webDir.create(recursive: true);
     await File(
-      path.join(projectDir.path, 'web', 'index.html'),
-    ).create(recursive: true);
-    await File(
-      path.join(projectDir.path, 'web', 'index.html'),
+      path.join(webDir.path, 'index.html'),
     ).writeAsString(_fakeIndexHtml(path.basename(projectDir.path)));
   }
 
   if (includeMacos) {
+    final runnerDir = Directory(path.join(projectDir.path, 'macos', 'Runner'));
+    await runnerDir.create(recursive: true);
     await File(
-      path.join(
-        projectDir.path,
-        'macos',
-        'Runner',
-        'DebugProfile.entitlements',
-      ),
-    ).create(recursive: true);
-    await File(
-      path.join(
-        projectDir.path,
-        'macos',
-        'Runner',
-        'DebugProfile.entitlements',
-      ),
+      path.join(runnerDir.path, 'DebugProfile.entitlements'),
     ).writeAsString(_fakeDebugEntitlements);
     await File(
-      path.join(projectDir.path, 'macos', 'Runner', 'Release.entitlements'),
-    ).create(recursive: true);
-    await File(
-      path.join(projectDir.path, 'macos', 'Runner', 'Release.entitlements'),
+      path.join(runnerDir.path, 'Release.entitlements'),
     ).writeAsString(_fakeReleaseEntitlements);
   }
 }
@@ -416,3 +494,34 @@ const _fakeReleaseEntitlements = '''
 </dict>
 </plist>
 ''';
+
+Future<void> _writeAppPackageConfig(Directory projectDir) async {
+  final packageConfigFile = File(
+    path.join(projectDir.path, '.dart_tool', 'package_config.json'),
+  );
+  await packageConfigFile.create(recursive: true);
+  await packageConfigFile.writeAsString('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "${path.basename(projectDir.path)}",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "3.11"
+    },
+    {
+      "name": "flutter",
+      "rootUri": "../fake_flutter/",
+      "packageUri": "lib/",
+      "languageVersion": "3.11"
+    }
+  ]
+}
+''');
+}
+
+YamlMap _pubspecSection(String pubspecContents, String sectionName) {
+  final pubspec = loadYaml(pubspecContents) as YamlMap;
+  return pubspec[sectionName] as YamlMap;
+}

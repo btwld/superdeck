@@ -40,6 +40,72 @@ void main() {
         expect(config.outputDir, 'build');
         expect(config.assetsPath, 'images');
       });
+
+      test('accepts normal relative paths', () {
+        expect(
+          () => DeckWorkspace(
+            slidesPath: 'slides.md',
+            outputDir: '.superdeck',
+            assetsPath: 'assets',
+          ),
+          returnsNormally,
+        );
+      });
+
+      test('accepts nested relative paths', () {
+        expect(
+          () => DeckWorkspace(
+            slidesPath: 'content/slides.md',
+            outputDir: 'build/output',
+            assetsPath: 'static/assets',
+          ),
+          returnsNormally,
+        );
+      });
+
+      group('rejects unsafe paths', () {
+        for (final field in ['slidesPath', 'outputDir', 'assetsPath']) {
+          test('$field rejects ".." traversal', () {
+            expect(
+              () => DeckWorkspace(
+                slidesPath: field == 'slidesPath' ? '../etc/passwd' : null,
+                outputDir: field == 'outputDir' ? '../etc/passwd' : null,
+                assetsPath: field == 'assetsPath' ? '../etc/passwd' : null,
+              ),
+              throwsA(isA<ArgumentError>()),
+            );
+          });
+
+          test('$field rejects absolute paths', () {
+            expect(
+              () => DeckWorkspace(
+                slidesPath: field == 'slidesPath' ? '/tmp/evil' : null,
+                outputDir: field == 'outputDir' ? '/tmp/evil' : null,
+                assetsPath: field == 'assetsPath' ? '/tmp/evil' : null,
+              ),
+              throwsA(isA<ArgumentError>()),
+            );
+          });
+
+          test('$field rejects nested ".." traversal', () {
+            expect(
+              () => DeckWorkspace(
+                slidesPath: field == 'slidesPath' ? 'sub/../../outside' : null,
+                outputDir: field == 'outputDir' ? 'sub/../../outside' : null,
+                assetsPath: field == 'assetsPath' ? 'sub/../../outside' : null,
+              ),
+              throwsA(isA<ArgumentError>()),
+            );
+          });
+        }
+      });
+
+      test('projectDir allows absolute paths', () {
+        expect(
+          () => DeckWorkspace(projectDir: '/absolute/project'),
+          returnsNormally,
+        );
+      });
     });
 
     group('computed paths', () {

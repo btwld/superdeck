@@ -91,8 +91,8 @@ String patchSetupPubspec(String pubspecContents) {
   final devDependencies = _mutableMap(pubspec['dev_dependencies']);
   final flutter = _mutableMap(pubspec['flutter']);
 
-  dependencies['superdeck'] = '^$packageVersion';
-  devDependencies['superdeck_cli'] = '^$packageVersion';
+  dependencies.putIfAbsent('superdeck', () => '^$packageVersion');
+  devDependencies.putIfAbsent('superdeck_cli', () => '^$packageVersion');
 
   final assets = List<String>.from(
     (flutter['assets'] as List?)?.map((value) => value.toString()) ??
@@ -227,7 +227,7 @@ Future<void> _ensureSuperdeckPlaceholders(Directory projectDir) async {
 }
 
 Future<void> _applyWebSetup(Directory projectDir) async {
-  final assetsRoot = await resolveSetupAssetsRoot();
+  final assetsRoot = resolveSetupAssetsRoot();
   final indexHtmlFile = File(path.join(projectDir.path, 'web', 'index.html'));
   if (!indexHtmlFile.existsSync()) {
     throw FileSystemException(

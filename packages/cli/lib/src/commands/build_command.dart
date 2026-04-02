@@ -200,16 +200,14 @@ class BuildCommand extends SuperDeckCommand {
   Future<int> run() async {
     DeckBuildStore? store;
     try {
-      if (!isWorkspaceConfigValid(projectDir: _projectDir)) {
+      if (!ensureSupportedWorkspaceLayout(projectDir: _projectDir)) {
         return ExitCode.data.code;
       }
 
       final deckWorkspace = DeckWorkspace(projectDir: _projectDir);
 
       if (!await deckWorkspace.slidesFile.exists()) {
-        logger.err(
-          'Slides file not found: ${deckWorkspace.slidesFile.path}',
-        );
+        logger.err('Slides file not found: ${deckWorkspace.slidesFile.path}');
         logger.info(
           'Add a slides.md file in the project root. If this app has not been '
           'configured for SuperDeck yet, run `superdeck setup` first to add '
@@ -223,9 +221,7 @@ class BuildCommand extends SuperDeckCommand {
       await store.initialize();
 
       if (boolArg('force-rebuild')) {
-        logger.info(
-          'Force rebuild enabled. All assets will be regenerated.',
-        );
+        logger.info('Force rebuild enabled. All assets will be regenerated.');
         await _clearGeneratedAssets(deckWorkspace);
       }
 
@@ -288,11 +284,7 @@ class BuildCommand extends SuperDeckCommand {
                     logger.info('Force rebuild triggered...');
                     // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
-                      _cleanAndRebuild(
-                        store!,
-                        deckWorkspace,
-                        builder: builder,
-                      ),
+                      _cleanAndRebuild(store!, deckWorkspace, builder: builder),
                     );
                     break;
                   case 'q':
@@ -312,9 +304,7 @@ class BuildCommand extends SuperDeckCommand {
           await for (final event in builder.watchAndBuild()) {
             switch (event) {
               case BuildStarted():
-                logger.info(
-                  'File change detected. Rebuilding presentation...',
-                );
+                logger.info('File change detected. Rebuilding presentation...');
               case BuildCompleted(:final slides):
                 if (slides.isEmpty) {
                   logger.warn('No slides found in the deck.');

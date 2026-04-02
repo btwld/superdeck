@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart' show visibleForTesting;
 import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -620,6 +621,7 @@ class MermaidGenerator implements AssetGenerator {
   }
 
   /// Exposes the resolved HTML payload for unit tests.
+  @visibleForTesting
   String buildHtmlContentForTesting(String graphDefinition) {
     return _buildHtmlContent(
       _resolveRenderConfig(graphDefinition),

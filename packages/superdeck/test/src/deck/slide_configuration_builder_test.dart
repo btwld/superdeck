@@ -7,7 +7,7 @@ void main() {
 
   group('SlideConfigurationBuilder', () {
     test('returns empty list for empty slides', () {
-      final result = builder.buildConfigurations(const [], const DeckOptions());
+      final result = builder.buildConfigurations(const [], DeckOptions());
       expect(result, isEmpty);
     });
 

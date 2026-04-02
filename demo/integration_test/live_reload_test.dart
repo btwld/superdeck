@@ -155,9 +155,7 @@ void main() {
       assertOnlyLayoutOverflowOrNoException(tester);
     });
 
-    testWidgets('currentIndex clamps when slides are removed', (
-      tester,
-    ) async {
+    testWidgets('currentIndex clamps when slides are removed', (tester) async {
       final initialSlides = [
         makeSlide('s1', '# One'),
         makeSlide('s2', '# Two'),
@@ -225,7 +223,9 @@ void main() {
       ];
       await simulateBuildSuccess(workspace, slides2, 3);
       await tester.pumpUntil(
-        () => controller.totalSlides.value == 2 && !controller.isBuildActive.value,
+        () =>
+            controller.totalSlides.value == 2 &&
+            !controller.isBuildActive.value,
         debugLabel: 'cycle 1 success',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -245,7 +245,9 @@ void main() {
       ];
       await simulateBuildSuccess(workspace, slides3, 5);
       await tester.pumpUntil(
-        () => controller.totalSlides.value == 3 && !controller.isBuildActive.value,
+        () =>
+            controller.totalSlides.value == 3 &&
+            !controller.isBuildActive.value,
         debugLabel: 'cycle 2 success',
         onTimeout: () => describeDeckControllerState(controller),
       );

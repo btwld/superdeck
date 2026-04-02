@@ -1,28 +1,36 @@
 import 'dart:io';
+import 'dart:isolate';
 
-import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 
 /// Resolves the filesystem path to the `tool/setup_assets/` directory bundled
 /// with the `superdeck_cli` package.
 ///
-/// Uses `package_config.json` to locate the package root, which works in both
-/// normal execution and the Flutter test runner.
-Future<String> resolveSetupAssetsRoot([Directory? from]) async {
-  final config = await findPackageConfig(from ?? Directory.current);
-  if (config == null) {
-    throw StateError(
-      'Cannot resolve setup assets: .dart_tool/package_config.json not found. '
-      'Run `dart pub get` first.',
+/// Uses the running CLI isolate's package resolution instead of the target
+/// app's current working directory, so `superdeck setup` works before the app
+/// adds `superdeck_cli` as a dependency.
+String resolveSetupAssetsRoot() {
+  final packageLibUri = Isolate.resolvePackageUriSync(
+    Uri.parse('package:superdeck_cli/'),
+  );
+  if (packageLibUri == null || packageLibUri.scheme != 'file') {
+    throw FileSystemException(
+      'Cannot resolve setup assets: superdeck_cli must be run from a '
+      'pub-based package install (`dart pub global activate superdeck_cli` '
+      'or a project dev dependency).',
+      packageLibUri?.toString(),
     );
   }
 
-  final package = config.packages.where((p) => p.name == 'superdeck_cli');
-  if (package.isEmpty) {
-    throw StateError(
-      'Cannot resolve setup assets: superdeck_cli not found in package config.',
+  final assetsDir = Directory.fromUri(
+    packageLibUri.resolve('../tool/setup_assets/'),
+  );
+  if (!assetsDir.existsSync()) {
+    throw FileSystemException(
+      'Cannot resolve setup assets: bundled setup assets were not found.',
+      path.normalize(assetsDir.path),
     );
   }
 
-  return path.join(package.first.root.toFilePath(), 'tool', 'setup_assets');
+  return path.normalize(assetsDir.path);
 }

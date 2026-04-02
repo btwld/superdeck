@@ -21,7 +21,21 @@ final class DeckWorkspace with DeckWorkspaceMappable {
   }) : projectDir = projectDir ?? '.',
        slidesPath = slidesPath ?? 'slides.md',
        outputDir = outputDir ?? '.superdeck',
-       assetsPath = assetsPath ?? 'assets';
+       assetsPath = assetsPath ?? 'assets' {
+    _validatePath('slidesPath', this.slidesPath);
+    _validatePath('outputDir', this.outputDir);
+    _validatePath('assetsPath', this.assetsPath);
+  }
+
+  static void _validatePath(String name, String value) {
+    if (!_isRelativeWithoutTraversal(value)) {
+      throw ArgumentError.value(
+        value,
+        name,
+        'must be a relative path without ".." traversal segments',
+      );
+    }
+  }
 
   Directory get projectDirectory => Directory(p.normalize(projectDir));
 

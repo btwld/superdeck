@@ -132,6 +132,7 @@ class DeckController {
       onError: (Object error, StackTrace stackTrace) {
         if (_disposed) return;
         debugPrint('[DeckController] Loader stream error: $error');
+        _applyErrorState(error, '$error');
       },
     );
   }
@@ -139,33 +140,39 @@ class DeckController {
   void _handleEvent(SlidesEvent event) {
     if (_disposed) return;
 
-    switch (event) {
-      case SlidesLoadingEvent():
-        _isLoading.value = true;
-        _error.value = null;
-      case SlidesLoadedEvent(:final slides):
-        _loadedSlides.value = List<Slide>.unmodifiable(slides);
-        _isLoading.value = false;
-        _error.value = null;
-        _isBuildActive.value = false;
-        _buildFailure.value = null;
-      case SlidesErrorEvent(:final message, :final error):
-        if (_loadedSlides.value != null) {
+    batch(() {
+      switch (event) {
+        case SlidesLoadingEvent():
+          _isLoading.value = true;
+          _error.value = null;
+        case SlidesLoadedEvent(:final slides):
+          _loadedSlides.value = List<Slide>.unmodifiable(slides);
           _isLoading.value = false;
-          _isBuildActive.value = false;
-          _buildFailure.value = error is DeckBuildError
-              ? error
-              : DeckBuildError(message: message);
-        } else {
-          _error.value = error ?? message;
-          _isLoading.value = false;
+          _error.value = null;
           _isBuildActive.value = false;
           _buildFailure.value = null;
-        }
-      case SlidesRebuildingEvent():
-        _isBuildActive.value = true;
+        case SlidesErrorEvent(:final message, :final error):
+          _applyErrorState(error ?? message, message);
+        case SlidesRebuildingEvent():
+          _isBuildActive.value = true;
+          _buildFailure.value = null;
+      }
+    });
+  }
+
+  void _applyErrorState(Object? error, String message) {
+    batch(() {
+      _isLoading.value = false;
+      _isBuildActive.value = false;
+      if (_loadedSlides.value != null) {
+        _buildFailure.value = error is DeckBuildError
+            ? error
+            : DeckBuildError(message: message);
+      } else {
+        _error.value = error ?? message;
         _buildFailure.value = null;
-    }
+      }
+    });
   }
 
   @internal
@@ -182,10 +189,12 @@ class DeckController {
 
   Future<void> reloadDeck() async {
     if (_disposed) return;
-    _error.value = null;
-    _buildFailure.value = null;
-    _isBuildActive.value = false;
-    _isLoading.value = true;
+    batch(() {
+      _error.value = null;
+      _buildFailure.value = null;
+      _isBuildActive.value = false;
+      _isLoading.value = true;
+    });
     await _deckLoader.reload();
   }
 

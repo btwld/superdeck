@@ -42,6 +42,11 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
   @override
   void didUpdateWidget(DeckControllerBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
+    assert(
+      widget.deckLoader == oldWidget.deckLoader,
+      'DeckControllerBuilder.deckLoader must not change after mount. '
+      'Create a new key to force a full rebuild.',
+    );
     if (widget.options != oldWidget.options) {
       _deckController.updateOptions(widget.options);
     }

@@ -1,10 +1,14 @@
-import 'package:flutter/widgets.dart';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/export/pdf_controller.dart';
 import 'package:superdeck/src/export/slide_capture_service.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
-import 'package:superdeck_core/superdeck_core.dart';
-import 'package:superdeck/src/styling/components/slide.dart';
+
+import '../../helpers/fake_slide_capture_service.dart';
+import '../../helpers/test_helpers.dart';
 
 class _SequencedRenderObject extends Fake implements RenderObject {
   _SequencedRenderObject(this._attachedValues);
@@ -72,6 +76,64 @@ class _KeyReadState {
   int readCount = 0;
 }
 
+const _fileSaverChannel = MethodChannel('file_saver');
+final _testPngBytes = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGP4DwQACfsD/fteaysAAAAASUVORK5CYII=',
+);
+
+Widget _buildExportHarness(PdfController controller) {
+  return MaterialApp(
+    home: Scaffold(
+      body: PageView(
+        controller: controller.pageController,
+        children: [
+          for (final slide in controller.slides)
+            RepaintBoundary(
+              key: controller.getSlideKey(slide),
+              child: const SizedBox.expand(),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+void _mockFileSaverChannel(Future<Object?> Function(MethodCall call) handler) {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(_fileSaverChannel, handler);
+}
+
+Future<Object?> _runExportAndPump(
+  WidgetTester tester,
+  PdfController controller,
+) async {
+  return tester.runAsync<Object?>(() async {
+    Object? error;
+    var completed = false;
+
+    final completion = controller
+        .export()
+        .then<void>(
+          (_) {},
+          onError: (Object caught, StackTrace stackTrace) {
+            error = caught;
+          },
+        )
+        .whenComplete(() {
+          completed = true;
+        });
+
+    for (var i = 0; i < 100 && !completed; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+
+    expect(completed, isTrue, reason: 'export() did not complete in time');
+    await completion;
+    return error;
+  });
+}
+
 void main() {
   group('PdfController', () {
     late PdfController controller;
@@ -79,32 +141,7 @@ void main() {
     late List<SlideConfiguration> testSlides;
 
     setUp(() {
-      // Create minimal test slides using real constructor
-      final slide1 = Slide(key: 'slide-1', sections: [], comments: []);
-      final slide2 = Slide(key: 'slide-2', sections: [], comments: []);
-      final slide3 = Slide(key: 'slide-3', sections: [], comments: []);
-
-      testSlides = [
-        SlideConfiguration(
-          slideIndex: 0,
-          style: SlideStyle(),
-          slide: slide1,
-          thumbnailKey: 'thumb1.png',
-        ),
-        SlideConfiguration(
-          slideIndex: 1,
-          style: SlideStyle(),
-          slide: slide2,
-          thumbnailKey: 'thumb2.png',
-        ),
-        SlideConfiguration(
-          slideIndex: 2,
-          style: SlideStyle(),
-          slide: slide3,
-          thumbnailKey: 'thumb3.png',
-        ),
-      ];
-
+      testSlides = createTestSlides(3);
       slideCaptureService = SlideCaptureService();
 
       controller = PdfController(
@@ -148,22 +185,71 @@ void main() {
       });
     });
 
-    group('State Management', () {
-      test('pageController is initialized', () {
-        expect(controller.pageController.initialPage, 0);
+    group('Export flow', () {
+      PdfController createExportController() {
+        final c = PdfController(
+          slides: [testSlides.first],
+          slideCaptureService: FakeSlideCaptureService(_testPngBytes),
+          waitDuration: Duration.zero,
+        );
+        addTearDown(c.dispose);
+        addTearDown(() => _mockFileSaverChannel((_) async => null));
+        return c;
+      }
+
+      testWidgets('successful save completes export', (tester) async {
+        final exportController = createExportController();
+
+        _mockFileSaverChannel((call) async {
+          expect(call.method, 'saveAs');
+          return '/tmp/superdeck.pdf';
+        });
+
+        await tester.pumpWidget(_buildExportHarness(exportController));
+        await tester.pump();
+
+        final error = await _runExportAndPump(tester, exportController);
+
+        expect(error, isNull);
+        expect(exportController.exportStatus.value, PdfExportStatus.complete);
+        expect(exportController.exportError.value, isNull);
       });
 
-      // Note: dispose test skipped - PageController disposal requires
-      // widget test context
-    });
+      testWidgets('cancelled save returns export to idle', (tester) async {
+        final exportController = createExportController();
 
-    group('Export Status', () {
-      test('starts with idle status', () {
-        expect(controller.exportStatus.value, PdfExportStatus.idle);
+        _mockFileSaverChannel((call) async {
+          expect(call.method, 'saveAs');
+          return null;
+        });
+
+        await tester.pumpWidget(_buildExportHarness(exportController));
+        await tester.pump();
+
+        final error = await _runExportAndPump(tester, exportController);
+
+        expect(error, isNull);
+        expect(exportController.exportStatus.value, PdfExportStatus.idle);
+        expect(exportController.exportError.value, isNull);
       });
 
-      // Note: Full export tests would require widget testing
-      // and mock implementations of the capture service
+      testWidgets('save failure marks export as failed', (tester) async {
+        final exportController = createExportController();
+
+        _mockFileSaverChannel((call) async {
+          expect(call.method, 'saveAs');
+          throw PlatformException(code: 'save_failed', message: 'disk full');
+        });
+
+        await tester.pumpWidget(_buildExportHarness(exportController));
+        await tester.pump();
+
+        final error = await _runExportAndPump(tester, exportController);
+
+        expect(error, isA<PlatformException>());
+        expect(exportController.exportStatus.value, PdfExportStatus.failed);
+        expect(exportController.exportError.value, contains('save_failed'));
+      });
     });
 
     group('Render boundary paint waiting', () {

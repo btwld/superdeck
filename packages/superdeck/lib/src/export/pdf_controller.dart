@@ -239,7 +239,10 @@ class PdfController {
 
       _images.clear();
       _capturedCount.value = 0;
-      if (!await _savePdf(pdf)) return;
+      if (!await _savePdf(pdf)) {
+        _exportStatus.value = PdfExportStatus.idle;
+        return;
+      }
 
       _exportStatus.value = PdfExportStatus.complete;
     } on _ExportCancelledException catch (e) {
@@ -254,33 +257,30 @@ class PdfController {
 
   /// Saves [pdf] using the current platform's download flow.
   Future<bool> _savePdf(Uint8List pdf) async {
-    try {
-      if (kIsWeb) {
-        await FileSaver.instance.saveFile(
-          name: 'superdeck',
-          bytes: pdf,
-          ext: 'pdf',
-          mimeType: MimeType.pdf,
-        );
-
-        return true;
-      }
-
-      log('Saving pdf');
-      final result = await FileSaver.instance.saveAs(
+    if (kIsWeb) {
+      await FileSaver.instance.saveFile(
         name: 'superdeck',
         bytes: pdf,
         ext: 'pdf',
         mimeType: MimeType.pdf,
       );
-      log('Save result: $result');
+
       return true;
-    } catch (e) {
-      log('Error saving pdf: $e');
-      _exportError.value = 'Failed to save PDF: $e';
-      _exportStatus.value = PdfExportStatus.failed;
+    }
+
+    log('Saving pdf');
+    final result = await FileSaver.instance.saveAs(
+      name: 'superdeck',
+      bytes: pdf,
+      ext: 'pdf',
+      mimeType: MimeType.pdf,
+    );
+    if (result == null) {
+      log('Save cancelled by user');
       return false;
     }
+    log('Save result: $result');
+    return true;
   }
 
   void cancel() {

@@ -1,10 +1,9 @@
-import 'dart:typed_data';
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/export/slide_capture_service.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
+
+import '../../helpers/fake_slide_capture_service.dart';
 
 class _TrackingCacheStore implements AssetCacheStore {
   final Map<String, List<int>> _store = {};
@@ -35,22 +34,6 @@ class _TrackingCacheStore implements AssetCacheStore {
   void clearLog() => callLog.clear();
 }
 
-class _CountingCaptureService extends SlideCaptureService {
-  int captureCalls = 0;
-  final List<String> capturedKeys = [];
-
-  @override
-  Future<Uint8List> capture({
-    SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
-    required SlideConfiguration slide,
-    required BuildContext context,
-  }) async {
-    captureCalls++;
-    capturedKeys.add(slide.key);
-    return Uint8List.fromList([1, 2, 3]);
-  }
-}
-
 String _thumbnailKey(String slideKey) => 'thumbnail_$slideKey.png';
 
 SlideConfiguration _slide(String key, {String? thumbnailKey}) {
@@ -76,12 +59,12 @@ Future<BuildContext> _pumpContext(WidgetTester tester) async {
 void main() {
   group('ThumbnailService.generateThumbnail (single slide)', () {
     late _TrackingCacheStore cacheStore;
-    late _CountingCaptureService captureService;
+    late FakeSlideCaptureService captureService;
     late ThumbnailService service;
 
     setUp(() {
       cacheStore = _TrackingCacheStore();
-      captureService = _CountingCaptureService();
+      captureService = FakeSlideCaptureService();
       service = ThumbnailService(
         cacheStore: cacheStore,
         slideCaptureService: captureService,
@@ -190,12 +173,12 @@ void main() {
 
   group('ThumbnailService.generateThumbnails (batch cache management)', () {
     late _TrackingCacheStore cacheStore;
-    late _CountingCaptureService captureService;
+    late FakeSlideCaptureService captureService;
     late ThumbnailService service;
 
     setUp(() {
       cacheStore = _TrackingCacheStore();
-      captureService = _CountingCaptureService();
+      captureService = FakeSlideCaptureService();
       service = ThumbnailService(
         cacheStore: cacheStore,
         slideCaptureService: captureService,
@@ -264,9 +247,7 @@ void main() {
       expect(result!['change']!.thumbnailKey, 'thumbnail_change_v2.png');
     });
 
-    testWidgets('removed slides are absent from updated cache', (
-      tester,
-    ) async {
+    testWidgets('removed slides are absent from updated cache', (tester) async {
       final context = await _pumpContext(tester);
 
       // Start with 3 slides

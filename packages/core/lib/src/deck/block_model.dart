@@ -175,7 +175,7 @@ enum ImageFit {
 )
 class WidgetBlock extends Block with WidgetBlockMappable {
   static const key = 'widget';
-  static const _reservedKeys = {'type', 'name', 'align', 'flex', 'scrollable'};
+  static const _reservedKeys = {'name', 'align', 'flex', 'scrollable'};
 
   final Map<String, Object?> args;
   final String name;
@@ -186,14 +186,34 @@ class WidgetBlock extends Block with WidgetBlockMappable {
     super.align,
     super.flex,
     super.scrollable,
-  }) : args = args == null
-           ? const {}
-           : Map.unmodifiable(
-               Map.fromEntries(
-                 args.entries.where((e) => !_reservedKeys.contains(e.key)),
-               ),
-             ),
+  }) : args = _validateArgs(args),
        super(type: key);
+
+  static Map<String, Object?> _validateArgs(Map<String, Object?>? args) {
+    if (args == null) return const {};
+
+    // Single pass: strip the 'type' discriminator key leaked by
+    // UnmappedPropertiesHook during deserialization, and reject any
+    // other reserved keys that indicate a caller mistake.
+    final filtered = <String, Object?>{};
+    final collisions = <String>[];
+
+    for (final entry in args.entries) {
+      if (entry.key == 'type') continue;
+      if (_reservedKeys.contains(entry.key)) {
+        collisions.add(entry.key);
+      } else {
+        filtered[entry.key] = entry.value;
+      }
+    }
+
+    if (collisions.isNotEmpty) {
+      throw ArgumentError(
+        'args must not contain reserved keys: ${collisions.join(', ')}',
+      );
+    }
+    return Map.unmodifiable(filtered);
+  }
 
   static final fromMap = WidgetBlockMapper.fromMap;
 

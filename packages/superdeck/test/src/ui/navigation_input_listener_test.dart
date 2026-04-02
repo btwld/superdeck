@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
@@ -8,31 +6,8 @@ import 'package:superdeck/src/deck/navigation_input_listener.dart';
 import 'package:superdeck/src/deck/navigation_service.dart';
 import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../helpers/test_helpers.dart';
-
-final class _MockDeckLoader extends DeckLoader {
-  _MockDeckLoader() : super(workspace: DeckWorkspace());
-
-  final StreamController<SlidesEvent> _events =
-      StreamController<SlidesEvent>.broadcast();
-
-  @override
-  Stream<SlidesEvent> load() {
-    Future.microtask(() {
-      _events.add(SlidesLoadingEvent('Loading...'));
-      _events.add(SlidesLoadedEvent(createTestSlidesPayload()));
-    });
-    return _events.stream;
-  }
-
-  @override
-  Future<void> reload() async {}
-
-  @override
-  Future<void> dispose() => _events.close();
-}
+import '../../helpers/mock_deck_loader.dart';
 
 Widget _buildHarness(DeckController controller) {
   return MaterialApp.router(
@@ -78,14 +53,14 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('NavigationInputListener', () {
-    late _MockDeckLoader loader;
+    late MockDeckLoader loader;
     late DeckController controller;
 
     setUp(() async {
-      loader = _MockDeckLoader();
+      loader = MockDeckLoader();
       controller = DeckController(
         deckLoader: loader,
-        options: const DeckOptions(),
+        options: DeckOptions(),
         navigationService: NavigationService(transitionDuration: Duration.zero),
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));

@@ -3,8 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/export/slide_capture_service.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
+
+import '../../helpers/fake_slide_capture_service.dart';
 
 class _FakeAssetCacheStore implements AssetCacheStore {
   final List<String> callOrder = [];
@@ -33,23 +34,6 @@ class _FakeAssetCacheStore implements AssetCacheStore {
   Future<void> delete(String assetKey) async {
     callOrder.add('delete:$assetKey');
     deletedKey = assetKey;
-  }
-}
-
-class _FakeSlideCaptureService extends SlideCaptureService {
-  int captureCalls = 0;
-  final Uint8List bytes;
-
-  _FakeSlideCaptureService(this.bytes);
-
-  @override
-  Future<Uint8List> capture({
-    SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
-    required SlideConfiguration slide,
-    required BuildContext context,
-  }) async {
-    captureCalls += 1;
-    return bytes;
   }
 }
 
@@ -87,7 +71,7 @@ void main() {
       final store = _FakeAssetCacheStore(
         resolvedUri: Uri.parse('file:///tmp/cache-thumb.png'),
       );
-      final capture = _FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final capture = FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
       final service = ThumbnailService(
         cacheStore: store,
         slideCaptureService: capture,
@@ -110,7 +94,7 @@ void main() {
         resolvedUri: null,
         writeUri: Uri.parse('file:///tmp/new-thumb.png'),
       );
-      final capture = _FakeSlideCaptureService(Uint8List.fromList([7, 8, 9]));
+      final capture = FakeSlideCaptureService(Uint8List.fromList([7, 8, 9]));
       final service = ThumbnailService(
         cacheStore: store,
         slideCaptureService: capture,
@@ -142,7 +126,7 @@ void main() {
         resolvedUri: Uri.parse('file:///tmp/old-thumb.png'),
         writeUri: Uri.parse('file:///tmp/new-thumb.png'),
       );
-      final capture = _FakeSlideCaptureService(Uint8List.fromList([4, 5, 6]));
+      final capture = FakeSlideCaptureService(Uint8List.fromList([4, 5, 6]));
       final service = ThumbnailService(
         cacheStore: store,
         slideCaptureService: capture,
@@ -169,7 +153,7 @@ void main() {
     testWidgets('returns null when write fails', (tester) async {
       final context = await _pumpContext(tester);
       final store = _FakeAssetCacheStore(resolvedUri: null, writeUri: null);
-      final capture = _FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final capture = FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
       final service = ThumbnailService(
         cacheStore: store,
         slideCaptureService: capture,
@@ -199,7 +183,7 @@ void main() {
       final store = _FakeAssetCacheStore(
         resolvedUri: Uri.parse('file:///tmp/updated-thumb.png'),
       );
-      final capture = _FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final capture = FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
       final service = ThumbnailService(
         cacheStore: store,
         slideCaptureService: capture,

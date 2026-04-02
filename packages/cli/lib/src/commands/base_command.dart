@@ -19,7 +19,12 @@ abstract class SuperDeckCommand extends Command<int> {
   SuperDeckCommand({Logger? loggerOverride})
     : logger = loggerOverride ?? Logger();
 
-  bool isWorkspaceConfigValid({String? projectDir}) {
+  /// Rejects projects that use `superdeck.yaml` for path customization.
+  ///
+  /// The CLI intentionally enforces the default workspace layout for 1.0.
+  /// Core's [DeckWorkspace] accepts configurable paths for programmatic use,
+  /// but the CLI surface locks them down to simplify the user experience.
+  bool ensureSupportedWorkspaceLayout({String? projectDir}) {
     final configPath = projectDir == null
         ? unsupportedWorkspaceConfigFileName
         : path.join(projectDir, unsupportedWorkspaceConfigFileName);

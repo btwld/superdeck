@@ -73,70 +73,46 @@ void main() {
 
   group('ContentAlignment.toAlignment', () {
     test('null returns Alignment.center', () {
-      expect((null as ContentAlignment?)?.toAlignment ?? Alignment.center, Alignment.center);
-    });
-
-    test('topLeft returns Alignment.topLeft', () {
       expect(
-        ContentAlignment.topLeft.toAlignment,
-        Alignment.topLeft,
-      );
-    });
-
-    test('topCenter returns Alignment.topCenter', () {
-      expect(
-        ContentAlignment.topCenter.toAlignment,
-        Alignment.topCenter,
-      );
-    });
-
-    test('topRight returns Alignment.topRight', () {
-      expect(
-        ContentAlignment.topRight.toAlignment,
-        Alignment.topRight,
-      );
-    });
-
-    test('centerLeft returns Alignment.centerLeft', () {
-      expect(
-        ContentAlignment.centerLeft.toAlignment,
-        Alignment.centerLeft,
-      );
-    });
-
-    test('center returns Alignment.center', () {
-      expect(
-        ContentAlignment.center.toAlignment,
+        (null as ContentAlignment?)?.toAlignment ?? Alignment.center,
         Alignment.center,
       );
     });
 
+    test('topLeft returns Alignment.topLeft', () {
+      expect(ContentAlignment.topLeft.toAlignment, Alignment.topLeft);
+    });
+
+    test('topCenter returns Alignment.topCenter', () {
+      expect(ContentAlignment.topCenter.toAlignment, Alignment.topCenter);
+    });
+
+    test('topRight returns Alignment.topRight', () {
+      expect(ContentAlignment.topRight.toAlignment, Alignment.topRight);
+    });
+
+    test('centerLeft returns Alignment.centerLeft', () {
+      expect(ContentAlignment.centerLeft.toAlignment, Alignment.centerLeft);
+    });
+
+    test('center returns Alignment.center', () {
+      expect(ContentAlignment.center.toAlignment, Alignment.center);
+    });
+
     test('centerRight returns Alignment.centerRight', () {
-      expect(
-        ContentAlignment.centerRight.toAlignment,
-        Alignment.centerRight,
-      );
+      expect(ContentAlignment.centerRight.toAlignment, Alignment.centerRight);
     });
 
     test('bottomLeft returns Alignment.bottomLeft', () {
-      expect(
-        ContentAlignment.bottomLeft.toAlignment,
-        Alignment.bottomLeft,
-      );
+      expect(ContentAlignment.bottomLeft.toAlignment, Alignment.bottomLeft);
     });
 
     test('bottomCenter returns Alignment.bottomCenter', () {
-      expect(
-        ContentAlignment.bottomCenter.toAlignment,
-        Alignment.bottomCenter,
-      );
+      expect(ContentAlignment.bottomCenter.toAlignment, Alignment.bottomCenter);
     });
 
     test('bottomRight returns Alignment.bottomRight', () {
-      expect(
-        ContentAlignment.bottomRight.toAlignment,
-        Alignment.bottomRight,
-      );
+      expect(ContentAlignment.bottomRight.toAlignment, Alignment.bottomRight);
     });
   });
 

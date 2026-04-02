@@ -45,10 +45,7 @@ void main() {
     });
 
     DeckController createController() {
-      controller = DeckController(
-        deckLoader: loader,
-        options: const DeckOptions(),
-      );
+      controller = DeckController(deckLoader: loader, options: DeckOptions());
       addTearDown(controller.dispose);
       return controller;
     }

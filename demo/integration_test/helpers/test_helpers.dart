@@ -96,7 +96,9 @@ class TestApp extends StatelessWidget {
 Slide makeSlide(String key, String content) {
   return Slide(
     key: key,
-    sections: [SectionBlock([ContentBlock(content)])],
+    sections: [
+      SectionBlock([ContentBlock(content)]),
+    ],
   );
 }
 
