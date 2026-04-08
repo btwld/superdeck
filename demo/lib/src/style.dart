@@ -3,26 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 
-SlideStyle coverStyle() {
-  return SlideStyle(
-    h1: TextStyler().style(
-      TextStyleMix(fontFamily: GoogleFonts.poppins().fontFamily, fontSize: 100),
-    ),
-    blockContainer: BoxStyler(
-      decoration: BoxDecorationMix(
-        gradient: LinearGradientMix(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.5),
-            Colors.black.withValues(alpha: 0.95),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
 SlideStyle announcementStyle() {
   return SlideStyle(
     h1: TextStyler().style(
