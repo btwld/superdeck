@@ -84,23 +84,6 @@ import 'package:markdown/markdown.dart' as md;
   return (hero: hero, length: pos - start);
 }
 
-/// Consumes a leading hero marker (`{.tag}`) from the inline [parser].
-///
-/// If a valid hero tag is found the parser is advanced past the marker and the
-/// tag value is returned. Otherwise `null` is returned and the parser position
-/// is left untouched.
-String? consumeLeadingHeroMarker(md.InlineParser parser) {
-  final (:hero, :length) = scanLeadingHeroMarker(parser.source, parser.pos);
-  if (hero == null || length == 0) {
-    return null;
-  }
-
-  parser.consume(length);
-  parser.start = parser.pos;
-
-  return hero;
-}
-
 /// Consumes a hero marker that may follow an inline node such as an image.
 ///
 /// PARSER POSITION MANAGEMENT:
