@@ -128,7 +128,7 @@ void main() {
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await _waitForEvent<SlidesLoadedEvent>(events);
 
       expect(events.first, isA<SlidesLoadingEvent>());
       expect(events.whereType<SlidesLoadedEvent>(), hasLength(1));
@@ -145,7 +145,7 @@ void main() {
       final subscription = deckLoader.load().listen(events.add);
       addTearDown(subscription.cancel);
 
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await _waitForEvent<SlidesRebuildingEvent>(events);
 
       expect(events.whereType<SlidesRebuildingEvent>(), isNotEmpty);
       expect(events.whereType<SlidesLoadedEvent>(), isEmpty);
@@ -259,7 +259,10 @@ void main() {
         '"error":{"type":"BuildFailure","message":"Syntax error"}}',
       );
 
-      await Future<void>.delayed(const Duration(milliseconds: 200));
+      await _waitForEvent<SlidesErrorEvent>(
+        events,
+        where: (event) => event.message == 'Syntax error',
+      );
 
       final syntaxErrors = events
           .whereType<SlidesErrorEvent>()

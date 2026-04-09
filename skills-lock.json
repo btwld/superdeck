@@ -110,6 +110,11 @@
       "source": "flutter/skills",
       "sourceType": "github",
       "computedHash": "37ca76b0ec9e681b9b1d58f788f3ff1338a924ed1247983f6adf6c302d44887b"
+    },
+    "playwright-best-practices": {
+      "source": "currents-dev/playwright-best-practices-skill",
+      "sourceType": "github",
+      "computedHash": "320eaf861e3a0a923bfaad0726cb311a3fe30093378f8d26c89b9c5ae5c42b35"
     }
   }
 }

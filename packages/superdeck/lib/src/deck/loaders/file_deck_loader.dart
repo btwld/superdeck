@@ -32,7 +32,6 @@ class FileDeckLoader extends DeckLoader {
   File get _deckFile => workspace.deckJson;
   File get _statusFile => workspace.buildStatusJson;
   Directory get _statusParentDir => _statusFile.parent;
-  Directory get _projectDir => workspace.projectDirectory;
 
   bool _isCycleActive(Completer<void> cancel) {
     return !_disposed &&
@@ -61,6 +60,11 @@ class FileDeckLoader extends DeckLoader {
     } on Exception catch (error) {
       _emit(wrapReferenceError(error), cancel);
     }
+  }
+
+  Future<String?> _readStatusSnapshot() async {
+    if (!await _statusFile.exists()) return null;
+    return _statusFile.readAsString();
   }
 
   Future<void> _processStatus(Completer<void> cancel) async {
@@ -119,56 +123,34 @@ class FileDeckLoader extends DeckLoader {
 
   /// Waits for the status parent directory to be created.
   Future<void> _waitForDirectoryCreation(Completer<void> cancel) async {
-    if (_disposed || cancel.isCompleted || await _statusParentDir.exists()) {
-      return;
-    }
-
-    final wait = Completer<void>();
-    StreamSubscription<FileSystemEvent>? sub;
-    try {
-      sub = _projectDir
-          .watch(events: FileSystemEvent.create, recursive: true)
-          .listen(
-            // Any create event could be the directory — wake up and let the
-            // main loop re-check rather than risking a race condition.
-            (_) {
-              if (!wait.isCompleted) wait.complete();
-            },
-            onError: (_, __) {
-              if (!wait.isCompleted) wait.complete();
-            },
-            onDone: () {
-              if (!wait.isCompleted) wait.complete();
-            },
-          );
-      await Future.any<void>([wait.future, cancel.future]);
-    } on FileSystemException {
-      // Directory may not exist yet
-    } finally {
-      await sub?.cancel();
+    while (_isCycleActive(cancel) && !await _statusParentDir.exists()) {
+      await Future.any<void>([
+        Future<void>.delayed(const Duration(milliseconds: 50)),
+        cancel.future,
+      ]);
     }
   }
 
   /// Waits for the status file to change using [FileWatcher].
   ///
   /// Returns `true` if a change was detected, `false` if cancelled.
-  Future<bool> _waitForStatusChange(Completer<void> cancel) async {
-    final watcher = FileWatcher(
-      _statusFile,
-      events: FileSystemEvent.create | FileSystemEvent.modify,
-    );
+  Future<bool> _waitForStatusChange(
+    Completer<void> cancel, {
+    required String? statusAtStart,
+  }) async {
+    while (_isCycleActive(cancel)) {
+      final contentNow = await _readStatusSnapshot();
+      if (contentNow != statusAtStart) {
+        return true;
+      }
 
-    final changed = Completer<void>();
-    final sub = watcher.watch().listen((_) {
-      if (!changed.isCompleted) changed.complete();
-    });
-
-    try {
-      await Future.any<void>([changed.future, cancel.future]);
-      return changed.isCompleted;
-    } finally {
-      await sub.cancel();
+      await Future.any<void>([
+        Future<void>.delayed(const Duration(milliseconds: 50)),
+        cancel.future,
+      ]);
     }
+
+    return false;
   }
 
   void _startCycle() {
@@ -209,10 +191,14 @@ class FileDeckLoader extends DeckLoader {
         continue;
       }
 
+      final statusAtStart = await _readStatusSnapshot();
       await _processStatus(cancel);
       if (!_isCycleActive(cancel)) return;
 
-      final changed = await _waitForStatusChange(cancel);
+      final changed = await _waitForStatusChange(
+        cancel,
+        statusAtStart: statusAtStart,
+      );
       if (!changed) return;
     }
   }
