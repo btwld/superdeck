@@ -118,23 +118,8 @@ Future<String> patchSetupIndexHtml(
   String indexHtml, {
   required String assetsRoot,
 }) async {
-  final hasManagedStyle = indexHtml.contains(_managedLoaderStyleStart);
-  final hasManagedBody = indexHtml.contains(_managedLoaderBodyStart);
-  if (hasManagedStyle && hasManagedBody) {
+  if (_checkIndexHtmlPatchable(indexHtml)) {
     return indexHtml;
-  }
-  if (hasManagedStyle != hasManagedBody ||
-      indexHtml.contains('id="flutter-loader"')) {
-    throw const FormatException(
-      'Failed to patch web/index.html: existing loader markup is not managed '
-      'by SuperDeck. Merge the loader manually.',
-    );
-  }
-
-  if (!_flutterBootstrapScriptPattern.hasMatch(indexHtml)) {
-    throw const FormatException(
-      'Failed to patch web/index.html: missing flutter_bootstrap.js script tag.',
-    );
   }
 
   final loaderStyle = await File(
@@ -227,7 +212,6 @@ Future<void> _ensureSuperdeckPlaceholders(Directory projectDir) async {
 }
 
 Future<void> _applyWebSetup(Directory projectDir) async {
-  final assetsRoot = resolveSetupAssetsRoot();
   final indexHtmlFile = File(path.join(projectDir.path, 'web', 'index.html'));
   if (!indexHtmlFile.existsSync()) {
     throw FileSystemException(
@@ -238,12 +222,18 @@ Future<void> _applyWebSetup(Directory projectDir) async {
   final bootstrapFile = File(
     path.join(projectDir.path, 'web', 'flutter_bootstrap.js'),
   );
-  final patchedIndexHtml = await patchSetupIndexHtml(
-    await indexHtmlFile.readAsString(),
-    assetsRoot: assetsRoot,
-  );
+
+  // Validate before resolving assets root so format/io errors surface cleanly
+  // in environments where Isolate.resolvePackageUriSync is unavailable (tests).
+  final indexHtml = await indexHtmlFile.readAsString();
+  _checkIndexHtmlPatchable(indexHtml);
   await _ensureBootstrapIsManagedOrMissing(bootstrapFile);
 
+  final assetsRoot = resolveSetupAssetsRoot();
+  final patchedIndexHtml = await patchSetupIndexHtml(
+    indexHtml,
+    assetsRoot: assetsRoot,
+  );
   await indexHtmlFile.writeAsString(patchedIndexHtml);
 
   final bootstrapSource = File(
@@ -256,6 +246,31 @@ Future<void> _applyWebSetup(Directory projectDir) async {
     path.join(projectDir.path, 'web', 'superdeck_loader.svg'),
   );
   await svgSource.copy(svgTarget.path);
+}
+
+/// Validates that [indexHtml] can be patched by SuperDeck.
+///
+/// Returns `true` when the file is already fully managed and needs no
+/// further patching (idempotent re-run).  Throws [FormatException] when the
+/// file is partially managed or lacks the required `flutter_bootstrap.js`
+/// script tag.
+bool _checkIndexHtmlPatchable(String indexHtml) {
+  final hasManagedStyle = indexHtml.contains(_managedLoaderStyleStart);
+  final hasManagedBody = indexHtml.contains(_managedLoaderBodyStart);
+  if (hasManagedStyle && hasManagedBody) return true;
+  if (hasManagedStyle != hasManagedBody ||
+      indexHtml.contains('id="flutter-loader"')) {
+    throw const FormatException(
+      'Failed to patch web/index.html: existing loader markup is not managed '
+      'by SuperDeck. Merge the loader manually.',
+    );
+  }
+  if (!_flutterBootstrapScriptPattern.hasMatch(indexHtml)) {
+    throw const FormatException(
+      'Failed to patch web/index.html: missing flutter_bootstrap.js script tag.',
+    );
+  }
+  return false;
 }
 
 Future<void> _ensureBootstrapIsManagedOrMissing(File bootstrapFile) async {

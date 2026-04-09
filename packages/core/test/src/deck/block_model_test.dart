@@ -741,7 +741,7 @@ void main() {
           expect(map['scrollable'], false);
         });
 
-        test('spreads args into map', () {
+        test('flattens args into map instead of nesting under args', () {
           final widget = WidgetBlock(
             name: 'Test',
             args: {'customKey': 'customValue', 'count': 5},
@@ -750,6 +750,7 @@ void main() {
 
           expect(map['customKey'], 'customValue');
           expect(map['count'], 5);
+          expect(map.containsKey('args'), isFalse);
         });
 
         test('serializes reserved fields and custom args together', () {

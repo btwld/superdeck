@@ -34,7 +34,7 @@ The compiled payload is a raw JSON array of slide objects — no root wrapper, n
           {
             "type": "widget",
             "name": "qrcode",
-            "args": { "text": "https://superdeck.dev" },
+            "text": "https://superdeck.dev",
             "flex": 1
           }
         ]
@@ -100,7 +100,7 @@ Renders a named Flutter widget with arguments.
 |-------|------|-------------|
 | `type` | `"widget"` | Discriminator |
 | `name` | `string` | Widget factory name (registered in `DeckOptions.widgets`) |
-| `args` | `object` | Key-value arguments passed to the widget factory |
+| additional custom keys | `object` values | Flattened key-value arguments passed to the widget factory |
 | `align` | `enum?` | Content alignment |
 | `flex` | `integer?` | Flex weight relative to sibling blocks |
 | `scrollable` | `boolean?` | Enable scrolling for overflow content |

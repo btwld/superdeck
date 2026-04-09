@@ -55,9 +55,10 @@ int clampSlideIndex(DeckController controller, int target) {
 
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
-  const TestApp({super.key, this.deckLoader});
+  const TestApp({super.key, this.deckLoader, this.workspace});
 
   final DeckLoader? deckLoader;
+  final DeckWorkspace? workspace;
 
   static bool _initialized = false;
 
@@ -75,6 +76,7 @@ class TestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return SuperDeckApp(
       deckLoader: deckLoader,
+      workspace: workspace,
       options: DeckOptions(
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
@@ -203,10 +205,20 @@ extension IntegrationTestExtensions on WidgetTester {
     );
   }
 
-  /// Pumps a [TestApp] with the given [DeckLoader], waits for slides to load.
-  Future<DeckController> pumpTestAppWithLoader(DeckLoader loader) async {
-    await pumpWidget(TestApp(deckLoader: loader));
+  /// Pumps a [TestApp] with the given [DeckLoader] and matching [workspace],
+  /// then waits for slides to load.
+  ///
+  /// The workspace is required because [SuperDeckApp] asserts that a custom
+  /// loader and its cache store share the same workspace — passing only the
+  /// loader leaves the default [RuntimeAssetCacheStore] pointing at a
+  /// different directory than the loader reads from.
+  Future<DeckController> pumpTestAppWithLoader(
+    DeckLoader loader, {
+    required DeckWorkspace workspace,
+  }) async {
+    await pumpWidget(TestApp(deckLoader: loader, workspace: workspace));
     await pumpFor(const Duration(milliseconds: 200));
+    _failOnStartupException();
 
     await pumpUntil(
       () => findDeckController(this) != null,
@@ -226,6 +238,7 @@ extension IntegrationTestExtensions on WidgetTester {
   Future<DeckController> pumpTestApp() async {
     await pumpWidget(const TestApp());
     await pumpFor(const Duration(milliseconds: 200));
+    _failOnStartupException();
 
     await pumpUntil(
       () => findDeckController(this) != null,
@@ -290,6 +303,15 @@ extension IntegrationTestExtensions on WidgetTester {
     await sendKeyUpEvent(key);
     await sendKeyUpEvent(LogicalKeyboardKey.meta);
     await pumpFor(const Duration(milliseconds: 200));
+  }
+
+  /// Surfaces any caught startup exception immediately. Without this, a
+  /// build-time assertion failure is swallowed by the framework and the
+  /// subsequent `pumpUntil(controller)` times out after 15s instead.
+  void _failOnStartupException() {
+    final exception = takeException();
+    if (exception == null) return;
+    fail('SuperDeckApp failed to start:\n$exception');
   }
 
   String _startupDiagnostics() {

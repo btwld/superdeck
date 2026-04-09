@@ -61,3 +61,8 @@ discovery
 
 # Test coverage
 coverage/
+
+# Local execution artifacts
+.tmp/
+**/.npm-cache/
+**/.playwright-browsers/

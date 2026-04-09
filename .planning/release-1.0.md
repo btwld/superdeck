@@ -1,5 +1,7 @@
 # SuperDeck 1.0 Public Release Checklist
 
+> Status on 2026-04-09: historical run log plus current merge-readiness checklist. Re-run all blocking gates before using this file for a release go/no-go.
+
 ## Summary
 
 Release target: publish `superdeck`, `superdeck_core`, `superdeck_cli`, and `superdeck_builder` at `1.0.0`.
@@ -33,7 +35,7 @@ dart --version
 | 2026-02-23 | `fvm flutter pub run melos run analyze:dart --no-select` | Pass | No analyzer issues in `core`, `builder`, `cli`, `superdeck`, `demo`. |
 | 2026-02-23 | `fvm flutter pub run melos run test --no-select` | Pass | All package test suites passed (with expected Flutter startup-lock wait messages). |
 | 2026-02-23 | `fvm flutter pub run melos run test:integration --no-select` | Fail (expected local) | `-d linux` not available on local macOS; remains CI-only Linux gate. |
-| 2026-02-23 | `fvm flutter pub run melos run test:integration:macos --no-select` | Pass | Demo integration suite passed after stabilization fixes in `demo/integration_test/app_test.dart`. |
+| 2026-02-23 | `fvm flutter pub run melos run test:integration:macos --no-select` | Pass | Demo integration suite passed after stabilization fixes in `demo/integration_test/all_tests.dart` and the split integration test files. |
 | 2026-02-23 | `fvm flutter pub run melos run test:e2e:web --no-select` | Pass | Playwright smoke suite green (`4 passed`). |
 | 2026-02-23 | `fvm flutter pub run melos run analyze:dcm --no-select` | Fail (non-blocking) | DCM activation/license still missing (documented bypass). |
 | 2026-02-23 | `cd packages/core && fvm dart pub publish --dry-run` | Warnings | Pre-release dep warning + dirty git/overrides warnings. |
@@ -91,7 +93,7 @@ dart --version
 
 ## Phase 1: Reproducible Toolchain and Environment
 
-- [x] Pin `.fvmrc` to exact version (`3.38.9`).
+- [x] Pin `.fvmrc` to `stable`.
 - [x] Align SDK constraints across root/melos/packages/demo.
 - [x] Standardize melos scripts to FVM SDK commands.
 - [x] Verify no `Invalid SDK hash` appears in current release command logs.
@@ -101,7 +103,7 @@ dart --version
 
 - [x] Add `packages/superdeck/CHANGELOG.md`.
 - [x] Add `.pubignore` files for all publishable packages.
-- [x] Rename `packages/builder/docs` to `packages/builder/doc`.
+- [x] Keep publishable builder documentation in the existing `docs` directory.
 - [x] Resolve builder test import warning by adding direct `ack` dev dependency.
 - [ ] Re-run dry-runs and reduce warnings to approved prerelease exceptions only.
 - [x] Record final dependency exception sign-off after dry-runs.
@@ -194,12 +196,21 @@ Non-blocking (document-only for this release):
 
 - `packages/builder/test/manual_error_output_test.dart` (skip):
   - Disposition: keep skipped.
-  - Rationale: non-strict YAML logging path not exposed in this harness; covered by parser unit tests.
+  - Rationale: non-strict YAML logging path is intentionally exercised outside the normal test harness.
 
-- `packages/core/test/src/helpers/watcher_test.dart` (skip):
+- `packages/core/test/src/utils/file_watcher_test.dart` (skip):
   - Disposition: keep skipped.
   - Rationale: CI/event-loop variability can hang file watch assertions.
 
-- `packages/superdeck/test/deck/deck_controller_test.dart` (multiple skips):
-  - Disposition: keep skipped for 1.0.
-  - Rationale: these tests require bundled Google Fonts assets or further style-layer test seam changes.
+## 2026-04-09 merge-readiness refresh
+
+- `melos exec -c 10 -- fvm dart analyze --fatal-infos`: PASS
+- `cd packages/core && fvm dart run tool/export_contract_schemas.dart --check`: PASS
+- `cd packages/superdeck && fvm flutter test`: PASS
+- `cd demo && fvm dart run superdeck_cli:main build`: PASS
+- `cd demo && fvm flutter test integration_test/all_tests.dart -d macos --fail-fast --timeout 5m`: NOT RUN
+- `cd demo && fvm flutter build web --release && cd e2e && npm ci && npx playwright install chromium && npm run test:smoke`: NOT RUN
+
+Open blockers:
+- Local sandbox cannot complete the macOS integration gate because `xcodebuild` cannot access `CoreSimulatorService`.
+- Local sandbox cannot complete the Playwright smoke gate because headless Chromium launch fails with Mach bootstrap permission errors.

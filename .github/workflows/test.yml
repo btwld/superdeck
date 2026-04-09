@@ -161,7 +161,7 @@ jobs:
       - name: Build Web App
         run: |
           cd demo
-          fvm flutter build web --release
+          fvm flutter build web --release --no-wasm-dry-run
         timeout-minutes: 10
 
       - name: Setup Node.js

@@ -139,6 +139,11 @@ class DeckController {
     return _presentation.getThumbnail(slideKey);
   }
 
+  /// True while any thumbnail is being generated.  Used by integration tests
+  /// to wait for background thumbnail work to settle between tests.
+  @visibleForTesting
+  bool get hasLoadingThumbnails => _presentation.hasLoadingThumbnails;
+
   void dispose() {
     _presentation.dispose();
     _session.dispose();

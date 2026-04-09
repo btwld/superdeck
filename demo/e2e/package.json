@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "serve:web": "http-server ../build/web -p 4173 -c-1 --silent",
-    "test:smoke": "playwright test"
+    "test:smoke": "playwright test tests/smoke.spec.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.0",

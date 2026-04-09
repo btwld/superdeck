@@ -279,11 +279,19 @@ class _SplitViewState extends State<SplitView>
           isMenuOpen: isMenuOpen,
         ),
 
-        // Only show bottom bar on small layout (uncomment if needed):
-        bottomNavigationBar: SizeTransition(
-          axis: Axis.vertical,
-          sizeFactor: _curvedAnimation,
-          child: const DeckBottomBar(),
+        // ExcludeFocusTraversal keeps the collapsed bottom bar's focus nodes
+        // out of the root traversal policy.  Without it, a view-focus change
+        // (any click on Flutter web) runs ReadingOrderTraversalPolicy over
+        // every focus descendant — including buttons whose
+        // RenderSemanticsAnnotations are not yet laid out — which throws and
+        // crashes the renderer.
+        bottomNavigationBar: ExcludeFocusTraversal(
+          excluding: !isMenuOpen,
+          child: SizeTransition(
+            axis: Axis.vertical,
+            sizeFactor: _curvedAnimation,
+            child: const DeckBottomBar(),
+          ),
         ),
 
         // Body changes layout based on [isSmallLayout].
@@ -301,26 +309,42 @@ class _SplitViewState extends State<SplitView>
                           ),
                         ),
                       ),
-                      // Animated bottom panel
-                      SizeTransition(
-                        axis: Axis.vertical,
-                        sizeFactor: _curvedAnimation,
-                        child: SizedBox(
-                          height: 200,
-                          child: _buildPanel(context),
+                      // Animated bottom panel — see ExcludeFocus note on the
+                      // bottom nav above for why collapsed panels must be
+                      // excluded from focus traversal.
+                      ExcludeFocusTraversal(
+                        excluding: !isMenuOpen,
+                        child: ExcludeFocus(
+                          excluding: !isMenuOpen,
+                          child: SizeTransition(
+                            axis: Axis.vertical,
+                            sizeFactor: _curvedAnimation,
+                            child: SizedBox(
+                              height: 200,
+                              child: _buildPanel(context),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   )
                 : Row(
                     children: [
-                      // Animated side panel
-                      SizeTransition(
-                        axis: Axis.horizontal,
-                        sizeFactor: _curvedAnimation,
-                        child: SizedBox(
-                          width: 300,
-                          child: _buildPanel(context),
+                      // Animated side panel — see ExcludeFocus note on the
+                      // bottom nav above for why collapsed panels must be
+                      // excluded from focus traversal.
+                      ExcludeFocusTraversal(
+                        excluding: !isMenuOpen,
+                        child: ExcludeFocus(
+                          excluding: !isMenuOpen,
+                          child: SizeTransition(
+                            axis: Axis.horizontal,
+                            sizeFactor: _curvedAnimation,
+                            child: SizedBox(
+                              width: 300,
+                              child: _buildPanel(context),
+                            ),
+                          ),
                         ),
                       ),
                       // Main slide content

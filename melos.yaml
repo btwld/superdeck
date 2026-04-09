@@ -111,7 +111,7 @@ scripts:
     description: Run flutter integration tests on macOS (local)
 
   test:e2e:web:prepare:
-    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter build web --release
+    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter build web --release --no-wasm-dry-run
     description: Build demo assets and release web output for Playwright smoke tests.
 
   test:e2e:web:

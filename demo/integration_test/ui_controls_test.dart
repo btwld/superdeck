@@ -27,20 +27,28 @@ void main() {
 
       if (totalSlides > 1) {
         await tester.tapByLabel('Next slide');
+        // Waiting on the rendered counter covers both the signal update and
+        // the Watch widget rebuild without a fixed delay.
         await tester.pumpUntil(
-          () => controller.currentIndex.value == 1,
-          debugLabel: 'menu arrow-forward navigation',
+          () => find
+              .textContaining('2 of $totalSlides')
+              .evaluate()
+              .isNotEmpty,
+          debugLabel: 'menu arrow-forward counter update',
           onTimeout: () => describeDeckControllerState(controller),
         );
-        expect(find.textContaining('2 of $totalSlides'), findsOneWidget);
+        expect(controller.currentIndex.value, 1);
 
         await tester.tapByLabel('Previous slide');
         await tester.pumpUntil(
-          () => controller.currentIndex.value == 0,
-          debugLabel: 'menu arrow-back navigation',
+          () => find
+              .textContaining('1 of $totalSlides')
+              .evaluate()
+              .isNotEmpty,
+          debugLabel: 'menu arrow-back counter update',
           onTimeout: () => describeDeckControllerState(controller),
         );
-        expect(find.textContaining('1 of $totalSlides'), findsOneWidget);
+        expect(controller.currentIndex.value, 0);
       }
 
       await tester.tapByLabel('Close menu');
@@ -140,7 +148,21 @@ void main() {
       }
 
       await tester.tapByLabel('Regenerate thumbnails');
-      await tester.pumpFor(const Duration(milliseconds: 300));
+      // First wait for regeneration to start, then for it to settle.
+      // Otherwise the background work leaks into the next test and starves
+      // its event loop with 15+ seconds of thumbnail generation.
+      await tester.pumpUntil(
+        () => controller.hasLoadingThumbnails,
+        timeout: const Duration(seconds: 5),
+        debugLabel: 'thumbnail regeneration to start',
+        onTimeout: () => describeDeckControllerState(controller),
+      );
+      await tester.pumpUntil(
+        () => !controller.hasLoadingThumbnails,
+        timeout: const Duration(seconds: 30),
+        debugLabel: 'thumbnail regeneration to complete',
+        onTimeout: () => describeDeckControllerState(controller),
+      );
 
       expect(controller.getThumbnail(firstSlideKey), isNotNull);
       expect(find.textContaining('Error loading presentation'), findsNothing);

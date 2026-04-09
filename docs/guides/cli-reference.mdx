@@ -121,10 +121,11 @@ project/
 │   ├── build_status.json       # Last build status
 │   └── assets/                 # Build-generated assets (for example, Mermaid PNGs)
 │       └── mermaid_<hash>.png
-└── web/
-    ├── index.html              # Flutter web shell patched with loader markup
-    ├── flutter_bootstrap.js    # SuperDeck-managed loader lifecycle
-    └── superdeck_loader.svg    # Loader artwork
+├── web/                        # Optional; patched only when the Flutter web platform exists
+│   ├── index.html
+│   ├── flutter_bootstrap.js
+│   └── superdeck_loader.svg
+└── macos/                      # Optional; entitlements patched only when the Flutter macOS platform exists
 ```
 
 Runtime slide thumbnails are referenced by key (`thumbnail_<slideKey>.png`) and cached by the app at runtime (OS application cache on native platforms, in-memory data URIs on web).
@@ -236,9 +237,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: subosito/flutter-action@v2
-    - run: dart pub global activate superdeck_cli
-    - run: superdeck build
-    - run: superdeck publish
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: dart pub global activate melos
+      - run: melos bootstrap
+      - run: cd demo && fvm dart run superdeck_cli:main build
 ```

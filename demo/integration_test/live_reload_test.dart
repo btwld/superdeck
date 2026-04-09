@@ -39,7 +39,10 @@ void main() {
       loader = FileDeckLoader(workspace: workspace);
       loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(loader);
+      final controller = await tester.pumpTestAppWithLoader(
+        loader,
+        workspace: workspace,
+      );
       expect(controller.totalSlides.value, 1);
 
       await simulateBuilding(workspace, 2);
@@ -70,7 +73,10 @@ void main() {
       loader = FileDeckLoader(workspace: workspace);
       loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(loader);
+      final controller = await tester.pumpTestAppWithLoader(
+        loader,
+        workspace: workspace,
+      );
       expect(controller.totalSlides.value, 1);
       expect(controller.hasError.value, isFalse);
 
@@ -96,7 +102,10 @@ void main() {
       loader = FileDeckLoader(workspace: workspace);
       loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(loader);
+      final controller = await tester.pumpTestAppWithLoader(
+        loader,
+        workspace: workspace,
+      );
 
       // Trigger failure
       await simulateBuildFailure(workspace, 'Parse error', 2);
@@ -127,7 +136,10 @@ void main() {
       loader = FileDeckLoader(workspace: workspace);
       loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(loader);
+      final controller = await tester.pumpTestAppWithLoader(
+        loader,
+        workspace: workspace,
+      );
       expect(controller.totalSlides.value, 1);
 
       // Open menu to see the counter
@@ -166,7 +178,10 @@ void main() {
       loader = FileDeckLoader(workspace: workspace);
       loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(loader);
+      final controller = await tester.pumpTestAppWithLoader(
+        loader,
+        workspace: workspace,
+      );
       expect(controller.totalSlides.value, 3);
 
       // Navigate to the last slide
@@ -207,7 +222,10 @@ void main() {
       loader = FileDeckLoader(workspace: workspace);
       loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(loader);
+      final controller = await tester.pumpTestAppWithLoader(
+        loader,
+        workspace: workspace,
+      );
       expect(controller.totalSlides.value, 1);
 
       // Cycle 1: building → success with 2 slides

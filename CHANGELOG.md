@@ -1,6 +1,8 @@
 ## 1.0.0
 
 * First stable release of SuperDeck
+* Define the compiled slide contract as a raw JSON slide array.
+* Remove legacy `@column`; use `@section` for horizontal layout and `@block` for content blocks.
 * Roll back experimental setext-heading hero parsing; ATX headers continue to use the shared helper
 * Fix image hero-tag parsing to avoid inline parser overruns and keep Flutter/core paths aligned
 * Document the shared `{.hero}` helper and scope so future contributions stay consistent
