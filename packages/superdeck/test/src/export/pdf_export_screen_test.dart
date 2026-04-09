@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
-import 'package:superdeck/src/deck/navigation_service.dart';
 import 'package:superdeck/src/ui/panels/bottom_bar.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -45,7 +44,7 @@ void main() {
       controller = DeckController(
         deckLoader: loader,
         options: DeckOptions(),
-        navigationService: NavigationService(transitionDuration: Duration.zero),
+        transitionDuration: Duration.zero,
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));
     });

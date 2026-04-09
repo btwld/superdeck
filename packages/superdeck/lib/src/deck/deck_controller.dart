@@ -1,7 +1,5 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 import 'package:go_router/go_router.dart';
 import 'package:signals/signals.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -11,48 +9,26 @@ import '../export/thumbnail_service.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/asset_cache_store.dart';
 import 'deck_options.dart';
+import 'deck_presentation_state.dart';
+import 'deck_session_state.dart';
 import 'navigation_events.dart';
-import 'navigation_service.dart';
 import 'slide_configuration.dart';
 import 'slide_configuration_builder.dart';
 import 'superdeck_plugin.dart';
 
-/// Unified facade for all deck state and operations
+/// Unified facade for all deck state and operations.
 ///
-/// Manages reactive state with signals and delegates navigation and
-/// thumbnails to focused collaborators. Subscribes directly to a
-/// [DeckLoader.load] stream for deck loading and rebuild watching.
+/// Load/build lifecycle lives in [_session], while routing, navigation, menu
+/// state, and thumbnails live in [_presentation]. Consumers interact with this
+/// facade instead of reaching into those subsystems directly.
 class DeckController {
-  late final GoRouter router;
-
-  final DeckLoader _deckLoader;
-  final NavigationService _navigationService;
-  final ThumbnailService _thumbnailService;
+  late final DeckSessionState _session;
+  late final DeckPresentationState _presentation;
   final List<SuperDeckPlugin> _plugins;
-
-  bool _disposed = false;
-  StreamSubscription<SlidesEvent>? _subscription;
-
-  final _loadedSlides = signal<List<Slide>?>(null);
-  final _isLoading = signal<bool>(true);
-  final _error = signal<Object?>(null);
-  final _isBuildActive = signal<bool>(false);
-  final _buildFailure = signal<DeckBuildError?>(null);
-
   final _options = signal<DeckOptions>(DeckOptions());
 
-  final _isMenuOpen = signal<bool>(false);
-  final _isNotesOpen = signal<bool>(false);
-
-  final _currentIndex = signal<int>(0);
-  final _isTransitioning = signal<bool>(false);
-
-  final _thumbnails = signal<Map<String, AsyncThumbnail>>({});
-
-  EffectCleanup? _indexClampEffect;
-
   late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
-    final loadedSlides = _loadedSlides.value;
+    final loadedSlides = _session.loadedSlides.value;
     if (loadedSlides == null) return <SlideConfiguration>[];
     return const SlideConfigurationBuilder().buildConfigurations(
       loadedSlides,
@@ -63,28 +39,14 @@ class DeckController {
   late final ReadonlySignal<int> totalSlides = computed(
     () => slides.value.length,
   );
-  ReadonlySignal<bool> get isLoading => _isLoading;
-  late final ReadonlySignal<bool> hasError = computed(
-    () => _error.value != null && _loadedSlides.value == null,
-  );
-  ReadonlySignal<Object?> get error => _error;
-  ReadonlySignal<DeckBuildError?> get buildFailure => _buildFailure;
-
-  ReadonlySignal<bool> get isMenuOpen => _isMenuOpen;
-  ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
-  ReadonlySignal<bool> get isBuildActive => _isBuildActive;
-  List<SuperDeckPlugin> get plugins => _plugins;
-
-  ReadonlySignal<int> get currentIndex => _currentIndex;
-  ReadonlySignal<bool> get isTransitioning => _isTransitioning;
   late final ReadonlySignal<bool> canGoNext = computed(
-    () => _currentIndex.value < totalSlides.value - 1,
+    () => currentIndex.value < totalSlides.value - 1,
   );
   late final ReadonlySignal<bool> canGoPrevious = computed(
-    () => _currentIndex.value > 0,
+    () => currentIndex.value > 0,
   );
   late final ReadonlySignal<SlideConfiguration?> currentSlide = computed(() {
-    final index = _currentIndex.value;
+    final index = currentIndex.value;
     final slidesList = slides.value;
     return index >= 0 && index < slidesList.length ? slidesList[index] : null;
   });
@@ -92,92 +54,40 @@ class DeckController {
   DeckController({
     required DeckLoader deckLoader,
     required DeckOptions options,
-    NavigationService? navigationService,
     ThumbnailService? thumbnailService,
-  }) : _deckLoader = deckLoader,
-       _navigationService = navigationService ?? NavigationService(),
-       _thumbnailService =
-           thumbnailService ??
-           ThumbnailService(
-             cacheStore: RuntimeAssetCacheStore(
-               workspace: deckLoader.workspace,
-             ),
-           ),
-       _plugins = options.plugins {
+    AssetCacheStore? assetCacheStore,
+    Duration transitionDuration = const Duration(seconds: 1),
+  }) : _plugins = options.plugins {
     _options.value = options.copyWith(plugins: _plugins);
-    final pluginRoutes = _plugins
-        .expand((plugin) => plugin.buildRoutes())
-        .toList(growable: false);
-
-    router = _navigationService.createRouter(
-      onIndexChanged: (index) => _updateCurrentIndex(index),
-      additionalRoutes: pluginRoutes,
-    );
-
-    _indexClampEffect = effect(() {
-      totalSlides.value; // explicit trigger on slide count change
-      final currentIdx = _currentIndex.peek();
-      final clamped = _clampIndex(currentIdx);
-      if (currentIdx != clamped) {
-        _currentIndex.value = clamped;
-      }
-    });
-
-    _subscribe();
-  }
-
-  void _subscribe() {
-    _subscription = _deckLoader.load().listen(
-      _handleEvent,
-      onError: (Object error, StackTrace stackTrace) {
-        if (_disposed) return;
-        debugPrint('[DeckController] Loader stream error: $error');
-        _applyErrorState(error, '$error');
-      },
+    _session = DeckSessionState(deckLoader: deckLoader);
+    _presentation = DeckPresentationState(
+      thumbnailService:
+          thumbnailService ??
+          ThumbnailService(
+            cacheStore: assetCacheStore ?? RuntimeAssetCacheStore(),
+          ),
+      slides: slides,
+      plugins: _plugins,
+      transitionDuration: transitionDuration,
     );
   }
 
-  void _handleEvent(SlidesEvent event) {
-    if (_disposed) return;
+  ReadonlySignal<bool> get isLoading => _session.isLoading;
+  ReadonlySignal<bool> get hasError => _session.hasFatalError;
+  ReadonlySignal<Object?> get error => _session.error;
+  ReadonlySignal<bool> get isBuildActive => _session.isBuildActive;
+  ReadonlySignal<DeckBuildError?> get buildFailure => _session.buildFailure;
 
-    batch(() {
-      switch (event) {
-        case SlidesLoadingEvent():
-          _isLoading.value = true;
-          _error.value = null;
-        case SlidesLoadedEvent(:final slides):
-          _loadedSlides.value = List<Slide>.unmodifiable(slides);
-          _isLoading.value = false;
-          _error.value = null;
-          _isBuildActive.value = false;
-          _buildFailure.value = null;
-        case SlidesErrorEvent(:final message, :final error):
-          _applyErrorState(error ?? message, message);
-        case SlidesRebuildingEvent():
-          _isBuildActive.value = true;
-          _buildFailure.value = null;
-      }
-    });
-  }
+  ReadonlySignal<bool> get isMenuOpen => _presentation.isMenuOpen;
+  ReadonlySignal<bool> get isNotesOpen => _presentation.isNotesOpen;
+  ReadonlySignal<int> get currentIndex => _presentation.currentIndex;
+  ReadonlySignal<bool> get isTransitioning => _presentation.isTransitioning;
+  List<SuperDeckPlugin> get plugins => _plugins;
 
-  void _applyErrorState(Object? error, String message) {
-    batch(() {
-      _isLoading.value = false;
-      _isBuildActive.value = false;
-      if (_loadedSlides.value != null) {
-        _buildFailure.value = error is DeckBuildError
-            ? error
-            : DeckBuildError(message: message);
-      } else {
-        _error.value = error ?? message;
-        _buildFailure.value = null;
-      }
-    });
-  }
+  GoRouter get router => _presentation.router;
 
   @internal
   void updateOptions(DeckOptions newOptions) {
-    if (_disposed) return;
     final normalizedOptions = identical(newOptions.plugins, _plugins)
         ? newOptions
         : newOptions.copyWith(plugins: _plugins);
@@ -187,43 +97,25 @@ class DeckController {
     }
   }
 
-  Future<void> reloadDeck() async {
-    if (_disposed) return;
-    batch(() {
-      _error.value = null;
-      _buildFailure.value = null;
-      _isBuildActive.value = false;
-      _isLoading.value = true;
-    });
-    await _deckLoader.reload();
-  }
+  Future<void> reloadDeck() => _session.reload();
 
-  void openMenu() => _isMenuOpen.value = true;
-  void closeMenu() => _isMenuOpen.value = false;
-  void toggleNotes() => _isNotesOpen.value = !_isNotesOpen.value;
+  void openMenu() => _presentation.openMenu();
+  void closeMenu() => _presentation.closeMenu();
+  void toggleNotes() => _presentation.toggleNotes();
 
-  Future<void> goToSlide(int index) async {
-    await _navigationService.goToSlide(
-      router: router,
-      targetIndex: index,
-      totalSlides: totalSlides.value,
-      onTransitionStart: () => _isTransitioning.value = true,
-      onTransitionEnd: () {
-        if (_disposed) return;
-        _isTransitioning.value = false;
-      },
-    );
+  Future<void> goToSlide(int index) {
+    return _presentation.goToSlide(index, totalSlides.value);
   }
 
   Future<void> nextSlide() async {
     if (canGoNext.value) {
-      await goToSlide(_currentIndex.value + 1);
+      await goToSlide(currentIndex.value + 1);
     }
   }
 
   Future<void> previousSlide() async {
     if (canGoPrevious.value) {
-      await goToSlide(_currentIndex.value - 1);
+      await goToSlide(currentIndex.value - 1);
     }
   }
 
@@ -231,96 +123,29 @@ class DeckController {
   Future<void> handleNavigationEvent(NavigationEvent event) async {
     switch (event) {
       case NextSlideEvent():
-        await nextSlide();
+        await goToSlide(currentIndex.value + 1);
       case PreviousSlideEvent():
-        await previousSlide();
+        await goToSlide(currentIndex.value - 1);
       case GoToSlideEvent(:final index):
         await goToSlide(index);
     }
   }
 
-  void _updateCurrentIndex(int index) {
-    if (_disposed) return;
-    final clampedIndex = _clampIndex(index);
-
-    if (_currentIndex.value != clampedIndex) {
-      _currentIndex.value = clampedIndex;
-    }
-  }
-
-  int _clampIndex(int index) {
-    final total = totalSlides.value;
-    final maxIndex = total > 0 ? total - 1 : 0;
-    return index.clamp(0, maxIndex);
-  }
-
   void generateThumbnails(BuildContext context, {bool force = false}) {
-    if (_disposed) return;
-
-    final currentSlides = slides.value;
-    final currentSlideKeys = currentSlides.map((s) => s.key).toSet();
-
-    final currentCache = _thumbnails.value;
-    final staleKeys = currentCache.keys
-        .where((k) => !currentSlideKeys.contains(k))
-        .toList();
-
-    if (staleKeys.isNotEmpty) {
-      for (final key in staleKeys) {
-        currentCache[key]?.dispose();
-      }
-      final cleanedCache = Map<String, AsyncThumbnail>.from(currentCache)
-        ..removeWhere((k, _) => staleKeys.contains(k));
-      _thumbnails.value = cleanedCache;
-    }
-
-    _thumbnailService.generateThumbnails(
-      slides: currentSlides,
-      context: context,
-      cache: _thumbnails.value,
-      onCacheUpdate: (cache) {
-        if (!_disposed) {
-          _thumbnails.value = cache;
-        }
-      },
-      force: force,
-    );
+    _presentation.generateThumbnails(context, slides.value, force: force);
   }
 
   AsyncThumbnail? getThumbnail(String slideKey) {
-    return _thumbnails.value[slideKey];
+    return _presentation.getThumbnail(slideKey);
   }
 
   void dispose() {
-    if (_disposed) return;
-    _disposed = true;
+    _presentation.dispose();
+    _session.dispose();
 
-    _indexClampEffect?.call();
-
-    unawaited(_subscription?.cancel());
-    unawaited(_deckLoader.dispose());
-
-    router.dispose();
-
-    for (final thumbnail in _thumbnails.value.values) {
-      thumbnail.dispose();
-    }
-
-    _loadedSlides.dispose();
-    _isLoading.dispose();
-    _error.dispose();
-    _isBuildActive.dispose();
-    _buildFailure.dispose();
     _options.dispose();
-    _isMenuOpen.dispose();
-    _isNotesOpen.dispose();
-    _currentIndex.dispose();
-    _isTransitioning.dispose();
-    _thumbnails.dispose();
-
     slides.dispose();
     totalSlides.dispose();
-    hasError.dispose();
     canGoNext.dispose();
     canGoPrevious.dispose();
     currentSlide.dispose();

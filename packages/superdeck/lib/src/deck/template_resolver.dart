@@ -1,7 +1,8 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
-import '../styling/styling.dart';
+import '../styling/components/slide.dart';
+import '../styling/default_style.dart';
 import 'deck_options.dart';
 import 'slide_template.dart';
 import 'template_exception.dart';

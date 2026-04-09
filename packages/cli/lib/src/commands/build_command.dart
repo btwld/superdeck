@@ -33,16 +33,10 @@ DeckBuilder _createStandardBuilder({
         }
       : null;
 
-  return DeckBuilder(
-    tasks: [
-      DartFormatterTask(),
-      AssetGenerationTask.withDefaults(
-        store: store,
-        browserLaunchOptions: browserLaunchOptions,
-      ),
-    ],
+  return StandardDeckBuildPipeline.create(
     workspace: workspace,
     store: store,
+    browserLaunchOptions: browserLaunchOptions,
   );
 }
 

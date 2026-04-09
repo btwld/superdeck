@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:superdeck_core/asset_cache_store_io.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 import '../../helpers/testing_utils.dart';

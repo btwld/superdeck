@@ -3,10 +3,6 @@ import 'dartpad_widget.dart';
 import 'image_widget.dart';
 import 'qr_code_widget.dart';
 
-export 'dartpad_widget.dart';
-export 'image_widget.dart';
-export 'qr_code_widget.dart';
-
 /// Map of built-in widget factories.
 ///
 /// These widgets are automatically available in all presentations:

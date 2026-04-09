@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/deck_loader.dart';
+import 'package:superdeck/src/deck/loaders/bundled_deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {

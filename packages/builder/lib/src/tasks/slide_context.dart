@@ -1,15 +1,19 @@
 import '../parsers/raw_slide_schema.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 /// Represents the context for processing a slide during the build process.
 /// It holds the raw slide data and manages associated assets.
 class SlideContext {
   /// The index of the slide in the original list.
   final int slideIndex;
-  final DeckBuildStore dataStore;
 
   /// The raw slide being processed.
-  RawSlideMarkdown slide;
+  RawSlideMarkdown _slide;
 
-  SlideContext(this.slideIndex, this.slide, this.dataStore);
+  SlideContext(this.slideIndex, RawSlideMarkdown slide) : _slide = slide;
+
+  RawSlideMarkdown get slide => _slide;
+
+  void updateSlide(RawSlideMarkdown slide) {
+    _slide = slide;
+  }
 }

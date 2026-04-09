@@ -34,11 +34,12 @@ Widget twitterWidget(Map<String, Object?> args) {
 
 ### Recommended: StatelessWidget with typed args
 
-Parse and validate in the constructor. Use `Ack` (from `superdeck_core`) for schema validation.
+Parse and validate in the constructor. Import `package:superdeck_core/superdeck_core.dart` when you want to use `Ack` for schema validation.
 
 ```dart
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 class TwitterArgs {
   const TwitterArgs({required this.username, required this.tweetId});

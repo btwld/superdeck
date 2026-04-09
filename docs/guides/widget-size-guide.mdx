@@ -1,57 +1,39 @@
 ---
 title: Widget size measurement
-description: Measure a widget after layout with MeasureSize.
+description: SuperDeck does not expose a public widget-size measurement API.
 ---
 
 # Widget size measurement
 
-Use `MeasureSize` when you need a widget’s rendered size after layout (for example, to position an overlay or report sizes to another system).
+SuperDeck does not export a public `MeasureSize` widget from `package:superdeck/superdeck.dart`.
 
-## Use `MeasureSize`
-
-SuperDeck exports `MeasureSize` from `package:superdeck/superdeck.dart`.
-
-```dart
-import 'package:flutter/widgets.dart';
-import 'package:superdeck/superdeck.dart';
-
-class ResizablePanel extends StatefulWidget {
-  const ResizablePanel({super.key});
-
-  @override
-  State<ResizablePanel> createState() => _ResizablePanelState();
-}
-
-class _ResizablePanelState extends State<ResizablePanel> {
-  Size _size = Size.zero;
-  BoxConstraints _constraints = const BoxConstraints();
-
-  @override
-  Widget build(BuildContext context) {
-    return MeasureSize(
-      onChange: (size, parentConstraints) {
-        setState(() {
-          _size = size;
-          _constraints = parentConstraints;
-        });
-      },
-      child: Text('size=$_size constraints=$_constraints'),
-    );
-  }
-}
-```
-
-Notes:
-
-- `onChange` runs in a post-frame callback, so it is safe to call `setState`.
-- `parentConstraints` are the constraints applied to `MeasureSize` by its parent.
+If you need rendered size information in your app code, use Flutter’s built-in layout and measurement tools instead of relying on SuperDeck internals.
 
 ## Prefer built-in layout tools
 
-Before you measure, consider:
+Choose the tool that matches the problem:
 
 - `LayoutBuilder` (constraints during build)
 - `SizeChangedLayoutNotifier` (change notifications)
 - `CompositedTransformTarget` + `CompositedTransformFollower` (anchored overlays)
 - `AnimatedSize` (animate size changes)
 - `CustomSingleChildLayout` / `CustomMultiChildLayout` (custom layout)
+
+Example with `LayoutBuilder`:
+
+```dart
+import 'package:flutter/widgets.dart';
+
+class ResizablePanel extends StatelessWidget {
+  const ResizablePanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Text('constraints=$constraints');
+      },
+    );
+  }
+}
+```

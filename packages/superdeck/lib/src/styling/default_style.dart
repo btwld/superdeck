@@ -3,7 +3,14 @@ import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
 
-import 'styling.dart';
+import 'components/markdown_alert.dart';
+import 'components/markdown_alert_type.dart';
+import 'components/markdown_blockquote.dart';
+import 'components/markdown_checkbox.dart';
+import 'components/markdown_codeblock.dart';
+import 'components/markdown_list.dart';
+import 'components/markdown_table.dart';
+import 'components/slide.dart';
 
 /// Safely loads a Google Font, falling back to platform default when runtime
 /// fetching is disabled (e.g., in tests).

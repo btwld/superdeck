@@ -1,7 +1,7 @@
 import 'package:dart_mappable/dart_mappable.dart';
 
 import '../rendering/slides/slide_parts.dart';
-import '../styling/styling.dart';
+import '../styling/components/slide.dart';
 
 part 'slide_template.mapper.dart';
 

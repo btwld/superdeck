@@ -6,7 +6,7 @@ import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';
-import '../../styling/styling.dart';
+import '../../styling/components/slide.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/overflow_clip.dart';
 import '../../ui/widgets/provider.dart';

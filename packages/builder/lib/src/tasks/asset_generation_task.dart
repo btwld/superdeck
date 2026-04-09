@@ -19,20 +19,18 @@ final class AssetGenerationTask extends Task {
     required List<AssetGenerator> generators,
     required DeckBuildStore store,
     AssetCacheStore? cacheStore,
-    Map<String, Object?> configuration = const {},
   }) : _pipeline = AssetGenerationPipeline(
          generators: generators,
          store: store,
          cacheStore: cacheStore,
        ),
-       super('asset_generation', configuration: configuration);
+       super('asset_generation');
 
   /// Factory constructor that creates a default asset pipeline with standard generators.
   factory AssetGenerationTask.withDefaults({
     required DeckBuildStore store,
     Map<String, Object?>? browserLaunchOptions,
     AssetCacheStore? cacheStore,
-    Map<String, Object?> configuration = const {},
   }) {
     final generators = <AssetGenerator>[
       MermaidGenerator(launchOptions: browserLaunchOptions),
@@ -42,7 +40,6 @@ final class AssetGenerationTask extends Task {
       generators: generators,
       store: store,
       cacheStore: cacheStore,
-      configuration: configuration,
     );
   }
 
@@ -53,7 +50,7 @@ final class AssetGenerationTask extends Task {
       context.slideIndex,
     );
 
-    context.slide = context.slide.copyWith(content: result.updatedContent);
+    context.updateSlide(context.slide.copyWith(content: result.updatedContent));
   }
 
   @override

@@ -10,13 +10,10 @@ abstract base class Task {
   /// Name of the task, used for logging and identification.
   final String name;
 
-  /// Configuration options for this task
-  final Map<String, Object?> configuration;
-
   /// Logger instance for the task.
   late final Logger logger = Logger('Task: $name');
 
-  Task(this.name, {this.configuration = const {}});
+  Task(this.name);
 
   /// Executes the task using the provided [SlideContext].
   FutureOr<void> run(SlideContext context);

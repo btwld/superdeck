@@ -4,8 +4,14 @@ import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'build_event.dart';
+import '../parsers/comment_parser.dart';
 import '../parsers/markdown_parser.dart';
-import 'slide_processor.dart';
+import '../parsers/raw_slide_schema.dart';
+import '../parsers/section_parser.dart';
+import 'task_exception.dart';
+import '../tasks/asset_generation_task.dart';
+import '../tasks/dart_formatter_task.dart';
+import '../tasks/slide_context.dart';
 import '../tasks/task.dart';
 
 /// Builds decks from markdown content by processing slides through a series of tasks.
@@ -18,17 +24,14 @@ class DeckBuilder {
   final DeckWorkspace workspace;
   final DeckBuildStore store;
   final Logger _logger = Logger('DeckBuilder');
-
-  late final SlideProcessor _processor;
+  final int _concurrentSlides;
 
   DeckBuilder({
     required this.tasks,
     required this.workspace,
     required this.store,
     int concurrentSlides = 4,
-  }) {
-    _processor = SlideProcessor(concurrentSlides: concurrentSlides);
-  }
+  }) : _concurrentSlides = concurrentSlides;
 
   /// Builds the deck and watches for changes, emitting build events as a stream.
   ///
@@ -73,11 +76,7 @@ class DeckBuilder {
     final markdownParser = MarkdownParser();
     final rawSlides = markdownParser.parse(markdownRaw);
 
-    final processedSlides = await _processor.processAll(
-      rawSlides,
-      tasks,
-      store,
-    );
+    final processedSlides = await _processAll(rawSlides);
 
     await store.saveReferences(processedSlides);
     await store.saveBuildStatus(
@@ -97,5 +96,90 @@ class DeckBuilder {
   Future<void> dispose() async {
     // Convert FutureOr<void> to Future<void> for Future.wait compatibility
     await Future.wait(tasks.map((task) async => task.dispose()));
+  }
+
+  Future<List<Slide>> _processAll(List<RawSlideMarkdown> rawSlides) async {
+    _logger.info(
+      'Processing ${rawSlides.length} slides with $_concurrentSlides concurrent workers',
+    );
+
+    final processedSlides = <Slide>[];
+
+    for (var i = 0; i < rawSlides.length; i += _concurrentSlides) {
+      final end = (i + _concurrentSlides < rawSlides.length)
+          ? i + _concurrentSlides
+          : rawSlides.length;
+
+      final batch = rawSlides.sublist(i, end);
+      final futures = <Future<SlideContext>>[];
+
+      for (var j = 0; j < batch.length; j++) {
+        final index = i + j;
+        futures.add(_processSlide(SlideContext(index, batch[j])));
+      }
+
+      final results = await Future.wait(futures);
+      final slidesToAdd = results.map(_buildSlide);
+      processedSlides.addAll(slidesToAdd);
+    }
+
+    return processedSlides;
+  }
+
+  Future<SlideContext> _processSlide(SlideContext context) async {
+    for (final task in tasks) {
+      await _runTask(task, context);
+    }
+    return context;
+  }
+
+  Future<void> _runTask(Task task, SlideContext context) async {
+    try {
+      await task.run(context);
+    } on Exception catch (error, stackTrace) {
+      _logger.severe(
+        'Task "${task.name}" failed for slide ${context.slideIndex}: $error',
+      );
+      _logger.severe('Stack trace: $stackTrace');
+
+      Error.throwWithStackTrace(
+        TaskException(task.name, error, context.slideIndex),
+        stackTrace,
+      );
+    }
+  }
+
+  Slide _buildSlide(SlideContext result) {
+    return Slide(
+      key: result.slide.key,
+      options: SlideOptions.parse(result.slide.frontmatter),
+      sections: SectionParser().parse(result.slide.content),
+      comments: CommentParser().parse(result.slide.content),
+    );
+  }
+}
+
+/// Supported entry point for the default SuperDeck build pipeline.
+final class StandardDeckBuildPipeline {
+  const StandardDeckBuildPipeline._();
+
+  static DeckBuilder create({
+    required DeckWorkspace workspace,
+    required DeckBuildStore store,
+    Map<String, Object?>? browserLaunchOptions,
+    int concurrentSlides = 4,
+  }) {
+    return DeckBuilder(
+      tasks: [
+        DartFormatterTask(),
+        AssetGenerationTask.withDefaults(
+          store: store,
+          browserLaunchOptions: browserLaunchOptions,
+        ),
+      ],
+      workspace: workspace,
+      store: store,
+      concurrentSlides: concurrentSlides,
+    );
   }
 }

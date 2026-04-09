@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 
 import '../rendering/slides/slide_parts.dart';
-import '../styling/styling.dart';
+import '../styling/components/slide.dart';
 import 'slide_template.dart';
 import 'superdeck_plugin.dart';
 import 'widget_factory.dart';

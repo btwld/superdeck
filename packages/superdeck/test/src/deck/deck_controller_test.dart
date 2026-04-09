@@ -31,6 +31,57 @@ void main() {
       expect(controller.isBuildActive.value, isFalse);
     });
 
+    test('goToSlide ignores out of range indexes', () async {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      await controller.goToSlide(-1);
+      expect(controller.currentIndex.value, 0);
+
+      await controller.goToSlide(99);
+      expect(controller.currentIndex.value, 0);
+    });
+
+    test('goToSlide updates current slide when index is valid', () async {
+      final loader = MockDeckLoader();
+      final ctrl = DeckController(
+        deckLoader: loader,
+        options: DeckOptions(),
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(() async {
+        ctrl.dispose();
+        await loader.dispose();
+      });
+
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      await ctrl.goToSlide(2);
+
+      expect(ctrl.currentIndex.value, 2);
+      expect(ctrl.currentSlide.value?.slideIndex, 2);
+    });
+
+    test(
+      'dispose during an active transition does not surface an error',
+      () async {
+        final loader = MockDeckLoader();
+        final ctrl = DeckController(
+          deckLoader: loader,
+          options: DeckOptions(),
+          transitionDuration: const Duration(milliseconds: 50),
+        );
+        addTearDown(() async {
+          await loader.dispose();
+        });
+
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        final navigation = ctrl.goToSlide(1);
+        ctrl.dispose();
+
+        await expectLater(navigation, completes);
+      },
+    );
+
     test('initial load transitions to loaded state', () async {
       await Future<void>.delayed(const Duration(milliseconds: 10));
 

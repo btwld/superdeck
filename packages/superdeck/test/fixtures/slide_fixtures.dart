@@ -1,4 +1,4 @@
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 /// Purpose-built slide fixtures for widget/behavior tests.
 ///

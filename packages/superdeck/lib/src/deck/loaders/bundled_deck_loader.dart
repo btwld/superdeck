@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+
+import 'json_deck_loader_base.dart';
 
 /// Asset-based [DeckLoader] implementation for runtimes without file processes.
 ///
@@ -11,12 +12,13 @@ import 'package:superdeck_core/superdeck_core.dart';
 /// [reload] replays that bundled load cycle without any file watching.
 class BundledDeckLoader extends DeckLoader {
   final _controller = StreamController<SlidesEvent>();
+  final DeckWorkspace workspace;
   Future<void>? _loadTask;
   var _disposed = false;
   var _started = false;
 
   BundledDeckLoader({DeckWorkspace? workspace})
-    : super(workspace: workspace ?? DeckWorkspace());
+    : workspace = workspace ?? DeckWorkspace();
 
   Future<void> _emitLoad() async {
     if (_disposed || _controller.isClosed) return;
@@ -26,30 +28,21 @@ class BundledDeckLoader extends DeckLoader {
       final content = await rootBundle.loadString(
         workspace.bundledDeckJsonPath,
       );
-      final decoded = jsonDecode(content);
-      if (decoded is! List) {
-        throw Exception(
-          'Expected JSON array in bundled slides at '
-          '${workspace.bundledDeckJsonPath}, got ${decoded.runtimeType}',
-        );
-      }
       if (_disposed || _controller.isClosed) return;
 
-      _controller.add(SlidesLoadedEvent(parseSlidesContract(decoded)));
+      _controller.add(
+        decodeSlidesEvent(
+          content,
+          'bundled slides at ${workspace.bundledDeckJsonPath}',
+        ),
+      );
     } on Exception catch (error) {
       if (_disposed || _controller.isClosed) return;
-      _controller.add(
-        SlidesErrorEvent('Superdeck reference error', error: error),
-      );
+      _controller.add(wrapReferenceError(error));
     } on Error catch (error) {
       // rootBundle.loadString throws FlutterError (an Error, not Exception)
       if (_disposed || _controller.isClosed) return;
-      _controller.add(
-        SlidesErrorEvent(
-          'Superdeck reference error',
-          error: Exception(error.toString()),
-        ),
-      );
+      _controller.add(wrapReferenceError(error));
     }
   }
 

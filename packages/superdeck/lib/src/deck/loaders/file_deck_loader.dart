@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:superdeck_core/superdeck_core.dart';
 
+import 'json_deck_loader_base.dart';
+
 const missingBuildOutputMessage =
     'No SuperDeck build output found. '
     'SuperDeck uses the default workspace layout. '
@@ -17,6 +19,7 @@ const missingBuildOutputMessage =
 /// 2. Emits all subsequent events from `build_status.json`.
 class FileDeckLoader extends DeckLoader {
   final _controller = StreamController<SlidesEvent>();
+  final DeckWorkspace workspace;
   var _cancelSignal = Completer<void>();
   Future<void>? _runTask;
   var _disposed = false;
@@ -24,7 +27,7 @@ class FileDeckLoader extends DeckLoader {
   var _didEmitMissingBuildOutput = false;
 
   FileDeckLoader({DeckWorkspace? workspace})
-    : super(workspace: workspace ?? DeckWorkspace());
+    : workspace = workspace ?? DeckWorkspace();
 
   File get _deckFile => workspace.deckJson;
   File get _statusFile => workspace.buildStatusJson;
@@ -52,20 +55,11 @@ class FileDeckLoader extends DeckLoader {
 
   Future<void> _emitLoadedSlides(Completer<void> cancel) async {
     try {
-      final slidesJson = jsonDecode(await _deckFile.readAsString());
-      if (slidesJson is! List) {
-        throw Exception(
-          'Expected JSON array at ${_deckFile.path}, '
-          'got ${slidesJson.runtimeType}',
-        );
-      }
+      final content = await _deckFile.readAsString();
       _didEmitMissingBuildOutput = false;
-      _emit(SlidesLoadedEvent(parseSlidesContract(slidesJson)), cancel);
+      _emit(decodeSlidesEvent(content, _deckFile.path), cancel);
     } on Exception catch (error) {
-      _emit(
-        SlidesErrorEvent('Superdeck reference error', error: error),
-        cancel,
-      );
+      _emit(wrapReferenceError(error), cancel);
     }
   }
 

@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
+import 'package:superdeck_core/superdeck_core.dart';
+
 import 'asset_generator.dart';
 import '../parsers/fenced_code_parser.dart';
 import '../utils/markdown_utils.dart';
-import 'package:superdeck_core/asset_cache_store_io.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 /// Result of asset generation pipeline processing on slide content.
 class AssetGenerationResult {

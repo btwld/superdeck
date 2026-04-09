@@ -16,9 +16,9 @@ class MockDeckLoader extends DeckLoader {
   bool _autoLoad = true;
   var _disposed = false;
 
-  MockDeckLoader({DeckWorkspace? workspace, List<Slide>? slides})
+  MockDeckLoader({List<Slide>? slides})
     : _slidesToReturn = slides ?? createTestSlidesPayload(),
-      super(workspace: workspace ?? DeckWorkspace());
+      super();
 
   int loadCalls = 0;
   int reloadCalls = 0;

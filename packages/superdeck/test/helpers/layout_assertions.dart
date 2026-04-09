@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 
 /// Layout assertion helpers for SuperDeck widget tests.
 extension LayoutAssertions on WidgetTester {

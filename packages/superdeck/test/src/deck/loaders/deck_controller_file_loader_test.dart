@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
-import 'package:superdeck/src/deck/deck_loader.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
+import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 const _validSlidesJson = '[]';

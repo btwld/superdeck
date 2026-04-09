@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/rendering/blocks/block_widget.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../fixtures/slide_fixtures.dart';
 import '../../helpers/layout_assertions.dart';

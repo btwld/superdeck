@@ -1,6 +1,7 @@
-import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
+
+import 'package:superdeck_builder/src/parsers/section_parser.dart';
 
 void main() {
   final sectionParser = SectionParser();

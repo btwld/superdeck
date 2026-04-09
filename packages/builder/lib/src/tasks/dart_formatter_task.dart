@@ -9,18 +9,20 @@ import 'task.dart';
 /// Processes and formats Dart code blocks in slides
 final class DartFormatterTask extends Task {
   final Map<String, String>? _environmentOverrides;
+  final int? _lineLength;
+  final bool _fix;
 
   DartFormatterTask({
     Map<String, String>? environmentOverrides,
-    Map<String, Object?> configuration = const {},
+    int? lineLength,
+    bool fix = true,
   }) : _environmentOverrides = environmentOverrides,
-       super('dart_formatter', configuration: configuration);
+       _lineLength = lineLength,
+       _fix = fix,
+       super('dart_formatter');
 
   @override
   Future<void> run(SlideContext context) async {
-    final lineLength = configuration['lineLength'] as int?;
-    final fix = configuration['fix'] as bool? ?? true;
-
     final updatedContent = await processFencedCodeBlocks(
       context.slide.content,
       filter: (block) => block.language == 'dart',
@@ -28,8 +30,8 @@ final class DartFormatterTask extends Task {
         try {
           final formattedCode = await formatDartCode(
             block.content,
-            lineLength: lineLength,
-            fix: fix,
+            lineLength: _lineLength,
+            fix: _fix,
             environmentOverrides: _environmentOverrides,
           );
 
@@ -57,6 +59,6 @@ final class DartFormatterTask extends Task {
       },
     );
 
-    context.slide = context.slide.copyWith(content: updatedContent);
+    context.updateSlide(context.slide.copyWith(content: updatedContent));
   }
 }

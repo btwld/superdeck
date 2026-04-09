@@ -5,6 +5,7 @@ export 'package:ack/ack.dart';
 
 // Cache
 export 'src/cache/asset_cache_store.dart';
+export 'src/cache/asset_cache_store_io.dart';
 // Presentation
 export 'src/deck/asset_model.dart';
 export 'src/deck/block_model.dart';
@@ -23,5 +24,4 @@ export 'src/markdown/tag_tokenizer.dart';
 export 'src/utils/extensions.dart';
 export 'src/utils/file_watcher.dart';
 export 'src/utils/generate_hash.dart';
-export 'src/utils/pretty_json.dart';
 export 'src/utils/yaml_utils.dart';

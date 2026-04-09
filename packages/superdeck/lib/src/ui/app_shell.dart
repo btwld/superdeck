@@ -5,6 +5,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 
 import '../deck/deck_controller.dart';
 import '../deck/navigation_input_listener.dart';
+import '../deck/slide_configuration.dart';
 import '../rendering/slides/scaled_app.dart';
 import '../rendering/slides/slide_thumbnail.dart';
 import '../utils/constants.dart';
@@ -49,6 +50,10 @@ class _SplitViewState extends State<SplitView>
   late final Animation<double> _curvedAnimation;
   bool _isInitialized = false;
   EffectCleanup? _menuEffectCleanup;
+  EffectCleanup? _thumbnailWarmupEffectCleanup;
+  bool _thumbnailWarmupFrameQueued = false;
+  String? _lastThumbnailWarmupSignature;
+  String? _pendingThumbnailWarmupSignature;
 
   @override
   void initState() {
@@ -93,15 +98,25 @@ class _SplitViewState extends State<SplitView>
         } else if (!isMenuOpen && _animationController.value != 0.0) {
           _animationController.reverse();
         }
+      });
 
-        if (isMenuOpen) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted || !deckController.isMenuOpen.value) {
-              return;
-            }
-            deckController.generateThumbnails(context);
-          });
+      _thumbnailWarmupEffectCleanup = effect(() {
+        if (!mounted) return;
+
+        final signature = _thumbnailWarmupSignature(
+          deckController.slides.value,
+        );
+        if (signature == null) {
+          _lastThumbnailWarmupSignature = null;
+          _pendingThumbnailWarmupSignature = null;
+          return;
         }
+        if (signature == _lastThumbnailWarmupSignature) {
+          return;
+        }
+
+        _pendingThumbnailWarmupSignature = signature;
+        _scheduleThumbnailWarmup(deckController);
       });
     }
   }
@@ -110,8 +125,54 @@ class _SplitViewState extends State<SplitView>
   void dispose() {
     // Cleanup effect
     _menuEffectCleanup?.call();
+    _thumbnailWarmupEffectCleanup?.call();
+    _thumbnailWarmupFrameQueued = false;
+    _pendingThumbnailWarmupSignature = null;
     _animationController.dispose();
     super.dispose();
+  }
+
+  void _scheduleThumbnailWarmup(DeckController deckController) {
+    if (_thumbnailWarmupFrameQueued) return;
+
+    _thumbnailWarmupFrameQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _thumbnailWarmupFrameQueued = false;
+      if (!mounted) return;
+
+      final pendingSignature = _pendingThumbnailWarmupSignature;
+      if (pendingSignature == null ||
+          pendingSignature == _lastThumbnailWarmupSignature) {
+        return;
+      }
+
+      final currentSlides = deckController.slides.value;
+      final currentSignature = _thumbnailWarmupSignature(currentSlides);
+      if (currentSignature == null) {
+        _lastThumbnailWarmupSignature = null;
+        _pendingThumbnailWarmupSignature = null;
+        return;
+      }
+
+      if (currentSignature != pendingSignature) {
+        _pendingThumbnailWarmupSignature = currentSignature;
+        _scheduleThumbnailWarmup(deckController);
+        return;
+      }
+
+      deckController.generateThumbnails(context);
+      _lastThumbnailWarmupSignature = currentSignature;
+      if (_pendingThumbnailWarmupSignature == currentSignature) {
+        _pendingThumbnailWarmupSignature = null;
+      }
+    });
+  }
+
+  String? _thumbnailWarmupSignature(List<SlideConfiguration> slides) {
+    if (slides.isEmpty) return null;
+    return slides
+        .map((slide) => '${slide.key}:${slide.thumbnailKey}')
+        .join('|');
   }
 
   // Build the panel content (thumbnails + optional comments).
@@ -119,20 +180,15 @@ class _SplitViewState extends State<SplitView>
     final deck = DeckController.of(context);
 
     return Watch((context) {
-      final currentIndex = deck.currentIndex.value;
       final isNotesOpen = deck.isNotesOpen.value;
       final slides = deck.slides.value;
-
-      // Get current slide from index
-      final currentSlide = (currentIndex >= 0 && currentIndex < slides.length)
-          ? slides[currentIndex]
-          : null;
+      final currentSlide = deck.currentSlide.value;
 
       /// Common content for thumbnails
       final thumbnailPanel = ThumbnailPanel(
         scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
         onItemTap: deck.goToSlide,
-        activeIndex: currentSlide?.slideIndex ?? 0,
+        activeIndex: currentSlide?.slideIndex ?? deck.currentIndex.value,
         itemBuilder: (index, selected) {
           return SlideThumbnail(selected: selected, slide: slides[index]);
         },

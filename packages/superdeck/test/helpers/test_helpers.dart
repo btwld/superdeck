@@ -3,11 +3,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/deck/widget_factory.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
-import 'package:superdeck/src/styling/styling.dart';
+import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 export '../fixtures/slide_fixtures.dart';
+
+class NoopAssetCacheStore implements AssetCacheStore {
+  @override
+  Future<void> delete(String assetKey) async {}
+
+  @override
+  Future<Uri?> resolve(String assetKey) async => null;
+
+  @override
+  Future<Uri?> write(String assetKey, List<int> bytes) async => null;
+}
 
 /// Creates a list of test slides for testing navigation and presentation.
 List<SlideConfiguration> createTestSlides(int count) {

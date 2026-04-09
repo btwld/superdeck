@@ -39,6 +39,10 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 build/
+!packages/builder/lib/src/build/
+!packages/builder/lib/src/build/**
+!packages/builder/test/src/build/
+!packages/builder/test/src/build/**
 
 # FVM Version Cache
 .fvm/
