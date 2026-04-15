@@ -1,17 +1,27 @@
 import 'package:ack/ack.dart';
-import 'package:ack_annotations/ack_annotations.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 
 import 'block_model.dart';
 
-part 'slide_model.g.dart';
 part 'slide_model.mapper.dart';
+
+final slideOptionsSchema = Ack.object({
+  'title': Ack.string().optional(),
+  'style': Ack.string().optional(),
+  'template': Ack.string().optional(),
+}, additionalProperties: true);
+
+final slideSchema = Ack.object({
+  'key': Ack.string(),
+  'options': slideOptionsSchema.optional(),
+  'sections': Ack.list(sectionBlockSchema).optional(),
+  'comments': Ack.list(Ack.string()).optional(),
+}, additionalProperties: true);
 
 /// Represents a single slide in a presentation.
 ///
 /// A slide contains sections of content blocks, optional configuration options,
 /// and any speaker notes or comments. Each slide is uniquely identified by a key.
-@AckModel(additionalProperties: true)
 @MappableClass(ignoreNull: true)
 class Slide with SlideMappable {
   /// Unique identifier for this slide, typically generated from content hash.
@@ -34,11 +44,7 @@ class Slide with SlideMappable {
 
   static final fromMap = SlideMapper.fromMap;
 
-  static final schema = slideSchema.extend({
-    'options': SlideOptions.schema.optional(),
-    'sections': Ack.list(sectionBlockSchema).optional(),
-    'comments': Ack.list(Ack.string()).optional(),
-  });
+  static final schema = slideSchema;
 
   /// Validates [map] against the schema and constructs a [Slide].
   static Slide parse(Map<String, Object?> map) => fromMap(schema.parse(map)!);
@@ -47,7 +53,6 @@ class Slide with SlideMappable {
 /// Configuration options for a slide.
 ///
 /// Provides metadata and styling information for individual slides.
-@AckModel(additionalProperties: true, additionalPropertiesField: 'args')
 @MappableClass(hook: UnmappedPropertiesHook('args'), ignoreNull: true)
 class SlideOptions with SlideOptionsMappable {
   static const _knownFields = {'title', 'style', 'template'};
@@ -78,11 +83,7 @@ class SlideOptions with SlideOptionsMappable {
 
   static final fromMap = SlideOptionsMapper.fromMap;
 
-  static final schema = slideOptionsSchema.extend({
-    'title': Ack.string().optional(),
-    'style': Ack.string().optional(),
-    'template': Ack.string().optional(),
-  });
+  static final schema = slideOptionsSchema;
 
   /// Validates [map] against the schema and constructs [SlideOptions].
   static SlideOptions parse(Map<String, Object?> map) =>
