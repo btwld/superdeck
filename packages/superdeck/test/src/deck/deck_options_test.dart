@@ -11,13 +11,11 @@ void main() {
           styles: {'s': style},
           widgets: {},
           templates: {'t': const SlideTemplate()},
-          plugins: const [],
         );
         final b = DeckOptions(
           styles: {'s': style},
           widgets: {},
           templates: {'t': const SlideTemplate()},
-          plugins: const [],
         );
 
         expect(a, equals(b));
@@ -64,15 +62,6 @@ void main() {
           () => options.templates['x'] = const SlideTemplate(),
           throwsUnsupportedError,
         );
-      });
-
-      test('mutation attempt on plugins throws UnsupportedError', () {
-        final options = DeckOptions();
-        // Use a properly-typed list reference to avoid TypeError before
-        // reaching the unmodifiable guard.
-        final list = options.plugins;
-
-        expect(() => list.clear(), throwsUnsupportedError);
       });
     });
 

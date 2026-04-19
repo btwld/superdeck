@@ -61,3 +61,7 @@ discovery
 
 # Test coverage
 coverage/
+
+# SuperDeck CLI transient build state
+packages/cli/.superdeck/
+

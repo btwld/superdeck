@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:signals/signals.dart';
 import 'package:superdeck/src/deck/deck_presentation_state.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
-import 'package:superdeck/src/deck/superdeck_plugin.dart';
 import 'package:superdeck/src/export/async_thumbnail.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
 
@@ -83,7 +82,6 @@ void main() {
       final state = DeckPresentationState(
         thumbnailService: service,
         slides: slides,
-        plugins: const <SuperDeckPlugin>[],
         transitionDuration: Duration.zero,
       );
       addTearDown(state.dispose);
@@ -112,7 +110,6 @@ void main() {
       final state = DeckPresentationState(
         thumbnailService: service,
         slides: slides,
-        plugins: const <SuperDeckPlugin>[],
         transitionDuration: Duration.zero,
       );
 

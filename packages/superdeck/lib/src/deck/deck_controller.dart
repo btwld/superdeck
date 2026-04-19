@@ -14,7 +14,6 @@ import 'deck_session_state.dart';
 import 'navigation_events.dart';
 import 'slide_configuration.dart';
 import 'slide_configuration_builder.dart';
-import 'superdeck_plugin.dart';
 
 /// Unified facade for all deck state and operations.
 ///
@@ -24,7 +23,6 @@ import 'superdeck_plugin.dart';
 class DeckController {
   late final DeckSessionState _session;
   late final DeckPresentationState _presentation;
-  final List<SuperDeckPlugin> _plugins;
   final _options = signal<DeckOptions>(DeckOptions());
 
   late final ReadonlySignal<List<SlideConfiguration>> slides = computed(() {
@@ -57,8 +55,8 @@ class DeckController {
     ThumbnailService? thumbnailService,
     AssetCacheStore? assetCacheStore,
     Duration transitionDuration = const Duration(seconds: 1),
-  }) : _plugins = options.plugins {
-    _options.value = options.copyWith(plugins: _plugins);
+  }) {
+    _options.value = options;
     _session = DeckSessionState(deckLoader: deckLoader);
     _presentation = DeckPresentationState(
       thumbnailService:
@@ -67,7 +65,6 @@ class DeckController {
             cacheStore: assetCacheStore ?? RuntimeAssetCacheStore(),
           ),
       slides: slides,
-      plugins: _plugins,
       transitionDuration: transitionDuration,
     );
   }
@@ -82,18 +79,13 @@ class DeckController {
   ReadonlySignal<bool> get isNotesOpen => _presentation.isNotesOpen;
   ReadonlySignal<int> get currentIndex => _presentation.currentIndex;
   ReadonlySignal<bool> get isTransitioning => _presentation.isTransitioning;
-  List<SuperDeckPlugin> get plugins => _plugins;
 
   GoRouter get router => _presentation.router;
 
   @internal
   void updateOptions(DeckOptions newOptions) {
-    final normalizedOptions = identical(newOptions.plugins, _plugins)
-        ? newOptions
-        : newOptions.copyWith(plugins: _plugins);
-
-    if (_options.value != normalizedOptions) {
-      _options.value = normalizedOptions;
+    if (_options.value != newOptions) {
+      _options.value = newOptions;
     }
   }
 

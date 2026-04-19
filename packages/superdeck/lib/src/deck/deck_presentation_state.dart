@@ -2,17 +2,16 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:signals/signals.dart';
 
+
 import '../export/async_thumbnail.dart';
 import '../export/thumbnail_service.dart';
 import 'slide_configuration.dart';
 import 'slide_page_content.dart';
-import 'superdeck_plugin.dart';
 
 final class DeckPresentationState {
   final ThumbnailService _thumbnailService;
   final Duration _transitionDuration;
   final ReadonlySignal<List<SlideConfiguration>> _slides;
-  final List<RouteBase> _additionalRoutes;
 
   final _isMenuOpen = signal<bool>(false);
   final _isNotesOpen = signal<bool>(false);
@@ -40,21 +39,16 @@ final class DeckPresentationState {
           );
         },
       ),
-      ..._additionalRoutes,
     ],
   );
 
   DeckPresentationState({
     required ThumbnailService thumbnailService,
     required ReadonlySignal<List<SlideConfiguration>> slides,
-    required List<SuperDeckPlugin> plugins,
     Duration transitionDuration = const Duration(seconds: 1),
   }) : _thumbnailService = thumbnailService,
        _transitionDuration = transitionDuration,
-       _slides = slides,
-       _additionalRoutes = plugins
-           .expand((plugin) => plugin.buildRoutes())
-           .toList(growable: false) {
+       _slides = slides {
     _indexClampEffect = effect(() {
       _slides.value.length; // explicit trigger on slide count change
       final currentIdx = _currentIndex.peek();

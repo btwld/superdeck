@@ -204,8 +204,12 @@ superdeck publish --dry-run
 **Problem:** `Error: Not a git repository`
 **Solution:** Initialize git repository: `git init && git add . && git commit -m "Initial commit"`
 
-**Problem:** `Error: No changes to commit`
-**Solution:** This is informational. Make a change (or run `superdeck build --force-rebuild`) and publish again.
+### Publish no-op
+
+`No changes to commit` is not a failure — it means the built output matches
+what is already published. The command exits successfully. If you expected a
+republish, make a change (or run `superdeck build --force-rebuild`) and run
+`superdeck publish` again.
 
 ### Watch mode issues
 

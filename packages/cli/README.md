@@ -18,13 +18,17 @@ flutter create my_presentation
 cd my_presentation
 superdeck setup
 flutter pub get
+
+# Add slides.md in the project root and update lib/main.dart
+# to initialize and run SuperDeckApp before building.
+
 dart run superdeck_cli:main build --watch
 flutter run
 ```
 
-Then:
-- Add `slides.md` in the project root
-- Update `lib/main.dart` to initialize and run `SuperDeckApp`
+`superdeck build` requires `slides.md` to exist at the project root. Create it
+(and wire up `SuperDeckApp` in `lib/main.dart`) before running the build
+command.
 
 ## Install
 

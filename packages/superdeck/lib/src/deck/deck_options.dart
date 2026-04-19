@@ -4,7 +4,6 @@ import 'package:dart_mappable/dart_mappable.dart';
 import '../rendering/slides/slide_parts.dart';
 import '../styling/components/slide.dart';
 import 'slide_template.dart';
-import 'superdeck_plugin.dart';
 import 'widget_factory.dart';
 
 part 'deck_options.mapper.dart';
@@ -26,9 +25,6 @@ class DeckOptions with DeckOptionsMappable {
   /// disables applying any template for that slide.
   final SlideTemplate? defaultTemplate;
 
-  /// Optional plugin descriptors that extend deck behavior.
-  final List<SuperDeckPlugin> plugins;
-
   DeckOptions({
     this.baseStyle,
     Map<String, SlideStyle> styles = const <String, SlideStyle>{},
@@ -37,9 +33,7 @@ class DeckOptions with DeckOptionsMappable {
     this.debug = false,
     Map<String, SlideTemplate> templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
-    List<SuperDeckPlugin> plugins = const <SuperDeckPlugin>[],
   }) : styles = Map.unmodifiable(styles),
        widgets = Map.unmodifiable(widgets),
-       templates = Map.unmodifiable(templates),
-       plugins = List.unmodifiable(plugins);
+       templates = Map.unmodifiable(templates);
 }

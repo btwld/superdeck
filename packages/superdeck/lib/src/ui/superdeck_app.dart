@@ -9,7 +9,6 @@ import '../deck/deck_controller_builder.dart';
 import '../deck/deck_options.dart';
 import '../deck/loaders/bundled_deck_loader.dart';
 import '../deck/loaders/file_deck_loader.dart';
-import '../deck/superdeck_plugin.dart';
 import '../utils/app_initialization.dart';
 import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
@@ -33,19 +32,8 @@ class SuperDeckApp extends StatelessWidget {
   final DeckWorkspace? workspace;
   final AssetCacheStore? assetCacheStore;
 
-  static Future<void> initialize({
-    List<SuperDeckPlugin> plugins = const <SuperDeckPlugin>[],
-  }) async {
+  static Future<void> initialize() async {
     await initializeDependencies();
-    for (final plugin in plugins) {
-      try {
-        await plugin.initialize();
-      } catch (e, stack) {
-        debugPrint(
-          'SuperDeckPlugin "${plugin.name}" failed to initialize: $e\n$stack',
-        );
-      }
-    }
   }
 
   @override

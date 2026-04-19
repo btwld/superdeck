@@ -115,8 +115,8 @@ scripts:
     description: Build demo assets and release web output for Playwright smoke tests.
 
   test:e2e:web:
-    run: fvm flutter pub run melos run test:e2e:web:prepare && cd demo/e2e && npm ci && npx playwright install chromium && npm run test:smoke
-    description: Run Playwright smoke tests for the demo web build.
+    run: fvm flutter pub run melos run test:e2e:web:prepare && cd demo/e2e && npm ci && npx playwright install --with-deps chromium webkit && npm run test:smoke
+    description: Run Playwright smoke tests for the demo web build on Chromium and WebKit.
 
   test:e2e:
     run: fvm flutter pub run melos run test:integration && fvm flutter pub run melos run test:e2e:web

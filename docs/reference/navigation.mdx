@@ -1,0 +1,153 @@
+---
+title: Navigation reference
+description: Complete reference for SuperDeck keyboard, touch, menu, programmatic, and URL navigation
+---
+
+# Navigation reference
+
+SuperDeck supports navigation through keyboard shortcuts, touch and stylus gestures, the built-in menu UI, `DeckController`, and route URLs.
+
+Slide indexes are zero-based. The first slide is index `0`.
+
+## Keyboard shortcuts
+
+Keyboard navigation is handled when the deck has focus and the key event is a key-down event. SuperDeck listens for Flutter's Meta modifier.
+
+| Shortcut | Action |
+| --- | --- |
+| `Meta + ArrowRight` | Next slide |
+| `Meta + ArrowDown` | Next slide |
+| `Meta + ArrowLeft` | Previous slide |
+| `Meta + ArrowUp` | Previous slide |
+
+Other keys are ignored by the navigation listener.
+
+## Touch and pointer gestures
+
+Touch and stylus input is handled when the menu is closed. Opening the menu disables the deck-level tap and swipe navigation handlers.
+
+### Taps
+
+Tap the right half of the slide area to go to the next slide.
+
+Tap the left half of the slide area to go to the previous slide.
+
+Mouse clicks are ignored by the gesture handler. Touch, stylus, and inverted stylus input are accepted.
+
+### Swipes
+
+Swipe left to go to the next slide.
+
+Swipe right to go to the previous slide.
+
+Swipe navigation requires a horizontal velocity of at least `500` pixels per second. Mouse drags are ignored by the gesture handler.
+
+## Menu UI
+
+When the menu is closed, SuperDeck shows a floating menu button with the `Open menu` semantic label. Pressing it opens the deck menu.
+
+The bottom bar includes:
+
+1. Notes toggle - opens or closes the notes panel
+2. PDF export - opens the PDF export dialog
+3. Regenerate thumbnails - rebuilds slide thumbnails
+4. Previous slide - navigates to the previous slide
+5. Next slide - navigates to the next slide
+6. Slide counter - shows the current slide and total slide count
+7. Close menu - closes the menu
+
+## Programmatic navigation
+
+Use `DeckController.of(context)` from a widget below `SuperDeckApp`.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
+Future<void> navigateSlides(BuildContext context) async {
+  final deck = DeckController.of(context);
+
+  await deck.nextSlide();
+  await deck.previousSlide();
+  await deck.goToSlide(0);
+}
+```
+
+`nextSlide`, `previousSlide`, and `goToSlide` return `Future<void>`.
+
+### Custom button example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:superdeck/superdeck.dart';
+
+class SlideNavigationButtons extends StatelessWidget {
+  const SlideNavigationButtons({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final deck = DeckController.of(context);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ElevatedButton(
+          onPressed: () async {
+            await deck.previousSlide();
+          },
+          child: const Text('Previous'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            await deck.goToSlide(0);
+          },
+          child: const Text('First slide'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            await deck.nextSlide();
+          },
+          child: const Text('Next'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+## Deep linking
+
+SuperDeck uses `go_router` with this slide route:
+
+```dart
+const slideRoutePattern = '/slides/:index';
+```
+
+The default initial location is `/slides/0`, and `/` redirects to `/slides/0`.
+
+For web builds, link to a slide by putting the zero-based slide index in the URL:
+
+```text
+https://example.com/slides/0
+https://example.com/slides/3
+```
+
+Programmatic navigation also updates the route. Calling `goToSlide(3)` navigates to `/slides/3`.
+
+## Index bounds
+
+`nextSlide()` checks whether a next slide exists before navigating, so it is a no-op on the last slide.
+
+`previousSlide()` checks whether a previous slide exists before navigating, so it is a no-op on the first slide.
+
+`goToSlide(index)` only navigates when `index` is within the valid slide range. Calls with an index below `0` or greater than or equal to `totalSlides` are ignored.
+
+Route-derived indexes are clamped to the valid slide range before updating the current slide index.
+
+## Navigation events
+
+The input layer converts supported navigation input into internal events:
+
+1. `NextSlideEvent` - moves forward one slide
+2. `PreviousSlideEvent` - moves backward one slide
+3. `GoToSlideEvent(index)` - targets a specific zero-based slide index

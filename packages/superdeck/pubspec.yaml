@@ -47,6 +47,8 @@ dev_dependencies:
   build_runner: ^2.5.4
   dart_mappable_builder: ^4.7.0
   path_provider_platform_interface: ^2.1.2
+  superdeck_builder:
+    path: ../builder
 
 flutter:
   uses-material-design: true

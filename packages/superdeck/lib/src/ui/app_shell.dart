@@ -225,7 +225,6 @@ class _SplitViewState extends State<SplitView>
   }
 
   Widget? _buildFloatingAction({
-    required BuildContext context,
     required DeckController deckController,
     required bool isMenuOpen,
   }) {
@@ -233,28 +232,10 @@ class _SplitViewState extends State<SplitView>
       return null;
     }
 
-    final menuButton = SDIconButton(
+    return SDIconButton(
       icon: Icons.menu,
       onPressed: deckController.openMenu,
       semanticLabel: 'Open menu',
-    );
-    Widget? pluginAction;
-    for (final plugin in deckController.plugins) {
-      final action = plugin.buildFloatingAction(context);
-      if (action != null) {
-        pluginAction = action;
-        break;
-      }
-    }
-
-    if (pluginAction == null) {
-      return menuButton;
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [pluginAction, const SizedBox(height: 12), menuButton],
     );
   }
 
@@ -274,12 +255,10 @@ class _SplitViewState extends State<SplitView>
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         floatingActionButton: _buildFloatingAction(
-          context: context,
           deckController: deckController,
           isMenuOpen: isMenuOpen,
         ),
 
-        // Only show bottom bar on small layout (uncomment if needed):
         bottomNavigationBar: SizeTransition(
           axis: Axis.vertical,
           sizeFactor: _curvedAnimation,

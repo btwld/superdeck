@@ -15,7 +15,6 @@ flutter create my_presentation
 cd my_presentation
 superdeck setup
 flutter pub get
-dart run superdeck_cli:main build
 ```
 
 ## Initialize
@@ -33,6 +32,8 @@ Future<void> main() async {
   runApp(const SuperDeckApp(options: DeckOptions()));
 }
 ```
+
+Also add a `slides.md` at the project root with your first slide.
 
 ## Build slides
 

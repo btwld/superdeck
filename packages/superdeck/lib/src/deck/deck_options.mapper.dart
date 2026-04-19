@@ -77,13 +77,6 @@ class DeckOptionsMapper extends ClassMapperBase<DeckOptions> {
     _$defaultTemplate,
     opt: true,
   );
-  static List<SuperDeckPlugin> _$plugins(DeckOptions v) => v.plugins;
-  static const Field<DeckOptions, List<SuperDeckPlugin>> _f$plugins = Field(
-    'plugins',
-    _$plugins,
-    opt: true,
-    def: const <SuperDeckPlugin>[],
-  );
 
   @override
   final MappableFields<DeckOptions> fields = const {
@@ -94,7 +87,6 @@ class DeckOptionsMapper extends ClassMapperBase<DeckOptions> {
     #debug: _f$debug,
     #templates: _f$templates,
     #defaultTemplate: _f$defaultTemplate,
-    #plugins: _f$plugins,
   };
 
   static DeckOptions _instantiate(DecodingData data) {
@@ -106,7 +98,6 @@ class DeckOptionsMapper extends ClassMapperBase<DeckOptions> {
       debug: data.dec(_f$debug),
       templates: data.dec(_f$templates),
       defaultTemplate: data.dec(_f$defaultTemplate),
-      plugins: data.dec(_f$plugins),
     );
   }
 
@@ -196,12 +187,6 @@ abstract class DeckOptionsCopyWith<$R, $In extends DeckOptions, $Out>
   >
   get templates;
   SlideTemplateCopyWith<$R, SlideTemplate, SlideTemplate>? get defaultTemplate;
-  ListCopyWith<
-    $R,
-    SuperDeckPlugin,
-    ObjectCopyWith<$R, SuperDeckPlugin, SuperDeckPlugin>
-  >
-  get plugins;
   $R call({
     SlideStyle? baseStyle,
     Map<String, SlideStyle>? styles,
@@ -210,7 +195,6 @@ abstract class DeckOptionsCopyWith<$R, $In extends DeckOptions, $Out>
     bool? debug,
     Map<String, SlideTemplate>? templates,
     SlideTemplate? defaultTemplate,
-    List<SuperDeckPlugin>? plugins,
   });
   DeckOptionsCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
@@ -268,17 +252,6 @@ class _DeckOptionsCopyWithImpl<$R, $Out>
   get defaultTemplate =>
       $value.defaultTemplate?.copyWith.$chain((v) => call(defaultTemplate: v));
   @override
-  ListCopyWith<
-    $R,
-    SuperDeckPlugin,
-    ObjectCopyWith<$R, SuperDeckPlugin, SuperDeckPlugin>
-  >
-  get plugins => ListCopyWith(
-    $value.plugins,
-    (v, t) => ObjectCopyWith(v, $identity, t),
-    (v) => call(plugins: v),
-  );
-  @override
   $R call({
     Object? baseStyle = $none,
     Map<String, SlideStyle>? styles,
@@ -287,7 +260,6 @@ class _DeckOptionsCopyWithImpl<$R, $Out>
     bool? debug,
     Map<String, SlideTemplate>? templates,
     Object? defaultTemplate = $none,
-    List<SuperDeckPlugin>? plugins,
   }) => $apply(
     FieldCopyWithData({
       if (baseStyle != $none) #baseStyle: baseStyle,
@@ -297,7 +269,6 @@ class _DeckOptionsCopyWithImpl<$R, $Out>
       if (debug != null) #debug: debug,
       if (templates != null) #templates: templates,
       if (defaultTemplate != $none) #defaultTemplate: defaultTemplate,
-      if (plugins != null) #plugins: plugins,
     }),
   );
   @override
@@ -309,7 +280,6 @@ class _DeckOptionsCopyWithImpl<$R, $Out>
     debug: data.get(#debug, or: $value.debug),
     templates: data.get(#templates, or: $value.templates),
     defaultTemplate: data.get(#defaultTemplate, or: $value.defaultTemplate),
-    plugins: data.get(#plugins, or: $value.plugins),
   );
 
   @override

@@ -144,7 +144,7 @@ Register widgets in `DeckOptions.widgets`, then use them with the shorthand synt
 }
 ````
 
-The widget name becomes the block type (`@metricCard`), and all properties are passed to your widget's `parse()` method.
+The widget name becomes the block type (`@metricCard`), and all properties are passed to the registered `WidgetFactory` as `Map<String, Object?>`. Your widget (or a helper like `MetricCardArgs.parse(args)`) decides how to interpret them.
 
 ---
 

@@ -5,7 +5,7 @@ description: Complete API reference for configuring SuperDeck presentations
 
 # DeckOptions reference
 
-`DeckOptions` configures `SuperDeckApp` styling, custom widgets, slide parts, templates, plugins, and debug visuals.
+`DeckOptions` configures `SuperDeckApp` styling, custom widgets, slide parts, templates, and debug visuals.
 
 ## Constructor
 
@@ -18,7 +18,6 @@ const DeckOptions({
   bool debug = false,
   Map<String, SlideTemplate> templates = const {},
   SlideTemplate? defaultTemplate,
-  List<SuperDeckPlugin> plugins = const [],
 });
 ```
 
@@ -172,41 +171,6 @@ DeckOptions(
       header: BrandHeader(),
     ),
   ),
-)
-```
-
-### `plugins`
-**Type:** `List<SuperDeckPlugin>` | **Default:** `[]`
-
-Plugins extend deck behavior with custom routes, action bar widgets, and initialization logic.
-
-A plugin implements any combination of four hooks:
-
-| Hook | Purpose |
-|------|---------|
-| `buildRoutes()` | Extra `GoRouter` routes |
-| `buildActions(context)` | Widgets in the deck bottom bar |
-| `buildFloatingAction(context)` | Floating action when the menu is closed |
-| `initialize()` | Async startup logic |
-
-```dart
-class AnalyticsPlugin extends SuperDeckPlugin {
-  @override
-  String get name => 'analytics';
-
-  @override
-  Future<void> initialize() async {
-    // Set up analytics
-  }
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [AnalyticsButton()];
-  }
-}
-
-DeckOptions(
-  plugins: [AnalyticsPlugin()],
 )
 ```
 

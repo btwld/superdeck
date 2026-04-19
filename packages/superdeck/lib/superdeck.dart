@@ -28,7 +28,6 @@ export 'src/deck/loaders/bundled_deck_loader.dart';
 export 'src/deck/loaders/file_deck_loader.dart';
 export 'src/deck/slide_configuration.dart';
 export 'src/deck/slide_template.dart';
-export 'src/deck/superdeck_plugin.dart';
 export 'src/deck/template_exception.dart';
 export 'src/deck/widget_factory.dart';
 
