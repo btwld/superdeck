@@ -21,6 +21,8 @@ const _releaseEntitlements = <String, bool>{
   'com.apple.security.files.downloads.read-write': true,
 };
 
+const _requiredAssets = ['.superdeck/', '.superdeck/assets/'];
+
 Future<void> applySetup(Directory projectDir) async {
   final pubspecFile = File(path.join(projectDir.path, 'pubspec.yaml'));
   if (!pubspecFile.existsSync()) {
@@ -31,97 +33,67 @@ Future<void> applySetup(Directory projectDir) async {
     );
   }
 
-  await _ensureSuperdeckPlaceholders(projectDir);
-  await pubspecFile.writeAsString(
-    patchSetupPubspec(await pubspecFile.readAsString()),
-  );
-
-  final macosDir = Directory(path.join(projectDir.path, 'macos'));
-  if (macosDir.existsSync()) {
-    await _applyMacOsSetup(projectDir);
-  }
-}
-
-String patchSetupPubspec(String pubspecContents) {
-  final pubspec = _loadYamlMap(pubspecContents);
-  final flutter = _mutableMap(pubspec['flutter']);
-
-  final assets = List<String>.from(
-    (flutter['assets'] as List?)?.map((value) => value.toString()) ??
-        const <String>[],
-    growable: true,
-  );
-  final normalizedAssets = assets.toSet();
-  for (final asset in const ['.superdeck/', '.superdeck/assets/']) {
-    if (normalizedAssets.add(asset)) {
-      assets.add(asset);
-    }
-  }
-
-  flutter['assets'] = assets;
-  pubspec['flutter'] = flutter;
-
-  return YamlWriter(allowUnquotedStrings: true).write(pubspec);
-}
-
-Map<String, Object?> _loadYamlMap(String contents) {
-  final yaml = loadYaml(contents);
-  if (yaml is! Map<Object?, Object?>) {
-    throw const FormatException(
-      'Expected generated YAML content to have a top-level map.',
-    );
-  }
-  return _stringKeyedMap(yaml);
-}
-
-Map<String, Object?> _stringKeyedMap(Map<Object?, Object?> source) {
-  return source.map((key, value) {
-    final stringKey = key?.toString();
-    if (stringKey == null) {
-      throw const FormatException('Encountered a null YAML key.');
-    }
-    return MapEntry(stringKey, _normalizeYamlValue(value));
-  });
-}
-
-Object? _normalizeYamlValue(Object? value) {
-  if (value is Map<Object?, Object?>) {
-    return _stringKeyedMap(value);
-  }
-  if (value is List) {
-    return value.map(_normalizeYamlValue).toList();
-  }
-  return value;
-}
-
-Map<String, Object?> _mutableMap(Object? value) {
-  if (value is Map<String, Object?>) {
-    return Map<String, Object?>.from(value);
-  }
-  if (value is Map<Object?, Object?>) {
-    return _stringKeyedMap(value);
-  }
-  return <String, Object?>{};
-}
-
-Future<void> _ensureSuperdeckPlaceholders(Directory projectDir) async {
   final superdeckDir = Directory(path.join(projectDir.path, '.superdeck'));
   final assetsDir = Directory(path.join(superdeckDir.path, 'assets'));
   await assetsDir.create(recursive: true);
   await File(path.join(superdeckDir.path, '.gitkeep')).writeAsString('');
   await File(path.join(assetsDir.path, '.gitkeep')).writeAsString('');
+
+  await pubspecFile.writeAsString(
+    patchSetupPubspec(await pubspecFile.readAsString()),
+  );
+
+  final runnerDir = Directory(path.join(projectDir.path, 'macos', 'Runner'));
+  if (runnerDir.existsSync()) {
+    await _patchEntitlementsFile(
+      File(path.join(runnerDir.path, 'DebugProfile.entitlements')),
+      _debugEntitlements,
+    );
+    await _patchEntitlementsFile(
+      File(path.join(runnerDir.path, 'Release.entitlements')),
+      _releaseEntitlements,
+    );
+  }
 }
 
-Future<void> _applyMacOsSetup(Directory projectDir) async {
-  final runnerDir = path.join(projectDir.path, 'macos', 'Runner');
-  await _patchEntitlementsFile(
-    File(path.join(runnerDir, 'DebugProfile.entitlements')),
-    _debugEntitlements,
-  );
-  await _patchEntitlementsFile(
-    File(path.join(runnerDir, 'Release.entitlements')),
-    _releaseEntitlements,
-  );
+String patchSetupPubspec(String pubspecContents) {
+  final original = loadYaml(pubspecContents);
+  if (original is! Map) {
+    throw const FormatException('Expected pubspec.yaml to be a map.');
+  }
+
+  final pubspec = _toMutable(original) as Map<String, Object?>;
+  final flutter = pubspec['flutter'] is Map<String, Object?>
+      ? pubspec['flutter'] as Map<String, Object?>
+      : <String, Object?>{};
+
+  final assets = <String>[
+    ...?(flutter['assets'] as List?)?.map((value) => value.toString()),
+  ];
+  var changed = false;
+  for (final required in _requiredAssets) {
+    if (!assets.contains(required)) {
+      assets.add(required);
+      changed = true;
+    }
+  }
+  if (!changed) return pubspecContents;
+
+  flutter['assets'] = assets;
+  pubspec['flutter'] = flutter;
+  return YamlWriter(allowUnquotedStrings: true).write(pubspec);
+}
+
+Object? _toMutable(Object? value) {
+  if (value is Map) {
+    return value.map(
+      (key, val) => MapEntry(key.toString(), _toMutable(val)),
+    );
+  }
+  if (value is List) {
+    return value.map(_toMutable).toList();
+  }
+  return value;
 }
 
 Future<void> _patchEntitlementsFile(
