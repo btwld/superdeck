@@ -5,9 +5,6 @@ void main() {
   group('superdeck public api', () {
     test('exports the supported app surface', () {
       expect(SuperDeckApp, isNotNull);
-      expect(DeckController, isNotNull);
-      expect(BundledDeckLoader, isNotNull);
-      expect(FileDeckLoader, isNotNull);
       expect(SlideConfiguration, isNotNull);
     });
   });

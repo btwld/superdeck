@@ -6,7 +6,6 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'src/commands/build_command.dart';
-import 'src/commands/publish_command.dart';
 import 'src/commands/setup_command.dart';
 import 'src/commands/version_command.dart';
 import 'src/utils/constants.dart';
@@ -44,7 +43,6 @@ class SuperDeckRunner extends CommandRunner<int> {
 
     addCommand(buildCommand ?? BuildCommand(loggerOverride: _logger));
     addCommand(setupCommand ?? SetupCommand(loggerOverride: _logger));
-    addCommand(PublishCommand(loggerOverride: _logger));
     addCommand(VersionCommand(loggerOverride: loggerOverride));
   }
 
