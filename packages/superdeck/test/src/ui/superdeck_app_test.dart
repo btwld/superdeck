@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/export/async_thumbnail.dart';
 import 'package:superdeck/src/export/thumbnail_service.dart';
 import 'package:superdeck/src/ui/app_shell.dart';
