@@ -122,32 +122,12 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 ''');
-  await File(
-    path.join(projectDir.path, 'web', 'index.html'),
-  ).create(recursive: true);
-  await File(path.join(projectDir.path, 'web', 'index.html')).writeAsString('''
-<!DOCTYPE html>
-<html>
-<head>
-  <base href="\$FLUTTER_BASE_HREF">
-</head>
-<body>
-  <script src="flutter_bootstrap.js" async></script>
-</body>
-</html>
-''');
-  await File(
-    path.join(projectDir.path, 'macos', 'Runner', 'DebugProfile.entitlements'),
-  ).create(recursive: true);
-  await File(
-    path.join(projectDir.path, 'macos', 'Runner', 'DebugProfile.entitlements'),
-  ).writeAsString('<plist version="1.0"><dict></dict></plist>');
-  await File(
-    path.join(projectDir.path, 'macos', 'Runner', 'Release.entitlements'),
-  ).create(recursive: true);
-  await File(
-    path.join(projectDir.path, 'macos', 'Runner', 'Release.entitlements'),
-  ).writeAsString('<plist version="1.0"><dict></dict></plist>');
+  final runnerDir = Directory(path.join(projectDir.path, 'macos', 'Runner'));
+  await runnerDir.create(recursive: true);
+  for (final name in ['DebugProfile.entitlements', 'Release.entitlements']) {
+    await File(path.join(runnerDir.path, name))
+        .writeAsString('<plist version="1.0"><dict></dict></plist>');
+  }
 }
 
 class _CapturingLogger extends Logger {
