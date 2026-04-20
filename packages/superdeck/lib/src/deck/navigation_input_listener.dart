@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 import 'deck_controller.dart';
+import 'deck_presentation_state.dart';
 import 'navigation_events.dart';
 
 /// Unified widget for handling navigation input from keyboard and gestures
@@ -44,24 +45,29 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
     super.dispose();
   }
 
-  void _handleNavigationEvent(NavigationEvent? event) {
+  void _dispatch(DeckPresentationState presentation, NavigationEvent? event) {
     if (event == null) return;
-
-    final deck = DeckController.of(context);
-    deck.handleNavigationEvent(event);
+    switch (event) {
+      case NextSlideEvent():
+        presentation.nextSlide();
+      case PreviousSlideEvent():
+        presentation.previousSlide();
+      case GoToSlideEvent(:final index):
+        presentation.goToSlide(index);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final deck = DeckController.of(context);
+    final presentation = DeckController.of(context).presentation;
 
     return Focus(
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: (node, event) {
         final navigationEvent = _keyboardHandler.handleKey(event);
-        _handleNavigationEvent(navigationEvent);
+        _dispatch(presentation, navigationEvent);
 
         // Return handled if we processed the event, otherwise ignored
         return navigationEvent != null
@@ -69,7 +75,7 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
             : KeyEventResult.ignored;
       },
       child: Watch((context) {
-        final isMenuOpen = deck.isMenuOpen.value;
+        final isMenuOpen = presentation.isMenuOpen.value;
 
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
@@ -77,7 +83,7 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
               ? null
               : (details) {
                   final event = _gestureHandler.handleTap(details, size);
-                  _handleNavigationEvent(event);
+                  _dispatch(presentation, event);
                 },
           onHorizontalDragStart: isMenuOpen
               ? null
@@ -88,7 +94,7 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
               ? null
               : (details) {
                   final event = _gestureHandler.handleSwipe(details);
-                  _handleNavigationEvent(event);
+                  _dispatch(presentation, event);
                 },
           child: widget.child,
         );

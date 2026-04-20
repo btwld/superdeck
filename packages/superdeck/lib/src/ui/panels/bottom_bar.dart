@@ -24,6 +24,7 @@ class DeckBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deck = DeckController.of(context);
+    final presentation = deck.presentation;
 
     return FlexBox(
       style: _bottomBarContainer,
@@ -31,11 +32,11 @@ class DeckBottomBar extends StatelessWidget {
         // view notes - use Watch for reactive icon
         Watch(
           (context) => SDIconButton(
-            onPressed: deck.toggleNotes,
-            icon: deck.isNotesOpen.value
+            onPressed: presentation.toggleNotes,
+            icon: presentation.isNotesOpen.value
                 ? Icons.comment
                 : Icons.comments_disabled,
-            semanticLabel: deck.isNotesOpen.value
+            semanticLabel: presentation.isNotesOpen.value
                 ? 'Close notes panel'
                 : 'Open notes panel',
           ),
@@ -43,18 +44,22 @@ class DeckBottomBar extends StatelessWidget {
 
         SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
-          onPressed: () => deck.generateThumbnails(context, force: true),
+          onPressed: () => presentation.generateThumbnails(
+            context,
+            deck.slides.value,
+            force: true,
+          ),
           semanticLabel: 'Regenerate thumbnails',
         ),
         const Spacer(),
         SDIconButton(
           icon: Icons.arrow_back,
-          onPressed: deck.previousSlide,
+          onPressed: presentation.previousSlide,
           semanticLabel: 'Previous slide',
         ),
         SDIconButton(
           icon: Icons.arrow_forward,
-          onPressed: deck.nextSlide,
+          onPressed: presentation.nextSlide,
           semanticLabel: 'Next slide',
         ),
         const Spacer(),
@@ -62,14 +67,14 @@ class DeckBottomBar extends StatelessWidget {
         // Page counter - use Watch for reactive text
         Watch(
           (context) => Text(
-            '${deck.currentIndex.value + 1} of ${deck.totalSlides.value}',
+            '${presentation.currentIndex.value + 1} of ${presentation.totalSlides.value}',
             style: const TextStyle(color: Colors.white),
           ),
         ),
 
         SDIconButton(
           icon: Icons.close,
-          onPressed: deck.closeMenu,
+          onPressed: presentation.closeMenu,
           semanticLabel: 'Close menu',
         ),
       ],

@@ -10,7 +10,7 @@ import '../../helpers/mock_deck_loader.dart';
 
 Widget _buildHarness(DeckController controller) {
   return MaterialApp.router(
-    routerConfig: controller.router,
+    routerConfig: controller.presentation.router,
     builder: (context, child) {
       return InheritedData(
         data: controller,
@@ -24,9 +24,9 @@ Widget _buildHarness(DeckController controller) {
                     width: 300,
                     child: ThumbnailPanel(
                       scrollDirection: Axis.vertical,
-                      activeIndex: controller.currentIndex.value,
+                      activeIndex: controller.presentation.currentIndex.value,
                       itemCount: controller.slides.value.length,
-                      onItemTap: controller.goToSlide,
+                      onItemTap: controller.presentation.goToSlide,
                       itemBuilder: (index, selected) => SizedBox(
                         key: ValueKey<String>('thumb-$index'),
                         width: 120,
@@ -73,37 +73,37 @@ void main() {
     testWidgets('menu-open tap does not trigger global slide navigation', (
       tester,
     ) async {
-      controller.openMenu();
+      controller.presentation.openMenu();
 
       await tester.pumpWidget(_buildHarness(controller));
       await tester.pumpAndSettle();
 
-      controller.router.go('/slides/1');
+      controller.presentation.router.go('/slides/1');
       await tester.pumpAndSettle();
-      expect(controller.currentIndex.value, 1);
+      expect(controller.presentation.currentIndex.value, 1);
 
       await tester.tapAt(const Offset(500, 100));
       await tester.pumpAndSettle();
 
-      expect(controller.currentIndex.value, 1);
+      expect(controller.presentation.currentIndex.value, 1);
     });
 
     testWidgets('thumbnail tap still navigates while menu is open', (
       tester,
     ) async {
-      controller.openMenu();
+      controller.presentation.openMenu();
 
       await tester.pumpWidget(_buildHarness(controller));
       await tester.pumpAndSettle();
 
-      controller.router.go('/slides/1');
+      controller.presentation.router.go('/slides/1');
       await tester.pumpAndSettle();
-      expect(controller.currentIndex.value, 1);
+      expect(controller.presentation.currentIndex.value, 1);
 
       await tester.tap(find.byKey(const ValueKey<String>('thumb-2')));
       await tester.pumpAndSettle();
 
-      expect(controller.currentIndex.value, 2);
+      expect(controller.presentation.currentIndex.value, 2);
     });
   });
 }

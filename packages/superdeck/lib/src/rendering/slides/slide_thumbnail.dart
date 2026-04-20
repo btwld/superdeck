@@ -19,10 +19,10 @@ class SlideThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deck = DeckController.of(context);
+    final presentation = DeckController.of(context).presentation;
 
     return Watch((context) {
-      final asyncThumbnail = deck.getThumbnail(slide.key);
+      final asyncThumbnail = presentation.getThumbnail(slide.key);
 
       if (asyncThumbnail == null) {
         return _PreviewContainer(

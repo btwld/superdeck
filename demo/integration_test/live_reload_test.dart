@@ -40,11 +40,11 @@ void main() {
       loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
-      expect(controller.totalSlides.value, 1);
+      expect(controller.presentation.totalSlides.value, 1);
 
       await simulateBuilding(workspace, 2);
       await tester.pumpUntil(
-        () => controller.isBuildActive.value,
+        () => controller.session.isBuildActive.value,
         debugLabel: 'isBuildActive to become true',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -54,7 +54,7 @@ void main() {
       // Verify overlay disappears after successful rebuild
       await simulateBuildSuccess(workspace, initialSlides, 3);
       await tester.pumpUntil(
-        () => !controller.isBuildActive.value,
+        () => !controller.session.isBuildActive.value,
         debugLabel: 'isBuildActive to clear after success',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -71,12 +71,12 @@ void main() {
       loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
-      expect(controller.totalSlides.value, 1);
-      expect(controller.hasError.value, isFalse);
+      expect(controller.presentation.totalSlides.value, 1);
+      expect(controller.session.hasFatalError.value, isFalse);
 
       await simulateBuildFailure(workspace, 'Syntax error on line 5', 2);
       await tester.pumpUntil(
-        () => controller.buildFailure.value != null,
+        () => controller.session.buildFailure.value != null,
         debugLabel: 'buildFailure to be set',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -84,7 +84,7 @@ void main() {
       expect(find.textContaining('Build failed'), findsOneWidget);
       expect(find.textContaining('Syntax error on line 5'), findsOneWidget);
       // Slides should still be visible (non-fatal error path)
-      expect(controller.totalSlides.value, 1);
+      expect(controller.presentation.totalSlides.value, 1);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
 
@@ -101,7 +101,7 @@ void main() {
       // Trigger failure
       await simulateBuildFailure(workspace, 'Parse error', 2);
       await tester.pumpUntil(
-        () => controller.buildFailure.value != null,
+        () => controller.session.buildFailure.value != null,
         debugLabel: 'buildFailure to appear',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -111,13 +111,13 @@ void main() {
       final updatedSlides = [makeSlide('s1', '# Fixed')];
       await simulateBuildSuccess(workspace, updatedSlides, 3);
       await tester.pumpUntil(
-        () => controller.buildFailure.value == null,
+        () => controller.session.buildFailure.value == null,
         debugLabel: 'buildFailure to clear',
         onTimeout: () => describeDeckControllerState(controller),
       );
 
       expect(find.textContaining('Build failed'), findsNothing);
-      expect(controller.hasError.value, isFalse);
+      expect(controller.session.hasFatalError.value, isFalse);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
 
@@ -128,12 +128,12 @@ void main() {
       loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
-      expect(controller.totalSlides.value, 1);
+      expect(controller.presentation.totalSlides.value, 1);
 
       // Open menu to see the counter
       await tester.tapByLabel('Open menu');
       await tester.pumpUntil(
-        () => controller.isMenuOpen.value,
+        () => controller.presentation.isMenuOpen.value,
         debugLabel: 'menu open',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -146,7 +146,7 @@ void main() {
       ];
       await simulateBuildSuccess(workspace, updatedSlides, 2);
       await tester.pumpUntil(
-        () => controller.totalSlides.value == 2,
+        () => controller.presentation.totalSlides.value == 2,
         debugLabel: 'totalSlides to become 2',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -167,16 +167,16 @@ void main() {
       loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
-      expect(controller.totalSlides.value, 3);
+      expect(controller.presentation.totalSlides.value, 3);
 
       // Navigate to the last slide
       await tester.navigateToSlide(controller, 2);
-      expect(controller.currentIndex.value, 2);
+      expect(controller.presentation.currentIndex.value, 2);
 
       // Open menu
       await tester.tapByLabel('Open menu');
       await tester.pumpUntil(
-        () => controller.isMenuOpen.value,
+        () => controller.presentation.isMenuOpen.value,
         debugLabel: 'menu open',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -188,13 +188,13 @@ void main() {
       ];
       await simulateBuildSuccess(workspace, reducedSlides, 2);
       await tester.pumpUntil(
-        () => controller.totalSlides.value == 2,
+        () => controller.presentation.totalSlides.value == 2,
         debugLabel: 'totalSlides to become 2',
         onTimeout: () => describeDeckControllerState(controller),
       );
       await tester.pumpFor(const Duration(milliseconds: 200));
 
-      expect(controller.currentIndex.value, 1);
+      expect(controller.presentation.currentIndex.value, 1);
       expect(find.textContaining('2 of 2'), findsOneWidget);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
@@ -208,12 +208,12 @@ void main() {
       loaderCreated = true;
 
       final controller = await tester.pumpTestAppWithLoader(loader);
-      expect(controller.totalSlides.value, 1);
+      expect(controller.presentation.totalSlides.value, 1);
 
       // Cycle 1: building → success with 2 slides
       await simulateBuilding(workspace, 2);
       await tester.pumpUntil(
-        () => controller.isBuildActive.value,
+        () => controller.session.isBuildActive.value,
         debugLabel: 'cycle 1 building',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -225,8 +225,8 @@ void main() {
       await simulateBuildSuccess(workspace, slides2, 3);
       await tester.pumpUntil(
         () =>
-            controller.totalSlides.value == 2 &&
-            !controller.isBuildActive.value,
+            controller.presentation.totalSlides.value == 2 &&
+            !controller.session.isBuildActive.value,
         debugLabel: 'cycle 1 success',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -234,7 +234,7 @@ void main() {
       // Cycle 2: building → success with 3 slides
       await simulateBuilding(workspace, 4);
       await tester.pumpUntil(
-        () => controller.isBuildActive.value,
+        () => controller.session.isBuildActive.value,
         debugLabel: 'cycle 2 building',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -247,16 +247,16 @@ void main() {
       await simulateBuildSuccess(workspace, slides3, 5);
       await tester.pumpUntil(
         () =>
-            controller.totalSlides.value == 3 &&
-            !controller.isBuildActive.value,
+            controller.presentation.totalSlides.value == 3 &&
+            !controller.session.isBuildActive.value,
         debugLabel: 'cycle 2 success',
         onTimeout: () => describeDeckControllerState(controller),
       );
 
       // Verify final state
-      expect(controller.hasError.value, isFalse);
-      expect(controller.buildFailure.value, isNull);
-      expect(controller.totalSlides.value, 3);
+      expect(controller.session.hasFatalError.value, isFalse);
+      expect(controller.session.buildFailure.value, isNull);
+      expect(controller.presentation.totalSlides.value, 3);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
   });

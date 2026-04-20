@@ -51,7 +51,7 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       'Create a new key to force a full rebuild.',
     );
     if (widget.options != oldWidget.options) {
-      _deckController.updateOptions(widget.options);
+      _deckController.options.value = widget.options;
     }
   }
 
@@ -68,7 +68,7 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       data: _deckController,
       child: Builder(
         builder: (context) {
-          return widget.builder(context, _deckController.router);
+          return widget.builder(context, _deckController.presentation.router);
         },
       ),
     );

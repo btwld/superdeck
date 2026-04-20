@@ -81,7 +81,7 @@ class _SplitViewState extends State<SplitView>
       final deckController = DeckController.of(context);
 
       // Set initial animation value based on menu state
-      final initialMenuState = deckController.isMenuOpen.value;
+      final initialMenuState = deckController.presentation.isMenuOpen.value;
 
       if (initialMenuState) {
         _animationController.value = 1.0;
@@ -91,7 +91,7 @@ class _SplitViewState extends State<SplitView>
       _menuEffectCleanup = effect(() {
         if (!mounted) return;
 
-        final isMenuOpen = deckController.isMenuOpen.value;
+        final isMenuOpen = deckController.presentation.isMenuOpen.value;
 
         if (isMenuOpen && _animationController.value != 1.0) {
           _animationController.forward();
@@ -160,7 +160,10 @@ class _SplitViewState extends State<SplitView>
         return;
       }
 
-      deckController.generateThumbnails(context);
+      deckController.presentation.generateThumbnails(
+        context,
+        currentSlides,
+      );
       _lastThumbnailWarmupSignature = currentSignature;
       if (_pendingThumbnailWarmupSignature == currentSignature) {
         _pendingThumbnailWarmupSignature = null;
@@ -178,17 +181,19 @@ class _SplitViewState extends State<SplitView>
   // Build the panel content (thumbnails + optional comments).
   Widget _buildPanel(BuildContext context) {
     final deck = DeckController.of(context);
+    final presentation = deck.presentation;
 
     return Watch((context) {
-      final isNotesOpen = deck.isNotesOpen.value;
+      final isNotesOpen = presentation.isNotesOpen.value;
       final slides = deck.slides.value;
-      final currentSlide = deck.currentSlide.value;
+      final currentSlide = presentation.currentSlide.value;
 
       /// Common content for thumbnails
       final thumbnailPanel = ThumbnailPanel(
         scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
-        onItemTap: deck.goToSlide,
-        activeIndex: currentSlide?.slideIndex ?? deck.currentIndex.value,
+        onItemTap: presentation.goToSlide,
+        activeIndex:
+            currentSlide?.slideIndex ?? presentation.currentIndex.value,
         itemBuilder: (index, selected) {
           return SlideThumbnail(selected: selected, slide: slides[index]);
         },
@@ -234,7 +239,7 @@ class _SplitViewState extends State<SplitView>
 
     return SDIconButton(
       icon: Icons.menu,
-      onPressed: deckController.openMenu,
+      onPressed: deckController.presentation.openMenu,
       semanticLabel: 'Open menu',
     );
   }
@@ -247,9 +252,9 @@ class _SplitViewState extends State<SplitView>
     // so we place it in a Column below the main content.
     // For regular layout, place it on the left in a Row.
     return Watch((context) {
-      final isMenuOpen = deckController.isMenuOpen.value;
-      final isBuildActive = deckController.isBuildActive.value;
-      final buildFailure = deckController.buildFailure.value;
+      final isMenuOpen = deckController.presentation.isMenuOpen.value;
+      final isBuildActive = deckController.session.isBuildActive.value;
+      final buildFailure = deckController.session.buildFailure.value;
 
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
