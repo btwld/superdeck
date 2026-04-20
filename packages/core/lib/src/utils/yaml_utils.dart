@@ -27,15 +27,13 @@ Map<String, Object?> parseYamlMap(
   }
 
   if (yamlDoc == null) return {};
-
-  final converted = _deepConvert(yamlDoc);
-  if (converted is Map<String, Object?>) {
-    return converted;
+  if (yamlDoc is! Map) {
+    throw FormatException(
+      'Expected $sourceLabel to define a map at the top level.',
+    );
   }
 
-  throw FormatException(
-    'Expected $sourceLabel to define a map at the top level.',
-  );
+  return _deepConvert(yamlDoc) as Map<String, Object?>;
 }
 
 /// Converts YAML string to a `Map<String, Object?>`

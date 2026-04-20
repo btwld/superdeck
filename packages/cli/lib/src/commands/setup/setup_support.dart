@@ -53,7 +53,9 @@ Future<void> applySetup(Directory projectDir, Logger logger) async {
   final flutterDependency = dependencies is Map
       ? dependencies['flutter']
       : null;
-  if (flutterDependency is! Map || flutterDependency['sdk'] != 'flutter') {
+  final isFlutterApp =
+      flutterDependency is Map && flutterDependency['sdk'] == 'flutter';
+  if (!isFlutterApp) {
     throw FileSystemException(
       'Failed to configure SuperDeck: pubspec.yaml does not declare a '
       'Flutter SDK dependency. SuperDeck requires a Flutter app.',
