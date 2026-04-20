@@ -22,7 +22,6 @@ packages/
   cli/        # superdeck CLI tool (setup, build, publish, version)
   builder/    # Code generators and build_runner integration
   plugins/
-    pdf/      # Optional PDF export support
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
 .planning/    # Internal development docs (not published)
@@ -34,7 +33,6 @@ docs/         # User-facing documentation (MDX format)
 - **superdeck**: Flutter widgets, DeckController, navigation, thumbnail/capture services, theme system
 - **cli**: CLI commands for project setup and building slides
 - **builder**: build_runner generators for code generation
-- **plugins/pdf**: Optional PDF export dialog and controller built on SuperDeck public APIs
 
 ## Environment Setup
 
