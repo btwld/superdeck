@@ -2,6 +2,7 @@
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
 pubspec.lock
 pubspec_overrides.yaml
+!packages/plugins/*/pubspec_overrides.yaml
 
 # Miscellaneous
 *.class
@@ -64,4 +65,3 @@ coverage/
 
 # SuperDeck CLI transient build state
 packages/cli/.superdeck/
-

@@ -51,7 +51,10 @@ class SlideCaptureService {
 
       _generationQueue.add(queueKey);
 
-      final exportingSlide = slide.copyWith(debug: false, isExporting: true);
+      final staticRenderingSlide = slide.copyWith(
+        debug: false,
+        isStaticRendering: true,
+      );
 
       // Check if the context is still mounted after the async gap
       if (!context.mounted) {
@@ -65,7 +68,10 @@ class SlideCaptureService {
       );
 
       final image = await _fromWidgetToImage(
-        InheritedData(data: exportingSlide, child: SlideView(exportingSlide)),
+        InheritedData(
+          data: staticRenderingSlide,
+          child: SlideView(staticRenderingSlide),
+        ),
         config,
       );
 

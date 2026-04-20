@@ -2,9 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:signals/signals.dart';
 
-
-import '../export/async_thumbnail.dart';
-import '../export/thumbnail_service.dart';
+import '../thumbnails/async_thumbnail.dart';
+import '../thumbnails/thumbnail_service.dart';
 import 'slide_configuration.dart';
 import 'slide_page_content.dart';
 

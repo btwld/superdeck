@@ -7,8 +7,8 @@ import '../ui/widgets/hero_element.dart';
 /// Shared mixin that wraps markdown widgets with hero animations when a hero
 /// tag is present on the parsed element.
 mixin MarkdownHeroMixin on MarkdownElementBuilder {
-  /// Applies hero animation wrapping if a hero tag is present and we're not
-  /// exporting.
+  /// Applies hero animation wrapping when a hero tag is present during
+  /// interactive rendering.
   Widget applyHeroIfNeeded<T>({
     required BuildContext context,
     required Widget child,
@@ -17,7 +17,7 @@ mixin MarkdownHeroMixin on MarkdownElementBuilder {
     required Widget Function(BuildContext, T, T, double) buildFlight,
   }) {
     final shouldAnimate =
-        heroTag != null && !SlideConfiguration.of(context).isExporting;
+        heroTag != null && !SlideConfiguration.of(context).isStaticRendering;
 
     if (!shouldAnimate) return child;
 

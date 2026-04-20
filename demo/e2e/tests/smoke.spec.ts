@@ -103,7 +103,6 @@ test('panel controls support mouse interactions', async ({page}) => {
 
   const openNotesButton = page.getByRole('button', {name: 'Open notes panel'});
   await expect(openNotesButton).toBeVisible();
-  await expect(page.getByRole('button', {name: 'Export PDF'})).toBeVisible();
   await expect(page.getByRole('button', {name: 'Close menu'})).toBeVisible();
 
   await clickSemanticsButton(page, 'Open notes panel');

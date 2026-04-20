@@ -1,7 +1,12 @@
 /// Flutter widgets and presentation components for SuperDeck.
 library;
 
+export 'src/capture/slide_capture_service.dart';
+export 'src/rendering/slides/slide_constants.dart';
 export 'src/rendering/slides/slide_parts.dart';
+export 'src/rendering/slides/slide_render_view.dart';
+export 'src/thumbnails/async_thumbnail.dart';
+export 'src/thumbnails/thumbnail_service.dart';
 
 // Styling
 export 'src/styling/default_style.dart';

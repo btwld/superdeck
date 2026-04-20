@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
-import 'package:yaml/yaml.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
 const _debugEntitlements = <String, bool>{
@@ -57,15 +57,10 @@ Future<void> applySetup(Directory projectDir) async {
 }
 
 String patchSetupPubspec(String pubspecContents) {
-  final original = loadYaml(pubspecContents);
-  if (original is! Map) {
-    throw const FormatException('Expected pubspec.yaml to be a map.');
-  }
-
-  final pubspec = _toMutable(original) as Map<String, Object?>;
-  final flutter = pubspec['flutter'] is Map<String, Object?>
-      ? pubspec['flutter'] as Map<String, Object?>
-      : <String, Object?>{};
+  final pubspec = parseYamlMap(pubspecContents, sourceLabel: 'pubspec.yaml');
+  final flutter = Map<String, Object?>.from(
+    pubspec['flutter'] as Map? ?? const <String, Object?>{},
+  );
 
   final assets = <String>[
     ...?(flutter['assets'] as List?)?.map((value) => value.toString()),
@@ -80,20 +75,8 @@ String patchSetupPubspec(String pubspecContents) {
   if (!changed) return pubspecContents;
 
   flutter['assets'] = assets;
-  pubspec['flutter'] = flutter;
-  return YamlWriter(allowUnquotedStrings: true).write(pubspec);
-}
-
-Object? _toMutable(Object? value) {
-  if (value is Map) {
-    return value.map(
-      (key, val) => MapEntry(key.toString(), _toMutable(val)),
-    );
-  }
-  if (value is List) {
-    return value.map(_toMutable).toList();
-  }
-  return value;
+  final updated = Map.of(pubspec)..['flutter'] = flutter;
+  return YamlWriter(allowUnquotedStrings: true).write(updated);
 }
 
 Future<void> _patchEntitlementsFile(

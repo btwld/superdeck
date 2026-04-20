@@ -3,6 +3,43 @@ import 'package:yaml/yaml.dart';
 
 final _logger = Logger('YamlUtils');
 
+/// Parses YAML string into a deeply converted `Map<String, Object?>`.
+///
+/// Throws [FormatException] when [yamlString] has invalid syntax or when the
+/// top-level document is not a map. [sourceLabel] is included in error messages
+/// so callers can identify the source file or field.
+Map<String, Object?> parseYamlMap(
+  String yamlString, {
+  String sourceLabel = 'YAML',
+}) {
+  if (yamlString.trim().isEmpty) return {};
+
+  Object? yamlDoc;
+  try {
+    yamlDoc = loadYaml(yamlString);
+  } on YamlException catch (error, stackTrace) {
+    return Error.throwWithStackTrace(
+      FormatException(
+        'Failed to parse $sourceLabel. Invalid YAML syntax. Error: $error',
+      ),
+      stackTrace,
+    );
+  }
+
+  if (yamlDoc == null) {
+    throw FormatException(
+      'Expected $sourceLabel to define a map at the top level.',
+    );
+  }
+  if (yamlDoc is! Map) {
+    throw FormatException(
+      'Expected $sourceLabel to define a map at the top level.',
+    );
+  }
+
+  return _deepConvertStrictMap(yamlDoc, sourceLabel);
+}
+
 /// Converts YAML string to a `Map<String, Object?>`
 ///
 /// Supports both block-style and flow-style YAML:
@@ -37,6 +74,35 @@ Map<String, Object?> convertYamlToMap(
     if (strict) rethrow;
     return {};
   }
+}
+
+Map<String, Object?> _deepConvertStrictMap(
+  Map<Object?, Object?> value,
+  String sourceLabel,
+) {
+  return Map<String, Object?>.fromEntries(
+    value.entries.map((entry) {
+      final key = entry.key;
+      if (key == null) {
+        throw FormatException('Encountered a null YAML key in $sourceLabel.');
+      }
+
+      return MapEntry(
+        key.toString(),
+        _deepConvertStrict(entry.value, sourceLabel),
+      );
+    }),
+  );
+}
+
+Object? _deepConvertStrict(Object? value, String sourceLabel) {
+  if (value is Map) {
+    return _deepConvertStrictMap(value, sourceLabel);
+  }
+  if (value is List) {
+    return value.map((item) => _deepConvertStrict(item, sourceLabel)).toList();
+  }
+  return value;
 }
 
 /// Recursively converts YAML types (YamlMap, YamlList) to plain Dart types

@@ -28,7 +28,7 @@
     "comments": []
   },
   {
-    "key": "9hnwRuWL",
+    "key": "5eFcO0WT",
     "options": {},
     "sections": [
       {
@@ -61,7 +61,7 @@
     "comments": []
   },
   {
-    "key": "NisJ8sJm",
+    "key": "DOl0tJ6t",
     "options": {},
     "sections": [
       {
@@ -140,7 +140,7 @@
     "comments": []
   },
   {
-    "key": "GDN2EEzc",
+    "key": "aY6TnrgM",
     "options": {},
     "sections": [
       {
@@ -318,7 +318,7 @@
     "comments": []
   },
   {
-    "key": "PWMrcJez",
+    "key": "kTOjNLpJ",
     "options": {},
     "sections": [
       {
@@ -350,19 +350,26 @@
     "comments": []
   },
   {
-    "key": "9dCNe4XF",
+    "key": "lLG0XU1t",
     "options": {},
     "sections": [
       {
         "blocks": [
           {
-            "content": "## Export Options {.heading}\n",
+            "content": "",
             "flex": 1,
             "scrollable": false,
             "type": "block"
           },
           {
-            "content": "- **PDF Export** - Generate PDF for sharing\n- **Thumbnails** - Auto-generated slide previews\n- **Web Deploy** - Build for web hosting",
+            "content": "\n### Why SuperDeck? {.heading}\n\n- Version control your presentations\n- Use your favorite editor\n- Leverage Flutter's ecosystem\n- Hot reload while editing\n- Cross-platform output\n",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -376,19 +383,13 @@
     "comments": []
   },
   {
-    "key": "YwVhszmW",
+    "key": "e1GeS3GQ",
     "options": {},
     "sections": [
       {
         "blocks": [
           {
-            "content": "## Slide Templates {.heading}\n",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
-          },
-          {
-            "content": "Templates bundle **chrome** (header, footer, background) with an **isolated style system** — like Keynote master slides.",
+            "content": "template: corporate",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -402,16 +403,13 @@
     "comments": []
   },
   {
-    "key": "D8gwvOnV",
-    "options": {
-      "template": "corporate"
-    },
+    "key": "lDoWhrCY",
+    "options": {},
     "sections": [
       {
         "blocks": [
           {
-            "content": "# Corporate Template {.heading}\n\nThis slide uses the `corporate` template with branded header and footer.",
-            "align": "center",
+            "content": "template: corporate\nstyle: highlight",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -425,17 +423,13 @@
     "comments": []
   },
   {
-    "key": "zMnR2lH4",
-    "options": {
-      "style": "highlight",
-      "template": "corporate"
-    },
+    "key": "zTLKv5H0",
+    "options": {},
     "sections": [
       {
         "blocks": [
           {
-            "content": "# Highlight Style {.heading}\n\nTemplates can have their own named style variants.",
-            "align": "center",
+            "content": "template: minimal",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -449,30 +443,7 @@
     "comments": []
   },
   {
-    "key": "bgVDjrnG",
-    "options": {
-      "template": "minimal"
-    },
-    "sections": [
-      {
-        "blocks": [
-          {
-            "content": "# Minimal Template {.heading}\n\nA clean, typography-focused template with no chrome distractions.",
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
-          }
-        ],
-        "flex": 1,
-        "scrollable": false,
-        "type": "section"
-      }
-    ],
-    "comments": []
-  },
-  {
-    "key": "lrxo7KbB",
+    "key": "2IY2YTbh",
     "options": {},
     "sections": [
       {

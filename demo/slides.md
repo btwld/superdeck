@@ -35,7 +35,6 @@
 - Write slides in **Markdown**
 - Render with **Flutter**
 - Use **custom widgets** in your slides
-- Export to **PDF**
 
 ---
 
@@ -68,10 +67,6 @@ mindmap
       Custom widgets
       Hot reload
       Cross-platform
-    Export
-      PDF generation
-      Thumbnails
-      Sharing
     Styling
       Themes
       Custom styles
@@ -178,7 +173,6 @@ flowchart LR
     A[Markdown] --> B[Parser]
     B --> C[Slides]
     C --> D[Flutter UI]
-    D --> E[PDF Export]
 
     classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
 ```
@@ -345,14 +339,12 @@ graph TB
 
     subgraph Output
         E[Flutter App]
-        F[PDF Export]
         G[Thumbnails]
     end
 
     A --> C
     C --> D
     D --> E
-    E --> F
     E --> G
 ```
 
@@ -397,16 +389,6 @@ my_presentation/
 ├── slides.md
 └── pubspec.yaml
 ```
-
----
-
-## Export Options {.heading}
-
-@block
-
-- **PDF Export** - Generate PDF for sharing
-- **Thumbnails** - Auto-generated slide previews
-- **Web Deploy** - Build for web hosting
 
 ---
 
