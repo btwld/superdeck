@@ -10,7 +10,7 @@ void main() {
   group('DeckControllerBuilder', () {
     // This test runs first because it does not corrupt widget tree state.
     testWidgets(
-      'options change triggers updateOptions without assertion error',
+      'options change propagates without assertion error',
       (tester) async {
         final loader = MockDeckLoader();
 

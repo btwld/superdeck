@@ -25,20 +25,20 @@ void main() {
     });
 
     test('initializes router and default UI state', () {
-      expect(controller.router, isNotNull);
-      expect(controller.isMenuOpen.value, isFalse);
-      expect(controller.isNotesOpen.value, isFalse);
-      expect(controller.isBuildActive.value, isFalse);
+      expect(controller.presentation.router, isNotNull);
+      expect(controller.presentation.isMenuOpen.value, isFalse);
+      expect(controller.presentation.isNotesOpen.value, isFalse);
+      expect(controller.session.isBuildActive.value, isFalse);
     });
 
     test('goToSlide ignores out of range indexes', () async {
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      await controller.goToSlide(-1);
-      expect(controller.currentIndex.value, 0);
+      await controller.presentation.goToSlide(-1);
+      expect(controller.presentation.currentIndex.value, 0);
 
-      await controller.goToSlide(99);
-      expect(controller.currentIndex.value, 0);
+      await controller.presentation.goToSlide(99);
+      expect(controller.presentation.currentIndex.value, 0);
     });
 
     test('goToSlide updates current slide when index is valid', () async {
@@ -54,10 +54,10 @@ void main() {
       });
 
       await Future<void>.delayed(const Duration(milliseconds: 10));
-      await ctrl.goToSlide(2);
+      await ctrl.presentation.goToSlide(2);
 
-      expect(ctrl.currentIndex.value, 2);
-      expect(ctrl.currentSlide.value?.slideIndex, 2);
+      expect(ctrl.presentation.currentIndex.value, 2);
+      expect(ctrl.presentation.currentSlide.value?.slideIndex, 2);
     });
 
     test(
@@ -75,7 +75,7 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        final navigation = ctrl.goToSlide(1);
+        final navigation = ctrl.presentation.goToSlide(1);
         ctrl.dispose();
 
         await expectLater(navigation, completes);
@@ -85,9 +85,9 @@ void main() {
     test('initial load transitions to loaded state', () async {
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(controller.isLoading.value, isFalse);
-      expect(controller.hasError.value, isFalse);
-      expect(controller.totalSlides.value, 3);
+      expect(controller.session.isLoading.value, isFalse);
+      expect(controller.session.hasFatalError.value, isFalse);
+      expect(controller.presentation.totalSlides.value, 3);
       expect(mockDeckLoader.loadCalls, greaterThan(0));
     });
 
@@ -109,10 +109,10 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(controller.hasError.value, isFalse);
-        expect(controller.isLoading.value, isFalse);
-        expect(controller.isBuildActive.value, isFalse);
-        expect(controller.buildFailure.value?.message, 'boom');
+        expect(controller.session.hasFatalError.value, isFalse);
+        expect(controller.session.isLoading.value, isFalse);
+        expect(controller.session.isBuildActive.value, isFalse);
+        expect(controller.session.buildFailure.value?.message, 'boom');
       },
     );
 
@@ -134,8 +134,8 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(ctrl.hasError.value, isTrue);
-        expect(ctrl.error.value, isA<StateError>());
+        expect(ctrl.session.hasFatalError.value, isTrue);
+        expect(ctrl.session.error.value, isA<StateError>());
       },
     );
 
@@ -146,8 +146,8 @@ void main() {
 
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(controller.isBuildActive.value, isTrue);
-      expect(controller.hasError.value, isFalse);
+      expect(controller.session.isBuildActive.value, isTrue);
+      expect(controller.session.hasFatalError.value, isFalse);
     });
 
     test('rebuilding clears stale build failure', () async {
@@ -157,13 +157,13 @@ void main() {
         SlidesErrorEvent('Old failure', error: Exception('Old failure')),
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));
-      expect(controller.buildFailure.value?.message, 'Old failure');
+      expect(controller.session.buildFailure.value?.message, 'Old failure');
 
       mockDeckLoader.emitEvent(SlidesRebuildingEvent());
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(controller.isBuildActive.value, isTrue);
-      expect(controller.buildFailure.value, isNull);
+      expect(controller.session.isBuildActive.value, isTrue);
+      expect(controller.session.buildFailure.value, isNull);
     });
 
     test(
@@ -180,12 +180,12 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(controller.isBuildActive.value, isFalse);
+        expect(controller.session.isBuildActive.value, isFalse);
         expect(
-          controller.buildFailure.value?.message,
+          controller.session.buildFailure.value?.message,
           'Syntax error in slides.md',
         );
-        expect(controller.hasError.value, isFalse);
+        expect(controller.session.hasFatalError.value, isFalse);
       },
     );
 
@@ -197,16 +197,16 @@ void main() {
         SlidesErrorEvent('Failed', error: Exception('Failed')),
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));
-      expect(controller.buildFailure.value, isNotNull);
+      expect(controller.session.buildFailure.value, isNotNull);
 
       // Then success clears it
       mockDeckLoader.emitEvent(SlidesLoadedEvent(createTestSlidesPayload()));
 
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(controller.isBuildActive.value, isFalse);
-      expect(controller.buildFailure.value, isNull);
-      expect(controller.hasError.value, isFalse);
+      expect(controller.session.isBuildActive.value, isFalse);
+      expect(controller.session.buildFailure.value, isNull);
+      expect(controller.session.hasFatalError.value, isFalse);
     });
 
     test('stale success after newer failure leaves failure state', () async {
@@ -218,8 +218,8 @@ void main() {
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(controller.isBuildActive.value, isFalse);
-      expect(controller.buildFailure.value?.message, 'Newest failure');
+      expect(controller.session.isBuildActive.value, isFalse);
+      expect(controller.session.buildFailure.value?.message, 'Newest failure');
     });
 
     test('empty slide list is a valid successful load', () async {
@@ -230,9 +230,9 @@ void main() {
 
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(controller.hasError.value, isFalse);
-      expect(controller.totalSlides.value, 0);
-      expect(controller.currentSlide.value, isNull);
+      expect(controller.session.hasFatalError.value, isFalse);
+      expect(controller.presentation.totalSlides.value, 0);
+      expect(controller.presentation.currentSlide.value, isNull);
     });
 
     test(
@@ -251,11 +251,11 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(ctrl.hasError.value, isTrue);
-        expect(ctrl.error.value, isA<StateError>());
-        expect(ctrl.isLoading.value, isFalse);
-        expect(ctrl.isBuildActive.value, isFalse);
-        expect(ctrl.buildFailure.value, isNull);
+        expect(ctrl.session.hasFatalError.value, isTrue);
+        expect(ctrl.session.error.value, isA<StateError>());
+        expect(ctrl.session.isLoading.value, isFalse);
+        expect(ctrl.session.isBuildActive.value, isFalse);
+        expect(ctrl.session.buildFailure.value, isNull);
       },
     );
 
@@ -264,17 +264,17 @@ void main() {
       () async {
         // Wait for initial auto-load to complete
         await Future<void>.delayed(const Duration(milliseconds: 10));
-        expect(controller.totalSlides.value, 3);
+        expect(controller.presentation.totalSlides.value, 3);
 
         mockDeckLoader.emitError(StateError('stream broke'));
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(controller.hasError.value, isFalse);
-        expect(controller.isBuildActive.value, isFalse);
-        expect(controller.buildFailure.value, isNotNull);
+        expect(controller.session.hasFatalError.value, isFalse);
+        expect(controller.session.isBuildActive.value, isFalse);
+        expect(controller.session.buildFailure.value, isNotNull);
         expect(
-          controller.buildFailure.value?.message,
+          controller.session.buildFailure.value?.message,
           contains('stream broke'),
         );
       },
@@ -290,8 +290,8 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(controller.buildFailure.value, isA<DeckBuildError>());
-        expect(controller.buildFailure.value?.message, 'build failed');
+        expect(controller.session.buildFailure.value, isA<DeckBuildError>());
+        expect(controller.session.buildFailure.value?.message, 'build failed');
       },
     );
   });

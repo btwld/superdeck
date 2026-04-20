@@ -29,7 +29,7 @@ final class DeckPresentationState {
         path: '/slides/:index',
         pageBuilder: (context, state) {
           final index = _parseIndex(state.pathParameters['index']);
-          _updateCurrentIndex(index);
+          _writeClampedIndex(index);
           return CustomTransitionPage(
             key: ValueKey<String>('slide-$index'),
             child: SlidePageContent(index: index),
@@ -48,6 +48,7 @@ final class DeckPresentationState {
   }) : _thumbnailService = thumbnailService,
        _transitionDuration = transitionDuration,
        _slides = slides {
+    router.routeInformationProvider.addListener(_syncCurrentIndexFromRouter);
     _indexClampEffect = effect(() {
       _slides.value.length; // explicit trigger on slide count change
       final currentIdx = _currentIndex.peek();
@@ -62,6 +63,21 @@ final class DeckPresentationState {
   ReadonlySignal<bool> get isNotesOpen => _isNotesOpen;
   ReadonlySignal<int> get currentIndex => _currentIndex;
   ReadonlySignal<bool> get isTransitioning => _isTransitioning;
+
+  late final ReadonlySignal<int> totalSlides = computed(
+    () => _slides.value.length,
+  );
+  late final ReadonlySignal<bool> canGoNext = computed(
+    () => _currentIndex.value < _slides.value.length - 1,
+  );
+  late final ReadonlySignal<bool> canGoPrevious = computed(
+    () => _currentIndex.value > 0,
+  );
+  late final ReadonlySignal<SlideConfiguration?> currentSlide = computed(() {
+    final index = _currentIndex.value;
+    final list = _slides.value;
+    return index >= 0 && index < list.length ? list[index] : null;
+  });
 
   void openMenu() {
     if (_disposed) return;
@@ -78,14 +94,25 @@ final class DeckPresentationState {
     _isNotesOpen.value = !_isNotesOpen.value;
   }
 
-  Future<void> goToSlide(int index, int totalSlides) async {
-    if (_disposed || index < 0 || index >= totalSlides) return;
-    _currentIndex.value = index;
+  Future<void> goToSlide(int index) async {
+    if (_disposed || index < 0 || index >= _slides.value.length) return;
     _isTransitioning.value = true;
     router.go('/slides/$index');
     await Future<void>.delayed(_transitionDuration);
     if (_disposed) return;
     _isTransitioning.value = false;
+  }
+
+  Future<void> nextSlide() async {
+    if (canGoNext.value) {
+      await goToSlide(_currentIndex.value + 1);
+    }
+  }
+
+  Future<void> previousSlide() async {
+    if (canGoPrevious.value) {
+      await goToSlide(_currentIndex.value - 1);
+    }
   }
 
   void generateThumbnails(
@@ -95,12 +122,31 @@ final class DeckPresentationState {
   }) {
     if (_disposed) return;
     if (slides.isEmpty) return;
-    final cache = _reconcileThumbnailCache(slides);
+
+    final validKeys = slides.map((s) => s.key).toSet();
+    final current = _thumbnails.value;
+    final staleKeys = current.keys
+        .where((k) => !validKeys.contains(k))
+        .toList(growable: false);
+    final cache = staleKeys.isEmpty
+        ? current
+        : Map<String, AsyncThumbnail>.from(current);
+
+    for (final key in staleKeys) {
+      cache.remove(key)?.dispose();
+    }
+    if (staleKeys.isNotEmpty) {
+      _thumbnails.value = cache;
+    }
+
     _thumbnailService.generateThumbnails(
       slides: slides,
       context: context,
       cache: cache,
-      onCacheUpdate: _updateThumbnails,
+      onCacheUpdate: (updated) {
+        if (_disposed) return;
+        _thumbnails.value = updated;
+      },
       force: force,
     );
   }
@@ -112,6 +158,7 @@ final class DeckPresentationState {
   void dispose() {
     _disposed = true;
     _indexClampEffect?.call();
+    router.routeInformationProvider.removeListener(_syncCurrentIndexFromRouter);
     router.dispose();
     for (final thumbnail in _thumbnails.value.values) {
       thumbnail.dispose();
@@ -121,38 +168,24 @@ final class DeckPresentationState {
     _currentIndex.dispose();
     _isTransitioning.dispose();
     _thumbnails.dispose();
+    totalSlides.dispose();
+    canGoNext.dispose();
+    canGoPrevious.dispose();
+    currentSlide.dispose();
   }
 
-  void _updateThumbnails(Map<String, AsyncThumbnail> cache) {
+  void _syncCurrentIndexFromRouter() {
     if (_disposed) return;
-    _thumbnails.value = cache;
+    final path = router.routeInformationProvider.value.uri.path;
+    const prefix = '/slides/';
+    if (!path.startsWith(prefix)) return;
+    _writeClampedIndex(_parseIndex(path.substring(prefix.length)));
   }
 
-  Map<String, AsyncThumbnail> _reconcileThumbnailCache(
-    List<SlideConfiguration> slides,
-  ) {
-    final validSlideKeys = slides.map((slide) => slide.key).toSet();
-    final currentCache = _thumbnails.value;
-    final staleKeys = currentCache.keys
-        .where((key) => !validSlideKeys.contains(key))
-        .toList(growable: false);
-
-    if (staleKeys.isEmpty) {
-      return currentCache;
-    }
-
-    final cleanedCache = Map<String, AsyncThumbnail>.from(currentCache);
-    for (final key in staleKeys) {
-      cleanedCache.remove(key)?.dispose();
-    }
-    _thumbnails.value = cleanedCache;
-    return cleanedCache;
-  }
-
-  void _updateCurrentIndex(int index) {
-    final clampedIndex = _clampIndex(index, _slides.value.length);
-    if (_currentIndex.value != clampedIndex) {
-      _currentIndex.value = clampedIndex;
+  void _writeClampedIndex(int index) {
+    final clamped = _clampIndex(index, _slides.value.length);
+    if (_currentIndex.value != clamped) {
+      _currentIndex.value = clamped;
     }
   }
 

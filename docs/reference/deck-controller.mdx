@@ -5,14 +5,16 @@ description: Complete API reference for reading SuperDeck state and controlling 
 
 # DeckController reference
 
-`DeckController` is the unified facade for deck state and operations. It combines loaded slide state, build lifecycle, routing, navigation, menu and notes state, and thumbnail access behind one controller.
+`DeckController` is the composition root for deck state. It exposes two state objects:
+
+- `session` — load/build lifecycle
+- `presentation` — routing, navigation, menu, notes, thumbnails
+
+Consumers reach through those. `DeckController` itself only owns `options` and the cross-cutting `slides` computed.
 
 ## Obtaining a controller
 
 ### `DeckController.of(BuildContext context)`
-**Type:** `DeckController Function(BuildContext context)`
-
-In regular apps, get the controller from inside the `SuperDeckApp` widget tree:
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -20,7 +22,7 @@ import 'package:superdeck/superdeck.dart';
 
 Widget build(BuildContext context) {
   final deck = DeckController.of(context);
-  return Text('${deck.totalSlides.value} slides');
+  return Text('${deck.presentation.totalSlides.value} slides');
 }
 ```
 
@@ -34,369 +36,122 @@ import 'package:superdeck/superdeck.dart';
 Widget build(BuildContext context) {
   return Watch((context) {
     final deck = DeckController.of(context);
-    return Text('Slide ${deck.currentIndex.value + 1}');
+    return Text('Slide ${deck.presentation.currentIndex.value + 1}');
   });
 }
 ```
 
-## Reactive state signals
-
-All state accessors return `ReadonlySignal<T>`. Read `.value` inside `Watch((context) { ... })` so Flutter rebuilds when the signal changes.
+## Top-level surface
 
 ### `slides`
 **Type:** `ReadonlySignal<List<SlideConfiguration>>`
 
-Configured slides built from the loaded slide data and current `DeckOptions`.
+Configured slides built from the loaded slide data and the current `DeckOptions`. Empty while loading or when a fatal error has prevented any load.
 
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text('${deck.slides.value.length} configured slides');
-});
-```
+### `options`
+**Type:** `Signal<DeckOptions>`
 
-### `totalSlides`
-**Type:** `ReadonlySignal<int>`
+Writable. Assigning a new value recomputes `slides`. Managed automatically by `SuperDeckApp` through `DeckControllerBuilder`; application code should mutate `SuperDeckApp.options`, not this signal.
 
-The number of configured slides.
+### `session`
+**Type:** `DeckSessionState`
 
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text('${deck.totalSlides.value} total slides');
-});
-```
+Load/build lifecycle. See [Session state](#session-state).
 
-### `currentIndex`
-**Type:** `ReadonlySignal<int>`
+### `presentation`
+**Type:** `DeckPresentationState`
 
-The zero-based index of the active slide.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text('Slide ${deck.currentIndex.value + 1}');
-});
-```
-
-### `currentSlide`
-**Type:** `ReadonlySignal<SlideConfiguration?>`
-
-The active slide configuration, or `null` when no slide is available.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  final slide = deck.currentSlide.value;
-  return Text(slide?.key ?? 'No slide');
-});
-```
-
-### `canGoNext`
-**Type:** `ReadonlySignal<bool>`
-
-Whether there is a slide after the current slide.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.canGoNext.value ? 'Next available' : 'Last slide');
-});
-```
-
-### `canGoPrevious`
-**Type:** `ReadonlySignal<bool>`
-
-Whether there is a slide before the current slide.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.canGoPrevious.value ? 'Previous available' : 'First slide');
-});
-```
-
-### `isLoading`
-**Type:** `ReadonlySignal<bool>`
-
-Whether the deck loader is currently loading or reloading slides.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.isLoading.value ? 'Loading' : 'Ready');
-});
-```
-
-### `hasError`
-**Type:** `ReadonlySignal<bool>`
-
-Whether the initial deck load has a fatal error and no slides are available.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.hasError.value ? 'Load failed' : 'No fatal error');
-});
-```
-
-### `error`
-**Type:** `ReadonlySignal<Object?>`
-
-The fatal initial-load error object, or `null` when there is no fatal error.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.error.value?.toString() ?? 'No error');
-});
-```
-
-### `isBuildActive`
-**Type:** `ReadonlySignal<bool>`
-
-Whether a deck rebuild is currently in progress.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.isBuildActive.value ? 'Building' : 'Build idle');
-});
-```
-
-### `buildFailure`
-**Type:** `ReadonlySignal<DeckBuildError?>`
-
-The latest non-fatal rebuild failure after slides have loaded, or `null`.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  final failure = deck.buildFailure.value;
-  return Text(failure?.message ?? 'No build failure');
-});
-```
-
-### `isMenuOpen`
-**Type:** `ReadonlySignal<bool>`
-
-Whether the slide menu is open.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.isMenuOpen.value ? 'Menu open' : 'Menu closed');
-});
-```
-
-### `isNotesOpen`
-**Type:** `ReadonlySignal<bool>`
-
-Whether the notes panel is open.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.isNotesOpen.value ? 'Notes open' : 'Notes closed');
-});
-```
-
-### `isTransitioning`
-**Type:** `ReadonlySignal<bool>`
-
-Whether a slide transition is currently active.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  return Text(deck.isTransitioning.value ? 'Transitioning' : 'Still');
-});
-```
-
-## Navigation
-
-The sections below list the navigation methods on `DeckController`. For
-user-facing navigation semantics — keyboard shortcuts, touch gestures,
-deep-link URLs, and index-bound behavior — see the
-[Navigation reference](./navigation.mdx).
-
-### `goToSlide(int index)`
-**Type:** `Future<void> Function(int index)`
-
-Navigates to a zero-based slide index. Out-of-range indexes are ignored.
-
-```dart
-final deck = DeckController.of(context);
-deck.goToSlide(0);
-```
-
-### `nextSlide()`
-**Type:** `Future<void> Function()`
-
-Navigates to the next slide when `canGoNext.value` is `true`.
-
-```dart
-final deck = DeckController.of(context);
-deck.nextSlide();
-```
-
-### `previousSlide()`
-**Type:** `Future<void> Function()`
-
-Navigates to the previous slide when `canGoPrevious.value` is `true`.
-
-```dart
-final deck = DeckController.of(context);
-deck.previousSlide();
-```
+Routing, navigation, UI panels, thumbnails. See [Presentation state](#presentation-state).
 
 ### `reloadDeck()`
 **Type:** `Future<void> Function()`
 
-Reloads the deck through the active deck loader. This clears fatal errors and build failures before starting the reload.
-
-```dart
-final deck = DeckController.of(context);
-deck.reloadDeck();
-```
-
-## Menu and notes
-
-### `openMenu()`
-**Type:** `void Function()`
-
-Opens the slide menu.
-
-```dart
-final deck = DeckController.of(context);
-deck.openMenu();
-```
-
-### `closeMenu()`
-**Type:** `void Function()`
-
-Closes the slide menu.
-
-```dart
-final deck = DeckController.of(context);
-deck.closeMenu();
-```
-
-### `toggleNotes()`
-**Type:** `void Function()`
-
-Toggles the notes panel.
-
-```dart
-final deck = DeckController.of(context);
-deck.toggleNotes();
-```
-
-## Thumbnails
-
-### `generateThumbnails(BuildContext context, {bool force = false})`
-**Type:** `void Function(BuildContext context, {bool force})`
-
-Starts thumbnail generation for the currently configured slides. When `force` is `true`, thumbnails are regenerated instead of reusing cached results.
-
-```dart
-final deck = DeckController.of(context);
-deck.generateThumbnails(context, force: true);
-```
-
-### `getThumbnail(String slideKey)`
-**Type:** `AsyncThumbnail? Function(String slideKey)`
-
-Returns the cached asynchronous thumbnail for a slide key, or `null` before a thumbnail has been created.
-
-```dart
-Watch((context) {
-  final deck = DeckController.of(context);
-  final slide = deck.currentSlide.value;
-  final thumbnail = slide == null ? null : deck.getThumbnail(slide.key);
-
-  return thumbnail?.build(context) ?? const SizedBox.shrink();
-});
-```
-
-## Router access
-
-### `router`
-**Type:** `GoRouter`
-
-The `GoRouter` instance used by `SuperDeckApp`. The router redirects `/` to `/slides/0` and serves slide pages at `/slides/:index`.
-
-```dart
-final deck = DeckController.of(context);
-deck.router.go('/slides/0');
-```
-
-## Options update
-
-### `updateOptions(DeckOptions newOptions)`
-**Type:** `void Function(DeckOptions newOptions)`
-
-`updateOptions` is marked `@internal`. It swaps runtime options and causes the computed `slides` signal to rebuild slide configurations with the new `DeckOptions`.
-
-This is intended for `DeckControllerBuilder`, which calls it when the `SuperDeckApp.options` value changes. Application code should update `SuperDeckApp.options` instead of calling `updateOptions` directly.
-
-## Internal navigation events
-
-### `handleNavigationEvent(NavigationEvent event)`
-**Type:** `Future<void> Function(NavigationEvent event)`
-
-`handleNavigationEvent` is marked `@internal`. It maps input events to slide navigation:
-
-1. `NextSlideEvent` calls `goToSlide(currentIndex.value + 1)`
-2. `PreviousSlideEvent` calls `goToSlide(currentIndex.value - 1)`
-3. `GoToSlideEvent` calls `goToSlide(index)`
-
-These event types are used by SuperDeck input handlers. User code should call `nextSlide`, `previousSlide`, or `goToSlide` directly.
-
-## Lifecycle
-
-`DeckController` is created by `DeckControllerBuilder` inside `SuperDeckApp`. `SuperDeckApp` passes the controller's `router` to `MaterialApp.router`, and `DeckControllerBuilder` provides the controller to descendants through inherited widget state.
-
-Users typically do not construct `DeckController` directly. The public constructor exists for framework integration and takes `deckLoader`, `options`, optional `thumbnailService`, optional `assetCacheStore`, and `transitionDuration`, which defaults to one second.
+Asks the underlying `DeckLoader` to reload.
 
 ### `dispose()`
-**Type:** `void Function()`
+Tears down both state classes, the `options` signal, and the `slides` computed.
 
-`dispose` is the internal cleanup contract. `DeckControllerBuilder` calls it automatically when the SuperDeck widget tree is removed.
+## Session state
 
-Do not dispose a controller obtained from `DeckController.of(context)`.
+`deck.session` exposes the load/build lifecycle.
 
-## End-to-end example
+| Member | Type | Notes |
+|---|---|---|
+| `loadedSlides` | `ReadonlySignal<List<Slide>?>` | Raw slides from the loader; `null` until first successful load |
+| `isLoading` | `ReadonlySignal<bool>` | `true` while the loader is running |
+| `error` | `ReadonlySignal<Object?>` | Fatal load error when no slides have ever loaded |
+| `hasFatalError` | `ReadonlySignal<bool>` | `true` when `error != null && loadedSlides == null` |
+| `isBuildActive` | `ReadonlySignal<bool>` | `true` during a rebuild cycle |
+| `buildFailure` | `ReadonlySignal<DeckBuildError?>` | Rebuild failure after a successful prior load (non-fatal) |
+| `reload()` | `Future<void> Function()` | Re-trigger the loader |
 
-This widget reads the current slide reactively and jumps to the last slide when pressed.
+Fatal-vs-build distinction: if the app has never loaded slides, any failure is `error` / `hasFatalError`. If the app has loaded before and a subsequent rebuild fails, the prior snapshot stays on screen and `buildFailure` is populated instead.
 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/superdeck.dart';
-
-class GoToLastSlideButton extends StatelessWidget {
-  const GoToLastSlideButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final deck = DeckController.of(context);
-
-    return Watch((context) {
-      final currentSlide = deck.currentSlide.value;
-      final lastIndex = deck.totalSlides.value - 1;
-      final isOnLastSlide =
-          currentSlide != null && currentSlide.slideIndex == lastIndex;
-
-      return TextButton(
-        onPressed: lastIndex >= 0 && !isOnLastSlide
-            ? () {
-                deck.goToSlide(lastIndex);
-              }
-            : null,
-        child: Text(isOnLastSlide ? 'On last slide' : 'Go to last slide'),
-      );
-    });
-  }
+Widget build(BuildContext context) {
+  final session = DeckController.of(context).session;
+  return Watch((context) {
+    if (session.hasFatalError.value) {
+      return Text('Load failed: ${session.error.value}');
+    }
+    if (session.isBuildActive.value) return const Text('Rebuilding…');
+    final buildFailure = session.buildFailure.value;
+    if (buildFailure != null) return Text('Build failed: ${buildFailure.message}');
+    return const SizedBox.shrink();
+  });
 }
 ```
+
+## Presentation state
+
+`deck.presentation` exposes routing, navigation, UI panel state, and thumbnails.
+
+### Signals
+
+| Member | Type | Notes |
+|---|---|---|
+| `router` | `GoRouter` | The internal router. Pass to `MaterialApp.router` via `SuperDeckApp`. |
+| `currentIndex` | `ReadonlySignal<int>` | Active slide index, clamped to valid range |
+| `totalSlides` | `ReadonlySignal<int>` | Current slide count |
+| `currentSlide` | `ReadonlySignal<SlideConfiguration?>` | Slide at `currentIndex`, or `null` if slides empty |
+| `canGoNext` | `ReadonlySignal<bool>` | `currentIndex < totalSlides - 1` |
+| `canGoPrevious` | `ReadonlySignal<bool>` | `currentIndex > 0` |
+| `isTransitioning` | `ReadonlySignal<bool>` | `true` during the post-`goToSlide` transition window |
+| `isMenuOpen` | `ReadonlySignal<bool>` | Slide-menu panel visibility |
+| `isNotesOpen` | `ReadonlySignal<bool>` | Notes panel visibility |
+
+### Methods
+
+| Member | Signature | Notes |
+|---|---|---|
+| `goToSlide` | `Future<void> Function(int index)` | Clamp-checked; no-op if out of range |
+| `nextSlide` | `Future<void> Function()` | No-op when `!canGoNext.value` |
+| `previousSlide` | `Future<void> Function()` | No-op when `!canGoPrevious.value` |
+| `openMenu` | `void Function()` | Sets `isMenuOpen` to `true` |
+| `closeMenu` | `void Function()` | Sets `isMenuOpen` to `false` |
+| `toggleNotes` | `void Function()` | Toggles `isNotesOpen` |
+| `generateThumbnails` | `void Function(BuildContext, List<SlideConfiguration>, {bool force})` | Reconciles the thumbnail cache (disposes stale entries) and kicks off background generation. Pass `deck.slides.value` for the current slide set. |
+| `getThumbnail` | `AsyncThumbnail? Function(String slideKey)` | `null` until thumbnail generation produces one |
+
+```dart
+Widget buildNavBar(BuildContext context) {
+  final pres = DeckController.of(context).presentation;
+  return Watch((context) {
+    return Row(children: [
+      IconButton(
+        onPressed: pres.canGoPrevious.value ? pres.previousSlide : null,
+        icon: const Icon(Icons.arrow_back),
+      ),
+      Text('${pres.currentIndex.value + 1} / ${pres.totalSlides.value}'),
+      IconButton(
+        onPressed: pres.canGoNext.value ? pres.nextSlide : null,
+        icon: const Icon(Icons.arrow_forward),
+      ),
+    ]);
+  });
+}
+```
+
+## Lifecycle note
+
+`DeckController` is owned by `DeckControllerBuilder` inside `SuperDeckApp`. Application code normally never constructs or disposes a controller directly — it only reads through `DeckController.of(context)`. If you build a custom host, call `dispose()` when you tear the widget tree down.

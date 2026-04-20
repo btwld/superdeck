@@ -13,10 +13,10 @@ void main() {
 
     testWidgets('app starts and loads deck without errors', (tester) async {
       final controller = await tester.pumpTestApp();
-      expect(controller.hasError.value, isFalse);
-      expect(controller.totalSlides.value, greaterThan(0));
-      expect(controller.currentIndex.value, 0);
-      expect(controller.currentSlide.value, isNotNull);
+      expect(controller.session.hasFatalError.value, isFalse);
+      expect(controller.presentation.totalSlides.value, greaterThan(0));
+      expect(controller.presentation.currentIndex.value, 0);
+      expect(controller.presentation.currentSlide.value, isNotNull);
       expect(find.textContaining('Error loading presentation'), findsNothing);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
@@ -29,12 +29,12 @@ void main() {
 
       if (controller != null) {
         expect(
-          controller.isLoading.value || controller.totalSlides.value > 0,
+          controller.session.isLoading.value || controller.presentation.totalSlides.value > 0,
           isTrue,
           reason: 'App should be loading or have slides available',
         );
         await tester.waitForSlidesLoaded(controller);
-        expect(controller.isLoading.value, isFalse);
+        expect(controller.session.isLoading.value, isFalse);
         return;
       }
 
@@ -49,8 +49,8 @@ void main() {
       final targetIndex = clampSlideIndex(controller, 4);
 
       await tester.navigateToSlide(controller, targetIndex);
-      expect(controller.currentIndex.value, targetIndex);
-      expect(controller.hasError.value, isFalse);
+      expect(controller.presentation.currentIndex.value, targetIndex);
+      expect(controller.session.hasFatalError.value, isFalse);
       expect(find.textContaining('Error loading presentation'), findsNothing);
       assertOnlyLayoutOverflowOrNoException(tester);
     });

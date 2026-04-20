@@ -55,10 +55,10 @@ void main() {
       () async {
         createController();
 
-        await _waitUntil(() => controller.hasError.value);
-        expect(controller.isLoading.value, isFalse);
-        expect(controller.hasError.value, isTrue);
-        expect(controller.error.value, missingBuildOutputMessage);
+        await _waitUntil(() => controller.session.hasFatalError.value);
+        expect(controller.session.isLoading.value, isFalse);
+        expect(controller.session.hasFatalError.value, isTrue);
+        expect(controller.session.error.value, missingBuildOutputMessage);
 
         await controller.reloadDeck();
 
@@ -69,12 +69,12 @@ void main() {
         );
 
         await _waitUntil(
-          () => !controller.isLoading.value && !controller.hasError.value,
+          () => !controller.session.isLoading.value && !controller.session.hasFatalError.value,
         );
 
-        expect(controller.isLoading.value, isFalse);
-        expect(controller.hasError.value, isFalse);
-        expect(controller.error.value, isNull);
+        expect(controller.session.isLoading.value, isFalse);
+        expect(controller.session.hasFatalError.value, isFalse);
+        expect(controller.session.error.value, isNull);
       },
     );
 
@@ -83,8 +83,8 @@ void main() {
       () async {
         createController();
 
-        await _waitUntil(() => controller.hasError.value);
-        expect(controller.error.value, missingBuildOutputMessage);
+        await _waitUntil(() => controller.session.hasFatalError.value);
+        expect(controller.session.error.value, missingBuildOutputMessage);
 
         await config.superdeckDir.create(recursive: true);
         await config.deckJson.writeAsString(_validSlidesJson);
@@ -93,12 +93,12 @@ void main() {
         );
 
         await _waitUntil(
-          () => !controller.isLoading.value && !controller.hasError.value,
+          () => !controller.session.isLoading.value && !controller.session.hasFatalError.value,
         );
 
-        expect(controller.isLoading.value, isFalse);
-        expect(controller.hasError.value, isFalse);
-        expect(controller.error.value, isNull);
+        expect(controller.session.isLoading.value, isFalse);
+        expect(controller.session.hasFatalError.value, isFalse);
+        expect(controller.session.error.value, isNull);
       },
     );
 
@@ -111,19 +111,19 @@ void main() {
 
       createController();
 
-      await _waitUntil(() => !controller.isLoading.value);
-      expect(controller.hasError.value, isFalse);
+      await _waitUntil(() => !controller.session.isLoading.value);
+      expect(controller.session.hasFatalError.value, isFalse);
 
       await controller.reloadDeck();
       await config.buildStatusJson.writeAsString(
         _buildStatusJson('success', seq: 3),
       );
 
-      await _waitUntil(() => !controller.isLoading.value);
+      await _waitUntil(() => !controller.session.isLoading.value);
 
-      expect(controller.isLoading.value, isFalse);
-      expect(controller.hasError.value, isFalse);
-      expect(controller.error.value, isNull);
+      expect(controller.session.isLoading.value, isFalse);
+      expect(controller.session.hasFatalError.value, isFalse);
+      expect(controller.session.error.value, isNull);
     });
 
     test('exits loading when build status payload is not a map', () async {
@@ -133,13 +133,13 @@ void main() {
       createController();
 
       await _waitUntil(
-        () => !controller.isLoading.value && controller.hasError.value,
+        () => !controller.session.isLoading.value && controller.session.hasFatalError.value,
       );
 
-      expect(controller.isLoading.value, isFalse);
-      expect(controller.hasError.value, isTrue);
+      expect(controller.session.isLoading.value, isFalse);
+      expect(controller.session.hasFatalError.value, isTrue);
       expect(
-        controller.error.value,
+        controller.session.error.value,
         isA<Exception>().having(
           (error) => error.toString(),
           'message',

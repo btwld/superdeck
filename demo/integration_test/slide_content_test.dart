@@ -13,7 +13,7 @@ void main() {
 
     testWidgets('first slide has content blocks', (tester) async {
       final controller = await tester.pumpTestApp();
-      final slide = controller.currentSlide.value;
+      final slide = controller.presentation.currentSlide.value;
       expect(slide, isNotNull);
       expect(slide!.slideIndex, 0);
 
@@ -26,11 +26,11 @@ void main() {
       tester,
     ) async {
       final controller = await tester.pumpTestApp();
-      final total = controller.totalSlides.value;
+      final total = controller.presentation.totalSlides.value;
 
       await tester.tapByLabel('Open menu');
       await tester.pumpUntil(
-        () => controller.isMenuOpen.value,
+        () => controller.presentation.isMenuOpen.value,
         debugLabel: 'menu open for counter check',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -55,7 +55,7 @@ void main() {
       final slidesToCheck = slides.length > 3 ? 3 : slides.length;
       for (var i = 0; i < slidesToCheck; i++) {
         await tester.navigateToSlide(controller, i);
-        expect(controller.currentSlide.value?.slideIndex, i);
+        expect(controller.presentation.currentSlide.value?.slideIndex, i);
       }
       assertOnlyLayoutOverflowOrNoException(tester);
     });

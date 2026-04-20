@@ -40,7 +40,7 @@ class _AppShellHarness extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: controller.router,
+      routerConfig: controller.presentation.router,
       builder: (context, child) {
         return MixScope(
           colors: SDColors.colorMap,
@@ -155,7 +155,7 @@ void main() {
         await tester.pump();
         expect(thumbnailService.callCount, 1);
 
-        controller.openMenu();
+        controller.presentation.openMenu();
         await tester.pump();
         await tester.pump();
 

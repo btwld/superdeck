@@ -13,22 +13,22 @@ void main() {
 
     testWidgets('menu opens, updates counter, and closes', (tester) async {
       final controller = await tester.pumpTestApp();
-      expect(controller.isMenuOpen.value, isFalse);
-      final totalSlides = controller.totalSlides.value;
+      expect(controller.presentation.isMenuOpen.value, isFalse);
+      final totalSlides = controller.presentation.totalSlides.value;
 
       await tester.tapByLabel('Open menu');
       await tester.pumpUntil(
-        () => controller.isMenuOpen.value,
+        () => controller.presentation.isMenuOpen.value,
         debugLabel: 'menu open',
         onTimeout: () => describeDeckControllerState(controller),
       );
-      expect(controller.isMenuOpen.value, isTrue);
+      expect(controller.presentation.isMenuOpen.value, isTrue);
       expect(find.textContaining('1 of $totalSlides'), findsOneWidget);
 
       if (totalSlides > 1) {
         await tester.tapByLabel('Next slide');
         await tester.pumpUntil(
-          () => controller.currentIndex.value == 1,
+          () => controller.presentation.currentIndex.value == 1,
           debugLabel: 'menu arrow-forward navigation',
           onTimeout: () => describeDeckControllerState(controller),
         );
@@ -36,7 +36,7 @@ void main() {
 
         await tester.tapByLabel('Previous slide');
         await tester.pumpUntil(
-          () => controller.currentIndex.value == 0,
+          () => controller.presentation.currentIndex.value == 0,
           debugLabel: 'menu arrow-back navigation',
           onTimeout: () => describeDeckControllerState(controller),
         );
@@ -45,28 +45,28 @@ void main() {
 
       await tester.tapByLabel('Close menu');
       await tester.pumpUntil(
-        () => !controller.isMenuOpen.value,
+        () => !controller.presentation.isMenuOpen.value,
         debugLabel: 'menu close',
         onTimeout: () => describeDeckControllerState(controller),
       );
-      expect(controller.isMenuOpen.value, isFalse);
+      expect(controller.presentation.isMenuOpen.value, isFalse);
       assertOnlyLayoutOverflowOrNoException(tester);
     });
 
     testWidgets('notes panel toggles from bottom bar', (tester) async {
       final controller = await tester.pumpTestApp();
-      expect(controller.isNotesOpen.value, isFalse);
+      expect(controller.presentation.isNotesOpen.value, isFalse);
 
       await tester.tapByLabel('Open menu');
       await tester.pumpUntil(
-        () => controller.isMenuOpen.value,
+        () => controller.presentation.isMenuOpen.value,
         debugLabel: 'menu open for notes',
         onTimeout: () => describeDeckControllerState(controller),
       );
 
       await tester.tapByLabel('Open notes panel');
       await tester.pumpUntil(
-        () => controller.isNotesOpen.value,
+        () => controller.presentation.isNotesOpen.value,
         debugLabel: 'notes panel open',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -93,7 +93,7 @@ void main() {
       await tester.tap(toggleFinder, warnIfMissed: false);
 
       await tester.pumpUntil(
-        () => !controller.isNotesOpen.value,
+        () => !controller.presentation.isNotesOpen.value,
         debugLabel: 'notes panel close',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -110,7 +110,7 @@ void main() {
 
       await tester.tapByLabel('Open menu');
       await tester.pumpUntil(
-        () => controller.isMenuOpen.value,
+        () => controller.presentation.isMenuOpen.value,
         debugLabel: 'menu open for thumbnails',
         onTimeout: () => describeDeckControllerState(controller),
       );
@@ -128,21 +128,21 @@ void main() {
           await tester.ensureVisible(thumb2.first);
           await tester.tap(thumb2.first, warnIfMissed: false);
           await tester.pumpUntil(
-            () => controller.currentIndex.value == 1,
+            () => controller.presentation.currentIndex.value == 1,
             debugLabel: 'thumbnail navigation to slide 2',
             onTimeout: () => describeDeckControllerState(controller),
           );
         }
       } else if (totalSlides > 1) {
         await tester.navigateToSlide(controller, 1);
-        expect(controller.currentIndex.value, 1);
+        expect(controller.presentation.currentIndex.value, 1);
         await tester.navigateToSlide(controller, 0);
       }
 
       await tester.tapByLabel('Regenerate thumbnails');
       await tester.pumpFor(const Duration(milliseconds: 300));
 
-      expect(controller.getThumbnail(firstSlideKey), isNotNull);
+      expect(controller.presentation.getThumbnail(firstSlideKey), isNotNull);
       expect(find.textContaining('Error loading presentation'), findsNothing);
       assertOnlyLayoutOverflowOrNoException(tester);
     });

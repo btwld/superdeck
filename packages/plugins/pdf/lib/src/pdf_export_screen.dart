@@ -16,7 +16,12 @@ class PdfExportDialogScreen extends StatefulWidget {
   static void show(BuildContext context, {PdfSaver? pdfSaver}) {
     final deckController = DeckController.of(context);
     final dialogContext =
-        deckController.router.routerDelegate.navigatorKey.currentContext ??
+        deckController
+            .presentation
+            .router
+            .routerDelegate
+            .navigatorKey
+            .currentContext ??
         context;
 
     showDialog<void>(

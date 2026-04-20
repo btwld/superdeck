@@ -23,14 +23,15 @@ class SlidePageContent extends StatelessWidget {
     // Use Watch to react to signals
     return Watch((context) {
       // Access deck controller state
-      final isLoading = deckController.isLoading.value;
-      final hasError = deckController.hasError.value;
+      final session = deckController.session;
+      final isLoading = session.isLoading.value;
+      final hasError = session.hasFatalError.value;
       final slides = deckController.slides.value;
 
       // Render appropriate state
       if (hasError) {
         return _ErrorScreen(
-          error: deckController.error.value,
+          error: session.error.value,
           onRetry: deckController.reloadDeck,
         );
       }

@@ -38,19 +38,19 @@ String describeDeckControllerState(DeckController? controller) {
 
   return [
     'DeckController state:',
-    '  isLoading=${controller.isLoading.value}',
-    '  hasError=${controller.hasError.value}',
-    '  error=${controller.error.value}',
-    '  totalSlides=${controller.totalSlides.value}',
-    '  currentIndex=${controller.currentIndex.value}',
-    '  isMenuOpen=${controller.isMenuOpen.value}',
-    '  isNotesOpen=${controller.isNotesOpen.value}',
+    '  isLoading=${controller.session.isLoading.value}',
+    '  hasError=${controller.session.hasFatalError.value}',
+    '  error=${controller.session.error.value}',
+    '  totalSlides=${controller.presentation.totalSlides.value}',
+    '  currentIndex=${controller.presentation.currentIndex.value}',
+    '  isMenuOpen=${controller.presentation.isMenuOpen.value}',
+    '  isNotesOpen=${controller.presentation.isNotesOpen.value}',
   ].join('\n');
 }
 
-/// Returns the smaller of [target] and [controller.totalSlides - 1].
+/// Returns the smaller of [target] and [controller.presentation.totalSlides - 1].
 int clampSlideIndex(DeckController controller, int target) {
-  return math.min(target, controller.totalSlides.value - 1);
+  return math.min(target, controller.presentation.totalSlides.value - 1);
 }
 
 /// Test app widget that mirrors the production app configuration.
@@ -242,15 +242,15 @@ extension IntegrationTestExtensions on WidgetTester {
   /// Waits for the app to finish loading slides.
   Future<void> waitForSlidesLoaded(DeckController controller) async {
     await pumpUntil(
-      () => !controller.isLoading.value,
+      () => !controller.session.isLoading.value,
       timeout: const Duration(seconds: 20),
       debugLabel: 'slides to finish loading',
       onTimeout: () => describeDeckControllerState(controller),
     );
 
-    if (controller.hasError.value) {
+    if (controller.session.hasFatalError.value) {
       fail(
-        'Presentation failed to load: ${controller.error.value}\n'
+        'Presentation failed to load: ${controller.session.error.value}\n'
         '${describeDeckControllerState(controller)}',
       );
     }
@@ -260,9 +260,9 @@ extension IntegrationTestExtensions on WidgetTester {
 
   /// Navigates to a specific slide and waits for transition to complete.
   Future<void> navigateToSlide(DeckController controller, int index) async {
-    unawaited(controller.goToSlide(index));
+    unawaited(controller.presentation.goToSlide(index));
     await pumpUntil(
-      () => controller.currentIndex.value == index,
+      () => controller.presentation.currentIndex.value == index,
       timeout: const Duration(seconds: 5),
       debugLabel: 'navigation to slide $index',
       onTimeout: () => describeDeckControllerState(controller),

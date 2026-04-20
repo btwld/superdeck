@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
-import 'package:superdeck/src/deck/navigation_events.dart';
 
 import '../../helpers/mock_deck_loader.dart';
 
@@ -30,65 +29,46 @@ void main() {
     });
 
     test('nextSlide advances currentIndex when canGoNext', () async {
-      expect(controller.canGoNext.value, isTrue);
+      final pres = controller.presentation;
+      expect(pres.canGoNext.value, isTrue);
 
-      await controller.nextSlide();
+      await pres.nextSlide();
 
-      expect(controller.currentIndex.value, 1);
+      expect(pres.currentIndex.value, 1);
     });
 
     test('nextSlide is a no-op at the last slide', () async {
-      await controller.goToSlide(2);
-      expect(controller.canGoNext.value, isFalse);
+      final pres = controller.presentation;
+      await pres.goToSlide(2);
+      expect(pres.canGoNext.value, isFalse);
 
-      await controller.nextSlide();
+      await pres.nextSlide();
 
-      expect(controller.currentIndex.value, 2);
+      expect(pres.currentIndex.value, 2);
     });
 
     test('previousSlide decrements currentIndex when canGoPrevious', () async {
-      await controller.goToSlide(2);
-      expect(controller.canGoPrevious.value, isTrue);
+      final pres = controller.presentation;
+      await pres.goToSlide(2);
+      expect(pres.canGoPrevious.value, isTrue);
 
-      await controller.previousSlide();
+      await pres.previousSlide();
 
-      expect(controller.currentIndex.value, 1);
+      expect(pres.currentIndex.value, 1);
     });
 
     test('previousSlide is a no-op at the first slide', () async {
-      expect(controller.canGoPrevious.value, isFalse);
+      final pres = controller.presentation;
+      expect(pres.canGoPrevious.value, isFalse);
 
-      await controller.previousSlide();
+      await pres.previousSlide();
 
-      expect(controller.currentIndex.value, 0);
-    });
-
-    test('handleNavigationEvent dispatches NextSlideEvent forwards', () async {
-      await controller.handleNavigationEvent(NextSlideEvent());
-
-      expect(controller.currentIndex.value, 1);
-    });
-
-    test(
-      'handleNavigationEvent dispatches PreviousSlideEvent backwards',
-      () async {
-        await controller.goToSlide(2);
-
-        await controller.handleNavigationEvent(PreviousSlideEvent());
-
-        expect(controller.currentIndex.value, 1);
-      },
-    );
-
-    test('handleNavigationEvent dispatches GoToSlideEvent by index', () async {
-      await controller.handleNavigationEvent(GoToSlideEvent(2));
-
-      expect(controller.currentIndex.value, 2);
+      expect(pres.currentIndex.value, 0);
     });
   });
 
   group('DeckController options', () {
-    test('updateOptions updates slides only when options change', () async {
+    test('options signal updates slides only when value changes', () async {
       final initialOptions = DeckOptions();
       final loader = MockDeckLoader();
       final controller = DeckController(
@@ -105,11 +85,11 @@ void main() {
       final initialSlides = controller.slides.value;
       expect(initialSlides.first.debug, isFalse);
 
-      controller.updateOptions(initialOptions);
+      controller.options.value = initialOptions;
 
       expect(controller.slides.value, same(initialSlides));
 
-      controller.updateOptions(DeckOptions(debug: true));
+      controller.options.value = DeckOptions(debug: true);
 
       expect(controller.slides.value, isNot(same(initialSlides)));
       expect(controller.slides.value.first.debug, isTrue);
