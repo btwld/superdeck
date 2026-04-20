@@ -5,13 +5,14 @@ description: Export SuperDeck presentations to PDF
 
 # PDF export
 
-SuperDeck can export rendered slides to PDF on web and native Flutter targets.
+PDF export lives in the optional `superdeck_pdf` package. The base
+`superdeck` package no longer includes PDF export UI or PDF dependencies.
 
-## Built-in export
+## Optional export package
 
-The presentation bottom bar includes a save button. Selecting it opens the
-PDF export dialog automatically, captures the slides, builds the PDF, and
-saves it. No setup is required.
+Add `superdeck_pdf` when an application needs PDF output. The package provides
+the PDF export dialog and controller while depending on public SuperDeck slide
+rendering and capture APIs.
 
 ## Platform notes
 

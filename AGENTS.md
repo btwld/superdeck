@@ -19,6 +19,7 @@ This is a Melos monorepo with the following packages:
 packages/
   core/       # Rendering primitives, Markdown parsing, schema validation (Dart-only)
   superdeck/  # Flutter widgets and presentation components
+  pdf/        # Optional PDF export support
   cli/        # superdeck CLI tool (setup, build, publish, version)
   builder/    # Code generators and build_runner integration
 demo/         # Sample presentation app
@@ -29,7 +30,8 @@ docs/         # User-facing documentation (MDX format)
 ### Key Package Responsibilities
 
 - **core**: Markdown processing, slide/block configuration, shared model/schema validation, YAML utilities (no Flutter dependency)
-- **superdeck**: Flutter widgets, DeckController, navigation, PDF export, theme system
+- **superdeck**: Flutter widgets, DeckController, navigation, thumbnail/capture services, theme system
+- **pdf**: Optional PDF export dialog and controller built on SuperDeck public APIs
 - **cli**: CLI commands for project setup and building slides
 - **builder**: build_runner generators for code generation
 

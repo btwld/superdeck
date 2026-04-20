@@ -20,7 +20,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 - Write slides in **Markdown** - familiar syntax, version-controlled
 - Render with **Flutter** - cross-platform, beautiful UI
 - Extend with **custom widgets** - interactive, live demos
-- Export to **PDF** - share anywhere
+- Optional export package support
 
 ---
 
@@ -205,7 +205,7 @@ flowchart LR
     B --> C["Blocks"]
     C --> D["Widgets"]
     D --> E["Flutter UI"]
-    E --> F["PDF Export"]
+    E --> F["Export Package"]
 
     style A fill:#4CAF50,stroke:#2E7D32,color:#fff
     style E fill:#2196F3,stroke:#1565C0,color:#fff
@@ -216,7 +216,7 @@ The CLI processes your markdown through multiple stages:
 1. **Parse** - Extract frontmatter and block directives
 2. **Transform** - Convert to widget tree
 3. **Render** - Flutter builds the UI
-4. **Export** - Generate PDF and thumbnails
+4. **Extend** - Add export packages and thumbnails
 
 ---
 
@@ -300,7 +300,7 @@ style: quote
 - **Mermaid Diagrams** - Flowcharts, sequences, mind maps
 - **Code Highlighting** - Syntax-aware formatting
 - **Custom Widgets** - Embed any Flutter widget
-- **PDF Export** - Print-ready output
+- **Modular Export** - Print-ready output through `superdeck_pdf`
 - **Thumbnails** - Auto-generated previews
 - **Responsive** - Adapts to any screen size
 

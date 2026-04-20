@@ -35,7 +35,7 @@
 - Write slides in **Markdown**
 - Render with **Flutter**
 - Use **custom widgets** in your slides
-- Export to **PDF**
+- Optional export package support
 
 ---
 
@@ -69,7 +69,7 @@ mindmap
       Hot reload
       Cross-platform
     Export
-      PDF generation
+      Export package
       Thumbnails
       Sharing
     Styling
@@ -178,7 +178,7 @@ flowchart LR
     A[Markdown] --> B[Parser]
     B --> C[Slides]
     C --> D[Flutter UI]
-    D --> E[PDF Export]
+    D --> E[Export Package]
 
     classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
 ```
@@ -345,7 +345,7 @@ graph TB
 
     subgraph Output
         E[Flutter App]
-        F[PDF Export]
+        F[Export Package]
         G[Thumbnails]
     end
 
@@ -404,7 +404,7 @@ my_presentation/
 
 @block
 
-- **PDF Export** - Generate PDF for sharing
+- **Modular Export** - Add PDF sharing through `superdeck_pdf`
 - **Thumbnails** - Auto-generated slide previews
 - **Web Deploy** - Build for web hosting
 
