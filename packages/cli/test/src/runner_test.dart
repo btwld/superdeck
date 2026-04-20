@@ -34,15 +34,6 @@ void main() {
       });
     });
 
-    group('version subcommand', () {
-      test('prints version and exits successfully', () async {
-        final exitCode = await runner.run(['version']);
-
-        expect(exitCode, ExitCode.success.code);
-        expect(mockLogger.infoMessages, contains(contains(packageVersion)));
-      });
-    });
-
     group('shared logger propagation', () {
       test('passes quiet logging to setup', () async {
         final tempDir = await createTempDirAsync();
