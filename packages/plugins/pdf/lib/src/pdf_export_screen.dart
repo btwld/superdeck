@@ -1,24 +1,11 @@
-import 'package:flutter/material.dart' show Icons, Colors, Theme;
-import 'package:flutter/widgets.dart';
-import 'package:remix/remix.dart';
+import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import 'package:superdeck/superdeck.dart';
 
-import '../deck/deck_controller.dart';
-import '../deck/slide_configuration.dart';
-import '../rendering/slides/slide_view.dart';
-import '../ui/widgets/button.dart';
-import '../ui/widgets/loading_indicator.dart';
-import '../ui/widgets/provider.dart';
-import '../utils/constants.dart';
 import 'pdf_controller.dart';
-import 'slide_capture_service.dart';
 
 class PdfExportDialogScreen extends StatefulWidget {
-  const PdfExportDialogScreen({
-    super.key,
-    required this.slides,
-    this.pdfSaver,
-  });
+  const PdfExportDialogScreen({super.key, required this.slides, this.pdfSaver});
 
   final List<SlideConfiguration> slides;
   final PdfSaver? pdfSaver;
@@ -32,8 +19,9 @@ class PdfExportDialogScreen extends StatefulWidget {
         deckController.router.routerDelegate.navigatorKey.currentContext ??
         context;
 
-    showRemixDialog(
+    showDialog<void>(
       context: dialogContext,
+      barrierDismissible: false,
       builder: (context) => PdfExportDialogScreen(
         slides: deckController.slides.value,
         pdfSaver: pdfSaver,
@@ -109,9 +97,11 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return RemixDialog(
+    return Dialog(
+      insetPadding: EdgeInsets.zero,
+      backgroundColor: Colors.black,
       child: SizedBox.fromSize(
-        size: kResolution,
+        size: superDeckSlideSize,
         child: Watch((context) {
           _exportController.exportStatus.value;
 
@@ -122,13 +112,13 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
                 itemCount: _exportController.slides.length,
                 itemBuilder: (context, index) {
                   final slide = _exportController.slides[index].copyWith(
-                    isExporting: true,
+                    isStaticRendering: true,
                     debug: false,
                   );
 
                   return RepaintBoundary(
                     key: _exportController.getSlideKey(slide),
-                    child: InheritedData(data: slide, child: SlideView(slide)),
+                    child: SlideRenderView(slide),
                   );
                 },
               ),
@@ -190,7 +180,7 @@ class _PdfExportBar extends StatelessWidget {
               _ => SizedBox(
                 height: 32,
                 width: 32,
-                child: IsometricProgressIndicator(progress: progressValue),
+                child: CircularProgressIndicator(value: progressValue),
               ),
             },
             const SizedBox(height: 16.0),
@@ -201,13 +191,13 @@ class _PdfExportBar extends StatelessWidget {
               ).textTheme.bodyLarge?.copyWith(color: Colors.white),
             ),
             const SizedBox(height: 16.0),
-            SDButton(
+            ElevatedButton.icon(
               onPressed: () {
                 exportController.cancel();
                 Navigator.of(context, rootNavigator: true).pop();
               },
-              label: 'Cancel',
-              icon: Icons.cancel,
+              icon: const Icon(Icons.cancel),
+              label: const Text('Cancel'),
             ),
           ],
         ),

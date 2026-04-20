@@ -17,7 +17,7 @@ class SlideTestHarness {
     Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     Size? resolution,
-    bool isExporting = false,
+    bool isStaticRendering = false,
     SlideParts? parts,
   }) async {
     await SyntaxHighlight.initialize();
@@ -26,7 +26,7 @@ class SlideTestHarness {
       style: style,
       widgets: widgets,
       debug: debug,
-      isExporting: isExporting,
+      isStaticRendering: isStaticRendering,
       parts: parts,
     );
 
@@ -56,7 +56,7 @@ class SlideTestHarness {
     bool debug = false,
     int slideIndex = 0,
     SlideParts? parts,
-    bool isExporting = false,
+    bool isStaticRendering = false,
   }) {
     return SlideConfiguration(
       slideIndex: slideIndex,
@@ -66,7 +66,7 @@ class SlideTestHarness {
       debug: debug,
       widgets: {...builtInWidgets, ...widgets},
       parts: parts ?? const SlideParts(),
-      isExporting: isExporting,
+      isStaticRendering: isStaticRendering,
     );
   }
 

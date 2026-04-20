@@ -21,6 +21,7 @@ packages/
   superdeck/  # Flutter widgets and presentation components
   cli/        # superdeck CLI tool (setup, build, publish, version)
   builder/    # Code generators and build_runner integration
+  plugins/
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
 .planning/    # Internal development docs (not published)
@@ -29,7 +30,7 @@ docs/         # User-facing documentation (MDX format)
 ### Key Package Responsibilities
 
 - **core**: Markdown processing, slide/block configuration, shared model/schema validation, YAML utilities (no Flutter dependency)
-- **superdeck**: Flutter widgets, DeckController, navigation, PDF export, theme system
+- **superdeck**: Flutter widgets, DeckController, navigation, thumbnail/capture services, theme system
 - **cli**: CLI commands for project setup and building slides
 - **builder**: build_runner generators for code generation
 

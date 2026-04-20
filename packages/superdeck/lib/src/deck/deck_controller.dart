@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:signals/signals.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../export/async_thumbnail.dart';
-import '../export/thumbnail_service.dart';
+import '../thumbnails/async_thumbnail.dart';
+import '../thumbnails/thumbnail_service.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/asset_cache_store.dart';
 import 'deck_options.dart';

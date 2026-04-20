@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../deck/slide_configuration.dart';
+import '../capture/slide_capture_service.dart';
 import 'async_thumbnail.dart';
-import 'slide_capture_service.dart';
 
 /// Stateless service for thumbnail generation operations.
 ///

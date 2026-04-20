@@ -57,7 +57,8 @@ class _BlockContainerState extends State<_BlockContainer> {
     );
 
     content = OverflowClip(
-      scrollable: widget.block.scrollable && !widget.configuration.isExporting,
+      scrollable:
+          widget.block.scrollable && !widget.configuration.isStaticRendering,
       child: content,
     );
 
@@ -96,11 +97,13 @@ class _ContentBlockChild extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
-    final isExporting = SlideConfiguration.of(context).isExporting;
+    final isStaticRendering = SlideConfiguration.of(context).isStaticRendering;
     return MarkdownViewer(
       content: content,
       spec: data.spec,
-      duration: isExporting ? Duration.zero : const Duration(milliseconds: 250),
+      duration: isStaticRendering
+          ? Duration.zero
+          : const Duration(milliseconds: 250),
     );
   }
 }

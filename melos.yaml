@@ -3,6 +3,7 @@ name: superdeck_workspace
 sdkPath: .fvm/flutter_sdk
 packages:
   - packages/*
+  - packages/plugins/*
   - demo
 
 command:

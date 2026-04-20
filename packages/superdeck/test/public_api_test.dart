@@ -9,6 +9,13 @@ void main() {
       expect(BundledDeckLoader, isNotNull);
       expect(FileDeckLoader, isNotNull);
       expect(SlideConfiguration, isNotNull);
+      expect(SlideCaptureService, isNotNull);
+      expect(SlideCaptureQuality, isNotNull);
+      expect(SlideRenderView, isNotNull);
+      expect(AsyncThumbnail, isNotNull);
+      expect(ThumbnailService, isNotNull);
+      expect(superDeckSlideSize, isNotNull);
+      expect(superDeckAspectRatio, isNotNull);
     });
   });
 }

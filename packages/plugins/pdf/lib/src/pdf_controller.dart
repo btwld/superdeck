@@ -7,10 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:signals/signals.dart';
-
-import '../deck/slide_configuration.dart';
-import '../utils/constants.dart';
-import 'slide_capture_service.dart';
+import 'package:superdeck/superdeck.dart';
 
 /// Signature for a function that persists PDF bytes.
 ///
@@ -317,13 +314,16 @@ Future<Uint8List> _buildPdf(List<Uint8List> images) async {
 
     final pdfImage = pw.Image(
       image,
-      width: kResolution.width,
-      height: kResolution.height,
+      width: superDeckSlideSize.width,
+      height: superDeckSlideSize.height,
     );
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat(kResolution.width, kResolution.height),
+        pageFormat: PdfPageFormat(
+          superDeckSlideSize.width,
+          superDeckSlideSize.height,
+        ),
         build: (pw.Context context) {
           return pw.Center(child: pdfImage);
         },

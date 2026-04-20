@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/export/async_thumbnail.dart';
-import 'package:superdeck/src/export/thumbnail_service.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../helpers/fake_slide_capture_service.dart';
@@ -250,44 +248,45 @@ void main() {
     });
 
     testWidgets(
-        'regenerates only changed slides when presentation content updates',
-        (tester) async {
-      final context = await _pumpContext(tester);
+      'regenerates only changed slides when presentation content updates',
+      (tester) async {
+        final context = await _pumpContext(tester);
 
-      // 1. Initial generation — all cache misses
-      Map<String, AsyncThumbnail>? first;
-      service.generateThumbnails(
-        slides: [_slide('a'), _slide('b'), _slide('c')],
-        context: context,
-        cache: {},
-        onCacheUpdate: (cache) => first = cache,
-      );
+        // 1. Initial generation — all cache misses
+        Map<String, AsyncThumbnail>? first;
+        service.generateThumbnails(
+          slides: [_slide('a'), _slide('b'), _slide('c')],
+          context: context,
+          cache: {},
+          onCacheUpdate: (cache) => first = cache,
+        );
 
-      expect(first!.length, 3);
+        expect(first!.length, 3);
 
-      // 2. Simulate content edit: slide B changed (new thumbnailKey), A & C unchanged
-      Map<String, AsyncThumbnail>? second;
-      service.generateThumbnails(
-        slides: [
-          _slide('a'),
-          _slide('b', thumbnailKey: 'thumbnail_b_v2.png'),
-          _slide('c'),
-        ],
-        context: context,
-        cache: first!,
-        onCacheUpdate: (cache) => second = cache,
-      );
+        // 2. Simulate content edit: slide B changed (new thumbnailKey), A & C unchanged
+        Map<String, AsyncThumbnail>? second;
+        service.generateThumbnails(
+          slides: [
+            _slide('a'),
+            _slide('b', thumbnailKey: 'thumbnail_b_v2.png'),
+            _slide('c'),
+          ],
+          context: context,
+          cache: first!,
+          onCacheUpdate: (cache) => second = cache,
+        );
 
-      expect(second!.length, 3);
+        expect(second!.length, 3);
 
-      // A and C reused (same instance)
-      expect(identical(second!['a'], first!['a']), isTrue);
-      expect(identical(second!['c'], first!['c']), isTrue);
+        // A and C reused (same instance)
+        expect(identical(second!['a'], first!['a']), isTrue);
+        expect(identical(second!['c'], first!['c']), isTrue);
 
-      // B replaced with new thumbnailKey
-      expect(identical(second!['b'], first!['b']), isFalse);
-      expect(second!['b']!.thumbnailKey, 'thumbnail_b_v2.png');
-    });
+        // B replaced with new thumbnailKey
+        expect(identical(second!['b'], first!['b']), isFalse);
+        expect(second!['b']!.thumbnailKey, 'thumbnail_b_v2.png');
+      },
+    );
 
     testWidgets('removed slides are absent from updated cache', (tester) async {
       final context = await _pumpContext(tester);

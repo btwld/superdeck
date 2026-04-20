@@ -24,7 +24,7 @@ class SlideConfiguration with SlideConfigurationMappable {
   // Runtime thumbnail cache key (for example: thumbnail_intro.png).
   final String thumbnailKey;
 
-  final bool isExporting;
+  final bool isStaticRendering;
 
   SlideConfiguration({
     required this.slideIndex,
@@ -34,7 +34,7 @@ class SlideConfiguration with SlideConfigurationMappable {
     this.parts,
     required this.thumbnailKey,
     this.widgets = const {},
-    this.isExporting = false,
+    this.isStaticRendering = false,
   });
 
   SlideOptions get options => slide.options ?? SlideOptions();
@@ -63,7 +63,7 @@ class SlideConfiguration with SlideConfigurationMappable {
           parts == other.parts &&
           thumbnailKey == other.thumbnailKey &&
           widgets == other.widgets &&
-          isExporting == other.isExporting;
+          isStaticRendering == other.isStaticRendering;
 
   @override
   int get hashCode => Object.hash(
@@ -74,6 +74,6 @@ class SlideConfiguration with SlideConfigurationMappable {
     parts,
     thumbnailKey,
     widgets,
-    isExporting,
+    isStaticRendering,
   );
 }

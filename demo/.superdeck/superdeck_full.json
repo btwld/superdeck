@@ -110,7 +110,7 @@
     "comments": []
   },
   {
-    "key": "9hnwRuWL",
+    "key": "5eFcO0WT",
     "options": {},
     "sections": [
       {
@@ -173,7 +173,7 @@
     "comments": []
   },
   {
-    "key": "NisJ8sJm",
+    "key": "DOl0tJ6t",
     "options": {},
     "sections": [
       {
@@ -445,7 +445,7 @@
     "comments": []
   },
   {
-    "key": "GDN2EEzc",
+    "key": "aY6TnrgM",
     "options": {},
     "sections": [
       {
@@ -856,7 +856,7 @@
     "comments": []
   },
   {
-    "key": "PWMrcJez",
+    "key": "kTOjNLpJ",
     "options": {},
     "sections": [
       {
@@ -995,7 +995,7 @@
     "comments": []
   },
   {
-    "key": "9dCNe4XF",
+    "key": "lLG0XU1t",
     "options": {},
     "sections": [
       {
@@ -1003,19 +1003,7 @@
           {
             "content": {
               "type": "document",
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "h2",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Export Options {.heading}"
-                    }
-                  ],
-                  "generatedId": "export-options-heading"
-                }
-              ],
+              "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
@@ -1028,6 +1016,17 @@
             "content": {
               "type": "document",
               "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Why SuperDeck? {.heading}"
+                    }
+                  ],
+                  "generatedId": "why-superdeck-heading"
+                },
                 {
                   "type": "element",
                   "tag": "ul",
@@ -1037,18 +1036,8 @@
                       "tag": "li",
                       "children": [
                         {
-                          "type": "element",
-                          "tag": "strong",
-                          "children": [
-                            {
-                              "type": "text",
-                              "text": "PDF Export"
-                            }
-                          ]
-                        },
-                        {
                           "type": "text",
-                          "text": " - Generate PDF for sharing"
+                          "text": "Version control your presentations"
                         }
                       ]
                     },
@@ -1057,18 +1046,8 @@
                       "tag": "li",
                       "children": [
                         {
-                          "type": "element",
-                          "tag": "strong",
-                          "children": [
-                            {
-                              "type": "text",
-                              "text": "Thumbnails"
-                            }
-                          ]
-                        },
-                        {
                           "type": "text",
-                          "text": " - Auto-generated slide previews"
+                          "text": "Use your favorite editor"
                         }
                       ]
                     },
@@ -1077,24 +1056,47 @@
                       "tag": "li",
                       "children": [
                         {
-                          "type": "element",
-                          "tag": "strong",
-                          "children": [
-                            {
-                              "type": "text",
-                              "text": "Web Deploy"
-                            }
-                          ]
-                        },
+                          "type": "text",
+                          "text": "Leverage Flutter's ecosystem"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
                         {
                           "type": "text",
-                          "text": " - Build for web hosting"
+                          "text": "Hot reload while editing"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Cross-platform output"
                         }
                       ]
                     }
                   ]
                 }
               ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
@@ -1112,7 +1114,7 @@
     "comments": []
   },
   {
-    "key": "YwVhszmW",
+    "key": "e1GeS3GQ",
     "options": {},
     "sections": [
       {
@@ -1123,63 +1125,11 @@
               "children": [
                 {
                   "type": "element",
-                  "tag": "h2",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Slide Templates {.heading}"
-                    }
-                  ],
-                  "generatedId": "slide-templates-heading"
-                }
-              ],
-              "linkReferences": {},
-              "footnoteLabels": [],
-              "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
-          },
-          {
-            "content": {
-              "type": "document",
-              "children": [
-                {
-                  "type": "element",
                   "tag": "p",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Templates bundle "
-                    },
-                    {
-                      "type": "element",
-                      "tag": "strong",
-                      "children": [
-                        {
-                          "type": "text",
-                          "text": "chrome"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "text": " (header, footer, background) with an "
-                    },
-                    {
-                      "type": "element",
-                      "tag": "strong",
-                      "children": [
-                        {
-                          "type": "text",
-                          "text": "isolated style system"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "text": " — like Keynote master slides."
+                      "text": "template: corporate"
                     }
                   ]
                 }
@@ -1201,10 +1151,8 @@
     "comments": []
   },
   {
-    "key": "D8gwvOnV",
-    "options": {
-      "template": "corporate"
-    },
+    "key": "lDoWhrCY",
+    "options": {},
     "sections": [
       {
         "blocks": [
@@ -1214,36 +1162,11 @@
               "children": [
                 {
                   "type": "element",
-                  "tag": "h1",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Corporate Template {.heading}"
-                    }
-                  ],
-                  "generatedId": "corporate-template-heading"
-                },
-                {
-                  "type": "element",
                   "tag": "p",
                   "children": [
                     {
                       "type": "text",
-                      "text": "This slide uses the "
-                    },
-                    {
-                      "type": "element",
-                      "tag": "code",
-                      "children": [
-                        {
-                          "type": "text",
-                          "text": "corporate"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "text": " template with branded header and footer."
+                      "text": "template: corporate\nstyle: highlight"
                     }
                   ]
                 }
@@ -1252,7 +1175,6 @@
               "footnoteLabels": [],
               "footnoteReferences": {}
             },
-            "align": "center",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -1266,11 +1188,8 @@
     "comments": []
   },
   {
-    "key": "zMnR2lH4",
-    "options": {
-      "style": "highlight",
-      "template": "corporate"
-    },
+    "key": "zTLKv5H0",
+    "options": {},
     "sections": [
       {
         "blocks": [
@@ -1280,22 +1199,11 @@
               "children": [
                 {
                   "type": "element",
-                  "tag": "h1",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Highlight Style {.heading}"
-                    }
-                  ],
-                  "generatedId": "highlight-style-heading"
-                },
-                {
-                  "type": "element",
                   "tag": "p",
                   "children": [
                     {
                       "type": "text",
-                      "text": "Templates can have their own named style variants."
+                      "text": "template: minimal"
                     }
                   ]
                 }
@@ -1304,7 +1212,6 @@
               "footnoteLabels": [],
               "footnoteReferences": {}
             },
-            "align": "center",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -1318,58 +1225,7 @@
     "comments": []
   },
   {
-    "key": "bgVDjrnG",
-    "options": {
-      "template": "minimal"
-    },
-    "sections": [
-      {
-        "blocks": [
-          {
-            "content": {
-              "type": "document",
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "h1",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Minimal Template {.heading}"
-                    }
-                  ],
-                  "generatedId": "minimal-template-heading"
-                },
-                {
-                  "type": "element",
-                  "tag": "p",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "A clean, typography-focused template with no chrome distractions."
-                    }
-                  ]
-                }
-              ],
-              "linkReferences": {},
-              "footnoteLabels": [],
-              "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
-          }
-        ],
-        "flex": 1,
-        "scrollable": false,
-        "type": "section"
-      }
-    ],
-    "comments": []
-  },
-  {
-    "key": "lrxo7KbB",
+    "key": "2IY2YTbh",
     "options": {},
     "sections": [
       {

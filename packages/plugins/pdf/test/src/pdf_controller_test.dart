@@ -3,12 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
-import 'package:superdeck/src/export/pdf_controller.dart';
-import 'package:superdeck/src/export/slide_capture_service.dart';
+import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_pdf/superdeck_pdf.dart';
 
-import '../../helpers/fake_slide_capture_service.dart';
-import '../../helpers/test_helpers.dart';
+import '../helpers/fake_slide_capture_service.dart';
+import '../helpers/test_helpers.dart';
 
 class _SequencedRenderObject extends Fake implements RenderObject {
   _SequencedRenderObject(this._attachedValues);

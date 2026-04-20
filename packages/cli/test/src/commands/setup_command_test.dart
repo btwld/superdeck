@@ -187,7 +187,7 @@ dependencies:
   flutter:
     sdk: flutter
   superdeck:
-    path: ../superdeck
+    path: ../local_superdeck
 flutter:
   uses-material-design: true
 ''');
@@ -195,7 +195,7 @@ flutter:
       final dependencies = _pubspecSection(patched, 'dependencies');
       final superdeck = dependencies['superdeck'] as YamlMap;
 
-      expect(superdeck['path'], '../superdeck');
+      expect(superdeck['path'], '../local_superdeck');
     });
 
     test('preserves an existing git-based superdeck_cli dev dependency', () {
