@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  file_saver
   screen_retriever_linux
   window_manager
 )
