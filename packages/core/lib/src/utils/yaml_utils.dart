@@ -3,6 +3,41 @@ import 'package:yaml/yaml.dart';
 
 final _logger = Logger('YamlUtils');
 
+/// Parses YAML string into a deeply converted `Map<String, Object?>`.
+///
+/// Throws [FormatException] when [yamlString] has invalid syntax or when the
+/// top-level document is not a map. [sourceLabel] is included in error messages
+/// so callers can identify the source file or field.
+Map<String, Object?> parseYamlMap(
+  String yamlString, {
+  String sourceLabel = 'YAML',
+}) {
+  if (yamlString.trim().isEmpty) return {};
+
+  Object? yamlDoc;
+  try {
+    yamlDoc = loadYaml(yamlString);
+  } on YamlException catch (error, stackTrace) {
+    return Error.throwWithStackTrace(
+      FormatException(
+        'Failed to parse $sourceLabel. Invalid YAML syntax. Error: $error',
+      ),
+      stackTrace,
+    );
+  }
+
+  if (yamlDoc == null) return {};
+
+  final converted = _deepConvert(yamlDoc);
+  if (converted is Map<String, Object?>) {
+    return converted;
+  }
+
+  throw FormatException(
+    'Expected $sourceLabel to define a map at the top level.',
+  );
+}
+
 /// Converts YAML string to a `Map<String, Object?>`
 ///
 /// Supports both block-style and flow-style YAML:
