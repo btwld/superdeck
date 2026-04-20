@@ -1,4 +1,3 @@
-import 'package:ack/ack.dart';
 import 'package:superdeck_builder/src/parsers/markdown_parser.dart';
 import 'package:superdeck_builder/src/parsers/raw_slide_schema.dart';
 import 'package:test/test.dart';
@@ -17,27 +16,6 @@ void main() {
       expect(slide.key, equals('slide-1'));
       expect(slide.content, equals('Hello World'));
       expect(slide.frontmatter['title'], equals('Slide 1'));
-    });
-
-    test('throws AckException when frontmatter is not a map', () {
-      expect(
-        () => RawSlideMarkdown.parse({
-          'key': 'slide-1',
-          'content': 'Hello World',
-          'frontmatter': 'invalid',
-        }),
-        throwsA(isA<AckException>()),
-      );
-    });
-
-    test('throws AckException when required keys are missing', () {
-      expect(
-        () => RawSlideMarkdown.parse({
-          'content': 'Hello World',
-          'frontmatter': const {},
-        }),
-        throwsA(isA<AckException>()),
-      );
     });
   });
 

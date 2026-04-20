@@ -4,20 +4,7 @@ import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
-/// Creates a temporary directory that will be automatically cleaned up
-/// when the test completes.
-Directory createTempDir() {
-  final tempDir = Directory.systemTemp.createTempSync('superdeck_cli_test_');
-  addTearDown(() {
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
-    }
-  });
-  return tempDir;
-}
-
 /// Creates a temporary directory with async cleanup.
-/// Use this for tests that need async setup/tearDown.
 Future<Directory> createTempDirAsync() async {
   final tempDir = await Directory.systemTemp.createTemp('superdeck_cli_test_');
   addTearDown(() async {
@@ -28,27 +15,11 @@ Future<Directory> createTempDirAsync() async {
   return tempDir;
 }
 
-/// Creates a temporary file with the given content and returns the file.
-/// The file will be automatically cleaned up when the test completes.
-File createTempFile(String content, {String? extension}) {
-  final dir = createTempDir();
-  final file = File(path.join(dir.path, 'test${extension ?? ''}'));
-  file.writeAsStringSync(content);
-  return file;
-}
-
-/// Creates a test command runner with the given command
+/// Creates a test command runner with the given command.
 CommandRunner<int> createTestRunner(Command<int> command) {
   final runner = CommandRunner<int>('test', 'Test runner');
   runner.addCommand(command);
   return runner;
-}
-
-/// Creates a web directory structure for testing web-related commands
-Directory createWebDirectory(Directory parent) {
-  final webDir = Directory(path.join(parent.path, 'web'));
-  webDir.createSync();
-  return webDir;
 }
 
 /// Creates a basic pubspec.yaml file for testing

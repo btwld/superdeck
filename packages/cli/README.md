@@ -2,14 +2,13 @@
 
 Command-line workflow for SuperDeck projects.
 
-Use `superdeck_cli` to configure a Flutter app for SuperDeck, build deck artifacts, and publish web output.
+Use `superdeck_cli` to configure a Flutter app for SuperDeck and build deck artifacts.
 
 ## Main Commands
 
 - `superdeck setup` - Configures the current Flutter app for SuperDeck
 - `superdeck build` - Builds deck output from `slides.md`
 - `superdeck build --watch` - Rebuilds on slide changes during development
-- `superdeck publish` - Publishes web builds (for example, GitHub Pages)
 
 ## Typical Workflow
 
@@ -17,7 +16,8 @@ Use `superdeck_cli` to configure a Flutter app for SuperDeck, build deck artifac
 flutter create my_presentation
 cd my_presentation
 superdeck setup
-flutter pub get
+flutter pub add superdeck
+flutter pub add --dev superdeck_cli
 
 # Add slides.md in the project root and update lib/main.dart
 # to initialize and run SuperDeckApp before building.

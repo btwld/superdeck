@@ -30,13 +30,13 @@ superdeck setup
 
 This configures your Flutter app with:
 - `.superdeck/` asset folders and `pubspec.yaml` entries
-- A startup loader in `web/` when the web platform is present
 - Required macOS entitlements when the macOS platform is present
 
 ### Install dependencies
 
 ```bash
-flutter pub get
+flutter pub add superdeck
+flutter pub add --dev superdeck_cli
 ```
 
 SuperDeck keeps the SDK constraint emitted by your installed `flutter create` toolchain.
@@ -151,7 +151,7 @@ The CLI generates a `.superdeck/` directory containing compiled presentation dat
 
 **Asset errors during build**
 - Verify `pubspec.yaml` includes `.superdeck/` and `.superdeck/assets/`
-- Run `superdeck setup` to add the required pubspec entries, web loader, and macOS entitlements
+- Run `superdeck setup` to add the required pubspec entries and macOS entitlements
 
 **SuperDeckApp.initialize() fails**
 - Call `WidgetsFlutterBinding.ensureInitialized()` first

@@ -194,10 +194,6 @@ class BuildCommand extends SuperDeckCommand {
   Future<int> run() async {
     DeckBuildStore? store;
     try {
-      if (!ensureSupportedWorkspaceLayout(projectDir: _projectDir)) {
-        return ExitCode.data.code;
-      }
-
       final deckWorkspace = DeckWorkspace(projectDir: _projectDir);
 
       if (!await deckWorkspace.slidesFile.exists()) {

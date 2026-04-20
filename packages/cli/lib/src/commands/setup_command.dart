@@ -32,12 +32,9 @@ class SetupCommand extends SuperDeckCommand {
     }
 
     final projectDir = Directory(_projectDir ?? Directory.current.path);
-    if (!ensureSupportedWorkspaceLayout(projectDir: projectDir.path)) {
-      return ExitCode.data.code;
-    }
 
     try {
-      await applySetup(projectDir, logger);
+      await applySetup(projectDir);
     } on FormatException catch (error) {
       logger.err(error.message);
       return ExitCode.data.code;
@@ -52,7 +49,8 @@ class SetupCommand extends SuperDeckCommand {
     logger.success('Configured SuperDeck in ${projectDir.path}');
     logger.info('');
     logger.info('Next steps:');
-    logger.info('  flutter pub get');
+    logger.info('  flutter pub add superdeck');
+    logger.info('  flutter pub add --dev superdeck_cli');
     logger.info('  add slides.md in the project root');
     logger.info('  update lib/main.dart to run SuperDeckApp');
     logger.info('  dart run superdeck_cli:main build');
