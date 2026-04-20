@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/export/async_thumbnail.dart';
+import 'package:superdeck/src/thumbnails/async_thumbnail.dart';
 
 Future<BuildContext> _pumpContext(WidgetTester tester) async {
   final key = GlobalKey();

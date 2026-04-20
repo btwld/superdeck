@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:signals/signals.dart';
 import 'package:superdeck/src/deck/deck_presentation_state.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
-import 'package:superdeck/src/export/async_thumbnail.dart';
-import 'package:superdeck/src/export/thumbnail_service.dart';
+import 'package:superdeck/src/thumbnails/async_thumbnail.dart';
+import 'package:superdeck/src/thumbnails/thumbnail_service.dart';
 
 import '../../helpers/test_helpers.dart';
 

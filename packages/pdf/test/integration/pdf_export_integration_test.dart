@@ -3,20 +3,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mix/mix.dart';
 import 'package:signals/signals.dart';
-import 'package:superdeck/src/deck/slide_configuration.dart';
-import 'package:superdeck/src/export/pdf_controller.dart';
-import 'package:superdeck/src/export/slide_capture_service.dart';
-import 'package:superdeck/src/rendering/slides/slide_parts.dart';
-import 'package:superdeck/src/rendering/slides/slide_view.dart';
-import 'package:superdeck/src/ui/tokens/colors.dart';
-import 'package:superdeck/src/ui/widgets/provider.dart';
-import 'package:superdeck/src/utils/constants.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck_pdf/superdeck_pdf.dart';
 
-import '../fixtures/slide_fixtures.dart';
-import '../helpers/slide_test_harness.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -103,7 +95,7 @@ Author text in the second column.
       SlideTestHarness.createConfiguration(
         slide,
         slideIndex: index,
-        isExporting: true,
+        isStaticRendering: true,
         parts: const SlideParts(
           background: ColoredBox(color: Color(0xFF090909)),
         ),
@@ -127,7 +119,7 @@ Future<void> _pumpExportHarness(
   WidgetTester tester,
   PdfController controller,
 ) async {
-  tester.view.physicalSize = kResolution;
+  tester.view.physicalSize = superDeckSlideSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
@@ -141,22 +133,16 @@ Widget _buildExportHarness(PdfController controller) {
     home: Scaffold(
       backgroundColor: const Color(0xFF090909),
       body: SizedBox.fromSize(
-        size: kResolution,
-        child: MixScope(
-          colors: SDColors.colorMap,
-          child: PageView(
-            controller: controller.pageController,
-            children: [
-              for (final configuration in controller.slides)
-                RepaintBoundary(
-                  key: controller.getSlideKey(configuration),
-                  child: InheritedData(
-                    data: configuration,
-                    child: SlideView(configuration),
-                  ),
-                ),
-            ],
-          ),
+        size: superDeckSlideSize,
+        child: PageView(
+          controller: controller.pageController,
+          children: [
+            for (final configuration in controller.slides)
+              RepaintBoundary(
+                key: controller.getSlideKey(configuration),
+                child: SlideRenderView(configuration),
+              ),
+          ],
         ),
       ),
     ),

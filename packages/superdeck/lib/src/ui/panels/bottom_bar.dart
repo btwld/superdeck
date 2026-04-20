@@ -4,7 +4,6 @@ import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 import '../../deck/deck_controller.dart';
-import '../../export/pdf_export_screen.dart';
 import '../tokens/colors.dart';
 import '../widgets/icon_button.dart';
 
@@ -40,12 +39,6 @@ class DeckBottomBar extends StatelessWidget {
                 ? 'Close notes panel'
                 : 'Open notes panel',
           ),
-        ),
-
-        SDIconButton(
-          icon: Icons.save,
-          onPressed: () => PdfExportDialogScreen.show(context),
-          semanticLabel: 'Export PDF',
         ),
 
         SDIconButton(

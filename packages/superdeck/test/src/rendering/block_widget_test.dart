@@ -73,16 +73,17 @@ void main() {
         tester.expectNotScrollable(find.byType(BlockWidget));
       });
 
-      testWidgets('scrollable block is NOT scrollable when exporting', (
-        tester,
-      ) async {
-        await SlideTestHarness.pumpSlide(
-          tester,
-          SlideFixtures.scrollableBlock(lineCount: 80),
-          isExporting: true,
-        );
-        tester.expectNotScrollable(find.byType(BlockWidget));
-      });
+      testWidgets(
+        'scrollable block is NOT scrollable during static rendering',
+        (tester) async {
+          await SlideTestHarness.pumpSlide(
+            tester,
+            SlideFixtures.scrollableBlock(lineCount: 80),
+            isStaticRendering: true,
+          );
+          tester.expectNotScrollable(find.byType(BlockWidget));
+        },
+      );
     });
 
     group('error handling', () {
