@@ -32,9 +32,6 @@ class SetupCommand extends SuperDeckCommand {
     }
 
     final projectDir = Directory(_projectDir ?? Directory.current.path);
-    if (!ensureSupportedWorkspaceLayout(projectDir: projectDir.path)) {
-      return ExitCode.data.code;
-    }
 
     try {
       await applySetup(projectDir);

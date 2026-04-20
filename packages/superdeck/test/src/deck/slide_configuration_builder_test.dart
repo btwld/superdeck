@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/slide_configuration_builder.dart';
-import 'package:superdeck/src/deck/template_exception.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -110,7 +109,7 @@ void main() {
       expect(configs[0].style, defaultSlideStyle.merge(deckBase).merge(null));
     });
 
-    test('unknown template throws TemplateException', () {
+    test('unknown template throws ArgumentError', () {
       final options = DeckOptions(templates: {'real': SlideTemplate()});
       final slides = [
         Slide(
@@ -121,7 +120,7 @@ void main() {
 
       expect(
         () => builder.buildConfigurations(slides, options),
-        throwsA(isA<TemplateException>()),
+        throwsA(isA<ArgumentError>()),
       );
     });
 

@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/template_exception.dart';
 import 'package:superdeck/src/deck/template_resolver.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -51,14 +50,14 @@ void main() {
         },
       );
 
-      test('no template, unknown style — throws TemplateException', () {
+      test('no template, unknown style — throws ArgumentError', () {
         final options = DeckOptions(styles: {'light': SlideStyle()});
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(style: 'nonexistent');
 
         expect(
           () => resolver.resolve(slideOptions),
-          throwsA(isA<TemplateException>()),
+          throwsA(isA<ArgumentError>()),
         );
       });
 
@@ -74,7 +73,7 @@ void main() {
           expect(
             () => resolver.resolve(slideOptions),
             throwsA(
-              isA<TemplateException>().having(
+              isA<ArgumentError>().having(
                 (e) => e.message,
                 'message',
                 allOf(contains('missing'), contains('in deck')),
@@ -131,7 +130,7 @@ void main() {
         );
       });
 
-      test('template, unknown style — throws TemplateException', () {
+      test('template, unknown style — throws ArgumentError', () {
         final template = SlideTemplate(styles: {'known': SlideStyle()});
         final options = DeckOptions(templates: {'myTemplate': template});
         final resolver = TemplateResolver(options);
@@ -142,7 +141,7 @@ void main() {
 
         expect(
           () => resolver.resolve(slideOptions),
-          throwsA(isA<TemplateException>()),
+          throwsA(isA<ArgumentError>()),
         );
       });
 
@@ -160,7 +159,7 @@ void main() {
           expect(
             () => resolver.resolve(slideOptions),
             throwsA(
-              isA<TemplateException>().having(
+              isA<ArgumentError>().having(
                 (e) => e.message,
                 'message',
                 allOf(contains('bogus'), contains('corporate')),
@@ -170,14 +169,14 @@ void main() {
         },
       );
 
-      test('unknown template name — throws TemplateException', () {
+      test('unknown template name — throws ArgumentError', () {
         final options = DeckOptions(templates: {'existing': SlideTemplate()});
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(template: 'doesNotExist');
 
         expect(
           () => resolver.resolve(slideOptions),
-          throwsA(isA<TemplateException>()),
+          throwsA(isA<ArgumentError>()),
         );
       });
 
@@ -191,7 +190,7 @@ void main() {
           expect(
             () => resolver.resolve(slideOptions),
             throwsA(
-              isA<TemplateException>().having(
+              isA<ArgumentError>().having(
                 (e) => e.message,
                 'message',
                 contains('phantom'),
@@ -211,7 +210,7 @@ void main() {
           expect(
             () => resolver.resolve(slideOptions),
             throwsA(
-              isA<TemplateException>().having(
+              isA<ArgumentError>().having(
                 (e) => e.message,
                 'message',
                 allOf(
@@ -326,7 +325,7 @@ void main() {
           expect(
             () => resolver.resolve(slideOptions),
             throwsA(
-              isA<TemplateException>().having(
+              isA<ArgumentError>().having(
                 (e) => e.message,
                 'message',
                 allOf(contains('defaultTemplate'), contains('unknown')),

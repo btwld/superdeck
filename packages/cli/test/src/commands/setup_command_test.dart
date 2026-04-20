@@ -152,22 +152,6 @@ void main() {
       expect(result, ExitCode.ioError.code);
     });
 
-    test('fails fast when superdeck.yaml exists', () async {
-      await File(
-        path.join(tempDir.path, 'pubspec.yaml'),
-      ).writeAsString(_fakePubspec('existing_app'));
-      await File(
-        path.join(tempDir.path, 'superdeck.yaml'),
-      ).writeAsString('slidesPath: custom.md');
-
-      final result = await runner.run(['setup']);
-
-      expect(result, ExitCode.data.code);
-      expect(
-        Directory(path.join(tempDir.path, '.superdeck')).existsSync(),
-        isFalse,
-      );
-    });
   });
 }
 
