@@ -2,7 +2,6 @@ import 'dart:io';
 
 import '../../helpers/testing_utils.dart';
 import 'package:superdeck_builder/src/assets/asset_generation_pipeline.dart';
-import 'package:superdeck_builder/src/assets/asset_generator.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
@@ -26,7 +25,11 @@ class MockAssetGenerator implements AssetGenerator {
 
   @override
   GeneratedAsset createAssetReference(String content) {
-    return GeneratedAsset.mermaid(content);
+    return GeneratedAsset(
+      name: GeneratedAsset.buildKey(content),
+      extension: AssetExtension.png,
+      type: _type,
+    );
   }
 
   @override
@@ -113,7 +116,7 @@ void main() {
     setUp(() {
       tempDir = createTempDir(prefix: 'asset_pipeline_test');
       mockDeckStore = MockDeckStore(tempDir);
-      mockGenerator = MockAssetGenerator('mermaid', [1, 2, 3, 4, 5]);
+      mockGenerator = MockAssetGenerator('diagram', [1, 2, 3, 4, 5]);
       pipeline = AssetGenerationPipeline(
         generators: [mockGenerator],
         store: mockDeckStore,
@@ -131,11 +134,11 @@ void main() {
       expect(result.generatedAssets, isEmpty);
     });
 
-    test('processes slide content with mermaid block', () async {
+    test('processes slide content with registered fenced block', () async {
       const content = '''
 # Slide Title
 
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
@@ -146,14 +149,14 @@ More content.
       final result = await pipeline.processSlideContent(content, 0);
 
       expect(result.updatedContent, isNot(equals(content)));
-      expect(result.updatedContent, contains('![mermaid_asset]'));
+      expect(result.updatedContent, contains('![diagram_asset]'));
       expect(result.generatedAssets, hasLength(1));
-      expect(result.generatedAssets.first.type, equals('mermaid'));
+      expect(result.generatedAssets.first.type, equals('diagram'));
     });
 
     test('writes generated asset bytes to expected asset path', () async {
       const content = '''
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
@@ -172,7 +175,7 @@ graph TD
 
     test('finds correct generator for content type', () async {
       const content = '''
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
@@ -196,14 +199,14 @@ some unknown content
 
     test('processes multiple blocks in correct order', () async {
       const content = '''
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
 
 Some text
 
-```mermaid
+```diagram
 graph LR
   C --> D
 ```
@@ -211,12 +214,12 @@ graph LR
 
       final result = await pipeline.processSlideContent(content, 0);
       expect(result.generatedAssets, hasLength(2));
-      expect(result.updatedContent, contains('![mermaid_asset]'));
+      expect(result.updatedContent, contains('![diagram_asset]'));
     });
 
     test('skips regeneration when cached asset already exists', () async {
       const content = '''
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
@@ -241,7 +244,7 @@ graph TD
         );
 
         const content = '''
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
@@ -269,7 +272,7 @@ graph TD
         );
 
         const content = '''
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
@@ -297,7 +300,7 @@ graph TD
         );
 
         const content = '''
-```mermaid
+```diagram
 graph TD
   A --> B
 ```
@@ -317,7 +320,13 @@ graph TD
 
   group('AssetGenerationResult', () {
     test('creates result with content and assets', () {
-      final assets = [GeneratedAsset.mermaid('test')];
+      final assets = [
+        GeneratedAsset(
+          name: GeneratedAsset.buildKey('test'),
+          extension: AssetExtension.png,
+          type: 'mock',
+        ),
+      ];
       final result = AssetGenerationResult(
         updatedContent: 'updated content',
         generatedAssets: assets,

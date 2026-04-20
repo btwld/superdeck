@@ -166,16 +166,12 @@ final class StandardDeckBuildPipeline {
   static DeckBuilder create({
     required DeckWorkspace workspace,
     required DeckBuildStore store,
-    Map<String, Object?>? browserLaunchOptions,
     int concurrentSlides = 4,
   }) {
     return DeckBuilder(
       tasks: [
         DartFormatterTask(),
-        AssetGenerationTask.withDefaults(
-          store: store,
-          browserLaunchOptions: browserLaunchOptions,
-        ),
+        AssetGenerationTask.withDefaults(store: store),
       ],
       workspace: workspace,
       store: store,

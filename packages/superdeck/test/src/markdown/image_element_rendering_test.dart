@@ -60,7 +60,7 @@ void main() {
     testWidgets('image renders with block-level size constraints', (
       tester,
     ) async {
-      const markdown = '![mermaid](assets/mermaid.png)';
+      const markdown = '![diagram](assets/diagram.png)';
 
       await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
       await tester.pumpAndSettle();

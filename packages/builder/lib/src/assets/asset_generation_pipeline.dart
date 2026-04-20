@@ -4,7 +4,6 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'asset_generator.dart';
 import '../parsers/fenced_code_parser.dart';
 import '../utils/markdown_utils.dart';
 
@@ -24,9 +23,9 @@ class AssetGenerationResult {
 
 /// Coordinates build-time asset generation across multiple asset generators.
 ///
-/// The [AssetGenerationPipeline] finds asset blocks in slide content (e.g., mermaid diagrams,
-/// remote images), processes them through appropriate [AssetGenerator]s, and
-/// replaces the content with asset references.
+/// The [AssetGenerationPipeline] finds asset blocks in slide content (fenced
+/// code blocks, remote images), processes them through appropriate
+/// [AssetGenerator]s, and replaces the content with asset references.
 class AssetGenerationPipeline {
   final List<AssetGenerator> _generators;
   final DeckBuildStore _store;
@@ -53,7 +52,7 @@ class AssetGenerationPipeline {
   ) async {
     final generatedAssets = <GeneratedAsset>[];
 
-    // Process fenced code blocks (mermaid, etc.) using the utility
+    // Process fenced code blocks through registered generators.
     final updatedContent = await processFencedCodeBlocks(
       content,
       filter: (block) => _findGenerator(block.language) != null,

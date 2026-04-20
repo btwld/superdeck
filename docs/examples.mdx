@@ -147,12 +147,10 @@ final schema = Schema.object(properties: {
 
 @block
 
-```mermaid
-graph TD
-    A[Start] --> B[Input]
-    B --> C[Process]
-    C --> D[Output]
-    D --> E[End]
+```dart
+void main() {
+  print('Hello, SuperDeck!');
+}
 ```
 
 @block
@@ -163,7 +161,6 @@ graph TD
 ````
 
 **Features shown:**
-- Mermaid diagram integration
 - Side-by-side content
 - Mixed media types
 
@@ -342,33 +339,6 @@ Try the interactive counter:
 - Multiple argument types (int, string)
 - Interactive user interface elements
 
-## Mermaid diagrams
-
-### Process flow
-
-````markdown
-@block
-
-```mermaid
-graph TD
-    A[Start] --> B[Input]
-    B --> C[Process]
-    C --> D[Output]
-    D --> E[End]
-```
-
-## Process Overview
-
-Simple workflow representation using Mermaid syntax.
-
----
-````
-
-**Features shown:**
-- Mermaid diagram integration
-- Automatic diagram rendering
-- Process visualization
-
 ## Styling examples
 
 ### Hero classes
@@ -458,7 +428,6 @@ final schema = Schema.array(
 - **Hero sections** with centered content and large text
 - **Side-by-side comparisons** using two-column layouts
 - **Code + explanation** layouts with code in one column, description in another
-- **Process flows** using Mermaid diagrams
 - **Interactive demos** with DartPad and custom widgets
 - **Mixed media** combining images, text, and code
 

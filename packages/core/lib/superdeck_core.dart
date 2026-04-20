@@ -3,6 +3,8 @@ library;
 
 export 'package:ack/ack.dart';
 
+// Assets
+export 'src/assets/asset_generator.dart';
 // Cache
 export 'src/cache/asset_cache_store.dart';
 export 'src/cache/asset_cache_store_io.dart';

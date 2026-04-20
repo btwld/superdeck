@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:superdeck_core/superdeck_core.dart';
+import '../deck/asset_model.dart';
 
-/// Generates assets from content at build time (e.g., Mermaid diagrams to PNG).
+/// Generates assets from content at build time.
 ///
 /// Implementations handle a specific content type and produce raw asset data.
 /// They do not manipulate slide content directly — the pipeline handles replacement.

@@ -65,14 +65,6 @@ class GeneratedAsset with GeneratedAssetMappable {
   static GeneratedAsset parse(Map<String, Object?> map) =>
       fromMap(schema.parse(map)!);
 
-  static GeneratedAsset mermaid(String syntax) {
-    return GeneratedAsset(
-      name: GeneratedAsset.buildKey(syntax),
-      extension: AssetExtension.png,
-      type: 'mermaid',
-    );
-  }
-
   static GeneratedAsset image(String url, AssetExtension extension) {
     return GeneratedAsset(
       name: GeneratedAsset.buildKey(url),

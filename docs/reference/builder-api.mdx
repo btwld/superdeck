@@ -172,7 +172,6 @@ SuperDeck build pipeline.
 static DeckBuilder create({
   required DeckWorkspace workspace,
   required DeckBuildStore store,
-  Map<String, Object?>? browserLaunchOptions,
   int concurrentSlides = 4,
 })
 ```
@@ -181,9 +180,6 @@ Creates a `DeckBuilder` with the standard tasks in this order:
 
 1. `DartFormatterTask()`
 2. `AssetGenerationTask.withDefaults(...)`
-
-`browserLaunchOptions` is passed to the default asset generation task. The
-default asset generator list contains a Mermaid generator.
 
 ```dart
 final builder = StandardDeckBuildPipeline.create(
@@ -295,20 +291,15 @@ Use `AssetGenerationTask.withDefaults` for the standard asset pipeline.
 ```dart
 factory AssetGenerationTask.withDefaults({
   required DeckBuildStore store,
-  Map<String, Object?>? browserLaunchOptions,
   AssetCacheStore? cacheStore,
 })
 ```
 
-The default generator list contains a Mermaid generator.
+The default generator list is empty; consumers register their own generators
+by constructing `AssetGenerationTask` directly.
 
 ```dart
-AssetGenerationTask.withDefaults(
-  store: store,
-  browserLaunchOptions: {
-    'headless': true,
-  },
-)
+AssetGenerationTask.withDefaults(store: store)
 ```
 
 ### `DartFormatterTask`

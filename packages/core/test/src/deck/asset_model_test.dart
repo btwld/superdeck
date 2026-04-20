@@ -153,15 +153,6 @@ void main() {
     });
 
     group('factory methods', () {
-      test('mermaid creates png asset with mermaid type', () {
-        const syntax = 'graph TD; A-->B;';
-        final asset = GeneratedAsset.mermaid(syntax);
-
-        expect(asset.name, GeneratedAsset.buildKey(syntax));
-        expect(asset.extension, AssetExtension.png);
-        expect(asset.type, 'mermaid');
-      });
-
       test('image creates asset with specified extension', () {
         const url = 'https://example.com/image.webp';
         final asset = GeneratedAsset.image(url, AssetExtension.webp);
@@ -294,7 +285,7 @@ void main() {
         final original = GeneratedAsset(
           name: 'round_trip',
           extension: AssetExtension.webp,
-          type: 'mermaid',
+          type: 'diagram',
         );
 
         final restored = GeneratedAsset.fromMap(original.toMap());
@@ -362,7 +353,7 @@ void main() {
         final asset2 = GeneratedAsset(
           name: 'test',
           extension: AssetExtension.png,
-          type: 'mermaid',
+          type: 'diagram',
         );
 
         expect(asset1, isNot(equals(asset2)));
@@ -502,13 +493,13 @@ void main() {
       test('toMap returns correct structure', () {
         final ref = GeneratedAssetsReference(
           lastModified: DateTime.utc(2024, 3, 15, 12, 30, 45),
-          files: ['thumbnail_1.png', 'mermaid_abc.png'],
+          files: ['thumbnail_1.png', 'diagram_abc.png'],
         );
 
         final map = ref.toMap();
 
         expect(map['last_modified'], '2024-03-15T12:30:45.000Z');
-        expect(map['files'], ['thumbnail_1.png', 'mermaid_abc.png']);
+        expect(map['files'], ['thumbnail_1.png', 'diagram_abc.png']);
       });
 
       test('fromMap parses correctly', () {

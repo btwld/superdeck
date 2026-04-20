@@ -6,7 +6,7 @@ import 'package:meta/meta.dart' show visibleForTesting;
 import 'package:puppeteer/puppeteer.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import 'asset_generator.dart';
+import 'mermaid_asset.dart';
 
 typedef _MermaidRenderConfig = ({
   String theme,
@@ -320,7 +320,7 @@ class MermaidGenerator implements AssetGenerator {
 
   @override
   GeneratedAsset createAssetReference(String content) {
-    return GeneratedAsset.mermaid(content);
+    return mermaidAsset(content);
   }
 
   /// Returns an existing browser instance or creates a new one.

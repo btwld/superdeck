@@ -76,8 +76,7 @@ project/
     ├── superdeck_full.json     # Includes markdown AST JSON (for debugging)
     ├── generated_assets.json   # Asset manifest
     ├── build_status.json       # Last build status
-    └── assets/                 # Build-generated assets (for example, Mermaid PNGs)
-        └── mermaid_<hash>.png
+    └── assets/                 # Build-generated assets
 ```
 
 Runtime slide thumbnails are referenced by key (`thumbnail_<slideKey>.png`) and cached by the app at runtime (OS application cache on native platforms, in-memory data URIs on web).

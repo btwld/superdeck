@@ -11,33 +11,12 @@ import '../utils/logger.dart' show LoggerX;
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 
-/// Returns whether the process is running in a CI environment.
-bool _isCI() {
-  final env = Platform.environment;
-  return env['CI'] == 'true' ||
-      env['GITHUB_ACTIONS'] == 'true' ||
-      env['GITLAB_CI'] == 'true' ||
-      env['CIRCLECI'] == 'true' ||
-      env['TRAVIS'] == 'true';
-}
-
 /// Creates a [DeckBuilder] with the standard CLI task pipeline.
 DeckBuilder _createStandardBuilder({
   required DeckWorkspace workspace,
   required DeckBuildStore store,
 }) {
-  // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions
-  final browserLaunchOptions = _isCI()
-      ? <String, dynamic>{
-          'args': ['--no-sandbox', '--disable-setuid-sandbox'],
-        }
-      : null;
-
-  return StandardDeckBuildPipeline.create(
-    workspace: workspace,
-    store: store,
-    browserLaunchOptions: browserLaunchOptions,
-  );
+  return StandardDeckBuildPipeline.create(workspace: workspace, store: store);
 }
 
 /// Builds SuperDeck presentations from markdown.

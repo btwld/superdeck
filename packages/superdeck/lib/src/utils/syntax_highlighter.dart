@@ -17,7 +17,6 @@ class SyntaxHighlight {
   static final List<String> _secondarySupportedLangs = [
     'markdown',
     'python',
-    'mermaid',
   ];
 
   static Future<void> initialize() {

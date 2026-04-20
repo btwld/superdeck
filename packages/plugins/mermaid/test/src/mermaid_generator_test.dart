@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:superdeck_builder/src/assets/mermaid_generator.dart';
+import 'package:superdeck_mermaid/superdeck_mermaid.dart';
 import 'package:test/test.dart';
 
 void main() {

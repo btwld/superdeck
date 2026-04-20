@@ -1,4 +1,3 @@
-import 'package:superdeck_builder/src/assets/asset_generator.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
@@ -15,7 +14,11 @@ class MockAssetGenerator implements AssetGenerator {
 
   @override
   GeneratedAsset createAssetReference(String content) {
-    return GeneratedAsset.mermaid(content);
+    return GeneratedAsset(
+      name: GeneratedAsset.buildKey(content),
+      extension: AssetExtension.png,
+      type: 'mock',
+    );
   }
 
   @override
