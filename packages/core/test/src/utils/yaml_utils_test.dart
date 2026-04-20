@@ -4,6 +4,124 @@ import 'package:yaml/yaml.dart';
 
 void main() {
   group('YamlUtils', () {
+    group('parseYamlMap', () {
+      test('returns empty map for empty YAML', () {
+        expect(parseYamlMap(''), isEmpty);
+        expect(parseYamlMap('   \n\t  '), isEmpty);
+      });
+
+      test('parses valid top-level map', () {
+        const yaml = '''
+name: test_app
+version: 1.0.0
+publish_to: none
+''';
+
+        expect(parseYamlMap(yaml), {
+          'name': 'test_app',
+          'version': '1.0.0',
+          'publish_to': 'none',
+        });
+      });
+
+      test('converts nested maps and lists into plain Dart collections', () {
+        const yaml = '''
+dependencies:
+  flutter:
+    sdk: flutter
+flutter:
+  assets:
+    - .superdeck/
+    - .superdeck/assets/
+''';
+
+        final result = parseYamlMap(yaml);
+        final dependencies = result['dependencies'];
+        final flutterDependency = (dependencies as Map)['flutter'];
+        final flutter = result['flutter'];
+        final assets = (flutter as Map)['assets'];
+
+        expect(dependencies, isA<Map>());
+        expect(dependencies, isNot(isA<YamlMap>()));
+        expect(flutterDependency, isA<Map>());
+        expect(flutterDependency, isNot(isA<YamlMap>()));
+        expect(assets, isA<List>());
+        expect(assets, isNot(isA<YamlList>()));
+        expect(assets, ['.superdeck/', '.superdeck/assets/']);
+      });
+
+      test('throws FormatException for top-level scalar', () {
+        expect(
+          () => parseYamlMap('not a map', sourceLabel: 'pubspec.yaml'),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('pubspec.yaml'),
+            ),
+          ),
+        );
+      });
+
+      test('throws FormatException for top-level list', () {
+        expect(
+          () => parseYamlMap('''
+- first
+- second
+''', sourceLabel: 'pubspec.yaml'),
+          throwsA(isA<FormatException>()),
+        );
+      });
+
+      test('throws FormatException for null YAML document', () {
+        expect(
+          () => parseYamlMap('---\n...', sourceLabel: 'pubspec.yaml'),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('pubspec.yaml'),
+            ),
+          ),
+        );
+      });
+
+      test('throws FormatException for null YAML keys', () {
+        expect(
+          () => parseYamlMap('''
+?
+: value
+''', sourceLabel: 'pubspec.yaml'),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              allOf(contains('null YAML key'), contains('pubspec.yaml')),
+            ),
+          ),
+        );
+      });
+
+      test(
+        'throws FormatException containing source label for invalid YAML',
+        () {
+          expect(
+            () => parseYamlMap('name: [broken', sourceLabel: 'pubspec.yaml'),
+            throwsA(
+              isA<FormatException>().having(
+                (error) => error.message,
+                'message',
+                allOf(
+                  contains('pubspec.yaml'),
+                  contains('Invalid YAML syntax'),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    });
+
     group('convertYamlToMap', () {
       group('valid YAML', () {
         test('parses simple key-value pairs', () {

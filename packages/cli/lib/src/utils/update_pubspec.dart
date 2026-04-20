@@ -1,13 +1,12 @@
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
-import 'package:yaml/yaml.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
 /// Updates the 'assets' section of a pubspec.yaml with workspace paths.
 String updatePubspecAssets(DeckWorkspace workspace, String pubspecContents) {
-  final parsedYaml = _loadPubspecMap(pubspecContents);
-  final flutterSection = _stringKeyedMap(
-    parsedYaml['flutter'] as Map? ?? const <String, dynamic>{},
+  final parsedYaml = parseYamlMap(pubspecContents, sourceLabel: 'pubspec.yaml');
+  final flutterSection = Map<String, Object?>.from(
+    parsedYaml['flutter'] as Map? ?? const <String, Object?>{},
   );
 
   final assets = List<String>.from(
@@ -38,41 +37,4 @@ String updatePubspecAssets(DeckWorkspace workspace, String pubspecContents) {
   final updatedYaml = Map.of(parsedYaml)..['flutter'] = flutterSection;
 
   return YamlWriter(allowUnquotedStrings: true).write(updatedYaml);
-}
-
-Map<String, Object?> _loadPubspecMap(String pubspecContents) {
-  Object? yaml;
-  try {
-    yaml = loadYaml(pubspecContents);
-  } on YamlException catch (error, stackTrace) {
-    return _pubspecFormatException(
-      'Failed to parse pubspec.yaml. Invalid YAML syntax. '
-      'Please check your pubspec.yaml file. Error: $error',
-      stackTrace,
-    );
-  }
-
-  if (yaml is Map<Object?, Object?>) {
-    return _stringKeyedMap(yaml);
-  }
-
-  return _pubspecFormatException(
-    'Expected pubspec.yaml to define a map at the top level.',
-    StackTrace.current,
-  );
-}
-
-Map<String, Object?> _stringKeyedMap(Map<Object?, Object?> source) {
-  return source.map((key, value) {
-    final stringKey = key?.toString();
-    if (stringKey == null) {
-      throw const FormatException('Encountered null key in pubspec.yaml map.');
-    }
-
-    return MapEntry(stringKey, value);
-  });
-}
-
-Never _pubspecFormatException(String message, StackTrace stackTrace) {
-  return Error.throwWithStackTrace(FormatException(message), stackTrace);
 }

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
-import 'package:yaml/yaml.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
 import '../../utils/constants.dart';
@@ -48,12 +48,14 @@ Future<void> applySetup(Directory projectDir, Logger logger) async {
   }
 
   final pubspecContents = await pubspecFile.readAsString();
-  final pubspec = loadYaml(pubspecContents);
-  if (pubspec is! Map ||
-      pubspec['dependencies'] is! Map ||
-      (pubspec['dependencies'] as Map)['flutter'] is! Map ||
-      ((pubspec['dependencies'] as Map)['flutter'] as Map)['sdk'] !=
-          'flutter') {
+  final pubspec = parseYamlMap(pubspecContents, sourceLabel: 'pubspec.yaml');
+  final dependencies = pubspec['dependencies'];
+  final flutterDependency = dependencies is Map
+      ? dependencies['flutter']
+      : null;
+  final isFlutterApp =
+      flutterDependency is Map && flutterDependency['sdk'] == 'flutter';
+  if (!isFlutterApp) {
     throw FileSystemException(
       'Failed to configure SuperDeck: pubspec.yaml does not declare a '
       'Flutter SDK dependency. SuperDeck requires a Flutter app.',
@@ -86,7 +88,7 @@ Future<void> applySetup(Directory projectDir, Logger logger) async {
 }
 
 String patchSetupPubspec(String pubspecContents) {
-  final pubspec = _loadYamlMap(pubspecContents);
+  final pubspec = parseYamlMap(pubspecContents, sourceLabel: 'pubspec.yaml');
   final dependencies = _mutableMap(pubspec['dependencies']);
   final devDependencies = _mutableMap(pubspec['dev_dependencies']);
   final flutter = _mutableMap(pubspec['flutter']);
@@ -178,42 +180,9 @@ String _insertBeforeClosingTag(
   return html.replaceRange(match.start, match.start, '$insertion\n');
 }
 
-Map<String, Object?> _loadYamlMap(String contents) {
-  final yaml = loadYaml(contents);
-  if (yaml is! Map<Object?, Object?>) {
-    throw const FormatException(
-      'Expected generated YAML content to have a top-level map.',
-    );
-  }
-  return _stringKeyedMap(yaml);
-}
-
-Map<String, Object?> _stringKeyedMap(Map<Object?, Object?> source) {
-  return source.map((key, value) {
-    final stringKey = key?.toString();
-    if (stringKey == null) {
-      throw const FormatException('Encountered a null YAML key.');
-    }
-    return MapEntry(stringKey, _normalizeYamlValue(value));
-  });
-}
-
-Object? _normalizeYamlValue(Object? value) {
-  if (value is Map<Object?, Object?>) {
-    return _stringKeyedMap(value);
-  }
-  if (value is List) {
-    return value.map(_normalizeYamlValue).toList();
-  }
-  return value;
-}
-
 Map<String, Object?> _mutableMap(Object? value) {
-  if (value is Map<String, Object?>) {
+  if (value is Map) {
     return Map<String, Object?>.from(value);
-  }
-  if (value is Map<Object?, Object?>) {
-    return _stringKeyedMap(value);
   }
   return <String, Object?>{};
 }
