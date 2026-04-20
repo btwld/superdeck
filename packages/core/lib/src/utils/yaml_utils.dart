@@ -26,14 +26,18 @@ Map<String, Object?> parseYamlMap(
     );
   }
 
-  if (yamlDoc == null) return {};
+  if (yamlDoc == null) {
+    throw FormatException(
+      'Expected $sourceLabel to define a map at the top level.',
+    );
+  }
   if (yamlDoc is! Map) {
     throw FormatException(
       'Expected $sourceLabel to define a map at the top level.',
     );
   }
 
-  return _deepConvert(yamlDoc) as Map<String, Object?>;
+  return _deepConvertStrictMap(yamlDoc, sourceLabel);
 }
 
 /// Converts YAML string to a `Map<String, Object?>`
@@ -70,6 +74,35 @@ Map<String, Object?> convertYamlToMap(
     if (strict) rethrow;
     return {};
   }
+}
+
+Map<String, Object?> _deepConvertStrictMap(
+  Map<Object?, Object?> value,
+  String sourceLabel,
+) {
+  return Map<String, Object?>.fromEntries(
+    value.entries.map((entry) {
+      final key = entry.key;
+      if (key == null) {
+        throw FormatException('Encountered a null YAML key in $sourceLabel.');
+      }
+
+      return MapEntry(
+        key.toString(),
+        _deepConvertStrict(entry.value, sourceLabel),
+      );
+    }),
+  );
+}
+
+Object? _deepConvertStrict(Object? value, String sourceLabel) {
+  if (value is Map) {
+    return _deepConvertStrictMap(value, sourceLabel);
+  }
+  if (value is List) {
+    return value.map((item) => _deepConvertStrict(item, sourceLabel)).toList();
+  }
+  return value;
 }
 
 /// Recursively converts YAML types (YamlMap, YamlList) to plain Dart types

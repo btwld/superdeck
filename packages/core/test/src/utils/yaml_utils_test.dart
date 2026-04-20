@@ -73,6 +73,35 @@ flutter:
         );
       });
 
+      test('throws FormatException for null YAML document', () {
+        expect(
+          () => parseYamlMap('---\n...', sourceLabel: 'pubspec.yaml'),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('pubspec.yaml'),
+            ),
+          ),
+        );
+      });
+
+      test('throws FormatException for null YAML keys', () {
+        expect(
+          () => parseYamlMap('''
+?
+: value
+''', sourceLabel: 'pubspec.yaml'),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              allOf(contains('null YAML key'), contains('pubspec.yaml')),
+            ),
+          ),
+        );
+      });
+
       test(
         'throws FormatException containing source label for invalid YAML',
         () {
