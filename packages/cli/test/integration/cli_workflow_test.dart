@@ -31,11 +31,9 @@ void main() {
         expect(await runner.run(['setup']), ExitCode.success.code);
 
         final pubspec = await _read(projectDir, 'pubspec.yaml');
-        final index = await _read(projectDir, 'web/index.html');
-        final entitlements = await _read(projectDir, 'macos/Runner/DebugProfile.entitlements');
-        expect(_count(pubspec, '- .superdeck/\n'), 1);
-        expect(_count(pubspec, '- .superdeck/assets/\n'), 1);
-        expect(_count(index, 'id="flutter-loader"'), 1);
+        final entitlements =
+            await _read(projectDir, 'macos/Runner/DebugProfile.entitlements');
+        expect(_count(pubspec, '.superdeck/assets/'), 1);
         expect(_count(entitlements, 'com.apple.security.files.user-selected.read-write'), 1);
       });
     });
@@ -45,8 +43,6 @@ void main() {
 Future<Directory> _createProject() async {
   final dir = await createTempDirAsync();
   createTestPubspec(dir);
-  await File(path.join(createWebDirectory(dir).path, 'index.html'))
-      .writeAsString(_indexHtml);
   final runnerDir = Directory(path.join(dir.path, 'macos', 'Runner'));
   await runnerDir.create(recursive: true);
   for (final name in ['DebugProfile.entitlements', 'Release.entitlements']) {
@@ -59,21 +55,16 @@ Future<Directory> _createProject() async {
 Future<void> _expectSetup(Directory dir) async {
   expect(
     await _read(dir, 'pubspec.yaml'),
-    allOf(contains('superdeck:'), contains('superdeck_cli:'), contains('.superdeck/'), contains('.superdeck/assets/')),
+    allOf(contains('.superdeck/'), contains('.superdeck/assets/')),
   );
   expect(Directory(path.join(dir.path, '.superdeck/assets')).existsSync(), isTrue);
   expect(
-    await _read(dir, 'web/index.html'),
-    allOf(contains('id="flutter-loader"'), contains('superdeck:managed loader-style:start'), contains('superdeck:managed loader-body:start')),
-  );
-  expect(
-    await _read(dir, 'web/flutter_bootstrap.js'),
-    contains('superdeck:managed bootstrap'),
-  );
-  expect(File(path.join(dir.path, 'web/superdeck_loader.svg')).existsSync(), isTrue);
-  expect(
     await _read(dir, 'macos/Runner/DebugProfile.entitlements'),
-    allOf(contains('com.apple.security.files.user-selected.read-write'), contains('com.apple.security.files.downloads.read-write'), contains('<false/>')),
+    allOf(
+      contains('com.apple.security.files.user-selected.read-write'),
+      contains('com.apple.security.files.downloads.read-write'),
+      contains('<false/>'),
+    ),
   );
 }
 
@@ -115,9 +106,6 @@ Future<String> _read(Directory dir, String relativePath) =>
 int _count(String contents, String pattern) =>
     RegExp(RegExp.escape(pattern)).allMatches(contents).length;
 
-const _indexHtml =
-    '<!DOCTYPE html><html><head><base href="\$FLUTTER_BASE_HREF"></head>'
-    '<body><script src="flutter_bootstrap.js" async></script></body></html>';
 const _entitlements =
     '<plist version="1.0"><dict><key>com.apple.security.app-sandbox</key>'
     '<true/></dict></plist>';
