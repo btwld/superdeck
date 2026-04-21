@@ -11,20 +11,16 @@ final class DeckWorkspace with DeckWorkspaceMappable {
   final String projectDir;
   final String slidesPath;
   final String outputDir;
-  final String assetsPath;
 
   DeckWorkspace({
     String? projectDir,
     String? slidesPath,
     String? outputDir,
-    String? assetsPath,
   }) : projectDir = projectDir ?? '.',
        slidesPath = slidesPath ?? 'slides.md',
-       outputDir = outputDir ?? '.superdeck',
-       assetsPath = assetsPath ?? 'assets' {
+       outputDir = outputDir ?? '.superdeck' {
     _validatePath('slidesPath', this.slidesPath);
     _validatePath('outputDir', this.outputDir);
-    _validatePath('assetsPath', this.assetsPath);
   }
 
   static void _validatePath(String name, String value) {
@@ -53,17 +49,6 @@ final class DeckWorkspace with DeckWorkspaceMappable {
   String get bundledDeckJsonPath =>
       _normalizeBundledPath(p.join(outputDir, 'superdeck.json'));
 
-  Directory get assetsDir => Directory(p.join(superdeckDir.path, assetsPath));
-
-  /// Path for reading generated assets from bundled Flutter assets.
-  ///
-  /// This intentionally ignores [projectDir] because runtime asset keys are
-  /// always relative to the app bundle root.
-  String get bundledAssetsPath =>
-      _normalizeBundledPath(p.join(outputDir, assetsPath));
-
-  File get assetsRefJson =>
-      File(p.join(superdeckDir.path, 'generated_assets.json'));
   File get buildStatusJson =>
       File(p.join(superdeckDir.path, 'build_status.json'));
 
@@ -87,7 +72,6 @@ final class DeckWorkspace with DeckWorkspaceMappable {
     'projectDir': Ack.string().strictParsing().optional(),
     'slidesPath': _safePath.optional(),
     'outputDir': _safePath.optional(),
-    'assetsPath': _safePath.optional(),
   }).passthrough();
 
   /// Returns `true` when [value] is a relative path that does not contain

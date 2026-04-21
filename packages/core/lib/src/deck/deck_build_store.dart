@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:markdown/markdown.dart' as md;
-import 'package:path/path.dart' as p;
 
 import '../markdown/markdown_json.dart';
 import '../utils/extensions.dart';
 import 'package:logging/logging.dart';
 import '../utils/pretty_json.dart';
-import 'asset_model.dart';
 import 'deck_build_status.dart';
 import 'deck_workspace.dart';
 import 'slide_model.dart';
@@ -22,11 +19,9 @@ class DeckBuildStore {
   DeckBuildStore({required this.workspace});
 
   final DeckWorkspace workspace;
-  final List<GeneratedAsset> _generatedAssets = [];
   final Logger _logger = Logger('DeckBuildStore');
 
   Future<void> initialize() async {
-    await workspace.assetsDir.ensureExists();
     await workspace.deckJson.ensureExists(content: '[]');
     await workspace.buildStatusJson.ensureExists(
       content: prettyJson(
@@ -43,15 +38,6 @@ class DeckBuildStore {
     return workspace.slidesFile.readAsString();
   }
 
-  void clearGeneratedAssets() {
-    _generatedAssets.clear();
-  }
-
-  String getGeneratedAssetPath(GeneratedAsset asset) {
-    _generatedAssets.add(asset);
-    return p.join(workspace.assetsDir.path, asset.fileName);
-  }
-
   Future<void> saveReferences(List<Slide> slides) async {
     final deckJson = prettyJson(
       slides.map((slide) => slide.toMap()).toList(growable: false),
@@ -59,33 +45,6 @@ class DeckBuildStore {
     await workspace.deckJson.writeAsString(deckJson);
 
     await _saveFullDeckReference(slides);
-    final uniqueAssets = <String, GeneratedAsset>{};
-    for (final asset in _generatedAssets) {
-      uniqueAssets[asset.fileName] = asset;
-    }
-
-    final assetPaths = uniqueAssets.values
-        .map((asset) => p.join(workspace.assetsDir.path, asset.fileName))
-        .toList();
-
-    final previousAssetsRef = await _readExistingAssetsReference();
-    final filesUnchanged =
-        previousAssetsRef != null &&
-        _haveSamePaths(assetPaths, previousAssetsRef.files);
-
-    final assetsRef = GeneratedAssetsReference(
-      lastModified: filesUnchanged
-          ? previousAssetsRef.lastModified
-          : DateTime.now(),
-      files: assetPaths,
-    );
-
-    if (!filesUnchanged) {
-      final assetsJson = prettyJson(assetsRef.toMap());
-      await workspace.assetsRefJson.writeAsString(assetsJson);
-    }
-
-    await _cleanupGeneratedAssets(assetsRef);
   }
 
   Future<void> saveBuildStatus({
@@ -149,71 +108,5 @@ class DeckBuildStore {
 
     final fullDeckJson = prettyJson(slidesWithMarkdownJson);
     await workspace.deckFullJson.writeAsString(fullDeckJson);
-  }
-
-  /// Removes generated assets that are no longer referenced.
-  Future<void> _cleanupGeneratedAssets(
-    GeneratedAssetsReference assetsReference,
-  ) async {
-    final existingFiles = await workspace.assetsDir
-        .list(recursive: true)
-        .where((e) => e is File)
-        .map((e) => e as File)
-        .toList();
-
-    final referencedFiles = assetsReference.files.toSet();
-
-    final filesToDelete = existingFiles.where(
-      (file) => !referencedFiles.contains(file.path),
-    );
-
-    await Future.wait(
-      filesToDelete.map((file) async {
-        try {
-          if (await file.exists()) {
-            await file.delete();
-            _logger.info('Deleted unreferenced asset: ${file.path}');
-          }
-        } catch (e) {
-          _logger.warning('Failed to delete asset file ${file.path}: $e');
-        }
-      }),
-    );
-  }
-
-  Future<GeneratedAssetsReference?> _readExistingAssetsReference() async {
-    final file = workspace.assetsRefJson;
-    if (!await file.exists()) {
-      return null;
-    }
-
-    try {
-      final content = await file.readAsString();
-      if (content.trim().isEmpty) {
-        return null;
-      }
-
-      final data = jsonDecode(content) as Map<String, dynamic>;
-      return GeneratedAssetsReference.fromMap(data);
-    } catch (e) {
-      _logger.warning(
-        'Failed to parse existing generated assets reference: $e',
-      );
-      return null;
-    }
-  }
-
-  bool _haveSamePaths(List<String> current, List<String> previous) {
-    if (current.length != previous.length) {
-      return false;
-    }
-
-    for (var i = 0; i < current.length; i++) {
-      if (current[i] != previous[i]) {
-        return false;
-      }
-    }
-
-    return true;
   }
 }

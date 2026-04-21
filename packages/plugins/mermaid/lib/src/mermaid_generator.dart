@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart' show visibleForTesting;
 import 'package:puppeteer/puppeteer.dart';
-import 'package:superdeck_core/superdeck_core.dart';
-
-import 'mermaid_asset.dart';
 
 typedef _MermaidRenderConfig = ({
   String theme,
@@ -23,11 +21,11 @@ typedef _MermaidRenderConfig = ({
   Map<String, Object?> diagramConfigs,
 });
 
-/// Asset generator for Mermaid diagrams.
+/// Renders Mermaid diagrams to PNG using a headless browser.
 ///
-/// Converts Mermaid diagram syntax into PNG images using a headless browser.
-/// This generator focuses purely on asset generation and does not manipulate slide content.
-class MermaidGenerator implements AssetGenerator {
+/// Standalone puppeteer-backed utility. Call [render] with Mermaid syntax to
+/// produce PNG bytes; call [dispose] when finished to close the browser.
+class MermaidGenerator {
   static final _logger = Logger('MermaidGenerator');
 
   Browser? _browser;
@@ -35,7 +33,6 @@ class MermaidGenerator implements AssetGenerator {
   bool _disposed = false;
   final Map<String, Object?> _launchOptions;
 
-  /// HTML template for rendering Mermaid diagrams.
   static final _mermaidHtmlTemplate = '''
 <html>
   <head>
@@ -96,7 +93,6 @@ class MermaidGenerator implements AssetGenerator {
 </html>
 ''';
 
-  @override
   final Map<String, Object?> configuration;
 
   /// Creates a Mermaid generator with hardcoded dark theme as default.
@@ -116,7 +112,6 @@ class MermaidGenerator implements AssetGenerator {
          ),
        );
 
-  /// Default CSS theme styling - colors come from theme variables.
   static const _defaultThemeCSS = '''
   text {
     font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
@@ -150,10 +145,7 @@ class MermaidGenerator implements AssetGenerator {
     'er',
   ];
 
-  /// Hardcoded dark theme variables (pre-computed for optimal dark slide rendering)
-  /// Based on: background=#0b0f14, primary=#0ea5e9, text=#e2e8f0, darkMode=true
   static const _darkThemeVariables = <String, dynamic>{
-    // Core global variables
     'darkMode': true,
     'background': '#0b0f14',
     'fontFamily': 'Inter, ui-sans-serif, system-ui, sans-serif',
@@ -258,35 +250,21 @@ class MermaidGenerator implements AssetGenerator {
     'tagLabelFontSize': '14px',
   };
 
-  /// Default dark theme configuration with hardcoded theme variables
   static final _defaultConfiguration = <String, dynamic>{
-    // Global look & theme
-    'theme': 'base', // 'base' is the only theme you can customize
-    'look': 'classic', // or 'handDrawn'
-    'securityLevel': 'strict', // 'loose' only if you need clickable links/HTML
+    'theme': 'base',
+    'look': 'classic',
+    'securityLevel': 'strict',
     'handDrawnSeed': 17,
-
-    // Hardcoded dark theme variables (optimized for dark slide backgrounds)
     'themeVariables': _darkThemeVariables,
-
-    // CSS only for non-variable gaps (tick text, relationship labels, etc.)
     'themeCSS': _defaultThemeCSS,
-
-    // Flowchart-specific config (v11)
     'flowchart': {'htmlLabels': true},
-
-    // Sequence diagram knobs
     'sequence': {'mirrorActors': false},
-
-    // Class diagram (v11 supports htmlLabels here too)
     'class': {'htmlLabels': true},
-
-    // Rendering mechanics for the browser page
     'viewportWidth': _defaultViewportWidth,
     'viewportHeight': _defaultViewportHeight,
     'deviceScaleFactor': _defaultDeviceScaleFactor,
     'timeout': _defaultTimeout,
-    'extraCSS': '', // Optional extra CSS
+    'extraCSS': '',
   };
 
   static Map<String, Object?> _mergeConfiguration(
@@ -312,27 +290,7 @@ class MermaidGenerator implements AssetGenerator {
     return merged;
   }
 
-  @override
-  String get type => 'mermaid';
-
-  @override
-  bool canProcess(String contentType) => contentType == 'mermaid';
-
-  @override
-  GeneratedAsset createAssetReference(String content) {
-    return mermaidAsset(content);
-  }
-
-  /// Returns an existing browser instance or creates a new one.
-  ///
-  /// Uses a shared future to prevent concurrent browser launches - if multiple
-  /// calls arrive while the browser is being initialized, they all await the
-  /// same initialization future.
-  ///
-  /// Handles browser disconnection gracefully by detecting stale instances
-  /// and relaunching when needed.
   Future<Browser> _getBrowser() async {
-    // Prevent usage after disposal
     if (_disposed) {
       throw StateError(
         'MermaidGenerator has been disposed. '
@@ -340,12 +298,10 @@ class MermaidGenerator implements AssetGenerator {
       );
     }
 
-    // Return existing browser if still connected
     if (_browser != null && _browser!.isConnected) {
       return _browser!;
     }
 
-    // Browser disconnected externally - clean up stale references
     if (_browser != null && !_browser!.isConnected) {
       _logger.warning(
         'Browser disconnected unexpectedly. Relaunching for next diagram.',
@@ -354,29 +310,22 @@ class MermaidGenerator implements AssetGenerator {
       _browserInitFuture = null;
     }
 
-    // If initialization is in progress, await it
     if (_browserInitFuture != null) {
       return _browserInitFuture!;
     }
 
-    // Start initialization and store the future for concurrent callers
     _browserInitFuture = _launchBrowser();
     try {
       _browser = await _browserInitFuture!;
       return _browser!;
     } catch (e) {
-      // Clear the future on failure so retry is possible
       _browserInitFuture = null;
       rethrow;
     } finally {
-      // Clear the init future after completion - the result is now in _browser
-      // This prevents stale futures from being returned if _browser is later
-      // cleared due to disconnection
       _browserInitFuture = null;
     }
   }
 
-  /// Launches a new headless browser for Mermaid rendering.
   Future<Browser> _launchBrowser() async {
     try {
       _logger.info('Launching headless browser for Mermaid rendering');
@@ -405,7 +354,6 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
-  /// Executes an action with a new browser page, closing it afterwards.
   Future<T> _withPage<T>(Future<T> Function(Page page) action) async {
     final browser = await _getBrowser();
     final page = await browser.newPage();
@@ -416,10 +364,10 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
-  @override
-  Future<List<int>> generateAsset(String content, String assetPath) async {
+  /// Renders the given Mermaid [syntax] and returns PNG bytes.
+  Future<Uint8List> render(String syntax) async {
     try {
-      return await _generateMermaidImage(content);
+      return await _generateMermaidImage(syntax);
     } on TimeoutException catch (e, stackTrace) {
       final timeoutSeconds =
           configuration['timeout'] as int? ?? _defaultTimeout;
@@ -441,22 +389,12 @@ class MermaidGenerator implements AssetGenerator {
     }
   }
 
-  /// Returns whether the diagram type should use fallback theme instead of custom theme.
-  ///
-  /// Some diagram types (timeline, gantt) have rendering issues with custom
-  /// dark themes where structural elements (axis, grid lines) become invisible.
-  /// For these diagrams, this falls back to Mermaid's default theme which has
-  /// better visibility for structural elements.
-  ///
-  /// Only applies to dark mode - light mode custom theme works fine for timeline.
   bool _shouldUseFallbackTheme(String graphDefinition) {
     final trimmed = graphDefinition.trim().toLowerCase();
 
-    // Check if we're in dark mode
     final themeVars = configuration['themeVariables'] as Map<String, Object?>?;
     final isDarkMode = themeVars?['darkMode'] as bool? ?? true;
 
-    // Timeline diagrams have axis visibility issues with custom DARK themes only
     if (trimmed.startsWith('timeline') && isDarkMode) {
       _logger.warning(
         'Timeline diagram detected in dark mode. Using Mermaid default theme '
@@ -470,8 +408,7 @@ class MermaidGenerator implements AssetGenerator {
     return false;
   }
 
-  /// Generates a PNG image from the given Mermaid diagram definition.
-  Future<List<int>> _generateMermaidImage(String graphDefinition) {
+  Future<Uint8List> _generateMermaidImage(String graphDefinition) {
     _logger.fine('Starting Mermaid image generation');
     final config = _resolveRenderConfig(graphDefinition);
 
@@ -488,7 +425,6 @@ class MermaidGenerator implements AssetGenerator {
         '${config.deviceScaleFactor}',
       );
 
-      // Set viewport before loading content
       await page.setViewport(
         DeviceViewport(
           width: config.width,
@@ -504,7 +440,6 @@ class MermaidGenerator implements AssetGenerator {
         'Waiting for Mermaid to render (timeout: ${config.timeout.inSeconds}s)',
       );
 
-      // Wait for mermaid to finish rendering
       try {
         await page.waitForFunction(
           'window.mermaidReady === true || window.mermaidError != null',
@@ -530,7 +465,6 @@ class MermaidGenerator implements AssetGenerator {
 
       _logger.fine('Selecting SVG element for screenshot');
 
-      // Screenshot the SVG element directly
       final element = await page.$OrNull('pre.mermaid > svg');
       if (element == null) {
         _logger.severe('SVG element not found after successful render');
@@ -554,11 +488,10 @@ class MermaidGenerator implements AssetGenerator {
   }
 
   _MermaidRenderConfig _resolveRenderConfig(String graphDefinition) {
-    // Detect diagram type and use fallback theme for problematic diagrams
     final useFallbackTheme = _shouldUseFallbackTheme(graphDefinition);
 
     final theme = useFallbackTheme
-        ? 'default' // Use Mermaid's default theme for timeline/gantt
+        ? 'default'
         : (configuration['theme'] as String? ?? 'base');
 
     final themeVariables = useFallbackTheme
@@ -569,7 +502,7 @@ class MermaidGenerator implements AssetGenerator {
           );
 
     final themeCSS = useFallbackTheme
-        ? '' // No custom CSS for fallback
+        ? ''
         : (configuration['themeCSS'] as String? ?? '');
 
     final diagramConfigs = <String, Object?>{};
@@ -603,7 +536,6 @@ class MermaidGenerator implements AssetGenerator {
     _MermaidRenderConfig config,
     String graphDefinition,
   ) {
-    // Base64 encode for safe injection
     final graphB64 = base64Encode(utf8.encode(graphDefinition));
     final themeCSSB64 = base64Encode(utf8.encode(config.themeCSS));
     final extraCSSB64 = base64Encode(utf8.encode(config.extraCSS));
@@ -629,16 +561,11 @@ class MermaidGenerator implements AssetGenerator {
     );
   }
 
-  /// The timeout for waiting on browser initialization during dispose.
   static const _disposeTimeout = Duration(seconds: 30);
 
-  @override
   Future<void> dispose() async {
-    // Mark as disposed first to prevent new browser launches
     _disposed = true;
 
-    // Wait for any in-flight initialization to complete before disposing,
-    // but with a timeout to prevent indefinite hangs if browser launch is stuck
     if (_browserInitFuture != null) {
       try {
         await _browserInitFuture!.timeout(_disposeTimeout);

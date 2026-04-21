@@ -131,25 +131,6 @@ void main() {
         expect(fullDeckJson.first, containsPair('key', isA<String>()));
       });
 
-      test('generated assets metadata excludes runtime thumbnails', () async {
-        const markdown = '# First Slide\n\n---\n\n# Second Slide';
-        final builder = DeckBuilder(
-          tasks: const [],
-          workspace: workspace,
-          store: store,
-        );
-        addTearDown(builder.dispose);
-
-        await workspace.slidesFile.writeAsString(markdown);
-        await builder.build();
-
-        final assetsRef =
-            jsonDecode(await workspace.assetsRefJson.readAsString())
-                as Map<String, dynamic>;
-
-        expect(assetsRef['files'], isEmpty);
-      });
-
       test('wraps task failures in TaskException', () async {
         const markdown = '# First Slide';
         final builder = DeckBuilder(

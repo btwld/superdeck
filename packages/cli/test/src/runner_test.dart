@@ -70,12 +70,10 @@ void main() {
 
         final workspace = DeckWorkspace(projectDir: tempDir.path);
         await workspace.superdeckDir.create(recursive: true);
-        await workspace.assetsRefJson.writeAsString('{"stale":true}');
 
         final exitCode = await runner.run([
           '--verbose',
           'build',
-          '--force-rebuild',
           '--skip-pubspec',
         ]);
 
@@ -85,7 +83,7 @@ void main() {
         );
         expect(
           mockLogger.detailMessages,
-          contains('Deleted generated_assets.json'),
+          contains('Verbose logging enabled'),
         );
       });
     });

@@ -2,20 +2,37 @@
 
 Optional Mermaid diagram rendering support for SuperDeck presentations.
 
-This package contains the Mermaid asset generator and puppeteer-backed rendering
-pipeline that were split out of `superdeck_builder`. It keeps the heavy
+This package provides a standalone `MermaidGenerator` that converts Mermaid
+syntax into PNG images via a headless browser (`puppeteer`). It keeps the
 headless-browser dependency out of the default CLI install for presentations
 that do not use Mermaid.
 
 > Integration with the default `superdeck_cli` build pipeline is not wired up
 > yet and will be provided by the plugin system in a future release.
 
+## Usage
+
+```dart
+import 'package:superdeck_mermaid/superdeck_mermaid.dart';
+
+final generator = MermaidGenerator();
+try {
+  final pngBytes = await generator.render('''
+    graph TD;
+      A-->B;
+      A-->C;
+  ''');
+  // persist or embed pngBytes
+} finally {
+  await generator.dispose();
+}
+```
+
 ## Contents
 
-- `MermaidGenerator` – implements `AssetGenerator` from `superdeck_core`, turns
-  Mermaid syntax into PNG via `puppeteer`.
-- `mermaidAsset(String syntax)` – helper that builds a `GeneratedAsset`
-  reference for a Mermaid diagram (type `mermaid`, extension `png`).
+- `MermaidGenerator` – standalone class that renders Mermaid syntax to PNG
+  bytes using `puppeteer`. Call `render(syntax)` to produce a `Uint8List`, and
+  `dispose()` to close the browser when finished.
 - `assets/grammars/mermaid.json` – TextMate grammar for syntax highlighting
   mermaid fenced code blocks.
 - `docs/mermaid_themes/` – reference Mermaid theme files.

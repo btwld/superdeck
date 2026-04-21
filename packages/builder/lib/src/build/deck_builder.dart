@@ -9,8 +9,6 @@ import '../parsers/markdown_parser.dart';
 import '../parsers/raw_slide_schema.dart';
 import '../parsers/section_parser.dart';
 import 'task_exception.dart';
-import '../tasks/asset_generation_task.dart';
-import '../tasks/dart_formatter_task.dart';
 import '../tasks/slide_context.dart';
 import '../tasks/task.dart';
 
@@ -69,8 +67,6 @@ class DeckBuilder {
     await store.initialize();
 
     await store.saveBuildStatus(phase: DeckBuildPhase.building);
-
-    store.clearGeneratedAssets();
 
     final markdownRaw = await store.readDeckMarkdown();
     final markdownParser = MarkdownParser();
@@ -169,10 +165,7 @@ final class StandardDeckBuildPipeline {
     int concurrentSlides = 4,
   }) {
     return DeckBuilder(
-      tasks: [
-        DartFormatterTask(),
-        AssetGenerationTask.withDefaults(store: store),
-      ],
+      tasks: const [],
       workspace: workspace,
       store: store,
       concurrentSlides: concurrentSlides,

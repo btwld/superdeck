@@ -43,14 +43,12 @@ DeckBuilder({
 ### `tasks`
 **Type:** `List<Task>`
 
-Tasks run for each slide, in list order.
+Tasks run for each slide, in list order. The default task list is empty;
+register your own tasks to extend the pipeline.
 
 ```dart
 DeckBuilder(
-  tasks: [
-    DartFormatterTask(),
-    AssetGenerationTask.withDefaults(store: store),
-  ],
+  tasks: const [],
   workspace: workspace,
   store: store,
 )
@@ -66,7 +64,6 @@ final workspace = DeckWorkspace(
   projectDir: '.',
   slidesPath: 'slides.md',
   outputDir: '.superdeck',
-  assetsPath: 'assets',
 );
 ```
 
@@ -74,7 +71,7 @@ final workspace = DeckWorkspace(
 **Type:** `DeckBuildStore`
 
 Build-side storage used by the builder to initialize files, read Markdown, save
-deck references, save build status, and track generated assets.
+deck references, and save build status.
 
 ```dart
 final store = DeckBuildStore(workspace: workspace);
@@ -99,12 +96,11 @@ During a build, `DeckBuilder`:
 
 1. Initializes the `DeckBuildStore`
 2. Saves build status as `DeckBuildPhase.building`
-3. Clears generated asset tracking
-4. Reads deck Markdown from the store
-5. Parses raw slides
-6. Runs every task for every slide
-7. Saves deck references
-8. Saves build status as `DeckBuildPhase.success`
+3. Reads deck Markdown from the store
+4. Parses raw slides
+5. Runs every task for every slide
+6. Saves deck references
+7. Saves build status as `DeckBuildPhase.success`
 
 If a task throws an `Exception`, `DeckBuilder` wraps it in `TaskException` and
 rethrows it from `build()`.
@@ -176,10 +172,9 @@ static DeckBuilder create({
 })
 ```
 
-Creates a `DeckBuilder` with the standard tasks in this order:
-
-1. `DartFormatterTask()`
-2. `AssetGenerationTask.withDefaults(...)`
+Creates a `DeckBuilder` with an empty default task list. It is the supported
+starting point when you want the standard wiring (workspace + store + concurrency)
+but no built-in tasks.
 
 ```dart
 final builder = StandardDeckBuildPipeline.create(
@@ -188,15 +183,13 @@ final builder = StandardDeckBuildPipeline.create(
 );
 ```
 
-`StandardDeckBuildPipeline.create` does not accept a custom task list. To add,
-remove, or reorder tasks, construct `DeckBuilder` directly.
+`StandardDeckBuildPipeline.create` does not accept a custom task list. To add
+tasks, construct `DeckBuilder` directly.
 
 ```dart
 final builder = DeckBuilder(
   tasks: [
     MyTask(),
-    DartFormatterTask(),
-    AssetGenerationTask.withDefaults(store: store),
   ],
   workspace: workspace,
   store: store,
@@ -271,57 +264,10 @@ Plug the task into a custom `DeckBuilder` task list:
 final builder = DeckBuilder(
   tasks: [
     StripSpeakerNotesTask(),
-    DartFormatterTask(),
-    AssetGenerationTask.withDefaults(store: store),
   ],
   workspace: workspace,
   store: store,
 );
-```
-
-## Built-in tasks
-
-### `AssetGenerationTask`
-
-Processes build-time assets in slide content through an asset generation
-pipeline, then updates the slide content with generated asset references.
-
-Use `AssetGenerationTask.withDefaults` for the standard asset pipeline.
-
-```dart
-factory AssetGenerationTask.withDefaults({
-  required DeckBuildStore store,
-  AssetCacheStore? cacheStore,
-})
-```
-
-The default generator list is empty; consumers register their own generators
-by constructing `AssetGenerationTask` directly.
-
-```dart
-AssetGenerationTask.withDefaults(store: store)
-```
-
-### `DartFormatterTask`
-
-Formats fenced Dart code blocks in slide Markdown.
-
-```dart
-DartFormatterTask({
-  Map<String, String>? environmentOverrides,
-  int? lineLength,
-  bool fix = true,
-})
-```
-
-The task processes fenced code blocks where the language is `dart`. If
-formatting a block fails, it logs the error and skips that block.
-
-```dart
-DartFormatterTask(
-  lineLength: 80,
-  fix: true,
-)
 ```
 
 ## Build events
@@ -450,6 +396,4 @@ From `packages/builder/lib/superdeck_builder.dart`:
 6. `StandardDeckBuildPipeline`
 7. `TaskException`
 8. `DeckFormatException`
-9. `AssetGenerationTask`
-10. `DartFormatterTask`
-11. `Task`
+9. `Task`

@@ -388,14 +388,10 @@ flowchart TD
 
 ## Build process
 
-When you run `dart run superdeck_cli:main build`, Mermaid diagrams are automatically:
-
-1. **Detected** in your markdown slides
-2. **Rendered** to high-quality PNG images
-3. **Cached** to avoid regenerating unchanged diagrams
-4. **Replaced** with image references in your presentation
-
-Generated images are saved to `.superdeck/assets/` and automatically included in your presentation.
+> Automatic rendering through the CLI is not currently wired up. The
+> `superdeck_mermaid` package exposes a standalone `MermaidGenerator` that
+> converts Mermaid syntax into PNG bytes via a headless browser; CLI/build
+> integration will return in a future release.
 
 ## Troubleshooting
 
