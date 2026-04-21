@@ -26,32 +26,16 @@ constructor signatures.
 
 ## DeckBuilder
 
-`DeckBuilder` builds decks from Markdown by reading a workspace, parsing slides,
-running tasks, writing build artifacts, and returning processed slides.
+`DeckBuilder` builds decks from Markdown by reading a workspace, parsing
+slides, writing build artifacts, and returning processed slides.
 
 ### Constructor
 
 ```dart
 DeckBuilder({
-  required List<Task> tasks,
   required DeckWorkspace workspace,
   required DeckBuildStore store,
-  int concurrentSlides = 4,
 });
-```
-
-### `tasks`
-**Type:** `List<Task>`
-
-Tasks run for each slide, in list order. The default task list is empty;
-register your own tasks to extend the pipeline.
-
-```dart
-DeckBuilder(
-  tasks: const [],
-  workspace: workspace,
-  store: store,
-)
 ```
 
 ### `workspace`
@@ -77,11 +61,6 @@ deck references, and save build status.
 final store = DeckBuildStore(workspace: workspace);
 ```
 
-### `concurrentSlides`
-**Type:** `int` | **Default:** `4`
-
-Number of slides processed concurrently in each batch.
-
 ## Methods
 
 ### `build()`
@@ -97,13 +76,9 @@ During a build, `DeckBuilder`:
 1. Initializes the `DeckBuildStore`
 2. Saves build status as `DeckBuildPhase.building`
 3. Reads deck Markdown from the store
-4. Parses raw slides
-5. Runs every task for every slide
-6. Saves deck references
-7. Saves build status as `DeckBuildPhase.success`
-
-If a task throws an `Exception`, `DeckBuilder` wraps it in `TaskException` and
-rethrows it from `build()`.
+4. Parses raw slides into `Slide` models
+5. Saves deck references
+6. Saves build status as `DeckBuildPhase.success`
 
 ```dart
 final slides = await builder.build();
@@ -115,8 +90,8 @@ final slides = await builder.build();
 Stream<BuildEvent> watchAndBuild()
 ```
 
-Runs an initial build, then watches `workspace.slidesFile` and rebuilds when the
-file changes.
+Runs an initial build, then watches `workspace.slidesFile` and rebuilds when
+the file changes.
 
 The stream emits:
 
@@ -140,134 +115,6 @@ await for (final event in builder.watchAndBuild()) {
       }
   }
 }
-```
-
-### `dispose()`
-
-```dart
-Future<void> dispose()
-```
-
-Disposes every task in `tasks`.
-
-Call `dispose()` when you are done with the builder, especially after ending
-watch mode.
-
-```dart
-await builder.dispose();
-```
-
-## StandardDeckBuildPipeline
-
-`StandardDeckBuildPipeline` is the supported entry point for the default
-SuperDeck build pipeline.
-
-### `create(...)`
-
-```dart
-static DeckBuilder create({
-  required DeckWorkspace workspace,
-  required DeckBuildStore store,
-  int concurrentSlides = 4,
-})
-```
-
-Creates a `DeckBuilder` with an empty default task list. It is the supported
-starting point when you want the standard wiring (workspace + store + concurrency)
-but no built-in tasks.
-
-```dart
-final builder = StandardDeckBuildPipeline.create(
-  workspace: workspace,
-  store: store,
-);
-```
-
-`StandardDeckBuildPipeline.create` does not accept a custom task list. To add
-tasks, construct `DeckBuilder` directly.
-
-```dart
-final builder = DeckBuilder(
-  tasks: [
-    MyTask(),
-  ],
-  workspace: workspace,
-  store: store,
-);
-```
-
-## Task
-
-`Task` is the base class for slide processing work.
-
-```dart
-abstract base class Task {
-  Task(this.name);
-
-  final String name;
-
-  FutureOr<void> run(context);
-
-  FutureOr<void> dispose();
-}
-```
-
-### `name`
-**Type:** `String`
-
-Task name used for logging and failure identification.
-
-### `run(context)`
-**Type:** `FutureOr<void>`
-
-Runs the task for one slide.
-
-Tasks can update the slide content by calling `context.updateSlide(...)`.
-Built-in tasks use this pattern after processing slide Markdown.
-
-### `dispose()`
-**Type:** `FutureOr<void>` | **Default:** no-op
-
-Override `dispose()` when a task owns resources that need explicit cleanup.
-
-### Custom task example
-
-```dart
-import 'dart:async';
-
-import 'package:superdeck_builder/superdeck_builder.dart';
-
-final class StripSpeakerNotesTask extends Task {
-  StripSpeakerNotesTask() : super('strip_speaker_notes');
-
-  @override
-  FutureOr<void> run(dynamic context) {
-    final content = context.slide.content as String;
-    final updatedContent = content.replaceAll(
-      RegExp(r'<!-- speaker:.*?-->', dotAll: true),
-      '',
-    );
-
-    context.updateSlide(
-      context.slide.copyWith(content: updatedContent),
-    );
-  }
-
-  @override
-  FutureOr<void> dispose() {}
-}
-```
-
-Plug the task into a custom `DeckBuilder` task list:
-
-```dart
-final builder = DeckBuilder(
-  tasks: [
-    StripSpeakerNotesTask(),
-  ],
-  workspace: workspace,
-  store: store,
-);
 ```
 
 ## Build events
@@ -301,38 +148,6 @@ the build store before emitting this event.
 
 ## Errors
 
-### `TaskException`
-
-```dart
-const TaskException(
-  String taskName,
-  Exception originalException,
-  int slideIndex,
-)
-```
-
-Raised by `DeckBuilder` when a task throws an `Exception`.
-
-Properties:
-
-### `taskName`
-**Type:** `String`
-
-Name of the task that failed.
-
-### `originalException`
-**Type:** `Exception`
-
-Original exception thrown by the task.
-
-### `slideIndex`
-**Type:** `int`
-
-Zero-based slide index being processed when the task failed.
-
-When using `build()`, the `TaskException` is thrown to the caller. When using
-`watchAndBuild()`, the same error is surfaced as `BuildFailed.error`.
-
 ### `DeckFormatException`
 
 ```dart
@@ -356,30 +171,23 @@ import 'package:superdeck_core/superdeck_core.dart'
 Future<void> main() async {
   final workspace = DeckWorkspace();
   final store = DeckBuildStore(workspace: workspace);
-  final builder = StandardDeckBuildPipeline.create(
-    workspace: workspace,
-    store: store,
-  );
+  final builder = DeckBuilder(workspace: workspace, store: store);
 
-  try {
-    final slides = await builder.build();
-    print('Built ${slides.length} slides');
+  final slides = await builder.build();
+  print('Built ${slides.length} slides');
 
-    await for (final event in builder.watchAndBuild()) {
-      switch (event) {
-        case BuildStarted():
-          print('Build started');
-        case BuildCompleted(:final slides):
-          print('Built ${slides.length} slides');
-        case BuildFailed(:final error, :final stackTrace):
-          print('Build failed: $error');
-          if (stackTrace != null) {
-            print(stackTrace);
-          }
-      }
+  await for (final event in builder.watchAndBuild()) {
+    switch (event) {
+      case BuildStarted():
+        print('Build started');
+      case BuildCompleted(:final slides):
+        print('Built ${slides.length} slides');
+      case BuildFailed(:final error, :final stackTrace):
+        print('Build failed: $error');
+        if (stackTrace != null) {
+          print(stackTrace);
+        }
     }
-  } finally {
-    await builder.dispose();
   }
 }
 ```
@@ -393,7 +201,4 @@ From `packages/builder/lib/superdeck_builder.dart`:
 3. `BuildCompleted`
 4. `BuildFailed`
 5. `DeckBuilder`
-6. `StandardDeckBuildPipeline`
-7. `TaskException`
-8. `DeckFormatException`
-9. `Task`
+6. `DeckFormatException`

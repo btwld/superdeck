@@ -6,11 +6,9 @@ void main() {
     test('exports the supported build surface', () {
       final error = DeckFormatException('invalid', '', 0);
 
-      expect(StandardDeckBuildPipeline.create, isNotNull);
       expect(DeckBuilder, isNotNull);
       expect(BuildStarted(), isA<BuildEvent>());
       expect(error, isA<Exception>());
-      expect(Task, isNotNull);
     });
   });
 }

@@ -69,11 +69,7 @@ void main() {
       'builder and loader propagate a real slides.md edit end-to-end',
       () async {
         final store = DeckBuildStore(workspace: workspace);
-        final builder = StandardDeckBuildPipeline.create(
-          workspace: workspace,
-          store: store,
-        );
-        addTearDown(builder.dispose);
+        final builder = DeckBuilder(workspace: workspace, store: store);
 
         final builderEvents = StreamIterator(builder.watchAndBuild());
         addTearDown(builderEvents.cancel);

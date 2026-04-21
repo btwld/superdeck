@@ -1,13 +1,8 @@
 import 'dart:io';
 
-import 'package:ack/ack.dart';
-import 'package:dart_mappable/dart_mappable.dart';
 import 'package:path/path.dart' as p;
 
-part 'deck_workspace.mapper.dart';
-
-@MappableClass()
-final class DeckWorkspace with DeckWorkspaceMappable {
+final class DeckWorkspace {
   final String projectDir;
   final String slidesPath;
   final String outputDir;
@@ -55,24 +50,6 @@ final class DeckWorkspace with DeckWorkspaceMappable {
   File get slidesFile => File(p.join(projectDir, slidesPath));
 
   File get pubspecFile => File(p.join(projectDir, 'pubspec.yaml'));
-
-  static final fromMap = DeckWorkspaceMapper.fromMap;
-
-  static DeckWorkspace parse(Map<String, Object?> map) =>
-      fromMap(Map<String, dynamic>.from(schema.parse(map)!));
-
-  static final _safePath = Ack.string().strictParsing().refine(
-    _isRelativeWithoutTraversal,
-    message:
-        'must be a relative path without ".." traversal segments'
-        ' (absolute paths and parent-directory traversal are not allowed)',
-  );
-
-  static final schema = Ack.object({
-    'projectDir': Ack.string().strictParsing().optional(),
-    'slidesPath': _safePath.optional(),
-    'outputDir': _safePath.optional(),
-  }).passthrough();
 
   /// Returns `true` when [value] is a relative path that does not contain
   /// `..` as a path segment. Filenames that happen to contain `..` (e.g.

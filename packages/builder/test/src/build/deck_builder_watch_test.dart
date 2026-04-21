@@ -3,22 +3,10 @@ import 'dart:io';
 
 import 'package:superdeck_builder/src/build/build_event.dart';
 import 'package:superdeck_builder/src/build/deck_builder.dart';
-import 'package:superdeck_builder/src/build/task_exception.dart';
-import 'package:superdeck_builder/src/tasks/slide_context.dart';
-import 'package:superdeck_builder/src/tasks/task.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 import '../../helpers/testing_utils.dart';
-
-final class ThrowingTask extends Task {
-  ThrowingTask() : super('throwing_task');
-
-  @override
-  Future<void> run(SlideContext context) async {
-    throw Exception('boom');
-  }
-}
 
 void main() {
   group('DeckBuilder.watchAndBuild', () {
@@ -33,14 +21,9 @@ void main() {
     });
 
     test('emits BuildStarted before the initial build result', () async {
-      final builder = DeckBuilder(
-        tasks: const [],
-        workspace: workspace,
-        store: store,
-      );
+      final builder = DeckBuilder(workspace: workspace, store: store);
       final iterator = StreamIterator(builder.watchAndBuild());
       addTearDown(iterator.cancel);
-      addTearDown(builder.dispose);
 
       await workspace.slidesFile.writeAsString('# First Slide');
 
@@ -49,14 +32,9 @@ void main() {
     });
 
     test('emits BuildCompleted after a successful build', () async {
-      final builder = DeckBuilder(
-        tasks: const [],
-        workspace: workspace,
-        store: store,
-      );
+      final builder = DeckBuilder(workspace: workspace, store: store);
       final iterator = StreamIterator(builder.watchAndBuild());
       addTearDown(iterator.cancel);
-      addTearDown(builder.dispose);
 
       await workspace.slidesFile.writeAsString('# First Slide');
 
@@ -73,38 +51,32 @@ void main() {
       );
     });
 
-    test('emits BuildFailed when a task fails', () async {
-      final builder = DeckBuilder(
-        tasks: [ThrowingTask()],
-        workspace: workspace,
-        store: store,
-      );
+    test('emits BuildFailed when the build throws', () async {
+      // `@column` is an unsupported directive — BlockParser throws
+      // DeckFormatException, which DeckBuilder surfaces as BuildFailed.
+      await workspace.slidesFile.writeAsString('# Slide\n\n@column\n');
+
+      final builder = DeckBuilder(workspace: workspace, store: store);
       final iterator = StreamIterator(builder.watchAndBuild());
       addTearDown(iterator.cancel);
-      addTearDown(builder.dispose);
-
-      await workspace.slidesFile.writeAsString('# First Slide');
 
       await _nextEvent(iterator);
       final event = await _nextEvent(iterator);
 
       expect(
         event,
-        isA<BuildFailed>()
-            .having((event) => event.error, 'error', isA<TaskException>())
-            .having((event) => event.stackTrace, 'stackTrace', isNotNull),
+        isA<BuildFailed>().having(
+          (event) => event.stackTrace,
+          'stackTrace',
+          isNotNull,
+        ),
       );
     });
 
     test('emits started and completed for a rebuild cycle', () async {
-      final builder = DeckBuilder(
-        tasks: const [],
-        workspace: workspace,
-        store: store,
-      );
+      final builder = DeckBuilder(workspace: workspace, store: store);
       final iterator = StreamIterator(builder.watchAndBuild());
       addTearDown(iterator.cancel);
-      addTearDown(builder.dispose);
 
       await workspace.slidesFile.writeAsString('# First Slide');
 

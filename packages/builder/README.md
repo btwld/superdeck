@@ -8,8 +8,9 @@ Use `superdeck_builder` directly only when you need programmatic control of the 
 ## What It Does
 
 - Parses `slides.md` into deck output
-- Runs the build task pipeline (empty by default; consumers can extend `Task`)
 - Writes build artifacts consumed by the runtime
+- Emits `BuildEvent`s from `DeckBuilder.watchAndBuild()` for file-change
+  driven rebuilds
 
 ## Typical Workflow
 

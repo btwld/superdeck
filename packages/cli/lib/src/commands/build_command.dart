@@ -53,8 +53,8 @@ class BuildCommand extends SuperDeckCommand {
 
   /// Runs the build process with proper error handling and progress reporting.
   ///
-  /// Uses the provided [builder] for the build, or creates and disposes a new
-  /// one if not provided.
+  /// Uses the provided [builder] for the build, or creates a new one if not
+  /// provided.
   Future<bool> _runBuild(
     DeckBuildStore store,
     DeckWorkspace workspace, {
@@ -67,11 +67,7 @@ class BuildCommand extends SuperDeckCommand {
     _isRunning = true;
     final progress = logger.progress('Generating slides...');
 
-    final ownsBuilder = builder == null;
-    builder ??= StandardDeckBuildPipeline.create(
-      workspace: workspace,
-      store: store,
-    );
+    builder ??= DeckBuilder(workspace: workspace, store: store);
 
     try {
       final slides = await builder.build();
@@ -123,10 +119,6 @@ class BuildCommand extends SuperDeckCommand {
       return false;
     } finally {
       _isRunning = false;
-      // Dispose the builder if we created it (not in watch mode)
-      if (ownsBuilder) {
-        await builder.dispose();
-      }
     }
   }
 
@@ -181,10 +173,7 @@ class BuildCommand extends SuperDeckCommand {
         logger.info('');
 
         // Create a builder that will handle watching and rebuilding
-        final builder = StandardDeckBuildPipeline.create(
-          workspace: deckWorkspace,
-          store: store,
-        );
+        final builder = DeckBuilder(workspace: deckWorkspace, store: store);
 
         // Listen to stdin for interactive commands
         StreamSubscription<String>? stdinSubscription;
@@ -206,7 +195,6 @@ class BuildCommand extends SuperDeckCommand {
                   case 'quit':
                     logger.info('Exiting watch mode...');
                     await stdinSubscription?.cancel();
-                    await builder.dispose();
                     exit(ExitCode.success.code);
                   default:
                     logger.warn('Unknown command: "$command"');
@@ -233,7 +221,6 @@ class BuildCommand extends SuperDeckCommand {
           }
         } finally {
           await stdinSubscription?.cancel();
-          await builder.dispose();
         }
       }
 

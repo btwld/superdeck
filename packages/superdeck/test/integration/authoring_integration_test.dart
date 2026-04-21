@@ -15,16 +15,8 @@ import 'package:superdeck_core/superdeck_core.dart';
 Future<void> main(List<String> args) async {
   final workspace = DeckWorkspace(projectDir: args.single);
   final store = DeckBuildStore(workspace: workspace);
-  final builder = StandardDeckBuildPipeline.create(
-    workspace: workspace,
-    store: store,
-  );
-
-  try {
-    await builder.build();
-  } finally {
-    await builder.dispose();
-  }
+  final builder = DeckBuilder(workspace: workspace, store: store);
+  await builder.build();
 }
 ''';
 
