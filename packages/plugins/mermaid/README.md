@@ -33,8 +33,6 @@ try {
 - `MermaidGenerator` – standalone class that renders Mermaid syntax to PNG
   bytes using `puppeteer`. Call `render(syntax)` to produce a `Uint8List`, and
   `dispose()` to close the browser when finished.
-- `assets/grammars/mermaid.json` – TextMate grammar for syntax highlighting
-  mermaid fenced code blocks.
 - `docs/mermaid_themes/` – reference Mermaid theme files.
 - `docs/mermaid-diagrams.mdx` – user guide for authoring Mermaid diagrams.
 
