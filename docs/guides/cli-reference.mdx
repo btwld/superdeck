@@ -49,7 +49,6 @@ superdeck build [options]
 |--------|-------|-------------|
 | `--watch` | `-w` | Watch for file changes and rebuild automatically |
 | `--skip-pubspec` | | Skip updating pubspec.yaml |
-| `--force-rebuild` | `-f` | Force rebuild all assets |
 
 **Examples:**
 ```bash
@@ -58,9 +57,6 @@ superdeck build
 
 # Build and watch for changes (recommended for development)
 superdeck build -w
-
-# Force rebuild everything
-superdeck build -f
 ```
 
 ## File structure
@@ -74,10 +70,7 @@ project/
 └── .superdeck/
     ├── superdeck.json          # Generated presentation data
     ├── superdeck_full.json     # Includes markdown AST JSON (for debugging)
-    ├── generated_assets.json   # Asset manifest
-    ├── build_status.json       # Last build status
-    └── assets/                 # Build-generated assets (for example, Mermaid PNGs)
-        └── mermaid_<hash>.png
+    └── build_status.json       # Last build status
 ```
 
 Runtime slide thumbnails are referenced by key (`thumbnail_<slideKey>.png`) and cached by the app at runtime (OS application cache on native platforms, in-memory data URIs on web).
@@ -92,7 +85,6 @@ The CLI automatically adds this to your `pubspec.yaml`:
 flutter:
   assets:
     - .superdeck/
-    - .superdeck/assets/
 ```
 
 ## Common workflows
@@ -112,9 +104,6 @@ flutter run
 ```bash
 # Verbose output for debugging
 dart run superdeck_cli:main build --verbose
-
-# Force rebuild if assets are corrupted
-dart run superdeck_cli:main build --force-rebuild
 ```
 
 ## Exit codes
@@ -184,4 +173,3 @@ jobs:
 1. **Use watch mode** - `dart run superdeck_cli:main build --watch` is optimized for development
 2. **Cache remote images** - Remote images are cached at runtime by `cached_network_image`
 3. **Skip pubspec updates** - Use `--skip-pubspec` if you manage assets manually
-4. **Incremental builds** - Only changed assets are rebuilt by default

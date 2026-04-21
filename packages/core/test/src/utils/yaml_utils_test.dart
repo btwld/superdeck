@@ -31,8 +31,8 @@ dependencies:
     sdk: flutter
 flutter:
   assets:
+    - assets/
     - .superdeck/
-    - .superdeck/assets/
 ''';
 
         final result = parseYamlMap(yaml);
@@ -47,7 +47,7 @@ flutter:
         expect(flutterDependency, isNot(isA<YamlMap>()));
         expect(assets, isA<List>());
         expect(assets, isNot(isA<YamlList>()));
-        expect(assets, ['.superdeck/', '.superdeck/assets/']);
+        expect(assets, ['assets/', '.superdeck/']);
       });
 
       test('throws FormatException for top-level scalar', () {

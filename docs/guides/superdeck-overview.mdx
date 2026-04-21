@@ -14,7 +14,7 @@ Create presentations with Flutter and Markdown.
 With SuperDeck, you can:
 
 - **Write slides in Markdown** with live hot-reload during development
-- **Embed interactive content** like DartPad playgrounds, Mermaid diagrams, and custom widgets
+- **Embed interactive content** like DartPad playgrounds and custom widgets
 - **Style everything** with type-safe control over typography, colors, and themes
 - **Deploy** to web or desktop
 - **Export to PDF**
@@ -116,16 +116,6 @@ SuperDeck calls the `WidgetFactory` function with the block's arguments to rende
 > Critical warning
 ````
 
-**Mermaid diagrams** – Full support with automatic PNG rendering:
-
-````markdown
-```mermaid
-graph TD
-  A[Start] --> B[Process]
-  B --> C[End]
-```
-````
-
 **Code highlighting** – Syntax highlighting for supported grammars (Dart/JSON/YAML/Markdown) with a Dart fallback
 
 **Standard Markdown** – Full CommonMark plus GitHub Flavored Markdown support
@@ -185,7 +175,7 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 
 SuperDeck uses a two-stage build pipeline:
 
-1. **Build time**: The CLI parses your `slides.md` file, renders Mermaid diagrams to images, and generates asset manifests
+1. **Build time**: The CLI parses your `slides.md` file and generates asset manifests
 2. **Runtime**: Flutter renders the parsed slide data as widgets with full styling control
 
 This approach gives you fast hot-reload during development while ensuring optimized assets in production.

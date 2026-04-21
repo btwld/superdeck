@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:superdeck_builder/src/assets/mermaid_generator.dart';
+import 'package:superdeck_mermaid/superdeck_mermaid.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -8,23 +8,7 @@ void main() {
     late MermaidGenerator generator;
 
     setUp(() {
-      // Create generator for interface testing
       generator = MermaidGenerator();
-    });
-
-    test('has correct type', () {
-      expect(generator.type, equals('mermaid'));
-    });
-
-    test('canProcess returns true for mermaid content', () {
-      expect(generator.canProcess('mermaid'), isTrue);
-    });
-
-    test('canProcess returns false for other content types', () {
-      expect(generator.canProcess('dart'), isFalse);
-      expect(generator.canProcess('javascript'), isFalse);
-      expect(generator.canProcess('html'), isFalse);
-      expect(generator.canProcess('css'), isFalse);
     });
 
     test('has default configuration', () {
@@ -67,29 +51,6 @@ void main() {
       await expectLater(generator.dispose(), completes);
     });
 
-    test('implements AssetGenerator interface correctly', () {
-      expect(generator.type, isA<String>());
-      expect(generator.configuration, isA<Map<String, dynamic>>());
-      expect(generator.canProcess('mermaid'), isA<bool>());
-    });
-
-    group('content validation', () {
-      test('canProcess handles empty string', () {
-        expect(generator.canProcess(''), isFalse);
-      });
-
-      test('canProcess handles null-like values', () {
-        expect(generator.canProcess('null'), isFalse);
-        expect(generator.canProcess('undefined'), isFalse);
-      });
-
-      test('canProcess is case sensitive', () {
-        expect(generator.canProcess('MERMAID'), isFalse);
-        expect(generator.canProcess('Mermaid'), isFalse);
-        expect(generator.canProcess('mermaid'), isTrue);
-      });
-    });
-
     group('configuration validation', () {
       test('default configuration has required keys', () {
         final config = generator.configuration;
@@ -125,7 +86,7 @@ void main() {
       });
     });
 
-    group('error handling configuration', () {
+    group('render configuration', () {
       test('timeout configuration is properly set', () {
         final generator = MermaidGenerator(configuration: const {'timeout': 5});
 
@@ -151,7 +112,6 @@ void main() {
       test('fallback theme detection returns correct theme type', () {
         final generator = MermaidGenerator();
 
-        // Verify default configuration has theme settings
         expect(generator.configuration['theme'], equals('base'));
         expect(generator.configuration['themeVariables'], isNotEmpty);
       });
@@ -196,28 +156,23 @@ void main() {
       });
     });
 
-    // Note: Error handling tests that require browser (generateAsset calls)
-    // have been removed. These should be run as integration tests separately.
+    // Note: Actual render() tests require a headless browser and are run as
+    // integration tests separately.
 
     group('lifecycle management', () {
       test('dispose can be called multiple times safely', () async {
         final generator = MermaidGenerator();
 
-        // First dispose should succeed
         await expectLater(generator.dispose(), completes);
-
-        // Second dispose should also complete without error
         await expectLater(generator.dispose(), completes);
       });
 
-      test('generateAsset throws after dispose', () async {
+      test('render throws after dispose', () async {
         final generator = MermaidGenerator();
         await generator.dispose();
 
-        // Attempting to generate after dispose should throw
-        // (StateError is wrapped in Exception by generateAsset's error handling)
         await expectLater(
-          () => generator.generateAsset('graph TD; A-->B', 'test.png'),
+          () => generator.render('graph TD; A-->B'),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -226,15 +181,6 @@ void main() {
             ),
           ),
         );
-      });
-
-      test('createAssetReference works after dispose', () async {
-        final generator = MermaidGenerator();
-        await generator.dispose();
-
-        // createAssetReference doesn't need the browser, so it should work
-        final asset = generator.createAssetReference('graph TD; A-->B');
-        expect(asset, isNotNull);
       });
     });
   });

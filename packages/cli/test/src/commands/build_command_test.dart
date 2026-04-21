@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
-import 'package:path/path.dart' as path;
 import 'package:superdeck_cli/src/commands/build_command.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
@@ -53,14 +52,6 @@ void main() {
         expect(skipOption.negatable, isFalse);
         expect(skipOption.help, contains('Skip updating pubspec assets'));
       });
-
-      test('has force-rebuild flag configured correctly', () {
-        expect(command.argParser.options.containsKey('force-rebuild'), isTrue);
-        final forceOption = command.argParser.options['force-rebuild']!;
-        expect(forceOption.abbr, equals('f'));
-        expect(forceOption.negatable, isFalse);
-        expect(forceOption.help, contains('Force rebuild all assets'));
-      });
     });
 
     group('run() - basic build execution', () {
@@ -83,7 +74,7 @@ This is test content.
         );
       });
 
-      test('creates assets directory if it does not exist', () async {
+      test('creates superdeck directory if it does not exist', () async {
         final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
 
@@ -92,9 +83,7 @@ This is test content.
         final runner = createTestRunner(command);
         await runner.run(['build']);
 
-        // Assets directory should be created
-        final assetsDir = deckWorkspace.assetsDir;
-        expect(assetsDir.existsSync(), isTrue);
+        expect(deckWorkspace.superdeckDir.existsSync(), isTrue);
       });
 
       test('handles empty slides file gracefully', () async {
@@ -115,45 +104,6 @@ This is test content.
     });
 
     group('run() - flag behavior', () {
-      test('force-rebuild flag clears assets directory', () async {
-        final slidesFile = deckWorkspace.slidesFile;
-        await slidesFile.writeAsString('# Test\n\nContent');
-
-        createTestPubspec(tempDir);
-
-        // Create a pre-existing asset
-        final assetsDir = deckWorkspace.assetsDir;
-        await assetsDir.create(recursive: true);
-        final oldAsset = File(path.join(assetsDir.path, 'old_asset.txt'));
-        await oldAsset.writeAsString('old content');
-
-        expect(oldAsset.existsSync(), isTrue);
-
-        final runner = createTestRunner(command);
-        await runner.run(['build', '--force-rebuild']);
-
-        // Old asset should be gone
-        expect(oldAsset.existsSync(), isFalse);
-      });
-
-      test('force-rebuild flag replaces stale generated_assets.json', () async {
-        final slidesFile = deckWorkspace.slidesFile;
-        await slidesFile.writeAsString('# Test\n\nContent');
-        createTestPubspec(tempDir);
-
-        await deckWorkspace.superdeckDir.create(recursive: true);
-        await deckWorkspace.assetsRefJson.writeAsString('{"stale":true}');
-
-        final runner = createTestRunner(command);
-        await runner.run(['build', '--force-rebuild']);
-
-        final assetsRefContents = await deckWorkspace.assetsRefJson
-            .readAsString();
-        expect(assetsRefContents, isNot('{"stale":true}'));
-        expect(assetsRefContents, contains('last_modified'));
-        expect(assetsRefContents, contains('files'));
-      });
-
       test('skip-pubspec flag skips pubspec update', () async {
         final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');

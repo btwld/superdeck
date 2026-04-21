@@ -37,13 +37,10 @@ void main() {
       expect(await slidesFile.readAsString(), '# Keep me');
       expect(
         await File(path.join(tempDir.path, 'pubspec.yaml')).readAsString(),
-        allOf(
-          contains('.superdeck/'),
-          contains('.superdeck/assets/'),
-        ),
+        contains('.superdeck/'),
       );
       expect(
-        Directory(path.join(tempDir.path, '.superdeck', 'assets')).existsSync(),
+        Directory(path.join(tempDir.path, '.superdeck')).existsSync(),
         isTrue,
       );
       expect(
@@ -69,7 +66,7 @@ void main() {
       final flutter = pubspec['flutter'] as YamlMap;
       final assets = (flutter['assets'] as YamlList).map((e) => e.toString());
 
-      expect(assets, containsAll(['.superdeck/', '.superdeck/assets/']));
+      expect(assets, contains('.superdeck/'));
     });
 
     test('rerunning setup is idempotent', () async {
@@ -85,7 +82,7 @@ void main() {
         path.join(tempDir.path, 'macos', 'Runner', 'DebugProfile.entitlements'),
       ).readAsString();
 
-      expect(_countMatches(pubspecContents, '.superdeck/assets/'), 1);
+      expect(_countMatches(pubspecContents, '.superdeck/'), 1);
       expect(
         _countMatches(
           debugEntitlements,
@@ -104,7 +101,7 @@ void main() {
 
       expect(result, ExitCode.success.code);
       expect(
-        Directory(path.join(tempDir.path, '.superdeck', 'assets')).existsSync(),
+        Directory(path.join(tempDir.path, '.superdeck')).existsSync(),
         isTrue,
       );
       expect(

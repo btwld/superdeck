@@ -10,7 +10,6 @@ void main() {
         expect(config.projectDir, '.');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, '.superdeck');
-        expect(config.assetsPath, 'assets');
       });
 
       test('normalizes explicit null values to defaults', () {
@@ -18,13 +17,11 @@ void main() {
           projectDir: null,
           slidesPath: null,
           outputDir: null,
-          assetsPath: null,
         );
 
         expect(config.projectDir, '.');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, '.superdeck');
-        expect(config.assetsPath, 'assets');
       });
 
       test('creates with all parameters', () {
@@ -32,22 +29,16 @@ void main() {
           projectDir: '/project',
           slidesPath: 'presentation.md',
           outputDir: 'build',
-          assetsPath: 'images',
         );
 
         expect(config.projectDir, '/project');
         expect(config.slidesPath, 'presentation.md');
         expect(config.outputDir, 'build');
-        expect(config.assetsPath, 'images');
       });
 
       test('accepts normal relative paths', () {
         expect(
-          () => DeckWorkspace(
-            slidesPath: 'slides.md',
-            outputDir: '.superdeck',
-            assetsPath: 'assets',
-          ),
+          () => DeckWorkspace(slidesPath: 'slides.md', outputDir: '.superdeck'),
           returnsNormally,
         );
       });
@@ -57,20 +48,18 @@ void main() {
           () => DeckWorkspace(
             slidesPath: 'content/slides.md',
             outputDir: 'build/output',
-            assetsPath: 'static/assets',
           ),
           returnsNormally,
         );
       });
 
       group('rejects unsafe paths', () {
-        for (final field in ['slidesPath', 'outputDir', 'assetsPath']) {
+        for (final field in ['slidesPath', 'outputDir']) {
           test('$field rejects ".." traversal', () {
             expect(
               () => DeckWorkspace(
                 slidesPath: field == 'slidesPath' ? '../etc/passwd' : null,
                 outputDir: field == 'outputDir' ? '../etc/passwd' : null,
-                assetsPath: field == 'assetsPath' ? '../etc/passwd' : null,
               ),
               throwsA(isA<ArgumentError>()),
             );
@@ -81,7 +70,6 @@ void main() {
               () => DeckWorkspace(
                 slidesPath: field == 'slidesPath' ? '/tmp/evil' : null,
                 outputDir: field == 'outputDir' ? '/tmp/evil' : null,
-                assetsPath: field == 'assetsPath' ? '/tmp/evil' : null,
               ),
               throwsA(isA<ArgumentError>()),
             );
@@ -92,7 +80,6 @@ void main() {
               () => DeckWorkspace(
                 slidesPath: field == 'slidesPath' ? 'sub/../../outside' : null,
                 outputDir: field == 'outputDir' ? 'sub/../../outside' : null,
-                assetsPath: field == 'assetsPath' ? 'sub/../../outside' : null,
               ),
               throwsA(isA<ArgumentError>()),
             );
@@ -162,35 +149,6 @@ void main() {
         });
       });
 
-      group('assetsDir', () {
-        test('uses default assets when assetsPath is not provided', () {
-          final config = DeckWorkspace();
-
-          expect(config.assetsDir.path, contains('assets'));
-        });
-
-        test('uses custom assetsPath when provided', () {
-          final config = DeckWorkspace(assetsPath: 'custom-assets');
-
-          expect(config.assetsDir.path, contains('custom-assets'));
-        });
-
-        test('is inside superdeckDir', () {
-          final config = DeckWorkspace();
-
-          expect(config.assetsDir.path, contains(config.superdeckDir.path));
-        });
-      });
-
-      group('assetsRefJson', () {
-        test('is inside superdeckDir', () {
-          final config = DeckWorkspace();
-
-          expect(config.assetsRefJson.path, contains(config.superdeckDir.path));
-          expect(config.assetsRefJson.path, endsWith('generated_assets.json'));
-        });
-      });
-
       group('buildStatusJson', () {
         test('is inside superdeckDir', () {
           final config = DeckWorkspace();
@@ -214,23 +172,6 @@ void main() {
           final config = DeckWorkspace(outputDir: 'generated');
 
           expect(config.bundledDeckJsonPath, 'generated/superdeck.json');
-        });
-      });
-
-      group('bundledAssetsPath', () {
-        test('uses defaults without projectDir prefix', () {
-          final config = DeckWorkspace(projectDir: '/abs/project');
-
-          expect(config.bundledAssetsPath, '.superdeck/assets');
-        });
-
-        test('uses custom outputDir and assetsPath', () {
-          final config = DeckWorkspace(
-            outputDir: 'generated',
-            assetsPath: 'media',
-          );
-
-          expect(config.bundledAssetsPath, 'generated/media');
         });
       });
 
@@ -290,26 +231,17 @@ void main() {
         expect(copy.outputDir, 'new-out');
       });
 
-      test('copies with new assetsPath', () {
-        final original = DeckWorkspace(assetsPath: 'old-assets');
-        final copy = original.copyWith(assetsPath: 'new-assets');
-
-        expect(copy.assetsPath, 'new-assets');
-      });
-
       test('preserves values when not specified', () {
         final original = DeckWorkspace(
           projectDir: '/project',
           slidesPath: 'slides.md',
           outputDir: 'output',
-          assetsPath: 'assets',
         );
         final copy = original.copyWith();
 
         expect(copy.projectDir, original.projectDir);
         expect(copy.slidesPath, original.slidesPath);
         expect(copy.outputDir, original.outputDir);
-        expect(copy.assetsPath, original.assetsPath);
       });
     });
 
@@ -321,7 +253,6 @@ void main() {
         expect(map['projectDir'], '.');
         expect(map['slidesPath'], 'slides.md');
         expect(map['outputDir'], '.superdeck');
-        expect(map['assetsPath'], 'assets');
       });
 
       test('serializes updated values alongside defaults', () {
@@ -331,7 +262,6 @@ void main() {
         expect(map['projectDir'], '/project');
         expect(map['slidesPath'], 'slides.md');
         expect(map['outputDir'], '.superdeck');
-        expect(map['assetsPath'], 'assets');
       });
 
       test('serializes all values when present', () {
@@ -339,14 +269,12 @@ void main() {
           projectDir: '/project',
           slidesPath: 'slides.md',
           outputDir: 'output',
-          assetsPath: 'assets',
         );
         final map = config.toMap();
 
         expect(map['projectDir'], '/project');
         expect(map['slidesPath'], 'slides.md');
         expect(map['outputDir'], 'output');
-        expect(map['assetsPath'], 'assets');
       });
     });
 
@@ -357,7 +285,6 @@ void main() {
         expect(config.projectDir, '.');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, '.superdeck');
-        expect(config.assetsPath, 'assets');
       });
 
       test('deserializes null values using constructor defaults', () {
@@ -365,13 +292,11 @@ void main() {
           'projectDir': null,
           'slidesPath': null,
           'outputDir': null,
-          'assetsPath': null,
         });
 
         expect(config.projectDir, '.');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, '.superdeck');
-        expect(config.assetsPath, 'assets');
       });
 
       test('deserializes partial map', () {
@@ -383,7 +308,6 @@ void main() {
         expect(config.projectDir, '/project');
         expect(config.slidesPath, 'deck.md');
         expect(config.outputDir, '.superdeck');
-        expect(config.assetsPath, 'assets');
       });
 
       test('deserializes full map', () {
@@ -391,13 +315,11 @@ void main() {
           'projectDir': '/project',
           'slidesPath': 'slides.md',
           'outputDir': 'output',
-          'assetsPath': 'assets',
         });
 
         expect(config.projectDir, '/project');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, 'output');
-        expect(config.assetsPath, 'assets');
       });
     });
 
@@ -407,7 +329,6 @@ void main() {
           projectDir: '/roundtrip',
           slidesPath: 'rt.md',
           outputDir: 'rt-out',
-          assetsPath: 'rt-assets',
         );
 
         final restored = DeckWorkspace.fromMap(original.toMap());
@@ -426,7 +347,6 @@ void main() {
         expect(restored.projectDir, '/partial');
         expect(restored.outputDir, 'out');
         expect(restored.slidesPath, 'slides.md');
-        expect(restored.assetsPath, 'assets');
       });
     });
 
@@ -437,7 +357,6 @@ void main() {
         expect(config.projectDir, '.');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, '.superdeck');
-        expect(config.assetsPath, 'assets');
       });
 
       test('parses valid map', () {
@@ -451,12 +370,7 @@ void main() {
       });
 
       test('rejects invalid typed known fields', () {
-        for (final field in [
-          'projectDir',
-          'slidesPath',
-          'outputDir',
-          'assetsPath',
-        ]) {
+        for (final field in ['projectDir', 'slidesPath', 'outputDir']) {
           expect(
             () => DeckWorkspace.parse({field: 42}),
             throwsA(isA<Exception>()),
@@ -486,7 +400,6 @@ void main() {
           'projectDir': '/project',
           'slidesPath': 'slides.md',
           'outputDir': 'output',
-          'assetsPath': 'assets',
         });
         expect(result.isOk, isTrue);
       });
@@ -499,12 +412,7 @@ void main() {
       });
 
       test('fails when optional fields are explicitly null', () {
-        for (final field in [
-          'projectDir',
-          'slidesPath',
-          'outputDir',
-          'assetsPath',
-        ]) {
+        for (final field in ['projectDir', 'slidesPath', 'outputDir']) {
           final result = DeckWorkspace.schema.safeParse({field: null});
           expect(result.isOk, isFalse);
         }
@@ -520,7 +428,7 @@ void main() {
       });
 
       group('path validation', () {
-        for (final field in ['slidesPath', 'outputDir', 'assetsPath']) {
+        for (final field in ['slidesPath', 'outputDir']) {
           group(field, () {
             test('accepts simple relative path', () {
               final result = DeckWorkspace.schema.safeParse({
@@ -613,13 +521,6 @@ void main() {
       test('different outputDir makes configs unequal', () {
         final config1 = DeckWorkspace(outputDir: 'a');
         final config2 = DeckWorkspace(outputDir: 'b');
-
-        expect(config1, isNot(config2));
-      });
-
-      test('different assetsPath makes configs unequal', () {
-        final config1 = DeckWorkspace(assetsPath: 'a');
-        final config2 = DeckWorkspace(assetsPath: 'b');
 
         expect(config1, isNot(config2));
       });

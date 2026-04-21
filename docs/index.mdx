@@ -21,13 +21,11 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
 - **Flutter Package** - UI components and presentation runtime
 - **Block System** - Flexible layouts with 3 core block types
 - **Mix Styling** - Comprehensive theming system
-- **Asset Pipeline** - Automatic asset generation and optimization
 
 ## Core features
 
 - **3 Block Types** - `@block` (content), `@section` (layout), `@widget` (custom components)
 - **Built-in Widgets** - `image`, `dartpad`, `qrcode`
-- **Mermaid Diagrams** - Use ` ```mermaid` code blocks (rendered to images at build time)
 - **CLI Commands** - `setup`, `build`, `version`
 - **Markdown Support** - Full CommonMark with GitHub-style alerts
 - **Custom Widgets** - Extensible widget system
@@ -37,7 +35,7 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
 ## Architecture
 
 - **Core** (`packages/core/`) - Data models and domain logic
-- **Builder** (`packages/builder/`) - Markdown parsing and asset generation
+- **Builder** (`packages/builder/`) - Markdown parsing and build pipeline
 - **CLI** (`packages/cli/`) - Command-line interface
 - **SuperDeck** (`packages/superdeck/`) - Flutter UI components and Mix styling
 
@@ -89,4 +87,4 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
 - **Block-Based** - Flexible layouts beyond traditional slides
 - **Developer-Friendly** - CLI tools, hot reload, debugging
 - **Extensible** - Custom widgets and comprehensive styling
-- **Production-Ready** - Asset optimization and deployment
+- **Production-Ready** - Web and desktop deployment

@@ -28,4 +28,3 @@ flutter:
   assets:
     - assets/
     - .superdeck/
-    - .superdeck/assets/

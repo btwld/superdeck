@@ -11,39 +11,10 @@ import '../utils/logger.dart' show LoggerX;
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 
-/// Returns whether the process is running in a CI environment.
-bool _isCI() {
-  final env = Platform.environment;
-  return env['CI'] == 'true' ||
-      env['GITHUB_ACTIONS'] == 'true' ||
-      env['GITLAB_CI'] == 'true' ||
-      env['CIRCLECI'] == 'true' ||
-      env['TRAVIS'] == 'true';
-}
-
-/// Creates a [DeckBuilder] with the standard CLI task pipeline.
-DeckBuilder _createStandardBuilder({
-  required DeckWorkspace workspace,
-  required DeckBuildStore store,
-}) {
-  // In CI environments, Chrome needs --no-sandbox due to user namespace restrictions
-  final browserLaunchOptions = _isCI()
-      ? <String, dynamic>{
-          'args': ['--no-sandbox', '--disable-setuid-sandbox'],
-        }
-      : null;
-
-  return StandardDeckBuildPipeline.create(
-    workspace: workspace,
-    store: store,
-    browserLaunchOptions: browserLaunchOptions,
-  );
-}
-
 /// Builds SuperDeck presentations from markdown.
 ///
-/// Parses and processes the slides.md file, generating all required assets
-/// and outputs for the presentation.
+/// Parses the slides.md file and writes the compiled deck to the workspace
+/// output directory.
 class BuildCommand extends SuperDeckCommand {
   bool _isRunning = false;
   final String? _projectDir;
@@ -60,12 +31,6 @@ class BuildCommand extends SuperDeckCommand {
       ..addFlag(
         'skip-pubspec',
         help: 'Skip updating pubspec assets',
-        negatable: false,
-      )
-      ..addFlag(
-        'force-rebuild',
-        abbr: 'f',
-        help: 'Force rebuild all assets',
         negatable: false,
       );
   }
@@ -86,38 +51,10 @@ class BuildCommand extends SuperDeckCommand {
     }
   }
 
-  Future<void> _clearGeneratedAssets(DeckWorkspace workspace) async {
-    if (await workspace.assetsDir.exists()) {
-      await workspace.assetsDir.delete(recursive: true);
-    }
-    await workspace.assetsDir.create(recursive: true);
-
-    if (await workspace.assetsRefJson.exists()) {
-      await workspace.assetsRefJson.delete();
-      logger.detail('Deleted generated_assets.json');
-    }
-  }
-
-  /// Cleans all generated assets and runs a full rebuild.
-  ///
-  /// Uses the provided [builder] for the build, or creates and disposes a new
-  /// one if not provided.
-  Future<bool> _cleanAndRebuild(
-    DeckBuildStore store,
-    DeckWorkspace workspace, {
-    DeckBuilder? builder,
-  }) async {
-    logger.info('Force rebuild: Clearing all generated assets...');
-
-    await _clearGeneratedAssets(workspace);
-
-    return _runBuild(store, workspace, builder: builder);
-  }
-
   /// Runs the build process with proper error handling and progress reporting.
   ///
-  /// Uses the provided [builder] for the build, or creates and disposes a new
-  /// one if not provided.
+  /// Uses the provided [builder] for the build, or creates a new one if not
+  /// provided.
   Future<bool> _runBuild(
     DeckBuildStore store,
     DeckWorkspace workspace, {
@@ -130,8 +67,7 @@ class BuildCommand extends SuperDeckCommand {
     _isRunning = true;
     final progress = logger.progress('Generating slides...');
 
-    final ownsBuilder = builder == null;
-    builder ??= _createStandardBuilder(workspace: workspace, store: store);
+    builder ??= DeckBuilder(workspace: workspace, store: store);
 
     try {
       final slides = await builder.build();
@@ -183,10 +119,6 @@ class BuildCommand extends SuperDeckCommand {
       return false;
     } finally {
       _isRunning = false;
-      // Dispose the builder if we created it (not in watch mode)
-      if (ownsBuilder) {
-        await builder.dispose();
-      }
     }
   }
 
@@ -209,11 +141,6 @@ class BuildCommand extends SuperDeckCommand {
 
       store = DeckBuildStore(workspace: deckWorkspace);
       await store.initialize();
-
-      if (boolArg('force-rebuild')) {
-        logger.info('Force rebuild enabled. All assets will be regenerated.');
-        await _clearGeneratedAssets(deckWorkspace);
-      }
 
       if (!boolArg('skip-pubspec')) {
         try {
@@ -240,17 +167,13 @@ class BuildCommand extends SuperDeckCommand {
         logger.info('');
         logger.info('Commands:');
         logger.info('  r - Rebuild presentation');
-        logger.info('  f - Force rebuild (clear all assets and rebuild)');
         logger.info('  q - Quit watch mode');
         logger.info('');
         logger.info('Press Ctrl+C to stop watching.');
         logger.info('');
 
         // Create a builder that will handle watching and rebuilding
-        final builder = _createStandardBuilder(
-          workspace: deckWorkspace,
-          store: store,
-        );
+        final builder = DeckBuilder(workspace: deckWorkspace, store: store);
 
         // Listen to stdin for interactive commands
         StreamSubscription<String>? stdinSubscription;
@@ -264,29 +187,19 @@ class BuildCommand extends SuperDeckCommand {
                   case 'r':
                   case 'rebuild':
                     logger.info('Manual rebuild triggered...');
-                    // Reuse the watch builder to avoid spawning extra browser instances
                     unawaited(
                       _runBuild(store!, deckWorkspace, builder: builder),
-                    );
-                    break;
-                  case 'f':
-                  case 'force-rebuild':
-                    logger.info('Force rebuild triggered...');
-                    // Reuse the watch builder to avoid spawning extra browser instances
-                    unawaited(
-                      _cleanAndRebuild(store!, deckWorkspace, builder: builder),
                     );
                     break;
                   case 'q':
                   case 'quit':
                     logger.info('Exiting watch mode...');
                     await stdinSubscription?.cancel();
-                    await builder.dispose();
                     exit(ExitCode.success.code);
                   default:
                     logger.warn('Unknown command: "$command"');
                     logger.info(
-                      'Available commands: r (rebuild), f (force-rebuild), q (quit)',
+                      'Available commands: r (rebuild), q (quit)',
                     );
                 }
               });
@@ -308,7 +221,6 @@ class BuildCommand extends SuperDeckCommand {
           }
         } finally {
           await stdinSubscription?.cancel();
-          await builder.dispose();
         }
       }
 

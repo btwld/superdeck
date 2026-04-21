@@ -17,12 +17,10 @@ DeckWorkspace createTestWorkspace(
   Directory tempDir, {
   String? slidesPath,
   String? outputDir,
-  String? assetsPath,
 }) {
   return DeckWorkspace(
     projectDir: tempDir.path,
     slidesPath: slidesPath,
     outputDir: outputDir,
-    assetsPath: assetsPath,
   );
 }

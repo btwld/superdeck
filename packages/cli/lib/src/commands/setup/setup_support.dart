@@ -21,7 +21,7 @@ const _releaseEntitlements = <String, bool>{
   'com.apple.security.files.downloads.read-write': true,
 };
 
-const _requiredAssets = ['.superdeck/', '.superdeck/assets/'];
+const _requiredAssets = ['.superdeck/'];
 
 Future<void> applySetup(Directory projectDir) async {
   final pubspecFile = File(path.join(projectDir.path, 'pubspec.yaml'));
@@ -34,10 +34,8 @@ Future<void> applySetup(Directory projectDir) async {
   }
 
   final superdeckDir = Directory(path.join(projectDir.path, '.superdeck'));
-  final assetsDir = Directory(path.join(superdeckDir.path, 'assets'));
-  await assetsDir.create(recursive: true);
+  await superdeckDir.create(recursive: true);
   await File(path.join(superdeckDir.path, '.gitkeep')).writeAsString('');
-  await File(path.join(assetsDir.path, '.gitkeep')).writeAsString('');
 
   await pubspecFile.writeAsString(
     patchSetupPubspec(await pubspecFile.readAsString()),

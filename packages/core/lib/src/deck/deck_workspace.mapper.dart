@@ -40,19 +40,12 @@ class DeckWorkspaceMapper extends ClassMapperBase<DeckWorkspace> {
     _$outputDir,
     opt: true,
   );
-  static String _$assetsPath(DeckWorkspace v) => v.assetsPath;
-  static const Field<DeckWorkspace, String> _f$assetsPath = Field(
-    'assetsPath',
-    _$assetsPath,
-    opt: true,
-  );
 
   @override
   final MappableFields<DeckWorkspace> fields = const {
     #projectDir: _f$projectDir,
     #slidesPath: _f$slidesPath,
     #outputDir: _f$outputDir,
-    #assetsPath: _f$assetsPath,
   };
 
   static DeckWorkspace _instantiate(DecodingData data) {
@@ -60,7 +53,6 @@ class DeckWorkspaceMapper extends ClassMapperBase<DeckWorkspace> {
       projectDir: data.dec(_f$projectDir),
       slidesPath: data.dec(_f$slidesPath),
       outputDir: data.dec(_f$outputDir),
-      assetsPath: data.dec(_f$assetsPath),
     );
   }
 
@@ -126,12 +118,7 @@ extension DeckWorkspaceValueCopy<$R, $Out>
 
 abstract class DeckWorkspaceCopyWith<$R, $In extends DeckWorkspace, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
-  $R call({
-    String? projectDir,
-    String? slidesPath,
-    String? outputDir,
-    String? assetsPath,
-  });
+  $R call({String? projectDir, String? slidesPath, String? outputDir});
   DeckWorkspaceCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
 
@@ -148,13 +135,11 @@ class _DeckWorkspaceCopyWithImpl<$R, $Out>
     Object? projectDir = $none,
     Object? slidesPath = $none,
     Object? outputDir = $none,
-    Object? assetsPath = $none,
   }) => $apply(
     FieldCopyWithData({
       if (projectDir != $none) #projectDir: projectDir,
       if (slidesPath != $none) #slidesPath: slidesPath,
       if (outputDir != $none) #outputDir: outputDir,
-      if (assetsPath != $none) #assetsPath: assetsPath,
     }),
   );
   @override
@@ -162,7 +147,6 @@ class _DeckWorkspaceCopyWithImpl<$R, $Out>
     projectDir: data.get(#projectDir, or: $value.projectDir),
     slidesPath: data.get(#slidesPath, or: $value.slidesPath),
     outputDir: data.get(#outputDir, or: $value.outputDir),
-    assetsPath: data.get(#assetsPath, or: $value.assetsPath),
   );
 
   @override

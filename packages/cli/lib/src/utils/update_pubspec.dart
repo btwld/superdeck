@@ -26,7 +26,6 @@ String updatePubspecAssets(DeckWorkspace workspace, String pubspecContents) {
   }
 
   addAssetDirectory(workspace.superdeckDir.path);
-  addAssetDirectory(workspace.assetsDir.path);
 
   if (!needsUpdate) {
     return pubspecContents;

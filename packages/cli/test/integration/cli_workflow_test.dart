@@ -33,7 +33,7 @@ void main() {
         final pubspec = await _read(projectDir, 'pubspec.yaml');
         final entitlements =
             await _read(projectDir, 'macos/Runner/DebugProfile.entitlements');
-        expect(_count(pubspec, '.superdeck/assets/'), 1);
+        expect(_count(pubspec, '.superdeck/'), 1);
         expect(_count(entitlements, 'com.apple.security.files.user-selected.read-write'), 1);
       });
     });
@@ -53,11 +53,8 @@ Future<Directory> _createProject() async {
 }
 
 Future<void> _expectSetup(Directory dir) async {
-  expect(
-    await _read(dir, 'pubspec.yaml'),
-    allOf(contains('.superdeck/'), contains('.superdeck/assets/')),
-  );
-  expect(Directory(path.join(dir.path, '.superdeck/assets')).existsSync(), isTrue);
+  expect(await _read(dir, 'pubspec.yaml'), contains('.superdeck/'));
+  expect(Directory(path.join(dir.path, '.superdeck')).existsSync(), isTrue);
   expect(
     await _read(dir, 'macos/Runner/DebugProfile.entitlements'),
     allOf(
@@ -74,20 +71,13 @@ Future<void> _expectBuild(Directory dir) async {
     workspace.superdeckDir.existsSync(),
     workspace.deckJson.existsSync(),
     workspace.buildStatusJson.existsSync(),
-    workspace.assetsRefJson.existsSync(),
   ], everyElement(isTrue));
   final deck = jsonDecode(await workspace.deckJson.readAsString()) as List;
   final status = jsonDecode(await workspace.buildStatusJson.readAsString()) as Map;
-  final assets = jsonDecode(await workspace.assetsRefJson.readAsString()) as Map;
   expect(deck, hasLength(2));
   expect(status['status'], 'success');
   expect(status['slideCount'], 2);
-  expect(assets, containsPair('files', isA<List>()));
-  expect(assets, containsPair('last_modified', isA<String>()));
-  expect(
-    await _read(dir, 'pubspec.yaml'),
-    allOf(contains('.superdeck/'), contains('.superdeck/assets/')),
-  );
+  expect(await _read(dir, 'pubspec.yaml'), contains('.superdeck/'));
 }
 
 Future<T> _inProject<T>(Directory dir, Future<T> Function() body) async {
