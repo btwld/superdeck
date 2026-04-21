@@ -13,8 +13,7 @@ void main() {
     });
 
     testWidgets('Meta+ArrowRight advances to next slide', (tester) async {
-      final controller = await tester.pumpTestApp();
-      if (controller.presentation.totalSlides.value <= 1) return;
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
 
       expect(controller.presentation.currentIndex.value, 0);
       await tester.sendMetaKey(LogicalKeyboardKey.arrowRight);
@@ -28,8 +27,7 @@ void main() {
     });
 
     testWidgets('Meta+ArrowDown advances to next slide', (tester) async {
-      final controller = await tester.pumpTestApp();
-      if (controller.presentation.totalSlides.value <= 1) return;
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
 
       expect(controller.presentation.currentIndex.value, 0);
       await tester.sendMetaKey(LogicalKeyboardKey.arrowDown);
@@ -43,8 +41,7 @@ void main() {
     });
 
     testWidgets('Meta+ArrowLeft goes to previous slide', (tester) async {
-      final controller = await tester.pumpTestApp();
-      if (controller.presentation.totalSlides.value <= 1) return;
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
 
       await tester.navigateToSlide(controller, 1);
 
@@ -59,8 +56,7 @@ void main() {
     });
 
     testWidgets('Meta+ArrowUp goes to previous slide', (tester) async {
-      final controller = await tester.pumpTestApp();
-      if (controller.presentation.totalSlides.value <= 1) return;
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
 
       await tester.navigateToSlide(controller, 1);
 
@@ -75,8 +71,7 @@ void main() {
     });
 
     testWidgets('arrow keys without Meta do not navigate', (tester) async {
-      final controller = await tester.pumpTestApp();
-      if (controller.presentation.totalSlides.value <= 1) return;
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
 
       expect(controller.presentation.currentIndex.value, 0);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -89,7 +84,7 @@ void main() {
     });
 
     testWidgets('Meta+ArrowRight on last slide stays on last', (tester) async {
-      final controller = await tester.pumpTestApp();
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(3));
       final lastIndex = controller.presentation.totalSlides.value - 1;
       await tester.navigateToSlide(controller, lastIndex);
 

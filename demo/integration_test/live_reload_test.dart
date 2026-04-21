@@ -62,7 +62,7 @@ void main() {
         onTimeout: () => describeDeckControllerState(controller),
       );
       expect(find.textContaining('Rebuilding'), findsNothing);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('build failure shows error banner after successful load', (
@@ -91,7 +91,7 @@ void main() {
       expect(find.textContaining('Syntax error on line 5'), findsOneWidget);
       // Slides should still be visible (non-fatal error path)
       expect(controller.presentation.totalSlides.value, 1);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('build failure clears after successful rebuild', (
@@ -127,7 +127,7 @@ void main() {
 
       expect(find.textContaining('Build failed'), findsNothing);
       expect(controller.session.hasFatalError.value, isFalse);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('slide count updates after rebuild', (tester) async {
@@ -165,7 +165,7 @@ void main() {
       await tester.pumpFor(const Duration(milliseconds: 200));
 
       expect(find.textContaining('1 of 2'), findsOneWidget);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('currentIndex clamps when slides are removed', (tester) async {
@@ -211,7 +211,7 @@ void main() {
 
       expect(controller.presentation.currentIndex.value, 1);
       expect(find.textContaining('2 of 2'), findsOneWidget);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('multiple sequential rebuild cycles complete cleanly', (
@@ -275,7 +275,7 @@ void main() {
       expect(controller.session.hasFatalError.value, isFalse);
       expect(controller.session.buildFailure.value, isNull);
       expect(controller.presentation.totalSlides.value, 3);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
   });
 }

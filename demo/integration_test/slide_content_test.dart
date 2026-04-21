@@ -12,20 +12,20 @@ void main() {
     });
 
     testWidgets('first slide has content blocks', (tester) async {
-      final controller = await tester.pumpTestApp();
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(1));
       final slide = controller.presentation.currentSlide.value;
       expect(slide, isNotNull);
       expect(slide!.slideIndex, 0);
 
       final slideData = controller.slides.value.first;
       expect(slideData.sections, isNotEmpty);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('slide counter reflects correct position after navigation', (
       tester,
     ) async {
-      final controller = await tester.pumpTestApp();
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
       final total = controller.presentation.totalSlides.value;
 
       await tester.tapByLabel('Open menu');
@@ -37,18 +37,15 @@ void main() {
 
       expect(find.textContaining('1 of $total'), findsOneWidget);
 
-      if (total > 1) {
-        await tester.navigateToSlide(controller, 1);
-        await tester.pumpFor(const Duration(milliseconds: 200));
-        expect(find.textContaining('2 of $total'), findsOneWidget);
-      }
-      assertOnlyLayoutOverflowOrNoException(tester);
+      await tester.navigateToSlide(controller, 1);
+      await tester.pumpFor(const Duration(milliseconds: 200));
+      expect(find.textContaining('2 of $total'), findsOneWidget);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('each slide has unique keys', (tester) async {
-      final controller = await tester.pumpTestApp();
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(3));
       final slides = controller.slides.value;
-      if (slides.length <= 1) return;
 
       expect(slides[0].key, isNot(equals(slides[1].key)));
 
@@ -57,7 +54,7 @@ void main() {
         await tester.navigateToSlide(controller, i);
         expect(controller.presentation.currentSlide.value?.slideIndex, i);
       }
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
   });
 }

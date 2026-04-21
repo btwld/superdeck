@@ -14,13 +14,8 @@ void main() {
     });
 
     testWidgets('nextSlide advances to second slide', (tester) async {
-      final controller = await tester.pumpTestApp();
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
       expect(controller.presentation.currentIndex.value, 0);
-
-      if (controller.presentation.totalSlides.value <= 1) {
-        expect(controller.presentation.canGoNext.value, isFalse);
-        return;
-      }
 
       expect(controller.presentation.canGoNext.value, isTrue);
       unawaited(controller.presentation.nextSlide());
@@ -33,8 +28,7 @@ void main() {
     });
 
     testWidgets('previousSlide returns to first slide', (tester) async {
-      final controller = await tester.pumpTestApp();
-      if (controller.presentation.totalSlides.value <= 1) return;
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
 
       await tester.navigateToSlide(controller, 1);
       expect(controller.presentation.canGoPrevious.value, isTrue);
@@ -49,21 +43,21 @@ void main() {
     });
 
     testWidgets('canGoPrevious is false on first slide', (tester) async {
-      final controller = await tester.pumpTestApp();
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(2));
       expect(controller.presentation.currentIndex.value, 0);
       expect(controller.presentation.canGoPrevious.value, isFalse);
     });
 
     testWidgets('canGoNext is false on last slide', (tester) async {
-      final controller = await tester.pumpTestApp();
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(3));
       final lastIndex = controller.presentation.totalSlides.value - 1;
       await tester.navigateToSlide(controller, lastIndex);
       expect(controller.presentation.canGoNext.value, isFalse);
     });
 
     testWidgets('goToSlide navigates to specific slide', (tester) async {
-      final controller = await tester.pumpTestApp();
-      final targetIndex = clampSlideIndex(controller, 3);
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(4));
+      const targetIndex = 3;
 
       await tester.navigateToSlide(controller, targetIndex);
       expect(controller.presentation.currentIndex.value, targetIndex);
@@ -72,8 +66,7 @@ void main() {
     testWidgets('rapid sequential navigation does not corrupt state', (
       tester,
     ) async {
-      final controller = await tester.pumpTestApp();
-      if (controller.presentation.totalSlides.value <= 5) return;
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(6));
 
       // Fire multiple goToSlide calls without awaiting each
       controller.presentation.goToSlide(5);
@@ -94,8 +87,8 @@ void main() {
     });
 
     testWidgets('navigation updates currentSlide data', (tester) async {
-      final controller = await tester.pumpTestApp();
-      final targetIndex = clampSlideIndex(controller, 2);
+      final controller = await tester.pumpTestAppWithSlides(makeSlides(3));
+      const targetIndex = 2;
 
       final slide0 = controller.presentation.currentSlide.value;
       expect(slide0, isNotNull);

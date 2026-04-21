@@ -18,7 +18,7 @@ void main() {
       expect(controller.presentation.currentIndex.value, 0);
       expect(controller.presentation.currentSlide.value, isNotNull);
       expect(find.textContaining('Error loading presentation'), findsNothing);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('app transitions through loading state', (tester) async {
@@ -29,12 +29,14 @@ void main() {
 
       if (controller != null) {
         expect(
-          controller.session.isLoading.value || controller.presentation.totalSlides.value > 0,
+          controller.session.isLoading.value ||
+              controller.presentation.totalSlides.value > 0,
           isTrue,
           reason: 'App should be loading or have slides available',
         );
         await tester.waitForSlidesLoaded(controller);
         expect(controller.session.isLoading.value, isFalse);
+        assertNoFlutterException(tester);
         return;
       }
 
@@ -42,17 +44,23 @@ void main() {
       final delayedController = findDeckController(tester);
       expect(delayedController, isNotNull);
       await tester.waitForSlidesLoaded(delayedController!);
+      assertNoFlutterException(tester);
     });
 
     testWidgets('asset-heavy slide loads without errors', (tester) async {
       final controller = await tester.pumpTestApp();
-      final targetIndex = clampSlideIndex(controller, 4);
+      expect(
+        controller.presentation.totalSlides.value,
+        greaterThan(4),
+        reason: 'Demo deck should keep the asset-heavy slide at index 4.',
+      );
+      const targetIndex = 4;
 
       await tester.navigateToSlide(controller, targetIndex);
       expect(controller.presentation.currentIndex.value, targetIndex);
       expect(controller.session.hasFatalError.value, isFalse);
       expect(find.textContaining('Error loading presentation'), findsNothing);
-      assertOnlyLayoutOverflowOrNoException(tester);
+      assertNoFlutterException(tester);
     });
   });
 }

@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math' as math;
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
+import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'package:superdeck_example/src/parts/background.dart';
@@ -17,19 +19,18 @@ import 'package:superdeck_example/src/style.dart';
 import 'package:superdeck_example/src/templates.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
-final _renderOverflowPattern = RegExp(r'A Render\w+ overflowed by');
+void assertNoFlutterException(WidgetTester tester) {
+  final exceptions = <Object>[];
 
-void assertOnlyLayoutOverflowOrNoException(WidgetTester tester) {
-  final exception = tester.takeException();
-  if (exception == null) return;
-
-  final message = exception.toString();
-  if (_renderOverflowPattern.hasMatch(message)) {
-    debugPrint('[Integration Test] Layout overflow accepted: $message');
-    return;
+  while (true) {
+    final exception = tester.takeException();
+    if (exception == null) break;
+    exceptions.add(exception);
   }
 
-  fail('Unexpected exception: $exception');
+  if (exceptions.isEmpty) return;
+
+  fail('Unexpected Flutter exception(s):\n${exceptions.join('\n\n')}');
 }
 
 String describeDeckControllerState(DeckController? controller) {
@@ -49,11 +50,6 @@ String describeDeckControllerState(DeckController? controller) {
   ].join('\n');
 }
 
-/// Returns the smaller of [target] and [controller.presentation.totalSlides - 1].
-int clampSlideIndex(DeckController controller, int target) {
-  return math.min(target, controller.presentation.totalSlides.value - 1);
-}
-
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
   const TestApp({super.key, this.deckLoader, this.workspace});
@@ -66,11 +62,12 @@ class TestApp extends StatelessWidget {
   /// Initializes dependencies for testing. Safe to call multiple times.
   static Future<void> initialize() async {
     if (_initialized) return;
-    _initialized = true;
     WidgetsFlutterBinding.ensureInitialized();
     SignalsObserver.instance = null;
+    GoogleFonts.config.allowRuntimeFetching = false;
     WidgetsBinding.instance.ensureSemantics();
     await SuperDeckApp.initialize();
+    _initialized = true;
   }
 
   @override
@@ -103,6 +100,13 @@ Slide makeSlide(String key, String content) {
     sections: [
       SectionBlock([ContentBlock(content)]),
     ],
+  );
+}
+
+List<Slide> makeSlides(int count) {
+  return List.generate(
+    count,
+    (index) => makeSlide('s${index + 1}', '# Slide ${index + 1}'),
   );
 }
 
@@ -209,7 +213,7 @@ extension IntegrationTestExtensions on WidgetTester {
   /// Pumps a [TestApp] with the given [DeckLoader], waits for slides to load.
   Future<DeckController> pumpTestAppWithLoader(
     DeckLoader loader, {
-    DeckWorkspace? workspace,
+    required DeckWorkspace workspace,
   }) async {
     await pumpWidget(TestApp(deckLoader: loader, workspace: workspace));
     await pumpFor(const Duration(milliseconds: 200));
@@ -224,6 +228,26 @@ extension IntegrationTestExtensions on WidgetTester {
     final controller = findDeckController(this)!;
     await waitForSlidesLoaded(controller);
     return controller;
+  }
+
+  /// Pumps the test app with a temporary workspace containing [slides].
+  Future<DeckController> pumpTestAppWithSlides(List<Slide> slides) async {
+    final tempDir = await Directory.systemTemp.createTemp('sd_fixture_app_');
+    FileDeckLoader? loader;
+    addTearDown(() async {
+      await loader?.dispose();
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    final workspace = DeckWorkspace(projectDir: tempDir.path);
+    await simulateBuildSuccess(workspace, slides, 1);
+
+    final fileLoader = FileDeckLoader(workspace: workspace);
+    loader = fileLoader;
+
+    return pumpTestAppWithLoader(fileLoader, workspace: workspace);
   }
 
   /// Pumps the test app, waits for it to fully load, and returns the controller.
