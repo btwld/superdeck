@@ -15,7 +15,7 @@ import '../tasks/task.dart';
 /// Builds decks from markdown content by processing slides through a series of tasks.
 ///
 /// Handles loading markdown content, parsing slides, executing build tasks,
-/// managing generated assets, and saving the compiled deck.
+/// and saving the compiled deck.
 class DeckBuilder {
   /// List of tasks to execute for each slide.
   final List<Task> tasks;

@@ -56,9 +56,7 @@ void main() {
 
     setUp(() async {
       tempDir = Directory.systemTemp.createTempSync('watch_integration_');
-      final superdeckDir = Directory(p.join(tempDir.path, '.superdeck'))
-        ..createSync(recursive: true);
-      Directory(p.join(superdeckDir.path, 'assets')).createSync();
+      Directory(p.join(tempDir.path, '.superdeck')).createSync(recursive: true);
       workspace = DeckWorkspace(projectDir: tempDir.path);
       await workspace.slidesFile.writeAsString(_initialMarkdown);
     });

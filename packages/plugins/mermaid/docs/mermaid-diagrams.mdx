@@ -5,7 +5,9 @@ description: Create beautiful diagrams and flowcharts using Mermaid syntax in Su
 
 # Mermaid diagrams guide
 
-SuperDeck includes built-in support for [Mermaid](https://mermaid.js.org/) diagrams, allowing you to create flowcharts, sequence diagrams, class diagrams, and more using simple text syntax. During the build process, mermaid diagrams are automatically rendered to high-quality images.
+The `superdeck_mermaid` plugin can render [Mermaid](https://mermaid.js.org/) diagrams — flowcharts, sequence diagrams, class diagrams, and more — to PNG via a headless browser. This guide documents the Mermaid syntax the plugin supports.
+
+> CLI/build integration is not wired up in this release. The plugin currently exposes a standalone `MermaidGenerator.render(syntax)` API that returns PNG bytes. See [Build process](#build-process) for status.
 
 ## Supported diagram types
 
@@ -311,7 +313,7 @@ erDiagram
 
 ## Styling and theming
 
-SuperDeck renders Mermaid diagrams to PNG during `dart run superdeck_cli:main build`. By default, the builder uses Mermaid’s `base` theme with a dark set of `themeVariables`.
+`MermaidGenerator` uses Mermaid’s `base` theme with a dark set of `themeVariables` by default.
 
 Some diagram types (for example, `timeline` in dark mode) fall back to Mermaid’s `default` theme to keep axes and grid lines readable.
 
@@ -366,7 +368,7 @@ flowchart TD
 
 ### Links
 
-Mermaid supports `click` directives in SVG output. SuperDeck renders diagrams to PNG, so click interactions are not preserved. If you need links, add them as normal Markdown next to the diagram.
+Mermaid supports `click` directives in SVG output. The generator renders diagrams to PNG, so click interactions are not preserved. If you need links, add them as normal Markdown next to the diagram.
 
 ### Comments
 
@@ -398,16 +400,8 @@ flowchart TD
 ### Common issues
 
 1. **Syntax Errors**: Validate your Mermaid syntax using the [official live editor](https://mermaid.live/)
-2. **Missing Images**: Check build output for any generation errors
-3. **Complex Diagrams**: Very large diagrams may timeout - try breaking them into smaller parts
-
-### Debugging
-
-Use verbose mode to see detailed build information:
-
-```bash
-dart run superdeck_cli:main build --verbose
-```
+2. **Rendering Failures**: `MermaidGenerator.render()` throws on invalid syntax; inspect the exception message for the underlying Mermaid error
+3. **Complex Diagrams**: Very large diagrams may timeout — try breaking them into smaller parts or raise the generator timeout via `configuration`
 
 ## Best practices
 
@@ -418,14 +412,7 @@ dart run superdeck_cli:main build --verbose
 3. **Readable Text**: Ensure text is large enough for presentation viewing
 4. **Consistent Style**: Use similar styling across all diagrams
 
-### Performance tips
-
-1. **Keep Diagrams Simple**: Avoid overly complex diagrams for better readability
-2. **Test Early**: Build regularly to catch syntax issues
-3. **Use Caching**: Identical diagrams are cached automatically
-
 ### Accessibility
 
-- Generated images include descriptive alt text
 - Default theme provides good contrast for presentations
 - Text sizes are optimized for presentation viewing

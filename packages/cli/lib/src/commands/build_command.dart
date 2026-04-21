@@ -11,18 +11,10 @@ import '../utils/logger.dart' show LoggerX;
 import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 
-/// Creates a [DeckBuilder] with the standard CLI task pipeline.
-DeckBuilder _createStandardBuilder({
-  required DeckWorkspace workspace,
-  required DeckBuildStore store,
-}) {
-  return StandardDeckBuildPipeline.create(workspace: workspace, store: store);
-}
-
 /// Builds SuperDeck presentations from markdown.
 ///
-/// Parses and processes the slides.md file, generating all required assets
-/// and outputs for the presentation.
+/// Parses the slides.md file and writes the compiled deck to the workspace
+/// output directory.
 class BuildCommand extends SuperDeckCommand {
   bool _isRunning = false;
   final String? _projectDir;
@@ -76,7 +68,10 @@ class BuildCommand extends SuperDeckCommand {
     final progress = logger.progress('Generating slides...');
 
     final ownsBuilder = builder == null;
-    builder ??= _createStandardBuilder(workspace: workspace, store: store);
+    builder ??= StandardDeckBuildPipeline.create(
+      workspace: workspace,
+      store: store,
+    );
 
     try {
       final slides = await builder.build();
@@ -186,7 +181,7 @@ class BuildCommand extends SuperDeckCommand {
         logger.info('');
 
         // Create a builder that will handle watching and rebuilding
-        final builder = _createStandardBuilder(
+        final builder = StandardDeckBuildPipeline.create(
           workspace: deckWorkspace,
           store: store,
         );
