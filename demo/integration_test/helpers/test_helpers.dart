@@ -56,9 +56,10 @@ int clampSlideIndex(DeckController controller, int target) {
 
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
-  const TestApp({super.key, this.deckLoader});
+  const TestApp({super.key, this.deckLoader, this.workspace});
 
   final DeckLoader? deckLoader;
+  final DeckWorkspace? workspace;
 
   static bool _initialized = false;
 
@@ -76,6 +77,7 @@ class TestApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return SuperDeckApp(
       deckLoader: deckLoader,
+      workspace: workspace,
       options: DeckOptions(
         baseStyle: borderedStyle(),
         widgets: demoWidgets,
@@ -205,8 +207,11 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   /// Pumps a [TestApp] with the given [DeckLoader], waits for slides to load.
-  Future<DeckController> pumpTestAppWithLoader(DeckLoader loader) async {
-    await pumpWidget(TestApp(deckLoader: loader));
+  Future<DeckController> pumpTestAppWithLoader(
+    DeckLoader loader, {
+    DeckWorkspace? workspace,
+  }) async {
+    await pumpWidget(TestApp(deckLoader: loader, workspace: workspace));
     await pumpFor(const Duration(milliseconds: 200));
 
     await pumpUntil(

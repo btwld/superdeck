@@ -56,22 +56,29 @@
 @block {
   align: topCenter
 }
-```mermaid
-mindmap
-  root((SuperDeck))
-    Markdown
-      Simple syntax
-      Code blocks
-      Mermaid diagrams
-    Flutter
-      Custom widgets
-      Hot reload
-      Cross-platform
-    Styling
-      Themes
-      Custom styles
-      Responsive
-```
+### Markdown {.heading}
+
+- Simple syntax
+- Code blocks
+- Version control friendly
+
+@block {
+  align: topCenter
+}
+### Flutter {.heading}
+
+- Custom widgets
+- Hot reload
+- Cross-platform
+
+@block {
+  align: topCenter
+}
+### Styling {.heading}
+
+- Themes
+- Custom styles
+- Responsive layouts
 
 ---
 
@@ -84,7 +91,6 @@ Write your presentations in familiar Markdown syntax:
 - Headers and text formatting
 - Code blocks with syntax highlighting
 - Lists and blockquotes
-- Mermaid diagrams
 - Custom widgets via `@widget` syntax
 
 ---
@@ -161,39 +167,6 @@ void main() {
   );
 }
 ```{.code}
-
----
-
-### Mermaid Diagrams {.heading}
-
-@block
-
-```mermaid
-flowchart LR
-    A[Markdown] --> B[Parser]
-    B --> C[Slides]
-    C --> D[Flutter UI]
-
-    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
-```
-
----
-
-### Sequence Diagrams {.heading}
-
-@block
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant SuperDeck
-    participant Flutter
-
-    User->>SuperDeck: Write slides.md
-    SuperDeck->>SuperDeck: Parse markdown
-    SuperDeck->>Flutter: Generate widgets
-    Flutter->>User: Render presentation
-```
 
 ---
 
@@ -326,27 +299,11 @@ style: quote
 
 @block
 
-```mermaid
-graph TB
-    subgraph Input
-        A[slides.md]
-    end
-
-    subgraph Processing
-        C[CLI Parser]
-        D[Code Generator]
-    end
-
-    subgraph Output
-        E[Flutter App]
-        G[Thumbnails]
-    end
-
-    A --> C
-    C --> D
-    D --> E
-    E --> G
-```
+1. Write slides in `slides.md`
+2. Run the CLI build command
+3. SuperDeck parses Markdown into slide data
+4. Flutter renders the presentation UI
+5. Runtime services generate previews as needed
 
 ---
 

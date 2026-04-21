@@ -32,12 +32,22 @@ void main() {
           debugLabel: 'menu arrow-forward navigation',
           onTimeout: () => describeDeckControllerState(controller),
         );
+        await tester.pumpUntil(
+          () => find.textContaining('2 of $totalSlides').evaluate().isNotEmpty,
+          debugLabel: 'menu counter to show slide 2',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
         expect(find.textContaining('2 of $totalSlides'), findsOneWidget);
 
         await tester.tapByLabel('Previous slide');
         await tester.pumpUntil(
           () => controller.presentation.currentIndex.value == 0,
           debugLabel: 'menu arrow-back navigation',
+          onTimeout: () => describeDeckControllerState(controller),
+        );
+        await tester.pumpUntil(
+          () => find.textContaining('1 of $totalSlides').evaluate().isNotEmpty,
+          debugLabel: 'menu counter to show slide 1',
           onTimeout: () => describeDeckControllerState(controller),
         );
         expect(find.textContaining('1 of $totalSlides'), findsOneWidget);

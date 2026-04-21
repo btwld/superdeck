@@ -46,7 +46,7 @@ dart pub add --dev superdeck_cli
 
 - `superdeck` - Flutter slide runtime
 - `superdeck_core` - core models and contracts
-- `superdeck_builder` - build pipeline and asset generation
+- `superdeck_builder` - Markdown build pipeline
 
 ## License
 

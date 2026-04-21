@@ -133,7 +133,7 @@ class BuildCommand extends SuperDeckCommand {
         logger.info(
           'Add a slides.md file in the project root. If this app has not been '
           'configured for SuperDeck yet, run `superdeck setup` first to add '
-          'the required pubspec entries, web loader, and macOS entitlements.',
+          'the required pubspec entries and macOS entitlements.',
         );
 
         return ExitCode.unavailable.code;

@@ -173,7 +173,7 @@
     "comments": []
   },
   {
-    "key": "DOl0tJ6t",
+    "key": "s84pyc7A",
     "options": {},
     "sections": [
       {
@@ -247,16 +247,6 @@
                         {
                           "type": "text",
                           "text": "Lists and blockquotes"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "element",
-                      "tag": "li",
-                      "children": [
-                        {
-                          "type": "text",
-                          "text": "Mermaid diagrams"
                         }
                       ]
                     },
@@ -433,76 +423,6 @@
               "footnoteReferences": {}
             },
             "flex": 2,
-            "scrollable": false,
-            "type": "block"
-          }
-        ],
-        "flex": 1,
-        "scrollable": false,
-        "type": "section"
-      }
-    ],
-    "comments": []
-  },
-  {
-    "key": "aY6TnrgM",
-    "options": {},
-    "sections": [
-      {
-        "blocks": [
-          {
-            "content": {
-              "type": "document",
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "h3",
-                  "children": [
-                    {
-                      "type": "text",
-                      "text": "Sequence Diagrams {.heading}"
-                    }
-                  ],
-                  "generatedId": "sequence-diagrams-heading"
-                }
-              ],
-              "linkReferences": {},
-              "footnoteLabels": [],
-              "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
-          },
-          {
-            "content": {
-              "type": "document",
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "pre",
-                  "children": [
-                    {
-                      "type": "element",
-                      "tag": "code",
-                      "attributes": {
-                        "class": "language-mermaid"
-                      },
-                      "children": [
-                        {
-                          "type": "text",
-                          "text": "sequenceDiagram\n    participant User\n    participant SuperDeck\n    participant Flutter\n\n    User-&gt;&gt;SuperDeck: Write slides.md\n    SuperDeck-&gt;&gt;SuperDeck: Parse markdown\n    SuperDeck-&gt;&gt;Flutter: Generate widgets\n    Flutter-&gt;&gt;User: Render presentation\n"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ],
-              "linkReferences": {},
-              "footnoteLabels": [],
-              "footnoteReferences": {}
-            },
-            "flex": 1,
             "scrollable": false,
             "type": "block"
           }
@@ -860,7 +780,7 @@
     "comments": []
   },
   {
-    "key": "kTOjNLpJ",
+    "key": "4QSJhaVE",
     "options": {},
     "sections": [
       {

@@ -61,7 +61,7 @@
     "comments": []
   },
   {
-    "key": "DOl0tJ6t",
+    "key": "s84pyc7A",
     "options": {},
     "sections": [
       {
@@ -73,7 +73,7 @@
             "type": "block"
           },
           {
-            "content": "Write your presentations in familiar Markdown syntax:\n\n- Headers and text formatting\n- Code blocks with syntax highlighting\n- Lists and blockquotes\n- Mermaid diagrams\n- Custom widgets via `@widget` syntax",
+            "content": "Write your presentations in familiar Markdown syntax:\n\n- Headers and text formatting\n- Code blocks with syntax highlighting\n- Lists and blockquotes\n- Custom widgets via `@widget` syntax",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -128,32 +128,6 @@
           {
             "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': myWidgetFactory,\n        },\n      ),\n    ),\n  );\n}\n```{.code}",
             "flex": 2,
-            "scrollable": false,
-            "type": "block"
-          }
-        ],
-        "flex": 1,
-        "scrollable": false,
-        "type": "section"
-      }
-    ],
-    "comments": []
-  },
-  {
-    "key": "aY6TnrgM",
-    "options": {},
-    "sections": [
-      {
-        "blocks": [
-          {
-            "content": "### Sequence Diagrams {.heading}\n",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
-          },
-          {
-            "content": "```mermaid\nsequenceDiagram\n    participant User\n    participant SuperDeck\n    participant Flutter\n\n    User->>SuperDeck: Write slides.md\n    SuperDeck->>SuperDeck: Parse markdown\n    SuperDeck->>Flutter: Generate widgets\n    Flutter->>User: Render presentation\n```",
-            "flex": 1,
             "scrollable": false,
             "type": "block"
           }
@@ -318,7 +292,7 @@
     "comments": []
   },
   {
-    "key": "kTOjNLpJ",
+    "key": "4QSJhaVE",
     "options": {},
     "sections": [
       {

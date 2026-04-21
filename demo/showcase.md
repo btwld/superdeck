@@ -98,7 +98,7 @@ and *italic* text.
 
 - Bullet points
 - Code blocks
-- Mermaid diagrams
+- Custom widgets
 
 ---
 ```{.code}
@@ -198,17 +198,6 @@ Each block supports:
 
 @block
 
-```mermaid
-flowchart LR
-    A["slides.md"] --> B["Parser"]
-    B --> C["Blocks"]
-    C --> D["Widgets"]
-    D --> E["Flutter UI"]
-
-    style A fill:#4CAF50,stroke:#2E7D32,color:#fff
-    style E fill:#2196F3,stroke:#1565C0,color:#fff
-```
-
 The CLI processes your markdown through multiple stages:
 1. **Parse** - Extract frontmatter and block directives
 2. **Transform** - Convert to widget tree
@@ -293,7 +282,6 @@ style: quote
 
 @block
 
-- **Mermaid Diagrams** - Flowcharts, sequences, mind maps
 - **Code Highlighting** - Syntax-aware formatting
 - **Custom Widgets** - Embed any Flutter widget
 - **Thumbnails** - Auto-generated previews
