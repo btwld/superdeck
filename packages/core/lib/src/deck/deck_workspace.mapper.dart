@@ -118,11 +118,7 @@ extension DeckWorkspaceValueCopy<$R, $Out>
 
 abstract class DeckWorkspaceCopyWith<$R, $In extends DeckWorkspace, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
-  $R call({
-    String? projectDir,
-    String? slidesPath,
-    String? outputDir,
-  });
+  $R call({String? projectDir, String? slidesPath, String? outputDir});
   DeckWorkspaceCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
 
@@ -158,3 +154,4 @@ class _DeckWorkspaceCopyWithImpl<$R, $Out>
     Then<$Out2, $R2> t,
   ) => _DeckWorkspaceCopyWithImpl<$R2, $Out2>($value, $cast, t);
 }
+

@@ -480,16 +480,20 @@
               "children": [
                 {
                   "type": "element",
-                  "tag": "p",
+                  "tag": "pre",
                   "children": [
                     {
                       "type": "element",
-                      "tag": "img",
+                      "tag": "code",
                       "attributes": {
-                        "src": ".superdeck/assets/mermaid_c9oXzHsh.png",
-                        "alt": "mermaid_asset"
+                        "class": "language-mermaid"
                       },
-                      "isEmpty": true
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "sequenceDiagram\n    participant User\n    participant SuperDeck\n    participant Flutter\n\n    User-&gt;&gt;SuperDeck: Write slides.md\n    SuperDeck-&gt;&gt;SuperDeck: Parse markdown\n    SuperDeck-&gt;&gt;Flutter: Generate widgets\n    Flutter-&gt;&gt;User: Render presentation\n"
+                        }
+                      ]
                     }
                   ]
                 }

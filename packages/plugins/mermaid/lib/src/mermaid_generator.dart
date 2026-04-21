@@ -483,7 +483,7 @@ class MermaidGenerator {
       _logger.info(
         'Successfully generated Mermaid image (${screenshot.length} bytes)',
       );
-      return screenshot;
+      return Uint8List.fromList(screenshot);
     });
   }
 

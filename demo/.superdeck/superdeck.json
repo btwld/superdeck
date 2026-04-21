@@ -152,7 +152,7 @@
             "type": "block"
           },
           {
-            "content": "![mermaid_asset](.superdeck/assets/mermaid_c9oXzHsh.png)",
+            "content": "```mermaid\nsequenceDiagram\n    participant User\n    participant SuperDeck\n    participant Flutter\n\n    User->>SuperDeck: Write slides.md\n    SuperDeck->>SuperDeck: Parse markdown\n    SuperDeck->>Flutter: Generate widgets\n    Flutter->>User: Render presentation\n```",
             "flex": 1,
             "scrollable": false,
             "type": "block"

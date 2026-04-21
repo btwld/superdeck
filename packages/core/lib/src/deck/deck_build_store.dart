@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:markdown/markdown.dart' as md;
 
 import '../markdown/markdown_json.dart';
