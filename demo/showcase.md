@@ -187,10 +187,12 @@ SuperDeck uses three core block types:
 - **Widget Blocks** (`@widget`) - Embed custom Flutter components
 - **Built-in Widgets** (`@image`, `@dartpad`, `@qrcode`) - Pre-configured widgets
 
-Each block supports:
+Content and widget blocks support:
 - `flex` - Relative sizing (default: 1)
 - `align` - Content positioning (e.g., `center`, `topLeft`)
 - `scrollable` - Enable overflow scrolling
+
+Sections support `flex` and `align`; set `scrollable` on the child block or widget that overflows.
 
 ---
 

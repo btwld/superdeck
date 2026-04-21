@@ -43,39 +43,27 @@ void main() {
       },
     );
 
-    test(
-      '@section with multiple @block children produces expected section + '
-      'block structure',
-      () async {
-        final slides = await _buildFixtureDeck();
-        final slide = slides[1];
+    test('@section with multiple @block children produces expected section + '
+        'block structure', () async {
+      final slides = await _buildFixtureDeck();
+      final slide = slides[1];
 
-        expect(slide.sections, hasLength(1));
-        final section = slide.sections.single;
-        expect(section.type, SectionBlock.key);
-        expect(section.blocks, hasLength(2));
+      expect(slide.sections, hasLength(1));
+      final section = slide.sections.single;
+      expect(section.type, SectionBlock.key);
+      expect(section.blocks, hasLength(2));
 
-        final leftBlock = section.blocks[0];
-        final rightBlock = section.blocks[1];
+      final leftBlock = section.blocks[0];
+      final rightBlock = section.blocks[1];
 
-        expect(leftBlock, isA<ContentBlock>());
-        expect(
-          (leftBlock as ContentBlock).content,
-          contains('## Left Column'),
-        );
-        expect(leftBlock.content, contains('Author text in the first column.'));
+      expect(leftBlock, isA<ContentBlock>());
+      expect((leftBlock as ContentBlock).content, contains('## Left Column'));
+      expect(leftBlock.content, contains('Author text in the first column.'));
 
-        expect(rightBlock, isA<ContentBlock>());
-        expect(
-          (rightBlock as ContentBlock).content,
-          contains('## Right Column'),
-        );
-        expect(
-          rightBlock.content,
-          contains('Author text in the second column.'),
-        );
-      },
-    );
+      expect(rightBlock, isA<ContentBlock>());
+      expect((rightBlock as ContentBlock).content, contains('## Right Column'));
+      expect(rightBlock.content, contains('Author text in the second column.'));
+    });
 
     test(
       '@block option (alignment) is parsed and preserved on the slide model',
@@ -113,10 +101,83 @@ void main() {
       },
     );
 
+    test(
+      'section and block layout options are preserved through the build',
+      () async {
+        final slides = await _buildFixtureDeck();
+        final slide = slides[4];
+
+        expect(slide.sections, hasLength(2));
+
+        final topSection = slide.sections[0];
+        final footerSection = slide.sections[1];
+        expect(topSection.flex, 2);
+        expect(footerSection.flex, 1);
+        expect(topSection.blocks, hasLength(2));
+
+        final narrowBlock = topSection.blocks[0] as ContentBlock;
+        final wideBlock = topSection.blocks[1] as ContentBlock;
+        final footerBlock = footerSection.blocks.single as ContentBlock;
+
+        expect(narrowBlock.flex, 1);
+        expect(narrowBlock.align, ContentAlignment.topLeft);
+        expect(wideBlock.flex, 3);
+        expect(wideBlock.scrollable, isTrue);
+        expect(footerBlock.align, ContentAlignment.bottomRight);
+      },
+    );
+
+    test(
+      '@widget block keeps an explicit widget name and arbitrary args',
+      () async {
+        final slides = await _buildFixtureDeck();
+        final block = slides[5].sections.single.blocks.single;
+
+        expect(block, isA<WidgetBlock>());
+        final widgetBlock = block as WidgetBlock;
+        expect(widgetBlock.name, 'poll');
+        expect(widgetBlock.args, containsPair('question', 'Ready to ship?'));
+        expect(widgetBlock.args['choices'], orderedEquals(['yes', 'no']));
+      },
+    );
+
+    test(
+      'built-in widget shorthand tags become widget blocks with args',
+      () async {
+        final slides = await _buildFixtureDeck();
+        final qrBlock = slides[6].sections.single.blocks.single as WidgetBlock;
+        final dartPadBlock =
+            slides[7].sections.single.blocks.single as WidgetBlock;
+
+        expect(qrBlock.name, 'qrcode');
+        expect(qrBlock.args, containsPair('text', 'https://superdeck.dev'));
+        expect(qrBlock.args, containsPair('size', 180));
+        expect(qrBlock.args, containsPair('errorCorrection', 'high'));
+
+        expect(dartPadBlock.name, 'dartpad');
+        expect(dartPadBlock.args, containsPair('id', 'abc123'));
+        expect(dartPadBlock.args, containsPair('theme', 'dark'));
+        expect(dartPadBlock.args, containsPair('embed', isTrue));
+        expect(dartPadBlock.args, containsPair('run', isFalse));
+      },
+    );
+
+    test('escaped directive syntax remains markdown content', () async {
+      final slides = await _buildFixtureDeck();
+      final block = slides[8].sections.single.blocks.single;
+
+      expect(block, isA<ContentBlock>());
+      expect(block.align, isNull);
+      expect(
+        (block as ContentBlock).content,
+        contains('@block {align: center}'),
+      );
+    });
+
     test('total slide count matches fixture', () async {
       final slides = await _buildFixtureDeck();
 
-      expect(slides, hasLength(4));
+      expect(slides, hasLength(9));
     });
   });
 }
@@ -148,15 +209,11 @@ Future<void> _runBuilder(Directory repoRoot, DeckWorkspace workspace) async {
   );
   await buildScript.writeAsString(_buildScriptSource);
 
-  final result = await Process.run(
-    _dartExecutable(repoRoot),
-    [
-      '--packages=${packageConfig.path}',
-      buildScript.path,
-      workspace.projectDir,
-    ],
-    workingDirectory: builderDir.path,
-  );
+  final result = await Process.run(_dartExecutable(repoRoot), [
+    '--packages=${packageConfig.path}',
+    buildScript.path,
+    workspace.projectDir,
+  ], workingDirectory: builderDir.path);
 
   if (result.exitCode != 0) {
     fail(

@@ -136,9 +136,13 @@ void main() {
       testWidgets('renders content and widget blocks together', (tester) async {
         await SlideTestHarness.pumpSlide(
           tester,
-          SlideFixtures.withCustomWidget(widgetName: 'qrcode'),
+          SlideFixtures.contentAndWidget(),
         );
-        tester.expectBlockCount(1);
+
+        tester.expectBlockCount(2);
+        expect(find.byType(BlockWidget), findsOneWidget);
+        expect(find.byType(CustomBlockWidget), findsOneWidget);
+        expect(find.textContaining('Error building widget'), findsNothing);
         expect(tester.takeException(), isNull);
       });
     });

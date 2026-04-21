@@ -126,6 +126,33 @@ void main() {
         final rect2 = tester.getRect(sections.at(1));
         expect(rect2.top, closeTo(rect1.bottom, 1.0));
       });
+
+      testWidgets('header and footer reserve vertical space for sections', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.twoSectionEqual(),
+          parts: const SlideParts(
+            header: PreferredSize(
+              preferredSize: Size.fromHeight(80),
+              child: SizedBox.shrink(),
+            ),
+            footer: PreferredSize(
+              preferredSize: Size.fromHeight(40),
+              child: SizedBox.shrink(),
+            ),
+          ),
+        );
+
+        final sections = find.byType(SectionWidget);
+        final topSection = tester.getRect(sections.at(0));
+        final bottomSection = tester.getRect(sections.at(1));
+
+        expect(topSection.top, closeTo(80, 1.0));
+        expect(bottomSection.bottom, closeTo(680, 1.0));
+        expect(topSection.height + bottomSection.height, closeTo(600, 1.0));
+      });
     });
 
     group('slide size', () {

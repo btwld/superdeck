@@ -428,6 +428,21 @@ Header content.
           reason: 'Invalid alignment value should throw an exception.',
         );
       });
+
+      test('Section-level scrollable is rejected', () {
+        const markdown = '''
+@section { scrollable: true }
+@block
+Header content.
+
+''';
+
+        expect(
+          () => sectionParser.parse(markdown),
+          throwsA(isA<Exception>()),
+          reason: 'Scrollable should be set on child blocks, not sections.',
+        );
+      });
     });
   });
 }

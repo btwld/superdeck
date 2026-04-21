@@ -3,10 +3,10 @@ import 'package:dart_mappable/dart_mappable.dart';
 
 part 'block_model.mapper.dart';
 
-/// Base class for all content blocks in a slide.
+/// Base class for renderable blocks in a slide section.
 ///
-/// Blocks are the fundamental building units of slide content. They can be
-/// arranged in sections and support alignment, flexible sizing, and scrolling.
+/// Blocks are leaf content units inside sections. They support alignment,
+/// flexible sizing, and scrolling.
 @MappableClass(discriminatorKey: 'type', ignoreNull: true)
 sealed class Block with BlockMappable {
   final String type;
@@ -50,18 +50,25 @@ sealed class Block with BlockMappable {
   static final fromMap = BlockMapper.fromMap;
 }
 
-/// A block that contains multiple child blocks arranged horizontally.
+/// A section that contains multiple child blocks arranged horizontally.
 ///
 /// Sections are used to create multi-column layouts within a slide.
-@MappableClass(discriminatorValue: SectionBlock.key)
-class SectionBlock extends Block with SectionBlockMappable {
+@MappableClass(ignoreNull: true)
+class SectionBlock with SectionBlockMappable {
   final List<Block> blocks;
+  final ContentAlignment? align;
+  final int flex;
+  final String type;
 
   static const key = 'section';
 
-  SectionBlock(List<Block>? blocks, {super.align, super.flex, super.scrollable})
-    : blocks = List.unmodifiable(blocks ?? const []),
-      super(type: key);
+  SectionBlock(
+    List<Block>? blocks, {
+    this.align,
+    this.flex = 1,
+    String type = key,
+  }) : blocks = List.unmodifiable(blocks ?? const []),
+       type = _validateType(type);
 
   /// The total flex value of all child blocks.
   int get totalBlockFlex {
@@ -79,13 +86,18 @@ class SectionBlock extends Block with SectionBlockMappable {
     return SectionBlock([ContentBlock(content)]);
   }
 
+  static String _validateType(String type) {
+    if (type == key) return type;
+    throw ArgumentError.value(type, 'type', 'SectionBlock type must be "$key"');
+  }
+
   /// Validation schema for section blocks.
   static final schema = Ack.object({
+    'type': Ack.literal(key).optional(),
     'align': ContentAlignment.schema.optional(),
     'flex': Ack.integer().optional(),
-    'scrollable': Ack.boolean().optional(),
     'blocks': Ack.list(Block.discriminatedSchema).optional(),
-  }, additionalProperties: true);
+  }, additionalProperties: false);
 }
 
 /// Alias used by generated Ack model schemas for [SectionBlock] references.

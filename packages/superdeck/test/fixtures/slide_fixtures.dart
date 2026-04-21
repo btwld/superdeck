@@ -169,6 +169,22 @@ class SlideFixtures {
     ]);
   }
 
+  /// Section with one markdown block and one widget block.
+  static Slide contentAndWidget({
+    String widgetName = 'qrcode',
+    Map<String, dynamic> args = const {
+      'text': 'https://superdeck.dev',
+      'size': 96.0,
+    },
+  }) {
+    return _slide('fixture-content-and-widget-$widgetName', [
+      SectionBlock([
+        ContentBlock('# Content'),
+        WidgetBlock(name: widgetName, args: args),
+      ]),
+    ]);
+  }
+
   /// Block containing fenced code block.
   static Slide withCodeBlock({String language = 'dart'}) {
     return _slide('fixture-code-block', [

@@ -11,7 +11,6 @@
         "type": "array"
       },
       "key": {
-        "description": "Unique identifier for this slide, typically generated from content hash.",
         "type": "string"
       },
       "options": {
@@ -31,7 +30,7 @@
       },
       "sections": {
         "items": {
-          "additionalProperties": {},
+          "additionalProperties": false,
           "properties": {
             "align": {
               "enum": [
@@ -130,8 +129,9 @@
             "flex": {
               "type": "integer"
             },
-            "scrollable": {
-              "type": "boolean"
+            "type": {
+              "const": "section",
+              "type": "string"
             }
           },
           "type": "object"

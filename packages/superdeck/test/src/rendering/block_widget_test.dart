@@ -65,6 +65,23 @@ void main() {
         tester.expectScrollable(find.byType(BlockWidget));
       });
 
+      testWidgets('scrollable block responds to drag gestures', (tester) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.scrollableBlock(lineCount: 160),
+        );
+
+        final scrollable = find.byType(Scrollable).first;
+        final state = tester.state<ScrollableState>(scrollable);
+
+        expect(state.position.pixels, 0);
+
+        await tester.drag(scrollable, const Offset(0, -320));
+        await tester.pumpAndSettle();
+
+        expect(state.position.pixels, greaterThan(0));
+      });
+
       testWidgets('non-scrollable block clips overflow', (tester) async {
         await SlideTestHarness.pumpSlide(
           tester,

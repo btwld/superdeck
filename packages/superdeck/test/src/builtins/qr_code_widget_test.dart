@@ -48,10 +48,7 @@ void main() {
       });
 
       test('rejects text exceeding 1000 characters', () {
-        expect(
-          () => QrCodeDto.parse({'text': 'x' * 1001}),
-          throwsA(anything),
-        );
+        expect(() => QrCodeDto.parse({'text': 'x' * 1001}), throwsA(anything));
       });
 
       test('rejects invalid hex color', () {
@@ -88,7 +85,10 @@ void main() {
 
       final qrImage = tester.widget<QrImageView>(find.byType(QrImageView));
       expect(qrImage.size, 160.0);
+      expect(qrImage.errorCorrectionLevel, QrErrorCorrectLevel.Q);
       expect(qrImage.backgroundColor, const Color(0xFFFFFF00));
+      expect(qrImage.eyeStyle.color, const Color(0xFF123456));
+      expect(qrImage.dataModuleStyle.color, const Color(0xFF123456));
     });
   });
 }

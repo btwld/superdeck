@@ -4,6 +4,16 @@ import 'package:integration_test/integration_test.dart';
 
 import 'helpers/test_helpers.dart';
 
+Finder? _notesToggleFinder() {
+  final closeLabel = find.bySemanticsLabel('Close notes panel');
+  if (closeLabel.evaluate().isNotEmpty) return closeLabel;
+
+  final openLabel = find.bySemanticsLabel('Open notes panel');
+  if (openLabel.evaluate().isNotEmpty) return openLabel;
+
+  return null;
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -84,13 +94,7 @@ void main() {
       // Semantics label updates can lag on some macOS runners — try either label.
       // Use raw finders here because tapByLabel can fail when the semantics
       // node exists but the underlying widget is at the viewport edge.
-      final closeLabel = find.bySemanticsLabel('Close notes panel');
-      final openLabel = find.bySemanticsLabel('Open notes panel');
-      final toggleFinder = closeLabel.evaluate().isNotEmpty
-          ? closeLabel
-          : openLabel.evaluate().isNotEmpty
-          ? openLabel
-          : null;
+      final toggleFinder = _notesToggleFinder();
 
       if (toggleFinder == null) {
         fail(

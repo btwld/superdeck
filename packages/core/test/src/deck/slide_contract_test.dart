@@ -11,6 +11,14 @@ Map<String, Object?> _propertySchema(
   return Map<String, Object?>.from(properties[property] as Map);
 }
 
+Map<String, Object?> _arrayItemSchema(
+  Map<String, Object?> schema,
+  String property,
+) {
+  final arraySchema = _propertySchema(schema, property);
+  return Map<String, Object?>.from(arraySchema['items'] as Map);
+}
+
 void _expectSchemaIsNotNullable(Map<String, Object?> schema) {
   expect(schema['type'], isNot('null'));
 
@@ -92,6 +100,20 @@ void main() {
         'title',
       );
       _expectSchemaIsNotNullable(slideOptionsTitleSchema);
+    });
+
+    test('json schema exports closed section options', () {
+      final jsonSchema = slidesContractSchema.toJsonSchema();
+      final itemsSchema = Map<String, Object?>.from(jsonSchema['items'] as Map);
+      final sectionSchema = _arrayItemSchema(itemsSchema, 'sections');
+      final sectionProperties = Map<String, Object?>.from(
+        sectionSchema['properties'] as Map,
+      );
+
+      expect(sectionSchema['additionalProperties'], isFalse);
+      expect(sectionProperties.keys, containsAll(['type', 'align', 'flex']));
+      expect(sectionProperties.containsKey('blocks'), isTrue);
+      expect(sectionProperties.containsKey('scrollable'), isFalse);
     });
   });
 }

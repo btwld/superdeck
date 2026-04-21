@@ -489,7 +489,6 @@ void main() {
         expect(section.blocks, isEmpty);
         expect(section.type, 'section');
         expect(section.flex, 1);
-        expect(section.scrollable, false);
       });
 
       test('creates with child blocks', () {
@@ -514,12 +513,10 @@ void main() {
           [ContentBlock('Test')],
           align: ContentAlignment.center,
           flex: 2,
-          scrollable: true,
         );
 
         expect(section.align, ContentAlignment.center);
         expect(section.flex, 2);
-        expect(section.scrollable, true);
       });
 
       group('totalBlockFlex', () {
@@ -553,14 +550,12 @@ void main() {
             [ContentBlock('Test')],
             align: ContentAlignment.center,
             flex: 2,
-            scrollable: true,
           );
           final copy = original.copyWith();
 
           expect(copy.blocks.length, original.blocks.length);
           expect(copy.align, original.align);
           expect(copy.flex, original.flex);
-          expect(copy.scrollable, original.scrollable);
         });
       });
 
@@ -571,6 +566,7 @@ void main() {
 
           expect(map['type'], 'section');
           expect(map['blocks'], isEmpty);
+          expect(map.containsKey('scrollable'), isFalse);
         });
 
         test('serializes section with blocks', () {
@@ -580,6 +576,7 @@ void main() {
           expect(map['type'], 'section');
           expect(map['blocks'], isA<List>());
           expect((map['blocks'] as List).length, 1);
+          expect(map.containsKey('scrollable'), isFalse);
         });
       });
 
@@ -602,6 +599,42 @@ void main() {
 
           expect(section.blocks.length, 1);
           expect((section.blocks[0] as ContentBlock).content, 'Test');
+        });
+      });
+
+      group('schema', () {
+        test('validates full section', () {
+          final result = SectionBlock.schema.safeParse({
+            'align': 'center',
+            'flex': 2,
+            'blocks': [
+              {'type': 'block', 'content': 'Test'},
+            ],
+          });
+
+          expect(result.isOk, isTrue);
+        });
+
+        test('rejects section-level scrollable', () {
+          final result = SectionBlock.schema.safeParse({
+            'scrollable': true,
+            'blocks': [
+              {'type': 'block', 'content': 'Test'},
+            ],
+          });
+
+          expect(result.isOk, isFalse);
+        });
+
+        test('rejects unknown section-level fields', () {
+          final result = SectionBlock.schema.safeParse({
+            'customSectionArg': 'value',
+            'blocks': [
+              {'type': 'block', 'content': 'Test'},
+            ],
+          });
+
+          expect(result.isOk, isFalse);
         });
       });
 
@@ -879,11 +912,10 @@ void main() {
           expect(() => Block.fromMap(map), throwsA(anything));
         });
 
-        test('creates SectionBlock from section type', () {
+        test('rejects SectionBlock from section type', () {
           final map = {'type': 'section', 'blocks': []};
-          final block = Block.fromMap(map);
 
-          expect(block, isA<SectionBlock>());
+          expect(() => Block.fromMap(map), throwsA(anything));
         });
 
         test('creates WidgetBlock from widget type', () {
@@ -942,31 +974,28 @@ void main() {
     });
 
     group('Nested structures', () {
-      test('section with nested sections', () {
-        final nested = SectionBlock([
-          SectionBlock([ContentBlock('Inner1'), ContentBlock('Inner2')]),
-          ContentBlock('Outer'),
-        ]);
-
-        expect(nested.blocks.length, 2);
-        expect(nested.blocks[0], isA<SectionBlock>());
-        expect((nested.blocks[0] as SectionBlock).blocks.length, 2);
-      });
-
-      test('round-trip nested structure', () {
+      test('round-trips mixed leaf blocks', () {
         final original = SectionBlock([
           ContentBlock('A', align: ContentAlignment.topLeft),
           WidgetBlock(name: 'W', args: {'x': 1}),
-          SectionBlock([ContentBlock('B')]),
         ]);
 
         final map = original.toMap();
         final restored = SectionBlock.fromMap(map);
 
-        expect(restored.blocks.length, 3);
+        expect(restored.blocks.length, 2);
         expect(restored.blocks[0], isA<ContentBlock>());
         expect(restored.blocks[1], isA<WidgetBlock>());
-        expect(restored.blocks[2], isA<SectionBlock>());
+      });
+
+      test('schema rejects nested sections', () {
+        final result = SectionBlock.schema.safeParse({
+          'blocks': [
+            {'type': 'section', 'blocks': []},
+          ],
+        });
+
+        expect(result.isOk, isFalse);
       });
     });
   });

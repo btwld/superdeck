@@ -231,7 +231,6 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
           size: blockSize,
           configuration: configuration,
         ),
-        _ => const SizedBox.shrink(),
       };
 
       // Add debug info overlay if needed

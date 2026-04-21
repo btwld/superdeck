@@ -48,13 +48,13 @@ class SectionParser {
         );
       }
 
-      final block = parsedBlock.type == 'section'
-          ? SectionBlock.parse(parsedBlock.data)
-          : Block.parse(parsedBlock.data);
+      if (parsedBlock.type == SectionBlock.key) {
+        aggregator.addSection(SectionBlock.parse(parsedBlock.data));
+      } else {
+        aggregator.addBlock(Block.parse(parsedBlock.data));
+      }
 
-      aggregator
-        ..addBlock(block)
-        ..addContent(blockContent);
+      aggregator.addContent(blockContent);
     }
 
     return aggregator.sections;
@@ -106,14 +106,14 @@ class _SectionAggregator {
     sections.last = section.copyWith(blocks: updatedBlocks);
   }
 
-  void addBlock(Block block) {
-    if (block is SectionBlock) {
-      sections.add(block);
-    } else {
-      final lastSection = _getSection();
-      final blocks = [...lastSection.blocks, block];
+  void addSection(SectionBlock section) {
+    sections.add(section);
+  }
 
-      sections.last = lastSection.copyWith(blocks: blocks);
-    }
+  void addBlock(Block block) {
+    final lastSection = _getSection();
+    final blocks = [...lastSection.blocks, block];
+
+    sections.last = lastSection.copyWith(blocks: blocks);
   }
 }

@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:integration_test/integration_test.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
@@ -19,6 +22,11 @@ import 'package:superdeck_example/src/style.dart';
 import 'package:superdeck_example/src/templates.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
+var _reviewScreenshotRun = 0;
+final _reviewScreenshotBoundaryKey = GlobalKey(
+  debugLabel: 'review-screenshot-boundary',
+);
+
 void assertNoFlutterException(WidgetTester tester) {
   final exceptions = <Object>[];
 
@@ -31,6 +39,142 @@ void assertNoFlutterException(WidgetTester tester) {
   if (exceptions.isEmpty) return;
 
   fail('Unexpected Flutter exception(s):\n${exceptions.join('\n\n')}');
+}
+
+void assertNoRenderedPresentationErrors(WidgetTester tester) {
+  const errorTextPatterns = [
+    'Error loading presentation',
+    'Widget not found:',
+    'Error building widget:',
+    'Error loading image:',
+    'Invalid image source:',
+    'Image source is empty',
+  ];
+
+  final renderedErrors = <String>[];
+
+  for (final pattern in errorTextPatterns) {
+    final finder = find.textContaining(pattern);
+    for (final element in finder.evaluate()) {
+      final widget = element.widget;
+      if (widget is Text) {
+        renderedErrors.add(
+          widget.data ?? widget.textSpan?.toPlainText() ?? pattern,
+        );
+      } else {
+        renderedErrors.add(pattern);
+      }
+    }
+  }
+
+  if (renderedErrors.isEmpty) return;
+
+  fail('Rendered presentation error(s):\n${renderedErrors.join('\n\n')}');
+}
+
+void assertPresentationHealthy(WidgetTester tester, DeckController controller) {
+  if (controller.session.hasFatalError.value) {
+    fail(
+      'Presentation has fatal error: ${controller.session.error.value}\n'
+      '${describeDeckControllerState(controller)}',
+    );
+  }
+
+  assertNoRenderedPresentationErrors(tester);
+  assertNoFlutterException(tester);
+}
+
+Future<void> captureAllSlidesForReview(
+  WidgetTester tester,
+  DeckController controller, {
+  required String suiteName,
+  required String scenarioName,
+}) async {
+  if (Platform.environment['SUPERDECK_CAPTURE_SLIDES'] != '1') return;
+
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final originalIndex = controller.presentation.currentIndex.value;
+  final runId = (++_reviewScreenshotRun).toString().padLeft(3, '0');
+  final outputDir = Directory(
+    '${_reviewScreenshotRoot().path}/${_slug(suiteName)}/'
+    '${runId}_${_slug(scenarioName)}',
+  );
+  await outputDir.create(recursive: true);
+
+  final totalSlides = controller.presentation.totalSlides.value;
+  for (var index = 0; index < totalSlides; index++) {
+    await tester.navigateToSlide(controller, index);
+    await tester.pumpUntil(
+      () => !controller.presentation.isTransitioning.value,
+      timeout: const Duration(seconds: 3),
+      debugLabel: 'slide transition to finish before screenshot',
+      onTimeout: () => describeDeckControllerState(controller),
+    );
+    await tester.pumpFor(const Duration(milliseconds: 150));
+    assertPresentationHealthy(tester, controller);
+
+    final slide = controller.slides.value[index];
+    final slideNumber = (index + 1).toString().padLeft(2, '0');
+    final fileName = '${slideNumber}_${_slug(slide.key)}.png';
+    final screenshotName =
+        '${_slug(suiteName)}_${runId}_${slideNumber}_${_slug(slide.key)}';
+    final bytes = await _captureReviewScreenshot(binding, screenshotName);
+
+    await File('${outputDir.path}/$fileName').writeAsBytes(bytes, flush: true);
+  }
+
+  if (originalIndex >= 0 && originalIndex < totalSlides) {
+    await tester.navigateToSlide(controller, originalIndex);
+  }
+}
+
+Future<List<int>> _captureReviewScreenshot(
+  IntegrationTestWidgetsFlutterBinding binding,
+  String screenshotName,
+) async {
+  try {
+    return await binding.takeScreenshot(screenshotName);
+  } on MissingPluginException {
+    final boundaryContext = _reviewScreenshotBoundaryKey.currentContext;
+    if (boundaryContext == null) {
+      throw StateError('Review screenshot boundary is not mounted.');
+    }
+    if (!boundaryContext.mounted) {
+      throw StateError('Review screenshot boundary is no longer mounted.');
+    }
+
+    final renderObject = boundaryContext.findRenderObject();
+    if (renderObject is! RenderRepaintBoundary) {
+      throw StateError(
+        'Review screenshot boundary has unexpected render object: '
+        '${renderObject.runtimeType}',
+      );
+    }
+
+    final image = await renderObject.toImage(pixelRatio: 1.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
+
+    if (byteData == null) {
+      throw StateError('Could not encode review screenshot "$screenshotName".');
+    }
+
+    return byteData.buffer.asUint8List();
+  }
+}
+
+Directory _reviewScreenshotRoot() {
+  final configured = Platform.environment['SUPERDECK_SCREENSHOT_DIR'];
+  if (configured != null && configured.trim().isNotEmpty) {
+    return Directory(configured);
+  }
+
+  return Directory('${Directory.current.path}/build/integration_screenshots');
+}
+
+String _slug(String value) {
+  final slug = value.trim().replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '_');
+  return slug.isEmpty ? 'unnamed' : slug;
 }
 
 String describeDeckControllerState(DeckController? controller) {
@@ -72,21 +216,24 @@ class TestApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SuperDeckApp(
-      deckLoader: deckLoader,
-      workspace: workspace,
-      options: DeckOptions(
-        baseStyle: borderedStyle(),
-        widgets: demoWidgets,
-        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
-        templates: {
-          'corporate': corporateTemplate(),
-          'minimal': minimalTemplate(),
-        },
-        parts: const SlideParts(
-          header: HeaderPart(),
-          footer: FooterPart(),
-          background: BackgroundPart(),
+    return RepaintBoundary(
+      key: _reviewScreenshotBoundaryKey,
+      child: SuperDeckApp(
+        deckLoader: deckLoader,
+        workspace: workspace,
+        options: DeckOptions(
+          baseStyle: borderedStyle(),
+          widgets: demoWidgets,
+          styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
+          templates: {
+            'corporate': corporateTemplate(),
+            'minimal': minimalTemplate(),
+          },
+          parts: const SlideParts(
+            header: HeaderPart(),
+            footer: FooterPart(),
+            background: BackgroundPart(),
+          ),
         ),
       ),
     );

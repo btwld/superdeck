@@ -26,6 +26,7 @@ void main() {
         'allAlignments': SlideFixtures.allAlignments,
         'scrollableBlock': () => SlideFixtures.scrollableBlock(),
         'nonScrollableBlock': () => SlideFixtures.nonScrollableBlock(),
+        'contentAndWidget': SlideFixtures.contentAndWidget,
         'withCodeBlock': () => SlideFixtures.withCodeBlock(),
         'mixedMarkdown': SlideFixtures.mixedMarkdown,
       };

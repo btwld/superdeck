@@ -34,9 +34,9 @@ SuperDeck supports three core block types.
 
 | Block | Purpose | Key properties |
 |---|---|---|
-| `@section` | Container for horizontal layout | `flex`, `align`, `scrollable` |
+| `@section` | Container for horizontal layout | `flex`, `align` |
 | `@block` | Render markdown content | `flex`, `align`, `scrollable` |
-| `@widget` | Embed custom Flutter widgets | `name` + custom args |
+| `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `scrollable` + custom args |
 
 Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@widget`.
 
@@ -58,6 +58,7 @@ Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@
 
 - Type: boolean
 - Default: `false`
+- Applies to: `@block` and `@widget`
 - Meaning: enable scrolling for overflow content.
 
 ## Built-in widgets
