@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/builtins/image_widget.dart';
@@ -5,6 +6,7 @@ import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/src/utils/converters.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -54,6 +56,23 @@ void main() {
         expect(dto.src.host, 'example.com');
       });
 
+      test('parses data URI, absolute, file URI, and Windows path sources', () {
+        final dataUri = ImageDto.parse({'src': _transparentPixelDataUri});
+        expect(dataUri.src.scheme, 'data');
+
+        final absolute = ImageDto.parse({'src': '/tmp/superdeck-image.png'});
+        expect(absolute.src.path, '/tmp/superdeck-image.png');
+
+        final fileUri = ImageDto.parse({
+          'src': 'file:///tmp/superdeck-image.png',
+        });
+        expect(fileUri.src.scheme, 'file');
+        expect(fileUri.src.path, '/tmp/superdeck-image.png');
+
+        final windows = ImageDto.parse({'src': r'C:\Users\me\image.png'});
+        expect(windows.src.scheme, 'file');
+      });
+
       test('rejects missing src', () {
         expect(() => ImageDto.parse({}), throwsA(anything));
       });
@@ -77,6 +96,35 @@ void main() {
           expect(dto.fit, fit);
         }
       });
+    });
+  });
+
+  group('image provider selection', () {
+    test('uses memory provider for data URI images', () {
+      final provider = getImageProvider(Uri.parse(_transparentPixelDataUri));
+      expect(provider, isA<MemoryImage>());
+    });
+
+    test('uses file provider for absolute, file URI, and relative paths', () {
+      final absolute = getImageProvider(Uri.file('/tmp/superdeck-image.png'));
+      final fileUri = getImageProvider(Uri.parse('file:///tmp/from-uri.png'));
+      final relative = getImageProvider(Uri.parse('assets/concepta-icon.png'));
+
+      expect(absolute, isA<FileImage>());
+      expect(fileUri, isA<FileImage>());
+      expect(relative, isA<FileImage>());
+      expect(
+        (relative as FileImage).file.path,
+        endsWith('assets/concepta-icon.png'),
+      );
+    });
+
+    test('uses cached network provider for http and https images', () {
+      final http = getImageProvider(Uri.parse('http://example.com/a.png'));
+      final https = getImageProvider(Uri.parse('https://example.com/a.jpg'));
+
+      expect(http, isA<CachedNetworkImageProvider>());
+      expect(https, isA<CachedNetworkImageProvider>());
     });
   });
 
@@ -117,6 +165,22 @@ void main() {
       expect(explicitSize.width, 120.0);
       expect(explicitSize.height, 80.0);
     });
+
+    for (final fit in ImageFit.values) {
+      testWidgets('applies ${fit.name} fit to CachedImage', (tester) async {
+        await tester.pumpWidget(
+          _ImageHarness(
+            size: const Size(640, 480),
+            args: {'src': _transparentPixelDataUri, 'fit': fit.toJson()},
+          ),
+        );
+        await tester.pump();
+
+        final image = tester.widget<CachedImage>(find.byType(CachedImage));
+        expect(image.styleSpec.spec.fit, fit.toBoxFit);
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 }
 

@@ -8,10 +8,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:integration_test/integration_test.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -85,21 +83,23 @@ void assertPresentationHealthy(WidgetTester tester, DeckController controller) {
   assertNoFlutterException(tester);
 }
 
-Future<void> captureAllSlidesForReview(
+Future<Directory?> captureAllSlidesForReview(
   WidgetTester tester,
   DeckController controller, {
   required String suiteName,
   required String scenarioName,
 }) async {
-  if (Platform.environment['SUPERDECK_CAPTURE_SLIDES'] != '1') return;
+  if (Platform.environment['SUPERDECK_CAPTURE_SLIDES'] != '1') return null;
 
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   final originalIndex = controller.presentation.currentIndex.value;
   final runId = (++_reviewScreenshotRun).toString().padLeft(3, '0');
   final outputDir = Directory(
     '${_reviewScreenshotRoot().path}/${_slug(suiteName)}/'
     '${runId}_${_slug(scenarioName)}',
   );
+  if (await outputDir.exists()) {
+    await outputDir.delete(recursive: true);
+  }
   await outputDir.create(recursive: true);
 
   final totalSlides = controller.presentation.totalSlides.value;
@@ -111,9 +111,7 @@ Future<void> captureAllSlidesForReview(
     final slide = controller.slides.value[index];
     final slideNumber = (index + 1).toString().padLeft(2, '0');
     final fileName = '${slideNumber}_${_slug(slide.key)}.png';
-    final screenshotName =
-        '${_slug(suiteName)}_${runId}_${slideNumber}_${_slug(slide.key)}';
-    final bytes = await _captureReviewScreenshot(binding, screenshotName);
+    final bytes = await _captureReviewScreenshot();
 
     await File('${outputDir.path}/$fileName').writeAsBytes(bytes, flush: true);
   }
@@ -121,41 +119,36 @@ Future<void> captureAllSlidesForReview(
   if (originalIndex >= 0 && originalIndex < totalSlides) {
     await tester.navigateToSlide(controller, originalIndex);
   }
+
+  return outputDir;
 }
 
-Future<List<int>> _captureReviewScreenshot(
-  IntegrationTestWidgetsFlutterBinding binding,
-  String screenshotName,
-) async {
-  try {
-    return await binding.takeScreenshot(screenshotName);
-  } on MissingPluginException {
-    final boundaryContext = _reviewScreenshotBoundaryKey.currentContext;
-    if (boundaryContext == null) {
-      throw StateError('Review screenshot boundary is not mounted.');
-    }
-    if (!boundaryContext.mounted) {
-      throw StateError('Review screenshot boundary is no longer mounted.');
-    }
-
-    final renderObject = boundaryContext.findRenderObject();
-    if (renderObject is! RenderRepaintBoundary) {
-      throw StateError(
-        'Review screenshot boundary has unexpected render object: '
-        '${renderObject.runtimeType}',
-      );
-    }
-
-    final image = await renderObject.toImage(pixelRatio: 1.0);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-
-    if (byteData == null) {
-      throw StateError('Could not encode review screenshot "$screenshotName".');
-    }
-
-    return byteData.buffer.asUint8List();
+Future<List<int>> _captureReviewScreenshot() async {
+  final boundaryContext = _reviewScreenshotBoundaryKey.currentContext;
+  if (boundaryContext == null) {
+    throw StateError('Review screenshot boundary is not mounted.');
   }
+  if (!boundaryContext.mounted) {
+    throw StateError('Review screenshot boundary is no longer mounted.');
+  }
+
+  final renderObject = boundaryContext.findRenderObject();
+  if (renderObject is! RenderRepaintBoundary) {
+    throw StateError(
+      'Review screenshot boundary has unexpected render object: '
+      '${renderObject.runtimeType}',
+    );
+  }
+
+  final image = await renderObject.toImage(pixelRatio: 1.0);
+  final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+
+  if (byteData == null) {
+    throw StateError('Could not encode review screenshot.');
+  }
+
+  return byteData.buffer.asUint8List();
 }
 
 Directory _reviewScreenshotRoot() {
@@ -191,10 +184,16 @@ String describeDeckControllerState(DeckController? controller) {
 
 /// Test app widget that mirrors the production app configuration.
 class TestApp extends StatelessWidget {
-  const TestApp({super.key, this.deckLoader, this.workspace});
+  const TestApp({
+    super.key,
+    this.deckLoader,
+    this.workspace,
+    this.extraWidgets = const {},
+  });
 
   final DeckLoader? deckLoader;
   final DeckWorkspace? workspace;
+  final Map<String, WidgetFactory> extraWidgets;
 
   static bool _initialized = false;
 
@@ -216,9 +215,14 @@ class TestApp extends StatelessWidget {
       child: SuperDeckApp(
         deckLoader: deckLoader,
         workspace: workspace,
+        assetCacheStore: const _TransparentThumbnailCacheStore(),
         options: DeckOptions(
           baseStyle: borderedStyle(),
-          widgets: demoWidgets,
+          widgets: {
+            ...demoWidgets,
+            'twitter': _testTwitterWidget,
+            ...extraWidgets,
+          },
           styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
           templates: {
             'corporate': corporateTemplate(),
@@ -233,6 +237,70 @@ class TestApp extends StatelessWidget {
       ),
     );
   }
+}
+
+class _TransparentThumbnailCacheStore implements AssetCacheStore {
+  const _TransparentThumbnailCacheStore();
+
+  static Future<Uri>? _fixtureUriFuture;
+
+  static Future<Uri> _fixtureUri() {
+    return _fixtureUriFuture ??= _writeFixture();
+  }
+
+  static Future<Uri> _writeFixture() async {
+    final file = File(
+      '${Directory.current.path}/build/integration_fixtures/thumbnails/'
+      'transparent-thumbnail.png',
+    );
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(
+      base64Decode(transparentPixelPngBase64),
+      flush: true,
+    );
+    return file.absolute.uri;
+  }
+
+  @override
+  Future<void> delete(String assetKey) async {
+    AssetCacheStore.validateAssetKey(assetKey);
+  }
+
+  @override
+  Future<Uri?> resolve(String assetKey) async {
+    AssetCacheStore.validateAssetKey(assetKey);
+    return _fixtureUri();
+  }
+
+  @override
+  Future<Uri?> write(String assetKey, List<int> bytes) async {
+    AssetCacheStore.validateAssetKey(assetKey);
+    return _fixtureUri();
+  }
+}
+
+class _TestTwitterWidget extends StatelessWidget {
+  const _TestTwitterWidget({required this.username});
+
+  final String username;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        color: Colors.purple,
+        child: Text(
+          'Twitter: $username',
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+Widget _testTwitterWidget(Map<String, Object?> args) {
+  return _TestTwitterWidget(username: args['username'] as String? ?? '');
 }
 
 /// Builds a minimal [Slide] with a single content block.
@@ -297,6 +365,39 @@ Future<void> simulateBuilding(DeckWorkspace ws, int seq) async {
   await ws.buildStatusJson.writeAsString(_statusJson('building', seq));
 }
 
+Future<LocalImageFixture> createLocalPngFixture({
+  String relativePath =
+      'build/integration_fixtures/local_images/sample-local.png',
+}) async {
+  final file = File('${Directory.current.path}/$relativePath');
+  await file.parent.create(recursive: true);
+  await file.writeAsBytes(base64Decode(transparentPixelPngBase64), flush: true);
+
+  return LocalImageFixture(
+    relativePath: relativePath,
+    absolutePath: file.absolute.path,
+    fileUri: file.absolute.uri.toString(),
+  );
+}
+
+const transparentPixelPngBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+const transparentPixelDataUri =
+    'data:image/png;base64,$transparentPixelPngBase64';
+
+class LocalImageFixture {
+  const LocalImageFixture({
+    required this.relativePath,
+    required this.absolutePath,
+    required this.fileUri,
+  });
+
+  final String relativePath;
+  final String absolutePath;
+  final String fileUri;
+}
+
 /// Finds the DeckController from the widget tree.
 ///
 /// Returns null if the controller cannot be found.
@@ -356,8 +457,15 @@ extension IntegrationTestExtensions on WidgetTester {
   Future<DeckController> pumpTestAppWithLoader(
     DeckLoader loader, {
     required DeckWorkspace workspace,
+    Map<String, WidgetFactory> extraWidgets = const {},
   }) async {
-    await pumpWidget(TestApp(deckLoader: loader, workspace: workspace));
+    await pumpWidget(
+      TestApp(
+        deckLoader: loader,
+        workspace: workspace,
+        extraWidgets: extraWidgets,
+      ),
+    );
     await pumpFor(const Duration(milliseconds: 200));
 
     await pumpUntil(
@@ -373,7 +481,10 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   /// Pumps the test app with a temporary workspace containing [slides].
-  Future<DeckController> pumpTestAppWithSlides(List<Slide> slides) async {
+  Future<DeckController> pumpTestAppWithSlides(
+    List<Slide> slides, {
+    Map<String, WidgetFactory> extraWidgets = const {},
+  }) async {
     final tempDir = await Directory.systemTemp.createTemp('sd_fixture_app_');
     FileDeckLoader? loader;
     addTearDown(() async {
@@ -389,7 +500,11 @@ extension IntegrationTestExtensions on WidgetTester {
     final fileLoader = FileDeckLoader(workspace: workspace);
     loader = fileLoader;
 
-    return pumpTestAppWithLoader(fileLoader, workspace: workspace);
+    return pumpTestAppWithLoader(
+      fileLoader,
+      workspace: workspace,
+      extraWidgets: extraWidgets,
+    );
   }
 
   /// Pumps the test app, waits for it to fully load, and returns the controller.
@@ -431,15 +546,38 @@ extension IntegrationTestExtensions on WidgetTester {
   }
 
   /// Navigates to a specific slide and waits for transition to complete.
-  Future<void> navigateToSlide(DeckController controller, int index) async {
+  Future<void> navigateToSlide(
+    DeckController controller,
+    int index, {
+    String? context,
+  }) async {
     unawaited(controller.presentation.goToSlide(index));
     await pumpUntil(
       () => controller.presentation.currentIndex.value == index,
       timeout: const Duration(seconds: 5),
-      debugLabel: 'navigation to slide $index',
+      debugLabel: context ?? 'navigation to slide $index',
       onTimeout: () => describeDeckControllerState(controller),
     );
     await pumpFor(_slideTransitionSettleDuration);
+  }
+
+  Future<void> assertScrollableMoves(
+    Finder scrollContainerFinder, {
+    Offset dragOffset = const Offset(0, -320),
+  }) async {
+    expect(scrollContainerFinder, findsOneWidget);
+    final scrollableFinder = find.descendant(
+      of: scrollContainerFinder,
+      matching: find.byType(Scrollable),
+    );
+    expect(scrollableFinder, findsOneWidget);
+    final state = this.state<ScrollableState>(scrollableFinder.first);
+    final before = state.position.pixels;
+
+    await drag(scrollableFinder.first, dragOffset);
+    await pumpFor(const Duration(milliseconds: 300));
+
+    expect(state.position.pixels, greaterThan(before));
   }
 
   /// Taps a widget found by [finder], scrolling it into view first if needed.
@@ -471,5 +609,55 @@ extension IntegrationTestExtensions on WidgetTester {
       'Scaffold count=${find.byType(Scaffold).evaluate().length}',
       'Error text count=${find.textContaining('Error loading presentation').evaluate().length}',
     ].join('\n');
+  }
+}
+
+Future<void> assertReviewScreenshots({
+  required Directory? outputDir,
+  required int expectedCount,
+  Size expectedSize = const Size(1280, 720),
+}) async {
+  if (Platform.environment['SUPERDECK_CAPTURE_SLIDES'] != '1') return;
+  if (outputDir == null) return;
+
+  expect(await outputDir.exists(), isTrue);
+  final pngFiles = <File>[];
+  await for (final entity in outputDir.list()) {
+    if (entity is File && entity.path.endsWith('.png')) {
+      pngFiles.add(entity);
+    }
+  }
+  pngFiles.sort((a, b) => a.path.compareTo(b.path));
+
+  expect(pngFiles, hasLength(expectedCount));
+
+  for (final file in pngFiles) {
+    final bytes = await file.readAsBytes();
+    expect(bytes.length, greaterThan(1000), reason: file.path);
+
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    expect(image.width, expectedSize.width.toInt(), reason: file.path);
+    expect(image.height, expectedSize.height.toInt(), reason: file.path);
+
+    final raw = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    image.dispose();
+    expect(raw, isNotNull, reason: file.path);
+
+    final pixels = raw!.buffer.asUint8List();
+    var hasVisiblePixel = false;
+    for (var i = 0; i < pixels.length; i += 4) {
+      final red = pixels[i];
+      final green = pixels[i + 1];
+      final blue = pixels[i + 2];
+      final alpha = pixels[i + 3];
+      if (alpha > 0 && (red > 0 || green > 0 || blue > 0)) {
+        hasVisiblePixel = true;
+        break;
+      }
+    }
+
+    expect(hasVisiblePixel, isTrue, reason: file.path);
   }
 }

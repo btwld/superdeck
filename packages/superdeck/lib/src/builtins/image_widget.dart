@@ -77,7 +77,7 @@ class ImageDto {
   static Uri _parseUri(String src) {
     // Handle Windows absolute paths (e.g., C:\path\to\file.png).
     if (RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(src)) {
-      return Uri.file(src);
+      return Uri.file(src, windows: true);
     }
 
     return Uri.parse(src);

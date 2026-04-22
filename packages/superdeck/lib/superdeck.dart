@@ -24,6 +24,7 @@ export 'src/styling/components/slide.dart';
 export 'src/ui/superdeck_app.dart';
 
 // Presentation
+export 'src/deck/deck_controller.dart';
 export 'src/deck/deck_options.dart';
 export 'src/deck/slide_configuration.dart';
 export 'src/deck/slide_template.dart';

@@ -82,6 +82,35 @@ void main() {
         expect(state.position.pixels, greaterThan(0));
       });
 
+      testWidgets('scrollable widget block responds to drag gestures', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'scrollable-widget',
+            sections: [
+              SectionBlock([
+                WidgetBlock(name: 'tall-widget', scrollable: true),
+              ]),
+            ],
+          ),
+          widgets: {'tall-widget': (_) => const _TallWidget()},
+        );
+
+        tester.expectScrollable(find.byType(CustomBlockWidget));
+
+        final scrollable = find.byType(Scrollable).first;
+        final state = tester.state<ScrollableState>(scrollable);
+
+        expect(state.position.pixels, 0);
+
+        await tester.drag(scrollable, const Offset(0, -320));
+        await tester.pumpAndSettle();
+
+        expect(state.position.pixels, greaterThan(0));
+      });
+
       testWidgets('non-scrollable block clips overflow', (tester) async {
         await SlideTestHarness.pumpSlide(
           tester,
@@ -101,6 +130,30 @@ void main() {
           tester.expectNotScrollable(find.byType(BlockWidget));
         },
       );
+
+      testWidgets(
+        'scrollable widget block is NOT scrollable during static rendering',
+        (tester) async {
+          await SlideTestHarness.pumpSlide(
+            tester,
+            Slide(
+              key: 'static-widget',
+              sections: [
+                SectionBlock([
+                  WidgetBlock(name: 'short-widget', scrollable: true),
+                ]),
+              ],
+            ),
+            widgets: {
+              'short-widget': (_) =>
+                  const SizedBox(height: 80, child: Text('Static widget')),
+            },
+            isStaticRendering: true,
+          );
+
+          tester.expectNotScrollable(find.byType(CustomBlockWidget));
+        },
+      );
     });
 
     group('error handling', () {
@@ -112,6 +165,21 @@ void main() {
           SlideFixtures.withCustomWidget(widgetName: 'nonexistent_widget_xyz'),
         );
         expect(find.textContaining('Widget not found'), findsOneWidget);
+      });
+
+      testWidgets('CustomBlockWidget shows error for throwing factory', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.withCustomWidget(widgetName: 'throwing-widget'),
+          widgets: {
+            'throwing-widget': (_) => throw StateError('factory failed'),
+          },
+        );
+
+        expect(find.textContaining('Error building widget'), findsOneWidget);
+        expect(find.textContaining('factory failed'), findsOneWidget);
       });
     });
 
@@ -144,6 +212,30 @@ void main() {
       });
     });
   });
+}
+
+class _TallWidget extends StatelessWidget {
+  const _TallWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 2400,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var index = 0; index < 60; index++)
+            SizedBox(
+              height: 40,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text('Tall widget row $index'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 Alignment _toAlignment(ContentAlignment alignment) {

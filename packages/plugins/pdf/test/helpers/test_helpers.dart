@@ -120,7 +120,7 @@ class SlideTestHarness {
       slide: slide,
       thumbnailKey: 'test-thumbnail.png',
       debug: debug,
-      widgets: {...builtInWidgets, ...widgets},
+      widgets: widgets,
       parts: parts ?? const SlideParts(),
       isStaticRendering: isStaticRendering,
     );

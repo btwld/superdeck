@@ -70,6 +70,24 @@ void main() {
         tester.expectFlexRatio(blocks.at(0), blocks.at(1), 1, 2);
       });
 
+      testWidgets('2:1 columns reflect ratio', (tester) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.twoColumnWeighted(leftFlex: 2, rightFlex: 1),
+        );
+        final blocks = find.byType(BlockWidget);
+        tester.expectFlexRatio(blocks.at(0), blocks.at(1), 2, 1);
+      });
+
+      testWidgets('1:1:1 columns split width evenly', (tester) async {
+        await SlideTestHarness.pumpSlide(tester, SlideFixtures.threeColumn());
+        final blocks = find.byType(BlockWidget);
+        tester.expectFlexDistribution(
+          [blocks.at(0), blocks.at(1), blocks.at(2)],
+          [1, 1, 1],
+        );
+      });
+
       testWidgets('1:2:1 columns reflect distribution', (tester) async {
         await SlideTestHarness.pumpSlide(
           tester,
@@ -134,6 +152,19 @@ void main() {
         );
         tester.expectSectionCount(2);
         tester.expectBlockCount(3);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('empty section renders without blocks or errors', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(key: 'empty-section', sections: [SectionBlock([])]),
+        );
+
+        tester.expectSectionCount(1);
+        tester.expectBlockCount(0);
         expect(tester.takeException(), isNull);
       });
 

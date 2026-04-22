@@ -3,6 +3,7 @@ import 'package:integration_test/integration_test.dart';
 
 import 'helpers/test_helpers.dart';
 import 'keyboard_navigation_test.dart' as keyboard_navigation;
+import 'layout_matrix_test.dart' as layout_matrix;
 import 'live_reload_test.dart' as live_reload;
 import 'navigation_test.dart' as navigation;
 import 'slide_content_test.dart' as slide_content;
@@ -28,5 +29,6 @@ void main() {
   ui_controls.main();
   keyboard_navigation.main();
   slide_content.main();
+  layout_matrix.main();
   live_reload.main();
 }

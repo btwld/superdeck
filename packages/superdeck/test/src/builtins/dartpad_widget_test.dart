@@ -168,6 +168,109 @@ void main() {
         webViewPlatform.controllers.single.loadedRequests.single.uri.toString(),
         wrapper.url,
       );
+      expect(
+        webViewPlatform.controllers.single.javaScriptMode,
+        JavaScriptMode.unrestricted,
+      );
+      expect(webViewPlatform.controllers.single.navigationDelegate, isNotNull);
+    });
+
+    testWidgets('reload and clear controls call the WebView controller', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const _DartPadHarness(size: Size(640, 480), args: {'id': 'snippet'}),
+      );
+      await tester.pump();
+
+      final controller = webViewPlatform.controllers.single;
+
+      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(controller.reloadCount, 1);
+
+      await tester.tap(find.byIcon(Icons.clear));
+      await tester.pump();
+      expect(controller.javaScripts.single, contains("setValue('')"));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('page finished fades in the WebView', (tester) async {
+      await tester.pumpWidget(
+        const _DartPadHarness(size: Size(640, 480), args: {'id': 'snippet'}),
+      );
+      await tester.pump();
+
+      expect(
+        tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity,
+        0,
+      );
+
+      final delegate =
+          webViewPlatform.controllers.single.navigationDelegate!
+              as _FakeNavigationDelegate;
+      delegate.onPageFinished?.call('https://dartpad.dev/?id=snippet');
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 150));
+
+      expect(
+        tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity,
+        1,
+      );
+    });
+
+    testWidgets('loads a new request when DartPad URL updates', (tester) async {
+      await tester.pumpWidget(
+        const _DartPadHarness(size: Size(640, 480), args: {'id': 'first'}),
+      );
+      await tester.pump();
+
+      await tester.pumpWidget(
+        const _DartPadHarness(
+          size: Size(640, 480),
+          args: {'id': 'second', 'theme': 'dark'},
+        ),
+      );
+      await tester.pump();
+
+      final controller = webViewPlatform.controllers.single;
+      expect(controller.loadedRequests, hasLength(2));
+      expect(
+        controller.loadedRequests.last.uri.toString(),
+        'https://dartpad.dev/?id=second&theme=dark&embed=true&run=true',
+      );
+    });
+
+    testWidgets('navigation delegate allows same host and blocks others', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const _DartPadHarness(size: Size(640, 480), args: {'id': 'snippet'}),
+      );
+      await tester.pump();
+
+      final delegate =
+          webViewPlatform.controllers.single.navigationDelegate!
+              as _FakeNavigationDelegate;
+
+      expect(
+        await delegate.onNavigationRequest?.call(
+          const NavigationRequest(
+            url: 'https://dartpad.dev/?id=next',
+            isMainFrame: true,
+          ),
+        ),
+        NavigationDecision.navigate,
+      );
+      expect(
+        await delegate.onNavigationRequest?.call(
+          const NavigationRequest(
+            url: 'https://example.com/phishing',
+            isMainFrame: true,
+          ),
+        ),
+        NavigationDecision.prevent,
+      );
     });
   });
 }
