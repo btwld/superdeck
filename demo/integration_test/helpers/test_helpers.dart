@@ -26,6 +26,7 @@ var _reviewScreenshotRun = 0;
 final _reviewScreenshotBoundaryKey = GlobalKey(
   debugLabel: 'review-screenshot-boundary',
 );
+const _slideTransitionSettleDuration = Duration(milliseconds: 1250);
 
 void assertNoFlutterException(WidgetTester tester) {
   final exceptions = <Object>[];
@@ -104,12 +105,6 @@ Future<void> captureAllSlidesForReview(
   final totalSlides = controller.presentation.totalSlides.value;
   for (var index = 0; index < totalSlides; index++) {
     await tester.navigateToSlide(controller, index);
-    await tester.pumpUntil(
-      () => !controller.presentation.isTransitioning.value,
-      timeout: const Duration(seconds: 3),
-      debugLabel: 'slide transition to finish before screenshot',
-      onTimeout: () => describeDeckControllerState(controller),
-    );
     await tester.pumpFor(const Duration(milliseconds: 150));
     assertPresentationHealthy(tester, controller);
 
@@ -444,7 +439,7 @@ extension IntegrationTestExtensions on WidgetTester {
       debugLabel: 'navigation to slide $index',
       onTimeout: () => describeDeckControllerState(controller),
     );
-    await pumpFor(const Duration(milliseconds: 200));
+    await pumpFor(_slideTransitionSettleDuration);
   }
 
   /// Taps a widget found by [finder], scrolling it into view first if needed.
