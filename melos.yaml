@@ -95,7 +95,7 @@ scripts:
       scope: "superdeck_core"
 
   test:
-    run: fvm flutter pub run melos exec -- fvm flutter test --exclude-tags golden --exclude-tags flaky
+    run: fvm flutter pub run melos exec -- fvm flutter test --exclude-tags "golden || flaky"
     description: Run flutter tests excluding explicit golden and flaky suites.
     packageFilters:
       dirExists: test
