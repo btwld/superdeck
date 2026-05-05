@@ -1,3 +1,4 @@
 tags:
+  ci-excluded:
   flaky:
   golden:

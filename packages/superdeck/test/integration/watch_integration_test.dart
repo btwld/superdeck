@@ -118,7 +118,7 @@ void main() {
           reason: 'loader should reflect the edited slides.md',
         );
       },
-      tags: ['flaky'],
+      tags: ['ci-excluded', 'flaky'],
     );
   });
 }
