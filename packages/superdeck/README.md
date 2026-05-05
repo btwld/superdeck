@@ -3,7 +3,7 @@
 SuperDeck renders Markdown slides in Flutter.
 
 - Live demo: https://superdeck-dev.web.app
-- Documentation: https://github.com/leoafarias/superdeck/tree/main/docs
+- Documentation: https://github.com/btwld/superdeck/tree/main/docs
 
 ## Install
 
@@ -76,7 +76,7 @@ title: Welcome
 2. Reference it by name in Markdown.
 
 See the custom widgets guide:
-https://github.com/leoafarias/superdeck/blob/main/docs/guides/custom-widgets.mdx
+https://github.com/btwld/superdeck/blob/main/docs/guides/custom-widgets.mdx
 
 ## License
 

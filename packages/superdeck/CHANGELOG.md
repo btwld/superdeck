@@ -7,7 +7,7 @@
 
 ## 0.0.4
 
-- Fix better error handling when `mmdc` (`mermaid-cli`) is not installed.
+- Fix better error handling when external asset tooling is not installed.
 - Improve the asset generation pipeline.
 
 ## 0.0.3
@@ -15,7 +15,7 @@
 - Clean up dependencies.
 - Update example code.
 - Improve logging.
-- Fix and improve Mermaid generation.
+- Fix and improve asset generation.
 
 ## 0.0.2
 

@@ -21,7 +21,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -54,7 +53,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -80,7 +78,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -107,7 +104,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -133,7 +129,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -172,7 +167,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -211,7 +205,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -237,7 +230,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -263,7 +255,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -285,7 +276,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -317,7 +307,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -350,7 +339,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -370,7 +358,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -390,7 +377,6 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
@@ -410,14 +396,13 @@
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],
     "comments": []
   },
   {
-    "key": "2IY2YTbh",
+    "key": "V1ncUYAO",
     "options": {},
     "sections": [
       {
@@ -431,7 +416,6 @@
         ],
         "align": "bottomCenter",
         "flex": 2,
-        "scrollable": false,
         "type": "section"
       },
       {
@@ -455,14 +439,13 @@
             "type": "block"
           },
           {
-            "content": "#### Source Code\nhttps://github.com/leoafarias/superdeck",
+            "content": "#### Source Code\nhttps://github.com/btwld/superdeck",
             "flex": 1,
             "scrollable": false,
             "type": "block"
           }
         ],
         "flex": 1,
-        "scrollable": false,
         "type": "section"
       }
     ],

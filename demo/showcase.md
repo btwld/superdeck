@@ -308,7 +308,7 @@ style: quote
   align: bottomCenter
 }
 # Start Building {.heading}
-## github.com/leoafarias/superdeck {.subheading}
+## github.com/btwld/superdeck {.subheading}
 
 @section
 

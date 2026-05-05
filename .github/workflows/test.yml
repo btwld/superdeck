@@ -56,6 +56,10 @@ jobs:
       - name: Run Unit Tests
         run: melos run test --no-select
 
+      - name: Run Golden Tests
+        working-directory: packages/superdeck
+        run: fvm flutter test test/goldens/slide_goldens_test.dart
+
   integration-test:
     runs-on: ubuntu-latest
     name: Integration Tests
@@ -174,10 +178,10 @@ jobs:
           cd demo/e2e
           npm ci
 
-      - name: Install Playwright browser
+      - name: Install Playwright browsers
         run: |
           cd demo/e2e
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
 
       - name: Run Playwright smoke tests
         run: |

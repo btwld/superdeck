@@ -1,6 +1,0 @@
-pubspec_overrides.yaml
-.dart_tool/
-build/
-coverage/
-.flutter-plugins
-.flutter-plugins-dependencies

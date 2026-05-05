@@ -9,7 +9,7 @@ This file provides guidance to Claude Code and other AI assistants working on th
 SuperDeck is a Flutter presentation framework that renders slides written in Markdown. Users write slides in a `slides.md` file using Markdown syntax with custom block annotations, and SuperDeck renders them as a Flutter application.
 
 - **Live demo**: https://superdeck-dev.web.app
-- **Repository**: https://github.com/leoafarias/superdeck
+- **Repository**: https://github.com/btwld/superdeck
 
 ## Project Structure
 
@@ -21,7 +21,6 @@ packages/
   superdeck/  # Flutter widgets and presentation components
   cli/        # superdeck CLI tool (setup, build, publish, version)
   builder/    # Code generators and build_runner integration
-  plugins/
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
 .planning/    # Internal development docs (not published)
@@ -166,7 +165,7 @@ Slides use `@tag` directives in Markdown to define layout and content:
 - `@section` - Groups child blocks into a horizontal section
 - `@block` - Markdown content block
 - `@widget` - Named Flutter widget block
-- Any unrecognized `@name` becomes a `WidgetBlock` (e.g., `@image`, `@code`, `@mermaid`)
+- Any unrecognized `@name` becomes a `WidgetBlock` (e.g., `@image`, `@chart`, `@callout`)
 
 ### Style System
 Styles are defined in Dart through `SlideStyle`, `DeckOptions.baseStyle`, and `DeckOptions.styles`.

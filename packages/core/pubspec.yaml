@@ -1,8 +1,8 @@
 name: superdeck_core
 description: A core library for SuperDeck.
 version: 1.0.0
-homepage: https://github.com/leoafarias/superdeck
-documentation: https://docs.page/leoafarias/superdeck
+homepage: https://github.com/btwld/superdeck
+documentation: https://docs.page/btwld/superdeck
 
 
 environment:
