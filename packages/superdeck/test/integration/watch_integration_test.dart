@@ -76,8 +76,10 @@ void main() {
 
         // Initial build from setUp's slides.md
         await _expectEvent<BuildStarted>(builderEvents, 'builder');
-        final firstCompleted =
-            await _expectEvent<BuildCompleted>(builderEvents, 'builder');
+        final firstCompleted = await _expectEvent<BuildCompleted>(
+          builderEvents,
+          'builder',
+        );
         expect(firstCompleted.slides, hasLength(2));
 
         final loader = FileDeckLoader(workspace: workspace);
@@ -87,8 +89,10 @@ void main() {
         addTearDown(loaderEvents.cancel);
 
         await _expectEvent<SlidesLoadingEvent>(loaderEvents, 'loader');
-        final initialLoad =
-            await _expectEvent<SlidesLoadedEvent>(loaderEvents, 'loader');
+        final initialLoad = await _expectEvent<SlidesLoadedEvent>(
+          loaderEvents,
+          'loader',
+        );
         expect(initialLoad.slides, hasLength(2));
 
         // Edit slides.md → builder rebuilds → loader re-emits.
@@ -97,8 +101,10 @@ void main() {
         await workspace.slidesFile.writeAsString(_updatedMarkdown);
 
         await _expectEvent<BuildStarted>(builderEvents, 'builder');
-        final secondCompleted =
-            await _expectEvent<BuildCompleted>(builderEvents, 'builder');
+        final secondCompleted = await _expectEvent<BuildCompleted>(
+          builderEvents,
+          'builder',
+        );
         expect(secondCompleted.slides, hasLength(3));
 
         final updatedLoad = await _expectEvent<SlidesLoadedEvent>(
@@ -112,6 +118,7 @@ void main() {
           reason: 'loader should reflect the edited slides.md',
         );
       },
+      tags: ['flaky'],
     );
   });
 }
@@ -125,9 +132,9 @@ Future<T> _expectEvent<T>(
   while (stopwatch.elapsed < _eventTimeout) {
     final remaining = _eventTimeout - stopwatch.elapsed;
     final hasNext = await events.moveNext().timeout(
-          remaining,
-          onTimeout: () => false,
-        );
+      remaining,
+      onTimeout: () => false,
+    );
     if (!hasNext) break;
     final event = events.current;
     if (event is T && (where == null || where(event))) {

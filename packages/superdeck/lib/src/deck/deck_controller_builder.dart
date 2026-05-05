@@ -14,6 +14,7 @@ class DeckControllerBuilder extends StatefulWidget {
   final DeckOptions options;
   final DeckLoader deckLoader;
   final AssetCacheStore? assetCacheStore;
+  final Duration transitionDuration;
   final Widget Function(BuildContext context, GoRouter router) builder;
 
   const DeckControllerBuilder({
@@ -21,6 +22,7 @@ class DeckControllerBuilder extends StatefulWidget {
     required this.options,
     required this.deckLoader,
     this.assetCacheStore,
+    this.transitionDuration = const Duration(seconds: 1),
     required this.builder,
   });
 
@@ -39,6 +41,7 @@ class _DeckControllerBuilderState extends State<DeckControllerBuilder> {
       deckLoader: widget.deckLoader,
       options: widget.options,
       assetCacheStore: widget.assetCacheStore,
+      transitionDuration: widget.transitionDuration,
     );
   }
 

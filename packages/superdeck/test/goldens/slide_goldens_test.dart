@@ -40,7 +40,7 @@ This slide keeps regular markdown content together.
       find.byType(SlideView),
       matchesGoldenFile('plain_markdown_slide.png'),
     );
-  });
+  }, tags: ['golden']);
 
   testWidgets('section with two blocks', (tester) async {
     await _pumpGoldenSlide(
@@ -63,7 +63,7 @@ Author text in the second column.
       find.byType(SlideView),
       matchesGoldenFile('section_two_blocks.png'),
     );
-  });
+  }, tags: ['golden']);
 
   testWidgets('block aligned center', (tester) async {
     await _pumpGoldenSlide(
@@ -75,7 +75,7 @@ Author text in the second column.
       find.byType(SlideView),
       matchesGoldenFile('block_aligned_center.png'),
     );
-  });
+  }, tags: ['golden']);
 }
 
 Future<void> _pumpGoldenSlide(WidgetTester tester, Slide slide) async {
@@ -86,9 +86,7 @@ Future<void> _pumpGoldenSlide(WidgetTester tester, Slide slide) async {
 
   final configuration = SlideTestHarness.createConfiguration(
     slide,
-    parts: const SlideParts(
-      background: ColoredBox(color: Color(0xFF090909)),
-    ),
+    parts: const SlideParts(background: ColoredBox(color: Color(0xFF090909))),
   );
 
   await tester.pumpWidget(

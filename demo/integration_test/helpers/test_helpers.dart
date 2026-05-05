@@ -24,7 +24,8 @@ var _reviewScreenshotRun = 0;
 final _reviewScreenshotBoundaryKey = GlobalKey(
   debugLabel: 'review-screenshot-boundary',
 );
-const _slideTransitionSettleDuration = Duration(milliseconds: 1250);
+const _slideTransitionSettleDuration = Duration(milliseconds: 100);
+const _testSlideTransitionDuration = Duration.zero;
 
 void assertNoFlutterException(WidgetTester tester) {
   final exceptions = <Object>[];
@@ -234,6 +235,7 @@ class TestApp extends StatelessWidget {
             background: BackgroundPart(),
           ),
         ),
+        transitionDuration: _testSlideTransitionDuration,
       ),
     );
   }

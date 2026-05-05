@@ -7,10 +7,15 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
     name: Test
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v2
 
@@ -63,13 +68,15 @@ jobs:
   integration-test:
     runs-on: ubuntu-latest
     name: Integration Tests
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v2
 
       - name: Install Linux Desktop Dependencies
+        timeout-minutes: 8
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev ninja-build pkg-config
+          sudo apt-get update -o Acquire::Retries=3
+          sudo apt-get install -y -o Dpkg::Lock::Timeout=60 libgtk-3-dev ninja-build pkg-config
 
       - name: Install FVM
         shell: bash
@@ -112,18 +119,14 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           run: melos run test:integration --no-select
-        timeout-minutes: 10
+        timeout-minutes: 7
 
   web-smoke:
     runs-on: ubuntu-latest
     name: Web Smoke (Playwright)
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Linux Desktop Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev ninja-build pkg-config
 
       - name: Install FVM
         shell: bash
@@ -179,11 +182,13 @@ jobs:
           npm ci
 
       - name: Install Playwright browsers
+        timeout-minutes: 10
         run: |
           cd demo/e2e
           npx playwright install --with-deps chromium webkit
 
       - name: Run Playwright smoke tests
+        timeout-minutes: 5
         run: |
           cd demo/e2e
           npm run test:smoke

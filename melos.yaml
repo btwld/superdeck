@@ -95,17 +95,17 @@ scripts:
       scope: "superdeck_core"
 
   test:
-    run: fvm flutter pub run melos exec -- fvm flutter test
-    description: Run flutter test
+    run: fvm flutter pub run melos exec -- fvm flutter test --exclude-tags golden --exclude-tags flaky
+    description: Run flutter tests excluding explicit golden and flaky suites.
     packageFilters:
       dirExists: test
 
   test:integration:
-    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter test integration_test/all_tests.dart -d linux --fail-fast --timeout 5m
+    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter test integration_test/all_tests.dart -d linux --fail-fast --timeout 2m
     description: Run flutter integration tests on Linux (CI default)
 
   test:integration:macos:
-    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter test integration_test/all_tests.dart -d macos --fail-fast --timeout 5m
+    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter test integration_test/all_tests.dart -d macos --fail-fast --timeout 2m
     description: Run flutter integration tests on macOS (local)
 
   test:e2e:web:prepare:

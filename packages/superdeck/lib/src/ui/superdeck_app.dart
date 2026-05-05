@@ -22,6 +22,7 @@ class SuperDeckApp extends StatelessWidget {
     this.deckLoader,
     this.workspace,
     this.assetCacheStore,
+    this.transitionDuration = const Duration(seconds: 1),
   });
 
   final DeckOptions options;
@@ -31,6 +32,7 @@ class SuperDeckApp extends StatelessWidget {
   final DeckLoader? deckLoader;
   final DeckWorkspace? workspace;
   final AssetCacheStore? assetCacheStore;
+  final Duration transitionDuration;
 
   static Future<void> initialize() async {
     await initializeDependencies();
@@ -57,13 +59,13 @@ class SuperDeckApp extends StatelessWidget {
             ? FileDeckLoader(workspace: runtimeWorkspace)
             : BundledDeckLoader(workspace: runtimeWorkspace));
     final cacheStore =
-        assetCacheStore ??
-        RuntimeAssetCacheStore(workspace: runtimeWorkspace);
+        assetCacheStore ?? RuntimeAssetCacheStore(workspace: runtimeWorkspace);
 
     return DeckControllerBuilder(
       options: options,
       deckLoader: loader,
       assetCacheStore: cacheStore,
+      transitionDuration: transitionDuration,
       builder: (context, router) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
