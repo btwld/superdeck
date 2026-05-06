@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_genui/superdeck_genui.dart';
 
 import 'src/parts/background.dart';
 import 'src/parts/footer.dart';
@@ -12,7 +11,6 @@ import 'src/widgets/demo_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  const plugins = [GenUiPlugin()];
 
   // Disable signals logging to reduce console noise
   SignalsObserver.instance = null;
@@ -20,12 +18,12 @@ void main() async {
   // Enable semantics for testing
   WidgetsBinding.instance.ensureSemantics();
 
-  await SuperDeckApp.initialize(plugins: plugins);
+  await SuperDeckApp.initialize();
   runApp(
     SuperDeckApp(
       options: DeckOptions(
         baseStyle: borderedStyle(),
-        widgets: {...demoWidgets, 'twitter': const _TwitterWidgetDefinition()},
+        widgets: {...demoWidgets, 'twitter': _twitterWidget},
         // debug: true,
         styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
         templates: {
@@ -37,8 +35,6 @@ void main() async {
           footer: FooterPart(),
           background: BackgroundPart(),
         ),
-        watchForChanges: true,
-        plugins: plugins,
       ),
     ),
   );
@@ -46,13 +42,8 @@ void main() async {
 
 class TwitterWidget extends StatelessWidget {
   final String username;
-  final String tweetId;
 
-  const TwitterWidget({
-    super.key,
-    required this.username,
-    required this.tweetId,
-  });
+  const TwitterWidget({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
@@ -72,19 +63,7 @@ class TwitterWidget extends StatelessWidget {
   }
 }
 
-class _TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const _TwitterWidgetDefinition();
-
-  @override
-  Map<String, Object?> parse(Map<String, Object?> args) {
-    // No validation - just pass through
-    return args;
-  }
-
-  @override
-  Widget build(BuildContext context, Map<String, Object?> args) {
-    final username = args['username'] as String? ?? '';
-    final tweetId = args['tweetId'] as String? ?? '';
-    return TwitterWidget(username: username, tweetId: tweetId);
-  }
+Widget _twitterWidget(Map<String, Object?> args) {
+  final username = args['username'] as String? ?? '';
+  return TwitterWidget(username: username);
 }

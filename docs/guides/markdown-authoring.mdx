@@ -18,7 +18,7 @@ A basic slide with a title and content:
 title: My First Slide
 ---
 
-@column
+@block
 
 # Welcome to SuperDeck
 
@@ -35,6 +35,7 @@ Each slide can have YAML front matter with these options:
 
 - `title` – Slide title (appears in navigation and exports)
 - `style` – Named style variant to apply (defined in `DeckOptions.styles`)
+- `template` – Named template to apply (defined in `DeckOptions.templates`; `'none'` to opt out)
 - Custom keys – Access via `slide.options.args['keyName']` in slide parts
 
 ````markdown
@@ -51,7 +52,7 @@ style: overview
 Use these block types when you compose slides:
 
 - `@section` for horizontal layout containers.
-- `@column` for markdown content.
+- `@block` for markdown content.
 - `@widget` for custom Flutter widgets.
 
 For the full syntax and argument reference, see the [Markdown syntax reference](../reference/markdown-syntax).
@@ -71,12 +72,12 @@ Groups blocks horizontally. Use sections to create multi-column layouts.
 }
 ````
 
-### `@column`
+### `@block`
 
 Renders markdown content. Most slides use one or more columns.
 
 ````markdown
-@column {
+@block {
   flex: 2
   align: topLeft
 }
@@ -89,7 +90,8 @@ Renders markdown content. Most slides use one or more columns.
 
 ### Common properties
 
-Use these properties on blocks:
+Use these properties on blocks. Sections support `flex` and `align`;
+`scrollable` applies to child blocks and widgets.
 
 - `flex` – Relative size (default: `1`). A column with `flex: 2` takes twice the space of `flex: 1`
 - `align` – Content alignment such as `topLeft`, `center`, and `bottomRight`
@@ -143,7 +145,7 @@ Register widgets in `DeckOptions.widgets`, then use them with the shorthand synt
 }
 ````
 
-The widget name becomes the block type (`@metricCard`), and all properties are passed to your widget's `parse()` method.
+The widget name becomes the block type (`@metricCard`), and all properties are passed to the registered `WidgetFactory` as `Map<String, Object?>`. Your widget (or a helper like `MetricCardArgs.parse(args)`) decides how to interpret them.
 
 ---
 
@@ -154,7 +156,7 @@ The widget name becomes the block type (`@metricCard`), and all properties are p
 Use headings, lists, tables, and code blocks as you normally would:
 
 ````markdown
-@column
+@block
 
 # Slide Title
 
@@ -196,21 +198,6 @@ Elements with matching class names animate smoothly during slide transitions.
 
 ---
 
-## Mermaid diagrams
-
-Add Mermaid diagrams using fenced code blocks:
-
-````markdown
-```mermaid
-graph TD
-  Start --> Plan --> Build --> Ship
-```
-````
-
-The CLI renders diagrams to images during build. Run `superdeck build` after editing diagrams.
-
----
-
 ## Styling
 
 Apply named styles to individual slides using front matter:
@@ -242,5 +229,5 @@ See the [SuperDeck Overview](./superdeck-overview) for more styling options.
 
 - Explore syntax details in the [Markdown syntax reference](../reference/markdown-syntax)
 - Explore block behavior in the [Block types reference](../reference/block-types)
-- Learn about publishing with the [CLI Reference](./cli-reference)
+- Explore build tooling in the [CLI Reference](./cli-reference)
 - Create custom widgets with the [Custom Widgets Guide](./custom-widgets)

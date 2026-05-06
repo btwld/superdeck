@@ -3,7 +3,7 @@
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 # SuperDeck {.heading}
@@ -11,14 +11,14 @@
 
 ---
 
-@column {
+@block {
   align: center
 }
 
 #### Leo Farias {.heading}
 #### @leoafarias {.subheading}
 
-@column {
+@block {
   align: centerLeft
 }
 - Founder/CEO/CTO
@@ -30,23 +30,22 @@
 
 ## What is SuperDeck? {.heading}
 
-@column
+@block
 
 - Write slides in **Markdown**
 - Render with **Flutter**
 - Use **custom widgets** in your slides
-- Export to **PDF**
 
 ---
 
-@column
-@column {
+@block
+@block {
   flex: 5
   align: center
 }
 ### A developer-first presentation framework that combines the simplicity of Markdown with the power of Flutter. {.heading}
 
-@column
+@block
 
 ---
 
@@ -54,42 +53,44 @@
 
 @section
 
-@column {
+@block {
   align: topCenter
 }
-```mermaid
-mindmap
-  root((SuperDeck))
-    Markdown
-      Simple syntax
-      Code blocks
-      Mermaid diagrams
-    Flutter
-      Custom widgets
-      Hot reload
-      Cross-platform
-    Export
-      PDF generation
-      Thumbnails
-      Sharing
-    Styling
-      Themes
-      Custom styles
-      Responsive
-```
+### Markdown {.heading}
+
+- Simple syntax
+- Code blocks
+- Version control friendly
+
+@block {
+  align: topCenter
+}
+### Flutter {.heading}
+
+- Custom widgets
+- Hot reload
+- Cross-platform
+
+@block {
+  align: topCenter
+}
+### Styling {.heading}
+
+- Themes
+- Custom styles
+- Responsive layouts
 
 ---
 
 ### Markdown-First {.heading}
 
-@column
+@block
 
 Write your presentations in familiar Markdown syntax:
 
 - Headers and text formatting
 - Code blocks with syntax highlighting
 - Lists and blockquotes
-- Mermaid diagrams
 - Custom widgets via `@widget` syntax
 
 ---
@@ -100,22 +101,22 @@ SuperDeck supports flexible layouts using sections and columns.
 
 ---
 
-@column {
+@block {
   flex: 2
   align: centerRight
 }
 ### Two Columns {.heading}
 
-@column {
+@block {
   flex: 3
 }
 ```markdown
-@column {
+@block {
   flex: 2
 }
 Left content here
 
-@column {
+@block {
   flex: 3
 }
 Right content here
@@ -124,7 +125,7 @@ Right content here
 ---
 
 @section
-@column {
+@block {
   align: center
 }
 ### Top Section
@@ -132,13 +133,13 @@ Right content here
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 ### Middle Section (flex: 2)
 
 @section
-@column {
+@block {
   align: center
 }
 ### Bottom Section
@@ -147,7 +148,7 @@ Right content here
 
 ### Code Blocks {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
@@ -159,7 +160,7 @@ void main() {
     SuperDeckApp(
       options: DeckOptions(
         widgets: {
-          'my-widget': MyWidgetDefinition(),
+          'my-widget': myWidgetFactory,
         },
       ),
     ),
@@ -169,43 +170,9 @@ void main() {
 
 ---
 
-### Mermaid Diagrams {.heading}
-
-@column
-
-```mermaid
-flowchart LR
-    A[Markdown] --> B[Parser]
-    B --> C[Slides]
-    C --> D[Flutter UI]
-    D --> E[PDF Export]
-
-    classDef default fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
-```
-
----
-
-### Sequence Diagrams {.heading}
-
-@column
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant SuperDeck
-    participant Flutter
-
-    User->>SuperDeck: Write slides.md
-    SuperDeck->>SuperDeck: Parse markdown
-    SuperDeck->>Flutter: Generate widgets
-    Flutter->>User: Render presentation
-```
-
----
-
 ## Custom Widgets {.heading}
 
-@column
+@block
 
 Embed interactive Flutter widgets directly in your slides!
 
@@ -213,7 +180,7 @@ Embed interactive Flutter widgets directly in your slides!
 
 ### Mix Box Example {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
@@ -221,7 +188,7 @@ Embed interactive Flutter widgets directly in your slides!
 @mix-simple-box
 ```
 
-@column {
+@block {
   flex: 3
   align: center
 }
@@ -232,13 +199,13 @@ Embed interactive Flutter widgets directly in your slides!
 
 ### Interactive Variants {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
 Hover and press interactions using Mix variants.
 
-@column {
+@block {
   flex: 3
   align: center
 }
@@ -249,13 +216,13 @@ Hover and press interactions using Mix variants.
 
 ### Remix Buttons {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
 Design system components with Remix.
 
-@column {
+@block {
   flex: 3
   align: center
 }
@@ -266,13 +233,13 @@ Design system components with Remix.
 
 ### Animations {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
 Implicit and keyframe animations with Mix.
 
-@column {
+@block {
   flex: 3
   align: center
 }
@@ -283,37 +250,34 @@ Implicit and keyframe animations with Mix.
 
 ## Styling Options {.heading}
 
-@column
+@block
 
 SuperDeck supports custom themes and per-slide styling.
 
 ---
 
-@column {
+@block {
   scrollable: true
 }
 
 ### Style Configuration
 
-```yaml
-# superdeck.yaml
-styles:
-  default:
-    background: '#1a1a2e'
-    primaryColor: '#4CAF50'
-
-  code:
-    background: '#0f0f23'
-
-  quote:
-    background: 'linear-gradient(...)'
+```dart
+SuperDeckApp(
+  options: DeckOptions(
+    styles: {
+      'default': borderedStyle(),
+      'quote': quoteStyle(),
+    },
+  ),
+)
 ```
 
 ---
 
 ### Per-Slide Styles
 
-@column
+@block
 
 ```markdown
 ---
@@ -333,39 +297,19 @@ style: quote
 
 ## Architecture {.heading}
 
-@column
+@block
 
-```mermaid
-graph TB
-    subgraph Input
-        A[slides.md]
-        B[superdeck.yaml]
-    end
-
-    subgraph Processing
-        C[CLI Parser]
-        D[Code Generator]
-    end
-
-    subgraph Output
-        E[Flutter App]
-        F[PDF Export]
-        G[Thumbnails]
-    end
-
-    A --> C
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    E --> G
-```
+1. Write slides in `slides.md`
+2. Run the CLI build command
+3. SuperDeck parses Markdown into slide data
+4. Flutter renders the presentation UI
+5. Runtime services generate previews as needed
 
 ---
 
 ## Getting Started {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
@@ -374,7 +318,7 @@ graph TB
 3. Run the CLI
 4. Present!
 
-@column {
+@block {
   flex: 3
 }
 
@@ -393,31 +337,20 @@ flutter run
 
 ### Project Structure {.heading}
 
-@column
+@block
 
 ```
 my_presentation/
 ├── lib/
 │   └── main.dart
 ├── slides.md
-├── superdeck.yaml
 └── pubspec.yaml
 ```
 
 ---
 
-## Export Options {.heading}
-
-@column
-
-- **PDF Export** - Generate PDF for sharing
-- **Thumbnails** - Auto-generated slide previews
-- **Web Deploy** - Build for web hosting
-
----
-
-@column
-@column {
+@block
+@block {
   flex: 3
   align: center
 }
@@ -429,13 +362,13 @@ my_presentation/
 - Hot reload while editing
 - Cross-platform output
 
-@column
+@block
 
 ---
 
 ## Slide Templates {.heading}
 
-@column
+@block
 
 Templates bundle **chrome** (header, footer, background) with an **isolated style system** — like Keynote master slides.
 
@@ -443,7 +376,7 @@ Templates bundle **chrome** (header, footer, background) with an **isolated styl
 template: corporate
 ---
 
-@column {
+@block {
   align: center
 }
 # Corporate Template {.heading}
@@ -455,7 +388,7 @@ template: corporate
 style: highlight
 ---
 
-@column {
+@block {
   align: center
 }
 # Highlight Style {.heading}
@@ -466,7 +399,7 @@ Templates can have their own named style variants.
 template: minimal
 ---
 
-@column {
+@block {
   align: center
 }
 # Minimal Template {.heading}
@@ -486,7 +419,7 @@ Leo Farias
 @leoafarias
 (GitHub, Twitter/X)
 
-@column
+@block
 
 #### Source Code
-https://github.com/leoafarias/superdeck
+https://github.com/btwld/superdeck

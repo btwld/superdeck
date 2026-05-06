@@ -7,7 +7,6 @@ environment:
 
 dependencies:
   melos: ^6.3.3
-  mix: ^2.0.0-rc.0
 
 lint_staged:
   '**.dart': fvm dart fix --apply && dcm fix

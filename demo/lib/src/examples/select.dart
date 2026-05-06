@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:naked_ui/naked_ui.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
 // Simple fruit data class for type safety
 class Fruit {
   const Fruit({required this.value, required this.label, required this.emoji});
@@ -12,38 +8,6 @@ class Fruit {
   final String value;
   final String label;
   final String emoji;
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: Colors.grey.shade50,
-        body: const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Simple Select',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Choose from a dropdown list',
-                style: TextStyle(color: Colors.grey),
-              ),
-              SizedBox(height: 24),
-              SimpleSelectExample(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class SimpleSelectExample extends StatefulWidget {
@@ -56,14 +20,12 @@ class SimpleSelectExample extends StatefulWidget {
 class _SimpleSelectExampleState extends State<SimpleSelectExample> {
   String? _selectedValue;
 
-  // Available fruits
   static const fruits = [
     Fruit(value: 'apple', label: 'Apple', emoji: '🍎'),
     Fruit(value: 'banana', label: 'Banana', emoji: '🍌'),
     Fruit(value: 'orange', label: 'Orange', emoji: '🍊'),
   ];
 
-  // Get selected fruit label for display
   String? get _selectedLabel {
     if (_selectedValue == null) return null;
     return fruits.firstWhere((f) => f.value == _selectedValue).label;

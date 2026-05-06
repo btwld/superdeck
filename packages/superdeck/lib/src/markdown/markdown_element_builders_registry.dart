@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../../../superdeck.dart';
 import 'builders/alert_element_builder.dart';
@@ -11,26 +12,7 @@ import 'builders/image_element_builder.dart';
 import 'builders/text_element_builder.dart';
 import 'image_block_syntax.dart';
 
-/// Registry for all markdown element builders and custom syntaxes.
-///
-/// Centralizes the configuration of markdown parsing and rendering for
-/// SuperDeck presentations. This class wires together:
-/// - Custom markdown syntaxes (for parsing)
-/// - Element builders (for rendering)
-/// - Padding/bullet/checkbox builders (for layout)
-///
-/// Usage:
-/// ```dart
-/// final builders = SpecMarkdownBuilders(slideSpec);
-///
-/// MarkdownBody(
-///   data: content,
-///   builders: builders.builders,
-///   blockSyntaxes: builders.blockSyntaxes,
-///   inlineSyntaxes: builders.inlineSyntaxes,
-///   // ... other properties
-/// )
-/// ```
+/// Registry for markdown element builders, syntaxes, and layout builders.
 class SpecMarkdownBuilders {
   final SlideSpec spec;
 
@@ -38,31 +20,19 @@ class SpecMarkdownBuilders {
 
   /// Custom block-level syntaxes.
   ///
-  /// These extend standard markdown to support SuperDeck features:
-  /// - [ImageBlockSyntax] - Standalone images as block elements (MUST BE FIRST)
-  /// - [HeaderTagSyntax] - Extracts hero tags from ATX headers
-  /// - [HeroFencedCodeBlockSyntax] - Extracts hero tags from fenced code
-  /// - [AlertBlockSyntax] - GitHub-style alert blocks
-  ///
-  /// IMPORTANT: ImageBlockSyntax must be first to intercept standalone image
-  /// lines before they get parsed as paragraphs.
+  /// [ImageBlockSyntax] must be first to intercept standalone image lines
+  /// before they get wrapped in `<p>` tags by the default paragraph parser.
   final List<md.BlockSyntax> blockSyntaxes = [
-    ImageBlockSyntax(), // Must be first!
+    ImageBlockSyntax(),
     const HeaderTagSyntax(),
     const HeroFencedCodeBlockSyntax(),
     const AlertBlockSyntax(),
   ];
 
   /// Custom inline syntaxes.
-  ///
-  /// These extend standard markdown to support SuperDeck features:
-  /// - [ImageHeroSyntax] - Adds hero tags to images
   final List<md.InlineSyntax> inlineSyntaxes = [ImageHeroSyntax()];
 
   /// Element builders for rendering markdown nodes to Flutter widgets.
-  ///
-  /// Preserve the existing null-aware defaults so we do not regress styling
-  /// when a particular `SlideSpec` field is omitted.
   late final Map<String, MarkdownElementBuilder> builders = {
     'h1': TextElementBuilder(spec.h1 ?? const StyleSpec(spec: TextSpec())),
     'h2': TextElementBuilder(spec.h2 ?? const StyleSpec(spec: TextSpec())),
@@ -83,10 +53,7 @@ class SpecMarkdownBuilders {
     ),
   };
 
-  /// Padding builders for markdown block elements.
-  ///
-  /// Returns zero padding for all block-level tags to give full control
-  /// to the Mix framework styling system.
+  /// Returns zero-padding builders for all block-level tags.
   Map<String, MarkdownPaddingBuilder> get paddingBuilders {
     final zeroPadding = _ZeroPaddingBuilder();
     return _kBlockTags.fold(
@@ -96,9 +63,6 @@ class SpecMarkdownBuilders {
   }
 
   /// Checkbox builder for task lists.
-  ///
-  /// Renders checkboxes using the Mix framework [StyledIcon] with styling
-  /// from [SlideSpec.checkbox].
   Widget Function(bool) get checkboxBuilder {
     return (bool checked) {
       final icon = checked ? Icons.check_box : Icons.check_box_outline_blank;
@@ -111,9 +75,6 @@ class SpecMarkdownBuilders {
   }
 
   /// Bullet builder for ordered and unordered lists.
-  ///
-  /// Renders list bullets using the Mix framework [StyledText] with styling
-  /// from [SlideSpec.list.bullet].
   Widget Function(MarkdownBulletParameters params) get bulletBuilder {
     return (parameters) {
       final contents = switch (parameters.style) {
@@ -128,21 +89,13 @@ class SpecMarkdownBuilders {
   }
 }
 
-/// Block-level HTML tags that receive zero padding.
-///
-/// These tags are styled entirely through the Mix framework, so we remove
-/// default markdown padding to prevent conflicts.
 final _kBlockTags = <String>[
   'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', //
   'ul', 'ol', 'li', 'blockquote', //
-  'pre', 'ol', 'ul', 'hr', 'table', //
+  'pre', 'hr', 'table', //
   'thead', 'tbody', 'tr', 'section', 'alert',
 ];
 
-/// Inline padding builder that returns zero padding.
-///
-/// Inlined from zero_padding_builder.dart to eliminate unnecessary file for
-/// single-purpose 3-line class.
 class _ZeroPaddingBuilder extends MarkdownPaddingBuilder {
   @override
   EdgeInsets getPadding() => EdgeInsets.zero;

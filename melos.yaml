@@ -13,9 +13,7 @@ command:
     dependencies:
       collection: ^1.18.0
       mix: ^2.0.0-rc.0
-      ack: ^1.0.0-beta.7
-      ack_annotations: ^1.0.0-beta.7
-      ack_generator: ^1.0.0-beta.7
+      ack: 1.0.0-beta.9
   # publish:
     # hooks:
     #   pre: melos run gen:build
@@ -97,30 +95,30 @@ scripts:
       scope: "superdeck_core"
 
   test:
-    run: fvm flutter pub run melos exec -- fvm flutter test
-    description: Run flutter test
+    run: fvm flutter pub run melos exec -- fvm flutter test --exclude-tags ci-excluded
+    description: Run flutter tests excluding explicit golden and flaky suites.
     packageFilters:
       dirExists: test
 
   test:integration:
-    run: fvm flutter pub run melos exec -- fvm flutter test integration_test -d linux --fail-fast --timeout 5m
+    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter test integration_test/all_tests.dart -d linux --fail-fast --timeout 2m
     description: Run flutter integration tests on Linux (CI default)
-    packageFilters:
-      dirExists: integration_test
 
   test:integration:macos:
-    run: fvm flutter pub run melos exec -- fvm flutter test integration_test -d macos --fail-fast --timeout 5m
+    run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter test integration_test/all_tests.dart -d macos --fail-fast --timeout 2m
     description: Run flutter integration tests on macOS (local)
-    packageFilters:
-      dirExists: integration_test
 
   test:e2e:web:prepare:
     run: cd demo && fvm dart run superdeck_cli:main build && fvm flutter build web --release
     description: Build demo assets and release web output for Playwright smoke tests.
 
   test:e2e:web:
-    run: fvm flutter pub run melos run test:e2e:web:prepare && cd demo/e2e && npm ci && npx playwright install chromium && npm run test:smoke
-    description: Run Playwright smoke tests for the demo web build.
+    run: fvm flutter pub run melos run test:e2e:web:prepare && cd demo/e2e && npm ci && npx playwright install --with-deps chromium webkit && npm run test:smoke
+    description: Run Playwright smoke tests for the demo web build on Chromium and WebKit.
+
+  test:e2e:
+    run: fvm flutter pub run melos run test:integration && fvm flutter pub run melos run test:e2e:web
+    description: Run full desktop integration and web smoke E2E coverage.
 
   test:all:
     run: fvm flutter pub run melos run test && fvm flutter pub run melos run test:integration

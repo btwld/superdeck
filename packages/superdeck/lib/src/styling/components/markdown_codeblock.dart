@@ -2,10 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for markdown code block styling properties.
 ///
 /// Defines styling for code blocks including text style, container, and alignment.
@@ -53,10 +49,6 @@ final class MarkdownCodeblockSpec extends Spec<MarkdownCodeblockSpec>
   @override
   List<Object?> get props => [textStyle, container, alignment];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownCodeblockSpec] properties.
 final class MarkdownCodeblockStyle extends Style<MarkdownCodeblockSpec>

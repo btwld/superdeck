@@ -3,27 +3,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 
+import 'google_font_helpers.dart';
+
 /// A corporate-style template with a branded header and subtle footer.
 SlideTemplate corporateTemplate() {
   return SlideTemplate(
     baseStyle: SlideStyle(
       h1: TextStyler().style(
         TextStyleMix(
-          fontFamily: GoogleFonts.poppins().fontFamily,
+          fontFamily: safeGoogleFontFamily(GoogleFonts.poppins),
           fontSize: 64,
           fontWeight: FontWeight.bold,
         ),
       ),
       h2: TextStyler().style(
         TextStyleMix(
-          fontFamily: GoogleFonts.poppins().fontFamily,
+          fontFamily: safeGoogleFontFamily(GoogleFonts.poppins),
           fontSize: 40,
           fontWeight: FontWeight.w500,
         ),
       ),
       p: TextStyler().style(
         TextStyleMix(
-          fontFamily: GoogleFonts.inter().fontFamily,
+          fontFamily: safeGoogleFontFamily(GoogleFonts.inter),
           fontSize: 24,
         ),
       ),
@@ -64,14 +66,14 @@ SlideTemplate minimalTemplate() {
     baseStyle: SlideStyle(
       h1: TextStyler().style(
         TextStyleMix(
-          fontFamily: GoogleFonts.notoSerif().fontFamily,
+          fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),
           fontSize: 48,
           fontWeight: FontWeight.w300,
         ),
       ),
       p: TextStyler().style(
         TextStyleMix(
-          fontFamily: GoogleFonts.notoSerif().fontFamily,
+          fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),
           fontSize: 22,
           height: 1.8,
         ),
@@ -98,18 +100,25 @@ class _CorporateHeader extends StatelessWidget implements PreferredSizeWidget {
           if (slide.options.title != null)
             Text(
               slide.options.title!,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white70,
+              style: safeGoogleFont(
+                () => GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white70,
+                ),
+                fallback: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white70,
+                ),
               ),
             ),
           const Spacer(),
           Text(
             '${slide.slideIndex + 1}',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.white38,
+            style: safeGoogleFont(
+              () => GoogleFonts.poppins(fontSize: 16, color: Colors.white38),
+              fallback: const TextStyle(fontSize: 16, color: Colors.white38),
             ),
           ),
         ],
@@ -132,15 +141,25 @@ class _CorporateFooter extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Text(
             'SuperDeck Corp',
-            style: GoogleFonts.inter(fontSize: 14, color: Colors.white30),
+            style: safeGoogleFont(
+              () => GoogleFonts.inter(fontSize: 14, color: Colors.white30),
+              fallback: const TextStyle(fontSize: 14, color: Colors.white30),
+            ),
           ),
           const Spacer(),
           Text(
             'Confidential',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: Colors.white24,
-              fontStyle: FontStyle.italic,
+            style: safeGoogleFont(
+              () => GoogleFonts.inter(
+                fontSize: 12,
+                color: Colors.white24,
+                fontStyle: FontStyle.italic,
+              ),
+              fallback: const TextStyle(
+                fontSize: 12,
+                color: Colors.white24,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
         ],

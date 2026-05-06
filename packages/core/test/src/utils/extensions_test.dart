@@ -201,9 +201,9 @@ line3''';
       });
     });
 
-    group('ackEnum', () {
+    group('Ack.enumValues', () {
       test('validates simple enum names', () {
-        final schema = ackEnum(SimpleEnum.values);
+        final schema = Ack.enumValues(SimpleEnum.values);
 
         expect(schema.safeParse('one').isOk, isTrue);
         expect(schema.safeParse('two').isOk, isTrue);
@@ -211,7 +211,7 @@ line3''';
       });
 
       test('validates camelCase enum names', () {
-        final schema = ackEnum(CamelCaseEnum.values);
+        final schema = Ack.enumValues(CamelCaseEnum.values);
 
         expect(schema.safeParse('firstValue').isOk, isTrue);
         expect(schema.safeParse('secondValue').isOk, isTrue);
@@ -219,14 +219,14 @@ line3''';
       });
 
       test('handles single word enums', () {
-        final schema = ackEnum(SingleWordEnum.values);
+        final schema = Ack.enumValues(SingleWordEnum.values);
 
         expect(schema.safeParse('alpha').isOk, isTrue);
         expect(schema.safeParse('beta').isOk, isTrue);
       });
 
       test('rejects invalid enum values', () {
-        final schema = ackEnum(SimpleEnum.values);
+        final schema = Ack.enumValues(SimpleEnum.values);
 
         expect(schema.safeParse('invalid').isOk, isFalse);
         expect(schema.safeParse('ONE').isOk, isFalse);
@@ -234,14 +234,14 @@ line3''';
       });
 
       test('validates abbreviation enum names', () {
-        final schema = ackEnum(AbbreviationEnum.values);
+        final schema = Ack.enumValues(AbbreviationEnum.values);
 
         expect(schema.safeParse('urlParser').isOk, isTrue);
         expect(schema.safeParse('htmlElement').isOk, isTrue);
       });
 
       test('handles numeric suffixes', () {
-        final schema = ackEnum(NumericEnum.values);
+        final schema = Ack.enumValues(NumericEnum.values);
 
         // Enum names stay as-is when they're single words with numbers
         expect(schema.safeParse('version1').isOk, isTrue);
@@ -361,7 +361,7 @@ line3''';
   });
 }
 
-// Test enums for ackEnum tests
+// Test enums for Ack.enumValues tests
 enum SimpleEnum { one, two, three }
 
 enum CamelCaseEnum { firstValue, secondValue, thirdValueHere }

@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
 
-void main() {
-  runApp(
-    const MaterialApp(
-      home: Scaffold(body: ButtonExample(), backgroundColor: Colors.white),
-    ),
-  );
-}
-
 class ButtonExample extends StatelessWidget {
   const ButtonExample({super.key});
 
@@ -49,10 +41,6 @@ class ButtonExample extends StatelessWidget {
 
   RemixButtonStyle get solidStyle =>
       baseStyle.color(Colors.blueAccent.shade700);
-
-  RemixButtonStyle get softStyle => baseStyle
-      .color(Colors.blueAccent.shade100.withValues(alpha: 0.2))
-      .labelColor(Colors.blueAccent.shade700);
 
   RemixButtonStyle get outlineStyle => baseStyle
       .borderAll(color: Colors.blueAccent.shade700.withValues(alpha: 0.7))

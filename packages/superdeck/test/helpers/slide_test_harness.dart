@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/builtins/widgets.dart';
+import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/utils/constants.dart'; // kResolution
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/utils/syntax_highlighter.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 /// Lightweight harness for pumping slides with production defaults.
 class SlideTestHarness {
@@ -12,10 +15,10 @@ class SlideTestHarness {
     WidgetTester tester,
     Slide slide, {
     SlideStyle? style,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     Size? resolution,
-    bool isExporting = false,
+    bool isStaticRendering = false,
     SlideParts? parts,
   }) async {
     await SyntaxHighlight.initialize();
@@ -24,7 +27,7 @@ class SlideTestHarness {
       style: style,
       widgets: widgets,
       debug: debug,
-      isExporting: isExporting,
+      isStaticRendering: isStaticRendering,
       parts: parts,
     );
 
@@ -50,21 +53,21 @@ class SlideTestHarness {
   static SlideConfiguration createConfiguration(
     Slide slide, {
     SlideStyle? style,
-    Map<String, WidgetDefinition> widgets = const {},
+    Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     int slideIndex = 0,
     SlideParts? parts,
-    bool isExporting = false,
+    bool isStaticRendering = false,
   }) {
     return SlideConfiguration(
       slideIndex: slideIndex,
       style: style ?? defaultSlideStyle,
       slide: slide,
-      thumbnailFile: 'test-thumbnail.png',
+      thumbnailKey: 'test-thumbnail.png',
       debug: debug,
       widgets: {...builtInWidgets, ...widgets},
       parts: parts ?? const SlideParts(),
-      isExporting: isExporting,
+      isStaticRendering: isStaticRendering,
     );
   }
 

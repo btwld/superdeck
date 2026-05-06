@@ -1,35 +1,119 @@
 ---
 title: Contracts and Schemas
-description: Canonical SuperDeck deck JSON contract for tooling and runtime consumers
+description: Canonical SuperDeck slides JSON contract for tooling and runtime consumers
 ---
 
 # Contracts and schemas
 
-`superdeck_core` is the canonical contract package for `superdeck.json`.
+`superdeck_core` defines the canonical contract for `superdeck.json`, the compiled presentation payload that the Flutter runtime consumes.
 
-## Root deck contract (`superdeck.json`)
+## Root shape
 
-`Deck` is the root model and contract surface.
+The compiled payload is a raw JSON array of slide objects — no root wrapper, no configuration envelope.
 
-Root fields:
+```json
+[
+  {
+    "key": "a1b2c3",
+    "options": {
+      "title": "Welcome",
+      "style": "title",
+      "template": "brand"
+    },
+    "sections": [
+      {
+        "align": "center",
+        "flex": 1,
+        "blocks": [
+          {
+            "type": "block",
+            "content": "# Hello, SuperDeck!",
+            "align": "center",
+            "flex": 2
+          },
+          {
+            "type": "widget",
+            "name": "qrcode",
+            "args": { "text": "https://superdeck.dev" },
+            "flex": 1
+          }
+        ]
+      }
+    ],
+    "comments": ["Speaker note for this slide"]
+  }
+]
+```
 
-- `slides` (required)
-- `configuration` (optional operational config map)
+## Slide object
 
-## Compatibility note
+Each slide object contains these fields:
 
-Contract compatibility is not frozen yet.
-Breaking changes to deck contract shape may happen as SuperDeck finalizes the tooling surface.
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | Unique identifier, typically a content hash |
+| `options` | `object` | Slide-level configuration (see below) |
+| `sections` | `array` | Ordered list of section blocks |
+| `comments` | `string[]` | Speaker notes attached to this slide |
 
-## Machine-readable schema artifacts
+### `options`
 
-Canonical JSON Schema artifacts are exported to:
+| Field | Type | Description |
+|-------|------|-------------|
+| `style` | `string?` | Named style variant to apply |
+| `template` | `string?` | Named template to apply (`"none"` to opt out) |
+| `title` | `string?` | Slide title for navigation and export |
 
-- `packages/core/schema/superdeck.deck.schema.json`
+## Section block
 
-Commands:
+Each section groups child blocks into a horizontal row.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `align` | `enum` | Content alignment within the section |
+| `flex` | `integer?` | Flex weight relative to sibling sections |
+| `blocks` | `array` | Ordered list of content or widget blocks |
+
+The `align` enum accepts nine compass values: `topLeft`, `topCenter`, `topRight`, `centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, `bottomRight`.
+
+## Block types
+
+Blocks use a discriminated union on the `type` field. SuperDeck defines two block variants.
+
+### Content block (`type: "block"`)
+
+Renders parsed Markdown content.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | `"block"` | Discriminator |
+| `content` | `string` | Raw Markdown content |
+| `align` | `enum?` | Content alignment |
+| `flex` | `integer?` | Flex weight relative to sibling blocks |
+| `scrollable` | `boolean?` | Enable scrolling for overflow content |
+
+### Widget block (`type: "widget"`)
+
+Renders a named Flutter widget with arguments.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | `"widget"` | Discriminator |
+| `name` | `string` | Widget factory name (registered in `DeckOptions.widgets`) |
+| `args` | `object` | Key-value arguments passed to the widget factory |
+| `align` | `enum?` | Content alignment |
+| `flex` | `integer?` | Flex weight relative to sibling blocks |
+| `scrollable` | `boolean?` | Enable scrolling for overflow content |
+
+## Machine-readable schema
+
+The canonical JSON Schema artifact is exported to:
+
+`packages/core/schema/superdeck.slides.schema.json`
+
+Use these Melos commands to manage the schema:
 
 ```bash
-melos run contracts:export
-melos run contracts:check
+melos run contracts:export   # Regenerate schema from Dart models
+melos run contracts:check    # Verify schema matches current models
 ```

@@ -1,7 +1,8 @@
 name: superdeck_core
 description: A core library for SuperDeck.
 version: 1.0.0
-homepage: https://github.com/leoafarias/superdeck
+homepage: https://github.com/btwld/superdeck
+documentation: https://docs.page/btwld/superdeck
 
 
 environment:
@@ -13,14 +14,14 @@ dependencies:
   yaml: ^3.1.2
   collection: ^1.18.0
   path: ^1.9.0
-  meta: ^1.15.0
-  ack: ^1.0.0-beta.7
-  ack_annotations: ^1.0.0-beta.7
+  ack: 1.0.0-beta.9
+  dart_mappable: ^4.7.0
   markdown: ^7.3.0
   logging: ^1.3.0
-  crypto: ^3.0.6
 
 dev_dependencies:
   lints: ^5.0.0
   test: ^1.24.0
   dart_code_metrics_presets: ^2.19.0
+  build_runner: ^2.5.4
+  dart_mappable_builder: ^4.7.0

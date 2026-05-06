@@ -1,16 +1,23 @@
-import 'package:ack_annotations/ack_annotations.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+extension type RawSlideMarkdown(Map<String, Object?> _data) {
+  static RawSlideMarkdown parse(Map<String, Object?> data) =>
+      RawSlideMarkdown(data);
 
-part 'raw_slide_schema.g.dart';
+  String get key => _data['key'] as String;
 
-@AckType()
-final rawSlideFrontmatterSchema = Ack.object({}).passthrough();
+  String get content => _data['content'] as String;
 
-@AckType()
-final rawSlideMarkdownSchema = Ack.object({
-  'key': Ack.string(),
-  'content': Ack.string(),
-  'frontmatter': rawSlideFrontmatterSchema,
-});
+  Map<String, Object?> get frontmatter =>
+      _data['frontmatter'] as Map<String, Object?>;
 
-typedef RawSlideMarkdown = RawSlideMarkdownType;
+  RawSlideMarkdown copyWith({
+    String? key,
+    String? content,
+    Map<String, Object?>? frontmatter,
+  }) {
+    return RawSlideMarkdown({
+      'key': key ?? this.key,
+      'content': content ?? this.content,
+      'frontmatter': frontmatter ?? this.frontmatter,
+    });
+  }
+}

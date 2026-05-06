@@ -4,7 +4,7 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
 import '../../rendering/blocks/block_provider.dart';
-import '../../styling/styling.dart';
+import '../../styling/components/markdown_codeblock.dart';
 import '../../ui/widgets/hero_element.dart';
 import '../../ui/widgets/overflow_clip.dart';
 import '../../utils/converters.dart';
@@ -81,7 +81,6 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     TextStyle? preferredStyle,
     TextStyle? parentStyle,
   ) {
-    // Extract language from the class attribute, default to 'dart'
     var language = 'dart';
     if (element.attributes['class'] != null) {
       String lg = element.attributes['class'] as String;
@@ -90,7 +89,6 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
       }
     }
 
-    // Extract hero tag if present (prefer attribute injected by parser)
     final attributeHero = element.attributes['hero'];
     final tagAndContent = getTagAndContent(element.textContent);
     final heroTag = attributeHero ?? tagAndContent.tag;
@@ -130,7 +128,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
 
         final containerSpec = spec.container?.spec;
         final codeOffset = containerSpec != null
-            ? ConverterHelper.calculateBlockOffset(containerSpec)
+            ? containerSpec.calculateBlockOffset
             : Offset.zero;
 
         final totalSize = Size(

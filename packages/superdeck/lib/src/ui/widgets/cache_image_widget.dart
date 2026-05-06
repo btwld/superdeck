@@ -25,9 +25,9 @@ ImageProvider getImageProvider(Uri uri) {
       }
       return MemoryImage(bytes);
     default:
-      // On platforms that can run processes (desktop debug), files are
-      // generated at runtime and loaded from the filesystem.
-      // On web/release, files are pre-bundled as assets.
+      // Relative paths are filesystem-backed in native debug runtimes
+      // (for example .superdeck-generated assets and local project images)
+      // and bundled assets everywhere else.
       if (kCanRunProcess) {
         return FileImage(File(uri.path).absolute);
       }

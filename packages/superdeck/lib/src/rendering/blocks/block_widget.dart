@@ -1,16 +1,17 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';
-import '../../styling/styling.dart';
+import '../../styling/components/slide.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/overflow_clip.dart';
 import '../../ui/widgets/provider.dart';
 import '../../utils/converters.dart';
+import 'block_provider.dart';
 import 'markdown_viewer.dart';
 
 /// Private container widget that provides shared block infrastructure.
@@ -39,9 +40,7 @@ class _BlockContainerState extends State<_BlockContainer> {
     // Get the resolved SlideSpec (provided by SlideView)
     final spec = SlideSpec.of(context);
 
-    final blockOffset = ConverterHelper.calculateBlockOffset(
-      spec.blockContainer.spec,
-    );
+    final blockOffset = spec.blockContainer.spec.calculateBlockOffset;
 
     final blockData = BlockConfiguration(
       align: widget.block.align,
@@ -58,13 +57,14 @@ class _BlockContainerState extends State<_BlockContainer> {
     );
 
     content = OverflowClip(
-      scrollable: widget.block.scrollable && !widget.configuration.isExporting,
+      scrollable:
+          widget.block.scrollable && !widget.configuration.isStaticRendering,
       child: content,
     );
 
     // Apply alignment
     content = Align(
-      alignment: ConverterHelper.toAlignment(widget.block.align),
+      alignment: widget.block.align?.toAlignment ?? Alignment.center,
       child: content,
     );
 
@@ -97,7 +97,14 @@ class _ContentBlockChild extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
-    return MarkdownViewer(content: content, spec: data.spec);
+    final isStaticRendering = SlideConfiguration.of(context).isStaticRendering;
+    return MarkdownViewer(
+      content: content,
+      spec: data.spec,
+      duration: isStaticRendering
+          ? Duration.zero
+          : const Duration(milliseconds: 250),
+    );
   }
 }
 
@@ -111,18 +118,36 @@ class _CustomBlockChild extends StatelessWidget {
   Widget build(BuildContext context) {
     final slide = SlideConfiguration.of(context);
     final data = BlockConfiguration.of(context);
-    final widgetDef = slide.getWidgetDefinition(block.name);
+    final factory = slide.getWidgetFactory(block.name);
 
-    if (widgetDef == null) {
+    if (factory == null) {
       return ErrorWidgets.simple('Widget not found: ${block.name}');
     }
 
     try {
-      final typedArgs = widgetDef.parse(block.args);
-      return SizedBox(
-        height: data.size.height,
-        child: widgetDef.build(context, typedArgs),
-      );
+      final child = factory(block.args);
+      if (block.scrollable && !slide.isStaticRendering) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(minHeight: data.size.height),
+          child: child,
+        );
+      }
+
+      if (block.scrollable && slide.isStaticRendering) {
+        return SizedBox(
+          height: data.size.height,
+          child: ClipRect(
+            child: OverflowBox(
+              alignment: Alignment.topCenter,
+              minHeight: data.size.height,
+              maxHeight: double.infinity,
+              child: child,
+            ),
+          ),
+        );
+      }
+
+      return SizedBox(height: data.size.height, child: child);
     } catch (e, stackTrace) {
       return ErrorWidgets.detailed(
         'Error building widget: ${block.name}',
@@ -228,7 +253,6 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
           size: blockSize,
           configuration: configuration,
         ),
-        _ => const SizedBox.shrink(),
       };
 
       // Add debug info overlay if needed

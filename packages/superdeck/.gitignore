@@ -46,3 +46,6 @@ build/
 # Node file for website
 node_modules
 .local-chrome
+
+# Golden test failure artifacts
+test/goldens/failures/

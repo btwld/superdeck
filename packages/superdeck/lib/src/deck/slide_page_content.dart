@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart' show Icons, Colors, Scaffold;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/ui/ui.dart';
 
 import '../rendering/slides/slide_screen.dart';
+import '../ui/widgets/button.dart';
+import '../ui/widgets/loading_indicator.dart';
 import 'deck_controller.dart';
 
 /// Widget for rendering slide page content
@@ -22,14 +23,15 @@ class SlidePageContent extends StatelessWidget {
     // Use Watch to react to signals
     return Watch((context) {
       // Access deck controller state
-      final isLoading = deckController.isLoading.value;
-      final hasError = deckController.hasError.value;
+      final session = deckController.session;
+      final isLoading = session.isLoading.value;
+      final hasError = session.hasFatalError.value;
       final slides = deckController.slides.value;
 
       // Render appropriate state
       if (hasError) {
         return _ErrorScreen(
-          error: deckController.error.value,
+          error: session.error.value,
           onRetry: deckController.reloadDeck,
         );
       }
@@ -102,7 +104,7 @@ class _NoSlidesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(32),
@@ -119,8 +121,8 @@ class _NoSlidesScreen extends StatelessWidget {
               ),
               SizedBox(height: 12),
               Text(
-                'Add slides to your deck (slides.md) and rebuild to start presenting.',
-                style: TextStyle(fontSize: 16),
+                "This presentation doesn't have any slides to show yet.",
+                style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ],

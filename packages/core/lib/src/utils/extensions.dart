@@ -2,9 +2,7 @@ import 'dart:io';
 
 import 'package:ack/ack.dart';
 
-// File extensions
 extension FileX on File {
-  /// Ensures a file exists and optionally writes content to it
   Future<File> ensureExists({String? content}) async {
     if (!await exists()) {
       await create(recursive: true);
@@ -15,7 +13,6 @@ extension FileX on File {
     return this;
   }
 
-  /// Ensures that a file exists and writes the provided content to it
   Future<File> ensureWrite(String content) async {
     if (!await exists()) {
       await create(recursive: true);
@@ -24,20 +21,13 @@ extension FileX on File {
   }
 }
 
-// Directory extensions
 extension DirectoryX on Directory {
-  /// Ensures a directory exists, creating it if necessary
   Future<Directory> ensureExists() async {
     if (!await exists()) {
       return await create(recursive: true);
     }
     return this;
   }
-}
-
-/// ACK (Schema Validation) helper function for enums.
-EnumSchema<T> ackEnum<T extends Enum>(List<T> values) {
-  return Ack.enumValues(values);
 }
 
 /// Extension on StringSchema for hex color validation

@@ -1,11 +1,9 @@
-import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 /// Purpose-built slide fixtures for widget/behavior tests.
 ///
 /// All keys are deterministic (no timestamps) to keep tests stable.
 class SlideFixtures {
-  // ---------- Basic layouts ----------
-
   /// Single column, single section, center aligned.
   static Slide singleColumn({String content = '# Hello World'}) {
     return _slide('fixture-single-column', [
@@ -64,8 +62,6 @@ class SlideFixtures {
     ]);
   }
 
-  // ---------- Multi-section layouts ----------
-
   /// Two stacked sections with equal flex (1:1).
   static Slide twoSectionEqual() {
     return _slide('fixture-two-section-equal', [
@@ -105,8 +101,6 @@ class SlideFixtures {
       SectionBlock([ContentBlock('Bottom Single')], flex: 1),
     ]);
   }
-
-  // ---------- Alignment variations ----------
 
   /// Single block with a specific alignment.
   static Slide withAlignment(ContentAlignment align) {
@@ -149,8 +143,6 @@ class SlideFixtures {
     );
   }
 
-  // ---------- Special content ----------
-
   /// Scrollable block with long content to exercise SingleChildScrollView path.
   static Slide scrollableBlock({int lineCount = 50}) {
     final content = List.filled(lineCount, 'Scrollable line').join('\n');
@@ -174,6 +166,22 @@ class SlideFixtures {
   }) {
     return _slide('fixture-custom-widget-$widgetName', [
       SectionBlock([WidgetBlock(name: widgetName, args: args)]),
+    ]);
+  }
+
+  /// Section with one markdown block and one widget block.
+  static Slide contentAndWidget({
+    String widgetName = 'qrcode',
+    Map<String, dynamic> args = const {
+      'text': 'https://superdeck.dev',
+      'size': 96.0,
+    },
+  }) {
+    return _slide('fixture-content-and-widget-$widgetName', [
+      SectionBlock([
+        ContentBlock('# Content'),
+        WidgetBlock(name: widgetName, args: args),
+      ]),
     ]);
   }
 
@@ -212,8 +220,6 @@ void main() {
       ]),
     ]);
   }
-
-  // ---------- Helpers ----------
 
   static Slide _slide(String key, List<SectionBlock> sections) {
     return Slide(key: key, sections: sections);

@@ -2,10 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for individual markdown alert type styling.
 ///
 /// Defines the complete styling for a single alert type (note, tip, important, etc.)
@@ -88,10 +84,6 @@ final class MarkdownAlertTypeSpec extends Spec<MarkdownAlertTypeSpec>
     headingFlex,
   ];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownAlertTypeSpec] properties.
 final class MarkdownAlertTypeStyle extends Style<MarkdownAlertTypeSpec>

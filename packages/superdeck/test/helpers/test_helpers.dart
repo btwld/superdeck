@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/styling/components/slide.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+
+export '../fixtures/slide_fixtures.dart';
+
+class NoopAssetCacheStore implements AssetCacheStore {
+  @override
+  Future<void> delete(String assetKey) async {}
+
+  @override
+  Future<Uri?> resolve(String assetKey) async => null;
+
+  @override
+  Future<Uri?> write(String assetKey, List<int> bytes) async => null;
+}
+
+/// Creates a list of test slides for testing navigation and presentation.
+List<SlideConfiguration> createTestSlides(int count) {
+  return List.generate(
+    count,
+    (index) => SlideConfiguration(
+      slideIndex: index,
+      style: SlideStyle(),
+      slide: Slide(
+        key: 'slide-$index',
+        sections: [
+          SectionBlock([ContentBlock('Test slide $index content')]),
+        ],
+      ),
+      thumbnailKey: buildThumbnailKey('slide-$index'),
+    ),
+  );
+}
+
+/// Creates a test slide configuration with custom content.
+SlideConfiguration createTestSlide({
+  required int index,
+  String? content,
+  SlideStyle? style,
+  String? thumbnailKey,
+}) {
+  final slideKey = 'slide-$index';
+  return SlideConfiguration(
+    slideIndex: index,
+    style: style ?? SlideStyle(),
+    slide: Slide(
+      key: slideKey,
+      sections: [
+        SectionBlock([ContentBlock(content ?? 'Test slide $index content')]),
+      ],
+    ),
+    thumbnailKey: thumbnailKey ?? buildThumbnailKey(slideKey),
+  );
+}
+
+/// Creates a test slide payload with the given slides.
+List<Slide> createTestSlidesPayload({List<Slide>? slides}) {
+  return slides ??
+      List.generate(
+        3,
+        (index) => Slide(
+          key: 'slide-$index',
+          sections: [
+            SectionBlock([ContentBlock('Test slide $index content')]),
+          ],
+        ),
+      );
+}
+
+/// Pumps a widget and settles all animations.
+Future<void> pumpAndSettleWidget(
+  WidgetTester tester,
+  Widget widget, {
+  Duration? duration,
+}) async {
+  await tester.pumpWidget(widget);
+  if (duration != null) {
+    await tester.pumpAndSettle(duration);
+  } else {
+    await tester.pumpAndSettle();
+  }
+}
+
+/// Finds a widget by its key.
+Finder findByKey(String key) => find.byKey(Key(key));
+
+/// Finds a widget by its text content.
+Finder findByText(String text) => find.text(text);
+
+/// Verifies that a widget exists and is visible.
+void expectWidgetVisible(Finder finder) {
+  expect(finder, findsOneWidget);
+}
+
+/// Verifies that a widget does not exist.
+void expectWidgetNotFound(Finder finder) {
+  expect(finder, findsNothing);
+}
+
+int _testSlideId = 0;
+
+String _nextKey(String prefix) => '$prefix-${_testSlideId++}';
+
+/// Creates a Slide from a list of sections for inline test setup.
+Slide createSlideFromSections(
+  List<SectionBlock> sections, {
+  String? key,
+  SlideOptions? options,
+}) {
+  return Slide(
+    key: key ?? _nextKey('test-slide'),
+    sections: sections,
+    options: options,
+  );
+}
+
+/// Creates a simple single-section slide with given blocks.
+Slide createSlideFromBlocks(
+  List<Block> blocks, {
+  String? key,
+  int sectionFlex = 1,
+}) {
+  return Slide(
+    key: key ?? _nextKey('test-slide'),
+    sections: [SectionBlock(blocks, flex: sectionFlex)],
+  );
+}
+
+/// Creates a content block with common defaults.
+ContentBlock createContentBlock(
+  String content, {
+  int flex = 1,
+  ContentAlignment? align,
+  bool scrollable = false,
+}) {
+  return ContentBlock(
+    content,
+    flex: flex,
+    align: align,
+    scrollable: scrollable,
+  );
+}
+
+extension WidgetTesterX on WidgetTester {
+  Future<void> pumpWithScaffold(Widget widget) async {
+    await pumpWidget(MaterialApp(home: Scaffold(body: widget)));
+  }
+}

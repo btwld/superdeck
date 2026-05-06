@@ -5,7 +5,7 @@ description: Learn how to create and use custom Flutter widgets in SuperDeck pre
 
 # Custom widgets guide
 
-Render custom Flutter widgets from Markdown. Register widgets in `DeckOptions.widgets`, then use them in `slides.md`.
+Render custom Flutter widgets from Markdown. Register widget factories in `DeckOptions.widgets`, then use them in `slides.md`.
 
 ## Markdown syntax
 
@@ -14,38 +14,32 @@ Two equivalent forms:
 - **Shorthand (recommended)** - `@twitter { ... }`
 - **Explicit** - `@widget { name: "twitter" ... }`
 
-All properties pass to `WidgetDefinition.parse()` as arguments.
+All properties pass to your `WidgetFactory` as a `Map<String, Object?>`.
 
-## Create a `WidgetDefinition`
+## Create a widget factory
 
-### Simple: map args (no validation)
+A `WidgetFactory` is a function: `Widget Function(Map<String, Object?> args)`.
+
+### Simple: plain function
 
 ```dart
 import 'package:flutter/widgets.dart';
-import 'package:superdeck/superdeck.dart';
 
-class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const TwitterWidgetDefinition();
-
-  @override
-  Map<String, Object?> parse(Map<String, Object?> args) => args;
-
-  @override
-  Widget build(BuildContext context, Map<String, Object?> args) {
-    final username = args['username'] as String? ?? '';
-    final tweetId = args['tweetId'] as String? ?? '';
-    return Text('Twitter: @$username ($tweetId)');
-  }
+Widget twitterWidget(Map<String, Object?> args) {
+  final username = args['username'] as String? ?? '';
+  final tweetId = args['tweetId'] as String? ?? '';
+  return Text('Twitter: @$username ($tweetId)');
 }
 ```
 
-### Recommended: typed args with validation
+### Recommended: StatelessWidget with typed args
 
-Validate and convert the raw map to a typed args object in `parse()`. Use `Ack` (from `superdeck_core`) for schema validation.
+Parse and validate in the constructor. Import `package:superdeck_core/superdeck_core.dart` when you want to use `Ack` for schema validation.
 
 ```dart
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 class TwitterArgs {
   const TwitterArgs({required this.username, required this.tweetId});
@@ -67,15 +61,15 @@ class TwitterArgs {
   }
 }
 
-class TwitterDefinition extends WidgetDefinition<TwitterArgs> {
-  const TwitterDefinition();
+class TwitterWidget extends StatelessWidget {
+  final TwitterArgs data;
+
+  TwitterWidget(Map<String, Object?> args, {super.key})
+    : data = TwitterArgs.parse(args);
 
   @override
-  TwitterArgs parse(Map<String, Object?> args) => TwitterArgs.parse(args);
-
-  @override
-  Widget build(BuildContext context, TwitterArgs args) {
-    return Text('Twitter: @${args.username} (${args.tweetId})');
+  Widget build(BuildContext context) {
+    return Text('Twitter: @${data.username} (${data.tweetId})');
   }
 }
 ```
@@ -93,8 +87,8 @@ void main() async {
   runApp(
     SuperDeckApp(
       options: DeckOptions(
-        widgets: const {
-          'twitter': TwitterWidgetDefinition(),
+        widgets: {
+          'twitter': TwitterWidget.new,
         },
       ),
     ),
@@ -123,23 +117,38 @@ Explicit:
 }
 ```
 
-## Access block and slide context
+## Slide context
 
-In `WidgetDefinition.build()`:
-
-- `BlockConfiguration.of(context)` - Block size, alignment, slide spec
-- `SlideConfiguration.of(context)` - Slide index, options, metadata
+`SlideConfiguration.of(context)` exposes the slide index, options, and
+metadata if your widget needs them:
 
 ```dart
-@override
-Widget build(BuildContext context, TwitterArgs args) {
-  final block = BlockConfiguration.of(context);
-  final slide = SlideConfiguration.of(context);
+class TwitterWidget extends StatelessWidget {
+  final TwitterArgs data;
 
-  return SizedBox(
-    width: block.size.width,
-    height: block.size.height,
-    child: Text('Slide ${slide.slideIndex + 1}: @${args.username}'),
+  TwitterWidget(Map<String, Object?> args, {super.key})
+    : data = TwitterArgs.parse(args);
+
+  @override
+  Widget build(BuildContext context) {
+    final slide = SlideConfiguration.of(context);
+    return Text('Slide ${slide.slideIndex + 1}: @${data.username}');
+  }
+}
+```
+
+For sizing your widget to the available block area, use Flutter's
+`LayoutBuilder` — it gives you the parent's constraints without any
+SuperDeck-specific API:
+
+```dart
+Widget twitterWidget(Map<String, Object?> args) {
+  final username = args['username'] as String? ?? '';
+  return LayoutBuilder(
+    builder: (context, constraints) => SizedBox(
+      width: constraints.maxWidth,
+      child: Text('@$username'),
+    ),
   );
 }
 ```

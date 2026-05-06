@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-Templates provide reusable **chrome configurations** (background, header, footer) bundled with **isolated style systems** for consistent slide presentation. Templates are like Keynote master slides - they define the visual frame and default styling, while users continue writing markdown content using `@section`/`@column` directives normally.
+Templates provide reusable **chrome configurations** (background, header, footer) bundled with **isolated style systems** for consistent slide presentation. Templates are like Keynote master slides - they define the visual frame and default styling, while users continue writing markdown content using `@section`/`@block` directives normally.
 
-**Key Principle:** Templates control the **decorative layer** (chrome + styling), not the content layout. The existing `@section`/`@column` system remains unchanged.
+**Key Principle:** Templates control the **decorative layer** (chrome + styling), not the content layout. The existing `@section`/`@block` system remains unchanged.
 
 ---
 
@@ -12,7 +12,7 @@ Templates provide reusable **chrome configurations** (background, header, footer
 
 ### 1. Template Scope: Chrome Only
 - **Chrome Elements:** Background, header, footer (via `SlideParts`)
-- **NOT in scope:** Slot definitions, layout restructuring, replacing `@section`/`@column`
+- **NOT in scope:** Slot definitions, layout restructuring, replacing `@section`/`@block`
 - **Rationale:** Keep templates simple, focused, and non-invasive to existing markdown authoring
 
 ### 2. Isolated Style Systems
@@ -257,7 +257,7 @@ SlideConfiguration
 SlideView
   ├─ config.parts.background (from template or deck)
   ├─ config.parts.header (from template or deck)
-  ├─ @section/@column content (styled with config.style)
+  ├─ @section/@block content (styled with config.style)
   └─ config.parts.footer (from template or deck)
 ```
 
@@ -292,7 +292,7 @@ TemplateException: Style "titl" not found in template "corporate".
 Available styles: title, content, closing
 ```
 
-**3. Unknown Style in Deck (no template)**
+**3. Unknown Style in Presentation (no template)**
 ```markdown
 ---
 style: announement  # Typo
@@ -404,7 +404,7 @@ final template = SlideTemplate(
 - [ ] File: `packages/superdeck/test/deck/slide_configuration_builder_test.dart`
 - [ ] Test builder with templates
 - [ ] Test builder with defaultTemplate
-- [ ] Test builder without templates (backward compatibility)
+- [ ] Test builder without templates
 - [ ] Test parts resolution from template
 
 **3.4 Update Existing Tests**
@@ -435,7 +435,7 @@ final template = SlideTemplate(
 - [ ] File: `demo/slides.md`
 - [ ] Add slides using different templates
 - [ ] Show template + style combinations
-- [ ] Show slide without template (backward compatibility)
+- [ ] Show slide without template
 
 **4.4 Update Documentation**
 - [ ] This file: Complete implementation details
@@ -462,7 +462,7 @@ final template = SlideTemplate(
 - [ ] Test template with custom header/footer
 - [ ] Test defaultTemplate behavior
 - [ ] Test error messages (unknown template, unknown style)
-- [ ] Test backward compatibility (slides without templates)
+- [ ] Test slides without templates
 
 **5.3 Performance Check**
 - [ ] Verify build time is not impacted
@@ -619,7 +619,7 @@ Available styles: title, emphasis, closing
 ```
 **Fix:** Check style name spelling, ensure style is defined in `template.styles`
 
-### Unknown Style in Deck
+### Unknown Style in Presentation
 ```
 TemplateException: Style "announement" not found in deck.
 Available styles: announcement, quote, emphasis
@@ -634,7 +634,7 @@ Available styles: announcement, quote, emphasis
 
 **1. Keep Templates Focused**
 - Templates should define chrome (visual frame)
-- Let content flow naturally using `@section`/`@column`
+- Let content flow naturally using `@section`/`@block`
 - Don't try to control content layout from templates
 
 **2. Provide Sensible Defaults**
@@ -656,7 +656,7 @@ Available styles: announcement, quote, emphasis
 - With default: all slides use template unless overridden
 - Recommendation: start without default, add later if needed
 
-**2. Be Consistent Within Deck**
+**2. Be Consistent Within a Presentation**
 - Use 2-3 templates max per presentation
 - Reserve template switching for major section changes
 
@@ -666,15 +666,15 @@ Available styles: announcement, quote, emphasis
 
 ---
 
-## Backward Compatibility
+## Behavior Without Templates
 
 ### Existing Slides Without Templates
-- **Status:** ✅ Fully compatible, no changes required
+- **Status:** ✅ Unchanged
 - **Behavior:** Render exactly as before using deck-level styles and parts
 
 ### Existing Code Using SlideOptions
-- **Status:** ✅ Compatible, `template` field is optional
-- **Migration:** None required, existing code continues to work
+- **Status:** ✅ `template` remains optional
+- **Behavior:** Existing code continues to work without setting `template`
 
 ### Existing Style System
 - **Status:** ✅ Unchanged, deck-level styles work as before
@@ -724,7 +724,7 @@ Available styles: announcement, quote, emphasis
 
 ## Success Criteria
 
-- [ ] All existing tests pass (backward compatibility verified)
+- [ ] All existing tests pass
 - [ ] New tests cover all resolution paths and error cases
 - [ ] Demo app showcases 3+ different templates
 - [ ] Error messages are clear and actionable
@@ -737,7 +737,7 @@ Available styles: announcement, quote, emphasis
 ## Open Questions (Resolved)
 
 ### ~~Q1: Slot mapping strategy?~~
-**Resolved:** Templates do NOT define slots. Users continue using `@section`/`@column` normally. Templates only affect chrome (background, header, footer).
+**Resolved:** Templates do NOT define slots. Users continue using `@section`/`@block` normally. Templates only affect chrome (background, header, footer).
 
 ### ~~Q2: Template helper return type?~~
 **Resolved:** Not applicable - templates are simple data classes, not helpers/builders.

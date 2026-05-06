@@ -1,13 +1,18 @@
-import '../rendering/slides/slide_parts.dart';
-import '../styling/styling.dart';
-import 'slide_template.dart';
-import 'superdeck_plugin.dart';
-import 'widget_definition.dart';
+import 'package:flutter/widgets.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 
-class DeckOptions {
+import '../rendering/slides/slide_parts.dart';
+import '../styling/components/slide.dart';
+import 'slide_template.dart';
+import 'widget_factory.dart';
+
+part 'deck_options.mapper.dart';
+
+@MappableClass()
+class DeckOptions with DeckOptionsMappable {
   final SlideStyle? baseStyle;
   final Map<String, SlideStyle> styles;
-  final Map<String, WidgetDefinition> widgets;
+  final Map<String, WidgetFactory> widgets;
   final SlideParts parts;
   final bool debug;
 
@@ -20,77 +25,15 @@ class DeckOptions {
   /// disables applying any template for that slide.
   final SlideTemplate? defaultTemplate;
 
-  /// Whether to watch for file changes and auto-rebuild the deck.
-  ///
-  /// When `true`, starts a CLI watcher process that monitors
-  /// the slides file and rebuilds automatically on changes.
-  /// Defaults to `false`.
-  final bool watchForChanges;
-
-  /// Optional plugin descriptors that extend deck behavior.
-  final List<SuperDeckPlugin> plugins;
-
-  const DeckOptions({
+  DeckOptions({
     this.baseStyle,
-    this.styles = const <String, SlideStyle>{},
-    this.widgets = const <String, WidgetDefinition>{},
+    Map<String, SlideStyle> styles = const <String, SlideStyle>{},
+    Map<String, WidgetFactory> widgets = const <String, WidgetFactory>{},
     this.parts = const SlideParts(),
     this.debug = false,
-    this.templates = const <String, SlideTemplate>{},
+    Map<String, SlideTemplate> templates = const <String, SlideTemplate>{},
     this.defaultTemplate,
-    this.watchForChanges = false,
-    this.plugins = const <SuperDeckPlugin>[],
-  });
-
-  DeckOptions copyWith({
-    SlideStyle? baseStyle,
-    Map<String, SlideStyle>? styles,
-    Map<String, WidgetDefinition>? widgets,
-    SlideParts? parts,
-    bool? debug,
-    Map<String, SlideTemplate>? templates,
-    SlideTemplate? defaultTemplate,
-    bool? watchForChanges,
-    List<SuperDeckPlugin>? plugins,
-  }) {
-    return DeckOptions(
-      baseStyle: baseStyle ?? this.baseStyle,
-      styles: styles ?? this.styles,
-      widgets: widgets ?? this.widgets,
-      parts: parts ?? this.parts,
-      debug: debug ?? this.debug,
-      templates: templates ?? this.templates,
-      defaultTemplate: defaultTemplate ?? this.defaultTemplate,
-      watchForChanges: watchForChanges ?? this.watchForChanges,
-      plugins: plugins ?? this.plugins,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DeckOptions &&
-          runtimeType == other.runtimeType &&
-          baseStyle == other.baseStyle &&
-          styles == other.styles &&
-          widgets == other.widgets &&
-          parts == other.parts &&
-          debug == other.debug &&
-          templates == other.templates &&
-          defaultTemplate == other.defaultTemplate &&
-          watchForChanges == other.watchForChanges &&
-          plugins == other.plugins;
-
-  @override
-  int get hashCode => Object.hash(
-    baseStyle,
-    styles,
-    widgets,
-    parts,
-    debug,
-    templates,
-    defaultTemplate,
-    watchForChanges,
-    plugins,
-  );
+  }) : styles = Map.unmodifiable(styles),
+       widgets = Map.unmodifiable(widgets),
+       templates = Map.unmodifiable(templates);
 }

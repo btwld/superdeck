@@ -3,7 +3,7 @@
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 # SuperDeck {.heading}
@@ -13,24 +13,23 @@
 
 ## What is SuperDeck? {.heading}
 
-@column
+@block
 
 SuperDeck is a presentation framework that transforms how developers create slides.
 
 - Write slides in **Markdown** - familiar syntax, version-controlled
 - Render with **Flutter** - cross-platform, beautiful UI
 - Extend with **custom widgets** - interactive, live demos
-- Export to **PDF** - share anywhere
 
 ---
 
-@column {
+@block {
   flex: 2
   align: centerLeft
 }
 ### Traditional Tools {.heading}
 
-@column {
+@block {
   flex: 3
 }
 
@@ -53,7 +52,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 ## "Write once, present anywhere. Version control everything." {.heading}
@@ -62,7 +61,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 
 ---
 
-@column {
+@block {
   flex: 2
   align: centerLeft
 }
@@ -70,7 +69,7 @@ SuperDeck is a presentation framework that transforms how developers create slid
 
 Edit your slides and see changes instantly - no rebuild needed.
 
-@column {
+@block {
   flex: 3
 }
 
@@ -83,7 +82,7 @@ Edit your slides and see changes instantly - no rebuild needed.
 
 ### Markdown Syntax {.heading}
 
-@column {
+@block {
   flex: 2
 }
 
@@ -92,14 +91,14 @@ Edit your slides and see changes instantly - no rebuild needed.
 
 ## Slide Title {.heading}
 
-@column
+@block
 
 Your content here with **bold**
 and *italic* text.
 
 - Bullet points
 - Code blocks
-- Mermaid diagrams
+- Custom widgets
 
 ---
 ```{.code}
@@ -108,7 +107,7 @@ and *italic* text.
 
 @section
 
-@column {
+@block {
   flex: 1
 }
 ## Layout System {.heading}
@@ -120,7 +119,7 @@ How SuperDeck organizes content on slides.
   align: topLeft
 }
 
-@column {
+@block {
   flex: 1
 }
 #### Sections
@@ -133,7 +132,7 @@ Horizontal rows that divide the slide vertically.
 }
 ```
 
-@column {
+@block {
   flex: 1
 }
 #### Columns
@@ -141,13 +140,13 @@ Horizontal rows that divide the slide vertically.
 Vertical divisions within sections.
 
 ```markdown
-@column {
+@block {
   flex: 3
   align: center
 }
 ```
 
-@column {
+@block {
   flex: 1
 }
 #### Blocks
@@ -164,7 +163,7 @@ Content containers with markdown or widgets.
 
 ## Layout Types {.heading}
 
-@column
+@block
 
 | Layout | Structure | Best For |
 |--------|-----------|----------|
@@ -180,53 +179,41 @@ Content containers with markdown or widgets.
 
 ### The Block System {.heading}
 
-@column
+@block
 
 SuperDeck uses three core block types:
 
-- **Content Blocks** (`@column`) - Render markdown text, lists, tables
+- **Content Blocks** (`@block`) - Render markdown text, lists, tables
 - **Widget Blocks** (`@widget`) - Embed custom Flutter components
 - **Built-in Widgets** (`@image`, `@dartpad`, `@qrcode`) - Pre-configured widgets
 
-Each block supports:
+Content and widget blocks support:
 - `flex` - Relative sizing (default: 1)
 - `align` - Content positioning (e.g., `center`, `topLeft`)
 - `scrollable` - Enable overflow scrolling
+
+Sections support `flex` and `align`; set `scrollable` on the child block or widget that overflows.
 
 ---
 
 ### Build Pipeline {.heading}
 
-@column
-
-```mermaid
-flowchart LR
-    A["slides.md"] --> B["Parser"]
-    B --> C["Blocks"]
-    C --> D["Widgets"]
-    D --> E["Flutter UI"]
-    E --> F["PDF Export"]
-
-    style A fill:#4CAF50,stroke:#2E7D32,color:#fff
-    style E fill:#2196F3,stroke:#1565C0,color:#fff
-    style F fill:#FF9800,stroke:#F57C00,color:#fff
-```
+@block
 
 The CLI processes your markdown through multiple stages:
 1. **Parse** - Extract frontmatter and block directives
 2. **Transform** - Convert to widget tree
 3. **Render** - Flutter builds the UI
-4. **Export** - Generate PDF and thumbnails
 
 ---
 
-@column {
+@block {
   flex: 2
   align: centerLeft
 }
 ### Getting Started {.heading}
 
-@column {
+@block {
   flex: 3
 }
 
@@ -257,22 +244,25 @@ flutter run -d macos  # or chrome, windows, linux
   flex: 3
 }
 
-@column {
+@block {
   flex: 1
 }
 
 #### Global Themes
 
-Define in `superdeck.yaml`:
+Define in `DeckOptions.styles`:
 
-```yaml
-styles:
-  default:
-    background: '#1a1a2e'
-    primaryColor: '#4CAF50'
+```dart
+SuperDeckApp(
+  options: DeckOptions(
+    styles: {
+      'default': borderedStyle(),
+    },
+  ),
+)
 ```
 
-@column {
+@block {
   flex: 1
 }
 
@@ -292,12 +282,10 @@ style: quote
 
 ## Advanced Features {.heading}
 
-@column
+@block
 
-- **Mermaid Diagrams** - Flowcharts, sequences, mind maps
 - **Code Highlighting** - Syntax-aware formatting
 - **Custom Widgets** - Embed any Flutter widget
-- **PDF Export** - Print-ready output
 - **Thumbnails** - Auto-generated previews
 - **Responsive** - Adapts to any screen size
 
@@ -306,7 +294,7 @@ style: quote
 @section {
   flex: 2
 }
-@column {
+@block {
   align: center
 }
 ## "The best presentation tool is the one that gets out of your way." {.heading}
@@ -320,11 +308,11 @@ style: quote
   align: bottomCenter
 }
 # Start Building {.heading}
-## github.com/leoafarias/superdeck {.subheading}
+## github.com/btwld/superdeck {.subheading}
 
 @section
 
-@column {
+@block {
   align: center
 }
 MIT License | Flutter & Dart

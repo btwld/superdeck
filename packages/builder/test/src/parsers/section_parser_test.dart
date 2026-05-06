@@ -1,7 +1,7 @@
-import 'package:superdeck_builder/src/parsers/section_parser.dart';
-import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
+
+import 'package:superdeck_builder/src/parsers/section_parser.dart';
 
 void main() {
   final sectionParser = SectionParser();
@@ -38,10 +38,10 @@ void main() {
 @section
 # Title
 
-@column
+@block
 content column 1.
 
-@column
+@block
 content column 2.
 
 ''';
@@ -67,10 +67,10 @@ content column 2.
 
     test('Only columns without sections', () {
       const markdown = '''
-@column
+@block
 Content column 1.
 
-@column
+@block
 Content column 2.
 
 ''';
@@ -79,6 +79,24 @@ Content column 2.
       expect(sections[0].blocks.length, equals(2));
       expect(sections[0].blocks[0].content.trim(), 'Content column 1.');
       expect(sections[0].blocks[1].content.trim(), 'Content column 2.');
+    });
+
+    test('Legacy @column directives fail loudly', () {
+      const markdown = '''
+@column
+Legacy content.
+''';
+
+      expect(
+        () => sectionParser.parse(markdown),
+        throwsA(
+          isA<DeckFormatException>().having(
+            (e) => e.message,
+            'message',
+            contains('Unsupported @column directive'),
+          ),
+        ),
+      );
     });
 
     test('Columns then sections', () {
@@ -90,7 +108,7 @@ This is some regular markdown content.
 @section
 ## Header Title
 
-@column
+@block
 Content inside the header.
 ''';
 
@@ -116,18 +134,18 @@ Content inside the header.
 @section
 # Header Title
 
-@column
+@block
 Header content column.
 
 @section
-@column
+@block
 Body content column 1.
 
-@column
+@block
 Body content column 2.
 
 @section
-@column
+@block
 Footer content column.
 
 ''';
@@ -151,12 +169,12 @@ Footer content column.
       test('Header with columns and flex attribute', () {
         const markdown = '''
 @section
-@column{
+@block{
   flex: 1
 }
 Header content column 1.
 
-@column{
+@block{
   flex: 2
 }
 Header content column 2.
@@ -188,12 +206,12 @@ Header content column 2.
       test('Section with columns and alignment attribute', () {
         const markdown = '''
 @section
-@column{
+@block{
       align: center
 }
 Body content column 1.
 
-@column{
+@block{
       align: bottomRight
 }
 Body content column 2.
@@ -214,12 +232,12 @@ Body content column 2.
       test('Section with columns, flex, and alignment attributes', () {
         const markdown = '''
 @section
-@column{
+@block{
   flex: 3 
   align: topLeft
 }
 Footer content column 1.
-@column{
+@block{
   flex: 1
   align: centerRight
 }
@@ -251,27 +269,27 @@ Footer content column 2.
       test('Sections with columns and attributes', () {
         const markdown = '''
 @section
-@column{
+@block{
     flex: 1
     align: center
 }
 Header content.
 
 @section
-@column{
+@block{
     flex: 2
     align: centerLeft
 }
 Body content column 1.
 
-@column{
+@block{
     flex: 1
     align: centerRight
 }
 Body content column 2.
 
 @section
-@column{
+@block{
     flex: 1
     align: bottomCenter
 }
@@ -316,14 +334,14 @@ Footer content.
       test('Columns inherit options from the parent', () {
         const markdown = '''
 @section {align: center}
-@column
+@block
 Header content.
 
 @section{
   align: topLeft
   flex: 2
 }
-@column{
+@block{
   flex: 3
 }
 Body content.
@@ -332,7 +350,7 @@ Body content.
   align: bottomRight
   flex: 1
 }
-@column{ align: bottomRight}
+@block{ align: bottomRight}
 Footer content.
 
 ''';
@@ -383,7 +401,7 @@ Footer content.
       test('Invalid flex attribute format', () {
         const markdown = '''
 @section
-@column{ flex: invalid}
+@block{ flex: invalid}
 Header content.
 
 ''';
@@ -397,7 +415,7 @@ Header content.
       test('Invalid alignment attribute value', () {
         const markdown = '''
 @section
-@column{
+@block{
   align: invalid_alignment
 }
 Header content.
@@ -408,6 +426,21 @@ Header content.
           () => sectionParser.parse(markdown),
           throwsA(isA<Exception>()),
           reason: 'Invalid alignment value should throw an exception.',
+        );
+      });
+
+      test('Section-level scrollable is rejected', () {
+        const markdown = '''
+@section { scrollable: true }
+@block
+Header content.
+
+''';
+
+        expect(
+          () => sectionParser.parse(markdown),
+          throwsA(isA<Exception>()),
+          reason: 'Scrollable should be set on child blocks, not sections.',
         );
       });
     });

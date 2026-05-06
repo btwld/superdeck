@@ -14,10 +14,9 @@ Create presentations with Flutter and Markdown.
 With SuperDeck, you can:
 
 - **Write slides in Markdown** with live hot-reload during development
-- **Embed interactive content** like DartPad playgrounds, Mermaid diagrams, and custom widgets
+- **Embed interactive content** like DartPad playgrounds and custom widgets
 - **Style everything** with type-safe control over typography, colors, and themes
 - **Deploy** to web or desktop
-- **Export to PDF** or publish directly to GitHub Pages
 
 ---
 
@@ -32,14 +31,14 @@ SuperDeck uses a powerful `@block` syntax for organizing slide content into flex
   flex: 2
 }
 
-@column {
+@block {
   align: center
 }
 
 # Welcome to SuperDeck
 Build presentations with Markdown and Flutter
 
-@column {
+@block {
   align: center
   flex: 1
 }
@@ -50,7 +49,7 @@ Build presentations with Markdown and Flutter
 **Core block types**
 
 - `@section` – multi-column container with configurable flex ratios
-- `@column` – display markdown content with alignment and scrolling
+- `@block` – display markdown content with alignment and scrolling
 - `@widget` – custom registered Flutter widgets
 
 **Built-in widgets** (use shorthand syntax like `@image { ... }`):
@@ -66,10 +65,18 @@ Build presentations with Markdown and Flutter
 Register custom Flutter widgets and use them directly in Markdown:
 
 ```dart
+import 'package:flutter/widgets.dart';
+import 'package:superdeck/superdeck.dart';
+
+Widget twitterWidget(Map<String, Object?> args) {
+  final username = args['username'] as String? ?? '';
+  return Text('@$username');
+}
+
 SuperDeckApp(
   options: DeckOptions(
-    widgets: const {
-      'twitter': TwitterWidgetDefinition(),
+    widgets: {
+      'twitter': twitterWidget,
     },
   ),
 )
@@ -84,7 +91,7 @@ Use in Markdown:
 }
 ````
 
-SuperDeck calls `WidgetDefinition.parse()` with the block's arguments and then `WidgetDefinition.build()` to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
+SuperDeck calls the `WidgetFactory` function with the block's arguments to render your widget. For complex widgets, parse into a typed args class and validate with `Ack` (see the Custom Widgets guide).
 
 ### Markdown extensions
 
@@ -106,16 +113,6 @@ SuperDeck calls `WidgetDefinition.parse()` with the block's arguments and then `
 
 > [!CAUTION]
 > Critical warning
-````
-
-**Mermaid diagrams** – Full support with automatic PNG rendering:
-
-````markdown
-```mermaid
-graph TD
-  A[Start] --> B[Process]
-  B --> C[End]
-```
 ````
 
 **Code highlighting** – Syntax highlighting for supported grammars (Dart/JSON/YAML/Markdown) with a Dart fallback
@@ -177,7 +174,7 @@ Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the 
 
 SuperDeck uses a two-stage build pipeline:
 
-1. **Build time**: The CLI parses your `slides.md` file, renders Mermaid diagrams to images, and generates asset manifests
+1. **Build time**: The CLI parses your `slides.md` file and generates asset manifests
 2. **Runtime**: Flutter renders the parsed slide data as widgets with full styling control
 
 This approach gives you fast hot-reload during development while ensuring optimized assets in production.
@@ -188,4 +185,4 @@ This approach gives you fast hot-reload during development while ensuring optimi
 
 - Learn how to author slides with the [Markdown Authoring Guide](./markdown-authoring)
 - Dive deeper into block behavior in the [Block Types reference](../reference/block-types)
-- Explore automation and publishing with the [CLI Reference](./cli-reference)
+- Explore build tooling in the [CLI Reference](./cli-reference)

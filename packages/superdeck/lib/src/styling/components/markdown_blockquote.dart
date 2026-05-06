@@ -2,10 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for markdown blockquote styling properties.
 ///
 /// Defines styling for blockquotes including text style, padding,
@@ -64,10 +60,6 @@ final class MarkdownBlockquoteSpec extends Spec<MarkdownBlockquoteSpec>
   @override
   List<Object?> get props => [textStyle, padding, decoration, alignment];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownBlockquoteSpec] properties.
 final class MarkdownBlockquoteStyle extends Style<MarkdownBlockquoteSpec>

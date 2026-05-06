@@ -1,0 +1,96 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 200.006 226.45"
+  role="img"
+  aria-labelledby="superdeck-loader-title superdeck-loader-desc"
+>
+  <title id="superdeck-loader-title">SuperDeck Loader</title>
+  <desc id="superdeck-loader-desc">
+    Four isometric bars that pulse in sequence to form the SuperDeck loading
+    indicator.
+  </desc>
+  <style>
+    .bar {
+      fill: #ffffff;
+      animation: superdeck-loader-cycle 900ms linear infinite;
+      will-change: opacity;
+    }
+
+    .bar-1 {
+      animation-delay: 0ms;
+    }
+
+    .bar-2 {
+      animation-delay: -225ms;
+    }
+
+    .bar-3 {
+      animation-delay: -450ms;
+    }
+
+    .bar-4 {
+      animation-delay: -675ms;
+    }
+
+    @keyframes superdeck-loader-cycle {
+      0% {
+        opacity: 1;
+      }
+
+      25% {
+        opacity: 0.72;
+      }
+
+      50% {
+        opacity: 0.44;
+      }
+
+      75% {
+        opacity: 0.2;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bar {
+        animation: none;
+      }
+
+      .bar-1 {
+        opacity: 1;
+      }
+
+      .bar-2 {
+        opacity: 0.72;
+      }
+
+      .bar-3 {
+        opacity: 0.44;
+      }
+
+      .bar-4 {
+        opacity: 0.2;
+      }
+    }
+  </style>
+
+  <path
+    class="bar bar-1"
+    d="M92.2116 119.9706L0 66.7358V132.1824L71.075 173.2154V189.8452L0 148.812V173.2154L92.2116 226.45V161.0138L21.1366 119.9706V103.341L92.2116 144.384Z"
+  />
+  <path
+    class="bar bar-2"
+    d="M28.9178 41.045L7.78124 53.2566L107.7764 110.9884V202.038L128.9128 214.25V98.7868Z"
+  />
+  <path
+    class="bar bar-3"
+    d="M64.4646 20.5274L43.3282 32.7388L143.3232 90.4706V181.521L164.4598 193.7328V78.269Z"
+  />
+  <path
+    class="bar bar-4"
+    d="M78.875 12.21148L178.87 69.9434V160.994L200.006 173.2054V57.7318L169.2662 39.99L100.0116 0Z"
+  />
+</svg>

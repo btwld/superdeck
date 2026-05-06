@@ -1,45 +1,27 @@
 # superdeck_core
 
-Core models and utilities for SuperDeck.
+Shared domain models and core utilities for SuperDeck.
 
-Most projects should depend on `superdeck` (Flutter) and use `superdeck_cli` for builds. Use `superdeck_core` when you want to read or write deck data outside the Flutter runtime.
+Most projects should use `superdeck` for runtime and `superdeck_cli` for builds.
+Use `superdeck_core` when you need SuperDeck contracts and storage primitives in custom tooling.
 
-## What it provides
+## What It Includes
 
-- Deck data models (`Deck`, `Slide`, `SlideOptions`, block models)
-- Canonical deck contract schema (`Deck.schema`)
-- File layout helpers (`DeckConfiguration` for `slides.md` and `.superdeck/`)
-- Local storage and file watching (`DeckService`)
-- Markdown extensions and parsing helpers
+- Slide models and compiled slide-contract helpers
+- Slides contract schema
+- Project path/workspace helpers (`DeckWorkspace`)
+- Runtime deck loader contracts (`DeckLoader`, `SlidesEvent`)
+- Build-side storage primitives (`DeckBuildStore`)
+- Markdown parsing helpers
 
-## Example (Dart VM)
+## When To Use
 
-```dart
-import 'dart:io';
+- Use this package directly for integrations, tooling, and non-Flutter workflows.
+- For app development, prefer `superdeck` + `superdeck_cli`.
 
-import 'package:superdeck_core/superdeck_core.dart';
+## Documentation
 
-Future<void> main() async {
-  final config = DeckConfiguration(projectDir: Directory.current.path);
-  final service = DeckService(configuration: config);
-
-  await service.initialize();
-  final deck = await service.loadDeck();
-
-  print('Slides: ${deck.slides.length}');
-}
-```
-
-## Related packages
-
-- `superdeck` - Flutter slide runtime
-- `superdeck_builder` - asset generation and build pipeline
-- `superdeck_cli` - CLI wrapper (installs the `superdeck` command)
-
-## Contract docs
-
-- `/docs/reference/contracts.mdx` in this repository
-- Published docs route: `/reference/contracts`
+For contract details, see `/docs/reference/contracts.mdx` in this repository.
 
 ## License
 

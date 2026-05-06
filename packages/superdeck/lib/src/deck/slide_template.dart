@@ -1,12 +1,17 @@
+import 'package:dart_mappable/dart_mappable.dart';
+
 import '../rendering/slides/slide_parts.dart';
-import '../styling/styling.dart';
+import '../styling/components/slide.dart';
+
+part 'slide_template.mapper.dart';
 
 /// A reusable slide template that bundles chrome (header, footer, background)
 /// with an isolated style system.
 ///
 /// Templates act like Keynote master slides — providing consistent visual
 /// framing across slides without manually applying styles/parts to each slide.
-final class SlideTemplate {
+@MappableClass()
+final class SlideTemplate with SlideTemplateMappable {
   /// Chrome parts (header, footer, background) for this template.
   final SlideParts parts;
 
@@ -21,18 +26,6 @@ final class SlideTemplate {
     this.baseStyle,
     this.styles = const <String, SlideStyle>{},
   });
-
-  SlideTemplate copyWith({
-    SlideParts? parts,
-    SlideStyle? baseStyle,
-    Map<String, SlideStyle>? styles,
-  }) {
-    return SlideTemplate(
-      parts: parts ?? this.parts,
-      baseStyle: baseStyle ?? this.baseStyle,
-      styles: styles ?? this.styles,
-    );
-  }
 
   @override
   bool operator ==(Object other) =>

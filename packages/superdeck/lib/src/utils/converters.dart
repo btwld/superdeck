@@ -2,30 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-class ConverterHelper {
+extension BoxSpecOffsetExtension on BoxSpec {
   /// Calculates the total spacing offset from padding, margin, and border.
-  ///
-  /// Returns the combined horizontal and vertical spacing that reduces
-  /// the available content area within a block.
-  static Offset calculateBlockOffset(BoxSpec spec) {
-    final padding = spec.padding ?? EdgeInsets.zero;
-    final margin = spec.margin ?? EdgeInsets.zero;
+  Offset get calculateBlockOffset {
+    final paddingX = padding?.horizontal ?? 0.0;
+    final paddingY = padding?.vertical ?? 0.0;
+    final marginX = margin?.horizontal ?? 0.0;
+    final marginY = margin?.vertical ?? 0.0;
 
-    // Extract border dimensions if present
-    final borderDimensions = spec.decoration is BoxDecoration
-        ? (spec.decoration as BoxDecoration).border?.dimensions
+    final borderDimensions = decoration is BoxDecoration
+        ? (decoration as BoxDecoration).border?.dimensions
         : null;
 
-    return Offset(
-      padding.horizontal +
-          margin.horizontal +
-          (borderDimensions?.horizontal ?? 0.0),
-      padding.vertical + margin.vertical + (borderDimensions?.vertical ?? 0.0),
-    );
-  }
+    final borderX = borderDimensions?.horizontal ?? 0.0;
+    final borderY = borderDimensions?.vertical ?? 0.0;
 
-  static BoxFit toBoxFit(ImageFit fit) {
-    return switch (fit) {
+    return Offset(paddingX + marginX + borderX, paddingY + marginY + borderY);
+  }
+}
+
+extension ImageFitExtension on ImageFit {
+  BoxFit get toBoxFit {
+    return switch (this) {
       ImageFit.fill => BoxFit.fill,
       ImageFit.contain => BoxFit.contain,
       ImageFit.cover => BoxFit.cover,
@@ -35,12 +33,11 @@ class ConverterHelper {
       ImageFit.scaleDown => BoxFit.scaleDown,
     };
   }
+}
 
-  static Alignment toAlignment(ContentAlignment? alignment) {
-    if (alignment == null) {
-      return Alignment.center;
-    }
-    return switch (alignment) {
+extension ContentAlignmentExtension on ContentAlignment {
+  Alignment get toAlignment {
+    return switch (this) {
       ContentAlignment.topLeft => Alignment.topLeft,
       ContentAlignment.topCenter => Alignment.topCenter,
       ContentAlignment.topRight => Alignment.topRight,
@@ -53,14 +50,13 @@ class ConverterHelper {
     };
   }
 
-  static (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis)
-  toFlexAlignment(Axis axis, ContentAlignment alignment) {
-    // For horizontal axis (Row): main = horizontal, cross = vertical
-    // For vertical axis (Column): main = vertical, cross = horizontal
+  (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis) toFlexAlignment(
+    Axis axis,
+  ) {
     final isHorizontal = axis == Axis.horizontal;
 
     if (isHorizontal) {
-      return switch (alignment) {
+      return switch (this) {
         ContentAlignment.topLeft => (
           MainAxisAlignment.start,
           CrossAxisAlignment.start,
@@ -99,8 +95,7 @@ class ConverterHelper {
         ),
       };
     } else {
-      // Column: vertical main axis, horizontal cross axis
-      return switch (alignment) {
+      return switch (this) {
         ContentAlignment.topLeft => (
           MainAxisAlignment.start,
           CrossAxisAlignment.start,
@@ -140,25 +135,12 @@ class ConverterHelper {
       };
     }
   }
-
-  static (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis)
-  toRowAlignment(ContentAlignment alignment) {
-    return toFlexAlignment(Axis.horizontal, alignment);
-  }
-
-  static (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis)
-  toColumnAlignment(ContentAlignment alignment) {
-    return toFlexAlignment(Axis.vertical, alignment);
-  }
 }
 
-/// Converts a hex color string to a Color object.
+/// Converts a hex color string to a [Color].
 ///
-/// Supports:
-/// - 6 digit RGB: "#ff0000" or "ff0000" → opaque color
-/// - 8 digit RGBA: "#80ff0000" or "80ff0000" → color with alpha
-///
-/// The '#' prefix is optional. For 6-digit hex, alpha is set to FF (fully opaque).
+/// Accepts 6-digit RGB (`"ff0000"`) or 8-digit ARGB (`"80ff0000"`).
+/// The `#` prefix is optional. 6-digit values default to fully opaque.
 Color hexToColor(String hex) {
   final hexCode = hex.replaceAll('#', '');
   final fullHex = hexCode.length == 6 ? 'FF$hexCode' : hexCode;

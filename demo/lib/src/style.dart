@@ -3,25 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 
-SlideStyle coverStyle() {
-  return SlideStyle(
-    h1: TextStyler().style(
-      TextStyleMix(fontFamily: GoogleFonts.poppins().fontFamily, fontSize: 100),
-    ),
-    blockContainer: BoxStyler(
-      decoration: BoxDecorationMix(
-        gradient: LinearGradientMix(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.5),
-            Colors.black.withValues(alpha: 0.95),
-          ],
-        ),
-      ),
-    ),
-  );
-}
+import 'google_font_helpers.dart';
 
 SlideStyle announcementStyle() {
   return SlideStyle(
@@ -60,12 +42,15 @@ SlideStyle quoteStyle() {
   return SlideStyle(
     h1: TextStyler().style(
       TextStyleMix(
-        fontFamily: GoogleFonts.notoSerif().fontFamily,
+        fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),
         fontSize: 32,
       ),
     ),
     blockquote: MarkdownBlockquoteStyle(
-      textStyle: GoogleFonts.notoSerif(fontSize: 32),
+      textStyle: safeGoogleFont(
+        () => GoogleFonts.notoSerif(fontSize: 32),
+        fallback: const TextStyle(fontSize: 32),
+      ),
       decoration: const BoxDecoration(
         border: Border(left: BorderSide(color: Colors.red, width: 4)),
       ),
@@ -73,7 +58,7 @@ SlideStyle quoteStyle() {
     p: TextStyler().style(TextStyleMix(fontSize: 32)),
     h6: TextStyler().style(
       TextStyleMix(
-        fontFamily: GoogleFonts.notoSerif().fontFamily,
+        fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),
         fontSize: 20,
       ),
     ),

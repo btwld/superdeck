@@ -15,6 +15,7 @@ Supported keys:
 
 - `title`: Slide title used in navigation and exports.
 - `style`: Named style variant from `DeckOptions.styles`.
+- `template`: Named template from `DeckOptions.templates` (`'none'` to opt out).
 - Custom keys: Available through `slide.options.args['keyName']`.
 
 Example:
@@ -33,9 +34,9 @@ SuperDeck supports three core block types.
 
 | Block | Purpose | Key properties |
 |---|---|---|
-| `@section` | Container for horizontal layout | `flex`, `align`, `scrollable` |
-| `@column` | Render markdown content | `flex`, `align`, `scrollable` |
-| `@widget` | Embed custom Flutter widgets | `name` + custom args |
+| `@section` | Container for horizontal layout | `flex`, `align` |
+| `@block` | Render markdown content | `flex`, `align`, `scrollable` |
+| `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `scrollable` + custom args |
 
 Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@widget`.
 
@@ -57,6 +58,7 @@ Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@
 
 - Type: boolean
 - Default: `false`
+- Applies to: `@block` and `@widget`
 - Meaning: enable scrolling for overflow content.
 
 ## Built-in widgets
@@ -105,16 +107,17 @@ Example:
 
 ````markdown
 @qrcode {
-  value: "https://superdeck.dev"
+  text: "https://superdeck.dev"
   size: 220
 }
 ````
 
 Arguments:
 
-- `value` (required): content to encode.
-- `size`: number.
-- `padding`: number.
+- `text` (required): content to encode.
+- `size`: size in logical pixels (default: `200`).
+- `errorCorrection`: `low`, `medium`, `high`, or `highest` (default: `medium`).
+- `backgroundColor`, `foregroundColor`: hex colors (for example, `#ffffff`).
 
 ## Markdown extensions
 
@@ -137,15 +140,4 @@ Use classes to animate matching elements between slides:
 ````markdown
 # Roadmap {.hero-title}
 ![Diagram](assets/roadmap.png) {.hero-visual}
-````
-
-### Mermaid blocks
-
-Use fenced code blocks with `mermaid` as the language:
-
-````markdown
-```mermaid
-graph TD
-  Start --> Build --> Ship
-```
 ````

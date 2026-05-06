@@ -1,71 +1,54 @@
 import 'package:flutter/widgets.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
 import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
-import 'widget_definition.dart';
+import 'widget_factory.dart';
 
-class SlideConfiguration {
+part 'slide_configuration.mapper.dart';
+
+String buildThumbnailKey(String slideKey) {
+  return 'thumbnail_$slideKey.png';
+}
+
+@MappableClass()
+class SlideConfiguration with SlideConfigurationMappable {
   final int slideIndex;
   final SlideStyle style;
-  final Slide _slide;
+  final Slide slide;
   final bool debug;
   final SlideParts? parts;
-  final Map<String, WidgetDefinition> _widgets;
-  // Bare thumbnail asset key (for example: thumbnail_intro.png).
-  final String thumbnailFile;
+  final Map<String, WidgetFactory> widgets;
+  // Runtime thumbnail cache key (for example: thumbnail_intro.png).
+  final String thumbnailKey;
 
-  final bool isExporting;
+  final bool isStaticRendering;
 
   SlideConfiguration({
     required this.slideIndex,
     required this.style,
-    required Slide slide,
+    required this.slide,
     this.debug = false,
     this.parts,
-    required this.thumbnailFile,
-    Map<String, WidgetDefinition> widgets = const {},
-    this.isExporting = false,
-  }) : _slide = slide,
-       _widgets = widgets;
+    required this.thumbnailKey,
+    this.widgets = const {},
+    this.isStaticRendering = false,
+  });
 
-  SlideOptions get options => _slide.options ?? const SlideOptions();
+  SlideOptions get options => slide.options ?? SlideOptions();
 
-  String get key => _slide.key;
+  String get key => slide.key;
 
-  Slide get data => _slide;
+  List<SectionBlock> get sections => slide.sections;
 
-  List<SectionBlock> get sections => _slide.sections;
+  List<String> get comments => slide.comments;
 
-  List<String> get comments => _slide.comments;
-
-  WidgetDefinition? getWidgetDefinition(String name) => _widgets[name];
+  WidgetFactory? getWidgetFactory(String name) => widgets[name];
 
   static SlideConfiguration of(BuildContext context) {
     return InheritedData.of(context);
-  }
-
-  SlideConfiguration copyWith({
-    int? slideIndex,
-    SlideStyle? style,
-    Slide? slide,
-    bool? debug,
-    SlideParts? parts,
-    String? thumbnailFile,
-    Map<String, WidgetDefinition>? widgets,
-    bool? isExporting,
-  }) {
-    return SlideConfiguration(
-      slideIndex: slideIndex ?? this.slideIndex,
-      style: style ?? this.style,
-      slide: slide ?? _slide,
-      debug: debug ?? this.debug,
-      parts: parts ?? this.parts,
-      thumbnailFile: thumbnailFile ?? this.thumbnailFile,
-      widgets: widgets ?? _widgets,
-      isExporting: isExporting ?? this.isExporting,
-    );
   }
 
   @override
@@ -75,22 +58,22 @@ class SlideConfiguration {
           runtimeType == other.runtimeType &&
           slideIndex == other.slideIndex &&
           style == other.style &&
-          _slide == other._slide &&
+          slide == other.slide &&
           debug == other.debug &&
           parts == other.parts &&
-          thumbnailFile == other.thumbnailFile &&
-          _widgets == other._widgets &&
-          isExporting == other.isExporting;
+          thumbnailKey == other.thumbnailKey &&
+          widgets == other.widgets &&
+          isStaticRendering == other.isStaticRendering;
 
   @override
   int get hashCode => Object.hash(
     slideIndex,
     style,
-    _slide,
+    slide,
     debug,
     parts,
-    thumbnailFile,
-    _widgets,
-    isExporting,
+    thumbnailKey,
+    widgets,
+    isStaticRendering,
   );
 }

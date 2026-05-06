@@ -7,9 +7,10 @@ description: Complete reference for all SuperDeck block types and their properti
 
 SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget system as `@widget`.
 
-## Common properties
+## Common block properties
 
-All blocks support these properties:
+Content and widget blocks support these properties. Sections support `align`
+and `flex`, but scrolling is configured on child blocks or widgets.
 
 ### `align`
 **Type:** String | **Default:** `center`
@@ -29,12 +30,12 @@ Controls relative sizing (`flex: 2` takes twice the space of `flex: 1`).
 
 Enables scrolling for overflow content.
 
-## @column
+## @block
 
 Renders markdown content.
 
 ```markdown
-@column {
+@block {
   align: center
   flex: 2
   scrollable: true
@@ -60,10 +61,10 @@ Arranges child blocks horizontally.
   flex: 1
 }
 
-@column
+@block
 Left content
 
-@column
+@block
 Right content
 ```
 
@@ -76,13 +77,13 @@ Use for multi-column layouts and side-by-side content.
 ```markdown
 @section
 
-@column
+@block
 Column 1
 
-@column
+@block
 Column 2
 
-@column
+@block
 Column 3
 ```
 
@@ -116,31 +117,23 @@ All additional properties pass to the widget builder.
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
-class CustomChartDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const CustomChartDefinition();
+Widget customChart(Map<String, Object?> args) {
+  final title = args['title'] as String? ?? 'Untitled Chart';
+  final data = (args['data'] as List?)?.cast<Object?>() ?? const [];
 
-  @override
-  Map<String, Object?> parse(Map<String, Object?> args) => args;
-
-  @override
-  Widget build(BuildContext context, Map<String, Object?> args) {
-    final title = args['title'] as String? ?? 'Untitled Chart';
-    final data = (args['data'] as List?)?.cast<Object?>() ?? const [];
-
-    return Text('$title (${data.length} points)');
-  }
+  return Text('$title (${data.length} points)');
 }
 
 SuperDeckApp(
   options: DeckOptions(
-    widgets: const {
-      'customChart': CustomChartDefinition(),
+    widgets: {
+      'customChart': customChart,
     },
   ),
 );
 ```
 
-**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to `WidgetDefinition.parse()` as `Map<String, Object?>`.
+**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to your `WidgetFactory` as `Map<String, Object?>`.
 
 ## Built-in widgets
 
@@ -194,17 +187,6 @@ Generates QR codes.
 - `errorCorrection` - `low`, `medium`, `high`, `highest` (default: `medium`)
 - `backgroundColor`, `foregroundColor` - Hex colors (for example, `#ffffff`)
 
-### Mermaid diagrams
-
-Use a fenced code block with the `mermaid` language. The CLI renders Mermaid to PNG during `superdeck build`.
-
-````markdown
-```mermaid
-graph TD
-  A[Start] --> B[End]
-```
-````
-
 ## Block syntax
 
 ### Basic syntax
@@ -228,7 +210,7 @@ graph TD
 
 **Centered content:**
 ```markdown
-@column {
+@block {
   align: center
 }
 ```
@@ -237,11 +219,11 @@ graph TD
 ```markdown
 @section
 
-@column {
+@block {
   flex: 1
 }
 
-@column {
+@block {
   flex: 1
 }
 ```
@@ -275,7 +257,7 @@ graph TD
 
 ## Best practices
 
-1. Use `@column` for most content
+1. Use `@block` for most content
 2. Combine blocks in `@section` for rich layouts
 3. Set explicit image dimensions to prevent shifts
 4. Test DartPad IDs before presenting

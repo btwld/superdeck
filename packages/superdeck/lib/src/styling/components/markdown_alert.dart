@@ -4,10 +4,6 @@ import 'package:mix/mix.dart';
 
 import 'markdown_alert_type.dart';
 
-// ============================================================
-// SPEC
-// ============================================================
-
 /// Specification for markdown alert container with all alert types.
 ///
 /// Defines styling for different alert types: note, tip, important, warning, and caution.
@@ -75,10 +71,6 @@ final class MarkdownAlertSpec extends Spec<MarkdownAlertSpec>
   @override
   List<Object?> get props => [note, tip, important, warning, caution];
 }
-
-// ============================================================
-// STYLE
-// ============================================================
 
 /// Style class for configuring [MarkdownAlertSpec] properties.
 final class MarkdownAlertStyle extends Style<MarkdownAlertSpec>

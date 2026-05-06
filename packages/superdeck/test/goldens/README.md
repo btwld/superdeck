@@ -1,0 +1,1 @@
+These golden tests pin a small set of stable slide-rendering surfaces at the deck's fixed `kResolution`; when an intentional visual change updates these baselines, run `fvm flutter test test/goldens/slide_goldens_test.dart --update-goldens` from `packages/superdeck` and review the resulting PNG diffs before committing.

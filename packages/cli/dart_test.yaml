@@ -1,0 +1,3 @@
+# Integration tests mutate Directory.current; serialize file execution
+# to prevent races. Other CLI tests are fast enough that this is cheap.
+concurrency: 1

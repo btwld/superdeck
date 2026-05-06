@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
-import '../../styling/styling.dart';
+import '../../styling/components/markdown_codeblock.dart';
 
 /// Immutable data holder for text elements in Hero animations
 class TextElement {

@@ -3,7 +3,7 @@
 SuperDeck renders Markdown slides in Flutter.
 
 - Live demo: https://superdeck-dev.web.app
-- Documentation: https://github.com/leoafarias/superdeck/tree/main/docs
+- Documentation: https://github.com/btwld/superdeck/tree/main/docs
 
 ## Install
 
@@ -11,8 +11,10 @@ In your Flutter project:
 
 ```bash
 dart pub global activate superdeck_cli
+flutter create my_presentation
+cd my_presentation
 superdeck setup
-flutter pub add superdeck
+flutter pub get
 ```
 
 ## Initialize
@@ -31,10 +33,12 @@ Future<void> main() async {
 }
 ```
 
+Also add a `slides.md` at the project root with your first slide.
+
 ## Build slides
 
 ```bash
-superdeck build --watch
+dart run superdeck_cli:main build --watch
 flutter run
 ```
 
@@ -42,24 +46,27 @@ SuperDeck reads slide content from `slides.md` and build output from `.superdeck
 
 ## Write slides
 
-Separate slides with `---`. Use blocks to control layout:
+Separate slides with frontmatter fences. Use blocks to control layout:
 
 - `@section` groups blocks horizontally.
-- `@column` renders Markdown content.
+- `@block` renders Markdown content.
 - `@widget` renders a registered Flutter widget.
 
 ```md
 ---
+title: Welcome
+---
 
 @section
 
-@column
+@block
 # Title
 
-@column
+@block
 - Point one
 - Point two
 
+---
 ---
 ```
 
@@ -69,7 +76,7 @@ Separate slides with `---`. Use blocks to control layout:
 2. Reference it by name in Markdown.
 
 See the custom widgets guide:
-https://github.com/leoafarias/superdeck/blob/main/docs/guides/custom-widgets.mdx
+https://github.com/btwld/superdeck/blob/main/docs/guides/custom-widgets.mdx
 
 ## License
 

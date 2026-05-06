@@ -5,7 +5,7 @@ description: Complete API reference for configuring SuperDeck presentations
 
 # DeckOptions reference
 
-`DeckOptions` configures `SuperDeckApp` styling, custom widgets, slide parts, and debug visuals.
+`DeckOptions` configures `SuperDeckApp` styling, custom widgets, slide parts, templates, and debug visuals.
 
 ## Constructor
 
@@ -13,10 +13,11 @@ description: Complete API reference for configuring SuperDeck presentations
 const DeckOptions({
   SlideStyle? baseStyle,
   Map<String, SlideStyle> styles = const {},
-  Map<String, WidgetDefinition> widgets = const {},
+  Map<String, WidgetFactory> widgets = const {},
   SlideParts parts = const SlideParts(),
   bool debug = false,
-  bool watchForChanges = false,
+  Map<String, SlideTemplate> templates = const {},
+  SlideTemplate? defaultTemplate,
 });
 ```
 
@@ -38,6 +39,9 @@ DeckOptions(
 
 Named style variants for specific slides.
 
+SuperDeck styles are configured in app code through `DeckOptions.baseStyle`
+and `DeckOptions.styles`. There is no separate `styles.yaml` file to load.
+
 ```dart
 DeckOptions(
   styles: {
@@ -56,14 +60,14 @@ style: title
 ```
 
 ### `widgets`
-**Type:** `Map<String, WidgetDefinition>` | **Default:** `{}`
+**Type:** `Map<String, WidgetFactory>` | **Default:** `{}`
 
-Custom widget definitions.
+Custom widget factories. A `WidgetFactory` is a function that takes `Map<String, Object?>` args and returns a `Widget`.
 
 ```dart
 DeckOptions(
   widgets: {
-    'twitter': TwitterWidgetDefinition(),
+    'twitter': twitterWidget,
   },
 )
 ```
@@ -86,25 +90,16 @@ Or shorthand:
 }
 ```
 
-#### WidgetDefinition example (simple map args)
+#### WidgetFactory example (simple function)
 
 ```dart
 import 'package:flutter/widgets.dart';
-import 'package:superdeck/superdeck.dart';
 
-class TwitterWidgetDefinition extends WidgetDefinition<Map<String, Object?>> {
-  const TwitterWidgetDefinition();
+Widget twitterWidget(Map<String, Object?> args) {
+  final username = args['username'] as String? ?? '';
+  final tweetId = args['tweetId'] as String? ?? '';
 
-  @override
-  Map<String, Object?> parse(Map<String, Object?> args) => args;
-
-  @override
-  Widget build(BuildContext context, Map<String, Object?> args) {
-    final username = args['username'] as String? ?? '';
-    final tweetId = args['tweetId'] as String? ?? '';
-
-    return Text('Twitter: @$username ($tweetId)');
-  }
+  return Text('Twitter: @$username ($tweetId)');
 }
 ```
 
@@ -136,15 +131,46 @@ DeckOptions(
 )
 ```
 
-### `watchForChanges`
-**Type:** `bool` | **Default:** `false`
+### `templates`
+**Type:** `Map<String, SlideTemplate>` | **Default:** `{}`
 
-Enables file watching for automatic deck rebuilds when supported by your
-runtime flow.
+Named slide templates that bundle chrome (header, footer, background) with an isolated style system. Templates act like Keynote master slides, providing consistent visual framing across slides.
 
 ```dart
 DeckOptions(
-  watchForChanges: true,
+  templates: {
+    'keynote': SlideTemplate(
+      parts: SlideParts(
+        header: BrandHeader(),
+        footer: BrandFooter(),
+      ),
+      baseStyle: SlideStyle(),
+    ),
+  },
+)
+```
+
+Use in slides:
+```markdown
+---
+template: keynote
+---
+
+# This slide uses the 'keynote' template
+```
+
+### `defaultTemplate`
+**Type:** `SlideTemplate?` | **Default:** `null`
+
+Default template applied to all slides that do not specify an explicit template. Individual slides can opt out by setting `template: 'none'` in their front matter.
+
+```dart
+DeckOptions(
+  defaultTemplate: SlideTemplate(
+    parts: SlideParts(
+      header: BrandHeader(),
+    ),
+  ),
 )
 ```
 
@@ -154,14 +180,18 @@ DeckOptions(
 import 'package:flutter/material.dart';
 import 'package:superdeck/superdeck.dart';
 
+Widget twitterWidget(Map<String, Object?> args) {
+  final username = args['username'] as String? ?? '';
+  return Text('Twitter: @$username');
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SuperDeckApp(
       options: DeckOptions(
-        // Custom widgets (registered by name)
-        widgets: const {
-          'twitter': TwitterWidgetDefinition(),
+        widgets: {
+          'twitter': twitterWidget,
         },
 
         // Optional: provide slide chrome (header/footer/background)
@@ -169,6 +199,18 @@ class MyApp extends StatelessWidget {
           header: CustomHeaderPart(),
           footer: CustomFooterPart(),
           background: CustomBackgroundPart(),
+        ),
+
+        // Templates for consistent slide framing
+        templates: {
+          'brand': SlideTemplate(
+            parts: SlideParts(header: BrandHeader()),
+          ),
+        },
+
+        // Default template for all slides
+        defaultTemplate: SlideTemplate(
+          parts: SlideParts(header: BrandHeader()),
         ),
 
         // Debug mode for development
@@ -188,7 +230,7 @@ class MyApp extends StatelessWidget {
 4. Test across different screen sizes
 
 ### Custom widgets
-1. Validate in `parse()` early
+1. Validate widget arguments early
 2. Provide explicit defaults
 3. Throw helpful errors (rendered on-slide)
 4. Keep widgets focused
@@ -201,6 +243,6 @@ class MyApp extends StatelessWidget {
 
 ### Development
 1. Enable `debug: true` during development
-2. Use hot reload with `superdeck build --watch`
-3. Version control style definitions
+2. Use `dart run superdeck_cli:main build --watch` in one terminal and `flutter run` in another
+3. Version control your `SlideStyle` definitions alongside app code
 4. Document custom components

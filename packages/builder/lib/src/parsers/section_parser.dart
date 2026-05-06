@@ -4,13 +4,13 @@ import 'block_parser.dart';
 
 /// Stage 2 of 3-stage parsing: Converts slide markdown into structured layout.
 ///
-/// Parses custom @section/@column directives to create a tree of [SectionBlock]
+/// Parses custom @section/@block directives to create a tree of [SectionBlock]
 /// objects representing the slide's layout structure. This is build-time processing
 /// specific to SuperDeck's layout DSL.
 ///
 /// See also:
 /// - [MarkdownParser] - Stage 1: Splits presentation into slides
-/// - [BlockParser] - Parses individual @section/@column directives
+/// - [BlockParser] - Parses individual @section/@block directives
 class SectionParser {
   const SectionParser();
 
@@ -48,13 +48,13 @@ class SectionParser {
         );
       }
 
-      final block = parsedBlock.type == 'section'
-          ? SectionBlock.parse(parsedBlock.data)
-          : Block.parse(parsedBlock.data);
+      if (parsedBlock.type == SectionBlock.key) {
+        aggregator.addSection(SectionBlock.parse(parsedBlock.data));
+      } else {
+        aggregator.addBlock(Block.parse(parsedBlock.data));
+      }
 
-      aggregator
-        ..addBlock(block)
-        ..addContent(blockContent);
+      aggregator.addContent(blockContent);
     }
 
     return aggregator.sections;
@@ -106,14 +106,14 @@ class _SectionAggregator {
     sections.last = section.copyWith(blocks: updatedBlocks);
   }
 
-  void addBlock(Block block) {
-    if (block is SectionBlock) {
-      sections.add(block);
-    } else {
-      final lastSection = _getSection();
-      final blocks = [...lastSection.blocks, block];
+  void addSection(SectionBlock section) {
+    sections.add(section);
+  }
 
-      sections.last = lastSection.copyWith(blocks: blocks);
-    }
+  void addBlock(Block block) {
+    final lastSection = _getSection();
+    final blocks = [...lastSection.blocks, block];
+
+    sections.last = lastSection.copyWith(blocks: blocks);
   }
 }

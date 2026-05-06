@@ -1,0 +1,204 @@
+---
+title: superdeck_builder API reference
+description: Complete API reference for programmatic SuperDeck builds
+---
+
+# superdeck_builder API reference
+
+`superdeck_builder` is the build-time engine for SuperDeck presentations.
+
+Most projects should run builds through `superdeck_cli`, for example
+`dart run superdeck_cli:main build --watch`. Use `superdeck_builder` directly
+when you need programmatic control for custom tooling, editor integrations, or
+another build system.
+
+## Imports
+
+```dart
+import 'package:superdeck_builder/superdeck_builder.dart';
+import 'package:superdeck_core/superdeck_core.dart'
+    show DeckBuildStore, DeckWorkspace;
+```
+
+`superdeck_builder` exports the builder types. `DeckWorkspace` and
+`DeckBuildStore` come from `superdeck_core` and are required by the builder
+constructor signatures.
+
+## DeckBuilder
+
+`DeckBuilder` builds decks from Markdown by reading a workspace, parsing
+slides, writing build artifacts, and returning processed slides.
+
+### Constructor
+
+```dart
+DeckBuilder({
+  required DeckWorkspace workspace,
+  required DeckBuildStore store,
+});
+```
+
+### `workspace`
+**Type:** `DeckWorkspace`
+
+Workspace paths used to read `slides.md` and write `.superdeck` build output.
+
+```dart
+final workspace = DeckWorkspace(
+  projectDir: '.',
+  slidesPath: 'slides.md',
+  outputDir: '.superdeck',
+);
+```
+
+### `store`
+**Type:** `DeckBuildStore`
+
+Build-side storage used by the builder to initialize files, read Markdown, save
+deck references, and save build status.
+
+```dart
+final store = DeckBuildStore(workspace: workspace);
+```
+
+## Methods
+
+### `build()`
+
+```dart
+Future<Iterable<Slide>> build()
+```
+
+Runs one build and returns the processed slides.
+
+During a build, `DeckBuilder`:
+
+1. Initializes the `DeckBuildStore`
+2. Saves build status as `DeckBuildPhase.building`
+3. Reads deck Markdown from the store
+4. Parses raw slides into `Slide` models
+5. Saves deck references
+6. Saves build status as `DeckBuildPhase.success`
+
+```dart
+final slides = await builder.build();
+```
+
+### `watchAndBuild()`
+
+```dart
+Stream<BuildEvent> watchAndBuild()
+```
+
+Runs an initial build, then watches `workspace.slidesFile` and rebuilds when
+the file changes.
+
+The stream emits:
+
+1. `BuildStarted`
+2. `BuildCompleted` when the build succeeds
+3. `BuildFailed` when the build throws
+
+The stream continues watching for later file changes.
+
+```dart
+await for (final event in builder.watchAndBuild()) {
+  switch (event) {
+    case BuildStarted():
+      print('Build started');
+    case BuildCompleted(:final slides):
+      print('Built ${slides.length} slides');
+    case BuildFailed(:final error, :final stackTrace):
+      print('Build failed: $error');
+      if (stackTrace != null) {
+        print(stackTrace);
+      }
+  }
+}
+```
+
+## Build events
+
+`BuildEvent` is the sealed base type for events emitted by `watchAndBuild()`.
+
+### `BuildStarted`
+
+```dart
+const BuildStarted()
+```
+
+Emitted before each build starts.
+
+### `BuildCompleted`
+
+```dart
+const BuildCompleted(List<Slide> slides)
+```
+
+Emitted when a build completes successfully.
+
+### `BuildFailed`
+
+```dart
+const BuildFailed(Object error, [StackTrace? stackTrace])
+```
+
+Emitted when a watched build fails. `DeckBuilder` also saves failure status to
+the build store before emitting this event.
+
+## Errors
+
+### `DeckFormatException`
+
+```dart
+const DeckFormatException(
+  String message,
+  dynamic source,
+  int offset,
+)
+```
+
+`DeckFormatException` extends `FormatException` and is re-exported by
+`superdeck_builder`.
+
+## Minimal example
+
+```dart
+import 'package:superdeck_builder/superdeck_builder.dart';
+import 'package:superdeck_core/superdeck_core.dart'
+    show DeckBuildStore, DeckWorkspace;
+
+Future<void> main() async {
+  final workspace = DeckWorkspace();
+  final store = DeckBuildStore(workspace: workspace);
+  final builder = DeckBuilder(workspace: workspace, store: store);
+
+  final slides = await builder.build();
+  print('Built ${slides.length} slides');
+
+  await for (final event in builder.watchAndBuild()) {
+    switch (event) {
+      case BuildStarted():
+        print('Build started');
+      case BuildCompleted(:final slides):
+        print('Built ${slides.length} slides');
+      case BuildFailed(:final error, :final stackTrace):
+        print('Build failed: $error');
+        if (stackTrace != null) {
+          print(stackTrace);
+        }
+    }
+  }
+}
+```
+
+## Public symbols documented
+
+From `packages/builder/lib/superdeck_builder.dart`:
+
+1. `BuildEvent`
+2. `BuildStarted`
+3. `BuildCompleted`
+4. `BuildFailed`
+5. `DeckBuilder`
+6. `DeckFormatException`

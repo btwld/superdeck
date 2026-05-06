@@ -5,7 +5,8 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 
 import '../../rendering/blocks/block_provider.dart';
-import '../../styling/styling.dart';
+import '../../styling/components/markdown_alert.dart';
+import '../../styling/components/markdown_alert_type.dart';
 import '../markdown_element_builders_registry.dart';
 import '../../rendering/blocks/markdown_render_scope.dart';
 
@@ -39,14 +40,12 @@ class AlertBlockSyntax extends md.AlertBlockSyntax {
 
   @override
   md.Node parse(md.BlockParser parser) {
-    // Extract type before advancing
     final type = pattern
         .firstMatch(parser.current.content)!
         .group(1)!
         .toLowerCase();
     parser.advance();
 
-    // Use base class to parse child lines (handles all edge cases)
     final childLines = parseChildLines(parser);
 
     // Simple heuristic for lazy continuation: if last line has content,
@@ -55,16 +54,13 @@ class AlertBlockSyntax extends md.AlertBlockSyntax {
     final disableSetext =
         childLines.isNotEmpty && childLines.last.content.trim().isNotEmpty;
 
-    // Parse children
     final children = md.BlockParser(
       childLines,
       parser.document,
     ).parseLines(parentSyntax: this, disabledSetextHeading: disableSetext);
 
-    // Store raw markdown for re-parsing in builder
     final rawMarkdown = childLines.map((line) => line.content).join('\n');
 
-    // Return custom <alert> element (not <div>) with type and raw source
     return md.Element('alert', children)
       ..attributes['type'] = type
       ..attributes[markdownSourceAttribute] = rawMarkdown;
@@ -115,7 +111,6 @@ class AlertElementBuilder extends MarkdownElementBuilder {
     return StyleSpecBuilder<MarkdownAlertSpec>(
       styleSpec: styleSpec,
       builder: (context, alertSpec) {
-        // Get the specific alert type spec
         final typeStyleSpec = switch (alertType) {
           AlertType.note => alertSpec.note,
           AlertType.tip => alertSpec.tip,
@@ -124,7 +119,6 @@ class AlertElementBuilder extends MarkdownElementBuilder {
           AlertType.caution => alertSpec.caution,
         };
 
-        // Now unwrap that to get the MarkdownAlertTypeSpec
         return StyleSpecBuilder<MarkdownAlertTypeSpec>(
           styleSpec: typeStyleSpec,
           builder: (context, typeSpec) {

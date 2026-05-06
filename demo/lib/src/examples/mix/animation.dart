@@ -1,23 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(child: SwitchAnimation()),
-        backgroundColor: Colors.white,
-      ),
-    );
-  }
-}
-
 class SwitchAnimation extends StatefulWidget {
   const SwitchAnimation({super.key});
 
@@ -36,7 +19,6 @@ class _SwitchAnimationState extends State<SwitchAnimation> {
 
   @override
   Widget build(BuildContext context) {
-    // Simple implicit animation for the container
     final containerStyle = BoxStyler()
         .color(_trigger.value ? Colors.deepPurpleAccent : Colors.grey.shade300)
         .height(30)
@@ -47,7 +29,6 @@ class _SwitchAnimationState extends State<SwitchAnimation> {
         )
         .animate(AnimationConfig.easeOut(300.ms));
 
-    // Complex keyframe animation for the thumb
     final thumbStyle = BoxStyler()
         .height(30)
         .width(40)

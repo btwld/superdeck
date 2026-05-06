@@ -78,7 +78,7 @@ dart --version
 
 - No P0 release blockers were found in the scoped pass for:
   - `packages/core` (fallback/IO paths)
-  - `packages/builder` (browser lifecycle/mermaid generation)
+  - `packages/builder` (build lifecycle/error handling)
   - `packages/cli` (git safety/worktree flow)
   - `packages/superdeck` (controller lifecycle/navigation/style loading)
 
@@ -133,7 +133,7 @@ Non-blocking (document-only for this release):
 ## Phase 5: Release-Focused Code Review
 
 - [x] Core review (`packages/core`): file watching, deck fallback, IO edge cases.
-- [x] Builder review (`packages/builder`): browser lifecycle, Mermaid generation failures.
+- [x] Builder review (`packages/builder`): build lifecycle and failure handling.
 - [x] CLI review (`packages/cli`): git safety, branch/worktree behavior, dry-run parity.
 - [x] Superdeck review (`packages/superdeck`): controller lifecycle/disposal, navigation state, style/font loading.
 - [x] Apply must-fix policy:
@@ -195,10 +195,6 @@ Non-blocking (document-only for this release):
 - `packages/builder/test/manual_error_output_test.dart` (skip):
   - Disposition: keep skipped.
   - Rationale: non-strict YAML logging path not exposed in this harness; covered by parser unit tests.
-
-- `packages/core/test/src/deck_service_test.dart` (skip):
-  - Disposition: keep skipped.
-  - Rationale: filesystem watch stream timing is flaky across environments; covered by integration/runtime validation.
 
 - `packages/core/test/src/helpers/watcher_test.dart` (skip):
   - Disposition: keep skipped.

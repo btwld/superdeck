@@ -2,18 +2,19 @@ import 'package:flutter/material.dart'
     show Icons, Colors, Scaffold, FloatingActionButtonLocation;
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/rendering/slides/scaled_app.dart';
-import 'package:superdeck/src/rendering/slides/slide_thumbnail.dart';
-import 'package:superdeck/src/ui/extensions.dart';
-import 'package:superdeck/src/ui/panels/comments_panel.dart';
-import 'package:superdeck/src/ui/panels/thumbnail_panel.dart';
-import 'package:superdeck/src/ui/widgets/icon_button.dart';
-import 'package:superdeck/src/ui/widgets/loading_indicator.dart';
-import 'package:superdeck/src/utils/constants.dart';
 
 import '../deck/deck_controller.dart';
 import '../deck/navigation_input_listener.dart';
+import '../deck/slide_configuration.dart';
+import '../rendering/slides/scaled_app.dart';
+import '../rendering/slides/slide_thumbnail.dart';
+import '../utils/constants.dart';
+import 'extensions.dart';
 import 'panels/bottom_bar.dart';
+import 'panels/comments_panel.dart';
+import 'panels/thumbnail_panel.dart';
+import 'widgets/icon_button.dart';
+import 'widgets/loading_indicator.dart';
 
 /// High-level app shell that toggles between
 /// small layout (bottom panel) or regular layout (side panel).
@@ -49,6 +50,10 @@ class _SplitViewState extends State<SplitView>
   late final Animation<double> _curvedAnimation;
   bool _isInitialized = false;
   EffectCleanup? _menuEffectCleanup;
+  EffectCleanup? _thumbnailWarmupEffectCleanup;
+  bool _thumbnailWarmupFrameQueued = false;
+  String? _lastThumbnailWarmupSignature;
+  String? _pendingThumbnailWarmupSignature;
 
   @override
   void initState() {
@@ -76,7 +81,7 @@ class _SplitViewState extends State<SplitView>
       final deckController = DeckController.of(context);
 
       // Set initial animation value based on menu state
-      final initialMenuState = deckController.isMenuOpen.value;
+      final initialMenuState = deckController.presentation.isMenuOpen.value;
 
       if (initialMenuState) {
         _animationController.value = 1.0;
@@ -86,22 +91,32 @@ class _SplitViewState extends State<SplitView>
       _menuEffectCleanup = effect(() {
         if (!mounted) return;
 
-        final isMenuOpen = deckController.isMenuOpen.value;
+        final isMenuOpen = deckController.presentation.isMenuOpen.value;
 
         if (isMenuOpen && _animationController.value != 1.0) {
           _animationController.forward();
         } else if (!isMenuOpen && _animationController.value != 0.0) {
           _animationController.reverse();
         }
+      });
 
-        if (isMenuOpen) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted || !deckController.isMenuOpen.value) {
-              return;
-            }
-            deckController.generateThumbnails(context);
-          });
+      _thumbnailWarmupEffectCleanup = effect(() {
+        if (!mounted) return;
+
+        final signature = _thumbnailWarmupSignature(
+          deckController.slides.value,
+        );
+        if (signature == null) {
+          _lastThumbnailWarmupSignature = null;
+          _pendingThumbnailWarmupSignature = null;
+          return;
         }
+        if (signature == _lastThumbnailWarmupSignature) {
+          return;
+        }
+
+        _pendingThumbnailWarmupSignature = signature;
+        _scheduleThumbnailWarmup(deckController);
       });
     }
   }
@@ -110,29 +125,75 @@ class _SplitViewState extends State<SplitView>
   void dispose() {
     // Cleanup effect
     _menuEffectCleanup?.call();
+    _thumbnailWarmupEffectCleanup?.call();
+    _thumbnailWarmupFrameQueued = false;
+    _pendingThumbnailWarmupSignature = null;
     _animationController.dispose();
     super.dispose();
+  }
+
+  void _scheduleThumbnailWarmup(DeckController deckController) {
+    if (_thumbnailWarmupFrameQueued) return;
+
+    _thumbnailWarmupFrameQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _thumbnailWarmupFrameQueued = false;
+      if (!mounted) return;
+
+      final pendingSignature = _pendingThumbnailWarmupSignature;
+      if (pendingSignature == null ||
+          pendingSignature == _lastThumbnailWarmupSignature) {
+        return;
+      }
+
+      final currentSlides = deckController.slides.value;
+      final currentSignature = _thumbnailWarmupSignature(currentSlides);
+      if (currentSignature == null) {
+        _lastThumbnailWarmupSignature = null;
+        _pendingThumbnailWarmupSignature = null;
+        return;
+      }
+
+      if (currentSignature != pendingSignature) {
+        _pendingThumbnailWarmupSignature = currentSignature;
+        _scheduleThumbnailWarmup(deckController);
+        return;
+      }
+
+      deckController.presentation.generateThumbnails(
+        context,
+        currentSlides,
+      );
+      _lastThumbnailWarmupSignature = currentSignature;
+      if (_pendingThumbnailWarmupSignature == currentSignature) {
+        _pendingThumbnailWarmupSignature = null;
+      }
+    });
+  }
+
+  String? _thumbnailWarmupSignature(List<SlideConfiguration> slides) {
+    if (slides.isEmpty) return null;
+    return slides
+        .map((slide) => '${slide.key}:${slide.thumbnailKey}')
+        .join('|');
   }
 
   // Build the panel content (thumbnails + optional comments).
   Widget _buildPanel(BuildContext context) {
     final deck = DeckController.of(context);
+    final presentation = deck.presentation;
 
     return Watch((context) {
-      final currentIndex = deck.currentIndex.value;
-      final isNotesOpen = deck.isNotesOpen.value;
+      final isNotesOpen = presentation.isNotesOpen.value;
       final slides = deck.slides.value;
-
-      // Get current slide from index
-      final currentSlide = (currentIndex >= 0 && currentIndex < slides.length)
-          ? slides[currentIndex]
-          : null;
+      final currentSlide = presentation.currentSlide.value;
 
       /// Common content for thumbnails
       final thumbnailPanel = ThumbnailPanel(
         scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
-        onItemTap: deck.goToSlide,
-        activeIndex: currentSlide?.slideIndex ?? 0,
+        onItemTap: presentation.goToSlide,
+        activeIndex:
+            currentSlide?.slideIndex ?? presentation.currentIndex.value,
         itemBuilder: (index, selected) {
           return SlideThumbnail(selected: selected, slide: slides[index]);
         },
@@ -169,7 +230,6 @@ class _SplitViewState extends State<SplitView>
   }
 
   Widget? _buildFloatingAction({
-    required BuildContext context,
     required DeckController deckController,
     required bool isMenuOpen,
   }) {
@@ -177,28 +237,10 @@ class _SplitViewState extends State<SplitView>
       return null;
     }
 
-    final menuButton = SDIconButton(
+    return SDIconButton(
       icon: Icons.menu,
-      onPressed: deckController.openMenu,
+      onPressed: deckController.presentation.openMenu,
       semanticLabel: 'Open menu',
-    );
-    Widget? pluginAction;
-    for (final plugin in deckController.plugins) {
-      final action = plugin.buildFloatingAction(context);
-      if (action != null) {
-        pluginAction = action;
-        break;
-      }
-    }
-
-    if (pluginAction == null) {
-      return menuButton;
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [pluginAction, const SizedBox(height: 12), menuButton],
     );
   }
 
@@ -210,19 +252,18 @@ class _SplitViewState extends State<SplitView>
     // so we place it in a Column below the main content.
     // For regular layout, place it on the left in a Row.
     return Watch((context) {
-      final isMenuOpen = deckController.isMenuOpen.value;
-      final isRebuilding = deckController.isRebuilding.value;
+      final isMenuOpen = deckController.presentation.isMenuOpen.value;
+      final isBuildActive = deckController.session.isBuildActive.value;
+      final buildFailure = deckController.session.buildFailure.value;
 
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 9, 9, 9),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         floatingActionButton: _buildFloatingAction(
-          context: context,
           deckController: deckController,
           isMenuOpen: isMenuOpen,
         ),
 
-        // Only show bottom bar on small layout (uncomment if needed):
         bottomNavigationBar: SizeTransition(
           axis: Axis.vertical,
           sizeFactor: _curvedAnimation,
@@ -277,12 +318,12 @@ class _SplitViewState extends State<SplitView>
                       ),
                     ],
                   ),
-            // Loading indicator when rebuilding
-            if (isRebuilding)
+            if (isBuildActive || buildFailure != null)
               Positioned(
                 top: 16,
                 right: 16,
                 child: Container(
+                  constraints: const BoxConstraints(maxWidth: 320),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
@@ -290,23 +331,56 @@ class _SplitViewState extends State<SplitView>
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white24, width: 1),
+                    border: Border.all(
+                      color: buildFailure == null
+                          ? Colors.white24
+                          : Colors.redAccent.withValues(alpha: 0.8),
+                      width: 1,
+                    ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: IsometricLoading(),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Rebuilding...',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
+                  child: isBuildActive
+                      ? const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: IsometricLoading(),
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Rebuilding...',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Build failed',
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              buildFailure!.message,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
           ],

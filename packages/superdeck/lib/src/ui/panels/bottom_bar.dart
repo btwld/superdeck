@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart' show Icons, Colors;
+import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/src/export/pdf_export_screen.dart';
-import 'package:superdeck/src/ui/tokens/colors.dart';
-import 'package:superdeck/src/ui/widgets/icon_button.dart';
-
-import 'package:flutter/widgets.dart';
 
 import '../../deck/deck_controller.dart';
+import '../tokens/colors.dart';
+import '../widgets/icon_button.dart';
 
 class DeckBottomBar extends StatelessWidget {
   const DeckBottomBar({super.key});
@@ -26,9 +24,7 @@ class DeckBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deck = DeckController.of(context);
-    final pluginActions = deck.plugins
-        .expand((plugin) => plugin.buildActions(context))
-        .toList(growable: false);
+    final presentation = deck.presentation;
 
     return FlexBox(
       style: _bottomBarContainer,
@@ -36,37 +32,34 @@ class DeckBottomBar extends StatelessWidget {
         // view notes - use Watch for reactive icon
         Watch(
           (context) => SDIconButton(
-            onPressed: deck.toggleNotes,
-            icon: deck.isNotesOpen.value
+            onPressed: presentation.toggleNotes,
+            icon: presentation.isNotesOpen.value
                 ? Icons.comment
                 : Icons.comments_disabled,
-            semanticLabel: deck.isNotesOpen.value
+            semanticLabel: presentation.isNotesOpen.value
                 ? 'Close notes panel'
                 : 'Open notes panel',
           ),
         ),
 
         SDIconButton(
-          icon: Icons.save,
-          onPressed: () => PdfExportDialogScreen.show(context),
-          semanticLabel: 'Export PDF',
-        ),
-
-        SDIconButton(
           icon: Icons.replay_circle_filled_rounded,
-          onPressed: () => deck.generateThumbnails(context, force: true),
+          onPressed: () => presentation.generateThumbnails(
+            context,
+            deck.slides.value,
+            force: true,
+          ),
           semanticLabel: 'Regenerate thumbnails',
         ),
-        ...pluginActions,
         const Spacer(),
         SDIconButton(
           icon: Icons.arrow_back,
-          onPressed: deck.previousSlide,
+          onPressed: presentation.previousSlide,
           semanticLabel: 'Previous slide',
         ),
         SDIconButton(
           icon: Icons.arrow_forward,
-          onPressed: deck.nextSlide,
+          onPressed: presentation.nextSlide,
           semanticLabel: 'Next slide',
         ),
         const Spacer(),
@@ -74,14 +67,14 @@ class DeckBottomBar extends StatelessWidget {
         // Page counter - use Watch for reactive text
         Watch(
           (context) => Text(
-            '${deck.currentIndex.value + 1} of ${deck.totalSlides.value}',
+            '${presentation.currentIndex.value + 1} of ${presentation.totalSlides.value}',
             style: const TextStyle(color: Colors.white),
           ),
         ),
 
         SDIconButton(
           icon: Icons.close,
-          onPressed: deck.closeMenu,
+          onPressed: presentation.closeMenu,
           semanticLabel: 'Close menu',
         ),
       ],

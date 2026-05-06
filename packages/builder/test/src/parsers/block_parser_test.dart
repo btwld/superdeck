@@ -1,156 +1,6 @@
 import 'package:superdeck_builder/src/parsers/block_parser.dart';
-import 'package:superdeck_builder/src/parsers/fenced_code_parser.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
-
-final List<Map<String, dynamic>> testCaseCodeBlock = [
-  {
-    'description': 'Test Case 1: Basic js code with options',
-    'input': '''
-```js {theme: dark, lineNumbers: true}
-console.log("Hello, world!");
-function greet() {
-  return "Hi!";
-}
-```
-''',
-    'expectedBlocks': [
-      {
-        'language': 'js',
-        'options': {'theme': 'dark', 'lineNumbers': true},
-        'content': '''console.log("Hello, world!");
-function greet() {
-  return "Hi!";
-}''',
-      },
-    ],
-  },
-  {
-    'description': 'Test Case 2: Python code without options',
-    'input': '''
-```python
-print("Hello, world!")
-
-def greet():
-    return "Hi!"
-```
-''',
-    'expectedBlocks': [
-      {
-        'language': 'python',
-        'options': {},
-        'content': '''print("Hello, world!")
-
-def greet():
-    return "Hi!"''',
-      },
-    ],
-  },
-  {
-    'description': 'Test Case 3: Ruby code with different options',
-    'input': '''
-```ruby {author: "Jane Doe", version: 2.0}
-puts "Hello, world!"
-
-def greet
-  "Hi!"
-end
-```
-''',
-    'expectedBlocks': [
-      {
-        'language': 'ruby',
-        'options': {'author': 'Jane Doe', 'version': 2.0},
-        'content': '''puts "Hello, world!"
-
-def greet
-  "Hi!"
-end''',
-      },
-    ],
-  },
-  {
-    'description': 'Test Case 4: Code content containing ``` inside',
-    'input': '''
-```js {theme: light}
-console.log("Starting code block...");
-function greet() {
-  console.log("Hi!");
-}
-```
-''',
-    'expectedBlocks': [
-      {
-        'language': 'js',
-        'options': {'theme': 'light'},
-        'content': '''console.log("Starting code block...");
-function greet() {
-  console.log("Hi!");
-}''',
-      },
-    ],
-  },
-  {
-    'description':
-        'Test Case 5: Incorrectly formatted code block (missing closing ```',
-    'input': '''
-```js {theme: dark, lineNumbers: true}
-console.log("Hello, world!");
-function greet() {
-  return "Hi!";
-}
-```
-''',
-    'expectedBlocks': [
-      {
-        'language': 'js',
-        'options': {'theme': 'dark', 'lineNumbers': true},
-        'content': '''console.log("Hello, world!");
-function greet() {
-  return "Hi!";
-}''',
-      },
-    ],
-  },
-  {
-    'description': 'Test Case 6: Code block with complex options',
-    'input': '''
-```dart {theme: "dark mode", showLineNumbers: true, indent: 2}
-void main() {
-  print("Hello, Dart!");
-}
-```
-''',
-    'expectedBlocks': [
-      {
-        'language': 'dart',
-        'options': {'theme': 'dark mode', 'showLineNumbers': true, 'indent': 2},
-        'content': '''void main() {
-  print("Hello, Dart!");
-}''',
-      },
-    ],
-  },
-  {
-    'description': 'Test Case 7: Dart code block with no options',
-    'input': '''
-```dart
-void main() {
-  print("Hello, Dart!");
-}
-```
-''',
-    'expectedBlocks': [
-      {
-        'language': 'dart',
-        'options': {},
-        'content': '''void main() {
-  print("Hello, Dart!");
-}''',
-      },
-    ],
-  },
-];
 
 final List<Map<String, dynamic>> testCaseTagBlock = [
   {
@@ -345,52 +195,17 @@ Test content 2
       ),
     ],
   },
-  // does not match {@column}
+  // does not match {@block}
   {
-    'description': 'Test Case 10: Does not match @column',
+    'description': 'Test Case 10: Does not match @block',
     'input': '''
-{@column}
+{@block}
 ''',
     'expectedBlocks': [],
   },
 ];
 
 void main() {
-  group('parseFencedCode', () {
-    final fencedCodeParser = const FencedCodeParser();
-    for (final testCase in testCaseCodeBlock) {
-      test(testCase['description'], () {
-        final blocks = fencedCodeParser.parse(testCase['input']);
-        expect(
-          blocks.length,
-          testCase['expectedBlocks'].length,
-          reason: 'Number of parsed blocks does not match expected.',
-        );
-
-        for (int i = 0; i < testCase['expectedBlocks'].length; i++) {
-          final expected = testCase['expectedBlocks'][i];
-          final actual = blocks[i];
-
-          expect(
-            actual.language,
-            expected['language'],
-            reason: 'Block \${i + 1}: Language mismatch.',
-          );
-          expect(
-            actual.options,
-            expected['options'],
-            reason: 'Block \${i + 1}: Options mismatch.',
-          );
-          expect(
-            actual.content.trim(),
-            expected['content'].trim(),
-            reason: 'Block \${i + 1}: Content mismatch.',
-          );
-        }
-      });
-    }
-  });
-
   group('parseTagBlocks', () {
     for (final testCase in testCaseTagBlock) {
       final description = testCase['description'];
@@ -448,7 +263,7 @@ void main() {
       );
     });
 
-    test('normalizes @block tag to ContentBlock key', () {
+    test('@block produces a ContentBlock', () {
       const text = '''
 @block
 Some markdown content
@@ -464,30 +279,29 @@ More content
 
       expect(blocks.length, 2);
 
-      // First @block block
-      expect(blocks[0].type, 'block'); // Original type
-      expect(blocks[0].data['type'], 'block'); // Normalized to ContentBlock.key
-
-      // Second @block block with options
+      expect(blocks[0].type, 'block');
+      expect(blocks[0].data['type'], 'block');
       expect(blocks[1].type, 'block');
       expect(blocks[1].data['type'], 'block');
       expect(blocks[1].data['align'], 'center');
       expect(blocks[1].data['flex'], 2);
     });
 
-    test('both @column and @block produce same ContentBlock type', () {
-      const textColumn = '@column{flex: 1}';
-      const textBlock = '@block{flex: 1}';
+    test('rejects unsupported @column directives', () {
+      const text = '@column{flex: 1}';
 
-      final blocksColumn = const BlockParser().parse(textColumn);
-      final blocksBlock = const BlockParser().parse(textBlock);
-
-      expect(blocksColumn[0].data['type'], blocksBlock[0].data['type']);
       expect(
-        blocksColumn[0].data['type'],
-        'block',
-      ); // Both normalize to ContentBlock.key
-      expect(blocksColumn[0].data['flex'], blocksBlock[0].data['flex']);
+        () => const BlockParser().parse(text),
+        throwsA(
+          isA<DeckFormatException>()
+              .having(
+                (e) => e.message,
+                'message',
+                contains('Unsupported @column directive'),
+              )
+              .having((e) => e.offset, 'offset', 0),
+        ),
+      );
     });
   });
 }

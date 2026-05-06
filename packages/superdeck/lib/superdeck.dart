@@ -1,38 +1,31 @@
+/// Flutter widgets and presentation components for SuperDeck.
 library;
 
-// Rendering
-export 'package:superdeck/src/rendering/blocks/block_widget.dart';
-export 'package:superdeck/src/rendering/blocks/block_provider.dart';
-export 'package:superdeck/src/rendering/slides/slide_parts.dart';
-
-// Utils
-export 'package:superdeck/src/ui/extensions.dart';
-export 'package:superdeck/src/ui/widgets/measure_size.dart';
-export 'package:superdeck/src/ui/widgets/provider.dart';
+export 'src/capture/slide_capture_service.dart';
+export 'src/rendering/slides/slide_constants.dart';
+export 'src/rendering/slides/slide_parts.dart';
+export 'src/rendering/slides/slide_render_view.dart';
+export 'src/thumbnails/async_thumbnail.dart';
+export 'src/thumbnails/thumbnail_service.dart';
 
 // Styling
-export 'package:superdeck/src/styling/default_style.dart';
-export 'package:superdeck/src/styling/styling.dart';
+export 'src/styling/default_style.dart';
+export 'src/styling/components/markdown_alert.dart';
+export 'src/styling/components/markdown_alert_type.dart';
+export 'src/styling/components/markdown_blockquote.dart';
+export 'src/styling/components/markdown_checkbox.dart';
+export 'src/styling/components/markdown_codeblock.dart';
+export 'src/styling/components/markdown_list.dart';
+export 'src/styling/components/markdown_table.dart';
+export 'src/styling/components/markdown_text.dart';
+export 'src/styling/components/slide.dart';
 
 // UI
-export 'package:superdeck/src/ui/superdeck_app.dart';
-export 'package:superdeck/src/ui/app_shell.dart';
+export 'src/ui/superdeck_app.dart';
 
-// Deck
-export 'package:superdeck/src/deck/deck_controller.dart';
-export 'package:superdeck/src/deck/deck_options.dart';
-export 'package:superdeck/src/deck/deck_controller_builder.dart';
-export 'package:superdeck/src/deck/slide_configuration.dart';
-export 'package:superdeck/src/deck/slide_template.dart';
-export 'package:superdeck/src/deck/superdeck_plugin.dart';
-export 'package:superdeck/src/deck/template_exception.dart';
-export 'package:superdeck/src/deck/widget_definition.dart';
-
-// Export
-export 'package:superdeck/src/export/async_thumbnail.dart';
-
-// Built-in Widgets
-export 'package:superdeck/src/widgets/widgets.dart';
-
-// Core
-export 'package:superdeck_core/superdeck_core.dart';
+// Presentation
+export 'src/deck/deck_controller.dart';
+export 'src/deck/deck_options.dart';
+export 'src/deck/slide_configuration.dart';
+export 'src/deck/slide_template.dart';
+export 'src/deck/widget_factory.dart';

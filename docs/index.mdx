@@ -7,7 +7,7 @@ description: Create beautiful presentations with Flutter and Markdown
 
 Create presentations in Flutter using Markdown.
 
-<img src="https://github.com/leoafarias/superdeck/assets/435833/42ec88e9-d3d9-4c52-bbf9-5a2809cca257" alt="SuperDeck Screenshot" />
+<img src="https://github.com/btwld/superdeck/assets/435833/42ec88e9-d3d9-4c52-bbf9-5a2809cca257" alt="SuperDeck Screenshot" />
 
 ## [View live demo](https://superdeck-dev.web.app)
 
@@ -17,28 +17,25 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
 
 ### Key components
 
-- **CLI Tool** - Set up, build, and publish presentations
+- **CLI Tool** - Configure and build presentations
 - **Flutter Package** - UI components and presentation runtime
 - **Block System** - Flexible layouts with 3 core block types
 - **Mix Styling** - Comprehensive theming system
-- **Asset Pipeline** - Automatic asset generation and optimization
 
 ## Core features
 
-- **3 Block Types** - `@column` (content), `@section` (layout), `@widget` (custom components)
+- **3 Block Types** - `@block` (content), `@section` (layout), `@widget` (custom components)
 - **Built-in Widgets** - `image`, `dartpad`, `qrcode`
-- **Mermaid Diagrams** - Use ` ```mermaid` code blocks (rendered to images at build time)
-- **CLI Commands** - `setup`, `build`, `publish`, `version`
+- **CLI Commands** - `setup`, `build`, `version`
 - **Markdown Support** - Full CommonMark with GitHub-style alerts
 - **Custom Widgets** - Extensible widget system
 - **Platforms** - Web and desktop
 - **Live Development** - Watch mode with hot reload
-- **GitHub Pages** - Built-in publishing
 
 ## Architecture
 
 - **Core** (`packages/core/`) - Data models and domain logic
-- **Builder** (`packages/builder/`) - Markdown parsing and asset generation
+- **Builder** (`packages/builder/`) - Markdown parsing and build pipeline
 - **CLI** (`packages/cli/`) - Command-line interface
 - **SuperDeck** (`packages/superdeck/`) - Flutter UI components and Mix styling
 
@@ -49,37 +46,36 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
    dart pub global activate superdeck_cli
    ```
 
-2. **Set up your project**:
+2. **Create a Flutter app**:
    ```bash
-   cd your-flutter-project
+   flutter create my_presentation
+   cd my_presentation
+   ```
+
+3. **Configure SuperDeck**:
+   ```bash
    superdeck setup
-   ```
-
-3. **Add SuperDeck**:
-   ```bash
    flutter pub add superdeck
+   flutter pub add --dev superdeck_cli
    ```
 
-4. **Initialize your app**:
-   ```dart
-   import 'package:flutter/widgets.dart';
-   import 'package:superdeck/superdeck.dart';
+4. **Wire your app and add slides**:
+   - Update `lib/main.dart` to initialize and run `SuperDeckApp`
+   - Add `slides.md` in the project root
 
-   void main() async {
-     WidgetsFlutterBinding.ensureInitialized();
-     await SuperDeckApp.initialize();
+5. **Build your slides**:
+   ```bash
+   dart run superdeck_cli:main build
+   ```
 
-     runApp(
-       SuperDeckApp(
-         options: const DeckOptions(),
-       ),
-     );
-   }
+6. **Run your app**:
+   ```bash
+   flutter run
    ```
 
 ## Documentation structure
 
-- **[Getting Started](/getting-started)** - Complete setup guide
+- **[Getting Started](/getting-started)** - Complete setup-and-run guide
 - **[Tutorials](/tutorials/first-presentation)** - Step-by-step learning paths
 - **[How-to Guides](/guides/superdeck-overview)** - Task-focused instructions
 - **[Reference](/reference/deck-options)** - Complete API documentation
@@ -91,4 +87,4 @@ SuperDeck is a Flutter presentation framework that combines Markdown simplicity 
 - **Block-Based** - Flexible layouts beyond traditional slides
 - **Developer-Friendly** - CLI tools, hot reload, debugging
 - **Extensible** - Custom widgets and comprehensive styling
-- **Production-Ready** - Asset optimization and deployment
+- **Production-Ready** - Web and desktop deployment

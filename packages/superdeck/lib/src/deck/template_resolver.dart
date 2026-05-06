@@ -1,10 +1,10 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
-import '../styling/styling.dart';
+import '../styling/components/slide.dart';
+import '../styling/default_style.dart';
 import 'deck_options.dart';
 import 'slide_template.dart';
-import 'template_exception.dart';
 
 /// Result of resolving a slide's template and style configuration.
 class TemplateResolutionResult {
@@ -52,7 +52,7 @@ class TemplateResolver {
 
   /// Resolves the style and parts for a slide based on its options.
   ///
-  /// Throws [TemplateException] if:
+  /// Throws [ArgumentError] if:
   /// - The slide references an unknown template name
   /// - The slide references an unknown style within a template
   /// - The slide references an unknown deck-level style (when not using a template)
@@ -86,7 +86,7 @@ class TemplateResolver {
             ? 'No templates are registered in this deck.'
             : 'Available templates: ${availableTemplates.join(', ')}';
 
-        throw TemplateException(
+        throw ArgumentError(
           'Unknown template "$templateName". $availableMessage',
         );
       }
@@ -105,7 +105,7 @@ class TemplateResolver {
     if (styleName != null) {
       styleOverride = template.styles[styleName];
       if (styleOverride == null) {
-        throw TemplateException(
+        throw ArgumentError(
           'Unknown style "$styleName" in template "$templateName". '
           'Available styles: ${template.styles.keys.join(', ')}',
         );
@@ -128,7 +128,7 @@ class TemplateResolver {
     if (styleName != null) {
       styleOverride = _options.styles[styleName];
       if (styleOverride == null) {
-        throw TemplateException(
+        throw ArgumentError(
           'Unknown style "$styleName" in deck. '
           'Available styles: ${_options.styles.keys.join(', ')}',
         );
