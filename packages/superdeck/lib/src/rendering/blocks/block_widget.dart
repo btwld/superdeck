@@ -62,9 +62,14 @@ class _BlockContainerState extends State<_BlockContainer> {
       child: content,
     );
 
-    // Apply alignment
+    // Apply alignment. ContentBlocks (`@block`) default to centerLeft because
+    // most prose is multi-line, left-to-right text where left alignment scans
+    // more naturally; other block types keep the historical center default.
+    final defaultAlignment = widget.block is ContentBlock
+        ? Alignment.centerLeft
+        : Alignment.center;
     content = Align(
-      alignment: widget.block.align?.toAlignment ?? Alignment.center,
+      alignment: widget.block.align?.toAlignment ?? defaultAlignment,
       child: content,
     );
 
