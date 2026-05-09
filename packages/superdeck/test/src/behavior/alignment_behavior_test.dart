@@ -110,6 +110,42 @@ void main() {
       });
     });
 
+    group('default alignment', () {
+      testWidgets('ContentBlock without explicit align defaults to centerLeft', (
+        tester,
+      ) async {
+        final slide = Slide(
+          key: 'block-default-align',
+          sections: [
+            SectionBlock([ContentBlock('Hello')]),
+          ],
+        );
+        await SlideTestHarness.pumpSlide(tester, slide);
+
+        final alignWidget = tester.widget<Align>(find.byType(Align).first);
+        expect(alignWidget.alignment, Alignment.centerLeft);
+      });
+
+      testWidgets('WidgetBlock without explicit align defaults to center', (
+        tester,
+      ) async {
+        final slide = Slide(
+          key: 'widget-default-align',
+          sections: [
+            SectionBlock([WidgetBlock(name: 'plain')]),
+          ],
+        );
+        await SlideTestHarness.pumpSlide(
+          tester,
+          slide,
+          widgets: {'plain': (_) => const SizedBox.shrink()},
+        );
+
+        final alignWidget = tester.widget<Align>(find.byType(Align).first);
+        expect(alignWidget.alignment, Alignment.center);
+      });
+    });
+
     group('alignment in sections', () {
       testWidgets('different alignments per section', (tester) async {
         final slide = Slide(
