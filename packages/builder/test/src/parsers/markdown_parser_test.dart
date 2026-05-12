@@ -334,7 +334,7 @@ Content for slide 2
       const markdown = '''
 ---
 title: Slide 1
---- 
+---
 Content for slide 1
 
 ---
@@ -352,5 +352,29 @@ Content for the second slide
       expect(slides[1].frontmatter, {});
       expect(slides[1].content, equals('Content for the second slide'));
     });
+
+    test(
+      'returns the correct slide count when slides without frontmatter are separated by --- (issue #63)',
+      () async {
+        const markdown = '''
+# Slide 1
+
+---
+
+# Slide 2
+
+---
+
+# Slide 3
+''';
+
+        final slides = markdownParser.parse(markdown);
+
+        expect(slides.length, equals(3));
+        expect(slides[0].content, equals('# Slide 1'));
+        expect(slides[1].content, equals('# Slide 2'));
+        expect(slides[2].content, equals('# Slide 3'));
+      },
+    );
   });
 }
