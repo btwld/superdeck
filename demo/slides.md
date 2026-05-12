@@ -56,7 +56,7 @@
 @block {
   align: topCenter
 }
-### Markdown {.heading}
+### Markdown {.feat-markdown}
 
 - Simple syntax
 - Code blocks
@@ -65,7 +65,7 @@
 @block {
   align: topCenter
 }
-### Flutter {.heading}
+### Flutter {.feat-flutter}
 
 - Custom widgets
 - Hot reload
@@ -74,7 +74,7 @@
 @block {
   align: topCenter
 }
-### Styling {.heading}
+### Styling {.feat-styling}
 
 - Themes
 - Custom styles
