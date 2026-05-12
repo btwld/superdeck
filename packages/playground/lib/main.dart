@@ -74,7 +74,14 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
       ],
       child: MaterialApp(
         title: 'Playground',
-        builder: (context, child) => HeroTheme(data: .dark(), child: child!),
+        builder: (context, child) {
+          final isDark =
+              MediaQuery.of(context).platformBrightness == Brightness.dark;
+          return HeroTheme(
+            data: isDark ? HeroThemeData.dark() : HeroThemeData.light(),
+            child: child!,
+          );
+        },
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
         onGenerateRoute: (settings) {

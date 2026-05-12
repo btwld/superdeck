@@ -3,6 +3,8 @@ import 'package:hero_ui/hero_ui.dart';
 
 import 'package:super_editor/super_editor.dart';
 
+import '../../utils/edit_reaction.dart';
+
 class TextEditor extends StatefulWidget {
   const TextEditor({super.key, required this.initialText, this.onChanged});
 
@@ -39,7 +41,8 @@ class _TextEditorState extends State<TextEditor> {
       requestHandlers: List.from(defaultRequestHandlers),
       reactionPipeline: [
         UpdateComposerTextStylesReaction(),
-        HeaderConversionReaction(),
+        // HeaderConversionReaction(),
+        SeparatorColorReaction(),
         // Intentionally omitting content-conversion reactions
         // (HorizontalRuleConversionReaction, HeaderConversionReaction, etc.)
         // so raw markdown characters like --- and # are kept as-is.
@@ -90,6 +93,15 @@ class _TextEditorState extends State<TextEditor> {
           ],
           stylesheet: Stylesheet(
             rules: [
+              StyleRule(BlockSelector.all, (doc, docNode) {
+                return {
+                  Styles.textStyle: TextStyle(
+                    color: $muted.resolve(context),
+                    fontSize: 18,
+                    height: 1.4,
+                  ),
+                };
+              }),
               StyleRule(const BlockSelector("header1"), (doc, docNode) {
                 return {
                   "textStyle": const TextStyle(
@@ -100,9 +112,18 @@ class _TextEditorState extends State<TextEditor> {
                 };
               }),
             ],
-            inlineTextStyler: (_, textStyle) =>
-                const TextStyle(fontSize: 16).merge(textStyle),
-            documentPadding: const EdgeInsets.all(32),
+            inlineTextStyler: (attributions, textStyle) {
+              var style = const TextStyle(fontSize: 16).merge(textStyle);
+              for (final attribution in attributions) {
+                if (attribution == separatorAttribution) {
+                  style = style.copyWith(
+                    color: $separatorTertiary.resolve(context),
+                  );
+                }
+              }
+              return style;
+            },
+            documentPadding: const .all(32),
           ),
         ),
       ),
