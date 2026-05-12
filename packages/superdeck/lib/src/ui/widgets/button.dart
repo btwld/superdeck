@@ -20,7 +20,7 @@ class SDButton extends StatelessWidget {
       onPressed: onPressed,
       style: _style,
       label: label,
-      icon: icon,
+      // icon: icon,
     );
   }
 

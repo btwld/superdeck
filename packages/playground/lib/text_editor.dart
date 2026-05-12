@@ -3,7 +3,10 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:super_editor/super_editor.dart';
 
 class TextEditor extends StatefulWidget {
-  const TextEditor({super.key});
+  const TextEditor({super.key, required this.initialText, this.onChanged});
+
+  final String initialText;
+  final ValueChanged<String>? onChanged;
 
   @override
   State<TextEditor> createState() => _TextEditorState();
@@ -11,50 +14,73 @@ class TextEditor extends StatefulWidget {
 
 class _TextEditorState extends State<TextEditor> {
   late final MutableDocument _document;
-  late final DocumentComposer _composer;
-  late final DocumentEditor _editor;
+  late final MutableDocumentComposer _composer;
+  late final Editor _editor;
 
   @override
   void initState() {
     super.initState();
 
-    // A MutableDocument is an in-memory Document. Create the starting
-    // content that you want your editor to display.
-    //
-    // To start with an empty document, create a MutableDocument with a
-    // single ParagraphNode that holds an empty string.
     _document = MutableDocument(
       nodes: [
         ParagraphNode(
-          id: DocumentEditor.createNodeId(),
-          text: AttributedText('---\n\nSlide #1\n\n---'),
-        ),
-        ParagraphNode(
-          id: DocumentEditor.createNodeId(),
-          text: AttributedText('\nSlide #2\n\n---'),
+          id: Editor.createNodeId(),
+          text: AttributedText(widget.initialText),
         ),
       ],
     );
 
-    // A DocumentComposer holds the user's selection. Your editor will likely want
-    // to observe, and possibly change the user's selection. Therefore, you should
-    // hold onto your own DocumentComposer and pass it to your Editor.
-    _composer = DocumentComposer();
+    _document.addListener(_onDocumentChanged);
 
-    // With a MutableDocument, create an Editor, which knows how to apply changes
-    // to the MutableDocument.
-    _editor = DocumentEditor(document: _document);
+    _composer = MutableDocumentComposer();
+    _editor = Editor(
+      editables: {
+        Editor.documentKey: _document,
+        Editor.composerKey: _composer,
+      },
+      requestHandlers: List.from(defaultRequestHandlers),
+      reactionPipeline: [
+        UpdateComposerTextStylesReaction(),
+        // Intentionally omitting content-conversion reactions
+        // (HorizontalRuleConversionReaction, HeaderConversionReaction, etc.)
+        // so raw markdown characters like --- and # are kept as-is.
+      ],
+    );
+  }
+
+  void _onDocumentChanged(DocumentChangeLog changeLog) {
+    final text = _extractText();
+    widget.onChanged?.call(text);
+  }
+
+  String _extractText() {
+    final buffer = StringBuffer();
+    var first = true;
+    for (final node in _document) {
+      if (!first) buffer.write('\n');
+      first = false;
+      if (node is TextNode) {
+        buffer.write(node.text.toPlainText());
+      }
+    }
+    return buffer.toString();
+  }
+
+  @override
+  void dispose() {
+    _document.removeListener(_onDocumentChanged);
+    _editor.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const .all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: HeroCard(
         child: SuperEditor(
           editor: _editor,
-          composer: _composer,
-          stylesheet: .new(
+          stylesheet: Stylesheet(
             rules: [
               StyleRule(const BlockSelector("header1"), (doc, docNode) {
                 return {
@@ -67,8 +93,8 @@ class _TextEditorState extends State<TextEditor> {
               }),
             ],
             inlineTextStyler: (_, textStyle) =>
-                TextStyle(fontSize: 16).merge(textStyle),
-            documentPadding: .all(32),
+                const TextStyle(fontSize: 16).merge(textStyle),
+            documentPadding: const EdgeInsets.all(32),
           ),
         ),
       ),
