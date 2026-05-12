@@ -36,59 +36,123 @@ class MarkdownParser {
   // Regex to match code fence: 3+ backticks at start, optionally followed by language
   static final _codeFencePattern = RegExp(r'^(`{3,})(\s*\S*)?$');
 
+  static final _yamlKeyPattern = RegExp(r'^[A-Za-z_][\w-]*\s*:');
+
   /// Splits the entire markdown into slides.
   ///
-  /// A "slide" is defined by frontmatter sections delimited with `---`.
+  /// A slide is bounded by `---` separator lines. A slide may begin with an
+  /// optional YAML frontmatter block delimited by a `---` pair at its start.
   /// Code blocks (fenced by ```) are respected, so `---` inside a code block
-  /// won't be treated as frontmatter delimiters.
+  /// won't be treated as a separator.
   static List<String> _splitSlides(String content) {
     content = content.trim();
+    if (content.isEmpty) return [];
+
     final lines = LineSplitter().convert(content);
+    final separators = _findSeparatorLines(lines);
+
     final slides = <String>[];
     final buffer = StringBuffer();
-    bool insideFrontMatter = false;
 
-    int? codeFenceLength; // null = not in code block, otherwise = fence length
+    var i = 0;
+    while (i < lines.length) {
+      if (separators.contains(i)) {
+        final pending = buffer.toString().trim();
+        if (pending.isNotEmpty) {
+          slides.add(pending);
+          buffer.clear();
+        }
 
-    for (var line in lines) {
-      final trimmed = line.trim();
+        final closeIdx = _findFrontmatterClose(lines, i, separators);
+        if (closeIdx != null) {
+          for (var j = i; j <= closeIdx; j++) {
+            buffer.writeln(lines[j]);
+          }
+          i = closeIdx + 1;
+          continue;
+        }
 
-      // Check for code fence (opening or closing)
+        i++;
+        continue;
+      }
+
+      buffer.writeln(lines[i]);
+      i++;
+    }
+
+    final tail = buffer.toString().trim();
+    if (tail.isNotEmpty) slides.add(tail);
+
+    return slides;
+  }
+
+  /// Returns the indices of `---` lines that sit outside fenced code blocks.
+  static Set<int> _findSeparatorLines(List<String> lines) {
+    final separators = <int>{};
+    int? codeFenceLength;
+
+    for (var i = 0; i < lines.length; i++) {
+      final trimmed = lines[i].trim();
       final fenceMatch = _codeFencePattern.firstMatch(trimmed);
       if (fenceMatch != null) {
         final backticks = fenceMatch.group(1)!.length;
         if (codeFenceLength == null) {
-          // Opening a code block
           codeFenceLength = backticks;
         } else if (backticks >= codeFenceLength) {
-          // Closing the code block (needs same or more backticks)
           codeFenceLength = null;
         }
-        // If backticks < codeFenceLength, it's content inside the block
-      }
-
-      if (codeFenceLength != null) {
-        buffer.writeln(line);
         continue;
       }
 
-      if (trimmed == '---') {
-        if (!insideFrontMatter) {
-          if (buffer.isNotEmpty) {
-            slides.add(buffer.toString().trim());
-            buffer.clear();
-          }
-        }
-        insideFrontMatter = !insideFrontMatter;
+      if (codeFenceLength != null) continue;
+      if (trimmed == '---') separators.add(i);
+    }
+
+    return separators;
+  }
+
+  /// If [openIdx] opens a YAML frontmatter block, returns the index of the
+  /// closing `---`. Returns null when the next separator is too far away or
+  /// the lines between look like markdown content rather than YAML.
+  static int? _findFrontmatterClose(
+    List<String> lines,
+    int openIdx,
+    Set<int> separators,
+  ) {
+    int? closeIdx;
+    for (var j = openIdx + 1; j < lines.length; j++) {
+      if (separators.contains(j)) {
+        closeIdx = j;
+        break;
       }
-      buffer.writeln(line);
+      final trimmed = lines[j].trimLeft();
+      if (trimmed.isEmpty) continue;
+      // Distinctive markdown body indicators rule out frontmatter.
+      final firstChar = trimmed[0];
+      if (firstChar == '#' ||
+          firstChar == '@' ||
+          firstChar == '>' ||
+          firstChar == '!') {
+        return null;
+      }
     }
 
-    if (buffer.isNotEmpty) {
-      slides.add(buffer.toString());
+    if (closeIdx == null) return null;
+
+    var hasContent = false;
+    var hasYamlMarker = false;
+    for (var j = openIdx + 1; j < closeIdx; j++) {
+      final trimmed = lines[j].trim();
+      if (trimmed.isEmpty) continue;
+      hasContent = true;
+      if (_yamlKeyPattern.hasMatch(trimmed) || trimmed.startsWith('- ')) {
+        hasYamlMarker = true;
+        break;
+      }
     }
 
-    return slides;
+    if (!hasContent || hasYamlMarker) return closeIdx;
+    return null;
   }
 
   List<RawSlideMarkdown> parse(String markdown) {
