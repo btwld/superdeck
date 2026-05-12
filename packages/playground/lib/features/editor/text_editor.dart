@@ -1,5 +1,6 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
+
 import 'package:super_editor/super_editor.dart';
 
 class TextEditor extends StatefulWidget {
@@ -34,13 +35,11 @@ class _TextEditorState extends State<TextEditor> {
 
     _composer = MutableDocumentComposer();
     _editor = Editor(
-      editables: {
-        Editor.documentKey: _document,
-        Editor.composerKey: _composer,
-      },
+      editables: {Editor.documentKey: _document, Editor.composerKey: _composer},
       requestHandlers: List.from(defaultRequestHandlers),
       reactionPipeline: [
         UpdateComposerTextStylesReaction(),
+        HeaderConversionReaction(),
         // Intentionally omitting content-conversion reactions
         // (HorizontalRuleConversionReaction, HeaderConversionReaction, etc.)
         // so raw markdown characters like --- and # are kept as-is.
@@ -80,6 +79,15 @@ class _TextEditorState extends State<TextEditor> {
       child: HeroCard(
         child: SuperEditor(
           editor: _editor,
+          documentOverlayBuilders: [
+            const SuperEditorIosToolbarFocalPointDocumentLayerBuilder(),
+            const SuperEditorIosHandlesDocumentLayerBuilder(),
+            const SuperEditorAndroidToolbarFocalPointDocumentLayerBuilder(),
+            const SuperEditorAndroidHandlesDocumentLayerBuilder(),
+            DefaultCaretOverlayBuilder(
+              caretStyle: CaretStyle(color: $accent.resolve(context)),
+            ),
+          ],
           stylesheet: Stylesheet(
             rules: [
               StyleRule(const BlockSelector("header1"), (doc, docNode) {

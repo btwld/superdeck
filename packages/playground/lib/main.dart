@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
-import 'package:mix/mix.dart';
-import 'package:playground/memory_deck_loader.dart';
-import 'package:playground/preview_sidebar.dart';
-import 'package:playground/text_editor.dart';
+import 'package:playground/utils/memory_deck_loader.dart';
+import 'package:playground/features/presentation/presentation_page.dart';
+import 'package:playground/utils/takeover_route.dart';
+import 'package:playground/features/editor/editor_page.dart';
+import 'package:provider/provider.dart';
 import 'package:superdeck/superdeck.dart';
 
-const _initialMarkdown = '''---
+void main() {
+  runApp(const PlaygroundApp());
+}
+
+const initialMarkdown = '''---
 title: Welcome
 
 # Hello SuperDeck
@@ -35,32 +40,14 @@ This is a live preview playground.
 - Preview on the right
 ''';
 
-void main() {
-  runApp(const PlaygroundApp());
-}
-
-class PlaygroundApp extends StatelessWidget {
+class PlaygroundApp extends StatefulWidget {
   const PlaygroundApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Playground',
-      builder: (context, child) => HeroTheme(data: .dark(), child: child!),
-      debugShowCheckedModeBanner: false,
-      home: const PlaygroundHome(),
-    );
-  }
+  State<PlaygroundApp> createState() => _PlaygroundAppState();
 }
 
-class PlaygroundHome extends StatefulWidget {
-  const PlaygroundHome({super.key});
-
-  @override
-  State<PlaygroundHome> createState() => _PlaygroundHomeState();
-}
-
-class _PlaygroundHomeState extends State<PlaygroundHome> {
+class _PlaygroundAppState extends State<PlaygroundApp> {
   late final MemoryDeckLoader _loader;
   late final DeckController _controller;
 
@@ -69,8 +56,7 @@ class _PlaygroundHomeState extends State<PlaygroundHome> {
     super.initState();
     _loader = MemoryDeckLoader();
     _controller = DeckController(deckLoader: _loader, options: DeckOptions());
-
-    _loader.updateMarkdown(_initialMarkdown);
+    _loader.updateMarkdown(initialMarkdown);
   }
 
   @override
@@ -79,27 +65,32 @@ class _PlaygroundHomeState extends State<PlaygroundHome> {
     super.dispose();
   }
 
-  void _onMarkdownChanged(String markdown) {
-    _loader.updateMarkdown(markdown);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: $background.resolve(context),
-      body: Box(
-        style: BoxStyler().color($background()),
-        child: RowBox(
-          children: [
-            Expanded(
-              child: TextEditor(
-                initialText: _initialMarkdown,
-                onChanged: _onMarkdownChanged,
-              ),
-            ),
-            SlidesSidebar(controller: _controller),
-          ],
-        ),
+    return MultiProvider(
+      providers: [
+        Provider<DeckController>.value(value: _controller),
+        Provider<MemoryDeckLoader>.value(value: _loader),
+      ],
+      child: MaterialApp(
+        title: 'Playground',
+        builder: (context, child) => HeroTheme(data: .dark(), child: child!),
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            case '/present':
+              return TakeoverRoute<void>(
+                settings: settings,
+                builder: (_) => const PresentationPage(),
+              );
+            default:
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => const EditorPage(),
+              );
+          }
+        },
       ),
     );
   }

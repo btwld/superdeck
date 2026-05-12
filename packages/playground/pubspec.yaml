@@ -3,11 +3,8 @@ description: A playground app for experimenting with Mix, Remix, and Hero UI.
 publish_to: none
 
 environment:
-  sdk: ">=3.10.0 <4.0.0"
+  sdk: ">=3.11.3 <4.0.0"
   flutter: ">=3.38.1"
-
-dependency_overrides:
-  remix: ^0.1.0-beta.2
 
 dependencies:
   flutter:
@@ -15,6 +12,7 @@ dependencies:
   mix: ^2.0.2
   remix: ^0.2.0
   super_editor: ^0.3.0-dev.51
+  provider: ^6.1.2
   signals_flutter: ^6.2.0
   superdeck:
     path: ../superdeck

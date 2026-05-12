@@ -2,13 +2,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
+import 'package:provider/provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 class SlidesSidebar extends StatelessWidget {
-  const SlidesSidebar({super.key, required this.controller});
+  const SlidesSidebar({
+    super.key,
+    this.onPlay,
+  });
 
-  final DeckController controller;
+  final VoidCallback? onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +22,8 @@ class SlidesSidebar extends StatelessWidget {
         ColumnBox(
           style: FlexBoxStyler().spacing(24),
           children: [
-            _Toolbar(),
-            Expanded(child: _PreviewList(controller: controller)),
+            _Toolbar(onPlay: onPlay),
+            Expanded(child: _PreviewList()),
           ],
         ),
       ],
@@ -28,7 +32,9 @@ class SlidesSidebar extends StatelessWidget {
 }
 
 class _Toolbar extends StatelessWidget {
-  const _Toolbar();
+  const _Toolbar({this.onPlay});
+
+  final VoidCallback? onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +52,10 @@ class _Toolbar extends StatelessWidget {
         ),
         SizedBox(
           width: 48,
-          child: HeroIconButton(icon: CupertinoIcons.play, onPressed: () {}),
+          child: HeroIconButton(
+            icon: CupertinoIcons.play,
+            onPressed: onPlay ?? () {},
+          ),
         ),
       ],
     );
@@ -54,12 +63,11 @@ class _Toolbar extends StatelessWidget {
 }
 
 class _PreviewList extends StatelessWidget {
-  const _PreviewList({required this.controller});
-
-  final DeckController controller;
+  const _PreviewList();
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.read<DeckController>();
     final slides = controller.slides.watch(context);
 
     if (slides.isEmpty) {
