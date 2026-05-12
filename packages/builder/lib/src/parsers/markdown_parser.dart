@@ -38,6 +38,10 @@ class MarkdownParser {
 
   static final _yamlKeyPattern = RegExp(r'^[A-Za-z_][\w-]*\s*:');
 
+  /// Leading characters that mark a line as markdown body (heading, directive,
+  /// blockquote, image/link) and therefore rule out YAML frontmatter.
+  static const _markdownLeadChars = {'#', '@', '>', '!'};
+
   /// Splits the entire markdown into slides.
   ///
   /// A slide is bounded by `---` separator lines. A slide may begin with an
@@ -54,35 +58,35 @@ class MarkdownParser {
     final slides = <String>[];
     final buffer = StringBuffer();
 
+    void flush() {
+      final pending = buffer.toString().trim();
+      if (pending.isNotEmpty) slides.add(pending);
+      buffer.clear();
+    }
+
     var i = 0;
     while (i < lines.length) {
-      if (separators.contains(i)) {
-        final pending = buffer.toString().trim();
-        if (pending.isNotEmpty) {
-          slides.add(pending);
-          buffer.clear();
-        }
-
-        final closeIdx = _findFrontmatterClose(lines, i, separators);
-        if (closeIdx != null) {
-          for (var j = i; j <= closeIdx; j++) {
-            buffer.writeln(lines[j]);
-          }
-          i = closeIdx + 1;
-          continue;
-        }
-
+      if (!separators.contains(i)) {
+        buffer.writeln(lines[i]);
         i++;
         continue;
       }
 
-      buffer.writeln(lines[i]);
-      i++;
+      flush();
+      final closeIdx = _findFrontmatterClose(lines, i, separators);
+      if (closeIdx == null) {
+        i++;
+        continue;
+      }
+
+      // Consume the frontmatter block (open `---`, YAML body, close `---`).
+      for (var j = i; j <= closeIdx; j++) {
+        buffer.writeln(lines[j]);
+      }
+      i = closeIdx + 1;
     }
 
-    final tail = buffer.toString().trim();
-    if (tail.isNotEmpty) slides.add(tail);
-
+    flush();
     return slides;
   }
 
@@ -112,46 +116,31 @@ class MarkdownParser {
   }
 
   /// If [openIdx] opens a YAML frontmatter block, returns the index of the
-  /// closing `---`. Returns null when the next separator is too far away or
-  /// the lines between look like markdown content rather than YAML.
+  /// closing `---`. Returns null when no closing `---` is found, or when the
+  /// lines between look like markdown content rather than YAML.
   static int? _findFrontmatterClose(
     List<String> lines,
     int openIdx,
     Set<int> separators,
   ) {
-    int? closeIdx;
-    for (var j = openIdx + 1; j < lines.length; j++) {
-      if (separators.contains(j)) {
-        closeIdx = j;
-        break;
-      }
-      final trimmed = lines[j].trimLeft();
-      if (trimmed.isEmpty) continue;
-      // Distinctive markdown body indicators rule out frontmatter.
-      final firstChar = trimmed[0];
-      if (firstChar == '#' ||
-          firstChar == '@' ||
-          firstChar == '>' ||
-          firstChar == '!') {
-        return null;
-      }
-    }
-
-    if (closeIdx == null) return null;
-
     var hasContent = false;
     var hasYamlMarker = false;
-    for (var j = openIdx + 1; j < closeIdx; j++) {
+    for (var j = openIdx + 1; j < lines.length; j++) {
+      if (separators.contains(j)) {
+        // An empty pair (`---\n---`) is a valid (empty) frontmatter block.
+        // Otherwise require at least one YAML-shaped line.
+        return (!hasContent || hasYamlMarker) ? j : null;
+      }
       final trimmed = lines[j].trim();
       if (trimmed.isEmpty) continue;
+      // Distinctive markdown body indicators rule out frontmatter.
+      if (_markdownLeadChars.contains(trimmed[0])) return null;
       hasContent = true;
       if (_yamlKeyPattern.hasMatch(trimmed) || trimmed.startsWith('- ')) {
         hasYamlMarker = true;
-        break;
       }
     }
-
-    if (!hasContent || hasYamlMarker) return closeIdx;
+    // Reached EOF without a closing `---`.
     return null;
   }
 
