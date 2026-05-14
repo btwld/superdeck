@@ -2,77 +2,42 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
+import 'package:playground/stores/slide_configuration_store.dart';
 import 'package:provider/provider.dart';
-import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
-class SlidesSidebar extends StatelessWidget {
-  const SlidesSidebar({
-    super.key,
-    this.onPlay,
-  });
+class PreviewSidebar extends StatelessWidget {
+  const PreviewSidebar({super.key, this.onPlay});
 
   final VoidCallback? onPlay;
 
   @override
   Widget build(BuildContext context) {
     return StackBox(
-      style: StackBoxStyler().minWidth(218).maxWidth(328).marginAll(16),
+      style: StackBoxStyler().width(218).marginAll(16),
       children: [
         ColumnBox(
           style: FlexBoxStyler().spacing(24),
-          children: [
-            _Toolbar(onPlay: onPlay),
-            Expanded(child: _PreviewList()),
-          ],
+          children: [Expanded(child: SlidesPreviewList())],
         ),
       ],
     );
   }
 }
 
-class _Toolbar extends StatelessWidget {
-  const _Toolbar({this.onPlay});
-
-  final VoidCallback? onPlay;
+class SlidesPreviewList extends StatelessWidget {
+  const SlidesPreviewList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return RowBox(
-      style: FlexBoxStyler().spacing(8),
-      children: [
-        Spacer(),
-        SizedBox(
-          width: 48,
-          child: HeroIconButton(
-            icon: CupertinoIcons.share,
-            variant: .secondary,
-            onPressed: () {},
-          ),
-        ),
-        SizedBox(
-          width: 48,
-          child: HeroIconButton(
-            icon: CupertinoIcons.play,
-            onPressed: onPlay ?? () {},
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PreviewList extends StatelessWidget {
-  const _PreviewList();
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = context.read<DeckController>();
-    final slides = controller.slides.watch(context);
+    final slides = context.watch<SlideConfigurationStore>().slides;
 
     if (slides.isEmpty) {
-      return const Center(
-        child: Text('No slides', style: TextStyle(color: Colors.white54)),
+      return Center(
+        child: StyledText(
+          'No slides',
+          style: TextStyler().style(.color($muted())),
+        ),
       );
     }
 
@@ -99,24 +64,32 @@ class _PreviewItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final textScaler = context.watch<SlideConfigurationStore>().textScaler;
+
     return HeroCard(
       variant: .tertiary,
       child: Stack(
-        alignment: Alignment.bottomRight,
+        alignment: .bottomRight,
         children: [
           Box(
             style: BoxStyler().wrap(.aspectRatio(16 / 9)),
             child: FittedBox(
-              fit: BoxFit.cover,
+              fit: .cover,
               alignment: .topLeft,
-              child: SlideRenderView(configuration),
+              child: SlideRenderView(
+                configuration.copyWith(
+                  style: configuration.style.merge(
+                    SlideStyle(textScaleFactor: TextScaler.linear(1)),
+                  ),
+                ),
+              ),
             ),
           ),
           Box(
             style: BoxStyler()
                 .marginAll(8)
                 .padding(.horizontal(10).vertical(2))
-                .color($backdrop())
+                .color($overlay())
                 .borderRounded(12)
                 .textStyle(.color($surfaceForeground()).fontSize(12)),
             child: StyledText('${index + 1}'),

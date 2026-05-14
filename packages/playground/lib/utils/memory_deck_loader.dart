@@ -21,7 +21,7 @@ class MemoryDeckLoader extends DeckLoader {
         for (final raw in rawSlides)
           Slide(
             key: raw.key,
-            options: SlideOptions.parse(raw.frontmatter),
+            options: .parse(raw.frontmatter),
             sections: const SectionParser().parse(raw.content),
             comments: const CommentParser().parse(raw.content),
           ),

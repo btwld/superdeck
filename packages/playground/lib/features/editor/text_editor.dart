@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hero_ui/hero_ui.dart';
+import 'package:provider/provider.dart';
 
 import 'package:super_editor/super_editor.dart';
 
 import '../../utils/edit_reaction.dart';
+import '../../utils/memory_deck_loader.dart';
 
 class TextEditor extends StatefulWidget {
-  const TextEditor({super.key, required this.initialText, this.onChanged});
+  const TextEditor({super.key, this.onChanged, this.onInit});
 
-  final String initialText;
   final ValueChanged<String>? onChanged;
+  final VoidCallback? onInit;
 
   @override
   State<TextEditor> createState() => _TextEditorState();
@@ -26,10 +29,16 @@ class _TextEditorState extends State<TextEditor> {
 
     _document = MutableDocument(
       nodes: [
+        ParagraphNode(id: Editor.createNodeId(), text: AttributedText('---\n')),
         ParagraphNode(
           id: Editor.createNodeId(),
-          text: AttributedText(widget.initialText),
+          text: AttributedText('# Title'),
         ),
+        ParagraphNode(
+          id: Editor.createNodeId(),
+          text: AttributedText('## Subtitle\n'),
+        ),
+        ParagraphNode(id: Editor.createNodeId(), text: AttributedText('---\n')),
       ],
     );
 
@@ -41,18 +50,18 @@ class _TextEditorState extends State<TextEditor> {
       requestHandlers: List.from(defaultRequestHandlers),
       reactionPipeline: [
         UpdateComposerTextStylesReaction(),
-        // HeaderConversionReaction(),
         SeparatorColorReaction(),
-        // Intentionally omitting content-conversion reactions
-        // (HorizontalRuleConversionReaction, HeaderConversionReaction, etc.)
-        // so raw markdown characters like --- and # are kept as-is.
+        HeaderHighlightReaction(),
+        BlockHighlightReaction(),
       ],
     );
+
+    context.read<MemoryDeckLoader>().updateMarkdown(_extractText());
   }
 
   void _onDocumentChanged(DocumentChangeLog changeLog) {
     final text = _extractText();
-    widget.onChanged?.call(text);
+    context.read<MemoryDeckLoader>().updateMarkdown(text);
   }
 
   String _extractText() {
@@ -82,11 +91,8 @@ class _TextEditorState extends State<TextEditor> {
       child: HeroCard(
         child: SuperEditor(
           editor: _editor,
+          keyboardActions: [...defaultKeyboardActions],
           documentOverlayBuilders: [
-            const SuperEditorIosToolbarFocalPointDocumentLayerBuilder(),
-            const SuperEditorIosHandlesDocumentLayerBuilder(),
-            const SuperEditorAndroidToolbarFocalPointDocumentLayerBuilder(),
-            const SuperEditorAndroidHandlesDocumentLayerBuilder(),
             DefaultCaretOverlayBuilder(
               caretStyle: CaretStyle(color: $accent.resolve(context)),
             ),
@@ -102,23 +108,32 @@ class _TextEditorState extends State<TextEditor> {
                   ),
                 };
               }),
-              StyleRule(const BlockSelector("header1"), (doc, docNode) {
-                return {
-                  "textStyle": const TextStyle(
-                    color: Color(0xFF333333),
-                    fontSize: 38,
-                    fontWeight: FontWeight.bold,
-                  ),
-                };
-              }),
             ],
             inlineTextStyler: (attributions, textStyle) {
               var style = const TextStyle(fontSize: 16).merge(textStyle);
+
               for (final attribution in attributions) {
-                if (attribution == separatorAttribution) {
-                  style = style.copyWith(
-                    color: $separatorTertiary.resolve(context),
-                  );
+                switch (attribution) {
+                  case separatorAttribution:
+                    style = style.copyWith(
+                      color: $separatorTertiary.resolve(context),
+                    );
+                    break;
+                  case headerAttribution:
+                    style = style.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: $foreground.resolve(context),
+                    );
+                    break;
+                  case blockAttribution:
+                    style = style.copyWith(color: $danger.resolve(context));
+                    break;
+                  case blockKeyAttribution:
+                    style = style.copyWith(color: $warning.resolve(context));
+                    break;
+                  case blockValueAttribution:
+                    style = style.copyWith(color: $foreground.resolve(context));
+                    break;
                 }
               }
               return style;

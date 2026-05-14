@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
+import 'package:playground/stores/slide_configuration_store.dart';
 import 'package:provider/provider.dart';
-import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 class PresentationPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class _PresentationPageState extends State<PresentationPage> {
   int _slideIndex = 0;
 
   void _goNext() {
-    final slides = context.read<DeckController>().slides.value;
+    final slides = context.read<SlideConfigurationStore>().slides;
     if (_slideIndex < slides.length - 1) {
       setState(() => _slideIndex++);
     }
@@ -31,9 +31,10 @@ class _PresentationPageState extends State<PresentationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.read<DeckController>();
+    final slides = context.watch<SlideConfigurationStore>().slides;
 
     return Scaffold(
+      backgroundColor: $background.resolve(context),
       body: KeyboardListener(
         focusNode: FocusNode()..requestFocus(),
         autofocus: true,
@@ -49,24 +50,21 @@ class _PresentationPageState extends State<PresentationPage> {
             }
           }
         },
-        child: GestureDetector(
-          onTap: _goNext,
-          child: Watch((context) {
-            final slides = controller.slides.value;
-            if (slides.isEmpty) {
-              return _EmptyState();
-            }
-
-            final index = _slideIndex.clamp(0, slides.length - 1);
-
-            return Center(
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: SlideRenderView(slides[index]),
+        child: slides.isEmpty
+            ? const _EmptyState()
+            : GestureDetector(
+                onTap: _goNext,
+                child: Center(
+                  child: SizedBox.expand(
+                    child: FittedBox(
+                      fit: .cover,
+                      child: SlideRenderView(
+                        slides[_slideIndex.clamp(0, slides.length - 1)],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            );
-          }),
-        ),
       ),
     );
   }
