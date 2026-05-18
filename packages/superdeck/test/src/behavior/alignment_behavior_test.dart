@@ -126,7 +126,7 @@ void main() {
         expect(alignWidget.alignment, Alignment.centerLeft);
       });
 
-      testWidgets('WidgetBlock without explicit align defaults to center', (
+      testWidgets('WidgetBlock without explicit align defaults to centerLeft', (
         tester,
       ) async {
         final slide = Slide(
@@ -142,7 +142,7 @@ void main() {
         );
 
         final alignWidget = tester.widget<Align>(find.byType(Align).first);
-        expect(alignWidget.alignment, Alignment.center);
+        expect(alignWidget.alignment, Alignment.centerLeft);
       });
     });
 
