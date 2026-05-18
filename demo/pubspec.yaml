@@ -15,7 +15,7 @@ dependencies:
   superdeck: ^1.0.0
   signals_flutter: ^6.0.4
   naked_ui: ^0.2.0-beta.7
-  remix: ^0.1.0-beta.1
+  remix: ^0.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -12,8 +12,19 @@ class SlideConfigurationStore extends ChangeNotifier {
 
   late List<SlideConfiguration> _slides;
   late final void Function() _unsubscribe;
+  int _activeSlideIndex = 0;
 
   List<SlideConfiguration> get slides => _slides;
+
+  int get activeSlideIndex => _activeSlideIndex;
+
+  set activeSlideIndex(int value) {
+    final index = value - 1;
+
+    if (_activeSlideIndex == index) return;
+    _activeSlideIndex = index;
+    notifyListeners();
+  }
 
   @override
   void dispose() {

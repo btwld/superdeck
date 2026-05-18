@@ -57,7 +57,7 @@ class _PresentationPageState extends State<PresentationPage> {
                 child: Center(
                   child: SizedBox.expand(
                     child: FittedBox(
-                      fit: .cover,
+                      fit: .fitWidth,
                       child: SlideRenderView(
                         slides[_slideIndex.clamp(0, slides.length - 1)],
                       ),

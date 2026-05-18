@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
@@ -30,7 +29,9 @@ class SlidesPreviewList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slides = context.watch<SlideConfigurationStore>().slides;
+    final store = context.watch<SlideConfigurationStore>();
+    final slides = store.slides;
+    final activeIndex = store.activeSlideIndex;
 
     if (slides.isEmpty) {
       return Center(
@@ -46,9 +47,14 @@ class SlidesPreviewList extends StatelessWidget {
       child: ListView.builder(
         itemCount: slides.length,
         itemBuilder: (context, index) {
+          final isActive = index == activeIndex;
           return Padding(
             padding: const .only(bottom: 24),
-            child: _PreviewItem(index: index, configuration: slides[index]),
+            child: _PreviewItem(
+              index: index,
+              configuration: slides[index],
+              isActive: isActive,
+            ),
           );
         },
       ),
@@ -57,10 +63,15 @@ class SlidesPreviewList extends StatelessWidget {
 }
 
 class _PreviewItem extends StatelessWidget {
-  const _PreviewItem({required this.index, required this.configuration});
+  const _PreviewItem({
+    required this.index,
+    required this.configuration,
+    this.isActive = false,
+  });
 
   final int index;
   final SlideConfiguration configuration;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +100,13 @@ class _PreviewItem extends StatelessWidget {
             style: BoxStyler()
                 .marginAll(8)
                 .padding(.horizontal(10).vertical(2))
-                .color($overlay())
+                .color(isActive ? $accent() : $overlay())
                 .borderRounded(12)
-                .textStyle(.color($surfaceForeground()).fontSize(12)),
+                .textStyle(
+                  .color(
+                    isActive ? $accentForeground() : $surfaceForeground(),
+                  ).fontSize(12),
+                ),
             child: StyledText('${index + 1}'),
           ),
         ],

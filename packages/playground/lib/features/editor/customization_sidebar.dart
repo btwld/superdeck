@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:hero_ui/hero_ui.dart';
+import 'package:playground/features/editor/preview_sidebar.dart';
 import 'package:remix/remix.dart';
 
 class CustomizationSidebar extends StatelessWidget {
@@ -11,13 +12,15 @@ class CustomizationSidebar extends StatelessWidget {
       style: StackBoxStyler().width(280).marginAll(16),
       children: [
         ColumnBox(
+          style: FlexBoxStyler().spacing(24),
           children: [
             _Toolbar(),
-            Padding(
-              padding: const .symmetric(vertical: 16),
-              child: HeroDivider(),
-            ),
-            Expanded(child: _TextScalerTool()),
+            Expanded(child: SlidesPreviewList()),
+            // Padding(
+            //   padding: const .symmetric(vertical: 16),
+            //   child: HeroDivider(),
+            // ),
+            // Expanded(child: _TextScalerTool()),
           ],
         ),
       ],

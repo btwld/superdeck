@@ -7,9 +7,11 @@ import 'package:playground/utils/takeover_route.dart';
 import 'package:playground/features/editor/editor_page.dart';
 import 'package:provider/provider.dart';
 import 'package:remix/remix.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 void main() {
+  SignalsObserver.instance = null;
   runApp(const PlaygroundApp());
 }
 

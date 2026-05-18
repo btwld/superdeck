@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:super_editor/super_editor.dart';
 
+import '../../stores/slide_configuration_store.dart';
 import '../../utils/edit_reaction.dart';
 import '../../utils/memory_deck_loader.dart';
 
@@ -45,6 +46,7 @@ class _TextEditorState extends State<TextEditor> {
     _document.addListener(_onDocumentChanged);
 
     _composer = MutableDocumentComposer();
+    _composer.selectionNotifier.addListener(_onSelectionChanged);
     _editor = Editor(
       editables: {Editor.documentKey: _document, Editor.composerKey: _composer},
       requestHandlers: List.from(defaultRequestHandlers),
@@ -64,6 +66,24 @@ class _TextEditorState extends State<TextEditor> {
     context.read<MemoryDeckLoader>().updateMarkdown(text);
   }
 
+  void _onSelectionChanged() {
+    final selection = _composer.selection;
+
+    if (selection == null) return;
+
+    final caretNodeId = selection.extent.nodeId;
+    var slideIndex = 0;
+
+    for (final node in _document) {
+      if (node.id == caretNodeId) break;
+      if (node is TextNode && node.text.toPlainText().trim() == '---') {
+        slideIndex++;
+      }
+    }
+
+    context.read<SlideConfigurationStore>().activeSlideIndex = slideIndex;
+  }
+
   String _extractText() {
     final buffer = StringBuffer();
     var first = true;
@@ -79,6 +99,7 @@ class _TextEditorState extends State<TextEditor> {
 
   @override
   void dispose() {
+    _composer.selectionNotifier.removeListener(_onSelectionChanged);
     _document.removeListener(_onDocumentChanged);
     _editor.dispose();
     super.dispose();
