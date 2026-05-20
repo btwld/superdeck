@@ -22,6 +22,7 @@ export 'src/styling/components/slide.dart';
 
 // UI
 export 'src/ui/superdeck_app.dart';
+export 'src/ui/widgets/loading_indicator.dart';
 
 // Presentation
 export 'src/deck/deck_controller.dart';
