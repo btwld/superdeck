@@ -195,7 +195,7 @@ class _TextEditorState extends State<TextEditor> {
                 return {
                   Styles.textStyle: TextStyle(
                     color: $muted.resolve(context),
-                    fontSize: 18,
+                    fontSize: 16,
                     height: 1.4,
                     fontFamily: GoogleFonts.googleSansCode().fontFamily,
                   ),

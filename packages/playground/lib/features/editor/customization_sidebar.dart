@@ -183,16 +183,22 @@ class _SwatchRow extends StatelessWidget {
       style: FlexBoxStyler().spacing(8),
       children: [
         for (final swatch in swatches)
-          GestureDetector(
-            onTap: () => onSelected(swatch.color),
+          Pressable(
+            onPress: () => onSelected(swatch.color),
             child: Box(
               style: BoxStyler()
                   .width(28)
                   .height(28)
                   .color(swatch.color)
                   .borderRounded(999)
+                  .shadowOnly(
+                    color: swatch.color == selected ? $accent() : $background(),
+                    offset: Offset(0, 0),
+                    blurRadius: 0,
+                    spreadRadius: 2,
+                  )
                   .borderAll(
-                    color: swatch.color == selected ? $accent() : $border(),
+                    color: swatch.color == selected ? $background() : $border(),
                     width: swatch.color == selected ? 2 : 1,
                   ),
             ),

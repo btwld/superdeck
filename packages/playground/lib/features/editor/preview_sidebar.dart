@@ -158,20 +158,11 @@ class _SlidePreview extends StatelessWidget {
       final isThumbnailReady = status == AsyncFileStatus.done && !active;
 
       return isThumbnailReady
-          ? Banner(
+          ? KeyedSubtree(
               key: const ValueKey('thumbnail'),
-              message: 'Thumbnail',
-              location: .topStart,
               child: thumbnail!.build(context),
             )
-          : KeyedSubtree(
-              key: const ValueKey('fallback'),
-              child: Banner(
-                message: 'Fallback',
-                location: .topStart,
-                child: fallback(),
-              ),
-            );
+          : KeyedSubtree(key: const ValueKey('fallback'), child: fallback());
     });
   }
 }
