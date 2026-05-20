@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
 import 'package:super_editor/super_editor.dart';
 
-import '../../stores/slide_configuration_store.dart';
+import '../../stores/editor_state.dart';
 import '../../utils/edit_reaction.dart';
 import '../../utils/memory_deck_loader.dart';
 
@@ -23,6 +23,8 @@ class _TextEditorState extends State<TextEditor> {
   late final MutableDocument _document;
   late final MutableDocumentComposer _composer;
   late final Editor _editor;
+  late final void Function() _unsubscribeActiveIndex;
+  bool _isUpdatingFromCursor = false;
 
   @override
   void initState() {
@@ -59,6 +61,12 @@ class _TextEditorState extends State<TextEditor> {
     );
 
     context.read<MemoryDeckLoader>().updateMarkdown(_extractText());
+
+    final editorState = context.read<EditorState>();
+    _unsubscribeActiveIndex = editorState.activeSlideIndex.subscribe((index) {
+      if (_isUpdatingFromCursor) return;
+      _scrollToSlide(index);
+    });
   }
 
   void _onDocumentChanged(DocumentChangeLog changeLog) {
@@ -81,7 +89,69 @@ class _TextEditorState extends State<TextEditor> {
       }
     }
 
-    context.read<SlideConfigurationStore>().activeSlideIndex = slideIndex;
+    final editorState = context.read<EditorState>();
+    // The first --- is the frontmatter separator, so slide 0 content
+    // appears after the first ---. Subtract 1 to convert separator count
+    // to 0-based slide index.
+    final adjustedIndex = (slideIndex - 1).clamp(0, slideIndex);
+    if (editorState.activeSlideIndex.value != adjustedIndex) {
+      _isUpdatingFromCursor = true;
+      editorState.activeSlideIndex.value = adjustedIndex;
+      _isUpdatingFromCursor = false;
+    }
+  }
+
+  void _scrollToSlide(int targetIndex) {
+    // Find the node that starts the target slide's content.
+    // Slide N starts after the (N+1)th --- separator.
+    var separatorCount = 0;
+    String? targetNodeId;
+
+    for (final node in _document) {
+      if (node is TextNode && node.text.toPlainText().trim() == '---') {
+        separatorCount++;
+        if (separatorCount == targetIndex + 1) {
+          // The next node after this separator is the slide's content.
+          // For now, place caret at the separator itself — the content
+          // node may not exist yet if the slide is empty.
+          final nodeIndex = _document.getNodeIndexById(node.id);
+          if (nodeIndex + 1 < _document.length) {
+            targetNodeId = _document.getNodeAt(nodeIndex + 1)!.id;
+          } else {
+            targetNodeId = node.id;
+          }
+          break;
+        }
+      }
+    }
+
+    // For slide 0, target the first content node after the first ---
+    if (targetIndex == 0 && targetNodeId == null) {
+      for (final node in _document) {
+        if (node is TextNode && node.text.toPlainText().trim() == '---') {
+          final nodeIndex = _document.getNodeIndexById(node.id);
+          if (nodeIndex + 1 < _document.length) {
+            targetNodeId = _document.getNodeAt(nodeIndex + 1)!.id;
+          }
+          break;
+        }
+      }
+    }
+
+    if (targetNodeId == null) return;
+
+    _editor.execute([
+      ChangeSelectionRequest(
+        DocumentSelection.collapsed(
+          position: DocumentPosition(
+            nodeId: targetNodeId,
+            nodePosition: const TextNodePosition(offset: 0),
+          ),
+        ),
+        SelectionChangeType.placeCaret,
+        SelectionReason.userInteraction,
+      ),
+    ]);
   }
 
   String _extractText() {
@@ -99,6 +169,7 @@ class _TextEditorState extends State<TextEditor> {
 
   @override
   void dispose() {
+    _unsubscribeActiveIndex();
     _composer.selectionNotifier.removeListener(_onSelectionChanged);
     _document.removeListener(_onDocumentChanged);
     _editor.dispose();
@@ -126,6 +197,7 @@ class _TextEditorState extends State<TextEditor> {
                     color: $muted.resolve(context),
                     fontSize: 18,
                     height: 1.4,
+                    fontFamily: GoogleFonts.googleSansCode().fontFamily,
                   ),
                 };
               }),

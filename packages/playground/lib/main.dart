@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
-import 'package:playground/stores/slide_configuration_store.dart';
+import 'package:playground/stores/deck_customization_store.dart';
+import 'package:playground/stores/editor_state.dart';
+import 'package:playground/utils/memory_asset_cache_store.dart';
 import 'package:playground/utils/memory_deck_loader.dart';
 import 'package:playground/features/presentation/presentation_page.dart';
 import 'package:playground/utils/takeover_route.dart';
 import 'package:playground/features/editor/editor_page.dart';
 import 'package:provider/provider.dart';
-import 'package:remix/remix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
@@ -65,26 +66,20 @@ class _ProvidersState extends State<_Providers> {
       providers: [
         Provider<MemoryDeckLoader>(create: (_) => MemoryDeckLoader()),
         Provider<DeckController>(
-          create: (context) {
-            final baseStyle = SlideStyle(
-              h1: TextStyler().style(.color($foreground())),
-              h2: TextStyler().style(.color($foreground())),
-              h3: TextStyler().style(.color($foreground())),
-              h4: TextStyler().style(.color($foreground())),
-              h5: TextStyler().style(.color($foreground())),
-              h6: TextStyler().style(.color($foreground())),
-              p: TextStyler().style(.color($foreground())),
-            );
-
-            return DeckController(
-              deckLoader: context.read<MemoryDeckLoader>(),
-              options: .new(baseStyle: baseStyle),
-            );
-          },
+          create: (context) => DeckController(
+            deckLoader: context.read<MemoryDeckLoader>(),
+            options: .new(),
+            assetCacheStore: MemoryAssetCacheStore(),
+          ),
         ),
-        ChangeNotifierProvider<SlideConfigurationStore>(
+        Provider<DeckCustomizationStore>(
           create: (context) =>
-              SlideConfigurationStore(context.read<DeckController>()),
+              DeckCustomizationStore(context.read<DeckController>()),
+          dispose: (_, store) => store.dispose(),
+        ),
+        Provider<EditorState>(
+          create: (_) => EditorState(),
+          dispose: (_, state) => state.dispose(),
         ),
       ],
       child: widget.child,

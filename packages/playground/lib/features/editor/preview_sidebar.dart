@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
-import 'package:playground/stores/slide_configuration_store.dart';
 import 'package:provider/provider.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
-class PreviewSidebar extends StatelessWidget {
-  const PreviewSidebar({super.key, this.onPlay});
+import '../../stores/editor_state.dart';
 
-  final VoidCallback? onPlay;
+class PreviewSidebar extends StatelessWidget {
+  const PreviewSidebar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StackBox(
-      style: StackBoxStyler().width(218).marginAll(16),
-      children: [
-        ColumnBox(
-          style: FlexBoxStyler().spacing(24),
-          children: [Expanded(child: SlidesPreviewList())],
-        ),
-      ],
+    return HeroMode(
+      enabled: false,
+      child: StackBox(
+        style: StackBoxStyler().width(218).marginAll(16),
+        children: [
+          ColumnBox(
+            style: FlexBoxStyler().spacing(24),
+            children: [Expanded(child: SlidesPreviewList())],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -29,36 +32,44 @@ class SlidesPreviewList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = context.watch<SlideConfigurationStore>();
-    final slides = store.slides;
-    final activeIndex = store.activeSlideIndex;
+    final controller = context.read<DeckController>();
+    final editorState = context.read<EditorState>();
 
-    if (slides.isEmpty) {
-      return Center(
-        child: StyledText(
-          'No slides',
-          style: TextStyler().style(.color($muted())),
+    return Watch((context) {
+      final slides = controller.slides.value;
+      final activeIndex = editorState.activeSlideIndex.value;
+
+      if (slides.isEmpty) {
+        return Center(
+          child: StyledText(
+            'No slides',
+            style: TextStyler().style(.color($muted())),
+          ),
+        );
+      }
+
+      return ScrollConfiguration(
+        behavior: ScrollBehavior().copyWith(scrollbars: false),
+        child: ListView.builder(
+          clipBehavior: .none,
+          itemCount: slides.length,
+          itemBuilder: (context, index) {
+            final isActive = index == activeIndex;
+            return Padding(
+              padding: const .only(bottom: 24),
+              child: _PreviewItem(
+                index: index,
+                configuration: slides[index],
+                isActive: isActive,
+                onTap: () {
+                  editorState.activeSlideIndex.value = index;
+                },
+              ),
+            );
+          },
         ),
       );
-    }
-
-    return ScrollConfiguration(
-      behavior: ScrollBehavior().copyWith(scrollbars: false),
-      child: ListView.builder(
-        itemCount: slides.length,
-        itemBuilder: (context, index) {
-          final isActive = index == activeIndex;
-          return Padding(
-            padding: const .only(bottom: 24),
-            child: _PreviewItem(
-              index: index,
-              configuration: slides[index],
-              isActive: isActive,
-            ),
-          );
-        },
-      ),
-    );
+    });
   }
 }
 
@@ -67,50 +78,100 @@ class _PreviewItem extends StatelessWidget {
     required this.index,
     required this.configuration,
     this.isActive = false,
+    this.onTap,
   });
 
   final int index;
   final SlideConfiguration configuration;
   final bool isActive;
+  final VoidCallback? onTap;
+
+  Widget _buildSlideRender() {
+    return FittedBox(
+      fit: .cover,
+      alignment: .topLeft,
+      child: SlideRenderView(
+        configuration.copyWith(style: configuration.style),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // final textScaler = context.watch<SlideConfigurationStore>().textScaler;
+    final controller = context.read<DeckController>();
 
-    return HeroCard(
-      variant: .tertiary,
-      child: Stack(
-        alignment: .bottomRight,
-        children: [
-          Box(
-            style: BoxStyler().wrap(.aspectRatio(16 / 9)),
-            child: FittedBox(
-              fit: .cover,
-              alignment: .topLeft,
-              child: SlideRenderView(
-                configuration.copyWith(
-                  style: configuration.style.merge(
-                    SlideStyle(textScaleFactor: TextScaler.linear(1)),
-                  ),
-                ),
+    return GestureDetector(
+      onTap: onTap,
+      child: HeroCard(
+        variant: .tertiary,
+        child: Stack(
+          alignment: .bottomRight,
+          children: [
+            Box(
+              style: BoxStyler().wrap(.aspectRatio(16 / 9)),
+              child: _SlidePreview(
+                active: isActive,
+                controller: controller,
+                configuration: configuration,
+                fallback: _buildSlideRender,
               ),
             ),
-          ),
-          Box(
-            style: BoxStyler()
-                .marginAll(8)
-                .padding(.horizontal(10).vertical(2))
-                .color(isActive ? $accent() : $overlay())
-                .borderRounded(12)
-                .textStyle(
-                  .color(
-                    isActive ? $accentForeground() : $surfaceForeground(),
-                  ).fontSize(12),
-                ),
-            child: StyledText('${index + 1}'),
-          ),
-        ],
+            Box(
+              style: BoxStyler()
+                  .marginAll(8)
+                  .padding(.horizontal(10).vertical(2))
+                  .color(isActive ? $accent() : $overlay())
+                  .borderRounded(12)
+                  .textStyle(
+                    .color(
+                      isActive ? $accentForeground() : $surfaceForeground(),
+                    ).fontSize(12),
+                  ),
+              child: StyledText('${index + 1}'),
+            ),
+          ],
+        ),
       ),
     );
+  }
+}
+
+class _SlidePreview extends StatelessWidget {
+  const _SlidePreview({
+    required this.controller,
+    required this.configuration,
+    required this.active,
+    required this.fallback,
+  });
+
+  final DeckController controller;
+  final SlideConfiguration configuration;
+  final bool active;
+  final Widget Function() fallback;
+
+  @override
+  Widget build(BuildContext context) {
+    return Watch((context) {
+      final thumbnail = controller.presentation.getThumbnail(configuration.key);
+
+      final status = thumbnail?.status.value;
+      final isThumbnailReady = status == AsyncFileStatus.done && !active;
+
+      return isThumbnailReady
+          ? Banner(
+              key: const ValueKey('thumbnail'),
+              message: 'Thumbnail',
+              location: .topStart,
+              child: thumbnail!.build(context),
+            )
+          : KeyedSubtree(
+              key: const ValueKey('fallback'),
+              child: Banner(
+                message: 'Fallback',
+                location: .topStart,
+                child: fallback(),
+              ),
+            );
+    });
   }
 }
