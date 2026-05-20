@@ -9,9 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  mix: ^2.0.2
+  mix: ^2.0.3
   remix: ^0.2.0
-  super_editor: ^0.3.0-dev.51
+  super_editor: 0.3.0-dev.49
   provider: ^6.1.2
   signals_flutter: ^6.2.0
   google_fonts: ^8.1.0

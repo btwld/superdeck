@@ -16,7 +16,7 @@ class SlideRenderView extends StatelessWidget {
   Widget build(BuildContext context) {
     final oldMixScope = MixScope.maybeOf(context);
 
-    return MixScope(
+    return MixScope.inherit(
       colors: SDColors.colorMap,
       tokens: {...oldMixScope?.tokens ?? {}},
       child: InheritedData(
