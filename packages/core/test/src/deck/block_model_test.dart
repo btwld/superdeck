@@ -287,6 +287,24 @@ void main() {
         expect(block.scrollable, true);
       });
 
+      group('resolvedAlign', () {
+        test('defaults to centerLeft when align is not set', () {
+          final block = ContentBlock('Content');
+
+          expect(block.align, isNull);
+          expect(block.resolvedAlign, ContentAlignment.centerLeft);
+        });
+
+        test('uses explicit align when set', () {
+          final block = ContentBlock(
+            'Content',
+            align: ContentAlignment.center,
+          );
+
+          expect(block.resolvedAlign, ContentAlignment.center);
+        });
+      });
+
       group('copyWith', () {
         test('copies with new content', () {
           final original = ContentBlock('Original');
@@ -727,6 +745,24 @@ void main() {
           );
 
           expect(widget.args, {'custom': 'value', 'count': 42, 'flag': true});
+        });
+      });
+
+      group('resolvedAlign', () {
+        test('defaults to centerLeft when align is not set', () {
+          final widget = WidgetBlock(name: 'Test');
+
+          expect(widget.align, isNull);
+          expect(widget.resolvedAlign, ContentAlignment.centerLeft);
+        });
+
+        test('uses explicit align when set', () {
+          final widget = WidgetBlock(
+            name: 'Test',
+            align: ContentAlignment.topRight,
+          );
+
+          expect(widget.resolvedAlign, ContentAlignment.topRight);
         });
       });
 

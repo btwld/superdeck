@@ -52,6 +52,23 @@ void main() {
         tester.expectBlockCount(9);
         expect(tester.takeException(), isNull);
       });
+
+      testWidgets('block without explicit align defaults to centerLeft', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'default-align',
+            sections: [
+              SectionBlock([ContentBlock('# No explicit align')]),
+            ],
+          ),
+        );
+
+        final align = tester.widget<Align>(find.byType(Align).first);
+        expect(align.alignment, Alignment.centerLeft);
+      });
     });
 
     group('scrollable behavior', () {

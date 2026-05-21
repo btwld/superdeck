@@ -48,6 +48,14 @@ sealed class Block with BlockMappable {
   );
 
   static final fromMap = BlockMapper.fromMap;
+
+  /// The effective alignment for this block.
+  ///
+  /// When [align] is not set explicitly, defaults to
+  /// [ContentAlignment.centerLeft] because paragraph-like content is easier
+  /// to read and scan when left-aligned. Set `align: center` explicitly to
+  /// restore the previous default.
+  ContentAlignment get resolvedAlign => align ?? ContentAlignment.centerLeft;
 }
 
 /// A section that contains multiple child blocks arranged horizontally.
