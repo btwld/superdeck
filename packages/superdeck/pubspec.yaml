@@ -30,8 +30,8 @@ dependencies:
   webview_flutter: ^4.10.0
   google_fonts: ^8.1.0
   qr_flutter: ^4.1.0
-  signals: ^6.2.0
-  signals_flutter: ^6.2.0
+  signals: ^7.0.0
+  signals_flutter: ^7.0.0
 
 dev_dependencies:
   flutter_test:
