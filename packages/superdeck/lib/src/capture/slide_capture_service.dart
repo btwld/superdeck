@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
+import 'package:mix/mix.dart';
+import '../ui/tokens/colors.dart';
 import '../ui/widgets/provider.dart';
 
 import '../rendering/slides/slide_view.dart';
@@ -117,6 +119,7 @@ class SlideCaptureService {
     RenderConfig config,
   ) async {
     try {
+      final mixScope = MixScope.maybeOf(config.context);
       final child = InheritedTheme.captureAll(
         config.context,
         MediaQuery(
@@ -124,7 +127,13 @@ class SlideCaptureService {
           child: MaterialApp(
             theme: Theme.of(config.context),
             debugShowCheckedModeBanner: false,
-            home: Scaffold(body: widget),
+
+            home: Scaffold(
+              body: MixScope(
+                tokens: {...?mixScope?.tokens, ...SDColors.colorMap},
+                child: widget,
+              ),
+            ),
           ),
         ),
       );

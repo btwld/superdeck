@@ -8,7 +8,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.3.2
+  google_fonts: ^8.1.0
   mesh: ^0.4.3
   mix: ^2.0.3
   superdeck_core: ^1.0.0
