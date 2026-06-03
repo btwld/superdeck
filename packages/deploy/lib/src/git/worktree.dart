@@ -35,13 +35,15 @@ class GitWorktree {
       'superdeck_publish_${DateTime.now().millisecondsSinceEpoch}',
     );
 
-    if (await _git.branchExists(targetBranch)) {
+    final branchExists = await _git.branchExists(targetBranch);
+    if (branchExists) {
       await _git.run(['worktree', 'add', '-f', path, targetBranch]);
-      _created = !_dryRun;
     } else {
       await _git.run(['worktree', 'add', '--detach', path]);
-      _created = !_dryRun;
+    }
+    _created = !_dryRun;
 
+    if (!branchExists) {
       await _git.run(
         ['checkout', '--orphan', targetBranch],
         workingDirectory: path,

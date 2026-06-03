@@ -124,7 +124,12 @@ Future<void> restoreIndexHtml(String? backupPath, {required Logger logger}) asyn
   final backupFile = File(backupPath);
   if (!backupFile.existsSync()) return;
 
-  final indexHtmlPath = backupPath.replaceAll('.bak', '');
+  // The backup path is always the index path with a trailing '.bak'; strip
+  // exactly that suffix (a plain replaceAll would corrupt paths whose parent
+  // directories happen to contain '.bak').
+  final indexHtmlPath = backupPath.endsWith('.bak')
+      ? backupPath.substring(0, backupPath.length - '.bak'.length)
+      : backupPath;
   try {
     await backupFile.copy(indexHtmlPath);
     await backupFile.delete();

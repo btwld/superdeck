@@ -53,11 +53,11 @@ class GitHubPagesOptions {
 /// isolated git worktree.
 class GitHubPagesTarget {
   final Logger _logger;
-  final ProcessRunner _processRunner;
+  final ProcessRunner _run;
 
   GitHubPagesTarget({required Logger logger, ProcessRunner? processRunner})
     : _logger = logger,
-      _processRunner = processRunner ?? defaultProcessRunner;
+      _run = processRunner ?? defaultProcessRunner;
 
   /// Runs the publish flow. Returns an exit code (0 == success).
   Future<int> publish(GitHubPagesOptions options) async {
@@ -87,7 +87,7 @@ class GitHubPagesTarget {
       workingDirectory: currentDir,
       logger: _logger,
       dryRun: options.dryRun,
-      processRunner: _processRunner,
+      processRunner: _run,
     );
 
     if (!await git.isGitRepository()) {
@@ -122,7 +122,7 @@ class GitHubPagesTarget {
 
       final builder = WebBuilder(
         logger: _logger,
-        processRunner: _processRunner,
+        processRunner: _run,
       );
       final built = await builder.build(
         appDir: appDir,
@@ -240,11 +240,7 @@ class GitHubPagesTarget {
 
     for (final entity in entities) {
       if (!entity.existsSync()) continue;
-      if (entity is Directory) {
-        await entity.delete(recursive: true);
-      } else {
-        await entity.delete();
-      }
+      await entity.delete(recursive: entity is Directory);
     }
 
     await _copyDirectory(buildDir, worktreePath);

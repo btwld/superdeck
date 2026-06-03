@@ -105,14 +105,14 @@ class GitRunner {
   Future<String?> currentBranch() async {
     final result = await query(['symbolic-ref', '--short', 'HEAD']);
 
-    return result == null ? null : result.stdout.toString().trim();
+    return result?.stdout.toString().trim();
   }
 
   /// The `origin` remote URL, or `null` if there is no origin.
   Future<String?> remoteUrl() async {
     final result = await query(['remote', 'get-url', 'origin']);
 
-    return result == null ? null : result.stdout.toString().trim();
+    return result?.stdout.toString().trim();
   }
 
   /// Whether a local branch named [branch] exists.
