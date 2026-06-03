@@ -1,0 +1,3 @@
+# Worktree and build flows mutate the filesystem and Directory.current;
+# serialize file execution to prevent races between tests.
+concurrency: 1

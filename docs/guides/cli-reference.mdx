@@ -135,9 +135,43 @@ dart run superdeck_cli:main build --verbose
 **Problem:** Build errors in watch mode
 **Solution:** Fix the error and save again; watch mode will retry automatically
 
-## Deploying to GitHub Pages
+## Deploying
 
-SuperDeck builds a plain Flutter web app, so any Flutter web deployment pipeline works. Two pieces are easy to forget and cause the most common failures:
+Deployment lives in a separate package, `superdeck_deploy`, which ships the
+`superdeck-deploy` executable. Install it alongside the CLI:
+
+```bash
+dart pub global activate superdeck_deploy
+```
+
+### One command: GitHub Pages
+
+`superdeck-deploy github-pages` builds the web app, auto-detects the
+`--base-href` from your `origin` remote, writes `.nojekyll`, and publishes the
+output to a branch (`gh-pages` by default) using an isolated git worktree — your
+working tree is never touched.
+
+```bash
+superdeck build          # generate the deck
+superdeck-deploy github-pages
+```
+
+Use `--dry-run` to preview the steps, `--no-push` to commit without pushing, or
+`--branch`, `--app-dir`, `--build-dir`, and `--base-href` to customize. See the
+[`superdeck_deploy` README](https://github.com/btwld/superdeck/tree/main/packages/deploy)
+for the full flag list.
+
+### Firebase Hosting
+
+```bash
+superdeck-deploy firebase --app-dir demo --project my-project
+```
+
+### Manual GitHub Pages pipeline
+
+If you prefer to wire up deployment yourself, SuperDeck builds a plain Flutter
+web app, so any Flutter web deployment pipeline works. Two pieces are easy to
+forget and cause the most common failures:
 
 - Pass `--base-href "/<repo>/"` to `flutter build web` so asset URLs resolve under the Pages subpath.
 - Write an empty `.nojekyll` file at the root of the published output so Pages does not drop Flutter's `_flutter/` directory.

@@ -19,8 +19,9 @@ This is a Melos monorepo with the following packages:
 packages/
   core/       # Rendering primitives, Markdown parsing, schema validation (Dart-only)
   superdeck/  # Flutter widgets and presentation components
-  cli/        # superdeck CLI tool (setup, build, publish, version)
+  cli/        # superdeck CLI tool (setup, build)
   builder/    # Code generators and build_runner integration
+  deploy/     # superdeck-deploy CLI: publish decks (GitHub Pages, Firebase)
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
 .planning/    # Internal development docs (not published)
@@ -32,6 +33,7 @@ docs/         # User-facing documentation (MDX format)
 - **superdeck**: Flutter widgets, DeckController, navigation, thumbnail/capture services, theme system
 - **cli**: CLI commands for project setup and building slides
 - **builder**: build_runner generators for code generation
+- **deploy**: standalone `superdeck-deploy` CLI that publishes a built deck to GitHub Pages or Firebase Hosting (no Flutter dependency)
 
 ## Environment Setup
 
