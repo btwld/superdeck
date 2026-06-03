@@ -98,16 +98,16 @@ class GitHubPagesTarget {
       return ExitCode.usage.code;
     }
 
-    final currentBranch = await git.currentBranch();
-    if (currentBranch == null || currentBranch.isEmpty) {
-      _logger.err('Failed to determine the current branch.');
+    final sourceRef = await git.currentBranch();
+    if (sourceRef == null || sourceRef.isEmpty) {
+      _logger.err('Failed to determine the current commit.');
 
       return ExitCode.software.code;
     }
 
     final remote = await _resolveRemote(git);
 
-    String? indexHtmlBackup;
+    IndexHtmlBackup? indexHtmlBackup;
     if (options.build) {
       final baseHref = options.baseHref ?? remote?.baseHref;
       if (baseHref != null) {
@@ -177,7 +177,7 @@ class GitHubPagesTarget {
         await git.run([
           'commit',
           '-m',
-          '${options.message}\n\nPublished from branch $currentBranch',
+          '${options.message}\n\nPublished from $sourceRef',
         ], workingDirectory: worktree.path);
 
         if (options.push) {
@@ -197,7 +197,7 @@ class GitHubPagesTarget {
         options.dryRun ? 'Dry run completed' : 'Publication successful',
       );
 
-      _reportResult(options, remote, currentBranch, hasChanges: hasChanges);
+      _reportResult(options, remote, hasChanges: hasChanges);
 
       return ExitCode.success.code;
     } catch (e, stackTrace) {
@@ -267,11 +267,10 @@ class GitHubPagesTarget {
 
   void _reportResult(
     GitHubPagesOptions options,
-    GitHubRemote? remote,
-    String currentBranch, {
+    GitHubRemote? remote, {
     required bool hasChanges,
   }) {
-    final pagesUrl = remote?.pagesUrl(options.branch);
+    final pagesUrl = remote?.pagesUrl;
 
     if (!options.push && hasChanges && !options.dryRun) {
       _logger.info('\nTo push your changes to GitHub, run:');

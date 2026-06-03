@@ -1,5 +1,5 @@
 name: superdeck_deploy
-description: Deployment tooling for SuperDeck presentations (GitHub Pages, Firebase Hosting).
+description: Deployment tooling for SuperDeck presentations (GitHub Pages).
 version: 1.0.0
 homepage: https://github.com/btwld/superdeck
 documentation: https://docs.page/btwld/superdeck

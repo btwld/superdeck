@@ -84,12 +84,23 @@ const String customIndexHtml = r'''
 </html>
 ''';
 
+/// A handle describing how to undo an [installLoadingIndexHtml] swap.
+class IndexHtmlBackup {
+  /// The `index.html` that was overwritten with the template.
+  final String indexPath;
+
+  /// The saved original, or `null` when no `index.html` existed beforehand
+  /// (in which case the written template should be deleted on restore).
+  final String? backupPath;
+
+  const IndexHtmlBackup({required this.indexPath, this.backupPath});
+}
+
 /// Installs [customIndexHtml] into `<webDir>/index.html`, backing up any
 /// existing file.
 ///
-/// Returns the backup path (to pass to [restoreIndexHtml]) or `null` when there
-/// was nothing to back up or in [dryRun] mode.
-Future<String?> installLoadingIndexHtml(
+/// Returns a handle to pass to [restoreIndexHtml], or `null` in [dryRun] mode.
+Future<IndexHtmlBackup?> installLoadingIndexHtml(
   String webDir, {
   required Logger logger,
   bool dryRun = false,
@@ -101,40 +112,59 @@ Future<String?> installLoadingIndexHtml(
   }
 
   final indexHtmlPath = p.join(webDir, 'index.html');
-  String? backupPath;
-
+  final backupPath = p.join(webDir, 'index.html.bak');
   final indexFile = File(indexHtmlPath);
+  final backupFile = File(backupPath);
+
+  // Self-heal from a previously interrupted run: a leftover backup means the
+  // current index.html is our template, not the user's file. Restore it first
+  // so we never copy the template over the genuine original below.
+  if (backupFile.existsSync()) {
+    backupFile.copySync(indexHtmlPath);
+    logger.detail('Recovered index.html from a previous run\'s backup');
+  }
+
+  String? savedBackup;
   if (indexFile.existsSync()) {
-    backupPath = p.join(webDir, 'index.html.bak');
     await indexFile.copy(backupPath);
+    savedBackup = backupPath;
     logger.detail('Created backup of original index.html');
   }
 
   await File(indexHtmlPath).writeAsString(customIndexHtml);
   logger.info('Installed custom index.html with loading indicator');
 
-  return backupPath;
+  return IndexHtmlBackup(indexPath: indexHtmlPath, backupPath: savedBackup);
 }
 
-/// Restores the original `index.html` from a backup created by
-/// [installLoadingIndexHtml]. Safe to call with `null` or a missing backup.
-Future<void> restoreIndexHtml(String? backupPath, {required Logger logger}) async {
-  if (backupPath == null) return;
+/// Undoes an [installLoadingIndexHtml] swap. Restores the original when one was
+/// backed up, otherwise removes the template that was written. Safe to call
+/// with `null`.
+Future<void> restoreIndexHtml(
+  IndexHtmlBackup? backup, {
+  required Logger logger,
+}) async {
+  if (backup == null) return;
 
-  final backupFile = File(backupPath);
-  if (!backupFile.existsSync()) return;
-
-  // The backup path is always the index path with a trailing '.bak'; strip
-  // exactly that suffix (a plain replaceAll would corrupt paths whose parent
-  // directories happen to contain '.bak').
-  final indexHtmlPath = backupPath.endsWith('.bak')
-      ? backupPath.substring(0, backupPath.length - '.bak'.length)
-      : backupPath;
   try {
-    await backupFile.copy(indexHtmlPath);
-    await backupFile.delete();
-    logger.detail('Restored original index.html from backup');
+    final backupPath = backup.backupPath;
+    if (backupPath != null && File(backupPath).existsSync()) {
+      final backupFile = File(backupPath);
+      await backupFile.copy(backup.indexPath);
+      await backupFile.delete();
+      logger.detail('Restored original index.html from backup');
+
+      return;
+    }
+
+    // No original existed: remove the template we wrote so the working tree is
+    // left exactly as we found it.
+    final indexFile = File(backup.indexPath);
+    if (indexFile.existsSync()) {
+      await indexFile.delete();
+      logger.detail('Removed temporary index.html (no original to restore)');
+    }
   } catch (e) {
-    logger.warn('Failed to restore index.html backup: $e');
+    logger.warn('Failed to restore index.html: $e');
   }
 }

@@ -13,6 +13,17 @@ void main() {
       expect(b.repo, 'superdeck');
     });
 
+    test('preserves dots in the repo name (user/org Pages sites)', () {
+      final a = GitHubRemote.parse(
+        'https://github.com/btwld/btwld.github.io.git',
+      )!;
+      expect(a.owner, 'btwld');
+      expect(a.repo, 'btwld.github.io');
+
+      final b = GitHubRemote.parse('git@github.com:btwld/btwld.github.io')!;
+      expect(b.repo, 'btwld.github.io');
+    });
+
     test('parses SSH urls', () {
       final remote = GitHubRemote.parse('git@github.com:btwld/superdeck.git')!;
       expect(remote.owner, 'btwld');
@@ -26,22 +37,26 @@ void main() {
   });
 
   group('baseHref', () {
-    test('is the repo subpath', () {
+    test('is the repo subpath for a project site', () {
       expect(const GitHubRemote('btwld', 'superdeck').baseHref, '/superdeck/');
+    });
+
+    test('is the domain root for a user/org site', () {
+      expect(const GitHubRemote('btwld', 'btwld.github.io').baseHref, '/');
     });
   });
 
   group('pagesUrl', () {
-    test('uses the project subpath for gh-pages', () {
+    test('uses the project subpath for a project site', () {
       expect(
-        const GitHubRemote('btwld', 'superdeck').pagesUrl('gh-pages'),
+        const GitHubRemote('btwld', 'superdeck').pagesUrl,
         'https://btwld.github.io/superdeck/',
       );
     });
 
-    test('uses the root for a user site on main', () {
+    test('uses the root for a user/org site', () {
       expect(
-        const GitHubRemote('btwld', 'btwld.github.io').pagesUrl('main'),
+        const GitHubRemote('btwld', 'btwld.github.io').pagesUrl,
         'https://btwld.github.io/',
       );
     });

@@ -9,10 +9,10 @@ class GitHubRemote {
   const GitHubRemote(this.owner, this.repo);
 
   static final _httpsPattern = RegExp(
-    r'https://github\.com/([^/]+)/([^/.]+)(\.git)?',
+    r'^https://github\.com/([^/]+)/(.+?)(?:\.git)?/?$',
   );
   static final _sshPattern = RegExp(
-    r'git@github\.com:([^/]+)/([^/.]+)(\.git)?',
+    r'^git@github\.com:([^/]+)/(.+?)(?:\.git)?/?$',
   );
 
   /// Parses a git remote [url] in HTTPS or SSH form, or returns `null` if it is
@@ -31,15 +31,15 @@ class GitHubRemote {
     return null;
   }
 
-  /// The `--base-href` value for serving under a Pages project subpath.
-  String get baseHref => '/$repo/';
+  /// Whether this is a user/organization Pages site (`<owner>.github.io`),
+  /// which GitHub serves from the domain root rather than a project subpath.
+  bool get isUserSite => repo.toLowerCase() == '${owner.toLowerCase()}.github.io';
 
-  /// The public GitHub Pages URL for the given [branch].
-  String pagesUrl(String branch) {
-    if (repo == '$owner.github.io' && (branch == 'main' || branch == 'master')) {
-      return 'https://$owner.github.io/';
-    }
+  /// The `--base-href` value: the domain root for a user site, otherwise the
+  /// project subpath.
+  String get baseHref => isUserSite ? '/' : '/$repo/';
 
-    return 'https://$owner.github.io/$repo/';
-  }
+  /// The public GitHub Pages URL for this repository.
+  String get pagesUrl =>
+      isUserSite ? 'https://$owner.github.io/' : 'https://$owner.github.io/$repo/';
 }

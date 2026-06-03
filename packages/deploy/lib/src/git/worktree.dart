@@ -27,29 +27,43 @@ class GitWorktree {
        _logger = logger,
        _dryRun = dryRun;
 
-  /// Adds a worktree for [targetBranch], creating it as an orphan branch when
-  /// it does not already exist.
+  /// Adds a worktree for [targetBranch].
+  ///
+  /// Bases the worktree on the existing branch when one is found — locally, or
+  /// (for fresh clones / CI) on `origin` after fetching it — so the publish
+  /// commit extends the existing history and pushes fast-forward. Only when no
+  /// branch exists anywhere is a fresh orphan branch created.
   Future<void> create({required String targetBranch}) async {
     path = p.join(
       Directory.systemTemp.path,
       'superdeck_publish_${DateTime.now().millisecondsSinceEpoch}',
     );
 
-    final branchExists = await _git.branchExists(targetBranch);
-    if (branchExists) {
+    if (await _git.branchExists(targetBranch)) {
       await _git.run(['worktree', 'add', '-f', path, targetBranch]);
-    } else {
-      await _git.run(['worktree', 'add', '--detach', path]);
-    }
-    _created = !_dryRun;
+      _created = !_dryRun;
 
-    if (!branchExists) {
-      await _git.run(
-        ['checkout', '--orphan', targetBranch],
-        workingDirectory: path,
-      );
-      await _git.run(['rm', '-rf', '.'], workingDirectory: path);
+      return;
     }
+
+    if (await _git.remoteBranchExists(targetBranch)) {
+      await _git.run(['fetch', 'origin', targetBranch]);
+      await _git.run(
+        ['worktree', 'add', '-f', '-b', targetBranch, path, 'FETCH_HEAD'],
+      );
+      _created = !_dryRun;
+
+      return;
+    }
+
+    // Brand-new branch: create it as an orphan with no prior history.
+    await _git.run(['worktree', 'add', '--detach', path]);
+    _created = !_dryRun;
+    await _git.run(
+      ['checkout', '--orphan', targetBranch],
+      workingDirectory: path,
+    );
+    await _git.run(['rm', '-rf', '.'], workingDirectory: path);
   }
 
   /// Removes the worktree if one was created.

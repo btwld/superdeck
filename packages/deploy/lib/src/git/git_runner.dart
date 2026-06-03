@@ -101,11 +101,18 @@ class GitRunner {
     return result != null && result.stdout.toString().trim() == 'true';
   }
 
-  /// The current branch name, or `null` if it cannot be determined.
+  /// The current branch name, or the short commit SHA when HEAD is detached
+  /// (e.g. CI checkouts, tags, mid-rebase). Returns `null` only when HEAD
+  /// cannot be resolved at all.
   Future<String?> currentBranch() async {
-    final result = await query(['symbolic-ref', '--short', 'HEAD']);
+    final branch = await query(['symbolic-ref', '--short', 'HEAD']);
+    final name = branch?.stdout.toString().trim();
+    if (name != null && name.isNotEmpty) return name;
 
-    return result?.stdout.toString().trim();
+    final sha = await query(['rev-parse', '--short', 'HEAD']);
+    final shaValue = sha?.stdout.toString().trim();
+
+    return (shaValue != null && shaValue.isNotEmpty) ? shaValue : null;
   }
 
   /// The `origin` remote URL, or `null` if there is no origin.
@@ -125,6 +132,16 @@ class GitRunner {
     ]);
 
     return result != null;
+  }
+
+  /// Whether a branch named [branch] exists on the `origin` remote.
+  ///
+  /// Uses `ls-remote` so it works even in fresh clones / CI checkouts that
+  /// fetched only a single branch and have no local remote-tracking ref.
+  Future<bool> remoteBranchExists(String branch) async {
+    final result = await query(['ls-remote', '--heads', 'origin', branch]);
+
+    return result != null && result.stdout.toString().trim().isNotEmpty;
   }
 
   /// Whether [workingDirectory] has staged or unstaged changes.
