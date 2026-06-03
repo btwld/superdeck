@@ -8,6 +8,8 @@ void main() {
       expect(PdfExportDialogScreen, isNotNull);
       expect(PdfSaver, isNotNull);
       expect(PdfExportStatus, isNotNull);
+      expect(pdfActions, isNotNull);
+      expect(pdfExportAction, isNotNull);
     });
   });
 }

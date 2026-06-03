@@ -1,14 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart' show Icons, Colors;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
 import '../../deck/deck_controller.dart';
+import '../../plugins/deck_action.dart';
 import '../tokens/colors.dart';
 import '../widgets/icon_button.dart';
 
 class DeckBottomBar extends StatelessWidget {
-  const DeckBottomBar({super.key});
+  const DeckBottomBar({super.key, this.actions = const []});
+
+  final List<DeckAction> actions;
 
   FlexBoxStyler get _bottomBarContainer => FlexBoxStyler()
       .mainAxisAlignment(MainAxisAlignment.center)
@@ -51,6 +56,12 @@ class DeckBottomBar extends StatelessWidget {
           ),
           semanticLabel: 'Regenerate thumbnails',
         ),
+        for (final action in actions)
+          SDIconButton(
+            icon: action.icon,
+            onPressed: () => _invokeAction(context, deck, action),
+            semanticLabel: action.label,
+          ),
         const Spacer(),
         SDIconButton(
           icon: Icons.arrow_back,
@@ -78,6 +89,30 @@ class DeckBottomBar extends StatelessWidget {
           semanticLabel: 'Close menu',
         ),
       ],
+    );
+  }
+
+  void _invokeAction(
+    BuildContext context,
+    DeckController deck,
+    DeckAction action,
+  ) {
+    unawaited(
+      action.invoke(context, deck).catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: error,
+            stack: stackTrace,
+            library: 'superdeck',
+            context: ErrorDescription(
+              'while invoking deck action "${action.id}"',
+            ),
+          ),
+        );
+      }),
     );
   }
 }

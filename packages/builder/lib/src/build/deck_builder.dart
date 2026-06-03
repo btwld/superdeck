@@ -7,6 +7,7 @@ import '../parsers/comment_parser.dart';
 import '../parsers/markdown_parser.dart';
 import '../parsers/section_parser.dart';
 import 'build_event.dart';
+import 'deck_build_plugin.dart';
 
 /// Builds decks from markdown content.
 ///
@@ -15,9 +16,15 @@ import 'build_event.dart';
 class DeckBuilder {
   final DeckWorkspace workspace;
   final DeckBuildStore store;
+  final List<DeckBuildPlugin> plugins;
   final Logger _logger = Logger('DeckBuilder');
+  Future<void> _lastBuild = Future<void>.value();
 
-  DeckBuilder({required this.workspace, required this.store});
+  DeckBuilder({
+    required this.workspace,
+    required this.store,
+    List<DeckBuildPlugin> plugins = const [],
+  }) : plugins = List.unmodifiable(plugins);
 
   /// Builds the deck and watches for changes, emitting build events as a stream.
   ///
@@ -50,7 +57,14 @@ class DeckBuilder {
     }
   }
 
-  Future<Iterable<Slide>> build() async {
+  Future<Iterable<Slide>> build() {
+    final buildFuture = _lastBuild.then((_) => _build());
+    _lastBuild = buildFuture.then<void>((_) {}).catchError((_) {});
+
+    return buildFuture;
+  }
+
+  Future<Iterable<Slide>> _build() async {
     _logger.info('Starting build...');
     await store.initialize();
     await store.saveBuildStatus(phase: DeckBuildPhase.building);
@@ -58,7 +72,7 @@ class DeckBuilder {
     final markdownRaw = await store.readDeckMarkdown();
     final rawSlides = MarkdownParser().parse(markdownRaw);
 
-    final slides = [
+    final parsedSlides = [
       for (final raw in rawSlides)
         Slide(
           key: raw.key,
@@ -67,6 +81,7 @@ class DeckBuilder {
           comments: CommentParser().parse(raw.content),
         ),
     ];
+    final slides = await _applyBuildPlugins(parsedSlides);
 
     await store.saveReferences(slides);
     await store.saveBuildStatus(
@@ -76,5 +91,84 @@ class DeckBuilder {
 
     _logger.info('Build completed: ${slides.length} slides processed');
     return slides;
+  }
+
+  Future<void> dispose() async {
+    for (final plugin in plugins) {
+      try {
+        await plugin.dispose();
+      } catch (error, stackTrace) {
+        _logger.warning(
+          'Failed to dispose build plugin "${plugin.id}".',
+          error,
+          stackTrace,
+        );
+      }
+    }
+  }
+
+  Future<List<Slide>> _applyBuildPlugins(List<Slide> slides) async {
+    if (plugins.isEmpty) return slides;
+
+    final transformedSlides = <Slide>[];
+    for (var slideIndex = 0; slideIndex < slides.length; slideIndex++) {
+      final slide = slides[slideIndex];
+      final transformedSections = <SectionBlock>[];
+
+      for (
+        var sectionIndex = 0;
+        sectionIndex < slide.sections.length;
+        sectionIndex++
+      ) {
+        final section = slide.sections[sectionIndex];
+        final transformedBlocks = <Block>[];
+
+        for (
+          var blockIndex = 0;
+          blockIndex < section.blocks.length;
+          blockIndex++
+        ) {
+          final block = section.blocks[blockIndex];
+          if (block is! ContentBlock) {
+            transformedBlocks.add(block);
+            continue;
+          }
+
+          transformedBlocks.add(
+            await _applyContentBlockPlugins(
+              block,
+              DeckBuildContext(
+                workspace: workspace,
+                slideKey: slide.key,
+                slideIndex: slideIndex,
+                sectionIndex: sectionIndex,
+                blockIndex: blockIndex,
+              ),
+            ),
+          );
+        }
+
+        transformedSections.add(section.copyWith(blocks: transformedBlocks));
+      }
+
+      transformedSlides.add(slide.copyWith(sections: transformedSections));
+    }
+
+    return transformedSlides;
+  }
+
+  Future<ContentBlock> _applyContentBlockPlugins(
+    ContentBlock block,
+    DeckBuildContext context,
+  ) async {
+    var transformedBlock = block;
+    for (final plugin in plugins) {
+      transformedBlock = await plugin.transformContentBlock(
+        transformedBlock,
+        context,
+      );
+    }
+
+    return transformedBlock;
   }
 }

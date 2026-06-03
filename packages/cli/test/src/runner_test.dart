@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
+import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_cli/runner.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
 import 'package:superdeck_cli/src/commands/setup_command.dart';
@@ -35,6 +36,22 @@ void main() {
     });
 
     group('shared logger propagation', () {
+      test('passes build plugins to the default build command', () {
+        final plugin = DeckBuildPlugin(
+          id: 'test.runner-transform',
+          transformContentBlock: (block, _) => block,
+        );
+        final runner = SuperDeckRunner(
+          loggerOverride: mockLogger,
+          plugins: [plugin],
+          setupCommand: SetupCommand(loggerOverride: mockLogger),
+        );
+
+        final buildCommand = runner.commands['build'] as BuildCommand;
+
+        expect(buildCommand.plugins, contains(plugin));
+      });
+
       test('passes quiet logging to setup', () async {
         final tempDir = await createTempDirAsync();
         await _createMinimalFlutterApp(tempDir);
@@ -81,10 +98,7 @@ void main() {
           exitCode,
           anyOf(equals(ExitCode.success.code), equals(ExitCode.software.code)),
         );
-        expect(
-          mockLogger.detailMessages,
-          contains('Verbose logging enabled'),
-        );
+        expect(mockLogger.detailMessages, contains('Verbose logging enabled'));
       });
     });
   });
@@ -114,8 +128,9 @@ flutter:
   final runnerDir = Directory(path.join(projectDir.path, 'macos', 'Runner'));
   await runnerDir.create(recursive: true);
   for (final name in ['DebugProfile.entitlements', 'Release.entitlements']) {
-    await File(path.join(runnerDir.path, name))
-        .writeAsString('<plist version="1.0"><dict></dict></plist>');
+    await File(
+      path.join(runnerDir.path, name),
+    ).writeAsString('<plist version="1.0"><dict></dict></plist>');
   }
 }
 

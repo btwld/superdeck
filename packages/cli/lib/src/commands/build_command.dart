@@ -16,11 +16,16 @@ import 'base_command.dart';
 /// Parses the slides.md file and writes the compiled deck to the workspace
 /// output directory.
 class BuildCommand extends SuperDeckCommand {
+  final List<DeckBuildPlugin> plugins;
   bool _isRunning = false;
   final String? _projectDir;
 
-  BuildCommand({super.loggerOverride, String? projectDir})
-    : _projectDir = projectDir {
+  BuildCommand({
+    super.loggerOverride,
+    String? projectDir,
+    List<DeckBuildPlugin> plugins = const [],
+  }) : plugins = List.unmodifiable(plugins),
+       _projectDir = projectDir {
     argParser
       ..addFlag(
         'watch',
@@ -67,7 +72,12 @@ class BuildCommand extends SuperDeckCommand {
     _isRunning = true;
     final progress = logger.progress('Generating slides...');
 
-    builder ??= DeckBuilder(workspace: workspace, store: store);
+    final ownsBuilder = builder == null;
+    builder ??= DeckBuilder(
+      workspace: workspace,
+      store: store,
+      plugins: plugins,
+    );
 
     try {
       final slides = await builder.build();
@@ -91,9 +101,9 @@ class BuildCommand extends SuperDeckCommand {
       logger.err('File system error: ${e.message}');
       logger.err('Path: ${e.path ?? 'Unknown'}');
       await store.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
-        stackTrace: StackTrace.current,
+        stackTrace: .current,
       );
 
       return false;
@@ -101,9 +111,9 @@ class BuildCommand extends SuperDeckCommand {
       progress.fail('Format error');
       logger.err(e.message);
       await store.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
-        stackTrace: StackTrace.current,
+        stackTrace: .current,
       );
 
       return false;
@@ -111,13 +121,16 @@ class BuildCommand extends SuperDeckCommand {
       progress.fail('Build failed');
       _logBuildFailure(e, stackTrace);
       await store.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
         stackTrace: stackTrace,
       );
 
       return false;
     } finally {
+      if (ownsBuilder) {
+        await builder.dispose();
+      }
       _isRunning = false;
     }
   }
@@ -173,38 +186,46 @@ class BuildCommand extends SuperDeckCommand {
         logger.info('');
 
         // Create a builder that will handle watching and rebuilding
-        final builder = DeckBuilder(workspace: deckWorkspace, store: store);
+        final builder = DeckBuilder(
+          workspace: deckWorkspace,
+          store: store,
+          plugins: plugins,
+        );
 
         // Listen to stdin for interactive commands
-        StreamSubscription<String>? stdinSubscription;
-        try {
-          stdinSubscription = stdin
-              .transform(utf8.decoder)
-              .transform(const LineSplitter())
-              .listen((line) async {
-                final command = line.trim().toLowerCase();
-                switch (command) {
-                  case 'r':
-                  case 'rebuild':
-                    logger.info('Manual rebuild triggered...');
-                    unawaited(
-                      _runBuild(store!, deckWorkspace, builder: builder),
-                    );
-                    break;
-                  case 'q':
-                  case 'quit':
-                    logger.info('Exiting watch mode...');
-                    await stdinSubscription?.cancel();
-                    exit(ExitCode.success.code);
-                  default:
-                    logger.warn('Unknown command: "$command"');
-                    logger.info(
-                      'Available commands: r (rebuild), q (quit)',
-                    );
-                }
-              });
+        final quitRequested = Completer<void>();
+        var watchExitCode = ExitCode.success.code;
 
-          await for (final event in builder.watchAndBuild()) {
+        void requestQuit([int exitCode = 0]) {
+          if (quitRequested.isCompleted) return;
+          watchExitCode = exitCode;
+          quitRequested.complete();
+        }
+
+        final stdinSubscription = stdin
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen((line) {
+              final command = line.trim().toLowerCase();
+              switch (command) {
+                case 'r':
+                case 'rebuild':
+                  logger.info('Manual rebuild triggered...');
+                  unawaited(_runBuild(store!, deckWorkspace, builder: builder));
+                  break;
+                case 'q':
+                case 'quit':
+                  logger.info('Exiting watch mode...');
+                  requestQuit(ExitCode.success.code);
+                  break;
+                default:
+                  logger.warn('Unknown command: "$command"');
+                  logger.info('Available commands: r (rebuild), q (quit)');
+              }
+            }, onDone: () => requestQuit());
+
+        final buildSubscription = builder.watchAndBuild().listen(
+          (event) {
             switch (event) {
               case BuildStarted():
                 logger.info('File change detected. Rebuilding presentation...');
@@ -218,9 +239,22 @@ class BuildCommand extends SuperDeckCommand {
                 logger.err('Error processing slides during watch.');
                 _logBuildFailure(error, stackTrace);
             }
-          }
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            logger.err('Watch mode failed.');
+            _logBuildFailure(error, stackTrace);
+            requestQuit(ExitCode.software.code);
+          },
+        );
+
+        try {
+          await quitRequested.future;
+
+          return watchExitCode;
         } finally {
-          await stdinSubscription?.cancel();
+          await stdinSubscription.cancel();
+          await buildSubscription.cancel();
+          await builder.dispose();
         }
       }
 
@@ -229,7 +263,7 @@ class BuildCommand extends SuperDeckCommand {
       logger.err('Build failed before the deck could be generated.');
       _logBuildFailure(e, stackTrace);
       await store?.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
         stackTrace: stackTrace,
       );

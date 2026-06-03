@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:superdeck_builder/src/build/deck_build_plugin.dart';
 import 'package:superdeck_builder/src/build/deck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
@@ -76,5 +78,128 @@ Discuss release plan.
         expect(slide.comments, equals(['Speaker note']));
       },
     );
+
+    test('runs build plugins against content blocks before saving', () async {
+      const markdown = '# First Slide\n\nOriginal content';
+      final plugin = DeckBuildPlugin(
+        id: 'test.content-transform',
+        transformContentBlock: (block, context) {
+          expect(context.workspace, workspace);
+          expect(context.slideKey, isNotEmpty);
+          expect(context.slideIndex, 0);
+          expect(context.sectionIndex, 0);
+          expect(context.blockIndex, 0);
+          expect(
+            context.outputFile('plugin/image.png').path,
+            endsWith('.superdeck/plugin/image.png'),
+          );
+          expect(
+            context.assetPath('plugin/image.png'),
+            '.superdeck/plugin/image.png',
+          );
+
+          return block.copyWith(
+            content: '${block.content}\n\nTransformed by plugin.',
+          );
+        },
+      );
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [plugin],
+      );
+
+      await workspace.slidesFile.writeAsString(markdown);
+      final slides = await builder.build();
+      final block = slides.single.sections.single.blocks.single as ContentBlock;
+
+      expect(block.content, contains('Transformed by plugin.'));
+
+      final deckJson =
+          jsonDecode(await workspace.deckJson.readAsString()) as List<dynamic>;
+      final savedSlide = deckJson.single as Map<String, dynamic>;
+      final savedSection =
+          (savedSlide['sections'] as List<dynamic>).single
+              as Map<String, dynamic>;
+      final savedBlock =
+          (savedSection['blocks'] as List<dynamic>).single
+              as Map<String, dynamic>;
+
+      expect(savedBlock['content'], contains('Transformed by plugin.'));
+    });
+
+    test('serializes overlapping builds for a shared builder', () async {
+      const markdown = '# First Slide\n\nOriginal content';
+      final firstTransformStarted = Completer<void>();
+      final releaseFirstTransform = Completer<void>();
+      var activeTransforms = 0;
+      var maxActiveTransforms = 0;
+      final plugin = DeckBuildPlugin(
+        id: 'test.serialized-transform',
+        transformContentBlock: (block, _) async {
+          activeTransforms++;
+          if (activeTransforms > maxActiveTransforms) {
+            maxActiveTransforms = activeTransforms;
+          }
+          if (!firstTransformStarted.isCompleted) {
+            firstTransformStarted.complete();
+          }
+          await releaseFirstTransform.future;
+          activeTransforms--;
+
+          return block;
+        },
+      );
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [plugin],
+      );
+
+      await workspace.slidesFile.writeAsString(markdown);
+      final firstBuild = builder.build();
+      await firstTransformStarted.future;
+      final secondBuild = builder.build();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(maxActiveTransforms, 1);
+
+      releaseFirstTransform.complete();
+      await firstBuild;
+      await secondBuild;
+
+      expect(maxActiveTransforms, 1);
+    });
+
+    test('disposes every build plugin even when one dispose fails', () async {
+      var firstDisposed = false;
+      var secondDisposed = false;
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [
+          DeckBuildPlugin(
+            id: 'test.dispose-fails',
+            transformContentBlock: (block, _) => block,
+            dispose: () {
+              firstDisposed = true;
+              throw StateError('dispose failed');
+            },
+          ),
+          DeckBuildPlugin(
+            id: 'test.dispose-runs',
+            transformContentBlock: (block, _) => block,
+            dispose: () {
+              secondDisposed = true;
+            },
+          ),
+        ],
+      );
+
+      await builder.dispose();
+
+      expect(firstDisposed, isTrue);
+      expect(secondDisposed, isTrue);
+    });
   });
 }

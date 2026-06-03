@@ -19,34 +19,33 @@ dependencies:
 
 ## Usage
 
-Open the export dialog from a widget below `SuperDeckApp`:
+Register the PDF action with `SuperDeckApp`:
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_pdf/superdeck_pdf.dart';
 
-class ExportButton extends StatelessWidget {
-  const ExportButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.picture_as_pdf),
-      onPressed: () => PdfExportDialogScreen.show(context),
-    );
-  }
-}
+SuperDeckApp(
+  options: DeckOptions(),
+  actions: [
+    ...pdfActions(),
+  ],
+);
 ```
 
 For custom save behavior, pass a `PdfSaver`:
 
 ```dart
-PdfExportDialogScreen.show(
-  context,
-  pdfSaver: (bytes) async {
-    // Persist or upload bytes.
-    return true;
-  },
+SuperDeckApp(
+  options: DeckOptions(),
+  actions: [
+    ...pdfActions(
+      pdfSaver: (bytes) async {
+        // Persist or upload bytes.
+        return true;
+      },
+    ),
+  ],
 );
 ```
 

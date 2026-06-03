@@ -13,6 +13,7 @@ void main() {
       expect(ThumbnailService, isNotNull);
       expect(superDeckSlideSize, isNotNull);
       expect(superDeckAspectRatio, isNotNull);
+      expect(DeckAction, isNotNull);
     });
   });
 }

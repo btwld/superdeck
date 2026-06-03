@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
+import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
@@ -122,6 +124,43 @@ version: 1.0.0
         // Pubspec should not have superdeck assets
         final updatedContent = await pubspecFile.readAsString();
         expect(updatedContent, equals(originalContent));
+      });
+
+      test('passes build plugins into the deck builder', () async {
+        final slidesFile = deckWorkspace.slidesFile;
+        await slidesFile.writeAsString('# Test\n\nOriginal');
+
+        createTestPubspec(tempDir);
+        command = BuildCommand(
+          plugins: [
+            DeckBuildPlugin(
+              id: 'test.cli-transform',
+              transformContentBlock: (block, _) {
+                return block.copyWith(
+                  content: '${block.content}\n\nCLI transformed.',
+                );
+              },
+            ),
+          ],
+        );
+
+        final runner = createTestRunner(command);
+        final result = await runner.run(['build', '--skip-pubspec']);
+
+        expect(result, ExitCode.success.code);
+
+        final deckJson =
+            jsonDecode(await deckWorkspace.deckJson.readAsString())
+                as List<dynamic>;
+        final savedSlide = deckJson.single as Map<String, dynamic>;
+        final savedSection =
+            (savedSlide['sections'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        final savedBlock =
+            (savedSection['blocks'] as List<dynamic>).single
+                as Map<String, dynamic>;
+
+        expect(savedBlock['content'], contains('CLI transformed.'));
       });
     });
 

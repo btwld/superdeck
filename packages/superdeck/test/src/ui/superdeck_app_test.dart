@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/ui/app_shell.dart';
+import 'package:superdeck/src/ui/panels/bottom_bar.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -103,6 +104,148 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('passes runtime actions to the bottom bar', (tester) async {
+      final loader = MockDeckLoader();
+      addTearDown(loader.dispose);
+
+      await tester.pumpWidget(
+        SuperDeckApp(
+          options: DeckOptions(),
+          deckLoader: loader,
+          assetCacheStore: NoopAssetCacheStore(),
+          transitionDuration: Duration.zero,
+          actions: [
+            DeckAction(
+              id: 'test.actions.export',
+              label: 'Test deck action',
+              icon: Icons.picture_as_pdf,
+              onPressed: (_, _) {},
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      await tester.tap(find.bySemanticsLabel('Open menu'));
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump();
+
+      expect(find.bySemanticsLabel('Test deck action'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('DeckBottomBar actions', () {
+    testWidgets('invokes action callbacks with the current controller', (
+      tester,
+    ) async {
+      final loader = MockDeckLoader();
+      DeckController? callbackDeck;
+      var tapCount = 0;
+      final controller = DeckController(
+        deckLoader: loader,
+        options: DeckOptions(),
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(() async {
+        controller.dispose();
+        await loader.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MixScope(
+            colors: SDColors.colorMap,
+            child: InheritedData(
+              data: controller,
+              child: Center(
+                child: SizedBox(
+                  width: 800,
+                  child: DeckBottomBar(
+                    actions: [
+                      DeckAction(
+                        id: 'test.actions.export',
+                        label: 'Test deck action',
+                        icon: Icons.picture_as_pdf,
+                        onPressed: (context, deck) {
+                          callbackDeck = deck;
+                          tapCount++;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      await tester.tap(find.bySemanticsLabel('Test deck action'));
+      await tester.pump();
+
+      expect(tapCount, 1);
+      expect(callbackDeck, isNotNull);
+      expect(callbackDeck!.slides.value, isNotEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('reports asynchronous action failures', (tester) async {
+      final loader = MockDeckLoader();
+      final errors = <FlutterErrorDetails>[];
+      final originalOnError = FlutterError.onError;
+      FlutterError.onError = errors.add;
+
+      final controller = DeckController(
+        deckLoader: loader,
+        options: DeckOptions(),
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(() async {
+        FlutterError.onError = originalOnError;
+        controller.dispose();
+        await loader.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MixScope(
+            colors: SDColors.colorMap,
+            child: InheritedData(
+              data: controller,
+              child: Center(
+                child: SizedBox(
+                  width: 800,
+                  child: DeckBottomBar(
+                    actions: [
+                      DeckAction(
+                        id: 'test.actions.fail',
+                        label: 'Failing deck action',
+                        icon: Icons.picture_as_pdf,
+                        onPressed: (_, _) async {
+                          throw StateError('action failed');
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.bySemanticsLabel('Failing deck action'));
+      await tester.pump();
+
+      expect(errors, hasLength(1));
+      expect(errors.single.exception, isA<StateError>());
     });
   });
 

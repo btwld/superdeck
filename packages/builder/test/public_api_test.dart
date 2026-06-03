@@ -7,6 +7,8 @@ void main() {
       final error = DeckFormatException('invalid', '', 0);
 
       expect(DeckBuilder, isNotNull);
+      expect(DeckBuildPlugin, isNotNull);
+      expect(DeckBuildContext, isNotNull);
       expect(BuildStarted(), isA<BuildEvent>());
       expect(error, isA<Exception>());
     });

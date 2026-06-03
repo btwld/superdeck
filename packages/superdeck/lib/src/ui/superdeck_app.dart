@@ -9,6 +9,7 @@ import '../deck/deck_controller_builder.dart';
 import '../deck/deck_options.dart';
 import '../deck/loaders/bundled_deck_loader.dart';
 import '../deck/loaders/file_deck_loader.dart';
+import '../plugins/deck_action.dart';
 import '../utils/app_initialization.dart';
 import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
@@ -19,6 +20,7 @@ class SuperDeckApp extends StatelessWidget {
   const SuperDeckApp({
     super.key,
     required this.options,
+    this.actions = const [],
     this.deckLoader,
     this.workspace,
     this.assetCacheStore,
@@ -26,6 +28,7 @@ class SuperDeckApp extends StatelessWidget {
   });
 
   final DeckOptions options;
+  final List<DeckAction> actions;
 
   /// Optional loader override. When null, auto-selects [FileDeckLoader] or
   /// [BundledDeckLoader] based on the runtime environment.
@@ -74,7 +77,7 @@ class SuperDeckApp extends StatelessWidget {
           builder: (context, child) {
             return MixScope(
               colors: SDColors.colorMap,
-              child: AppShell(child: child!),
+              child: AppShell(actions: actions, child: child!),
             );
           },
           theme: theme,
