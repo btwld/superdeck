@@ -14,7 +14,6 @@ Future<void> main(List<String> args) async {
     logger.info('');
     logger.info('Available commands:');
     logger.info('  github-pages  - Publish a web app to GitHub Pages');
-    logger.info('  firebase      - Deploy a web app to Firebase Hosting');
     logger.info('');
     logger.info('Run "$deployToolName --help" for usage information.');
     await _flushThenExit(ExitCode.success.code);

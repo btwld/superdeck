@@ -42,16 +42,16 @@ superdeck-deploy github-pages [options]
 | `--base-href` | auto | Override the auto-detected base href |
 | `--dry-run` | off | Plan only; make no changes |
 
-### `firebase`
+## Firebase Hosting
 
-Deploys to Firebase Hosting via the `firebase` CLI. Expects a built web app and
-a `firebase.json` in `--app-dir`.
+For Firebase, use the official tooling rather than this package:
 
-```bash
-superdeck-deploy firebase [--app-dir demo] [--project my-project] [--channel preview]
-```
+- **CI:** the [`FirebaseExtended/action-hosting-deploy`](https://github.com/FirebaseExtended/action-hosting-deploy)
+  GitHub Action (handles auth, live deploys, and PR preview channels). Set it up
+  with `firebase init hosting:github`.
+- **Local:** `firebase deploy --only hosting`.
 
 ## Programmatic use
 
-The targets are exported from `package:superdeck_deploy/superdeck_deploy.dart`
-(`GitHubPagesTarget`, `FirebaseTarget`) for use in custom tooling.
+`GitHubPagesTarget` is exported from
+`package:superdeck_deploy/superdeck_deploy.dart` for use in custom tooling.

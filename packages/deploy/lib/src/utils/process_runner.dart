@@ -3,7 +3,7 @@ import 'dart:io';
 /// Runs an external process and returns its [ProcessResult].
 ///
 /// Abstracted as a typedef so tests can inject a fake runner instead of
-/// shelling out to real `git`, `flutter`, or `firebase` executables.
+/// shelling out to real `git` or `flutter` executables.
 typedef ProcessRunner =
     Future<ProcessResult> Function(
       String executable,

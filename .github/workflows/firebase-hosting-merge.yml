@@ -55,9 +55,6 @@ jobs:
           cd demo
           fvm dart run superdeck_cli:main build
 
-      # Firebase deployment is owned by the `superdeck_deploy` package
-      # (`superdeck-deploy firebase`) for local/manual deploys. CI keeps the
-      # GitHub-integrated action below for live deploys + PR preview comments.
       - name: Deploy Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         env:

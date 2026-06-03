@@ -1,6 +1,6 @@
 ## Unreleased
 
-* **New package `superdeck_deploy`** with a standalone `superdeck-deploy` executable that publishes a built deck to GitHub Pages (`github-pages`) or Firebase Hosting (`firebase`).
+* **New package `superdeck_deploy`** with a standalone `superdeck-deploy` executable that publishes a built deck to GitHub Pages (`github-pages`).
 * **Breaking:** deployment is no longer part of the `superdeck` CLI. Install and run `superdeck-deploy` separately (`dart pub global activate superdeck_deploy`).
 
 ## 1.0.0

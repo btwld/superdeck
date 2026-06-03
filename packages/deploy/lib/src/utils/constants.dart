@@ -6,5 +6,4 @@ const deployToolVersion = '1.0.0';
 
 /// Human-readable description shown in `--help` output.
 const deployToolDescription =
-    'Deployment tooling for SuperDeck presentations '
-    '(GitHub Pages, Firebase Hosting).';
+    'Deployment tooling for SuperDeck presentations (GitHub Pages).';

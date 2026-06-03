@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
 
-import 'commands/firebase_command.dart';
 import 'commands/github_pages_command.dart';
 import 'utils/constants.dart';
 import 'utils/process_runner.dart';
@@ -17,7 +16,6 @@ class DeployRunner extends CommandRunner<int> {
     Logger? loggerOverride,
     ProcessRunner? processRunner,
     Command<int>? githubPagesCommand,
-    Command<int>? firebaseCommand,
   }) : _logger = loggerOverride ?? Logger(),
        super(deployToolName, deployToolDescription) {
     argParser
@@ -42,13 +40,6 @@ class DeployRunner extends CommandRunner<int> {
     addCommand(
       githubPagesCommand ??
           GitHubPagesCommand(
-            loggerOverride: _logger,
-            processRunner: processRunner,
-          ),
-    );
-    addCommand(
-      firebaseCommand ??
-          FirebaseCommand(
             loggerOverride: _logger,
             processRunner: processRunner,
           ),

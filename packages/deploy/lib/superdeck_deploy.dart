@@ -5,7 +5,6 @@
 library;
 
 export 'src/runner.dart' show DeployRunner;
-export 'src/targets/firebase.dart' show FirebaseOptions, FirebaseTarget;
 export 'src/targets/github_pages.dart'
     show GitHubPagesOptions, GitHubPagesTarget;
 export 'src/utils/process_runner.dart' show ProcessRunner, defaultProcessRunner;

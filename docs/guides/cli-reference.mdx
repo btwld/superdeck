@@ -163,9 +163,10 @@ for the full flag list.
 
 ### Firebase Hosting
 
-```bash
-superdeck-deploy firebase --app-dir demo --project my-project
-```
+For Firebase, use the official tooling rather than `superdeck-deploy`. In CI, the
+[`FirebaseExtended/action-hosting-deploy`](https://github.com/FirebaseExtended/action-hosting-deploy)
+GitHub Action handles auth, live deploys, and PR preview channels — set it up
+with `firebase init hosting:github`. Locally, run `firebase deploy --only hosting`.
 
 ### Manual GitHub Pages pipeline
 
