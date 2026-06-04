@@ -34,6 +34,10 @@ class GitHubPagesOptions {
   /// Explicit `--base-href` override; auto-detected from the remote when null.
   final String? baseHref;
 
+  /// Custom domain to write to a `CNAME` file. When null, any `CNAME` already
+  /// on the branch (e.g. set via the GitHub Pages UI) is preserved.
+  final String? cname;
+
   /// Whether to plan the publish without making changes.
   final bool dryRun;
 
@@ -45,6 +49,7 @@ class GitHubPagesOptions {
     this.buildDir = 'build/web',
     this.appDir = '.',
     this.baseHref,
+    this.cname,
     this.dryRun = false,
   });
 }
@@ -164,6 +169,7 @@ class GitHubPagesTarget {
       await _replaceWorktreeContents(
         worktree.path,
         buildDir,
+        cname: options.cname,
         dryRun: options.dryRun,
       );
 
@@ -218,20 +224,31 @@ class GitHubPagesTarget {
     return url == null ? null : GitHubRemote.parse(url);
   }
 
-  /// Clears the worktree (except `.git`), copies the build output in, and writes
-  /// a `.nojekyll` marker.
+  /// Clears the worktree (except `.git`), copies the build output in, and adds
+  /// the GitHub Pages conventions: a `.nojekyll` marker, a preserved/explicit
+  /// `CNAME`, and a `404.html` SPA fallback.
   Future<void> _replaceWorktreeContents(
     String worktreePath,
     String buildDir, {
+    required String? cname,
     required bool dryRun,
   }) async {
     if (dryRun) {
       _logger.info('Would clear and update content in the target branch');
       _logger.info('Would copy web build files from $buildDir');
       _logger.info('Would create a .nojekyll file');
+      if (cname != null) _logger.info('Would write a CNAME for $cname');
+      _logger.info('Would add a 404.html SPA fallback');
 
       return;
     }
+
+    // Capture a custom-domain CNAME already on the branch (e.g. configured via
+    // the GitHub Pages UI) before clearing, so we can restore it afterward.
+    final existingCname = File(p.join(worktreePath, 'CNAME'));
+    final preservedCname = existingCname.existsSync()
+        ? existingCname.readAsStringSync()
+        : null;
 
     final entities = Directory(worktreePath)
         .listSync()
@@ -245,6 +262,48 @@ class GitHubPagesTarget {
 
     await _copyDirectory(buildDir, worktreePath);
     File(p.join(worktreePath, '.nojekyll')).createSync();
+    _writeCname(worktreePath, explicit: cname, preserved: preservedCname);
+    _ensureSpaFallback(worktreePath);
+  }
+
+  /// Resolves the `CNAME` to publish: an [explicit] value wins, then any CNAME
+  /// the build output shipped (e.g. `web/CNAME`), then a [preserved] CNAME from
+  /// the branch. Writes the file when one is resolved.
+  void _writeCname(
+    String worktreePath, {
+    required String? explicit,
+    required String? preserved,
+  }) {
+    final cnameFile = File(p.join(worktreePath, 'CNAME'));
+
+    if (explicit != null && explicit.trim().isNotEmpty) {
+      cnameFile.writeAsStringSync('${explicit.trim()}\n');
+      _logger.info('Wrote CNAME for ${explicit.trim()}');
+
+      return;
+    }
+
+    // The build output already shipped a CNAME — leave it untouched.
+    if (cnameFile.existsSync()) return;
+
+    if (preserved != null && preserved.trim().isNotEmpty) {
+      cnameFile.writeAsStringSync(preserved);
+      _logger.detail('Preserved existing CNAME (${preserved.trim()})');
+    }
+  }
+
+  /// Copies `index.html` to `404.html` so client-side routes deep-link
+  /// correctly on GitHub Pages, which serves `404.html` for unknown paths.
+  /// Skips when the build already ships a `404.html`.
+  void _ensureSpaFallback(String worktreePath) {
+    final notFound = File(p.join(worktreePath, '404.html'));
+    if (notFound.existsSync()) return;
+
+    final index = File(p.join(worktreePath, 'index.html'));
+    if (index.existsSync()) {
+      index.copySync(notFound.path);
+      _logger.detail('Added 404.html SPA fallback');
+    }
   }
 
   Future<void> _copyDirectory(String source, String destination) async {

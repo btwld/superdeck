@@ -24,8 +24,8 @@ superdeck-deploy github-pages
 
 Publishes the built web app to a GitHub Pages branch using an isolated git
 worktree (your working tree is never touched). It auto-detects `--base-href`
-from the `origin` remote, installs a loading `index.html`, writes `.nojekyll`,
-and commits/pushes the result.
+from the `origin` remote, installs a loading `index.html`, and commits/pushes
+the result, extending the branch's existing history rather than orphaning it.
 
 ```bash
 superdeck-deploy github-pages [options]
@@ -40,7 +40,20 @@ superdeck-deploy github-pages [options]
 | `--build-dir` | `build/web` | Built web assets directory |
 | `--app-dir` | `.` | Flutter app directory to build |
 | `--base-href` | auto | Override the auto-detected base href |
+| `--cname` | preserve | Custom domain to write to `CNAME` |
 | `--dry-run` | off | Plan only; make no changes |
+
+### GitHub Pages conventions
+
+Each publish applies the conventions GitHub Pages needs for a Flutter web app:
+
+- **`.nojekyll`** — disables Jekyll so Flutter's `assets/`, `canvaskit/`, and
+  underscore-prefixed files are served as-is.
+- **`404.html`** — a copy of `index.html`, so client-side (path-based) routes
+  deep-link correctly; Pages serves `404.html` for unknown paths.
+- **`CNAME`** — a custom domain set via the Pages UI (or a previous `--cname`)
+  is preserved across publishes. Pass `--cname deck.example.com` to set one, or
+  commit `web/CNAME` to manage it from source.
 
 ## Firebase Hosting
 

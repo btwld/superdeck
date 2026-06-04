@@ -42,3 +42,11 @@ Future<String> gitOutput(String repoPath, List<String> args) async {
 
   return result.exitCode == 0 ? result.stdout.toString().trim() : '';
 }
+
+/// Runs a git command in [repoPath], throwing on a non-zero exit.
+Future<void> runGit(String repoPath, List<String> args) async {
+  final result = await Process.run('git', args, workingDirectory: repoPath);
+  if (result.exitCode != 0) {
+    throw Exception('git ${args.join(' ')} failed: ${result.stderr}');
+  }
+}

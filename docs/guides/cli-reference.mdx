@@ -147,14 +147,20 @@ dart pub global activate superdeck_deploy
 ### One command: GitHub Pages
 
 `superdeck-deploy github-pages` builds the web app, auto-detects the
-`--base-href` from your `origin` remote, writes `.nojekyll`, and publishes the
-output to a branch (`gh-pages` by default) using an isolated git worktree — your
-working tree is never touched.
+`--base-href` from your `origin` remote, and publishes the output to a branch
+(`gh-pages` by default) using an isolated git worktree — your working tree is
+never touched.
 
 ```bash
 superdeck build          # generate the deck
 superdeck-deploy github-pages
 ```
+
+Each publish applies the GitHub Pages conventions a Flutter web app needs:
+`.nojekyll` (so `assets/` and `canvaskit/` are served as-is), a `404.html` SPA
+fallback for deep links, and a preserved `CNAME` for custom domains (set one
+with `--cname deck.example.com`). Publishes extend the branch's existing history
+rather than orphaning it, so prior deploys aren't clobbered.
 
 Use `--dry-run` to preview the steps, `--no-push` to commit without pushing, or
 `--branch`, `--app-dir`, `--build-dir`, and `--base-href` to customize. See the

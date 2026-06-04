@@ -91,10 +91,77 @@ void main() {
     expect(await gitOutput(repo.path, ['symbolic-ref', '--short', 'HEAD']), 'main');
     expect(await gitOutput(repo.path, ['status', '--porcelain']), isEmpty);
 
-    // The gh-pages branch now contains the build output and a .nojekyll marker.
+    // The gh-pages branch now contains the build output, a .nojekyll marker,
+    // and a 404.html SPA fallback copied from index.html.
     final tree = await gitOutput(repo.path, ['ls-tree', '-r', '--name-only', 'gh-pages']);
     expect(tree, contains('index.html'));
     expect(tree, contains('assets/app.js'));
     expect(tree, contains('.nojekyll'));
+    expect(tree, contains('404.html'));
+  });
+
+  test('preserves a custom-domain CNAME across publishes', () async {
+    final repo = await createGitRepo();
+
+    // A pre-existing gh-pages with a CNAME, as GitHub writes when a custom
+    // domain is configured through the Pages UI.
+    await runGit(repo.path, ['checkout', '-b', 'gh-pages']);
+    File(p.join(repo.path, 'CNAME')).writeAsStringSync('deck.example.com\n');
+    await runGit(repo.path, ['add', 'CNAME']);
+    await runGit(repo.path, ['commit', '-m', 'set custom domain']);
+    await runGit(repo.path, ['checkout', 'main']);
+
+    final buildDir = await Directory.systemTemp.createTemp('deploy_build_');
+    addTearDown(() => buildDir.delete(recursive: true));
+    File(p.join(buildDir.path, 'index.html')).writeAsStringSync('<html></html>');
+
+    final original = Directory.current;
+    addTearDown(() => Directory.current = original);
+    Directory.current = repo;
+
+    final code = await GitHubPagesTarget(logger: quiet()).publish(
+      GitHubPagesOptions(
+        branch: 'gh-pages',
+        build: false,
+        push: false,
+        buildDir: buildDir.path,
+      ),
+    );
+    expect(code, ExitCode.success.code);
+
+    final tree = await gitOutput(repo.path, ['ls-tree', '-r', '--name-only', 'gh-pages']);
+    expect(tree, contains('CNAME'), reason: 'custom domain must survive');
+    expect(
+      await gitOutput(repo.path, ['show', 'gh-pages:CNAME']),
+      'deck.example.com',
+    );
+  });
+
+  test('writes an explicit --cname for a new branch', () async {
+    final repo = await createGitRepo();
+
+    final buildDir = await Directory.systemTemp.createTemp('deploy_build_');
+    addTearDown(() => buildDir.delete(recursive: true));
+    File(p.join(buildDir.path, 'index.html')).writeAsStringSync('<html></html>');
+
+    final original = Directory.current;
+    addTearDown(() => Directory.current = original);
+    Directory.current = repo;
+
+    final code = await GitHubPagesTarget(logger: quiet()).publish(
+      GitHubPagesOptions(
+        branch: 'gh-pages',
+        build: false,
+        push: false,
+        buildDir: buildDir.path,
+        cname: 'new.example.com',
+      ),
+    );
+    expect(code, ExitCode.success.code);
+
+    expect(
+      await gitOutput(repo.path, ['show', 'gh-pages:CNAME']),
+      'new.example.com',
+    );
   });
 }

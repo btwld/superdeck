@@ -41,6 +41,11 @@ class GitHubPagesCommand extends DeployCommand {
         'base-href',
         help: 'Override the auto-detected base href (e.g. "/my-repo/").',
       )
+      ..addOption(
+        'cname',
+        help: 'Custom domain to write to a CNAME file (e.g. '
+            '"deck.example.com"). Preserves an existing CNAME when omitted.',
+      )
       ..addFlag(
         'dry-run',
         help: 'Plan the publish without making any changes.',
@@ -59,6 +64,7 @@ class GitHubPagesCommand extends DeployCommand {
       buildDir: args['build-dir'] as String,
       appDir: args['app-dir'] as String,
       baseHref: args['base-href'] as String?,
+      cname: args['cname'] as String?,
       dryRun: args['dry-run'] as bool,
     );
 
