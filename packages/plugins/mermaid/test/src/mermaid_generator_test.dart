@@ -13,16 +13,19 @@ void main() {
 
     test('has default configuration', () {
       expect(generator.configuration, isA<Map<String, dynamic>>());
-      expect(generator.configuration['theme'], equals('base'));
+      expect(generator.configuration['theme'], equals('default'));
       expect(
         generator.configuration['themeVariables'],
         isA<Map<String, dynamic>>(),
       );
-      expect(
-        (generator.configuration['themeVariables'] as Map?)?['darkMode'],
-        equals(true),
-      );
+      final themeVariables = generator.configuration['themeVariables'] as Map?;
+      expect(themeVariables?['darkMode'], isTrue);
+      expect(themeVariables?['background'], 'transparent');
       expect(generator.configuration['themeCSS'], isA<String>());
+      expect(
+        generator.configuration['themeCSS'],
+        contains('background: transparent'),
+      );
       expect(generator.configuration['look'], equals('classic'));
       expect(generator.configuration['viewportWidth'], equals(1280));
       expect(generator.configuration['viewportHeight'], equals(780));
@@ -112,11 +115,11 @@ void main() {
       test('fallback theme detection returns correct theme type', () {
         final generator = MermaidGenerator();
 
-        expect(generator.configuration['theme'], equals('base'));
+        expect(generator.configuration['theme'], equals('default'));
         expect(generator.configuration['themeVariables'], isNotEmpty);
       });
 
-      test('partial configuration retains default dark theme settings', () {
+      test('partial configuration retains transparent default settings', () {
         final generator = MermaidGenerator(
           configuration: const {
             'themeVariables': {'primaryColor': '#ff00ff'},
@@ -127,10 +130,30 @@ void main() {
           generator.configuration['themeVariables']! as Map,
         );
 
-        expect(generator.configuration['theme'], equals('base'));
+        expect(generator.configuration['theme'], equals('default'));
         expect(generator.configuration['themeCSS'], contains('font-family'));
         expect(themeVariables['primaryColor'], equals('#ff00ff'));
         expect(themeVariables['darkMode'], equals(true));
+        expect(themeVariables['background'], equals('transparent'));
+      });
+
+      test('default configuration does not override stroke styling', () {
+        final themeVariables = Map<String, Object?>.from(
+          generator.configuration['themeVariables']! as Map,
+        );
+        final themeCSS = generator.configuration['themeCSS'] as String;
+
+        expect(themeCSS, isNot(contains('stroke-width')));
+        expect(themeCSS, isNot(contains('stroke:')));
+        expect(themeVariables, isNot(containsPair('lineColor', anything)));
+        expect(
+          themeVariables,
+          isNot(containsPair('primaryBorderColor', anything)),
+        );
+        expect(
+          themeVariables,
+          isNot(containsPair('defaultLinkColor', anything)),
+        );
       });
 
       test('HTML payload encodes theme strings as JS-safe literals', () {

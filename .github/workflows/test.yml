@@ -59,6 +59,11 @@ jobs:
       - name: Run Unit Tests
         run: melos run test --no-select
 
+      - name: Run PDF Plugin Golden Tests
+        run: |
+          cd packages/plugins/pdf
+          fvm flutter test test/goldens/pdf_export_dialog_golden_test.dart
+
   integration-test:
     runs-on: ubuntu-latest
     name: Integration Tests

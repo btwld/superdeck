@@ -1,4 +1,4 @@
-# melos_managed_dependency_overrides: superdeck,superdeck_builder,superdeck_cli,superdeck_core
+# melos_managed_dependency_overrides: superdeck,superdeck_builder,superdeck_cli,superdeck_core,superdeck_mermaid,superdeck_pdf
 dependency_overrides:
   superdeck:
     path: ../packages/superdeck
@@ -8,3 +8,7 @@ dependency_overrides:
     path: ../packages/cli
   superdeck_core:
     path: ../packages/core
+  superdeck_mermaid:
+    path: ../packages/plugins/mermaid
+  superdeck_pdf:
+    path: ../packages/plugins/pdf

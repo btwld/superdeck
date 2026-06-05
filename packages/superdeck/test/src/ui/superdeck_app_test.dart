@@ -136,6 +136,46 @@ void main() {
       expect(find.bySemanticsLabel('Test deck action'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('shell modal host exposes modal controller to descendants', (
+      tester,
+    ) async {
+      DeckShellModalEntry? modalEntry;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: DeckShellModalHost(
+            child: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    modalEntry = DeckShellModal.maybeOf(context)?.show(
+                      builder: (_) => const ColoredBox(
+                        color: Colors.black,
+                        child: Center(child: Text('Shell modal content')),
+                      ),
+                    );
+                  },
+                  child: const Text('Open shell modal'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open shell modal'));
+      await tester.pump();
+
+      expect(modalEntry, isNotNull);
+      expect(find.text('Shell modal content'), findsOneWidget);
+
+      modalEntry!.close();
+      await tester.pump();
+
+      expect(find.text('Shell modal content'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('DeckBottomBar actions', () {

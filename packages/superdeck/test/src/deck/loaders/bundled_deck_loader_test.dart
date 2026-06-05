@@ -47,5 +47,21 @@ void main() {
       expect(events.whereType<SlidesLoadingEvent>(), hasLength(2));
       expect(events.whereType<SlidesErrorEvent>(), hasLength(2));
     });
+
+    test('dispose is idempotent while cleanup is in progress', () async {
+      final loader = BundledDeckLoader();
+      final subscription = loader.load().listen((_) {});
+
+      addTearDown(() async {
+        await subscription.cancel();
+        await loader.dispose();
+      });
+
+      final firstDispose = loader.dispose();
+      final secondDispose = loader.dispose();
+
+      expect(identical(firstDispose, secondDispose), isTrue);
+      await Future.wait([firstDispose, secondDispose]);
+    });
   });
 }

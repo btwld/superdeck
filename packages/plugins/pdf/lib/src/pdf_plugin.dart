@@ -13,8 +13,7 @@ DeckAction pdfExportAction({PdfSaver? pdfSaver}) {
     id: 'superdeck.pdf.export',
     label: 'Export PDF',
     icon: Icons.picture_as_pdf,
-    onPressed: (context, deck) {
-      PdfExportDialogScreen.show(context, pdfSaver: pdfSaver);
-    },
+    onPressed: (context, deck) =>
+        PdfExportDialogScreen.show(context, pdfSaver: pdfSaver),
   );
 }

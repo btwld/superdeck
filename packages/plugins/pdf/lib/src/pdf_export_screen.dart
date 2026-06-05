@@ -5,16 +5,37 @@ import 'package:superdeck/superdeck.dart';
 import 'pdf_controller.dart';
 
 class PdfExportDialogScreen extends StatefulWidget {
-  const PdfExportDialogScreen({super.key, required this.slides, this.pdfSaver});
+  const PdfExportDialogScreen({
+    super.key,
+    required this.slides,
+    this.pdfSaver,
+    this.onClose,
+  });
 
   final List<SlideConfiguration> slides;
   final PdfSaver? pdfSaver;
+  final VoidCallback? onClose;
 
   @override
   State<PdfExportDialogScreen> createState() => _PdfExportDialogScreenState();
 
-  static void show(BuildContext context, {PdfSaver? pdfSaver}) {
+  static Future<void> show(BuildContext context, {PdfSaver? pdfSaver}) {
     final deckController = DeckController.of(context);
+    final slides = deckController.slides.value;
+    final shellModal = DeckShellModal.maybeOf(context);
+    if (shellModal != null) {
+      DeckShellModalEntry? entry;
+      entry = shellModal.show(
+        builder: (context) => PdfExportDialogScreen(
+          slides: slides,
+          pdfSaver: pdfSaver,
+          onClose: () => entry?.close(),
+        ),
+      );
+
+      return entry.closed;
+    }
+
     final dialogContext =
         deckController
             .presentation
@@ -24,13 +45,11 @@ class PdfExportDialogScreen extends StatefulWidget {
             .currentContext ??
         context;
 
-    showDialog<void>(
+    return showDialog<void>(
       context: dialogContext,
       barrierDismissible: false,
-      builder: (context) => PdfExportDialogScreen(
-        slides: deckController.slides.value,
-        pdfSaver: pdfSaver,
-      ),
+      builder: (context) =>
+          PdfExportDialogScreen(slides: slides, pdfSaver: pdfSaver),
     );
   }
 }
@@ -76,12 +95,23 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
       stackTrace = caughtStackTrace;
     }
 
-    if (mounted) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
+    if (mounted) _close();
 
     if (error != null) {
       Error.throwWithStackTrace(error, stackTrace!);
+    }
+  }
+
+  void _close() {
+    final onClose = widget.onClose;
+    if (onClose != null) {
+      onClose();
+      return;
+    }
+
+    final navigator = Navigator.maybeOf(context, rootNavigator: true);
+    if (navigator?.canPop() ?? false) {
+      navigator!.pop();
     }
   }
 
@@ -102,17 +132,16 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      insetPadding: EdgeInsets.zero,
-      backgroundColor: Colors.black,
-      child: SizedBox.fromSize(
-        size: superDeckSlideSize,
-        child: Watch((context) {
-          _exportController.exportStatus.value;
+    return Watch((context) {
+      _exportController.exportStatus.value;
 
-          return Stack(
-            children: [
-              PageView.builder(
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: SizedBox.fromSize(
+              size: superDeckSlideSize,
+              child: PageView.builder(
                 controller: _exportController.pageController,
                 itemCount: _exportController.slides.length,
                 itemBuilder: (context, index) {
@@ -123,31 +152,47 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
                   return RepaintBoundary(
                     key: _exportController.getSlideKey(slide),
-                    child: SlideRenderView(slide),
+                    child: _PdfSlideCaptureView(slide: slide),
                   );
                 },
               ),
-              Positioned.fill(
-                child: Container(
-                  color: Colors.black,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: _PdfExportBar(exportController: _exportController),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }),
-      ),
+            ),
+          ),
+          const ModalBarrier(color: Colors.black, dismissible: false),
+          Center(
+            child: _PdfExportBar(
+              exportController: _exportController,
+              onCancel: () {
+                _exportController.cancel();
+                _close();
+              },
+            ),
+          ),
+        ],
+      );
+    });
+  }
+}
+
+class _PdfSlideCaptureView extends StatelessWidget {
+  const _PdfSlideCaptureView({required this.slide});
+
+  final SlideConfiguration slide;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SlideRenderView(slide),
     );
   }
 }
 
 class _PdfExportBar extends StatelessWidget {
-  const _PdfExportBar({required this.exportController});
+  const _PdfExportBar({required this.exportController, required this.onCancel});
 
   final PdfController exportController;
+  final VoidCallback onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +200,10 @@ class _PdfExportBar extends StatelessWidget {
       final status = exportController.exportStatus.value;
       final progressValue = exportController.progress.value;
       final (current, total) = exportController.progressTuple.value;
+      final theme = Theme.of(context);
+      final indicatorValue = status == PdfExportStatus.capturing
+          ? progressValue
+          : null;
 
       final progressText = switch (status) {
         PdfExportStatus.building => 'Building PDF...',
@@ -166,45 +215,51 @@ class _PdfExportBar extends StatelessWidget {
           exportController.exportError.value ?? 'Export failed',
       };
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            switch (status) {
-              PdfExportStatus.complete => Icon(
-                Icons.check_circle,
-                color: Theme.of(context).colorScheme.primary,
-                size: 32,
-              ),
-              PdfExportStatus.failed => Icon(
-                Icons.error,
-                color: Theme.of(context).colorScheme.error,
-                size: 32,
-              ),
-              _ => SizedBox(
-                height: 32,
-                width: 32,
-                child: CircularProgressIndicator(value: progressValue),
-              ),
-            },
-            const SizedBox(height: 16.0),
-            Text(
-              progressText,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.white),
+      return ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360, minWidth: 280),
+        child: Material(
+          color: const Color(0xff171717),
+          elevation: 24,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                switch (status) {
+                  PdfExportStatus.complete => Icon(
+                    Icons.check_circle,
+                    color: theme.colorScheme.primary,
+                    size: 32,
+                  ),
+                  PdfExportStatus.failed => Icon(
+                    Icons.error,
+                    color: theme.colorScheme.error,
+                    size: 32,
+                  ),
+                  _ => SizedBox(
+                    height: 32,
+                    width: 32,
+                    child: CircularProgressIndicator(value: indicatorValue),
+                  ),
+                },
+                const SizedBox(height: 16.0),
+                Text(
+                  progressText,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20.0),
+                ElevatedButton.icon(
+                  onPressed: onCancel,
+                  icon: const Icon(Icons.cancel),
+                  label: const Text('Cancel'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16.0),
-            ElevatedButton.icon(
-              onPressed: () {
-                exportController.cancel();
-                Navigator.of(context, rootNavigator: true).pop();
-              },
-              icon: const Icon(Icons.cancel),
-              label: const Text('Cancel'),
-            ),
-          ],
+          ),
         ),
       );
     });

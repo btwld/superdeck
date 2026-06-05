@@ -7,7 +7,9 @@ description: Create beautiful diagrams and flowcharts using Mermaid syntax in Su
 
 The `superdeck_mermaid` plugin can render [Mermaid](https://mermaid.js.org/) diagrams — flowcharts, sequence diagrams, class diagrams, and more — to PNG via a headless browser. This guide documents the Mermaid syntax the plugin supports.
 
-> CLI/build integration is not wired up in this release. The plugin currently exposes a standalone `MermaidGenerator.render(syntax)` API that returns PNG bytes. See [Build process](#build-process) for status.
+Register `mermaidBuildPlugin()` with a custom `SuperDeckRunner` to render
+Mermaid fences during the deck build. The plugin also exposes
+`MermaidGenerator.render(syntax)` for direct PNG generation.
 
 ## Supported diagram types
 
@@ -313,9 +315,9 @@ erDiagram
 
 ## Styling and theming
 
-`MermaidGenerator` uses Mermaid’s `base` theme with a dark set of `themeVariables` by default.
+`MermaidGenerator` uses Mermaid’s default theme with dark-mode color derivation and a transparent background by default.
 
-Some diagram types (for example, `timeline` in dark mode) fall back to Mermaid’s `default` theme to keep axes and grid lines readable.
+Custom theming can be added through Mermaid configuration when a deck needs it.
 
 ### Per-diagram styling
 
@@ -390,10 +392,27 @@ flowchart TD
 
 ## Build process
 
-> Automatic rendering through the CLI is not currently wired up. The
-> `superdeck_mermaid` package exposes a standalone `MermaidGenerator` that
-> converts Mermaid syntax into PNG bytes via a headless browser; CLI/build
-> integration will return in a future release.
+The Mermaid build plugin runs before the runtime app loads the compiled deck.
+It scans content blocks for fenced Mermaid code, renders each diagram to a PNG,
+writes the generated asset under `.superdeck/mermaid/`, and replaces the fence
+with Markdown image syntax that points at the generated asset.
+
+```dart
+import 'dart:io';
+
+import 'package:superdeck_cli/runner.dart';
+import 'package:superdeck_mermaid/superdeck_mermaid.dart';
+
+Future<void> main(List<String> args) async {
+  final exitCode = await SuperDeckRunner(
+    plugins: [
+      mermaidBuildPlugin(),
+    ],
+  ).run(args);
+
+  exit(exitCode);
+}
+```
 
 ## Troubleshooting
 

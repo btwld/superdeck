@@ -10,6 +10,7 @@ import '../plugins/deck_action.dart';
 import '../rendering/slides/scaled_app.dart';
 import '../rendering/slides/slide_thumbnail.dart';
 import '../utils/constants.dart';
+import 'deck_shell_modal.dart';
 import 'extensions.dart';
 import 'panels/bottom_bar.dart';
 import 'panels/comments_panel.dart';
@@ -27,11 +28,13 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationInputListener(
-      child: SplitView(
-        isSmallLayout: context.isSmall,
-        actions: actions,
-        child: child,
+    return DeckShellModalHost(
+      child: NavigationInputListener(
+        child: SplitView(
+          isSmallLayout: context.isSmall,
+          actions: actions,
+          child: child,
+        ),
       ),
     );
   }

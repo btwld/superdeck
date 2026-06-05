@@ -21,6 +21,7 @@ export 'src/styling/components/markdown_text.dart';
 export 'src/styling/components/slide.dart';
 
 // UI
+export 'src/ui/deck_shell_modal.dart';
 export 'src/ui/superdeck_app.dart';
 
 // Plugins

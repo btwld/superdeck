@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:superdeck_builder/src/build/build_event.dart';
 import 'package:superdeck_builder/src/build/deck_build_plugin.dart';
 import 'package:superdeck_builder/src/build/deck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
 import '../../helpers/testing_utils.dart';
+
+const _eventTimeout = Duration(seconds: 5);
 
 void main() {
   group('DeckBuilder', () {
@@ -201,5 +204,84 @@ Discuss release plan.
       expect(firstDisposed, isTrue);
       expect(secondDisposed, isTrue);
     });
+
+    test('watchAndBuild applies build plugins after slides.md edits', () async {
+      const initialMarkdown = '# First Slide\n\nOriginal content';
+      const updatedMarkdown = '# First Slide\n\nUpdated content';
+      final transformedContents = <String>[];
+      final plugin = DeckBuildPlugin(
+        id: 'test.watch-transform',
+        transformContentBlock: (block, _) {
+          transformedContents.add(block.content);
+
+          return block.copyWith(
+            content:
+                '${block.content}\n\n'
+                'Transformed cycle ${transformedContents.length}.',
+          );
+        },
+      );
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [plugin],
+      );
+      addTearDown(builder.dispose);
+
+      await workspace.slidesFile.writeAsString(initialMarkdown);
+      final events = StreamIterator(builder.watchAndBuild());
+      addTearDown(events.cancel);
+
+      await _expectEvent<BuildStarted>(events, 'builder');
+      final firstCompleted = await _expectEvent<BuildCompleted>(
+        events,
+        'builder',
+      );
+      expect(
+        _singleContentBlock(firstCompleted).content,
+        contains('Transformed cycle 1.'),
+      );
+
+      await workspace.slidesFile.writeAsString(updatedMarkdown);
+
+      await _expectEvent<BuildStarted>(events, 'builder');
+      final secondCompleted = await _expectEvent<BuildCompleted>(
+        events,
+        'builder',
+      );
+      expect(
+        _singleContentBlock(secondCompleted).content,
+        contains('Updated content\n\nTransformed cycle 2.'),
+      );
+      expect(transformedContents, [
+        '# First Slide\n\nOriginal content',
+        '# First Slide\n\nUpdated content',
+      ]);
+    });
   });
+}
+
+Future<T> _expectEvent<T>(
+  StreamIterator<Object?> events,
+  String streamName,
+) async {
+  final stopwatch = Stopwatch()..start();
+  while (stopwatch.elapsed < _eventTimeout) {
+    final remaining = _eventTimeout - stopwatch.elapsed;
+    final hasNext = await events.moveNext().timeout(
+      remaining,
+      onTimeout: () => false,
+    );
+    if (!hasNext) break;
+    final event = events.current;
+    if (event is T) return event;
+  }
+  fail('Timed out waiting for ${T.toString()} on $streamName');
+}
+
+ContentBlock _singleContentBlock(BuildCompleted completed) {
+  final block = completed.slides.single.sections.single.blocks.single;
+  expect(block, isA<ContentBlock>());
+
+  return block as ContentBlock;
 }

@@ -36,6 +36,7 @@ void main() {
         slides: [
           Slide(
             key: 'pdf-action-test',
+            options: SlideOptions(title: ''),
             sections: [
               SectionBlock([WidgetBlock(name: 'open-pdf-action')]),
             ],
@@ -43,6 +44,14 @@ void main() {
         ],
       );
       addTearDown(loader.dispose);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      tester.view
+        ..physicalSize = superDeckSlideSize
+        ..devicePixelRatio = 1.0;
 
       await tester.pumpWidget(
         SuperDeckApp(
