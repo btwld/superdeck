@@ -7,8 +7,20 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import 'mermaid_generator.dart';
 
-DeckBuildPlugin mermaidBuildPlugin({MermaidGenerator? generator}) {
-  final renderer = generator ?? MermaidGenerator();
+/// Creates the build-time plugin that renders fenced Mermaid blocks to PNGs.
+DeckBuildPlugin mermaidBuildPlugin({
+  Map<String, Object?> configuration = const {},
+  MermaidGenerator? generator,
+}) {
+  if (generator != null && configuration.isNotEmpty) {
+    throw ArgumentError.value(
+      configuration,
+      'configuration',
+      'must be empty when a custom MermaidGenerator is provided',
+    );
+  }
+
+  final renderer = generator ?? MermaidGenerator(configuration: configuration);
   final ownsRenderer = generator == null;
   final processor = _MermaidBuildProcessor(renderer);
 

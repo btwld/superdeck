@@ -31,6 +31,27 @@ Future<void> main(List<String> args) async {
 The build plugin replaces fenced Mermaid blocks in `slides.md` with generated
 PNG image references under `.superdeck/mermaid/`.
 
+To customize Mermaid rendering, pass Mermaid configuration through the plugin
+factory:
+
+```dart
+SuperDeckRunner(
+  plugins: [
+    mermaidBuildPlugin(
+      configuration: {
+        'theme': 'forest',
+        'viewportWidth': 1280,
+        'viewportHeight': 780,
+      },
+    ),
+  ],
+);
+```
+
+For custom browser launch options or tests, pass a `MermaidGenerator` directly.
+Do not pass both `configuration` and `generator`; the generator owns its own
+configuration.
+
 You can also use the renderer directly:
 
 ```dart
@@ -56,9 +77,8 @@ try {
 - `MermaidGenerator` – standalone class that renders Mermaid syntax to PNG
   bytes using `puppeteer`. Call `render(syntax)` to produce a `Uint8List`, and
   `dispose()` to close the browser when finished.
-- `docs/mermaid_themes/` – reference Mermaid theme files.
 - `docs/mermaid-diagrams.mdx` – user guide for authoring Mermaid diagrams.
 
 ## License
 
-BSD 3-Clause. See the root `LICENSE`.
+BSD 3-Clause. See `LICENSE`.

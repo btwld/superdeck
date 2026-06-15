@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -140,6 +141,40 @@ void main() {
       );
     });
 
+    test('uses factory configuration for owned generator cache keys', () async {
+      const syntax = 'graph TD\nA --> B';
+      const configuration = {'theme': 'forest'};
+      final generator = MermaidGenerator(configuration: configuration);
+      final expectedHash = _cacheKey(syntax, generator.configuration);
+      await generator.dispose();
+
+      final imageFile = context.outputFile(
+        p.posix.join('mermaid', 'mermaid_$expectedHash.png'),
+      );
+      await imageFile.parent.create(recursive: true);
+      await imageFile.writeAsBytes(const [1, 2, 3]);
+
+      final plugin = mermaidBuildPlugin(configuration: configuration);
+      addTearDown(plugin.dispose);
+
+      final block = await plugin.transformContentBlock(
+        ContentBlock('```mermaid\n$syntax\n```'),
+        context,
+      );
+
+      expect(block.content, contains('mermaid_$expectedHash.png'));
+    });
+
+    test('rejects configuration when a custom generator is provided', () {
+      expect(
+        () => mermaidBuildPlugin(
+          configuration: const {'theme': 'forest'},
+          generator: _FakeMermaidGenerator(),
+        ),
+        throwsArgumentError,
+      );
+    });
+
     test('renderer errors fail the transform', () async {
       final plugin = mermaidBuildPlugin(generator: _FailingMermaidGenerator());
 
@@ -158,6 +193,32 @@ String _extractImagePath(String content) {
   final match = RegExp(r'!\[Mermaid diagram\]\(([^)]+)\)').firstMatch(content);
 
   return match!.group(1)!;
+}
+
+String _cacheKey(String syntax, Map<String, Object?> configuration) {
+  final payload = jsonEncode({
+    'source': syntax,
+    'configuration': _canonicalize(configuration),
+  });
+
+  return generateValueHash(payload);
+}
+
+Object? _canonicalize(Object? value) {
+  if (value is Map) {
+    final entries =
+        value.entries
+            .map((entry) => (key: entry.key.toString(), value: entry.value))
+            .toList()
+          ..sort((a, b) => a.key.compareTo(b.key));
+
+    return {for (final entry in entries) entry.key: _canonicalize(entry.value)};
+  }
+  if (value is Iterable) {
+    return value.map(_canonicalize).toList(growable: false);
+  }
+
+  return value;
 }
 
 class _FakeMermaidGenerator extends MermaidGenerator {

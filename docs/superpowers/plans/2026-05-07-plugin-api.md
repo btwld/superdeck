@@ -49,7 +49,7 @@ And:
 ```dart
 DeckBuildPlugin mermaidBuildPlugin() {
   return DeckBuildPlugin(
-    id: 'superdeck_mermaid',
+    id: 'superdeck.mermaid',
     transformContentBlock: mermaidTransform,
   );
 }
@@ -105,24 +105,22 @@ keeps PDF as a command contribution rather than a broad runtime plugin system.
 
 ### Action Plugin Shape
 
-Conceptually:
-
-```dart
-An action is a command shown by the SuperDeck shell:
+Conceptually, an action is a command shown by the SuperDeck shell:
 
 ```dart
 final class DeckAction {
   const DeckAction({
     required this.id,
     required this.icon,
-    required this.semanticLabel,
+    required this.label,
     required this.onPressed,
   });
 
   final String id;
   final IconData icon;
-  final String semanticLabel;
-  final void Function(BuildContext context, DeckController deck) onPressed;
+  final String label;
+  final FutureOr<void> Function(BuildContext context, DeckController deck)
+      onPressed;
 }
 ```
 
@@ -135,9 +133,9 @@ This is enough for a plugin to open any UI it owns:
 
 ```dart
 DeckAction(
-  id: 'superdeck_pdf.export',
+  id: 'superdeck.pdf.export',
   icon: Icons.picture_as_pdf,
-  semanticLabel: 'Export PDF',
+  label: 'Export PDF',
   onPressed: (context, deck) {
     PdfExportDialogScreen.show(context);
   },
@@ -263,7 +261,7 @@ SuperDeckApp(
 
 The plugin contributes one action:
 
-- action ID: `superdeck_pdf.export`
+- action ID: `superdeck.pdf.export`
 - label: `Export PDF`
 - icon: `Icons.picture_as_pdf`
 - behavior: open `PdfExportDialogScreen.show(context)`
@@ -547,6 +545,7 @@ Mermaid factory:
 ```dart
 DeckBuildPlugin mermaidBuildPlugin({
   Map<String, Object?> configuration = const {},
+  MermaidGenerator? generator,
 });
 ```
 

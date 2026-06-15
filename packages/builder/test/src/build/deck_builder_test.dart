@@ -242,9 +242,11 @@ Discuss release plan.
         contains('Transformed cycle 1.'),
       );
 
+      final rebuildStarted = _expectEvent<BuildStarted>(events, 'builder');
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       await workspace.slidesFile.writeAsString(updatedMarkdown);
 
-      await _expectEvent<BuildStarted>(events, 'builder');
+      await rebuildStarted;
       final secondCompleted = await _expectEvent<BuildCompleted>(
         events,
         'builder',

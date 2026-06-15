@@ -51,7 +51,7 @@ flowchart TD
   Save[(Save to Database)]
   Error[Show Error]
   End([End])
-  
+
   Start --> Input
   Input --> Process
   Process --> Decision
@@ -90,7 +90,7 @@ flowchart LR
 Control flowchart direction:
 
 - `TD` or `TB` - Top to Bottom (default)
-- `BT` - Bottom to Top  
+- `BT` - Bottom to Top
 - `LR` - Left to Right
 - `RL` - Right to Left
 
@@ -112,16 +112,16 @@ sequenceDiagram
   participant Frontend as 💻 Frontend
   participant API as 🔗 API
   participant Database as 🗄️ Database
-  
+
   Customer->>Frontend: Login Request
   Frontend->>API: POST /auth/login
   API->>Database: Verify Credentials
   Database-->>API: User Data
   API-->>Frontend: JWT Token
   Frontend-->>Customer: Login Success
-  
+
   Note over Customer,Database: Authentication Flow
-  
+
   Customer->>Frontend: Request Data
   Frontend->>API: GET /data (with token)
   API->>Database: Query Data
@@ -155,7 +155,7 @@ classDiagram
     +previousSlide()
     +goToSlide(int index)
   }
-  
+
   class Slide {
     +String key
     +SlideOptions options
@@ -163,16 +163,16 @@ classDiagram
     +List~String~ comments
     +render()
   }
-  
+
   class SlideOptions {
     +String? title
-    +String? style  
+    +String? style
     +Map~String, Object?~ args
   }
-  
+
   PresentationController "1" --> "*" Slide
   Slide "1" --> "1" SlideOptions
-  
+
   <<interface>> Renderable
   Slide ..|> Renderable
 ```
@@ -189,15 +189,15 @@ stateDiagram-v2
   Idle --> Loading : startPresentation()
   Loading --> Ready : loadComplete()
   Loading --> Error : loadFailed()
-  
+
   Ready --> Presenting : startSlideshow()
   Presenting --> Ready : stopSlideshow()
   Presenting --> NextSlide : nextSlide()
   NextSlide --> Presenting : slideLoaded()
-  
+
   Error --> Idle : retry()
   Ready --> [*] : close()
-  
+
   state Presenting {
     [*] --> ShowingSlide
     ShowingSlide --> Transitioning : navigate()
@@ -228,18 +228,18 @@ Show user experience flows:
 ```mermaid
 journey
   title Creating a SuperDeck Presentation
-  
+
   section Planning
     Define Content: 5: Developer
     Choose Template: 4: Developer
     Prepare Assets: 3: Developer
-  
-  section Development  
+
+  section Development
     Write Markdown: 5: Developer
     Add Diagrams: 4: Developer
     Style Slides: 4: Developer
     Test Build: 3: Developer
-  
+
   section Publishing
     Generate Build: 5: Developer
     Review Output: 4: Developer
@@ -256,17 +256,17 @@ Project timeline visualization:
 gantt
   title SuperDeck Development Timeline
   dateFormat YYYY-MM-DD
-  
+
   section Core Features
     Block System       :done, core1, 2024-01-01, 2024-02-15
     Presentation Engine:done, core2, 2024-02-01, 2024-03-15
     Build Pipeline     :done, core3, 2024-03-01, 2024-04-15
-  
+
   section Advanced Features
     Mermaid Support    :done, feat1, 2024-04-01, 2024-05-01
     Custom Widgets     :active, feat2, 2024-05-01, 2024-06-15
     Export Options     :feat3, 2024-06-01, 2024-07-15
-  
+
   section Documentation
     API Documentation  :done, docs1, 2024-05-15, 2024-06-01
     User Guides        :active, docs2, 2024-06-01, 2024-07-01
@@ -288,7 +288,7 @@ erDiagram
     datetime created_at
     datetime updated_at
   }
-  
+
   SLIDE {
     string id PK
     string presentation_id FK
@@ -297,7 +297,7 @@ erDiagram
     text content
     json options
   }
-  
+
   ASSET {
     string id PK
     string presentation_id FK
@@ -306,7 +306,7 @@ erDiagram
     string hash
     datetime created_at
   }
-  
+
   PRESENTATION ||--o{ SLIDE : contains
   PRESENTATION ||--o{ ASSET : includes
   SLIDE }o--o{ ASSET : references
@@ -353,13 +353,13 @@ flowchart TD
     State[State Management]
     Router[Navigation]
   end
-  
+
   subgraph Backend ["⚙️ Backend"]
     API[REST API]
     Auth[Authentication]
     DB[(Database)]
   end
-  
+
   UI --> API
   State --> API
   Router --> State
@@ -381,11 +381,11 @@ Add documentation to your diagrams:
 flowchart TD
   %% This is a comment that won't appear in the diagram
   A[Start] --> B[Process]
-  
+
   %% Multi-line comments
   %% can be used to document
   %% complex diagram logic
-  
+
   B --> C[End]
 ```
 ````

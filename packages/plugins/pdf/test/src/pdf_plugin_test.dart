@@ -28,6 +28,7 @@ void main() {
       final actions = pdfActions();
 
       expect(actions, hasLength(1));
+      expect(actions.single.id, 'superdeck.pdf.export');
       expect(actions.single.label, 'Export PDF');
     });
 
