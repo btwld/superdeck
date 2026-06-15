@@ -62,9 +62,9 @@ class _BlockContainerState extends State<_BlockContainer> {
       child: content,
     );
 
-    // Apply alignment
+    // Apply alignment, falling back to the block's default when unset.
     content = Align(
-      alignment: widget.block.align?.toAlignment ?? Alignment.center,
+      alignment: widget.block.resolvedAlign.toAlignment,
       child: content,
     );
 

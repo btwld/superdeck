@@ -13,12 +13,15 @@ Content and widget blocks support these properties. Sections support `align`
 and `flex`, but scrolling is configured on child blocks or widgets.
 
 ### `align`
-**Type:** String | **Default:** `center`
+**Type:** String | **Default:** `centerLeft`
 
 Controls content alignment:
 - `topLeft`, `topCenter`, `topRight`
 - `centerLeft`, `center`, `centerRight`
 - `bottomLeft`, `bottomCenter`, `bottomRight`
+
+Blocks default to `centerLeft` because paragraph-like content reads better
+left-aligned. Set `align: center` explicitly for titles or short callouts.
 
 ### `flex`
 **Type:** Number | **Default:** `1`

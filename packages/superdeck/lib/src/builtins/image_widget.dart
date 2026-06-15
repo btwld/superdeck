@@ -119,7 +119,7 @@ class ImageWidget extends StatelessWidget {
       styleSpec: StyleSpec(
         spec: spec.image.spec.copyWith(
           fit: _data.fit.toBoxFit,
-          alignment: alignment?.toAlignment ?? Alignment.center,
+          alignment: alignment?.toAlignment ?? Alignment.centerLeft,
         ),
       ),
     );
@@ -129,7 +129,7 @@ class ImageWidget extends StatelessWidget {
         : image;
 
     return Align(
-      alignment: alignment?.toAlignment ?? Alignment.center,
+      alignment: alignment?.toAlignment ?? Alignment.centerLeft,
       child: constrained,
     );
   }

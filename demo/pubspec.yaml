@@ -10,12 +10,12 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.3.2
   mesh: ^0.4.3
-  mix: ^2.0.0-rc.0
+  mix: ^2.0.3
   superdeck_core: ^1.0.0
   superdeck: ^1.0.0
   signals_flutter: ^6.0.4
   naked_ui: ^0.2.0-beta.7
-  remix: ^0.1.0-beta.1
+  remix: ^0.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
