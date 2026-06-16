@@ -204,7 +204,9 @@ This example replaces a small custom marker with a GitHub-style note:
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart' show ContentBlock;
 
+/// Rewrites inline callout markers into Markdown note blocks.
 final class CalloutBuildPlugin extends DeckBuildPlugin {
+  /// Creates a callout transform plugin.
   const CalloutBuildPlugin();
 
   @override
@@ -259,7 +261,9 @@ to create a file inside the active build output directory, then use
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart' show ContentBlock;
 
+/// Writes a generated text asset and links it from transformed Markdown.
 final class TextAssetPlugin extends DeckBuildPlugin {
+  /// Creates a text asset plugin.
   const TextAssetPlugin();
 
   @override

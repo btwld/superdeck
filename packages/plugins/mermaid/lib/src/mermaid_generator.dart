@@ -23,8 +23,8 @@ typedef _MermaidRenderConfig = ({
 
 /// Renders Mermaid diagrams to PNG using a headless browser.
 ///
-/// Standalone puppeteer-backed utility. Call [render] with Mermaid syntax to
-/// produce PNG bytes; call [dispose] when finished to close the browser.
+/// The browser is launched lazily on the first render and reused for later
+/// renders. Call [dispose] when the generator is no longer needed.
 class MermaidGenerator {
   static final _logger = Logger('MermaidGenerator');
 
@@ -93,13 +93,22 @@ class MermaidGenerator {
 </html>
 ''';
 
+  /// The resolved Mermaid rendering configuration.
+  ///
+  /// Values passed to the constructor are deeply merged with SuperDeck's
+  /// defaults and then exposed as an unmodifiable map.
   final Map<String, Object?> configuration;
 
-  /// Creates a Mermaid generator using Mermaid's default theme.
+  /// Creates a Mermaid generator backed by a headless browser.
   ///
-  /// The generated PNGs keep a transparent background so slide styling remains
-  /// responsible for the surrounding canvas. Custom theme support can be layered
-  /// on top later without changing the build plugin contract.
+  /// [launchOptions] are forwarded to `puppeteer.launch`, including options
+  /// such as `headless`, `args`, and `executablePath`.
+  ///
+  /// [configuration] customizes Mermaid rendering. Supported keys include
+  /// `theme`, `look`, `securityLevel`, `themeVariables`, `themeCSS`,
+  /// `extraCSS`, `viewportWidth`, `viewportHeight`, `deviceScaleFactor`,
+  /// `timeout`, and diagram-specific configuration keys such as `flowchart` or
+  /// `sequence`.
   MermaidGenerator({
     Map<String, Object?>? launchOptions,
     Map<String, Object?>? configuration,
@@ -278,7 +287,10 @@ class MermaidGenerator {
     }
   }
 
-  /// Renders the given Mermaid [syntax] and returns PNG bytes.
+  /// Renders Mermaid [syntax] and returns PNG bytes.
+  ///
+  /// Throws an [Exception] when the browser cannot launch, Mermaid rejects the
+  /// syntax, rendering times out, or no SVG output is produced.
   Future<Uint8List> render(String syntax) async {
     try {
       return await _generateMermaidImage(syntax);
@@ -477,6 +489,9 @@ class MermaidGenerator {
 
   static const _disposeTimeout = Duration(seconds: 30);
 
+  /// Closes the browser owned by this generator.
+  ///
+  /// After disposal, later calls to [render] throw a [StateError].
   Future<void> dispose() async {
     _disposed = true;
 

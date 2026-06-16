@@ -9,29 +9,30 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:signals/signals.dart';
 import 'package:superdeck/superdeck.dart';
 
-/// Signature for a function that persists PDF bytes.
+/// Persists generated PDF bytes.
 ///
-/// Returns `true` if the save succeeded, `false` if the user cancelled.
+/// Return `true` when the save succeeds and `false` when the user cancels or
+/// chooses not to persist the file. Throw to mark the export as failed.
 typedef PdfSaver = Future<bool> Function(Uint8List pdf);
 
 /// Status values for PDF export.
 enum PdfExportStatus {
-  /// Initial state, no export in progress
+  /// No export is in progress.
   idle,
 
-  /// Currently capturing slide images
+  /// Slide images are being captured.
   capturing,
 
-  /// Building PDF from captured images
+  /// A PDF is being built from captured images.
   building,
 
-  /// Export completed successfully
+  /// The PDF export completed successfully.
   complete,
 
-  /// Preparing slides for export
+  /// Slides are being prepared for capture.
   preparing,
 
-  /// Export failed with error
+  /// The PDF export failed.
   failed,
 }
 
@@ -74,16 +75,21 @@ class PdfController {
   final _capturedCount = signal<int>(0);
   final _exportError = signal<String?>(null);
 
+  /// Fraction of slides captured during the current export.
   late final progress = computed(() {
     if (_slideKeys.isEmpty) return 0.0;
     return _capturedCount.value / _slideKeys.length;
   });
 
+  /// The current captured slide count and total slide count.
   late final progressTuple = computed(() {
     return (_capturedCount.value, _slideKeys.length);
   });
 
+  /// Current export phase.
   ReadonlySignal<PdfExportStatus> get exportStatus => _exportStatus;
+
+  /// Last export error message, if the export failed.
   ReadonlySignal<String?> get exportError => _exportError;
 
   void _checkExportAllowed() {
@@ -100,7 +106,7 @@ class PdfController {
   final Duration _waitDuration;
   final Duration _renderAttachmentTimeout;
 
-  /// Whether this controller has been disposed
+  /// Whether this controller has been disposed.
   bool get disposed => _disposed;
 
   /// The page controller used during export.
@@ -109,6 +115,7 @@ class PdfController {
   /// The [GlobalKey] for [slide].
   GlobalKey getSlideKey(SlideConfiguration slide) => _slideKeys[slide.key]!;
 
+  /// Waits until [key]'s render boundary is attached.
   @visibleForTesting
   Future<void> waitForRenderBoundaryPaint(GlobalKey key) =>
       _waitForRenderBoundaryPaint(key);
@@ -263,10 +270,12 @@ class PdfController {
   /// Saves [pdf] using the injected [PdfSaver].
   Future<bool> _savePdf(Uint8List pdf) => _pdfSaver(pdf);
 
+  /// Requests cancellation of the active export.
   void cancel() {
     _cancelled = true;
   }
 
+  /// Releases page-controller and signal resources owned by this controller.
   void dispose() {
     _disposed = true;
     _pageController.dispose();

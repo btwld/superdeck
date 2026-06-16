@@ -4,7 +4,9 @@ import 'package:superdeck/superdeck.dart';
 
 import 'pdf_controller.dart';
 
+/// Internal dialog surface used to capture slides and export them as a PDF.
 class PdfExportDialogScreen extends StatefulWidget {
+  /// Creates a PDF export dialog for [slides].
   const PdfExportDialogScreen({
     super.key,
     required this.slides,
@@ -12,13 +14,22 @@ class PdfExportDialogScreen extends StatefulWidget {
     this.onClose,
   });
 
+  /// Slides to capture into the PDF.
   final List<SlideConfiguration> slides;
+
+  /// Optional saver for generated PDF bytes.
   final PdfSaver? pdfSaver;
+
+  /// Callback used when the export surface is hosted by a shell modal.
   final VoidCallback? onClose;
 
   @override
   State<PdfExportDialogScreen> createState() => _PdfExportDialogScreenState();
 
+  /// Opens the PDF export flow for the deck in [context].
+  ///
+  /// Uses the SuperDeck shell modal when available; otherwise falls back to a
+  /// non-dismissible Flutter dialog.
   static Future<void> show(BuildContext context, {PdfSaver? pdfSaver}) {
     final deckController = DeckController.of(context);
     final slides = deckController.slides.value;

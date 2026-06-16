@@ -7,7 +7,11 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import 'mermaid_generator.dart';
 
-/// Build-time plugin that renders fenced Mermaid blocks to PNGs.
+/// Build-time plugin that renders fenced Mermaid blocks to PNG assets.
+///
+/// Register this plugin with the SuperDeck build runner. During each build it
+/// replaces fenced `mermaid` code blocks with Markdown image references that
+/// point to generated files in the active build output directory.
 final class MermaidBuildPlugin extends DeckBuildPlugin {
   static final _mermaidFencePattern = RegExp(
     r'^[ \t]*```mermaid[ \t]*\r?\n([\s\S]*?)\r?\n^[ \t]*```[ \t]*$',
@@ -16,6 +20,14 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
 
   final MermaidGenerator _generator;
 
+  /// Creates a Mermaid build plugin.
+  ///
+  /// [configuration] is merged with the default [MermaidGenerator]
+  /// configuration when the plugin creates its own generator.
+  ///
+  /// Pass [generator] to customize browser launch behavior or to inject a test
+  /// renderer. When [generator] is supplied, [configuration] must be empty, and
+  /// the plugin takes ownership of the generator and disposes it from [dispose].
   MermaidBuildPlugin({
     Map<String, Object?> configuration = const {},
     MermaidGenerator? generator,
@@ -74,6 +86,10 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
     return buffer.toString();
   }
 
+  /// Rewrites Mermaid fences in [block] to Markdown image references.
+  ///
+  /// Rendering failures are reported as [DeckFormatException] so the build can
+  /// point authors back to the offending slide content.
   @override
   Future<ContentBlock> transformContentBlock(
     ContentBlock block,
@@ -84,6 +100,7 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
     return content == block.content ? block : block.copyWith(content: content);
   }
 
+  /// Disposes the [MermaidGenerator] owned by this plugin.
   @override
   Future<void> dispose() async {
     await _generator.dispose();
