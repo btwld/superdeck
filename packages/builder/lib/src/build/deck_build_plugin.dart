@@ -85,13 +85,14 @@ final class DeckBuildContext {
 /// against parsed [ContentBlock]s before build output is written. Subclasses
 /// should be `final`, `base`, or `sealed`, provide a stable non-empty [id], and
 /// override [transformContentBlock] when they rewrite slide content.
-abstract base class DeckBuildPlugin {
+abstract base class DeckBuildPlugin extends DeckPlugin {
   /// Creates a build plugin.
   const DeckBuildPlugin();
 
-  /// Stable identifier used for plugin registration and diagnostics.
+  /// Stable identifier used for build plugin registration and diagnostics.
   ///
   /// IDs must be non-empty and unique within one build pipeline.
+  @override
   String get id;
 
   /// Transforms a parsed content [block].

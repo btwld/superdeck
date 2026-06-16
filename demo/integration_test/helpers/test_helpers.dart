@@ -231,13 +231,13 @@ class TestApp extends StatelessWidget {
     this.deckLoader,
     this.workspace,
     this.extraWidgets = const {},
-    this.actions = const [],
+    this.plugins = const [],
   });
 
   final DeckLoader? deckLoader;
   final DeckWorkspace? workspace;
   final Map<String, WidgetFactory> extraWidgets;
-  final List<DeckAction> actions;
+  final List<DeckRuntimePlugin> plugins;
 
   static bool _initialized = false;
 
@@ -279,7 +279,7 @@ class TestApp extends StatelessWidget {
           ),
         ),
         transitionDuration: _testSlideTransitionDuration,
-        actions: actions,
+        plugins: plugins,
       ),
     );
   }
@@ -510,14 +510,14 @@ extension IntegrationTestExtensions on WidgetTester {
     DeckLoader loader, {
     required DeckWorkspace workspace,
     Map<String, WidgetFactory> extraWidgets = const {},
-    List<DeckAction> actions = const [],
+    List<DeckRuntimePlugin> plugins = const [],
   }) async {
     await pumpWidget(
       TestApp(
         deckLoader: loader,
         workspace: workspace,
         extraWidgets: extraWidgets,
-        actions: actions,
+        plugins: plugins,
       ),
     );
     await pumpFor(const Duration(milliseconds: 200));
@@ -538,7 +538,7 @@ extension IntegrationTestExtensions on WidgetTester {
   Future<DeckController> pumpTestAppWithSlides(
     List<Slide> slides, {
     Map<String, WidgetFactory> extraWidgets = const {},
-    List<DeckAction> actions = const [],
+    List<DeckRuntimePlugin> plugins = const [],
   }) async {
     final tempDir = await Directory.systemTemp.createTemp('sd_fixture_app_');
     FileDeckLoader? loader;
@@ -559,7 +559,7 @@ extension IntegrationTestExtensions on WidgetTester {
       fileLoader,
       workspace: workspace,
       extraWidgets: extraWidgets,
-      actions: actions,
+      plugins: plugins,
     );
   }
 

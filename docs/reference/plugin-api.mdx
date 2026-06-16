@@ -5,32 +5,63 @@ description: Runtime and build-time extension APIs for SuperDeck plugins
 
 # Plugin API reference
 
-SuperDeck exposes two plugin surfaces:
+SuperDeck exposes a shared plugin identity with two lifecycle-specific plugin
+surfaces:
 
-- **Runtime actions** add commands to the presentation shell.
+- **Runtime plugins** register commands in the presentation shell.
 - **Build plugins** transform parsed Markdown content during `superdeck_cli`
   builds.
 
 Use [custom widgets](/guides/custom-widgets) instead when you only need to
 render custom slide content from `@name { ... }`.
 
-## Runtime actions
+## Shared plugin identity
 
-Runtime actions are Flutter UI commands contributed to `SuperDeckApp`.
+### `DeckPlugin`
 
-### `SuperDeckApp.actions`
+```dart
+abstract base class DeckPlugin {
+  const DeckPlugin();
+
+  String get id;
+}
+```
+
+All plugin types expose a stable `id`. IDs must be non-empty and unique within
+the runtime or build registration surface where the plugin is used.
+
+## Runtime plugins
+
+Runtime plugins run inside the Flutter app and are passed to `SuperDeckApp`.
+They register `DeckAction` commands that the app shell renders.
+
+### `SuperDeckApp.plugins`
 
 ```dart
 SuperDeckApp(
   options: DeckOptions(),
-  actions: [
-    ...pdfActions(),
+  plugins: const [
+    PdfPlugin(),
   ],
 );
 ```
 
-`actions` is a `List<DeckAction>`. The app shell renders those actions in the
-presentation UI and invokes them with the active `DeckController`.
+`plugins` is a `List<DeckRuntimePlugin>`. The app shell renders the actions
+registered by those plugins and invokes each action with the active
+`DeckController`.
+
+### `DeckRuntimePlugin`
+
+```dart
+abstract base class DeckRuntimePlugin extends DeckPlugin {
+  const DeckRuntimePlugin();
+
+  List<DeckAction> get actions;
+}
+```
+
+Extend `DeckRuntimePlugin` for app-shell extensions. Keep plugin configuration
+as fields on the plugin object and return preconfigured actions from `actions`.
 
 ### `DeckAction`
 
@@ -85,7 +116,7 @@ Plugins run in list order.
 ### `DeckBuildPlugin`
 
 ```dart
-abstract base class DeckBuildPlugin {
+abstract base class DeckBuildPlugin extends DeckPlugin {
   const DeckBuildPlugin();
 
   String get id;
@@ -135,8 +166,8 @@ escape the build output directory.
 
 ## First-party plugin packages
 
-- `superdeck_pdf` exposes `pdfActions()`, `pdfExportAction()`, and `PdfSaver`
-  for PDF export.
+- `superdeck_pdf` exposes `PdfPlugin`, `PdfExportOptions`, and `PdfSaver` for
+  PDF export.
 - `superdeck_mermaid` exposes `MermaidBuildPlugin` and `MermaidGenerator`
   for build-time Mermaid diagram rendering.
 

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_pdf/superdeck_pdf.dart';
 import 'package:superdeck_pdf/src/pdf_controller.dart';
 
 import '../helpers/fake_slide_capture_service.dart';
@@ -184,7 +185,7 @@ void main() {
           slides: [testSlides.first],
           slideCaptureService: FakeSlideCaptureService(_testPngBytes),
           waitDuration: Duration.zero,
-          pdfSaver: pdfSaver,
+          options: PdfExportOptions(pdfSaver: pdfSaver),
         );
         addTearDown(c.dispose);
         return c;

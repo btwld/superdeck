@@ -2,10 +2,10 @@
 
 Optional PDF export support for SuperDeck presentations.
 
-This package contains the PDF controller and dialog that were split out of the
-base `superdeck` package. It depends on SuperDeck public rendering and capture
-APIs, so apps can add PDF output without pulling PDF dependencies into every
-SuperDeck installation.
+This package provides a `PdfPlugin` runtime plugin that adds PDF export to the
+SuperDeck app shell. It depends on SuperDeck public rendering and capture APIs,
+so apps can add PDF output without pulling PDF dependencies into every SuperDeck
+installation.
 
 ## Install
 
@@ -19,7 +19,7 @@ dependencies:
 
 ## Usage
 
-Register the PDF action with `SuperDeckApp`:
+Register the PDF plugin with `SuperDeckApp`:
 
 ```dart
 import 'package:superdeck/superdeck.dart';
@@ -27,8 +27,8 @@ import 'package:superdeck_pdf/superdeck_pdf.dart';
 
 SuperDeckApp(
   options: DeckOptions(),
-  actions: [
-    ...pdfActions(),
+  plugins: const [
+    PdfPlugin(),
   ],
 );
 ```
@@ -38,16 +38,21 @@ For custom save behavior, pass a `PdfSaver`:
 ```dart
 SuperDeckApp(
   options: DeckOptions(),
-  actions: [
-    ...pdfActions(
-      pdfSaver: (bytes) async {
-        // Persist or upload bytes.
-        return true;
-      },
+  plugins: [
+    PdfPlugin(
+      options: PdfExportOptions(
+        pdfSaver: (bytes) async {
+          // Persist or upload bytes.
+          return true;
+        },
+      ),
     ),
   ],
 );
 ```
+
+Use `PdfExportOptions.fileName` to change the default save/download name when
+you are using the built-in saver.
 
 For full setup guidance and plugin authoring patterns, see the SuperDeck
 [plugin guide](https://docs.page/btwld/superdeck/guides/plugins) and

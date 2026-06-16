@@ -8,6 +8,7 @@ void main() {
       final slide = Slide(key: 'intro');
 
       expect(workspace.deckJson.path, contains('superdeck.json'));
+      expect(DeckPlugin, isNotNull);
       expect(slidesContractSchema, isNotNull);
       expect(parseSlidesContract([slide.toMap()]), hasLength(1));
     });

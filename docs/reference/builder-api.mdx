@@ -158,8 +158,8 @@ the build store before emitting this event.
 
 ## Build plugins
 
-`DeckBuildPlugin` is the class-based extension point for build-time content
-transforms.
+`DeckBuildPlugin` extends the shared `DeckPlugin` identity and is the
+class-based extension point for build-time content transforms.
 
 ```dart
 /// Leaves content blocks unchanged.

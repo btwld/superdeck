@@ -12,14 +12,14 @@ import 'package:superdeck_pdf/src/pdf_export_screen.dart';
 import '../helpers/test_helpers.dart';
 
 class _OpenPdfButton extends StatelessWidget {
-  const _OpenPdfButton({required this.pdfSaver});
+  const _OpenPdfButton({required this.options});
 
-  final PdfSaver pdfSaver;
+  final PdfExportOptions options;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () => PdfExportDialogScreen.show(context, pdfSaver: pdfSaver),
+      onPressed: () => PdfExportDialogScreen.show(context, options: options),
       child: const Text('Open PDF export'),
     );
   }
@@ -54,7 +54,9 @@ void main() {
         SuperDeckApp(
           options: DeckOptions(
             widgets: {
-              'open-pdf': (_) => _OpenPdfButton(pdfSaver: (_) async => true),
+              'open-pdf': (_) => _OpenPdfButton(
+                options: PdfExportOptions(pdfSaver: (_) async => true),
+              ),
             },
           ),
           deckLoader: loader,
@@ -120,10 +122,12 @@ void main() {
               child: Scaffold(
                 body: Center(
                   child: _OpenPdfButton(
-                    pdfSaver: (_) {
-                      saverCalled = true;
-                      return releaseSave.future;
-                    },
+                    options: PdfExportOptions(
+                      pdfSaver: (_) {
+                        saverCalled = true;
+                        return releaseSave.future;
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -185,10 +189,12 @@ void main() {
                 ),
               ),
             ],
-            pdfSaver: (pdf) async {
-              savedPdf = pdf;
-              return true;
-            },
+            options: PdfExportOptions(
+              pdfSaver: (pdf) async {
+                savedPdf = pdf;
+                return true;
+              },
+            ),
           ),
         ),
       );

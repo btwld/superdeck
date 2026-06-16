@@ -55,6 +55,25 @@ class _AppShellHarness extends StatelessWidget {
   }
 }
 
+final class _TestRuntimePlugin extends DeckRuntimePlugin {
+  const _TestRuntimePlugin({required this.pluginId, this.actions = const []});
+
+  final String pluginId;
+
+  @override
+  final List<DeckAction> actions;
+
+  @override
+  String get id => pluginId;
+}
+
+Future<void> _openDeckMenu(WidgetTester tester) async {
+  await tester.tap(find.bySemanticsLabel('Open menu'));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 250));
+  await tester.pump();
+}
+
 void main() {
   group('SuperDeckApp', () {
     testWidgets(
@@ -106,7 +125,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('passes runtime actions to the bottom bar', (tester) async {
+    testWidgets('passes runtime plugin actions to the bottom bar', (
+      tester,
+    ) async {
       final loader = MockDeckLoader();
       addTearDown(loader.dispose);
 
@@ -116,12 +137,17 @@ void main() {
           deckLoader: loader,
           assetCacheStore: NoopAssetCacheStore(),
           transitionDuration: Duration.zero,
-          actions: [
-            DeckAction(
-              id: 'test.actions.export',
-              label: 'Test deck action',
-              icon: Icons.picture_as_pdf,
-              onPressed: (_, _) {},
+          plugins: [
+            _TestRuntimePlugin(
+              pluginId: 'test.pdf',
+              actions: [
+                DeckAction(
+                  id: 'test.actions.export',
+                  label: 'Test deck action',
+                  icon: Icons.picture_as_pdf,
+                  onPressed: (_, _) {},
+                ),
+              ],
             ),
           ],
         ),
@@ -129,12 +155,156 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      await tester.tap(find.bySemanticsLabel('Open menu'));
-      await tester.pump(const Duration(milliseconds: 250));
-      await tester.pump();
+      await _openDeckMenu(tester);
 
       expect(find.bySemanticsLabel('Test deck action'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('invokes runtime plugin actions with the active controller', (
+      tester,
+    ) async {
+      final loader = MockDeckLoader();
+      DeckController? callbackDeck;
+      var tapCount = 0;
+      addTearDown(loader.dispose);
+
+      await tester.pumpWidget(
+        SuperDeckApp(
+          options: DeckOptions(),
+          deckLoader: loader,
+          assetCacheStore: NoopAssetCacheStore(),
+          transitionDuration: Duration.zero,
+          plugins: [
+            _TestRuntimePlugin(
+              pluginId: 'test.inspect',
+              actions: [
+                DeckAction(
+                  id: 'test.actions.inspect',
+                  label: 'Inspect deck',
+                  icon: Icons.info_outline,
+                  onPressed: (_, deck) {
+                    callbackDeck = deck;
+                    tapCount++;
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      await _openDeckMenu(tester);
+
+      final actionFinder = find.bySemanticsLabel('Inspect deck');
+      await tester.tap(actionFinder);
+      await tester.pump();
+
+      expect(tapCount, 1);
+      expect(callbackDeck, isNotNull);
+      expect(callbackDeck!.slides.value, isNotEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('rejects empty runtime plugin ids', (tester) async {
+      final loader = MockDeckLoader();
+      addTearDown(loader.dispose);
+
+      await tester.pumpWidget(
+        SuperDeckApp(
+          options: DeckOptions(),
+          deckLoader: loader,
+          assetCacheStore: NoopAssetCacheStore(),
+          transitionDuration: Duration.zero,
+          plugins: const [_TestRuntimePlugin(pluginId: '')],
+        ),
+      );
+
+      expect(
+        tester.takeException(),
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Runtime plugin id must not be empty.',
+        ),
+      );
+    });
+
+    testWidgets('rejects duplicate runtime plugin ids', (tester) async {
+      final loader = MockDeckLoader();
+      addTearDown(loader.dispose);
+
+      await tester.pumpWidget(
+        SuperDeckApp(
+          options: DeckOptions(),
+          deckLoader: loader,
+          assetCacheStore: NoopAssetCacheStore(),
+          transitionDuration: Duration.zero,
+          plugins: const [
+            _TestRuntimePlugin(pluginId: 'test.duplicate'),
+            _TestRuntimePlugin(pluginId: 'test.duplicate'),
+          ],
+        ),
+      );
+
+      expect(
+        tester.takeException(),
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Duplicate runtime plugin id "test.duplicate".',
+        ),
+      );
+    });
+
+    testWidgets('rejects duplicate runtime action ids', (tester) async {
+      final loader = MockDeckLoader();
+      addTearDown(loader.dispose);
+
+      await tester.pumpWidget(
+        SuperDeckApp(
+          options: DeckOptions(),
+          deckLoader: loader,
+          assetCacheStore: NoopAssetCacheStore(),
+          transitionDuration: Duration.zero,
+          plugins: [
+            _TestRuntimePlugin(
+              pluginId: 'test.first',
+              actions: [
+                DeckAction(
+                  id: 'test.action.duplicate',
+                  label: 'First action',
+                  icon: Icons.picture_as_pdf,
+                  onPressed: (_, _) {},
+                ),
+              ],
+            ),
+            _TestRuntimePlugin(
+              pluginId: 'test.second',
+              actions: [
+                DeckAction(
+                  id: 'test.action.duplicate',
+                  label: 'Second action',
+                  icon: Icons.picture_as_pdf,
+                  onPressed: (_, _) {},
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      expect(
+        tester.takeException(),
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Duplicate deck action id "test.action.duplicate" from runtime '
+              'plugin "test.second".',
+        ),
+      );
     });
 
     testWidgets('shell modal host exposes modal controller to descendants', (

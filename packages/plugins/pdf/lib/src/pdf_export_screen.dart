@@ -3,6 +3,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 import 'pdf_controller.dart';
+import 'pdf_export_options.dart';
 
 /// Internal dialog surface used to capture slides and export them as a PDF.
 class PdfExportDialogScreen extends StatefulWidget {
@@ -10,15 +11,15 @@ class PdfExportDialogScreen extends StatefulWidget {
   const PdfExportDialogScreen({
     super.key,
     required this.slides,
-    this.pdfSaver,
+    this.options = const PdfExportOptions(),
     this.onClose,
   });
 
   /// Slides to capture into the PDF.
   final List<SlideConfiguration> slides;
 
-  /// Optional saver for generated PDF bytes.
-  final PdfSaver? pdfSaver;
+  /// PDF export configuration.
+  final PdfExportOptions options;
 
   /// Callback used when the export surface is hosted by a shell modal.
   final VoidCallback? onClose;
@@ -30,7 +31,10 @@ class PdfExportDialogScreen extends StatefulWidget {
   ///
   /// Uses the SuperDeck shell modal when available; otherwise falls back to a
   /// non-dismissible Flutter dialog.
-  static Future<void> show(BuildContext context, {PdfSaver? pdfSaver}) {
+  static Future<void> show(
+    BuildContext context, {
+    PdfExportOptions options = const PdfExportOptions(),
+  }) {
     final deckController = DeckController.of(context);
     final slides = deckController.slides.value;
     final shellModal = DeckShellModal.maybeOf(context);
@@ -39,7 +43,7 @@ class PdfExportDialogScreen extends StatefulWidget {
       entry = shellModal.show(
         builder: (context) => PdfExportDialogScreen(
           slides: slides,
-          pdfSaver: pdfSaver,
+          options: options,
           onClose: () => entry?.close(),
         ),
       );
@@ -60,7 +64,7 @@ class PdfExportDialogScreen extends StatefulWidget {
       context: dialogContext,
       barrierDismissible: false,
       builder: (context) =>
-          PdfExportDialogScreen(slides: slides, pdfSaver: pdfSaver),
+          PdfExportDialogScreen(slides: slides, options: options),
     );
   }
 }
@@ -78,7 +82,7 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
     _exportController = PdfController(
       slides: widget.slides,
       slideCaptureService: SlideCaptureService(),
-      pdfSaver: widget.pdfSaver,
+      options: widget.options,
     );
 
     _scheduleExportAfterMount();

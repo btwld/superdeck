@@ -1,6 +1,8 @@
 /// Flutter widgets and presentation components for SuperDeck.
 library;
 
+export 'package:superdeck_core/superdeck_core.dart' show DeckPlugin;
+
 export 'src/capture/slide_capture_service.dart';
 export 'src/rendering/slides/slide_constants.dart';
 export 'src/rendering/slides/slide_parts.dart';
@@ -26,6 +28,7 @@ export 'src/ui/superdeck_app.dart';
 
 // Plugins
 export 'src/plugins/deck_action.dart';
+export 'src/plugins/deck_runtime_plugin.dart';
 
 // Presentation
 export 'src/deck/deck_controller.dart';

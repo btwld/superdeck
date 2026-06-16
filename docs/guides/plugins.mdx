@@ -10,9 +10,9 @@ without adding every possible feature to the base `superdeck` package.
 
 There are two plugin surfaces:
 
-- **Runtime actions** add buttons to the SuperDeck shell. Use these for commands
-  that need the current `DeckController`, such as exporting a PDF or opening a
-  custom panel.
+- **Runtime plugins** register commands in the SuperDeck shell. Use these for
+  commands that need the current `DeckController`, such as exporting a PDF or
+  opening a custom panel.
 - **Build plugins** transform Markdown content before the Flutter app renders
   it. Use these for generated assets, syntax transforms, or content that must
   be prepared during `superdeck_cli build`.
@@ -23,8 +23,8 @@ build-time transform.
 
 ## Use the PDF plugin
 
-`superdeck_pdf` is a runtime plugin. It contributes an action button to the
-deck shell and opens a PDF export flow using the current deck state.
+`superdeck_pdf` is a runtime plugin. It contributes an Export PDF command to
+the deck shell and opens a PDF export flow using the current deck state.
 
 Add it to the Flutter app:
 
@@ -34,7 +34,7 @@ dependencies:
   superdeck_pdf: ^1.0.0
 ```
 
-Register the action in `SuperDeckApp`:
+Register the plugin in `SuperDeckApp`:
 
 ```dart
 import 'package:flutter/widgets.dart';
@@ -48,8 +48,8 @@ Future<void> main() async {
   runApp(
     SuperDeckApp(
       options: DeckOptions(),
-      actions: [
-        ...pdfActions(),
+      plugins: const [
+        PdfPlugin(),
       ],
     ),
   );
@@ -62,16 +62,21 @@ bytes:
 ```dart
 SuperDeckApp(
   options: DeckOptions(),
-  actions: [
-    ...pdfActions(
-      pdfSaver: (bytes) async {
-        // Upload or persist the generated PDF bytes.
-        return true;
-      },
+  plugins: [
+    PdfPlugin(
+      options: PdfExportOptions(
+        pdfSaver: (bytes) async {
+          // Upload or persist the generated PDF bytes.
+          return true;
+        },
+      ),
     ),
   ],
 );
 ```
+
+Set `fileName` when the default platform save flow should use a different
+download or save-dialog name.
 
 ## Use the Mermaid plugin
 
@@ -146,50 +151,59 @@ diagram syntax and authoring examples.
 When a custom `MermaidGenerator` is passed to `MermaidBuildPlugin`, the plugin
 disposes that generator from its own `dispose()` method.
 
-## Create a runtime action plugin
+## Create a runtime plugin
 
-Runtime plugins return one or more `DeckAction` objects. Each action needs a
-stable `id`, a user-facing `label`, an `IconData`, and an `onPressed` callback.
-The callback receives the current `BuildContext` and `DeckController`.
+Runtime plugins extend `DeckRuntimePlugin` and register one or more
+`DeckAction` objects. Each action needs a stable `id`, a user-facing `label`,
+an `IconData`, and an `onPressed` callback. The callback receives the current
+`BuildContext` and `DeckController`.
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:superdeck/superdeck.dart';
 
-List<DeckAction> speakerActions() {
-  return [
-    DeckAction(
-      id: 'example.current-slide',
-      label: 'Show current slide',
-      icon: Icons.info_outline,
-      onPressed: (context, deck) {
-        final slide = deck.presentation.currentSlide.value;
-        final title = slide?.options.title;
-        final label = title == null || title.isEmpty
-            ? slide?.key ?? 'Untitled slide'
-            : title;
+final class SpeakerToolsPlugin extends DeckRuntimePlugin {
+  const SpeakerToolsPlugin();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Current slide: $label')),
-        );
-      },
-    ),
-  ];
+  @override
+  String get id => 'example.speaker-tools';
+
+  @override
+  List<DeckAction> get actions {
+    return [
+      DeckAction(
+        id: 'example.current-slide',
+        label: 'Show current slide',
+        icon: Icons.info_outline,
+        onPressed: (context, deck) {
+          final slide = deck.presentation.currentSlide.value;
+          final title = slide?.options.title;
+          final label = title == null || title.isEmpty
+              ? slide?.key ?? 'Untitled slide'
+              : title;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Current slide: $label')),
+          );
+        },
+      ),
+    ];
+  }
 }
 ```
 
-Register it exactly like any other runtime action:
+Register it exactly like any other runtime plugin:
 
 ```dart
 SuperDeckApp(
   options: DeckOptions(),
-  actions: [
-    ...speakerActions(),
+  plugins: const [
+    SpeakerToolsPlugin(),
   ],
 );
 ```
 
-Use runtime actions when the plugin needs current slide state, navigation state,
+Use runtime plugins when the plugin needs current slide state, navigation state,
 thumbnail state, or access to Flutter UI.
 
 ## Create a build plugin
@@ -295,10 +309,9 @@ content, write files through `DeckBuildContext.outputFile`, and throw
 For one presentation, plugin helpers can live in `lib/` or `tool/`. For reuse,
 publish a small Dart or Flutter package:
 
-- Use a Flutter package when the plugin exports runtime actions or widgets.
+- Use a Flutter package when the plugin exports runtime plugins or widgets.
 - Use a Dart package when the plugin only exports build plugins.
-- Export one small public API, such as `pdfActions()` or
-  `MermaidBuildPlugin`.
+- Export one small public API, such as `PdfPlugin` or `MermaidBuildPlugin`.
 - Keep heavy dependencies in the optional plugin package, not in base
   `superdeck`.
 - Include tests for the public plugin class and the behavior it contributes.
@@ -308,15 +321,15 @@ publish a small Dart or Flutter package:
 | Need | Use |
 | --- | --- |
 | Render custom slide content from `@name { ... }` | Custom widget |
-| Add a command button to the shell | Runtime action plugin |
+| Add a command to the shell | Runtime plugin |
 | Rewrite Markdown before rendering | Build plugin |
 | Generate image, data, or cache files during build | Build plugin |
-| Open a dialog using current deck state | Runtime action plugin |
+| Open a dialog using current deck state | Runtime plugin |
 
 ## Troubleshooting
 
-- **Action is not visible**: Make sure it is included in
-  `SuperDeckApp(actions: [...])` and that the deck shell menu is open.
+- **Runtime command is not visible**: Make sure the plugin is included in
+  `SuperDeckApp(plugins: [...])` and that the deck shell menu is open.
 - **Build plugin does not run**: Make sure builds are run through the custom
   `SuperDeckRunner`, not the default CLI entrypoint.
 - **Generated asset is missing**: Write it with `context.outputFile(...)` and

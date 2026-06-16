@@ -86,7 +86,7 @@ graph TD
       await assertReviewScreenshots(outputDir: outputDir, expectedCount: 1);
     });
 
-    testWidgets('PDF action opens export dialog for screenshot review', (
+    testWidgets('PDF plugin opens export dialog for screenshot review', (
       tester,
     ) async {
       _setReviewViewport(tester);
@@ -102,15 +102,18 @@ graph TD
       final slides = _pdfReviewSlides();
       final controller = await tester.pumpTestAppWithSlides(
         slides,
-        actions: pdfActions(
-          pdfSaver: (pdf) {
-            saverCalled = true;
-            final pdfBytes = Uint8List.fromList(pdf);
-            exportedPdf = pdfBytes;
-            _writePdfExportArtifactIfRequested(pdfBytes);
-            return releaseSave.future;
-          },
-        ),
+        plugins: [
+          PdfPlugin(
+            options: PdfExportOptions(
+              pdfSaver: (pdf) {
+                saverCalled = true;
+                exportedPdf = pdf;
+                _writePdfExportArtifactIfRequested(pdf);
+                return releaseSave.future;
+              },
+            ),
+          ),
+        ],
       );
 
       await tester.tapByLabel('Open menu');
@@ -156,7 +159,7 @@ List<Slide> _pdfReviewSlides() {
     makeSlide('pdf-plugin-cover', '''
 # PDF Plugin Visual Test
 
-Multi-page export review for the plugin action flow.
+Multi-page export review for the plugin export flow.
 '''),
     makeSlide('pdf-plugin-markdown', '''
 # Markdown Export Coverage

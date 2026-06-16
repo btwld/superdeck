@@ -16,7 +16,7 @@ class _OpenPdfActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () => action.invoke(context, DeckController.of(context)),
-      child: const Text('Open PDF action'),
+      child: const Text('Open PDF plugin action'),
     );
   }
 }
@@ -24,16 +24,26 @@ class _OpenPdfActionButton extends StatelessWidget {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('pdfActions', () {
-    test('exposes one Export PDF deck action', () {
-      final actions = pdfActions();
+  group('PdfPlugin', () {
+    test('uses default export options', () {
+      const options = PdfExportOptions();
 
+      expect(options.fileName, 'superdeck');
+      expect(options.pdfSaver, isNull);
+    });
+
+    test('exposes one Export PDF deck action', () {
+      const plugin = PdfPlugin();
+      final actions = plugin.actions;
+
+      expect(plugin, isA<DeckRuntimePlugin>());
+      expect(plugin.id, 'superdeck.pdf');
       expect(actions, hasLength(1));
       expect(actions.single.id, 'superdeck.pdf.export');
       expect(actions.single.label, 'Export PDF');
     });
 
-    testWidgets('export action opens the PDF export screen', (tester) async {
+    testWidgets('plugin action opens the PDF export screen', (tester) async {
       final loader = TestDeckLoader(
         slides: [
           Slide(
@@ -60,7 +70,9 @@ void main() {
           options: DeckOptions(
             widgets: {
               'open-pdf-action': (_) => _OpenPdfActionButton(
-                action: pdfExportAction(pdfSaver: (_) async => true),
+                action: PdfPlugin(
+                  options: PdfExportOptions(pdfSaver: (_) async => true),
+                ).actions.single,
               ),
             },
           ),
@@ -73,7 +85,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 50));
       }
 
-      await tester.tap(find.text('Open PDF action'));
+      await tester.tap(find.text('Open PDF plugin action'));
       await tester.pump();
 
       expect(find.byType(PdfExportDialogScreen), findsOneWidget);

@@ -19,6 +19,8 @@ export 'src/deck/slide_model.dart';
 export 'src/markdown/hero_tag_helpers.dart';
 export 'src/markdown/markdown_syntaxes.dart';
 export 'src/markdown/tag_tokenizer.dart';
+// Plugins
+export 'src/plugins/deck_plugin.dart';
 // Utils
 export 'src/utils/extensions.dart';
 export 'src/utils/file_watcher.dart';

@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart' show Icons;
 import 'package:superdeck/superdeck.dart';
 
-import 'pdf_controller.dart';
+import 'pdf_export_options.dart';
 import 'pdf_export_screen.dart';
 
-/// Returns the deck actions contributed by the PDF package.
+/// Runtime plugin that adds PDF export support to the SuperDeck app shell.
 ///
-/// Pass [pdfSaver] to override how the generated PDF bytes are persisted.
-List<DeckAction> pdfActions({PdfSaver? pdfSaver}) {
-  return [pdfExportAction(pdfSaver: pdfSaver)];
-}
+/// Register this with [SuperDeckApp.plugins] to add an Export PDF action.
+final class PdfPlugin extends DeckRuntimePlugin {
+  /// Creates a PDF export plugin.
+  const PdfPlugin({this.options = const PdfExportOptions()});
 
-/// Creates the deck action that opens the PDF export flow.
-///
-/// The returned action uses the stable ID `superdeck.pdf.export`.
-DeckAction pdfExportAction({PdfSaver? pdfSaver}) {
-  return DeckAction(
-    id: 'superdeck.pdf.export',
-    label: 'Export PDF',
-    icon: Icons.picture_as_pdf,
-    onPressed: (context, deck) =>
-        PdfExportDialogScreen.show(context, pdfSaver: pdfSaver),
-  );
+  /// PDF export configuration used by the action this plugin registers.
+  final PdfExportOptions options;
+
+  @override
+  String get id => 'superdeck.pdf';
+
+  @override
+  List<DeckAction> get actions {
+    return [
+      DeckAction(
+        id: 'superdeck.pdf.export',
+        label: 'Export PDF',
+        icon: Icons.picture_as_pdf,
+        onPressed: (context, deck) =>
+            PdfExportDialogScreen.show(context, options: options),
+      ),
+    ];
+  }
 }
