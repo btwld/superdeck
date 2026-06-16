@@ -49,6 +49,10 @@ SuperDeckApp(
 );
 ```
 
+For full setup guidance and plugin authoring patterns, see the SuperDeck
+[plugin guide](https://docs.page/btwld/superdeck/guides/plugins) and
+[plugin API reference](https://docs.page/btwld/superdeck/reference/plugin-api).
+
 ## License
 
 BSD 3-Clause. See `LICENSE`.

@@ -1,6 +1,26 @@
 [
   {
-    "key": "lvDNA0nM",
+    "key": "twqj0tSm",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "# SuperDeck {.heading}\n# Build presentations with Flutter {.subheading}",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 2,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "jzmQg9FF",
     "options": {},
     "sections": [
       {
@@ -27,7 +47,32 @@
     "comments": []
   },
   {
-    "key": "5eFcO0WT",
+    "key": "Z2AHmAYY",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## What is SuperDeck? {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "- Write slides in **Markdown**\n- Render with **Flutter**\n- Use **custom widgets** in your slides",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "qpCfFHU6",
     "options": {},
     "sections": [
       {
@@ -59,7 +104,53 @@
     "comments": []
   },
   {
-    "key": "s84pyc7A",
+    "key": "m8fonBAX",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Key Features {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n### Markdown {.feat-markdown}\n\n- Simple syntax\n- Code blocks\n- Version control friendly\n",
+            "align": "topCenter",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n### Flutter {.feat-flutter}\n\n- Custom widgets\n- Hot reload\n- Cross-platform\n",
+            "align": "topCenter",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "### Styling {.feat-styling}\n\n- Themes\n- Custom styles\n- Responsive layouts",
+            "align": "topCenter",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "4W41Bw5o",
     "options": {},
     "sections": [
       {
@@ -84,7 +175,26 @@
     "comments": []
   },
   {
-    "key": "rGZUdY7z",
+    "key": "MClcEqCK",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Slide Layouts {.heading}\n\nSuperDeck supports flexible layouts using sections and columns.",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "lxLJHzO3",
     "options": {},
     "sections": [
       {
@@ -110,7 +220,53 @@
     "comments": []
   },
   {
-    "key": "qYdspw67",
+    "key": "6O6VDcHk",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n### Top Section\n",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n### Middle Section (flex: 2)\n",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 2,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "### Bottom Section",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "0FwBx5pp",
     "options": {},
     "sections": [
       {
@@ -135,7 +291,32 @@
     "comments": []
   },
   {
-    "key": "sduca8e7",
+    "key": "QExThnct",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Custom Widgets {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "Embed interactive Flutter widgets directly in your slides!",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "C8r6gb6A",
     "options": {},
     "sections": [
       {
@@ -173,7 +354,45 @@
     "comments": []
   },
   {
-    "key": "NTiLkoKx",
+    "key": "shY8inJJ",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "### Interactive Variants {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\nHover and press interactions using Mix variants.\n",
+            "flex": 2,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "mix-variants",
+            "flex": 1,
+            "scrollable": false,
+            "type": "widget"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "KoGyoFYE",
     "options": {},
     "sections": [
       {
@@ -211,7 +430,45 @@
     "comments": []
   },
   {
-    "key": "ypMk9Qr3",
+    "key": "pSdPSgnY",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "### Animations {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\nImplicit and keyframe animations with Mix.\n",
+            "flex": 2,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "mix-animation",
+            "flex": 1,
+            "scrollable": false,
+            "type": "widget"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "gTnFpqec",
     "options": {},
     "sections": [
       {
@@ -236,7 +493,26 @@
     "comments": []
   },
   {
-    "key": "dthgXBk8",
+    "key": "noe6hSfS",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "### Style Configuration\n\n```dart\nSuperDeckApp(\n  options: DeckOptions(\n    styles: {\n      'default': borderedStyle(),\n      'quote': quoteStyle(),\n    },\n  ),\n)\n```",
+            "flex": 1,
+            "scrollable": true,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "eXrJuXLD",
     "options": {},
     "sections": [
       {
@@ -282,7 +558,32 @@
     "comments": []
   },
   {
-    "key": "4QSJhaVE",
+    "key": "xWjTD2bP",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Architecture {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "1. Write slides in `slides.md`\n2. Run the CLI build command\n3. SuperDeck parses Markdown into slide data\n4. Flutter renders the presentation UI\n5. Runtime services generate previews as needed",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "AkehJJKA",
     "options": {},
     "sections": [
       {
@@ -313,7 +614,32 @@
     "comments": []
   },
   {
-    "key": "lLG0XU1t",
+    "key": "YEBniJtp",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "### Project Structure {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "```\nmy_presentation/\n├── lib/\n│   └── main.dart\n├── slides.md\n└── pubspec.yaml\n```",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "YCMCADkH",
     "options": {},
     "sections": [
       {
@@ -345,13 +671,19 @@
     "comments": []
   },
   {
-    "key": "e1GeS3GQ",
+    "key": "jHmU4XO9",
     "options": {},
     "sections": [
       {
         "blocks": [
           {
-            "content": "template: corporate",
+            "content": "## Slide Templates {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "Templates bundle **chrome** (header, footer, background) with an **isolated style system** — like Keynote master slides.",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -364,13 +696,16 @@
     "comments": []
   },
   {
-    "key": "lDoWhrCY",
-    "options": {},
+    "key": "D8gwvOnV",
+    "options": {
+      "template": "corporate"
+    },
     "sections": [
       {
         "blocks": [
           {
-            "content": "template: corporate\nstyle: highlight",
+            "content": "# Corporate Template {.heading}\n\nThis slide uses the `corporate` template with branded header and footer.",
+            "align": "center",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -383,13 +718,17 @@
     "comments": []
   },
   {
-    "key": "zTLKv5H0",
-    "options": {},
+    "key": "zMnR2lH4",
+    "options": {
+      "style": "highlight",
+      "template": "corporate"
+    },
     "sections": [
       {
         "blocks": [
           {
-            "content": "template: minimal",
+            "content": "# Highlight Style {.heading}\n\nTemplates can have their own named style variants.",
+            "align": "center",
             "flex": 1,
             "scrollable": false,
             "type": "block"
@@ -402,7 +741,29 @@
     "comments": []
   },
   {
-    "key": "V1ncUYAO",
+    "key": "bgVDjrnG",
+    "options": {
+      "template": "minimal"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "# Minimal Template {.heading}\n\nA clean, typography-focused template with no chrome distractions.",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "MKokn2KA",
     "options": {},
     "sections": [
       {

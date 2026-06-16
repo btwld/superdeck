@@ -15,9 +15,11 @@ another build system.
 ## Imports
 
 ```dart
+import 'dart:async';
+
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart'
-    show DeckBuildStore, DeckWorkspace;
+    show ContentBlock, DeckBuildStore, DeckWorkspace;
 ```
 
 `superdeck_builder` exports the builder types. `DeckWorkspace` and
@@ -35,6 +37,7 @@ slides, writing build artifacts, and returning processed slides.
 DeckBuilder({
   required DeckWorkspace workspace,
   required DeckBuildStore store,
+  List<DeckBuildPlugin> plugins = const [],
 });
 ```
 
@@ -61,6 +64,12 @@ deck references, and save build status.
 final store = DeckBuildStore(workspace: workspace);
 ```
 
+### `plugins`
+**Type:** `List<DeckBuildPlugin>`
+
+Optional build plugins that transform parsed `ContentBlock`s before build
+output is written. Plugin IDs must be non-empty and unique.
+
 ## Methods
 
 ### `build()`
@@ -77,8 +86,9 @@ During a build, `DeckBuilder`:
 2. Saves build status as `DeckBuildPhase.building`
 3. Reads deck Markdown from the store
 4. Parses raw slides into `Slide` models
-5. Saves deck references
-6. Saves build status as `DeckBuildPhase.success`
+5. Applies build plugins to parsed content blocks
+6. Saves deck references
+7. Saves build status as `DeckBuildPhase.success`
 
 ```dart
 final slides = await builder.build();
@@ -146,6 +156,32 @@ const BuildFailed(Object error, [StackTrace? stackTrace])
 Emitted when a watched build fails. `DeckBuilder` also saves failure status to
 the build store before emitting this event.
 
+## Build plugins
+
+`DeckBuildPlugin` is the class-based extension point for build-time content
+transforms.
+
+```dart
+final class ExampleBuildPlugin extends DeckBuildPlugin {
+  const ExampleBuildPlugin();
+
+  @override
+  String get id => 'example.build-plugin';
+
+  @override
+  FutureOr<ContentBlock> transformContentBlock(
+    ContentBlock block,
+    DeckBuildContext context,
+  ) {
+    return block;
+  }
+}
+```
+
+Build plugins run after Markdown parsing and only receive `ContentBlock`s.
+Throw `DeckFormatException` when a failure should point back to invalid slide
+content.
+
 ## Errors
 
 ### `DeckFormatException`
@@ -171,7 +207,11 @@ import 'package:superdeck_core/superdeck_core.dart'
 Future<void> main() async {
   final workspace = DeckWorkspace();
   final store = DeckBuildStore(workspace: workspace);
-  final builder = DeckBuilder(workspace: workspace, store: store);
+  final builder = DeckBuilder(
+    workspace: workspace,
+    store: store,
+    plugins: const [],
+  );
 
   final slides = await builder.build();
   print('Built ${slides.length} slides');
@@ -201,4 +241,6 @@ From `packages/builder/lib/superdeck_builder.dart`:
 3. `BuildCompleted`
 4. `BuildFailed`
 5. `DeckBuilder`
-6. `DeckFormatException`
+6. `DeckBuildPlugin`
+7. `DeckBuildContext`
+8. `DeckFormatException`

@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 void main() {
   group('superdeck_mermaid public api', () {
     test('exports the supported Mermaid surface', () async {
-      final plugin = mermaidBuildPlugin(
+      final plugin = MermaidBuildPlugin(
         configuration: const {'theme': 'forest'},
       );
       addTearDown(plugin.dispose);

@@ -131,18 +131,7 @@ version: 1.0.0
         await slidesFile.writeAsString('# Test\n\nOriginal');
 
         createTestPubspec(tempDir);
-        command = BuildCommand(
-          plugins: [
-            DeckBuildPlugin(
-              id: 'test.cli-transform',
-              transformContentBlock: (block, _) {
-                return block.copyWith(
-                  content: '${block.content}\n\nCLI transformed.',
-                );
-              },
-            ),
-          ],
-        );
+        command = BuildCommand(plugins: const [_CliTransformPlugin()]);
 
         final runner = createTestRunner(command);
         final result = await runner.run(['build', '--skip-pubspec']);
@@ -185,4 +174,16 @@ More content
       });
     });
   });
+}
+
+final class _CliTransformPlugin extends DeckBuildPlugin {
+  const _CliTransformPlugin();
+
+  @override
+  String get id => 'test.cli-transform';
+
+  @override
+  ContentBlock transformContentBlock(ContentBlock block, DeckBuildContext _) {
+    return block.copyWith(content: '${block.content}\n\nCLI transformed.');
+  }
 }

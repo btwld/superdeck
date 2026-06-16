@@ -7,31 +7,8 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import 'mermaid_generator.dart';
 
-/// Creates the build-time plugin that renders fenced Mermaid blocks to PNGs.
-DeckBuildPlugin mermaidBuildPlugin({
-  Map<String, Object?> configuration = const {},
-  MermaidGenerator? generator,
-}) {
-  if (generator != null && configuration.isNotEmpty) {
-    throw ArgumentError.value(
-      configuration,
-      'configuration',
-      'must be empty when a custom MermaidGenerator is provided',
-    );
-  }
-
-  final renderer = generator ?? MermaidGenerator(configuration: configuration);
-  final ownsRenderer = generator == null;
-  final processor = _MermaidBuildProcessor(renderer);
-
-  return DeckBuildPlugin(
-    id: 'superdeck.mermaid',
-    transformContentBlock: processor._transformBlock,
-    dispose: ownsRenderer ? renderer.dispose : null,
-  );
-}
-
-final class _MermaidBuildProcessor {
+/// Build-time plugin that renders fenced Mermaid blocks to PNGs.
+final class MermaidBuildPlugin extends DeckBuildPlugin {
   static final _mermaidFencePattern = RegExp(
     r'^[ \t]*```mermaid[ \t]*\r?\n([\s\S]*?)\r?\n^[ \t]*```[ \t]*$',
     multiLine: true,
@@ -39,7 +16,31 @@ final class _MermaidBuildProcessor {
 
   final MermaidGenerator _generator;
 
-  _MermaidBuildProcessor(this._generator);
+  MermaidBuildPlugin({
+    Map<String, Object?> configuration = const {},
+    MermaidGenerator? generator,
+  }) : _generator = _createGenerator(
+         configuration: configuration,
+         generator: generator,
+       );
+
+  static MermaidGenerator _createGenerator({
+    required Map<String, Object?> configuration,
+    required MermaidGenerator? generator,
+  }) {
+    if (generator != null && configuration.isNotEmpty) {
+      throw ArgumentError.value(
+        configuration,
+        'configuration',
+        'must be empty when a custom MermaidGenerator is provided',
+      );
+    }
+
+    return generator ?? MermaidGenerator(configuration: configuration);
+  }
+
+  @override
+  String get id => 'superdeck.mermaid';
 
   Future<String> _transformContentBlock(
     ContentBlock block,
@@ -73,13 +74,19 @@ final class _MermaidBuildProcessor {
     return buffer.toString();
   }
 
-  Future<ContentBlock> _transformBlock(
+  @override
+  Future<ContentBlock> transformContentBlock(
     ContentBlock block,
     DeckBuildContext context,
   ) async {
     final content = await _transformContentBlock(block, context);
 
     return content == block.content ? block : block.copyWith(content: content);
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _generator.dispose();
   }
 
   Future<String> _renderMermaidImage(

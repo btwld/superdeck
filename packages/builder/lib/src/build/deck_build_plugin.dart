@@ -4,14 +4,6 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 
-typedef ContentBlockTransformer =
-    FutureOr<ContentBlock> Function(
-      ContentBlock block,
-      DeckBuildContext context,
-    );
-
-typedef DeckBuildPluginDisposer = FutureOr<void> Function();
-
 final class DeckBuildContext {
   final DeckWorkspace workspace;
   final String slideKey;
@@ -58,33 +50,17 @@ final class DeckBuildContext {
   }
 }
 
-final class DeckBuildPlugin {
-  final String id;
-  final ContentBlockTransformer _transformContentBlock;
-  final DeckBuildPluginDisposer? _dispose;
+abstract base class DeckBuildPlugin {
+  const DeckBuildPlugin();
 
-  DeckBuildPlugin({
-    required this.id,
-    required ContentBlockTransformer transformContentBlock,
-    DeckBuildPluginDisposer? dispose,
-  }) : _transformContentBlock = transformContentBlock,
-       _dispose = dispose {
-    if (id.trim().isEmpty) {
-      throw ArgumentError.value(id, 'id', 'Build plugin id must not be empty.');
-    }
-  }
+  String get id;
 
-  Future<ContentBlock> transformContentBlock(
+  FutureOr<ContentBlock> transformContentBlock(
     ContentBlock block,
     DeckBuildContext context,
-  ) async {
-    return _transformContentBlock(block, context);
+  ) {
+    return block;
   }
 
-  Future<void> dispose() async {
-    final disposer = _dispose;
-    if (disposer == null) return;
-
-    await disposer();
-  }
+  FutureOr<void> dispose() {}
 }

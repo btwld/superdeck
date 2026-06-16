@@ -82,11 +82,52 @@ Discuss release plan.
       },
     );
 
+    test('default build plugin transform returns the original block', () async {
+      const plugin = _IdentityPlugin('test.identity');
+      final block = ContentBlock('Original content');
+      final context = DeckBuildContext(
+        workspace: workspace,
+        slideKey: 'identity-test',
+        slideIndex: 0,
+        sectionIndex: 0,
+        blockIndex: 0,
+      );
+
+      final transformed = await plugin.transformContentBlock(block, context);
+
+      expect(identical(transformed, block), isTrue);
+    });
+
+    test('rejects build plugins with empty ids', () {
+      expect(
+        () => DeckBuilder(
+          workspace: workspace,
+          store: store,
+          plugins: const [_IdentityPlugin(' ')],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('rejects duplicate build plugin ids', () {
+      expect(
+        () => DeckBuilder(
+          workspace: workspace,
+          store: store,
+          plugins: const [
+            _IdentityPlugin('test.duplicate'),
+            _IdentityPlugin('test.duplicate'),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    });
+
     test('runs build plugins against content blocks before saving', () async {
       const markdown = '# First Slide\n\nOriginal content';
-      final plugin = DeckBuildPlugin(
+      final plugin = _TransformPlugin(
         id: 'test.content-transform',
-        transformContentBlock: (block, context) {
+        transform: (block, context) {
           expect(context.workspace, workspace);
           expect(context.slideKey, isNotEmpty);
           expect(context.slideIndex, 0);
@@ -137,9 +178,9 @@ Discuss release plan.
       final releaseFirstTransform = Completer<void>();
       var activeTransforms = 0;
       var maxActiveTransforms = 0;
-      final plugin = DeckBuildPlugin(
+      final plugin = _TransformPlugin(
         id: 'test.serialized-transform',
-        transformContentBlock: (block, _) async {
+        transform: (block, _) async {
           activeTransforms++;
           if (activeTransforms > maxActiveTransforms) {
             maxActiveTransforms = activeTransforms;
@@ -181,18 +222,16 @@ Discuss release plan.
         workspace: workspace,
         store: store,
         plugins: [
-          DeckBuildPlugin(
+          _DisposePlugin(
             id: 'test.dispose-fails',
-            transformContentBlock: (block, _) => block,
-            dispose: () {
+            onDispose: () {
               firstDisposed = true;
               throw StateError('dispose failed');
             },
           ),
-          DeckBuildPlugin(
+          _DisposePlugin(
             id: 'test.dispose-runs',
-            transformContentBlock: (block, _) => block,
-            dispose: () {
+            onDispose: () {
               secondDisposed = true;
             },
           ),
@@ -209,9 +248,9 @@ Discuss release plan.
       const initialMarkdown = '# First Slide\n\nOriginal content';
       const updatedMarkdown = '# First Slide\n\nUpdated content';
       final transformedContents = <String>[];
-      final plugin = DeckBuildPlugin(
+      final plugin = _TransformPlugin(
         id: 'test.watch-transform',
-        transformContentBlock: (block, _) {
+        transform: (block, _) {
           transformedContents.add(block.content);
 
           return block.copyWith(
@@ -260,6 +299,61 @@ Discuss release plan.
         '# First Slide\n\nUpdated content',
       ]);
     });
+
+    test('wraps generic plugin transform failures with context', () async {
+      const markdown = '# First Slide\n\nOriginal content';
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [
+          _TransformPlugin(
+            id: 'test.fail-context',
+            transform: (_, _) => throw StateError('transform failed'),
+          ),
+        ],
+      );
+
+      await workspace.slidesFile.writeAsString(markdown);
+
+      await expectLater(
+        () => builder.build(),
+        throwsA(
+          isA<Exception>().having(
+            (error) => error.toString(),
+            'message',
+            allOf(
+              contains('test.fail-context'),
+              contains('section 0'),
+              contains('block 0'),
+              contains('transform failed'),
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('preserves DeckFormatException thrown by plugins', () async {
+      const markdown = '# First Slide\n\nOriginal content';
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [
+          _TransformPlugin(
+            id: 'test.format-failure',
+            transform: (block, _) {
+              throw DeckFormatException('Invalid plugin content.', block, 0);
+            },
+          ),
+        ],
+      );
+
+      await workspace.slidesFile.writeAsString(markdown);
+
+      await expectLater(
+        () => builder.build(),
+        throwsA(isA<DeckFormatException>()),
+      );
+    });
   });
 }
 
@@ -286,4 +380,44 @@ ContentBlock _singleContentBlock(BuildCompleted completed) {
   expect(block, isA<ContentBlock>());
 
   return block as ContentBlock;
+}
+
+final class _IdentityPlugin extends DeckBuildPlugin {
+  @override
+  final String id;
+
+  const _IdentityPlugin(this.id);
+}
+
+final class _TransformPlugin extends DeckBuildPlugin {
+  @override
+  final String id;
+  final FutureOr<ContentBlock> Function(
+    ContentBlock block,
+    DeckBuildContext context,
+  )
+  transform;
+
+  const _TransformPlugin({required this.id, required this.transform});
+
+  @override
+  FutureOr<ContentBlock> transformContentBlock(
+    ContentBlock block,
+    DeckBuildContext context,
+  ) {
+    return transform(block, context);
+  }
+}
+
+final class _DisposePlugin extends DeckBuildPlugin {
+  @override
+  final String id;
+  final void Function() onDispose;
+
+  const _DisposePlugin({required this.id, required this.onDispose});
+
+  @override
+  void dispose() {
+    onDispose();
+  }
 }

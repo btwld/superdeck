@@ -40,7 +40,7 @@ void main() {
       final builder = DeckBuilder(
         workspace: workspace,
         store: DeckBuildStore(workspace: workspace),
-        plugins: [mermaidBuildPlugin(generator: _FakeMermaidGenerator())],
+        plugins: [MermaidBuildPlugin(generator: _FakeMermaidGenerator())],
       );
       FileDeckLoader? loader;
       addTearDown(() async {
@@ -57,7 +57,7 @@ void main() {
 
 ```mermaid
 graph TD
-  Markdown[slides.md] --> Plugin[mermaidBuildPlugin]
+  Markdown[slides.md] --> Plugin[MermaidBuildPlugin]
   Plugin --> Asset[PNG asset]
   Asset --> Runtime[SuperDeck runtime]
 ```

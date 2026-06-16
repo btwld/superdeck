@@ -9,7 +9,7 @@ import 'package:superdeck_mermaid/superdeck_mermaid.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('mermaidBuildPlugin', () {
+  group('MermaidBuildPlugin', () {
     late Directory tempDir;
     late DeckWorkspace workspace;
     late DeckBuildContext context;
@@ -34,7 +34,7 @@ void main() {
 
     test('replaces mermaid fenced code blocks with image markdown', () async {
       final generator = _FakeMermaidGenerator();
-      final plugin = mermaidBuildPlugin(generator: generator);
+      final plugin = MermaidBuildPlugin(generator: generator);
 
       final block = await plugin.transformContentBlock(
         ContentBlock('Before\n\n```mermaid\ngraph TD\nA --> B\n```\n\nAfter'),
@@ -54,7 +54,7 @@ void main() {
 
     test('leaves non-mermaid fenced code blocks unchanged', () async {
       final generator = _FakeMermaidGenerator();
-      final plugin = mermaidBuildPlugin(generator: generator);
+      final plugin = MermaidBuildPlugin(generator: generator);
       const content = '```dart\nvoid main() {}\n```';
 
       final block = await plugin.transformContentBlock(
@@ -70,7 +70,7 @@ void main() {
       'reuses cached image for unchanged source and configuration',
       () async {
         final generator = _FakeMermaidGenerator();
-        final plugin = mermaidBuildPlugin(generator: generator);
+        final plugin = MermaidBuildPlugin(generator: generator);
         final block = ContentBlock('```mermaid\ngraph TD\nA --> B\n```');
 
         final first = await plugin.transformContentBlock(block, context);
@@ -86,7 +86,7 @@ void main() {
 
     test('rerenders empty cached image files', () async {
       final generator = _FakeMermaidGenerator();
-      final plugin = mermaidBuildPlugin(generator: generator);
+      final plugin = MermaidBuildPlugin(generator: generator);
       final block = ContentBlock('```mermaid\ngraph TD\nA --> B\n```');
 
       final first = await plugin.transformContentBlock(block, context);
@@ -114,7 +114,7 @@ void main() {
         sectionIndex: 0,
         blockIndex: 0,
       );
-      final plugin = mermaidBuildPlugin(generator: generator);
+      final plugin = MermaidBuildPlugin(generator: generator);
 
       final block = await plugin.transformContentBlock(
         ContentBlock('```mermaid\ngraph TD\nA --> B\n```'),
@@ -126,10 +126,10 @@ void main() {
 
     test('changing configuration generates a different cached image', () async {
       final source = ContentBlock('```mermaid\ngraph TD\nA --> B\n```');
-      final first = await mermaidBuildPlugin(
+      final first = await MermaidBuildPlugin(
         generator: _FakeMermaidGenerator(),
       ).transformContentBlock(source, context);
-      final second = await mermaidBuildPlugin(
+      final second = await MermaidBuildPlugin(
         generator: _FakeMermaidGenerator(
           configuration: const {'theme': 'forest'},
         ),
@@ -141,33 +141,36 @@ void main() {
       );
     });
 
-    test('uses factory configuration for owned generator cache keys', () async {
-      const syntax = 'graph TD\nA --> B';
-      const configuration = {'theme': 'forest'};
-      final generator = MermaidGenerator(configuration: configuration);
-      final expectedHash = _cacheKey(syntax, generator.configuration);
-      await generator.dispose();
+    test(
+      'uses constructor configuration for owned generator cache keys',
+      () async {
+        const syntax = 'graph TD\nA --> B';
+        const configuration = {'theme': 'forest'};
+        final generator = MermaidGenerator(configuration: configuration);
+        final expectedHash = _cacheKey(syntax, generator.configuration);
+        await generator.dispose();
 
-      final imageFile = context.outputFile(
-        p.posix.join('mermaid', 'mermaid_$expectedHash.png'),
-      );
-      await imageFile.parent.create(recursive: true);
-      await imageFile.writeAsBytes(const [1, 2, 3]);
+        final imageFile = context.outputFile(
+          p.posix.join('mermaid', 'mermaid_$expectedHash.png'),
+        );
+        await imageFile.parent.create(recursive: true);
+        await imageFile.writeAsBytes(const [1, 2, 3]);
 
-      final plugin = mermaidBuildPlugin(configuration: configuration);
-      addTearDown(plugin.dispose);
+        final plugin = MermaidBuildPlugin(configuration: configuration);
+        addTearDown(plugin.dispose);
 
-      final block = await plugin.transformContentBlock(
-        ContentBlock('```mermaid\n$syntax\n```'),
-        context,
-      );
+        final block = await plugin.transformContentBlock(
+          ContentBlock('```mermaid\n$syntax\n```'),
+          context,
+        );
 
-      expect(block.content, contains('mermaid_$expectedHash.png'));
-    });
+        expect(block.content, contains('mermaid_$expectedHash.png'));
+      },
+    );
 
     test('rejects configuration when a custom generator is provided', () {
       expect(
-        () => mermaidBuildPlugin(
+        () => MermaidBuildPlugin(
           configuration: const {'theme': 'forest'},
           generator: _FakeMermaidGenerator(),
         ),
@@ -176,7 +179,7 @@ void main() {
     });
 
     test('renderer errors fail the transform', () async {
-      final plugin = mermaidBuildPlugin(generator: _FailingMermaidGenerator());
+      final plugin = MermaidBuildPlugin(generator: _FailingMermaidGenerator());
 
       await expectLater(
         () => plugin.transformContentBlock(
@@ -185,6 +188,15 @@ void main() {
         ),
         throwsA(isA<DeckFormatException>()),
       );
+    });
+
+    test('disposes a custom generator', () async {
+      final generator = _FakeMermaidGenerator();
+      final plugin = MermaidBuildPlugin(generator: generator);
+
+      await plugin.dispose();
+
+      expect(generator.disposeCount, 1);
     });
   });
 }
@@ -226,6 +238,7 @@ class _FakeMermaidGenerator extends MermaidGenerator {
 
   final List<String> sources = [];
   int renderCount = 0;
+  int disposeCount = 0;
 
   @override
   Future<Uint8List> render(String syntax) async {
@@ -236,7 +249,9 @@ class _FakeMermaidGenerator extends MermaidGenerator {
   }
 
   @override
-  Future<void> dispose() async {}
+  Future<void> dispose() async {
+    disposeCount++;
+  }
 }
 
 class _FailingMermaidGenerator extends MermaidGenerator {

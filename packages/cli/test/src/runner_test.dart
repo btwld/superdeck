@@ -37,10 +37,7 @@ void main() {
 
     group('shared logger propagation', () {
       test('passes build plugins to the default build command', () {
-        final plugin = DeckBuildPlugin(
-          id: 'test.runner-transform',
-          transformContentBlock: (block, _) => block,
-        );
+        const plugin = _IdentityPlugin('test.runner-transform');
         final runner = SuperDeckRunner(
           loggerOverride: mockLogger,
           plugins: [plugin],
@@ -162,4 +159,11 @@ class _CapturingLogger extends Logger {
     }
     errMessages.add(message);
   }
+}
+
+final class _IdentityPlugin extends DeckBuildPlugin {
+  @override
+  final String id;
+
+  const _IdentityPlugin(this.id);
 }

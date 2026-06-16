@@ -7,6 +7,7 @@ import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck_pdf/superdeck_pdf.dart';
+import 'package:superdeck_pdf/src/pdf_export_screen.dart';
 
 import '../helpers/test_helpers.dart';
 

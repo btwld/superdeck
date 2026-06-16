@@ -31,10 +31,18 @@ void main() {
         expect(await runner.run(['setup']), ExitCode.success.code);
 
         final pubspec = await _read(projectDir, 'pubspec.yaml');
-        final entitlements =
-            await _read(projectDir, 'macos/Runner/DebugProfile.entitlements');
+        final entitlements = await _read(
+          projectDir,
+          'macos/Runner/DebugProfile.entitlements',
+        );
         expect(_count(pubspec, '.superdeck/'), 1);
-        expect(_count(entitlements, 'com.apple.security.files.user-selected.read-write'), 1);
+        expect(
+          _count(
+            entitlements,
+            'com.apple.security.files.user-selected.read-write',
+          ),
+          1,
+        );
       });
     });
   });
@@ -73,7 +81,8 @@ Future<void> _expectBuild(Directory dir) async {
     workspace.buildStatusJson.existsSync(),
   ], everyElement(isTrue));
   final deck = jsonDecode(await workspace.deckJson.readAsString()) as List;
-  final status = jsonDecode(await workspace.buildStatusJson.readAsString()) as Map;
+  final status =
+      jsonDecode(await workspace.buildStatusJson.readAsString()) as Map;
   expect(deck, hasLength(2));
   expect(status['status'], 'success');
   expect(status['slideCount'], 2);
@@ -99,6 +108,7 @@ int _count(String contents, String pattern) =>
 const _entitlements =
     '<plist version="1.0"><dict><key>com.apple.security.app-sandbox</key>'
     '<true/></dict></plist>';
-const _slides = '---\ntitle: Cover\n---\n# SuperDeck Workflow\n\n'
+const _slides =
+    '---\ntitle: Cover\n---\n# SuperDeck Workflow\n\n'
     'A complete CLI build.\n\n---\ntitle: Layout\n---\n@section\n@block\n\n'
     '## Agenda\n\n- Setup\n- Build\n- Load\n';

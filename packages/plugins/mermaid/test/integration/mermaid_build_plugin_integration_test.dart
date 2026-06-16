@@ -8,7 +8,7 @@ import 'package:superdeck_mermaid/superdeck_mermaid.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('mermaidBuildPlugin browser integration', () {
+  group('MermaidBuildPlugin browser integration', () {
     late Directory tempDir;
 
     setUp(() {
@@ -28,7 +28,7 @@ void main() {
       () async {
         final workspace = DeckWorkspace(projectDir: tempDir.path);
         final store = DeckBuildStore(workspace: workspace);
-        final plugin = mermaidBuildPlugin();
+        final plugin = MermaidBuildPlugin();
         final builder = DeckBuilder(
           workspace: workspace,
           store: store,

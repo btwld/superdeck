@@ -7,7 +7,7 @@ description: Create beautiful diagrams and flowcharts using Mermaid syntax in Su
 
 The `superdeck_mermaid` plugin can render [Mermaid](https://mermaid.js.org/) diagrams — flowcharts, sequence diagrams, class diagrams, and more — to PNG via a headless browser. This guide documents the Mermaid syntax the plugin supports.
 
-Register `mermaidBuildPlugin()` with a custom `SuperDeckRunner` to render
+Register `MermaidBuildPlugin()` with a custom `SuperDeckRunner` to render
 Mermaid fences during the deck build. The plugin also exposes
 `MermaidGenerator.render(syntax)` for direct PNG generation.
 
@@ -394,8 +394,9 @@ flowchart TD
 
 The Mermaid build plugin runs before the runtime app loads the compiled deck.
 It scans content blocks for fenced Mermaid code, renders each diagram to a PNG,
-writes the generated asset under `.superdeck/mermaid/`, and replaces the fence
-with Markdown image syntax that points at the generated asset.
+writes the generated asset under the active SuperDeck build output directory,
+and replaces the fence with Markdown image syntax that points at the generated
+asset.
 
 ```dart
 import 'dart:io';
@@ -406,7 +407,7 @@ import 'package:superdeck_mermaid/superdeck_mermaid.dart';
 Future<void> main(List<String> args) async {
   final exitCode = await SuperDeckRunner(
     plugins: [
-      mermaidBuildPlugin(),
+      MermaidBuildPlugin(),
     ],
   ).run(args);
 

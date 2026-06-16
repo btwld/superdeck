@@ -24,7 +24,30 @@ class DeckBuilder {
     required this.workspace,
     required this.store,
     List<DeckBuildPlugin> plugins = const [],
-  }) : plugins = List.unmodifiable(plugins);
+  }) : plugins = List.unmodifiable(_validatePlugins(plugins));
+
+  static List<DeckBuildPlugin> _validatePlugins(List<DeckBuildPlugin> plugins) {
+    final seenIds = <String>{};
+    for (final plugin in plugins) {
+      final id = plugin.id.trim();
+      if (id.isEmpty) {
+        throw ArgumentError.value(
+          plugin.id,
+          'plugins',
+          'Build plugin id must not be empty.',
+        );
+      }
+      if (!seenIds.add(id)) {
+        throw ArgumentError.value(
+          plugin.id,
+          'plugins',
+          'Duplicate build plugin id "$id".',
+        );
+      }
+    }
+
+    return plugins;
+  }
 
   /// Builds the deck and watches for changes, emitting build events as a stream.
   ///
@@ -163,10 +186,23 @@ class DeckBuilder {
   ) async {
     var transformedBlock = block;
     for (final plugin in plugins) {
-      transformedBlock = await plugin.transformContentBlock(
-        transformedBlock,
-        context,
-      );
+      try {
+        transformedBlock = await plugin.transformContentBlock(
+          transformedBlock,
+          context,
+        );
+      } on DeckFormatException {
+        rethrow;
+      } catch (error, stackTrace) {
+        Error.throwWithStackTrace(
+          Exception(
+            'Build plugin "${plugin.id}" failed at slide "${context.slideKey}", '
+            'section ${context.sectionIndex}, block ${context.blockIndex}: '
+            '$error',
+          ),
+          stackTrace,
+        );
+      }
     }
 
     return transformedBlock;
