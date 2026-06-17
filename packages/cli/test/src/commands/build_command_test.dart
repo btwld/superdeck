@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -106,6 +107,52 @@ This is test content.
     });
 
     group('run() - flag behavior', () {
+      test('watch exits on interactive quit command', () async {
+        final slidesFile = deckWorkspace.slidesFile;
+        await slidesFile.writeAsString('# Test\n\nContent');
+
+        createTestPubspec(tempDir);
+        command = BuildCommand(
+          commandInput: Stream.value('q'),
+          stdinIsInteractive: true,
+        );
+
+        final runner = createTestRunner(command);
+        final result = await runner.run(['build', '--watch', '--skip-pubspec']);
+
+        expect(result, ExitCode.success.code);
+      });
+
+      test('watch ignores non-interactive stdin EOF', () async {
+        final slidesFile = deckWorkspace.slidesFile;
+        await slidesFile.writeAsString('# Test\n\nContent');
+
+        createTestPubspec(tempDir);
+        final releaseWatch = Completer<void>();
+        final watchReady = Completer<void>();
+        var runCompleted = false;
+        command = BuildCommand(
+          commandInput: const Stream<String>.empty(),
+          stdinIsInteractive: false,
+          watchQuitSignal: releaseWatch.future,
+          watchReady: watchReady.complete,
+        );
+
+        final runner = createTestRunner(command);
+        final runFuture = runner
+            .run(['build', '--watch', '--skip-pubspec'])
+            .whenComplete(() {
+              runCompleted = true;
+            });
+
+        await watchReady.future;
+        await Future<void>.delayed(Duration.zero);
+        expect(runCompleted, isFalse);
+
+        releaseWatch.complete();
+        expect(await runFuture, ExitCode.success.code);
+      });
+
       test('skip-pubspec flag skips pubspec update', () async {
         final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');

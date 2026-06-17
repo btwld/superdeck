@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:isolate';
 
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
@@ -87,6 +88,10 @@ class PdfController {
 
   /// Last export error message, if the export failed.
   ReadonlySignal<String?> get exportError => _exportError;
+
+  /// Number of captured images currently held by the controller.
+  @visibleForTesting
+  int get capturedImageCountForTesting => _images.length;
 
   void _checkExportAllowed() {
     if (_disposed) throw _ExportCancelledException('Controller disposed');
@@ -243,10 +248,17 @@ class PdfController {
       await Future.delayed(_waitDuration);
       _checkExportAllowed();
 
-      final pdf = await compute(_buildPdf, [..._images]);
+      // Transfer captured PNGs to the PDF isolate instead of copying them.
+      // PDF assembly still holds the complete document in memory; true
+      // constant-memory streaming would require a different writer strategy.
+      final transferableImages = _images
+          .map((image) => TransferableTypedData.fromList([image]))
+          .toList(growable: false);
+      _images.clear();
+
+      final pdf = await Isolate.run(() => _buildPdf(transferableImages));
       _checkExportAllowed();
 
-      _images.clear();
       _capturedCount.value = 0;
       if (!await _savePdf(pdf)) {
         _exportStatus.value = PdfExportStatus.idle;
@@ -260,7 +272,7 @@ class PdfController {
     } catch (e) {
       _exportError.value = 'Export failed: $e';
       _exportStatus.value = PdfExportStatus.failed;
-      rethrow;
+      log('Export failed: $e');
     }
   }
 
@@ -300,8 +312,19 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
   // Web doesn't support saveAs (throws UnimplementedError),
   // so use saveFile which triggers a browser download.
   if (kIsWeb) {
-    await saver.saveFile(name: fileName, bytes: pdf, ext: ext, mimeType: mime);
-    return true;
+    try {
+      await saver.saveFile(
+        name: fileName,
+        bytes: pdf,
+        ext: ext,
+        mimeType: mime,
+      );
+      // Browsers do not expose download completion or cancellation here, so a
+      // successful handoff to the browser download flow is best-effort success.
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   final result = await saver.saveAs(
@@ -315,11 +338,12 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
 
 /// Builds a PDF document from [images].
 ///
-/// This runs on a separate isolate via [compute]
-Future<Uint8List> _buildPdf(List<Uint8List> images) async {
+/// This runs on a separate isolate via [Isolate.run].
+Future<Uint8List> _buildPdf(List<TransferableTypedData> images) async {
   final pdf = pw.Document();
 
-  for (final imageData in images) {
+  for (final transferableImage in images) {
+    final imageData = transferableImage.materialize().asUint8List();
     final image = pw.MemoryImage(imageData);
 
     final pdfImage = pw.Image(

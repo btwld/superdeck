@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
+import 'package:meta/meta.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -19,13 +20,25 @@ class BuildCommand extends SuperDeckCommand {
   final List<DeckBuildPlugin> plugins;
   bool _isRunning = false;
   final String? _projectDir;
+  final Stream<String>? _commandInput;
+  final bool? _stdinIsInteractive;
+  final Future<void>? _watchQuitSignal;
+  final void Function()? _watchReady;
 
   BuildCommand({
     super.loggerOverride,
     String? projectDir,
     List<DeckBuildPlugin> plugins = const [],
+    @visibleForTesting Stream<String>? commandInput,
+    @visibleForTesting bool? stdinIsInteractive,
+    @visibleForTesting Future<void>? watchQuitSignal,
+    @visibleForTesting void Function()? watchReady,
   }) : plugins = List.unmodifiable(plugins),
-       _projectDir = projectDir {
+       _projectDir = projectDir,
+       _commandInput = commandInput,
+       _stdinIsInteractive = stdinIsInteractive,
+       _watchQuitSignal = watchQuitSignal,
+       _watchReady = watchReady {
     argParser
       ..addFlag(
         'watch',
@@ -202,27 +215,36 @@ class BuildCommand extends SuperDeckCommand {
           quitRequested.complete();
         }
 
-        final stdinSubscription = stdin
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())
-            .listen((line) {
-              final command = line.trim().toLowerCase();
-              switch (command) {
-                case 'r':
-                case 'rebuild':
-                  logger.info('Manual rebuild triggered...');
-                  unawaited(_runBuild(store!, deckWorkspace, builder: builder));
-                  break;
-                case 'q':
-                case 'quit':
-                  logger.info('Exiting watch mode...');
-                  requestQuit(ExitCode.success.code);
-                  break;
-                default:
-                  logger.warn('Unknown command: "$command"');
-                  logger.info('Available commands: r (rebuild), q (quit)');
-              }
-            }, onDone: () => requestQuit());
+        final interactive = _stdinIsInteractive ?? stdin.hasTerminal;
+        final lines =
+            _commandInput ??
+            stdin.transform(utf8.decoder).transform(const LineSplitter());
+        final stdinSubscription = lines.listen(
+          (line) {
+            final command = line.trim().toLowerCase();
+            switch (command) {
+              case 'r':
+              case 'rebuild':
+                logger.info('Manual rebuild triggered...');
+                unawaited(_runBuild(store!, deckWorkspace, builder: builder));
+                break;
+              case 'q':
+              case 'quit':
+                logger.info('Exiting watch mode...');
+                requestQuit(ExitCode.success.code);
+                break;
+              default:
+                logger.warn('Unknown command: "$command"');
+                logger.info('Available commands: r (rebuild), q (quit)');
+            }
+          },
+          onDone: () {
+            if (interactive) requestQuit();
+          },
+        );
+        final watchQuitSubscription = _watchQuitSignal?.asStream().listen(
+          (_) => requestQuit(ExitCode.success.code),
+        );
 
         final buildSubscription = builder.watchAndBuild().listen(
           (event) {
@@ -246,6 +268,7 @@ class BuildCommand extends SuperDeckCommand {
             requestQuit(ExitCode.software.code);
           },
         );
+        _watchReady?.call();
 
         try {
           await quitRequested.future;
@@ -253,6 +276,7 @@ class BuildCommand extends SuperDeckCommand {
           return watchExitCode;
         } finally {
           await stdinSubscription.cancel();
+          await watchQuitSubscription?.cancel();
           await buildSubscription.cancel();
           await builder.dispose();
         }

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
@@ -27,6 +29,11 @@ typedef _MermaidRenderConfig = ({
 /// renders. Call [dispose] when the generator is no longer needed.
 class MermaidGenerator {
   static final _logger = Logger('MermaidGenerator');
+  static const _mermaidVersion = '11.4.1';
+  static final _mermaidPackageUri = Uri.parse(
+    'package:superdeck_mermaid/src/vendor/mermaid.min.js',
+  );
+  static String? _cachedMermaidLibrary;
 
   Browser? _browser;
   Future<Browser>? _browserInitFuture;
@@ -43,8 +50,29 @@ class MermaidGenerator {
   <body>
     <pre class="mermaid"></pre>
 
-    <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+    <script>
+      window.mermaidReady = false;
+      try {
+        // SuperDeck vendored Mermaid library v__MERMAID_VERSION__
+        const mermaidSource = atob('__MERMAID_LIB_B64__');
+        const mermaidScript = document.createElement('script');
+        mermaidScript.text = mermaidSource;
+        document.head.appendChild(mermaidScript);
+      } catch (e) {
+        window.mermaidError = 'Failed to load vendored Mermaid library: ' + (e?.message || String(e));
+      }
+    </script>
+
+    <script>
+      (async () => {
+      if (window.mermaidError != null) return;
+
+      if (typeof globalThis.mermaid === 'undefined') {
+        window.mermaidError = 'Vendored Mermaid library did not expose global mermaid.';
+        return;
+      }
+
+      const mermaidApi = globalThis.mermaid;
 
       // Safe, decoded inputs from Dart
       const graph          = atob('__GRAPH_B64__');
@@ -60,7 +88,7 @@ class MermaidGenerator {
       // Inject extra CSS before initialize (fonts/styles)
       if (extraCSS) document.getElementById('extra-css').textContent = extraCSS;
 
-      mermaid.initialize({
+      mermaidApi.initialize({
         startOnLoad: false,
         theme,
         themeVariables,
@@ -83,11 +111,12 @@ class MermaidGenerator {
 
       // Render and confirm we have an SVG
       try {
-        await mermaid.run({ querySelector: 'pre.mermaid' });
+        await mermaidApi.run({ querySelector: 'pre.mermaid' });
         window.mermaidReady = !!document.querySelector('pre.mermaid svg');
       } catch (e) {
         window.mermaidError = e?.message || String(e);
       }
+      })();
     </script>
   </body>
 </html>
@@ -213,13 +242,79 @@ class MermaidGenerator {
     return merged;
   }
 
-  Future<Browser> _getBrowser() async {
+  static Future<String> _loadMermaidLibrary() async {
+    final cached = _cachedMermaidLibrary;
+    if (cached != null) return cached;
+
+    final uri = await _resolveMermaidLibraryUri();
+    if (uri == null) {
+      throw StateError(
+        'Unable to resolve vendored Mermaid library at $_mermaidPackageUri. '
+        'Ensure the superdeck_mermaid package is available with its lib/src/vendor assets.',
+      );
+    }
+
+    final source = await File(uri.toFilePath()).readAsString();
+    _cachedMermaidLibrary = source;
+
+    return source;
+  }
+
+  static Future<Uri?> _resolveMermaidLibraryUri() async {
+    try {
+      final uri = await Isolate.resolvePackageUri(_mermaidPackageUri);
+      if (uri != null) return uri;
+    } on UnsupportedError {
+      // Flutter test isolates do not support package URI resolution here.
+    }
+
+    final packageConfig = await _findPackageConfig(Directory.current);
+    if (packageConfig == null) return null;
+
+    final rawConfig =
+        jsonDecode(await packageConfig.readAsString()) as Map<String, dynamic>;
+    final packages = rawConfig['packages'] as List<dynamic>? ?? const [];
+
+    for (final rawPackage in packages.cast<Map<String, dynamic>>()) {
+      if (rawPackage['name'] != 'superdeck_mermaid') continue;
+
+      final rootUri = packageConfig.uri.resolve(
+        rawPackage['rootUri'] as String,
+      );
+      final packageUri = rawPackage['packageUri'] as String? ?? 'lib/';
+
+      return rootUri.resolve(packageUri).resolve('src/vendor/mermaid.min.js');
+    }
+
+    return null;
+  }
+
+  static Future<File?> _findPackageConfig(Directory start) async {
+    var current = start.absolute;
+    while (true) {
+      final packageConfig = File(
+        '${current.path}${Platform.pathSeparator}.dart_tool'
+        '${Platform.pathSeparator}package_config.json',
+      );
+      if (await packageConfig.exists()) return packageConfig;
+
+      final parent = current.parent;
+      if (parent.path == current.path) return null;
+      current = parent;
+    }
+  }
+
+  void _checkNotDisposed() {
     if (_disposed) {
       throw StateError(
         'MermaidGenerator has been disposed. '
         'Cannot generate diagrams after dispose() has been called.',
       );
     }
+  }
+
+  Future<Browser> _getBrowser() async {
+    _checkNotDisposed();
 
     if (_browser != null && _browser!.isConnected) {
       return _browser!;
@@ -334,7 +429,8 @@ class MermaidGenerator {
     return false;
   }
 
-  Future<Uint8List> _generateMermaidImage(String graphDefinition) {
+  Future<Uint8List> _generateMermaidImage(String graphDefinition) async {
+    _checkNotDisposed();
     _logger.fine('Starting Mermaid image generation');
     final config = _resolveRenderConfig(graphDefinition);
 
@@ -343,7 +439,12 @@ class MermaidGenerator {
       'timeout: ${config.timeout.inSeconds}s',
     );
 
-    final htmlContent = _buildHtmlContent(config, graphDefinition);
+    final mermaidLibrary = await _loadMermaidLibrary();
+    final htmlContent = _buildHtmlContent(
+      config,
+      graphDefinition,
+      mermaidLibrary,
+    );
 
     return _withPage((page) async {
       _logger.fine(
@@ -461,12 +562,16 @@ class MermaidGenerator {
   String _buildHtmlContent(
     _MermaidRenderConfig config,
     String graphDefinition,
+    String mermaidLibrary,
   ) {
     final graphB64 = base64Encode(utf8.encode(graphDefinition));
+    final mermaidLibraryB64 = base64Encode(utf8.encode(mermaidLibrary));
     final themeCSSB64 = base64Encode(utf8.encode(config.themeCSS));
     final extraCSSB64 = base64Encode(utf8.encode(config.extraCSS));
 
     return _mermaidHtmlTemplate
+        .replaceAll('__MERMAID_VERSION__', _mermaidVersion)
+        .replaceAll('__MERMAID_LIB_B64__', mermaidLibraryB64)
         .replaceAll('__GRAPH_B64__', graphB64)
         .replaceAll('__THEME_JSON__', jsonEncode(config.theme))
         .replaceAll('__LOOK_JSON__', jsonEncode(config.look))
@@ -480,10 +585,13 @@ class MermaidGenerator {
 
   /// Exposes the resolved HTML payload for unit tests.
   @visibleForTesting
-  String buildHtmlContentForTesting(String graphDefinition) {
+  Future<String> buildHtmlContentForTesting(String graphDefinition) async {
+    final mermaidLibrary = await _loadMermaidLibrary();
+
     return _buildHtmlContent(
       _resolveRenderConfig(graphDefinition),
       graphDefinition,
+      mermaidLibrary,
     );
   }
 

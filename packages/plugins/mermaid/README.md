@@ -77,6 +77,17 @@ try {
   bytes using `puppeteer`. Call `render(syntax)` to produce a `Uint8List`, and
   `dispose()` to close the browser when finished.
 
+## Vendored Mermaid runtime
+
+Rendering uses the vendored Mermaid browser bundle at
+`lib/src/vendor/mermaid.min.js`, pinned to Mermaid `11.4.1`. This keeps
+build-time diagram rendering offline and avoids a CDN dependency in CI or
+air-gapped environments.
+
+To update the runtime, replace the vendored file with the matching
+`dist/mermaid.min.js` bundle for the new Mermaid version, update the pinned
+version in `MermaidGenerator`, and run the Mermaid package tests.
+
 For full setup guidance and plugin authoring patterns, see the SuperDeck
 [plugin guide](https://docs.page/btwld/superdeck/guides/plugins),
 [plugin API reference](https://docs.page/btwld/superdeck/reference/plugin-api),

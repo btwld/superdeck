@@ -226,7 +226,9 @@ void main() {
         expect(exportController.exportError.value, isNull);
       });
 
-      testWidgets('save failure marks export as failed', (tester) async {
+      testWidgets('save failure marks export as failed without throwing', (
+        tester,
+      ) async {
         final exportController = createExportController(
           pdfSaver: (pdf) async => throw Exception('disk full'),
         );
@@ -236,9 +238,39 @@ void main() {
 
         final error = await _runExportAndPump(tester, exportController);
 
-        expect(error, isA<Exception>());
+        expect(error, isNull);
         expect(exportController.exportStatus.value, PdfExportStatus.failed);
         expect(exportController.exportError.value, contains('disk full'));
+      });
+
+      testWidgets('moves captured images into the PDF isolate', (tester) async {
+        Uint8List? savedPdf;
+        final captureService = FakeSlideCaptureService(_testPngBytes);
+        final exportController = PdfController(
+          slides: testSlides,
+          slideCaptureService: captureService,
+          waitDuration: Duration.zero,
+          options: PdfExportOptions(
+            pdfSaver: (pdf) async {
+              savedPdf = pdf;
+              return true;
+            },
+          ),
+        );
+        addTearDown(exportController.dispose);
+
+        await tester.pumpWidget(_buildExportHarness(exportController));
+        await tester.pump();
+
+        final error = await _runExportAndPump(tester, exportController);
+
+        expect(error, isNull);
+        expect(exportController.exportStatus.value, PdfExportStatus.complete);
+        expect(exportController.capturedImageCountForTesting, 0);
+        expect(captureService.captureFromKeyCalls, testSlides.length);
+        expect(savedPdf, isNotNull);
+        expect(savedPdf, isNotEmpty);
+        expect(String.fromCharCodes(savedPdf!.take(4)), '%PDF');
       });
     });
 

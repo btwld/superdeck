@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -164,7 +165,7 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
       'configuration': _canonicalize(_generator.configuration),
     });
 
-    return generateValueHash(payload);
+    return sha256.convert(utf8.encode(payload)).toString();
   }
 
   Object? _canonicalize(Object? value) {

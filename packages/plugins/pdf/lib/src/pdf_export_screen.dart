@@ -72,6 +72,9 @@ class PdfExportDialogScreen extends StatefulWidget {
 class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
   late PdfController _exportController;
 
+  @visibleForTesting
+  PdfController get exportControllerForTesting => _exportController;
+
   @override
   void initState() {
     super.initState();
@@ -100,20 +103,11 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
   }
 
   Future<void> _handleExport() async {
-    Object? error;
-    StackTrace? stackTrace;
+    await _exportController.export();
+    if (!mounted) return;
 
-    try {
-      await _exportController.export();
-    } catch (caughtError, caughtStackTrace) {
-      error = caughtError;
-      stackTrace = caughtStackTrace;
-    }
-
-    if (mounted) _close();
-
-    if (error != null) {
-      Error.throwWithStackTrace(error, stackTrace!);
+    if (_exportController.exportStatus.value != PdfExportStatus.failed) {
+      _close();
     }
   }
 
@@ -219,6 +213,10 @@ class _PdfExportBar extends StatelessWidget {
       final indicatorValue = status == PdfExportStatus.capturing
           ? progressValue
           : null;
+      final isDone = switch (status) {
+        PdfExportStatus.complete || PdfExportStatus.failed => true,
+        _ => false,
+      };
 
       final progressText = switch (status) {
         PdfExportStatus.building => 'Building PDF...',
@@ -269,8 +267,8 @@ class _PdfExportBar extends StatelessWidget {
                 const SizedBox(height: 20.0),
                 ElevatedButton.icon(
                   onPressed: onCancel,
-                  icon: const Icon(Icons.cancel),
-                  label: const Text('Cancel'),
+                  icon: Icon(isDone ? Icons.close : Icons.cancel),
+                  label: Text(isDone ? 'Close' : 'Cancel'),
                 ),
               ],
             ),

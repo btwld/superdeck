@@ -39,7 +39,8 @@ final class DeckBuildContext {
     if (normalized == '.' ||
         normalized == '..' ||
         normalized.startsWith('../') ||
-        p.posix.isAbsolute(normalized)) {
+        p.posix.isAbsolute(normalized) ||
+        p.windows.isAbsolute(normalized)) {
       throw ArgumentError.value(
         path,
         'relativePath',

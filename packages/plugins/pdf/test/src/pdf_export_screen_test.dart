@@ -7,6 +7,7 @@ import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck_pdf/superdeck_pdf.dart';
+import 'package:superdeck_pdf/src/pdf_controller.dart';
 import 'package:superdeck_pdf/src/pdf_export_screen.dart';
 
 import '../helpers/test_helpers.dart';
@@ -210,6 +211,61 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(savedPdf, isNotNull);
       expect(String.fromCharCodes(savedPdf!.take(4)), '%PDF');
+    });
+
+    testWidgets('keeps failed export dialog open without async exceptions', (
+      tester,
+    ) async {
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      tester.view
+        ..physicalSize = superDeckSlideSize
+        ..devicePixelRatio = 1.0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: PdfExportDialogScreen(
+            slides: [
+              SlideTestHarness.createConfiguration(
+                Slide(
+                  key: 'pdf-dialog-failure-test',
+                  options: SlideOptions(title: ''),
+                  sections: [
+                    SectionBlock([ContentBlock('# PDF export failure test')]),
+                  ],
+                ),
+              ),
+            ],
+            options: PdfExportOptions(
+              pdfSaver: (_) async => throw Exception('disk full'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.runAsync(() async {
+        for (
+          var i = 0;
+          i < 200 && find.textContaining('disk full').evaluate().isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(milliseconds: 50));
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+      });
+
+      expect(find.byType(PdfExportDialogScreen), findsOneWidget);
+      expect(find.textContaining('disk full'), findsOneWidget);
+      expect(find.text('Close'), findsOneWidget);
+
+      final state = tester.state(find.byType(PdfExportDialogScreen)) as dynamic;
+      final controller = state.exportControllerForTesting as PdfController;
+      expect(controller.exportStatus.value, PdfExportStatus.failed);
+      expect(tester.takeException(), isNull);
     });
   });
 }

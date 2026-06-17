@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -141,6 +142,29 @@ void main() {
       );
     });
 
+    test('uses stable source-sensitive sha256 cache filenames', () async {
+      final generator = _FakeMermaidGenerator();
+      final plugin = MermaidBuildPlugin(generator: generator);
+      final firstSource = ContentBlock('```mermaid\ngraph TD\nA --> B\n```');
+      final secondSource = ContentBlock('```mermaid\ngraph TD\nA --> C\n```');
+
+      final first = await plugin.transformContentBlock(firstSource, context);
+      final sameFirst = await plugin.transformContentBlock(
+        firstSource,
+        context,
+      );
+      final second = await plugin.transformContentBlock(secondSource, context);
+
+      final firstImagePath = _extractImagePath(first.content);
+      expect(firstImagePath, _extractImagePath(sameFirst.content));
+      expect(firstImagePath, isNot(_extractImagePath(second.content)));
+      expect(
+        p.posix.basename(firstImagePath),
+        matches(RegExp(r'^mermaid_[a-f0-9]{64}\.png$')),
+      );
+      expect(generator.renderCount, 2);
+    });
+
     test(
       'uses constructor configuration for owned generator cache keys',
       () async {
@@ -213,7 +237,7 @@ String _cacheKey(String syntax, Map<String, Object?> configuration) {
     'configuration': _canonicalize(configuration),
   });
 
-  return generateValueHash(payload);
+  return sha256.convert(utf8.encode(payload)).toString();
 }
 
 Object? _canonicalize(Object? value) {

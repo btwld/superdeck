@@ -172,6 +172,21 @@ Discuss release plan.
       expect(savedBlock['content'], contains('Transformed by plugin.'));
     });
 
+    test('rejects Windows absolute plugin output paths', () {
+      final context = DeckBuildContext(
+        workspace: workspace,
+        slideKey: 'path-guard-test',
+        slideIndex: 0,
+        sectionIndex: 0,
+        blockIndex: 0,
+      );
+
+      for (final relativePath in ['C:/x', r'C:\x', r'\\server\share']) {
+        expect(() => context.outputFile(relativePath), throwsArgumentError);
+        expect(() => context.assetPath(relativePath), throwsArgumentError);
+      }
+    });
+
     test('serializes overlapping builds for a shared builder', () async {
       const markdown = '# First Slide\n\nOriginal content';
       final firstTransformStarted = Completer<void>();

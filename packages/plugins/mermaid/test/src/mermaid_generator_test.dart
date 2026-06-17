@@ -156,7 +156,7 @@ void main() {
         );
       });
 
-      test('HTML payload encodes theme strings as JS-safe literals', () {
+      test('HTML payload encodes theme strings as JS-safe literals', () async {
         const theme = 'ba"se';
         const look = 'classic\'; window.__broken = true; \'';
         const securityLevel = 'strict"\nwindow.__broken = true;';
@@ -168,7 +168,9 @@ void main() {
           },
         );
 
-        final html = generator.buildHtmlContentForTesting('graph TD; A-->B');
+        final html = await generator.buildHtmlContentForTesting(
+          'graph TD; A-->B',
+        );
 
         expect(html, contains('const theme          = ${jsonEncode(theme)};'));
         expect(html, contains('const look           = ${jsonEncode(look)};'));
@@ -177,6 +179,21 @@ void main() {
           contains('const securityLevel  = ${jsonEncode(securityLevel)};'),
         );
       });
+
+      test(
+        'HTML payload embeds vendored Mermaid without external URLs',
+        () async {
+          final html = await generator.buildHtmlContentForTesting(
+            'graph TD; A-->B',
+          );
+
+          expect(html, contains('SuperDeck vendored Mermaid library v11.4.1'));
+          expect(html, isNot(contains('cdn.jsdelivr.net')));
+          expect(html, isNot(contains('type="module"')));
+          expect(html, isNot(contains('http://')));
+          expect(html, isNot(contains('https://')));
+        },
+      );
     });
 
     // Note: Actual render() tests require a headless browser and are run as
