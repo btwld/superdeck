@@ -20,45 +20,51 @@ void main() {
       runner = createTestRunner(SetupCommand(projectDir: tempDir.path));
     });
 
-    test('configures placeholders, pubspec assets, and macOS entitlements', () async {
-      await _createMinimalFlutterApp(tempDir, includeMacos: true);
+    test(
+      'configures placeholders, pubspec assets, and macOS entitlements',
+      () async {
+        await _createMinimalFlutterApp(tempDir, includeMacos: true);
 
-      final mainFile = File(path.join(tempDir.path, 'lib', 'main.dart'));
-      await mainFile.create(recursive: true);
-      await mainFile.writeAsString('void main() => print("keep");\n');
+        final mainFile = File(path.join(tempDir.path, 'lib', 'main.dart'));
+        await mainFile.create(recursive: true);
+        await mainFile.writeAsString('void main() => print("keep");\n');
 
-      final slidesFile = File(path.join(tempDir.path, 'slides.md'));
-      await slidesFile.writeAsString('# Keep me');
+        final slidesFile = File(path.join(tempDir.path, 'slides.md'));
+        await slidesFile.writeAsString('# Keep me');
 
-      final result = await runner.run(['setup']);
+        final result = await runner.run(['setup']);
 
-      expect(result, ExitCode.success.code);
-      expect(await mainFile.readAsString(), 'void main() => print("keep");\n');
-      expect(await slidesFile.readAsString(), '# Keep me');
-      expect(
-        await File(path.join(tempDir.path, 'pubspec.yaml')).readAsString(),
-        contains('.superdeck/'),
-      );
-      expect(
-        Directory(path.join(tempDir.path, '.superdeck')).existsSync(),
-        isTrue,
-      );
-      expect(
-        await File(
-          path.join(
-            tempDir.path,
-            'macos',
-            'Runner',
-            'DebugProfile.entitlements',
+        expect(result, ExitCode.success.code);
+        expect(
+          await mainFile.readAsString(),
+          'void main() => print("keep");\n',
+        );
+        expect(await slidesFile.readAsString(), '# Keep me');
+        expect(
+          await File(path.join(tempDir.path, 'pubspec.yaml')).readAsString(),
+          contains('.superdeck/'),
+        );
+        expect(
+          Directory(path.join(tempDir.path, '.superdeck')).existsSync(),
+          isTrue,
+        );
+        expect(
+          await File(
+            path.join(
+              tempDir.path,
+              'macos',
+              'Runner',
+              'DebugProfile.entitlements',
+            ),
+          ).readAsString(),
+          allOf(
+            contains('com.apple.security.files.user-selected.read-write'),
+            contains('com.apple.security.files.downloads.read-write'),
+            contains('<false/>'),
           ),
-        ).readAsString(),
-        allOf(
-          contains('com.apple.security.files.user-selected.read-write'),
-          contains('com.apple.security.files.downloads.read-write'),
-          contains('<false/>'),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('adds .superdeck asset entries to pubspec flutter.assets', () {
       final patched = patchSetupPubspec(_fakePubspec('existing_app'));
@@ -148,7 +154,6 @@ void main() {
 
       expect(result, ExitCode.ioError.code);
     });
-
   });
 }
 

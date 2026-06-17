@@ -81,10 +81,7 @@ void main() {
           exitCode,
           anyOf(equals(ExitCode.success.code), equals(ExitCode.software.code)),
         );
-        expect(
-          mockLogger.detailMessages,
-          contains('Verbose logging enabled'),
-        );
+        expect(mockLogger.detailMessages, contains('Verbose logging enabled'));
       });
     });
   });
@@ -114,8 +111,9 @@ flutter:
   final runnerDir = Directory(path.join(projectDir.path, 'macos', 'Runner'));
   await runnerDir.create(recursive: true);
   for (final name in ['DebugProfile.entitlements', 'Release.entitlements']) {
-    await File(path.join(runnerDir.path, name))
-        .writeAsString('<plist version="1.0"><dict></dict></plist>');
+    await File(
+      path.join(runnerDir.path, name),
+    ).writeAsString('<plist version="1.0"><dict></dict></plist>');
   }
 }
 
