@@ -136,6 +136,7 @@ class SlideCaptureService {
           View.maybeOf(config.context) ?? platformDispatcher.views.first;
       final logicalSize =
           config.targetSize ?? view.physicalSize / view.devicePixelRatio;
+      final physicalSize = logicalSize * config.pixelRatio;
 
       final renderView = RenderView(
         view: view,
@@ -144,14 +145,8 @@ class SlideCaptureService {
           child: repaintBoundary,
         ),
         configuration: ViewConfiguration(
-          logicalConstraints: BoxConstraints(
-            maxWidth: logicalSize.width,
-            maxHeight: logicalSize.height,
-          ),
-          physicalConstraints: BoxConstraints(
-            maxWidth: logicalSize.width * config.pixelRatio,
-            maxHeight: logicalSize.height * config.pixelRatio,
-          ),
+          logicalConstraints: BoxConstraints.tight(logicalSize),
+          physicalConstraints: BoxConstraints.tight(physicalSize),
           devicePixelRatio: config.pixelRatio,
         ),
       );

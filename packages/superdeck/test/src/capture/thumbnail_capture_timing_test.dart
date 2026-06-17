@@ -84,6 +84,21 @@ SlideConfiguration _slide(String key, String content) {
   );
 }
 
+SlideConfiguration _slideWithParts(String key, String content) {
+  return SlideConfiguration(
+    slideIndex: 0,
+    style: SlideStyle(),
+    parts: const SlideParts(),
+    slide: Slide(
+      key: key,
+      sections: [
+        SectionBlock([ContentBlock(content)]),
+      ],
+    ),
+    thumbnailKey: 'thumbnail_$key.png',
+  );
+}
+
 SlideConfiguration _delayedSlide({
   required Duration delay,
   required Completer<void> settled,
@@ -131,6 +146,23 @@ void main() {
         expect(bytes, isNotEmpty);
         expect(settled.isCompleted, isTrue);
         expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(40));
+      });
+    });
+
+    testWidgets('captures slides with chrome parts', (tester) async {
+      final context = await _pumpContext(tester);
+      final slide = _slideWithParts(
+        'parts',
+        '# Slide with parts\n\nHeader and footer stay inside capture bounds.',
+      );
+
+      await tester.runAsync(() async {
+        final bytes = await SlideCaptureService().capture(
+          slide: slide,
+          context: context,
+        );
+
+        expect(bytes, isNotEmpty);
       });
     });
 
