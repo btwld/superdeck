@@ -15,7 +15,7 @@ import 'mermaid_generator.dart';
 /// point to generated files in the active build output directory.
 final class MermaidBuildPlugin extends DeckBuildPlugin {
   static final _mermaidFencePattern = RegExp(
-    r'^[ \t]*```mermaid[ \t]*\r?\n([\s\S]*?)\r?\n^[ \t]*```[ \t]*$',
+    r'^[ ]{0,3}```mermaid[ \t]*\r?\n([\s\S]*?)\r?\n^[ ]{0,3}```[ \t]*$',
     multiLine: true,
   );
 

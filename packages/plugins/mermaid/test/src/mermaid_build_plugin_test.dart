@@ -211,6 +211,62 @@ void main() {
       },
     );
 
+    group('fence indentation', () {
+      test('1-space indented fence transforms', () async {
+        final generator = _FakeMermaidGenerator();
+        final plugin = MermaidBuildPlugin(generator: generator);
+
+        final block = await plugin.transformContentBlock(
+          ContentBlock(' ```mermaid\ngraph TD\nA --> B\n ```'),
+          context,
+        );
+
+        expect(block.content, contains('![Mermaid diagram]'));
+        expect(generator.renderCount, 1);
+      });
+
+      test('3-space indented fence transforms', () async {
+        final generator = _FakeMermaidGenerator();
+        final plugin = MermaidBuildPlugin(generator: generator);
+
+        final block = await plugin.transformContentBlock(
+          ContentBlock('   ```mermaid\ngraph TD\nA --> B\n   ```'),
+          context,
+        );
+
+        expect(block.content, contains('![Mermaid diagram]'));
+        expect(generator.renderCount, 1);
+      });
+
+      test('4-space indented fence is a code block and is not transformed', () async {
+        final generator = _FakeMermaidGenerator();
+        final plugin = MermaidBuildPlugin(generator: generator);
+        const content = '    ```mermaid\ngraph TD\nA --> B\n    ```';
+
+        final block = await plugin.transformContentBlock(
+          ContentBlock(content),
+          context,
+        );
+
+        expect(block.content, content);
+        expect(generator.renderCount, 0);
+      });
+
+      test('tab-indented fence is not transformed', () async {
+        final generator = _FakeMermaidGenerator();
+        final plugin = MermaidBuildPlugin(generator: generator);
+        const content = '\t```mermaid\ngraph TD\nA --> B\n\t```';
+
+        final block = await plugin.transformContentBlock(
+          ContentBlock(content),
+          context,
+        );
+
+        expect(block.content, content);
+        expect(generator.renderCount, 0);
+      });
+    });
+
     test('rejects configuration when a custom generator is provided', () {
       expect(
         () => MermaidBuildPlugin(
