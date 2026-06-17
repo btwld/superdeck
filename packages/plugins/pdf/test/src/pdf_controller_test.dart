@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -242,6 +243,69 @@ void main() {
         expect(exportController.exportStatus.value, PdfExportStatus.failed);
         expect(exportController.exportError.value, contains('disk full'));
       });
+
+      testWidgets(
+        'dispose during in-flight saver does not write to disposed signals',
+        (tester) async {
+          final releaseSave = Completer<bool>();
+          var saverCalled = false;
+          var exportCompleted = false;
+          addTearDown(() {
+            if (!releaseSave.isCompleted) releaseSave.complete(false);
+          });
+          final exportController = PdfController(
+            slides: [testSlides.first],
+            slideCaptureService: FakeSlideCaptureService(_testPngBytes),
+            waitDuration: Duration.zero,
+            options: PdfExportOptions(
+              pdfSaver: (pdf) {
+                saverCalled = true;
+                return releaseSave.future;
+              },
+            ),
+          );
+
+          await tester.pumpWidget(_buildExportHarness(exportController));
+          await tester.pump();
+
+          // All async work inside runAsync so real + fake timers both work.
+          await tester.runAsync(() async {
+            Object? asyncError;
+            final exportFuture = exportController
+                .export()
+                .catchError((Object e, StackTrace _) {
+                  asyncError = e;
+                })
+                .whenComplete(() {
+                  exportCompleted = true;
+                });
+
+            // Drive until the saver is pending.
+            for (var i = 0; i < 100 && !saverCalled; i++) {
+              await tester.pump(const Duration(milliseconds: 50));
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+            }
+
+            // Dispose while saver has not yet completed.
+            exportController.dispose();
+
+            // Release the saver after disposal.
+            releaseSave.complete(true);
+
+            // Drive until export future completes.
+            for (var i = 0; i < 50 && !exportCompleted; i++) {
+              await tester.pump(const Duration(milliseconds: 50));
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+            }
+
+            await exportFuture;
+
+            expect(asyncError, isNull);
+          });
+
+          expect(tester.takeException(), isNull);
+        },
+      );
 
       testWidgets('moves captured images into the PDF isolate', (tester) async {
         Uint8List? savedPdf;

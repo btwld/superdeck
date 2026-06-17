@@ -217,7 +217,7 @@ class PdfController {
     try {
       await _prepare();
 
-      _exportStatus.value = PdfExportStatus.capturing;
+      if (!_disposed) _exportStatus.value = PdfExportStatus.capturing;
 
       for (var i = 0; i < _slideKeys.length; i++) {
         _checkExportAllowed();
@@ -240,40 +240,55 @@ class PdfController {
         _checkExportAllowed();
 
         _images.add(image);
-        _capturedCount.value = _images.length;
+        if (!_disposed) _capturedCount.value = _images.length;
       }
 
-      _exportStatus.value = PdfExportStatus.building;
+      if (!_disposed) _exportStatus.value = PdfExportStatus.building;
 
       await Future.delayed(_waitDuration);
       _checkExportAllowed();
 
-      // Transfer captured PNGs to the PDF isolate instead of copying them.
-      // PDF assembly still holds the complete document in memory; true
-      // constant-memory streaming would require a different writer strategy.
-      final transferableImages = _images
-          .map((image) => TransferableTypedData.fromList([image]))
-          .toList(growable: false);
-      _images.clear();
-
-      final pdf = await Isolate.run(() => _buildPdf(transferableImages));
+      final pdf = await _buildPdfForCurrentPlatform();
       _checkExportAllowed();
 
-      _capturedCount.value = 0;
+      if (!_disposed) _capturedCount.value = 0;
       if (!await _savePdf(pdf)) {
-        _exportStatus.value = PdfExportStatus.idle;
+        if (!_disposed) _exportStatus.value = PdfExportStatus.idle;
         return;
       }
 
-      _exportStatus.value = PdfExportStatus.complete;
+      if (!_disposed) _exportStatus.value = PdfExportStatus.complete;
     } on _ExportCancelledException catch (e) {
-      _exportStatus.value = PdfExportStatus.idle;
+      if (!_disposed) _exportStatus.value = PdfExportStatus.idle;
       log(e.toString());
     } catch (e) {
-      _exportError.value = 'Export failed: $e';
-      _exportStatus.value = PdfExportStatus.failed;
+      if (!_disposed) {
+        _exportError.value = 'Export failed: $e';
+        _exportStatus.value = PdfExportStatus.failed;
+      }
       log('Export failed: $e');
     }
+  }
+
+  /// Builds the PDF from captured images, branching on platform.
+  ///
+  /// On web, [Isolate.run] is not available; the PDF is assembled on the
+  /// current thread. On native, images are transferred to an isolate via
+  /// [TransferableTypedData] to avoid copying.
+  Future<Uint8List> _buildPdfForCurrentPlatform() async {
+    if (kIsWeb) {
+      final images = List<Uint8List>.from(_images);
+      _images.clear();
+      return _buildPdfFromBytes(images);
+    }
+    // Transfer captured PNGs to the PDF isolate instead of copying them.
+    // PDF assembly still holds the complete document in memory; true
+    // constant-memory streaming would require a different writer strategy.
+    final transferableImages = _images
+        .map((image) => TransferableTypedData.fromList([image]))
+        .toList(growable: false);
+    _images.clear();
+    return Isolate.run(() => _buildPdf(transferableImages));
   }
 
   /// Saves [pdf] using the injected [PdfSaver].
@@ -291,6 +306,7 @@ class PdfController {
 
   /// Releases page-controller and signal resources owned by this controller.
   void dispose() {
+    cancel();
     _disposed = true;
     _pageController.dispose();
 
@@ -336,16 +352,12 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
   return result != null;
 }
 
-/// Builds a PDF document from [images].
-///
-/// This runs on a separate isolate via [Isolate.run].
-Future<Uint8List> _buildPdf(List<TransferableTypedData> images) async {
+/// Builds a PDF document from raw PNG byte lists.
+Future<Uint8List> _buildPdfFromBytes(List<Uint8List> images) async {
   final pdf = pw.Document();
 
-  for (final transferableImage in images) {
-    final imageData = transferableImage.materialize().asUint8List();
+  for (final imageData in images) {
     final image = pw.MemoryImage(imageData);
-
     final pdfImage = pw.Image(
       image,
       width: superDeckSlideSize.width,
@@ -358,15 +370,21 @@ Future<Uint8List> _buildPdf(List<TransferableTypedData> images) async {
           superDeckSlideSize.width,
           superDeckSlideSize.height,
         ),
-        build: (pw.Context context) {
-          return pw.Center(child: pdfImage);
-        },
+        build: (pw.Context context) => pw.Center(child: pdfImage),
       ),
     );
   }
 
-  return await pdf.save();
+  return pdf.save();
 }
+
+/// Materializes [TransferableTypedData] images and delegates to [_buildPdfFromBytes].
+///
+/// Runs on a separate isolate via [Isolate.run].
+Future<Uint8List> _buildPdf(List<TransferableTypedData> images) =>
+    _buildPdfFromBytes(
+      images.map((t) => t.materialize().asUint8List()).toList(),
+    );
 
 class _ExportCancelledException implements Exception {
   final String message;

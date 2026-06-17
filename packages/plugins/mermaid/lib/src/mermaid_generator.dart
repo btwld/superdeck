@@ -74,15 +74,20 @@ class MermaidGenerator {
 
       const mermaidApi = globalThis.mermaid;
 
-      // Safe, decoded inputs from Dart
-      const graph          = atob('__GRAPH_B64__');
+      // UTF-8-safe Base64 decoder; TextDecoder handles non-ASCII text correctly.
+      const _decodeUtf8 = (b64) =>
+        new TextDecoder().decode(
+          Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+        );
+
+      const graph          = _decodeUtf8('__GRAPH_B64__');
       const theme          = __THEME_JSON__;          // usually 'base'
       const look           = __LOOK_JSON__;           // 'classic' | 'handDrawn'
       const securityLevel  = __SECURITY_LEVEL_JSON__; // 'strict' (default), 'loose', etc.
       const themeVariables = __THEME_VARIABLES__;  // JSON from Dart
-      const themeCSS       = atob('__THEME_CSS_B64__');
+      const themeCSS       = _decodeUtf8('__THEME_CSS_B64__');
       const handDrawnSeed  = __HAND_DRAWN_SEED__;  // number
-      const extraCSS       = atob('__EXTRA_CSS_B64__'); // optional, can be ''
+      const extraCSS       = _decodeUtf8('__EXTRA_CSS_B64__'); // optional, can be ''
       const diagramConfigs = __DIAGRAM_CONFIGS__;  // All diagram-specific configs
 
       // Inject extra CSS before initialize (fonts/styles)
@@ -127,6 +132,10 @@ class MermaidGenerator {
   /// Values passed to the constructor are deeply merged with SuperDeck's
   /// defaults and then exposed as an unmodifiable map.
   final Map<String, Object?> configuration;
+
+  /// A salt included in cache keys to bust stale images when the Mermaid
+  /// runtime version changes.
+  String get cacheKeySalt => 'mermaid:$_mermaidVersion';
 
   /// Creates a Mermaid generator backed by a headless browser.
   ///

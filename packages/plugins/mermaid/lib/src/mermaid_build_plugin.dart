@@ -163,6 +163,7 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
     final payload = jsonEncode({
       'source': syntax,
       'configuration': _canonicalize(_generator.configuration),
+      'salt': _generator.cacheKeySalt,
     });
 
     return sha256.convert(utf8.encode(payload)).toString();

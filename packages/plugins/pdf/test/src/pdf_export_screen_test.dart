@@ -213,6 +213,57 @@ void main() {
       expect(String.fromCharCodes(savedPdf!.take(4)), '%PDF');
     });
 
+    testWidgets('Cancel tap during export does not throw async exceptions', (
+      tester,
+    ) async {
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      tester.view
+        ..physicalSize = superDeckSlideSize
+        ..devicePixelRatio = 1.0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: PdfExportDialogScreen(
+            slides: [
+              SlideTestHarness.createConfiguration(
+                Slide(
+                  key: 'cancel-during-export-test',
+                  options: SlideOptions(title: ''),
+                  sections: [
+                    SectionBlock([ContentBlock('# Cancel test')]),
+                  ],
+                ),
+              ),
+            ],
+            options: PdfExportOptions(pdfSaver: (_) async => true),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Tap Cancel shortly after the export begins (during the prepare phase).
+      await tester.runAsync(() async {
+        for (var i = 0; i < 5; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+
+        await tester.tap(find.text('Cancel'));
+        await tester.pump();
+
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+      });
+
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('keeps failed export dialog open without async exceptions', (
       tester,
     ) async {

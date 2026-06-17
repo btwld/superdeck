@@ -192,6 +192,25 @@ void main() {
       },
     );
 
+    test(
+      'changing cacheKeySalt on a fake generator produces a different cached image path',
+      () async {
+        final source = ContentBlock('```mermaid\ngraph TD\nA --> B\n```');
+        final first = await MermaidBuildPlugin(
+          generator: _FakeMermaidGenerator(),
+        ).transformContentBlock(source, context);
+
+        final second = await MermaidBuildPlugin(
+          generator: _FakeMermaidGeneratorWithSalt('mermaid:99.0.0'),
+        ).transformContentBlock(source, context);
+
+        expect(
+          _extractImagePath(first.content),
+          isNot(_extractImagePath(second.content)),
+        );
+      },
+    );
+
     test('rejects configuration when a custom generator is provided', () {
       expect(
         () => MermaidBuildPlugin(
@@ -231,10 +250,15 @@ String _extractImagePath(String content) {
   return match!.group(1)!;
 }
 
-String _cacheKey(String syntax, Map<String, Object?> configuration) {
+String _cacheKey(
+  String syntax,
+  Map<String, Object?> configuration, {
+  String salt = 'mermaid:11.4.1',
+}) {
   final payload = jsonEncode({
     'source': syntax,
     'configuration': _canonicalize(configuration),
+    'salt': salt,
   });
 
   return sha256.convert(utf8.encode(payload)).toString();
@@ -276,6 +300,14 @@ class _FakeMermaidGenerator extends MermaidGenerator {
   Future<void> dispose() async {
     disposeCount++;
   }
+}
+
+class _FakeMermaidGeneratorWithSalt extends _FakeMermaidGenerator {
+  _FakeMermaidGeneratorWithSalt(this._salt);
+  final String _salt;
+
+  @override
+  String get cacheKeySalt => _salt;
 }
 
 class _FailingMermaidGenerator extends MermaidGenerator {

@@ -79,6 +79,46 @@ graph TD
                 'Mermaid integration test.',
       timeout: const Timeout(Duration(minutes: 2)),
     );
+    test(
+      'renders a diagram with emoji and accented text without corruption',
+      () async {
+        final workspace = DeckWorkspace(projectDir: tempDir.path);
+        final store = DeckBuildStore(workspace: workspace);
+        final plugin = MermaidBuildPlugin();
+        final builder = DeckBuilder(
+          workspace: workspace,
+          store: store,
+          plugins: [plugin],
+        );
+        addTearDown(builder.dispose);
+
+        await workspace.slidesFile.writeAsString(r'''
+# UTF-8 test
+
+```mermaid
+graph TD
+  A["Héllo 🌍"] --> B["Wörld"]
+  B --> C["日本語"]
+```
+''');
+
+        final slides = (await builder.build()).toList(growable: false);
+        final block =
+            slides.single.sections.single.blocks.single as ContentBlock;
+        final imagePath = _extractImagePath(block.content);
+        final imageFile = File(p.join(tempDir.path, imagePath));
+        final pngBytes = await imageFile.readAsBytes();
+
+        expect(block.content, isNot(contains('```mermaid')));
+        expect(pngBytes.take(8), _pngSignature);
+        expect(pngBytes.length, greaterThan(1000));
+      },
+      skip: Platform.environment['SUPERDECK_RUN_BROWSER_TESTS'] == '1'
+          ? false
+          : 'Set SUPERDECK_RUN_BROWSER_TESTS=1 to run the browser-backed '
+                'Mermaid integration test.',
+      timeout: const Timeout(Duration(minutes: 2)),
+    );
   });
 }
 

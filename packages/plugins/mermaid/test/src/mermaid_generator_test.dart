@@ -181,6 +181,20 @@ void main() {
       });
 
       test(
+        'HTML payload uses UTF-8 decoder helper instead of raw atob for text inputs',
+        () async {
+          final html = await generator.buildHtmlContentForTesting(
+            'graph TD; A-->B',
+          );
+
+          expect(html, contains('TextDecoder'));
+          expect(html, isNot(matches(RegExp(r'const graph\s*=\s*atob\('))));
+          expect(html, isNot(matches(RegExp(r'const themeCSS\s*=\s*atob\('))));
+          expect(html, isNot(matches(RegExp(r'const extraCSS\s*=\s*atob\('))));
+        },
+      );
+
+      test(
         'HTML payload embeds vendored Mermaid without external URLs',
         () async {
           final html = await generator.buildHtmlContentForTesting(
