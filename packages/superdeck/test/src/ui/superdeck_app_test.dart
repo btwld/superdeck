@@ -88,7 +88,7 @@ bool _menuGateExcludesFocus(WidgetTester tester, String key) {
 
   return tester
       .widgetList<ExcludeFocus>(excludeFocus)
-      .singleWhere((widget) => widget.child is ExcludeSemantics)
+      .singleWhere((widget) => widget.child is SizeTransition)
       .excluding;
 }
 

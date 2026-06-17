@@ -435,10 +435,7 @@ class _MenuVisibilityGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return IgnorePointer(
       ignoring: !visible,
-      child: ExcludeFocus(
-        excluding: !visible,
-        child: ExcludeSemantics(excluding: !visible, child: child),
-      ),
+      child: ExcludeFocus(excluding: !visible, child: child),
     );
   }
 }
