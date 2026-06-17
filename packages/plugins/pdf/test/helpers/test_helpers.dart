@@ -77,33 +77,6 @@ List<Slide> createTestSlidesPayload({List<Slide>? slides}) {
       );
 }
 
-class SlideFixtures {
-  static Slide singleColumn({String content = '# Hello World'}) {
-    return _slide('fixture-single-column', [
-      SectionBlock([ContentBlock(content, align: ContentAlignment.center)]),
-    ]);
-  }
-
-  static Slide twoColumnEqual({String? left, String? right}) {
-    return _slide('fixture-two-column-equal', [
-      SectionBlock([
-        ContentBlock(left ?? '# Left'),
-        ContentBlock(right ?? '# Right'),
-      ]),
-    ]);
-  }
-
-  static Slide withAlignment(ContentAlignment align) {
-    return _slide('fixture-with-alignment-${align.name}', [
-      SectionBlock([ContentBlock('# Aligned ${align.name}', align: align)]),
-    ]);
-  }
-
-  static Slide _slide(String key, List<SectionBlock> sections) {
-    return Slide(key: key, sections: sections);
-  }
-}
-
 class SlideTestHarness {
   static SlideConfiguration createConfiguration(
     Slide slide, {

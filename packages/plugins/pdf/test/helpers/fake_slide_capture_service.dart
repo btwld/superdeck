@@ -10,9 +10,7 @@ class FakeSlideCaptureService extends SlideCaptureService {
 
   final Uint8List bytes;
 
-  int captureCalls = 0;
   int captureFromKeyCalls = 0;
-  final List<String> capturedKeys = [];
 
   @override
   Future<Uint8List> capture({
@@ -20,8 +18,6 @@ class FakeSlideCaptureService extends SlideCaptureService {
     required SlideConfiguration slide,
     required BuildContext context,
   }) async {
-    captureCalls++;
-    capturedKeys.add(slide.key);
     return bytes;
   }
 

@@ -72,9 +72,6 @@ class PdfExportDialogScreen extends StatefulWidget {
 class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
   late PdfController _exportController;
 
-  @visibleForTesting
-  PdfController get exportControllerForTesting => _exportController;
-
   @override
   void initState() {
     super.initState();

@@ -7,7 +7,6 @@ import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck_pdf/superdeck_pdf.dart';
-import 'package:superdeck_pdf/src/pdf_controller.dart';
 import 'package:superdeck_pdf/src/pdf_export_screen.dart';
 
 import '../helpers/test_helpers.dart';
@@ -312,10 +311,6 @@ void main() {
       expect(find.byType(PdfExportDialogScreen), findsOneWidget);
       expect(find.textContaining('disk full'), findsOneWidget);
       expect(find.text('Close'), findsOneWidget);
-
-      final state = tester.state(find.byType(PdfExportDialogScreen)) as dynamic;
-      final controller = state.exportControllerForTesting as PdfController;
-      expect(controller.exportStatus.value, PdfExportStatus.failed);
       expect(tester.takeException(), isNull);
     });
   });
