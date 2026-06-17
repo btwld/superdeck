@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 
 /// Provides app-shell modal presentation for deck actions.
 ///
@@ -9,15 +10,15 @@ import 'package:flutter/widgets.dart';
 abstract final class DeckShellModal {
   static DeckShellModalController? maybeOf(BuildContext context) {
     return context
-        .dependOnInheritedWidgetOfExactType<_DeckShellModalScope>()
+        .getInheritedWidgetOfExactType<_DeckShellModalScope>()
         ?.controller;
   }
 }
 
-final class DeckShellModalController extends ChangeNotifier {
-  final List<DeckShellModalEntry> _entries = [];
+final class DeckShellModalController {
+  final Signal<List<DeckShellModalEntry>> _entries = signal(const []);
 
-  List<DeckShellModalEntry> get entries => List.unmodifiable(_entries);
+  List<DeckShellModalEntry> get entries => List.unmodifiable(_entries.value);
 
   DeckShellModalEntry show({required WidgetBuilder builder}) {
     late final DeckShellModalEntry entry;
@@ -25,25 +26,24 @@ final class DeckShellModalController extends ChangeNotifier {
       builder: builder,
       onClose: () => _remove(entry),
     );
-    _entries.add(entry);
-    notifyListeners();
+    _entries.value = [..._entries.value, entry];
 
     return entry;
   }
 
   void _remove(DeckShellModalEntry entry) {
-    if (!_entries.remove(entry)) return;
+    final next = _entries.value.where((e) => e != entry).toList();
+    if (next.length == _entries.value.length) return;
 
-    notifyListeners();
+    _entries.value = next;
   }
 
-  @override
   void dispose() {
-    for (final entry in List<DeckShellModalEntry>.of(_entries)) {
+    for (final entry in _entries.value) {
       entry._dispose();
     }
-    _entries.clear();
-    super.dispose();
+    _entries.value = const [];
+    _entries.dispose();
   }
 }
 
@@ -59,9 +59,14 @@ final class DeckShellModalEntry {
   Future<void> get closed => _closed.future;
 
   void _dispose() {
-    if (_closed.isCompleted) return;
+    _isClosed = true;
+    _complete();
+  }
 
-    _closed.complete();
+  void _complete() {
+    if (!_closed.isCompleted) {
+      _closed.complete();
+    }
   }
 
   void close() {
@@ -69,9 +74,7 @@ final class DeckShellModalEntry {
 
     _isClosed = true;
     _onClose();
-    if (!_closed.isCompleted) {
-      _closed.complete();
-    }
+    _complete();
   }
 }
 
@@ -90,34 +93,28 @@ class _DeckShellModalHostState extends State<DeckShellModalHost> {
   @override
   void initState() {
     super.initState();
-    _controller = DeckShellModalController()..addListener(_handleModalChanged);
+    _controller = DeckShellModalController();
   }
 
   @override
   void dispose() {
-    _controller
-      ..removeListener(_handleModalChanged)
-      ..dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _handleModalChanged() {
-    if (!mounted) return;
-
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return _DeckShellModalScope(
       controller: _controller,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          widget.child,
-          for (final entry in _controller.entries)
-            Positioned.fill(child: _DeckShellModalEntryView(entry: entry)),
-        ],
+      child: Watch(
+        (context) => Stack(
+          fit: StackFit.expand,
+          children: [
+            widget.child,
+            for (final entry in _controller.entries)
+              Positioned.fill(child: _DeckShellModalEntryView(entry: entry)),
+          ],
+        ),
       ),
     );
   }
