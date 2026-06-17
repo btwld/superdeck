@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/deck_controller.dart';
 import 'package:superdeck/src/deck/deck_options.dart';
@@ -104,6 +105,22 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(controller.presentation.currentIndex.value, 2);
+    });
+
+    testWidgets('meta arrow navigation does not require widget focus', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildHarness(controller));
+      await tester.pumpAndSettle();
+
+      expect(controller.presentation.currentIndex.value, 0);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.meta);
+      await tester.pumpAndSettle();
+
+      expect(controller.presentation.currentIndex.value, 1);
     });
   });
 }
