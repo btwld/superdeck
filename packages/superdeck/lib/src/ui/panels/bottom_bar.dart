@@ -85,7 +85,10 @@ class DeckBottomBar extends StatelessWidget {
 
         SDIconButton(
           icon: Icons.close,
-          onPressed: presentation.closeMenu,
+          onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            presentation.closeMenu();
+          },
           semanticLabel: 'Close menu',
         ),
       ],

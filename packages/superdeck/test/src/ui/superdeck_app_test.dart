@@ -34,9 +34,10 @@ class _RecordingThumbnailService extends ThumbnailService {
 }
 
 class _AppShellHarness extends StatelessWidget {
-  const _AppShellHarness({required this.controller});
+  const _AppShellHarness({required this.controller, this.focusNode});
 
   final DeckController controller;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,10 @@ class _AppShellHarness extends StatelessWidget {
           colors: SDColors.colorMap,
           child: InheritedData(
             data: controller,
-            child: AppShell(child: child ?? const SizedBox()),
+            child: Focus(
+              focusNode: focusNode,
+              child: AppShell(child: child ?? const SizedBox()),
+            ),
           ),
         );
       },
@@ -456,6 +460,53 @@ void main() {
 
       expect(errors, hasLength(1));
       expect(errors.single.exception, isA<StateError>());
+    });
+  });
+
+  group('AppShell focus handling', () {
+    testWidgets('menu toggle actions clear focus before hiding controls', (
+      tester,
+    ) async {
+      final loader = MockDeckLoader();
+      final focusNode = FocusNode();
+      final controller = DeckController(
+        deckLoader: loader,
+        options: DeckOptions(),
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(() async {
+        focusNode.dispose();
+        controller.dispose();
+        await loader.dispose();
+      });
+
+      await tester.pumpWidget(
+        _AppShellHarness(controller: controller, focusNode: focusNode),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      focusNode.requestFocus();
+      await tester.pump();
+      expect(focusNode.hasFocus, isTrue);
+
+      await _openDeckMenu(tester);
+
+      expect(focusNode.hasFocus, isFalse);
+      expect(controller.presentation.isMenuOpen.value, isTrue);
+
+      focusNode.requestFocus();
+      await tester.pump();
+      expect(focusNode.hasFocus, isTrue);
+
+      await tester.tap(find.bySemanticsLabel('Close menu'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump();
+
+      expect(focusNode.hasFocus, isFalse);
+      expect(controller.presentation.isMenuOpen.value, isFalse);
+      expect(tester.takeException(), isNull);
     });
   });
 

@@ -251,7 +251,10 @@ class _SplitViewState extends State<SplitView>
 
     return SDIconButton(
       icon: Icons.menu,
-      onPressed: deckController.presentation.openMenu,
+      onPressed: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+        deckController.presentation.openMenu();
+      },
       semanticLabel: 'Open menu',
     );
   }
