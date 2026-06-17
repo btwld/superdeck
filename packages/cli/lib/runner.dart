@@ -56,12 +56,12 @@ class SuperDeckRunner extends CommandRunner<int> {
       }
 
       if (argResults['verbose'] == true) {
-        _logger.level = Level.verbose;
+        _logger.level = .verbose;
         _logger.detail('Verbose logging enabled');
       }
 
       if (argResults['quiet'] == true) {
-        _logger.level = Level.error;
+        _logger.level = .error;
       }
 
       final exitCode = await runCommand(argResults);

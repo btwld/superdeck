@@ -101,10 +101,7 @@ Future<BuildEvent> _nextEvent(StreamIterator<BuildEvent> iterator) async {
   return iterator.current;
 }
 
-Future<void> _modifySlidesFile(
-  DeckWorkspace workspace,
-  String markdown,
-) async {
+Future<void> _modifySlidesFile(DeckWorkspace workspace, String markdown) async {
   await Future<void>.delayed(const Duration(milliseconds: 100));
   await workspace.slidesFile.writeAsString(markdown);
 }

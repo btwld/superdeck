@@ -91,9 +91,9 @@ class BuildCommand extends SuperDeckCommand {
       logger.err('File system error: ${e.message}');
       logger.err('Path: ${e.path ?? 'Unknown'}');
       await store.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
-        stackTrace: StackTrace.current,
+        stackTrace: .current,
       );
 
       return false;
@@ -101,9 +101,9 @@ class BuildCommand extends SuperDeckCommand {
       progress.fail('Format error');
       logger.err(e.message);
       await store.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
-        stackTrace: StackTrace.current,
+        stackTrace: .current,
       );
 
       return false;
@@ -111,7 +111,7 @@ class BuildCommand extends SuperDeckCommand {
       progress.fail('Build failed');
       _logBuildFailure(e, stackTrace);
       await store.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
         stackTrace: stackTrace,
       );
@@ -198,9 +198,7 @@ class BuildCommand extends SuperDeckCommand {
                     exit(ExitCode.success.code);
                   default:
                     logger.warn('Unknown command: "$command"');
-                    logger.info(
-                      'Available commands: r (rebuild), q (quit)',
-                    );
+                    logger.info('Available commands: r (rebuild), q (quit)');
                 }
               });
 
@@ -229,7 +227,7 @@ class BuildCommand extends SuperDeckCommand {
       logger.err('Build failed before the deck could be generated.');
       _logBuildFailure(e, stackTrace);
       await store?.saveBuildStatus(
-        phase: DeckBuildPhase.failure,
+        phase: .failure,
         error: e,
         stackTrace: stackTrace,
       );

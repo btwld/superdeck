@@ -16,7 +16,8 @@ final class DeckSessionState {
   final _isBuildActive = signal<bool>(false);
   final _buildFailure = signal<DeckBuildError?>(null);
 
-  DeckSessionState({required DeckLoader deckLoader}) : _deckLoader = deckLoader {
+  DeckSessionState({required DeckLoader deckLoader})
+    : _deckLoader = deckLoader {
     _subscription = _deckLoader.load().listen(
       _handleEvent,
       onError: (Object error, StackTrace stackTrace) {

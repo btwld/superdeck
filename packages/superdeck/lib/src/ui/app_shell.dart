@@ -160,10 +160,7 @@ class _SplitViewState extends State<SplitView>
         return;
       }
 
-      deckController.presentation.generateThumbnails(
-        context,
-        currentSlides,
-      );
+      deckController.presentation.generateThumbnails(context, currentSlides);
       _lastThumbnailWarmupSignature = currentSignature;
       if (_pendingThumbnailWarmupSignature == currentSignature) {
         _pendingThumbnailWarmupSignature = null;

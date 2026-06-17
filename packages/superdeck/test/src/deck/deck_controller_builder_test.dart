@@ -9,50 +9,49 @@ import '../../helpers/mock_deck_loader.dart';
 void main() {
   group('DeckControllerBuilder', () {
     // This test runs first because it does not corrupt widget tree state.
-    testWidgets(
-      'options change propagates without assertion error',
-      (tester) async {
-        final loader = MockDeckLoader();
+    testWidgets('options change propagates without assertion error', (
+      tester,
+    ) async {
+      final loader = MockDeckLoader();
 
-        // Intercept FlutterErrors to check for assertion errors
-        final loaderAssertErrors = <FlutterErrorDetails>[];
-        final originalHandler = FlutterError.onError;
-        FlutterError.onError = (details) {
-          final ex = details.exception;
-          if (ex is AssertionError &&
-              ex.message.toString().contains('must not change after mount')) {
-            loaderAssertErrors.add(details);
-          }
-          // Suppress all errors (overflow, etc.)
-        };
+      // Intercept FlutterErrors to check for assertion errors
+      final loaderAssertErrors = <FlutterErrorDetails>[];
+      final originalHandler = FlutterError.onError;
+      FlutterError.onError = (details) {
+        final ex = details.exception;
+        if (ex is AssertionError &&
+            ex.message.toString().contains('must not change after mount')) {
+          loaderAssertErrors.add(details);
+        }
+        // Suppress all errors (overflow, etc.)
+      };
 
-        await tester.pumpWidget(
-          _TestApp(deckLoader: loader, options: DeckOptions()),
-        );
-        await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpWidget(
+        _TestApp(deckLoader: loader, options: DeckOptions()),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
 
-        // Update with new options — should not fire the loader assert
-        await tester.pumpWidget(
-          _TestApp(deckLoader: loader, options: DeckOptions(debug: true)),
-        );
-        await tester.pump(const Duration(milliseconds: 50));
+      // Update with new options — should not fire the loader assert
+      await tester.pumpWidget(
+        _TestApp(deckLoader: loader, options: DeckOptions(debug: true)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
 
-        // Restore handler before any assertions
-        FlutterError.onError = originalHandler;
+      // Restore handler before any assertions
+      FlutterError.onError = originalHandler;
 
-        // Drain any queued test framework exceptions
-        while (tester.takeException() != null) {}
+      // Drain any queued test framework exceptions
+      while (tester.takeException() != null) {}
 
-        // No loader-change assertion errors should have been captured
-        expect(
-          loaderAssertErrors,
-          isEmpty,
-          reason: 'Changing options should not fire the deckLoader assert',
-        );
+      // No loader-change assertion errors should have been captured
+      expect(
+        loaderAssertErrors,
+        isEmpty,
+        reason: 'Changing options should not fire the deckLoader assert',
+      );
 
-        await loader.dispose();
-      },
-    );
+      await loader.dispose();
+    });
 
     // This test intentionally corrupts the widget tree, so it runs last.
     testWidgets('assert fires when deckLoader changes', (tester) async {

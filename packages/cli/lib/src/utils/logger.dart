@@ -1,7 +1,7 @@
 import 'package:mason_logger/mason_logger.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 
-final logger = Logger(theme: LogTheme(), level: Level.info);
+final logger = Logger(theme: LogTheme(), level: .info);
 
 extension LoggerX on Logger {
   void formatError(DeckFormatException exception) {
