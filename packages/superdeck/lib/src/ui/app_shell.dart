@@ -251,10 +251,7 @@ class _SplitViewState extends State<SplitView>
 
     return SDIconButton(
       icon: Icons.menu,
-      onPressed: () {
-        FocusManager.instance.primaryFocus?.unfocus();
-        deckController.presentation.openMenu();
-      },
+      onPressed: deckController.presentation.openMenu,
       semanticLabel: 'Open menu',
     );
   }
@@ -279,14 +276,10 @@ class _SplitViewState extends State<SplitView>
           isMenuOpen: isMenuOpen,
         ),
 
-        bottomNavigationBar: _MenuVisibilityGate(
-          key: const ValueKey<String>('superdeck-bottom-bar-menu-gate'),
-          visible: isMenuOpen,
-          child: SizeTransition(
-            axis: Axis.vertical,
-            sizeFactor: _curvedAnimation,
-            child: DeckBottomBar(actions: widget.actions),
-          ),
+        bottomNavigationBar: SizeTransition(
+          axis: Axis.vertical,
+          sizeFactor: _curvedAnimation,
+          child: DeckBottomBar(actions: widget.actions),
         ),
 
         // Body changes layout based on [isSmallLayout].
@@ -305,18 +298,12 @@ class _SplitViewState extends State<SplitView>
                         ),
                       ),
                       // Animated bottom panel
-                      _MenuVisibilityGate(
-                        key: const ValueKey<String>(
-                          'superdeck-bottom-panel-menu-gate',
-                        ),
-                        visible: isMenuOpen,
-                        child: SizeTransition(
-                          axis: Axis.vertical,
-                          sizeFactor: _curvedAnimation,
-                          child: SizedBox(
-                            height: 200,
-                            child: _buildPanel(context),
-                          ),
+                      SizeTransition(
+                        axis: Axis.vertical,
+                        sizeFactor: _curvedAnimation,
+                        child: SizedBox(
+                          height: 200,
+                          child: _buildPanel(context),
                         ),
                       ),
                     ],
@@ -324,18 +311,12 @@ class _SplitViewState extends State<SplitView>
                 : Row(
                     children: [
                       // Animated side panel
-                      _MenuVisibilityGate(
-                        key: const ValueKey<String>(
-                          'superdeck-side-panel-menu-gate',
-                        ),
-                        visible: isMenuOpen,
-                        child: SizeTransition(
-                          axis: Axis.horizontal,
-                          sizeFactor: _curvedAnimation,
-                          child: SizedBox(
-                            width: 300,
-                            child: _buildPanel(context),
-                          ),
+                      SizeTransition(
+                        axis: Axis.horizontal,
+                        sizeFactor: _curvedAnimation,
+                        child: SizedBox(
+                          width: 300,
+                          child: _buildPanel(context),
                         ),
                       ),
                       // Main slide content
@@ -418,24 +399,5 @@ class _SplitViewState extends State<SplitView>
         ),
       );
     });
-  }
-}
-
-class _MenuVisibilityGate extends StatelessWidget {
-  const _MenuVisibilityGate({
-    super.key,
-    required this.visible,
-    required this.child,
-  });
-
-  final bool visible;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: !visible,
-      child: ExcludeFocus(excluding: !visible, child: child),
-    );
   }
 }

@@ -5,7 +5,6 @@ import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/ui/app_shell.dart';
 import 'package:superdeck/src/ui/panels/bottom_bar.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
-import 'package:superdeck/src/ui/widgets/icon_button.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -69,27 +68,10 @@ final class _TestRuntimePlugin extends DeckRuntimePlugin {
 }
 
 Future<void> _openDeckMenu(WidgetTester tester) async {
-  await tester.tap(
-    find.byWidgetPredicate(
-      (widget) => widget is SDIconButton && widget.semanticLabel == 'Open menu',
-    ),
-  );
+  await tester.tap(find.bySemanticsLabel('Open menu'));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 250));
   await tester.pump();
-}
-
-bool _menuGateExcludesFocus(WidgetTester tester, String key) {
-  final gate = find.byKey(ValueKey<String>(key));
-  final excludeFocus = find.descendant(
-    of: gate,
-    matching: find.byType(ExcludeFocus),
-  );
-
-  return tester
-      .widgetList<ExcludeFocus>(excludeFocus)
-      .singleWhere((widget) => widget.child is SizeTransition)
-      .excluding;
 }
 
 void main() {
@@ -474,65 +456,6 @@ void main() {
 
       expect(errors, hasLength(1));
       expect(errors.single.exception, isA<StateError>());
-    });
-  });
-
-  group('AppShell focus handling', () {
-    testWidgets('collapsed menu excludes hidden controls from focus', (
-      tester,
-    ) async {
-      final loader = MockDeckLoader();
-      final controller = DeckController(
-        deckLoader: loader,
-        options: DeckOptions(),
-        transitionDuration: Duration.zero,
-      );
-      addTearDown(() async {
-        controller.dispose();
-        await loader.dispose();
-      });
-
-      await tester.pumpWidget(_AppShellHarness(controller: controller));
-      await tester.pump();
-      await tester.pump();
-
-      expect(
-        _menuGateExcludesFocus(tester, 'superdeck-bottom-bar-menu-gate'),
-        isTrue,
-      );
-      expect(
-        _menuGateExcludesFocus(tester, 'superdeck-side-panel-menu-gate'),
-        isTrue,
-      );
-
-      controller.presentation.openMenu();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 250));
-      await tester.pump();
-
-      expect(
-        _menuGateExcludesFocus(tester, 'superdeck-bottom-bar-menu-gate'),
-        isFalse,
-      );
-      expect(
-        _menuGateExcludesFocus(tester, 'superdeck-side-panel-menu-gate'),
-        isFalse,
-      );
-
-      controller.presentation.closeMenu();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 250));
-      await tester.pump();
-
-      expect(controller.presentation.isMenuOpen.value, isFalse);
-      expect(
-        _menuGateExcludesFocus(tester, 'superdeck-bottom-bar-menu-gate'),
-        isTrue,
-      );
-      expect(
-        _menuGateExcludesFocus(tester, 'superdeck-side-panel-menu-gate'),
-        isTrue,
-      );
     });
   });
 
