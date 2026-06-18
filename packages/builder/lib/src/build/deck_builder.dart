@@ -56,13 +56,21 @@ class DeckBuilder {
   ///
   /// The stream continues indefinitely, rebuilding on file changes.
   Stream<BuildEvent> watchAndBuild() async* {
-    yield const BuildStarted();
-    yield* _buildAndEmit();
-
-    final fileWatcher = FileWatcher(workspace.slidesFile);
-    await for (final _ in fileWatcher.watch()) {
+    final fileChanges = StreamIterator<void>(
+      FileWatcher(workspace.slidesFile).watch(),
+    );
+    var nextChange = fileChanges.moveNext();
+    try {
       yield const BuildStarted();
       yield* _buildAndEmit();
+
+      while (await nextChange) {
+        nextChange = fileChanges.moveNext();
+        yield const BuildStarted();
+        yield* _buildAndEmit();
+      }
+    } finally {
+      await fileChanges.cancel();
     }
   }
 
