@@ -230,6 +230,155 @@ Discuss release plan.
       expect(maxActiveTransforms, 1);
     });
 
+    test('runs build lifecycle hooks around content transforms', () async {
+      const markdown = '# First Slide\n\nOriginal content';
+      final events = <String>[];
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [
+          _LifecyclePlugin(
+            id: 'test.lifecycle',
+            onBegin: (_) {
+              events.add('begin');
+            },
+            onTransform: (block, _) {
+              events.add('transform');
+              return block;
+            },
+            onFinish: (_) {
+              events.add('finish');
+            },
+          ),
+        ],
+      );
+
+      await workspace.slidesFile.writeAsString(markdown);
+      await builder.build();
+
+      expect(events, ['begin', 'transform', 'finish']);
+    });
+
+    test('does not run finishBuild after transform failure', () async {
+      const markdown = '# First Slide\n\nOriginal content';
+      final events = <String>[];
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: store,
+        plugins: [
+          _LifecyclePlugin(
+            id: 'test.lifecycle-failure',
+            onBegin: (_) {
+              events.add('begin');
+            },
+            onTransform: (_, _) {
+              events.add('transform');
+              throw StateError('transform failed');
+            },
+            onFinish: (_) {
+              events.add('finish');
+            },
+          ),
+        ],
+      );
+
+      await workspace.slidesFile.writeAsString(markdown);
+
+      await expectLater(builder.build(), throwsA(isA<Exception>()));
+      expect(events, ['begin', 'transform']);
+    });
+
+    test('does not run finishBuild when saving references fails', () async {
+      const markdown = '# First Slide\n\nOriginal content';
+      final events = <String>[];
+      final failingStore = _FailingReferenceStore(
+        workspace: workspace,
+        onSaveReferences: () {
+          events.add('save-references');
+          throw StateError('save references failed');
+        },
+      );
+      final builder = DeckBuilder(
+        workspace: workspace,
+        store: failingStore,
+        plugins: [
+          _LifecyclePlugin(
+            id: 'test.lifecycle-save-failure',
+            onTransform: (block, _) {
+              events.add('transform');
+              return block;
+            },
+            onFinish: (_) {
+              events.add('finish');
+            },
+          ),
+        ],
+      );
+
+      await workspace.slidesFile.writeAsString(markdown);
+
+      await expectLater(builder.build(), throwsA(isA<StateError>()));
+      expect(events, ['transform', 'save-references']);
+    });
+
+    test(
+      'dispose waits for active plugin transforms before disposing',
+      () async {
+        const markdown = '# First Slide\n\nOriginal content';
+        final transformStarted = Completer<void>();
+        final releaseTransform = Completer<void>();
+        final events = <String>[];
+        var disposeCompleted = false;
+        final builder = DeckBuilder(
+          workspace: workspace,
+          store: store,
+          plugins: [
+            _LifecyclePlugin(
+              id: 'test.dispose-waits',
+              onTransform: (block, _) async {
+                events.add('transform-start');
+                transformStarted.complete();
+                await releaseTransform.future;
+                events.add('transform-end');
+
+                return block;
+              },
+              onDispose: () {
+                events.add('dispose');
+              },
+            ),
+          ],
+        );
+
+        await workspace.slidesFile.writeAsString(markdown);
+        final buildFuture = builder.build();
+        await transformStarted.future;
+
+        final disposeFuture = builder.dispose().whenComplete(() {
+          disposeCompleted = true;
+        });
+        await Future<void>.delayed(Duration.zero);
+
+        expect(disposeCompleted, isFalse);
+        expect(events, ['transform-start']);
+
+        releaseTransform.complete();
+        await buildFuture;
+        await disposeFuture;
+
+        expect(disposeCompleted, isTrue);
+        expect(events, ['transform-start', 'transform-end', 'dispose']);
+      },
+    );
+
+    test('build after dispose fails with StateError', () async {
+      final builder = DeckBuilder(workspace: workspace, store: store);
+
+      await builder.dispose();
+
+      await expectLater(builder.build(), throwsA(isA<StateError>()));
+    });
+
     test('disposes every build plugin even when one dispose fails', () async {
       var firstDisposed = false;
       var secondDisposed = false;
@@ -434,5 +583,63 @@ final class _DisposePlugin extends DeckBuildPlugin {
   @override
   void dispose() {
     onDispose();
+  }
+}
+
+final class _LifecyclePlugin extends DeckBuildPlugin {
+  @override
+  final String id;
+  final FutureOr<void> Function(DeckWorkspace workspace)? onBegin;
+  final FutureOr<ContentBlock> Function(
+    ContentBlock block,
+    DeckBuildContext context,
+  )?
+  onTransform;
+  final FutureOr<void> Function(DeckWorkspace workspace)? onFinish;
+  final FutureOr<void> Function()? onDispose;
+
+  const _LifecyclePlugin({
+    required this.id,
+    this.onBegin,
+    this.onTransform,
+    this.onFinish,
+    this.onDispose,
+  });
+
+  @override
+  FutureOr<void> beginBuild(DeckWorkspace workspace) {
+    return onBegin?.call(workspace);
+  }
+
+  @override
+  FutureOr<ContentBlock> transformContentBlock(
+    ContentBlock block,
+    DeckBuildContext context,
+  ) {
+    return onTransform?.call(block, context) ?? block;
+  }
+
+  @override
+  FutureOr<void> finishBuild(DeckWorkspace workspace) {
+    return onFinish?.call(workspace);
+  }
+
+  @override
+  FutureOr<void> dispose() {
+    return onDispose?.call();
+  }
+}
+
+final class _FailingReferenceStore extends DeckBuildStore {
+  final FutureOr<void> Function() onSaveReferences;
+
+  _FailingReferenceStore({
+    required super.workspace,
+    required this.onSaveReferences,
+  });
+
+  @override
+  Future<void> saveReferences(List<Slide> slides) async {
+    await onSaveReferences();
   }
 }

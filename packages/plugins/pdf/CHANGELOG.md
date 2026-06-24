@@ -1,3 +1,9 @@
+## Unreleased
+
+- Capture PDF slide images with good quality on all platforms.
+- Use `FileSaver.saveFile` for default PDF saves on web and Linux, and surface
+  unexpected save failures as export failures.
+
 ## 1.0.0
 
 - Extract PDF export support from `superdeck` into `superdeck_pdf`.

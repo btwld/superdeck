@@ -18,8 +18,10 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
     r'^[ ]{0,3}```mermaid[ \t]*\r?\n([\s\S]*?)\r?\n^[ ]{0,3}```[ \t]*$',
     multiLine: true,
   );
+  static final _generatedImagePattern = RegExp(r'^mermaid_.*\.png$');
 
   final MermaidGenerator _generator;
+  final Set<String> _activeImagePaths = <String>{};
 
   /// Creates a Mermaid build plugin.
   ///
@@ -54,6 +56,29 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
 
   @override
   String get id => 'superdeck.mermaid';
+
+  /// Clears build-scoped asset tracking before each build.
+  @override
+  void beginBuild(DeckWorkspace workspace) {
+    _activeImagePaths.clear();
+  }
+
+  /// Deletes Mermaid images that were not used by the successful build.
+  @override
+  Future<void> finishBuild(DeckWorkspace workspace) async {
+    final mermaidDir = Directory(
+      p.join(workspace.superdeckDir.path, 'mermaid'),
+    );
+    if (!await mermaidDir.exists()) return;
+
+    await for (final entity in mermaidDir.list()) {
+      if (entity is! File) continue;
+      if (!_generatedImagePattern.hasMatch(p.basename(entity.path))) continue;
+      if (_activeImagePaths.contains(p.normalize(entity.path))) continue;
+
+      await entity.delete();
+    }
+  }
 
   Future<String> _transformContentBlock(
     ContentBlock block,
@@ -117,6 +142,7 @@ final class MermaidBuildPlugin extends DeckBuildPlugin {
     final fileName = 'mermaid_$cacheKey.png';
     final outputFile = context.outputFile(p.posix.join('mermaid', fileName));
     final outputDir = outputFile.parent;
+    _activeImagePaths.add(p.normalize(outputFile.path));
 
     await outputDir.create(recursive: true);
     if (!await _hasCachedImage(outputFile)) {

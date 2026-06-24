@@ -11,6 +11,7 @@ class FakeSlideCaptureService extends SlideCaptureService {
   final Uint8List bytes;
 
   int captureFromKeyCalls = 0;
+  final List<SlideCaptureQuality> captureFromKeyQualities = [];
 
   @override
   Future<Uint8List> capture({
@@ -27,6 +28,7 @@ class FakeSlideCaptureService extends SlideCaptureService {
     required SlideCaptureQuality quality,
   }) async {
     captureFromKeyCalls++;
+    captureFromKeyQualities.add(quality);
     return bytes;
   }
 }

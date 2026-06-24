@@ -84,15 +84,21 @@ During a build, `DeckBuilder`:
 
 1. Initializes the `DeckBuildStore`
 2. Saves build status as `DeckBuildPhase.building`
-3. Reads deck Markdown from the store
-4. Parses raw slides into `Slide` models
-5. Applies build plugins to parsed content blocks
-6. Saves deck references
-7. Saves build status as `DeckBuildPhase.success`
+3. Calls `beginBuild` on each registered build plugin
+4. Reads deck Markdown from the store
+5. Parses raw slides into `Slide` models
+6. Applies build plugins to parsed content blocks
+7. Saves deck references
+8. Calls `finishBuild` on each registered build plugin after transforms and
+   reference saving succeed
+9. Saves build status as `DeckBuildPhase.success`
 
 ```dart
 final slides = await builder.build();
 ```
+
+Calls to `build()` are serialized for one builder instance. Calling `build()`
+after `dispose()` fails with a `StateError`.
 
 ### `watchAndBuild()`
 
@@ -126,6 +132,16 @@ await for (final event in builder.watchAndBuild()) {
   }
 }
 ```
+
+### `dispose()`
+
+```dart
+Future<void> dispose()
+```
+
+Disposes registered build plugins. `dispose()` first waits for the builder's
+serialized build queue to finish, so plugin resources are not released while a
+previously started build is still transforming content.
 
 ## Build events
 
@@ -171,18 +187,28 @@ final class ExampleBuildPlugin extends DeckBuildPlugin {
   String get id => 'example.build-plugin';
 
   @override
+  FutureOr<void> beginBuild(DeckWorkspace workspace) {
+    // Initialize build-scoped state.
+  }
+
+  @override
   FutureOr<ContentBlock> transformContentBlock(
     ContentBlock block,
     DeckBuildContext context,
   ) {
     return block;
   }
+
+  @override
+  FutureOr<void> finishBuild(DeckWorkspace workspace) {
+    // Finalize state after every transform succeeds.
+  }
 }
 ```
 
 Build plugins run after Markdown parsing and only receive `ContentBlock`s.
 Throw `DeckFormatException` when a failure should point back to invalid slide
-content.
+content. `finishBuild` is skipped when a transform or reference save fails.
 
 ## Errors
 

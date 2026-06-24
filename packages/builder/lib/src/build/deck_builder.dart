@@ -19,6 +19,8 @@ class DeckBuilder {
   final List<DeckBuildPlugin> plugins;
   final Logger _logger = Logger('DeckBuilder');
   Future<void> _lastBuild = Future<void>.value();
+  Future<void>? _disposeFuture;
+  bool _disposed = false;
 
   DeckBuilder({
     required this.workspace,
@@ -89,6 +91,12 @@ class DeckBuilder {
   }
 
   Future<Iterable<Slide>> build() {
+    if (_disposed) {
+      return Future<Iterable<Slide>>.error(
+        StateError('DeckBuilder has been disposed.'),
+      );
+    }
+
     final buildFuture = _lastBuild.then((_) => _build());
     _lastBuild = buildFuture.then<void>((_) {}).catchError((_) {});
 
@@ -99,6 +107,7 @@ class DeckBuilder {
     _logger.info('Starting build...');
     await store.initialize();
     await store.saveBuildStatus(phase: DeckBuildPhase.building);
+    await _beginBuildPlugins();
 
     final markdownRaw = await store.readDeckMarkdown();
     final rawSlides = MarkdownParser().parse(markdownRaw);
@@ -115,6 +124,7 @@ class DeckBuilder {
     final slides = await _applyBuildPlugins(parsedSlides);
 
     await store.saveReferences(slides);
+    await _finishBuildPlugins();
     await store.saveBuildStatus(
       phase: DeckBuildPhase.success,
       slideCount: slides.length,
@@ -124,7 +134,19 @@ class DeckBuilder {
     return slides;
   }
 
-  Future<void> dispose() async {
+  Future<void> dispose() {
+    final disposeFuture = _disposeFuture;
+    if (disposeFuture != null) return disposeFuture;
+
+    _disposed = true;
+    _disposeFuture = _dispose();
+
+    return _disposeFuture!;
+  }
+
+  Future<void> _dispose() async {
+    await _lastBuild;
+
     for (final plugin in plugins) {
       try {
         await plugin.dispose();
@@ -135,6 +157,18 @@ class DeckBuilder {
           stackTrace,
         );
       }
+    }
+  }
+
+  Future<void> _beginBuildPlugins() async {
+    for (final plugin in plugins) {
+      await plugin.beginBuild(workspace);
+    }
+  }
+
+  Future<void> _finishBuildPlugins() async {
+    for (final plugin in plugins) {
+      await plugin.finishBuild(workspace);
     }
   }
 

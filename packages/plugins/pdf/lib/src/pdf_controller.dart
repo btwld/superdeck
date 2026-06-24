@@ -175,9 +175,7 @@ class PdfController {
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await slideCaptureService.captureFromKey(
-          quality: kIsWeb
-              ? SlideCaptureQuality.thumbnail
-              : SlideCaptureQuality.good,
+          quality: SlideCaptureQuality.good,
           key: key,
         );
       } catch (error) {
@@ -322,28 +320,80 @@ class PdfController {
 /// Default [PdfSaver] that uses [FileSaver] to save via platform dialog.
 Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
   final saver = FileSaver.instance;
+
+  return savePdfWithFileSaverForTesting(
+    pdf: pdf,
+    fileName: fileName,
+    isWeb: kIsWeb,
+    targetPlatform: defaultTargetPlatform,
+    saveFile:
+        ({
+          required String name,
+          required Uint8List bytes,
+          required String ext,
+          required MimeType mimeType,
+        }) {
+          return saver.saveFile(
+            name: name,
+            bytes: bytes,
+            ext: ext,
+            mimeType: mimeType,
+          );
+        },
+    saveAs:
+        ({
+          required String name,
+          required Uint8List bytes,
+          required String ext,
+          required MimeType mimeType,
+        }) {
+          return saver.saveAs(
+            name: name,
+            bytes: bytes,
+            ext: ext,
+            mimeType: mimeType,
+          );
+        },
+  );
+}
+
+/// Saves PDF bytes through [FileSaver] platform operations.
+///
+/// This is public only for package tests; callers should use
+/// [PdfExportOptions.pdfSaver] to customize saving behavior.
+@visibleForTesting
+Future<bool> savePdfWithFileSaverForTesting({
+  required Uint8List pdf,
+  required String fileName,
+  required bool isWeb,
+  required TargetPlatform targetPlatform,
+  required Future<String> Function({
+    required String name,
+    required Uint8List bytes,
+    required String ext,
+    required MimeType mimeType,
+  })
+  saveFile,
+  required Future<String?> Function({
+    required String name,
+    required Uint8List bytes,
+    required String ext,
+    required MimeType mimeType,
+  })
+  saveAs,
+}) async {
   const ext = 'pdf';
   const mime = MimeType.pdf;
 
-  // Web doesn't support saveAs (throws UnimplementedError),
-  // so use saveFile which triggers a browser download.
-  if (kIsWeb) {
-    try {
-      await saver.saveFile(
-        name: fileName,
-        bytes: pdf,
-        ext: ext,
-        mimeType: mime,
-      );
-      // Browsers do not expose download completion or cancellation here, so a
-      // successful handoff to the browser download flow is best-effort success.
-      return true;
-    } catch (_) {
-      return false;
-    }
+  // Web does not expose download completion or cancellation here, so a
+  // successful handoff to the browser download flow is best-effort success.
+  // Linux does not support FileSaver.saveAs; saveFile writes to downloads.
+  if (isWeb || targetPlatform == TargetPlatform.linux) {
+    await saveFile(name: fileName, bytes: pdf, ext: ext, mimeType: mime);
+    return true;
   }
 
-  final result = await saver.saveAs(
+  final result = await saveAs(
     name: fileName,
     bytes: pdf,
     ext: ext,

@@ -96,6 +96,12 @@ abstract base class DeckBuildPlugin extends DeckPlugin {
   @override
   String get id;
 
+  /// Called once before content transforms run for a build.
+  ///
+  /// Override this to initialize build-scoped plugin state. The default
+  /// implementation does nothing.
+  FutureOr<void> beginBuild(DeckWorkspace workspace) {}
+
   /// Transforms a parsed content [block].
   ///
   /// The default implementation returns [block] unchanged. Override this method
@@ -109,6 +115,13 @@ abstract base class DeckBuildPlugin extends DeckPlugin {
   ) {
     return block;
   }
+
+  /// Called once after all content transforms complete successfully.
+  ///
+  /// Override this to finalize build-scoped plugin state, such as cleaning up
+  /// generated files that were not used by the successful build. This hook is
+  /// not called when a content transform fails.
+  FutureOr<void> finishBuild(DeckWorkspace workspace) {}
 
   /// Releases resources owned by this plugin.
   ///

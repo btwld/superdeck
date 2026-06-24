@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
@@ -244,6 +245,51 @@ void main() {
         expect(exportController.exportError.value, contains('disk full'));
       });
 
+      testWidgets('web file saver exceptions mark export as failed', (
+        tester,
+      ) async {
+        final exportController = createExportController(
+          pdfSaver: (pdf) {
+            return savePdfWithFileSaverForTesting(
+              pdf: pdf,
+              fileName: 'slides',
+              isWeb: true,
+              targetPlatform: TargetPlatform.macOS,
+              saveFile:
+                  ({
+                    required String name,
+                    required Uint8List bytes,
+                    required String ext,
+                    required MimeType mimeType,
+                  }) async {
+                    throw StateError('browser download failed');
+                  },
+              saveAs:
+                  ({
+                    required String name,
+                    required Uint8List bytes,
+                    required String ext,
+                    required MimeType mimeType,
+                  }) async {
+                    fail('saveAs should not be used for web PDF export');
+                  },
+            );
+          },
+        );
+
+        await tester.pumpWidget(_buildExportHarness(exportController));
+        await tester.pump();
+
+        final error = await _runExportAndPump(tester, exportController);
+
+        expect(error, isNull);
+        expect(exportController.exportStatus.value, PdfExportStatus.failed);
+        expect(
+          exportController.exportError.value,
+          contains('browser download failed'),
+        );
+      });
+
       testWidgets(
         'dispose during in-flight saver does not write to disposed signals',
         (tester) async {
@@ -332,9 +378,55 @@ void main() {
         expect(exportController.exportStatus.value, PdfExportStatus.complete);
         expect(exportController.capturedImageCountForTesting, 0);
         expect(captureService.captureFromKeyCalls, testSlides.length);
+        expect(
+          captureService.captureFromKeyQualities,
+          everyElement(SlideCaptureQuality.good),
+        );
         expect(savedPdf, isNotNull);
         expect(savedPdf, isNotEmpty);
         expect(String.fromCharCodes(savedPdf!.take(4)), '%PDF');
+      });
+    });
+
+    group('Default saver', () {
+      test('uses saveFile instead of saveAs on Linux', () async {
+        final calls = <String>[];
+
+        final saved = await savePdfWithFileSaverForTesting(
+          pdf: Uint8List.fromList([1, 2, 3]),
+          fileName: 'slides',
+          isWeb: false,
+          targetPlatform: TargetPlatform.linux,
+          saveFile:
+              ({
+                required String name,
+                required Uint8List bytes,
+                required String ext,
+                required MimeType mimeType,
+              }) async {
+                calls.add('saveFile');
+                expect(name, 'slides');
+                expect(bytes, [1, 2, 3]);
+                expect(ext, 'pdf');
+                expect(mimeType, MimeType.pdf);
+
+                return '/tmp/slides.pdf';
+              },
+          saveAs:
+              ({
+                required String name,
+                required Uint8List bytes,
+                required String ext,
+                required MimeType mimeType,
+              }) async {
+                calls.add('saveAs');
+
+                return '/tmp/save-as.pdf';
+              },
+        );
+
+        expect(saved, isTrue);
+        expect(calls, ['saveFile']);
       });
     });
 

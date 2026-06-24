@@ -85,6 +85,88 @@ void main() {
       },
     );
 
+    test('preserves active cached images during cleanup', () async {
+      final generator = _FakeMermaidGenerator();
+      final plugin = MermaidBuildPlugin(generator: generator);
+      final source = ContentBlock('```mermaid\ngraph TD\nA --> B\n```');
+
+      final first = await plugin.transformContentBlock(source, context);
+      final imageFile = File(
+        p.join(tempDir.path, _extractImagePath(first.content)),
+      );
+
+      plugin.beginBuild(workspace);
+      final second = await plugin.transformContentBlock(source, context);
+      await plugin.finishBuild(workspace);
+
+      expect(
+        _extractImagePath(second.content),
+        _extractImagePath(first.content),
+      );
+      expect(await imageFile.exists(), isTrue);
+      expect(generator.renderCount, 1);
+    });
+
+    test('deletes stale generated images after a successful build', () async {
+      final generator = _FakeMermaidGenerator();
+      final plugin = MermaidBuildPlugin(generator: generator);
+      final staleImage = await _writeGeneratedImage(
+        workspace,
+        'mermaid_stale.png',
+      );
+      final source = ContentBlock('```mermaid\ngraph TD\nA --> B\n```');
+
+      plugin.beginBuild(workspace);
+      final block = await plugin.transformContentBlock(source, context);
+      await plugin.finishBuild(workspace);
+
+      final activeImage = File(
+        p.join(tempDir.path, _extractImagePath(block.content)),
+      );
+      expect(await staleImage.exists(), isFalse);
+      expect(await activeImage.exists(), isTrue);
+    });
+
+    test(
+      'deletes stale generated images when a successful build has no diagrams',
+      () async {
+        final plugin = MermaidBuildPlugin(generator: _FakeMermaidGenerator());
+        final staleImage = await _writeGeneratedImage(
+          workspace,
+          'mermaid_stale.png',
+        );
+
+        plugin.beginBuild(workspace);
+        final block = await plugin.transformContentBlock(
+          ContentBlock('No Mermaid diagrams here.'),
+          context,
+        );
+        await plugin.finishBuild(workspace);
+
+        expect(block.content, 'No Mermaid diagrams here.');
+        expect(await staleImage.exists(), isFalse);
+      },
+    );
+
+    test('does not clean stale images after a failed transform', () async {
+      final plugin = MermaidBuildPlugin(generator: _FailingMermaidGenerator());
+      final staleImage = await _writeGeneratedImage(
+        workspace,
+        'mermaid_stale.png',
+      );
+
+      plugin.beginBuild(workspace);
+      await expectLater(
+        () => plugin.transformContentBlock(
+          ContentBlock('```mermaid\ngraph TD\nA --> B\n```'),
+          context,
+        ),
+        throwsA(isA<DeckFormatException>()),
+      );
+
+      expect(await staleImage.exists(), isTrue);
+    });
+
     test('rerenders empty cached image files', () async {
       final generator = _FakeMermaidGenerator();
       final plugin = MermaidBuildPlugin(generator: generator);
@@ -238,19 +320,22 @@ void main() {
         expect(generator.renderCount, 1);
       });
 
-      test('4-space indented fence is a code block and is not transformed', () async {
-        final generator = _FakeMermaidGenerator();
-        final plugin = MermaidBuildPlugin(generator: generator);
-        const content = '    ```mermaid\ngraph TD\nA --> B\n    ```';
+      test(
+        '4-space indented fence is a code block and is not transformed',
+        () async {
+          final generator = _FakeMermaidGenerator();
+          final plugin = MermaidBuildPlugin(generator: generator);
+          const content = '    ```mermaid\ngraph TD\nA --> B\n    ```';
 
-        final block = await plugin.transformContentBlock(
-          ContentBlock(content),
-          context,
-        );
+          final block = await plugin.transformContentBlock(
+            ContentBlock(content),
+            context,
+          );
 
-        expect(block.content, content);
-        expect(generator.renderCount, 0);
-      });
+          expect(block.content, content);
+          expect(generator.renderCount, 0);
+        },
+      );
 
       test('tab-indented fence is not transformed', () async {
         final generator = _FakeMermaidGenerator();
@@ -304,6 +389,17 @@ String _extractImagePath(String content) {
   final match = RegExp(r'!\[Mermaid diagram\]\(([^)]+)\)').firstMatch(content);
 
   return match!.group(1)!;
+}
+
+Future<File> _writeGeneratedImage(
+  DeckWorkspace workspace,
+  String fileName,
+) async {
+  final file = File(p.join(workspace.superdeckDir.path, 'mermaid', fileName));
+  await file.parent.create(recursive: true);
+  await file.writeAsBytes(const [9, 8, 7], flush: true);
+
+  return file;
 }
 
 String _cacheKey(

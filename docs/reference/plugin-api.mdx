@@ -121,12 +121,16 @@ abstract base class DeckBuildPlugin extends DeckPlugin {
 
   String get id;
 
+  FutureOr<void> beginBuild(DeckWorkspace workspace) {}
+
   FutureOr<ContentBlock> transformContentBlock(
     ContentBlock block,
     DeckBuildContext context,
   ) {
     return block;
   }
+
+  FutureOr<void> finishBuild(DeckWorkspace workspace) {}
 
   FutureOr<void> dispose() {}
 }
@@ -142,6 +146,11 @@ original `block` when no changes are needed. Return
 
 Throw `DeckFormatException` when the failure comes from invalid slide content
 and should point users back to `slides.md`.
+
+Override `beginBuild` to initialize state for one build and `finishBuild` to
+finalize state after plugin transforms and reference saving succeed.
+`finishBuild` is not called when a transform or reference save fails, which lets
+plugins avoid cleaning or publishing partial build output.
 
 Override `dispose` when the plugin owns browsers, files, or other long-lived
 resources.
