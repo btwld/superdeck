@@ -28,7 +28,7 @@ void main() {
       () async {
         final workspace = DeckWorkspace(projectDir: tempDir.path);
         final store = DeckBuildStore(workspace: workspace);
-        final plugin = MermaidBuildPlugin();
+        final plugin = _createMermaidBuildPlugin();
         final builder = DeckBuilder(
           workspace: workspace,
           store: store,
@@ -84,7 +84,7 @@ graph TD
       () async {
         final workspace = DeckWorkspace(projectDir: tempDir.path);
         final store = DeckBuildStore(workspace: workspace);
-        final plugin = MermaidBuildPlugin();
+        final plugin = _createMermaidBuildPlugin();
         final builder = DeckBuilder(
           workspace: workspace,
           store: store,
@@ -123,6 +123,20 @@ graph TD
 }
 
 const _pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+
+MermaidBuildPlugin _createMermaidBuildPlugin() {
+  if (Platform.environment['CI'] != 'true') {
+    return MermaidBuildPlugin();
+  }
+
+  return MermaidBuildPlugin(
+    generator: MermaidGenerator(
+      launchOptions: const {
+        'args': ['--no-sandbox', '--disable-setuid-sandbox'],
+      },
+    ),
+  );
+}
 
 String _extractImagePath(String content) {
   final match = RegExp(r'!\[Mermaid diagram\]\(([^)]+)\)').firstMatch(content);
