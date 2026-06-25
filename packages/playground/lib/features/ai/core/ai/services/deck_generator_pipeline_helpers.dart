@@ -1,6 +1,6 @@
 part of 'deck_generator_service.dart';
 
-/// Sanitizes a slide key for safe filesystem use.
+/// Sanitizes a slide key for safe use as a filename component.
 ///
 /// Removes or replaces characters that are invalid in filenames across
 /// common filesystems (Windows, macOS, Linux).
@@ -13,58 +13,6 @@ String _fileSafeKey(String key, int index) {
       .replaceAll(RegExp(r'-{2,}'), '-') // Collapse multiple dashes
       .replaceAll(RegExp(r'^[-.]+|[-.]+$'), ''); // Trim leading/trailing
   return cleaned.isEmpty ? 'slide-$index' : cleaned;
-}
-
-/// Removes stale asset files that don't match current slide keys.
-Future<void> _cleanupStaleAssets(List<Map<String, dynamic>> slides) async {
-  final assetsDir = Directory(Paths.superdeckAssetsPath);
-  if (!await assetsDir.exists()) return;
-
-  // Build set of valid filenames using sanitized keys
-  final validThumbnails = <String>{};
-  final validIllustrations = <String>{};
-  final referencedAssets = referencedGeneratedAssetFilenames(slides);
-
-  for (var i = 0; i < slides.length; i++) {
-    final key = slides[i]['key']?.toString();
-    if (key == null) continue;
-    final safeKey = _fileSafeKey(key, i);
-    validThumbnails.add('thumbnail_$safeKey.png');
-    validIllustrations.add('slide-$safeKey-illustration.png');
-  }
-
-  try {
-    await for (final entity in assetsDir.list()) {
-      if (entity is! File) continue;
-
-      final filename = p.basename(entity.path);
-      if (filename == '.gitkeep') continue;
-
-      var shouldDelete = false;
-
-      if (filename.startsWith('thumbnail_')) {
-        shouldDelete = !validThumbnails.contains(filename);
-      } else if (filename.startsWith('slide-') &&
-          filename.endsWith('-illustration.png')) {
-        shouldDelete =
-            !validIllustrations.contains(filename) &&
-            !referencedAssets.contains(filename);
-      } else if (filename.startsWith('slide-') &&
-          filename.endsWith('-bg.png')) {
-        shouldDelete = !referencedAssets.contains(filename);
-      }
-
-      if (shouldDelete) {
-        try {
-          await entity.delete();
-        } catch (e) {
-          debugLog.log('CLEANUP', 'Could not delete $filename: $e');
-        }
-      }
-    }
-  } catch (e) {
-    debugLog.log('CLEANUP', 'Could not list assets directory: $e');
-  }
 }
 
 @visibleForTesting
@@ -120,10 +68,15 @@ class _ImageGenerationResults {
   const _ImageGenerationResults({
     required this.successes,
     required this.failures,
+    required this.bytes,
   });
 
+  /// Maps slide key -> bare asset filename (e.g. "slide-intro-illustration.png").
   final Map<String, String> successes;
   final Map<String, String> failures;
+
+  /// Maps bare asset filename -> PNG bytes.
+  final Map<String, Uint8List> bytes;
 }
 
 List<Map<String, dynamic>> _sanitizeSlides(List<Map<String, dynamic>> slides) {

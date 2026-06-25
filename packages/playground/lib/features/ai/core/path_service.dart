@@ -1,14 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+
+// dart:io is only available on non-web targets.
+import 'path_service_io.dart' if (dart.library.html) 'path_service_web.dart';
 
 /// Platform-aware path resolution service.
 ///
 /// Resolves the SuperDeck storage directory to:
 /// - Desktop: cwd/.superdeck (matches SuperDeck viewer's DeckWorkspace)
 /// - Mobile/sandboxed: getApplicationSupportDirectory()/.superdeck
+/// - Web: always '.superdeck' (not used for I/O on web)
 ///
 /// Must be initialized at app startup via [initialize()].
 class PathService {
@@ -22,10 +23,6 @@ class PathService {
   bool get isInitialized => _initialized;
 
   /// Initializes the service. Must be called at app startup.
-  ///
-  /// On desktop (macOS/Linux/Windows), uses CWD-relative `.superdeck/` to
-  /// match the SuperDeck viewer's path resolution. On mobile/sandboxed
-  /// platforms, uses Application Support directory.
   Future<void> initialize() async {
     if (_initialized) return;
 
@@ -35,17 +32,7 @@ class PathService {
       return;
     }
 
-    if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
-      _baseDir = '.superdeck';
-    } else {
-      try {
-        final appSupportDir = await getApplicationSupportDirectory();
-        _baseDir = p.join(appSupportDir.path, '.superdeck');
-      } catch (_) {
-        _baseDir = '.superdeck';
-      }
-    }
-
+    _baseDir = await resolveBaseDir();
     _initialized = true;
   }
 

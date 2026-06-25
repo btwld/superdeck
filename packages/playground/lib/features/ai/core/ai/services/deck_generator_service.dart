@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter/foundation.dart';
 import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
-import 'package:path/path.dart' as p;
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:playground/features/ai/core/ai/prompts/examples_loader.dart';
 import 'package:playground/features/ai/core/ai/prompts/image_style_prompts.dart';
@@ -21,9 +19,7 @@ import 'package:playground/features/ai/core/ai/services/retry_policy.dart';
 import 'package:playground/features/ai/core/ai/services/slide_key_utils.dart';
 import 'package:playground/features/ai/core/ai/services/style_json_serializer.dart';
 import 'package:playground/features/ai/core/constants/gemini_models.dart';
-import 'package:playground/features/ai/core/constants/paths.dart';
 import 'package:playground/features/ai/core/debug_logger.dart';
-import 'package:playground/features/ai/core/tools/deck_document_store.dart';
 
 part 'deck_generator_pipeline.dart';
 part 'deck_generator_pipeline_helpers.dart';
@@ -34,24 +30,25 @@ class DeckGenerationResult {
   const DeckGenerationResult._({
     required this.success,
     this.message,
-    this.path,
     this.error,
-    this.slideCount,
+    List<Slide>? slides,
+    Map<String, Uint8List>? images,
     this.style,
     this.imageFailures,
-  });
+  }) : slides = slides ?? const [],
+       images = images ?? const {};
 
   DeckGenerationResult.success({
-    required String path,
-    required int slideCount,
+    required List<Slide> slides,
+    Map<String, Uint8List> images = const {},
     DeckStyleType? style,
     Map<String, String>? imageFailures,
   }) : this._(
          success: true,
          message:
-             'Successfully generated presentation with $slideCount slides.',
-         path: path,
-         slideCount: slideCount,
+             'Successfully generated presentation with ${slides.length} slides.',
+         slides: slides,
+         images: images,
          style: style,
          imageFailures: imageFailures,
        );
@@ -61,9 +58,13 @@ class DeckGenerationResult {
 
   final bool success;
   final String? message;
-  final String? path;
   final String? error;
-  final int? slideCount;
+
+  /// Generated slides (in-memory, not written to disk).
+  final List<Slide> slides;
+
+  /// Generated image bytes keyed by bare asset filename (e.g. slide-intro-illustration.png).
+  final Map<String, Uint8List> images;
 
   /// Style configuration extracted from the generated deck.
   final DeckStyleType? style;
@@ -71,6 +72,9 @@ class DeckGenerationResult {
   /// Images that failed to generate, keyed by slide key.
   /// Null if no images were requested or all succeeded.
   final Map<String, String>? imageFailures;
+
+  /// Number of slides in the result.
+  int get slideCount => slides.length;
 
   /// Whether all requested images were generated successfully.
   bool get allImagesGenerated =>
@@ -81,10 +85,12 @@ class _ImagePhaseData {
   const _ImagePhaseData({
     required this.availableImages,
     required this.imageFailures,
+    required this.imageBytes,
   });
 
   final Map<String, String> availableImages;
   final Map<String, String>? imageFailures;
+  final Map<String, Uint8List> imageBytes;
 }
 
 /// Service that generates SuperDeck presentations using Google Generative AI.
@@ -116,6 +122,11 @@ class DeckGeneratorService {
   /// Retry policy for transient generation failures.
   final RetryPolicy retryPolicy;
 
+  // In-memory storage of the last generation request for regeneration.
+  String? _lastPrompt;
+  String? _lastImageStyleId;
+  String? _lastBackgroundColor;
+
   /// Generates a presentation deck from a natural language prompt.
   ///
   /// The [prompt] should describe the presentation requirements including:
@@ -138,12 +149,10 @@ class DeckGeneratorService {
     GenerationProgressCallback? onProgress,
     bool Function()? isCancelled,
   }) async {
-    if (kIsWeb) {
-      return DeckGenerationResult.failure(
-        'Presentation file generation is not available on web yet. '
-        'Use macOS/Linux/Windows for slide generation.',
-      );
-    }
+    // Store last generation request for regeneration.
+    _lastPrompt = prompt;
+    _lastImageStyleId = imageStyleId;
+    _lastBackgroundColor = backgroundColor;
 
     _logPipelineConfig(
       this,
@@ -212,6 +221,7 @@ class DeckGeneratorService {
         this,
         deckJson: deckJson,
         availableImages: imagePhase.availableImages,
+        imageBytes: imagePhase.imageBytes,
         imageFailures: imagePhase.imageFailures,
         pipelineStart: pipelineStart,
         onProgress: onProgress,
@@ -231,57 +241,27 @@ class DeckGeneratorService {
     }
   }
 
-  /// Regenerates from the last saved generation metadata.
+  /// Regenerates from the last in-memory generation request.
   ///
-  /// Reads prompt and parameters (imageStyleId, backgroundColor) from
-  /// the metadata JSON saved during the previous generation.
-  /// Falls back to plain prompt file if metadata is unavailable.
+  /// Uses the prompt and parameters stored from the previous [generate] call.
+  /// Returns a failure result if no previous generation has been performed.
   Future<DeckGenerationResult> regenerateFromLastPrompt({
     GenerationProgressCallback? onProgress,
     bool Function()? isCancelled,
   }) async {
-    if (kIsWeb) {
-      return DeckGenerationResult.failure(
-        'Regenerate from local files is not available on web yet. '
-        'Use macOS/Linux/Windows for this action.',
-      );
-    }
-
-    // Try metadata JSON first (has full parameters)
-    final metadataFile = File(Paths.lastGenerationPath);
-    if (await metadataFile.exists()) {
-      try {
-        final json =
-            jsonDecode(await metadataFile.readAsString())
-                as Map<String, dynamic>;
-        final prompt = json['prompt'] as String?;
-        if (prompt != null && prompt.trim().isNotEmpty) {
-          return generate(
-            prompt,
-            imageStyleId: json['imageStyleId'] as String?,
-            backgroundColor: json['backgroundColor'] as String?,
-            onProgress: onProgress,
-            isCancelled: isCancelled,
-          );
-        }
-      } catch (e) {
-        debugLog.log('DECK_GEN', 'Failed to read metadata, falling back: $e');
-      }
-    }
-
-    // Fallback to plain prompt file
-    final promptFile = File(Paths.lastPromptPath);
-    if (!await promptFile.exists()) {
+    final prompt = _lastPrompt;
+    if (prompt == null || prompt.trim().isEmpty) {
       return DeckGenerationResult.failure(
         'No previous prompt found. Complete the wizard at least once.',
       );
     }
 
-    final prompt = await promptFile.readAsString();
-    if (prompt.trim().isEmpty) {
-      return DeckGenerationResult.failure('Previous prompt file is empty.');
-    }
-
-    return generate(prompt, onProgress: onProgress, isCancelled: isCancelled);
+    return generate(
+      prompt,
+      imageStyleId: _lastImageStyleId,
+      backgroundColor: _lastBackgroundColor,
+      onProgress: onProgress,
+      isCancelled: isCancelled,
+    );
   }
 }

@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:playground/features/ai/core/ai/catalog/catalog.dart';
 import 'package:playground/features/ai/core/ai/wizard_context.dart';
@@ -9,7 +6,6 @@ import 'package:playground/features/ai/core/ai/services/generation_progress.dart
 import 'package:playground/features/ai/core/ai/services/genui_conversation_viewmodel.dart';
 import 'package:playground/features/ai/core/ai/services/prompt_builder.dart';
 import 'package:playground/features/ai/core/env_config.dart';
-import 'package:playground/features/ai/core/constants/paths.dart';
 import 'package:playground/features/ai/core/debug_logger.dart';
 
 // Re-export message types for consumers of ChatViewModel.
@@ -27,6 +23,11 @@ class ChatViewModel extends GenUiConversationViewModel {
         promptLoadErrorMessage:
             'Unable to load conversation prompts. Please restart the app.',
       );
+
+  // In-memory storage of last generation params (no disk).
+  String? _lastPrompt;
+  String? _lastImageStyleId;
+  String? _lastBackgroundColor;
 
   /// Generates presentation directly from wizard context.
   ///
@@ -49,9 +50,10 @@ class ChatViewModel extends GenUiConversationViewModel {
     final imageStyleId = context.imageStyleId;
     final backgroundColor = context.colors?.firstOrNull;
 
-    // Save generation metadata before starting pipeline so regeneration
-    // works even if this attempt fails.
-    await _saveGenerationMetadata(prompt, imageStyleId, backgroundColor);
+    // Store generation metadata in-memory for potential regeneration.
+    _lastPrompt = prompt;
+    _lastImageStyleId = imageStyleId;
+    _lastBackgroundColor = backgroundColor;
 
     final result = await service.generate(
       prompt,
@@ -64,51 +66,25 @@ class ChatViewModel extends GenUiConversationViewModel {
     return result;
   }
 
-  /// Regenerates presentation from the last saved prompt and parameters.
+  /// Regenerates presentation from the last in-memory prompt and parameters.
   Future<DeckGenerationResult> regenerateFromLastPrompt(
     GenerationProgressCallback? onProgress, {
     bool Function()? isCancelled,
   }) async {
+    final prompt = _lastPrompt;
+    if (prompt == null || prompt.trim().isEmpty) {
+      return DeckGenerationResult.failure(
+        'No previous prompt found. Complete the wizard at least once.',
+      );
+    }
+
     final service = DeckGeneratorService(apiKey: EnvConfig.geminiApiKey);
-    return service.regenerateFromLastPrompt(
+    return service.generate(
+      prompt,
+      imageStyleId: _lastImageStyleId,
+      backgroundColor: _lastBackgroundColor,
       onProgress: onProgress,
       isCancelled: isCancelled,
     );
-  }
-
-  /// Persists generation parameters so regeneration works even after failure.
-  Future<void> _saveGenerationMetadata(
-    String prompt,
-    String? imageStyleId,
-    String? backgroundColor,
-  ) async {
-    if (kIsWeb) {
-      debugLog.log(
-        'GEN',
-        'Skipping local metadata persistence on web runtime.',
-      );
-      return;
-    }
-
-    try {
-      final metadata = <String, dynamic>{
-        'prompt': prompt,
-        if (imageStyleId case final styleId?) 'imageStyleId': styleId,
-        if (backgroundColor case final bgColor?) 'backgroundColor': bgColor,
-      };
-      await Directory(Paths.superdeckDir).create(recursive: true);
-      final metadataFile = File(Paths.lastGenerationPath);
-      await metadataFile.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(metadata),
-      );
-      // Also save plain prompt for human readability
-      await File(Paths.lastPromptPath).writeAsString(prompt);
-    } catch (e) {
-      debugLog.log(
-        'GEN',
-        'Failed to save generation metadata '
-            '(${Paths.lastGenerationPath}, ${Paths.lastPromptPath}): $e',
-      );
-    }
   }
 }

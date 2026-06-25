@@ -4,6 +4,8 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
+import 'package:playground/features/ai/core/utils/color_utils.dart';
 
 /// Curated font families surfaced in the playground's customization sidebar.
 const playgroundFontFamilies = <String>[
@@ -208,6 +210,32 @@ class DeckCustomizationStore {
         return FontWeight.w900;
     }
     return FontWeight.w400;
+  }
+
+  /// Applies an AI-generated [DeckStyleType] to the store's signals.
+  ///
+  /// Maps:
+  /// - `style.colors.background` → [background]
+  /// - `style.colors.heading` + `style.fonts.headline` → h1 / h2 / h3 color & family
+  /// - `style.colors.body` + `style.fonts.body` → p color & family
+  ///
+  /// The reactive effect will push updated [DeckOptions] to the controller.
+  void applyFromAiStyle(DeckStyleType style) {
+    final bgColor = hexToColor(style.colors.background);
+    final headingColor = hexToColor(style.colors.heading);
+    final bodyColor = hexToColor(style.colors.body);
+    final headlineFamily = style.fonts.headline.fontFamily;
+    final bodyFamily = style.fonts.body.fontFamily;
+
+    background.value = bgColor;
+
+    for (final lvl in [TextLevel.h1, TextLevel.h2, TextLevel.h3]) {
+      levels[lvl]!.color.value = headingColor;
+      levels[lvl]!.family.value = headlineFamily;
+    }
+
+    levels[TextLevel.p]!.color.value = bodyColor;
+    levels[TextLevel.p]!.family.value = bodyFamily;
   }
 
   void dispose() {

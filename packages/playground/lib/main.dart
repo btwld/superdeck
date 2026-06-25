@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
+import 'package:playground/stores/ai_store.dart';
 import 'package:playground/stores/deck_customization_store.dart';
 import 'package:playground/stores/editor_state.dart';
 import 'package:playground/utils/memory_asset_cache_store.dart';
 import 'package:playground/utils/memory_deck_loader.dart';
+import 'package:playground/utils/text_editor_controller.dart';
 import 'package:playground/features/presentation/presentation_page.dart';
 import 'package:playground/utils/takeover_route.dart';
 import 'package:playground/features/editor/editor_page.dart';
@@ -65,11 +67,13 @@ class _ProvidersState extends State<_Providers> {
     return MultiProvider(
       providers: [
         Provider<MemoryDeckLoader>(create: (_) => MemoryDeckLoader()),
+        // Shared asset cache store — used by both DeckController and AiStore.
+        Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
         Provider<DeckController>(
           create: (context) => DeckController(
             deckLoader: context.read<MemoryDeckLoader>(),
             options: .new(),
-            assetCacheStore: MemoryAssetCacheStore(),
+            assetCacheStore: context.read<MemoryAssetCacheStore>(),
           ),
         ),
         Provider<DeckCustomizationStore>(
@@ -80,6 +84,19 @@ class _ProvidersState extends State<_Providers> {
         Provider<EditorState>(
           create: (_) => EditorState(),
           dispose: (_, state) => state.dispose(),
+        ),
+        Provider<TextEditorController>(
+          create: (_) => TextEditorController(),
+          dispose: (_, c) => c.dispose(),
+        ),
+        Provider<AiStore>(
+          create: (context) => AiStore(
+            deckLoader: context.read<MemoryDeckLoader>(),
+            assetCacheStore: context.read<MemoryAssetCacheStore>(),
+            customizationStore: context.read<DeckCustomizationStore>(),
+            textEditorController: context.read<TextEditorController>(),
+          ),
+          dispose: (_, store) => store.dispose(),
         ),
       ],
       child: widget.child,

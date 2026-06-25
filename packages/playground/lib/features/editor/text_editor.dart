@@ -8,6 +8,7 @@ import 'package:super_editor/super_editor.dart';
 import '../../stores/editor_state.dart';
 import '../../utils/edit_reaction.dart';
 import '../../utils/memory_deck_loader.dart';
+import '../../utils/text_editor_controller.dart';
 
 class TextEditor extends StatefulWidget {
   const TextEditor({super.key, this.onChanged, this.onInit});
@@ -24,6 +25,7 @@ class _TextEditorState extends State<TextEditor> {
   late final MutableDocumentComposer _composer;
   late final Editor _editor;
   late final void Function() _unsubscribeActiveIndex;
+  TextEditorController? _textEditorController;
   bool _isUpdatingFromCursor = false;
 
   @override
@@ -62,11 +64,62 @@ class _TextEditorState extends State<TextEditor> {
 
     context.read<MemoryDeckLoader>().updateMarkdown(_extractText());
 
+    // Subscribe to external markdown injection via TextEditorController.
+    try {
+      _textEditorController = context.read<TextEditorController>();
+      _textEditorController!.addListener(_onExternalMarkdown);
+    } catch (_) {
+      // TextEditorController not provided — editor works standalone.
+    }
+
     final editorState = context.read<EditorState>();
     _unsubscribeActiveIndex = editorState.activeSlideIndex.subscribe((index) {
       if (_isUpdatingFromCursor) return;
       _scrollToSlide(index);
     });
+  }
+
+  /// Called when [TextEditorController.loadMarkdown] is invoked externally.
+  ///
+  /// Replaces the document content with [markdown] and notifies the deck
+  /// loader. The [_onDocumentChanged] listener is temporarily suppressed to
+  /// avoid double-notifying.
+  void _onExternalMarkdown() {
+    final markdown = _textEditorController?.pendingMarkdown;
+    if (markdown == null) return;
+
+    // Rebuild document nodes from the markdown lines, matching init structure.
+    final lines = markdown.split('\n');
+    final newNodes = <DocumentNode>[
+      for (final line in lines)
+        ParagraphNode(
+          id: Editor.createNodeId(),
+          text: AttributedText(line),
+        ),
+    ];
+
+    // Suppress listener to avoid re-entrant deck-loader update.
+    _document.removeListener(_onDocumentChanged);
+    try {
+      // Remove all existing nodes then insert new ones.
+      final existingIds =
+          _document.map((n) => n.id).toList(growable: false);
+      for (final id in existingIds) {
+        _editor.execute([
+          DeleteNodeRequest(nodeId: id),
+        ]);
+      }
+      for (var i = 0; i < newNodes.length; i++) {
+        _editor.execute([
+          InsertNodeAtIndexRequest(nodeIndex: i, newNode: newNodes[i]),
+        ]);
+      }
+    } finally {
+      _document.addListener(_onDocumentChanged);
+    }
+
+    // Push new markdown to the deck loader.
+    context.read<MemoryDeckLoader>().updateMarkdown(markdown);
   }
 
   void _onDocumentChanged(DocumentChangeLog changeLog) {
@@ -169,6 +222,7 @@ class _TextEditorState extends State<TextEditor> {
 
   @override
   void dispose() {
+    _textEditorController?.removeListener(_onExternalMarkdown);
     _unsubscribeActiveIndex();
     _composer.selectionNotifier.removeListener(_onSelectionChanged);
     _document.removeListener(_onDocumentChanged);

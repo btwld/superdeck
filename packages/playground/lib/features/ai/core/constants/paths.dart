@@ -66,9 +66,9 @@ abstract final class Paths {
   // ---------------------------------------------------------------------------
 
   /// Directory for prompt templates (Flutter assets).
-  static const promptsDir = 'assets/prompts/';
+  static const promptsDir = 'assets/ai_prompts/';
 
   /// Directory for example prompt/result pairs (Flutter assets).
   /// Used for AssetManifest lookups - NOT for filesystem I/O.
-  static const examplesAssetsDir = 'assets/examples/';
+  static const examplesAssetsDir = 'assets/ai_examples/';
 }

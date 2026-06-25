@@ -114,11 +114,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     );
     final successes = <String, String>{};
     final failures = <String, String>{};
+    final bytes = <String, Uint8List>{};
     var completed = 0;
     var failed = 0;
-
-    final assetsDir = Directory(Paths.superdeckAssetsPath);
-    await assetsDir.create(recursive: true);
 
     // Portrait ratio for images displayed in their own column
     final imageService = ImageGeneratorService(
@@ -150,7 +148,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
               requirements.indexOf(req),
             );
             final filename = 'slide-$safeKey-illustration.png';
-            final outputPath = p.join(Paths.superdeckAssetsPath, filename);
 
             try {
               // Build prompt with style (if present) and always wrap with
@@ -173,14 +170,16 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
               final imgMs = DateTime.now().difference(imgStart).inMilliseconds;
 
               if (result.success && result.bytes != null) {
-                final bytes = result.bytes as Uint8List;
-                await File(outputPath).writeAsBytes(bytes, flush: true);
-                successes[req.slideKey] = '.superdeck/assets/$filename';
+                final imgBytes = result.bytes as Uint8List;
+                // Store bytes in-memory keyed by bare filename.
+                bytes[filename] = imgBytes;
+                // Map slide key -> bare filename for Phase 3 prompt.
+                successes[req.slideKey] = filename;
                 completed++;
                 debugLog.log(
                   'IMG',
                   '[${req.slideKey}] OK in ${imgMs}ms - '
-                      '${bytes.length} bytes → $outputPath',
+                      '${imgBytes.length} bytes (in-memory)',
                 );
               } else {
                 failures[req.slideKey] = result.error ?? 'Unknown error';
@@ -208,7 +207,11 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       imageService.dispose();
     }
 
-    return _ImageGenerationResults(successes: successes, failures: failures);
+    return _ImageGenerationResults(
+      successes: successes,
+      failures: failures,
+      bytes: bytes,
+    );
   }
 
   // ===========================================================================
@@ -373,9 +376,4 @@ $outlineContext
     }
   }
 
-  /// Ensures required directories exist.
-  Future<void> _ensureDirectoriesExist() async {
-    await Directory(Paths.superdeckDir).create(recursive: true);
-    await Directory(Paths.superdeckAssetsPath).create(recursive: true);
-  }
 }

@@ -57,7 +57,11 @@ Future<_ImagePhaseData> _runImagePhase(
   debugLog.section('Phase 2: Generate Images');
   if (isCancelled?.call() ?? false) {
     debugLog.log('DECK_GEN', 'Generation cancelled before image generation');
-    return const _ImagePhaseData(availableImages: {}, imageFailures: null);
+    return const _ImagePhaseData(
+      availableImages: {},
+      imageFailures: null,
+      imageBytes: {},
+    );
   }
 
   final imageRequirements = owner._extractImageRequirements(outline);
@@ -114,6 +118,11 @@ Future<_ImagePhaseData> _runImagePhase(
     for (final entry in results.failures.entries) {
       debugLog.log('DECK_GEN', '  FAIL: ${entry.key} → ${entry.value}');
     }
+    return _ImagePhaseData(
+      availableImages: availableImages,
+      imageFailures: imageFailures,
+      imageBytes: results.bytes,
+    );
   } else {
     debugLog.log(
       'DECK_GEN',
@@ -123,9 +132,10 @@ Future<_ImagePhaseData> _runImagePhase(
     );
   }
 
-  return _ImagePhaseData(
-    availableImages: availableImages,
-    imageFailures: imageFailures,
+  return const _ImagePhaseData(
+    availableImages: {},
+    imageFailures: null,
+    imageBytes: {},
   );
 }
 
@@ -169,6 +179,7 @@ Future<DeckGenerationResult> _finalizeDeck(
   DeckGeneratorService owner, {
   required Map<String, dynamic> deckJson,
   required Map<String, String> availableImages,
+  required Map<String, Uint8List> imageBytes,
   required Map<String, String>? imageFailures,
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,
@@ -199,30 +210,9 @@ Future<DeckGenerationResult> _finalizeDeck(
   }
 
   if (_generationCancelled(isCancelled)) {
-    debugLog.log('DECK_GEN', 'Generation cancelled before deck write');
+    debugLog.log('DECK_GEN', 'Generation cancelled before finalizing');
     return DeckGenerationResult.failure('Generation cancelled.');
   }
-
-  await owner._ensureDirectoriesExist();
-  if (_generationCancelled(isCancelled)) {
-    debugLog.log('DECK_GEN', 'Generation cancelled before deck write');
-    return DeckGenerationResult.failure('Generation cancelled.');
-  }
-
-  final store = DeckDocumentStore();
-  await store.writeCanonical(slides: parsedSlides, style: styleData);
-  final file = store.workspace.deckJson;
-  debugLog.log(
-    'DECK_GEN',
-    'Wrote canonical deck to ${file.path} (${parsedSlides.length} slides)',
-  );
-
-  if (_generationCancelled(isCancelled)) {
-    debugLog.log('DECK_GEN', 'Generation cancelled before asset cleanup');
-    return DeckGenerationResult.failure('Generation cancelled.');
-  }
-
-  await _cleanupStaleAssets(sanitizedSlides);
 
   final totalMs = DateTime.now().difference(pipelineStart).inMilliseconds;
   debugLog.log(
@@ -233,8 +223,8 @@ Future<DeckGenerationResult> _finalizeDeck(
   );
 
   return DeckGenerationResult.success(
-    path: file.absolute.path,
-    slideCount: sanitizedSlides.length,
+    slides: parsedSlides,
+    images: imageBytes,
     style: styleData,
     imageFailures: imageFailures,
   );
