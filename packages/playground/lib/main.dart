@@ -9,6 +9,8 @@ import 'package:playground/utils/text_editor_controller.dart';
 import 'package:playground/features/presentation/presentation_page.dart';
 import 'package:playground/utils/takeover_route.dart';
 import 'package:playground/features/editor/editor_page.dart';
+import 'package:playground/features/ai/chat/view/chat_screen.dart';
+import 'package:playground/features/ai/remix/view/remix_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
@@ -41,6 +43,16 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
             return TakeoverRoute<void>(
               settings: settings,
               builder: (_) => const PresentationPage(),
+            );
+          case '/ai/wizard':
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => const ChatScreen(),
+            );
+          case '/ai/remix':
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => const RemixScreen(),
             );
           default:
             return MaterialPageRoute<void>(

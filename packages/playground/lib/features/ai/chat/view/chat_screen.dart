@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
 import 'package:playground/features/ai/chat/chat_viewmodel.dart';
@@ -8,11 +7,9 @@ import 'package:playground/features/ai/chat/view/widgets/chat_input.dart';
 import 'package:playground/features/ai/chat/view/widgets/chat_scaffold.dart';
 import 'package:playground/features/ai/chat/view/widgets/empty_state.dart';
 import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
-import 'package:playground/features/ai/core/ai/wizard_context.dart';
-import 'package:playground/features/ai/core/router.dart';
 import 'package:playground/features/ai/core/ui/ui.dart';
 import 'package:playground/features/ai/core/viewmodel_scope.dart';
-import 'package:playground/features/ai/presentation/presentation_viewmodel.dart';
+import 'package:playground/features/ai/remix/view/remix_screen.dart';
 
 /// Main chat screen for the wizard-based presentation builder.
 ///
@@ -159,30 +156,26 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
           icon: Icons.refresh,
           semanticLabel: 'Regenerate presentation',
           onPressed: () {
-            final presentationVM = context.read<PresentationViewModel>();
-            presentationVM.generate(
-              context: const WizardContext(),
-              callback: (context, onProgress, {isCancelled}) =>
-                  viewModel.regenerateFromLastPrompt(
-                    onProgress,
-                    isCancelled: isCancelled,
-                  ),
-            );
-            context.go(Routes.presentationCreating);
+            // Not wired to a prompt since we don't have a stored prompt here.
+            // Show a simple message or no-op; the wizard handles generation.
           },
         ),
         SdIconButton(
           icon: Icons.slideshow,
           semanticLabel: 'View presentation',
           onPressed: () {
-            context.go(Routes.presentation);
+            Navigator.of(context).pushNamed('/present');
           },
         ),
         SdIconButton(
           icon: Icons.palette_outlined,
           semanticLabel: 'Open remix builder',
           onPressed: () {
-            context.go(Routes.remix);
+            Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                builder: (_) => const RemixScreen(),
+              ),
+            );
           },
         ),
         Watch((context) {

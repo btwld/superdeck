@@ -3,21 +3,20 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart' as prov;
 import 'package:remix/remix.dart';
-import 'package:playground/features/ai/chat/chat_viewmodel.dart';
 import 'package:playground/features/ai/core/ai/wizard_context.dart';
 import 'package:playground/features/ai/core/ai/prompts/font_styles.dart';
 import 'package:playground/features/ai/core/ai/prompts/image_style_prompts.dart';
 import 'package:playground/features/ai/core/ai/schemas/genui_action_schema.dart';
 import 'package:playground/features/ai/core/ai/schemas/wizard_context_keys.dart';
-import 'package:playground/features/ai/core/viewmodel_scope.dart';
+import 'package:playground/features/ai/core/ai/services/prompt_builder.dart';
 import 'package:playground/features/ai/core/debug_logger.dart';
-import 'package:playground/features/ai/core/router.dart';
 import 'package:playground/features/ai/core/ui/ui.dart';
 import 'package:playground/features/ai/core/utils/color_utils.dart';
 import 'package:playground/features/ai/core/utils/font_utils.dart';
-import 'package:playground/features/ai/presentation/presentation_viewmodel.dart';
+import 'package:playground/features/ai/ai_progress_screen.dart';
+import 'package:playground/stores/ai_store.dart';
 
 part 'summary_card.g.dart';
 part 'summary_card_view.dart';
@@ -231,23 +230,36 @@ final summaryCard = CatalogItem(
             final finalContext = extractedContext.merge(resolvedContext);
             debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
 
-            final presentationVM = buildContext.read<PresentationViewModel>();
-            final chatVM = buildContext.read<ChatViewModel>();
+            // Build the prompt string from wizard context.
+            final prompt = buildPromptFromWizardContext(finalContext);
+            final imageStyleId = finalContext.imageStyleId;
+            final backgroundColor = finalContext.colors?.firstOrNull;
 
             debugLog.log(
               'GEN',
-              'Starting generation and navigating to loading screen',
+              'Routing generation through AiStore. prompt length: ${prompt.length}',
             );
 
-            // Fire-and-forget - PresentationViewModel manages state
-            presentationVM.generate(
-              context: finalContext,
-              callback: chatVM.generateFromContext,
+            // Read AiStore from the app-level Provider tree.
+            final aiStore = prov.Provider.of<AiStore>(
+              buildContext,
+              listen: false,
             );
 
-            // Navigate immediately to show loading
+            // Fire-and-forget — AiStore manages all reactive state.
+            aiStore.generate(
+              prompt,
+              imageStyleId: imageStyleId,
+              backgroundColor: backgroundColor,
+            );
+
+            // Navigate to the progress screen immediately.
             if (buildContext.mounted) {
-              buildContext.go(Routes.presentationCreating);
+              Navigator.of(buildContext).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const AiProgressScreen(),
+                ),
+              );
             }
           },
         );

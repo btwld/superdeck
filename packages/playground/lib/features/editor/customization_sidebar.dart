@@ -412,6 +412,7 @@ class _Toolbar extends StatelessWidget {
       style: FlexBoxStyler().spacing(8),
       children: [
         Spacer(),
+        // Simple AI prompt panel (quick text-entry shortcut).
         SizedBox(
           width: 48,
           child: HeroIconButton(
@@ -420,6 +421,26 @@ class _Toolbar extends StatelessWidget {
             variant: .secondary,
             onPressed: () =>
                 showAiGeneratePanel(context, context.read<AiStore>()),
+          ),
+        ),
+        // Full 8-step GenUI wizard.
+        SizedBox(
+          width: 48,
+          child: HeroIconButton(
+            icon: CupertinoIcons.wand_stars,
+            size: .lg,
+            variant: .secondary,
+            onPressed: () => Navigator.of(context).pushNamed('/ai/wizard'),
+          ),
+        ),
+        // Remix component builder.
+        SizedBox(
+          width: 48,
+          child: HeroIconButton(
+            icon: CupertinoIcons.cube_box,
+            size: .lg,
+            variant: .secondary,
+            onPressed: () => Navigator.of(context).pushNamed('/ai/remix'),
           ),
         ),
         SizedBox(

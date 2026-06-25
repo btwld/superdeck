@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
 import 'package:playground/features/ai/chat/view/widgets/chat_genui_panels.dart';
 import 'package:playground/features/ai/chat/view/widgets/chat_input.dart';
 import 'package:playground/features/ai/chat/view/widgets/chat_scaffold.dart';
 import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
-import 'package:playground/features/ai/core/router.dart';
 import 'package:playground/features/ai/core/ui/ui.dart';
 import 'package:playground/features/ai/core/viewmodel_scope.dart';
 import 'package:playground/features/ai/remix/remix_viewmodel.dart';
@@ -126,7 +124,7 @@ class _RemixScreenScaffoldState extends State<_RemixScreenScaffold> {
             icon: Icons.forum_outlined,
             semanticLabel: 'Back to chat',
             onPressed: () {
-              context.go(Routes.chat);
+              Navigator.of(context).maybePop();
             },
           ),
           Watch((context) {
