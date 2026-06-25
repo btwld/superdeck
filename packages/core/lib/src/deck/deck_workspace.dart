@@ -61,7 +61,7 @@ final class DeckWorkspace with DeckWorkspaceMappable {
   static DeckWorkspace parse(Map<String, Object?> map) =>
       fromMap(Map<String, dynamic>.from(schema.parse(map)!));
 
-  static final _safePath = Ack.string().strictParsing().refine(
+  static final _safePath = Ack.string().refine(
     _isRelativeWithoutTraversal,
     message:
         'must be a relative path without ".." traversal segments'
@@ -69,7 +69,7 @@ final class DeckWorkspace with DeckWorkspaceMappable {
   );
 
   static final schema = Ack.object({
-    'projectDir': Ack.string().strictParsing().optional(),
+    'projectDir': Ack.string().optional(),
     'slidesPath': _safePath.optional(),
     'outputDir': _safePath.optional(),
   }).passthrough();

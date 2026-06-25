@@ -3,8 +3,8 @@ description: A playground app for experimenting with Mix, Remix, and Hero UI.
 publish_to: none
 
 environment:
-  sdk: ">=3.11.3 <4.0.0"
-  flutter: ">=3.38.1"
+  sdk: ">=3.10.0 <4.0.0"
+  flutter: ">=3.41.0"
 
 dependencies:
   flutter:
@@ -13,6 +13,7 @@ dependencies:
   remix: ^0.2.0
   super_editor: 0.3.0-dev.49
   provider: ^6.1.2
+  signals: ^6.2.0
   signals_flutter: ^6.2.0
   google_fonts: ^8.1.0
   superdeck:
@@ -25,11 +26,27 @@ dependencies:
     git:
       url: https://github.com/tilucasoli/hero_ui
       ref: v0.0.5
+  # AI generation (migrated from superdeck_ai)
+  genui: ^0.7.0
+  genui_google_generative_ai: ^0.7.1
+  google_cloud_ai_generativelanguage_v1beta: ^0.4.0
+  gpt_markdown: ^1.1.4
+  dotprompt_dart: ^0.5.0
+  flutter_dotenv: ^6.0.0
+  ack: 1.0.0-beta.12
+  ack_annotations: 1.0.0-beta.12
+  ack_json_schema_builder: 1.0.0-beta.12
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  build_runner: ^2.5.4
+  ack_generator: 1.0.0-beta.12
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/ai_prompts/
+    - assets/ai_prompts/partials/
+    - assets/ai_examples/

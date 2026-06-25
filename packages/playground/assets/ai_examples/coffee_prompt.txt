@@ -1,0 +1,17 @@
+Generate a presentation with the following specifications:
+
+Topic: Introduction to Coffee
+Target Audience: Aspiring Baristas
+Presentation Approach: Professional Foundation
+Key Areas to Emphasize: History, Bean Varieties, Roasting, Brewing
+Number of Slides: 12
+Visual Style: Artisan Brewing
+
+Color Palette:
+  - Background: #8B4513
+  - Heading text: #4B2C20
+  - Body text: #F5F5DC
+Headline Font: playfairDisplay
+Body Font: sourceSerif4
+
+Layout Guidance: Use sections as rows and blocks as columns. Use 1-2 blocks per section (never 4+). Put all bullets in a single block. Use two sections (title + body) for most slides. Center-align only titles; left-align body content. Do not use widget blocks or empty blocks.
