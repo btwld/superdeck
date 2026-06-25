@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:remix/remix.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
+import '../../stores/ai_store.dart';
 import '../../stores/deck_customization_store.dart';
+import '../ai/ai_generate_panel.dart';
 
 class CustomizationSidebar extends StatefulWidget {
   const CustomizationSidebar({super.key});
@@ -413,10 +415,11 @@ class _Toolbar extends StatelessWidget {
         SizedBox(
           width: 48,
           child: HeroIconButton(
-            icon: CupertinoIcons.share,
+            icon: CupertinoIcons.sparkles,
             size: .lg,
             variant: .secondary,
-            onPressed: () {},
+            onPressed: () =>
+                showAiGeneratePanel(context, context.read<AiStore>()),
           ),
         ),
         SizedBox(
