@@ -83,6 +83,32 @@ List<Map<String, dynamic>> _sanitizeSlides(List<Map<String, dynamic>> slides) {
   return slides.map(_sanitizeSlide).nonNulls.toList();
 }
 
+@visibleForTesting
+String? validateGeneratedSlideCount({
+  required int expectedSlideCount,
+  required int actualSlideCount,
+}) {
+  final minimumSlideCount = minimumUsableSlideCount(expectedSlideCount);
+  if (minimumSlideCount <= 0 || actualSlideCount >= minimumSlideCount) {
+    return null;
+  }
+
+  final slideNoun = actualSlideCount == 1 ? 'slide' : 'slides';
+  return 'Generated only $actualSlideCount usable $slideNoun; expected at least '
+      '$minimumSlideCount of $expectedSlideCount requested slides. '
+      'Please try again.';
+}
+
+@visibleForTesting
+int minimumUsableSlideCount(int expectedSlideCount) {
+  if (expectedSlideCount <= 1) {
+    return expectedSlideCount;
+  }
+
+  final seventyFivePercent = (expectedSlideCount * 3 + 3) ~/ 4;
+  return seventyFivePercent < 2 ? 2 : seventyFivePercent;
+}
+
 Map<String, dynamic>? _sanitizeSlide(Map<String, dynamic> slide) {
   final sections = <Map<String, dynamic>>[];
   final rawSections = slide['sections'];

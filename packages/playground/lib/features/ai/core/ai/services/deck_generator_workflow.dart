@@ -178,6 +178,7 @@ Future<Map<String, dynamic>?> _runFinalDeckPhase(
 Future<DeckGenerationResult> _finalizeDeck(
   DeckGeneratorService owner, {
   required Map<String, dynamic> deckJson,
+  required int expectedSlideCount,
   required Map<String, String> availableImages,
   required Map<String, Uint8List> imageBytes,
   required Map<String, String>? imageFailures,
@@ -201,6 +202,15 @@ Future<DeckGenerationResult> _finalizeDeck(
   if (sanitizedSlides.isEmpty) {
     debugLog.error('DECK_GEN', 'No slides survived sanitization');
     return DeckGenerationResult.failure('No slides generated');
+  }
+
+  final slideCountError = validateGeneratedSlideCount(
+    expectedSlideCount: expectedSlideCount,
+    actualSlideCount: sanitizedSlides.length,
+  );
+  if (slideCountError != null) {
+    debugLog.error('DECK_GEN', slideCountError);
+    return DeckGenerationResult.failure(slideCountError);
   }
 
   final styleData = _extractStyleData(deckJson);
@@ -268,7 +278,6 @@ List<Map<String, dynamic>> _extractSlidesWithKeys(
 
   return slides;
 }
-
 
 DeckStyleType? _extractStyleData(Map<String, dynamic> deckJson) {
   final rawStyle = deckJson['style'];

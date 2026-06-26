@@ -33,9 +33,10 @@ void main() {
     if (error == null) return false;
     final s = error.toLowerCase();
     return s.contains('quota') ||
-        s.contains('rate') ||
+        s.contains('rate limit') ||
         s.contains('exceeded') ||
         s.contains('overloaded') ||
+        s.contains('resource_exhausted') ||
         s.contains('toomanyrequests') ||
         s.contains('too many') ||
         s.contains('429');
@@ -50,7 +51,10 @@ void main() {
   testWidgets(
     'image model returns real PNG bytes',
     (tester) async {
-      final service = ImageGeneratorService(apiKey: apiKey!, aspectRatio: '3:4');
+      final service = ImageGeneratorService(
+        apiKey: apiKey!,
+        aspectRatio: '3:4',
+      );
       final ImageGenerationResult result;
       try {
         result = await service.generateImage(
@@ -67,8 +71,10 @@ void main() {
       }
 
       // ignore: avoid_print
-      print('IMAGE: success=${result.success} bytes=${result.bytes?.length} '
-          'error=${result.error}');
+      print(
+        'IMAGE: success=${result.success} bytes=${result.bytes?.length} '
+        'error=${result.error}',
+      );
       if (!result.success && isQuota(result.error)) {
         markTestSkipped('Gemini quota/rate limited: ${result.error}');
         return;
@@ -92,9 +98,11 @@ void main() {
       );
 
       // ignore: avoid_print
-      print('DECK: success=${result.success} slides=${result.slideCount} '
-          'images=${result.images.length} style=${result.style != null} '
-          'error=${result.error}');
+      print(
+        'DECK: success=${result.success} slides=${result.slideCount} '
+        'images=${result.images.length} style=${result.style != null} '
+        'error=${result.error}',
+      );
       if (!result.success && isQuota(result.error)) {
         markTestSkipped('Gemini quota/rate limited: ${result.error}');
         return;
@@ -109,8 +117,10 @@ void main() {
       }
       final markdown = const SlideSerializer().serialize(result.slides);
       // ignore: avoid_print
-      print('MARKDOWN (${markdown.length} chars):\n'
-          '${markdown.substring(0, markdown.length.clamp(0, 1500))}');
+      print(
+        'MARKDOWN (${markdown.length} chars):\n'
+        '${markdown.substring(0, markdown.length.clamp(0, 1500))}',
+      );
       expect(markdown.trim(), isNotEmpty);
 
       // Every cached image key should resolve back to a data: URI (what the
@@ -119,8 +129,11 @@ void main() {
         final uri = await store.resolve(key);
         expect(uri?.scheme, 'data', reason: 'image $key should resolve');
         // The serialized markdown should reference the bare key (clean editor).
-        expect(markdown.contains(key), isTrue,
-            reason: 'markdown should reference $key');
+        expect(
+          markdown.contains(key),
+          isTrue,
+          reason: 'markdown should reference $key',
+        );
       }
     },
     timeout: const Timeout(Duration(minutes: 6)),

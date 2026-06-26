@@ -210,6 +210,7 @@ class DeckGeneratorService {
       return _finalizeDeck(
         this,
         deckJson: deckJson,
+        expectedSlideCount: (outline['slides'] as List?)?.length ?? 0,
         availableImages: imagePhase.availableImages,
         imageBytes: imagePhase.imageBytes,
         imageFailures: imagePhase.imageFailures,
@@ -230,5 +231,4 @@ class DeckGeneratorService {
       service.close();
     }
   }
-
 }
