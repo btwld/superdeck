@@ -55,6 +55,10 @@ class AiStore {
     String? imageStyleId,
     String? backgroundColor,
   }) async {
+    // Ignore re-entrant calls (e.g. a double-tap) so concurrent runs can't
+    // interleave their writes to the shared asset cache / editor / loader.
+    if (isGenerating.value) return;
+
     if (!EnvConfig.hasGeminiApiKey) {
       error.value =
           'No Gemini API key configured. '
@@ -83,14 +87,30 @@ class AiStore {
         return;
       }
 
-      // Write image bytes to the in-memory asset cache.
+      if (result.slides.isEmpty) {
+        error.value = 'No slides were generated. Please try again.';
+        return;
+      }
+
+      // Write image bytes to the in-memory asset cache, capturing the data:
+      // URI each one resolves to.
+      final imageUris = <String, String>{};
       for (final entry in result.images.entries) {
-        await _assetCacheStore.write(entry.key, entry.value);
+        final uri = await _assetCacheStore.write(entry.key, entry.value);
+        if (uri != null) imageUris[entry.key] = uri.toString();
         debugLog.log('AI_STORE', 'Cached image: ${entry.key}');
       }
 
-      // Serialize slides to markdown and push to editor + loader.
-      final markdown = const SlideSerializer().serialize(result.slides);
+      // Serialize slides to markdown. The markdown image renderer does not
+      // consult the in-memory asset cache, so inline the data: URIs in place of
+      // the bare asset-key references the model emitted (e.g.
+      // `slide-x-illustration.png`) so generated images actually render.
+      var markdown = const SlideSerializer().serialize(result.slides);
+      imageUris.forEach((key, uri) {
+        markdown = markdown.replaceAll(key, uri);
+      });
+
+      // Push to editor + loader.
       _textEditorController.loadMarkdown(markdown);
       _deckLoader.updateMarkdown(markdown);
       debugLog.log(

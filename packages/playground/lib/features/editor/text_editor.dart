@@ -89,8 +89,10 @@ class _TextEditorState extends State<TextEditor> {
     if (markdown == null) return;
 
     // One paragraph node per markdown line, matching the init structure.
+    // Always keep at least one node — SuperEditor requires a non-empty document.
+    final lines = markdown.isEmpty ? const [''] : markdown.split('\n');
     final newNodes = <DocumentNode>[
-      for (final line in markdown.split('\n'))
+      for (final line in lines)
         ParagraphNode(id: Editor.createNodeId(), text: AttributedText(line)),
     ];
 
@@ -99,13 +101,16 @@ class _TextEditorState extends State<TextEditor> {
     _document.removeListener(_onDocumentChanged);
     try {
       final existingIds = _document.map((node) => node.id).toList();
-      for (final id in existingIds) {
-        _editor.execute([DeleteNodeRequest(nodeId: id)]);
-      }
+      // Insert the new content first so the document is never momentarily
+      // empty (which would violate SuperEditor's single-node invariant), then
+      // remove the now-trailing original nodes.
       for (var i = 0; i < newNodes.length; i++) {
         _editor.execute([
           InsertNodeAtIndexRequest(nodeIndex: i, newNode: newNodes[i]),
         ]);
+      }
+      for (final id in existingIds) {
+        _editor.execute([DeleteNodeRequest(nodeId: id)]);
       }
     } finally {
       _document.addListener(_onDocumentChanged);
