@@ -52,3 +52,15 @@ typedef GenerationProgressCallback =
       GenerationPhase phase,
       ImageGenerationProgress? imageProgress,
     );
+
+/// Human-readable label for each [GenerationPhase].
+extension GenerationPhaseLabel on GenerationPhase {
+  String get label => switch (this) {
+    GenerationPhase.generatingOutline => 'Planning the outline…',
+    GenerationPhase.generatingImages => 'Generating images…',
+    GenerationPhase.generatingFinalDeck => 'Writing the slides…',
+    GenerationPhase.finalizing => 'Finalizing…',
+    GenerationPhase.generatingThumbnails => 'Rendering thumbnails…',
+    GenerationPhase.idle => 'Working…',
+  };
+}

@@ -55,7 +55,7 @@ class DeckToolsService {
     if (store == null) {
       throw StateError(
         'DeckToolsService: no DeckStore provided. '
-        'Inject an InMemoryDeckStore (web) or DeckDocumentStore (native).',
+        'Inject an InMemoryDeckStore.',
       );
     }
     return store;
@@ -317,16 +317,7 @@ class DeckToolsService {
     int insertIndex,
   ) {
     final existingKeys = existingSlides.map((slide) => slide.key).toSet();
-    const maxAttempts = 1024;
-    for (var attempt = 0; attempt < maxAttempts; attempt++) {
-      final candidate = generateSlideKey(slideMap, insertIndex + attempt);
-      if (!existingKeys.contains(candidate)) {
-        return candidate;
-      }
-    }
-    throw DeckToolException.slideKeyConflict(
-      'Could not generate unique key after $maxAttempts attempts',
-    );
+    return generateUniqueSlideKey(slideMap, insertIndex, existingKeys);
   }
 
   Future<T> _runSerializedMutation<T>(Future<T> Function() operation) {

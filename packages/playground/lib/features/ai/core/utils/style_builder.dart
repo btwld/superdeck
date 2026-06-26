@@ -4,6 +4,29 @@ import 'package:superdeck/superdeck.dart';
 import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
 import 'package:playground/features/ai/core/utils/color_utils.dart';
 
+/// Parsed colors and font families from a [DeckStyleType].
+typedef AiStyleColors = ({
+  Color backgroundColor,
+  Color headingColor,
+  Color bodyColor,
+  String headlineFontFamily,
+  String bodyFontFamily,
+});
+
+/// Extracts the three semantic colors and font families from [style].
+///
+/// Shared by [buildDeckOptionsFromStyle] and
+/// [DeckCustomizationStore.applyFromAiStyle] to avoid duplicating hex-parsing.
+AiStyleColors extractAiStyleColors(DeckStyleType style) {
+  return (
+    backgroundColor: hexToColor(style.colors.background),
+    headingColor: hexToColor(style.colors.heading),
+    bodyColor: hexToColor(style.colors.body),
+    headlineFontFamily: style.fonts.headline.fontFamily,
+    bodyFontFamily: style.fonts.body.fontFamily,
+  );
+}
+
 /// Builds [DeckOptions] from AI-generated style configuration.
 ///
 /// Takes the style object from [DeckGenerationResult] and creates
@@ -12,21 +35,14 @@ import 'package:playground/features/ai/core/utils/color_utils.dart';
 DeckOptions buildDeckOptionsFromStyle(DeckStyleType? style) {
   if (style == null) return DeckOptions();
 
-  final colors = style.colors;
-  final fonts = style.fonts;
-
-  // Extract colors with new semantic names
-  final backgroundHex = colors.background;
-  final headingHex = colors.heading;
-  final bodyHex = colors.body;
-
-  final headingColor = hexToColor(headingHex);
-  final bodyColor = hexToColor(bodyHex);
-  final backgroundColor = hexToColor(backgroundHex);
+  final extracted = extractAiStyleColors(style);
+  final headingColor = extracted.headingColor;
+  final bodyColor = extracted.bodyColor;
+  final backgroundColor = extracted.backgroundColor;
 
   // Font enums already carry the concrete family names to use in text styles.
-  final headlineFontFamily = fonts.headline.fontFamily;
-  final bodyFontFamily = fonts.body.fontFamily;
+  final headlineFontFamily = extracted.headlineFontFamily;
+  final bodyFontFamily = extracted.bodyFontFamily;
 
   TextStyler headingStyler() {
     var styler = TextStyler().style(TextStyleMix(color: headingColor));

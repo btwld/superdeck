@@ -65,15 +65,11 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
   }
 }
 
-class _Providers extends StatefulWidget {
+class _Providers extends StatelessWidget {
   const _Providers({required this.child});
 
   final Widget child;
-  @override
-  State<_Providers> createState() => _ProvidersState();
-}
 
-class _ProvidersState extends State<_Providers> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -111,7 +107,7 @@ class _ProvidersState extends State<_Providers> {
           dispose: (_, store) => store.dispose(),
         ),
       ],
-      child: widget.child,
+      child: child,
     );
   }
 }

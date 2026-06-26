@@ -1,44 +1,50 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
 import 'package:playground/features/ai/core/ai/services/slide_key_utils.dart';
-import 'package:playground/features/ai/core/tools/deck_document_store.dart';
 import 'package:playground/features/ai/core/tools/deck_store.dart';
 import 'package:playground/features/ai/core/tools/deck_tools_schemas.dart';
 import 'package:playground/features/ai/core/tools/deck_tools_service.dart';
 import 'package:playground/features/ai/core/tools/errors.dart';
+import 'package:playground/features/ai/core/tools/in_memory_deck_store.dart';
 import 'package:playground/features/ai/core/utils/deck_style_service.dart';
+import 'package:playground/utils/memory_deck_loader.dart';
 
 void main() {
-  late Directory tempDir;
-  late DeckWorkspace workspace;
-  late DeckDocumentStore store;
-
-  setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('deck_tools_service_test_');
-    workspace = DeckWorkspace(projectDir: tempDir.path);
-    store = DeckDocumentStore(workspace: workspace);
+  setUp(() {
     DeckStyleService.clearCache();
   });
 
-  tearDown(() async {
+  tearDown(() {
     DeckStyleService.clearCache();
-    if (await tempDir.exists()) {
-      await tempDir.delete(recursive: true);
-    }
   });
+
+  /// Builds an [InMemoryDeckStore] pre-seeded with [slides] and [style].
+  (InMemoryDeckStore, MemoryDeckLoader) makeStore({
+    required List<Map<String, dynamic>> slides,
+    Map<String, Object?>? style,
+  }) {
+    final loader = MemoryDeckLoader();
+    final parsedSlides = slides.map((s) => Slide.parse(Map<String, Object?>.from(s))).toList();
+    final parsedStyle = style != null ? DeckStyleType.parse(style) : null;
+    final store = InMemoryDeckStore(
+      slidesProvider: () => parsedSlides,
+      deckLoader: loader,
+      initialStyle: parsedStyle,
+    );
+    return (store, loader);
+  }
 
   group('DeckToolsService', () {
     test('getDeck returns deck snapshot', () async {
-      await _writeDeck(
-        workspace,
+      final (store, _) = makeStore(
         slides: [
           _slideSchema(key: 'slide-1', title: 'Intro'),
           _slideSchema(key: 'slide-2', title: 'Agenda'),
@@ -55,10 +61,16 @@ void main() {
     });
 
     test('createSlide generates key when key is missing', () async {
-      await _writeDeck(
-        workspace,
-        slides: [_slideSchema(key: 'slide-1', title: 'Intro')],
-        style: _styleMap(),
+      final slides = [_slideSchema(key: 'slide-1', title: 'Intro')];
+      final loader = MemoryDeckLoader();
+      // Use a mutable list so writeCanonical updates are visible in readRequired.
+      final mutableSlides = slides
+          .map((s) => Slide.parse(Map<String, Object?>.from(s)))
+          .toList();
+      final store = _MutableInMemoryStore(
+        mutableSlides: mutableSlides,
+        deckLoader: loader,
+        style: DeckStyleType.parse(_styleMap()),
       );
 
       final service = DeckToolsService(documentStore: store);
@@ -84,10 +96,13 @@ void main() {
           Map<String, dynamic>.from(incomingSchema),
           1,
         );
-        await _writeDeck(
-          workspace,
-          slides: [_slideSchema(key: collidingKey, title: 'Existing')],
-          style: _styleMap(),
+        final mutableSlides = [
+          Slide.parse(Map<String, Object?>.from(_slideSchema(key: collidingKey, title: 'Existing'))),
+        ];
+        final loader = MemoryDeckLoader();
+        final store = _MutableInMemoryStore(
+          mutableSlides: mutableSlides,
+          deckLoader: loader,
         );
 
         final service = DeckToolsService(documentStore: store);
@@ -109,8 +124,7 @@ void main() {
     );
 
     test('createSlide throws slide_key_conflict for duplicate key', () async {
-      await _writeDeck(
-        workspace,
+      final (store, _) = makeStore(
         slides: [_slideSchema(key: 'slide-1', title: 'Intro')],
       );
 
@@ -133,8 +147,7 @@ void main() {
     });
 
     test('createSlide rejects unsafe explicit key', () async {
-      await _writeDeck(
-        workspace,
+      final (store, _) = makeStore(
         slides: [_slideSchema(key: 'slide-1', title: 'Intro')],
       );
 
@@ -157,9 +170,13 @@ void main() {
     });
 
     test('updateSlide preserves existing key', () async {
-      await _writeDeck(
-        workspace,
-        slides: [_slideSchema(key: 'slide-1', title: 'Original')],
+      final mutableSlides = [
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-1', title: 'Original'))),
+      ];
+      final loader = MemoryDeckLoader();
+      final store = _MutableInMemoryStore(
+        mutableSlides: mutableSlides,
+        deckLoader: loader,
       );
 
       final service = DeckToolsService(documentStore: store);
@@ -180,9 +197,13 @@ void main() {
     test(
       'updateSlide accepts schema without key and preserves existing key',
       () async {
-        await _writeDeck(
-          workspace,
-          slides: [_slideSchema(key: 'slide-1', title: 'Original')],
+        final mutableSlides = [
+          Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-1', title: 'Original'))),
+        ];
+        final loader = MemoryDeckLoader();
+        final store = _MutableInMemoryStore(
+          mutableSlides: mutableSlides,
+          deckLoader: loader,
         );
 
         final service = DeckToolsService(documentStore: store);
@@ -202,12 +223,14 @@ void main() {
     );
 
     test('deleteSlide removes a slide by index', () async {
-      await _writeDeck(
-        workspace,
-        slides: [
-          _slideSchema(key: 'slide-1', title: 'One'),
-          _slideSchema(key: 'slide-2', title: 'Two'),
-        ],
+      final mutableSlides = [
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-1', title: 'One'))),
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-2', title: 'Two'))),
+      ];
+      final loader = MemoryDeckLoader();
+      final store = _MutableInMemoryStore(
+        mutableSlides: mutableSlides,
+        deckLoader: loader,
       );
 
       final service = DeckToolsService(documentStore: store);
@@ -220,13 +243,15 @@ void main() {
     });
 
     test('moveSlide reorders slides', () async {
-      await _writeDeck(
-        workspace,
-        slides: [
-          _slideSchema(key: 'slide-1', title: 'One'),
-          _slideSchema(key: 'slide-2', title: 'Two'),
-          _slideSchema(key: 'slide-3', title: 'Three'),
-        ],
+      final mutableSlides = [
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-1', title: 'One'))),
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-2', title: 'Two'))),
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-3', title: 'Three'))),
+      ];
+      final loader = MemoryDeckLoader();
+      final store = _MutableInMemoryStore(
+        mutableSlides: mutableSlides,
+        deckLoader: loader,
       );
 
       final service = DeckToolsService(documentStore: store);
@@ -243,9 +268,13 @@ void main() {
     });
 
     test('updateStyle validates payload and updates cache', () async {
-      await _writeDeck(
-        workspace,
-        slides: [_slideSchema(key: 'slide-1', title: 'One')],
+      final mutableSlides = [
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-1', title: 'One'))),
+      ];
+      final loader = MemoryDeckLoader();
+      final store = _MutableInMemoryStore(
+        mutableSlides: mutableSlides,
+        deckLoader: loader,
       );
 
       final service = DeckToolsService(documentStore: store);
@@ -258,7 +287,7 @@ void main() {
       );
 
       expect(result.style['name'], 'Updated Style');
-      expect(DeckStyleService.readStyleFromCache()?.name, 'Updated Style');
+      expect(DeckStyleService.style.value?.name, 'Updated Style');
 
       final persisted = await store.readRequired();
       expect(persisted.style?.name, 'Updated Style');
@@ -267,8 +296,7 @@ void main() {
     test(
       'updateStyle rejects invalid payload and preserves existing style',
       () async {
-        await _writeDeck(
-          workspace,
+        final (store, _) = makeStore(
           slides: [_slideSchema(key: 'slide-1')],
           style: _styleMap(name: 'Existing Style'),
         );
@@ -293,28 +321,21 @@ void main() {
           ),
         );
 
-        expect(DeckStyleService.readStyleFromCache()?.name, 'Existing Style');
+        expect(DeckStyleService.style.value?.name, 'Existing Style');
       },
     );
 
-    test('getDeck fails fast when deck file is missing', () async {
-      final service = DeckToolsService(documentStore: store);
+    test('getDeck fails fast when no store is provided', () async {
+      final service = DeckToolsService();
 
       await expectLater(
         service.getDeck(),
-        throwsA(
-          isA<DeckToolException>().having(
-            (error) => error.code,
-            'code',
-            DeckToolErrorCode.deckFileNotFound,
-          ),
-        ),
+        throwsA(isA<StateError>()),
       );
     });
 
     test('readSlide returns schema and base64 thumbnail', () async {
-      await _writeDeck(
-        workspace,
+      final (store, _) = makeStore(
         slides: [_slideSchema(key: 'slide-1', title: 'Intro')],
         style: _styleMap(),
       );
@@ -339,8 +360,7 @@ void main() {
     });
 
     test('readSlide captures using the requested slide index', () async {
-      await _writeDeck(
-        workspace,
+      final (store, _) = makeStore(
         slides: [
           _slideSchema(key: 'slide-1', title: 'Intro'),
           _slideSchema(key: 'slide-2', title: 'Agenda'),
@@ -381,8 +401,7 @@ void main() {
     test(
       'readSlide stops before capture if context unmounts while configuring',
       () async {
-        await _writeDeck(
-          workspace,
+        final (store, _) = makeStore(
           slides: [_slideSchema(key: 'slide-1', title: 'Intro')],
           style: _styleMap(),
         );
@@ -427,7 +446,9 @@ void main() {
     test(
       'readSlide throws context_unavailable when no context exists',
       () async {
-        await _writeDeck(workspace, slides: [_slideSchema(key: 'slide-1')]);
+        final (store, _) = makeStore(
+          slides: [_slideSchema(key: 'slide-1')],
+        );
 
         final service = DeckToolsService(documentStore: store);
 
@@ -445,14 +466,14 @@ void main() {
     );
 
     test('serializes concurrent mutations', () async {
-      await _writeDeck(
-        workspace,
-        slides: [_slideSchema(key: 'slide-1', title: 'Seed')],
-      );
-
+      final mutableSlides = [
+        Slide.parse(Map<String, Object?>.from(_slideSchema(key: 'slide-1', title: 'Seed'))),
+      ];
+      final loader = MemoryDeckLoader();
       final gate = Completer<void>();
-      final gatedStore = _GatedDeckDocumentStore(
-        workspace: workspace,
+      final gatedStore = _GatedMutableStore(
+        mutableSlides: mutableSlides,
+        deckLoader: loader,
         firstReadGate: gate,
       );
       final service = DeckToolsService(documentStore: gatedStore);
@@ -485,7 +506,7 @@ void main() {
 
       await Future.wait([firstMutation, secondMutation]);
 
-      final persisted = await store.readRequired();
+      final persisted = await gatedStore.readRequired();
       expect(persisted.slides, hasLength(3));
       expect(
         persisted.slides.map((slide) => slide.options?.title),
@@ -529,11 +550,47 @@ class _MutableBuildContext implements BuildContext {
   }
 }
 
-class _GatedDeckDocumentStore extends DeckDocumentStore {
-  _GatedDeckDocumentStore({
-    required DeckWorkspace workspace,
+/// A [DeckStore] backed by a mutable list, allowing [writeCanonical] to
+/// update the visible state returned by [readRequired].
+class _MutableInMemoryStore implements DeckStore {
+  _MutableInMemoryStore({
+    required List<Slide> mutableSlides,
+    required MemoryDeckLoader deckLoader,
+    DeckStyleType? style,
+  }) : _slides = mutableSlides,
+       _deckLoader = deckLoader,
+       _style = style;
+
+  final List<Slide> _slides;
+  final MemoryDeckLoader _deckLoader;
+  DeckStyleType? _style;
+
+  @override
+  Future<DeckDocument> readRequired() async =>
+      DeckDocument(slides: List.unmodifiable(_slides), style: _style);
+
+  @override
+  Future<void> writeCanonical({
+    required List<Slide> slides,
+    DeckStyleType? style,
+  }) async {
+    _slides
+      ..clear()
+      ..addAll(slides);
+    _style = style;
+    // Update the loader (required by InMemoryDeckStore contract, used here
+    // for fidelity but not observed by test assertions).
+    final markdown = const SlideSerializer().serialize(slides);
+    _deckLoader.updateMarkdown(markdown);
+  }
+}
+
+class _GatedMutableStore extends _MutableInMemoryStore {
+  _GatedMutableStore({
+    required super.mutableSlides,
+    required super.deckLoader,
     required this.firstReadGate,
-  }) : super(workspace: workspace);
+  });
 
   final Completer<void> firstReadGate;
   int readCalls = 0;
@@ -546,20 +603,6 @@ class _GatedDeckDocumentStore extends DeckDocumentStore {
     }
     return super.readRequired();
   }
-}
-
-Future<void> _writeDeck(
-  DeckWorkspace workspace, {
-  required List<Map<String, dynamic>> slides,
-  Map<String, Object?>? style,
-}) async {
-  final payload = <String, Object?>{'slides': slides};
-  if (style != null) {
-    payload['style'] = style;
-  }
-
-  await workspace.deckJson.parent.create(recursive: true);
-  await workspace.deckJson.writeAsString(jsonEncode(payload));
 }
 
 Map<String, dynamic> _slideSchema({

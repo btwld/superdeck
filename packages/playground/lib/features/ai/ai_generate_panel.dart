@@ -56,16 +56,6 @@ class _AiGeneratePanelState extends State<_AiGeneratePanel> {
     }
   }
 
-  String _phaseLabel(GenerationPhase phase) {
-    return switch (phase) {
-      GenerationPhase.generatingOutline => 'Planning the outline…',
-      GenerationPhase.generatingImages => 'Generating images…',
-      GenerationPhase.generatingFinalDeck => 'Writing the slides…',
-      GenerationPhase.finalizing => 'Finalizing…',
-      GenerationPhase.generatingThumbnails => 'Rendering thumbnails…',
-      GenerationPhase.idle => 'Working…',
-    };
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +85,7 @@ class _AiGeneratePanelState extends State<_AiGeneratePanel> {
               final store = widget.aiStore;
               if (store.isGenerating.value) {
                 return _ProgressRow(
-                  label: _phaseLabel(store.phase.value),
+                  label: store.phase.value.label,
                   imageProgress: store.imageProgress.value,
                 );
               }

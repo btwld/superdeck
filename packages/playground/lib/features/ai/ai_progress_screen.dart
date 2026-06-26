@@ -46,17 +46,6 @@ class _AiProgressScreenState extends State<AiProgressScreen> {
     super.dispose();
   }
 
-  String _phaseLabel(GenerationPhase phase) {
-    return switch (phase) {
-      GenerationPhase.generatingOutline => 'Planning the outline…',
-      GenerationPhase.generatingImages => 'Generating images…',
-      GenerationPhase.generatingFinalDeck => 'Writing the slides…',
-      GenerationPhase.finalizing => 'Finalizing…',
-      GenerationPhase.generatingThumbnails => 'Rendering thumbnails…',
-      GenerationPhase.idle => 'Working…',
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     final store = context.read<AiStore>();
@@ -82,8 +71,8 @@ class _AiProgressScreenState extends State<AiProgressScreen> {
   ) {
     final label = imageProgress != null &&
             phase == GenerationPhase.generatingImages
-        ? '${_phaseLabel(phase)} (${imageProgress.completed}/${imageProgress.total})'
-        : _phaseLabel(phase);
+        ? '${phase.label} (${imageProgress.completed}/${imageProgress.total})'
+        : phase.label;
 
     final sentence = TextStyler()
         .style(FortalTokens.text2.mix())

@@ -11,8 +11,8 @@ class DeckDocument {
 
 /// Read/write seam between [DeckToolsService] and the underlying storage.
 ///
-/// Concrete implementations may write to disk (DeckDocumentStore) or keep the
-/// deck entirely in-memory ([InMemoryDeckStore]).
+/// The concrete implementation ([InMemoryDeckStore]) keeps the deck entirely
+/// in-memory.
 abstract interface class DeckStore {
   /// Returns the current deck document, throwing if unavailable.
   Future<DeckDocument> readRequired();

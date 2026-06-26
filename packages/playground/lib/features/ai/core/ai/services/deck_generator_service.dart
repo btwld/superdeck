@@ -122,11 +122,6 @@ class DeckGeneratorService {
   /// Retry policy for transient generation failures.
   final RetryPolicy retryPolicy;
 
-  // In-memory storage of the last generation request for regeneration.
-  String? _lastPrompt;
-  String? _lastImageStyleId;
-  String? _lastBackgroundColor;
-
   /// Generates a presentation deck from a natural language prompt.
   ///
   /// The [prompt] should describe the presentation requirements including:
@@ -149,11 +144,6 @@ class DeckGeneratorService {
     GenerationProgressCallback? onProgress,
     bool Function()? isCancelled,
   }) async {
-    // Store last generation request for regeneration.
-    _lastPrompt = prompt;
-    _lastImageStyleId = imageStyleId;
-    _lastBackgroundColor = backgroundColor;
-
     _logPipelineConfig(
       this,
       prompt: prompt,
@@ -237,27 +227,4 @@ class DeckGeneratorService {
     }
   }
 
-  /// Regenerates from the last in-memory generation request.
-  ///
-  /// Uses the prompt and parameters stored from the previous [generate] call.
-  /// Returns a failure result if no previous generation has been performed.
-  Future<DeckGenerationResult> regenerateFromLastPrompt({
-    GenerationProgressCallback? onProgress,
-    bool Function()? isCancelled,
-  }) async {
-    final prompt = _lastPrompt;
-    if (prompt == null || prompt.trim().isEmpty) {
-      return DeckGenerationResult.failure(
-        'No previous prompt found. Complete the wizard at least once.',
-      );
-    }
-
-    return generate(
-      prompt,
-      imageStyleId: _lastImageStyleId,
-      backgroundColor: _lastBackgroundColor,
-      onProgress: onProgress,
-      isCancelled: isCancelled,
-    );
-  }
 }

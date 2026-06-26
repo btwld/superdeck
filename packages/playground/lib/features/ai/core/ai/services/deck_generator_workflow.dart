@@ -253,7 +253,7 @@ List<Map<String, dynamic>> _extractSlidesWithKeys(
     final existingKey = slide['key']?.toString();
     var key = normalizeSlideKey(slide, index);
     if (usedKeys.contains(key)) {
-      key = _generateUniqueAiSlideKey(slide, index, usedKeys);
+      key = generateUniqueSlideKey(slide, index, usedKeys);
     }
 
     if (existingKey == null || existingKey.isEmpty) {
@@ -269,18 +269,6 @@ List<Map<String, dynamic>> _extractSlidesWithKeys(
   return slides;
 }
 
-String _generateUniqueAiSlideKey(
-  Map<String, dynamic> slide,
-  int index,
-  Set<String> usedKeys,
-) {
-  const maxAttempts = 1024;
-  for (var attempt = 0; attempt < maxAttempts; attempt++) {
-    final candidate = generateSlideKey(slide, index + attempt);
-    if (!usedKeys.contains(candidate)) return candidate;
-  }
-  return '${generateSlideKey(slide, index)}-$index';
-}
 
 DeckStyleType? _extractStyleData(Map<String, dynamic> deckJson) {
   final rawStyle = deckJson['style'];

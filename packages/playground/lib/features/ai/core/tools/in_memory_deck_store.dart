@@ -50,11 +50,4 @@ class InMemoryDeckStore implements DeckStore {
     }
   }
 
-  /// Updates the stored style without touching slides.
-  void updateStyle(DeckStyleType? style) {
-    _currentStyle = style;
-  }
-
-  /// Returns the most recently written style.
-  DeckStyleType? get currentStyle => _currentStyle;
 }

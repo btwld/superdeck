@@ -6,7 +6,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 import '../features/ai/core/ai/schemas/deck_schemas.dart';
-import '../features/ai/core/utils/color_utils.dart';
+import '../features/ai/core/utils/style_builder.dart';
 
 /// Curated font families surfaced in the playground's customization sidebar.
 const playgroundFontFamilies = <String>[
@@ -222,19 +222,19 @@ class DeckCustomizationStore {
   ///
   /// The reactive effect will push updated [DeckOptions] to the controller.
   void applyFromAiStyle(DeckStyleType style) {
-    background.value = hexToColor(style.colors.background);
+    final extracted = extractAiStyleColors(style);
 
-    final headingColor = hexToColor(style.colors.heading);
-    final headlineFamily = style.fonts.headline.fontFamily;
+    background.value = extracted.backgroundColor;
+
     for (final heading in [TextLevel.h1, TextLevel.h2, TextLevel.h3]) {
       level(heading)
-        ..color.value = headingColor
-        ..family.value = headlineFamily;
+        ..color.value = extracted.headingColor
+        ..family.value = extracted.headlineFontFamily;
     }
 
     level(TextLevel.p)
-      ..color.value = hexToColor(style.colors.body)
-      ..family.value = style.fonts.body.fontFamily;
+      ..color.value = extracted.bodyColor
+      ..family.value = extracted.bodyFontFamily;
   }
 
   void dispose() {

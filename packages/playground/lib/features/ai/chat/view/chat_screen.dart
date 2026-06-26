@@ -130,7 +130,7 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
               enabled: !hasConversationStarted,
               selectedValue: viewModel.model.value,
               onChanged: (value) {
-                viewModel.model.set(value);
+                viewModel.model.value = value;
               },
             );
           }),
@@ -184,7 +184,7 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
             spacing: 8,
             children: [
               GestureDetector(
-                onTap: () => viewModel.debugMode.set(!debugMode),
+                onTap: () => viewModel.debugMode.value = !debugMode,
                 child: SdCaption(
                   'Show logs',
                   style: TextStyler().color(FortalTokens.gray11()).fontSize(13),
@@ -194,7 +194,7 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
                 selected: debugMode,
                 semanticLabel: 'Show debug logs',
                 onChanged: (value) {
-                  viewModel.debugMode.set(value);
+                  viewModel.debugMode.value = value;
                 },
               ),
             ],
@@ -204,7 +204,7 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
           icon: showChat ? Icons.chat : Icons.chat_outlined,
           semanticLabel: showChat ? 'Hide chat panel' : 'Show chat panel',
           onPressed: () {
-            viewModel.showChat.set(!showChat);
+            viewModel.showChat.value = !showChat;
           },
         ),
         SdButton(

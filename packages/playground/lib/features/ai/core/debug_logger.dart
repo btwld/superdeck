@@ -10,9 +10,6 @@ class DebugLogger {
 
   DebugLogger._internal();
 
-  /// Initialises the logger (no-op — kept for call-site compatibility).
-  void init() {}
-
   /// Log a message with timestamp and category.
   void log(String category, String message) {
     if (!kDebugMode) return;
@@ -54,8 +51,6 @@ class DebugLogger {
     debugPrint('\n--- $title ---');
   }
 
-  /// Dispose — no-op (no resources to release).
-  Future<void> dispose() async {}
 }
 
 /// Global shortcut for logging.

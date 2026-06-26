@@ -30,20 +30,15 @@ void main() {
   }
 
   group('DeckStyleService', () {
-    group('preloadStyle', () {
-      test('returns null from cache when no style has been set', () async {
-        // preloadStyle is a no-op in the in-memory implementation
-        await DeckStyleService.preloadStyle();
-
-        final result = DeckStyleService.readStyleFromCache();
-        expect(result, isNull);
+    group('style signal initial state', () {
+      test('is null when no style has been set', () {
+        expect(DeckStyleService.style.value, isNull);
       });
     });
 
-    group('readStyleFromCache', () {
+    group('style signal reads', () {
       test('returns null when cache is empty', () {
-        final result = DeckStyleService.readStyleFromCache();
-        expect(result, isNull);
+        expect(DeckStyleService.style.value, isNull);
       });
 
       test('returns style after setStyle is called', () {
@@ -51,7 +46,7 @@ void main() {
           DeckStyleType.parse(buildStyle(heading: '#FF0000')),
         );
 
-        final result = DeckStyleService.readStyleFromCache();
+        final result = DeckStyleService.style.value;
         expect(result, isNotNull);
         expect(result!.colors.heading, '#FF0000');
       });
@@ -71,7 +66,7 @@ void main() {
 
         dispose();
 
-        final result = DeckStyleService.readStyleFromCache();
+        final result = DeckStyleService.style.value;
         expect(result, isNotNull);
         expect(result!.colors.heading, '#ABABAB');
         expect(notifications, 1);
@@ -81,47 +76,44 @@ void main() {
         final parsed = DeckStyleService.setStyleFromJson(buildStyle());
 
         expect(parsed, isNotNull);
-        expect(DeckStyleService.readStyleFromCache()?.name, 'Test Style');
+        expect(DeckStyleService.style.value?.name, 'Test Style');
       });
 
       test('setStyleFromJson returns null for invalid payload', () {
         final parsed = DeckStyleService.setStyleFromJson({'name': 'invalid'});
 
         expect(parsed, isNull);
-        expect(DeckStyleService.readStyleFromCache(), isNull);
+        expect(DeckStyleService.style.value, isNull);
       });
     });
 
-    group('updateCache', () {
-      test('updates cache with new style', () {
+    group('setStyle', () {
+      test('updates signal with new style', () {
         final style = DeckStyleType.parse(buildStyle(heading: '#123456'));
 
-        DeckStyleService.updateCache(style);
+        DeckStyleService.setStyle(style);
 
-        final result = DeckStyleService.readStyleFromCache();
+        final result = DeckStyleService.style.value;
         expect(result, isNotNull);
         expect(result!.colors.heading, '#123456');
       });
 
-      test('can update cache to null', () {
-        DeckStyleService.updateCache(
+      test('can set to null', () {
+        DeckStyleService.setStyle(
           DeckStyleType.parse(buildStyle(heading: '#000000')),
         );
-        expect(DeckStyleService.readStyleFromCache(), isNotNull);
+        expect(DeckStyleService.style.value, isNotNull);
 
-        DeckStyleService.updateCache(null);
-        expect(DeckStyleService.readStyleFromCache(), isNull);
+        DeckStyleService.setStyle(null);
+        expect(DeckStyleService.style.value, isNull);
       });
 
-      test('preloadStyle is a no-op after updateCache', () async {
-        DeckStyleService.updateCache(
+      test('setStyle after clearCache leaves signal updated', () {
+        DeckStyleService.setStyle(
           DeckStyleType.parse(buildStyle(heading: '#DIRECT')),
         );
 
-        // preloadStyle is always a no-op in the in-memory implementation
-        await DeckStyleService.preloadStyle();
-
-        final result = DeckStyleService.readStyleFromCache();
+        final result = DeckStyleService.style.value;
         expect(result!.colors.heading, '#DIRECT');
       });
     });
@@ -131,11 +123,11 @@ void main() {
         DeckStyleService.setStyle(
           DeckStyleType.parse(buildStyle(heading: '#FF0000')),
         );
-        expect(DeckStyleService.readStyleFromCache(), isNotNull);
+        expect(DeckStyleService.style.value, isNotNull);
 
         DeckStyleService.clearCache();
 
-        expect(DeckStyleService.readStyleFromCache(), isNull);
+        expect(DeckStyleService.style.value, isNull);
       });
 
       test('does not throw when called multiple times', () {
@@ -152,14 +144,14 @@ void main() {
     });
 
     group('cache behavior', () {
-      test('cache is shared across calls', () {
+      test('signal value is shared across reads', () {
         DeckStyleService.setStyle(
           DeckStyleType.parse(buildStyle(heading: '#FF0000')),
         );
 
-        final result1 = DeckStyleService.readStyleFromCache();
-        final result2 = DeckStyleService.readStyleFromCache();
-        final result3 = DeckStyleService.readStyleFromCache();
+        final result1 = DeckStyleService.style.value;
+        final result2 = DeckStyleService.style.value;
+        final result3 = DeckStyleService.style.value;
 
         expect(identical(result1, result2), isTrue);
         expect(identical(result2, result3), isTrue);

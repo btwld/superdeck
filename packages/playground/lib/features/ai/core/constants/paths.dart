@@ -1,43 +1,5 @@
-import 'package:playground/features/ai/core/path_service.dart';
-
-/// Centralized file and directory path constants.
-///
-/// Runtime paths (for file I/O) delegate to [PathService] for platform-aware
-/// resolution. Asset paths (bundled in Flutter) remain as static constants.
+/// Centralized file path constants for bundled Flutter assets.
 abstract final class Paths {
-  // ---------------------------------------------------------------------------
-  // Runtime paths - delegate to PathService for platform-aware resolution
-  // ---------------------------------------------------------------------------
-
-  /// Root directory for SuperDeck output files.
-  static String get superdeckDir => PathService.instance.superdeckDir;
-
-  /// Full path to assets directory.
-  static String get superdeckAssetsPath => PathService.instance.assetsPath;
-
-  /// Full path to deck JSON file.
-  static String get deckJsonPath => PathService.instance.deckJsonPath;
-
-  /// Full path to last prompt file.
-  static String get lastPromptPath => PathService.instance.lastPromptPath;
-
-  /// Full path to last generation metadata (prompt + parameters).
-  static String get lastGenerationPath =>
-      PathService.instance.lastGenerationPath;
-
-  /// Full path to app-specific SuperDeck metadata.
-  static String get aiMetadataPath => PathService.instance.aiMetadataPath;
-
-  /// Full path to SuperDeck build status.
-  static String get buildStatusPath => PathService.instance.buildStatusPath;
-
-  /// Full path to debug log.
-  static String get debugLogPath => PathService.instance.debugLogPath;
-
-  /// Runtime directory for example prompt/result pairs (filesystem I/O).
-  /// For asset bundle lookups, use [examplesAssetsDir] instead.
-  static String get examplesDir => PathService.instance.examplesDir;
-
   // ---------------------------------------------------------------------------
   // File names - for reference only
   // ---------------------------------------------------------------------------
