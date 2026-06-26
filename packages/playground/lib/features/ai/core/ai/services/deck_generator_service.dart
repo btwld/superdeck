@@ -213,10 +213,6 @@ class DeckGeneratorService {
         );
       }
 
-      if (generationCancelled()) {
-        return cancelledResult();
-      }
-
       return _finalizeDeck(
         this,
         deckJson: deckJson,

@@ -88,26 +88,19 @@ class _TextEditorState extends State<TextEditor> {
     final markdown = _textEditorController?.pendingMarkdown;
     if (markdown == null) return;
 
-    // Rebuild document nodes from the markdown lines, matching init structure.
-    final lines = markdown.split('\n');
+    // One paragraph node per markdown line, matching the init structure.
     final newNodes = <DocumentNode>[
-      for (final line in lines)
-        ParagraphNode(
-          id: Editor.createNodeId(),
-          text: AttributedText(line),
-        ),
+      for (final line in markdown.split('\n'))
+        ParagraphNode(id: Editor.createNodeId(), text: AttributedText(line)),
     ];
 
-    // Suppress listener to avoid re-entrant deck-loader update.
+    // Suppress the listener to avoid a re-entrant deck-loader update while we
+    // swap all existing nodes for the new ones.
     _document.removeListener(_onDocumentChanged);
     try {
-      // Remove all existing nodes then insert new ones.
-      final existingIds =
-          _document.map((n) => n.id).toList(growable: false);
+      final existingIds = _document.map((node) => node.id).toList();
       for (final id in existingIds) {
-        _editor.execute([
-          DeleteNodeRequest(nodeId: id),
-        ]);
+        _editor.execute([DeleteNodeRequest(nodeId: id)]);
       }
       for (var i = 0; i < newNodes.length; i++) {
         _editor.execute([

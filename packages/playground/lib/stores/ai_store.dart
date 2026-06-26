@@ -1,13 +1,14 @@
 import 'package:signals/signals_flutter.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
-import 'package:playground/features/ai/core/ai/services/deck_generator_service.dart';
-import 'package:playground/features/ai/core/ai/services/generation_progress.dart';
-import 'package:playground/features/ai/core/debug_logger.dart';
-import 'package:playground/features/ai/core/env_config.dart';
-import 'package:playground/stores/deck_customization_store.dart';
-import 'package:playground/utils/memory_asset_cache_store.dart';
-import 'package:playground/utils/memory_deck_loader.dart';
-import 'package:playground/utils/text_editor_controller.dart';
+
+import '../features/ai/core/ai/services/deck_generator_service.dart';
+import '../features/ai/core/ai/services/generation_progress.dart';
+import '../features/ai/core/debug_logger.dart';
+import '../features/ai/core/env_config.dart';
+import '../utils/memory_asset_cache_store.dart';
+import '../utils/memory_deck_loader.dart';
+import '../utils/text_editor_controller.dart';
+import 'deck_customization_store.dart';
 
 /// Orchestration store for AI presentation generation.
 ///
