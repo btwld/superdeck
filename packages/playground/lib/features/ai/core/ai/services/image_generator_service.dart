@@ -3,8 +3,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
-    as google_ai;
 import 'package:http/http.dart' as http;
 import '../prompts/prompt_registry.dart';
 import 'retry_policy.dart';
@@ -62,7 +60,6 @@ class ImageGeneratorService {
   /// Retry policy for transient generation failures.
   final RetryPolicy retryPolicy;
 
-  google_ai.GenerativeService? _service;
   http.Client? _httpClient;
   final bool _ownsHttpClient;
 
@@ -82,133 +79,22 @@ class ImageGeneratorService {
   /// Returns [ImageGenerationResult.success] with image bytes on success,
   /// or [ImageGenerationResult.failure] with an error message on failure.
   Future<ImageGenerationResult> generateImage(String prompt) async {
-    try {
-      final key = _cacheKey(prompt);
-      final cached = _memoryCache.remove(key);
-      if (cached != null) {
-        // Re-insert to mark as most-recently-used.
-        _memoryCache[key] = cached;
-        debugLog.log(
-          'IMG',
-          'Cache hit (${cached.length} bytes) for model: $modelName',
-        );
-        return ImageGenerationResult.success(cached);
-      }
-
-      if (_usesInteractionsApi) {
-        return _generateImageWithInteractions(prompt, key);
-      }
-
-      _service ??= google_ai.GenerativeService.fromApiKey(apiKey);
-      debugLog.log('IMG', 'Starting image generation with model: $modelName');
-
-      final request = google_ai.GenerateContentRequest(
-        model: modelName,
-        contents: [
-          google_ai.Content(
-            role: 'user',
-            parts: [google_ai.Part(text: prompt)],
-          ),
-        ],
-        generationConfig: google_ai.GenerationConfig(
-          // Request image-only output to avoid text-only responses
-          responseModalities: [google_ai.GenerationConfig_Modality.image],
-          imageConfig: google_ai.ImageConfig(aspectRatio: aspectRatio),
-        ),
-      );
-
-      final response = await retryPolicy.run(
-        () => _service!
-            .generateContent(request)
-            .timeout(
-              const Duration(seconds: 60),
-              onTimeout: () {
-                throw TimeoutException('Image generation timed out');
-              },
-            ),
-      );
-
+    final key = _cacheKey(prompt);
+    final cached = _memoryCache.remove(key);
+    if (cached != null) {
+      // Re-insert to mark as most-recently-used.
+      _memoryCache[key] = cached;
       debugLog.log(
         'IMG',
-        'Response received - candidates: ${response.candidates.length}',
+        'Cache hit (${cached.length} bytes) for model: $modelName',
       );
-
-      // Check for blocked prompts
-      final blockReason = response.promptFeedback?.blockReason;
-      if (blockReason != null && blockReason.isNotDefault) {
-        debugLog.log('IMG', 'Prompt blocked: $blockReason');
-        return ImageGenerationResult.failure(
-          'Content blocked by safety filter',
-        );
-      }
-
-      final candidate = response.candidates.firstOrNull;
-
-      // Check finish reason for image-specific failures
-      final finishReason = candidate?.finishReason;
-      if (finishReason != null) {
-        final imageFailReasons = {
-          google_ai.Candidate_FinishReason.safety,
-          google_ai.Candidate_FinishReason.recitation,
-          google_ai.Candidate_FinishReason.blocklist,
-          google_ai.Candidate_FinishReason.prohibitedContent,
-          google_ai.Candidate_FinishReason.imageSafety,
-          google_ai.Candidate_FinishReason.imageProhibitedContent,
-          google_ai.Candidate_FinishReason.imageRecitation,
-          google_ai.Candidate_FinishReason.noImage,
-          google_ai.Candidate_FinishReason.imageOther,
-        };
-        if (imageFailReasons.contains(finishReason)) {
-          debugLog.log('IMG', 'Image blocked by finish reason: $finishReason');
-          return ImageGenerationResult.failure(
-            'Content blocked by safety filter',
-          );
-        }
-      }
-
-      final parts = candidate?.content?.parts ?? [];
-      debugLog.log('IMG', 'Parts in response: ${parts.length}');
-
-      for (final part in parts) {
-        if (part.inlineData != null && part.inlineData!.data.isNotEmpty) {
-          debugLog.log(
-            'IMG',
-            'Image generated: ${part.inlineData!.data.length} bytes, '
-                'mime: ${part.inlineData!.mimeType}',
-          );
-          final bytes = part.inlineData!.data;
-
-          _memoryCache[key] = bytes;
-          while (_memoryCache.length > _maxCacheEntries) {
-            _memoryCache.remove(_memoryCache.keys.first);
-          }
-
-          return ImageGenerationResult.success(bytes);
-        }
-        if (part.text != null) {
-          debugLog.log('IMG', 'Text response: ${part.text}');
-        }
-      }
-
-      debugLog.log('IMG', 'No image data in response');
-      return ImageGenerationResult.failure('No image data in response');
-    } on TimeoutException {
-      debugLog.error('IMG', 'Image generation timed out after 60s');
-      return ImageGenerationResult.failure('Image generation timed out');
-    } catch (e) {
-      // Log error type only - avoid exposing API keys in stack traces
-      debugLog.error('IMG', 'Image generation failed: ${e.runtimeType}');
-      return ImageGenerationResult.failure(
-        'Image generation failed: ${e.runtimeType}',
-      );
+      return ImageGenerationResult.success(cached);
     }
+
+    return _requestImage(prompt, key);
   }
 
-  bool get _usesInteractionsApi =>
-      modelName == GeminiModelNames.gemini31FlashImagePreview ||
-      modelName == 'gemini-3.1-flash-image';
-
-  Future<ImageGenerationResult> _generateImageWithInteractions(
+  Future<ImageGenerationResult> _requestImage(
     String prompt,
     int cacheKey,
   ) async {
@@ -249,7 +135,7 @@ class ImageGeneratorService {
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        final message = _parseInteractionsError(response.body);
+        final message = _parseError(response.body);
         debugLog.error(
           'IMG',
           'Interactions image generation failed: ${response.statusCode}',
@@ -258,7 +144,7 @@ class ImageGeneratorService {
       }
 
       final decoded = jsonDecode(response.body);
-      final bytes = _extractInteractionsImageBytes(decoded);
+      final bytes = _extractImageBytes(decoded);
       if (bytes == null) {
         debugLog.log('IMG', 'No image data in interactions response');
         return ImageGenerationResult.failure('No image data in response');
@@ -288,7 +174,7 @@ class ImageGeneratorService {
     }
   }
 
-  String _parseInteractionsError(String body) {
+  String _parseError(String body) {
     try {
       final decoded = jsonDecode(body);
       if (decoded is Map<String, Object?>) {
@@ -310,7 +196,7 @@ class ImageGeneratorService {
     return 'Image generation failed';
   }
 
-  Uint8List? _extractInteractionsImageBytes(Object? value) {
+  Uint8List? _extractImageBytes(Object? value) {
     if (value is Map) {
       final data = value['data'];
       final mimeType = value['mime_type'] ?? value['mimeType'];
@@ -323,14 +209,14 @@ class ImageGeneratorService {
       }
 
       for (final child in value.values) {
-        final bytes = _extractInteractionsImageBytes(child);
+        final bytes = _extractImageBytes(child);
         if (bytes != null) return bytes;
       }
     }
 
     if (value is Iterable) {
       for (final child in value) {
-        final bytes = _extractInteractionsImageBytes(child);
+        final bytes = _extractImageBytes(child);
         if (bytes != null) return bytes;
       }
     }
@@ -356,8 +242,6 @@ class ImageGeneratorService {
   }
 
   void dispose() {
-    _service?.close();
-    _service = null;
     if (_ownsHttpClient) {
       _httpClient?.close();
     }
