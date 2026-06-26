@@ -54,7 +54,7 @@ void main() {
     (tester) async {
       final service = ImageGeneratorService(
         apiKey: apiKey!,
-        aspectRatio: GeminiImageAspectRatio.portrait3x4,
+        aspectRatio: GeminiImageAspectRatio.ratio3x4,
       );
       final ImageGenerationResult result;
       try {

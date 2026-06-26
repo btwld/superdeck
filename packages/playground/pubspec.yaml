@@ -29,6 +29,7 @@ dependencies:
   # AI generation (migrated from superdeck_ai)
   genui: ^0.7.0
   genui_google_generative_ai: ^0.7.1
+  googleai_dart: ^8.0.0
   google_cloud_ai_generativelanguage_v1beta: ^0.4.0
   http: ^1.5.0
   gpt_markdown: ^1.1.4

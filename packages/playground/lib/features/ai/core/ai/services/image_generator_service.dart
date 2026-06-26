@@ -3,7 +3,9 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:googleai_dart/googleai_dart.dart' as ga;
 import 'package:http/http.dart' as http;
+
 import '../prompts/prompt_registry.dart';
 import 'retry_policy.dart';
 import '../../constants/gemini_image_options.dart';
@@ -37,7 +39,6 @@ class ImageGenerationResult {
 
 typedef _ImageCacheKey = ({
   GeminiImageModel model,
-  GeminiImageResponseType responseType,
   GeminiImageAspectRatio aspectRatio,
   GeminiImageSize imageSize,
   String prompt,
@@ -51,21 +52,28 @@ class ImageGeneratorService {
   ImageGeneratorService({
     required this.apiKey,
     this.model = GeminiImageModel.gemini31FlashImage,
-    this.responseType = GeminiImageResponseType.image,
-    this.aspectRatio = GeminiImageAspectRatio.widescreen16x9,
+    this.aspectRatio = GeminiImageAspectRatio.ratio16x9,
     GeminiImageSize? imageSize,
     RetryPolicy? retryPolicy,
     http.Client? httpClient,
   }) : imageSize = imageSize ?? model.defaultImageSize,
-       retryPolicy = retryPolicy ?? RetryPolicy(),
-       _httpClient = httpClient,
-       _ownsHttpClient = httpClient == null {
+       retryPolicy = retryPolicy ?? RetryPolicy() {
     _validateModelOptions();
+    _client = ga.GoogleAIClient(
+      config: ga.GoogleAIConfig.googleAI(
+        apiVersion: ga.ApiVersion.v1beta,
+        authProvider: ga.ApiKeyProvider(
+          apiKey,
+          placement: ga.AuthPlacement.header,
+        ),
+        retryPolicy: const ga.RetryPolicy(maxRetries: 0),
+      ),
+      httpClient: httpClient,
+    );
   }
 
   final String apiKey;
   final GeminiImageModel model;
-  final GeminiImageResponseType responseType;
 
   /// Aspect ratio for generated images.
   final GeminiImageAspectRatio aspectRatio;
@@ -76,8 +84,7 @@ class ImageGeneratorService {
   /// Retry policy for transient generation failures.
   final RetryPolicy retryPolicy;
 
-  http.Client? _httpClient;
-  final bool _ownsHttpClient;
+  late final ga.GoogleAIClient _client;
 
   // Simple in-memory LRU cache to avoid regenerating identical prompts during a
   // single app/session (e.g., navigating back to the image style selector).
@@ -91,7 +98,6 @@ class ImageGeneratorService {
   _ImageCacheKey _cacheKey(String prompt) {
     return (
       model: model,
-      responseType: responseType,
       aspectRatio: aspectRatio,
       imageSize: imageSize,
       prompt: prompt,
@@ -103,16 +109,26 @@ class ImageGeneratorService {
       throw ArgumentError.value(
         aspectRatio,
         'aspectRatio',
-        '${model.label} does not support ${aspectRatio.apiValue}',
+        '${model.label} does not support '
+            '${geminiImageAspectRatioApiValue(aspectRatio)}',
       );
     }
     if (!model.supportsImageSize(imageSize)) {
       throw ArgumentError.value(
         imageSize,
         'imageSize',
-        '${model.label} does not support ${imageSize.apiValue}',
+        '${model.label} does not support ${geminiImageSizeApiValue(imageSize)}',
       );
     }
+  }
+
+  ga.InteractionResponseFormatConfig _buildResponseFormat() {
+    return ga.InteractionResponseFormatConfig.single(
+      ga.InteractionImageResponseFormat(
+        aspectRatio: aspectRatio,
+        imageSize: imageSize,
+      ),
+    );
   }
 
   /// Generates an image from a text prompt.
@@ -145,27 +161,12 @@ class ImageGeneratorService {
         'Starting interactions image generation with model: ${model.apiValue}',
       );
 
-      final client = _httpClient ??= http.Client();
-      final response = await retryPolicy.run(
-        () => client
-            .post(
-              Uri.https(
-                'generativelanguage.googleapis.com',
-                '/v1beta/interactions',
-              ),
-              headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': apiKey,
-              },
-              body: jsonEncode({
-                'model': model.apiValue,
-                'input': prompt,
-                'response_format': {
-                  'type': responseType.apiValue,
-                  'aspect_ratio': aspectRatio.apiValue,
-                  'image_size': imageSize.apiValue,
-                },
-              }),
+      final interaction = await retryPolicy.run(
+        () => _client.interactions
+            .create(
+              model: model.apiValue,
+              input: ga.InteractionInput.text(prompt),
+              responseFormat: _buildResponseFormat(),
             )
             .timeout(
               const Duration(seconds: 60),
@@ -175,22 +176,20 @@ class ImageGeneratorService {
             ),
       );
 
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        final message = _parseError(response.body);
-        debugLog.error(
-          'IMG',
-          'Interactions image generation failed: ${response.statusCode}',
-        );
-        return ImageGenerationResult.failure(message);
+      String? imageData;
+      for (final image in interaction.imageOutputs) {
+        final data = image.data;
+        if (data != null && data.isNotEmpty) {
+          imageData = data;
+          break;
+        }
       }
-
-      final decoded = jsonDecode(response.body);
-      final bytes = _extractImageBytes(decoded);
-      if (bytes == null) {
+      if (imageData == null) {
         debugLog.log('IMG', 'No image data in interactions response');
         return ImageGenerationResult.failure('No image data in response');
       }
 
+      final bytes = base64Decode(imageData);
       _memoryCache[cacheKey] = bytes;
       while (_memoryCache.length > _maxCacheEntries) {
         _memoryCache.remove(_memoryCache.keys.first);
@@ -204,6 +203,12 @@ class ImageGeneratorService {
     } on TimeoutException {
       debugLog.error('IMG', 'Image generation timed out after 60s');
       return ImageGenerationResult.failure('Image generation timed out');
+    } on ga.GoogleAIException catch (e) {
+      debugLog.error(
+        'IMG',
+        'Interactions image generation failed: ${e.message}',
+      );
+      return ImageGenerationResult.failure(e.message);
     } catch (e) {
       debugLog.error(
         'IMG',
@@ -213,56 +218,6 @@ class ImageGeneratorService {
         'Image generation failed: ${e.runtimeType}',
       );
     }
-  }
-
-  String _parseError(String body) {
-    try {
-      final decoded = jsonDecode(body);
-      if (decoded is Map<String, Object?>) {
-        final error = decoded['error'];
-        if (error is Map<String, Object?>) {
-          final message = error['message']?.toString();
-          if (message != null && message.isNotEmpty) {
-            return message;
-          }
-          final code = error['code']?.toString();
-          if (code != null && code.isNotEmpty) {
-            return code;
-          }
-        }
-      }
-    } catch (_) {
-      // Fall through to generic message.
-    }
-    return 'Image generation failed';
-  }
-
-  Uint8List? _extractImageBytes(Object? value) {
-    if (value is Map) {
-      final data = value['data'];
-      final mimeType = value['mime_type'] ?? value['mimeType'];
-      final type = value['type'];
-      final looksLikeImage =
-          type == 'image' ||
-          (mimeType is String && mimeType.toLowerCase().startsWith('image/'));
-      if (data is String && data.isNotEmpty && looksLikeImage) {
-        return base64Decode(data);
-      }
-
-      for (final child in value.values) {
-        final bytes = _extractImageBytes(child);
-        if (bytes != null) return bytes;
-      }
-    }
-
-    if (value is Iterable) {
-      for (final child in value) {
-        final bytes = _extractImageBytes(child);
-        if (bytes != null) return bytes;
-      }
-    }
-
-    return null;
   }
 
   /// Builds an image prompt with presentation-specific constraints.
@@ -283,9 +238,6 @@ class ImageGeneratorService {
   }
 
   void dispose() {
-    if (_ownsHttpClient) {
-      _httpClient?.close();
-    }
-    _httpClient = null;
+    _client.close();
   }
 }

@@ -124,12 +124,13 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     // Portrait ratio for images displayed in their own column
     final imageService = ImageGeneratorService(
       apiKey: apiKey,
-      aspectRatio: GeminiImageAspectRatio.portrait3x4,
+      aspectRatio: GeminiImageAspectRatio.ratio3x4,
     );
     debugLog.log(
       'IMG',
       'ImageService: aspectRatio='
-          '${GeminiImageAspectRatio.portrait3x4.apiValue} (portrait)',
+          '${geminiImageAspectRatioApiValue(GeminiImageAspectRatio.ratio3x4)} '
+          '(portrait)',
     );
 
     try {

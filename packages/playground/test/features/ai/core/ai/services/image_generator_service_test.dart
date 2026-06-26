@@ -16,7 +16,7 @@ void main() {
         expect(request.method, 'POST');
         expect(request.url.host, 'generativelanguage.googleapis.com');
         expect(request.url.path, '/v1beta/interactions');
-        expect(request.headers['x-goog-api-key'], 'test-key');
+        expect(_headerValue(request, 'X-Goog-Api-Key'), 'test-key');
 
         final body = jsonDecode(request.body) as Map<String, Object?>;
         expect(body['model'], GeminiModelNames.gemini31FlashImage);
@@ -26,24 +26,9 @@ void main() {
         expect(responseFormat, containsPair('aspect_ratio', '16:9'));
         expect(responseFormat, containsPair('image_size', '512'));
 
-        return http.Response(
-          jsonEncode({
-            'status': 'completed',
-            'steps': [
-              {'type': 'signature', 'signature': 'ignored'},
-              {
-                'type': 'output',
-                'content': [
-                  {
-                    'type': 'image',
-                    'mime_type': 'image/jpeg',
-                    'data': base64Encode(imageBytes),
-                  },
-                ],
-              },
-            ],
-          }),
-          200,
+        return _successfulInteractionResponse(
+          imageBytes,
+          mimeType: 'image/jpeg',
         );
       });
 
@@ -71,23 +56,14 @@ void main() {
         expect(responseFormat, containsPair('aspect_ratio', '3:4'));
         expect(responseFormat, containsPair('image_size', '2K'));
 
-        return http.Response(
-          jsonEncode({
-            'output_image': {
-              'type': 'image',
-              'mime_type': 'image/png',
-              'data': base64Encode(imageBytes),
-            },
-          }),
-          200,
-        );
+        return _successfulInteractionResponse(imageBytes);
       });
 
       final service = ImageGeneratorService(
         apiKey: 'test-key',
         model: GeminiImageModel.gemini3ProImage,
-        aspectRatio: GeminiImageAspectRatio.portrait3x4,
-        imageSize: GeminiImageSize.k2,
+        aspectRatio: GeminiImageAspectRatio.ratio3x4,
+        imageSize: GeminiImageSize.size2k,
         httpClient: client,
         retryPolicy: RetryPolicy(maxAttempts: 1),
       );
@@ -107,16 +83,7 @@ void main() {
         final responseFormat = body['response_format'] as Map<String, Object?>;
         expect(responseFormat, containsPair('image_size', '1K'));
 
-        return http.Response(
-          jsonEncode({
-            'output_image': {
-              'type': 'image',
-              'mime_type': 'image/png',
-              'data': base64Encode(imageBytes),
-            },
-          }),
-          200,
-        );
+        return _successfulInteractionResponse(imageBytes);
       });
 
       final service = ImageGeneratorService(
@@ -138,7 +105,7 @@ void main() {
         () => ImageGeneratorService(
           apiKey: 'test-key',
           model: GeminiImageModel.gemini3ProImage,
-          imageSize: GeminiImageSize.px512,
+          imageSize: GeminiImageSize.size512,
         ),
         throwsArgumentError,
       );
@@ -149,7 +116,7 @@ void main() {
         () => ImageGeneratorService(
           apiKey: 'test-key',
           model: GeminiImageModel.gemini3ProImage,
-          aspectRatio: GeminiImageAspectRatio.tall1x4,
+          aspectRatio: GeminiImageAspectRatio.ratio1x4,
         ),
         throwsArgumentError,
       );
@@ -159,16 +126,7 @@ void main() {
       var requestCount = 0;
       final client = MockClient((request) async {
         requestCount++;
-        return http.Response(
-          jsonEncode({
-            'output_image': {
-              'type': 'image',
-              'mime_type': 'image/png',
-              'data': base64Encode([requestCount]),
-            },
-          }),
-          200,
-        );
+        return _successfulInteractionResponse([requestCount]);
       });
 
       final px512Service = ImageGeneratorService(
@@ -178,7 +136,7 @@ void main() {
       );
       final k1Service = ImageGeneratorService(
         apiKey: 'test-key',
-        imageSize: GeminiImageSize.k1,
+        imageSize: GeminiImageSize.size1k,
         httpClient: client,
         retryPolicy: RetryPolicy(maxAttempts: 1),
       );
@@ -225,4 +183,40 @@ void main() {
       );
     });
   });
+}
+
+String? _headerValue(http.Request request, String name) {
+  final normalizedName = name.toLowerCase();
+  for (final entry in request.headers.entries) {
+    if (entry.key.toLowerCase() == normalizedName) {
+      return entry.value;
+    }
+  }
+  return null;
+}
+
+http.Response _successfulInteractionResponse(
+  List<int> imageBytes, {
+  String mimeType = 'image/png',
+}) {
+  return http.Response(
+    jsonEncode({
+      'id': 'interaction-test',
+      'status': 'completed',
+      'model': GeminiModelNames.gemini31FlashImage,
+      'steps': [
+        {
+          'type': 'model_output',
+          'content': [
+            {
+              'type': 'image',
+              'mime_type': mimeType,
+              'data': base64Encode(imageBytes),
+            },
+          ],
+        },
+      ],
+    }),
+    200,
+  );
 }
