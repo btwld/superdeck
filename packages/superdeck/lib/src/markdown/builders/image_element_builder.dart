@@ -2,8 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
-import 'package:superdeck_core/superdeck_core.dart';
-
+import '../../deck/slide_configuration.dart';
 import '../../rendering/blocks/block_provider.dart';
 import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
@@ -68,9 +67,10 @@ class ImageElementBuilder extends MarkdownElementBuilder
     final totalSize = BlockConfiguration.of(context).size;
 
     // A bare key (e.g. an AI-generated `slide-x-illustration.png`) is resolved
-    // through the ambient asset cache when one is present. Hero transitions are
+    // through the slide's asset cache when one is bound. Hero transitions are
     // not applied for cache-resolved images (they have no hero tag in practice).
-    final assetCacheStore = InheritedData.maybeOf<AssetCacheStore>(context);
+    final assetCacheStore =
+        InheritedData.maybeOf<SlideConfiguration>(context)?.assetCacheStore;
     if (assetCacheStore != null && isBareAssetKey(uri)) {
       return ConstrainedBox(
         constraints: BoxConstraints.tight(totalSize),

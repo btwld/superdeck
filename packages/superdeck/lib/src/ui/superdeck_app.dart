@@ -14,7 +14,6 @@ import '../utils/asset_cache_store.dart';
 import '../utils/constants.dart';
 import 'app_shell.dart';
 import 'app_theme.dart';
-import 'widgets/provider.dart';
 
 class SuperDeckApp extends StatelessWidget {
   const SuperDeckApp({
@@ -75,10 +74,7 @@ class SuperDeckApp extends StatelessWidget {
           builder: (context, child) {
             return MixScope(
               colors: SDColors.colorMap,
-              child: InheritedData<AssetCacheStore>(
-                data: cacheStore,
-                child: AppShell(child: child!),
-              ),
+              child: AppShell(child: child!),
             );
           },
           theme: theme,

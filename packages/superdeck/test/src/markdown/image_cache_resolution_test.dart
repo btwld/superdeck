@@ -116,6 +116,7 @@ class _MarkdownHarness extends StatelessWidget {
       style: SlideStyle(),
       slide: Slide(key: 'slide'),
       thumbnailKey: 'thumb.png',
+      assetCacheStore: assetCacheStore,
     );
     final blockData = BlockConfiguration(
       align: ContentBlock(markdown).align,
@@ -123,7 +124,7 @@ class _MarkdownHarness extends StatelessWidget {
       size: const Size(800, 600),
     );
 
-    Widget tree = InheritedData<SlideConfiguration>(
+    final tree = InheritedData<SlideConfiguration>(
       data: slideConfiguration,
       child: InheritedData<BlockConfiguration>(
         data: blockData,
@@ -147,11 +148,6 @@ class _MarkdownHarness extends StatelessWidget {
         ),
       ),
     );
-
-    final store = assetCacheStore;
-    if (store != null) {
-      tree = InheritedData<AssetCacheStore>(data: store, child: tree);
-    }
 
     return MaterialApp(home: tree);
   }

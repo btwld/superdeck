@@ -23,19 +23,19 @@ final class DeckController {
     AssetCacheStore? assetCacheStore,
     Duration transitionDuration = const Duration(seconds: 1),
   }) {
+    this.assetCacheStore = assetCacheStore ?? RuntimeAssetCacheStore();
     this.options = signal<DeckOptions>(options);
     session = DeckSessionState(deckLoader: deckLoader);
     presentation = DeckPresentationState(
       thumbnailService:
-          thumbnailService ??
-          ThumbnailService(
-            cacheStore: assetCacheStore ?? RuntimeAssetCacheStore(),
-          ),
+          thumbnailService ?? ThumbnailService(cacheStore: this.assetCacheStore),
       slides: slides,
       transitionDuration: transitionDuration,
     );
   }
 
+  /// Asset cache shared by thumbnail capture and in-slide image resolution.
+  late final AssetCacheStore assetCacheStore;
   late final Signal<DeckOptions> options;
   late final DeckSessionState session;
   late final DeckPresentationState presentation;
@@ -46,6 +46,7 @@ final class DeckController {
     return const SlideConfigurationBuilder().buildConfigurations(
       loaded,
       options.value,
+      assetCacheStore: assetCacheStore,
     );
   });
 

@@ -6,7 +6,6 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 import '../../stores/editor_state.dart';
-import '../../utils/memory_asset_cache_store.dart';
 
 class PreviewSidebar extends StatelessWidget {
   const PreviewSidebar({super.key});
@@ -87,13 +86,12 @@ class _PreviewItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback? onTap;
 
-  Widget _buildSlideRender(MemoryAssetCacheStore assetCacheStore) {
+  Widget _buildSlideRender() {
     return FittedBox(
       fit: .cover,
       alignment: .topLeft,
       child: SlideRenderView(
         configuration.copyWith(style: configuration.style),
-        assetCacheStore: assetCacheStore,
       ),
     );
   }
@@ -115,9 +113,7 @@ class _PreviewItem extends StatelessWidget {
                 active: isActive,
                 controller: controller,
                 configuration: configuration,
-                fallback: () => _buildSlideRender(
-                  context.read<MemoryAssetCacheStore>(),
-                ),
+                fallback: _buildSlideRender,
               ),
             ),
             Box(
