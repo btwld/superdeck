@@ -1,4 +1,4 @@
-import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
+import '../schemas/deck_schemas.dart';
 
 /// Serializes a parsed deck style to a JSON-encodable map.
 ///

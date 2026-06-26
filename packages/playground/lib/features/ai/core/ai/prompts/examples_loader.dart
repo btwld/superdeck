@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
-import 'package:playground/features/ai/core/constants/paths.dart';
-import 'package:playground/features/ai/core/debug_logger.dart';
+import '../../constants/paths.dart';
+import '../../debug_logger.dart';
 
 /// Loads example prompt/result pairs from assets for few-shot learning.
 ///

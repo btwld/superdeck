@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
+import '../../../core/ui/ui.dart';
 
 /// Shared chat input widget used by both sidebar and inline views.
 ///

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:remix/remix.dart';
 
-import 'package:playground/features/ai/core/debug_logger.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
-import 'package:playground/features/ai/core/utils/color_utils.dart';
+import '../../debug_logger.dart';
+import '../../ui/ui.dart';
+import '../../utils/color_utils.dart';
 
 import 'remix_component_preview.dart';
 

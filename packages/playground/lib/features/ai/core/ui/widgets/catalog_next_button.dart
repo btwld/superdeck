@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
+import '../ui.dart';
 
 class CatalogNextButton extends StatelessWidget {
   const CatalogNextButton({super.key, required this.onPressed});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:remix/remix.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
+import '../../../core/ui/ui.dart';
 
 /// Type of chat message bubble for styling differentiation.
 ///

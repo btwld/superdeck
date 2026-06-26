@@ -1,4 +1,4 @@
-import 'package:playground/features/ai/core/ai/schemas/wizard_context_keys.dart';
+import 'schemas/wizard_context_keys.dart';
 
 /// Typed representation of wizard context data used for generation.
 ///

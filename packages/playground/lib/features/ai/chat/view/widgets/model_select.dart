@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:playground/features/ai/core/constants/gemini_models.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
+import '../../../core/constants/gemini_models.dart';
+import '../../../core/ui/ui.dart';
 
 /// Chat models available for user selection in the UI.
 ///

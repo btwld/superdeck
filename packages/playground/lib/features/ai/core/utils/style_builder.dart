@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
-import 'package:playground/features/ai/core/utils/color_utils.dart';
+import '../ai/schemas/deck_schemas.dart';
+import 'color_utils.dart';
 
 /// Parsed colors and font families from a [DeckStyleType].
 typedef AiStyleColors = ({

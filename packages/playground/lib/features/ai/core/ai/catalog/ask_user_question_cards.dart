@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 
 import 'package:remix/remix.dart';
 
-import 'package:playground/features/ai/core/ai/prompts/font_styles.dart';
-import 'package:playground/features/ai/core/ai/prompts/image_style_prompts.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
-import 'package:playground/features/ai/core/utils/color_utils.dart';
-import 'package:playground/features/ai/core/utils/font_utils.dart';
+import '../prompts/font_styles.dart';
+import '../prompts/image_style_prompts.dart';
+import '../../ui/ui.dart';
+import '../../utils/color_utils.dart';
+import '../../utils/font_utils.dart';
 
 // ─────────────────────────────────── STYLING UTILITIES ───────────────────────────────────
 

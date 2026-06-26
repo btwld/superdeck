@@ -1,4 +1,4 @@
-import 'package:playground/features/ai/core/ai/wizard_context.dart';
+import '../wizard_context.dart';
 
 /// Builds a deck generation prompt from wizard context data.
 ///

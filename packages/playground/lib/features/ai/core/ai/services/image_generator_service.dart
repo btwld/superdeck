@@ -4,10 +4,10 @@ import 'dart:typed_data';
 
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
-import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
-import 'package:playground/features/ai/core/ai/services/retry_policy.dart';
-import 'package:playground/features/ai/core/constants/gemini_models.dart';
-import 'package:playground/features/ai/core/debug_logger.dart';
+import '../prompts/prompt_registry.dart';
+import 'retry_policy.dart';
+import '../../constants/gemini_models.dart';
+import '../../debug_logger.dart';
 
 /// Result of image generation.
 class ImageGenerationResult {

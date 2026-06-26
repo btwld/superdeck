@@ -3,7 +3,7 @@ import 'package:dotprompt_dart/dotprompt_dart.dart';
 import 'package:dotprompt_dart/src/partial_resolver.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
-import 'package:playground/features/ai/core/constants/paths.dart';
+import '../../constants/paths.dart';
 
 /// Loads and renders dotprompt templates from Flutter assets.
 class PromptRegistry {

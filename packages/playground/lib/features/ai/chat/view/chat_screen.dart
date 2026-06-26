@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
-import 'package:playground/features/ai/chat/chat_viewmodel.dart';
-import 'package:playground/features/ai/chat/view/widgets/chat_genui_panels.dart';
-import 'package:playground/features/ai/chat/view/widgets/chat_input.dart';
-import 'package:playground/features/ai/chat/view/widgets/chat_scaffold.dart';
-import 'package:playground/features/ai/chat/view/widgets/empty_state.dart';
-import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
-import 'package:playground/features/ai/core/viewmodel_scope.dart';
-import 'package:playground/features/ai/remix/view/remix_screen.dart';
+import '../chat_viewmodel.dart';
+import 'widgets/chat_genui_panels.dart';
+import 'widgets/chat_input.dart';
+import 'widgets/chat_scaffold.dart';
+import 'widgets/empty_state.dart';
+import 'widgets/model_select.dart';
+import '../../core/ui/ui.dart';
+import '../../core/viewmodel_scope.dart';
+import '../../remix/view/remix_screen.dart';
 
 /// Main chat screen for the wizard-based presentation builder.
 ///

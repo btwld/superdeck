@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
-import 'package:playground/features/ai/core/debug_logger.dart';
+import '../../debug_logger.dart';
 
 import 'ask_user_checkbox.dart';
 import 'ask_user_image_style.dart';

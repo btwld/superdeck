@@ -4,13 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:genui/genui.dart';
 import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
 import 'package:signals/signals_flutter.dart';
-import 'package:playground/features/ai/chat/chat_message.dart';
-import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
-import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
-import 'package:playground/features/ai/core/ai/services/error_classifier.dart';
-import 'package:playground/features/ai/core/debug_logger.dart';
-import 'package:playground/features/ai/core/env_config.dart';
-import 'package:playground/features/ai/core/viewmodel_scope.dart';
+import '../../../chat/chat_message.dart';
+import '../../../chat/view/widgets/model_select.dart';
+import '../prompts/prompt_registry.dart';
+import 'error_classifier.dart';
+import '../../debug_logger.dart';
+import '../../env_config.dart';
+import '../../viewmodel_scope.dart';
 
 /// Builder for creating GenUI conversations.
 ///

@@ -8,14 +8,14 @@ import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:genui/genui.dart';
 import 'package:remix/remix.dart';
 
-import 'package:playground/features/ai/core/ai/catalog/user_action_dispatch.dart';
-import 'package:playground/features/ai/core/ai/prompts/image_style_prompts.dart';
-import 'package:playground/features/ai/core/ai/schemas/genui_action_schema.dart';
-import 'package:playground/features/ai/core/ai/schemas/wizard_context_keys.dart';
-import 'package:playground/features/ai/core/ai/services/image_generator_service.dart';
-import 'package:playground/features/ai/core/env_config.dart';
-import 'package:playground/features/ai/core/debug_logger.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
+import 'user_action_dispatch.dart';
+import '../prompts/image_style_prompts.dart';
+import '../schemas/genui_action_schema.dart';
+import '../schemas/wizard_context_keys.dart';
+import '../services/image_generator_service.dart';
+import '../../env_config.dart';
+import '../../debug_logger.dart';
+import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';

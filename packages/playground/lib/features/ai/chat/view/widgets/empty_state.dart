@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
-import 'package:playground/features/ai/presentation/view/loading.dart';
+import '../../../core/ui/ui.dart';
+import '../../../presentation/view/loading.dart';
 
 /// Initial state displayed before conversation starts.
 ///

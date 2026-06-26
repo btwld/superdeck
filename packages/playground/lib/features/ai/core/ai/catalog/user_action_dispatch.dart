@@ -1,5 +1,5 @@
 import 'package:genui/genui.dart';
-import 'package:playground/features/ai/core/ai/schemas/genui_action_schema.dart';
+import '../schemas/genui_action_schema.dart';
 
 typedef CatalogActionContextBuilder = Map<String, dynamic> Function();
 

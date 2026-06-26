@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
-import 'package:playground/features/ai/chat/chat_message.dart';
-import 'package:playground/features/ai/chat/view/widgets/chat_bubble.dart';
-import 'package:playground/features/ai/chat/view/widgets/typing_indicator.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
+import '../../chat_message.dart';
+import 'chat_bubble.dart';
+import 'typing_indicator.dart';
+import '../../../core/ui/ui.dart';
 
 /// Shared bubble border radius for iOS-style chat bubbles.
 const _bubbleBorderRadius = BorderRadius.only(

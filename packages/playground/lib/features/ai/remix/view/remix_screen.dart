@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
-import 'package:playground/features/ai/chat/view/widgets/chat_genui_panels.dart';
-import 'package:playground/features/ai/chat/view/widgets/chat_input.dart';
-import 'package:playground/features/ai/chat/view/widgets/chat_scaffold.dart';
-import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
-import 'package:playground/features/ai/core/viewmodel_scope.dart';
-import 'package:playground/features/ai/remix/remix_viewmodel.dart';
+import '../../chat/view/widgets/chat_genui_panels.dart';
+import '../../chat/view/widgets/chat_input.dart';
+import '../../chat/view/widgets/chat_scaffold.dart';
+import '../../chat/view/widgets/model_select.dart';
+import '../../core/ui/ui.dart';
+import '../../core/viewmodel_scope.dart';
+import '../remix_viewmodel.dart';
 
 /// Standalone Remix component builder screen.
 class RemixScreen extends StatelessWidget {

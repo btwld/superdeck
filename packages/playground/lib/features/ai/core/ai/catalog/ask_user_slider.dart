@@ -6,9 +6,9 @@ import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:genui/genui.dart';
 import 'package:remix/remix.dart';
 
-import 'package:playground/features/ai/core/ai/schemas/genui_action_schema.dart';
-import 'package:playground/features/ai/core/ai/catalog/user_action_dispatch.dart';
-import 'package:playground/features/ai/core/ui/ui.dart';
+import '../schemas/genui_action_schema.dart';
+import 'user_action_dispatch.dart';
+import '../../ui/ui.dart';
 
 import 'catalog_question_step.dart';
 
