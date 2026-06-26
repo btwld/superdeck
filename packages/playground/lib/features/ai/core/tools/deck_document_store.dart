@@ -7,16 +7,14 @@ import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
 import 'package:playground/features/ai/core/ai/services/style_json_serializer.dart';
 import 'package:playground/features/ai/core/constants/paths.dart';
 import 'package:playground/features/ai/core/superdeck_workspace.dart';
+import 'package:playground/features/ai/core/tools/deck_store.dart';
 import 'package:playground/features/ai/core/tools/errors.dart';
 
-class DeckDocument {
-  const DeckDocument({required this.slides, required this.style});
-
-  final List<Slide> slides;
-  final DeckStyleType? style;
-}
-
-class DeckDocumentStore {
+/// Disk-backed [DeckStore].
+///
+/// Reads/writes the deck from the filesystem via [DeckWorkspace].
+/// Not suitable for web — use [InMemoryDeckStore] instead.
+class DeckDocumentStore implements DeckStore {
   DeckDocumentStore({DeckWorkspace? workspace})
     : workspace = workspace ?? runtimeDeckWorkspace();
 
@@ -25,6 +23,7 @@ class DeckDocumentStore {
   File get _metadataFile =>
       File(p.join(workspace.superdeckDir.path, Paths.aiMetadataFile));
 
+  @override
   Future<DeckDocument> readRequired() async {
     final file = workspace.deckJson;
     if (!await file.exists()) {
@@ -67,6 +66,7 @@ class DeckDocumentStore {
     );
   }
 
+  @override
   Future<void> writeCanonical({
     required List<Slide> slides,
     DeckStyleType? style,

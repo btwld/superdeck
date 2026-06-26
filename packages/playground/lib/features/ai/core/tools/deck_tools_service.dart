@@ -9,8 +9,8 @@ import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
 import 'package:playground/features/ai/core/ai/services/slide_key_utils.dart';
 import 'package:playground/features/ai/core/ai/services/style_json_serializer.dart';
 import 'package:playground/features/ai/core/superdeck_slide_configurations.dart';
-import 'package:playground/features/ai/core/tools/deck_document_store.dart';
 import 'package:playground/features/ai/core/tools/deck_mutation_helpers.dart' as mutation;
+import 'package:playground/features/ai/core/tools/deck_store.dart';
 import 'package:playground/features/ai/core/tools/deck_tools_schemas.dart';
 import 'package:playground/features/ai/core/tools/errors.dart';
 import 'package:playground/features/ai/core/utils/deck_style_service.dart';
@@ -32,17 +32,17 @@ typedef ReadSlideConfigurationBuilder =
 /// In-app deck tooling service for slide CRUD and style updates.
 class DeckToolsService {
   DeckToolsService({
-    DeckDocumentStore? documentStore,
+    DeckStore? documentStore,
     BuildContextProvider? contextProvider,
     SlideCaptureFn? captureSlide,
     ReadSlideConfigurationBuilder? buildReadSlideConfiguration,
-  }) : _documentStore = documentStore ?? DeckDocumentStore(),
+  }) : _documentStore = documentStore,
        _contextProvider = contextProvider ?? _defaultContextProvider,
        _captureSlide = captureSlide,
        _buildReadSlideConfiguration =
            buildReadSlideConfiguration ?? _defaultReadSlideConfigurationBuilder;
 
-  final DeckDocumentStore _documentStore;
+  final DeckStore? _documentStore;
   final BuildContextProvider _contextProvider;
   final SlideCaptureFn? _captureSlide;
   final ReadSlideConfigurationBuilder _buildReadSlideConfiguration;
@@ -50,13 +50,24 @@ class DeckToolsService {
   SlideCaptureService? _captureService;
   Future<void> _mutationQueue = Future.value();
 
+  DeckStore _store() {
+    final store = _documentStore;
+    if (store == null) {
+      throw StateError(
+        'DeckToolsService: no DeckStore provided. '
+        'Inject an InMemoryDeckStore (web) or DeckDocumentStore (native).',
+      );
+    }
+    return store;
+  }
+
   Future<DeckSnapshotType> getDeck() async {
-    final document = await _documentStore.readRequired();
+    final document = await _store().readRequired();
     return mutation.buildDeckSnapshot(document.slides, style: document.style);
   }
 
   Future<ReadSlideResultType> readSlide(ReadSlideRequestType request) async {
-    final document = await _documentStore.readRequired();
+    final document = await _store().readRequired();
     final index = request.index;
     mutation.validateReadIndex(index, document.slides.length);
 
@@ -93,7 +104,7 @@ class DeckToolsService {
     CreateSlideRequestType request,
   ) async {
     return _runSerializedMutation(() async {
-      final document = await _documentStore.readRequired();
+      final document = await _store().readRequired();
       final insertIndex = request.atIndex ?? document.slides.length;
       mutation.validateInsertIndex(insertIndex, document.slides.length);
 
@@ -123,7 +134,7 @@ class DeckToolsService {
         slide,
         insertIndex,
       );
-      await _documentStore.writeCanonical(
+      await _store().writeCanonical(
         slides: updatedSlides,
         style: document.style,
       );
@@ -143,7 +154,7 @@ class DeckToolsService {
     UpdateSlideRequestType request,
   ) async {
     return _runSerializedMutation(() async {
-      final document = await _documentStore.readRequired();
+      final document = await _store().readRequired();
       final index = request.index;
       mutation.validateReadIndex(index, document.slides.length);
 
@@ -166,7 +177,7 @@ class DeckToolsService {
         index,
         updatedSlide,
       );
-      await _documentStore.writeCanonical(
+      await _store().writeCanonical(
         slides: updatedSlides,
         style: document.style,
       );
@@ -184,11 +195,11 @@ class DeckToolsService {
 
   Future<DeckSnapshotType> deleteSlide(DeleteSlideRequestType request) async {
     return _runSerializedMutation(() async {
-      final document = await _documentStore.readRequired();
+      final document = await _store().readRequired();
       final index = request.index;
       final updatedSlides = mutation.removeSlideAt(document.slides, index);
 
-      await _documentStore.writeCanonical(
+      await _store().writeCanonical(
         slides: updatedSlides,
         style: document.style,
       );
@@ -199,14 +210,14 @@ class DeckToolsService {
 
   Future<SlideMoveResultType> moveSlide(MoveSlideRequestType request) async {
     return _runSerializedMutation(() async {
-      final document = await _documentStore.readRequired();
+      final document = await _store().readRequired();
       final updatedSlides = mutation.moveSlide(
         document.slides,
         request.fromIndex,
         request.toIndex,
       );
 
-      await _documentStore.writeCanonical(
+      await _store().writeCanonical(
         slides: updatedSlides,
         style: document.style,
       );
@@ -233,8 +244,8 @@ class DeckToolsService {
         );
       }
 
-      final document = await _documentStore.readRequired();
-      await _documentStore.writeCanonical(
+      final document = await _store().readRequired();
+      await _store().writeCanonical(
         slides: document.slides,
         style: parsedStyle,
       );

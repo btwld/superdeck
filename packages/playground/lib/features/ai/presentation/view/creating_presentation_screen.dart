@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:playground/features/ai/core/debug_logger.dart';
-import 'package:playground/features/ai/core/viewmodel_scope.dart';
 import 'package:playground/features/ai/core/router.dart';
-import 'package:playground/features/ai/core/tools/deck_document_store.dart';
 import 'package:playground/features/ai/core/ui/ui.dart';
 import 'package:playground/features/ai/core/utils/deck_style_service.dart';
+import 'package:playground/features/ai/core/viewmodel_scope.dart';
 import 'package:playground/features/ai/presentation/view/loading.dart';
 import 'package:playground/features/ai/core/ai/services/generation_progress.dart';
 import 'package:playground/features/ai/presentation/presentation_viewmodel.dart';
@@ -87,8 +87,9 @@ class _CreatingPresentationScreenState
       final generationContext = context;
       if (!generationContext.mounted) return;
       try {
-        // Load the deck that was just written by the generation pipeline
-        final deck = await DeckDocumentStore().readRequired();
+        // Read slides from the in-memory DeckController (web-safe, no disk I/O).
+        final controller = DeckController.of(generationContext);
+        final slides = controller.session.loadedSlides.value ?? const [];
 
         if (!generationContext.mounted || viewModel.thumbnailEpoch != epoch) {
           return;
@@ -97,7 +98,7 @@ class _CreatingPresentationScreenState
         final service = ThumbnailPreviewService();
         await service.generatePreviews(
           context: generationContext,
-          slides: deck.slides,
+          slides: slides,
           style: style,
           onThumbnailCaptured: (slideIndex, imageBytes) {
             viewModel.addThumbnailPreview(slideIndex, imageBytes, epoch: epoch);
@@ -119,9 +120,9 @@ class _CreatingPresentationScreenState
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<PresentationViewModel>();
+    final viewModel = ViewModelScope.of<PresentationViewModel>(context);
 
-    return Watch((context) {
+    return Watch<Widget>((context) {
       final status = viewModel.status.value;
 
       switch (status) {
@@ -306,7 +307,7 @@ class _CreatingPresentationScreenState
   }
 
   Widget _buildLoadingUI(BuildContext context) {
-    final viewModel = context.read<PresentationViewModel>();
+    final viewModel = ViewModelScope.of<PresentationViewModel>(context);
     final flexBoxStyler = StackBoxStyler().alignment(.center).paddingAll(24);
 
     final sentence = TextStyler()
