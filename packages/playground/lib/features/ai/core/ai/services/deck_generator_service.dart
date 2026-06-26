@@ -102,7 +102,7 @@ class _ImagePhaseData {
 class DeckGeneratorService {
   DeckGeneratorService({
     required this.apiKey,
-    this.modelName = GeminiModelNames.gemini25Pro,
+    this.modelName = GeminiModelNames.gemini25Flash,
     this.outlineModelName = GeminiModelNames.gemini3FlashPreview,
     this.thinkingBudget = 3072,
     RetryPolicy? retryPolicy,
@@ -111,6 +111,10 @@ class DeckGeneratorService {
   final String apiKey;
 
   /// Model used for the final deck generation (Phase 3).
+  ///
+  /// Defaults to `gemini-2.5-flash` so deck generation works on a free-tier
+  /// API key. Pass `GeminiModelNames.gemini25Pro` for higher-quality decks on a
+  /// billing-enabled key.
   final String modelName;
 
   /// Model used for the outline generation (Phase 1).
