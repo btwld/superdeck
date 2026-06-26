@@ -31,8 +31,10 @@ abstract class GenUiConversationViewModel implements Disposable {
     required this.catalog,
     required this.promptName,
     required this.promptLoadErrorMessage,
+    Iterable<AiTool<Map<String, dynamic>>> additionalTools = const [],
     GenUiConversationBuilder? conversationBuilder,
-  }) : _conversationBuilder = conversationBuilder ?? GenUiConversation.new;
+  }) : _additionalTools = List.unmodifiable(additionalTools),
+       _conversationBuilder = conversationBuilder ?? GenUiConversation.new;
 
   @protected
   final Catalog catalog;
@@ -44,6 +46,7 @@ abstract class GenUiConversationViewModel implements Disposable {
   final String promptLoadErrorMessage;
 
   final GenUiConversationBuilder _conversationBuilder;
+  final List<AiTool<Map<String, dynamic>>> _additionalTools;
   final model = Signal<GeminiModels>(GeminiModels.defaultValue);
   final surfaceIds = Signal<List<String>>([]);
   final _conversation = Signal<GenUiConversation?>(null);
@@ -104,7 +107,7 @@ abstract class GenUiConversationViewModel implements Disposable {
         systemInstruction: systemInstruction,
         apiKey: apiKey,
         modelName: model.value.modelPath,
-        additionalTools: [],
+        additionalTools: _additionalTools,
       );
 
       _bindOnSubmit(processor);

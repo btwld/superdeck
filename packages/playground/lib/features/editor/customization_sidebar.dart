@@ -7,6 +7,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 
 import '../../stores/ai_store.dart';
 import '../../stores/deck_customization_store.dart';
+import '../../utils/text_editor_controller.dart';
 import '../ai/ai_generate_panel.dart';
 
 class CustomizationSidebar extends StatefulWidget {
@@ -421,6 +422,22 @@ class _Toolbar extends StatelessWidget {
             variant: .secondary,
             onPressed: () =>
                 showAiGeneratePanel(context, context.read<AiStore>()),
+          ),
+        ),
+        SizedBox(
+          width: 48,
+          child: HeroIconButton(
+            icon: CupertinoIcons.text_bubble,
+            size: .lg,
+            variant: .secondary,
+            onPressed: () {
+              final editorController = context.read<TextEditorController>();
+              final capturedSource = editorController.latestMarkdown;
+              editorController.suspendOutboundWritesForAiEntry();
+              Navigator.of(
+                context,
+              ).pushReplacementNamed('/ai/edit', arguments: capturedSource);
+            },
           ),
         ),
         // Full 8-step GenUI wizard.

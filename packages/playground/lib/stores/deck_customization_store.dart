@@ -80,6 +80,32 @@ class TextLevelSignals {
 
 enum TextLevel { h1, h2, h3, p }
 
+@immutable
+class TextLevelSnapshot {
+  const TextLevelSnapshot({
+    required this.color,
+    required this.size,
+    required this.weight,
+    required this.family,
+  });
+
+  final Color color;
+  final double size;
+  final int weight;
+  final String family;
+}
+
+@immutable
+class DeckCustomizationSnapshot {
+  const DeckCustomizationSnapshot({
+    required this.background,
+    required this.levels,
+  });
+
+  final Color background;
+  final Map<TextLevel, TextLevelSnapshot> levels;
+}
+
 /// Owns the playground's deck-wide customization state and pushes a fresh
 /// [DeckOptions] into the [DeckController] on every change.
 ///
@@ -235,6 +261,34 @@ class DeckCustomizationStore {
     level(TextLevel.p)
       ..color.value = extracted.bodyColor
       ..family.value = extracted.bodyFontFamily;
+  }
+
+  DeckCustomizationSnapshot captureSnapshot() {
+    return DeckCustomizationSnapshot(
+      background: background.value,
+      levels: {
+        for (final entry in levels.entries)
+          entry.key: TextLevelSnapshot(
+            color: entry.value.color.value,
+            size: entry.value.size.value,
+            weight: entry.value.weight.value,
+            family: entry.value.family.value,
+          ),
+      },
+    );
+  }
+
+  void restoreSnapshot(DeckCustomizationSnapshot snapshot) {
+    background.value = snapshot.background;
+    for (final entry in snapshot.levels.entries) {
+      final target = levels[entry.key];
+      if (target == null) continue;
+      target
+        ..color.value = entry.value.color
+        ..size.value = entry.value.size
+        ..weight.value = entry.value.weight
+        ..family.value = entry.value.family;
+    }
   }
 
   void dispose() {

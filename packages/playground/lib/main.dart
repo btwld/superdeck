@@ -10,6 +10,7 @@ import 'features/presentation/presentation_page.dart';
 import 'utils/takeover_route.dart';
 import 'features/editor/editor_page.dart';
 import 'features/ai/chat/view/chat_screen.dart';
+import 'features/ai/deck_edit/deck_edit_screen.dart';
 import 'features/ai/remix/view/remix_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -53,6 +54,11 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
             return MaterialPageRoute<void>(
               settings: settings,
               builder: (_) => const RemixScreen(),
+            );
+          case '/ai/edit':
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => const DeckEditScreen(),
             );
           default:
             return MaterialPageRoute<void>(

@@ -21,6 +21,12 @@ class TextEditor extends StatefulWidget {
 }
 
 class _TextEditorState extends State<TextEditor> {
+  static const _starterMarkdown = '''---
+# Title
+## Subtitle
+---
+''';
+
   late final MutableDocument _document;
   late final MutableDocumentComposer _composer;
   late final Editor _editor;
@@ -32,20 +38,27 @@ class _TextEditorState extends State<TextEditor> {
   void initState() {
     super.initState();
 
-    _document = MutableDocument(
-      nodes: [
-        ParagraphNode(id: Editor.createNodeId(), text: AttributedText('---\n')),
-        ParagraphNode(
-          id: Editor.createNodeId(),
-          text: AttributedText('# Title'),
-        ),
-        ParagraphNode(
-          id: Editor.createNodeId(),
-          text: AttributedText('## Subtitle\n'),
-        ),
-        ParagraphNode(id: Editor.createNodeId(), text: AttributedText('---\n')),
-      ],
-    );
+    try {
+      _textEditorController = context.read<TextEditorController>();
+    } catch (_) {
+      // TextEditorController not provided — editor works standalone.
+    }
+
+    final pendingMarkdown = _textEditorController?.takePendingMarkdown();
+    final stagedMarkdown = pendingMarkdown == null
+        ? _textEditorController?.takeStagedMarkdownForNextEditorMount()
+        : null;
+    final initialMarkdown =
+        pendingMarkdown ?? stagedMarkdown ?? _starterMarkdown;
+    final consumedHandoff = pendingMarkdown != null || stagedMarkdown != null;
+
+    _textEditorController?.recordLatestMarkdown(initialMarkdown);
+    if (consumedHandoff ||
+        (_textEditorController?.outboundWritesSuspended ?? false)) {
+      _textEditorController?.resumeOutboundWritesForEditorMount();
+    }
+
+    _document = _documentFromMarkdown(initialMarkdown);
 
     _document.addListener(_onDocumentChanged);
 
@@ -62,21 +75,18 @@ class _TextEditorState extends State<TextEditor> {
       ],
     );
 
-    context.read<MemoryDeckLoader>().updateMarkdown(_extractText());
+    _writeMarkdownToLoaderIfAllowed(_extractText());
 
     // Subscribe to external markdown injection via TextEditorController.
-    try {
-      _textEditorController = context.read<TextEditorController>();
-      _textEditorController!.addListener(_onExternalMarkdown);
-    } catch (_) {
-      // TextEditorController not provided — editor works standalone.
-    }
+    _textEditorController?.addListener(_onExternalMarkdown);
 
     final editorState = context.read<EditorState>();
     _unsubscribeActiveIndex = editorState.activeSlideIndex.subscribe((index) {
       if (_isUpdatingFromCursor) return;
       _scrollToSlide(index);
     });
+
+    widget.onInit?.call();
   }
 
   /// Called when [TextEditorController.loadMarkdown] is invoked externally.
@@ -85,25 +95,39 @@ class _TextEditorState extends State<TextEditor> {
   /// loader. The [_onDocumentChanged] listener is temporarily suppressed to
   /// avoid double-notifying.
   void _onExternalMarkdown() {
-    final markdown = _textEditorController?.pendingMarkdown;
+    final markdown = _textEditorController?.takePendingMarkdown();
     if (markdown == null) return;
 
-    // One paragraph node per markdown line, matching the init structure.
-    // Always keep at least one node — SuperEditor requires a non-empty document.
+    _replaceDocumentMarkdown(markdown);
+    _textEditorController?.recordLatestMarkdown(markdown);
+    widget.onChanged?.call(markdown);
+    _writeMarkdownToLoaderIfAllowed(markdown);
+  }
+
+  void _onDocumentChanged(DocumentChangeLog changeLog) {
+    final text = _extractText();
+    _textEditorController?.recordLatestMarkdown(text);
+    widget.onChanged?.call(text);
+    _writeMarkdownToLoaderIfAllowed(text);
+  }
+
+  MutableDocument _documentFromMarkdown(String markdown) {
+    return MutableDocument(nodes: _nodesFromMarkdown(markdown));
+  }
+
+  List<DocumentNode> _nodesFromMarkdown(String markdown) {
     final lines = markdown.isEmpty ? const [''] : markdown.split('\n');
-    final newNodes = <DocumentNode>[
+    return [
       for (final line in lines)
         ParagraphNode(id: Editor.createNodeId(), text: AttributedText(line)),
     ];
+  }
 
-    // Suppress the listener to avoid a re-entrant deck-loader update while we
-    // swap all existing nodes for the new ones.
+  void _replaceDocumentMarkdown(String markdown) {
+    final newNodes = _nodesFromMarkdown(markdown);
     _document.removeListener(_onDocumentChanged);
     try {
       final existingIds = _document.map((node) => node.id).toList();
-      // Insert the new content first so the document is never momentarily
-      // empty (which would violate SuperEditor's single-node invariant), then
-      // remove the now-trailing original nodes.
       for (var i = 0; i < newNodes.length; i++) {
         _editor.execute([
           InsertNodeAtIndexRequest(nodeIndex: i, newNode: newNodes[i]),
@@ -115,14 +139,11 @@ class _TextEditorState extends State<TextEditor> {
     } finally {
       _document.addListener(_onDocumentChanged);
     }
-
-    // Push new markdown to the deck loader.
-    context.read<MemoryDeckLoader>().updateMarkdown(markdown);
   }
 
-  void _onDocumentChanged(DocumentChangeLog changeLog) {
-    final text = _extractText();
-    context.read<MemoryDeckLoader>().updateMarkdown(text);
+  void _writeMarkdownToLoaderIfAllowed(String markdown) {
+    if (_textEditorController?.outboundWritesSuspended ?? false) return;
+    context.read<MemoryDeckLoader>().updateMarkdown(markdown);
   }
 
   void _onSelectionChanged() {
