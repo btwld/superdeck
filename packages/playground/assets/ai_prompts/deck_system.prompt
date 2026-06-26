@@ -171,6 +171,6 @@ Example image slide layout:
 ```
 
 Only use images that are listed above. Do not invent image paths.
-Maximum 3 images per presentation. Use `###` (H3) for titles on image slides. Text block gets `flex: 3`, image block gets `flex: 2`.
+Maximum 1 image per presentation. Use `###` (H3) for titles on image slides. Text block gets `flex: 3`, image block gets `flex: 2`.
 
 {{{examples}}}

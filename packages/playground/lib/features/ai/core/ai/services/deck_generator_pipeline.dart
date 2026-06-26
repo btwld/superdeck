@@ -1,5 +1,8 @@
 part of 'deck_generator_service.dart';
 
+const _maxGeneratedImagesPerDeck = 1;
+const _imageGenerationBatchSize = 1;
+
 extension _DeckGeneratorPipeline on DeckGeneratorService {
   // ===========================================================================
   // PHASE 1: Generate Outline
@@ -91,9 +94,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       requirements.add(_ImageRequirement(slideKey: key, subject: subject));
     }
 
-    // Hard cap at 3 images per presentation
-    if (requirements.length > 3) {
-      return requirements.take(3).toList();
+    // Keep the free-tier path cheap: one image request per deck generation.
+    if (requirements.length > _maxGeneratedImagesPerDeck) {
+      return requirements.take(_maxGeneratedImagesPerDeck).toList();
     }
 
     return requirements;
@@ -126,18 +129,19 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     debugLog.log('IMG', 'ImageService: aspectRatio=3:4 (portrait)');
 
     try {
-      // Process in batches of 3 to avoid rate limits
-      const batchSize = 3;
-      for (var i = 0; i < requirements.length; i += batchSize) {
+      for (var i = 0; i < requirements.length; i += _imageGenerationBatchSize) {
         if (isCancelled?.call() ?? false) {
           debugLog.log('IMG', 'Image generation cancelled before next batch');
           break;
         }
 
-        final batch = requirements.skip(i).take(batchSize).toList();
+        final batch = requirements
+            .skip(i)
+            .take(_imageGenerationBatchSize)
+            .toList();
         debugLog.log(
           'IMG',
-          'Processing batch ${i ~/ batchSize + 1}: '
+          'Processing image batch ${i ~/ _imageGenerationBatchSize + 1}: '
               '${batch.map((r) => r.slideKey).join(', ')}',
         );
 
@@ -375,5 +379,4 @@ $outlineContext
       return null;
     }
   }
-
 }

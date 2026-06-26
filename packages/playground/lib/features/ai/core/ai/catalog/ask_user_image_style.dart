@@ -193,7 +193,9 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
         }
       });
 
-      final futures = styles.asMap().entries.map((entry) async {
+      for (final entry in styles.asMap().entries) {
+        if (!mounted || !_isCurrentGeneration(generationId)) return;
+
         final index = entry.key;
         final style = entry.value;
 
@@ -214,15 +216,35 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
           }
           _loadingImages.remove(index);
         });
-      });
 
-      await Future.wait(futures);
+        if (_isQuotaLimitedImageError(result.error)) {
+          if (!mounted || !_isCurrentGeneration(generationId)) return;
+          setState(() {
+            for (var i = index + 1; i < styles.length; i++) {
+              _failedImages.add(i);
+              _loadingImages.remove(i);
+            }
+          });
+          break;
+        }
+      }
     } catch (e) {
       debugLog.error('IMG', 'Failed to generate previews: $e');
       _setImageError('Failed to generate previews', generationId: generationId);
     } finally {
       service.dispose();
     }
+  }
+
+  bool _isQuotaLimitedImageError(String? error) {
+    if (error == null) return false;
+    final normalized = error.toLowerCase();
+    return normalized.contains('quota') ||
+        normalized.contains('rate limit') ||
+        normalized.contains('resource_exhausted') ||
+        normalized.contains('toomanyrequests') ||
+        normalized.contains('too many requests') ||
+        normalized.contains('429');
   }
 
   Future<void> _retryImage(int index) async {

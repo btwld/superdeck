@@ -26,9 +26,8 @@ Each slide should have:
 
 ## Image Requirements
 
-Include `imageRequirement` for **exactly 3 slides** — no more, no less. Pick the 3 most impactful slides for images:
-- 1 title or closing slide: atmospheric or thematic imagery
-- 1-2 content slides: illustrations that complement the text
+Include `imageRequirement` for **at most 1 slide**. Pick the single most
+impactful slide for imagery, usually the title or closing slide.
 
 Skip images for all other slides (comparisons, data, quotes, minimalist content).
 
@@ -43,7 +42,7 @@ Be specific in subject descriptions:
 1. Match the requested slide count exactly
 2. One clear idea per slide
 3. Vary layout hints - don't repeat the same layout consecutively
-4. Include imageRequirement on exactly 3 slides (the most visually impactful ones)
+4. Include imageRequirement on no more than 1 slide (the most visually impactful one)
 5. Use descriptive kebab-case keys that reflect slide purpose
 
 ## Example Output
