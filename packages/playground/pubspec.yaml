@@ -30,6 +30,7 @@ dependencies:
   genui: ^0.7.0
   genui_google_generative_ai: ^0.7.1
   google_cloud_ai_generativelanguage_v1beta: ^0.4.0
+  http: ^1.5.0
   gpt_markdown: ^1.1.4
   dotprompt_dart: ^0.5.0
   flutter_dotenv: ^6.0.0

@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
+import 'package:http/http.dart' as http;
 import '../prompts/prompt_registry.dart';
 import 'retry_policy.dart';
 import '../../constants/gemini_models.dart';
@@ -42,10 +44,13 @@ class ImageGenerationResult {
 class ImageGeneratorService {
   ImageGeneratorService({
     required this.apiKey,
-    this.modelName = GeminiModelNames.gemini25FlashImage,
+    this.modelName = GeminiModelNames.gemini31FlashImagePreview,
     this.aspectRatio = '16:9',
     RetryPolicy? retryPolicy,
-  }) : retryPolicy = retryPolicy ?? RetryPolicy();
+    http.Client? httpClient,
+  }) : retryPolicy = retryPolicy ?? RetryPolicy(),
+       _httpClient = httpClient,
+       _ownsHttpClient = httpClient == null;
 
   final String apiKey;
   final String modelName;
@@ -58,6 +63,8 @@ class ImageGeneratorService {
   final RetryPolicy retryPolicy;
 
   google_ai.GenerativeService? _service;
+  http.Client? _httpClient;
+  final bool _ownsHttpClient;
 
   // Simple in-memory LRU cache to avoid regenerating identical prompts during a
   // single app/session (e.g., navigating back to the image style selector).
@@ -88,8 +95,11 @@ class ImageGeneratorService {
         return ImageGenerationResult.success(cached);
       }
 
-      _service ??= google_ai.GenerativeService.fromApiKey(apiKey);
+      if (_usesInteractionsApi) {
+        return _generateImageWithInteractions(prompt, key);
+      }
 
+      _service ??= google_ai.GenerativeService.fromApiKey(apiKey);
       debugLog.log('IMG', 'Starting image generation with model: $modelName');
 
       final request = google_ai.GenerateContentRequest(
@@ -194,6 +204,140 @@ class ImageGeneratorService {
     }
   }
 
+  bool get _usesInteractionsApi =>
+      modelName == GeminiModelNames.gemini31FlashImagePreview ||
+      modelName == 'gemini-3.1-flash-image';
+
+  Future<ImageGenerationResult> _generateImageWithInteractions(
+    String prompt,
+    int cacheKey,
+  ) async {
+    try {
+      debugLog.log(
+        'IMG',
+        'Starting interactions image generation with model: $modelName',
+      );
+
+      final client = _httpClient ??= http.Client();
+      final response = await retryPolicy.run(
+        () => client
+            .post(
+              Uri.https(
+                'generativelanguage.googleapis.com',
+                '/v1beta/interactions',
+              ),
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey,
+              },
+              body: jsonEncode({
+                'model': modelName,
+                'input': prompt,
+                'response_format': {
+                  'type': 'image',
+                  'aspect_ratio': aspectRatio,
+                  'image_size': '512',
+                },
+              }),
+            )
+            .timeout(
+              const Duration(seconds: 60),
+              onTimeout: () {
+                throw TimeoutException('Image generation timed out');
+              },
+            ),
+      );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final message = _parseInteractionsError(response.body);
+        debugLog.error(
+          'IMG',
+          'Interactions image generation failed: ${response.statusCode}',
+        );
+        return ImageGenerationResult.failure(message);
+      }
+
+      final decoded = jsonDecode(response.body);
+      final bytes = _extractInteractionsImageBytes(decoded);
+      if (bytes == null) {
+        debugLog.log('IMG', 'No image data in interactions response');
+        return ImageGenerationResult.failure('No image data in response');
+      }
+
+      _memoryCache[cacheKey] = bytes;
+      while (_memoryCache.length > _maxCacheEntries) {
+        _memoryCache.remove(_memoryCache.keys.first);
+      }
+
+      debugLog.log(
+        'IMG',
+        'Interactions image generated: ${bytes.length} bytes',
+      );
+      return ImageGenerationResult.success(bytes);
+    } on TimeoutException {
+      debugLog.error('IMG', 'Image generation timed out after 60s');
+      return ImageGenerationResult.failure('Image generation timed out');
+    } catch (e) {
+      debugLog.error(
+        'IMG',
+        'Interactions image generation failed: ${e.runtimeType}',
+      );
+      return ImageGenerationResult.failure(
+        'Image generation failed: ${e.runtimeType}',
+      );
+    }
+  }
+
+  String _parseInteractionsError(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, Object?>) {
+        final error = decoded['error'];
+        if (error is Map<String, Object?>) {
+          final message = error['message']?.toString();
+          if (message != null && message.isNotEmpty) {
+            return message;
+          }
+          final code = error['code']?.toString();
+          if (code != null && code.isNotEmpty) {
+            return code;
+          }
+        }
+      }
+    } catch (_) {
+      // Fall through to generic message.
+    }
+    return 'Image generation failed';
+  }
+
+  Uint8List? _extractInteractionsImageBytes(Object? value) {
+    if (value is Map) {
+      final data = value['data'];
+      final mimeType = value['mime_type'] ?? value['mimeType'];
+      final type = value['type'];
+      final looksLikeImage =
+          type == 'image' ||
+          (mimeType is String && mimeType.toLowerCase().startsWith('image/'));
+      if (data is String && data.isNotEmpty && looksLikeImage) {
+        return base64Decode(data);
+      }
+
+      for (final child in value.values) {
+        final bytes = _extractInteractionsImageBytes(child);
+        if (bytes != null) return bytes;
+      }
+    }
+
+    if (value is Iterable) {
+      for (final child in value) {
+        final bytes = _extractInteractionsImageBytes(child);
+        if (bytes != null) return bytes;
+      }
+    }
+
+    return null;
+  }
+
   /// Builds an image prompt with presentation-specific constraints.
   ///
   /// [stylePrompt] should describe visual intent as narrative prose.
@@ -214,5 +358,9 @@ class ImageGeneratorService {
   void dispose() {
     _service?.close();
     _service = null;
+    if (_ownsHttpClient) {
+      _httpClient?.close();
+    }
+    _httpClient = null;
   }
 }
