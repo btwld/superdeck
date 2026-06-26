@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../prompts/prompt_registry.dart';
 import 'retry_policy.dart';
-import '../../constants/gemini_models.dart';
+import '../../constants/gemini_image_options.dart';
 import '../../debug_logger.dart';
 
 /// Result of image generation.
@@ -35,6 +35,14 @@ class ImageGenerationResult {
   final String? error;
 }
 
+typedef _ImageCacheKey = ({
+  GeminiImageModel model,
+  GeminiImageResponseType responseType,
+  GeminiImageAspectRatio aspectRatio,
+  GeminiImageSize imageSize,
+  String prompt,
+});
+
 /// Generates slide-safe background images via Gemini image models.
 ///
 /// Converts provider/model/safety failures into user-safe error results.
@@ -42,20 +50,28 @@ class ImageGenerationResult {
 class ImageGeneratorService {
   ImageGeneratorService({
     required this.apiKey,
-    this.modelName = GeminiModelNames.gemini31FlashImagePreview,
-    this.aspectRatio = '16:9',
+    this.model = GeminiImageModel.gemini31FlashImage,
+    this.responseType = GeminiImageResponseType.image,
+    this.aspectRatio = GeminiImageAspectRatio.widescreen16x9,
+    GeminiImageSize? imageSize,
     RetryPolicy? retryPolicy,
     http.Client? httpClient,
-  }) : retryPolicy = retryPolicy ?? RetryPolicy(),
+  }) : imageSize = imageSize ?? model.defaultImageSize,
+       retryPolicy = retryPolicy ?? RetryPolicy(),
        _httpClient = httpClient,
-       _ownsHttpClient = httpClient == null;
+       _ownsHttpClient = httpClient == null {
+    _validateModelOptions();
+  }
 
   final String apiKey;
-  final String modelName;
+  final GeminiImageModel model;
+  final GeminiImageResponseType responseType;
 
   /// Aspect ratio for generated images.
-  /// Supported: 1:1, 2:3, 3:2, 3:4, 4:3, 9:16, 16:9, 21:9
-  final String aspectRatio;
+  final GeminiImageAspectRatio aspectRatio;
+
+  /// Output resolution for generated images.
+  final GeminiImageSize imageSize;
 
   /// Retry policy for transient generation failures.
   final RetryPolicy retryPolicy;
@@ -68,11 +84,36 @@ class ImageGeneratorService {
   //
   // Network/model inference dominates latency; caching is the highest-leverage
   // local speedup without changing model behavior.
-  static final LinkedHashMap<int, Uint8List> _memoryCache =
-      LinkedHashMap<int, Uint8List>();
+  static final LinkedHashMap<_ImageCacheKey, Uint8List> _memoryCache =
+      LinkedHashMap<_ImageCacheKey, Uint8List>();
   static const int _maxCacheEntries = 32;
 
-  int _cacheKey(String prompt) => Object.hash(modelName, aspectRatio, prompt);
+  _ImageCacheKey _cacheKey(String prompt) {
+    return (
+      model: model,
+      responseType: responseType,
+      aspectRatio: aspectRatio,
+      imageSize: imageSize,
+      prompt: prompt,
+    );
+  }
+
+  void _validateModelOptions() {
+    if (!model.supportsAspectRatio(aspectRatio)) {
+      throw ArgumentError.value(
+        aspectRatio,
+        'aspectRatio',
+        '${model.label} does not support ${aspectRatio.apiValue}',
+      );
+    }
+    if (!model.supportsImageSize(imageSize)) {
+      throw ArgumentError.value(
+        imageSize,
+        'imageSize',
+        '${model.label} does not support ${imageSize.apiValue}',
+      );
+    }
+  }
 
   /// Generates an image from a text prompt.
   ///
@@ -86,7 +127,7 @@ class ImageGeneratorService {
       _memoryCache[key] = cached;
       debugLog.log(
         'IMG',
-        'Cache hit (${cached.length} bytes) for model: $modelName',
+        'Cache hit (${cached.length} bytes) for model: ${model.apiValue}',
       );
       return ImageGenerationResult.success(cached);
     }
@@ -96,12 +137,12 @@ class ImageGeneratorService {
 
   Future<ImageGenerationResult> _requestImage(
     String prompt,
-    int cacheKey,
+    _ImageCacheKey cacheKey,
   ) async {
     try {
       debugLog.log(
         'IMG',
-        'Starting interactions image generation with model: $modelName',
+        'Starting interactions image generation with model: ${model.apiValue}',
       );
 
       final client = _httpClient ??= http.Client();
@@ -117,12 +158,12 @@ class ImageGeneratorService {
                 'x-goog-api-key': apiKey,
               },
               body: jsonEncode({
-                'model': modelName,
+                'model': model.apiValue,
                 'input': prompt,
                 'response_format': {
-                  'type': 'image',
-                  'aspect_ratio': aspectRatio,
-                  'image_size': '512',
+                  'type': responseType.apiValue,
+                  'aspect_ratio': aspectRatio.apiValue,
+                  'image_size': imageSize.apiValue,
                 },
               }),
             )

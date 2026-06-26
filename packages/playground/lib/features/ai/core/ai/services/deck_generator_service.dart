@@ -18,6 +18,7 @@ import 'image_generator_service.dart';
 import 'retry_policy.dart';
 import 'slide_key_utils.dart';
 import 'style_json_serializer.dart';
+import '../../constants/gemini_image_options.dart';
 import '../../constants/gemini_models.dart';
 import '../../debug_logger.dart';
 

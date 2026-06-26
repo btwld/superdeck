@@ -9,6 +9,7 @@ import 'package:playground/features/ai/core/ai/prompts/examples_loader.dart';
 import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
 import 'package:playground/features/ai/core/ai/services/deck_generator_service.dart';
 import 'package:playground/features/ai/core/ai/services/image_generator_service.dart';
+import 'package:playground/features/ai/core/constants/gemini_image_options.dart';
 import 'package:playground/utils/memory_asset_cache_store.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 
@@ -53,7 +54,7 @@ void main() {
     (tester) async {
       final service = ImageGeneratorService(
         apiKey: apiKey!,
-        aspectRatio: '3:4',
+        aspectRatio: GeminiImageAspectRatio.portrait3x4,
       );
       final ImageGenerationResult result;
       try {

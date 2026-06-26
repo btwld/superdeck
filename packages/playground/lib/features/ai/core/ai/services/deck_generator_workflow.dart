@@ -78,7 +78,8 @@ Future<_ImagePhaseData> _runImagePhase(
     debugLog.log(
       'DECK_GEN',
       'Starting image generation: style=$imageStyleId, '
-          'aspectRatio=3:4 (portrait), bgColor=$backgroundColor',
+          'aspectRatio=${GeminiImageAspectRatio.portrait3x4.apiValue} '
+          '(portrait), bgColor=$backgroundColor',
     );
     onProgress?.call(
       GenerationPhase.generatingImages,

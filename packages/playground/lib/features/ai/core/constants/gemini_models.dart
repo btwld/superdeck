@@ -6,7 +6,8 @@
 /// Chat models displayed in selector: [gemini25Pro], [gemini25Flash],
 /// [gemini25FlashLite], [gemini3FlashPreview]
 ///
-/// Specialized models (internal use only): [gemini31FlashImagePreview]
+/// Specialized models (internal use only): [gemini31FlashImage],
+/// [gemini3ProImage]
 abstract final class GeminiModelNames {
   // -- Chat models (appear in GeminiModels enum / UI selector) --
   static const gemini25Pro = 'models/gemini-2.5-pro';
@@ -15,5 +16,6 @@ abstract final class GeminiModelNames {
   static const gemini3FlashPreview = 'models/gemini-3-flash-preview';
 
   // -- Specialized models (internal service use only) --
-  static const gemini31FlashImagePreview = 'gemini-3.1-flash-image-preview';
+  static const gemini31FlashImage = 'gemini-3.1-flash-image';
+  static const gemini3ProImage = 'gemini-3-pro-image';
 }
