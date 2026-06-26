@@ -2,13 +2,24 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../rendering/blocks/block_provider.dart';
 import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/hero_element.dart';
+import '../../ui/widgets/provider.dart';
+import '../../ui/widgets/resolved_asset_image.dart';
 import '../../utils/uri_validator.dart';
 import '../markdown_hero_mixin.dart';
+
+/// True for a bare asset-key reference (no scheme, no path separators), e.g.
+/// `slide-intro-illustration.png` — a candidate for [AssetCacheStore] resolution.
+bool isBareAssetKey(Uri uri) =>
+    uri.scheme.isEmpty &&
+    uri.path.isNotEmpty &&
+    !uri.path.contains('/') &&
+    !uri.path.contains('\\');
 
 class ImageElementBuilder extends MarkdownElementBuilder
     with MarkdownHeroMixin {
@@ -55,6 +66,23 @@ class ImageElementBuilder extends MarkdownElementBuilder
 
     // Access BlockConfiguration from the context parameter (available because isBlockElement() is true)
     final totalSize = BlockConfiguration.of(context).size;
+
+    // A bare key (e.g. an AI-generated `slide-x-illustration.png`) is resolved
+    // through the ambient asset cache when one is present. Hero transitions are
+    // not applied for cache-resolved images (they have no hero tag in practice).
+    final assetCacheStore = InheritedData.maybeOf<AssetCacheStore>(context);
+    if (assetCacheStore != null && isBareAssetKey(uri)) {
+      return ConstrainedBox(
+        constraints: BoxConstraints.tight(totalSize),
+        child: ResolvedAssetImage(
+          assetKey: uri.path,
+          store: assetCacheStore,
+          fallback: uri,
+          targetSize: totalSize,
+          styleSpec: styleSpec,
+        ),
+      );
+    }
 
     return StyleSpecBuilder<ImageSpec>(
       styleSpec: styleSpec,

@@ -92,25 +92,17 @@ class AiStore {
         return;
       }
 
-      // Write image bytes to the in-memory asset cache, capturing the data:
-      // URI each one resolves to.
-      final imageUris = <String, String>{};
+      // Write image bytes to the in-memory asset cache, keyed by the bare
+      // filename the model references (e.g. `slide-x-illustration.png`). The
+      // slide renderer resolves those keys back through the same cache, so the
+      // editor markdown keeps clean `![](slide-x-illustration.png)` refs.
       for (final entry in result.images.entries) {
-        final uri = await _assetCacheStore.write(entry.key, entry.value);
-        if (uri != null) imageUris[entry.key] = uri.toString();
+        await _assetCacheStore.write(entry.key, entry.value);
         debugLog.log('AI_STORE', 'Cached image: ${entry.key}');
       }
 
-      // Serialize slides to markdown. The markdown image renderer does not
-      // consult the in-memory asset cache, so inline the data: URIs in place of
-      // the bare asset-key references the model emitted (e.g.
-      // `slide-x-illustration.png`) so generated images actually render.
-      var markdown = const SlideSerializer().serialize(result.slides);
-      imageUris.forEach((key, uri) {
-        markdown = markdown.replaceAll(key, uri);
-      });
-
-      // Push to editor + loader.
+      // Serialize slides to markdown and push to editor + loader.
+      final markdown = const SlideSerializer().serialize(result.slides);
       _textEditorController.loadMarkdown(markdown);
       _deckLoader.updateMarkdown(markdown);
       debugLog.log(

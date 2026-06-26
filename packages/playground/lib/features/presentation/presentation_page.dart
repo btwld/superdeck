@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
+import '../../utils/memory_asset_cache_store.dart';
+
 class PresentationPage extends StatefulWidget {
   const PresentationPage({super.key});
 
@@ -121,7 +123,13 @@ class _SlideStage extends StatelessWidget {
 
     return Center(
       child: SizedBox.expand(
-        child: FittedBox(fit: .fitWidth, child: SlideRenderView(slide)),
+        child: FittedBox(
+          fit: .fitWidth,
+          child: SlideRenderView(
+            slide,
+            assetCacheStore: context.read<MemoryAssetCacheStore>(),
+          ),
+        ),
       ),
     );
   }
