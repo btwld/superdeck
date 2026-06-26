@@ -90,9 +90,7 @@ class _PreviewItem extends StatelessWidget {
     return FittedBox(
       fit: .cover,
       alignment: .topLeft,
-      child: SlideRenderView(
-        configuration.copyWith(style: configuration.style),
-      ),
+      child: SlideRenderView(configuration),
     );
   }
 
