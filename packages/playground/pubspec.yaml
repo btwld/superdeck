@@ -1,0 +1,35 @@
+name: playground
+description: A playground app for experimenting with Mix, Remix, and Hero UI.
+publish_to: none
+
+environment:
+  sdk: ">=3.11.3 <4.0.0"
+  flutter: ">=3.38.1"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  mix: ^2.0.3
+  remix: ^0.2.0
+  super_editor: 0.3.0-dev.49
+  provider: ^6.1.2
+  signals_flutter: ^6.2.0
+  google_fonts: ^8.1.0
+  superdeck:
+    path: ../superdeck
+  superdeck_core:
+    path: ../core
+  superdeck_builder:
+    path: ../builder
+  hero_ui:
+    git:
+      url: https://github.com/tilucasoli/hero_ui
+      ref: v0.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

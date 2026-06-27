@@ -155,6 +155,22 @@ final class DeckPresentationState {
     return _thumbnails.value[slideKey];
   }
 
+  /// Deletes every cached thumbnail (in-memory and persistent).
+  ///
+  /// After this completes, [getThumbnail] returns `null` for every slide
+  /// until [generateThumbnails] is called again.
+  Future<void> deleteAllThumbnails() async {
+    if (_disposed) return;
+    await _thumbnailService.deleteAllThumbnails(
+      slides: _slides.value,
+      cache: _thumbnails.value,
+      onCacheUpdate: (updated) {
+        if (_disposed) return;
+        _thumbnails.value = updated;
+      },
+    );
+  }
+
   void dispose() {
     _disposed = true;
     _indexClampEffect?.call();

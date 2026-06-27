@@ -72,6 +72,31 @@ class ThumbnailService {
     onCacheUpdate(updatedCache);
   }
 
+  /// Deletes every cached thumbnail and clears the in-memory cache.
+  ///
+  /// Disposes every [AsyncThumbnail] in [cache] and removes the corresponding
+  /// entry from the asset cache store. Keys to delete are taken from both the
+  /// disposed [AsyncThumbnail]s (so orphan entries for removed slides are
+  /// still cleaned) and the current [slides] list. After completion,
+  /// [onCacheUpdate] is invoked with an empty map.
+  Future<void> deleteAllThumbnails({
+    required List<SlideConfiguration> slides,
+    required Map<String, AsyncThumbnail> cache,
+    required void Function(Map<String, AsyncThumbnail>) onCacheUpdate,
+  }) async {
+    final keysToDelete = <String>{
+      for (final thumbnail in cache.values) thumbnail.thumbnailKey,
+      for (final slide in slides) slide.thumbnailKey,
+    };
+
+    for (final thumbnail in cache.values) {
+      thumbnail.dispose();
+    }
+    onCacheUpdate(<String, AsyncThumbnail>{});
+
+    await Future.wait(keysToDelete.map(_cacheStore.delete));
+  }
+
   /// Generates a single thumbnail for a slide.
   ///
   /// Resolve order:

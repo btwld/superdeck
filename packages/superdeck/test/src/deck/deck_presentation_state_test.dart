@@ -28,6 +28,7 @@ class _RecordingThumbnailService extends ThumbnailService {
   _RecordingThumbnailService() : super(cacheStore: NoopAssetCacheStore());
 
   int callCount = 0;
+  int deleteAllCallCount = 0;
   final List<Set<String>> receivedCacheKeys = <Set<String>>[];
   final Map<String, _TrackableAsyncThumbnail> trackedThumbnails =
       <String, _TrackableAsyncThumbnail>{};
@@ -60,6 +61,19 @@ class _RecordingThumbnailService extends ThumbnailService {
     }
 
     onCacheUpdate(updatedCache);
+  }
+
+  @override
+  Future<void> deleteAllThumbnails({
+    required List<SlideConfiguration> slides,
+    required Map<String, AsyncThumbnail> cache,
+    required void Function(Map<String, AsyncThumbnail>) onCacheUpdate,
+  }) async {
+    deleteAllCallCount++;
+    for (final thumbnail in cache.values) {
+      thumbnail.dispose();
+    }
+    onCacheUpdate(<String, AsyncThumbnail>{});
   }
 }
 
@@ -98,6 +112,52 @@ void main() {
       expect(state.getThumbnail('slide-1'), isNull);
       expect(staleThumbnail.disposed, isTrue);
       expect(service.receivedCacheKeys.last, equals({'slide-0'}));
+    });
+
+    testWidgets('deleteAllThumbnails disposes cache and clears getThumbnail', (
+      tester,
+    ) async {
+      final slides = signal<List<SlideConfiguration>>(createTestSlides(2));
+      addTearDown(slides.dispose);
+
+      final service = _RecordingThumbnailService();
+      final state = DeckPresentationState(
+        thumbnailService: service,
+        slides: slides,
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(state.dispose);
+
+      final context = await _pumpContext(tester);
+      state.generateThumbnails(context, slides.value);
+      final slide0 = service.trackedThumbnails['slide-0']!;
+      final slide1 = service.trackedThumbnails['slide-1']!;
+
+      await state.deleteAllThumbnails();
+
+      expect(service.deleteAllCallCount, 1);
+      expect(state.getThumbnail('slide-0'), isNull);
+      expect(state.getThumbnail('slide-1'), isNull);
+      expect(slide0.disposed, isTrue);
+      expect(slide1.disposed, isTrue);
+    });
+
+    testWidgets('deleteAllThumbnails is a no-op after dispose', (tester) async {
+      final slides = signal<List<SlideConfiguration>>(createTestSlides(1));
+      addTearDown(slides.dispose);
+
+      final service = _RecordingThumbnailService();
+      final state = DeckPresentationState(
+        thumbnailService: service,
+        slides: slides,
+        transitionDuration: Duration.zero,
+      );
+
+      state.dispose();
+      await state.deleteAllThumbnails();
+
+      expect(service.deleteAllCallCount, 0);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('dispose tears down thumbnail cache and blocks later updates', (
