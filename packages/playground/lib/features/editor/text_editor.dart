@@ -10,10 +10,7 @@ import '../../utils/edit_reaction.dart';
 import '../../utils/memory_deck_loader.dart';
 
 class TextEditor extends StatefulWidget {
-  const TextEditor({super.key, this.onChanged, this.onInit});
-
-  final ValueChanged<String>? onChanged;
-  final VoidCallback? onInit;
+  const TextEditor({super.key});
 
   @override
   State<TextEditor> createState() => _TextEditorState();

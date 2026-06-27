@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -60,6 +62,8 @@ class ThumbnailRefresher extends StatefulWidget {
 }
 
 class _ThumbnailRefresherState extends State<ThumbnailRefresher> {
+  static const _styleRefreshDebounce = Duration(milliseconds: 250);
+
   late final DeckController _controller;
   late final EditorState _editorState;
   late final ThumbnailRegenerate _regenerate;
@@ -72,6 +76,7 @@ class _ThumbnailRefresherState extends State<ThumbnailRefresher> {
   bool _generateScheduled = false;
   bool _forcePending = false;
   bool _deleteFirstPending = false;
+  Timer? _styleDebounce;
 
   @override
   void initState() {
@@ -102,7 +107,11 @@ class _ThumbnailRefresherState extends State<ThumbnailRefresher> {
     _optionsCleanup = effect(() {
       _controller.options.value; // subscribe
       if (!_initialDone) return;
-      _scheduleGenerate(deleteFirst: true);
+      _styleDebounce?.cancel();
+      _styleDebounce = Timer(_styleRefreshDebounce, () {
+        if (!mounted) return;
+        _scheduleGenerate(deleteFirst: true);
+      });
     });
   }
 
@@ -146,6 +155,7 @@ class _ThumbnailRefresherState extends State<ThumbnailRefresher> {
     _initialCleanup();
     _activeSlideCleanup();
     _optionsCleanup();
+    _styleDebounce?.cancel();
     super.dispose();
   }
 

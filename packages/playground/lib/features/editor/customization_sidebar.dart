@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
@@ -288,11 +287,6 @@ class _FontSizeFieldState extends State<_FontSizeField> {
     );
   }
 }
-//         ),
-//       ],
-//     );
-//   }
-// }
 
 class _FontWeightSlider extends StatelessWidget {
   const _FontWeightSlider({required this.level});

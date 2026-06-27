@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:superdeck/superdeck.dart';
 
 const _twoSlides = '# Slide one\n\n---\n\n# Slide two';
+const _styleRefreshDebounce = Duration(milliseconds: 250);
 
 void main() {
   // Keep deck building offline: never fetch fonts over the network in tests.
@@ -80,9 +81,7 @@ void main() {
     await settle(tester);
   }
 
-  testWidgets('does not regenerate before the deck has slides', (
-    tester,
-  ) async {
+  testWidgets('does not regenerate before the deck has slides', (tester) async {
     await pumpRefresher(tester);
     await settle(tester);
 
@@ -104,6 +103,7 @@ void main() {
     expect(events, ['regenerate(force=false)']);
 
     controller.options.value = DeckOptions(debug: true);
+    await tester.pump(_styleRefreshDebounce);
     await settle(tester);
 
     expect(deleteAllCalls, 1);
@@ -125,10 +125,48 @@ void main() {
     controller.options.value = DeckOptions(debug: true);
     controller.options.value = DeckOptions(debug: false);
     controller.options.value = DeckOptions(debug: true);
+    await tester.pump(_styleRefreshDebounce);
     await settle(tester);
 
     expect(deleteAllCalls, 1);
     expect(forceCalls, [false, false]);
+  });
+
+  testWidgets('style changes across frames within debounce coalesce', (
+    tester,
+  ) async {
+    await pumpRefresher(tester);
+    await loadDeck(tester);
+    expect(events, ['regenerate(force=false)']);
+
+    controller.options.value = DeckOptions(debug: true);
+    await tester.pump(const Duration(milliseconds: 80));
+    controller.options.value = DeckOptions(debug: false);
+    await tester.pump(const Duration(milliseconds: 80));
+    controller.options.value = DeckOptions(debug: true);
+    await tester.pump(_styleRefreshDebounce);
+    await settle(tester);
+
+    expect(deleteAllCalls, 1);
+    expect(events, [
+      'regenerate(force=false)',
+      'deleteAll',
+      'regenerate(force=false)',
+    ]);
+  });
+
+  testWidgets('active slide changes regenerate without deleting thumbnails', (
+    tester,
+  ) async {
+    await pumpRefresher(tester);
+    await loadDeck(tester);
+    expect(events, ['regenerate(force=false)']);
+
+    editorState.activeSlideIndex.value = 1;
+    await settle(tester);
+
+    expect(deleteAllCalls, 0);
+    expect(events, ['regenerate(force=false)', 'regenerate(force=false)']);
   });
 
   testWidgets('a style change before the deck loads is ignored', (

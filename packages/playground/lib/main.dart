@@ -71,6 +71,7 @@ class _ProvidersState extends State<_Providers> {
             options: .new(),
             assetCacheStore: MemoryAssetCacheStore(),
           ),
+          dispose: (_, controller) => controller.dispose(),
         ),
         Provider<DeckCustomizationStore>(
           create: (context) =>
