@@ -55,6 +55,14 @@ jobs:
           cd demo
           fvm dart run superdeck_cli:main build
 
+      # Pin Node to avoid the keep-alive socket regression in Node 22.23.0 /
+      # 24.17.0 (nodejs/node#63989), which makes firebase-tools fail channel
+      # deploys with "premature close" -> retried release -> FAILED_PRECONDITION.
+      - name: Pin Node for Firebase deploy
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.18.0"
+
       - name: Deploy Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         env:
