@@ -63,5 +63,6 @@ jobs:
           entryPoint: ./demo
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SUPERDECK_DEV }}
+          firebaseToolsVersion: "15.22.3"
           channelId: live
           projectId: superdeck-dev
