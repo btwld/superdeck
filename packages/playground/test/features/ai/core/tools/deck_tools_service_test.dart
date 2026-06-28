@@ -236,6 +236,32 @@ void main() {
     });
 
     test(
+      'dispose closes session and lets active side effects unwind safely',
+      () async {
+        final writeGate = Completer<void>();
+        final store = _MutableDeckStore([_slide('seed')], writeGate);
+        final service = _service(store);
+
+        final mutation = service.createSlide(
+          CreateSlideRequestType.parse({
+            'slide': _deckToolSlide(title: 'Pending'),
+          }),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(service.isSideEffectQueueIdle.value, isFalse);
+
+        service.dispose();
+        writeGate.complete();
+
+        await expectLater(
+          mutation,
+          _throwsDeckToolCode(DeckToolErrorCode.contextUnavailable),
+        );
+        expect(service.isClosed, isTrue);
+      },
+    );
+
+    test(
       'updateStyle applies style out-of-band and keeps deck snapshot style-free',
       () async {
         final store = _MutableDeckStore([_slide('seed')]);
@@ -313,6 +339,29 @@ void main() {
       expect((result['error']! as Map)['code'], 'context_unavailable');
 
       adapter.dispose();
+      service.dispose();
+    });
+
+    test('dispose waits for active invocations to finish safely', () async {
+      final writeGate = Completer<void>();
+      final store = _MutableDeckStore(const [], writeGate);
+      final service = _service(store);
+      final adapter = DeckToolsAdapter(service);
+      final tool = adapter.tools.firstWhere(
+        (tool) => tool.name == 'createSlide',
+      );
+
+      final pending = tool.call({'slide': _deckToolSlide(title: 'Pending')});
+      await Future<void>.delayed(Duration.zero);
+
+      expect(adapter.isIdle.value, isFalse);
+      adapter.dispose();
+      writeGate.complete();
+
+      final result = await pending;
+      expect(result['index'], 0);
+      expect(store.slides.single.options?.title, 'Pending');
+
       service.dispose();
     });
   });

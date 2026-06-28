@@ -60,12 +60,16 @@ class SuperdeckA2uiTransport implements genui.Transport {
     final fallbackResponse = StringBuffer();
     final generatedMessages = <dartantic.ChatMessage>[];
     await for (final chunk in _client.sendStream(prompt, history: _history)) {
+      if (_disposed) return;
+
       if (chunk.text.isNotEmpty) {
         fallbackResponse.write(chunk.text);
         _adapter.addChunk(chunk.text);
       }
       generatedMessages.addAll(chunk.messages);
     }
+
+    if (_disposed) return;
 
     if (generatedMessages.isNotEmpty) {
       _history.addAll(generatedMessages);

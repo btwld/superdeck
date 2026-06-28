@@ -24,15 +24,15 @@ class DeckToolsService {
   final DeckStore _documentStore;
   final DeckToolsRuntime _runtime;
 
-  final Signal<int> _pendingSideEffects = signal<int>(0);
-  final Signal<int> _runningSideEffects = signal<int>(0);
+  final Signal<int> _outstandingSideEffects = signal<int>(0);
   Future<void> _sideEffectQueue = Future<void>.value();
   bool _closed = false;
+  bool _disposed = false;
 
   bool get isClosed => _closed;
 
   late final Computed<bool> isSideEffectQueueIdle = computed(() {
-    return _pendingSideEffects.value == 0 && _runningSideEffects.value == 0;
+    return _outstandingSideEffects.value == 0;
   });
 
   void closeSession() {
@@ -40,9 +40,10 @@ class DeckToolsService {
   }
 
   void dispose() {
-    isSideEffectQueueIdle.dispose();
-    _pendingSideEffects.dispose();
-    _runningSideEffects.dispose();
+    if (_disposed) return;
+    _disposed = true;
+    closeSession();
+    _disposeSignalsIfIdle();
   }
 
   Future<DeckSnapshotType> getDeck() async {
@@ -207,24 +208,34 @@ class DeckToolsService {
     _ensureAvailable();
 
     final completer = Completer<T>();
-    _pendingSideEffects.value++;
+    _outstandingSideEffects.value++;
 
     _sideEffectQueue = _sideEffectQueue
         .catchError((Object _, StackTrace _) {})
         .then((_) async {
-          _pendingSideEffects.value--;
-          _runningSideEffects.value++;
           try {
             _ensureAvailable();
             completer.complete(await operation());
           } catch (error, stackTrace) {
             completer.completeError(error, stackTrace);
           } finally {
-            _runningSideEffects.value--;
+            _outstandingSideEffects.value--;
+            if (_disposed) {
+              _disposeSignalsIfIdle();
+            }
           }
         });
 
     return completer.future;
+  }
+
+  void _disposeSignalsIfIdle() {
+    if (_outstandingSideEffects.value > 0) {
+      return;
+    }
+
+    isSideEffectQueueIdle.dispose();
+    _outstandingSideEffects.dispose();
   }
 
   Future<void> _drainSideEffects() async {

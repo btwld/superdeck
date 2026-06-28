@@ -55,8 +55,12 @@ abstract class GenUiConversationViewModel implements Disposable {
   StreamSubscription<String>? _textSubscription;
 
   DateTime? _lastRequestTime;
+  Future<bool>? _startingConversation;
+  Future<void> _requestQueue = Future<void>.value();
   String _streamingAiResponse = '';
   int? _streamingAiMessageIndex;
+  var _sessionEpoch = 0;
+  var _disposed = false;
 
   genui.SurfaceController? get controller => _controller.value;
 
@@ -78,15 +82,32 @@ abstract class GenUiConversationViewModel implements Disposable {
     () => _controller.value != null,
   );
 
-  bool buildConversation() {
-    if (_controller.value != null) return true;
+  Future<bool> buildConversation() {
+    if (_disposed) return Future.value(false);
+    if (_controller.value != null) return Future.value(true);
+
+    final starting = _startingConversation;
+    if (starting != null) return starting;
+
+    late final Future<bool> future;
+    future = _buildConversation().whenComplete(() {
+      if (identical(_startingConversation, future)) {
+        _startingConversation = null;
+      }
+    });
+    _startingConversation = future;
+    return future;
+  }
+
+  Future<bool> _buildConversation() async {
+    final epoch = _sessionEpoch;
 
     final apiKey = _readApiKey();
     if (apiKey == null) return false;
 
     try {
-      final systemInstruction = _loadSystemInstruction();
-      if (systemInstruction == null) return false;
+      final systemInstruction = await _loadSystemInstruction(epoch);
+      if (systemInstruction == null || !_isActiveEpoch(epoch)) return false;
 
       final controller = genui.SurfaceController(catalogs: [catalog]);
       final transport = _transportFactory(
@@ -97,18 +118,30 @@ abstract class GenUiConversationViewModel implements Disposable {
         agentClientFactory: _agentClientFactory,
       );
 
-      _bindSession(controller: controller, transport: transport);
+      if (!_isActiveEpoch(epoch)) {
+        controller.dispose();
+        transport.dispose();
+        return false;
+      }
+
+      _bindSession(
+        controller: controller,
+        transport: transport,
+        sessionEpoch: epoch,
+      );
       _controller.value = controller;
       _transport.value = transport;
       return true;
     } catch (e, stack) {
-      _disposeSession();
-      debugLog.error('CONV', _sanitizeError(e), stack);
-      _messages.add(
-        const SuperdeckAiMessage(
-          'Failed to initialize conversation. Please try again.',
-        ),
-      );
+      if (_isActiveEpoch(epoch)) {
+        _disposeSession();
+        debugLog.error('CONV', _sanitizeError(e), stack);
+        _messages.add(
+          const SuperdeckAiMessage(
+            'Failed to initialize conversation. Please try again.',
+          ),
+        );
+      }
       return false;
     }
   }
@@ -117,17 +150,25 @@ abstract class GenUiConversationViewModel implements Disposable {
     final message = raw.trim();
     if (message.isEmpty) return;
 
+    unawaited(_sendUserMessage(message));
+  }
+
+  Future<void> _sendUserMessage(String message) async {
+    if (_disposed) return;
+
     debugLog.userAction('SEND_MESSAGE', {'message': message});
     debugLog.section('New Message');
 
     if (!hasConversationStarted.value) {
       debugLog.log('CONV', 'Building new conversation');
-      final ok = buildConversation();
+      final ok = await buildConversation();
       if (!ok) return;
     }
 
+    if (!_hasActiveSession) return;
+
     _messages.add(SuperdeckUserMessage(message));
-    unawaited(_sendRequest(genui.ChatMessage.user(message)));
+    await _enqueueRequest(genui.ChatMessage.user(message));
   }
 
   void restartConversation() {
@@ -139,6 +180,7 @@ abstract class GenUiConversationViewModel implements Disposable {
 
   @override
   void dispose() {
+    _disposed = true;
     _disposeSession();
 
     model.dispose();
@@ -167,12 +209,21 @@ abstract class GenUiConversationViewModel implements Disposable {
     }
   }
 
-  String? _loadSystemInstruction() {
+  Future<String?> _loadSystemInstruction(int epoch) async {
     try {
+      await PromptRegistry.instance.load();
       return PromptRegistry.instance.render(promptName);
     } on StateError catch (e) {
-      debugLog.error('PROMPT', e.message);
-      _messages.add(SuperdeckAiMessage(promptLoadErrorMessage));
+      if (_isActiveEpoch(epoch)) {
+        debugLog.error('PROMPT', e.message);
+        _messages.add(SuperdeckAiMessage(promptLoadErrorMessage));
+      }
+      return null;
+    } catch (e, stack) {
+      if (_isActiveEpoch(epoch)) {
+        debugLog.error('PROMPT', _sanitizeError(e), stack);
+        _messages.add(SuperdeckAiMessage(promptLoadErrorMessage));
+      }
       return null;
     }
   }
@@ -209,23 +260,34 @@ abstract class GenUiConversationViewModel implements Disposable {
   void _bindSession({
     required genui.SurfaceController controller,
     required SuperdeckA2uiTransport transport,
+    required int sessionEpoch,
   }) {
-    _onSubmitSubscription = controller.onSubmit.listen(
-      _handleUiSubmit,
-      onError: _handleTransportError,
-    );
-    _surfaceSubscription = controller.surfaceUpdates.listen(
-      _handleSurfaceUpdate,
-      onError: _handleTransportError,
-    );
-    _a2uiMessageSubscription = transport.incomingMessages.listen(
-      controller.handleMessage,
-      onError: _handleTransportError,
-    );
-    _textSubscription = transport.incomingText.listen(
-      _handleTextResponse,
-      onError: _handleTransportError,
-    );
+    void handleError(Object error, StackTrace stack) {
+      if (_isActiveEpoch(sessionEpoch)) {
+        _handleTransportError(error, stack);
+      }
+    }
+
+    _onSubmitSubscription = controller.onSubmit.listen((message) {
+      if (_isActiveEpoch(sessionEpoch)) {
+        _handleUiSubmit(message);
+      }
+    }, onError: handleError);
+    _surfaceSubscription = controller.surfaceUpdates.listen((update) {
+      if (_isActiveEpoch(sessionEpoch)) {
+        _handleSurfaceUpdate(update);
+      }
+    }, onError: handleError);
+    _a2uiMessageSubscription = transport.incomingMessages.listen((message) {
+      if (_isActiveEpoch(sessionEpoch)) {
+        controller.handleMessage(message);
+      }
+    }, onError: handleError);
+    _textSubscription = transport.incomingText.listen((value) {
+      if (_isActiveEpoch(sessionEpoch)) {
+        _handleTextResponse(value);
+      }
+    }, onError: handleError);
   }
 
   void _handleUiSubmit(genui.ChatMessage message) {
@@ -248,7 +310,7 @@ abstract class GenUiConversationViewModel implements Disposable {
       debugLog.userAction('UI_ACTION', parsed?.context ?? {'raw': rawJson});
     }
 
-    unawaited(_sendRequest(message));
+    unawaited(_enqueueRequest(message));
   }
 
   void _handleTextResponse(String value) {
@@ -307,9 +369,26 @@ abstract class GenUiConversationViewModel implements Disposable {
     _addDebugMessage('Surface deleted: $surfaceId');
   }
 
-  Future<void> _sendRequest(genui.ChatMessage message) async {
+  Future<void> _enqueueRequest(genui.ChatMessage message) {
+    final epoch = _sessionEpoch;
+    final queued = _requestQueue
+        .catchError(_handleRequestQueueError)
+        .then((_) => _sendRequest(message, sessionEpoch: epoch));
+    _requestQueue = queued;
+    return queued;
+  }
+
+  void _handleRequestQueueError(Object error, StackTrace stack) {
+    if (_disposed) return;
+    debugLog.error('GenUI queue', _sanitizeError(error), stack);
+  }
+
+  Future<void> _sendRequest(
+    genui.ChatMessage message, {
+    required int sessionEpoch,
+  }) async {
     final transport = _transport.value;
-    if (transport == null) return;
+    if (transport == null || !_isActiveEpoch(sessionEpoch)) return;
 
     _lastRequestTime = DateTime.now();
     _streamingAiResponse = '';
@@ -323,10 +402,13 @@ abstract class GenUiConversationViewModel implements Disposable {
     try {
       await transport.sendRequest(message);
     } catch (e, stack) {
+      if (!_isActiveEpoch(sessionEpoch)) return;
       debugLog.error('GenUI', _sanitizeError(e), stack);
       _messages.add(SuperdeckAiMessage(_getErrorMessage(e)));
     } finally {
-      _isProcessing.value = false;
+      if (_isActiveEpoch(sessionEpoch)) {
+        _isProcessing.value = false;
+      }
     }
   }
 
@@ -339,6 +421,9 @@ abstract class GenUiConversationViewModel implements Disposable {
   }
 
   void _disposeSession() {
+    _sessionEpoch++;
+    _startingConversation = null;
+    _requestQueue = Future<void>.value();
     unawaited(_onSubmitSubscription?.cancel());
     unawaited(_surfaceSubscription?.cancel());
     unawaited(_a2uiMessageSubscription?.cancel());
@@ -355,6 +440,14 @@ abstract class GenUiConversationViewModel implements Disposable {
     _isProcessing.value = false;
     _streamingAiResponse = '';
     _streamingAiMessageIndex = null;
+  }
+
+  bool get _hasActiveSession {
+    return !_disposed && _controller.value != null && _transport.value != null;
+  }
+
+  bool _isActiveEpoch(int epoch) {
+    return !_disposed && epoch == _sessionEpoch;
   }
 
   void _logElapsed(String event) {

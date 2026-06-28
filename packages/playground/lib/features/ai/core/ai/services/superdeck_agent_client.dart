@@ -28,14 +28,12 @@ class DartanticSuperdeckAgentClient implements SuperdeckAgentClient {
     required String apiKey,
     required String modelName,
     required List<dartantic.Tool> tools,
-  }) : normalizedModelName = normalizeGeminiModelName(modelName),
-       _agent = dartantic.Agent.forProvider(
+  }) : _agent = dartantic.Agent.forProvider(
          dartantic.GoogleProvider(apiKey: apiKey),
          chatModelName: normalizeGeminiModelName(modelName),
          tools: tools,
        );
 
-  final String normalizedModelName;
   final dartantic.Agent _agent;
 
   @override

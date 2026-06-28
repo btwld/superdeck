@@ -18,6 +18,7 @@ class DeckToolsAdapter {
 
   final DeckToolsService _service;
   final Signal<int> _activeInvocations = signal<int>(0);
+  var _disposed = false;
 
   late final Computed<bool> isIdle = computed(() {
     return _activeInvocations.value == 0;
@@ -34,8 +35,12 @@ class DeckToolsAdapter {
   ];
 
   void dispose() {
-    isIdle.dispose();
-    _activeInvocations.dispose();
+    if (_disposed) return;
+    _disposed = true;
+
+    if (_activeInvocations.value == 0) {
+      _disposeSignals();
+    }
   }
 
   late final dartantic.Tool<Map<String, dynamic>> _getDeckTool = dartantic.Tool(
@@ -135,7 +140,7 @@ class DeckToolsAdapter {
   Future<Map<String, dynamic>> _invoke(
     Future<Map<String, dynamic>> Function() body,
   ) async {
-    if (_service.isClosed) {
+    if (_disposed || _service.isClosed) {
       return _error(
         DeckToolErrorCode.contextUnavailable,
         DeckToolException.contextUnavailable().message,
@@ -151,7 +156,15 @@ class DeckToolsAdapter {
       return _error(error.code, error.message);
     } finally {
       _activeInvocations.value--;
+      if (_disposed && _activeInvocations.value == 0) {
+        _disposeSignals();
+      }
     }
+  }
+
+  void _disposeSignals() {
+    isIdle.dispose();
+    _activeInvocations.dispose();
   }
 
   T _parse<T>(T Function() parse) {

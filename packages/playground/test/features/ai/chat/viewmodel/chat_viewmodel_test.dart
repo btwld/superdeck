@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartantic_ai/dartantic_ai.dart' as dartantic;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,10 +11,12 @@ import 'package:playground/features/ai/core/ai/catalog/catalog.dart';
 import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
 import 'package:playground/features/ai/core/ai/services/superdeck_agent_client.dart';
 
+import '../../../../helpers/fake_superdeck_agent_client.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late _FakeAgentClient agent;
+  late FakeSuperdeckAgentClient agent;
   late List<dartantic.Tool> capturedTools;
 
   SuperdeckAgentClient fakeAgentFactory({
@@ -31,7 +35,7 @@ void main() {
     PromptRegistry.instance.loadForTest(
       prompts: {'wizard_system': 'Test wizard prompt'},
     );
-    agent = _FakeAgentClient(chunks: const []);
+    agent = FakeSuperdeckAgentClient();
     capturedTools = const [];
   });
 
@@ -71,7 +75,7 @@ void main() {
     test(
       'streams chunks into one AI bubble and owns system prompt history',
       () async {
-        agent = _FakeAgentClient(chunks: const ['Hel', 'lo']);
+        agent = FakeSuperdeckAgentClient(chunks: const ['Hel', 'lo']);
         final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
         addTearDown(viewModel.dispose);
 
@@ -85,7 +89,7 @@ void main() {
           dartantic.ChatMessageRole.system,
         );
         expect(
-          _messageText(agent.histories.single.first),
+          dartanticMessageText(agent.histories.single.first),
           contains('Test wizard prompt'),
         );
         expect(capturedTools, isEmpty);
@@ -103,7 +107,7 @@ void main() {
       final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
       addTearDown(viewModel.dispose);
 
-      expect(viewModel.buildConversation(), isTrue);
+      expect(await viewModel.buildConversation(), isTrue);
       viewModel.controller!.handleUiEvent(
         genui.UserActionEvent(
           name: 'submit_answer',
@@ -127,7 +131,7 @@ void main() {
         final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
         addTearDown(viewModel.dispose);
 
-        expect(viewModel.buildConversation(), isTrue);
+        expect(await viewModel.buildConversation(), isTrue);
         final controller = viewModel.controller!;
 
         controller.handleMessage(
@@ -165,18 +169,32 @@ void main() {
       },
     );
 
-    test('prompt load failure emits safe user-facing message', () {
-      PromptRegistry.instance.reset();
+    test('missing prompt emits safe user-facing message', () async {
+      PromptRegistry.instance.loadForTest();
       final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
       addTearDown(viewModel.dispose);
 
       viewModel.sendMessage('Hello');
+      await pumpEventQueue();
 
       expect(viewModel.hasConversationStarted.value, isFalse);
       expect(
         (viewModel.messages.value.single as SuperdeckAiMessage).text,
         'Unable to load conversation prompts. Please restart the app.',
       );
+    });
+
+    test('loads asset prompts when conversation starts', () async {
+      PromptRegistry.instance.reset();
+      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
+
+      viewModel.sendMessage('Hello');
+      await pumpEventQueue();
+
+      expect(PromptRegistry.instance.isLoaded, isTrue);
+      expect(viewModel.hasConversationStarted.value, isTrue);
+      expect(agent.prompts, ['Hello']);
     });
 
     test('missing API key emits safe user-facing message', () {
@@ -193,6 +211,62 @@ void main() {
       );
     });
 
+    test('restart ignores delayed chunks from previous request', () async {
+      final responseController =
+          StreamController<SuperdeckAgentResponseChunk>();
+      agent = FakeSuperdeckAgentClient(
+        responseStream: responseController.stream,
+      );
+      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
+      addTearDown(responseController.close);
+
+      viewModel.sendMessage('Hello');
+      await pumpEventQueue();
+      expect(viewModel.hasConversationStarted.value, isTrue);
+
+      viewModel.restartConversation();
+      responseController.add(const SuperdeckAgentResponseChunk(text: 'Late'));
+      await pumpEventQueue();
+      await responseController.close();
+
+      expect(viewModel.messages.value, isEmpty);
+      expect(viewModel.isThinking.value, isFalse);
+    });
+
+    test('serializes overlapping user requests', () async {
+      final queuedAgent = QueuedSuperdeckAgentClient();
+      final viewModel = ChatViewModel(
+        agentClientFactory:
+            ({
+              required String apiKey,
+              required String modelName,
+              required List<dartantic.Tool> tools,
+            }) {
+              return queuedAgent;
+            },
+      );
+      addTearDown(viewModel.dispose);
+
+      viewModel.sendMessage('First');
+      await pumpEventQueue();
+      expect(queuedAgent.prompts, ['First']);
+
+      viewModel.sendMessage('Second');
+      await pumpEventQueue();
+      expect(queuedAgent.prompts, ['First']);
+      expect(queuedAgent.maxActiveInvocations, 1);
+
+      queuedAgent.completeNext();
+      await pumpEventQueue();
+      expect(queuedAgent.prompts, ['First', 'Second']);
+      expect(queuedAgent.maxActiveInvocations, 1);
+
+      queuedAgent.completeNext();
+      await pumpEventQueue();
+      expect(queuedAgent.activeInvocations, 0);
+    });
+
     test('allows model selection before conversation starts', () {
       final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
       addTearDown(viewModel.dispose);
@@ -202,39 +276,4 @@ void main() {
       expect(viewModel.model.value, GeminiModels.gemini25Pro);
     });
   });
-}
-
-class _FakeAgentClient implements SuperdeckAgentClient {
-  _FakeAgentClient({required this.chunks});
-
-  final List<String> chunks;
-  final prompts = <String>[];
-  final histories = <List<dartantic.ChatMessage>>[];
-  String? capturedApiKey;
-  String? capturedModelName;
-  var disposed = false;
-
-  @override
-  Stream<SuperdeckAgentResponseChunk> sendStream(
-    String prompt, {
-    required Iterable<dartantic.ChatMessage> history,
-  }) async* {
-    prompts.add(prompt);
-    histories.add(history.toList());
-    for (final chunk in chunks) {
-      yield SuperdeckAgentResponseChunk(text: chunk);
-    }
-  }
-
-  @override
-  void dispose() {
-    disposed = true;
-  }
-}
-
-String _messageText(dartantic.ChatMessage message) {
-  return message.parts
-      .whereType<dartantic.TextPart>()
-      .map((e) => e.text)
-      .join();
 }

@@ -101,7 +101,7 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
   void _submitAction() => submitCatalogActionIfValid(
     canSubmit: _canSubmit,
     itemContext: widget.itemContext,
-    rawAction: widget.data.action,
+    action: widget.data.action,
     contextBuilder: _buildActionContext,
   );
 

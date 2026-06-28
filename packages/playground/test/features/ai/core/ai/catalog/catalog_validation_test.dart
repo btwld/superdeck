@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genui/test/validation.dart';
 import 'package:playground/features/ai/core/ai/catalog/catalog.dart';
+import 'package:playground/features/ai/core/ai/catalog/catalog_data_normalizer.dart';
+import 'package:playground/features/ai/core/ai/catalog/remix_catalog.dart';
 
 void main() {
   group('SuperDeck Catalog Validation', () {
@@ -81,6 +83,54 @@ void main() {
       final schemaJson = definition.value;
 
       expect(schemaJson, isNotNull);
+    });
+
+    test('chatCatalog and remixCatalog require component exactly once', () {
+      final catalogs = [chatCatalog, remixCatalog];
+
+      for (final catalog in catalogs) {
+        for (final item in catalog.items) {
+          final schema = item.dataSchema.value;
+          final properties = schema['properties'] as Map;
+          final required = schema['required'] as List;
+          final componentRequirements = required.where(
+            (field) => field == 'component',
+          );
+
+          expect(
+            properties,
+            contains('component'),
+            reason: '${item.name} should expose the GenUI component field',
+          );
+          expect(
+            componentRequirements,
+            hasLength(1),
+            reason: '${item.name} should require component exactly once',
+          );
+        }
+      }
+    });
+
+    test('catalog data normalizer handles nested action literal numbers', () {
+      final normalized =
+          normalizeCatalogData({
+                'action': {
+                  'name': 'submit_answer',
+                  'context': [
+                    {
+                      'key': 'score',
+                      'value': {'literalNumber': 1},
+                    },
+                  ],
+                },
+              })
+              as Map<String, Object?>;
+      final action = normalized['action'] as Map<String, Object?>;
+      final context = action['context'] as List;
+      final entry = context.single as Map<String, Object?>;
+      final value = entry['value'] as Map<String, Object?>;
+
+      expect(value['literalNumber'], 1.0);
     });
   });
 }

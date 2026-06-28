@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUp(() {
     PromptRegistry.instance.reset();
   });
@@ -14,6 +16,21 @@ void main() {
     group('initial state', () {
       test('isLoaded should be false initially', () {
         expect(PromptRegistry.instance.isLoaded, isFalse);
+      });
+
+      test('loads real remix and deck-edit prompt assets', () async {
+        await PromptRegistry.instance.load();
+
+        final remixPrompt = PromptRegistry.instance.render('remix_system');
+        final deckEditPrompt = PromptRegistry.instance.render(
+          'deck_edit_system',
+        );
+
+        expect(remixPrompt, contains('surfaceId'));
+        expect(remixPrompt, isNot(contains('deleteSurface')));
+        expect(remixPrompt, isNot(contains('beginRendering')));
+        expect(remixPrompt, isNot(contains('provideFinalOutput')));
+        expect(deckEditPrompt.trim(), isNotEmpty);
       });
     });
 

@@ -130,7 +130,7 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
   void _submitAction() => submitCatalogActionIfValid(
     canSubmit: true,
     itemContext: widget.itemContext,
-    rawAction: widget.data.action,
+    action: widget.data.action,
     contextBuilder: _buildActionContext,
   );
 

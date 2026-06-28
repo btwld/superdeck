@@ -126,6 +126,37 @@ void main() {
       expect(node.children, equals(['child1', 'child2']));
     });
 
+    test('normalizes integer values emitted by model JSON', () {
+      final parsed = RemixComponentPreviewType.parse(
+        normalizeRemixComponentPreviewData({
+          'question': 'Pick a layout',
+          'componentOptions': [
+            {
+              'id': 'opt',
+              'title': 'Option',
+              'description': 'Desc',
+              'rootNodeId': 'progress',
+              'nodes': [
+                {'id': 'progress', 'type': 'progress', 'value': 1},
+              ],
+            },
+          ],
+          'action': {
+            'name': 'submit_answer',
+            'context': [
+              {
+                'key': 'score',
+                'value': {'literalNumber': 1},
+              },
+            ],
+          },
+        }),
+      );
+
+      expect(parsed.componentOptions.single.nodes.single.value, 1.0);
+      expect(parsed.action.context!.single.value.literalNumber, 1.0);
+    });
+
     test('UiNodeType optional fields default to null', () {
       final node = UiNodeType.parse({'id': 'minimal_node', 'type': 'divider'});
 

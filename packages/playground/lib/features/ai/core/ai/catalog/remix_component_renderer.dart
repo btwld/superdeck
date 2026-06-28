@@ -181,7 +181,7 @@ class ComponentTreeRenderer extends StatelessWidget {
   }
 
   Widget _buildProgress(UiNodeType node) {
-    final value = (node.value ?? 0.5).clamp(0.0, 1.0);
+    final value = (node.value ?? 0.5).clamp(0.0, 1.0).toDouble();
     final label = node.label;
 
     final row = FlexBoxStyler()
@@ -281,7 +281,7 @@ class ComponentTreeRenderer extends StatelessWidget {
   }
 
   Widget _buildSlider(UiNodeType node) {
-    final value = (node.value ?? 0.5).clamp(0.0, 1.0);
+    final value = (node.value ?? 0.5).clamp(0.0, 1.0).toDouble();
 
     final col = FlexBoxStyler()
         .column()

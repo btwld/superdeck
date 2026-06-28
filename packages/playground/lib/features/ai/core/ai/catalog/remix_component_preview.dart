@@ -6,6 +6,7 @@ import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:genui/genui.dart';
 import 'package:remix/remix.dart';
 
+import 'catalog_data_normalizer.dart';
 import 'user_action_dispatch.dart';
 import '../schemas/genui_action_schema.dart';
 import '../../debug_logger.dart';
@@ -256,7 +257,9 @@ final _brightnessNames = {
 /// Gemini sometimes returns enum values in Title Case or UPPERCASE instead
 /// of the expected camelCase/lowercase. This pre-processes the data before
 /// Ack schema validation to prevent parse failures.
-Map<String, Object?> _normalizePreviewData(Map<String, Object?> data) {
+Map<String, Object?> normalizeRemixComponentPreviewData(
+  Map<String, Object?> data,
+) {
   final result = Map<String, Object?>.from(data);
 
   // Normalize theme enums
@@ -279,7 +282,7 @@ Map<String, Object?> _normalizePreviewData(Map<String, Object?> data) {
     }).toList();
   }
 
-  return result;
+  return normalizeCatalogData(result) as Map<String, Object?>;
 }
 
 /// Common CSS color names that Gemini returns instead of hex codes.
@@ -329,6 +332,9 @@ Map<String, Object?> _normalizeNode(Map<String, Object?> node) {
       n.remove('color');
     }
   }
+  if (n['value'] case final int value) {
+    n['value'] = value.toDouble();
+  }
   return n;
 }
 
@@ -357,7 +363,7 @@ final remixComponentPreview = CatalogItem(
   exampleData: remixComponentPreviewExamples,
   widgetBuilder: (context) {
     final rawData = context.data as Map<String, Object?>;
-    final normalized = _normalizePreviewData(rawData);
+    final normalized = normalizeRemixComponentPreviewData(rawData);
     final data = RemixComponentPreviewType.parse(normalized);
     return _RemixComponentPreviewContent(data: data, itemContext: context);
   },
@@ -412,7 +418,7 @@ class _RemixComponentPreviewContentState
   void _submitAction() => submitCatalogActionIfValid(
     canSubmit: _canSubmit,
     itemContext: widget.itemContext,
-    rawAction: widget.data.action,
+    action: widget.data.action,
     contextBuilder: _buildActionContext,
   );
 

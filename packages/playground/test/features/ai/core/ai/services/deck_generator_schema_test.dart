@@ -10,10 +10,9 @@ void main() {
       final adapter = GoogleSchemaAdapter();
       final result = adapter.adapt(schema);
 
-      final criticalErrors = result.errors.where((e) {
-        final message = e.toString();
-        return !message.contains('will be ignored');
-      }).toList();
+      final criticalErrors = result.errors
+          .where((e) => !_isAllowedAdapterWarning(e))
+          .toList();
 
       expect(
         criticalErrors,
@@ -92,16 +91,19 @@ void main() {
       );
     });
 
-    test('optional fields should be marked as nullable in the schema', () {
+    test('optional fields stay present but out of required lists', () {
       final schema = slideGenerationSchema.toJsonSchemaBuilder();
       final jsonSchema = schema.value;
 
       final slidesSchema = jsonSchema['properties'] as Map;
       final slideItemSchema = (slidesSchema['slides'] as Map)['items'] as Map;
       final slideProps = slideItemSchema['properties'] as Map;
+      final slideRequired = (slideItemSchema['required'] as List).toSet();
 
       expect(slideProps.containsKey('options'), isTrue);
       expect(slideProps.containsKey('comments'), isTrue);
+      expect(slideRequired, isNot(contains('options')));
+      expect(slideRequired, isNot(contains('comments')));
     });
 
     test(
@@ -275,4 +277,15 @@ void main() {
       }
     });
   });
+}
+
+bool _isAllowedAdapterWarning(GoogleSchemaAdapterError error) {
+  if (error.message ==
+      'Unsupported keyword "additionalProperties". It will be ignored.') {
+    return true;
+  }
+
+  return error.message == 'Unsupported keyword "const". It will be ignored.' &&
+      error.path.join('/') ==
+          '#/properties/slides/items/properties/sections/items/properties/type';
 }

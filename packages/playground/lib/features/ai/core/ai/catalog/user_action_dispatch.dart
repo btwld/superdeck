@@ -8,13 +8,12 @@ typedef CatalogActionContextBuilder = Map<String, dynamic> Function();
 /// Dispatches a user action event with merged catalog + component context.
 Future<void> dispatchCatalogAction({
   required CatalogItemContext itemContext,
-  required Object? rawAction,
+  required ActionType action,
   required Map<String, dynamic> actionContext,
 }) async {
-  final action = ActionType.parse(rawAction);
-  final resolvedContext = await resolveContext(
-    itemContext.dataContext,
-    actionContextDefinitionFromAction(action),
+  final resolvedContext = await resolveCatalogActionContext(
+    itemContext: itemContext,
+    action: action,
   );
   resolvedContext.addAll(actionContext);
 
@@ -27,6 +26,16 @@ Future<void> dispatchCatalogAction({
   );
 }
 
+Future<JsonMap> resolveCatalogActionContext({
+  required CatalogItemContext itemContext,
+  required ActionType action,
+}) {
+  return resolveContext(
+    itemContext.dataContext,
+    actionContextDefinitionFromAction(action),
+  );
+}
+
 /// Dispatches a catalog action only when [canSubmit] is true.
 ///
 /// This centralizes the common submit guard + context builder pattern used by
@@ -34,14 +43,14 @@ Future<void> dispatchCatalogAction({
 void submitCatalogActionIfValid({
   required bool canSubmit,
   required CatalogItemContext itemContext,
-  required Object? rawAction,
+  required ActionType action,
   required CatalogActionContextBuilder contextBuilder,
 }) {
   if (!canSubmit) return;
   unawaited(
     dispatchCatalogAction(
       itemContext: itemContext,
-      rawAction: rawAction,
+      action: action,
       actionContext: contextBuilder(),
     ),
   );

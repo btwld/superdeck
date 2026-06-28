@@ -307,7 +307,7 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
   void _submitAction() => submitCatalogActionIfValid(
     canSubmit: _canSubmit,
     itemContext: widget.itemContext,
-    rawAction: widget.data.action,
+    action: widget.data.action,
     contextBuilder: _buildActionContext,
   );
 

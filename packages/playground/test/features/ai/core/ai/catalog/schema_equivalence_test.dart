@@ -16,20 +16,18 @@ void main() {
       test('schema structure matches original', () {
         final oldSchema = Schema.object(
           description:
-              'A summary card that displays a recap of all user selections before finalizing. '
-              'This should be used to show the user a complete overview of their choices '
-              '(audience, approach, style, etc.) so they can review before proceeding.',
+              'Summary card showing recap of all user selections before finalizing',
           properties: {
             'title': Schema.string(
-              description: 'The main heading of the summary card.',
+              description: 'The main heading of the summary card',
             ),
             'items': Schema.list(
-              description:
-                  'The list of summary items representing each user selection to display.',
+              description: 'List of summary items representing user selections',
               items: Schema.object(
+                description: 'Summary item representing a user selection',
                 properties: {
                   'label': Schema.string(
-                    description: 'The category label for this selection.',
+                    description: 'The category label for this selection',
                   ),
                   'kind': Schema.string(
                     description: 'Discriminator for summary payload shape',
@@ -37,18 +35,18 @@ void main() {
                   ),
                   'title': Schema.string(
                     description:
-                        'The primary text representing the user\'s choice.',
+                        'The primary text representing the user\'s choice',
                   ),
                   'description': Schema.string(
-                    description: 'Additional details about the selection.',
+                    description: 'Additional details about the selection',
                   ),
                   'text': Schema.string(
-                    description: 'Plain text content for simple display items.',
+                    description: 'Plain text content for simple display items',
                   ),
                   'colors': Schema.list(
                     description:
-                        'List of hex color strings for the style palette. Include for style selections.',
-                    items: Schema.string(description: 'Hex color value.'),
+                        'List of hex color strings for the style palette',
+                    items: Schema.string(description: 'Hex color value'),
                   ),
                   'headlineFont': Schema.string(
                     description: HeadlineFont.schemaDescription,
@@ -84,83 +82,53 @@ void _compareSchemaStructure(
   Schema newSchema,
   String componentName,
 ) {
-  _compareJsonStructure(oldSchema.value, newSchema.value, componentName);
+  expect(
+    _normalizeSchemaJson(newSchema.value),
+    equals(_normalizeSchemaJson(oldSchema.value, addAckObjectDefaults: true)),
+    reason: '$componentName schema should match the migration baseline',
+  );
 }
 
-void _compareJsonStructure(
-  Map<String, Object?> oldJson,
-  Map<String, Object?> newJson,
-  String path,
-) {
-  expect(
-    newJson['type'],
-    equals(oldJson['type']),
-    reason: '$path: type should match',
-  );
-
-  final oldRequired = (oldJson['required'] as List?)?.cast<String>().toSet();
-  final newRequired = (newJson['required'] as List?)?.cast<String>().toSet()
-    ?..removeAll(_v09ComponentFields);
-  expect(
-    newRequired,
-    equals(oldRequired),
-    reason: '$path: required fields should match',
-  );
-
-  if (oldJson.containsKey('enum')) {
-    expect(
-      newJson.containsKey('enum'),
-      isTrue,
-      reason: '$path: should have enum values',
-    );
-    final oldEnum = (oldJson['enum'] as List).toSet();
-    final newEnum = (newJson['enum'] as List).toSet();
-    expect(newEnum, equals(oldEnum), reason: '$path: enum values should match');
-  }
-
-  final oldProps = oldJson['properties'] as Map<String, Object?>?;
-  final newProps = newJson['properties'] as Map<String, Object?>?;
-
-  if (oldProps != null) {
-    expect(newProps, isNotNull, reason: '$path: should have properties');
-
-    final oldKeys = oldProps.keys.toSet();
-    final newKeys = newProps!.keys.toSet().difference(_v09ComponentFields);
-
-    final missingInNew = oldKeys.difference(newKeys);
-    final extraInNew = newKeys.difference(oldKeys);
-
-    expect(
-      missingInNew,
-      isEmpty,
-      reason: '$path: missing properties in new schema: $missingInNew',
-    );
-    expect(
-      extraInNew,
-      isEmpty,
-      reason: '$path: extra properties in new schema: $extraInNew',
-    );
-
-    for (final propName in oldProps.keys) {
-      final oldProp = oldProps[propName] as Map<String, Object?>;
-      final newProp = newProps[propName] as Map<String, Object?>;
-
-      _compareJsonStructure(oldProp, newProp, '$path.$propName');
+Object? _normalizeSchemaJson(
+  Object? value, {
+  String? parentKey,
+  bool addAckObjectDefaults = false,
+}) {
+  if (value is Map) {
+    final normalized = {
+      for (final entry in value.entries)
+        if (!(parentKey == 'properties' &&
+            _v09ComponentFields.contains(entry.key)))
+          entry.key: _normalizeSchemaJson(
+            entry.value,
+            parentKey: entry.key,
+            addAckObjectDefaults: addAckObjectDefaults,
+          ),
+    };
+    if (addAckObjectDefaults &&
+        normalized['type'] == 'object' &&
+        !normalized.containsKey('additionalProperties')) {
+      normalized['additionalProperties'] = false;
     }
+    return normalized;
   }
 
-  if (oldJson.containsKey('items')) {
-    expect(
-      newJson.containsKey('items'),
-      isTrue,
-      reason: '$path: should have items',
-    );
+  if (value is List) {
+    final normalized = value
+        .where((entry) {
+          return parentKey != 'required' ||
+              !_v09ComponentFields.contains(entry);
+        })
+        .map((entry) => _normalizeSchemaJson(entry, parentKey: parentKey))
+        .toList();
 
-    final oldItems = oldJson['items'] as Map<String, Object?>;
-    final newItems = newJson['items'] as Map<String, Object?>;
-
-    _compareJsonStructure(oldItems, newItems, '$path.items');
+    if (parentKey == 'required' || parentKey == 'enum') {
+      normalized.sort((a, b) => a.toString().compareTo(b.toString()));
+    }
+    return normalized;
   }
+
+  return value;
 }
 
 const _v09ComponentFields = {'id', 'component'};

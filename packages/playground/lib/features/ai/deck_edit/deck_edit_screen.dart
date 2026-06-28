@@ -16,7 +16,6 @@ import '../../editor/preview_sidebar.dart';
 import '../../editor/thumbnail_refresher.dart';
 import '../chat/view/widgets/chat_genui_panels.dart';
 import '../chat/view/widgets/chat_input.dart';
-import '../core/ai/prompts/prompt_registry.dart';
 import '../core/tools/deck_tools_adapter.dart';
 import '../core/tools/deck_tools_runtime.dart';
 import '../core/tools/deck_tools_service.dart';
@@ -86,10 +85,6 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
         textEditorController: textEditorController,
         capturedSource: capturedSource,
       );
-
-      if (!PromptRegistry.instance.isLoaded) {
-        await PromptRegistry.instance.load();
-      }
 
       if (!mounted) return;
 
@@ -188,10 +183,18 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
     final finalMarkdown = _serializeLiveSlides(deckController);
 
     setState(() => _boundaryRunning = true);
-    service.closeSession();
-    textEditorController.loadMarkdown(finalMarkdown);
-    if (!mounted) return;
-    navigator.pushReplacementNamed('/');
+    try {
+      textEditorController.loadMarkdown(finalMarkdown);
+      service.closeSession();
+      if (!mounted) return;
+      navigator.pushReplacementNamed('/');
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _boundaryRunning = false;
+        _entryError = 'Unable to apply AI edits: $error';
+      });
+    }
   }
 
   Future<void> _discard() async {
@@ -212,11 +215,11 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
     final navigator = Navigator.of(context);
 
     setState(() => _boundaryRunning = true);
-    service.closeSession();
     try {
       await store.writeCanonicalMarkdown(baselineMarkdown);
       customizationStore.restoreSnapshot(baselineSnapshot);
       textEditorController.loadMarkdown(baselineMarkdown);
+      service.closeSession();
       if (!mounted) return;
       navigator.pushReplacementNamed('/');
     } catch (error) {

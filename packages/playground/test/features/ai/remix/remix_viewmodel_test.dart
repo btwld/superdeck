@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartantic_ai/dartantic_ai.dart' as dartantic;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,10 +9,12 @@ import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
 import 'package:playground/features/ai/core/ai/services/superdeck_agent_client.dart';
 import 'package:playground/features/ai/remix/remix_viewmodel.dart';
 
+import '../../../helpers/fake_superdeck_agent_client.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late _FakeAgentClient agent;
+  late FakeSuperdeckAgentClient agent;
 
   SuperdeckAgentClient fakeAgentFactory({
     required String apiKey,
@@ -26,7 +30,7 @@ void main() {
     PromptRegistry.instance.loadForTest(
       prompts: {'remix_system': 'Test remix prompt'},
     );
-    agent = _FakeAgentClient(chunks: const []);
+    agent = FakeSuperdeckAgentClient();
   });
 
   tearDown(() {
@@ -45,7 +49,7 @@ void main() {
     });
 
     test('starts conversation and sends user message', () async {
-      agent = _FakeAgentClient(chunks: const ['Done']);
+      agent = FakeSuperdeckAgentClient(chunks: const ['Done']);
       final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
       addTearDown(viewModel.dispose);
 
@@ -59,7 +63,7 @@ void main() {
         dartantic.ChatMessageRole.system,
       );
       expect(
-        _messageText(agent.histories.single.first),
+        dartanticMessageText(agent.histories.single.first),
         contains('Test remix prompt'),
       );
       expect(
@@ -70,6 +74,21 @@ void main() {
         (viewModel.messages.value.last as SuperdeckAiMessage).text,
         'Done',
       );
+    });
+
+    test('loads real asset prompt when conversation starts', () async {
+      PromptRegistry.instance.reset();
+      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
+
+      viewModel.sendMessage('Build a settings panel');
+      await pumpEventQueue();
+
+      expect(PromptRegistry.instance.isLoaded, isTrue);
+      expect(viewModel.hasConversationStarted.value, isTrue);
+      expect(agent.prompts, ['Build a settings panel']);
+      final systemPrompt = dartanticMessageText(agent.histories.single.first);
+      expect(systemPrompt, contains('Remix UI component builder'));
     });
 
     test('restart clears session and disposes agent', () async {
@@ -87,6 +106,62 @@ void main() {
       expect(agent.disposed, isTrue);
     });
 
+    test('restart ignores delayed chunks from previous request', () async {
+      final responseController =
+          StreamController<SuperdeckAgentResponseChunk>();
+      agent = FakeSuperdeckAgentClient(
+        responseStream: responseController.stream,
+      );
+      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
+      addTearDown(responseController.close);
+
+      viewModel.sendMessage('Hello');
+      await pumpEventQueue();
+      expect(viewModel.hasConversationStarted.value, isTrue);
+
+      viewModel.restartConversation();
+      responseController.add(const SuperdeckAgentResponseChunk(text: 'Late'));
+      await pumpEventQueue();
+      await responseController.close();
+
+      expect(viewModel.messages.value, isEmpty);
+      expect(viewModel.isThinking.value, isFalse);
+    });
+
+    test('serializes overlapping user requests', () async {
+      final queuedAgent = QueuedSuperdeckAgentClient();
+      final viewModel = RemixViewModel(
+        agentClientFactory:
+            ({
+              required String apiKey,
+              required String modelName,
+              required List<dartantic.Tool> tools,
+            }) {
+              return queuedAgent;
+            },
+      );
+      addTearDown(viewModel.dispose);
+
+      viewModel.sendMessage('First');
+      await pumpEventQueue();
+      expect(queuedAgent.prompts, ['First']);
+
+      viewModel.sendMessage('Second');
+      await pumpEventQueue();
+      expect(queuedAgent.prompts, ['First']);
+      expect(queuedAgent.maxActiveInvocations, 1);
+
+      queuedAgent.completeNext();
+      await pumpEventQueue();
+      expect(queuedAgent.prompts, ['First', 'Second']);
+      expect(queuedAgent.maxActiveInvocations, 1);
+
+      queuedAgent.completeNext();
+      await pumpEventQueue();
+      expect(queuedAgent.activeInvocations, 0);
+    });
+
     test('allows model selection before conversation starts', () {
       final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
       addTearDown(viewModel.dispose);
@@ -96,38 +171,4 @@ void main() {
       expect(viewModel.model.value, GeminiModels.gemini25Pro);
     });
   });
-}
-
-class _FakeAgentClient implements SuperdeckAgentClient {
-  _FakeAgentClient({required this.chunks});
-
-  final List<String> chunks;
-  final prompts = <String>[];
-  final histories = <List<dartantic.ChatMessage>>[];
-  String? capturedModelName;
-  var disposed = false;
-
-  @override
-  Stream<SuperdeckAgentResponseChunk> sendStream(
-    String prompt, {
-    required Iterable<dartantic.ChatMessage> history,
-  }) async* {
-    prompts.add(prompt);
-    histories.add(history.toList());
-    for (final chunk in chunks) {
-      yield SuperdeckAgentResponseChunk(text: chunk);
-    }
-  }
-
-  @override
-  void dispose() {
-    disposed = true;
-  }
-}
-
-String _messageText(dartantic.ChatMessage message) {
-  return message.parts
-      .whereType<dartantic.TextPart>()
-      .map((e) => e.text)
-      .join();
 }

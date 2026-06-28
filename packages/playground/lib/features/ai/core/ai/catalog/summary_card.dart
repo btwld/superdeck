@@ -211,9 +211,7 @@ final summaryCard = CatalogItem(
   ],
   widgetBuilder: (catalogContext) {
     final data = SummaryCardType.parse(catalogContext.data);
-
-    // Use ActionType for type-safe action parsing with validation
-    final action = ActionType.parse(data.generateSlidesAction);
+    final action = data.generateSlidesAction;
     return Builder(
       builder: (buildContext) {
         return SummaryCard(
@@ -236,9 +234,9 @@ final summaryCard = CatalogItem(
 
               // Merge with any path-resolved context from the action
               final resolvedContext = WizardContext.fromMap(
-                await resolveContext(
-                  catalogContext.dataContext,
-                  actionContextDefinitionFromAction(action),
+                await resolveCatalogActionContext(
+                  itemContext: catalogContext,
+                  action: action,
                 ),
               );
               final finalContext = extractedContext.merge(resolvedContext);

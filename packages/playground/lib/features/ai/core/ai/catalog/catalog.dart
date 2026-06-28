@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
+import 'package:json_schema_builder/json_schema_builder.dart';
 import '../../debug_logger.dart';
 
 import 'ask_user_checkbox.dart';
@@ -8,6 +9,7 @@ import 'ask_user_radio.dart';
 import 'ask_user_slider.dart';
 import 'ask_user_style.dart';
 import 'ask_user_text.dart';
+import 'catalog_data_normalizer.dart';
 import 'remix_component_preview.dart';
 import 'summary_card.dart';
 
@@ -25,11 +27,11 @@ export 'summary_card.dart';
 CatalogItem withCatalogErrorHandling(CatalogItem item) {
   return CatalogItem(
     name: item.name,
-    dataSchema: item.dataSchema,
+    dataSchema: _schemaWithoutInjectedComponent(item.dataSchema),
     exampleData: item.exampleData,
     widgetBuilder: (context) {
       try {
-        return item.widgetBuilder(context);
+        return item.widgetBuilder(_normalizedContext(context));
       } catch (e, stack) {
         debugLog.error(
           item.name,
@@ -40,6 +42,39 @@ CatalogItem withCatalogErrorHandling(CatalogItem item) {
       }
     },
   );
+}
+
+CatalogItemContext _normalizedContext(CatalogItemContext context) {
+  return CatalogItemContext(
+    data: normalizeCatalogData(context.data) ?? context.data,
+    id: context.id,
+    type: context.type,
+    buildChild: context.buildChild,
+    dispatchEvent: context.dispatchEvent,
+    buildContext: context.buildContext,
+    dataContext: context.dataContext,
+    getComponent: context.getComponent,
+    getCatalogItem: context.getCatalogItem,
+    surfaceId: context.surfaceId,
+    reportError: context.reportError,
+  );
+}
+
+Schema _schemaWithoutInjectedComponent(Schema schema) {
+  final schemaMap = Map<String, Object?>.from(schema.value);
+  final properties = Map<String, Object?>.from(
+    (schemaMap['properties'] as Map?) ?? {},
+  )..remove('component');
+  final required = [
+    for (final value in (schemaMap['required'] as List?) ?? const <Object?>[])
+      if (value != 'component') value,
+  ];
+
+  return ObjectSchema.fromMap({
+    ...schemaMap,
+    'properties': properties,
+    'required': required,
+  });
 }
 
 /// SuperDeck AI chat catalog with GenUI components.
