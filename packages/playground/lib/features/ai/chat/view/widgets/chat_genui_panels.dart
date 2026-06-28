@@ -113,14 +113,14 @@ class GenUiMessageBubble extends StatelessWidget {
 class AiSurfacesPanel extends StatelessWidget {
   const AiSurfacesPanel({
     super.key,
-    required this.host,
+    required this.controller,
     required this.surfaceIds,
     required this.isThinking,
     required this.messages,
     this.inputWidget,
   });
 
-  final GenUiHost? host;
+  final SurfaceController? controller;
   final ReadonlySignal<List<String>> surfaceIds;
   final ReadonlySignal<bool> isThinking;
   final ReadonlySignal<List<SuperdeckChatMessage>> messages;
@@ -140,7 +140,7 @@ class AiSurfacesPanel extends StatelessWidget {
         .marginAll(24);
 
     Widget? surfacesWidget;
-    if (host case final resolvedHost?) {
+    if (controller case final resolvedController?) {
       if (ids.isNotEmpty) {
         surfacesWidget = Center(
           child: Padding(
@@ -160,10 +160,11 @@ class AiSurfacesPanel extends StatelessWidget {
                       return IgnorePointer(
                         key: ValueKey('ignore_$surfaceId'),
                         ignoring: thinking,
-                        child: GenUiSurface(
+                        child: Surface(
                           key: ValueKey('surface_$surfaceId'),
-                          host: resolvedHost,
-                          surfaceId: surfaceId,
+                          surfaceContext: resolvedController.contextFor(
+                            surfaceId,
+                          ),
                         ),
                       );
                     }).toList(),

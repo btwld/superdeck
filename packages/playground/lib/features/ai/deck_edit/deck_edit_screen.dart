@@ -57,7 +57,6 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
   @override
   void dispose() {
     _viewModel?.dispose();
-    _adapter?.dispose();
     _service
       ?..closeSession()
       ..dispose();

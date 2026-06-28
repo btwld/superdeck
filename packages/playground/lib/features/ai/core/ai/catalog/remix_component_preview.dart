@@ -11,6 +11,7 @@ import '../schemas/genui_action_schema.dart';
 import '../../debug_logger.dart';
 import '../../ui/ui.dart';
 import 'catalog_question_step.dart';
+import 'component_schema.dart';
 import 'remix_component_preview_examples.dart';
 import 'remix_component_renderer.dart';
 
@@ -350,7 +351,9 @@ Map<String, Object?> _normalizeTheme(Map<String, Object?> theme) {
 /// RemixComponentPreview catalog component for component selection.
 final remixComponentPreview = CatalogItem(
   name: 'RemixComponentPreview',
-  dataSchema: _remixComponentPreviewSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(
+    _remixComponentPreviewSchema.toJsonSchemaBuilder(),
+  ),
   exampleData: remixComponentPreviewExamples,
   widgetBuilder: (context) {
     final rawData = context.data as Map<String, Object?>;

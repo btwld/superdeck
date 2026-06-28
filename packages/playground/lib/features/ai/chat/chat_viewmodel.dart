@@ -6,11 +6,7 @@ import '../core/ai/services/genui_conversation_viewmodel.dart';
 export 'chat_message.dart';
 
 class ChatViewModel extends GenUiConversationViewModel {
-  /// Creates a ChatViewModel with optional dependency injection for testing.
-  ///
-  /// [conversationBuilder] - Builder for creating conversations. Defaults to
-  /// [GenUiConversation.new] which creates real GenUI conversations.
-  ChatViewModel({@visibleForTesting super.conversationBuilder})
+  ChatViewModel({@visibleForTesting super.agentClientFactory})
     : super(
         catalog: chatCatalog,
         promptName: 'wizard_system',

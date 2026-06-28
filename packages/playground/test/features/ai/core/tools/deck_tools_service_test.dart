@@ -287,7 +287,7 @@ void main() {
           (tool) => tool.name == 'createSlide',
         );
 
-        final result = await tool.invoke({
+        final result = await tool.call({
           'slide': {..._deckToolSlide(), 'key': 'stale'},
         });
 
@@ -308,7 +308,7 @@ void main() {
         (tool) => tool.name == 'updateSlide',
       );
 
-      final result = await tool.invoke({'not': 'a valid payload'});
+      final result = await tool.call({'not': 'a valid payload'});
 
       expect((result['error']! as Map)['code'], 'context_unavailable');
 

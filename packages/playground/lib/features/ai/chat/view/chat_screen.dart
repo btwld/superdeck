@@ -96,7 +96,7 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
         showChat: showChat,
       ),
       leadingWidget: AiSurfacesPanel(
-        host: viewModel.host,
+        controller: viewModel.controller,
         surfaceIds: viewModel.surfaceIds,
         isThinking: viewModel.isThinking,
         messages: viewModel.messages,
@@ -172,9 +172,7 @@ class _ChatScreenScaffoldState extends State<_ChatScreenScaffold> {
           semanticLabel: 'Open remix builder',
           onPressed: () {
             Navigator.of(context).push<void>(
-              MaterialPageRoute<void>(
-                builder: (_) => const RemixScreen(),
-              ),
+              MaterialPageRoute<void>(builder: (_) => const RemixScreen()),
             );
           },
         ),

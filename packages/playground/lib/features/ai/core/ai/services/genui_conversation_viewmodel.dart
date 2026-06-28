@@ -1,43 +1,35 @@
 import 'dart:async';
 
+import 'package:dartantic_ai/dartantic_ai.dart' as dartantic;
 import 'package:flutter/foundation.dart';
-import 'package:genui/genui.dart';
-import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
+import 'package:genui/genui.dart' as genui;
 import 'package:signals/signals_flutter.dart';
+
 import '../../../chat/chat_message.dart';
 import '../../../chat/view/widgets/model_select.dart';
-import '../prompts/prompt_registry.dart';
-import 'error_classifier.dart';
 import '../../debug_logger.dart';
 import '../../env_config.dart';
 import '../../viewmodel_scope.dart';
-
-/// Builder for creating GenUI conversations.
-///
-/// Allows tests to inject a mock conversation without extra abstractions.
-typedef GenUiConversationBuilder =
-    GenUiConversation Function({
-      required ContentGenerator contentGenerator,
-      required A2uiMessageProcessor a2uiMessageProcessor,
-      required ValueChanged<String>? onTextResponse,
-      required ValueChanged<ContentGeneratorError>? onError,
-      required ValueChanged<SurfaceAdded>? onSurfaceAdded,
-      required ValueChanged<SurfaceUpdated>? onSurfaceUpdated,
-      required ValueChanged<SurfaceRemoved>? onSurfaceDeleted,
-    });
+import '../prompts/prompt_registry.dart';
+import 'error_classifier.dart';
+import 'superdeck_a2ui_transport.dart';
+import 'superdeck_agent_client.dart';
 
 abstract class GenUiConversationViewModel implements Disposable {
   GenUiConversationViewModel({
     required this.catalog,
     required this.promptName,
     required this.promptLoadErrorMessage,
-    Iterable<AiTool<Map<String, dynamic>>> additionalTools = const [],
-    GenUiConversationBuilder? conversationBuilder,
-  }) : _additionalTools = List.unmodifiable(additionalTools),
-       _conversationBuilder = conversationBuilder ?? GenUiConversation.new;
+    Iterable<dartantic.Tool> tools = const [],
+    SuperdeckTransportFactory? transportFactory,
+    SuperdeckAgentClientFactory agentClientFactory =
+        DartanticSuperdeckAgentClient.new,
+  }) : _tools = List.unmodifiable(tools),
+       _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
+       _agentClientFactory = agentClientFactory;
 
   @protected
-  final Catalog catalog;
+  final genui.Catalog catalog;
 
   @protected
   final String promptName;
@@ -45,31 +37,33 @@ abstract class GenUiConversationViewModel implements Disposable {
   @protected
   final String promptLoadErrorMessage;
 
-  final GenUiConversationBuilder _conversationBuilder;
-  final List<AiTool<Map<String, dynamic>>> _additionalTools;
+  final List<dartantic.Tool> _tools;
+  final SuperdeckTransportFactory _transportFactory;
+  final SuperdeckAgentClientFactory _agentClientFactory;
   final model = Signal<GeminiModels>(GeminiModels.defaultValue);
   final surfaceIds = Signal<List<String>>([]);
-  final _conversation = Signal<GenUiConversation?>(null);
+  final _controller = Signal<genui.SurfaceController?>(null);
+  final _transport = Signal<SuperdeckA2uiTransport?>(null);
   final debugMode = Signal<bool>(false);
   final showChat = Signal<bool>(true);
   final Signal<List<SuperdeckChatMessage>> _messages = signal([]);
+  final _isProcessing = Signal<bool>(false);
 
-  /// Signal holding the isProcessing bridge from the current conversation.
-  final _isProcessingBridge = Signal<ReadonlySignal<bool>?>(null);
+  StreamSubscription<genui.ChatMessage>? _onSubmitSubscription;
+  StreamSubscription<genui.SurfaceUpdate>? _surfaceSubscription;
+  StreamSubscription<genui.A2uiMessage>? _a2uiMessageSubscription;
+  StreamSubscription<String>? _textSubscription;
 
-  /// Subscription for user action events from the message processor.
-  StreamSubscription<UserUiInteractionMessage>? _onSubmitSubscription;
+  DateTime? _lastRequestTime;
+  String _streamingAiResponse = '';
+  int? _streamingAiMessageIndex;
 
-  GenUiHost? get host => _conversation.value?.host;
-  A2uiMessageProcessor? get processor =>
-      _conversation.value?.a2uiMessageProcessor;
+  genui.SurfaceController? get controller => _controller.value;
 
-  /// Whether the AI is currently processing a response.
   late final Computed<bool> isThinking = computed(() {
-    return _isProcessingBridge.value?.value ?? false;
+    return _isProcessing.value;
   });
 
-  /// Filtered messages based on debug mode.
   late final Computed<List<SuperdeckChatMessage>> messages = computed(() {
     if (debugMode.value) {
       return _messages.value;
@@ -80,47 +74,35 @@ abstract class GenUiConversationViewModel implements Disposable {
     }).toList();
   });
 
-  /// Whether a conversation has been successfully initialized.
-  ///
-  /// Derived from conversation existence, not message history, so that
-  /// error messages (e.g., missing API key) don't lock model selection.
   late final Computed<bool> hasConversationStarted = computed(
-    () => _conversation.value != null,
+    () => _controller.value != null,
   );
 
-  /// Initializes a new GenUI conversation.
-  ///
-  /// Returns true if conversation was successfully created, false otherwise.
   bool buildConversation() {
-    _isProcessingBridge.value = null;
+    if (_controller.value != null) return true;
 
     final apiKey = _readApiKey();
     if (apiKey == null) return false;
 
     try {
-      final processor = A2uiMessageProcessor(catalogs: [catalog]);
       final systemInstruction = _loadSystemInstruction();
       if (systemInstruction == null) return false;
 
-      final contentGenerator = GoogleGenerativeAiContentGenerator(
-        catalog: catalog,
-        systemInstruction: systemInstruction,
+      final controller = genui.SurfaceController(catalogs: [catalog]);
+      final transport = _transportFactory(
         apiKey: apiKey,
         modelName: model.value.modelPath,
-        additionalTools: _additionalTools,
+        systemPrompt: _buildSystemPrompt(systemInstruction),
+        tools: _tools,
+        agentClientFactory: _agentClientFactory,
       );
 
-      _bindOnSubmit(processor);
-      _conversation.value = _createConversation(
-        processor: processor,
-        contentGenerator: contentGenerator,
-      );
-
-      _isProcessingBridge.value = _conversation.value!.isProcessing.toSignal();
+      _bindSession(controller: controller, transport: transport);
+      _controller.value = controller;
+      _transport.value = transport;
       return true;
     } catch (e, stack) {
-      _onSubmitSubscription?.cancel();
-      _onSubmitSubscription = null;
+      _disposeSession();
       debugLog.error('CONV', _sanitizeError(e), stack);
       _messages.add(
         const SuperdeckAiMessage(
@@ -129,6 +111,47 @@ abstract class GenUiConversationViewModel implements Disposable {
       );
       return false;
     }
+  }
+
+  void sendMessage(String raw) {
+    final message = raw.trim();
+    if (message.isEmpty) return;
+
+    debugLog.userAction('SEND_MESSAGE', {'message': message});
+    debugLog.section('New Message');
+
+    if (!hasConversationStarted.value) {
+      debugLog.log('CONV', 'Building new conversation');
+      final ok = buildConversation();
+      if (!ok) return;
+    }
+
+    _messages.add(SuperdeckUserMessage(message));
+    unawaited(_sendRequest(genui.ChatMessage.user(message)));
+  }
+
+  void restartConversation() {
+    debugLog.section('Conversation Restarted');
+    _disposeSession();
+    _messages.value = [];
+    surfaceIds.value = [];
+  }
+
+  @override
+  void dispose() {
+    _disposeSession();
+
+    model.dispose();
+    surfaceIds.dispose();
+    _controller.dispose();
+    _transport.dispose();
+    debugMode.dispose();
+    showChat.dispose();
+    _messages.dispose();
+    _isProcessing.dispose();
+    isThinking.dispose();
+    messages.dispose();
+    hasConversationStarted.dispose();
   }
 
   String? _readApiKey() {
@@ -154,134 +177,190 @@ abstract class GenUiConversationViewModel implements Disposable {
     }
   }
 
-  void _bindOnSubmit(A2uiMessageProcessor processor) {
-    _onSubmitSubscription = processor.onSubmit.listen((message) {
-      final parsed = UserActionPayload.tryParse(message.text);
-      if (parsed == null) {
-        debugLog.log('USER', 'Failed to parse user action: ${message.text}');
-        _addDebugMessage('Received unexpected action format');
-        return;
-      }
-      _messages.add(SuperdeckUserMessage(parsed.displayMessage));
-      _addJsonDebugMessage(message.text);
-    });
+  String _buildSystemPrompt(String systemInstruction) {
+    final fragments = [
+      systemInstruction,
+      genui.PromptFragments.acknowledgeUser(),
+      genui.PromptFragments.requireAtLeastOneSubmitElement(
+        prefix: genui.PromptBuilder.defaultImportancePrefix,
+      ),
+      genui.PromptFragments.uiGenerationRestriction(
+        prefix: genui.PromptBuilder.defaultImportancePrefix,
+      ),
+    ];
+
+    if (_tools.isEmpty) {
+      return genui.PromptBuilder.chat(
+        catalog: catalog,
+        systemPromptFragments: fragments,
+      ).systemPromptJoined();
+    }
+
+    return genui.PromptBuilder.custom(
+      catalog: catalog,
+      allowedOperations: genui.SurfaceOperations.createOnly(dataModel: false),
+      systemPromptFragments: fragments,
+      technicalPossibilities: const genui.TechnicalPossibilities(
+        toolCall: true,
+      ),
+    ).systemPromptJoined();
   }
 
-  GenUiConversation _createConversation({
-    required ContentGenerator contentGenerator,
-    required A2uiMessageProcessor processor,
+  void _bindSession({
+    required genui.SurfaceController controller,
+    required SuperdeckA2uiTransport transport,
   }) {
-    return _conversationBuilder(
-      contentGenerator: contentGenerator,
-      a2uiMessageProcessor: processor,
-      onTextResponse: _handleTextResponse,
-      onError: _handleConversationError,
-      onSurfaceAdded: _handleSurfaceAdded,
-      onSurfaceUpdated: _handleSurfaceUpdated,
-      onSurfaceDeleted: _handleSurfaceDeleted,
+    _onSubmitSubscription = controller.onSubmit.listen(
+      _handleUiSubmit,
+      onError: _handleTransportError,
     );
+    _surfaceSubscription = controller.surfaceUpdates.listen(
+      _handleSurfaceUpdate,
+      onError: _handleTransportError,
+    );
+    _a2uiMessageSubscription = transport.incomingMessages.listen(
+      controller.handleMessage,
+      onError: _handleTransportError,
+    );
+    _textSubscription = transport.incomingText.listen(
+      _handleTextResponse,
+      onError: _handleTransportError,
+    );
+  }
+
+  void _handleUiSubmit(genui.ChatMessage message) {
+    final interactionParts = message.parts.uiInteractionParts.toList();
+    if (interactionParts.isEmpty) {
+      debugLog.log('USER', 'Received submit message without interaction part');
+      _addDebugMessage('Received unexpected action format');
+    }
+
+    for (final part in interactionParts) {
+      final rawJson = part.interaction;
+      final parsed = UserActionPayload.tryParse(rawJson);
+      if (parsed == null) {
+        debugLog.log('USER', 'Failed to parse user action: $rawJson');
+        _addDebugMessage('Received unexpected action format');
+      } else {
+        _messages.add(SuperdeckUserMessage(parsed.displayMessage));
+      }
+      _addJsonDebugMessage(rawJson);
+      debugLog.userAction('UI_ACTION', parsed?.context ?? {'raw': rawJson});
+    }
+
+    unawaited(_sendRequest(message));
   }
 
   void _handleTextResponse(String value) {
     _logElapsed('TEXT_RESPONSE received');
     debugLog.aiResponse('TEXT', value);
-    _messages.add(SuperdeckAiMessage(value));
+    _streamingAiResponse += value;
+
+    final next = [..._messages.value];
+    final index = _streamingAiMessageIndex;
+    if (index != null &&
+        index >= 0 &&
+        index < next.length &&
+        next[index] is SuperdeckAiMessage) {
+      next[index] = SuperdeckAiMessage(_streamingAiResponse);
+    } else {
+      _streamingAiMessageIndex = next.length;
+      next.add(SuperdeckAiMessage(_streamingAiResponse));
+    }
+    _messages.value = next;
   }
 
-  void _handleConversationError(ContentGeneratorError value) {
-    _logElapsed('ERROR received');
-    debugLog.error('GenUI', _sanitizeError(value.error));
-    _messages.add(SuperdeckAiMessage(_getErrorMessage(value.error)));
-  }
-
-  void _handleSurfaceAdded(SurfaceAdded value) {
-    _logElapsed('SURFACE_ADDED: ${value.surfaceId}');
-    debugLog.surface('ADDED', value.surfaceId);
-    if (!surfaceIds.value.contains(value.surfaceId)) {
-      surfaceIds.value = [...surfaceIds.value, value.surfaceId];
-      _addDebugMessage('Surface added: ${value.surfaceId}');
+  void _handleSurfaceUpdate(genui.SurfaceUpdate value) {
+    switch (value) {
+      case genui.SurfaceAdded(:final surfaceId):
+        _handleSurfaceAdded(surfaceId);
+      case genui.ComponentsUpdated(:final surfaceId):
+        _handleSurfaceUpdated(surfaceId);
+      case genui.SurfaceRemoved(:final surfaceId):
+        _handleSurfaceDeleted(surfaceId);
     }
   }
 
-  void _handleSurfaceUpdated(SurfaceUpdated value) {
-    _logElapsed('SURFACE_UPDATED: ${value.surfaceId}');
-    debugLog.surface('UPDATED', value.surfaceId);
-    if (!surfaceIds.value.contains(value.surfaceId)) {
-      surfaceIds.value = [...surfaceIds.value, value.surfaceId];
-      _addDebugMessage('Surface added via update: ${value.surfaceId}');
+  void _handleSurfaceAdded(String surfaceId) {
+    _logElapsed('SURFACE_ADDED: $surfaceId');
+    debugLog.surface('ADDED', surfaceId);
+    if (!surfaceIds.value.contains(surfaceId)) {
+      surfaceIds.value = [...surfaceIds.value, surfaceId];
+      _addDebugMessage('Surface added: $surfaceId');
     }
-    _addDebugMessage('Surface updated: ${value.surfaceId}');
   }
 
-  void _handleSurfaceDeleted(SurfaceRemoved value) {
-    _logElapsed('SURFACE_DELETED: ${value.surfaceId}');
-    debugLog.surface('DELETED', value.surfaceId);
-    surfaceIds.value = surfaceIds.value
-        .where((id) => id != value.surfaceId)
-        .toList();
-    _addDebugMessage('Surface deleted: ${value.surfaceId}');
+  void _handleSurfaceUpdated(String surfaceId) {
+    _logElapsed('SURFACE_UPDATED: $surfaceId');
+    debugLog.surface('UPDATED', surfaceId);
+    if (!surfaceIds.value.contains(surfaceId)) {
+      surfaceIds.value = [...surfaceIds.value, surfaceId];
+      _addDebugMessage('Surface added via update: $surfaceId');
+    }
+    _addDebugMessage('Surface updated: $surfaceId');
   }
 
-  /// Tracks when the last request was sent for latency measurement.
-  DateTime? _lastRequestTime;
+  void _handleSurfaceDeleted(String surfaceId) {
+    _logElapsed('SURFACE_DELETED: $surfaceId');
+    debugLog.surface('DELETED', surfaceId);
+    surfaceIds.value = surfaceIds.value.where((id) => id != surfaceId).toList();
+    _addDebugMessage('Surface deleted: $surfaceId');
+  }
 
-  void sendMessage(String raw) {
-    final message = raw.trim();
-    if (message.isEmpty) return;
+  Future<void> _sendRequest(genui.ChatMessage message) async {
+    final transport = _transport.value;
+    if (transport == null) return;
 
     _lastRequestTime = DateTime.now();
-    debugLog.userAction('SEND_MESSAGE', {'message': message});
-    debugLog.section('New Message');
+    _streamingAiResponse = '';
+    _streamingAiMessageIndex = null;
+    _isProcessing.value = true;
     debugLog.log(
       'TIMING',
       'Request started at ${_lastRequestTime!.toIso8601String()}',
     );
 
-    if (!hasConversationStarted.value) {
-      debugLog.log('CONV', 'Building new conversation');
-      final ok = buildConversation();
-      if (!ok) return;
+    try {
+      await transport.sendRequest(message);
+    } catch (e, stack) {
+      debugLog.error('GenUI', _sanitizeError(e), stack);
+      _messages.add(SuperdeckAiMessage(_getErrorMessage(e)));
+    } finally {
+      _isProcessing.value = false;
     }
-
-    _messages.add(SuperdeckUserMessage(message));
-    _conversation.value?.sendRequest(UserMessage.text(message));
   }
 
-  /// Logs elapsed time since request started.
+  void _handleTransportError(Object error, StackTrace stack) {
+    _logElapsed('ERROR received');
+    debugLog.error('GenUI', _sanitizeError(error), stack);
+    _messages.add(SuperdeckAiMessage(_getErrorMessage(error)));
+    _isProcessing.value = false;
+    _streamingAiMessageIndex = null;
+  }
+
+  void _disposeSession() {
+    unawaited(_onSubmitSubscription?.cancel());
+    unawaited(_surfaceSubscription?.cancel());
+    unawaited(_a2uiMessageSubscription?.cancel());
+    unawaited(_textSubscription?.cancel());
+    _onSubmitSubscription = null;
+    _surfaceSubscription = null;
+    _a2uiMessageSubscription = null;
+    _textSubscription = null;
+
+    _controller.value?.dispose();
+    _controller.value = null;
+    _transport.value?.dispose();
+    _transport.value = null;
+    _isProcessing.value = false;
+    _streamingAiResponse = '';
+    _streamingAiMessageIndex = null;
+  }
+
   void _logElapsed(String event) {
     if (_lastRequestTime == null) return;
     final elapsed = DateTime.now().difference(_lastRequestTime!);
     debugLog.log('TIMING', '$event at +${elapsed.inMilliseconds}ms');
-  }
-
-  void restartConversation() {
-    debugLog.section('Conversation Restarted');
-    _onSubmitSubscription?.cancel();
-    _onSubmitSubscription = null;
-    _conversation.value?.dispose();
-    _conversation.value = null;
-    _isProcessingBridge.value = null;
-
-    _messages.clear();
-    surfaceIds.clear();
-  }
-
-  @override
-  void dispose() {
-    _onSubmitSubscription?.cancel();
-    _onSubmitSubscription = null;
-    _conversation.value?.dispose();
-
-    model.dispose();
-    surfaceIds.dispose();
-    _conversation.dispose();
-    debugMode.dispose();
-    showChat.dispose();
-    _messages.dispose();
-    _isProcessingBridge.dispose();
-    isThinking.dispose();
-    messages.dispose();
-    hasConversationStarted.dispose();
   }
 
   void _addDebugMessage(String message) {
@@ -292,16 +371,11 @@ abstract class GenUiConversationViewModel implements Disposable {
     _messages.add(SuperdeckJsonDebugMessage(json));
   }
 
-  /// Error classifier for converting errors to user-friendly messages.
   static const _errorClassifier = ErrorClassifier();
 
-  /// Maps error objects to user-friendly messages based on error type/content.
   String _getErrorMessage(Object error) =>
       _errorClassifier.getUserMessage(error);
 
-  /// Sanitizes error messages to avoid exposing API keys in logs.
-  ///
-  /// Redacts any string that looks like an API key (long alphanumeric tokens).
   String _sanitizeError(Object error) {
     final str = error.toString();
     return str.replaceAll(RegExp(r'[A-Za-z0-9_-]{20,}'), '[REDACTED]');

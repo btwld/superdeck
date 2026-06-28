@@ -1,11 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:genui/genui.dart';
+import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:json_schema_builder/json_schema_builder.dart';
 
 // ACK schemas (converted via toJsonSchemaBuilder)
 import 'package:playground/features/ai/core/ai/catalog/summary_card.dart';
 import 'package:playground/features/ai/core/ai/prompts/font_styles.dart';
 import 'package:playground/features/ai/core/ai/prompts/image_style_prompts.dart';
+import 'package:playground/features/ai/core/ai/schemas/genui_action_schema.dart';
 
 /// Tests to verify ACK schemas produce equivalent output to the original
 /// json_schema_builder schemas that were replaced during migration.
@@ -65,10 +66,7 @@ void main() {
                 required: ['label'],
               ),
             ),
-            'generateSlidesAction': A2uiSchemas.action(
-              description:
-                  'Generate the slides for the presentation. The context for this action should include references to the selected values so that the model can know what the user has selected.',
-            ),
+            'generateSlidesAction': actionSchema.toJsonSchemaBuilder(),
           },
           required: ['title', 'items', 'generateSlidesAction'],
         );
@@ -101,7 +99,8 @@ void _compareJsonStructure(
   );
 
   final oldRequired = (oldJson['required'] as List?)?.cast<String>().toSet();
-  final newRequired = (newJson['required'] as List?)?.cast<String>().toSet();
+  final newRequired = (newJson['required'] as List?)?.cast<String>().toSet()
+    ?..removeAll(_v09ComponentFields);
   expect(
     newRequired,
     equals(oldRequired),
@@ -126,7 +125,7 @@ void _compareJsonStructure(
     expect(newProps, isNotNull, reason: '$path: should have properties');
 
     final oldKeys = oldProps.keys.toSet();
-    final newKeys = newProps!.keys.toSet();
+    final newKeys = newProps!.keys.toSet().difference(_v09ComponentFields);
 
     final missingInNew = oldKeys.difference(newKeys);
     final extraInNew = newKeys.difference(oldKeys);
@@ -163,3 +162,5 @@ void _compareJsonStructure(
     _compareJsonStructure(oldItems, newItems, '$path.items');
   }
 }
+
+const _v09ComponentFields = {'id', 'component'};

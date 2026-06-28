@@ -13,6 +13,7 @@ import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
+import 'component_schema.dart';
 
 part 'ask_user_radio.g.dart';
 
@@ -45,24 +46,21 @@ final _askUserRadioSchema = Ack.object({
 /// AskUserRadio catalog component for single-selection questions.
 final askUserRadio = CatalogItem(
   name: 'AskUserRadio',
-  dataSchema: _askUserRadioSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(_askUserRadioSchema.toJsonSchemaBuilder()),
   exampleData: [
     () => '''
       [
         {
           "id": "root",
-          "component": {
-            "AskUserRadio": {
-              "question": "Who is your target audience?",
-              "description": "Select the group that best describes your viewers.",
-              "options": [
-                {"title": "Business Professionals", "description": "Corporate stakeholders"},
-                {"title": "Students", "description": "Academic learners"},
-                {"title": "General Public", "description": "Broad audience"}
-              ],
-              "action": {"name": "submit_answer", "context": []}
-            }
-          }
+          "component": "AskUserRadio",
+          "question": "Who is your target audience?",
+          "description": "Select the group that best describes your viewers.",
+          "options": [
+            {"title": "Business Professionals", "description": "Corporate stakeholders"},
+            {"title": "Students", "description": "Academic learners"},
+            {"title": "General Public", "description": "Broad audience"}
+          ],
+          "action": {"name": "submit_answer", "context": []}
         }
       ]
     ''',

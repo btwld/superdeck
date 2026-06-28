@@ -13,6 +13,7 @@ import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
+import 'component_schema.dart';
 
 part 'ask_user_checkbox.g.dart';
 
@@ -47,22 +48,19 @@ final _askUserCheckboxSchema = Ack.object({
 /// AskUserCheckbox catalog component for multiple-selection questions.
 final askUserCheckbox = CatalogItem(
   name: 'AskUserCheckbox',
-  dataSchema: _askUserCheckboxSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(_askUserCheckboxSchema.toJsonSchemaBuilder()),
   exampleData: [
     () => '''
       [
         {
           "id": "root",
-          "component": {
-            "AskUserCheckbox": {
-              "question": "What topics should we cover?",
-              "description": "Select all that apply.",
-              "items": ["History", "Current State", "Future Trends", "Case Studies"],
-              "minSelections": 1,
-              "maxSelections": 3,
-              "action": {"name": "submit_answer", "context": []}
-            }
-          }
+          "component": "AskUserCheckbox",
+          "question": "What topics should we cover?",
+          "description": "Select all that apply.",
+          "items": ["History", "Current State", "Future Trends", "Case Studies"],
+          "minSelections": 1,
+          "maxSelections": 3,
+          "action": {"name": "submit_answer", "context": []}
         }
       ]
     ''',

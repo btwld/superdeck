@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter/foundation.dart';
-import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -14,6 +13,7 @@ import '../schemas/deck_schemas.dart';
 import '../schemas/outline_schema.dart';
 import 'error_classifier.dart';
 import 'generation_progress.dart';
+import 'google_schema_adapter.dart';
 import 'image_generator_service.dart';
 import 'retry_policy.dart';
 import 'slide_key_utils.dart';

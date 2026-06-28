@@ -19,6 +19,7 @@ import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
+import 'component_schema.dart';
 
 part 'ask_user_image_style.g.dart';
 
@@ -69,21 +70,18 @@ final _askUserImageStyleSchema =
 /// AskUserImageStyle catalog component for image style selection with previews.
 final askUserImageStyle = CatalogItem(
   name: 'AskUserImageStyle',
-  dataSchema: _askUserImageStyleSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(_askUserImageStyleSchema.toJsonSchemaBuilder()),
   exampleData: [
     () => '''
       [
         {
           "id": "root",
-          "component": {
-            "AskUserImageStyle": {
-              "question": "Choose an image style",
-              "description": "Select the visual direction for imagery.",
-              "subject": "solar system with planets",
-              "imageStyles": ["watercolor", "minimalist", "gradient"],
-              "action": {"name": "submit_answer", "context": []}
-            }
-          }
+          "component": "AskUserImageStyle",
+          "question": "Choose an image style",
+          "description": "Select the visual direction for imagery.",
+          "subject": "solar system with planets",
+          "imageStyles": ["watercolor", "minimalist", "gradient"],
+          "action": {"name": "submit_answer", "context": []}
         }
       ]
     ''',

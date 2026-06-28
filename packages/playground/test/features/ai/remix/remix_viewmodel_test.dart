@@ -1,329 +1,133 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
+import 'package:dartantic_ai/dartantic_ai.dart' as dartantic;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:genui/genui.dart';
 
 import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
 import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
+import 'package:playground/features/ai/core/ai/services/superdeck_agent_client.dart';
 import 'package:playground/features/ai/remix/remix_viewmodel.dart';
-
-class MockA2uiMessageProcessor implements A2uiMessageProcessor {
-  final _onSubmitController =
-      StreamController<UserUiInteractionMessage>.broadcast();
-  final _surfaceUpdatesController = StreamController<GenUiUpdate>.broadcast();
-  final _surfaces = <String, ValueNotifier<UiDefinition?>>{};
-  final _dataModels = <String, DataModel>{};
-
-  @override
-  Stream<UserUiInteractionMessage> get onSubmit => _onSubmitController.stream;
-
-  @override
-  Stream<GenUiUpdate> get surfaceUpdates => _surfaceUpdatesController.stream;
-
-  @override
-  Iterable<Catalog> get catalogs => [];
-
-  @override
-  Map<String, ValueNotifier<UiDefinition?>> get surfaces => _surfaces;
-
-  @override
-  Map<String, DataModel> get dataModels => Map.unmodifiable(_dataModels);
-
-  @override
-  DataModel dataModelForSurface(String surfaceId) {
-    return _dataModels.putIfAbsent(surfaceId, DataModel.new);
-  }
-
-  @override
-  void handleMessage(A2uiMessage message) {}
-
-  @override
-  void handleUiEvent(UiEvent event) {}
-
-  @override
-  ValueNotifier<UiDefinition?> getSurfaceNotifier(String surfaceId) {
-    return _surfaces.putIfAbsent(
-      surfaceId,
-      () => ValueNotifier<UiDefinition?>(null),
-    );
-  }
-
-  @override
-  void dispose() {
-    _onSubmitController.close();
-    _surfaceUpdatesController.close();
-    for (final notifier in _surfaces.values) {
-      notifier.dispose();
-    }
-  }
-}
-
-class MockContentGenerator implements ContentGenerator {
-  final _a2uiMessageController = StreamController<A2uiMessage>.broadcast();
-  final _textResponseController = StreamController<String>.broadcast();
-  final _errorController = StreamController<ContentGeneratorError>.broadcast();
-  final _isProcessing = ValueNotifier<bool>(false);
-
-  @override
-  Stream<A2uiMessage> get a2uiMessageStream => _a2uiMessageController.stream;
-
-  @override
-  Stream<String> get textResponseStream => _textResponseController.stream;
-
-  @override
-  Stream<ContentGeneratorError> get errorStream => _errorController.stream;
-
-  @override
-  ValueListenable<bool> get isProcessing => _isProcessing;
-
-  @override
-  Future<void> sendRequest(
-    ChatMessage message, {
-    Iterable<ChatMessage>? history,
-    A2UiClientCapabilities? clientCapabilities,
-  }) async {}
-
-  @override
-  void dispose() {
-    _a2uiMessageController.close();
-    _textResponseController.close();
-    _errorController.close();
-    _isProcessing.dispose();
-  }
-}
-
-class MockGenUiConversation implements GenUiConversation {
-  MockGenUiConversation()
-    : _processor = MockA2uiMessageProcessor(),
-      _generator = MockContentGenerator();
-
-  final MockA2uiMessageProcessor _processor;
-  final MockContentGenerator _generator;
-  final _isProcessing = ValueNotifier<bool>(false);
-  final _conversation = ValueNotifier<List<ChatMessage>>([]);
-  bool _isDisposed = false;
-
-  @override
-  ValueListenable<bool> get isProcessing => _isProcessing;
-
-  @override
-  ValueListenable<List<ChatMessage>> get conversation => _conversation;
-
-  @override
-  Future<void> sendRequest(ChatMessage message) async {}
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    _isProcessing.dispose();
-    _conversation.dispose();
-    _processor.dispose();
-    _generator.dispose();
-  }
-
-  bool get isDisposed => _isDisposed;
-
-  @override
-  GenUiHost get host => _processor;
-
-  @override
-  A2uiMessageProcessor get a2uiMessageProcessor => _processor;
-
-  @override
-  ContentGenerator get contentGenerator => _generator;
-
-  @override
-  ValueNotifier<UiDefinition?> surface(String surfaceId) {
-    return _processor.getSurfaceNotifier(surfaceId);
-  }
-
-  @override
-  ValueChanged<SurfaceAdded>? get onSurfaceAdded => null;
-
-  @override
-  ValueChanged<SurfaceRemoved>? get onSurfaceDeleted => null;
-
-  @override
-  ValueChanged<SurfaceUpdated>? get onSurfaceUpdated => null;
-
-  @override
-  ValueChanged<String>? get onTextResponse => null;
-
-  @override
-  ValueChanged<ContentGeneratorError>? get onError => null;
-}
-
-class MockConversationBuilder {
-  MockGenUiConversation? lastCreatedConversation;
-
-  GenUiConversation call({
-    required ContentGenerator contentGenerator,
-    required A2uiMessageProcessor a2uiMessageProcessor,
-    required ValueChanged<String>? onTextResponse,
-    required ValueChanged<ContentGeneratorError>? onError,
-    required ValueChanged<SurfaceAdded>? onSurfaceAdded,
-    required ValueChanged<SurfaceUpdated>? onSurfaceUpdated,
-    required ValueChanged<SurfaceRemoved>? onSurfaceDeleted,
-  }) {
-    lastCreatedConversation = MockGenUiConversation();
-    return lastCreatedConversation!;
-  }
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late RemixViewModel viewModel;
-  late MockConversationBuilder mockConversationBuilder;
-  var viewModelDisposedInTest = false;
+  late _FakeAgentClient agent;
 
-  setUpAll(() async {
-    dotenv.loadFromString(envString: 'GOOGLE_AI_API_KEY=test_api_key');
-    PromptRegistry.instance.loadForTest(
-      prompts: {'remix_system': 'Test system prompt for remix'},
-    );
-  });
-
-  tearDownAll(() {
-    PromptRegistry.instance.reset();
-  });
+  SuperdeckAgentClient fakeAgentFactory({
+    required String apiKey,
+    required String modelName,
+    required List<dartantic.Tool> tools,
+  }) {
+    agent.capturedModelName = modelName;
+    return agent;
+  }
 
   setUp(() {
-    viewModelDisposedInTest = false;
-    mockConversationBuilder = MockConversationBuilder();
-    viewModel = RemixViewModel(
-      conversationBuilder: mockConversationBuilder.call,
+    dotenv.loadFromString(envString: 'GOOGLE_AI_API_KEY=test_api_key');
+    PromptRegistry.instance.loadForTest(
+      prompts: {'remix_system': 'Test remix prompt'},
     );
+    agent = _FakeAgentClient(chunks: const []);
   });
 
   tearDown(() {
-    if (!viewModelDisposedInTest) {
-      viewModel.dispose();
-    }
+    PromptRegistry.instance.reset();
   });
 
   group('RemixViewModel', () {
-    group('initial state', () {
-      test('surfaceIds should be empty list', () {
-        expect(viewModel.surfaceIds.value, isEmpty);
-      });
+    test('has expected initial state', () {
+      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
 
-      test('hasConversationStarted should be false', () {
-        expect(viewModel.hasConversationStarted.value, isFalse);
-      });
-
-      test('messages should be empty', () {
-        expect(viewModel.messages.value, isEmpty);
-      });
-
-      test('isThinking should return false', () {
-        expect(viewModel.isThinking.value, isFalse);
-      });
+      expect(viewModel.surfaceIds.value, isEmpty);
+      expect(viewModel.hasConversationStarted.value, isFalse);
+      expect(viewModel.messages.value, isEmpty);
+      expect(viewModel.isThinking.value, isFalse);
     });
 
-    group('sendMessage', () {
-      test('should not start conversation when message is empty', () {
-        viewModel.sendMessage('');
+    test('starts conversation and sends user message', () async {
+      agent = _FakeAgentClient(chunks: const ['Done']);
+      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
 
-        expect(viewModel.hasConversationStarted.value, isFalse);
-        expect(viewModel.messages.value, isEmpty);
-      });
+      viewModel.sendMessage('Build a settings panel');
+      await pumpEventQueue();
 
-      test('should start conversation when message is not empty', () {
-        viewModel.sendMessage('Build a settings panel');
-
-        expect(viewModel.hasConversationStarted.value, isTrue);
-        expect(viewModel.messages.value, isNotEmpty);
-      });
-
-      test('should add user message to messages list', () {
-        viewModel.sendMessage('Build a settings panel');
-
-        expect(viewModel.messages.value.length, 1);
-        expect(viewModel.messages.value.first, isA<SuperdeckUserMessage>());
-        expect(
-          (viewModel.messages.value.first as SuperdeckUserMessage).text,
-          'Build a settings panel',
-        );
-      });
-
-      test('should create conversation via builder', () {
-        viewModel.sendMessage('Build a settings panel');
-
-        expect(mockConversationBuilder.lastCreatedConversation, isNotNull);
-      });
+      expect(viewModel.hasConversationStarted.value, isTrue);
+      expect(agent.prompts, ['Build a settings panel']);
+      expect(
+        agent.histories.single.first.role,
+        dartantic.ChatMessageRole.system,
+      );
+      expect(
+        _messageText(agent.histories.single.first),
+        contains('Test remix prompt'),
+      );
+      expect(
+        (viewModel.messages.value.first as SuperdeckUserMessage).text,
+        'Build a settings panel',
+      );
+      expect(
+        (viewModel.messages.value.last as SuperdeckAiMessage).text,
+        'Done',
+      );
     });
 
-    group('restartConversation', () {
-      test('should clear conversation and messages', () {
-        viewModel.sendMessage('Hello');
-        expect(viewModel.hasConversationStarted.value, isTrue);
+    test('restart clears session and disposes agent', () async {
+      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
 
-        viewModel.restartConversation();
+      viewModel.sendMessage('Hello');
+      await pumpEventQueue();
+      expect(viewModel.hasConversationStarted.value, isTrue);
 
-        expect(viewModel.hasConversationStarted.value, isFalse);
-        expect(viewModel.messages.value, isEmpty);
-      });
+      viewModel.restartConversation();
 
-      test('should clear surfaceIds', () {
-        viewModel.sendMessage('Hello');
-        viewModel.surfaceIds.value = [
-          ...viewModel.surfaceIds.value,
-          'surface-1',
-        ];
-        expect(viewModel.surfaceIds.value, isNotEmpty);
-
-        viewModel.restartConversation();
-
-        expect(viewModel.surfaceIds.value, isEmpty);
-      });
-
-      test('should dispose previous conversation', () {
-        viewModel.sendMessage('Hello');
-        final conversation = mockConversationBuilder.lastCreatedConversation!;
-
-        viewModel.restartConversation();
-
-        expect(conversation.isDisposed, isTrue);
-      });
+      expect(viewModel.hasConversationStarted.value, isFalse);
+      expect(viewModel.messages.value, isEmpty);
+      expect(agent.disposed, isTrue);
     });
 
-    group('dispose', () {
-      test('should dispose conversation when present', () {
-        final localBuilder = MockConversationBuilder();
-        final localViewModel = RemixViewModel(
-          conversationBuilder: localBuilder.call,
-        );
+    test('allows model selection before conversation starts', () {
+      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      addTearDown(viewModel.dispose);
 
-        localViewModel.sendMessage('Hello');
-        final conversation = localBuilder.lastCreatedConversation!;
+      viewModel.model.value = GeminiModels.gemini25Pro;
 
-        localViewModel.dispose();
-
-        expect(conversation.isDisposed, isTrue);
-      });
-
-      test('should not throw when no conversation exists', () {
-        final localViewModel = RemixViewModel(
-          conversationBuilder: mockConversationBuilder.call,
-        );
-
-        expect(() => localViewModel.dispose(), returnsNormally);
-      });
-    });
-
-    group('model', () {
-      test('should be able to change model', () {
-        final newModel = viewModel.model.value == GeminiModels.gemini25Pro
-            ? GeminiModels.gemini25Flash
-            : GeminiModels.gemini25Pro;
-
-        viewModel.model.value = newModel;
-
-        expect(viewModel.model.value, newModel);
-      });
+      expect(viewModel.model.value, GeminiModels.gemini25Pro);
     });
   });
+}
+
+class _FakeAgentClient implements SuperdeckAgentClient {
+  _FakeAgentClient({required this.chunks});
+
+  final List<String> chunks;
+  final prompts = <String>[];
+  final histories = <List<dartantic.ChatMessage>>[];
+  String? capturedModelName;
+  var disposed = false;
+
+  @override
+  Stream<SuperdeckAgentResponseChunk> sendStream(
+    String prompt, {
+    required Iterable<dartantic.ChatMessage> history,
+  }) async* {
+    prompts.add(prompt);
+    histories.add(history.toList());
+    for (final chunk in chunks) {
+      yield SuperdeckAgentResponseChunk(text: chunk);
+    }
+  }
+
+  @override
+  void dispose() {
+    disposed = true;
+  }
+}
+
+String _messageText(dartantic.ChatMessage message) {
+  return message.parts
+      .whereType<dartantic.TextPart>()
+      .map((e) => e.text)
+      .join();
 }

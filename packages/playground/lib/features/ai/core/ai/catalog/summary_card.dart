@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
@@ -17,6 +19,8 @@ import '../../utils/color_utils.dart';
 import '../../utils/font_utils.dart';
 import '../../../ai_progress_screen.dart';
 import '../../../../../stores/ai_store.dart';
+import 'component_schema.dart';
+import 'user_action_dispatch.dart';
 
 part 'summary_card.g.dart';
 part 'summary_card_view.dart';
@@ -75,12 +79,18 @@ extension SummaryItemExt on SummaryItemType {
   /// Returns true if this item has image style data.
   bool get hasImageStyleData => imageStyleId != null;
 
+  bool get hasTitleOrText {
+    final titleValue = this['title'];
+    final textValue = this['text'];
+    return (titleValue is String && titleValue.isNotEmpty) ||
+        (textValue is String && textValue.isNotEmpty);
+  }
+
   /// Validates supported field combinations for summary rendering.
   ///
   /// This keeps backward compatibility with the current schema while surfacing
   /// malformed payloads early.
   String? get shapeValidationError {
-    final hasTitleOrText = title != null || text != null;
     final hasAnyStyleFields =
         colors != null || headlineFont != null || bodyFont != null;
 
@@ -139,64 +149,61 @@ extension SummaryItemExt on SummaryItemType {
 /// are rendered as style previews, otherwise they display as title/description pairs.
 final summaryCard = CatalogItem(
   name: 'SummaryCard',
-  dataSchema: _summaryCardSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(_summaryCardSchema.toJsonSchemaBuilder()),
   exampleData: [
     () => '''
       [
         {
           "id": "root",
-          "component": {
-            "SummaryCard": {
-              "title": "Summary",
-              "items": [
-                {
-                  "kind": "text",
-                  "label": "Topic",
-                  "title": "Introduction to Astronomy",
-                  "description": "A beginner-friendly overview of space and celestial objects"
-                },
-                {
-                  "kind": "text",
-                  "label": "Audience",
-                  "title": "Middle School Students",
-                  "description": "Ages 11-14"
-                },
-                {
-                  "kind": "text",
-                  "label": "Approach",
-                  "title": "Interactive & Visual",
-                  "description": "Engaging visuals with hands-on examples"
-                },
-                {
-                  "kind": "text",
-                  "label": "Emphasis",
-                  "text": "Planets, Stars, Space Exploration"
-                },
-                {
-                  "kind": "text",
-                  "label": "Slide Count",
-                  "text": "12 slides"
-                },
-                {
-                  "kind": "style",
-                  "label": "Style",
-                  "title": "Cosmic Blue",
-                  "description": "Deep space theme with vibrant accents",
-                  "colors": ["#0F172A", "#60A5FA", "#94A3B8"],
-                  "headlineFont": "oswald",
-                  "bodyFont": "inter"
-                },
-                {
-                  "kind": "imageStyle",
-                  "label": "Image Style",
-                  "imageStyleId": "minimalist"
-                }
-              ],
-              "generateSlidesAction": {
-                "name": "generate_slides",
-                "context": []
-              }
+          "component": "SummaryCard",
+          "title": "Summary",
+          "items": [
+            {
+              "kind": "text",
+              "label": "Topic",
+              "title": "Introduction to Astronomy",
+              "description": "A beginner-friendly overview of space and celestial objects"
+            },
+            {
+              "kind": "text",
+              "label": "Audience",
+              "title": "Middle School Students",
+              "description": "Ages 11-14"
+            },
+            {
+              "kind": "text",
+              "label": "Approach",
+              "title": "Interactive & Visual",
+              "description": "Engaging visuals with hands-on examples"
+            },
+            {
+              "kind": "text",
+              "label": "Emphasis",
+              "text": "Planets, Stars, Space Exploration"
+            },
+            {
+              "kind": "text",
+              "label": "Slide Count",
+              "text": "12 slides"
+            },
+            {
+              "kind": "style",
+              "label": "Style",
+              "title": "Cosmic Blue",
+              "description": "Deep space theme with vibrant accents",
+              "colors": ["#0F172A", "#60A5FA", "#94A3B8"],
+              "headlineFont": "oswald",
+              "bodyFont": "inter"
+            },
+            {
+              "kind": "imageStyle",
+              "label": "Image Style",
+              "imageStyleId": "minimalist"
             }
+          ],
+          "generateSlidesAction": {
+            "name": "generate_slides",
+            "context": []
           }
         }
       ]
@@ -207,60 +214,62 @@ final summaryCard = CatalogItem(
 
     // Use ActionType for type-safe action parsing with validation
     final action = ActionType.parse(data.generateSlidesAction);
-    final contextDefinition = action.context ?? [];
-
     return Builder(
       builder: (buildContext) {
         return SummaryCard(
           title: data.title,
           items: data.items.toList(),
           generateSlides: () {
-            debugLog.section('Generate Slides Triggered');
+            unawaited(() async {
+              debugLog.section('Generate Slides Triggered');
+              final aiStore = prov.Provider.of<AiStore>(
+                buildContext,
+                listen: false,
+              );
+              final navigator = Navigator.of(buildContext);
 
-            // Extract context from displayed summary items
-            final extractedContext = _extractContextFromItems(
-              data.items.toList(),
-            );
-            debugLog.userAction('GENERATE_SLIDES', extractedContext.toMap());
+              // Extract context from displayed summary items
+              final extractedContext = _extractContextFromItems(
+                data.items.toList(),
+              );
+              debugLog.userAction('GENERATE_SLIDES', extractedContext.toMap());
 
-            // Merge with any path-resolved context from the action
-            final resolvedContext = WizardContext.fromMap(
-              resolveContext(catalogContext.dataContext, contextDefinition),
-            );
-            final finalContext = extractedContext.merge(resolvedContext);
-            debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
-
-            // Build the prompt string from wizard context.
-            final prompt = buildPromptFromWizardContext(finalContext);
-            final imageStyleId = finalContext.imageStyleId;
-            final backgroundColor = finalContext.colors?.firstOrNull;
-
-            debugLog.log(
-              'GEN',
-              'Routing generation through AiStore. prompt length: ${prompt.length}',
-            );
-
-            // Read AiStore from the app-level Provider tree.
-            final aiStore = prov.Provider.of<AiStore>(
-              buildContext,
-              listen: false,
-            );
-
-            // Fire-and-forget — AiStore manages all reactive state.
-            aiStore.generate(
-              prompt,
-              imageStyleId: imageStyleId,
-              backgroundColor: backgroundColor,
-            );
-
-            // Navigate to the progress screen immediately.
-            if (buildContext.mounted) {
-              Navigator.of(buildContext).push<void>(
-                MaterialPageRoute<void>(
-                  builder: (_) => const AiProgressScreen(),
+              // Merge with any path-resolved context from the action
+              final resolvedContext = WizardContext.fromMap(
+                await resolveContext(
+                  catalogContext.dataContext,
+                  actionContextDefinitionFromAction(action),
                 ),
               );
-            }
+              final finalContext = extractedContext.merge(resolvedContext);
+              debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
+
+              // Build the prompt string from wizard context.
+              final prompt = buildPromptFromWizardContext(finalContext);
+              final imageStyleId = finalContext.imageStyleId;
+              final backgroundColor = finalContext.colors?.firstOrNull;
+
+              debugLog.log(
+                'GEN',
+                'Routing generation through AiStore. prompt length: ${prompt.length}',
+              );
+
+              // Fire-and-forget — AiStore manages all reactive state.
+              aiStore.generate(
+                prompt,
+                imageStyleId: imageStyleId,
+                backgroundColor: backgroundColor,
+              );
+
+              // Navigate to the progress screen immediately.
+              if (navigator.mounted) {
+                navigator.push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AiProgressScreen(),
+                  ),
+                );
+              }
+            }());
           },
         );
       },

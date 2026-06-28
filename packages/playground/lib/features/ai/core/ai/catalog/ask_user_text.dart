@@ -11,6 +11,7 @@ import 'user_action_dispatch.dart';
 import '../../ui/ui.dart';
 
 import 'catalog_question_step.dart';
+import 'component_schema.dart';
 
 part 'ask_user_text.g.dart';
 
@@ -36,21 +37,18 @@ final _askUserTextSchema = Ack.object({
 /// AskUserText catalog component for free-form text input.
 final askUserText = CatalogItem(
   name: 'AskUserText',
-  dataSchema: _askUserTextSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(_askUserTextSchema.toJsonSchemaBuilder()),
   exampleData: [
     () => '''
       [
         {
           "id": "root",
-          "component": {
-            "AskUserText": {
-              "question": "What is your presentation topic?",
-              "description": "Enter a brief description of your topic.",
-              "placeholder": "e.g., Introduction to Machine Learning",
-              "maxLength": 200,
-              "action": {"name": "submit_answer", "context": []}
-            }
-          }
+          "component": "AskUserText",
+          "question": "What is your presentation topic?",
+          "description": "Enter a brief description of your topic.",
+          "placeholder": "e.g., Introduction to Machine Learning",
+          "maxLength": 200,
+          "action": {"name": "submit_answer", "context": []}
         }
       ]
     ''',

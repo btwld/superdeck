@@ -76,7 +76,7 @@ class _RemixScreenScaffoldState extends State<_RemixScreenScaffold> {
           showChat: showChat,
         ),
         leadingWidget: AiSurfacesPanel(
-          host: viewModel.host,
+          controller: viewModel.controller,
           surfaceIds: viewModel.surfaceIds,
           isThinking: viewModel.isThinking,
           messages: viewModel.messages,

@@ -7,12 +7,21 @@ import '../core/tools/deck_tools_adapter.dart';
 class DeckEditViewModel extends GenUiConversationViewModel {
   DeckEditViewModel({
     required DeckToolsAdapter toolsAdapter,
-    @visibleForTesting super.conversationBuilder,
-  }) : super(
+    @visibleForTesting super.agentClientFactory,
+  }) : _toolsAdapter = toolsAdapter,
+       super(
          catalog: chatCatalog,
          promptName: 'deck_edit_system',
          promptLoadErrorMessage:
              'Unable to load deck edit prompts. Please restart the app.',
-         additionalTools: toolsAdapter.tools,
+         tools: toolsAdapter.tools,
        );
+
+  final DeckToolsAdapter _toolsAdapter;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _toolsAdapter.dispose();
+  }
 }

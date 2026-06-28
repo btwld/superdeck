@@ -11,6 +11,7 @@ import 'user_action_dispatch.dart';
 import '../../ui/ui.dart';
 
 import 'catalog_question_step.dart';
+import 'component_schema.dart';
 
 part 'ask_user_slider.g.dart';
 
@@ -42,22 +43,19 @@ final _askUserSliderSchema =
 /// AskUserSlider catalog component for numeric input questions.
 final askUserSlider = CatalogItem(
   name: 'AskUserSlider',
-  dataSchema: _askUserSliderSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(_askUserSliderSchema.toJsonSchemaBuilder()),
   exampleData: [
     () => '''
       [
         {
           "id": "root",
-          "component": {
-            "AskUserSlider": {
-              "question": "How many slides do you need?",
-              "minValue": 5,
-              "maxValue": 25,
-              "defaultValue": 10,
-              "unit": "slides",
-              "action": {"name": "submit_answer", "context": []}
-            }
-          }
+          "component": "AskUserSlider",
+          "question": "How many slides do you need?",
+          "minValue": 5,
+          "maxValue": 25,
+          "defaultValue": 10,
+          "unit": "slides",
+          "action": {"name": "submit_answer", "context": []}
         }
       ]
     ''',

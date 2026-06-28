@@ -14,6 +14,7 @@ import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
+import 'component_schema.dart';
 
 part 'ask_user_style.g.dart';
 
@@ -59,37 +60,34 @@ final _askUserStyleSchema =
 /// AskUserStyle catalog component for visual style selection.
 final askUserStyle = CatalogItem(
   name: 'AskUserStyle',
-  dataSchema: _askUserStyleSchema.toJsonSchemaBuilder(),
+  dataSchema: componentSchema(_askUserStyleSchema.toJsonSchemaBuilder()),
   exampleData: [
     () => '''
       [
         {
           "id": "root",
-          "component": {
-            "AskUserStyle": {
-              "question": "Choose a visual style",
-              "description": "Pick the palette and fonts that best fit your presentation.",
-              "styleOptions": [
-                {
-                  "id": "professional_clean",
-                  "title": "Professional & Clean",
-                  "description": "Muted palette with crisp typography.",
-                  "colors": ["#F8FAFC", "#1E3A8A", "#475569"],
-                  "headlineFont": "montserrat",
-                  "bodyFont": "openSans"
-                },
-                {
-                  "id": "playful_bright",
-                  "title": "Playful & Bright",
-                  "description": "Cheerful colors with friendly fonts.",
-                  "colors": ["#F5F3FF", "#5B21B6", "#6B7280"],
-                  "headlineFont": "lobster",
-                  "bodyFont": "inter"
-                }
-              ],
-              "action": {"name": "submit_answer", "context": []}
+          "component": "AskUserStyle",
+          "question": "Choose a visual style",
+          "description": "Pick the palette and fonts that best fit your presentation.",
+          "styleOptions": [
+            {
+              "id": "professional_clean",
+              "title": "Professional & Clean",
+              "description": "Muted palette with crisp typography.",
+              "colors": ["#F8FAFC", "#1E3A8A", "#475569"],
+              "headlineFont": "montserrat",
+              "bodyFont": "openSans"
+            },
+            {
+              "id": "playful_bright",
+              "title": "Playful & Bright",
+              "description": "Cheerful colors with friendly fonts.",
+              "colors": ["#F5F3FF", "#5B21B6", "#6B7280"],
+              "headlineFont": "lobster",
+              "bodyFont": "inter"
             }
-          }
+          ],
+          "action": {"name": "submit_answer", "context": []}
         }
       ]
     ''',

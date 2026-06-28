@@ -53,10 +53,11 @@ final class SuperdeckJsonDebugMessage extends SuperdeckChatMessage {
 /// Typed parser for user action payloads from GenUI.
 ///
 /// Safely extracts and validates the action structure from JSON.
-/// Expected format:
+/// Expected GenUI v0.9 format:
 /// ```json
 /// {
-///   "userAction": {
+///   "version": "v0.9",
+///   "action": {
 ///     "name": "action_name",
 ///     "context": { "message": "Display text", ... }
 ///   }
@@ -79,7 +80,7 @@ class UserActionPayload {
       final json = jsonDecode(jsonString);
       if (json is! Map<String, dynamic>) return null;
 
-      final userAction = json['userAction'];
+      final userAction = json['action'] ?? json['userAction'];
       if (userAction is! Map<String, dynamic>) return null;
 
       final name = userAction['name'];

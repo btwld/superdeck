@@ -6,7 +6,7 @@ import '../core/ai/services/genui_conversation_viewmodel.dart';
 export '../chat/chat_message.dart';
 
 class RemixViewModel extends GenUiConversationViewModel {
-  RemixViewModel({@visibleForTesting super.conversationBuilder})
+  RemixViewModel({@visibleForTesting super.agentClientFactory})
     : super(
         catalog: remixCatalog,
         promptName: 'remix_system',

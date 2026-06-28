@@ -1,7 +1,7 @@
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
 import 'package:playground/features/ai/core/ai/schemas/deck_schemas.dart';
+import 'package:playground/features/ai/core/ai/services/google_schema_adapter.dart';
 
 void main() {
   group('Slide Generation Schema', () {
@@ -124,8 +124,7 @@ void main() {
           equals({'slides', 'style'}),
         );
 
-        final slidesSchema =
-            (jsonSchema['properties'] as Map)['slides'] as Map;
+        final slidesSchema = (jsonSchema['properties'] as Map)['slides'] as Map;
         expect(slidesSchema['type'], equals('array'));
         expect(
           slidesSchema['description'],
