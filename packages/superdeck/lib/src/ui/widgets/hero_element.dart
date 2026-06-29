@@ -127,10 +127,22 @@ Widget buildElementHero<T>({
           final to = HeroElement.of<T>(toHeroContext);
           final from = HeroElement.maybeOf<T>(fromHeroContext) ?? to;
 
+          // The shuttle is built inside the Navigator's Overlay, which sits
+          // outside the route's Material and therefore exposes a different
+          // DefaultTextStyle than the slide. Text properties an element spec
+          // leaves unset (letterSpacing, leadingDistribution, ...) would
+          // otherwise resolve against the Overlay's bare default and make the
+          // text change size the instant the Hero hands off to/from the real
+          // widget. Re-apply the source slide's DefaultTextStyle so the
+          // shuttle resolves identically to the widget it stands in for.
+          final slideTextStyle = DefaultTextStyle.of(fromHeroContext).style;
+
           return AnimatedBuilder(
             animation: animation,
-            builder: (context, _) =>
-                buildFlight(context, from, to, animation.value),
+            builder: (context, _) => DefaultTextStyle.merge(
+              style: slideTextStyle,
+              child: buildFlight(context, from, to, animation.value),
+            ),
           );
         },
   );

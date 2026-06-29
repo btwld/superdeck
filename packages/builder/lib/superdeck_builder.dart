@@ -7,3 +7,7 @@ export 'package:superdeck_core/superdeck_core.dart'
 export 'src/build/build_event.dart';
 export 'src/build/deck_build_plugin.dart';
 export 'src/build/deck_builder.dart';
+
+export 'src/parsers/comment_parser.dart';
+export 'src/parsers/markdown_parser.dart';
+export 'src/parsers/section_parser.dart';

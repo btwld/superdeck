@@ -176,6 +176,70 @@ void main() {
       );
     });
 
+    test('deleteAllThumbnails clears cache and store entries', () async {
+      final store = _FakeAssetCacheStore();
+      final capture = FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
+      final introThumbnail = AsyncThumbnail(
+        thumbnailKey: _thumbnailKey('intro'),
+        generator: (ctx, {required force}) async => null,
+      );
+      final agendaThumbnail = AsyncThumbnail(
+        thumbnailKey: _thumbnailKey('agenda'),
+        generator: (ctx, {required force}) async => null,
+      );
+
+      Map<String, AsyncThumbnail>? updatedCache;
+      await service.deleteAllThumbnails(
+        slides: [_createSlide('intro'), _createSlide('agenda')],
+        cache: {'intro': introThumbnail, 'agenda': agendaThumbnail},
+        onCacheUpdate: (cache) {
+          updatedCache = cache;
+        },
+      );
+
+      expect(updatedCache, isNotNull);
+      expect(updatedCache, isEmpty);
+      expect(
+        store.callOrder,
+        containsAll([
+          'delete:${_thumbnailKey('intro')}',
+          'delete:${_thumbnailKey('agenda')}',
+        ]),
+      );
+    });
+
+    test('deleteAllThumbnails also removes orphan keys from cache', () async {
+      final store = _FakeAssetCacheStore();
+      final capture = FakeSlideCaptureService(Uint8List.fromList([1, 2, 3]));
+      final service = ThumbnailService(
+        cacheStore: store,
+        slideCaptureService: capture,
+      );
+      // 'orphan' is in the cache but no longer in the slides list.
+      final orphan = AsyncThumbnail(
+        thumbnailKey: _thumbnailKey('orphan'),
+        generator: (ctx, {required force}) async => null,
+      );
+
+      await service.deleteAllThumbnails(
+        slides: [_createSlide('intro')],
+        cache: {'orphan': orphan},
+        onCacheUpdate: (_) {},
+      );
+
+      expect(
+        store.callOrder,
+        containsAll([
+          'delete:${_thumbnailKey('orphan')}',
+          'delete:${_thumbnailKey('intro')}',
+        ]),
+      );
+    });
+
     testWidgets('replaces cached async thumbnail when thumbnail key changes', (
       tester,
     ) async {

@@ -29,7 +29,7 @@ dependencies:
   web: ^1.1.0
   webview_flutter: ^4.10.0
   webview_flutter_web: ^0.2.3
-  google_fonts: ^6.3.2
+  google_fonts: ^8.1.0
   meta: ^1.16.0
   qr_flutter: ^4.1.0
   signals: ^6.2.0
