@@ -42,7 +42,12 @@ class QrCodeDto {
 
   /// Parses and validates raw map into typed QrCodeDto.
   static QrCodeDto parse(Map<String, Object?> map) {
-    final parsed = schema.parse(map)!;
+    final normalized = Map<String, Object?>.from(map);
+    if (normalized['size'] case final int size) {
+      normalized['size'] = size.toDouble();
+    }
+
+    final parsed = schema.parse(normalized)!;
     final errorCorrection =
         parsed['errorCorrection'] as _QrErrorCorrectionToken? ??
         _QrErrorCorrectionToken.medium;
