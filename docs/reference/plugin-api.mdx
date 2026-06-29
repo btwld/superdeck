@@ -1,0 +1,183 @@
+---
+title: Plugin API reference
+description: Runtime and build-time extension APIs for SuperDeck plugins
+---
+
+# Plugin API reference
+
+SuperDeck exposes a shared plugin identity with two lifecycle-specific plugin
+surfaces:
+
+- **Runtime plugins** register commands in the presentation shell.
+- **Build plugins** transform parsed Markdown content during `superdeck_cli`
+  builds.
+
+Use [custom widgets](/guides/custom-widgets) instead when you only need to
+render custom slide content from `@name { ... }`.
+
+## Shared plugin identity
+
+### `DeckPlugin`
+
+```dart
+abstract base class DeckPlugin {
+  const DeckPlugin();
+
+  String get id;
+}
+```
+
+All plugin types expose a stable `id`. IDs must be non-empty and unique within
+the runtime or build registration surface where the plugin is used.
+
+## Runtime plugins
+
+Runtime plugins run inside the Flutter app and are passed to `SuperDeckApp`.
+They register `DeckAction` commands that the app shell renders.
+
+### `SuperDeckApp.plugins`
+
+```dart
+SuperDeckApp(
+  options: DeckOptions(),
+  plugins: const [
+    PdfPlugin(),
+  ],
+);
+```
+
+`plugins` is a `List<DeckRuntimePlugin>`. The app shell renders the actions
+registered by those plugins and invokes each action with the active
+`DeckController`.
+
+### `DeckRuntimePlugin`
+
+```dart
+abstract base class DeckRuntimePlugin extends DeckPlugin {
+  const DeckRuntimePlugin();
+
+  List<DeckAction> get actions;
+}
+```
+
+Extend `DeckRuntimePlugin` for app-shell extensions. Keep plugin configuration
+as fields on the plugin object and return preconfigured actions from `actions`.
+
+### `DeckAction`
+
+```dart
+DeckAction({
+  required String id,
+  required String label,
+  required IconData icon,
+  required DeckActionCallback onPressed,
+});
+```
+
+| Field | Description |
+| --- | --- |
+| `id` | Stable plugin/action identifier. Empty IDs are rejected. |
+| `label` | User-facing action label. Empty labels are rejected. |
+| `icon` | Flutter icon shown by the shell. |
+| `onPressed` | Callback invoked when the action runs. |
+
+### `DeckActionCallback`
+
+```dart
+typedef DeckActionCallback = FutureOr<void> Function(
+  BuildContext context,
+  DeckController deck,
+);
+```
+
+Use the `DeckController` to inspect or update current deck state. For example,
+`deck.presentation.currentIndex.value` exposes the active slide index, and
+`deck.presentation.currentSlide.value` exposes the active slide configuration.
+
+## Build plugins
+
+Build plugins run after Markdown parsing and before build output is written.
+They only receive `ContentBlock`s. Widget blocks, section structure, and slide
+frontmatter are already parsed before plugin transforms run.
+
+### `SuperDeckRunner.plugins`
+
+```dart
+final exitCode = await SuperDeckRunner(
+  plugins: [
+    MermaidBuildPlugin(),
+  ],
+).run(args);
+```
+
+Builds must run through the custom runner for these plugins to execute.
+Plugins run in list order.
+
+### `DeckBuildPlugin`
+
+```dart
+abstract base class DeckBuildPlugin extends DeckPlugin {
+  const DeckBuildPlugin();
+
+  String get id;
+
+  FutureOr<void> beginBuild(DeckWorkspace workspace) {}
+
+  FutureOr<ContentBlock> transformContentBlock(
+    ContentBlock block,
+    DeckBuildContext context,
+  ) {
+    return block;
+  }
+
+  FutureOr<void> finishBuild(DeckWorkspace workspace) {}
+
+  FutureOr<void> dispose() {}
+}
+```
+
+Extend `DeckBuildPlugin` for build-time transforms. `id` is the stable plugin
+identifier; empty or duplicate IDs are rejected when the plugin is registered
+with a builder.
+
+Override `transformContentBlock` to rewrite parsed content blocks. Return the
+original `block` when no changes are needed. Return
+`block.copyWith(content: updatedContent)` when the plugin rewrites content.
+
+Throw `DeckFormatException` when the failure comes from invalid slide content
+and should point users back to `slides.md`.
+
+Override `beginBuild` to initialize state for one build and `finishBuild` to
+finalize state after plugin transforms and reference saving succeed.
+`finishBuild` is not called when a transform or reference save fails, which lets
+plugins avoid cleaning or publishing partial build output.
+
+Override `dispose` when the plugin owns browsers, files, or other long-lived
+resources.
+
+### `DeckBuildContext`
+
+`DeckBuildContext` gives build plugins slide position metadata and safe helpers
+for generated files.
+
+| Property or method | Description |
+| --- | --- |
+| `workspace` | Active `DeckWorkspace`. |
+| `slideKey` | Key of the slide being transformed. |
+| `slideIndex` | Zero-based slide index. |
+| `sectionIndex` | Zero-based section index. |
+| `blockIndex` | Zero-based block index inside the section. |
+| `outputFile(relativePath)` | Creates a `File` path inside the active build output directory. |
+| `assetPath(relativePath)` | Returns the Markdown asset path for generated output. |
+
+Both `outputFile()` and `assetPath()` reject absolute paths and paths that
+escape the build output directory.
+
+## First-party plugin packages
+
+- `superdeck_pdf` exposes `PdfPlugin`, `PdfExportOptions`, and `PdfSaver` for
+  PDF export.
+- `superdeck_mermaid` exposes `MermaidBuildPlugin` and `MermaidGenerator`
+  for build-time Mermaid diagram rendering.
+
+See the [plugin guide](/guides/plugins) for installation and authoring examples.

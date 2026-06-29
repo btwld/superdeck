@@ -16,6 +16,7 @@ class BundledDeckLoader extends DeckLoader {
   Future<void>? _loadTask;
   var _disposed = false;
   var _started = false;
+  Future<void>? _disposeTask;
 
   BundledDeckLoader({DeckWorkspace? workspace})
     : workspace = workspace ?? DeckWorkspace();
@@ -68,7 +69,11 @@ class BundledDeckLoader extends DeckLoader {
   }
 
   @override
-  Future<void> dispose() async {
+  Future<void> dispose() {
+    return _disposeTask ??= _dispose();
+  }
+
+  Future<void> _dispose() async {
     if (_disposed) return;
     _disposed = true;
     await (_loadTask ?? Future<void>.value());

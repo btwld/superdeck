@@ -6,6 +6,7 @@ import 'keyboard_navigation_test.dart' as keyboard_navigation;
 import 'layout_matrix_test.dart' as layout_matrix;
 import 'live_reload_test.dart' as live_reload;
 import 'navigation_test.dart' as navigation;
+import 'plugin_visual_test.dart' as plugin_visual;
 import 'slide_content_test.dart' as slide_content;
 import 'startup_test.dart' as startup;
 import 'ui_controls_test.dart' as ui_controls;
@@ -31,4 +32,5 @@ void main() {
   slide_content.main();
   layout_matrix.main();
   live_reload.main();
+  plugin_visual.main();
 }

@@ -69,7 +69,9 @@ void main() {
         );
 
         await _waitUntil(
-          () => !controller.session.isLoading.value && !controller.session.hasFatalError.value,
+          () =>
+              !controller.session.isLoading.value &&
+              !controller.session.hasFatalError.value,
         );
 
         expect(controller.session.isLoading.value, isFalse);
@@ -93,7 +95,9 @@ void main() {
         );
 
         await _waitUntil(
-          () => !controller.session.isLoading.value && !controller.session.hasFatalError.value,
+          () =>
+              !controller.session.isLoading.value &&
+              !controller.session.hasFatalError.value,
         );
 
         expect(controller.session.isLoading.value, isFalse);
@@ -133,7 +137,9 @@ void main() {
       createController();
 
       await _waitUntil(
-        () => !controller.session.isLoading.value && controller.session.hasFatalError.value,
+        () =>
+            !controller.session.isLoading.value &&
+            controller.session.hasFatalError.value,
       );
 
       expect(controller.session.isLoading.value, isFalse);

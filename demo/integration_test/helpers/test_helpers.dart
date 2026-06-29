@@ -21,6 +21,7 @@ import 'package:superdeck_example/src/templates.dart';
 import 'package:superdeck_example/src/widgets/demo_widgets.dart';
 
 var _reviewScreenshotRun = 0;
+final _testRunRoot = Directory.current.path;
 final _reviewScreenshotBoundaryKey = GlobalKey(
   debugLabel: 'review-screenshot-boundary',
 );
@@ -84,6 +85,10 @@ void assertPresentationHealthy(WidgetTester tester, DeckController controller) {
   assertNoFlutterException(tester);
 }
 
+/// Opt-in review screenshots are artifact-only PNGs for human inspection.
+///
+/// Pixel assertions belong in package golden tests, such as the PDF export
+/// dialog golden, not in these end-to-end integration scenarios.
 Future<Directory?> captureAllSlidesForReview(
   WidgetTester tester,
   DeckController controller, {
@@ -93,15 +98,10 @@ Future<Directory?> captureAllSlidesForReview(
   if (Platform.environment['SUPERDECK_CAPTURE_SLIDES'] != '1') return null;
 
   final originalIndex = controller.presentation.currentIndex.value;
-  final runId = (++_reviewScreenshotRun).toString().padLeft(3, '0');
-  final outputDir = Directory(
-    '${_reviewScreenshotRoot().path}/${_slug(suiteName)}/'
-    '${runId}_${_slug(scenarioName)}',
+  final outputDir = await _createReviewScreenshotOutputDir(
+    suiteName: suiteName,
+    scenarioName: scenarioName,
   );
-  if (await outputDir.exists()) {
-    await outputDir.delete(recursive: true);
-  }
-  await outputDir.create(recursive: true);
 
   final totalSlides = controller.presentation.totalSlides.value;
   for (var index = 0; index < totalSlides; index++) {
@@ -120,6 +120,47 @@ Future<Directory?> captureAllSlidesForReview(
   if (originalIndex >= 0 && originalIndex < totalSlides) {
     await tester.navigateToSlide(controller, originalIndex);
   }
+
+  return outputDir;
+}
+
+Future<Directory?> captureCurrentViewForReview(
+  WidgetTester tester, {
+  required String suiteName,
+  required String scenarioName,
+  String fileName = 'current-view.png',
+}) async {
+  if (Platform.environment['SUPERDECK_CAPTURE_SLIDES'] != '1') return null;
+
+  final outputDir = await _createReviewScreenshotOutputDir(
+    suiteName: suiteName,
+    scenarioName: scenarioName,
+  );
+  await tester.pumpFor(const Duration(milliseconds: 150));
+  final normalizedFileName = fileName.endsWith('.png')
+      ? _slug(fileName)
+      : '${_slug(fileName)}.png';
+  final bytes = await _captureReviewScreenshot();
+  await File(
+    '${outputDir.path}/$normalizedFileName',
+  ).writeAsBytes(bytes, flush: true);
+
+  return outputDir;
+}
+
+Future<Directory> _createReviewScreenshotOutputDir({
+  required String suiteName,
+  required String scenarioName,
+}) async {
+  final runId = (++_reviewScreenshotRun).toString().padLeft(3, '0');
+  final outputDir = Directory(
+    '${_reviewScreenshotRoot().path}/${_slug(suiteName)}/'
+    '${runId}_${_slug(scenarioName)}',
+  );
+  if (await outputDir.exists()) {
+    await outputDir.delete(recursive: true);
+  }
+  await outputDir.create(recursive: true);
 
   return outputDir;
 }
@@ -158,7 +199,7 @@ Directory _reviewScreenshotRoot() {
     return Directory(configured);
   }
 
-  return Directory('${Directory.current.path}/build/integration_screenshots');
+  return Directory('$_testRunRoot/build/integration_screenshots');
 }
 
 String _slug(String value) {
@@ -190,11 +231,13 @@ class TestApp extends StatelessWidget {
     this.deckLoader,
     this.workspace,
     this.extraWidgets = const {},
+    this.plugins = const [],
   });
 
   final DeckLoader? deckLoader;
   final DeckWorkspace? workspace;
   final Map<String, WidgetFactory> extraWidgets;
+  final List<DeckRuntimePlugin> plugins;
 
   static bool _initialized = false;
 
@@ -236,6 +279,7 @@ class TestApp extends StatelessWidget {
           ),
         ),
         transitionDuration: _testSlideTransitionDuration,
+        plugins: plugins,
       ),
     );
   }
@@ -252,7 +296,7 @@ class _TransparentThumbnailCacheStore implements AssetCacheStore {
 
   static Future<Uri> _writeFixture() async {
     final file = File(
-      '${Directory.current.path}/build/integration_fixtures/thumbnails/'
+      '$_testRunRoot/build/integration_fixtures/thumbnails/'
       'transparent-thumbnail.png',
     );
     await file.parent.create(recursive: true);
@@ -428,6 +472,12 @@ extension IntegrationTestExtensions on WidgetTester {
     }
   }
 
+  /// Unmounts the current test app and flushes one frame of disposal work.
+  Future<void> unmountTestApp() async {
+    await pumpWidget(const SizedBox.shrink());
+    await pump();
+  }
+
   /// Pumps until [condition] is true or [timeout] is reached.
   Future<void> pumpUntil(
     bool Function() condition, {
@@ -460,12 +510,14 @@ extension IntegrationTestExtensions on WidgetTester {
     DeckLoader loader, {
     required DeckWorkspace workspace,
     Map<String, WidgetFactory> extraWidgets = const {},
+    List<DeckRuntimePlugin> plugins = const [],
   }) async {
     await pumpWidget(
       TestApp(
         deckLoader: loader,
         workspace: workspace,
         extraWidgets: extraWidgets,
+        plugins: plugins,
       ),
     );
     await pumpFor(const Duration(milliseconds: 200));
@@ -486,6 +538,7 @@ extension IntegrationTestExtensions on WidgetTester {
   Future<DeckController> pumpTestAppWithSlides(
     List<Slide> slides, {
     Map<String, WidgetFactory> extraWidgets = const {},
+    List<DeckRuntimePlugin> plugins = const [],
   }) async {
     final tempDir = await Directory.systemTemp.createTemp('sd_fixture_app_');
     FileDeckLoader? loader;
@@ -506,6 +559,7 @@ extension IntegrationTestExtensions on WidgetTester {
       fileLoader,
       workspace: workspace,
       extraWidgets: extraWidgets,
+      plugins: plugins,
     );
   }
 

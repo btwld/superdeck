@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
+import 'package:provider/provider.dart';
+import 'package:signals_flutter/signals_flutter.dart';
+import 'package:superdeck/superdeck.dart';
+
+import 'features/ai/chat/view/chat_screen.dart';
+import 'features/ai/deck_edit/deck_edit_screen.dart';
+import 'features/ai/remix/view/remix_screen.dart';
+import 'features/editor/editor_page.dart';
+import 'features/presentation/presentation_page.dart';
 import 'stores/ai_store.dart';
 import 'stores/deck_customization_store.dart';
 import 'stores/editor_state.dart';
 import 'utils/memory_asset_cache_store.dart';
 import 'utils/memory_deck_loader.dart';
-import 'utils/text_editor_controller.dart';
-import 'features/presentation/presentation_page.dart';
 import 'utils/takeover_route.dart';
-import 'features/editor/editor_page.dart';
-import 'features/ai/chat/view/chat_screen.dart';
-import 'features/ai/deck_edit/deck_edit_screen.dart';
-import 'features/ai/remix/view/remix_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:signals_flutter/signals_flutter.dart';
-import 'package:superdeck/superdeck.dart';
+import 'utils/text_editor_controller.dart';
 
 void main() {
   SignalsObserver.instance = null;
@@ -71,11 +72,15 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
   }
 }
 
-class _Providers extends StatelessWidget {
+class _Providers extends StatefulWidget {
   const _Providers({required this.child});
 
   final Widget child;
+  @override
+  State<_Providers> createState() => _ProvidersState();
+}
 
+class _ProvidersState extends State<_Providers> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -89,6 +94,7 @@ class _Providers extends StatelessWidget {
             options: .new(),
             assetCacheStore: context.read<MemoryAssetCacheStore>(),
           ),
+          dispose: (_, controller) => controller.dispose(),
         ),
         Provider<DeckCustomizationStore>(
           create: (context) =>
@@ -113,7 +119,7 @@ class _Providers extends StatelessWidget {
           dispose: (_, store) => store.dispose(),
         ),
       ],
-      child: child,
+      child: widget.child,
     );
   }
 }

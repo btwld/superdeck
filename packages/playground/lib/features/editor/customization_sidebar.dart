@@ -290,11 +290,6 @@ class _FontSizeFieldState extends State<_FontSizeField> {
     );
   }
 }
-//         ),
-//       ],
-//     );
-//   }
-// }
 
 class _FontWeightSlider extends StatelessWidget {
   const _FontWeightSlider({required this.level});
@@ -413,6 +408,15 @@ class _Toolbar extends StatelessWidget {
       style: FlexBoxStyler().spacing(8),
       children: [
         Spacer(),
+        SizedBox(
+          width: 48,
+          child: HeroIconButton(
+            icon: CupertinoIcons.share,
+            size: .lg,
+            variant: .secondary,
+            onPressed: () {},
+          ),
+        ),
         // Simple AI prompt panel (quick text-entry shortcut).
         SizedBox(
           width: 48,

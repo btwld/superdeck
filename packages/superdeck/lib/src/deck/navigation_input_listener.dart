@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
@@ -27,22 +28,29 @@ class NavigationInputListener extends StatefulWidget {
 class _NavigationInputListenerState extends State<NavigationInputListener> {
   final _keyboardHandler = KeyboardNavigationHandler();
   final _gestureHandler = GestureNavigationHandler();
-  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    // Request focus on mount to ensure keyboard events are captured
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _focusNode.requestFocus();
-    });
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     super.dispose();
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (!mounted) return false;
+
+    final navigationEvent = _keyboardHandler.handleKey(event);
+    if (navigationEvent == null) return false;
+
+    final presentation = DeckController.of(context).presentation;
+    _dispatch(presentation, navigationEvent);
+
+    return true;
   }
 
   void _dispatch(DeckPresentationState presentation, NavigationEvent? event) {
@@ -62,43 +70,30 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
     final size = MediaQuery.of(context).size;
     final presentation = DeckController.of(context).presentation;
 
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: true,
-      onKeyEvent: (node, event) {
-        final navigationEvent = _keyboardHandler.handleKey(event);
-        _dispatch(presentation, navigationEvent);
+    return Watch((context) {
+      final isMenuOpen = presentation.isMenuOpen.value;
 
-        // Return handled if we processed the event, otherwise ignored
-        return navigationEvent != null
-            ? KeyEventResult.handled
-            : KeyEventResult.ignored;
-      },
-      child: Watch((context) {
-        final isMenuOpen = presentation.isMenuOpen.value;
-
-        return GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTapUp: isMenuOpen
-              ? null
-              : (details) {
-                  final event = _gestureHandler.handleTap(details, size);
-                  _dispatch(presentation, event);
-                },
-          onHorizontalDragStart: isMenuOpen
-              ? null
-              : (details) {
-                  _gestureHandler.handleDragStart(details);
-                },
-          onHorizontalDragEnd: isMenuOpen
-              ? null
-              : (details) {
-                  final event = _gestureHandler.handleSwipe(details);
-                  _dispatch(presentation, event);
-                },
-          child: widget.child,
-        );
-      }),
-    );
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTapUp: isMenuOpen
+            ? null
+            : (details) {
+                final event = _gestureHandler.handleTap(details, size);
+                _dispatch(presentation, event);
+              },
+        onHorizontalDragStart: isMenuOpen
+            ? null
+            : (details) {
+                _gestureHandler.handleDragStart(details);
+              },
+        onHorizontalDragEnd: isMenuOpen
+            ? null
+            : (details) {
+                final event = _gestureHandler.handleSwipe(details);
+                _dispatch(presentation, event);
+              },
+        child: widget.child,
+      );
+    });
   }
 }

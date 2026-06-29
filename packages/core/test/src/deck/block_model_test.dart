@@ -296,10 +296,7 @@ void main() {
         });
 
         test('uses explicit align when set', () {
-          final block = ContentBlock(
-            'Content',
-            align: ContentAlignment.center,
-          );
+          final block = ContentBlock('Content', align: ContentAlignment.center);
 
           expect(block.resolvedAlign, ContentAlignment.center);
         });

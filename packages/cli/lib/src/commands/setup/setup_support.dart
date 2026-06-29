@@ -4,7 +4,7 @@ import 'package:path/path.dart' as path;
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
-const _debugEntitlements = <String, bool>{
+const _debugEntitlements = {
   'com.apple.security.app-sandbox': false,
   'com.apple.security.cs.allow-jit': true,
   'com.apple.security.network.server': true,
@@ -13,7 +13,7 @@ const _debugEntitlements = <String, bool>{
   'com.apple.security.files.user-selected.read-write': true,
 };
 
-const _releaseEntitlements = <String, bool>{
+const _releaseEntitlements = {
   'com.apple.security.app-sandbox': true,
   'com.apple.security.files.user-selected.read-write': true,
   'com.apple.security.network.client': true,
@@ -74,6 +74,7 @@ String patchSetupPubspec(String pubspecContents) {
 
   flutter['assets'] = assets;
   final updated = Map.of(pubspec)..['flutter'] = flutter;
+
   return YamlWriter(allowUnquotedStrings: true).write(updated);
 }
 

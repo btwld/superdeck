@@ -58,10 +58,7 @@ void main() {
 
     test('exposes the provided error payload', () {
       final error = StateError('missing slides.md');
-      final event = SlidesErrorEvent(
-        'Failed to load slides',
-        error: error,
-      );
+      final event = SlidesErrorEvent('Failed to load slides', error: error);
 
       expect(event.error, same(error));
     });
