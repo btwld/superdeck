@@ -4,7 +4,6 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter/material.dart';
-import 'package:genui/genui.dart';
 import 'package:provider/provider.dart' as prov;
 import 'package:remix/remix.dart';
 import '../wizard_context.dart';
@@ -20,6 +19,7 @@ import '../../utils/font_utils.dart';
 import '../../../ai_progress_screen.dart';
 import '../../../../../stores/ai_store.dart';
 import 'component_schema.dart';
+import 'typed_catalog_item.dart';
 import 'user_action_dispatch.dart';
 
 part 'summary_card.g.dart';
@@ -147,7 +147,7 @@ extension SummaryItemExt on SummaryItemType {
 ///
 /// Shows multiple items with labels and values. Items with color and font data
 /// are rendered as style previews, otherwise they display as title/description pairs.
-final summaryCard = CatalogItem(
+final summaryCard = typedCatalogItem<SummaryCardType>(
   name: 'SummaryCard',
   dataSchema: componentSchema(_summaryCardSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -209,8 +209,8 @@ final summaryCard = CatalogItem(
       ]
     ''',
   ],
-  widgetBuilder: (catalogContext) {
-    final data = SummaryCardType.parse(catalogContext.data);
+  parse: SummaryCardType.parse,
+  widgetBuilder: (catalogContext, data) {
     final action = data.generateSlidesAction;
     return Builder(
       builder: (buildContext) {

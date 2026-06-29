@@ -4,12 +4,13 @@ import 'package:dartantic_ai/dartantic_ai.dart' as dartantic;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
+import 'package:playground/features/ai/core/ai/services/ai_conversation_viewmodel.dart';
 import 'package:playground/features/ai/core/ai/services/superdeck_agent_client.dart';
 import 'package:playground/features/ai/core/tools/deck_store.dart';
 import 'package:playground/features/ai/core/tools/deck_tools_adapter.dart';
 import 'package:playground/features/ai/core/tools/deck_tools_runtime.dart';
 import 'package:playground/features/ai/core/tools/deck_tools_service.dart';
-import 'package:playground/features/ai/deck_edit/deck_edit_viewmodel.dart';
+import 'package:playground/features/ai/deck_edit/deck_edit_conversation_profile.dart';
 
 import '../../../helpers/fake_superdeck_agent_client.dart';
 
@@ -43,8 +44,8 @@ void main() {
       final adapter = DeckToolsAdapter(service);
       List<dartantic.Tool>? capturedTools;
 
-      final viewModel = DeckEditViewModel(
-        toolsAdapter: adapter,
+      final viewModel = AiConversationViewModel(
+        profile: deckEditConversationProfile(toolsAdapter: adapter),
         agentClientFactory:
             ({
               required String apiKey,
@@ -56,9 +57,10 @@ void main() {
             },
       );
       addTearDown(viewModel.dispose);
+      addTearDown(adapter.dispose);
       addTearDown(service.dispose);
 
-      expect(await viewModel.buildConversation(), isTrue);
+      expect(await viewModel.ensureConversationStarted(), isTrue);
 
       expect(capturedTools!.map((tool) => tool.name), [
         'getDeck',
@@ -77,8 +79,7 @@ void main() {
     final agent = FakeSuperdeckAgentClient();
     final viewModel = _deckEditHarness(agent);
 
-    viewModel.sendMessage('Tighten the intro slide');
-    await pumpEventQueue();
+    await viewModel.sendMessage('Tighten the intro slide');
 
     expect(PromptRegistry.instance.isLoaded, isTrue);
     expect(viewModel.hasConversationStarted.value, isTrue);
@@ -97,7 +98,7 @@ void main() {
     final viewModel = _deckEditHarness(agent);
     addTearDown(responseController.close);
 
-    viewModel.sendMessage('Hello');
+    unawaited(viewModel.sendMessage('Hello'));
     await pumpEventQueue();
     expect(viewModel.hasConversationStarted.value, isTrue);
 
@@ -114,11 +115,11 @@ void main() {
     final agent = QueuedSuperdeckAgentClient();
     final viewModel = _deckEditHarness(agent);
 
-    viewModel.sendMessage('First');
+    unawaited(viewModel.sendMessage('First'));
     await pumpEventQueue();
     expect(agent.prompts, ['First']);
 
-    viewModel.sendMessage('Second');
+    unawaited(viewModel.sendMessage('Second'));
     await pumpEventQueue();
     expect(agent.prompts, ['First']);
     expect(agent.maxActiveInvocations, 1);
@@ -134,7 +135,7 @@ void main() {
   });
 }
 
-DeckEditViewModel _deckEditHarness(SuperdeckAgentClient agent) {
+AiConversationViewModel _deckEditHarness(SuperdeckAgentClient agent) {
   final runtime = DeckToolsRuntime(
     slideConfigurationsProvider: () => const [],
     captureSlide: (_) async => throw StateError('capture not expected'),
@@ -146,8 +147,8 @@ DeckEditViewModel _deckEditHarness(SuperdeckAgentClient agent) {
     runtime: runtime,
   );
   final adapter = DeckToolsAdapter(service);
-  final viewModel = DeckEditViewModel(
-    toolsAdapter: adapter,
+  final viewModel = AiConversationViewModel(
+    profile: deckEditConversationProfile(toolsAdapter: adapter),
     agentClientFactory:
         ({
           required String apiKey,
@@ -159,6 +160,7 @@ DeckEditViewModel _deckEditHarness(SuperdeckAgentClient agent) {
   );
 
   addTearDown(viewModel.dispose);
+  addTearDown(adapter.dispose);
   addTearDown(service.dispose);
   return viewModel;
 }

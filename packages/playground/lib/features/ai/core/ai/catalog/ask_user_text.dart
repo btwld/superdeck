@@ -12,6 +12,7 @@ import '../../ui/ui.dart';
 
 import 'catalog_question_step.dart';
 import 'component_schema.dart';
+import 'typed_catalog_item.dart';
 
 part 'ask_user_text.g.dart';
 
@@ -35,7 +36,7 @@ final _askUserTextSchema = Ack.object({
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserText catalog component for free-form text input.
-final askUserText = CatalogItem(
+final askUserText = typedCatalogItem<AskUserTextType>(
   name: 'AskUserText',
   dataSchema: componentSchema(_askUserTextSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -53,10 +54,9 @@ final askUserText = CatalogItem(
       ]
     ''',
   ],
-  widgetBuilder: (context) {
-    final data = AskUserTextType.parse(context.data);
-    return _AskUserTextContent(data: data, itemContext: context);
-  },
+  parse: AskUserTextType.parse,
+  widgetBuilder: (context, data) =>
+      _AskUserTextContent(data: data, itemContext: context),
 );
 
 // ─────────────────────────────────── WIDGET ───────────────────────────────────

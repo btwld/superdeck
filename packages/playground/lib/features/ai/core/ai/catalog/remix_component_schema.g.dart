@@ -5,7 +5,7 @@
 // AckSchemaGenerator
 // **************************************************************************
 
-part of 'remix_component_preview.dart';
+part of 'remix_component_schema.dart';
 
 List<T> _$ackListCast<T>(Object? value) => (value as List).cast<T>();
 
@@ -13,14 +13,14 @@ List<T> _$ackListCast<T>(Object? value) => (value as List).cast<T>();
 extension type UiNodeType(Map<String, Object?> _data)
     implements Map<String, Object?> {
   static UiNodeType parse(Object? data) {
-    return _uiNodeSchema.parseAs(
+    return uiNodeSchema.parseAs(
       data,
       (validated) => UiNodeType(validated as Map<String, Object?>),
     );
   }
 
   static SchemaResult<UiNodeType> safeParse(Object? data) {
-    return _uiNodeSchema.safeParseAs(
+    return uiNodeSchema.safeParseAs(
       data,
       (validated) => UiNodeType(validated as Map<String, Object?>),
     );
@@ -51,14 +51,14 @@ extension type UiNodeType(Map<String, Object?> _data)
 extension type UiThemeType(Map<String, Object?> _data)
     implements Map<String, Object?> {
   static UiThemeType parse(Object? data) {
-    return _uiThemeSchema.parseAs(
+    return uiThemeSchema.parseAs(
       data,
       (validated) => UiThemeType(validated as Map<String, Object?>),
     );
   }
 
   static SchemaResult<UiThemeType> safeParse(Object? data) {
-    return _uiThemeSchema.safeParseAs(
+    return uiThemeSchema.safeParseAs(
       data,
       (validated) => UiThemeType(validated as Map<String, Object?>),
     );
@@ -75,14 +75,14 @@ extension type UiThemeType(Map<String, Object?> _data)
 extension type ComponentOptionType(Map<String, Object?> _data)
     implements Map<String, Object?> {
   static ComponentOptionType parse(Object? data) {
-    return _componentOptionSchema.parseAs(
+    return componentOptionSchema.parseAs(
       data,
       (validated) => ComponentOptionType(validated as Map<String, Object?>),
     );
   }
 
   static SchemaResult<ComponentOptionType> safeParse(Object? data) {
-    return _componentOptionSchema.safeParseAs(
+    return componentOptionSchema.safeParseAs(
       data,
       (validated) => ComponentOptionType(validated as Map<String, Object?>),
     );
@@ -105,7 +105,7 @@ extension type ComponentOptionType(Map<String, Object?> _data)
 extension type RemixComponentPreviewType(Map<String, Object?> _data)
     implements Map<String, Object?> {
   static RemixComponentPreviewType parse(Object? data) {
-    return _remixComponentPreviewSchema.parseAs(
+    return remixComponentPreviewSchema.parseAs(
       data,
       (validated) =>
           RemixComponentPreviewType(validated as Map<String, Object?>),
@@ -113,7 +113,7 @@ extension type RemixComponentPreviewType(Map<String, Object?> _data)
   }
 
   static SchemaResult<RemixComponentPreviewType> safeParse(Object? data) {
-    return _remixComponentPreviewSchema.safeParseAs(
+    return remixComponentPreviewSchema.safeParseAs(
       data,
       (validated) =>
           RemixComponentPreviewType(validated as Map<String, Object?>),

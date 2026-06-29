@@ -12,6 +12,7 @@ import '../../ui/ui.dart';
 
 import 'catalog_question_step.dart';
 import 'component_schema.dart';
+import 'typed_catalog_item.dart';
 
 part 'ask_user_slider.g.dart';
 
@@ -41,7 +42,7 @@ final _askUserSliderSchema =
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserSlider catalog component for numeric input questions.
-final askUserSlider = CatalogItem(
+final askUserSlider = typedCatalogItem<AskUserSliderType>(
   name: 'AskUserSlider',
   dataSchema: componentSchema(_askUserSliderSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -60,10 +61,9 @@ final askUserSlider = CatalogItem(
       ]
     ''',
   ],
-  widgetBuilder: (context) {
-    final data = AskUserSliderType.parse(context.data);
-    return _AskUserSliderContent(data: data, itemContext: context);
-  },
+  parse: AskUserSliderType.parse,
+  widgetBuilder: (context, data) =>
+      _AskUserSliderContent(data: data, itemContext: context),
 );
 
 // ─────────────────────────────────── WIDGET ───────────────────────────────────

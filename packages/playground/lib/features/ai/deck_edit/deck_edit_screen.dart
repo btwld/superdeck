@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_builder/superdeck_builder.dart';
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../../stores/deck_customization_store.dart';
 import '../../../stores/editor_state.dart';
@@ -16,12 +14,8 @@ import '../../editor/preview_sidebar.dart';
 import '../../editor/thumbnail_refresher.dart';
 import '../chat/view/widgets/chat_genui_panels.dart';
 import '../chat/view/widgets/chat_input.dart';
-import '../core/tools/deck_tools_adapter.dart';
-import '../core/tools/deck_tools_runtime.dart';
-import '../core/tools/deck_tools_service.dart';
 import '../core/tools/errors.dart';
-import '../core/tools/in_memory_deck_store.dart';
-import 'deck_edit_viewmodel.dart';
+import 'deck_edit_coordinator.dart';
 
 class DeckEditScreen extends StatefulWidget {
   const DeckEditScreen({super.key});
@@ -36,14 +30,7 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
   final SlideCaptureService _captureService = SlideCaptureService();
 
   bool _started = false;
-  bool _boundaryRunning = false;
-  String? _entryError;
-  String? _baselineCanonicalMarkdown;
-  DeckCustomizationSnapshot? _baselineCustomizationSnapshot;
-  InMemoryDeckStore? _store;
-  DeckToolsService? _service;
-  DeckToolsAdapter? _adapter;
-  DeckEditViewModel? _viewModel;
+  DeckEditCoordinator? _coordinator;
 
   @override
   void didChangeDependencies() {
@@ -55,10 +42,7 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
 
   @override
   void dispose() {
-    _viewModel?.dispose();
-    _service
-      ?..closeSession()
-      ..dispose();
+    _coordinator?.dispose();
     _chatController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -72,75 +56,32 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
     final args = ModalRoute.of(context)?.settings.arguments;
     final capturedSource = args is String ? args : null;
 
-    final store = InMemoryDeckStore(
+    final coordinator = DeckEditCoordinator(
+      deckController: deckController,
       loader: loader,
-      slidesProvider: () => _liveSlides(deckController),
+      customizationStore: customizationStore,
+      textEditorController: textEditorController,
+      captureSlide: _captureSlide,
+      isAvailable: () => mounted,
+      capturedSource: capturedSource,
     );
-    String? canonicalForAbort;
 
-    try {
-      canonicalForAbort = await _writeEntryMarkdown(
-        store: store,
-        deckController: deckController,
-        textEditorController: textEditorController,
-        capturedSource: capturedSource,
-      );
+    setState(() => _coordinator = coordinator);
+    final result = await coordinator.initialize();
+    if (!mounted) return;
 
-      if (!mounted) return;
-
-      final runtime = DeckToolsRuntime(
-        slideConfigurationsProvider: () => deckController.slides.value,
-        applyStyle: customizationStore.applyFromAiStyle,
-        isAvailable: () => mounted,
-        captureSlide: _captureSlide,
-      );
-      final service = DeckToolsService(documentStore: store, runtime: runtime);
-      final adapter = DeckToolsAdapter(service);
-      final viewModel = DeckEditViewModel(toolsAdapter: adapter);
-      final baselineMarkdown = _serializeLiveSlides(deckController);
-
-      setState(() {
-        _store = store;
-        _service = service;
-        _adapter = adapter;
-        _viewModel = viewModel;
-        _baselineCanonicalMarkdown = baselineMarkdown;
-        _baselineCustomizationSnapshot = customizationStore.captureSnapshot();
-      });
-    } catch (error) {
-      final handoff = canonicalForAbort ?? capturedSource ?? '';
-      _abortToEditor(
-        textEditorController: textEditorController,
-        markdown: handoff,
-        message: 'Unable to start AI deck editing: $error',
-      );
+    switch (result.disposition) {
+      case DeckEditStartupDisposition.ready:
+        setState(() {});
+      case DeckEditStartupDisposition.abort:
+        _abortToEditor(
+          textEditorController: textEditorController,
+          markdown: result.markdown ?? capturedSource ?? '',
+          message: result.message ?? 'Unable to start AI deck editing.',
+        );
+      case DeckEditStartupDisposition.cancelled:
+        coordinator.dispose();
     }
-  }
-
-  Future<String> _writeEntryMarkdown({
-    required InMemoryDeckStore store,
-    required DeckController deckController,
-    required TextEditorController textEditorController,
-    required String? capturedSource,
-  }) {
-    if (capturedSource != null) {
-      if (!textEditorController.outboundWritesSuspended) {
-        throw DeckToolException.contextUnavailable();
-      }
-      return store.writeCanonicalMarkdown(capturedSource);
-    }
-
-    return store.writeCanonicalMarkdown(_serializeLiveSlides(deckController));
-  }
-
-  String _serializeLiveSlides(DeckController deckController) {
-    return const SlideSerializer().serialize(_liveSlides(deckController));
-  }
-
-  List<Slide> _liveSlides(DeckController deckController) {
-    return deckController.slides.value
-        .map((configuration) => configuration.slide)
-        .toList();
   }
 
   Future<Uint8List> _captureSlide(SlideConfiguration configuration) {
@@ -158,7 +99,6 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
     required String message,
   }) {
     if (!mounted) return;
-    setState(() => _entryError = message);
     textEditorController.stageMarkdownForNextEditorMount(markdown);
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
@@ -167,79 +107,55 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
   }
 
   void _handleSubmit(String value) {
-    final viewModel = _viewModel;
+    final viewModel = _coordinator?.viewModel;
     if (viewModel == null) return;
-    viewModel.sendMessage(value);
+    unawaited(viewModel.sendMessage(value));
     _chatController.clear();
   }
 
   Future<void> _apply() async {
-    final service = _service;
-    if (service == null || !_isCompositeIdle) return;
-
-    final deckController = context.read<DeckController>();
-    final textEditorController = context.read<TextEditorController>();
+    final coordinator = _coordinator;
+    if (coordinator == null) return;
     final navigator = Navigator.of(context);
-    final finalMarkdown = _serializeLiveSlides(deckController);
 
-    setState(() => _boundaryRunning = true);
-    try {
-      textEditorController.loadMarkdown(finalMarkdown);
-      service.closeSession();
-      if (!mounted) return;
-      navigator.pushReplacementNamed('/');
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _boundaryRunning = false;
-        _entryError = 'Unable to apply AI edits: $error';
-      });
+    final result = await coordinator.apply();
+    if (!mounted) return;
+    switch (result.disposition) {
+      case DeckEditBoundaryDisposition.success:
+        navigator.pushReplacementNamed('/');
+      case DeckEditBoundaryDisposition.failure:
+        _showBoundaryError(result.message);
+      case DeckEditBoundaryDisposition.ignored:
+        return;
     }
   }
 
   Future<void> _discard() async {
-    final service = _service;
-    final store = _store;
-    final baselineMarkdown = _baselineCanonicalMarkdown;
-    final baselineSnapshot = _baselineCustomizationSnapshot;
-    if (service == null ||
-        store == null ||
-        baselineMarkdown == null ||
-        baselineSnapshot == null ||
-        !_isCompositeIdle) {
-      return;
-    }
-
-    final customizationStore = context.read<DeckCustomizationStore>();
-    final textEditorController = context.read<TextEditorController>();
+    final coordinator = _coordinator;
+    if (coordinator == null) return;
     final navigator = Navigator.of(context);
 
-    setState(() => _boundaryRunning = true);
-    try {
-      await store.writeCanonicalMarkdown(baselineMarkdown);
-      customizationStore.restoreSnapshot(baselineSnapshot);
-      textEditorController.loadMarkdown(baselineMarkdown);
-      service.closeSession();
-      if (!mounted) return;
-      navigator.pushReplacementNamed('/');
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _boundaryRunning = false;
-        _entryError = 'Unable to discard AI edits: $error';
-      });
+    final result = await coordinator.discard();
+    if (!mounted) return;
+    switch (result.disposition) {
+      case DeckEditBoundaryDisposition.success:
+        navigator.pushReplacementNamed('/');
+      case DeckEditBoundaryDisposition.failure:
+        _showBoundaryError(result.message);
+      case DeckEditBoundaryDisposition.ignored:
+        return;
     }
   }
 
+  void _showBoundaryError(String? message) {
+    final text = message ?? 'Unable to update AI deck edit state.';
+    ScaffoldMessenger.maybeOf(context)
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+  }
+
   bool get _isCompositeIdle {
-    final viewModel = _viewModel;
-    final adapter = _adapter;
-    final service = _service;
-    if (viewModel == null || adapter == null || service == null) return false;
-    return !_boundaryRunning &&
-        !viewModel.isThinking.value &&
-        adapter.isIdle.value &&
-        service.isSideEffectQueueIdle.value;
+    return _coordinator?.isCompositeIdle ?? false;
   }
 
   Future<void> _promptExit() async {
@@ -281,69 +197,87 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = _viewModel;
-    if (viewModel == null) {
+    final coordinator = _coordinator;
+    if (coordinator == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('AI Deck Edit')),
-        body: Center(
-          child: _entryError == null
-              ? const CircularProgressIndicator()
-              : Text(_entryError!),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) unawaited(_promptExit());
-      },
-      child: ThumbnailRefresher(
-        child: Watch((context) {
-          final busy = !_isCompositeIdle;
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('AI Deck Edit'),
-              actions: [
-                TextButton(
-                  onPressed: busy ? null : _discard,
-                  child: const Text('Discard'),
-                ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: busy ? null : _apply,
-                  child: const Text('Apply'),
-                ),
-                const SizedBox(width: 16),
-              ],
-            ),
-            body: Row(
-              children: [
-                const PreviewSidebar(),
-                const Expanded(child: _ActiveSlideStage()),
-                SizedBox(
-                  width: 440,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: ChatBodyPanel(
-                      messages: viewModel.messages,
-                      isThinking: viewModel.isThinking,
-                      emptyState: const _DeckEditEmptyState(),
-                      inputWidget: ChatInput(
-                        controller: _chatController,
-                        focusNode: _focusNode,
-                        enabled: !busy,
-                        onSubmitted: _handleSubmit,
+    return Watch((context) {
+      final status = coordinator.status.value;
+      final error = coordinator.errorMessage.value;
+      final viewModel = coordinator.viewModel;
+
+      if (status == DeckEditStatus.error) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('AI Deck Edit')),
+          body: Center(
+            child: Text(error ?? 'Unable to start AI deck editing.'),
+          ),
+        );
+      }
+
+      if (status == DeckEditStatus.initializing || viewModel == null) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('AI Deck Edit')),
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) unawaited(_promptExit());
+        },
+        child: ThumbnailRefresher(
+          child: Watch((context) {
+            final busy = !_isCompositeIdle;
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('AI Deck Edit'),
+                actions: [
+                  TextButton(
+                    onPressed: busy ? null : _discard,
+                    child: const Text('Discard'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: busy ? null : _apply,
+                    child: const Text('Apply'),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+              ),
+              body: Row(
+                children: [
+                  const PreviewSidebar(),
+                  const Expanded(child: _ActiveSlideStage()),
+                  SizedBox(
+                    width: 440,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ChatBodyPanel(
+                        messages: viewModel.messages,
+                        isThinking: viewModel.isThinking,
+                        emptyState: const _DeckEditEmptyState(),
+                        inputWidget: ChatInput(
+                          controller: _chatController,
+                          focusNode: _focusNode,
+                          enabled: !busy,
+                          onSubmitted: _handleSubmit,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
-        }),
-      ),
-    );
+                ],
+              ),
+            );
+          }),
+        ),
+      );
+    });
   }
 }
 

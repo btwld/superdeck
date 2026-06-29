@@ -20,6 +20,7 @@ import '../../ui/ui.dart';
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
 import 'component_schema.dart';
+import 'typed_catalog_item.dart';
 
 part 'ask_user_image_style.g.dart';
 
@@ -68,7 +69,7 @@ final _askUserImageStyleSchema =
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserImageStyle catalog component for image style selection with previews.
-final askUserImageStyle = CatalogItem(
+final askUserImageStyle = typedCatalogItem<AskUserImageStyleType>(
   name: 'AskUserImageStyle',
   dataSchema: componentSchema(_askUserImageStyleSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -86,10 +87,9 @@ final askUserImageStyle = CatalogItem(
       ]
     ''',
   ],
-  widgetBuilder: (context) {
-    final data = AskUserImageStyleType.parse(context.data);
-    return _AskUserImageStyleContent(data: data, itemContext: context);
-  },
+  parse: AskUserImageStyleType.parse,
+  widgetBuilder: (context, data) =>
+      _AskUserImageStyleContent(data: data, itemContext: context),
 );
 
 // ─────────────────────────────────── WIDGET ───────────────────────────────────

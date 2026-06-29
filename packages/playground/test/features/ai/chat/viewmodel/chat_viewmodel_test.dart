@@ -5,10 +5,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genui/genui.dart' as genui;
 
-import 'package:playground/features/ai/chat/chat_viewmodel.dart';
+import 'package:playground/features/ai/chat/chat_conversation_profile.dart';
+import 'package:playground/features/ai/chat/chat_message.dart';
 import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
 import 'package:playground/features/ai/core/ai/catalog/catalog.dart';
 import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
+import 'package:playground/features/ai/core/ai/services/ai_conversation_viewmodel.dart';
 import 'package:playground/features/ai/core/ai/services/superdeck_agent_client.dart';
 
 import '../../../../helpers/fake_superdeck_agent_client.dart';
@@ -43,7 +45,7 @@ void main() {
     PromptRegistry.instance.reset();
   });
 
-  group('ChatViewModel', () {
+  group('AiConversationViewModel chat profile', () {
     test('normalizes Gemini model paths for Dartantic', () {
       expect(
         normalizeGeminiModelName('models/gemini-3-flash-preview'),
@@ -53,7 +55,10 @@ void main() {
     });
 
     test('has expected initial state', () {
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
       expect(viewModel.surfaceIds.value, isEmpty);
@@ -62,11 +67,14 @@ void main() {
       expect(viewModel.isThinking.value, isFalse);
     });
 
-    test('ignores empty messages', () {
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+    test('ignores empty messages', () async {
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('   ');
+      await viewModel.sendMessage('   ');
 
       expect(viewModel.hasConversationStarted.value, isFalse);
       expect(viewModel.messages.value, isEmpty);
@@ -76,10 +84,13 @@ void main() {
       'streams chunks into one AI bubble and owns system prompt history',
       () async {
         agent = FakeSuperdeckAgentClient(chunks: const ['Hel', 'lo']);
-        final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+        final viewModel = AiConversationViewModel(
+          profile: chatConversationProfile(),
+          agentClientFactory: fakeAgentFactory,
+        );
         addTearDown(viewModel.dispose);
 
-        viewModel.sendMessage('Hello');
+        await viewModel.sendMessage('Hello');
         await pumpEventQueue();
 
         expect(viewModel.hasConversationStarted.value, isTrue);
@@ -104,10 +115,13 @@ void main() {
     );
 
     test('v0.9 UI action adds user bubble and forwards interaction', () async {
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      expect(await viewModel.buildConversation(), isTrue);
+      expect(await viewModel.ensureConversationStarted(), isTrue);
       viewModel.controller!.handleUiEvent(
         genui.UserActionEvent(
           name: 'submit_answer',
@@ -128,10 +142,13 @@ void main() {
     test(
       'surface add update and remove keep surfaceIds synchronized',
       () async {
-        final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+        final viewModel = AiConversationViewModel(
+          profile: chatConversationProfile(),
+          agentClientFactory: fakeAgentFactory,
+        );
         addTearDown(viewModel.dispose);
 
-        expect(await viewModel.buildConversation(), isTrue);
+        expect(await viewModel.ensureConversationStarted(), isTrue);
         final controller = viewModel.controller!;
 
         controller.handleMessage(
@@ -171,11 +188,13 @@ void main() {
 
     test('missing prompt emits safe user-facing message', () async {
       PromptRegistry.instance.loadForTest();
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('Hello');
-      await pumpEventQueue();
+      await viewModel.sendMessage('Hello');
 
       expect(viewModel.hasConversationStarted.value, isFalse);
       expect(
@@ -186,23 +205,28 @@ void main() {
 
     test('loads asset prompts when conversation starts', () async {
       PromptRegistry.instance.reset();
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('Hello');
-      await pumpEventQueue();
+      await viewModel.sendMessage('Hello');
 
       expect(PromptRegistry.instance.isLoaded, isTrue);
       expect(viewModel.hasConversationStarted.value, isTrue);
       expect(agent.prompts, ['Hello']);
     });
 
-    test('missing API key emits safe user-facing message', () {
+    test('missing API key emits safe user-facing message', () async {
       dotenv.loadFromString(envString: '', isOptional: true);
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('Hello');
+      await viewModel.sendMessage('Hello');
 
       expect(viewModel.hasConversationStarted.value, isFalse);
       expect(
@@ -217,11 +241,14 @@ void main() {
       agent = FakeSuperdeckAgentClient(
         responseStream: responseController.stream,
       );
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
       addTearDown(responseController.close);
 
-      viewModel.sendMessage('Hello');
+      unawaited(viewModel.sendMessage('Hello'));
       await pumpEventQueue();
       expect(viewModel.hasConversationStarted.value, isTrue);
 
@@ -236,7 +263,8 @@ void main() {
 
     test('serializes overlapping user requests', () async {
       final queuedAgent = QueuedSuperdeckAgentClient();
-      final viewModel = ChatViewModel(
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
         agentClientFactory:
             ({
               required String apiKey,
@@ -248,11 +276,11 @@ void main() {
       );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('First');
+      unawaited(viewModel.sendMessage('First'));
       await pumpEventQueue();
       expect(queuedAgent.prompts, ['First']);
 
-      viewModel.sendMessage('Second');
+      unawaited(viewModel.sendMessage('Second'));
       await pumpEventQueue();
       expect(queuedAgent.prompts, ['First']);
       expect(queuedAgent.maxActiveInvocations, 1);
@@ -268,7 +296,10 @@ void main() {
     });
 
     test('allows model selection before conversation starts', () {
-      final viewModel = ChatViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: chatConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
       viewModel.model.value = GeminiModels.gemini25Pro;

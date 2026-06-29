@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:genui/test/validation.dart';
 
 import 'package:playground/features/ai/core/ai/catalog/catalog.dart';
+import 'package:playground/features/ai/core/ai/catalog/remix_component_normalizer.dart';
+import 'package:playground/features/ai/core/ai/catalog/remix_component_schema.dart';
 
 void main() {
   group('RemixComponentPreview Schema', () {

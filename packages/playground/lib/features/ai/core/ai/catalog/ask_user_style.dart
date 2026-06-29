@@ -15,6 +15,7 @@ import '../../ui/ui.dart';
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
 import 'component_schema.dart';
+import 'typed_catalog_item.dart';
 
 part 'ask_user_style.g.dart';
 
@@ -58,7 +59,7 @@ final _askUserStyleSchema =
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserStyle catalog component for visual style selection.
-final askUserStyle = CatalogItem(
+final askUserStyle = typedCatalogItem<AskUserStyleType>(
   name: 'AskUserStyle',
   dataSchema: componentSchema(_askUserStyleSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -92,10 +93,9 @@ final askUserStyle = CatalogItem(
       ]
     ''',
   ],
-  widgetBuilder: (context) {
-    final data = AskUserStyleType.parse(context.data);
-    return _AskUserStyleContent(data: data, itemContext: context);
-  },
+  parse: AskUserStyleType.parse,
+  widgetBuilder: (context, data) =>
+      _AskUserStyleContent(data: data, itemContext: context),
 );
 
 // ─────────────────────────────────── WIDGET ───────────────────────────────────

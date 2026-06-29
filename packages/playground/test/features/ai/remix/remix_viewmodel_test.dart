@@ -4,10 +4,12 @@ import 'package:dartantic_ai/dartantic_ai.dart' as dartantic;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:playground/features/ai/chat/chat_message.dart';
 import 'package:playground/features/ai/chat/view/widgets/model_select.dart';
 import 'package:playground/features/ai/core/ai/prompts/prompt_registry.dart';
+import 'package:playground/features/ai/core/ai/services/ai_conversation_viewmodel.dart';
 import 'package:playground/features/ai/core/ai/services/superdeck_agent_client.dart';
-import 'package:playground/features/ai/remix/remix_viewmodel.dart';
+import 'package:playground/features/ai/remix/remix_conversation_profile.dart';
 
 import '../../../helpers/fake_superdeck_agent_client.dart';
 
@@ -37,9 +39,12 @@ void main() {
     PromptRegistry.instance.reset();
   });
 
-  group('RemixViewModel', () {
+  group('AiConversationViewModel remix profile', () {
     test('has expected initial state', () {
-      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: remixConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
       expect(viewModel.surfaceIds.value, isEmpty);
@@ -50,10 +55,13 @@ void main() {
 
     test('starts conversation and sends user message', () async {
       agent = FakeSuperdeckAgentClient(chunks: const ['Done']);
-      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: remixConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('Build a settings panel');
+      await viewModel.sendMessage('Build a settings panel');
       await pumpEventQueue();
 
       expect(viewModel.hasConversationStarted.value, isTrue);
@@ -78,11 +86,13 @@ void main() {
 
     test('loads real asset prompt when conversation starts', () async {
       PromptRegistry.instance.reset();
-      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: remixConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('Build a settings panel');
-      await pumpEventQueue();
+      await viewModel.sendMessage('Build a settings panel');
 
       expect(PromptRegistry.instance.isLoaded, isTrue);
       expect(viewModel.hasConversationStarted.value, isTrue);
@@ -92,11 +102,13 @@ void main() {
     });
 
     test('restart clears session and disposes agent', () async {
-      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: remixConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('Hello');
-      await pumpEventQueue();
+      await viewModel.sendMessage('Hello');
       expect(viewModel.hasConversationStarted.value, isTrue);
 
       viewModel.restartConversation();
@@ -112,11 +124,14 @@ void main() {
       agent = FakeSuperdeckAgentClient(
         responseStream: responseController.stream,
       );
-      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: remixConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
       addTearDown(responseController.close);
 
-      viewModel.sendMessage('Hello');
+      unawaited(viewModel.sendMessage('Hello'));
       await pumpEventQueue();
       expect(viewModel.hasConversationStarted.value, isTrue);
 
@@ -131,7 +146,8 @@ void main() {
 
     test('serializes overlapping user requests', () async {
       final queuedAgent = QueuedSuperdeckAgentClient();
-      final viewModel = RemixViewModel(
+      final viewModel = AiConversationViewModel(
+        profile: remixConversationProfile(),
         agentClientFactory:
             ({
               required String apiKey,
@@ -143,11 +159,11 @@ void main() {
       );
       addTearDown(viewModel.dispose);
 
-      viewModel.sendMessage('First');
+      unawaited(viewModel.sendMessage('First'));
       await pumpEventQueue();
       expect(queuedAgent.prompts, ['First']);
 
-      viewModel.sendMessage('Second');
+      unawaited(viewModel.sendMessage('Second'));
       await pumpEventQueue();
       expect(queuedAgent.prompts, ['First']);
       expect(queuedAgent.maxActiveInvocations, 1);
@@ -163,7 +179,10 @@ void main() {
     });
 
     test('allows model selection before conversation starts', () {
-      final viewModel = RemixViewModel(agentClientFactory: fakeAgentFactory);
+      final viewModel = AiConversationViewModel(
+        profile: remixConversationProfile(),
+        agentClientFactory: fakeAgentFactory,
+      );
       addTearDown(viewModel.dispose);
 
       viewModel.model.value = GeminiModels.gemini25Pro;

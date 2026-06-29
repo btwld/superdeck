@@ -6,7 +6,7 @@ import '../../debug_logger.dart';
 import '../../ui/ui.dart';
 import '../../utils/color_utils.dart';
 
-import 'remix_component_preview.dart';
+import 'remix_component_schema.dart';
 
 // ─────────────────────────────────── TREE RENDERER ───────────────────────────────────
 

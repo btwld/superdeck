@@ -4,5 +4,5 @@ import 'catalog.dart';
 
 /// Minimal catalog for the Remix component builder experience.
 final remixCatalog = Catalog([
-  withCatalogErrorHandling(remixComponentPreview),
+  remixComponentPreview,
 ], catalogId: 'com.superdeck.ai.remix');

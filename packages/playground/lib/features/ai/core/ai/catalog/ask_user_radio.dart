@@ -14,6 +14,7 @@ import '../../ui/ui.dart';
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
 import 'component_schema.dart';
+import 'typed_catalog_item.dart';
 
 part 'ask_user_radio.g.dart';
 
@@ -44,7 +45,7 @@ final _askUserRadioSchema = Ack.object({
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserRadio catalog component for single-selection questions.
-final askUserRadio = CatalogItem(
+final askUserRadio = typedCatalogItem<AskUserRadioType>(
   name: 'AskUserRadio',
   dataSchema: componentSchema(_askUserRadioSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -65,10 +66,9 @@ final askUserRadio = CatalogItem(
       ]
     ''',
   ],
-  widgetBuilder: (context) {
-    final data = AskUserRadioType.parse(context.data);
-    return _AskUserRadioContent(data: data, itemContext: context);
-  },
+  parse: AskUserRadioType.parse,
+  widgetBuilder: (context, data) =>
+      _AskUserRadioContent(data: data, itemContext: context),
 );
 
 // ─────────────────────────────────── WIDGET ───────────────────────────────────
