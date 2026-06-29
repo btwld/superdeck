@@ -63,6 +63,14 @@
           "href": "/guides/custom-widgets"
         },
         {
+          "title": "Plugins",
+          "href": "/guides/plugins"
+        },
+        {
+          "title": "Mermaid diagrams",
+          "href": "/guides/mermaid-diagrams"
+        },
+        {
           "title": "Markdown authoring",
           "href": "/guides/markdown-authoring"
         },
@@ -90,6 +98,10 @@
         {
           "title": "DeckOptions API",
           "href": "/reference/deck-options"
+        },
+        {
+          "title": "Plugin API",
+          "href": "/reference/plugin-api"
         },
         {
           "title": "Contracts and schemas",

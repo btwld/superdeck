@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:superdeck_core/superdeck_core.dart';
@@ -35,30 +36,14 @@ void main() {
       expect(watcher.events, FileSystemEvent.modify);
     });
 
-    // Skip the file change detection test since it's flaky in CI environments
-    test(
-      'detects file changes via watch() stream',
-      () async {
-        int changeCount = 0;
+    test('detects file changes via watch() stream', () async {
+      final events = StreamIterator(watcher.watch());
+      addTearDown(events.cancel);
+      final nextEvent = events.moveNext();
 
-        final sub = watcher.watch().listen((_) {
-          changeCount++;
-        });
-        addTearDown(sub.cancel);
+      await testFile.writeAsString('new content ${DateTime.now()}');
 
-        // Ensure initial baseline is set
-        await Future.delayed(const Duration(seconds: 1));
-
-        // Modify the file
-        await testFile.writeAsString('new content ${DateTime.now()}');
-
-        // Give enough time for the change to be detected
-        await Future.delayed(const Duration(seconds: 2));
-
-        expect(changeCount, equals(1));
-      },
-      skip:
-          "File watching tests are flaky in CI environments and can lead to test hangs",
-    );
+      expect(await nextEvent.timeout(const Duration(seconds: 2)), isTrue);
+    });
   });
 }

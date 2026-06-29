@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:mason_logger/mason_logger.dart';
+import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'src/commands/build_command.dart';
@@ -20,6 +21,7 @@ class SuperDeckRunner extends CommandRunner<int> {
   /// Creates a new [SuperDeckRunner] instance
   SuperDeckRunner({
     Logger? loggerOverride,
+    List<DeckBuildPlugin> plugins = const [],
     BuildCommand? buildCommand,
     SetupCommand? setupCommand,
   }) : super(cliName, cliDescription) {
@@ -40,7 +42,9 @@ class SuperDeckRunner extends CommandRunner<int> {
         negatable: false,
       );
 
-    addCommand(buildCommand ?? BuildCommand(loggerOverride: _logger));
+    addCommand(
+      buildCommand ?? BuildCommand(loggerOverride: _logger, plugins: plugins),
+    );
     addCommand(setupCommand ?? SetupCommand(loggerOverride: _logger));
   }
 

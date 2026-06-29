@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -13,36 +14,43 @@ void main() {
   group('Live Reload', () {
     late Directory tempDir;
     late DeckWorkspace workspace;
-    late FileDeckLoader loader;
-    var loaderCreated = false;
+    var cleanupRegistered = false;
 
     setUpAll(() async {
       await TestApp.initialize();
     });
 
     setUp(() async {
-      loaderCreated = false;
+      cleanupRegistered = false;
       tempDir = await Directory.systemTemp.createTemp('sd_reload_test_');
       workspace = DeckWorkspace(projectDir: tempDir.path);
     });
 
     tearDown(() async {
-      if (loaderCreated) await loader.dispose();
-      if (await tempDir.exists()) {
+      if (!cleanupRegistered && await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
     });
 
+    Future<DeckController> pumpLiveReloadApp(WidgetTester tester) {
+      final loader = FileDeckLoader(workspace: workspace);
+      cleanupRegistered = true;
+      addTearDown(() async {
+        await tester.unmountTestApp();
+        await loader.dispose();
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      });
+
+      return tester.pumpTestAppWithLoader(loader, workspace: workspace);
+    }
+
     testWidgets('rebuilding overlay appears during build', (tester) async {
       final initialSlides = [makeSlide('s1', '# Initial')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
-      loader = FileDeckLoader(workspace: workspace);
-      loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(
-        loader,
-        workspace: workspace,
-      );
+      final controller = await pumpLiveReloadApp(tester);
       expect(controller.presentation.totalSlides.value, 1);
 
       await simulateBuilding(workspace, 2);
@@ -70,13 +78,8 @@ void main() {
     ) async {
       final initialSlides = [makeSlide('s1', '# Working')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
-      loader = FileDeckLoader(workspace: workspace);
-      loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(
-        loader,
-        workspace: workspace,
-      );
+      final controller = await pumpLiveReloadApp(tester);
       expect(controller.presentation.totalSlides.value, 1);
       expect(controller.session.hasFatalError.value, isFalse);
 
@@ -99,13 +102,8 @@ void main() {
     ) async {
       final initialSlides = [makeSlide('s1', '# Working')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
-      loader = FileDeckLoader(workspace: workspace);
-      loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(
-        loader,
-        workspace: workspace,
-      );
+      final controller = await pumpLiveReloadApp(tester);
 
       // Trigger failure
       await simulateBuildFailure(workspace, 'Parse error', 2);
@@ -133,13 +131,8 @@ void main() {
     testWidgets('slide count updates after rebuild', (tester) async {
       final initialSlides = [makeSlide('s1', '# Slide One')];
       await simulateBuildSuccess(workspace, initialSlides, 1);
-      loader = FileDeckLoader(workspace: workspace);
-      loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(
-        loader,
-        workspace: workspace,
-      );
+      final controller = await pumpLiveReloadApp(tester);
       expect(controller.presentation.totalSlides.value, 1);
 
       // Open menu to see the counter
@@ -175,13 +168,8 @@ void main() {
         makeSlide('s3', '# Three'),
       ];
       await simulateBuildSuccess(workspace, initialSlides, 1);
-      loader = FileDeckLoader(workspace: workspace);
-      loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(
-        loader,
-        workspace: workspace,
-      );
+      final controller = await pumpLiveReloadApp(tester);
       expect(controller.presentation.totalSlides.value, 3);
 
       // Navigate to the last slide
@@ -219,13 +207,8 @@ void main() {
     ) async {
       final slides1 = [makeSlide('s1', '# Version 1')];
       await simulateBuildSuccess(workspace, slides1, 1);
-      loader = FileDeckLoader(workspace: workspace);
-      loaderCreated = true;
 
-      final controller = await tester.pumpTestAppWithLoader(
-        loader,
-        workspace: workspace,
-      );
+      final controller = await pumpLiveReloadApp(tester);
       expect(controller.presentation.totalSlides.value, 1);
 
       // Cycle 1: building → success with 2 slides

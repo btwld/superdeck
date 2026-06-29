@@ -1,0 +1,438 @@
+---
+title: Mermaid diagrams guide
+description: Create beautiful diagrams and flowcharts using Mermaid syntax in SuperDeck presentations
+---
+
+# Mermaid diagrams guide
+
+The `superdeck_mermaid` plugin can render [Mermaid](https://mermaid.js.org/) diagrams — flowcharts, sequence diagrams, class diagrams, and more — to PNG via a headless browser. This guide documents the Mermaid syntax the plugin supports.
+
+Register `MermaidBuildPlugin()` with a custom `SuperDeckRunner` to render
+Mermaid fences during the deck build. The plugin also exposes
+`MermaidGenerator.render(syntax)` for direct PNG generation.
+
+## Supported diagram types
+
+- **Flowcharts** - Process flows and decision trees
+- **Sequence Diagrams** - Interactions between participants over time
+- **Class Diagrams** - Object-oriented class relationships
+- **State Diagrams** - State transitions and workflows
+- **Pie Charts** - Data visualization
+- **Journey Maps** - User experience flows
+- **Gantt Charts** - Project timelines
+- **Entity-Relationship Diagrams** - Database relationships
+
+## Basic usage
+
+Create a mermaid diagram by using a fenced code block with the `mermaid` language:
+
+````markdown
+```mermaid
+graph TD
+  A[Start] --> B{Decision}
+  B -->|Yes| C[Action 1]
+  B -->|No| D[Action 2]
+  C --> E[End]
+  D --> E
+```
+````
+
+## Flowcharts
+
+### Basic flowchart
+
+````markdown
+```mermaid
+flowchart TD
+  Start([Start Process])
+  Input[/Get User Input/]
+  Process[Process Data]
+  Decision{Valid Data?}
+  Save[(Save to Database)]
+  Error[Show Error]
+  End([End])
+
+  Start --> Input
+  Input --> Process
+  Process --> Decision
+  Decision -->|Yes| Save
+  Decision -->|No| Error
+  Save --> End
+  Error --> Input
+```
+````
+
+### Node shapes
+
+SuperDeck supports all Mermaid node shapes:
+
+````markdown
+```mermaid
+flowchart LR
+  A[Rectangle]
+  B(Rounded Rectangle)
+  C([Stadium])
+  D[[Subroutine]]
+  E[(Database)]
+  F((Circle))
+  G>Asymmetric]
+  H{Diamond}
+  I{{Hexagon}}
+  J[/Parallelogram/]
+  K[\Parallelogram Alt\]
+  L[/Trapezoid\]
+  M[\Trapezoid Alt/]
+```
+````
+
+### Direction options
+
+Control flowchart direction:
+
+- `TD` or `TB` - Top to Bottom (default)
+- `BT` - Bottom to Top
+- `LR` - Left to Right
+- `RL` - Right to Left
+
+````markdown
+```mermaid
+flowchart LR
+  A --> B --> C --> D
+```
+````
+
+## Sequence diagrams
+
+Perfect for showing interactions between different systems or users:
+
+````markdown
+```mermaid
+sequenceDiagram
+  participant Customer as 🧑 Customer
+  participant Frontend as 💻 Frontend
+  participant API as 🔗 API
+  participant Database as 🗄️ Database
+
+  Customer->>Frontend: Login Request
+  Frontend->>API: POST /auth/login
+  API->>Database: Verify Credentials
+  Database-->>API: User Data
+  API-->>Frontend: JWT Token
+  Frontend-->>Customer: Login Success
+
+  Note over Customer,Database: Authentication Flow
+
+  Customer->>Frontend: Request Data
+  Frontend->>API: GET /data (with token)
+  API->>Database: Query Data
+  Database-->>API: Results
+  API-->>Frontend: JSON Response
+  Frontend-->>Customer: Display Data
+```
+````
+
+### Sequence diagram features
+
+- **Participants**: Define actors in the sequence
+- **Messages**: Arrows between participants (`->>`, `-->>`, `-x`, `--x`)
+- **Notes**: Add explanatory text (`Note over`, `Note left of`, `Note right of`)
+- **Loops**: Repetitive actions (`loop`, `end`)
+- **Alternatives**: Conditional flows (`alt`, `else`, `end`)
+
+## Class diagrams
+
+Show object-oriented relationships:
+
+````markdown
+```mermaid
+classDiagram
+  class PresentationController {
+    +DeckOptions options
+    +List~Slide~ slides
+    +int currentIndex
+    +initialize()
+    +nextSlide()
+    +previousSlide()
+    +goToSlide(int index)
+  }
+
+  class Slide {
+    +String key
+    +SlideOptions options
+    +List~SectionBlock~ sections
+    +List~String~ comments
+    +render()
+  }
+
+  class SlideOptions {
+    +String? title
+    +String? style
+    +Map~String, Object?~ args
+  }
+
+  PresentationController "1" --> "*" Slide
+  Slide "1" --> "1" SlideOptions
+
+  <<interface>> Renderable
+  Slide ..|> Renderable
+```
+````
+
+## State diagrams
+
+Model state transitions and workflows:
+
+````markdown
+```mermaid
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Loading : startPresentation()
+  Loading --> Ready : loadComplete()
+  Loading --> Error : loadFailed()
+
+  Ready --> Presenting : startSlideshow()
+  Presenting --> Ready : stopSlideshow()
+  Presenting --> NextSlide : nextSlide()
+  NextSlide --> Presenting : slideLoaded()
+
+  Error --> Idle : retry()
+  Ready --> [*] : close()
+
+  state Presenting {
+    [*] --> ShowingSlide
+    ShowingSlide --> Transitioning : navigate()
+    Transitioning --> ShowingSlide : complete()
+  }
+```
+````
+
+## Pie charts
+
+Visualize data proportions:
+
+````markdown
+```mermaid
+pie title SuperDeck Usage by Platform
+  "Flutter Web" : 45
+  "Flutter Desktop" : 30
+  "Flutter Mobile" : 20
+  "Other" : 5
+```
+````
+
+## Journey maps
+
+Show user experience flows:
+
+````markdown
+```mermaid
+journey
+  title Creating a SuperDeck Presentation
+
+  section Planning
+    Define Content: 5: Developer
+    Choose Template: 4: Developer
+    Prepare Assets: 3: Developer
+
+  section Development
+    Write Markdown: 5: Developer
+    Add Diagrams: 4: Developer
+    Style Slides: 4: Developer
+    Test Build: 3: Developer
+
+  section Publishing
+    Generate Build: 5: Developer
+    Review Output: 4: Developer
+    Deploy Presentation: 5: Developer
+```
+````
+
+## Gantt charts
+
+Project timeline visualization:
+
+````markdown
+```mermaid
+gantt
+  title SuperDeck Development Timeline
+  dateFormat YYYY-MM-DD
+
+  section Core Features
+    Block System       :done, core1, 2024-01-01, 2024-02-15
+    Presentation Engine:done, core2, 2024-02-01, 2024-03-15
+    Build Pipeline     :done, core3, 2024-03-01, 2024-04-15
+
+  section Advanced Features
+    Mermaid Support    :done, feat1, 2024-04-01, 2024-05-01
+    Custom Widgets     :active, feat2, 2024-05-01, 2024-06-15
+    Export Options     :feat3, 2024-06-01, 2024-07-15
+
+  section Documentation
+    API Documentation  :done, docs1, 2024-05-15, 2024-06-01
+    User Guides        :active, docs2, 2024-06-01, 2024-07-01
+    Examples           :docs3, 2024-07-01, 2024-07-30
+```
+````
+
+## Entity-relationship diagrams
+
+Database schema visualization:
+
+````markdown
+```mermaid
+erDiagram
+  PRESENTATION {
+    string id PK
+    string title
+    string description
+    datetime created_at
+    datetime updated_at
+  }
+
+  SLIDE {
+    string id PK
+    string presentation_id FK
+    int order_index
+    string title
+    text content
+    json options
+  }
+
+  ASSET {
+    string id PK
+    string presentation_id FK
+    string type
+    string path
+    string hash
+    datetime created_at
+  }
+
+  PRESENTATION ||--o{ SLIDE : contains
+  PRESENTATION ||--o{ ASSET : includes
+  SLIDE }o--o{ ASSET : references
+```
+````
+
+## Styling and theming
+
+`MermaidGenerator` uses Mermaid’s default theme with dark-mode color derivation and a transparent background by default.
+
+Custom theming can be added through Mermaid configuration when a deck needs it.
+
+### Per-diagram styling
+
+To customize a single diagram, use Mermaid’s `init` directive at the top of the code block:
+
+````markdown
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ff6b6b',
+    'primaryTextColor': '#ffffff',
+    'lineColor': '#feca57'
+  }
+}}%%
+
+graph TD
+  A[Custom Styled Node] --> B[Another Node]
+```
+````
+
+## Advanced features
+
+### Subgraphs
+
+Group related nodes together:
+
+````markdown
+```mermaid
+flowchart TD
+  subgraph Frontend ["🖥️ Frontend"]
+    UI[User Interface]
+    State[State Management]
+    Router[Navigation]
+  end
+
+  subgraph Backend ["⚙️ Backend"]
+    API[REST API]
+    Auth[Authentication]
+    DB[(Database)]
+  end
+
+  UI --> API
+  State --> API
+  Router --> State
+  API --> Auth
+  API --> DB
+```
+````
+
+### Links
+
+Mermaid supports `click` directives in SVG output. The generator renders diagrams to PNG, so click interactions are not preserved. If you need links, add them as normal Markdown next to the diagram.
+
+### Comments
+
+Add documentation to your diagrams:
+
+````markdown
+```mermaid
+flowchart TD
+  %% This is a comment that won't appear in the diagram
+  A[Start] --> B[Process]
+
+  %% Multi-line comments
+  %% can be used to document
+  %% complex diagram logic
+
+  B --> C[End]
+```
+````
+
+## Build process
+
+The Mermaid build plugin runs before the runtime app loads the compiled deck.
+It scans content blocks for fenced Mermaid code, renders each diagram to a PNG,
+writes the generated asset under the active SuperDeck build output directory,
+and replaces the fence with Markdown image syntax that points at the generated
+asset.
+
+```dart
+import 'dart:io';
+
+import 'package:superdeck_cli/runner.dart';
+import 'package:superdeck_mermaid/superdeck_mermaid.dart';
+
+Future<void> main(List<String> args) async {
+  final exitCode = await SuperDeckRunner(
+    plugins: [
+      MermaidBuildPlugin(),
+    ],
+  ).run(args);
+
+  exit(exitCode);
+}
+```
+
+## Troubleshooting
+
+### Common issues
+
+1. **Syntax Errors**: Validate your Mermaid syntax using the [official live editor](https://mermaid.live/)
+2. **Rendering Failures**: `MermaidGenerator.render()` throws on invalid syntax; inspect the exception message for the underlying Mermaid error
+3. **Complex Diagrams**: Very large diagrams may timeout — try breaking them into smaller parts or raise the generator timeout via `configuration`
+
+## Best practices
+
+### Design guidelines
+
+1. **Keep it Simple**: Avoid overly complex diagrams
+2. **Use Colors Wisely**: Consider presentation background when styling
+3. **Readable Text**: Ensure text is large enough for presentation viewing
+4. **Consistent Style**: Use similar styling across all diagrams
+
+### Accessibility
+
+- Default theme provides good contrast for presentations
+- Text sizes are optimized for presentation viewing

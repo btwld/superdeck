@@ -1,0 +1,216 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
+import 'package:path/path.dart' as p;
+import 'package:superdeck_builder/superdeck_builder.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+
+import 'mermaid_generator.dart';
+
+/// Build-time plugin that renders fenced Mermaid blocks to PNG assets.
+///
+/// Register this plugin with the SuperDeck build runner. During each build it
+/// replaces fenced `mermaid` code blocks with Markdown image references that
+/// point to generated files in the active build output directory.
+final class MermaidBuildPlugin extends DeckBuildPlugin {
+  static final _mermaidFencePattern = RegExp(
+    r'^[ ]{0,3}```mermaid[ \t]*\r?\n([\s\S]*?)\r?\n^[ ]{0,3}```[ \t]*$',
+    multiLine: true,
+  );
+  static final _generatedImagePattern = RegExp(r'^mermaid_.*\.png$');
+
+  final MermaidGenerator _generator;
+  final Set<String> _activeImagePaths = <String>{};
+
+  /// Creates a Mermaid build plugin.
+  ///
+  /// [configuration] is merged with the default [MermaidGenerator]
+  /// configuration when the plugin creates its own generator.
+  ///
+  /// Pass [generator] to customize browser launch behavior or to inject a test
+  /// renderer. When [generator] is supplied, [configuration] must be empty, and
+  /// the plugin takes ownership of the generator and disposes it from [dispose].
+  MermaidBuildPlugin({
+    Map<String, Object?> configuration = const {},
+    MermaidGenerator? generator,
+  }) : _generator = _createGenerator(
+         configuration: configuration,
+         generator: generator,
+       );
+
+  static MermaidGenerator _createGenerator({
+    required Map<String, Object?> configuration,
+    required MermaidGenerator? generator,
+  }) {
+    if (generator != null && configuration.isNotEmpty) {
+      throw ArgumentError.value(
+        configuration,
+        'configuration',
+        'must be empty when a custom MermaidGenerator is provided',
+      );
+    }
+
+    return generator ?? MermaidGenerator(configuration: configuration);
+  }
+
+  @override
+  String get id => 'superdeck.mermaid';
+
+  /// Clears build-scoped asset tracking before each build.
+  @override
+  void beginBuild(DeckWorkspace workspace) {
+    _activeImagePaths.clear();
+  }
+
+  /// Deletes Mermaid images that were not used by the successful build.
+  @override
+  Future<void> finishBuild(DeckWorkspace workspace) async {
+    final mermaidDir = Directory(
+      p.join(workspace.superdeckDir.path, 'mermaid'),
+    );
+    if (!await mermaidDir.exists()) return;
+
+    await for (final entity in mermaidDir.list()) {
+      if (entity is! File) continue;
+      if (!_generatedImagePattern.hasMatch(p.basename(entity.path))) continue;
+      if (_activeImagePaths.contains(p.normalize(entity.path))) continue;
+
+      await entity.delete();
+    }
+  }
+
+  Future<String> _transformContentBlock(
+    ContentBlock block,
+    DeckBuildContext context,
+  ) async {
+    final matches = _mermaidFencePattern
+        .allMatches(block.content)
+        .toList(growable: false);
+    if (matches.isEmpty) return block.content;
+
+    final buffer = StringBuffer();
+    var lastEnd = 0;
+
+    for (final match in matches) {
+      buffer.write(block.content.substring(lastEnd, match.start));
+
+      final syntax = match.group(1)!;
+      final assetPath = await _renderMermaidImage(
+        syntax,
+        block: block,
+        context: context,
+        offset: match.start,
+      );
+      buffer.write('![Mermaid diagram]($assetPath)');
+
+      lastEnd = match.end;
+    }
+
+    buffer.write(block.content.substring(lastEnd));
+
+    return buffer.toString();
+  }
+
+  /// Rewrites Mermaid fences in [block] to Markdown image references.
+  ///
+  /// Rendering failures are reported as [DeckFormatException] so the build can
+  /// point authors back to the offending slide content.
+  @override
+  Future<ContentBlock> transformContentBlock(
+    ContentBlock block,
+    DeckBuildContext context,
+  ) async {
+    final content = await _transformContentBlock(block, context);
+
+    return content == block.content ? block : block.copyWith(content: content);
+  }
+
+  /// Disposes the [MermaidGenerator] owned by this plugin.
+  @override
+  Future<void> dispose() async {
+    await _generator.dispose();
+  }
+
+  Future<String> _renderMermaidImage(
+    String syntax, {
+    required ContentBlock block,
+    required DeckBuildContext context,
+    required int offset,
+  }) async {
+    final cacheKey = _cacheKey(syntax);
+    final fileName = 'mermaid_$cacheKey.png';
+    final outputFile = context.outputFile(p.posix.join('mermaid', fileName));
+    final outputDir = outputFile.parent;
+    _activeImagePaths.add(p.normalize(outputFile.path));
+
+    await outputDir.create(recursive: true);
+    if (!await _hasCachedImage(outputFile)) {
+      try {
+        final pngBytes = await _generator.render(syntax);
+        await _writeImageAtomically(outputFile, pngBytes);
+      } catch (error, stackTrace) {
+        Error.throwWithStackTrace(
+          DeckFormatException(
+            'Failed to render Mermaid diagram '
+            'at slide "${context.slideKey}", section ${context.sectionIndex}, '
+            'block ${context.blockIndex}: $error',
+            block.content,
+            offset,
+          ),
+          stackTrace,
+        );
+      }
+    }
+
+    return context.assetPath(p.posix.join('mermaid', fileName));
+  }
+
+  Future<bool> _hasCachedImage(File file) async {
+    return await file.exists() && await file.length() > 0;
+  }
+
+  Future<void> _writeImageAtomically(
+    File outputFile,
+    List<int> pngBytes,
+  ) async {
+    final tempFile = File('${outputFile.path}.tmp');
+    try {
+      await tempFile.writeAsBytes(pngBytes, flush: true);
+      await tempFile.rename(outputFile.path);
+    } finally {
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
+    }
+  }
+
+  String _cacheKey(String syntax) {
+    final payload = jsonEncode({
+      'source': syntax,
+      'configuration': _canonicalize(_generator.configuration),
+      'salt': _generator.cacheKeySalt,
+    });
+
+    return sha256.convert(utf8.encode(payload)).toString();
+  }
+
+  Object? _canonicalize(Object? value) {
+    if (value is Map) {
+      final entries =
+          value.entries
+              .map((entry) => (key: entry.key.toString(), value: entry.value))
+              .toList()
+            ..sort((a, b) => a.key.compareTo(b.key));
+
+      return {
+        for (final entry in entries) entry.key: _canonicalize(entry.value),
+      };
+    }
+    if (value is Iterable) {
+      return value.map(_canonicalize).toList(growable: false);
+    }
+
+    return value;
+  }
+}

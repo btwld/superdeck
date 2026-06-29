@@ -1,6 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
+import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
@@ -104,6 +107,52 @@ This is test content.
     });
 
     group('run() - flag behavior', () {
+      test('watch exits on interactive quit command', () async {
+        final slidesFile = deckWorkspace.slidesFile;
+        await slidesFile.writeAsString('# Test\n\nContent');
+
+        createTestPubspec(tempDir);
+        command = BuildCommand(
+          commandInput: Stream.value('q'),
+          stdinIsInteractive: true,
+        );
+
+        final runner = createTestRunner(command);
+        final result = await runner.run(['build', '--watch', '--skip-pubspec']);
+
+        expect(result, ExitCode.success.code);
+      });
+
+      test('watch ignores non-interactive stdin EOF', () async {
+        final slidesFile = deckWorkspace.slidesFile;
+        await slidesFile.writeAsString('# Test\n\nContent');
+
+        createTestPubspec(tempDir);
+        final releaseWatch = Completer<void>();
+        final watchReady = Completer<void>();
+        var runCompleted = false;
+        command = BuildCommand(
+          commandInput: const Stream<String>.empty(),
+          stdinIsInteractive: false,
+          watchQuitSignal: releaseWatch.future,
+          watchReady: watchReady.complete,
+        );
+
+        final runner = createTestRunner(command);
+        final runFuture = runner
+            .run(['build', '--watch', '--skip-pubspec'])
+            .whenComplete(() {
+              runCompleted = true;
+            });
+
+        await watchReady.future;
+        await Future<void>.delayed(Duration.zero);
+        expect(runCompleted, isFalse);
+
+        releaseWatch.complete();
+        expect(await runFuture, ExitCode.success.code);
+      });
+
       test('skip-pubspec flag skips pubspec update', () async {
         final slidesFile = deckWorkspace.slidesFile;
         await slidesFile.writeAsString('# Test\n\nContent');
@@ -122,6 +171,32 @@ version: 1.0.0
         // Pubspec should not have superdeck assets
         final updatedContent = await pubspecFile.readAsString();
         expect(updatedContent, equals(originalContent));
+      });
+
+      test('passes build plugins into the deck builder', () async {
+        final slidesFile = deckWorkspace.slidesFile;
+        await slidesFile.writeAsString('# Test\n\nOriginal');
+
+        createTestPubspec(tempDir);
+        command = BuildCommand(plugins: const [_CliTransformPlugin()]);
+
+        final runner = createTestRunner(command);
+        final result = await runner.run(['build', '--skip-pubspec']);
+
+        expect(result, ExitCode.success.code);
+
+        final deckJson =
+            jsonDecode(await deckWorkspace.deckJson.readAsString())
+                as List<dynamic>;
+        final savedSlide = deckJson.single as Map<String, dynamic>;
+        final savedSection =
+            (savedSlide['sections'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        final savedBlock =
+            (savedSection['blocks'] as List<dynamic>).single
+                as Map<String, dynamic>;
+
+        expect(savedBlock['content'], contains('CLI transformed.'));
       });
     });
 
@@ -146,4 +221,16 @@ More content
       });
     });
   });
+}
+
+final class _CliTransformPlugin extends DeckBuildPlugin {
+  const _CliTransformPlugin();
+
+  @override
+  String get id => 'test.cli-transform';
+
+  @override
+  ContentBlock transformContentBlock(ContentBlock block, DeckBuildContext _) {
+    return block.copyWith(content: '${block.content}\n\nCLI transformed.');
+  }
 }

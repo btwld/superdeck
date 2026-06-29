@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:mix/mix.dart';
 import 'package:superdeck/src/markdown/builders/image_element_builder.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
+import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -91,6 +93,39 @@ void main() {
 
       expect(imageBox, isNotNull);
       expect(imageBox.constraints.isTight, isTrue);
+    });
+
+    testWidgets('standalone markdown images keep fit unset by default', (
+      tester,
+    ) async {
+      const markdown = '![diagram](assets/diagram.png)';
+
+      await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+      await tester.pumpAndSettle();
+
+      final image = tester.widget<CachedImage>(find.byType(CachedImage));
+
+      expect(image.styleSpec.spec.fit, isNull);
+    });
+
+    testWidgets('standalone markdown images respect explicit image fit', (
+      tester,
+    ) async {
+      const markdown = '![diagram](assets/diagram.png)';
+
+      await tester.pumpWidget(
+        _MarkdownHarness(
+          markdown: markdown,
+          slideSpec: const SlideSpec(
+            image: StyleSpec(spec: ImageSpec(fit: BoxFit.cover)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final image = tester.widget<CachedImage>(find.byType(CachedImage));
+
+      expect(image.styleSpec.spec.fit, BoxFit.cover);
     });
 
     test('multiple standalone images are parsed as block elements', () {
@@ -188,14 +223,17 @@ void main() {
 /// Mirrors the setup from markdown_builders_test.dart but specifically
 /// configured for testing image rendering with block-level context.
 class _MarkdownHarness extends StatelessWidget {
-  const _MarkdownHarness({required this.markdown});
+  const _MarkdownHarness({
+    required this.markdown,
+    this.slideSpec = const SlideSpec(),
+  });
 
   final String markdown;
+  final SlideSpec slideSpec;
 
   @override
   Widget build(BuildContext context) {
     final extensionSet = md.ExtensionSet.gitHubWeb;
-    final slideSpec = const SlideSpec();
     final registry = SpecMarkdownBuilders(slideSpec);
     final styleSheet = slideSpec.toStyle();
     final slideConfiguration = SlideConfiguration(

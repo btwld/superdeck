@@ -302,6 +302,28 @@ void main() {
 
       expect(events, hasLength(eventCountAtDispose));
     });
+
+    test('dispose is idempotent while cleanup is in progress', () async {
+      final streamDone = Completer<void>();
+      final subscription = deckLoader.load().listen(
+        (_) {},
+        onDone: () {
+          if (!streamDone.isCompleted) {
+            streamDone.complete();
+          }
+        },
+      );
+      addTearDown(subscription.cancel);
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      final firstDispose = deckLoader.dispose();
+      final secondDispose = deckLoader.dispose();
+
+      expect(identical(firstDispose, secondDispose), isTrue);
+      await Future.wait([firstDispose, secondDispose]);
+      await streamDone.future.timeout(const Duration(seconds: 1));
+    });
   });
 
   group('FileDeckLoader reload cycle', () {
