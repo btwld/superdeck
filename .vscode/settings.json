@@ -7,5 +7,5 @@
   "search.exclude": {
     "**/.fvm/versions": true,
     "**/.fvm/flutter_sdk": true
-  },
+  }
 }

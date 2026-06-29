@@ -31,8 +31,8 @@ import 'package:markdown/markdown.dart' as md;
 
 /// Scans [source] starting at [start] for a leading hero marker (`{.tag}`).
 ///
-/// Returns a record containing the detected [hero] (or `null` if none) and the
-/// total [length] of the slice that should be consumed from the parser when a
+/// Returns a record containing the detected `hero` (or `null` if none) and the
+/// total `length` of the slice that should be consumed from the parser when a
 /// hero is found. The consumed length includes surrounding whitespace so no
 /// extra cleanup is required by callers.
 ({String? hero, int length}) scanLeadingHeroMarker(String source, int start) {

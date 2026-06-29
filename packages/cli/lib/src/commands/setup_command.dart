@@ -13,12 +13,6 @@ class SetupCommand extends SuperDeckCommand {
     : _projectDir = projectDir;
 
   @override
-  String get description => 'Configure the current Flutter app for SuperDeck';
-
-  @override
-  String get name => 'setup';
-
-  @override
   Future<int> run() async {
     final rest = argResults?.rest ?? const <String>[];
     if (rest.isNotEmpty) {
@@ -37,12 +31,14 @@ class SetupCommand extends SuperDeckCommand {
       await applySetup(projectDir);
     } on FormatException catch (error) {
       logger.err(error.message);
+
       return ExitCode.data.code;
     } on FileSystemException catch (error) {
       logger.err(error.message);
       if (error.path != null) {
         logger.err('Path: ${error.path}');
       }
+
       return ExitCode.ioError.code;
     }
 
@@ -58,4 +54,10 @@ class SetupCommand extends SuperDeckCommand {
 
     return ExitCode.success.code;
   }
+
+  @override
+  String get description => 'Configure the current Flutter app for SuperDeck';
+
+  @override
+  String get name => 'setup';
 }

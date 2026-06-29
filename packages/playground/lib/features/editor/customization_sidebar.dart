@@ -290,11 +290,6 @@ class _FontSizeFieldState extends State<_FontSizeField> {
     );
   }
 }
-//         ),
-//       ],
-//     );
-//   }
-// }
 
 class _FontWeightSlider extends StatelessWidget {
   const _FontWeightSlider({required this.level});

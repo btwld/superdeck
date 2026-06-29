@@ -25,6 +25,7 @@ class FileDeckLoader extends DeckLoader {
   var _disposed = false;
   var _started = false;
   var _didEmitMissingBuildOutput = false;
+  Future<void>? _disposeTask;
 
   FileDeckLoader({DeckWorkspace? workspace})
     : workspace = workspace ?? DeckWorkspace();
@@ -228,7 +229,11 @@ class FileDeckLoader extends DeckLoader {
   }
 
   @override
-  Future<void> dispose() async {
+  Future<void> dispose() {
+    return _disposeTask ??= _dispose();
+  }
+
+  Future<void> _dispose() async {
     if (_disposed) return Future<void>.value();
     _disposed = true;
     if (!_cancelSignal.isCompleted) _cancelSignal.complete();

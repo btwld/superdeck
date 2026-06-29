@@ -12,13 +12,10 @@ final class DeckWorkspace with DeckWorkspaceMappable {
   final String slidesPath;
   final String outputDir;
 
-  DeckWorkspace({
-    String? projectDir,
-    String? slidesPath,
-    String? outputDir,
-  }) : projectDir = projectDir ?? '.',
-       slidesPath = slidesPath ?? 'slides.md',
-       outputDir = outputDir ?? '.superdeck' {
+  DeckWorkspace({String? projectDir, String? slidesPath, String? outputDir})
+    : projectDir = projectDir ?? '.',
+      slidesPath = slidesPath ?? 'slides.md',
+      outputDir = outputDir ?? '.superdeck' {
     _validatePath('slidesPath', this.slidesPath);
     _validatePath('outputDir', this.outputDir);
   }

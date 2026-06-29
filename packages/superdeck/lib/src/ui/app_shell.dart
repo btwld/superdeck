@@ -6,9 +6,11 @@ import 'package:signals_flutter/signals_flutter.dart';
 import '../deck/deck_controller.dart';
 import '../deck/navigation_input_listener.dart';
 import '../deck/slide_configuration.dart';
+import '../plugins/deck_action.dart';
 import '../rendering/slides/scaled_app.dart';
 import '../rendering/slides/slide_thumbnail.dart';
 import '../utils/constants.dart';
+import 'deck_shell_modal.dart';
 import 'extensions.dart';
 import 'panels/bottom_bar.dart';
 import 'panels/comments_panel.dart';
@@ -19,14 +21,21 @@ import 'widgets/loading_indicator.dart';
 /// High-level app shell that toggles between
 /// small layout (bottom panel) or regular layout (side panel).
 class AppShell extends StatelessWidget {
-  const AppShell({super.key, required this.child});
+  const AppShell({super.key, required this.child, this.actions = const []});
 
   final Widget child;
+  final List<DeckAction> actions;
 
   @override
   Widget build(BuildContext context) {
-    return NavigationInputListener(
-      child: SplitView(isSmallLayout: context.isSmall, child: child),
+    return DeckShellModalHost(
+      child: NavigationInputListener(
+        child: SplitView(
+          isSmallLayout: context.isSmall,
+          actions: actions,
+          child: child,
+        ),
+      ),
     );
   }
 }
@@ -34,9 +43,15 @@ class AppShell extends StatelessWidget {
 /// A widget that can lay out the "panel" (thumbnails and possibly notes)
 /// either at the bottom (vertical layout) or on the side (horizontal layout).
 class SplitView extends StatefulWidget {
-  const SplitView({super.key, required this.child, this.isSmallLayout = false});
+  const SplitView({
+    super.key,
+    required this.child,
+    this.actions = const [],
+    this.isSmallLayout = false,
+  });
 
   final Widget child;
+  final List<DeckAction> actions;
   final bool isSmallLayout;
 
   @override
@@ -160,10 +175,7 @@ class _SplitViewState extends State<SplitView>
         return;
       }
 
-      deckController.presentation.generateThumbnails(
-        context,
-        currentSlides,
-      );
+      deckController.presentation.generateThumbnails(context, currentSlides);
       _lastThumbnailWarmupSignature = currentSignature;
       if (_pendingThumbnailWarmupSignature == currentSignature) {
         _pendingThumbnailWarmupSignature = null;
@@ -267,7 +279,7 @@ class _SplitViewState extends State<SplitView>
         bottomNavigationBar: SizeTransition(
           axis: Axis.vertical,
           sizeFactor: _curvedAnimation,
-          child: const DeckBottomBar(),
+          child: DeckBottomBar(actions: widget.actions),
         ),
 
         // Body changes layout based on [isSmallLayout].
