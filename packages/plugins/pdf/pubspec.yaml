@@ -22,7 +22,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   dart_code_metrics_presets: ^2.19.0
-  google_fonts: ^6.3.2
+  google_fonts: ^8.1.0
   superdeck_core: ^1.0.0
 
 flutter:
