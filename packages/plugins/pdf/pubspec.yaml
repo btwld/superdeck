@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  file_saver: ^0.2.14
+  file_saver: ^0.4.0
   pdf: ^3.11.1
   signals: ^6.2.0
   signals_flutter: ^6.2.0

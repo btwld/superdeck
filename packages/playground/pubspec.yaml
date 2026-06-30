@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   mix: ^2.0.3
   remix: ^0.2.0
-  super_editor: 0.3.0-dev.49
+  super_editor: 0.3.0-dev.52
   provider: ^6.1.2
   signals: ^6.2.0
   signals_flutter: ^6.2.0
