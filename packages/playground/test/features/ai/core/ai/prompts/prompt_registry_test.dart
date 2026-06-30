@@ -18,18 +18,16 @@ void main() {
         expect(PromptRegistry.instance.isLoaded, isFalse);
       });
 
-      test('loads real remix and deck-edit prompt assets', () async {
+      test('loads real wizard and deck-edit prompt assets', () async {
         await PromptRegistry.instance.load();
 
-        final remixPrompt = PromptRegistry.instance.render('remix_system');
+        final wizardPrompt = PromptRegistry.instance.render('wizard_system');
         final deckEditPrompt = PromptRegistry.instance.render(
           'deck_edit_system',
         );
 
-        expect(remixPrompt, contains('surfaceId'));
-        expect(remixPrompt, isNot(contains('deleteSurface')));
-        expect(remixPrompt, isNot(contains('beginRendering')));
-        expect(remixPrompt, isNot(contains('provideFinalOutput')));
+        expect(wizardPrompt, contains('presentation wizard'));
+        expect(wizardPrompt, contains('SummaryCard'));
         expect(deckEditPrompt.trim(), isNotEmpty);
       });
     });

@@ -6,7 +6,6 @@ import 'package:superdeck/superdeck.dart';
 
 import 'features/ai/chat/view/chat_screen.dart';
 import 'features/ai/deck_edit/deck_edit_screen.dart';
-import 'features/ai/remix/view/remix_screen.dart';
 import 'features/editor/editor_page.dart';
 import 'features/presentation/presentation_page.dart';
 import 'stores/ai_store.dart';
@@ -50,11 +49,6 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
             return MaterialPageRoute<void>(
               settings: settings,
               builder: (_) => const ChatScreen(),
-            );
-          case '/ai/remix':
-            return MaterialPageRoute<void>(
-              settings: settings,
-              builder: (_) => const RemixScreen(),
             );
           case '/ai/edit':
             return MaterialPageRoute<void>(

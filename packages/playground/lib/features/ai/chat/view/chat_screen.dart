@@ -5,7 +5,6 @@ import 'widgets/empty_state.dart';
 import '../../core/ai/services/ai_conversation_viewmodel.dart';
 import '../../core/ui/ui.dart';
 import '../../core/viewmodel_scope.dart';
-import '../../remix/view/remix_screen.dart';
 
 /// Main chat screen for the wizard-based presentation builder.
 ///
@@ -44,15 +43,6 @@ class _ChatScreenScaffold extends StatelessWidget {
         semanticLabel: 'View presentation',
         onPressed: () {
           Navigator.of(context).pushNamed('/present');
-        },
-      ),
-      SdIconButton(
-        icon: Icons.palette_outlined,
-        semanticLabel: 'Open remix builder',
-        onPressed: () {
-          Navigator.of(context).push<void>(
-            MaterialPageRoute<void>(builder: (_) => const RemixScreen()),
-          );
         },
       ),
     ];

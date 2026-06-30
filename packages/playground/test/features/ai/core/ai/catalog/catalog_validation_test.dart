@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:genui/test/validation.dart';
 import 'package:playground/features/ai/core/ai/catalog/catalog.dart';
 import 'package:playground/features/ai/core/ai/catalog/catalog_data_normalizer.dart';
-import 'package:playground/features/ai/core/ai/catalog/remix_catalog.dart';
 
 void main() {
   group('SuperDeck Catalog Validation', () {
@@ -14,21 +13,18 @@ void main() {
     test('chatCatalog should contain all expected items', () {
       final itemNames = chatCatalog.items.map((item) => item.name).toList();
 
-      // Individual question components (steps 1-6)
-      expect(itemNames, contains('AskUserRadio'));
-      expect(itemNames, contains('AskUserCheckbox'));
-      expect(itemNames, contains('AskUserSlider'));
-      expect(itemNames, contains('AskUserText'));
-      expect(itemNames, contains('AskUserStyle'));
-      expect(itemNames, contains('AskUserImageStyle'));
-
-      // Summary component (step 7)
-      expect(itemNames, contains('SummaryCard'));
-
-      // Remix component preview (standalone demo)
-      expect(itemNames, contains('RemixComponentPreview'));
-
-      expect(itemNames.length, equals(8));
+      expect(
+        itemNames,
+        equals([
+          'AskUserRadio',
+          'AskUserCheckbox',
+          'AskUserSlider',
+          'AskUserText',
+          'AskUserStyle',
+          'AskUserImageStyle',
+          'SummaryCard',
+        ]),
+      );
     });
 
     for (final item in chatCatalog.items) {
@@ -85,29 +81,25 @@ void main() {
       expect(schemaJson, isNotNull);
     });
 
-    test('chatCatalog and remixCatalog require component exactly once', () {
-      final catalogs = [chatCatalog, remixCatalog];
+    test('chatCatalog items require component exactly once', () {
+      for (final item in chatCatalog.items) {
+        final schema = item.dataSchema.value;
+        final properties = schema['properties'] as Map;
+        final required = schema['required'] as List;
+        final componentRequirements = required.where(
+          (field) => field == 'component',
+        );
 
-      for (final catalog in catalogs) {
-        for (final item in catalog.items) {
-          final schema = item.dataSchema.value;
-          final properties = schema['properties'] as Map;
-          final required = schema['required'] as List;
-          final componentRequirements = required.where(
-            (field) => field == 'component',
-          );
-
-          expect(
-            properties,
-            contains('component'),
-            reason: '${item.name} should expose the GenUI component field',
-          );
-          expect(
-            componentRequirements,
-            hasLength(1),
-            reason: '${item.name} should require component exactly once',
-          );
-        }
+        expect(
+          properties,
+          contains('component'),
+          reason: '${item.name} should expose the GenUI component field',
+        );
+        expect(
+          componentRequirements,
+          hasLength(1),
+          reason: '${item.name} should require component exactly once',
+        );
       }
     });
 

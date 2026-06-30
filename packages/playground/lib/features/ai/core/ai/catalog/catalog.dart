@@ -6,7 +6,6 @@ import 'ask_user_radio.dart';
 import 'ask_user_slider.dart';
 import 'ask_user_style.dart';
 import 'ask_user_text.dart';
-import 'remix_component_preview.dart';
 import 'summary_card.dart';
 
 export 'ask_user_checkbox.dart';
@@ -15,7 +14,6 @@ export 'ask_user_radio.dart';
 export 'ask_user_slider.dart';
 export 'ask_user_style.dart';
 export 'ask_user_text.dart';
-export 'remix_component_preview.dart';
 export 'summary_card.dart';
 
 /// SuperDeck AI chat catalog with GenUI components.
@@ -36,5 +34,4 @@ final chatCatalog = Catalog([
   askUserStyle,
   askUserImageStyle,
   summaryCard,
-  remixComponentPreview,
 ], catalogId: 'com.superdeck.ai.chat');

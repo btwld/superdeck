@@ -445,16 +445,6 @@ class _Toolbar extends StatelessWidget {
             onPressed: () => Navigator.of(context).pushNamed('/ai/wizard'),
           ),
         ),
-        // Remix component builder.
-        SizedBox(
-          width: 48,
-          child: HeroIconButton(
-            icon: CupertinoIcons.cube_box,
-            size: .lg,
-            variant: .secondary,
-            onPressed: () => Navigator.of(context).pushNamed('/ai/remix'),
-          ),
-        ),
         SizedBox(
           width: 48,
           child: HeroIconButton(

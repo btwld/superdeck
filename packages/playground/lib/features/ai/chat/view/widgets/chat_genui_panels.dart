@@ -109,7 +109,7 @@ class GenUiMessageBubble extends StatelessWidget {
   }
 }
 
-/// Shared surfaces panel used by both chat and remix screens.
+/// Shared surfaces panel used by AI conversation screens.
 class AiSurfacesPanel extends StatelessWidget {
   const AiSurfacesPanel({
     super.key,
@@ -214,7 +214,7 @@ class AiSurfacesPanel extends StatelessWidget {
   }
 }
 
-/// Shared chat body panel used by both chat and remix screens.
+/// Shared chat body panel used by AI conversation screens.
 class ChatBodyPanel extends StatelessWidget {
   const ChatBodyPanel({
     super.key,
@@ -256,7 +256,7 @@ class ChatBodyPanel extends StatelessWidget {
   }
 }
 
-/// Shared message list used by chat and remix body panels.
+/// Shared message list used by AI conversation body panels.
 class MessageList extends StatelessWidget {
   const MessageList({
     super.key,
