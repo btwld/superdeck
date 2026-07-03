@@ -163,6 +163,9 @@ class DeckGeneratorService {
       DeckGenerationResult cancelledResult() =>
           DeckGenerationResult.failure('Generation cancelled.');
 
+      // Ensure dotprompt templates are loaded before any phase renders them.
+      await PromptRegistry.instance.load();
+
       final outline = await _runOutlinePhase(
         this,
         service: service,

@@ -66,7 +66,26 @@ class _PlaygroundAppState extends State<PlaygroundApp> {
           default:
             return MaterialPageRoute<void>(
               settings: settings,
-              builder: (_) => const EditorPage(),
+              builder: (_) => Stack(
+                children: [
+                  const EditorPage(),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Builder(
+                      builder: (context) {
+                        return HeroButton(
+                          label: 'override text',
+                          onPressed: () {
+                            context.read<TextEditorController>().loadMarkdown(
+                              'override text',
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             );
         }
       },

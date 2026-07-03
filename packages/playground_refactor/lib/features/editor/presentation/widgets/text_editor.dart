@@ -2,104 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
-
 import 'package:super_editor/super_editor.dart';
 
-import '../../stores/editor_state.dart';
-import '../../utils/edit_reaction.dart';
-import '../../utils/memory_deck_loader.dart';
-import '../../utils/text_editor_controller.dart';
+import '../../domain/stores/editor_store.dart';
+import 'edit_reaction.dart';
 
 class TextEditor extends StatefulWidget {
-  const TextEditor({super.key, this.onChanged, this.onInit});
-
-  final ValueChanged<String>? onChanged;
-  final VoidCallback? onInit;
+  const TextEditor({super.key});
 
   @override
   State<TextEditor> createState() => _TextEditorState();
 }
 
 class _TextEditorState extends State<TextEditor> {
-  static const _starterMarkdown = '''---\n
-# Title
-## Subtitle\n
----
-''';
-
   late MutableDocument _document;
   late MutableDocumentComposer _composer;
   late Editor _editor;
-  late final void Function() _unsubscribeActiveIndex;
-  TextEditorController? _textEditorController;
+  late final EditorStore _editorStore;
   bool _isUpdatingFromCursor = false;
+  int _lastActiveSlide = 0;
 
-  /// Bumped every time the editor is rebuilt from external markdown. Used as
-  /// the [SuperEditor] key so the pane remounts with a fresh layout presenter.
-  int _editorGeneration = 0;
+  /// Bumped each time the editables are (re)installed. Used as the [SuperEditor]
+  /// key so the pane mounts with a fresh layout presenter.
+  // int _editorGeneration = 0;
 
   @override
   void initState() {
     super.initState();
 
-    try {
-      _textEditorController = context.read<TextEditorController>();
-    } catch (_) {
-      // TextEditorController not provided — editor works standalone.
-    }
+    _editorStore = context.read<EditorStore>();
+    _lastActiveSlide = _editorStore.activeSlideIndex;
 
-    final pendingMarkdown = _textEditorController?.takePendingMarkdown();
-    final stagedMarkdown = pendingMarkdown == null
-        ? _textEditorController?.takeStagedMarkdownForNextEditorMount()
-        : null;
-    final initialMarkdown =
-        pendingMarkdown ?? stagedMarkdown ?? _starterMarkdown;
-    final consumedHandoff = pendingMarkdown != null || stagedMarkdown != null;
+    // The store owns the current text and has already seeded the deck loader;
+    // build the document from it.
+    _installEditables(_editorStore.currentText);
 
-    _textEditorController?.recordLatestMarkdown(initialMarkdown);
-    if (consumedHandoff ||
-        (_textEditorController?.outboundWritesSuspended ?? false)) {
-      _textEditorController?.resumeOutboundWritesForEditorMount();
-    }
-
-    _installEditables(initialMarkdown);
-
-    _writeMarkdownToLoaderIfAllowed(_extractText());
-
-    // Subscribe to external markdown injection via TextEditorController.
-    _textEditorController?.addListener(_onExternalMarkdown);
-
-    final editorState = context.read<EditorState>();
-    _unsubscribeActiveIndex = editorState.activeSlideIndex.subscribe((index) {
-      if (_isUpdatingFromCursor) return;
-      _scrollToSlide(index);
-    });
-
-    widget.onInit?.call();
+    _editorStore.addListener(_onActiveSlideChanged);
   }
 
-  /// Called when [TextEditorController.loadMarkdown] is invoked externally.
+  /// Reacts to the active slide changing (e.g. a preview tap) by scrolling the
+  /// caret to that slide.
   ///
-  /// Replaces the document content with [markdown] and notifies the deck
-  /// loader. The [_onDocumentChanged] listener is temporarily suppressed to
-  /// avoid double-notifying.
-  void _onExternalMarkdown() {
-    final markdown = _textEditorController?.takePendingMarkdown();
-    if (markdown == null) return;
-
-    // Rebuild the document + editor from scratch and rebuild the widget so
-    // SuperEditor mounts a fresh layout presenter for the new editor instance.
-    // Surgically inserting/deleting nodes on the live document updated the
-    // model but left the editor pane painting stale content in the running
-    // app, so the AI-generated markdown never appeared.
-    setState(() {
-      _disposeEditables();
-      _installEditables(markdown);
-    });
-
-    _textEditorController?.recordLatestMarkdown(markdown);
-    widget.onChanged?.call(markdown);
-    _writeMarkdownToLoaderIfAllowed(markdown);
+  /// [EditorStore] notifies on text edits too, so ignore notifications where the
+  /// index is unchanged — otherwise every keystroke would reset the caret to the
+  /// slide's start. Also skip when the change originated from the caret itself.
+  void _onActiveSlideChanged() {
+    final index = _editorStore.activeSlideIndex;
+    if (index == _lastActiveSlide) return;
+    _lastActiveSlide = index;
+    if (_isUpdatingFromCursor) return;
+    _scrollToSlide(index);
   }
 
   /// Builds a fresh document, composer, and editor from [markdown] and wires
@@ -140,7 +92,7 @@ class _TextEditorState extends State<TextEditor> {
 
     _document.addListener(_onDocumentChanged);
     _composer.selectionNotifier.addListener(_onSelectionChanged);
-    _editorGeneration++;
+    // _editorGeneration++;
   }
 
   void _disposeEditables() {
@@ -150,10 +102,7 @@ class _TextEditorState extends State<TextEditor> {
   }
 
   void _onDocumentChanged(DocumentChangeLog changeLog) {
-    final text = _extractText();
-    _textEditorController?.recordLatestMarkdown(text);
-    widget.onChanged?.call(text);
-    _writeMarkdownToLoaderIfAllowed(text);
+    _editorStore.updateText(_extractText());
   }
 
   List<DocumentNode> _nodesFromMarkdown(String markdown) {
@@ -164,75 +113,20 @@ class _TextEditorState extends State<TextEditor> {
     ];
   }
 
-  void _writeMarkdownToLoaderIfAllowed(String markdown) {
-    if (_textEditorController?.outboundWritesSuspended ?? false) return;
-    context.read<MemoryDeckLoader>().updateMarkdown(markdown);
-  }
-
   void _onSelectionChanged() {
     final selection = _composer.selection;
-
     if (selection == null) return;
 
-    final caretNodeId = selection.extent.nodeId;
-    var slideIndex = 0;
-
-    for (final node in _document) {
-      if (node.id == caretNodeId) break;
-      if (node is TextNode && node.text.toPlainText().trim() == '---') {
-        slideIndex++;
-      }
-    }
-
-    final editorState = context.read<EditorState>();
-    // The first --- is the frontmatter separator, so slide 0 content
-    // appears after the first ---. Subtract 1 to convert separator count
-    // to 0-based slide index.
-    final adjustedIndex = (slideIndex - 1).clamp(0, slideIndex);
-    if (editorState.activeSlideIndex.value != adjustedIndex) {
+    final index = _slideIndexForNode(selection.extent.nodeId);
+    if (_editorStore.activeSlideIndex != index) {
       _isUpdatingFromCursor = true;
-      editorState.activeSlideIndex.value = adjustedIndex;
+      _editorStore.activeSlideIndex = index;
       _isUpdatingFromCursor = false;
     }
   }
 
   void _scrollToSlide(int targetIndex) {
-    // Find the node that starts the target slide's content.
-    // Slide N starts after the (N+1)th --- separator.
-    var separatorCount = 0;
-    String? targetNodeId;
-
-    for (final node in _document) {
-      if (node is TextNode && node.text.toPlainText().trim() == '---') {
-        separatorCount++;
-        if (separatorCount == targetIndex + 1) {
-          // The next node after this separator is the slide's content.
-          // For now, place caret at the separator itself — the content
-          // node may not exist yet if the slide is empty.
-          final nodeIndex = _document.getNodeIndexById(node.id);
-          if (nodeIndex + 1 < _document.length) {
-            targetNodeId = _document.getNodeAt(nodeIndex + 1)!.id;
-          } else {
-            targetNodeId = node.id;
-          }
-          break;
-        }
-      }
-    }
-
-    // For slide 0, target the first content node after the first ---
-    if (targetIndex == 0 && targetNodeId == null) {
-      for (final node in _document) {
-        if (node is TextNode && node.text.toPlainText().trim() == '---') {
-          final nodeIndex = _document.getNodeIndexById(node.id);
-          if (nodeIndex + 1 < _document.length) {
-            targetNodeId = _document.getNodeAt(nodeIndex + 1)!.id;
-          }
-          break;
-        }
-      }
-    }
-
+    final targetNodeId = _firstNodeOfSlide(targetIndex);
     if (targetNodeId == null) return;
 
     _editor.execute([
@@ -247,6 +141,37 @@ class _TextEditorState extends State<TextEditor> {
         SelectionReason.userInteraction,
       ),
     ]);
+  }
+
+  bool _isSeparator(DocumentNode node) =>
+      node is TextNode && node.text.toPlainText().trim() == '---';
+
+  /// The 0-based slide the caret node [nodeId] falls in. The first `---` is the
+  /// frontmatter separator, so anything before/at it maps to slide 0.
+  int _slideIndexForNode(String nodeId) {
+    var separatorCount = 0;
+    for (final node in _document) {
+      if (node.id == nodeId) break;
+      if (_isSeparator(node)) separatorCount++;
+    }
+    return (separatorCount - 1).clamp(0, separatorCount);
+  }
+
+  /// The node id that starts slide [index]'s content — the node just after the
+  /// (index+1)th `---` separator, or the separator itself when the slide is
+  /// still empty. Null if that separator doesn't exist yet.
+  String? _firstNodeOfSlide(int index) {
+    var separatorCount = 0;
+    for (final node in _document) {
+      if (!_isSeparator(node)) continue;
+      if (++separatorCount != index + 1) continue;
+      final nodeIndex = _document.getNodeIndexById(node.id);
+      if (nodeIndex + 1 < _document.length) {
+        return _document.getNodeAt(nodeIndex + 1)!.id;
+      }
+      return node.id;
+    }
+    return null;
   }
 
   String _extractText() {
@@ -264,8 +189,7 @@ class _TextEditorState extends State<TextEditor> {
 
   @override
   void dispose() {
-    _textEditorController?.removeListener(_onExternalMarkdown);
-    _unsubscribeActiveIndex();
+    _editorStore.removeListener(_onActiveSlideChanged);
     _disposeEditables();
     super.dispose();
   }
@@ -276,7 +200,6 @@ class _TextEditorState extends State<TextEditor> {
       padding: const EdgeInsets.all(16.0),
       child: HeroCard(
         child: SuperEditor(
-          key: ValueKey(_editorGeneration),
           editor: _editor,
           keyboardActions: [...defaultKeyboardActions],
           documentOverlayBuilders: [
