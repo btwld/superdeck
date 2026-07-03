@@ -6,16 +6,17 @@ import 'package:superdeck/superdeck.dart';
 import '../core/data/data_sources/memory_asset_cache_store.dart';
 import '../core/data/data_sources/memory_deck_loader.dart';
 import '../core/domain/stores/deck_customization_store.dart';
-import '../core/domain/stores/deck_store.dart';
 
 /// App-root dependency injection: the deck globals shared across features.
 ///
-/// `DeckController`, `DeckStore`, and `DeckCustomizationStore` are created
-/// eagerly (`lazy: false`) so the `MemoryDeckLoader` → `DeckController.slides`
-/// pipeline is subscribed before the editor mounts and writes its first
-/// markdown — otherwise the loader's broadcast event would be dropped.
+/// `DeckController` and `DeckCustomizationStore` are created eagerly
+/// (`lazy: false`) so the `MemoryDeckLoader` → `DeckController.slides` pipeline
+/// is subscribed, and the initial `DeckOptions` seeded, before the editor mounts
+/// and writes its first markdown — otherwise the loader's broadcast event would
+/// be dropped.
 ///
-/// The editor's `EditorStore` is provided at its route instead.
+/// The editor's `EditorStore` is provided at its route instead. Slides are read
+/// straight off `DeckController.slides` (a signal) in the UI — no bridge store.
 class AppProviders extends StatelessWidget {
   const AppProviders({required this.child, super.key});
 
@@ -45,10 +46,6 @@ class AppProviders extends StatelessWidget {
             assetCacheStore: ctx.read<MemoryAssetCacheStore>(),
           ),
           dispose: (_, controller) => controller.dispose(),
-        ),
-        ChangeNotifierProvider<DeckStore>(
-          lazy: false,
-          create: (ctx) => DeckStore(ctx.read<DeckController>()),
         ),
         ChangeNotifierProvider<DeckCustomizationStore>(
           lazy: false,

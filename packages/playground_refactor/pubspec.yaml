@@ -1,5 +1,5 @@
 name: playground_refactor
-description: Layered (Provider + Command) rewrite of the playground app. No signals.
+description: Layered (Provider + Command) rewrite of the playground app.
 publish_to: none
 
 environment:
@@ -12,9 +12,9 @@ dependencies:
   # State management & DI — Provider + Command pattern.
   provider: ^6.1.2
   go_router: ^14.0.0
-  # signals is used ONLY inside core/ bridge stores to translate superdeck's
-  # DeckController signals into ChangeNotifier. No app code authors signals.
+  # signals: core/ bridge stores translate DeckController signals into
   signals: ^6.2.0
+  signals_flutter: ^6.2.0
   # UI
   mix: ^2.1.0
   remix: ^0.2.0
