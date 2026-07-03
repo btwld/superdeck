@@ -13,6 +13,8 @@ dependencies:
   provider: ^6.1.2
   go_router: ^14.0.0
   # signals: core/ bridge stores translate DeckController signals into
+  # ChangeNotifier; signals_flutter lets the UI watch DeckController.slides
+  # directly, so slides need no bridge store.
   signals: ^6.2.0
   signals_flutter: ^6.2.0
   # UI
@@ -57,9 +59,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # Assets are added as AI/editor features are migrated over.
-  # assets:
-  #   - .env
-  #   - assets/ai_prompts/
-  #   - assets/ai_prompts/partials/
-  #   - assets/ai_examples/
+  assets:
+    - .env
+    - assets/ai_prompts/
+    - assets/ai_prompts/partials/
+    - assets/ai_examples/

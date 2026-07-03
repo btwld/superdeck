@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:hero_ui/hero_ui.dart';
 
 import 'app/providers.dart';
 import 'app/router.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // The AI feature reads `GOOGLE_AI_API_KEY` from the bundled `.env` (git-
+  // ignored). Optional — EnvConfig falls back to --dart-define when absent.
+  try {
+    await dotenv.load();
+  } catch (_) {}
+
+  // debugRepaintRainbowEnabled = true;
   runApp(const PlaygroundRefactorApp());
 }
 

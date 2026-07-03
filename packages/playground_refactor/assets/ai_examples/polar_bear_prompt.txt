@@ -1,0 +1,24 @@
+Generate a presentation with the following specifications:
+
+Topic: Polar Bears
+Target Audience: Scientific Researchers
+Presentation Approach: Field-Based Technical Analysis
+Key Areas to Emphasize: Denning Sites, Dietary Shifts
+Number of Slides: 12
+Visual Style: Glacial Precision
+
+Color Palette:
+  - Background: #4682B4
+  - Heading text: #F0F8FF
+  - Body text: #B0C4DE
+Headline Font: montserrat
+Body Font: roboto
+
+Visual Direction: Minimalist
+
+Layout Guidance: Use sections as rows and blocks as columns. Use 1-2 blocks per section (never 4+). Put all bullets in a single block. Use two sections (title + body) for most slides. Center-align only titles; left-align body content. Do not use widget blocks or empty blocks.
+
+Available Images:
+  - YECIK2Hz: .superdeck/assets/slide-YECIK2Hz-illustration.png
+  - 77tyZAWT: .superdeck/assets/slide-77tyZAWT-illustration.png
+  - OB2KF7fb: .superdeck/assets/slide-OB2KF7fb-illustration.png
