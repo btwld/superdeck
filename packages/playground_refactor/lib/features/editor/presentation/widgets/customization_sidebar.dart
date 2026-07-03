@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:remix/remix.dart';
 
 import '../../../../core/domain/stores/deck_customization_store.dart';
+import '../../domain/stores/editor_store.dart';
 import 'color_control.dart';
 import 'labels.dart';
 
@@ -330,7 +331,10 @@ class _Toolbar extends StatelessWidget {
           child: HeroIconButton(
             size: .lg,
             icon: CupertinoIcons.play,
-            onPressed: () => context.push('/present'),
+            onPressed: () => context.push(
+              '/present',
+              extra: context.read<EditorStore>().activeSlideIndex,
+            ),
           ),
         ),
       ],
