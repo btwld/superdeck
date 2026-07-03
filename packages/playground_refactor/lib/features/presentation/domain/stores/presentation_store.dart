@@ -1,14 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:superdeck/superdeck.dart';
 
-/// Present-mode navigation state, scoped to the `/present` route.
+/// Present-mode slide navigation, scoped to the `/present` route.
 ///
-/// Tracks which slide is on screen and whether the thumbnail menu is open. The
-/// slide list itself lives on [DeckController.slides] (a signal) — this store
-/// only holds the cursor into it and reads the current count off the controller
-/// to keep the index in range. It intentionally does not subscribe to the
-/// controller: slides don't change while presenting, and the page watches the
-/// signal directly for rendering.
+/// Holds the cursor into [DeckController.slides] (a signal) and reads the
+/// current count off the controller to keep the index in range. It intentionally
+/// does not subscribe to the controller: slides don't change while presenting,
+/// and the page watches the signal directly for rendering.
+///
+/// This owns navigation only — transient UI chrome like the thumbnail menu's
+/// open/closed state is ephemeral and lives in the presentation screen's [State].
 ///
 /// Seeded from the editor's active slide via `initialIndex` so pressing Present
 /// opens on the slide the author was editing.
@@ -21,11 +22,8 @@ class PresentationStore extends ChangeNotifier {
   final DeckController _controller;
 
   int _currentIndex;
-  bool _isMenuOpen = false;
 
   int get currentIndex => _currentIndex;
-
-  bool get isMenuOpen => _isMenuOpen;
 
   int get slideCount => _controller.slides.value.length;
 
@@ -48,21 +46,4 @@ class PresentationStore extends ChangeNotifier {
   void next() => goToSlide(_currentIndex + 1);
 
   void previous() => goToSlide(_currentIndex - 1);
-
-  void openMenu() {
-    if (_isMenuOpen) return;
-    _isMenuOpen = true;
-    notifyListeners();
-  }
-
-  void closeMenu() {
-    if (!_isMenuOpen) return;
-    _isMenuOpen = false;
-    notifyListeners();
-  }
-
-  void toggleMenu() {
-    _isMenuOpen = !_isMenuOpen;
-    notifyListeners();
-  }
 }

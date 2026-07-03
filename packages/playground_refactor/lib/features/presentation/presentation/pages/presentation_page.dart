@@ -32,6 +32,10 @@ class PresentationPage extends StatefulWidget {
 class _PresentationPageState extends State<PresentationPage> {
   final FocusNode _focusNode = FocusNode();
 
+  /// Whether the thumbnail menu overlay is open. Ephemeral UI chrome — nothing
+  /// outside this screen reads it — so it lives here rather than in the store.
+  bool _isMenuOpen = false;
+
   @override
   void dispose() {
     _focusNode.dispose();
@@ -42,10 +46,17 @@ class _PresentationPageState extends State<PresentationPage> {
     if (context.canPop()) context.pop();
   }
 
+  void _toggleMenu() => setState(() => _isMenuOpen = !_isMenuOpen);
+
+  void _closeMenu() {
+    if (!_isMenuOpen) return;
+    setState(() => _isMenuOpen = false);
+  }
+
   /// A tap on the slide advances; if the menu is open it closes first.
   void _onSlideTap(PresentationStore store) {
-    if (store.isMenuOpen) {
-      store.closeMenu();
+    if (_isMenuOpen) {
+      _closeMenu();
     } else {
       store.next();
     }
@@ -60,6 +71,9 @@ class _PresentationPageState extends State<PresentationPage> {
       backgroundColor: $background.resolve(context),
       body: _PresentationKeyboard(
         focusNode: _focusNode,
+        isMenuOpen: _isMenuOpen,
+        onToggleMenu: _toggleMenu,
+        onCloseMenu: _closeMenu,
         onExit: _exit,
         child: Watch((context) {
           final slides = controller.slides.value;
@@ -88,12 +102,12 @@ class _PresentationPageState extends State<PresentationPage> {
               ),
 
               _SlidingThumbnailMenu(
-                isOpen: store.isMenuOpen,
+                isOpen: _isMenuOpen,
                 slides: slides,
                 activeIndex: index,
                 onSelect: (i) {
                   store.goToSlide(i);
-                  store.closeMenu();
+                  _closeMenu();
                   _focusNode.requestFocus();
                 },
               ),
@@ -110,7 +124,7 @@ class _PresentationPageState extends State<PresentationPage> {
                     slideCount: slides.length,
                     onPrevious: store.previous,
                     onNext: store.next,
-                    onToggleMenu: store.toggleMenu,
+                    onToggleMenu: _toggleMenu,
                   ),
                 ),
               ),
@@ -123,20 +137,28 @@ class _PresentationPageState extends State<PresentationPage> {
 }
 
 /// Wraps [child] in a [Focus] that drives present-mode navigation from the
-/// keyboard, reading the [PresentationStore] from context.
+/// keyboard. Slide navigation is read from the [PresentationStore] in context;
+/// the menu is screen-owned, so its state and toggles are passed in.
 ///
 /// Keys: →/↓/PageDown/Space/Enter advance · ←/↑/PageUp go back · Home/End jump
-/// to the first/last slide · `m` toggles the menu · `Esc` closes the menu, or
-/// calls [onExit] to leave present mode. The [focusNode] is owned by the page so
-/// it can re-grab focus after pointer interactions.
+/// to the first/last slide · `m` calls [onToggleMenu] · `Esc` calls
+/// [onCloseMenu] when [isMenuOpen], otherwise [onExit] to leave present mode.
+/// The [focusNode] is owned by the page so it can re-grab focus after pointer
+/// interactions.
 class _PresentationKeyboard extends StatelessWidget {
   const _PresentationKeyboard({
     required this.focusNode,
+    required this.isMenuOpen,
+    required this.onToggleMenu,
+    required this.onCloseMenu,
     required this.onExit,
     required this.child,
   });
 
   final FocusNode focusNode;
+  final bool isMenuOpen;
+  final VoidCallback onToggleMenu;
+  final VoidCallback onCloseMenu;
   final VoidCallback onExit;
   final Widget child;
 
@@ -175,13 +197,13 @@ class _PresentationKeyboard extends StatelessWidget {
     }
 
     if (key == LogicalKeyboardKey.keyM) {
-      store.toggleMenu();
+      onToggleMenu();
       return KeyEventResult.handled;
     }
 
     if (key == LogicalKeyboardKey.escape) {
-      if (store.isMenuOpen) {
-        store.closeMenu();
+      if (isMenuOpen) {
+        onCloseMenu();
       } else {
         onExit();
       }
