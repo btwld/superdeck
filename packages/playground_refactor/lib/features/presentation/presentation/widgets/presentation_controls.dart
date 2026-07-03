@@ -10,6 +10,7 @@ class PresentationControls extends StatelessWidget {
   const PresentationControls({
     required this.currentIndex,
     required this.slideCount,
+    required this.onFirst,
     required this.onPrevious,
     required this.onNext,
     required this.onToggleMenu,
@@ -18,6 +19,7 @@ class PresentationControls extends StatelessWidget {
 
   final int currentIndex;
   final int slideCount;
+  final VoidCallback onFirst;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final VoidCallback onToggleMenu;
@@ -37,6 +39,13 @@ class PresentationControls extends StatelessWidget {
           size: .sm,
           icon: CupertinoIcons.list_bullet,
           onPressed: onToggleMenu,
+        ),
+        HeroIconButton(
+          variant: .ghost,
+          size: .sm,
+          icon: CupertinoIcons.backward_end,
+          enabled: currentIndex > 0,
+          onPressed: onFirst,
         ),
         HeroIconButton(
           variant: .ghost,

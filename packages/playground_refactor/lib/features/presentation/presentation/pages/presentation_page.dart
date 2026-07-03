@@ -122,6 +122,7 @@ class _PresentationPageState extends State<PresentationPage> {
                   child: PresentationControls(
                     currentIndex: index,
                     slideCount: slides.length,
+                    onFirst: () => store.goToSlide(0),
                     onPrevious: store.previous,
                     onNext: store.next,
                     onToggleMenu: _toggleMenu,

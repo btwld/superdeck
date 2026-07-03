@@ -332,8 +332,7 @@ class _Toolbar extends StatelessWidget {
             size: .lg,
             icon: CupertinoIcons.play,
             onPressed: () => context.push(
-              '/present',
-              extra: context.read<EditorStore>().activeSlideIndex,
+              '/present/${context.read<EditorStore>().activeSlideIndex}',
             ),
           ),
         ),

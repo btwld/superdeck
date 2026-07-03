@@ -16,13 +16,14 @@ const _transitionDuration = Duration(milliseconds: 250);
 /// platform's default push transition.
 ///
 /// The scoped [PresentationStore] is provided at the route and seeded from the
-/// editor's active slide, passed through `GoRouterState.extra`, so present mode
-/// opens on the slide the author was editing.
+/// editor's active slide, passed through the `:index` path parameter, so present
+/// mode opens on the slide the author was editing.
 List<RouteBase> presentationRoutes() => [
   GoRoute(
-    path: '/present',
+    path: '/present/:index',
     pageBuilder: (context, state) {
-      final initialIndex = state.extra is int ? state.extra as int : 0;
+      final initialIndex =
+          int.tryParse(state.pathParameters['index'] ?? '') ?? 0;
       return CustomTransitionPage(
         key: state.pageKey,
         transitionDuration: _transitionDuration,
