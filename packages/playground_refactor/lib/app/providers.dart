@@ -15,8 +15,7 @@ import '../core/domain/stores/deck_store.dart';
 /// pipeline is subscribed before the editor mounts and writes its first
 /// markdown — otherwise the loader's broadcast event would be dropped.
 ///
-/// Feature-scoped stores (editor's `EditorStore`, `ThumbnailStore`) are
-/// provided at their route instead.
+/// The editor's `EditorStore` is provided at its route instead.
 class AppProviders extends StatelessWidget {
   const AppProviders({required this.child, super.key});
 

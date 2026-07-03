@@ -6,7 +6,6 @@ import 'package:superdeck/superdeck.dart';
 
 import '../../../../core/domain/stores/deck_store.dart';
 import '../../domain/stores/editor_store.dart';
-import '../../domain/stores/thumbnail_store.dart';
 
 class PreviewSidebar extends StatelessWidget {
   const PreviewSidebar({super.key});
@@ -28,39 +27,13 @@ class PreviewSidebar extends StatelessWidget {
   }
 }
 
-/// Renders the slide previews and hosts [ThumbnailStore]'s context-bridge: it's
-/// the widget that shows thumbnails and is always mounted, so it supplies the
-/// live [BuildContext] the store's [ThumbnailStore.reload] needs. The store owns
-/// *when* to regenerate; this widget owns only the frame + context hand-off.
-class SlidesPreviewList extends StatefulWidget {
+/// Renders the slide previews as live [SlideRenderView]s.
+///
+/// No thumbnail cache: each visible preview renders the slide directly, so it's
+/// always current and there's nothing to regenerate. `ListView.builder` keeps
+/// this to the on-screen previews.
+class SlidesPreviewList extends StatelessWidget {
   const SlidesPreviewList({super.key});
-
-  @override
-  State<SlidesPreviewList> createState() => _SlidesPreviewListState();
-}
-
-class _SlidesPreviewListState extends State<SlidesPreviewList> {
-  late final ThumbnailStore _store;
-  bool _scheduled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _store = context.read<ThumbnailStore>();
-    _store.reloadRequests.addListener(_scheduleReload);
-    // The store may have requested its initial reload before we mounted.
-    _scheduleReload();
-  }
-
-  void _scheduleReload() {
-    _store.reload(context);
-  }
-
-  @override
-  void dispose() {
-    _store.reloadRequests.removeListener(_scheduleReload);
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,13 +57,12 @@ class _SlidesPreviewListState extends State<SlidesPreviewList> {
         clipBehavior: .none,
         itemCount: slides.length,
         itemBuilder: (context, index) {
-          final isActive = index == activeIndex;
           return Padding(
             padding: const .only(bottom: 24),
             child: _PreviewItem(
               index: index,
               configuration: slides[index],
-              isActive: isActive,
+              isActive: index == activeIndex,
               onTap: () => context.read<EditorStore>().activeSlideIndex = index,
             ),
           );
@@ -113,14 +85,6 @@ class _PreviewItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback? onTap;
 
-  Widget _buildSlideRender() {
-    return FittedBox(
-      fit: .cover,
-      alignment: .topLeft,
-      child: SlideRenderView(configuration),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -132,10 +96,10 @@ class _PreviewItem extends StatelessWidget {
           children: [
             Box(
               style: BoxStyler().wrap(.aspectRatio(16 / 9)),
-              child: _SlidePreview(
-                active: isActive,
-                configuration: configuration,
-                fallback: _buildSlideRender,
+              child: FittedBox(
+                fit: .cover,
+                alignment: .topLeft,
+                child: SlideRenderView(configuration),
               ),
             ),
             Box(
@@ -153,49 +117,6 @@ class _PreviewItem extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SlidePreview extends StatelessWidget {
-  const _SlidePreview({
-    required this.configuration,
-    required this.active,
-    required this.fallback,
-  });
-
-  final SlideConfiguration configuration;
-  final bool active;
-  final Widget Function() fallback;
-
-  @override
-  Widget build(BuildContext context) {
-    final status = context.select<ThumbnailStore, AsyncFileStatus>(
-      (store) => store.statusFor(configuration.key),
-    );
-
-    final thumbnail = status == AsyncFileStatus.done && !active
-        ? context.read<ThumbnailStore>().thumbnailFor(configuration.key)
-        : null;
-
-    if (thumbnail == null) {
-      return KeyedSubtree(
-        key: const ValueKey('fallback'),
-        child: Banner(
-          message: 'Widget',
-          location: BannerLocation.topStart,
-          child: fallback(),
-        ),
-      );
-    }
-
-    return KeyedSubtree(
-      key: const ValueKey('thumbnail'),
-      child: Banner(
-        message: 'Thumbnail',
-        location: BannerLocation.topStart,
-        child: thumbnail.build(context),
       ),
     );
   }
