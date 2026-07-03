@@ -9,6 +9,7 @@ import '../../stores/ai_store.dart';
 import '../../stores/deck_customization_store.dart';
 import '../../utils/text_editor_controller.dart';
 import '../ai/ai_generate_panel.dart';
+import 'color_control.dart';
 
 class CustomizationSidebar extends StatefulWidget {
   const CustomizationSidebar({super.key});
@@ -125,14 +126,15 @@ class _BackgroundSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.read<DeckCustomizationStore>();
     return ColumnBox(
-      style: FlexBoxStyler().spacing(8).crossAxisAlignment(.start),
+      style: FlexBoxStyler().spacing(8).crossAxisAlignment(.stretch),
       children: [
         const _SectionLabel('Background'),
         Watch((context) {
-          return _SwatchRow(
-            swatches: playgroundBackgroundSwatches,
-            selected: store.background.value,
-            onSelected: (color) => store.background.value = color,
+          return ColorControl(
+            color: store.background.value is ColorRef
+                ? (store.background.value as ColorRef).resolveProp(context)
+                : store.background.value,
+            onChanged: (color) => store.background.value = color,
           );
         }),
       ],
@@ -154,57 +156,16 @@ class _LevelControls extends StatelessWidget {
       style: FlexBoxStyler().spacing(16).crossAxisAlignment(.stretch),
       children: [
         Watch((context) {
-          return _SwatchRow(
-            swatches: playgroundTextSwatches,
-            selected: signals.color.value,
-            onSelected: (color) => signals.color.value = color,
+          return ColorControl(
+            color: signals.color.value is ColorRef
+                ? (signals.color.value as ColorRef).resolveProp(context)
+                : signals.color.value,
+            onChanged: (color) => signals.color.value = color,
           );
         }),
         _FontSizeField(level: level),
         _FontWeightSlider(level: level),
         _FontFamilySelect(level: level),
-      ],
-    );
-  }
-}
-
-class _SwatchRow extends StatelessWidget {
-  const _SwatchRow({
-    required this.swatches,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final List<PlaygroundSwatch> swatches;
-  final Color selected;
-  final ValueChanged<Color> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return RowBox(
-      style: FlexBoxStyler().spacing(8),
-      children: [
-        for (final swatch in swatches)
-          Pressable(
-            onPress: () => onSelected(swatch.color),
-            child: Box(
-              style: BoxStyler()
-                  .width(28)
-                  .height(28)
-                  .color(swatch.color)
-                  .borderRounded(999)
-                  .shadowOnly(
-                    color: swatch.color == selected ? $accent() : $background(),
-                    offset: Offset(0, 0),
-                    blurRadius: 0,
-                    spreadRadius: 2,
-                  )
-                  .borderAll(
-                    color: swatch.color == selected ? $background() : $border(),
-                    width: swatch.color == selected ? 2 : 1,
-                  ),
-            ),
-          ),
       ],
     );
   }

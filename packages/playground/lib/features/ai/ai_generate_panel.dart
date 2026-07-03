@@ -11,7 +11,7 @@ import 'core/ai/services/generation_progress.dart';
 /// [aiStore] must be captured from a context that has the provider in scope
 /// (the dialog route does not inherit the editor's provider scope reliably).
 Future<void> showAiGeneratePanel(BuildContext context, AiStore aiStore) {
-  return showCupertinoDialog<void>(
+  return showRemixDialog<void>(
     context: context,
     barrierDismissible: true,
     builder: (_) => _AiGeneratePanel(aiStore: aiStore),
@@ -56,28 +56,23 @@ class _AiGeneratePanelState extends State<_AiGeneratePanel> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Box(
-        style: BoxStyler()
-            .width(520)
-            .color($surface())
-            .borderRounded(16)
-            .borderAll(color: $border(), width: 1)
-            .paddingAll(24),
+      child: HeroCard(
+        style: RemixCardStyle().maxWidth(520).paddingAll(24),
         child: ColumnBox(
           style: FlexBoxStyler()
               .mainAxisSize(.min)
-              .crossAxisAlignment(.stretch)
-              .spacing(16),
+              .spacing(12)
+              .crossAxisAlignment(.end),
           children: [
             _Header(onClose: () => Navigator.of(context).maybePop()),
             HeroTextField(
               fullWidth: true,
               controller: _controller,
               focusNode: _focusNode,
+              style: RemixTextFieldStyle().backgroundColor($surfaceSecondary()),
               hintText:
                   'Describe your presentation — topic, audience, tone, length…',
             ),
@@ -97,9 +92,11 @@ class _AiGeneratePanelState extends State<_AiGeneratePanel> {
             }),
             Watch((context) {
               final generating = widget.aiStore.isGenerating.value;
-              return _GenerateButton(
-                generating: generating,
+              return HeroButton(
+                label: 'Generate',
+                iconLeft: CupertinoIcons.sparkles,
                 onPressed: generating ? null : _generate,
+                loading: generating,
               );
             }),
           ],
@@ -177,31 +174,6 @@ class _ErrorRow extends StatelessWidget {
       child: StyledText(
         message,
         style: TextStyler().color($danger()).style($labelSmall.mix()),
-      ),
-    );
-  }
-}
-
-class _GenerateButton extends StatelessWidget {
-  const _GenerateButton({required this.generating, this.onPressed});
-
-  final bool generating;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Pressable(
-      onPress: onPressed ?? () {},
-      child: Box(
-        style: BoxStyler()
-            .color(onPressed == null ? $muted() : $accent())
-            .borderRounded(10)
-            .paddingY(12)
-            .alignment(Alignment.center),
-        child: StyledText(
-          generating ? 'Generating…' : 'Generate',
-          style: TextStyler().color($background()).style($labelMedium.mix()),
-        ),
       ),
     );
   }

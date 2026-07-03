@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -16,8 +17,15 @@ import 'utils/memory_deck_loader.dart';
 import 'utils/text_editor_controller.dart';
 import 'utils/takeover_route.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   SignalsObserver.instance = null;
+
+  // Optional — falls back to --dart-define=GOOGLE_AI_API_KEY when missing.
+  try {
+    await dotenv.load();
+  } catch (_) {}
+
   runApp(const PlaygroundApp());
 }
 

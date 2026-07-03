@@ -20,38 +20,6 @@ const playgroundFontFamilies = <String>[
   'DM Sans',
 ];
 
-/// Background swatches shown in the customization sidebar.
-///
-/// Token swatches resolve through the active [HeroTheme]; the last two are
-/// fixed white/black for decks targeting a known display environment.
-final playgroundBackgroundSwatches = <PlaygroundSwatch>[
-  PlaygroundSwatch(label: 'Background', color: $background()),
-  PlaygroundSwatch(label: 'Surface', color: $surface()),
-  PlaygroundSwatch(label: 'Muted', color: $muted()),
-  PlaygroundSwatch(label: 'Accent', color: $accent()),
-  const PlaygroundSwatch(label: 'White', color: Color(0xFFFFFFFF)),
-  const PlaygroundSwatch(label: 'Black', color: Color(0xFF000000)),
-];
-
-/// Text swatches mirror background swatches; the default heading color uses
-/// `$foreground` so headings remain legible on the seeded background.
-final playgroundTextSwatches = <PlaygroundSwatch>[
-  PlaygroundSwatch(label: 'Foreground', color: $foreground()),
-  PlaygroundSwatch(label: 'Muted', color: $muted()),
-  PlaygroundSwatch(label: 'Accent', color: $accent()),
-  PlaygroundSwatch(label: 'Surface', color: $surface()),
-  const PlaygroundSwatch(label: 'White', color: Color(0xFFFFFFFF)),
-  const PlaygroundSwatch(label: 'Black', color: Color(0xFF000000)),
-];
-
-@immutable
-class PlaygroundSwatch {
-  const PlaygroundSwatch({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-}
-
 /// Per-heading typography state. Each [TextLevel] owns four independent
 /// signals; the store derives a [TextStyler] from them on every change.
 class TextLevelSignals {

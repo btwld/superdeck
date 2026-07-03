@@ -40,3 +40,19 @@ ColorParseResult parseHexColor(String hex) {
 /// Convenience wrapper that returns only the color.
 /// Use [parseHexColor] if you need to check validity.
 Color hexToColor(String hex) => parseHexColor(hex).color;
+
+/// Formats [color] as an opaque, uppercase `#RRGGBB` hex string.
+///
+/// Alpha is intentionally dropped — the playground's color controls are
+/// opaque-only. The result round-trips through [parseHexColor].
+///
+/// ```dart
+/// colorToHex(const Color(0xFF0485F7)) // '#0485F7'
+/// colorToHex(const Color(0x800485F7)) // '#0485F7' (alpha dropped)
+/// ```
+String colorToHex(Color color) {
+  String channel(double value) =>
+      (value * 255).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
+  return '#${channel(color.r)}${channel(color.g)}${channel(color.b)}'
+      .toUpperCase();
+}
