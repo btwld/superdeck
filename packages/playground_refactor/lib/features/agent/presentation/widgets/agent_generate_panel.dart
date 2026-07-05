@@ -80,31 +80,36 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
               hintText:
                   'Describe your presentation — topic, audience, tone, length…',
             ),
-            ListenableBuilder(
-              listenable: widget.command,
-              builder: (context, _) {
-                final command = widget.command;
-                if (command.running) {
-                  return _ProgressRow(label: command.phase.label);
-                }
-                final result = command.result;
-                if (result is Failure) {
-                  return _ErrorRow(message: result.error.toString());
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-            ListenableBuilder(
-              listenable: widget.command,
-              builder: (context, _) {
-                final generating = widget.command.running;
-                return HeroButton(
-                  label: 'Generate',
-                  iconLeft: CupertinoIcons.sparkles,
-                  onPressed: generating ? null : _generate,
-                  loading: generating,
-                );
-              },
+            RowBox(
+              style: FlexBoxStyler().mainAxisAlignment(.spaceBetween),
+              children: [
+                ListenableBuilder(
+                  listenable: widget.command,
+                  builder: (context, _) {
+                    final command = widget.command;
+                    if (command.running) {
+                      return _ProgressRow(label: command.phase.label);
+                    }
+                    final result = command.result;
+                    if (result is Failure) {
+                      return _ErrorRow(message: result.error.toString());
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                ListenableBuilder(
+                  listenable: widget.command,
+                  builder: (context, _) {
+                    final generating = widget.command.running;
+                    return HeroButton(
+                      label: 'Generate',
+                      iconLeft: CupertinoIcons.sparkles,
+                      onPressed: generating ? null : _generate,
+                      loading: generating,
+                    );
+                  },
+                ),
+              ],
             ),
           ],
         ),
