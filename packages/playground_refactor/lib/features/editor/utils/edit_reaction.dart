@@ -1,5 +1,7 @@
 import 'package:super_editor/super_editor.dart';
 
+import 'slide_navigation.dart';
+
 const separatorAttribution = NamedAttribution('separator');
 const headerAttribution = NamedAttribution('header');
 const blockAttribution = NamedAttribution('block');
@@ -65,7 +67,7 @@ class SeparatorColorReaction extends TextNodeAttributionReaction {
   Set<Attribution> get attributions => {separatorAttribution};
 
   @override
-  bool matches(String text) => text.trim() == '---';
+  bool matches(String text) => isSlideSeparator(text);
 }
 
 final _headerPattern = RegExp(r'^#{1,6} ');
@@ -186,7 +188,9 @@ class BlockHighlightReaction extends EditReaction {
       final value = kv.group(2)!;
       if (value.isEmpty) continue;
       final valueStart =
-          innerStart + kv.start + kv.group(0)!.indexOf(value, kv.group(1)!.length);
+          innerStart +
+          kv.start +
+          kv.group(0)!.indexOf(value, kv.group(1)!.length);
       _addAttribution(
         nodeId,
         valueStart,

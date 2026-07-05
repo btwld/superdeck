@@ -3,16 +3,13 @@ part of 'deck_generator_service.dart';
 void _logPipelineConfig(
   DeckGeneratorService owner, {
   required String prompt,
-  required String? imageStyleId,
-  required String? backgroundColor,
 }) {
   debugLog.section('Deck Generation Pipeline');
   debugLog.log(
     'DECK_GEN',
     'Config: outlineModel=${owner.outlineModelName}, '
         'deckModel=${owner.modelName}, '
-        'thinkingBudget=${owner.thinkingBudget}, '
-        'imageStyle=$imageStyleId, bgColor=$backgroundColor',
+        'thinkingBudget=${owner.thinkingBudget}',
   );
   debugLog.log('DECK_GEN', 'Prompt (${prompt.length} chars):\n$prompt');
 }
@@ -24,7 +21,7 @@ Future<Map<String, dynamic>?> _runOutlinePhase(
   required GenerationProgressCallback? onProgress,
 }) async {
   debugLog.section('Phase 1: Generate Outline');
-  onProgress?.call(GenerationPhase.generatingOutline, null);
+  onProgress?.call(GenerationPhase.generatingOutline);
   final outlineStart = DateTime.now();
   final outline = await owner._generateOutline(service, prompt);
   final outlineMs = DateTime.now().difference(outlineStart).inMilliseconds;
@@ -46,125 +43,23 @@ Future<Map<String, dynamic>?> _runOutlinePhase(
   return outline;
 }
 
-Future<_ImagePhaseData> _runImagePhase(
-  DeckGeneratorService owner, {
-  required Map<String, dynamic> outline,
-  required String? imageStyleId,
-  required String? backgroundColor,
-  required GenerationProgressCallback? onProgress,
-  required bool Function()? isCancelled,
-}) async {
-  debugLog.section('Phase 2: Generate Images');
-  if (isCancelled?.call() ?? false) {
-    debugLog.log('DECK_GEN', 'Generation cancelled before image generation');
-    return const _ImagePhaseData(
-      availableImages: {},
-      imageFailures: null,
-      imageBytes: {},
-    );
-  }
-
-  final imageRequirements = owner._extractImageRequirements(outline);
-  debugLog.log(
-    'DECK_GEN',
-    'Extracted ${imageRequirements.length} image requirements: '
-        '${imageRequirements.map((r) => '${r.slideKey} → "${r.subject}"').join(', ')}',
-  );
-
-  final availableImages = <String, String>{};
-  Map<String, String>? imageFailures;
-
-  if (imageRequirements.isNotEmpty && imageStyleId != null) {
-    debugLog.log(
-      'DECK_GEN',
-      'Starting image generation: style=$imageStyleId, '
-          'aspectRatio='
-          '${geminiImageAspectRatioApiValue(GeminiImageAspectRatio.ratio3x4)} '
-          '(portrait), bgColor=$backgroundColor',
-    );
-    onProgress?.call(
-      GenerationPhase.generatingImages,
-      ImageGenerationProgress(completed: 0, total: imageRequirements.length),
-    );
-
-    final imageStart = DateTime.now();
-    final results = await owner._generateImagesFromRequirements(
-      imageRequirements,
-      imageStyleId,
-      backgroundColor: backgroundColor,
-      onProgress: (completed, failed) => onProgress?.call(
-        GenerationPhase.generatingImages,
-        ImageGenerationProgress(
-          completed: completed,
-          total: imageRequirements.length,
-          failed: failed,
-        ),
-      ),
-      isCancelled: isCancelled,
-    );
-    final imageMs = DateTime.now().difference(imageStart).inMilliseconds;
-
-    availableImages.addAll(results.successes);
-    if (results.failures.isNotEmpty) {
-      imageFailures = results.failures;
-    }
-    debugLog.log(
-      'DECK_GEN',
-      'Phase 2 COMPLETE in ${imageMs}ms - '
-          '${results.successes.length} succeeded, '
-          '${results.failures.length} failed',
-    );
-    for (final entry in results.successes.entries) {
-      debugLog.log('DECK_GEN', '  OK: ${entry.key} → ${entry.value}');
-    }
-    for (final entry in results.failures.entries) {
-      debugLog.log('DECK_GEN', '  FAIL: ${entry.key} → ${entry.value}');
-    }
-    return _ImagePhaseData(
-      availableImages: availableImages,
-      imageFailures: imageFailures,
-      imageBytes: results.bytes,
-    );
-  } else {
-    debugLog.log(
-      'DECK_GEN',
-      'Skipping image generation: '
-          'requirements=${imageRequirements.length}, '
-          'imageStyleId=$imageStyleId',
-    );
-  }
-
-  return const _ImagePhaseData(
-    availableImages: {},
-    imageFailures: null,
-    imageBytes: {},
-  );
-}
-
 Future<Map<String, dynamic>?> _runFinalDeckPhase(
   DeckGeneratorService owner, {
   required google_ai.GenerativeService service,
   required String prompt,
   required Map<String, dynamic> outline,
-  required Map<String, String> availableImages,
   required GenerationProgressCallback? onProgress,
 }) async {
-  debugLog.section('Phase 3: Generate Final Deck');
-  debugLog.log('DECK_GEN', 'Available images for final deck: $availableImages');
-  onProgress?.call(GenerationPhase.generatingFinalDeck, null);
+  debugLog.section('Phase 2: Generate Final Deck');
+  onProgress?.call(GenerationPhase.generatingFinalDeck);
   final deckStart = DateTime.now();
-  final deckJson = await owner._generateFinalDeck(
-    service,
-    prompt,
-    outline,
-    availableImages,
-  );
+  final deckJson = await owner._generateFinalDeck(service, prompt, outline);
   final deckMs = DateTime.now().difference(deckStart).inMilliseconds;
 
   if (deckJson == null) {
     debugLog.error(
       'DECK_GEN',
-      'Phase 3 FAILED after ${deckMs}ms - no deck JSON returned',
+      'Phase 2 FAILED after ${deckMs}ms - no deck JSON returned',
     );
     return null;
   }
@@ -172,7 +67,7 @@ Future<Map<String, dynamic>?> _runFinalDeckPhase(
   final deckSlides = (deckJson['slides'] as List?)?.length ?? 0;
   debugLog.log(
     'DECK_GEN',
-    'Phase 3 COMPLETE in ${deckMs}ms - $deckSlides raw slides',
+    'Phase 2 COMPLETE in ${deckMs}ms - $deckSlides raw slides',
   );
   return deckJson;
 }
@@ -181,15 +76,12 @@ Future<DeckGenerationResult> _finalizeDeck(
   DeckGeneratorService owner, {
   required Map<String, dynamic> deckJson,
   required int expectedSlideCount,
-  required Map<String, String> availableImages,
-  required Map<String, Uint8List> imageBytes,
-  required Map<String, String>? imageFailures,
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,
   required bool Function()? isCancelled,
 }) async {
   debugLog.section('Finalize');
-  onProgress?.call(GenerationPhase.finalizing, null);
+  onProgress?.call(GenerationPhase.finalizing);
 
   final slides = _extractSlidesWithKeys(deckJson);
 
@@ -229,17 +121,10 @@ Future<DeckGenerationResult> _finalizeDeck(
   final totalMs = DateTime.now().difference(pipelineStart).inMilliseconds;
   debugLog.log(
     'DECK_GEN',
-    'Pipeline COMPLETE in ${totalMs}ms - '
-        '${sanitizedSlides.length} slides, '
-        '${availableImages.length} images',
+    'Pipeline COMPLETE in ${totalMs}ms - ${sanitizedSlides.length} slides',
   );
 
-  return DeckGenerationResult.success(
-    slides: parsedSlides,
-    images: imageBytes,
-    style: styleData,
-    imageFailures: imageFailures,
-  );
+  return DeckGenerationResult.success(slides: parsedSlides, style: styleData);
 }
 
 bool _generationCancelled(bool Function()? isCancelled) =>

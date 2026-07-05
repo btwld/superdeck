@@ -1,8 +1,5 @@
 part of 'deck_generator_service.dart';
 
-const _maxGeneratedImagesPerDeck = 1;
-const _imageGenerationBatchSize = 1;
-
 extension _DeckGeneratorPipeline on DeckGeneratorService {
   // ===========================================================================
   // PHASE 1: Generate Outline
@@ -68,171 +65,14 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   }
 
   // ===========================================================================
-  // PHASE 2: Generate Images
+  // PHASE 2: Generate Final Deck
   // ===========================================================================
 
-  /// Extracts image requirements from the outline.
-  List<_ImageRequirement> _extractImageRequirements(
-    Map<String, dynamic> outline,
-  ) {
-    final requirements = <_ImageRequirement>[];
-    final slides = outline['slides'] as List?;
-    if (slides == null) return requirements;
-
-    for (final slide in slides) {
-      if (slide is! Map) continue;
-
-      final key = slide['key']?.toString();
-      if (key == null || key.isEmpty) continue;
-
-      final imageReq = slide['imageRequirement'] as Map?;
-      if (imageReq == null) continue;
-
-      final subject = imageReq['subject']?.toString();
-      if (subject == null || subject.isEmpty) continue;
-
-      requirements.add(_ImageRequirement(slideKey: key, subject: subject));
-    }
-
-    // Keep the free-tier path cheap: one image request per deck generation.
-    if (requirements.length > _maxGeneratedImagesPerDeck) {
-      return requirements.take(_maxGeneratedImagesPerDeck).toList();
-    }
-
-    return requirements;
-  }
-
-  /// Generates images from outline requirements in parallel batches.
-  Future<_ImageGenerationResults> _generateImagesFromRequirements(
-    List<_ImageRequirement> requirements,
-    String imageStyleId, {
-    String? backgroundColor,
-    void Function(int completed, int failed)? onProgress,
-    bool Function()? isCancelled,
-  }) async {
-    final style = ImageStyle.fromId(imageStyleId);
-    debugLog.log(
-      'IMG',
-      'Image style: ${style?.name ?? 'none'} (id=$imageStyleId)',
-    );
-    final successes = <String, String>{};
-    final failures = <String, String>{};
-    final bytes = <String, Uint8List>{};
-    var completed = 0;
-    var failed = 0;
-
-    // Portrait ratio for images displayed in their own column
-    final imageService = ImageGeneratorService(
-      apiKey: apiKey,
-      aspectRatio: GeminiImageAspectRatio.ratio3x4,
-    );
-    debugLog.log(
-      'IMG',
-      'ImageService: aspectRatio='
-          '${geminiImageAspectRatioApiValue(GeminiImageAspectRatio.ratio3x4)} '
-          '(portrait)',
-    );
-
-    try {
-      for (var i = 0; i < requirements.length; i += _imageGenerationBatchSize) {
-        if (isCancelled?.call() ?? false) {
-          debugLog.log('IMG', 'Image generation cancelled before next batch');
-          break;
-        }
-
-        final batch = requirements
-            .skip(i)
-            .take(_imageGenerationBatchSize)
-            .toList();
-        debugLog.log(
-          'IMG',
-          'Processing image batch ${i ~/ _imageGenerationBatchSize + 1}: '
-              '${batch.map((r) => r.slideKey).join(', ')}',
-        );
-
-        await Future.wait(
-          batch.map((req) async {
-            final safeKey = _fileSafeKey(
-              req.slideKey,
-              requirements.indexOf(req),
-            );
-            final filename = 'slide-$safeKey-illustration.png';
-
-            try {
-              // Build prompt with style (if present) and always wrap with
-              // ImageGeneratorService.buildPrompt for presentation constraints
-              final basePrompt = style != null
-                  ? style.buildPrompt(req.subject)
-                  : req.subject;
-              final prompt = ImageGeneratorService.buildPrompt(
-                basePrompt,
-                backgroundColor: backgroundColor,
-              );
-              debugLog.log(
-                'IMG',
-                '[${req.slideKey}] Generating with prompt '
-                    '(${prompt.length} chars):\n$prompt',
-              );
-
-              final imgStart = DateTime.now();
-              final result = await imageService.generateImage(prompt);
-              final imgMs = DateTime.now().difference(imgStart).inMilliseconds;
-
-              if (result.success && result.bytes != null) {
-                final imgBytes = result.bytes as Uint8List;
-                // Store bytes in-memory keyed by bare filename.
-                bytes[filename] = imgBytes;
-                // Map slide key -> bare filename for Phase 3 prompt.
-                successes[req.slideKey] = filename;
-                completed++;
-                debugLog.log(
-                  'IMG',
-                  '[${req.slideKey}] OK in ${imgMs}ms - '
-                      '${imgBytes.length} bytes (in-memory)',
-                );
-              } else {
-                failures[req.slideKey] = result.error ?? 'Unknown error';
-                failed++;
-                debugLog.log(
-                  'IMG',
-                  '[${req.slideKey}] FAILED in ${imgMs}ms: ${result.error}',
-                );
-              }
-            } catch (e, stack) {
-              failures[req.slideKey] = e.toString();
-              failed++;
-              debugLog.error(
-                'IMG',
-                '[${req.slideKey}] EXCEPTION: ${e.runtimeType}',
-                stack,
-              );
-            }
-
-            onProgress?.call(completed, failed);
-          }),
-        );
-      }
-    } finally {
-      imageService.dispose();
-    }
-
-    return _ImageGenerationResults(
-      successes: successes,
-      failures: failures,
-      bytes: bytes,
-    );
-  }
-
-  // ===========================================================================
-  // PHASE 3: Generate Final Deck
-  // ===========================================================================
-
-  /// Generates the final deck with available images context.
+  /// Generates the final deck from the outline.
   Future<Map<String, dynamic>?> _generateFinalDeck(
     google_ai.GenerativeService service,
     String prompt,
     Map<String, dynamic> outline,
-    Map<String, String> availableImages,
   ) async {
     final adapter = GoogleSchemaAdapter();
     final adaptResult = adapter.adapt(
@@ -247,7 +87,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       return null;
     }
 
-    final systemPrompt = _buildFinalDeckPrompt(outline, availableImages);
+    final systemPrompt = _buildFinalDeckPrompt(outline);
     debugLog.log(
       'DECK_GEN',
       'Final deck system prompt (${systemPrompt.length} chars)',
@@ -296,17 +136,11 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     return _parseJsonResponse(response, 'deck');
   }
 
-  /// Builds the system prompt for Phase 3 with outline and available images.
-  String _buildFinalDeckPrompt(
-    Map<String, dynamic> outline,
-    Map<String, String> availableImages,
-  ) {
+  /// Builds the system prompt for the final deck phase from the outline.
+  String _buildFinalDeckPrompt(Map<String, dynamic> outline) {
     final basePrompt = PromptRegistry.instance.render(
       'deck_system',
-      input: {
-        'examples': ExamplesLoader.instance.formatForPrompt(),
-        'availableImages': buildAvailableImagesContext(availableImages),
-      },
+      input: {'examples': ExamplesLoader.instance.formatForPrompt()},
     );
     final fieldGuidance = getSlideGenerationGuidance();
     final outlineContext = _formatOutlineForPrompt(outline);
@@ -338,10 +172,6 @@ $outlineContext
       buffer.writeln('- **${slide['key']}**: ${slide['title']}');
       buffer.writeln('  Layout: ${slide['layoutHint']}');
       buffer.writeln('  Purpose: ${slide['purpose']}');
-      if (slide['imageRequirement'] != null) {
-        final subject = (slide['imageRequirement'] as Map)['subject'];
-        buffer.writeln('  Image: $subject');
-      }
       buffer.writeln('');
     }
 

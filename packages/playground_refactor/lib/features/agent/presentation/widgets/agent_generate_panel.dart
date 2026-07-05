@@ -85,10 +85,7 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
               builder: (context, _) {
                 final command = widget.command;
                 if (command.running) {
-                  return _ProgressRow(
-                    label: command.phase.label,
-                    imageProgress: command.imageProgress,
-                  );
+                  return _ProgressRow(label: command.phase.label);
                 }
                 final result = command.result;
                 if (result is Failure) {
@@ -145,23 +142,18 @@ class _Header extends StatelessWidget {
 }
 
 class _ProgressRow extends StatelessWidget {
-  const _ProgressRow({required this.label, this.imageProgress});
+  const _ProgressRow({required this.label});
 
   final String label;
-  final ImageGenerationProgress? imageProgress;
 
   @override
   Widget build(BuildContext context) {
-    final progress = imageProgress;
-    final suffix = progress != null
-        ? ' (${progress.completed}/${progress.total})'
-        : '';
     return RowBox(
       style: FlexBoxStyler().spacing(12),
       children: [
         const CupertinoActivityIndicator(),
         StyledText(
-          '$label$suffix',
+          label,
           style: TextStyler().color($muted()).style($labelSmall.mix()),
         ),
       ],

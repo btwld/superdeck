@@ -21,7 +21,7 @@ const playgroundFontFamilies = <String>[
   'DM Sans',
 ];
 
-enum TextLevel { h1, h2, h3, p }
+enum TextLevel { h1, h2, h3, h4, h5, h6, p }
 
 /// Mutable per-heading typography state for one [TextLevel].
 class TextLevelStyle {
@@ -68,6 +68,24 @@ class DeckCustomizationStore extends ChangeNotifier {
       TextLevel.h3: TextLevelStyle(
         color: foreground,
         size: 24,
+        weight: 600,
+        family: 'Inter',
+      ),
+      TextLevel.h4: TextLevelStyle(
+        color: foreground,
+        size: 20,
+        weight: 600,
+        family: 'Inter',
+      ),
+      TextLevel.h5: TextLevelStyle(
+        color: foreground,
+        size: 18,
+        weight: 600,
+        family: 'Inter',
+      ),
+      TextLevel.h6: TextLevelStyle(
+        color: foreground,
+        size: 16,
         weight: 600,
         family: 'Inter',
       ),
@@ -138,11 +156,16 @@ class DeckCustomizationStore extends ChangeNotifier {
         h1: _stylerFor(TextLevel.h1),
         h2: _stylerFor(TextLevel.h2),
         h3: _stylerFor(TextLevel.h3),
+        h4: _stylerFor(TextLevel.h4),
+        h5: _stylerFor(TextLevel.h5),
+        h6: _stylerFor(TextLevel.h6),
         p: _stylerFor(TextLevel.p),
+        list: .new(
+          bullet: _stylerFor(TextLevel.p),
+          text: _stylerFor(TextLevel.p),
+        ),
       ),
-      parts: SlideParts(
-        background: Box(style: BoxStyler().color(_background)),
-      ),
+      parts: SlideParts(background: Box(style: BoxStyler().color(_background))),
     );
   }
 

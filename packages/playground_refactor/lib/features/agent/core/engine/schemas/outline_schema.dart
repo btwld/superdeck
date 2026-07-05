@@ -5,26 +5,9 @@ import 'package:ack/ack.dart';
 /// The outline is a lightweight structure that captures:
 /// - Slide topics and purposes
 /// - Layout hints for variety
-/// - Image requirements for slides that benefit from visuals
 ///
-/// This is generated first, before images, so the AI can plan
-/// what images are needed without knowing the full deck structure.
-
-// ============================================================================
-// IMAGE REQUIREMENT SCHEMA
-// ============================================================================
-
-/// Schema for image requirement in the outline.
-///
-/// Simple structure with just the subject description.
-/// The visual style treatment is applied from the user's ImageStyle selection.
-final imageRequirementSchema = Ack.object({
-  'subject': Ack.string().describe(
-    'Descriptive subject for illustration that enhances the slide content '
-    '(e.g., "team collaborating around whiteboard", "rocket launching into space", '
-    '"colorful data visualization dashboard")',
-  ),
-}).describe('Image needed for this slide');
+/// This is generated first so the AI can plan the deck structure before
+/// writing the full slide content.
 
 // ============================================================================
 // SLIDE OUTLINE SCHEMA
@@ -47,7 +30,6 @@ const _layoutHintValues = [
 /// - title: Working title (may be refined in final deck)
 /// - purpose: What the slide will communicate
 /// - layoutHint: Suggested layout type for variety
-/// - imageRequirement: Optional image specification
 final outlineSlideSchema = Ack.object({
   'key': Ack.string().describe(
     'Unique identifier for this slide (e.g., "intro", "slide-1", "conclusion")',
@@ -61,9 +43,6 @@ final outlineSlideSchema = Ack.object({
   'layoutHint': Ack.enumString(
     _layoutHintValues,
   ).describe('Suggested layout type for this slide'),
-  'imageRequirement': imageRequirementSchema.optional().describe(
-    'Image needed for this slide, if visual would enhance the content',
-  ),
 }).describe('A single slide in the presentation outline');
 
 // ============================================================================
@@ -79,4 +58,4 @@ final outlineSchema = Ack.object({
   'slides': Ack.list(
     outlineSlideSchema,
   ).describe('Ordered list of slides in the presentation'),
-}).describe('Presentation outline with structure and image requirements');
+}).describe('Presentation outline with structure');

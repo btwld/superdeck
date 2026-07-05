@@ -13,7 +13,6 @@ Each slide should have:
 - `title`: Working title (will be refined in final generation)
 - `purpose`: What this slide will communicate (1-2 sentences)
 - `layoutHint`: Suggested layout type
-- `imageRequirement`: Optional - only if an image would enhance this slide
 
 ## Layout Hints
 
@@ -24,26 +23,12 @@ Each slide should have:
 - `quote`: Key takeaway or memorable statement
 - `title-left`: Feature highlight with title on left
 
-## Image Requirements
-
-Include `imageRequirement` for **at most 1 slide**. Pick the single most
-impactful slide for imagery, usually the title or closing slide.
-
-Skip images for all other slides (comparisons, data, quotes, minimalist content).
-
-Be specific in subject descriptions:
-- Good: "team of diverse professionals brainstorming at whiteboard"
-- Bad: "teamwork"
-- Good: "colorful bar chart showing growth trend"
-- Bad: "chart"
-
 ## Guidelines
 
 1. Match the requested slide count exactly
 2. One clear idea per slide
 3. Vary layout hints - don't repeat the same layout consecutively
-4. Include imageRequirement on no more than 1 slide (the most visually impactful one)
-5. Use descriptive kebab-case keys that reflect slide purpose
+4. Use descriptive kebab-case keys that reflect slide purpose
 
 ## Example Output
 
@@ -55,10 +40,7 @@ Be specific in subject descriptions:
       "key": "intro",
       "title": "The AI Revolution",
       "purpose": "Set the stage with an impactful opening about how ML is transforming industries",
-      "layoutHint": "title",
-      "imageRequirement": \{
-        "subject": "futuristic neural network visualization with glowing connections"
-      }
+      "layoutHint": "title"
     },
     \{
       "key": "what-is-ml",

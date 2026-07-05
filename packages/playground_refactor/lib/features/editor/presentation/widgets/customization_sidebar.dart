@@ -6,8 +6,11 @@ import 'package:provider/provider.dart';
 import 'package:remix/remix.dart';
 
 import '../../../../core/domain/stores/deck_customization_store.dart';
+import '../../../agent/domain/commands/generate_deck_command.dart';
+import '../../../agent/presentation/widgets/agent_generate_panel.dart';
 import '../../domain/stores/editor_store.dart';
 import 'color_control.dart';
+import 'committed_text_field.dart';
 import 'labels.dart';
 
 class CustomizationSidebar extends StatefulWidget {
@@ -76,6 +79,21 @@ class _CustomizationSidebarState extends State<CustomizationSidebar> {
                         _LevelAccordion(
                           level: TextLevel.h3,
                           title: 'Heading 3',
+                        ),
+                        HeroDivider(),
+                        _LevelAccordion(
+                          level: TextLevel.h4,
+                          title: 'Heading 4',
+                        ),
+                        HeroDivider(),
+                        _LevelAccordion(
+                          level: TextLevel.h5,
+                          title: 'Heading 5',
+                        ),
+                        HeroDivider(),
+                        _LevelAccordion(
+                          level: TextLevel.h6,
+                          title: 'Heading 6',
                         ),
                         HeroDivider(),
                         _LevelAccordion(level: TextLevel.p, title: 'Paragraph'),
@@ -162,82 +180,38 @@ class _LevelControls extends StatelessWidget {
   }
 }
 
-class _FontSizeField extends StatefulWidget {
+class _FontSizeField extends StatelessWidget {
   const _FontSizeField({required this.level});
 
-  final TextLevel level;
-
-  @override
-  State<_FontSizeField> createState() => _FontSizeFieldState();
-}
-
-class _FontSizeFieldState extends State<_FontSizeField> {
   static const _minSize = 8;
   static const _maxSize = 128;
 
-  late final DeckCustomizationStore _store;
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
+  final TextLevel level;
 
-  @override
-  void initState() {
-    super.initState();
-    _store = context.read<DeckCustomizationStore>();
-    _controller = TextEditingController(
-      text: _store.level(widget.level).size.toInt().toString(),
-    );
-    _focusNode = FocusNode();
-    _focusNode.addListener(_handleFocusChange);
-    // Pull external mutations (e.g. reset/snapshot) into the field.
-    _store.addListener(_syncFromStore);
-  }
+  static String _format(double size) => size.toInt().toString();
 
-  @override
-  void dispose() {
-    _store.removeListener(_syncFromStore);
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _syncFromStore() {
-    if (_focusNode.hasFocus) return;
-    final expected = _store.level(widget.level).size.toInt().toString();
-    if (_controller.text != expected) _controller.text = expected;
-  }
-
-  void _handleFocusChange() {
-    if (!_focusNode.hasFocus) _commit();
-  }
-
-  /// Parses the field, clamps to [_minSize, _maxSize], and either writes to the
-  /// store or rewrites the field with the last known good value.
-  void _commit() {
-    final current = _store.level(widget.level).size;
-    final parsed = int.tryParse(_controller.text.trim());
-    if (parsed == null) {
-      _controller.text = current.toInt().toString();
-      return;
-    }
-    final clamped = parsed.clamp(_minSize, _maxSize);
-    _store.setSize(widget.level, clamped.toDouble());
-    _controller.text = clamped.toString();
+  /// Parses the field and clamps to [_minSize, _maxSize], or null to reject.
+  static double? _parse(String text) {
+    final parsed = int.tryParse(text.trim());
+    if (parsed == null) return null;
+    return parsed.clamp(_minSize, _maxSize).toDouble();
   }
 
   @override
   Widget build(BuildContext context) {
+    final store = context.watch<DeckCustomizationStore>();
+
     return ColumnBox(
       style: FlexBoxStyler().spacing(4).crossAxisAlignment(.start),
       children: [
         const ControlLabel('Size'),
-        HeroTextField(
-          fullWidth: true,
-          controller: _controller,
-          focusNode: _focusNode,
+        CommittedTextField<double>(
+          value: store.level(level).size,
+          format: _format,
+          parse: _parse,
+          onChanged: (size) => store.setSize(level, size),
           keyboardType: const TextInputType.numberWithOptions(decimal: false),
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onSubmitted: (_) => _commit(),
         ),
       ],
     );
@@ -324,8 +298,18 @@ class _Toolbar extends StatelessWidget {
       style: FlexBoxStyler().spacing(8),
       children: [
         const Spacer(),
-        // TODO(ai): re-introduce AI entry points (generate panel, deck-edit,
-        // wizard) once the AI feature is ported.
+        // TODO(ai): re-introduce the remaining AI entry points (deck-edit,
+        // wizard) once those features are ported.
+        SizedBox(
+          width: 48,
+          child: HeroIconButton(
+            size: .lg,
+            variant: .secondary,
+            icon: CupertinoIcons.sparkles,
+            onPressed: () =>
+                showAgentGeneratePanel(context, context.read<GenerateDeckCommand>()),
+          ),
+        ),
         SizedBox(
           width: 48,
           child: HeroIconButton(

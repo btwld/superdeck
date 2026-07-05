@@ -141,7 +141,7 @@ final slideOptionsSchema = _slideOptionsSchema;
 /// Schema for a single slide.
 ///
 /// Each slide contains a unique key, optional metadata, and a vertical stack
-/// of sections. Images are handled separately via the outline phase.
+/// of sections.
 @AckType(name: 'Slide')
 final slideSchema = Ack.object({
   'key': Ack.string().describe('Unique slide identifier using kebab-case'),
@@ -221,38 +221,4 @@ Position content based on its role:
 - Body content and bullets: "topLeft"
 - Captions and attributions: "bottomRight" or "bottomCenter"
 ''';
-}
-
-// ============================================================================
-// AVAILABLE IMAGES CONTEXT
-// ============================================================================
-
-/// Builds the available images context for Phase 3 prompt injection.
-///
-/// This creates a human-readable list of available images that the AI
-/// can reference when generating the final deck structure. The AI will
-/// use this to decide where to place images in slide content.
-///
-/// Example output:
-/// ```
-/// Available images for your slides:
-/// - intro: .superdeck/assets/slide-intro-illustration.png
-/// - slide-1: .superdeck/assets/slide-slide-1-illustration.png
-///
-/// Include these paths in slide content as markdown images where appropriate.
-/// ```
-String buildAvailableImagesContext(Map<String, String> availableImages) {
-  if (availableImages.isEmpty) {
-    return 'No images were generated for this presentation.';
-  }
-
-  final buffer = StringBuffer('Available images for your slides:\n');
-  for (final entry in availableImages.entries) {
-    buffer.writeln('- ${entry.key}: ${entry.value}');
-  }
-  buffer.writeln(
-    '\nInclude these paths in slide content as markdown images '
-    '(e.g., `![description](path)`) where they enhance the slide.',
-  );
-  return buffer.toString();
 }
