@@ -8,13 +8,31 @@ import 'package:flutter/foundation.dart';
 /// tap) by scrolling the caret to that slide.
 class EditorStore extends ChangeNotifier {
   int _activeSlideIndex = 0;
+  bool _showPreviewSidebar = true;
+  bool _showCustomizationSidebar = true;
 
   /// The 0-based slide the caret currently sits in.
   int get activeSlideIndex => _activeSlideIndex;
 
+  /// Whether the left preview sidebar is showing.
+  bool get showPreviewSidebar => _showPreviewSidebar;
+
+  /// Whether the right customization sidebar is showing.
+  bool get showCustomizationSidebar => _showCustomizationSidebar;
+
   set activeSlideIndex(int value) {
     if (_activeSlideIndex == value) return;
     _activeSlideIndex = value;
+    notifyListeners();
+  }
+
+  void togglePreviewSidebar() {
+    _showPreviewSidebar = !_showPreviewSidebar;
+    notifyListeners();
+  }
+
+  void toggleCustomizationSidebar() {
+    _showCustomizationSidebar = !_showCustomizationSidebar;
     notifyListeners();
   }
 }
