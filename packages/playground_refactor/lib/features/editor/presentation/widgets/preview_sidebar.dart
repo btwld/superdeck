@@ -12,10 +12,14 @@ class PreviewSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = context.select<EditorStore, double>(
+      (store) => store.previewSidebarWidth,
+    );
+
     return HeroMode(
       enabled: false,
       child: StackBox(
-        style: StackBoxStyler().width(218).marginAll(16),
+        style: StackBoxStyler().width(width).marginAll(16),
         children: [
           ColumnBox(
             style: FlexBoxStyler().spacing(24),

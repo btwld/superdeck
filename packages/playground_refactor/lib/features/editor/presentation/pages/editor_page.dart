@@ -20,34 +20,46 @@ class EditorPage extends StatelessWidget {
       backgroundColor: $background.resolve(context),
       body: Box(
         style: BoxStyler().color($background()),
-        child: Stack(
+        child: RowBox(
           children: [
-            RowBox(
-              children: [
-                _AnimatedSidebar(
-                  visible: store.showPreviewSidebar,
-                  alignment: Alignment.centerLeft,
-                  child: const PreviewSidebar(),
-                ),
-                const Expanded(child: TextEditor()),
-                _AnimatedSidebar(
-                  visible: store.showCustomizationSidebar,
-                  alignment: Alignment.centerRight,
-                  child: const CustomizationSidebar(),
-                ),
-              ],
+            _AnimatedSidebar(
+              visible: store.showPreviewSidebar,
+              alignment: Alignment.centerLeft,
+              child: const PreviewSidebar(),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: EditorControls(
-                  showPreviewSidebar: store.showPreviewSidebar,
-                  showCustomizationSidebar: store.showCustomizationSidebar,
-                  onTogglePreviewSidebar: store.togglePreviewSidebar,
-                  onToggleCustomizationSidebar: store.toggleCustomizationSidebar,
-                ),
+            if (store.showPreviewSidebar)
+              _SidebarResizeHandle(
+                onDrag: (delta) => store.previewSidebarWidth += delta,
               ),
+            Expanded(
+              child: Stack(
+                children: [
+                  TextEditor(),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: EditorControls(
+                        showPreviewSidebar: store.showPreviewSidebar,
+                        showCustomizationSidebar:
+                            store.showCustomizationSidebar,
+                        onTogglePreviewSidebar: store.togglePreviewSidebar,
+                        onToggleCustomizationSidebar:
+                            store.toggleCustomizationSidebar,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (store.showCustomizationSidebar)
+              _SidebarResizeHandle(
+                onDrag: (delta) => store.customizationSidebarWidth -= delta,
+              ),
+            _AnimatedSidebar(
+              visible: store.showCustomizationSidebar,
+              alignment: Alignment.centerRight,
+              child: const CustomizationSidebar(),
             ),
           ],
         ),
@@ -84,6 +96,52 @@ class _AnimatedSidebar extends StatelessWidget {
         duration: _duration,
         curve: _curve,
         child: child,
+      ),
+    );
+  }
+}
+
+/// A thin vertical grabber that reports horizontal drag deltas.
+///
+/// Sits between a sidebar and the editor. [onDrag] receives the pointer's
+/// horizontal movement in logical pixels (positive = rightward); callers map
+/// that onto their sidebar's width, so a left sidebar grows while a right one
+/// shrinks for the same rightward drag.
+class _SidebarResizeHandle extends StatefulWidget {
+  const _SidebarResizeHandle({required this.onDrag});
+
+  final ValueChanged<double> onDrag;
+
+  @override
+  State<_SidebarResizeHandle> createState() => _SidebarResizeHandleState();
+}
+
+class _SidebarResizeHandleState extends State<_SidebarResizeHandle> {
+  bool _active = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Bar highlights while dragging; hover lights it up too. The color change
+    // tweens via `.animate`, replacing the former AnimatedContainer.
+    final bar = BoxStyler()
+        .width(2)
+        .height(48)
+        .color(_active ? $accent() : $border())
+        .borderRadiusAll(.circular(1))
+        .animate(AnimationConfig.ease(const Duration(milliseconds: 120)));
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.resizeColumn,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragStart: (_) => setState(() => _active = true),
+        onHorizontalDragUpdate: (details) => widget.onDrag(details.delta.dx),
+        onHorizontalDragEnd: (_) => setState(() => _active = false),
+        onHorizontalDragCancel: () => setState(() => _active = false),
+        child: Box(
+          style: BoxStyler().width(8).alignment(Alignment.center),
+          child: Box(style: bar),
+        ),
       ),
     );
   }

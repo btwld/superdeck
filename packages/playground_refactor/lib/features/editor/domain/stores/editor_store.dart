@@ -7,9 +7,16 @@ import 'package:flutter/foundation.dart';
 /// the caret and reacts when it's set from outside the editor (e.g. a preview
 /// tap) by scrolling the caret to that slide.
 class EditorStore extends ChangeNotifier {
+  static const double minPreviewSidebarWidth = 160;
+  static const double maxPreviewSidebarWidth = 480;
+  static const double minCustomizationSidebarWidth = 240;
+  static const double maxCustomizationSidebarWidth = 560;
+
   int _activeSlideIndex = 0;
   bool _showPreviewSidebar = true;
   bool _showCustomizationSidebar = true;
+  double _previewSidebarWidth = 218;
+  double _customizationSidebarWidth = 280;
 
   /// The 0-based slide the caret currently sits in.
   int get activeSlideIndex => _activeSlideIndex;
@@ -20,9 +27,35 @@ class EditorStore extends ChangeNotifier {
   /// Whether the right customization sidebar is showing.
   bool get showCustomizationSidebar => _showCustomizationSidebar;
 
+  /// Width of the left preview sidebar's content, in logical pixels.
+  double get previewSidebarWidth => _previewSidebarWidth;
+
+  /// Width of the right customization sidebar's content, in logical pixels.
+  double get customizationSidebarWidth => _customizationSidebarWidth;
+
   set activeSlideIndex(int value) {
     if (_activeSlideIndex == value) return;
     _activeSlideIndex = value;
+    notifyListeners();
+  }
+
+  set previewSidebarWidth(double value) {
+    final clamped = value.clamp(
+      minPreviewSidebarWidth,
+      maxPreviewSidebarWidth,
+    );
+    if (_previewSidebarWidth == clamped) return;
+    _previewSidebarWidth = clamped;
+    notifyListeners();
+  }
+
+  set customizationSidebarWidth(double value) {
+    final clamped = value.clamp(
+      minCustomizationSidebarWidth,
+      maxCustomizationSidebarWidth,
+    );
+    if (_customizationSidebarWidth == clamped) return;
+    _customizationSidebarWidth = clamped;
     notifyListeners();
   }
 

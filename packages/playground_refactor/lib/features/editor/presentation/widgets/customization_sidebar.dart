@@ -8,6 +8,7 @@ import 'package:remix/remix.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../agent/domain/commands/generate_deck_command.dart';
 import '../../../agent/presentation/widgets/agent_generate_panel.dart';
+import '../../../agent/wizard/presentation/wizard_view.dart';
 import '../../domain/stores/editor_store.dart';
 import 'color_control.dart';
 import 'committed_text_field.dart';
@@ -38,8 +39,12 @@ class _CustomizationSidebarState extends State<CustomizationSidebar> {
 
   @override
   Widget build(BuildContext context) {
+    final width = context.select<EditorStore, double>(
+      (store) => store.customizationSidebarWidth,
+    );
+
     return Box(
-      style: BoxStyler().width(280).marginAll(16).clipBehavior(.none),
+      style: BoxStyler().width(width).marginAll(16).clipBehavior(.none),
       child: ColumnBox(
         style: FlexBoxStyler().crossAxisAlignment(.stretch).clipBehavior(.none),
         children: [
@@ -367,8 +372,6 @@ class _WizardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Wizard', style: TextStyle(color: $muted.resolve(context))),
-    );
+    return const WizardView();
   }
 }
