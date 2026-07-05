@@ -76,6 +76,8 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
               fullWidth: true,
               controller: _controller,
               focusNode: _focusNode,
+              minLines: 1,
+              maxLines: 10,
               style: RemixTextFieldStyle().backgroundColor($surfaceSecondary()),
               hintText:
                   'Describe your presentation — topic, audience, tone, length…',
