@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:remix/remix.dart';
 
 import '../../../../core/domain/stores/deck_customization_store.dart';
-import '../../../agent/domain/commands/generate_deck_command.dart';
-import '../../../agent/presentation/widgets/agent_generate_panel.dart';
-import '../../../agent/wizard/presentation/wizard_view.dart';
+import '../../../ai/quick_agent/domain/commands/generate_deck_command.dart';
+import '../../../ai/quick_agent/presentation/widgets/agent_generate_panel.dart';
+import '../../../ai/wizard/presentation/wizard_view.dart';
 import '../../domain/stores/editor_store.dart';
 import 'color_control.dart';
 import 'committed_text_field.dart';
@@ -23,7 +23,6 @@ class CustomizationSidebar extends StatefulWidget {
 
 class _CustomizationSidebarState extends State<CustomizationSidebar> {
   late final RemixAccordionController<TextLevel> _accordionController;
-  _SidebarTab _tab = _SidebarTab.editor;
 
   @override
   void initState() {
@@ -53,80 +52,86 @@ class _CustomizationSidebarState extends State<CustomizationSidebar> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: const HeroDivider(),
           ),
-          CupertinoSlidingSegmentedControl<_SidebarTab>(
-            groupValue: _tab,
-            onValueChanged: (value) {
-              if (value != null) setState(() => _tab = value);
-            },
-            children: const {
-              _SidebarTab.editor: _SegmentLabel('Editor'),
-              _SidebarTab.wizard: _SegmentLabel('Wizard'),
-            },
-          ),
-          const SizedBox(height: 16),
-          if (_tab == _SidebarTab.wizard)
-            const Expanded(child: _WizardTab())
-          else
-            Expanded(
-              child: SingleChildScrollView(
-                clipBehavior: Clip.none,
-                child: ColumnBox(
-                  style: FlexBoxStyler()
-                      .crossAxisAlignment(.stretch)
-                      .clipBehavior(.none),
-                  children: [
-                    const _BackgroundSection(),
-                    const SizedBox(height: 16),
-                    const HeroDivider(),
-                    const SizedBox(height: 16),
-                    RemixAccordionGroup<TextLevel>(
-                      controller: _accordionController,
-                      child: ColumnBox(
-                        style: FlexBoxStyler()
-                            .crossAxisAlignment(.stretch)
-                            .spacing(16),
-                        children: const [
-                          _LevelAccordion(
-                            level: TextLevel.h1,
-                            title: 'Heading 1',
+          Expanded(
+            child: HeroTabs(
+              initialId: _SidebarTab.editor.name,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  HeroTabBar(
+                    children: [
+                      HeroTab(label: 'Editor', tabId: _SidebarTab.editor.name),
+                      HeroTab(label: 'Wizard', tabId: _SidebarTab.wizard.name),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: HeroTabPanel(
+                            tabId: _SidebarTab.editor.name,
+                            child: _EditorTab(
+                              accordionController: _accordionController,
+                            ),
                           ),
-                          HeroDivider(),
-                          _LevelAccordion(
-                            level: TextLevel.h2,
-                            title: 'Heading 2',
+                        ),
+                        Positioned.fill(
+                          child: HeroTabPanel(
+                            tabId: _SidebarTab.wizard.name,
+                            child: const WizardView(),
                           ),
-                          HeroDivider(),
-                          _LevelAccordion(
-                            level: TextLevel.h3,
-                            title: 'Heading 3',
-                          ),
-                          HeroDivider(),
-                          _LevelAccordion(
-                            level: TextLevel.h4,
-                            title: 'Heading 4',
-                          ),
-                          HeroDivider(),
-                          _LevelAccordion(
-                            level: TextLevel.h5,
-                            title: 'Heading 5',
-                          ),
-                          HeroDivider(),
-                          _LevelAccordion(
-                            level: TextLevel.h6,
-                            title: 'Heading 6',
-                          ),
-                          HeroDivider(),
-                          _LevelAccordion(
-                            level: TextLevel.p,
-                            title: 'Paragraph',
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditorTab extends StatelessWidget {
+  const _EditorTab({required this.accordionController});
+
+  final RemixAccordionController<TextLevel> accordionController;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      clipBehavior: Clip.none,
+      child: ColumnBox(
+        style: FlexBoxStyler().crossAxisAlignment(.stretch).clipBehavior(.none),
+        children: [
+          const _BackgroundSection(),
+          const SizedBox(height: 16),
+          const HeroDivider(),
+          const SizedBox(height: 16),
+          RemixAccordionGroup<TextLevel>(
+            controller: accordionController,
+            child: ColumnBox(
+              style: FlexBoxStyler().crossAxisAlignment(.stretch).spacing(16),
+              children: const [
+                _LevelAccordion(level: TextLevel.h1, title: 'Heading 1'),
+                HeroDivider(),
+                _LevelAccordion(level: TextLevel.h2, title: 'Heading 2'),
+                HeroDivider(),
+                _LevelAccordion(level: TextLevel.h3, title: 'Heading 3'),
+                HeroDivider(),
+                _LevelAccordion(level: TextLevel.h4, title: 'Heading 4'),
+                HeroDivider(),
+                _LevelAccordion(level: TextLevel.h5, title: 'Heading 5'),
+                HeroDivider(),
+                _LevelAccordion(level: TextLevel.h6, title: 'Heading 6'),
+                HeroDivider(),
+                _LevelAccordion(level: TextLevel.p, title: 'Paragraph'),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -352,26 +357,3 @@ class _Toolbar extends StatelessWidget {
 
 /// The two views the customization sidebar can show.
 enum _SidebarTab { editor, wizard }
-
-class _SegmentLabel extends StatelessWidget {
-  const _SegmentLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Text(text),
-    );
-  }
-}
-
-class _WizardTab extends StatelessWidget {
-  const _WizardTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const WizardView();
-  }
-}

@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/data/data_sources/memory_deck_loader.dart';
-import '../../agent/domain/commands/generate_deck_command.dart';
+import '../../ai/quick_agent/domain/commands/generate_deck_command.dart';
 import '../domain/stores/editor_store.dart';
 import '../presentation/pages/editor_page.dart';
 import '../utils/text_editor_controller.dart';

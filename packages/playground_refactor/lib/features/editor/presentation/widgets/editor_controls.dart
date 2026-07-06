@@ -18,8 +18,8 @@ class EditorControls extends StatelessWidget {
 
   final bool showPreviewSidebar;
   final bool showCustomizationSidebar;
-  final VoidCallback onTogglePreviewSidebar;
-  final VoidCallback onToggleCustomizationSidebar;
+  final ValueChanged<bool> onTogglePreviewSidebar;
+  final ValueChanged<bool> onToggleCustomizationSidebar;
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +31,17 @@ class EditorControls extends StatelessWidget {
           .color($overlay())
           .shape(.stadium().side(.color($border()))),
       children: [
-        HeroIconButton(
-          variant: showPreviewSidebar ? .primary : .ghost,
-          size: .sm,
+        HeroToggleButton(
           icon: Icons.grid_view_rounded,
-          onPressed: onTogglePreviewSidebar,
+          label: 'Preview',
+          selected: showPreviewSidebar,
+          onChanged: onTogglePreviewSidebar,
         ),
-        HeroIconButton(
-          variant: showCustomizationSidebar ? .primary : .ghost,
-          size: .sm,
+        HeroToggleButton(
+          label: 'Customization',
           icon: Icons.tune_rounded,
-          onPressed: onToggleCustomizationSidebar,
+          selected: showCustomizationSidebar,
+          onChanged: onToggleCustomizationSidebar,
         ),
       ],
     );

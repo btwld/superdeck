@@ -40,10 +40,7 @@ class EditorStore extends ChangeNotifier {
   }
 
   set previewSidebarWidth(double value) {
-    final clamped = value.clamp(
-      minPreviewSidebarWidth,
-      maxPreviewSidebarWidth,
-    );
+    final clamped = value.clamp(minPreviewSidebarWidth, maxPreviewSidebarWidth);
     if (_previewSidebarWidth == clamped) return;
     _previewSidebarWidth = clamped;
     notifyListeners();
@@ -59,13 +56,13 @@ class EditorStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  void togglePreviewSidebar() {
-    _showPreviewSidebar = !_showPreviewSidebar;
+  void togglePreviewSidebar(bool value) {
+    _showPreviewSidebar = value;
     notifyListeners();
   }
 
-  void toggleCustomizationSidebar() {
-    _showCustomizationSidebar = !_showCustomizationSidebar;
+  void toggleCustomizationSidebar(bool value) {
+    _showCustomizationSidebar = value;
     notifyListeners();
   }
 }
