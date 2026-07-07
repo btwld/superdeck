@@ -3,14 +3,14 @@ description: An example presentation for SuperDeck
 publish_to: none
 version: 1.0.0+1
 environment:
-  sdk: ">=3.10.0 <4.0.0"
-  flutter: ">=3.41.0"
+  sdk: ">=3.12.0 <4.0.0"
+  flutter: ">=3.44.0"
 dependencies:
   flutter:
     sdk: flutter
   google_fonts: ^8.1.0
   mesh: ^0.4.3
-  mix: ^2.0.3
+  mix: ^2.1.0
   superdeck_core: ^1.0.0
   superdeck: ^1.0.0
   signals_flutter: ^6.0.4

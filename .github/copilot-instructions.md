@@ -18,7 +18,7 @@ dart pub global activate melos
 melos bootstrap
 ```
 
-> Required by workspace config: Dart `>=3.10.0`, Flutter `>=3.38.1`.
+> Required by workspace config: Dart `>=3.12.0`, Flutter `>=3.44.0`.
 
 ## High-signal commands (run from repo root)
 - Analyze: `melos run analyze`

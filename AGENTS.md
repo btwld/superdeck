@@ -35,7 +35,7 @@ docs/         # User-facing documentation (MDX format)
 
 ## Environment Setup
 
-This project uses FVM (Flutter Version Management) configured via `.fvmrc` (tracks `stable` channel):
+This project uses FVM (Flutter Version Management) configured via `.fvmrc` (pinned to Flutter `3.44.0`):
 
 ```bash
 fvm use --force
@@ -45,7 +45,7 @@ melos bootstrap
 
 Always work inside the FVM-provided SDK (`.fvm/flutter_sdk`) to avoid toolchain drift.
 
-**Required SDK versions**: Dart >=3.10.0, Flutter >=3.38.1
+**Required SDK versions**: Dart >=3.12.0, Flutter >=3.44.0
 
 ## Common Commands
 

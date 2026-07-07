@@ -42,7 +42,7 @@ class GenerateDeckCommand extends Command1<void, String> {
       return const Result.error(
         GenerationException(
           'No Gemini API key configured. '
-          'Set GOOGLE_AI_API_KEY via --dart-define or .env file.',
+          'Set GOOGLE_AI_API_KEY via --dart-define.',
         ),
       );
     }

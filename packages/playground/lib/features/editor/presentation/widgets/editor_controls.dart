@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
-import 'package:mix/mix.dart';
 import 'package:remix/remix.dart';
 
 /// Bottom-centered overlay bar for the editor.
