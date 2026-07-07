@@ -11,7 +11,8 @@ String buildMissingBuildOutputMessage(DeckWorkspace workspace) {
       'from a different cwd and will not find project-relative .superdeck '
       'files.\n'
       'Fixes:\n'
-      '1. Run `dart run superdeck_cli:main run` from the project directory.\n'
+      '1. Run `dart run superdeck_cli:main build --watch` from the project '
+      'directory, then run `flutter run`.\n'
       '2. For a standalone app, build in release with `.superdeck/` bundled '
       'as assets and load with `BundledDeckLoader`.';
 }

@@ -7,6 +7,7 @@ import 'tokens/colors.dart';
 
 import '../deck/deck_controller_builder.dart';
 import '../deck/deck_options.dart';
+import '../deck/default_workspace.dart';
 import '../deck/loaders/bundled_deck_loader.dart';
 import '../deck/loaders/file_deck_loader.dart';
 import '../plugins/deck_action.dart';
@@ -118,7 +119,7 @@ class SuperDeckApp extends StatelessWidget {
       );
     }
 
-    final runtimeWorkspace = workspace ?? DeckWorkspace();
+    final runtimeWorkspace = workspace ?? resolveDefaultWorkspace();
     final loader =
         deckLoader ??
         (kCanRunProcess

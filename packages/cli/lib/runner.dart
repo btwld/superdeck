@@ -7,7 +7,6 @@ import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'src/commands/build_command.dart';
-import 'src/commands/run_command.dart';
 import 'src/commands/setup_command.dart';
 import 'src/utils/constants.dart';
 import 'src/utils/logger.dart';
@@ -24,7 +23,6 @@ class SuperDeckRunner extends CommandRunner<int> {
     Logger? loggerOverride,
     List<DeckBuildPlugin> plugins = const [],
     BuildCommand? buildCommand,
-    RunCommand? runCommand,
     SetupCommand? setupCommand,
   }) : super(cliName, cliDescription) {
     _logger = loggerOverride ?? logger;
@@ -46,9 +44,6 @@ class SuperDeckRunner extends CommandRunner<int> {
 
     addCommand(
       buildCommand ?? BuildCommand(loggerOverride: _logger, plugins: plugins),
-    );
-    addCommand(
-      runCommand ?? RunCommand(loggerOverride: _logger, plugins: plugins),
     );
     addCommand(setupCommand ?? SetupCommand(loggerOverride: _logger));
   }

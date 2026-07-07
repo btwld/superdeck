@@ -45,12 +45,6 @@ SuperDeck is a Flutter presentation framework. You write slides in Markdown, and
 4. Add `slides.md`, then build slides and run the app:
 
    ```bash
-   dart run superdeck_cli:main run
-   ```
-
-   You can still use the two-terminal workflow when you want direct control:
-
-   ```bash
    dart run superdeck_cli:main build --watch
    flutter run
    ```
