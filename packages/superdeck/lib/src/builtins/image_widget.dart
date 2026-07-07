@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../deck/slide_configuration.dart';
+import '../markdown/builders/image_element_builder.dart' show isBareAssetKey;
 import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/cache_image_widget.dart';
+import '../ui/widgets/provider.dart';
+import '../ui/widgets/resolved_asset_image.dart';
 import '../utils/converters.dart';
 
 /// Strongly-typed data transfer object for image widget.
@@ -113,16 +117,30 @@ class ImageWidget extends StatelessWidget {
     final spec = data.spec;
     final alignment = data.align;
 
-    final image = CachedImage(
-      uri: _data.src,
-      targetSize: data.size,
-      styleSpec: StyleSpec(
-        spec: spec.image.spec.copyWith(
-          fit: _data.fit.toBoxFit,
-          alignment: alignment?.toAlignment ?? Alignment.centerLeft,
-        ),
+    final styleSpec = StyleSpec(
+      spec: spec.image.spec.copyWith(
+        fit: _data.fit.toBoxFit,
+        alignment: alignment?.toAlignment ?? Alignment.centerLeft,
       ),
     );
+
+    // Resolve a bare-key src (e.g. an in-memory AI-generated image) through the
+    // slide's asset cache when bound; otherwise render the source directly.
+    final assetCacheStore =
+        InheritedData.maybeOf<SlideConfiguration>(context)?.assetCacheStore;
+    final Widget image = (assetCacheStore != null && isBareAssetKey(_data.src))
+        ? ResolvedAssetImage(
+            assetKey: _data.src.path,
+            store: assetCacheStore,
+            fallback: _data.src,
+            targetSize: data.size,
+            styleSpec: styleSpec,
+          )
+        : CachedImage(
+            uri: _data.src,
+            targetSize: data.size,
+            styleSpec: styleSpec,
+          );
 
     final constrained = (_data.width != null || _data.height != null)
         ? SizedBox(width: _data.width, height: _data.height, child: image)

@@ -10,7 +10,7 @@ class SlideParts {
     this.background = const BackgroundPart(),
   });
 
-  final PreferredSizeWidget header;
-  final PreferredSizeWidget footer;
+  final PreferredSizeWidget? header;
+  final PreferredSizeWidget? footer;
   final Widget background;
 }

@@ -336,7 +336,7 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
           return saver.saveFile(
             name: name,
             bytes: bytes,
-            ext: ext,
+            fileExtension: ext,
             mimeType: mimeType,
           );
         },
@@ -350,7 +350,7 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
           return saver.saveAs(
             name: name,
             bytes: bytes,
-            ext: ext,
+            fileExtension: ext,
             mimeType: mimeType,
           );
         },

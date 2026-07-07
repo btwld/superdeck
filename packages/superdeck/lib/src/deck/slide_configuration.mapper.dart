@@ -71,6 +71,10 @@ class SlideConfigurationMapper extends ClassMapperBase<SlideConfiguration> {
     opt: true,
     def: false,
   );
+  static AssetCacheStore? _$assetCacheStore(SlideConfiguration v) =>
+      v.assetCacheStore;
+  static const Field<SlideConfiguration, AssetCacheStore> _f$assetCacheStore =
+      Field('assetCacheStore', _$assetCacheStore, opt: true);
 
   @override
   final MappableFields<SlideConfiguration> fields = const {
@@ -82,6 +86,7 @@ class SlideConfigurationMapper extends ClassMapperBase<SlideConfiguration> {
     #thumbnailKey: _f$thumbnailKey,
     #widgets: _f$widgets,
     #isStaticRendering: _f$isStaticRendering,
+    #assetCacheStore: _f$assetCacheStore,
   };
 
   static SlideConfiguration _instantiate(DecodingData data) {
@@ -94,6 +99,7 @@ class SlideConfigurationMapper extends ClassMapperBase<SlideConfiguration> {
       thumbnailKey: data.dec(_f$thumbnailKey),
       widgets: data.dec(_f$widgets),
       isStaticRendering: data.dec(_f$isStaticRendering),
+      assetCacheStore: data.dec(_f$assetCacheStore),
     );
   }
 
@@ -189,6 +195,7 @@ abstract class SlideConfigurationCopyWith<
     String? thumbnailKey,
     Map<String, Widget Function(Map<String, Object?>)>? widgets,
     bool? isStaticRendering,
+    AssetCacheStore? assetCacheStore,
   });
   SlideConfigurationCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
     Then<$Out2, $R2> t,
@@ -232,6 +239,7 @@ class _SlideConfigurationCopyWithImpl<$R, $Out>
     String? thumbnailKey,
     Map<String, Widget Function(Map<String, Object?>)>? widgets,
     bool? isStaticRendering,
+    Object? assetCacheStore = $none,
   }) => $apply(
     FieldCopyWithData({
       if (slideIndex != null) #slideIndex: slideIndex,
@@ -242,6 +250,7 @@ class _SlideConfigurationCopyWithImpl<$R, $Out>
       if (thumbnailKey != null) #thumbnailKey: thumbnailKey,
       if (widgets != null) #widgets: widgets,
       if (isStaticRendering != null) #isStaticRendering: isStaticRendering,
+      if (assetCacheStore != $none) #assetCacheStore: assetCacheStore,
     }),
   );
   @override
@@ -257,6 +266,7 @@ class _SlideConfigurationCopyWithImpl<$R, $Out>
       #isStaticRendering,
       or: $value.isStaticRendering,
     ),
+    assetCacheStore: data.get(#assetCacheStore, or: $value.assetCacheStore),
   );
 
   @override

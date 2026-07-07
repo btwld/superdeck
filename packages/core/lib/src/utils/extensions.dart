@@ -44,7 +44,7 @@ extension HexColorValidation on StringSchema {
   /// ```dart
   /// Ack.string().hexColor().nullable().optional()
   /// ```
-  AckSchema<String> hexColor() {
+  AckSchema<String, String> hexColor() {
     return refine(
       (value) {
         final hexCode = value.replaceAll('#', '');

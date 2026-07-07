@@ -11,10 +11,14 @@ class SlideConfigurationBuilder {
   const SlideConfigurationBuilder();
 
   /// Builds [SlideConfiguration]s for [slides] using [options].
+  ///
+  /// [assetCacheStore] is bound onto each configuration so the renderer can
+  /// resolve in-slide images referenced by a bare key.
   List<SlideConfiguration> buildConfigurations(
     List<Slide> slides,
-    DeckOptions options,
-  ) {
+    DeckOptions options, {
+    AssetCacheStore? assetCacheStore,
+  }) {
     if (slides.isEmpty) {
       return [];
     }
@@ -22,7 +26,13 @@ class SlideConfigurationBuilder {
     final resolver = TemplateResolver(options);
 
     return slides.asMap().entries.map((entry) {
-      return _buildConfiguration(entry.key, entry.value, options, resolver);
+      return _buildConfiguration(
+        entry.key,
+        entry.value,
+        options,
+        resolver,
+        assetCacheStore,
+      );
     }).toList();
   }
 
@@ -31,6 +41,7 @@ class SlideConfigurationBuilder {
     Slide slide,
     DeckOptions options,
     TemplateResolver resolver,
+    AssetCacheStore? assetCacheStore,
   ) {
     final widgets = Map<String, WidgetFactory>.from(builtInWidgets);
 
@@ -57,6 +68,7 @@ class SlideConfigurationBuilder {
       thumbnailKey: buildThumbnailKey(slide.key),
       parts: resolution.parts,
       debug: options.debug,
+      assetCacheStore: assetCacheStore,
     );
   }
 }

@@ -9,12 +9,12 @@ packages:
 command:
   bootstrap:
     environment:
-      sdk: ">=3.10.0 <4.0.0"
-      flutter: ">=3.38.1"
+      sdk: ">=3.12.0 <4.0.0"
+      flutter: ">=3.44.0"
     dependencies:
       collection: ^1.18.0
-      mix: ^2.0.3
-      ack: 1.0.0-beta.9
+      mix: ^2.1.0
+      ack: 1.0.0-beta.12
   # publish:
     # hooks:
     #   pre: melos run gen:build

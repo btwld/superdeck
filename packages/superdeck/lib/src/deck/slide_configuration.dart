@@ -26,6 +26,11 @@ class SlideConfiguration with SlideConfigurationMappable {
 
   final bool isStaticRendering;
 
+  /// Runtime asset cache used to resolve in-slide images referenced by a bare
+  /// key (e.g. AI-generated images held in memory). Bound at build time by
+  /// [SlideConfigurationBuilder]; resolved at render time by the image widgets.
+  final AssetCacheStore? assetCacheStore;
+
   SlideConfiguration({
     required this.slideIndex,
     required this.style,
@@ -35,6 +40,7 @@ class SlideConfiguration with SlideConfigurationMappable {
     required this.thumbnailKey,
     this.widgets = const {},
     this.isStaticRendering = false,
+    this.assetCacheStore,
   });
 
   SlideOptions get options => slide.options ?? SlideOptions();
@@ -63,7 +69,8 @@ class SlideConfiguration with SlideConfigurationMappable {
           parts == other.parts &&
           thumbnailKey == other.thumbnailKey &&
           widgets == other.widgets &&
-          isStaticRendering == other.isStaticRendering;
+          isStaticRendering == other.isStaticRendering &&
+          assetCacheStore == other.assetCacheStore;
 
   @override
   int get hashCode => Object.hash(
@@ -75,5 +82,6 @@ class SlideConfiguration with SlideConfigurationMappable {
     thumbnailKey,
     widgets,
     isStaticRendering,
+    assetCacheStore,
   );
 }

@@ -1,2 +1,7 @@
 include: package:flutter_lints/flutter.yaml
 extends: ../../shared_analysis_options.yaml
+
+linter:
+  rules:
+    prefer_relative_imports: true
+    prefer_initializing_formals: false

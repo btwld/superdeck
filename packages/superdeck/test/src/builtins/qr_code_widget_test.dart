@@ -24,6 +24,12 @@ void main() {
         expect(dto.foregroundColor, '#000000');
       });
 
+      test('accepts integer size values from generated slide data', () {
+        final dto = QrCodeDto.parse({'text': 'x', 'size': 220});
+
+        expect(dto.size, 220.0);
+      });
+
       test('uses defaults when optional fields are omitted or null', () {
         final omitted = QrCodeDto.parse({'text': 'omitted'});
         final explicitNull = QrCodeDto.parse({
@@ -89,6 +95,30 @@ void main() {
       expect(qrImage.backgroundColor, const Color(0xFFFFFF00));
       expect(qrImage.eyeStyle.color, const Color(0xFF123456));
       expect(qrImage.dataModuleStyle.color, const Color(0xFF123456));
+    });
+
+    testWidgets('renders with integer size and highest error correction', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: QrCodeWidget({
+              'text': 'https://superdeck.dev',
+              'size': 220,
+              'errorCorrection': 'highest',
+            }),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(QrImageView), findsOneWidget);
+
+      final qrImage = tester.widget<QrImageView>(find.byType(QrImageView));
+      expect(qrImage.size, 220.0);
+      expect(qrImage.errorCorrectionLevel, QrErrorCorrectLevel.H);
     });
   });
 }
