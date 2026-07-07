@@ -56,6 +56,12 @@ jobs:
       - name: Check Contract Schemas
         run: melos run contracts:check --no-select
 
+      # The playground declares `.env` as a bundled asset (git-ignored, holds a
+      # local dev API key). Provision an empty one so the asset bundle builds in
+      # CI; EnvConfig falls back to --dart-define when the key is absent.
+      - name: Provision playground .env
+        run: touch packages/playground/.env
+
       - name: Run Unit Tests
         run: melos run test --no-select
 
