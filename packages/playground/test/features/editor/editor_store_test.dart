@@ -1,74 +1,120 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:playground/core/data/data_sources/memory_deck_loader.dart';
 import 'package:playground/features/editor/domain/stores/editor_store.dart';
 
 void main() {
-  MemoryDeckLoader newLoader() {
-    final loader = MemoryDeckLoader();
-    addTearDown(loader.dispose);
-    return loader;
+  EditorStore newStore() {
+    final store = EditorStore();
+    addTearDown(store.dispose);
+    return store;
   }
 
-  test('seeds currentText and forwards the initial markdown to the loader',
-      () async {
-    final loader = newLoader();
-    final events = [];
-    final sub = loader.load().listen(events.add);
-    addTearDown(sub.cancel);
+  group('activeSlideIndex', () {
+    test('defaults to 0', () {
+      expect(newStore().activeSlideIndex, 0);
+    });
 
-    final store = EditorStore(loader);
-    addTearDown(store.dispose);
+    test('notifies on change and no-ops otherwise', () {
+      final store = newStore();
+      var notifications = 0;
+      store.addListener(() => notifications++);
 
-    expect(store.currentText, starterMarkdown);
-    await pumpEventQueue();
-    expect(events, hasLength(1));
+      store.activeSlideIndex = 2;
+      store.activeSlideIndex = 2;
+
+      expect(store.activeSlideIndex, 2);
+      expect(notifications, 1);
+    });
   });
 
-  test('updateText records the text, forwards it, and notifies once', () async {
-    final loader = newLoader();
-    final store = EditorStore(loader);
-    addTearDown(store.dispose);
+  group('previewSidebarWidth', () {
+    test('defaults to the minimum width', () {
+      expect(newStore().previewSidebarWidth,
+          EditorStore.minPreviewSidebarWidth);
+    });
 
-    final events = [];
-    final sub = loader.load().listen(events.add);
-    addTearDown(sub.cancel);
+    test('clamps below the minimum', () {
+      final store = newStore();
+      store.previewSidebarWidth = 0;
+      expect(store.previewSidebarWidth, EditorStore.minPreviewSidebarWidth);
+    });
 
-    var notifications = 0;
-    store.addListener(() => notifications++);
+    test('clamps above the maximum', () {
+      final store = newStore();
+      store.previewSidebarWidth = 10000;
+      expect(store.previewSidebarWidth, EditorStore.maxPreviewSidebarWidth);
+    });
 
-    store.updateText('---\n# A\n---\n# B\n');
+    test('accepts an in-range value and notifies once', () {
+      final store = newStore();
+      var notifications = 0;
+      store.addListener(() => notifications++);
 
-    expect(store.currentText, '---\n# A\n---\n# B\n');
-    expect(notifications, 1);
-    await pumpEventQueue();
-    expect(events, hasLength(1));
+      store.previewSidebarWidth = 300;
+
+      expect(store.previewSidebarWidth, 300);
+      expect(notifications, 1);
+    });
+
+    test('does not notify when the clamped value is unchanged', () {
+      final store = newStore();
+      var notifications = 0;
+      store.addListener(() => notifications++);
+
+      // Already at the minimum; clamping a smaller value yields no change.
+      store.previewSidebarWidth = -5;
+
+      expect(notifications, 0);
+    });
   });
 
-  test('updateText no-ops when the text is unchanged', () {
-    final loader = newLoader();
-    final store = EditorStore(loader);
-    addTearDown(store.dispose);
+  group('customizationSidebarWidth', () {
+    test('defaults to the maximum width', () {
+      expect(newStore().customizationSidebarWidth,
+          EditorStore.maxCustomizationSidebarWidth);
+    });
 
-    var notifications = 0;
-    store.addListener(() => notifications++);
+    test('clamps below the minimum', () {
+      final store = newStore();
+      store.customizationSidebarWidth = 0;
+      expect(store.customizationSidebarWidth,
+          EditorStore.minCustomizationSidebarWidth);
+    });
 
-    store.updateText(store.currentText);
-
-    expect(notifications, 0);
+    test('clamps above the maximum', () {
+      final store = newStore();
+      store.customizationSidebarWidth = 10000;
+      expect(store.customizationSidebarWidth,
+          EditorStore.maxCustomizationSidebarWidth);
+    });
   });
 
-  test('activeSlideIndex notifies on change and no-ops otherwise', () {
-    final loader = newLoader();
-    final store = EditorStore(loader);
-    addTearDown(store.dispose);
+  group('sidebar visibility', () {
+    test('both sidebars are visible by default', () {
+      final store = newStore();
+      expect(store.showPreviewSidebar, isTrue);
+      expect(store.showCustomizationSidebar, isTrue);
+    });
 
-    var notifications = 0;
-    store.addListener(() => notifications++);
+    test('togglePreviewSidebar updates state and notifies', () {
+      final store = newStore();
+      var notifications = 0;
+      store.addListener(() => notifications++);
 
-    store.activeSlideIndex = 2;
-    store.activeSlideIndex = 2;
+      store.togglePreviewSidebar(false);
 
-    expect(store.activeSlideIndex, 2);
-    expect(notifications, 1);
+      expect(store.showPreviewSidebar, isFalse);
+      expect(notifications, 1);
+    });
+
+    test('toggleCustomizationSidebar updates state and notifies', () {
+      final store = newStore();
+      var notifications = 0;
+      store.addListener(() => notifications++);
+
+      store.toggleCustomizationSidebar(false);
+
+      expect(store.showCustomizationSidebar, isFalse);
+      expect(notifications, 1);
+    });
   });
 }

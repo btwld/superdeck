@@ -26,7 +26,12 @@ void main() {
     expect(find.byType(EditorPage), findsOneWidget);
     expect(find.byType(PreviewSidebar), findsOneWidget);
     expect(find.byType(CustomizationSidebar), findsOneWidget);
-    // Customization sidebar label renders.
+
+    // The customization sidebar defaults to the Wizard tab; switch to the
+    // Editor tab so its 'Background' section label renders.
+    await tester.tap(find.text('Editor'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Background'), findsOneWidget);
 
     // Unmount so the editor's controllers/coordinator dispose and cancel their
