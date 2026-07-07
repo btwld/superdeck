@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 const _validSlidesJson = '[]';
@@ -41,6 +41,10 @@ Future<void> _waitForEvent<T extends SlidesEvent>(
     () => events.whereType<T>().any(where ?? (_) => true),
     timeout: timeout,
   );
+}
+
+bool _isMissingBuildOutputMessage(String message) {
+  return message.contains('No SuperDeck build output found');
 }
 
 void main() {
@@ -83,12 +87,23 @@ void main() {
 
         await _waitForEvent<SlidesErrorEvent>(
           events,
-          where: (event) => event.message == missingBuildOutputMessage,
+          where: (event) => _isMissingBuildOutputMessage(event.message),
         );
 
         final missingOutputError = events.whereType<SlidesErrorEvent>().last;
         expect(events.first, isA<SlidesLoadingEvent>());
-        expect(missingOutputError.message, missingBuildOutputMessage);
+        expect(
+          missingOutputError.message,
+          contains('No SuperDeck build output found'),
+        );
+        expect(
+          missingOutputError.message,
+          contains(config.deckJson.absolute.path),
+        );
+        expect(
+          missingOutputError.message,
+          contains(config.buildStatusJson.absolute.path),
+        );
         expect(missingOutputError.error, isNull);
       },
     );
@@ -105,13 +120,13 @@ void main() {
 
         await _waitForEvent<SlidesErrorEvent>(
           events,
-          where: (event) => event.message == missingBuildOutputMessage,
+          where: (event) => _isMissingBuildOutputMessage(event.message),
         );
 
         expect(events.first, isA<SlidesLoadingEvent>());
         expect(
           events.whereType<SlidesErrorEvent>().last.message,
-          missingBuildOutputMessage,
+          contains('No SuperDeck build output found'),
         );
         expect(events.whereType<SlidesLoadedEvent>(), isEmpty);
       },
@@ -358,7 +373,7 @@ void main() {
         expect(events.whereType<SlidesLoadingEvent>(), hasLength(1));
         await _waitForEvent<SlidesErrorEvent>(
           events,
-          where: (event) => event.message == missingBuildOutputMessage,
+          where: (event) => _isMissingBuildOutputMessage(event.message),
         );
 
         await deckLoader.reload();
@@ -507,7 +522,7 @@ void main() {
 
         await _waitForEvent<SlidesErrorEvent>(
           events,
-          where: (event) => event.message == missingBuildOutputMessage,
+          where: (event) => _isMissingBuildOutputMessage(event.message),
         );
 
         await config.superdeckDir.create(recursive: true);

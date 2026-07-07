@@ -1,6 +1,20 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:superdeck_core/superdeck_core.dart';
+
+String buildMissingBuildOutputMessage(DeckWorkspace workspace) {
+  return 'No SuperDeck build output found. Checked '
+      '${workspace.deckJson.absolute.path} and '
+      '${workspace.buildStatusJson.absolute.path} from cwd '
+      '${Directory.current.path}. A directly-launched desktop .app can run '
+      'from a different cwd and will not find project-relative .superdeck '
+      'files.\n'
+      'Fixes:\n'
+      '1. Run `dart run superdeck_cli:main run` from the project directory.\n'
+      '2. For a standalone app, build in release with `.superdeck/` bundled '
+      'as assets and load with `BundledDeckLoader`.';
+}
 
 SlidesLoadedEvent decodeSlidesEvent(String content, String sourceLabel) {
   final decoded = jsonDecode(content);
@@ -14,7 +28,7 @@ SlidesLoadedEvent decodeSlidesEvent(String content, String sourceLabel) {
 
 SlidesErrorEvent wrapReferenceError(
   Object error, {
-  String message = 'Superdeck reference error',
+  String message = 'SuperDeck reference error',
 }) {
   return SlidesErrorEvent(
     message,

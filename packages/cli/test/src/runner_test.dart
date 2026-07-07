@@ -5,6 +5,7 @@ import 'package:path/path.dart' as path;
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_cli/runner.dart';
 import 'package:superdeck_cli/src/commands/build_command.dart';
+import 'package:superdeck_cli/src/commands/run_command.dart';
 import 'package:superdeck_cli/src/commands/setup_command.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -45,8 +46,10 @@ void main() {
         );
 
         final buildCommand = runner.commands['build'] as BuildCommand;
+        final runCommand = runner.commands['run'] as RunCommand;
 
         expect(buildCommand.plugins, contains(plugin));
+        expect(runCommand.plugins, contains(plugin));
       });
 
       test('passes quiet logging to setup', () async {

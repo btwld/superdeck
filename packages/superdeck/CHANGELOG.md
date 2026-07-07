@@ -1,3 +1,10 @@
+## Unreleased
+
+- Export `FileDeckLoader` and `BundledDeckLoader` from the public barrel so
+  apps can use `SuperDeckApp.deckLoader` without importing from `src/`.
+- Improve missing build output diagnostics with checked paths and desktop app
+  guidance.
+
 ## 1.0.0
 
 - First stable release of `superdeck`.

@@ -59,6 +59,50 @@ superdeck build
 superdeck build -w
 ```
 
+### `superdeck run`
+
+Build the current project and launch `flutter run` from the same directory. In
+watch mode, SuperDeck rebuilds `.superdeck/` when `slides.md` changes while the
+running app reloads those files through `FileDeckLoader`.
+
+```bash
+superdeck run [options] [-- flutter-run-args]
+```
+
+**Options:**
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--device-id <id>` | `-d` | Forward a Flutter device id to `flutter run` |
+| `--flutter <path>` | | Override the Flutter executable |
+| `--watch` / `--no-watch` | | Rebuild on slide changes while Flutter runs; enabled by default |
+| `--skip-pubspec` | | Skip updating pubspec.yaml |
+
+When no `--flutter` override is provided, `run` uses `fvm flutter run` if the
+project has `.fvmrc` or `.fvm/` and `fvm` is available on `PATH`; otherwise it
+uses `flutter run`.
+
+**Examples:**
+
+```bash
+# Build, watch, and run the default Flutter target
+superdeck run
+
+# Run on a specific device
+superdeck run -d macos
+
+# Pass arguments through to flutter run
+superdeck run -d macos -- --dart-define=FOO=bar
+
+# Build once, then run Flutter without watching slides.md
+superdeck run --no-watch
+```
+
+`superdeck run` uses the current working directory as the Flutter app directory.
+It does not fix a double-clicked desktop `.app` launched from another cwd. For a
+standalone app, build in release with `.superdeck/` bundled as assets and load
+with `BundledDeckLoader`.
+
 ## File structure
 
 After running CLI commands, your project will have:
@@ -92,6 +136,12 @@ flutter:
 ### Development workflow
 
 ```bash
+# One command: build, watch, and launch Flutter
+dart run superdeck_cli:main run
+```
+
+```bash
+# Or use two terminals when you want separate control.
 # Terminal 1: Start CLI in watch mode
 dart run superdeck_cli:main build --watch
 

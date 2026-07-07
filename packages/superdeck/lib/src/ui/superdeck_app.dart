@@ -37,6 +37,18 @@ class SuperDeckApp extends StatelessWidget {
 
   /// Optional loader override. When null, auto-selects [FileDeckLoader] or
   /// [BundledDeckLoader] based on the runtime environment.
+  ///
+  /// To force bundled loading, pass one [DeckWorkspace] to both the loader and
+  /// app so the loader and asset cache resolve against the same workspace:
+  ///
+  /// ```dart
+  /// final ws = DeckWorkspace();
+  /// SuperDeckApp(
+  ///   options: options,
+  ///   deckLoader: BundledDeckLoader(workspace: ws),
+  ///   workspace: ws,
+  /// );
+  /// ```
   final DeckLoader? deckLoader;
   final DeckWorkspace? workspace;
   final AssetCacheStore? assetCacheStore;
@@ -124,7 +136,7 @@ class SuperDeckApp extends StatelessWidget {
       builder: (context, router) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          title: 'Superdeck',
+          title: 'SuperDeck',
           routerConfig: router,
           builder: (context, child) {
             return MixScope(
