@@ -74,6 +74,7 @@ jobs:
       - name: Install Linux Desktop Dependencies
         timeout-minutes: 8
         run: |
+          sudo find /etc/apt/sources.list.d -type f \( -name '*microsoft*' -o -name 'azure-cli.list' \) -print -delete
           sudo apt-get update -o Acquire::Retries=3
           sudo apt-get install -y -o Dpkg::Lock::Timeout=60 libgtk-3-dev ninja-build pkg-config
 
@@ -179,6 +180,7 @@ jobs:
       - name: Install Playwright browsers
         timeout-minutes: 10
         run: |
+          sudo find /etc/apt/sources.list.d -type f \( -name '*microsoft*' -o -name 'azure-cli.list' \) -print -delete
           cd demo/e2e
           npx playwright install --with-deps chromium webkit
 
