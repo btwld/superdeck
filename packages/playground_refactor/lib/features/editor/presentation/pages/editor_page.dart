@@ -27,18 +27,15 @@ class EditorPage extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: const PreviewSidebar(),
             ),
-            if (store.showPreviewSidebar)
-              _SidebarResizeHandle(
-                onDrag: (delta) => store.previewSidebarWidth += delta,
-              ),
+
             Expanded(
               child: Stack(
                 children: [
                   TextEditor(),
                   Align(
-                    alignment: Alignment.bottomCenter,
+                    alignment: .bottomCenter,
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
+                      padding: const .only(bottom: 24),
                       child: EditorControls(
                         showPreviewSidebar: store.showPreviewSidebar,
                         showCustomizationSidebar:
@@ -49,13 +46,30 @@ class EditorPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (store.showPreviewSidebar)
+                    Align(
+                      alignment: .centerLeft,
+                      child: Transform.translate(
+                        offset: Offset(-4, 0),
+                        child: _SidebarResizeHandle(
+                          onDrag: (delta) => store.previewSidebarWidth += delta,
+                        ),
+                      ),
+                    ),
+                  if (store.showCustomizationSidebar)
+                    Align(
+                      alignment: .centerRight,
+                      child: Transform.translate(
+                        offset: Offset(4, 0),
+                        child: _SidebarResizeHandle(
+                          onDrag: (delta) =>
+                              store.customizationSidebarWidth -= delta,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
-            if (store.showCustomizationSidebar)
-              _SidebarResizeHandle(
-                onDrag: (delta) => store.customizationSidebarWidth -= delta,
-              ),
             _AnimatedSidebar(
               visible: store.showCustomizationSidebar,
               alignment: Alignment.centerRight,
@@ -124,10 +138,10 @@ class _SidebarResizeHandleState extends State<_SidebarResizeHandle> {
     // Bar highlights while dragging; hover lights it up too. The color change
     // tweens via `.animate`, replacing the former AnimatedContainer.
     final bar = BoxStyler()
-        .width(2)
+        .width(7)
         .height(48)
+        .borderRadius(.circular(10))
         .color(_active ? $accent() : $border())
-        .borderRadiusAll(.circular(1))
         .animate(AnimationConfig.ease(const Duration(milliseconds: 120)));
 
     return MouseRegion(
@@ -138,10 +152,7 @@ class _SidebarResizeHandleState extends State<_SidebarResizeHandle> {
         onHorizontalDragUpdate: (details) => widget.onDrag(details.delta.dx),
         onHorizontalDragEnd: (_) => setState(() => _active = false),
         onHorizontalDragCancel: () => setState(() => _active = false),
-        child: Box(
-          style: BoxStyler().width(8).alignment(Alignment.center),
-          child: Box(style: bar),
-        ),
+        child: Box(style: bar),
       ),
     );
   }

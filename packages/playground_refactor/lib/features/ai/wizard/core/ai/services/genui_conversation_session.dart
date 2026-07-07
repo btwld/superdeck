@@ -254,6 +254,14 @@ final class GenUiConversationSession {
   String _buildSystemPrompt(String systemInstruction) {
     final fragments = [
       systemInstruction,
+      // The A2UI prompt tells the model to use "the catalog ID provided in
+      // system instructions", but never states the actual value — so the model
+      // hallucinates ids like "a2ui" and surface rendering fails with
+      // "Catalog with id ... not found". Provide the real id explicitly.
+      if (_profile.catalog.catalogId case final catalogId?)
+        '${genui.PromptBuilder.defaultImportancePrefix}When creating a surface, '
+            'the `catalogId` field MUST be exactly "$catalogId". '
+            'Never use any other value.',
       genui.PromptFragments.acknowledgeUser(),
       genui.PromptFragments.requireAtLeastOneSubmitElement(
         prefix: genui.PromptBuilder.defaultImportancePrefix,

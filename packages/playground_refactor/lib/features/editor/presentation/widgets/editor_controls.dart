@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
+import 'package:remix/remix.dart';
 
 /// Bottom-centered overlay bar for the editor.
 ///
@@ -34,12 +35,22 @@ class EditorControls extends StatelessWidget {
         HeroToggleButton(
           icon: Icons.grid_view_rounded,
           label: 'Preview',
+          variant: .ghost,
+          style: .new().variant(
+            HeroToggleButtonVariant.ghost,
+            RemixToggleStyle().backgroundColor($overlay()),
+          ),
           selected: showPreviewSidebar,
           onChanged: onTogglePreviewSidebar,
         ),
         HeroToggleButton(
           label: 'Customization',
           icon: Icons.tune_rounded,
+          variant: .ghost,
+          style: .new().variant(
+            HeroToggleButtonVariant.ghost,
+            RemixToggleStyle().backgroundColor($overlay()),
+          ),
           selected: showCustomizationSidebar,
           onChanged: onToggleCustomizationSidebar,
         ),

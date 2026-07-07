@@ -54,14 +54,14 @@ class _CustomizationSidebarState extends State<CustomizationSidebar> {
           ),
           Expanded(
             child: HeroTabs(
-              initialId: _SidebarTab.editor.name,
+              initialId: _SidebarTab.wizard.name,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   HeroTabBar(
                     children: [
-                      HeroTab(label: 'Editor', tabId: _SidebarTab.editor.name),
                       HeroTab(label: 'Wizard', tabId: _SidebarTab.wizard.name),
+                      HeroTab(label: 'Editor', tabId: _SidebarTab.editor.name),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -70,16 +70,16 @@ class _CustomizationSidebarState extends State<CustomizationSidebar> {
                       children: [
                         Positioned.fill(
                           child: HeroTabPanel(
-                            tabId: _SidebarTab.editor.name,
-                            child: _EditorTab(
-                              accordionController: _accordionController,
-                            ),
+                            tabId: _SidebarTab.wizard.name,
+                            child: const WizardView(),
                           ),
                         ),
                         Positioned.fill(
                           child: HeroTabPanel(
-                            tabId: _SidebarTab.wizard.name,
-                            child: const WizardView(),
+                            tabId: _SidebarTab.editor.name,
+                            child: _EditorTab(
+                              accordionController: _accordionController,
+                            ),
                           ),
                         ),
                       ],
@@ -356,4 +356,4 @@ class _Toolbar extends StatelessWidget {
 }
 
 /// The two views the customization sidebar can show.
-enum _SidebarTab { editor, wizard }
+enum _SidebarTab { wizard, editor }

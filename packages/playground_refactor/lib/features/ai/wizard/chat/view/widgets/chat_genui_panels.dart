@@ -3,9 +3,9 @@ import 'package:genui/genui.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
+import '../../../presentation/view/loading.dart';
 import '../../chat_message.dart';
 import 'chat_bubble.dart';
-import 'typing_indicator.dart';
 import '../../../core/ui/ui.dart';
 
 /// Shared bubble border radius for iOS-style chat bubbles.
@@ -28,26 +28,21 @@ class TypingBubble extends StatelessWidget {
 
     if (!thinking) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 48, bottom: 16),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            color: $background.resolve(context),
-            borderRadius: _bubbleBorderRadius,
-            boxShadow: [
-              BoxShadow(
-                color: $foreground.resolve(context).withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const TypingIndicator(),
+    return RowBox(
+      style: FlexBoxStyler().spacing(8).padding(.bottom(12)),
+      children: [
+        SizedBox(
+          width: 25,
+          height: 25,
+          child: IsometricLoading(color: $muted.resolve(context)),
         ),
-      ),
+        StyledText(
+          'Thinking...',
+          style: TextStyler()
+              .color($muted.resolve(context))
+              .style($labelSmall.mix()),
+        ),
+      ],
     );
   }
 }
@@ -174,7 +169,6 @@ class AiSurfacesPanel extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TypingBubble(isThinking: isThinking),
                   GenUiMessageBubble(
                     isThinking: isThinking,
                     messages: messages,
@@ -185,6 +179,7 @@ class AiSurfacesPanel extends StatelessWidget {
             ),
           ),
         ),
+        TypingBubble(isThinking: isThinking),
         inputWidget ?? const SizedBox.shrink(),
       ],
     );

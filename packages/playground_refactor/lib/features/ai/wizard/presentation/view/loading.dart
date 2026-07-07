@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Animated isometric cube loading indicator.
@@ -158,5 +159,5 @@ class IsometricLogoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(IsometricLogoPainter oldDelegate) =>
-      oldDelegate.colors != colors;
+      !listEquals(oldDelegate.colors, colors);
 }

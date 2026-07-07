@@ -15,8 +15,8 @@ class EditorStore extends ChangeNotifier {
   int _activeSlideIndex = 0;
   bool _showPreviewSidebar = true;
   bool _showCustomizationSidebar = true;
-  double _previewSidebarWidth = 218;
-  double _customizationSidebarWidth = 280;
+  double _previewSidebarWidth = minPreviewSidebarWidth;
+  double _customizationSidebarWidth = maxCustomizationSidebarWidth;
 
   /// The 0-based slide the caret currently sits in.
   int get activeSlideIndex => _activeSlideIndex;

@@ -111,7 +111,7 @@ class _AskUserTextContentState extends State<_AskUserTextContent> {
             border: InputBorder.none,
             counterText: '',
           ),
-          style: $paragraphMedium.mix().resolve(context),
+          style: $paragraphMedium.resolve(context),
           onChanged: (_) => setState(() {}),
         ),
       ),
