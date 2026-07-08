@@ -23,7 +23,7 @@ class EditorHeader extends StatelessWidget {
         Box(
           style: BoxStyler()
               .width(double.infinity)
-              .color($background())
+              .color($backgroundSecondary())
               .padding(.horizontal(16).vertical(8))
               .borderBottom(color: $border()),
           child: RowBox(
@@ -32,6 +32,12 @@ class EditorHeader extends StatelessWidget {
                 .crossAxisAlignment(.center)
                 .spacing(8),
             children: [
+              _FileName(
+                name: controller.fileName,
+                unbound: !controller.isBound,
+              ),
+              Spacer(),
+              Box(style: BoxStyler().width(1).height(16).color($border())),
               HeroButton(
                 label: 'New',
                 iconLeft: CupertinoIcons.add,
@@ -45,11 +51,6 @@ class EditorHeader extends StatelessWidget {
                 size: .sm,
                 variant: .ghost,
                 onPressed: controller.openDeck,
-              ),
-              Box(style: BoxStyler().width(1).height(16).color($border())),
-              _FileName(
-                name: controller.fileName,
-                unbound: !controller.isBound,
               ),
             ],
           ),
@@ -71,18 +72,17 @@ class _FileName extends StatelessWidget {
     return RowBox(
       style: FlexBoxStyler().mainAxisSize(.min).spacing(8),
       children: [
-        Icon(
-          unbound
+        StyledIcon(
+          icon: unbound
               ? CupertinoIcons.exclamationmark_triangle_fill
               : CupertinoIcons.doc_text,
-          size: 15,
-          color: unbound ? $warning.resolve(context) : $muted.resolve(context),
+          style: IconStyler().size(15).color(unbound ? $warning() : $muted()),
         ),
         StyledText(
           name,
           style: TextStyler()
               .color(unbound ? $warning() : $foreground())
-              .style($labelMedium.mix()),
+              .style($labelSmall.mix()),
         ),
       ],
     );

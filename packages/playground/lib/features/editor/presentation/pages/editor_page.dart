@@ -8,7 +8,6 @@ import '../../domain/stores/deck_file_controller.dart';
 import '../../domain/stores/editor_store.dart';
 import '../widgets/customization_sidebar.dart';
 import '../widgets/editor_controls.dart';
-import '../widgets/editor_header.dart';
 import '../widgets/new_deck_dialog.dart';
 import '../widgets/preview_sidebar.dart';
 import '../widgets/text_editor.dart';
@@ -50,7 +49,6 @@ class EditorPage extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      const EditorHeader(),
                       Expanded(
                         child: Stack(
                           children: [
@@ -73,24 +71,17 @@ class EditorPage extends StatelessWidget {
                             if (store.showPreviewSidebar)
                               Align(
                                 alignment: .centerLeft,
-                                child: Transform.translate(
-                                  offset: Offset(-4, 0),
-                                  child: _SidebarResizeHandle(
-                                    onDrag: (delta) =>
-                                        store.previewSidebarWidth += delta,
-                                  ),
+                                child: _SidebarResizeHandle(
+                                  onDrag: (delta) =>
+                                      store.previewSidebarWidth += delta,
                                 ),
                               ),
                             if (store.showCustomizationSidebar)
                               Align(
                                 alignment: .centerRight,
-                                child: Transform.translate(
-                                  offset: Offset(4, 0),
-                                  child: _SidebarResizeHandle(
-                                    onDrag: (delta) =>
-                                        store.customizationSidebarWidth -=
-                                            delta,
-                                  ),
+                                child: _SidebarResizeHandle(
+                                  onDrag: (delta) =>
+                                      store.customizationSidebarWidth -= delta,
                                 ),
                               ),
                           ],
