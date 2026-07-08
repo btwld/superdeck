@@ -128,14 +128,16 @@ class AsyncThumbnail {
   }
 
   Widget build(BuildContext context) {
-    return Watch((context) {
-      return switch (_status.value) {
-        AsyncFileStatus.idle => const IsometricLoading(),
-        AsyncFileStatus.loading => const IsometricLoading(),
-        AsyncFileStatus.done => _buildLoadedImage(context),
-        AsyncFileStatus.error => _errorWidget(context, this),
-      };
-    });
+    return SignalBuilder(
+      builder: (context) {
+        return switch (_status.value) {
+          AsyncFileStatus.idle => const IsometricLoading(),
+          AsyncFileStatus.loading => const IsometricLoading(),
+          AsyncFileStatus.done => _buildLoadedImage(context),
+          AsyncFileStatus.error => _errorWidget(context, this),
+        };
+      },
+    );
   }
 
   Widget _buildLoadedImage(BuildContext context) {

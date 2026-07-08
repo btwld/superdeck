@@ -195,50 +195,54 @@ class _SplitViewState extends State<SplitView>
     final deck = DeckController.of(context);
     final presentation = deck.presentation;
 
-    return Watch((context) {
-      final isNotesOpen = presentation.isNotesOpen.value;
-      final slides = deck.slides.value;
-      final currentSlide = presentation.currentSlide.value;
+    return SignalBuilder(
+      builder: (context) {
+        final isNotesOpen = presentation.isNotesOpen.value;
+        final slides = deck.slides.value;
+        final currentSlide = presentation.currentSlide.value;
 
-      /// Common content for thumbnails
-      final thumbnailPanel = ThumbnailPanel(
-        scrollDirection: widget.isSmallLayout ? Axis.horizontal : Axis.vertical,
-        onItemTap: presentation.goToSlide,
-        activeIndex:
-            currentSlide?.slideIndex ?? presentation.currentIndex.value,
-        itemBuilder: (index, selected) {
-          return SlideThumbnail(selected: selected, slide: slides[index]);
-        },
-        itemCount: slides.length,
-      );
-
-      /// Comments panel (shown only if notes are open)
-      final commentsPanel = isNotesOpen
-          ? CommentsPanel(comments: currentSlide?.comments ?? [])
-          : const SizedBox();
-
-      // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
-      // or for a big layout, we might do a column if it's on the SIDE.
-      // This is somewhat reversed based on your preference, so adjust as needed.
-      if (widget.isSmallLayout) {
-        // Panel at bottom => put them side-by-side in a Row
-        return Row(
-          children: [
-            !isNotesOpen
-                ? Expanded(child: thumbnailPanel)
-                : Expanded(child: commentsPanel),
-          ],
+        /// Common content for thumbnails
+        final thumbnailPanel = ThumbnailPanel(
+          scrollDirection: widget.isSmallLayout
+              ? Axis.horizontal
+              : Axis.vertical,
+          onItemTap: presentation.goToSlide,
+          activeIndex:
+              currentSlide?.slideIndex ?? presentation.currentIndex.value,
+          itemBuilder: (index, selected) {
+            return SlideThumbnail(selected: selected, slide: slides[index]);
+          },
+          itemCount: slides.length,
         );
-      } else {
-        // Panel on the side => put them in a Column
-        return Column(
-          children: [
-            Expanded(flex: 3, child: thumbnailPanel),
-            if (isNotesOpen) Expanded(flex: 1, child: commentsPanel),
-          ],
-        );
-      }
-    });
+
+        /// Comments panel (shown only if notes are open)
+        final commentsPanel = isNotesOpen
+            ? CommentsPanel(comments: currentSlide?.comments ?? [])
+            : const SizedBox();
+
+        // For small layout, show the panel horizontally (i.e., row) if it's at the BOTTOM,
+        // or for a big layout, we might do a column if it's on the SIDE.
+        // This is somewhat reversed based on your preference, so adjust as needed.
+        if (widget.isSmallLayout) {
+          // Panel at bottom => put them side-by-side in a Row
+          return Row(
+            children: [
+              !isNotesOpen
+                  ? Expanded(child: thumbnailPanel)
+                  : Expanded(child: commentsPanel),
+            ],
+          );
+        } else {
+          // Panel on the side => put them in a Column
+          return Column(
+            children: [
+              Expanded(flex: 3, child: thumbnailPanel),
+              if (isNotesOpen) Expanded(flex: 1, child: commentsPanel),
+            ],
+          );
+        }
+      },
+    );
   }
 
   Widget? _buildFloatingAction({
@@ -263,141 +267,144 @@ class _SplitViewState extends State<SplitView>
     // For small layout, the panel is typically at the bottom (vertical),
     // so we place it in a Column below the main content.
     // For regular layout, place it on the left in a Row.
-    return Watch((context) {
-      final isMenuOpen = deckController.presentation.isMenuOpen.value;
-      final isBuildActive = deckController.session.isBuildActive.value;
-      final buildFailure = deckController.session.buildFailure.value;
+    return SignalBuilder(
+      builder: (context) {
+        final isMenuOpen = deckController.presentation.isMenuOpen.value;
+        final isBuildActive = deckController.session.isBuildActive.value;
+        final buildFailure = deckController.session.buildFailure.value;
 
-      return Scaffold(
-        backgroundColor: const Color.fromARGB(255, 9, 9, 9),
-        floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
-        floatingActionButton: _buildFloatingAction(
-          deckController: deckController,
-          isMenuOpen: isMenuOpen,
-        ),
+        return Scaffold(
+          backgroundColor: const Color.fromARGB(255, 9, 9, 9),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniEndFloat,
+          floatingActionButton: _buildFloatingAction(
+            deckController: deckController,
+            isMenuOpen: isMenuOpen,
+          ),
 
-        bottomNavigationBar: SizeTransition(
-          axis: Axis.vertical,
-          sizeFactor: _curvedAnimation,
-          child: DeckBottomBar(actions: widget.actions),
-        ),
+          bottomNavigationBar: SizeTransition(
+            axis: Axis.vertical,
+            sizeFactor: _curvedAnimation,
+            child: DeckBottomBar(actions: widget.actions),
+          ),
 
-        // Body changes layout based on [isSmallLayout].
-        body: Stack(
-          children: [
-            widget.isSmallLayout
-                ? Column(
-                    children: [
-                      // Main slide content
-                      Expanded(
-                        child: Center(
-                          child: ScaledWidget(
-                            targetSize: kResolution,
-                            child: widget.child,
+          // Body changes layout based on [isSmallLayout].
+          body: Stack(
+            children: [
+              widget.isSmallLayout
+                  ? Column(
+                      children: [
+                        // Main slide content
+                        Expanded(
+                          child: Center(
+                            child: ScaledWidget(
+                              targetSize: kResolution,
+                              child: widget.child,
+                            ),
                           ),
                         ),
-                      ),
-                      // Animated bottom panel
-                      SizeTransition(
-                        axis: Axis.vertical,
-                        sizeFactor: _curvedAnimation,
-                        child: SizedBox(
-                          height: 200,
-                          child: _buildPanel(context),
-                        ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      // Animated side panel
-                      SizeTransition(
-                        axis: Axis.horizontal,
-                        sizeFactor: _curvedAnimation,
-                        child: SizedBox(
-                          width: 300,
-                          child: _buildPanel(context),
-                        ),
-                      ),
-                      // Main slide content
-                      Expanded(
-                        child: Center(
-                          child: ScaledWidget(
-                            targetSize: kResolution,
-                            child: widget.child,
+                        // Animated bottom panel
+                        SizeTransition(
+                          axis: Axis.vertical,
+                          sizeFactor: _curvedAnimation,
+                          child: SizedBox(
+                            height: 200,
+                            child: _buildPanel(context),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-            if (isBuildActive || buildFailure != null)
-              Positioned(
-                top: 16,
-                right: 16,
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 320),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: buildFailure == null
-                          ? Colors.white24
-                          : Colors.redAccent.withValues(alpha: 0.8),
-                      width: 1,
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        // Animated side panel
+                        SizeTransition(
+                          axis: Axis.horizontal,
+                          sizeFactor: _curvedAnimation,
+                          child: SizedBox(
+                            width: 300,
+                            child: _buildPanel(context),
+                          ),
+                        ),
+                        // Main slide content
+                        Expanded(
+                          child: Center(
+                            child: ScaledWidget(
+                              targetSize: kResolution,
+                              child: widget.child,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+              if (isBuildActive || buildFailure != null)
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: buildFailure == null
+                            ? Colors.white24
+                            : Colors.redAccent.withValues(alpha: 0.8),
+                        width: 1,
+                      ),
+                    ),
+                    child: isBuildActive
+                        ? const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: IsometricLoading(),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Rebuilding...',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Build failed',
+                                style: TextStyle(
+                                  color: Colors.redAccent,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                buildFailure!.message,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
-                  child: isBuildActive
-                      ? const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: IsometricLoading(),
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Rebuilding...',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'Build failed',
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              buildFailure!.message,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
                 ),
-              ),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+        );
+      },
+    );
   }
 }

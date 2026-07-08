@@ -49,17 +49,19 @@ class DeckPresenter extends StatelessWidget {
             // so render the current slide reactively and cross-fade between
             // indices to match SuperDeckApp's route transition. (A nested Router
             // would fight the host app's own router for platform route info.)
-            child: Watch((context) {
-              final index = controller.presentation.currentIndex.value;
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 400),
-                switchInCurve: Curves.easeInOut,
-                child: KeyedSubtree(
-                  key: ValueKey<int>(index),
-                  child: SlidePageContent(index: index),
-                ),
-              );
-            }),
+            child: SignalBuilder(
+              builder: (context) {
+                final index = controller.presentation.currentIndex.value;
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  switchInCurve: Curves.easeInOut,
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(index),
+                    child: SlidePageContent(index: index),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),

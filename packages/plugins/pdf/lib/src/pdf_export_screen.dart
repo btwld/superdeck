@@ -138,45 +138,47 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Watch((context) {
-      _exportController.exportStatus.value;
+    return SignalBuilder(
+      builder: (context) {
+        _exportController.exportStatus.value;
 
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          Center(
-            child: SizedBox.fromSize(
-              size: superDeckSlideSize,
-              child: PageView.builder(
-                controller: _exportController.pageController,
-                itemCount: _exportController.slides.length,
-                itemBuilder: (context, index) {
-                  final slide = _exportController.slides[index].copyWith(
-                    isStaticRendering: true,
-                    debug: false,
-                  );
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Center(
+              child: SizedBox.fromSize(
+                size: superDeckSlideSize,
+                child: PageView.builder(
+                  controller: _exportController.pageController,
+                  itemCount: _exportController.slides.length,
+                  itemBuilder: (context, index) {
+                    final slide = _exportController.slides[index].copyWith(
+                      isStaticRendering: true,
+                      debug: false,
+                    );
 
-                  return RepaintBoundary(
-                    key: _exportController.getSlideKey(slide),
-                    child: _PdfSlideCaptureView(slide: slide),
-                  );
+                    return RepaintBoundary(
+                      key: _exportController.getSlideKey(slide),
+                      child: _PdfSlideCaptureView(slide: slide),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const ModalBarrier(color: Colors.black, dismissible: false),
+            Center(
+              child: _PdfExportBar(
+                exportController: _exportController,
+                onCancel: () {
+                  _exportController.cancel();
+                  _close();
                 },
               ),
             ),
-          ),
-          const ModalBarrier(color: Colors.black, dismissible: false),
-          Center(
-            child: _PdfExportBar(
-              exportController: _exportController,
-              onCancel: () {
-                _exportController.cancel();
-                _close();
-              },
-            ),
-          ),
-        ],
-      );
-    });
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -202,76 +204,78 @@ class _PdfExportBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Watch((context) {
-      final status = exportController.exportStatus.value;
-      final progressValue = exportController.progress.value;
-      final (current, total) = exportController.progressTuple.value;
-      final theme = Theme.of(context);
-      final indicatorValue = status == PdfExportStatus.capturing
-          ? progressValue
-          : null;
-      final isDone = switch (status) {
-        PdfExportStatus.complete || PdfExportStatus.failed => true,
-        _ => false,
-      };
+    return SignalBuilder(
+      builder: (context) {
+        final status = exportController.exportStatus.value;
+        final progressValue = exportController.progress.value;
+        final (current, total) = exportController.progressTuple.value;
+        final theme = Theme.of(context);
+        final indicatorValue = status == PdfExportStatus.capturing
+            ? progressValue
+            : null;
+        final isDone = switch (status) {
+          PdfExportStatus.complete || PdfExportStatus.failed => true,
+          _ => false,
+        };
 
-      final progressText = switch (status) {
-        PdfExportStatus.building => 'Building PDF...',
-        PdfExportStatus.complete => 'Done',
-        PdfExportStatus.capturing => 'Exporting $current / $total',
-        PdfExportStatus.idle => 'Exporting $current / $total',
-        PdfExportStatus.preparing => 'Preparing...',
-        PdfExportStatus.failed =>
-          exportController.exportError.value ?? 'Export failed',
-      };
+        final progressText = switch (status) {
+          PdfExportStatus.building => 'Building PDF...',
+          PdfExportStatus.complete => 'Done',
+          PdfExportStatus.capturing => 'Exporting $current / $total',
+          PdfExportStatus.idle => 'Exporting $current / $total',
+          PdfExportStatus.preparing => 'Preparing...',
+          PdfExportStatus.failed =>
+            exportController.exportError.value ?? 'Export failed',
+        };
 
-      return ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360, minWidth: 280),
-        child: Material(
-          color: const Color(0xff171717),
-          elevation: 24,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                switch (status) {
-                  PdfExportStatus.complete => Icon(
-                    Icons.check_circle,
-                    color: theme.colorScheme.primary,
-                    size: 32,
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360, minWidth: 280),
+          child: Material(
+            color: const Color(0xff171717),
+            elevation: 24,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  switch (status) {
+                    PdfExportStatus.complete => Icon(
+                      Icons.check_circle,
+                      color: theme.colorScheme.primary,
+                      size: 32,
+                    ),
+                    PdfExportStatus.failed => Icon(
+                      Icons.error,
+                      color: theme.colorScheme.error,
+                      size: 32,
+                    ),
+                    _ => SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: CircularProgressIndicator(value: indicatorValue),
+                    ),
+                  },
+                  const SizedBox(height: 16.0),
+                  Text(
+                    progressText,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
-                  PdfExportStatus.failed => Icon(
-                    Icons.error,
-                    color: theme.colorScheme.error,
-                    size: 32,
+                  const SizedBox(height: 20.0),
+                  ElevatedButton.icon(
+                    onPressed: onCancel,
+                    icon: Icon(isDone ? Icons.close : Icons.cancel),
+                    label: Text(isDone ? 'Close' : 'Cancel'),
                   ),
-                  _ => SizedBox(
-                    height: 32,
-                    width: 32,
-                    child: CircularProgressIndicator(value: indicatorValue),
-                  ),
-                },
-                const SizedBox(height: 16.0),
-                Text(
-                  progressText,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20.0),
-                ElevatedButton.icon(
-                  onPressed: onCancel,
-                  icon: Icon(isDone ? Icons.close : Icons.cancel),
-                  label: Text(isDone ? 'Close' : 'Cancel'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }

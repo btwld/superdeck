@@ -17,14 +17,14 @@ const _bubbleBorderRadius = BorderRadius.only(
 );
 
 /// Typing indicator bubble - shows only when AI is thinking.
-class TypingBubble extends StatelessWidget {
+class TypingBubble extends SignalWidget {
   const TypingBubble({super.key, required this.isThinking});
 
   final ReadonlySignal<bool> isThinking;
 
   @override
   Widget build(BuildContext context) {
-    final thinking = isThinking.watch(context);
+    final thinking = isThinking.value;
 
     if (!thinking) return const SizedBox.shrink();
 
@@ -48,7 +48,7 @@ class TypingBubble extends StatelessWidget {
 }
 
 /// Message bubble - shows the last AI message (hidden when thinking).
-class GenUiMessageBubble extends StatelessWidget {
+class GenUiMessageBubble extends SignalWidget {
   const GenUiMessageBubble({
     super.key,
     required this.isThinking,
@@ -69,8 +69,8 @@ class GenUiMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentMessages = messages.watch(context);
-    final thinking = isThinking.watch(context);
+    final currentMessages = messages.value;
+    final thinking = isThinking.value;
 
     final lastAiMessage = currentMessages.reversed
         .whereType<SuperdeckAiMessage>()
@@ -90,7 +90,7 @@ class GenUiMessageBubble extends StatelessWidget {
 }
 
 /// Shared surfaces panel used by AI conversation screens.
-class AiSurfacesPanel extends StatelessWidget {
+class AiSurfacesPanel extends SignalWidget {
   const AiSurfacesPanel({
     super.key,
     required this.controller,
@@ -110,8 +110,8 @@ class AiSurfacesPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ids = surfaceIds.watch(context);
-    final thinking = isThinking.watch(context);
+    final ids = surfaceIds.value;
+    final thinking = isThinking.value;
 
     final flex = FlexBoxStyler()
         .spacing(16)
@@ -173,7 +173,7 @@ class AiSurfacesPanel extends StatelessWidget {
                     isThinking: isThinking,
                     messages: messages,
                   ),
-                  if (surfacesWidget != null) surfacesWidget,
+                  ?surfacesWidget,
                 ],
               ),
             ),
@@ -187,7 +187,7 @@ class AiSurfacesPanel extends StatelessWidget {
 }
 
 /// Shared chat body panel used by AI conversation screens.
-class ChatBodyPanel extends StatelessWidget {
+class ChatBodyPanel extends SignalWidget {
   const ChatBodyPanel({
     super.key,
     required this.messages,
@@ -205,7 +205,7 @@ class ChatBodyPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thinking = isThinking.watch(context);
+    final thinking = isThinking.value;
 
     return Column(
       children: [
@@ -217,10 +217,7 @@ class ChatBodyPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 8,
-            children: [
-              if (thinking) const LoadingResponse(),
-              if (inputWidget != null) inputWidget!,
-            ],
+            children: [if (thinking) const LoadingResponse(), ?inputWidget],
           ),
         ),
       ],
@@ -229,7 +226,7 @@ class ChatBodyPanel extends StatelessWidget {
 }
 
 /// Shared message list used by AI conversation body panels.
-class MessageList extends StatelessWidget {
+class MessageList extends SignalWidget {
   const MessageList({
     super.key,
     required this.messages,
@@ -241,7 +238,7 @@ class MessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentMessages = messages.watch(context);
+    final currentMessages = messages.value;
     final reversedMessages = currentMessages.reversed.toList();
 
     if (currentMessages.isEmpty) {
