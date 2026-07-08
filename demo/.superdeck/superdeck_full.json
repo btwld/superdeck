@@ -1032,6 +1032,136 @@
     "comments": []
   },
   {
+    "key": "DGz7HMmA",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Ack-Generated Widget Args {.heading}"
+                    }
+                  ],
+                  "generatedId": "ack-generated-widget-args-heading"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Ack can validate custom widget arguments and generate typed getters over the same "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Map&lt;String, Object?&gt;"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " payload."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "pre",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "attributes": {
+                        "class": "language-markdown"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "@ack-metric-card {\n  flex: 2\n  align: center\n  label: Activation\n  value: &quot;72%&quot;\n  caption: &quot;Parsed through Ack-generated typed getters&quot;\n  tone: green\n}\n"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 3,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "ack-metric-card",
+            "align": "center",
+            "flex": 2,
+            "scrollable": false,
+            "type": "widget",
+            "label": "Activation",
+            "value": "72%",
+            "caption": "Parsed through Ack-generated typed getters",
+            "tone": "green"
+          }
+        ],
+        "flex": 4,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
     "key": "C8r6gb6A",
     "options": {},
     "sections": [
