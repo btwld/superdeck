@@ -70,30 +70,32 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
     final size = MediaQuery.of(context).size;
     final presentation = DeckController.of(context).presentation;
 
-    return Watch((context) {
-      final isMenuOpen = presentation.isMenuOpen.value;
+    return SignalBuilder(
+      builder: (context) {
+        final isMenuOpen = presentation.isMenuOpen.value;
 
-      return GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTapUp: isMenuOpen
-            ? null
-            : (details) {
-                final event = _gestureHandler.handleTap(details, size);
-                _dispatch(presentation, event);
-              },
-        onHorizontalDragStart: isMenuOpen
-            ? null
-            : (details) {
-                _gestureHandler.handleDragStart(details);
-              },
-        onHorizontalDragEnd: isMenuOpen
-            ? null
-            : (details) {
-                final event = _gestureHandler.handleSwipe(details);
-                _dispatch(presentation, event);
-              },
-        child: widget.child,
-      );
-    });
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTapUp: isMenuOpen
+              ? null
+              : (details) {
+                  final event = _gestureHandler.handleTap(details, size);
+                  _dispatch(presentation, event);
+                },
+          onHorizontalDragStart: isMenuOpen
+              ? null
+              : (details) {
+                  _gestureHandler.handleDragStart(details);
+                },
+          onHorizontalDragEnd: isMenuOpen
+              ? null
+              : (details) {
+                  final event = _gestureHandler.handleSwipe(details);
+                  _dispatch(presentation, event);
+                },
+          child: widget.child,
+        );
+      },
+    );
   }
 }

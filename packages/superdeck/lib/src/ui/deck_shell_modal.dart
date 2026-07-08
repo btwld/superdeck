@@ -106,8 +106,8 @@ class _DeckShellModalHostState extends State<DeckShellModalHost> {
   Widget build(BuildContext context) {
     return _DeckShellModalScope(
       controller: _controller,
-      child: Watch(
-        (context) => Stack(
+      child: SignalBuilder(
+        builder: (context) => Stack(
           fit: StackFit.expand,
           children: [
             widget.child,
