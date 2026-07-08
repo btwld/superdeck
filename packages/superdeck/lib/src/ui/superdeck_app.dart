@@ -7,13 +7,11 @@ import 'tokens/colors.dart';
 
 import '../deck/deck_controller_builder.dart';
 import '../deck/deck_options.dart';
-import '../deck/loaders/bundled_deck_loader.dart';
-import '../deck/loaders/file_deck_loader.dart';
+import '../deck/default_deck_setup.dart';
 import '../plugins/deck_action.dart';
 import '../plugins/deck_runtime_plugin.dart';
 import '../utils/app_initialization.dart';
 import '../utils/asset_cache_store.dart';
-import '../utils/constants.dart';
 import 'app_shell.dart';
 import 'app_theme.dart';
 
@@ -35,8 +33,23 @@ class SuperDeckApp extends StatelessWidget {
   /// Plugin IDs and the action IDs they contribute must be unique.
   final List<DeckRuntimePlugin> plugins;
 
-  /// Optional loader override. When null, auto-selects [FileDeckLoader] or
-  /// [BundledDeckLoader] based on the runtime environment.
+  /// Optional loader override.
+  ///
+  /// When null, auto-selects `FileDeckLoader` if a project root
+  /// (`pubspec.yaml`) is discoverable from the current directory on a debug IO
+  /// runtime, and `BundledDeckLoader` otherwise.
+  ///
+  /// To force bundled loading, pass one [DeckWorkspace] to both the loader and
+  /// app so the loader and asset cache resolve against the same workspace:
+  ///
+  /// ```dart
+  /// final ws = DeckWorkspace();
+  /// SuperDeckApp(
+  ///   options: options,
+  ///   deckLoader: BundledDeckLoader(workspace: ws),
+  ///   workspace: ws,
+  /// );
+  /// ```
   final DeckLoader? deckLoader;
   final DeckWorkspace? workspace;
   final AssetCacheStore? assetCacheStore;
@@ -106,12 +119,16 @@ class SuperDeckApp extends StatelessWidget {
       );
     }
 
-    final runtimeWorkspace = workspace ?? DeckWorkspace();
-    final loader =
-        deckLoader ??
-        (kCanRunProcess
-            ? FileDeckLoader(workspace: runtimeWorkspace)
-            : BundledDeckLoader(workspace: runtimeWorkspace));
+    final DeckLoader loader;
+    final DeckWorkspace runtimeWorkspace;
+    if (deckLoader != null) {
+      loader = deckLoader!;
+      runtimeWorkspace = workspace ?? DeckWorkspace();
+    } else {
+      final setup = resolveDeckSetup(workspace: workspace);
+      loader = setup.loader;
+      runtimeWorkspace = setup.workspace;
+    }
     final cacheStore =
         assetCacheStore ?? RuntimeAssetCacheStore(workspace: runtimeWorkspace);
     final actions = _resolvePluginActions(plugins);
@@ -124,7 +141,7 @@ class SuperDeckApp extends StatelessWidget {
       builder: (context, router) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          title: 'Superdeck',
+          title: 'SuperDeck',
           routerConfig: router,
           builder: (context, child) {
             return MixScope(

@@ -7,9 +7,9 @@ import 'package:meta/meta.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../utils/ensure_pubspec_assets.dart';
 import '../utils/extensions.dart';
 import '../utils/logger.dart' show LoggerX;
-import '../utils/update_pubspec.dart';
 import 'base_command.dart';
 
 /// Builds SuperDeck presentations from markdown.
@@ -170,7 +170,7 @@ class BuildCommand extends SuperDeckCommand {
 
       if (!boolArg('skip-pubspec')) {
         try {
-          await _ensurePubspecAssets(deckWorkspace, logger);
+          await ensurePubspecAssets(deckWorkspace, logger);
         } catch (e) {
           logger.warn('Failed to update pubspec assets: $e');
         }
@@ -301,33 +301,4 @@ class BuildCommand extends SuperDeckCommand {
 
   @override
   String get name => 'build';
-}
-
-/// Ensures the pubspec.yaml has the necessary assets configuration.
-Future<void> _ensurePubspecAssets(
-  DeckWorkspace workspace,
-  Logger logger,
-) async {
-  final progress = logger.progress('Checking pubspec.yaml assets...');
-
-  final pubspecFile = workspace.pubspecFile;
-
-  if (!await pubspecFile.exists()) {
-    progress.fail('pubspec.yaml not found');
-
-    return;
-  }
-
-  final pubspecContents = await pubspecFile.readAsString();
-  final updatedPubspecContents = updatePubspecAssets(
-    workspace,
-    pubspecContents,
-  );
-
-  if (updatedPubspecContents != pubspecContents) {
-    await pubspecFile.writeAsString(updatedPubspecContents);
-    progress.complete('Pubspec assets updated');
-  } else {
-    progress.complete('Pubspec assets already configured');
-  }
 }
