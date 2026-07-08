@@ -153,6 +153,39 @@ void main() {
       );
     });
 
+    testWidgets('renders when optional webview APIs are unsupported', (
+      tester,
+    ) async {
+      webViewPlatform = _WebLikeWebViewPlatform();
+      WebViewPlatform.instance = webViewPlatform;
+
+      await tester.pumpWidget(
+        _WebViewHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          args: {'url': 'https://example.com/web', 'javascript': false},
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('fake-web-view')), findsOneWidget);
+      expect(webViewPlatform.controllers, hasLength(1));
+      expect(webViewPlatform.controllers.single.navigationDelegate, isNull);
+      expect(webViewPlatform.controllers.single.javaScriptMode, isNull);
+      expect(
+        tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity,
+        1,
+      );
+      expect(
+        webViewPlatform.controllers.single.loadedRequests.single.uri.toString(),
+        'https://example.com/web',
+      );
+    });
+
     testWidgets('reuses controller on remount with same cache identity', (
       tester,
     ) async {
@@ -547,6 +580,42 @@ void main() {
       expect(webViewPlatform.controllers.single.reloadCount, 1);
     });
 
+    testWidgets(
+      'refresh falls back to loadRequest when reload is unsupported',
+      (tester) async {
+        webViewPlatform = _WebLikeWebViewPlatform();
+        WebViewPlatform.instance = webViewPlatform;
+
+        await tester.pumpWidget(
+          _WebViewHarness(
+            deckController: deckController,
+            size: const Size(640, 480),
+            runtimeKey: 'slide-0:s0:b0',
+            args: {'url': 'https://example.com', 'showControls': true},
+          ),
+        );
+        await tester.pump();
+
+        final controller = webViewPlatform.controllers.single;
+
+        await tester.tap(find.byIcon(Icons.refresh));
+        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pump(const Duration(milliseconds: 150));
+
+        expect(tester.takeException(), isNull);
+        expect(controller.reloadCount, 0);
+        expect(controller.loadedRequests, hasLength(2));
+        expect(
+          controller.loadedRequests.last.uri.toString(),
+          'https://example.com',
+        );
+        expect(
+          tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity,
+          1,
+        );
+      },
+    );
+
     testWidgets('static rendering shows title placeholder without controller', (
       tester,
     ) async {
@@ -745,6 +814,17 @@ class _FakeWebViewPlatform extends WebViewPlatform {
   }
 }
 
+class _WebLikeWebViewPlatform extends _FakeWebViewPlatform {
+  @override
+  PlatformWebViewController createPlatformWebViewController(
+    PlatformWebViewControllerCreationParams params,
+  ) {
+    final controller = _WebLikeWebViewController(params);
+    controllers.add(controller);
+    return controller;
+  }
+}
+
 class _FakeWebViewController extends PlatformWebViewController {
   final loadedRequests = <LoadRequestParams>[];
   final javaScripts = <String>[];
@@ -780,6 +860,40 @@ class _FakeWebViewController extends PlatformWebViewController {
     PlatformNavigationDelegate handler,
   ) async {
     navigationDelegate = handler;
+  }
+}
+
+class _WebLikeWebViewController extends _FakeWebViewController {
+  _WebLikeWebViewController(super.params);
+
+  @override
+  Future<void> reload() {
+    throw UnimplementedError(
+      'reload is not implemented on the current platform',
+    );
+  }
+
+  @override
+  Future<void> runJavaScript(String javaScript) {
+    throw UnimplementedError(
+      'runJavaScript is not implemented on the current platform',
+    );
+  }
+
+  @override
+  Future<void> setJavaScriptMode(JavaScriptMode javaScriptMode) {
+    throw UnimplementedError(
+      'setJavaScriptMode is not implemented on the current platform',
+    );
+  }
+
+  @override
+  Future<void> setPlatformNavigationDelegate(
+    PlatformNavigationDelegate handler,
+  ) {
+    throw UnimplementedError(
+      'setPlatformNavigationDelegate is not implemented on the current platform',
+    );
   }
 }
 

@@ -25,6 +25,9 @@ class CachedWebViewEntry {
   /// Active mount listens here for page-finished fade-in.
   void Function()? onPageFinished;
 
+  /// Whether the platform can report page-finished events for this controller.
+  bool pageFinishedCallbacksUnsupported = false;
+
   Object? _activeMount;
 
   CachedWebViewEntry({required this.controller});

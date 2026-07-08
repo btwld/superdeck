@@ -228,6 +228,35 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('controls tolerate unsupported web iframe APIs', (
+      tester,
+    ) async {
+      webViewPlatform = _WebLikeWebViewPlatform();
+      WebViewPlatform.instance = webViewPlatform;
+
+      await tester.pumpWidget(
+        _DartPadHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          args: const {'id': 'snippet'},
+        ),
+      );
+      await tester.pump();
+
+      final controller = webViewPlatform.controllers.single;
+
+      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(controller.reloadCount, 0);
+      expect(controller.loadedRequests, hasLength(2));
+
+      await tester.tap(find.byIcon(Icons.clear));
+      await tester.pump();
+      expect(controller.javaScripts, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('page finished fades in the WebView', (tester) async {
       await tester.pumpWidget(
         _DartPadHarness(
@@ -445,6 +474,17 @@ class _FakeWebViewPlatform extends WebViewPlatform {
   }
 }
 
+class _WebLikeWebViewPlatform extends _FakeWebViewPlatform {
+  @override
+  PlatformWebViewController createPlatformWebViewController(
+    PlatformWebViewControllerCreationParams params,
+  ) {
+    final controller = _WebLikeWebViewController(params);
+    controllers.add(controller);
+    return controller;
+  }
+}
+
 class _FakeWebViewController extends PlatformWebViewController {
   final loadedRequests = <LoadRequestParams>[];
   final javaScripts = <String>[];
@@ -480,6 +520,40 @@ class _FakeWebViewController extends PlatformWebViewController {
     PlatformNavigationDelegate handler,
   ) async {
     navigationDelegate = handler;
+  }
+}
+
+class _WebLikeWebViewController extends _FakeWebViewController {
+  _WebLikeWebViewController(super.params);
+
+  @override
+  Future<void> reload() {
+    throw UnimplementedError(
+      'reload is not implemented on the current platform',
+    );
+  }
+
+  @override
+  Future<void> runJavaScript(String javaScript) {
+    throw UnimplementedError(
+      'runJavaScript is not implemented on the current platform',
+    );
+  }
+
+  @override
+  Future<void> setJavaScriptMode(JavaScriptMode javaScriptMode) {
+    throw UnimplementedError(
+      'setJavaScriptMode is not implemented on the current platform',
+    );
+  }
+
+  @override
+  Future<void> setPlatformNavigationDelegate(
+    PlatformNavigationDelegate handler,
+  ) {
+    throw UnimplementedError(
+      'setPlatformNavigationDelegate is not implemented on the current platform',
+    );
   }
 }
 
