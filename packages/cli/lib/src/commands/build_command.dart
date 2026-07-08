@@ -7,8 +7,8 @@ import 'package:meta/meta.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../utils/extensions.dart';
 import '../utils/ensure_pubspec_assets.dart';
+import '../utils/extensions.dart';
 import '../utils/logger.dart' show LoggerX;
 import 'base_command.dart';
 

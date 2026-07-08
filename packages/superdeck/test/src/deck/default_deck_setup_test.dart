@@ -93,7 +93,6 @@ void main() {
       expect(loader, isA<FileDeckLoader>());
       expect((loader as FileDeckLoader).workspace, same(workspace));
       expect(setup.workspace, same(workspace));
-      expect(identical(loader.workspace, setup.workspace), isTrue);
       expect(findRootCalled, isFalse);
     });
 
@@ -118,7 +117,6 @@ void main() {
         expect(loader, isA<BundledDeckLoader>());
         expect((loader as BundledDeckLoader).workspace, same(workspace));
         expect(setup.workspace, same(workspace));
-        expect(identical(loader.workspace, setup.workspace), isTrue);
         expect(findRootCalled, isFalse);
       },
     );
@@ -134,7 +132,6 @@ void main() {
       expect(loader, isA<FileDeckLoader>());
       expect(setup.workspace, DeckWorkspace(projectDir: '/found/root'));
       expect((loader as FileDeckLoader).workspace, same(setup.workspace));
-      expect(identical(loader.workspace, setup.workspace), isTrue);
     });
 
     test(
@@ -150,7 +147,6 @@ void main() {
         expect(loader, isA<BundledDeckLoader>());
         expect(setup.workspace, DeckWorkspace());
         expect((loader as BundledDeckLoader).workspace, same(setup.workspace));
-        expect(identical(loader.workspace, setup.workspace), isTrue);
       },
     );
 
@@ -172,7 +168,6 @@ void main() {
         expect(loader, isA<BundledDeckLoader>());
         expect(setup.workspace, DeckWorkspace());
         expect((loader as BundledDeckLoader).workspace, same(setup.workspace));
-        expect(identical(loader.workspace, setup.workspace), isTrue);
         expect(findRootCalled, isFalse);
       },
     );
