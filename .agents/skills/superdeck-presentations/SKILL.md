@@ -31,6 +31,7 @@ Load only the reference needed for the task:
 - A slide contains vertical sections. Each `@section` starts a new vertical row; blocks inside that section are laid out horizontally.
 - `@block` renders Markdown. `@widget` and any unrecognized `@name` render a `WidgetBlock`.
 - Images have two authoring paths. Prefer standalone Markdown `![alt](src)` when the image belongs in the Markdown content flow; use `@image { src: ... }` when the image needs block-level layout control such as `fit`, fixed size, `flex`, `align`, `scrollable`, or `data:` source support.
+- Markdown class markers such as `{.heading}` or `{.title}` drive Hero transitions for supported Markdown elements; the class does not need a `hero-` prefix. Use the same tag on matching elements across adjacent slides, and do not duplicate the same tag on one slide.
 - `@column` is intentionally unsupported; use `@block`.
 - Block and widget `align` controls visible content alignment. Current renderer stores `section.align` but does not apply it to child layout; set `align` on child blocks/widgets when visual placement matters.
 - `scrollable` is valid on `@block` and widget blocks, not on `@section`.

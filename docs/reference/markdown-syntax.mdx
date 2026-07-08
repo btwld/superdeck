@@ -135,9 +135,16 @@ Use GitHub-style alert syntax:
 
 ### Hero classes
 
-Use classes to animate matching elements between slides:
+Use Markdown class markers to animate matching elements between slides. The first valid class name becomes the Flutter Hero tag, so it does not need to start with `hero-`.
 
 ````markdown
+# Overview {.heading}
+## What changes next {.subheading}
+
 # Roadmap {.hero-title}
 ![Diagram](assets/roadmap.png) {.hero-visual}
 ````
+
+Use the same tag for the element that should transition from one slide to the next. For example, one `{.heading}` on slide A can animate to one `{.heading}` on slide B.
+
+Do not use the same tag twice on one slide. Each Hero tag must identify one element per slide, so use separate tags like `{.heading}` and `{.subheading}` when multiple elements should animate.

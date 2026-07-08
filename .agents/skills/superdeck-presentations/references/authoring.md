@@ -358,9 +358,12 @@ SuperDeck uses GitHub-flavored Markdown plus custom builders:
 
 Supported alert labels include `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`.
 
-Hero markers can be attached to headings, images, and fenced code blocks:
+Hero transition tags can be attached to headings, images, and fenced code blocks with Markdown class-marker syntax:
 
 ````markdown
+# Overview {.heading}
+## What changes next {.subheading}
+
 # Roadmap {.hero-title}
 ![Diagram](assets/roadmap.png) {.hero-visual}
 
@@ -369,7 +372,13 @@ void main() {}
 ```
 ````
 
-The first valid class name is used as the hero tag. Do not rely on classes beginning with `--`; they are rejected.
+The first valid class name is used as the Hero tag. The class does not need a `hero-` prefix: `{.heading}`, `{.subheading}`, `{.title}`, and `{.hero-title}` are all valid tag names when they match the identifier rules.
+
+Use the same tag on the element that should animate from one slide to the next. For example, a heading marked `{.heading}` on slide 1 will transition to the heading marked `{.heading}` on slide 2.
+
+Do not duplicate the same Hero tag on one slide. Flutter Hero transitions require one source/destination element for each tag in a route; if a slide contains two elements marked `{.heading}`, the transition is ambiguous and can fail. Use distinct tags such as `{.heading}` and `{.subheading}` for multiple animated text elements on the same slide.
+
+Do not rely on classes beginning with `--`; they are rejected. The class marker is stripped from rendered content and is not a Mix style selector.
 
 ## Authoring Patterns
 
