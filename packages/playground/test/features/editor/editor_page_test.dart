@@ -8,20 +8,33 @@ import 'package:playground/features/editor/presentation/pages/editor_page.dart';
 import 'package:playground/features/editor/presentation/widgets/customization_sidebar.dart';
 import 'package:playground/features/editor/presentation/widgets/preview_sidebar.dart';
 
+import '../../helpers/fake_deck_file_store.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
   Widget app() {
+    // In-memory store/settings so the editor's file-backed bootstrap resolves
+    // without touching disk or spinning a real file watcher.
     return MaterialApp.router(
       routerConfig: createRouter(),
-      builder: (context, child) => _Theme(child: AppProviders(child: child!)),
+      builder: (context, child) => _Theme(
+        child: AppProviders(
+          deckFileStore: FakeDeckFileStore(),
+          appSettingsStore: FakeAppSettingsStore(),
+          child: child!,
+        ),
+      ),
     );
   }
 
   testWidgets('editor route builds with its sidebars', (tester) async {
     await tester.pumpWidget(app());
+    // Let the async bootstrap (seed the in-memory default deck) resolve so the
+    // editor mounts past its loading spinner.
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.byType(EditorPage), findsOneWidget);
     expect(find.byType(PreviewSidebar), findsOneWidget);

@@ -3,6 +3,8 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:superdeck/superdeck.dart';
 
+import '../core/data/data_sources/app_settings_store.dart';
+import '../core/data/data_sources/deck_file_store.dart';
 import '../core/data/data_sources/memory_asset_cache_store.dart';
 import '../core/data/data_sources/memory_deck_loader.dart';
 import '../core/domain/stores/deck_customization_store.dart';
@@ -17,10 +19,21 @@ import '../core/domain/stores/deck_customization_store.dart';
 ///
 /// The editor's `EditorStore` is provided at its route instead. Slides are read
 /// straight off `DeckController.slides` (a signal) in the UI — no bridge store.
+///
+/// [deckFileStore]/[appSettingsStore] default to the native (filesystem)
+/// implementations; tests inject in-memory fakes so the editor's file-backed
+/// bootstrap runs without touching disk.
 class AppProviders extends StatelessWidget {
-  const AppProviders({required this.child, super.key});
+  const AppProviders({
+    required this.child,
+    this.deckFileStore,
+    this.appSettingsStore,
+    super.key,
+  });
 
   final Widget child;
+  final DeckFileStore? deckFileStore;
+  final AppSettingsStore? appSettingsStore;
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +48,12 @@ class AppProviders extends StatelessWidget {
           create: (_) => MemoryDeckLoader(),
           dispose: (_, loader) => loader.dispose(),
         ),
-        Provider<MemoryAssetCacheStore>(
-          create: (_) => MemoryAssetCacheStore(),
+        Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
+        Provider<DeckFileStore>(
+          create: (_) => deckFileStore ?? NativeDeckFileStore(),
+        ),
+        Provider<AppSettingsStore>(
+          create: (_) => appSettingsStore ?? NativeAppSettingsStore(),
         ),
         Provider<DeckController>(
           lazy: false,

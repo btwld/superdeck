@@ -46,6 +46,9 @@ dependencies:
   ack_json_schema_builder: 1.0.0-beta.12
   dartantic_ai: ^3.1.0
   json_schema_builder: ^0.1.5
+  # Filesystem persistence for the playground editor (desktop-only).
+  path_provider: ^2.1.4
+  file_picker: ^8.1.2
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +58,10 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.5.4
   ack_generator: 1.0.0-beta.12
+  # Test-only: mock path_provider so the native deck file store can be exercised
+  # against a temp directory.
+  path_provider_platform_interface: ^2.1.2
+  plugin_platform_interface: ^2.1.8
 
 flutter:
   uses-material-design: true

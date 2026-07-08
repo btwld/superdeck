@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/stores/deck_file_controller.dart';
 import '../../domain/stores/editor_store.dart';
 import '../widgets/customization_sidebar.dart';
 import '../widgets/editor_controls.dart';
+import '../widgets/editor_header.dart';
+import '../widgets/new_deck_dialog.dart';
 import '../widgets/preview_sidebar.dart';
 import '../widgets/text_editor.dart';
 
@@ -15,67 +19,92 @@ class EditorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<EditorStore>();
+    final fileController = context.read<DeckFileController>();
 
-    return Scaffold(
-      backgroundColor: $background.resolve(context),
-      body: Box(
-        style: BoxStyler().color($background()),
-        child: RowBox(
-          children: [
-            _AnimatedSidebar(
-              visible: store.showPreviewSidebar,
-              alignment: Alignment.centerLeft,
-              child: const PreviewSidebar(),
-            ),
-
-            Expanded(
-              child: Stack(
-                children: [
-                  TextEditor(),
-                  Align(
-                    alignment: .bottomCenter,
-                    child: Padding(
-                      padding: const .only(bottom: 24),
-                      child: EditorControls(
-                        showPreviewSidebar: store.showPreviewSidebar,
-                        showCustomizationSidebar:
-                            store.showCustomizationSidebar,
-                        onTogglePreviewSidebar: store.togglePreviewSidebar,
-                        onToggleCustomizationSidebar:
-                            store.toggleCustomizationSidebar,
+    // ⌘N / ⌘O drive the file operations; the file operations otherwise live in
+    // the header. Focus (autofocus) gives the shortcuts a target so they work
+    // before the editor is clicked, without stealing focus once it is.
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () =>
+            showNewDeckDialog(context, fileController),
+        const SingleActivator(LogicalKeyboardKey.keyO, meta: true):
+            fileController.openDeck,
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: $background.resolve(context),
+          body: Column(
+            children: [
+              const EditorHeader(),
+              Expanded(
+                child: Box(
+                  style: BoxStyler().color($background()),
+                  child: RowBox(
+                    children: [
+                      _AnimatedSidebar(
+                        visible: store.showPreviewSidebar,
+                        alignment: Alignment.centerLeft,
+                        child: const PreviewSidebar(),
                       ),
-                    ),
+
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            TextEditor(),
+                            Align(
+                              alignment: .bottomCenter,
+                              child: Padding(
+                                padding: const .only(bottom: 24),
+                                child: EditorControls(
+                                  showPreviewSidebar: store.showPreviewSidebar,
+                                  showCustomizationSidebar:
+                                      store.showCustomizationSidebar,
+                                  onTogglePreviewSidebar:
+                                      store.togglePreviewSidebar,
+                                  onToggleCustomizationSidebar:
+                                      store.toggleCustomizationSidebar,
+                                ),
+                              ),
+                            ),
+                            if (store.showPreviewSidebar)
+                              Align(
+                                alignment: .centerLeft,
+                                child: Transform.translate(
+                                  offset: Offset(-4, 0),
+                                  child: _SidebarResizeHandle(
+                                    onDrag: (delta) =>
+                                        store.previewSidebarWidth += delta,
+                                  ),
+                                ),
+                              ),
+                            if (store.showCustomizationSidebar)
+                              Align(
+                                alignment: .centerRight,
+                                child: Transform.translate(
+                                  offset: Offset(4, 0),
+                                  child: _SidebarResizeHandle(
+                                    onDrag: (delta) =>
+                                        store.customizationSidebarWidth -=
+                                            delta,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      _AnimatedSidebar(
+                        visible: store.showCustomizationSidebar,
+                        alignment: Alignment.centerRight,
+                        child: const CustomizationSidebar(),
+                      ),
+                    ],
                   ),
-                  if (store.showPreviewSidebar)
-                    Align(
-                      alignment: .centerLeft,
-                      child: Transform.translate(
-                        offset: Offset(-4, 0),
-                        child: _SidebarResizeHandle(
-                          onDrag: (delta) => store.previewSidebarWidth += delta,
-                        ),
-                      ),
-                    ),
-                  if (store.showCustomizationSidebar)
-                    Align(
-                      alignment: .centerRight,
-                      child: Transform.translate(
-                        offset: Offset(4, 0),
-                        child: _SidebarResizeHandle(
-                          onDrag: (delta) =>
-                              store.customizationSidebarWidth -= delta,
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
-            ),
-            _AnimatedSidebar(
-              visible: store.showCustomizationSidebar,
-              alignment: Alignment.centerRight,
-              child: const CustomizationSidebar(),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:super_editor/super_editor.dart';
 
 import '../../../core/data/data_sources/memory_deck_loader.dart';
@@ -30,8 +31,10 @@ class TextEditorController implements MarkdownEditor {
     required EditorStore editorStore,
     required MemoryDeckLoader deckLoader,
     String initialText = starterMarkdown,
+    ValueChanged<String>? onMarkdownChanged,
   }) : _editorStore = editorStore,
-       _deckLoader = deckLoader {
+       _deckLoader = deckLoader,
+       _onMarkdownChanged = onMarkdownChanged {
     _install(initialText);
     // Seed the live preview with the initial document.
     _pushMarkdown(initialText);
@@ -40,6 +43,10 @@ class TextEditorController implements MarkdownEditor {
 
   final EditorStore _editorStore;
   final MemoryDeckLoader _deckLoader;
+
+  /// Notified with the document's plain-text markdown on every real change
+  /// (deduped like the preview). The file controller uses it to auto-save.
+  final ValueChanged<String>? _onMarkdownChanged;
 
   late final MutableDocument _document;
   late final MutableDocumentComposer _composer;
@@ -139,6 +146,7 @@ class TextEditorController implements MarkdownEditor {
     if (markdown == _lastMarkdown) return;
     _lastMarkdown = markdown;
     _deckLoader.updateMarkdown(markdown);
+    _onMarkdownChanged?.call(markdown);
   }
 
   void _moveCaretToSlide(int index) {
