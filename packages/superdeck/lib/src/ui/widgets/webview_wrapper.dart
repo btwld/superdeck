@@ -1,4 +1,4 @@
-import 'dart:async' show FutureOr;
+import 'dart:async' show FutureOr, unawaited;
 
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart' show Icons;
@@ -54,6 +54,7 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
   WebViewController? _controller;
   CachedWebViewEntry? _cachedEntry;
   WebViewNavigationPolicy? _localPolicy;
+  bool _pageFinishedCallbacksUnsupported = false;
   bool _hide = true;
 
   @override
@@ -140,12 +141,18 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
     final entry = cache.getOrCreate(identity, () {
       return _createController(
         onPageFinished: () => cache[identity]?.onPageFinished?.call(),
+        onPageFinishedUnsupported: () {
+          cache[identity]?.pageFinishedCallbacksUnsupported = true;
+        },
         onNavigationRequest: (request) {
           return cache[identity]?.policy.decide(request) ??
               NavigationDecision.prevent;
         },
       );
     });
+    if (isNew && _pageFinishedCallbacksUnsupported) {
+      entry.pageFinishedCallbacksUnsupported = true;
+    }
 
     final switchedEntry =
         previousEntry != null && !identical(previousEntry, entry);
@@ -163,13 +170,14 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
 
     entry.policy.allowedHosts = hosts;
     entry.onPageFinished = _onPageFinished;
-    entry.controller.setJavaScriptMode(_javaScriptMode);
+    _applyJavaScriptMode(entry.controller);
 
     final alreadyLoaded = entry.loadedUrl == widget.url;
     if (isNew || !alreadyLoaded) {
       _hide = true;
       entry.loadedUrl = widget.url;
       entry.controller.loadRequest(Uri.parse(widget.url));
+      _revealIfPageFinishedUnsupported(entry.pageFinishedCallbacksUnsupported);
     } else if (switchedEntry || _controller == null) {
       // Already warm — remount or entry switch will not fire page-finished.
       _hide = false;
@@ -187,36 +195,104 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
     if (_controller == null) {
       _controller = _createController(
         onPageFinished: _onPageFinished,
+        onPageFinishedUnsupported: () {
+          _pageFinishedCallbacksUnsupported = true;
+        },
         onNavigationRequest: policy.decide,
       );
+      _applyJavaScriptMode(_controller!);
       _hide = true;
       _controller!.loadRequest(Uri.parse(widget.url));
+      _revealIfPageFinishedUnsupported(_pageFinishedCallbacksUnsupported);
       return;
     }
 
     // Prop-only updates: always refresh JS mode; policy object is shared with
     // the existing navigation delegate so host changes apply in place.
-    _controller!.setJavaScriptMode(_javaScriptMode);
+    _applyJavaScriptMode(_controller!);
 
     if (previousUrl != widget.url) {
       _hide = true;
       _controller!.loadRequest(Uri.parse(widget.url));
+      _revealIfPageFinishedUnsupported(_pageFinishedCallbacksUnsupported);
     }
   }
 
   WebViewController _createController({
     required VoidCallback onPageFinished,
+    required VoidCallback onPageFinishedUnsupported,
     required FutureOr<NavigationDecision> Function(NavigationRequest)
     onNavigationRequest,
   }) {
-    return WebViewController()
-      ..setJavaScriptMode(_javaScriptMode)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) => onPageFinished(),
-          onNavigationRequest: onNavigationRequest,
-        ),
-      );
+    final controller = WebViewController();
+    _pageFinishedCallbacksUnsupported = false;
+    _applyNavigationDelegate(
+      controller,
+      NavigationDelegate(
+        onPageFinished: (_) => onPageFinished(),
+        onNavigationRequest: onNavigationRequest,
+      ),
+      onUnsupported: onPageFinishedUnsupported,
+    );
+    return controller;
+  }
+
+  void _applyNavigationDelegate(
+    WebViewController controller,
+    NavigationDelegate delegate, {
+    required VoidCallback onUnsupported,
+  }) {
+    unawaited(
+      _setNavigationDelegateIfSupported(
+        controller,
+        delegate,
+        onUnsupported: onUnsupported,
+      ),
+    );
+  }
+
+  Future<void> _setNavigationDelegateIfSupported(
+    WebViewController controller,
+    NavigationDelegate delegate, {
+    required VoidCallback onUnsupported,
+  }) async {
+    try {
+      await controller.setNavigationDelegate(delegate);
+    } on UnimplementedError {
+      // webview_flutter_web does not expose iframe navigation callbacks.
+      _pageFinishedCallbacksUnsupported = true;
+      onUnsupported();
+      _revealWithoutPageFinished();
+    }
+  }
+
+  void _applyJavaScriptMode(WebViewController controller) {
+    unawaited(_setJavaScriptModeIfSupported(controller));
+  }
+
+  Future<void> _setJavaScriptModeIfSupported(
+    WebViewController controller,
+  ) async {
+    try {
+      await controller.setJavaScriptMode(_javaScriptMode);
+    } on UnimplementedError {
+      // webview_flutter_web does not implement JavaScript mode for iframes.
+    }
+  }
+
+  void _revealWithoutPageFinished() {
+    if (!_hide) return;
+    _hide = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {});
+    });
+  }
+
+  void _revealIfPageFinishedUnsupported(bool unsupported) {
+    if (unsupported) {
+      _revealWithoutPageFinished();
+    }
   }
 
   void _onPageFinished() {
@@ -232,13 +308,20 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
     setState(() => _hide = true);
     await Future<void>.delayed(const Duration(milliseconds: 150));
     if (!mounted) return;
-    await controller.reload();
+    try {
+      await controller.reload();
+    } on UnimplementedError {
+      await controller.loadRequest(Uri.parse(widget.url));
+      if (!mounted) return;
+      setState(() => _hide = false);
+    }
   }
 
-  Future<void> _clearDartPadEditor() {
+  Future<void> _clearDartPadEditor() async {
     final controller = _controller;
-    if (controller == null) return Future<void>.value();
-    return controller.runJavaScript('''
+    if (controller == null) return;
+    try {
+      await controller.runJavaScript('''
                 var editor = document.querySelector('.CodeMirror')?.CodeMirror;
                 if (editor) {
                   editor.setValue('');
@@ -247,6 +330,9 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
                   console.log('DartPad editor cleared!');
                 }
             ''');
+    } on UnimplementedError {
+      // webview_flutter_web does not allow JavaScript injection into iframes.
+    }
   }
 
   Widget _buildPlaceholder() {
