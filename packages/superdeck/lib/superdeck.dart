@@ -1,7 +1,8 @@
 /// Flutter widgets and presentation components for SuperDeck.
 library;
 
-export 'package:superdeck_core/superdeck_core.dart' show DeckPlugin;
+export 'package:superdeck_core/superdeck_core.dart'
+    show DeckLoader, DeckPlugin, DeckWorkspace;
 
 export 'src/capture/slide_capture_service.dart';
 export 'src/rendering/slides/slide_constants.dart';
@@ -34,6 +35,8 @@ export 'src/plugins/deck_runtime_plugin.dart';
 // Presentation
 export 'src/deck/deck_controller.dart';
 export 'src/deck/deck_options.dart';
+export 'src/deck/loaders/bundled_deck_loader.dart';
+export 'src/deck/loaders/file_deck_loader.dart';
 export 'src/deck/slide_configuration.dart';
 export 'src/deck/slide_template.dart';
 export 'src/deck/widget_factory.dart';

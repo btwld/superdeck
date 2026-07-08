@@ -1,3 +1,12 @@
+## Unreleased
+
+- Export `FileDeckLoader` and `BundledDeckLoader` from the public barrel so
+  apps can use `SuperDeckApp.deckLoader` without importing from `src/`.
+- Fall back to bundled deck assets when auto-selection cannot discover a
+  project root at runtime.
+- Improve missing build output diagnostics with checked paths and desktop app
+  guidance.
+
 ## 1.0.0
 
 - First stable release of `superdeck`.

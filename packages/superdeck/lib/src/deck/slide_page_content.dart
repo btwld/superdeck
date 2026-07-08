@@ -20,37 +20,39 @@ class SlidePageContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final deckController = DeckController.of(context);
 
-    // Use Watch to react to signals
-    return Watch((context) {
-      // Access deck controller state
-      final session = deckController.session;
-      final isLoading = session.isLoading.value;
-      final hasError = session.hasFatalError.value;
-      final slides = deckController.slides.value;
+    // Use SignalBuilder to react to signals
+    return SignalBuilder(
+      builder: (context) {
+        // Access deck controller state
+        final session = deckController.session;
+        final isLoading = session.isLoading.value;
+        final hasError = session.hasFatalError.value;
+        final slides = deckController.slides.value;
 
-      // Render appropriate state
-      if (hasError) {
-        return _ErrorScreen(
-          error: session.error.value,
-          onRetry: deckController.reloadDeck,
+        // Render appropriate state
+        if (hasError) {
+          return _ErrorScreen(
+            error: session.error.value,
+            onRetry: deckController.reloadDeck,
+          );
+        }
+
+        if (isLoading) {
+          return const _LoadingScreen();
+        }
+
+        if (slides.isEmpty) {
+          return const _NoSlidesScreen();
+        }
+
+        final safeIndex = index.clamp(0, slides.length - 1);
+        return Semantics(
+          label: 'Slide ${safeIndex + 1}',
+          container: true,
+          child: SlideScreen(slides[safeIndex]),
         );
-      }
-
-      if (isLoading) {
-        return const _LoadingScreen();
-      }
-
-      if (slides.isEmpty) {
-        return const _NoSlidesScreen();
-      }
-
-      final safeIndex = index.clamp(0, slides.length - 1);
-      return Semantics(
-        label: 'Slide ${safeIndex + 1}',
-        container: true,
-        child: SlideScreen(slides[safeIndex]),
-      );
-    });
+      },
+    );
   }
 }
 

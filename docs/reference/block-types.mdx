@@ -5,7 +5,7 @@ description: Complete reference for all SuperDeck block types and their properti
 
 # Block types reference
 
-SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget system as `@widget`.
+SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`, `webview`, `qrcode`) use the same widget system as `@widget`.
 
 ## Common block properties
 
@@ -173,6 +173,25 @@ Use shorthand syntax for these widgets.
 - `theme` - `light` or `dark` (default: `light`)
 - `embed` - Embed mode (default: `true`)
 - `run` - Auto-run code (default: `true`)
+- `cacheKey` - Optional key for sequential controller reuse across remounts (not concurrent mounts)
+
+### webview
+
+```markdown
+@webview {
+  url: "https://example.com"
+  title: "Example"
+  showControls: true
+}
+```
+
+**Properties:**
+- `url` (required) - Absolute `http` or `https` URL
+- `cacheKey` - Optional key for sequential controller reuse across remounts (not concurrent mounts)
+- `title` - Label shown during static/thumbnail capture
+- `allowedHosts` - Navigation allowlist (default: source host only)
+- `showControls` - Show refresh control (default: `false`)
+- `javascript` - Enable JavaScript (default: `true`)
 
 ### qrcode
 

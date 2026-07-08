@@ -752,8 +752,8 @@ WidgetBlock _image(
     args: {
       'src': src,
       'fit': fit,
-      if (width != null) 'width': width,
-      if (height != null) 'height': height,
+      'width': ?width,
+      'height': ?height,
     },
   );
 }

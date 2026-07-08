@@ -133,6 +133,22 @@ For all `@dartpad` arguments, see the [Markdown syntax reference](../reference/m
 
 > DartPad uses an embedded WebView. Make sure your target platform supports WebViews.
 
+### `@webview`
+
+Embed a persistent web page. Controllers are cached per block (or `cacheKey`) so
+returning to a slide does not reload the page. Reuse is sequential (one live
+mount at a time), not concurrent multi-widget sharing.
+
+````markdown
+@webview {
+  url: "https://example.com"
+  title: "Example"
+  showControls: true
+}
+````
+
+For all `@webview` arguments, see the [Markdown syntax reference](../reference/markdown-syntax).
+
 ### Custom widgets
 
 Register widgets in `DeckOptions.widgets`, then use them with the shorthand syntax:

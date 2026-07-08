@@ -38,7 +38,7 @@ SuperDeck supports three core block types.
 | `@block` | Render markdown content | `flex`, `align`, `scrollable` |
 | `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `scrollable` + custom args |
 
-Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@widget`.
+Built-in widgets (`image`, `dartpad`, `webview`, `qrcode`) use the same widget syntax as `@widget`.
 
 ## Common block properties
 
@@ -100,6 +100,28 @@ Arguments:
 - `theme`: `light` or `dark`.
 - `embed`: boolean.
 - `run`: boolean.
+- `cacheKey`: optional key for sequential controller reuse across remounts (not concurrent mounts).
+
+### `@webview`
+
+Example:
+
+````markdown
+@webview {
+  url: "https://example.com"
+  title: "Example"
+  showControls: true
+}
+````
+
+Arguments:
+
+- `url` (required): absolute `http` or `https` URL.
+- `cacheKey`: optional key for sequential controller reuse across remounts (not concurrent mounts).
+- `title`: label shown during static/thumbnail capture.
+- `allowedHosts`: navigation allowlist (default: source host only).
+- `showControls`: show refresh control (default: `false`).
+- `javascript`: enable JavaScript (default: `true`).
 
 ### `@qrcode`
 

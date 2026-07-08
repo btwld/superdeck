@@ -66,48 +66,50 @@ class _WizardBodyState extends State<_WizardBody> {
   Widget build(BuildContext context) {
     final viewModel = context.read<AiConversationViewModel>();
 
-    return Watch((context) {
-      final started = viewModel.hasConversationStarted.value;
-      final messages = viewModel.messages.value;
-      final isThinking = viewModel.isThinking.value;
+    return SignalBuilder(
+      builder: (context) {
+        final started = viewModel.hasConversationStarted.value;
+        final messages = viewModel.messages.value;
+        final isThinking = viewModel.isThinking.value;
 
-      final input = ChatInput(
-        controller: _controller,
-        focusNode: _focusNode,
-        enabled: !isThinking,
-        onSubmitted: _submit,
-      );
+        final input = ChatInput(
+          controller: _controller,
+          focusNode: _focusNode,
+          enabled: !isThinking,
+          onSubmitted: _submit,
+        );
 
-      // Before the first message: show the empty state with the topic prompt.
-      // It centers when it fits and scrolls when the sidebar is too short.
-      if (!started && messages.isEmpty) {
-        return Column(
-          children: [
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
+        // Before the first message: show the empty state with the topic prompt.
+        // It centers when it fits and scrolls when the sidebar is too short.
+        if (!started && messages.isEmpty) {
+          return Column(
+            children: [
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: EmptyState(onSuggestionTap: _submit),
                     ),
-                    child: EmptyState(onSuggestionTap: _submit),
                   ),
                 ),
               ),
-            ),
-            input,
-          ],
-        );
-      }
+              input,
+            ],
+          );
+        }
 
-      // Conversation in progress: render the current surface + input inline.
-      return AiSurfacesPanel(
-        controller: viewModel.controller,
-        surfaceIds: viewModel.surfaceIds,
-        isThinking: viewModel.isThinking,
-        messages: viewModel.messages,
-        inputWidget: input,
-      );
-    });
+        // Conversation in progress: render the current surface + input inline.
+        return AiSurfacesPanel(
+          controller: viewModel.controller,
+          surfaceIds: viewModel.surfaceIds,
+          isThinking: viewModel.isThinking,
+          messages: viewModel.messages,
+          inputWidget: input,
+        );
+      },
+    );
   }
 }
