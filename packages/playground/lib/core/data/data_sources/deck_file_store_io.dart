@@ -66,7 +66,12 @@ class NativeDeckFileStore extends DeckFileStore {
       type: FileType.custom,
       allowedExtensions: const ['md'],
     );
-    return result?.files.single.path;
+    // Treat an empty/oddly-shaped result or a path-less entry as a cancel
+    // rather than letting `.single` throw a StateError (which openDeck's
+    // narrow catch would not handle) escape the Open action.
+    final files = result?.files;
+    if (files == null || files.isEmpty) return null;
+    return files.first.path;
   }
 
   @override

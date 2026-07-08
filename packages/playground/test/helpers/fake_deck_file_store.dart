@@ -13,6 +13,10 @@ class FakeDeckFileStore extends DeckFileStore {
   String? pickResult;
   int writeCount = 0;
 
+  /// When true, [write] throws without touching [files] — simulates a disk
+  /// write that fails after the file already exists (permissions, full disk).
+  bool failWrites = false;
+
   @override
   Future<String> decksDirectoryPath() async => decksDir;
 
@@ -28,6 +32,7 @@ class FakeDeckFileStore extends DeckFileStore {
 
   @override
   Future<void> write(String path, String content) async {
+    if (failWrites) throw Exception('write failed');
     writeCount++;
     files[path] = content;
   }

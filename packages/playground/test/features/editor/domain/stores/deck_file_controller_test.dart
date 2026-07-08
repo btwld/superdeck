@@ -108,6 +108,48 @@ void main() {
 
       expect(store.writeCount, writesBefore);
     });
+
+    test('reverting to synced content mid-debounce cancels the stale save',
+        () async {
+      final store = FakeDeckFileStore();
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final path = controller.boundPath!;
+      final synced = controller.content;
+      final writesBefore = store.writeCount;
+
+      // Type an edit, then revert back to the synced content before the
+      // debounce fires. The pending save of the intermediate edit must not run.
+      controller.handleEditorChange('# Intermediate');
+      controller.handleEditorChange(synced);
+      await afterDebounce();
+
+      expect(store.files[path], synced, reason: 'disk keeps the synced content');
+      expect(store.writeCount, writesBefore, reason: 'stale save was cancelled');
+    });
+
+    test('a failed write does not mark content as synced', () async {
+      final store = FakeDeckFileStore();
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final path = controller.boundPath!;
+      final editor = FakeMarkdownEditor(controller);
+      controller.attachEditor(editor);
+
+      // Auto-save fails: nothing reaches disk and the synced marker must not
+      // advance to the unwritten content.
+      store.failWrites = true;
+      controller.handleEditorChange('# Never persisted');
+      await afterDebounce();
+
+      // A later external edit must still be detected as external (not mistaken
+      // for our own write) and reloaded into the editor.
+      store.failWrites = false;
+      await store.externalWrite(path, '# External');
+
+      expect(editor.replaced, ['# External']);
+      expect(controller.content, '# External');
+    });
   });
 
   group('external changes', () {

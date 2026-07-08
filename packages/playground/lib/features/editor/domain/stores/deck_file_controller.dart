@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
-import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../../../core/data/data_sources/app_settings_store.dart';
 import '../../../../core/data/data_sources/deck_file_store.dart';
@@ -37,7 +36,8 @@ enum DeckBindingStatus {
 /// - **Auto-save**: debounced writes of every edit back to [boundPath]; there
 ///   is no manual save and no dirty flag.
 /// - **Watch + self-write filtering**: watches the bound file and ignores the
-///   app's own writes (by comparing a content hash) so auto-save doesn't loop.
+///   app's own writes (by comparing the content it last synced) so auto-save
+///   doesn't loop.
 /// - **External wins**: an external change to the bound file auto-reloads into
 ///   the editor.
 /// - **Unbind on loss**: a deleted/moved file stops auto-save, keeps the
@@ -68,10 +68,11 @@ class DeckFileController extends ChangeNotifier {
   String _content = kStarterDeckMarkdown;
   String? _warning;
 
-  /// Hash of the content last read from / written to disk. Auto-saves that
-  /// match it (and watcher events whose on-disk content matches it) are the
-  /// app's own writes and are filtered out.
-  String _lastSyncedHash = generateValueHash(kStarterDeckMarkdown);
+  /// The content last read from / written to disk. Auto-saves that match it
+  /// (and watcher events whose on-disk content matches it) are the app's own
+  /// writes and are filtered out. Compared by value — a hash would risk a
+  /// collision silently dropping a genuine external edit.
+  String _lastSyncedContent = kStarterDeckMarkdown;
 
   Timer? _debounce;
   StreamSubscription<void>? _watchSub;
@@ -156,9 +157,11 @@ class DeckFileController extends ChangeNotifier {
   void handleEditorChange(String markdown) {
     _content = markdown;
     if (_status != DeckBindingStatus.bound || _boundPath == null) return;
-    if (generateValueHash(markdown) == _lastSyncedHash) return;
 
+    // Cancel any pending save first: if the edit reverted back to the synced
+    // content within the debounce window, a stale save must not still fire.
     _debounce?.cancel();
+    if (markdown == _lastSyncedContent) return;
     _debounce = Timer(_autoSaveDebounce, () => _flushSave(markdown));
   }
 
@@ -173,11 +176,15 @@ class DeckFileController extends ChangeNotifier {
   Future<void> _flushSave(String markdown) async {
     final path = _boundPath;
     if (_status != DeckBindingStatus.bound || path == null) return;
-    // Set the synced hash *before* writing so the watcher event our write
-    // triggers is recognised as a self-write and ignored.
-    _lastSyncedHash = generateValueHash(markdown);
     try {
       await _store.write(path, markdown);
+      // Only mark as synced once the write actually succeeds; otherwise the
+      // marker would claim content that never reached disk, and the next
+      // watcher event (reading the real, older disk content) would be treated
+      // as an external change and clobber the editor. The write() future
+      // resolves before the watcher's own change event is delivered, so this
+      // still filters out the self-write.
+      _lastSyncedContent = markdown;
     } catch (_) {
       // Best-effort auto-save; a subsequent edit will retry. If the file is
       // gone the watcher will unbind and warn.
@@ -190,13 +197,13 @@ class DeckFileController extends ChangeNotifier {
     await _rememberAndWatch(path);
   }
 
-  /// Updates in-memory binding state (path, content, hash, status) without any
-  /// I/O or editor/side effects.
+  /// Updates in-memory binding state (path, content, synced marker, status)
+  /// without any I/O or editor/side effects.
   void _bindState(String path, String content) {
     _debounce?.cancel();
     _boundPath = path;
     _content = content;
-    _lastSyncedHash = generateValueHash(content);
+    _lastSyncedContent = content;
     _status = DeckBindingStatus.bound;
     _warning = null;
   }
@@ -232,13 +239,13 @@ class DeckFileController extends ChangeNotifier {
     }
 
     // Self-write filter: our own auto-save produced this content.
-    if (generateValueHash(diskContent) == _lastSyncedHash) return;
+    if (diskContent == _lastSyncedContent) return;
 
     // External change → external wins → reload into the editor. Cancel any
     // pending auto-save so a stale in-flight edit can't clobber the new content.
     _debounce?.cancel();
     _content = diskContent;
-    _lastSyncedHash = generateValueHash(diskContent);
+    _lastSyncedContent = diskContent;
     _editor?.replaceMarkdown(diskContent);
     _notify();
   }
