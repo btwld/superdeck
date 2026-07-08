@@ -22,12 +22,14 @@ class _BlockContainer extends StatefulWidget {
     required this.block,
     required this.size,
     required this.configuration,
+    required this.runtimeKey,
     required this.child,
   });
 
   final Block block;
   final Size size;
   final SlideConfiguration configuration;
+  final String runtimeKey;
   final Widget child;
 
   @override
@@ -49,6 +51,7 @@ class _BlockContainerState extends State<_BlockContainer> {
         math.max(0.0, widget.size.width - blockOffset.dx),
         math.max(0.0, widget.size.height - blockOffset.dy),
       ),
+      runtimeKey: widget.runtimeKey,
     );
 
     Widget content = InheritedData(
@@ -164,11 +167,13 @@ class BlockWidget extends StatelessWidget {
     required this.block,
     required this.size,
     required this.configuration,
+    required this.runtimeKey,
   });
 
   final ContentBlock block;
   final Size size;
   final SlideConfiguration configuration;
+  final String runtimeKey;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +181,7 @@ class BlockWidget extends StatelessWidget {
       block: block,
       size: size,
       configuration: configuration,
+      runtimeKey: runtimeKey,
       child: _ContentBlockChild(content: block.content),
     );
   }
@@ -188,11 +194,13 @@ class CustomBlockWidget extends StatelessWidget {
     required this.block,
     required this.size,
     required this.configuration,
+    required this.runtimeKey,
   });
 
   final WidgetBlock block;
   final Size size;
   final SlideConfiguration configuration;
+  final String runtimeKey;
 
   @override
   Widget build(BuildContext context) {
@@ -200,6 +208,7 @@ class CustomBlockWidget extends StatelessWidget {
       block: block,
       size: size,
       configuration: configuration,
+      runtimeKey: runtimeKey,
       child: _CustomBlockChild(block: block),
     );
   }
@@ -207,10 +216,16 @@ class CustomBlockWidget extends StatelessWidget {
 
 /// Section widget that layouts child blocks horizontally.
 class SectionWidget extends StatelessWidget {
-  const SectionWidget({super.key, required this.section, required this.size});
+  const SectionWidget({
+    super.key,
+    required this.section,
+    required this.size,
+    required this.sectionIndex,
+  });
 
   final SectionBlock section;
   final Size size;
+  final int sectionIndex;
 
   Positioned _renderDebugInfo(Block block, Size size) {
     const textStyle = TextStyle(color: Colors.black, fontSize: 12);
@@ -238,20 +253,28 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
     double leftOffset = 0;
     final children = <Widget>[];
 
-    for (final block in section.blocks) {
+    for (var blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
+      final block = section.blocks[blockIndex];
       final blockWidth = flexUnit * block.flex;
       final blockSize = Size(blockWidth, size.height);
+      final runtimeKey = buildBlockRuntimeKey(
+        configuration.key,
+        sectionIndex,
+        blockIndex,
+      );
 
       Widget blockWidget = switch (block) {
         WidgetBlock b => CustomBlockWidget(
           block: b,
           size: blockSize,
           configuration: configuration,
+          runtimeKey: runtimeKey,
         ),
         ContentBlock b => BlockWidget(
           block: b,
           size: blockSize,
           configuration: configuration,
+          runtimeKey: runtimeKey,
         ),
       };
 

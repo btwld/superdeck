@@ -44,48 +44,37 @@ class SlideView extends StatelessWidget {
       (previous, section) => previous + section.flex,
     );
 
-    final sectionSizes = <SectionBlock, Size>{};
-
-    for (var section in sections) {
+    var topOffset = 0.0;
+    final sectionWidgets = <Widget>[];
+    for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+      final section = sections[sectionIndex];
       final heightPercentage = section.flex / totalSectionsFlex;
       final sectionSize = Size(
         slideSize.width,
         slideSize.height * heightPercentage,
       );
-      sectionSizes[section] = sectionSize;
-    }
-
-    Offset currentOffset = Offset.zero;
-
-    Map<SectionBlock, Offset> sectionOffsets = {};
-
-    for (var section in sectionSizes.entries) {
-      final sectionOffset = Offset(0, currentOffset.dy);
-      sectionOffsets[section.key] = sectionOffset;
-      currentOffset = Offset(
-        currentOffset.dx,
-        currentOffset.dy + section.value.height,
-      );
-    }
-
-    return Stack(
-      children: sections.map((section) {
-        final sectionOffset = sectionOffsets[section]!;
-        final sectionSize = sectionSizes[section]!;
-        return Positioned(
-          left: sectionOffset.dx,
-          top: sectionOffset.dy,
+      sectionWidgets.add(
+        Positioned(
+          left: 0,
+          top: topOffset,
           width: sectionSize.width,
           height: sectionSize.height,
           child: Stack(
             children: [
-              SectionWidget(section: section, size: sectionSize),
+              SectionWidget(
+                section: section,
+                size: sectionSize,
+                sectionIndex: sectionIndex,
+              ),
               if (configuration.debug) _renderDebugInfo(section, sectionSize),
             ],
           ),
-        );
-      }).toList(),
-    );
+        ),
+      );
+      topOffset += sectionSize.height;
+    }
+
+    return Stack(children: sectionWidgets);
   }
 
   @override

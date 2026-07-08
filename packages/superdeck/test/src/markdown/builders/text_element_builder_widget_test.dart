@@ -205,6 +205,7 @@ class _MarkdownHarness extends StatelessWidget {
       align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
+      runtimeKey: 'test-slide:s0:b0',
     );
 
     return MaterialApp(
