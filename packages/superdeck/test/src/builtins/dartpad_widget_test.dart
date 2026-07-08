@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/builtins/dartpad_widget.dart';
+import 'package:superdeck/src/deck/deck_controller.dart';
+import 'package:superdeck/src/deck/deck_options.dart';
+import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -8,6 +11,8 @@ import 'package:superdeck/src/ui/widgets/webview_wrapper.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 // ignore: depend_on_referenced_packages
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+
+import '../../helpers/mock_deck_loader.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +26,7 @@ void main() {
         expect(dto.theme, isNull);
         expect(dto.embed, isTrue);
         expect(dto.run, isTrue);
+        expect(dto.cacheKey, isNull);
       });
     });
 
@@ -31,6 +37,7 @@ void main() {
           'theme': 'dark',
           'embed': false,
           'run': true,
+          'cacheKey': 'shared-pad',
         });
 
         expect(result.isOk, isTrue);
@@ -53,12 +60,14 @@ void main() {
           'theme': 'dark',
           'embed': false,
           'run': false,
+          'cacheKey': 'pad-1',
         });
 
         expect(dto.id, 'snippet');
         expect(dto.theme, DartPadTheme.dark);
         expect(dto.embed, isFalse);
         expect(dto.run, isFalse);
+        expect(dto.cacheKey, 'pad-1');
       });
 
       test('uses defaults when optional fields are omitted or null', () {
@@ -68,14 +77,17 @@ void main() {
           'theme': null,
           'embed': null,
           'run': null,
+          'cacheKey': null,
         });
 
         expect(omitted.theme, isNull);
         expect(omitted.embed, isTrue);
         expect(omitted.run, isTrue);
+        expect(omitted.cacheKey, isNull);
         expect(explicitNull.theme, isNull);
         expect(explicitNull.embed, isTrue);
         expect(explicitNull.run, isTrue);
+        expect(explicitNull.cacheKey, isNull);
       });
 
       test('rejects a missing or empty id', () {
@@ -126,10 +138,22 @@ void main() {
 
   group('DartPadWidget', () {
     late _FakeWebViewPlatform webViewPlatform;
+    late MockDeckLoader loader;
+    late DeckController deckController;
 
     setUp(() {
       webViewPlatform = _FakeWebViewPlatform();
       WebViewPlatform.instance = webViewPlatform;
+      loader = MockDeckLoader();
+      deckController = DeckController(
+        deckLoader: loader,
+        options: DeckOptions(),
+      );
+    });
+
+    tearDown(() async {
+      deckController.dispose();
+      await loader.dispose();
     });
 
     testWidgets('renders a web view wrapper for the DartPad URL', (
@@ -139,7 +163,9 @@ void main() {
 
       await tester.pumpWidget(
         _DartPadHarness(
+          deckController: deckController,
           size: size,
+          runtimeKey: 'slide-0:s0:b0',
           args: {
             'id': 'snippet',
             'theme': 'light',
@@ -162,6 +188,8 @@ void main() {
         wrapper.url,
         'https://dartpad.dev/?id=snippet&theme=light&embed=true&run=false',
       );
+      expect(wrapper.showControls, isTrue);
+      expect(wrapper.showClearControl, isTrue);
       expect(find.byKey(const ValueKey('fake-web-view')), findsOneWidget);
       expect(webViewPlatform.controllers, hasLength(1));
       expect(
@@ -179,7 +207,12 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const _DartPadHarness(size: Size(640, 480), args: {'id': 'snippet'}),
+        _DartPadHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          args: const {'id': 'snippet'},
+        ),
       );
       await tester.pump();
 
@@ -197,7 +230,12 @@ void main() {
 
     testWidgets('page finished fades in the WebView', (tester) async {
       await tester.pumpWidget(
-        const _DartPadHarness(size: Size(640, 480), args: {'id': 'snippet'}),
+        _DartPadHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          args: const {'id': 'snippet'},
+        ),
       );
       await tester.pump();
 
@@ -221,14 +259,21 @@ void main() {
 
     testWidgets('loads a new request when DartPad URL updates', (tester) async {
       await tester.pumpWidget(
-        const _DartPadHarness(size: Size(640, 480), args: {'id': 'first'}),
+        _DartPadHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          args: const {'id': 'first'},
+        ),
       );
       await tester.pump();
 
       await tester.pumpWidget(
-        const _DartPadHarness(
-          size: Size(640, 480),
-          args: {'id': 'second', 'theme': 'dark'},
+        _DartPadHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          args: const {'id': 'second', 'theme': 'dark'},
         ),
       );
       await tester.pump();
@@ -241,11 +286,62 @@ void main() {
       );
     });
 
+    testWidgets(
+      'cached remount reuses controller and does not loadRequest again',
+      (tester) async {
+        await tester.pumpWidget(
+          _DartPadHarness(
+            deckController: deckController,
+            size: const Size(640, 480),
+            runtimeKey: 'slide-0:s0:b0',
+            args: const {'id': 'snippet'},
+          ),
+        );
+        await tester.pump();
+
+        expect(webViewPlatform.controllers, hasLength(1));
+        expect(webViewPlatform.controllers.single.loadedRequests, hasLength(1));
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+
+        await tester.pumpWidget(
+          _DartPadHarness(
+            deckController: deckController,
+            size: const Size(640, 480),
+            runtimeKey: 'slide-0:s0:b0',
+            args: const {'id': 'snippet'},
+          ),
+        );
+        await tester.pump();
+
+        expect(webViewPlatform.controllers, hasLength(1));
+        expect(webViewPlatform.controllers.single.loadedRequests, hasLength(1));
+
+        // Refresh and clear still work after remount.
+        await tester.tap(find.byIcon(Icons.refresh));
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(webViewPlatform.controllers.single.reloadCount, 1);
+
+        await tester.tap(find.byIcon(Icons.clear));
+        await tester.pump();
+        expect(
+          webViewPlatform.controllers.single.javaScripts.single,
+          contains("setValue('')"),
+        );
+      },
+    );
+
     testWidgets('navigation delegate allows same host and blocks others', (
       tester,
     ) async {
       await tester.pumpWidget(
-        const _DartPadHarness(size: Size(640, 480), args: {'id': 'snippet'}),
+        _DartPadHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          args: const {'id': 'snippet'},
+        ),
       );
       await tester.pump();
 
@@ -276,21 +372,47 @@ void main() {
 }
 
 class _DartPadHarness extends StatelessWidget {
+  final DeckController deckController;
   final Map<String, Object?> args;
   final Size size;
+  final String runtimeKey;
 
-  const _DartPadHarness({required this.args, required this.size});
+  const _DartPadHarness({
+    required this.deckController,
+    required this.args,
+    required this.size,
+    required this.runtimeKey,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final slide = SlideConfiguration(
+      slideIndex: 0,
+      style: SlideStyle(),
+      slide: Slide(
+        key: 'slide-0',
+        sections: [
+          SectionBlock([ContentBlock('placeholder')]),
+        ],
+      ),
+      thumbnailKey: buildThumbnailKey('slide-0'),
+    );
+
     return MaterialApp(
-      home: InheritedData<BlockConfiguration>(
-        data: BlockConfiguration(
-          spec: const SlideSpec(),
-          size: size,
-          align: null,
+      home: InheritedData<DeckController>(
+        data: deckController,
+        child: InheritedData<SlideConfiguration>(
+          data: slide,
+          child: InheritedData<BlockConfiguration>(
+            data: BlockConfiguration(
+              spec: const SlideSpec(),
+              size: size,
+              align: null,
+              runtimeKey: runtimeKey,
+            ),
+            child: Scaffold(body: DartPadWidget(args)),
+          ),
         ),
-        child: Scaffold(body: DartPadWidget(args)),
       ),
     );
   }
