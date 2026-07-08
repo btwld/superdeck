@@ -35,20 +35,22 @@ class EditorPage extends StatelessWidget {
         autofocus: true,
         child: Scaffold(
           backgroundColor: $background.resolve(context),
-          body: Column(
-            children: [
-              const EditorHeader(),
-              Expanded(
-                child: Box(
-                  style: BoxStyler().color($background()),
-                  child: RowBox(
-                    children: [
-                      _AnimatedSidebar(
-                        visible: store.showPreviewSidebar,
-                        alignment: Alignment.centerLeft,
-                        child: const PreviewSidebar(),
-                      ),
+          body: Box(
+            style: BoxStyler().color($background()),
+            child: RowBox(
+              children: [
+                _AnimatedSidebar(
+                  visible: store.showPreviewSidebar,
+                  alignment: Alignment.centerLeft,
+                  child: const PreviewSidebar(),
+                ),
 
+                // The filename bar sits on top of the editor pane only, not
+                // spanning the sidebars.
+                Expanded(
+                  child: Column(
+                    children: [
+                      const EditorHeader(),
                       Expanded(
                         child: Stack(
                           children: [
@@ -94,16 +96,16 @@ class EditorPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      _AnimatedSidebar(
-                        visible: store.showCustomizationSidebar,
-                        alignment: Alignment.centerRight,
-                        child: const CustomizationSidebar(),
-                      ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                _AnimatedSidebar(
+                  visible: store.showCustomizationSidebar,
+                  alignment: Alignment.centerRight,
+                  child: const CustomizationSidebar(),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import '../../domain/stores/deck_file_controller.dart';
 import 'new_deck_dialog.dart';
 
-/// Top bar for the editor showing the bound deck's filename and the
-/// `New` / `Open` actions. When the bound file is lost (deleted/moved) it also
-/// surfaces the controller's warning as a banner.
+/// Bar sitting on top of the text editor: the `New` / `Open` actions on the
+/// left, followed by the bound deck's filename. When the bound file is lost
+/// (deleted/moved) it also surfaces the controller's warning as a banner.
 class EditorHeader extends StatelessWidget {
   const EditorHeader({super.key});
 
@@ -28,32 +28,28 @@ class EditorHeader extends StatelessWidget {
               .borderBottom(color: $border()),
           child: RowBox(
             style: FlexBoxStyler()
-                .mainAxisAlignment(.spaceBetween)
+                .mainAxisAlignment(.start)
                 .crossAxisAlignment(.center)
-                .spacing(12),
+                .spacing(8),
             children: [
+              HeroButton(
+                label: 'New',
+                iconLeft: CupertinoIcons.add,
+                size: .sm,
+                variant: .ghost,
+                onPressed: () => showNewDeckDialog(context, controller),
+              ),
+              HeroButton(
+                label: 'Open',
+                iconLeft: CupertinoIcons.folder,
+                size: .sm,
+                variant: .ghost,
+                onPressed: controller.openDeck,
+              ),
+              Box(style: BoxStyler().width(1).height(16).color($border())),
               _FileName(
                 name: controller.fileName,
                 unbound: !controller.isBound,
-              ),
-              RowBox(
-                style: FlexBoxStyler().mainAxisSize(.min).spacing(8),
-                children: [
-                  HeroButton(
-                    label: 'New',
-                    iconLeft: CupertinoIcons.add,
-                    size: .sm,
-                    variant: .secondary,
-                    onPressed: () => showNewDeckDialog(context, controller),
-                  ),
-                  HeroButton(
-                    label: 'Open',
-                    iconLeft: CupertinoIcons.folder,
-                    size: .sm,
-                    variant: .ghost,
-                    onPressed: controller.openDeck,
-                  ),
-                ],
               ),
             ],
           ),
