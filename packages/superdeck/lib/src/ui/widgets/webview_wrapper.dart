@@ -226,37 +226,34 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
   }) {
     final controller = WebViewController();
     _pageFinishedCallbacksUnsupported = false;
-    _applyNavigationDelegate(
-      controller,
-      NavigationDelegate(
-        onPageFinished: (_) => onPageFinished(),
+    unawaited(
+      _setNavigationDelegateIfSupported(
+        controller,
+        onPageFinished: onPageFinished,
         onNavigationRequest: onNavigationRequest,
+        onUnsupported: onPageFinishedUnsupported,
       ),
-      onUnsupported: onPageFinishedUnsupported,
     );
     return controller;
   }
 
-  void _applyNavigationDelegate(
-    WebViewController controller,
-    NavigationDelegate delegate, {
-    required VoidCallback onUnsupported,
-  }) {
-    unawaited(
-      _setNavigationDelegateIfSupported(
-        controller,
-        delegate,
-        onUnsupported: onUnsupported,
-      ),
-    );
-  }
-
   Future<void> _setNavigationDelegateIfSupported(
-    WebViewController controller,
-    NavigationDelegate delegate, {
+    WebViewController controller, {
+    required VoidCallback onPageFinished,
+    required FutureOr<NavigationDecision> Function(NavigationRequest)
+    onNavigationRequest,
     required VoidCallback onUnsupported,
   }) async {
     try {
+      // On webview_flutter_web the NavigationDelegate constructor itself throws
+      // (createPlatformNavigationDelegate is unimplemented), so it must be built
+      // inside this guard — not passed in pre-constructed — or the throw escapes
+      // before the try runs. setNavigationDelegate throws on web too; the same
+      // fallback covers both.
+      final delegate = NavigationDelegate(
+        onPageFinished: (_) => onPageFinished(),
+        onNavigationRequest: onNavigationRequest,
+      );
       await controller.setNavigationDelegate(delegate);
     } on UnimplementedError {
       // webview_flutter_web does not expose iframe navigation callbacks.

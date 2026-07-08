@@ -823,6 +823,18 @@ class _WebLikeWebViewPlatform extends _FakeWebViewPlatform {
     controllers.add(controller);
     return controller;
   }
+
+  @override
+  PlatformNavigationDelegate createPlatformNavigationDelegate(
+    PlatformNavigationDelegateCreationParams params,
+  ) {
+    // Mirrors webview_flutter_web, which does not implement
+    // createPlatformNavigationDelegate. NavigationDelegate(...) therefore throws
+    // at construction, before the controller's setNavigationDelegate is reached.
+    throw UnimplementedError(
+      'createPlatformNavigationDelegate is not implemented on the current platform.',
+    );
+  }
 }
 
 class _FakeWebViewController extends PlatformWebViewController {
