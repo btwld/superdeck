@@ -508,6 +508,10 @@ void main() {
     });
 
     group('Fullscreen layout', () {
+      SlideOptions fullscreenOptions({String? template}) {
+        return SlideOptions(template: template, layout: SlideLayout.fullscreen);
+      }
+
       void expectFullscreenChrome(
         TemplateResolutionResult result, {
         required Widget background,
@@ -544,7 +548,7 @@ void main() {
           final resolver = TemplateResolver(options);
 
           expectFullscreenChrome(
-            resolver.resolve(SlideOptions(layout: SlideLayout.fullscreen)),
+            resolver.resolve(fullscreenOptions()),
             background: background,
             usingTemplate: false,
           );
@@ -562,9 +566,7 @@ void main() {
           final resolver = TemplateResolver(options);
 
           expectFullscreenChrome(
-            resolver.resolve(
-              SlideOptions(template: 'cover', layout: SlideLayout.fullscreen),
-            ),
+            resolver.resolve(fullscreenOptions(template: 'cover')),
             background: background,
             usingTemplate: true,
           );
@@ -583,7 +585,7 @@ void main() {
           final resolver = TemplateResolver(options);
 
           expectFullscreenChrome(
-            resolver.resolve(SlideOptions(layout: SlideLayout.fullscreen)),
+            resolver.resolve(fullscreenOptions()),
             background: background,
             usingTemplate: true,
           );
@@ -601,9 +603,7 @@ void main() {
           final resolver = TemplateResolver(options);
 
           expectFullscreenChrome(
-            resolver.resolve(
-              SlideOptions(template: 'none', layout: SlideLayout.fullscreen),
-            ),
+            resolver.resolve(fullscreenOptions(template: 'none')),
             background: background,
             usingTemplate: false,
           );
@@ -621,9 +621,7 @@ void main() {
         final resolver = TemplateResolver(options);
 
         final normal = resolver.resolve(null);
-        final fullscreen = resolver.resolve(
-          SlideOptions(layout: SlideLayout.fullscreen),
-        );
+        final fullscreen = resolver.resolve(fullscreenOptions());
 
         expect(fullscreen.style, normal.style);
       });
