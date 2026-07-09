@@ -61,7 +61,7 @@ Each slide object contains these fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `layout` | `"normal" \| "fullscreen"?` | Slide layout mode. `fullscreen` removes resolved header/footer chrome and uses full-bleed default block spacing |
+| `layout` | `"normal" \| "fullscreen"?` | Slide layout mode. `fullscreen` removes resolved header/footer chrome, keeps the resolved background, and zeroes default block padding and margin (named `style` merges after layout) |
 | `style` | `string?` | Named style variant to apply |
 | `template` | `string?` | Named template to apply (`"none"` to opt out) |
 | `title` | `string?` | Slide title for navigation and export |

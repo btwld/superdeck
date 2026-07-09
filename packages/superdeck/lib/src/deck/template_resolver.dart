@@ -31,6 +31,10 @@ class TemplateResolutionResult {
 /// - **With template**: `defaultSlideStyle -> template.baseStyle -> layout style -> template.styles[style]`
 /// - **Without template**: `defaultSlideStyle -> options.baseStyle -> layout style -> options.styles[style]`
 /// - **With defaultTemplate**: applies when slide has no explicit template
+///
+/// [SlideLayout.fullscreen] is applied after base style and before the named
+/// style so authors can re-introduce spacing via `style`. Fullscreen also
+/// clears resolved header/footer while preserving the resolved background.
 class TemplateResolver {
   final DeckOptions _options;
 
@@ -51,6 +55,7 @@ class TemplateResolver {
   /// styles even when a defaultTemplate is configured.
   static const noneTemplate = 'none';
 
+  /// Full-bleed block spacing: zero pad and margin after defaults, before named style.
   static final _fullscreenStyle = SlideStyle(
     blockContainer: BoxStyler(
       padding: EdgeInsetsGeometryMix.all(0),

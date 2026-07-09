@@ -76,8 +76,9 @@ class SlideOptions with SlideOptionsMappable {
   /// The layout mode to apply to this slide.
   ///
   /// Missing layout and [SlideLayout.normal] both use the default slide chrome
-  /// and spacing. [SlideLayout.fullscreen] removes slide chrome and uses
-  /// full-bleed default block spacing.
+  /// and spacing. [SlideLayout.fullscreen] removes header/footer chrome (keeps
+  /// background) and zeroes default block padding and margin before named style
+  /// merge.
   final SlideLayout? layout;
 
   /// The slide template to use for chrome and style isolation.
