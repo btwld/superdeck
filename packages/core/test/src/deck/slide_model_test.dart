@@ -464,18 +464,16 @@ void main() {
           expect(map.containsKey('style'), isFalse);
         });
 
-        test('serializes title and style', () {
-          final options = SlideOptions(title: 'T', style: 'S');
+        test('serializes known fields', () {
+          final options = SlideOptions(
+            title: 'T',
+            style: 'S',
+            layout: SlideLayout.fullscreen,
+          );
           final map = options.toMap();
 
           expect(map['title'], 'T');
           expect(map['style'], 'S');
-        });
-
-        test('serializes layout when present', () {
-          final options = SlideOptions(layout: SlideLayout.fullscreen);
-          final map = options.toMap();
-
           expect(map['layout'], 'fullscreen');
         });
 
@@ -538,18 +536,16 @@ void main() {
           expect(options.args, isEmpty);
         });
 
-        test('deserializes title and style', () {
-          final map = {'title': 'Parsed', 'style': 'parsed-style'};
+        test('deserializes known fields', () {
+          final map = {
+            'title': 'Parsed',
+            'style': 'parsed-style',
+            'layout': 'fullscreen',
+          };
           final options = SlideOptions.fromMap(map);
 
           expect(options.title, 'Parsed');
           expect(options.style, 'parsed-style');
-        });
-
-        test('deserializes layout field', () {
-          final map = {'layout': 'fullscreen'};
-          final options = SlideOptions.fromMap(map);
-
           expect(options.layout, SlideLayout.fullscreen);
         });
 
@@ -558,15 +554,6 @@ void main() {
           final options = SlideOptions.fromMap(map);
 
           expect(options.template, 'parsed-template');
-        });
-
-        test('removes layout from args', () {
-          final map = {'layout': 'fullscreen', 'extra': 'val'};
-          final options = SlideOptions.fromMap(map);
-
-          expect(options.layout, SlideLayout.fullscreen);
-          expect(options.args.containsKey('layout'), isFalse);
-          expect(options.args['extra'], 'val');
         });
 
         test('removes template from args', () {
@@ -605,6 +592,7 @@ void main() {
           expect(options.args.containsKey('style'), isFalse);
           expect(options.args.containsKey('layout'), isFalse);
           expect(options.args.containsKey('template'), isFalse);
+          expect(options.layout, SlideLayout.normal);
           expect(options.args['extra'], 'value');
         });
       });
@@ -614,6 +602,7 @@ void main() {
           final original = SlideOptions(
             title: 'RT',
             style: 'rt-style',
+            layout: SlideLayout.fullscreen,
             args: {'k': 'v'},
           );
 
@@ -621,6 +610,8 @@ void main() {
 
           expect(restored.title, original.title);
           expect(restored.style, original.style);
+          expect(restored.layout, original.layout);
+          expect(restored.args.containsKey('layout'), isFalse);
           expect(restored.args['k'], original.args['k']);
         });
 
@@ -631,15 +622,6 @@ void main() {
 
           expect(restored.template, original.template);
           expect(restored.args.containsKey('template'), isFalse);
-        });
-
-        test('preserves layout through toMap/fromMap', () {
-          final original = SlideOptions(layout: SlideLayout.fullscreen);
-
-          final restored = SlideOptions.fromMap(original.toMap());
-
-          expect(restored.layout, original.layout);
-          expect(restored.args.containsKey('layout'), isFalse);
         });
       });
 
@@ -657,26 +639,20 @@ void main() {
           expect(options.args['extra'], 'value');
         });
 
-        test('parses map with template field', () {
+        test('parses known fields', () {
           final options = SlideOptions.parse({
             'title': 'T',
+            'style': 'S',
+            'layout': 'fullscreen',
             'template': 'parsed-template',
           });
 
           expect(options.title, 'T');
-          expect(options.template, 'parsed-template');
-          expect(options.args.containsKey('template'), isFalse);
-        });
-
-        test('parses map with layout field', () {
-          final options = SlideOptions.parse({
-            'title': 'T',
-            'layout': 'fullscreen',
-          });
-
-          expect(options.title, 'T');
+          expect(options.style, 'S');
           expect(options.layout, SlideLayout.fullscreen);
+          expect(options.template, 'parsed-template');
           expect(options.args.containsKey('layout'), isFalse);
+          expect(options.args.containsKey('template'), isFalse);
         });
       });
 

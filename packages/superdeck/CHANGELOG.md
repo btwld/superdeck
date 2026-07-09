@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Support `layout: fullscreen` slides, which suppress resolved headers and
+  footers while preserving the resolved background and style.
 - Export `FileDeckLoader` and `BundledDeckLoader` from the public barrel so
   apps can use `SuperDeckApp.deckLoader` without importing from `src/`.
 - Fall back to bundled deck assets when auto-selection cannot discover a
