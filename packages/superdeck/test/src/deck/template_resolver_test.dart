@@ -508,14 +508,6 @@ void main() {
     });
 
     group('Fullscreen layout', () {
-      /// Zero pad/margin injected by fullscreen before named style merge.
-      final fullscreenBlockSpacing = SlideStyle(
-        blockContainer: BoxStyler(
-          padding: EdgeInsetsGeometryMix.all(0),
-          margin: EdgeInsetsGeometryMix.all(0),
-        ),
-      );
-
       void expectFullscreenChrome(
         TemplateResolutionResult result, {
         required Widget background,
@@ -618,8 +610,14 @@ void main() {
         },
       );
 
-      test('zeroes default block padding and margin after base style', () {
-        final options = DeckOptions();
+      test('preserves resolved style without layout-specific overrides', () {
+        final baseStyle = SlideStyle(
+          blockContainer: BoxStyler(
+            padding: EdgeInsetsGeometryMix.all(32),
+            margin: EdgeInsetsGeometryMix.all(16),
+          ),
+        );
+        final options = DeckOptions(baseStyle: baseStyle);
         final resolver = TemplateResolver(options);
 
         final normal = resolver.resolve(null);
@@ -627,31 +625,8 @@ void main() {
           SlideOptions(layout: SlideLayout.fullscreen),
         );
 
-        // Outcome: fullscreen is normal resolution plus full-bleed spacing only.
-        expect(fullscreen.style, normal.style.merge(fullscreenBlockSpacing));
-        expect(fullscreen.style, isNot(normal.style));
+        expect(fullscreen.style, normal.style);
       });
-
-      test(
-        'named style can re-add block padding after fullscreen defaults',
-        () {
-          final namedStyle = SlideStyle(
-            blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(24)),
-          );
-          final options = DeckOptions(styles: {'inset': namedStyle});
-          final resolver = TemplateResolver(options);
-
-          final fullscreenOnly = resolver.resolve(
-            SlideOptions(layout: SlideLayout.fullscreen),
-          );
-          final withNamed = resolver.resolve(
-            SlideOptions(layout: SlideLayout.fullscreen, style: 'inset'),
-          );
-
-          // Outcome: named style merges after fullscreen spacing.
-          expect(withNamed.style, fullscreenOnly.style.merge(namedStyle));
-        },
-      );
     });
   });
 }

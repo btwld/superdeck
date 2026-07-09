@@ -120,7 +120,7 @@ DeckOptions(
 
 See [Custom Slide Parts Guide](/guides/slide-parts) for examples.
 
-Slides can set `layout: fullscreen` in front matter to suppress the resolved header and footer for that slide while keeping the resolved background, and to zero default block padding and margin. Named styles still merge after those layout defaults.
+Slides can set `layout: fullscreen` in front matter to suppress the resolved header and footer for that slide while keeping the resolved background and style.
 
 ### `debug`
 **Type:** `bool` | **Default:** `false`
@@ -162,7 +162,7 @@ layout: fullscreen
 # This slide uses the 'keynote' template background without header/footer
 ```
 
-When `layout: fullscreen` is combined with a named template, SuperDeck first resolves the template's parts and base style, then removes header/footer chrome, zeroes default block padding and margin, and keeps the template background. Named styles still merge after the layout defaults.
+When `layout: fullscreen` is combined with a named template, SuperDeck first resolves the template's parts and style, then removes header/footer chrome while keeping the template background and resolved style.
 
 ### `defaultTemplate`
 **Type:** `SlideTemplate?` | **Default:** `null`
@@ -179,7 +179,7 @@ DeckOptions(
 )
 ```
 
-`layout: fullscreen` also works with `defaultTemplate`. Setting `template: 'none'` still only opts out of the default template; if the same slide sets `layout: fullscreen`, the deck-level header/footer are removed, default block padding and margin are zeroed, and the deck-level background is preserved.
+`layout: fullscreen` also works with `defaultTemplate`. Setting `template: 'none'` still only opts out of the default template; if the same slide sets `layout: fullscreen`, the deck-level header/footer are removed, and the deck-level background and style are preserved.
 
 ## Complete configuration example
 

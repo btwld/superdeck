@@ -1,4 +1,3 @@
-import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
@@ -28,13 +27,12 @@ class TemplateResolutionResult {
 /// Resolves slide templates and styles from [DeckOptions].
 ///
 /// Resolution order:
-/// - **With template**: `defaultSlideStyle -> template.baseStyle -> layout style -> template.styles[style]`
-/// - **Without template**: `defaultSlideStyle -> options.baseStyle -> layout style -> options.styles[style]`
+/// - **With template**: `defaultSlideStyle -> template.baseStyle -> template.styles[style]`
+/// - **Without template**: `defaultSlideStyle -> options.baseStyle -> options.styles[style]`
 /// - **With defaultTemplate**: applies when slide has no explicit template
 ///
-/// [SlideLayout.fullscreen] is applied after base style and before the named
-/// style so authors can re-introduce spacing via `style`. Fullscreen also
-/// clears resolved header/footer while preserving the resolved background.
+/// [SlideLayout.fullscreen] clears resolved header/footer while preserving the
+/// resolved background and style.
 class TemplateResolver {
   final DeckOptions _options;
 
@@ -54,14 +52,6 @@ class TemplateResolver {
   /// Use `template: 'none'` in slide options to fall back to deck-level
   /// styles even when a defaultTemplate is configured.
   static const noneTemplate = 'none';
-
-  /// Full-bleed block spacing: zero pad and margin after defaults, before named style.
-  static final _fullscreenStyle = SlideStyle(
-    blockContainer: BoxStyler(
-      padding: EdgeInsetsGeometryMix.all(0),
-      margin: EdgeInsetsGeometryMix.all(0),
-    ),
-  );
 
   /// Resolves the style and parts for a slide based on its options.
   ///
@@ -130,7 +120,6 @@ class TemplateResolver {
 
     final mergedStyle = defaultSlideStyle
         .merge(template.baseStyle)
-        .merge(_layoutStyle(layout))
         .merge(styleOverride);
 
     return TemplateResolutionResult(
@@ -157,7 +146,6 @@ class TemplateResolver {
 
     final mergedStyle = defaultSlideStyle
         .merge(_options.baseStyle)
-        .merge(_layoutStyle(layout))
         .merge(styleOverride);
 
     return TemplateResolutionResult(
@@ -165,10 +153,6 @@ class TemplateResolver {
       parts: _resolveParts(_options.parts, layout),
       usingTemplate: false,
     );
-  }
-
-  SlideStyle? _layoutStyle(SlideLayout? layout) {
-    return layout == SlideLayout.fullscreen ? _fullscreenStyle : null;
   }
 
   SlideParts _resolveParts(SlideParts parts, SlideLayout? layout) {

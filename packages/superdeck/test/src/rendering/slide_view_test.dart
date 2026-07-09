@@ -162,7 +162,7 @@ void main() {
           key: 'fullscreen',
           options: SlideOptions(layout: SlideLayout.fullscreen),
           sections: [
-            SectionBlock([ContentBlock('Full bleed')]),
+            SectionBlock([ContentBlock('Fullscreen content')]),
           ],
         );
         final configuration =
