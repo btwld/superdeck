@@ -1,3 +1,4 @@
+import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
@@ -27,8 +28,8 @@ class TemplateResolutionResult {
 /// Resolves slide templates and styles from [DeckOptions].
 ///
 /// Resolution order:
-/// - **With template**: `defaultSlideStyle -> template.baseStyle -> template.styles[style]`
-/// - **Without template**: `defaultSlideStyle -> options.baseStyle -> options.styles[style]`
+/// - **With template**: `defaultSlideStyle -> template.baseStyle -> layout style -> template.styles[style]`
+/// - **Without template**: `defaultSlideStyle -> options.baseStyle -> layout style -> options.styles[style]`
 /// - **With defaultTemplate**: applies when slide has no explicit template
 class TemplateResolver {
   final DeckOptions _options;
@@ -50,6 +51,13 @@ class TemplateResolver {
   /// styles even when a defaultTemplate is configured.
   static const noneTemplate = 'none';
 
+  static final _fullscreenStyle = SlideStyle(
+    blockContainer: BoxStyler(
+      padding: EdgeInsetsGeometryMix.all(0),
+      margin: EdgeInsetsGeometryMix.all(0),
+    ),
+  );
+
   /// Resolves the style and parts for a slide based on its options.
   ///
   /// Throws [ArgumentError] if:
@@ -59,6 +67,7 @@ class TemplateResolver {
   TemplateResolutionResult resolve(SlideOptions? slideOptions) {
     final templateName = slideOptions?.template;
     final styleName = slideOptions?.style;
+    final layout = slideOptions?.layout;
 
     // Determine which template to use (explicit > default > none)
     final template = _resolveTemplate(templateName);
@@ -68,10 +77,11 @@ class TemplateResolver {
         template,
         templateName ?? 'defaultTemplate',
         styleName,
+        layout,
       );
     }
 
-    return _resolveWithoutTemplate(styleName);
+    return _resolveWithoutTemplate(styleName, layout);
   }
 
   SlideTemplate? _resolveTemplate(String? templateName) {
@@ -100,6 +110,7 @@ class TemplateResolver {
     SlideTemplate template,
     String templateName,
     String? styleName,
+    SlideLayout? layout,
   ) {
     SlideStyle? styleOverride;
     if (styleName != null) {
@@ -114,16 +125,20 @@ class TemplateResolver {
 
     final mergedStyle = defaultSlideStyle
         .merge(template.baseStyle)
+        .merge(_layoutStyle(layout))
         .merge(styleOverride);
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: template.parts,
+      parts: _resolveParts(template.parts, layout),
       usingTemplate: true,
     );
   }
 
-  TemplateResolutionResult _resolveWithoutTemplate(String? styleName) {
+  TemplateResolutionResult _resolveWithoutTemplate(
+    String? styleName,
+    SlideLayout? layout,
+  ) {
     SlideStyle? styleOverride;
     if (styleName != null) {
       styleOverride = _options.styles[styleName];
@@ -137,12 +152,23 @@ class TemplateResolver {
 
     final mergedStyle = defaultSlideStyle
         .merge(_options.baseStyle)
+        .merge(_layoutStyle(layout))
         .merge(styleOverride);
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: _options.parts,
+      parts: _resolveParts(_options.parts, layout),
       usingTemplate: false,
     );
+  }
+
+  SlideStyle? _layoutStyle(SlideLayout? layout) {
+    return layout == SlideLayout.fullscreen ? _fullscreenStyle : null;
+  }
+
+  SlideParts _resolveParts(SlideParts parts, SlideLayout? layout) {
+    if (layout != SlideLayout.fullscreen) return parts;
+
+    return SlideParts(header: null, footer: null, background: parts.background);
   }
 }

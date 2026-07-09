@@ -8,6 +8,7 @@ part 'slide_model.mapper.dart';
 final slideOptionsSchema = Ack.object({
   'title': Ack.string().optional(),
   'style': Ack.string().optional(),
+  'layout': SlideLayout.schema.optional(),
   'template': Ack.string().optional(),
 }, additionalProperties: true);
 
@@ -50,17 +51,34 @@ class Slide with SlideMappable {
   static Slide parse(Map<String, Object?> map) => fromMap(schema.parse(map)!);
 }
 
+@MappableEnum()
+enum SlideLayout {
+  normal,
+  fullscreen;
+
+  static final schema = Ack.enumValues(values);
+
+  String toJson() => name;
+}
+
 /// Configuration options for a slide.
 ///
 /// Provides metadata and styling information for individual slides.
 @MappableClass(hook: UnmappedPropertiesHook('args'), ignoreNull: true)
 class SlideOptions with SlideOptionsMappable {
-  static const _knownFields = {'title', 'style', 'template'};
+  static const _knownFields = {'title', 'style', 'layout', 'template'};
 
   final String? title;
 
   /// The style variant to apply to this slide.
   final String? style;
+
+  /// The layout mode to apply to this slide.
+  ///
+  /// Missing layout and [SlideLayout.normal] both use the default slide chrome
+  /// and spacing. [SlideLayout.fullscreen] removes slide chrome and uses
+  /// full-bleed default block spacing.
+  final SlideLayout? layout;
 
   /// The slide template to use for chrome and style isolation.
   ///
@@ -73,6 +91,7 @@ class SlideOptions with SlideOptionsMappable {
   SlideOptions({
     this.title,
     this.style,
+    this.layout,
     this.template,
     Map<String, Object?> args = const {},
   }) : args = Map.unmodifiable(

@@ -1,4 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mix/mix.dart';
 import 'package:superdeck/src/deck/template_resolver.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -503,6 +505,152 @@ void main() {
         expect(withTemplate.parts, template.parts);
         expect(withoutTemplate.parts, options.parts);
       });
+    });
+
+    group('Fullscreen layout', () {
+      test('layout normal behaves like omitted layout', () {
+        final baseStyle = SlideStyle();
+        final options = DeckOptions(baseStyle: baseStyle);
+        final resolver = TemplateResolver(options);
+
+        final omitted = resolver.resolve(null);
+        final normal = resolver.resolve(
+          SlideOptions(layout: SlideLayout.normal),
+        );
+
+        expect(normal.usingTemplate, omitted.usingTemplate);
+        expect(normal.parts, same(omitted.parts));
+        expect(normal.style, defaultSlideStyle.merge(baseStyle).merge(null));
+      });
+
+      test(
+        'suppresses deck-level header and footer while preserving background',
+        () {
+          const background = ColoredBox(color: Color(0xFF123456));
+          final options = DeckOptions(
+            parts: const SlideParts(background: background),
+          );
+          final resolver = TemplateResolver(options);
+          final slideOptions = SlideOptions(layout: SlideLayout.fullscreen);
+
+          final result = resolver.resolve(slideOptions);
+
+          expect(result.usingTemplate, isFalse);
+          expect(result.parts.header, isNull);
+          expect(result.parts.footer, isNull);
+          expect(result.parts.background, same(background));
+        },
+      );
+
+      test(
+        'suppresses template header and footer while preserving background',
+        () {
+          const background = ColoredBox(color: Color(0xFF654321));
+          final template = SlideTemplate(
+            parts: const SlideParts(background: background),
+          );
+          final options = DeckOptions(templates: {'cover': template});
+          final resolver = TemplateResolver(options);
+          final slideOptions = SlideOptions(
+            template: 'cover',
+            layout: SlideLayout.fullscreen,
+          );
+
+          final result = resolver.resolve(slideOptions);
+
+          expect(result.usingTemplate, isTrue);
+          expect(result.parts.header, isNull);
+          expect(result.parts.footer, isNull);
+          expect(result.parts.background, same(background));
+        },
+      );
+
+      test('suppresses defaultTemplate header and footer', () {
+        final defaultTemplate = SlideTemplate();
+        final options = DeckOptions(defaultTemplate: defaultTemplate);
+        final resolver = TemplateResolver(options);
+        final slideOptions = SlideOptions(layout: SlideLayout.fullscreen);
+
+        final result = resolver.resolve(slideOptions);
+
+        expect(result.usingTemplate, isTrue);
+        expect(result.parts.header, isNull);
+        expect(result.parts.footer, isNull);
+      });
+
+      test(
+        'template: none remains deck-level with fullscreen chrome removal',
+        () {
+          const background = ColoredBox(color: Color(0xFFABCDEF));
+          final options = DeckOptions(
+            defaultTemplate: SlideTemplate(),
+            parts: const SlideParts(background: background),
+          );
+          final resolver = TemplateResolver(options);
+          final slideOptions = SlideOptions(
+            template: 'none',
+            layout: SlideLayout.fullscreen,
+          );
+
+          final result = resolver.resolve(slideOptions);
+
+          expect(result.usingTemplate, isFalse);
+          expect(result.parts.header, isNull);
+          expect(result.parts.footer, isNull);
+          expect(result.parts.background, same(background));
+        },
+      );
+
+      test('zeroes default block padding and margin', () {
+        final options = DeckOptions();
+        final resolver = TemplateResolver(options);
+        final slideOptions = SlideOptions(layout: SlideLayout.fullscreen);
+        final fullscreenStyle = SlideStyle(
+          blockContainer: BoxStyler(
+            padding: EdgeInsetsGeometryMix.all(0),
+            margin: EdgeInsetsGeometryMix.all(0),
+          ),
+        );
+
+        final result = resolver.resolve(slideOptions);
+
+        expect(
+          result.style,
+          defaultSlideStyle.merge(null).merge(fullscreenStyle).merge(null),
+        );
+      });
+
+      test(
+        'named style can re-add block padding after fullscreen defaults',
+        () {
+          final namedStyle = SlideStyle(
+            blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(24)),
+          );
+          final options = DeckOptions(styles: {'inset': namedStyle});
+          final resolver = TemplateResolver(options);
+          final slideOptions = SlideOptions(
+            layout: SlideLayout.fullscreen,
+            style: 'inset',
+          );
+
+          final result = resolver.resolve(slideOptions);
+
+          expect(
+            result.style,
+            defaultSlideStyle
+                .merge(null)
+                .merge(
+                  SlideStyle(
+                    blockContainer: BoxStyler(
+                      padding: EdgeInsetsGeometryMix.all(0),
+                      margin: EdgeInsetsGeometryMix.all(0),
+                    ),
+                  ),
+                )
+                .merge(namedStyle),
+          );
+        },
+      );
     });
   });
 }

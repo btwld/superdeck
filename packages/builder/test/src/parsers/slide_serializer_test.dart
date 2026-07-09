@@ -29,6 +29,7 @@ Map<String, Object?> canonicalSlide(Slide slide) {
         : {
             'title': slide.options!.title,
             'style': slide.options!.style,
+            'layout': slide.options!.layout?.name,
             'template': slide.options!.template,
             'args': slide.options!.args,
           },
@@ -99,12 +100,26 @@ void main() {
           '---\n'
           'title: Welcome\n'
           'style: hero\n'
+          'layout: fullscreen\n'
           'template: cover\n'
           'background: dark\n'
           '---\n\n'
           '# Welcome',
         ),
       );
+    });
+
+    test('frontmatter layout normal round-trips as an official option', () {
+      final slides = parseDeck(
+        '---\n'
+        'layout: normal\n'
+        '---\n\n'
+        '# Normal slide',
+      );
+
+      expect(slides.single.options?.layout, SlideLayout.normal);
+      expect(slides.single.options?.args.containsKey('layout'), isFalse);
+      expectRoundTrip(slides);
     });
 
     test('multi-section with flex and align', () {
@@ -191,7 +206,9 @@ void main() {
     );
 
     for (final name in ['coffee', 'polar_bear', 'zebra']) {
-      final deckFile = File('../playground/assets/ai_examples/${name}_deck.json');
+      final deckFile = File(
+        '../playground/assets/ai_examples/${name}_deck.json',
+      );
       test(
         'AI example deck: $name',
         () {

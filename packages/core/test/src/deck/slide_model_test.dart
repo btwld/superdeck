@@ -212,7 +212,7 @@ void main() {
         test(
           'throws AckException when options optional fields are explicitly null',
           () {
-            for (final field in ['title', 'style', 'template']) {
+            for (final field in ['title', 'style', 'layout', 'template']) {
               expect(
                 () => Slide.parse({
                   'key': 'invalid-options',
@@ -349,7 +349,7 @@ void main() {
         });
 
         test('fails validation when options fields are explicitly null', () {
-          for (final field in ['title', 'style', 'template']) {
+          for (final field in ['title', 'style', 'layout', 'template']) {
             final result = Slide.schema.safeParse({
               'key': 'full',
               'options': {field: null},
@@ -367,6 +367,7 @@ void main() {
 
         expect(options.title, isNull);
         expect(options.style, isNull);
+        expect(options.layout, isNull);
         expect(options.args, isEmpty);
       });
 
@@ -374,11 +375,13 @@ void main() {
         final options = SlideOptions(
           title: 'Title',
           style: 'dark',
+          layout: SlideLayout.fullscreen,
           args: {'custom': 'value'},
         );
 
         expect(options.title, 'Title');
         expect(options.style, 'dark');
+        expect(options.layout, SlideLayout.fullscreen);
         expect(options.args['custom'], 'value');
       });
 
@@ -438,6 +441,7 @@ void main() {
           final original = SlideOptions(
             title: 'T',
             style: 'S',
+            layout: SlideLayout.fullscreen,
             template: 'tmpl',
             args: {'k': 'v'},
           );
@@ -445,6 +449,7 @@ void main() {
 
           expect(copy.title, original.title);
           expect(copy.style, original.style);
+          expect(copy.layout, original.layout);
           expect(copy.template, original.template);
           expect(copy.args, original.args);
         });
@@ -465,6 +470,13 @@ void main() {
 
           expect(map['title'], 'T');
           expect(map['style'], 'S');
+        });
+
+        test('serializes layout when present', () {
+          final options = SlideOptions(layout: SlideLayout.fullscreen);
+          final map = options.toMap();
+
+          expect(map['layout'], 'fullscreen');
         });
 
         test('serializes template when present', () {
@@ -497,10 +509,12 @@ void main() {
           final options = SlideOptions(
             title: 'Reserved title',
             style: 'reserved-style',
+            layout: SlideLayout.normal,
             template: 'reserved-template',
             args: {
               'title': 'arg-title',
               'style': 'arg-style',
+              'layout': 'fullscreen',
               'template': 'arg-template',
               'custom': 'value',
             },
@@ -509,6 +523,7 @@ void main() {
 
           expect(map['title'], 'Reserved title');
           expect(map['style'], 'reserved-style');
+          expect(map['layout'], 'normal');
           expect(map['template'], 'reserved-template');
           expect(map['custom'], 'value');
         });
@@ -531,11 +546,27 @@ void main() {
           expect(options.style, 'parsed-style');
         });
 
+        test('deserializes layout field', () {
+          final map = {'layout': 'fullscreen'};
+          final options = SlideOptions.fromMap(map);
+
+          expect(options.layout, SlideLayout.fullscreen);
+        });
+
         test('deserializes template field', () {
           final map = {'template': 'parsed-template'};
           final options = SlideOptions.fromMap(map);
 
           expect(options.template, 'parsed-template');
+        });
+
+        test('removes layout from args', () {
+          final map = {'layout': 'fullscreen', 'extra': 'val'};
+          final options = SlideOptions.fromMap(map);
+
+          expect(options.layout, SlideLayout.fullscreen);
+          expect(options.args.containsKey('layout'), isFalse);
+          expect(options.args['extra'], 'val');
         });
 
         test('removes template from args', () {
@@ -565,12 +596,14 @@ void main() {
           final options = SlideOptions.fromMap({
             'title': 'T',
             'style': 'S',
+            'layout': 'normal',
             'template': 'tmpl',
             'extra': 'value',
           });
 
           expect(options.args.containsKey('title'), isFalse);
           expect(options.args.containsKey('style'), isFalse);
+          expect(options.args.containsKey('layout'), isFalse);
           expect(options.args.containsKey('template'), isFalse);
           expect(options.args['extra'], 'value');
         });
@@ -599,6 +632,15 @@ void main() {
           expect(restored.template, original.template);
           expect(restored.args.containsKey('template'), isFalse);
         });
+
+        test('preserves layout through toMap/fromMap', () {
+          final original = SlideOptions(layout: SlideLayout.fullscreen);
+
+          final restored = SlideOptions.fromMap(original.toMap());
+
+          expect(restored.layout, original.layout);
+          expect(restored.args.containsKey('layout'), isFalse);
+        });
       });
 
       group('parse', () {
@@ -625,6 +667,17 @@ void main() {
           expect(options.template, 'parsed-template');
           expect(options.args.containsKey('template'), isFalse);
         });
+
+        test('parses map with layout field', () {
+          final options = SlideOptions.parse({
+            'title': 'T',
+            'layout': 'fullscreen',
+          });
+
+          expect(options.title, 'T');
+          expect(options.layout, SlideLayout.fullscreen);
+          expect(options.args.containsKey('layout'), isFalse);
+        });
       });
 
       group('equality', () {
@@ -646,6 +699,13 @@ void main() {
         test('different style makes options unequal', () {
           final opt1 = SlideOptions(style: 'light');
           final opt2 = SlideOptions(style: 'dark');
+
+          expect(opt1, isNot(opt2));
+        });
+
+        test('different layout makes options unequal', () {
+          final opt1 = SlideOptions(layout: SlideLayout.normal);
+          final opt2 = SlideOptions(layout: SlideLayout.fullscreen);
 
           expect(opt1, isNot(opt2));
         });
@@ -709,8 +769,25 @@ void main() {
           expect(result.isOk, isTrue);
         });
 
+        test('validates normal and fullscreen layout values', () {
+          expect(
+            SlideOptions.schema.safeParse({'layout': 'normal'}).isOk,
+            isTrue,
+          );
+          expect(
+            SlideOptions.schema.safeParse({'layout': 'fullscreen'}).isOk,
+            isTrue,
+          );
+        });
+
+        test('rejects invalid layout values', () {
+          final result = SlideOptions.schema.safeParse({'layout': 'wide'});
+
+          expect(result.isOk, isFalse);
+        });
+
         test('fails validation when optional fields are explicitly null', () {
-          for (final field in ['title', 'style', 'template']) {
+          for (final field in ['title', 'style', 'layout', 'template']) {
             final result = SlideOptions.schema.safeParse({field: null});
             expect(result.isOk, isFalse);
           }
