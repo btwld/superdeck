@@ -16,6 +16,13 @@
       "options": {
         "additionalProperties": true,
         "properties": {
+          "layout": {
+            "enum": [
+              "normal",
+              "fullscreen"
+            ],
+            "type": "string"
+          },
           "style": {
             "type": "string"
           },

@@ -15,8 +15,9 @@ Supported keys:
 
 - `title`: Slide title used in navigation and exports.
 - `style`: Named style variant from `DeckOptions.styles`.
+- `layout`: Slide layout mode. Use `normal` or `fullscreen`.
 - `template`: Named template from `DeckOptions.templates` (`'none'` to opt out).
-- Custom keys: Available through `slide.options.args['keyName']`.
+- Custom keys: Available through `slide.options.args['keyName']`. Official keys such as `layout` are not included in `args`.
 
 Example:
 
@@ -24,9 +25,12 @@ Example:
 ---
 title: Product Vision
 style: overview
+layout: fullscreen
 owner: Platform Team
 ---
 ````
+
+`layout: fullscreen` creates a chrome-free fullscreen slide. It removes header and footer chrome from deck parts, named templates, or `defaultTemplate`, while preserving the resolved background and style.
 
 ## Block types
 

@@ -18,6 +18,7 @@ The compiled payload is a raw JSON array of slide objects — no root wrapper, n
     "options": {
       "title": "Welcome",
       "style": "title",
+      "layout": "fullscreen",
       "template": "brand"
     },
     "sections": [
@@ -60,6 +61,7 @@ Each slide object contains these fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `layout` | `"normal" \| "fullscreen"?` | Slide layout mode. `fullscreen` removes resolved header/footer chrome while keeping the resolved background and style |
 | `style` | `string?` | Named style variant to apply |
 | `template` | `string?` | Named template to apply (`"none"` to opt out) |
 | `title` | `string?` | Slide title for navigation and export |

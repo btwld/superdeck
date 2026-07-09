@@ -30,6 +30,9 @@ class TemplateResolutionResult {
 /// - **With template**: `defaultSlideStyle -> template.baseStyle -> template.styles[style]`
 /// - **Without template**: `defaultSlideStyle -> options.baseStyle -> options.styles[style]`
 /// - **With defaultTemplate**: applies when slide has no explicit template
+///
+/// [SlideLayout.fullscreen] clears resolved header/footer while preserving the
+/// resolved background and style.
 class TemplateResolver {
   final DeckOptions _options;
 
@@ -59,6 +62,7 @@ class TemplateResolver {
   TemplateResolutionResult resolve(SlideOptions? slideOptions) {
     final templateName = slideOptions?.template;
     final styleName = slideOptions?.style;
+    final layout = slideOptions?.layout;
 
     // Determine which template to use (explicit > default > none)
     final template = _resolveTemplate(templateName);
@@ -68,10 +72,11 @@ class TemplateResolver {
         template,
         templateName ?? 'defaultTemplate',
         styleName,
+        layout,
       );
     }
 
-    return _resolveWithoutTemplate(styleName);
+    return _resolveWithoutTemplate(styleName, layout);
   }
 
   SlideTemplate? _resolveTemplate(String? templateName) {
@@ -100,6 +105,7 @@ class TemplateResolver {
     SlideTemplate template,
     String templateName,
     String? styleName,
+    SlideLayout? layout,
   ) {
     SlideStyle? styleOverride;
     if (styleName != null) {
@@ -118,12 +124,15 @@ class TemplateResolver {
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: template.parts,
+      parts: _resolveParts(template.parts, layout),
       usingTemplate: true,
     );
   }
 
-  TemplateResolutionResult _resolveWithoutTemplate(String? styleName) {
+  TemplateResolutionResult _resolveWithoutTemplate(
+    String? styleName,
+    SlideLayout? layout,
+  ) {
     SlideStyle? styleOverride;
     if (styleName != null) {
       styleOverride = _options.styles[styleName];
@@ -141,8 +150,14 @@ class TemplateResolver {
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: _options.parts,
+      parts: _resolveParts(_options.parts, layout),
       usingTemplate: false,
     );
+  }
+
+  SlideParts _resolveParts(SlideParts parts, SlideLayout? layout) {
+    if (layout != SlideLayout.fullscreen) return parts;
+
+    return SlideParts(header: null, footer: null, background: parts.background);
   }
 }

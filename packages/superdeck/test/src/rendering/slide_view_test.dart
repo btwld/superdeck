@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/deck/slide_configuration_builder.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -152,6 +153,42 @@ void main() {
         expect(topSection.top, closeTo(80, 1.0));
         expect(bottomSection.bottom, closeTo(680, 1.0));
         expect(topSection.height + bottomSection.height, closeTo(600, 1.0));
+      });
+
+      testWidgets('fullscreen sections receive full slide size', (
+        tester,
+      ) async {
+        final slide = Slide(
+          key: 'fullscreen',
+          options: SlideOptions(layout: SlideLayout.fullscreen),
+          sections: [
+            SectionBlock([ContentBlock('Fullscreen content')]),
+          ],
+        );
+        final configuration =
+            const SlideConfigurationBuilder().buildConfigurations(
+              [slide],
+              DeckOptions(
+                parts: const SlideParts(
+                  header: PreferredSize(
+                    preferredSize: Size.fromHeight(80),
+                    child: SizedBox.shrink(),
+                  ),
+                  footer: PreferredSize(
+                    preferredSize: Size.fromHeight(40),
+                    child: SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ).single;
+
+        await SlideTestHarness.pumpConfiguration(tester, configuration);
+
+        final section = find.byType(SectionWidget);
+        final sectionRect = tester.getRect(section);
+
+        expect(sectionRect.top, 0);
+        expect(sectionRect.size, const Size(1280, 720));
       });
     });
 
