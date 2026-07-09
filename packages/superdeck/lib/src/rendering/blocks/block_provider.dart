@@ -47,6 +47,7 @@ class BlockConfiguration {
     return data;
   }
 
+  // ignore: unused-code
   static BlockConfiguration? maybeOf(BuildContext context) {
     return InheritedData.maybeOf<BlockConfiguration>(context);
   }

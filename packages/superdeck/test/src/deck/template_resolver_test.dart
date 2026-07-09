@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/template_resolver.dart';
 import 'package:superdeck/superdeck.dart';
@@ -47,6 +48,35 @@ void main() {
 
           expect(result.usingTemplate, isFalse);
           expect(result.style, defaultSlideStyle.merge(null).merge(namedStyle));
+        },
+      );
+
+      test(
+        'merge order is defaultSlideStyle -> baseStyle -> named style (last wins)',
+        () {
+          // Concrete last-wins check: named style overrides baseStyle fields.
+          final baseStyle = SlideStyle(
+            strong: const TextStyle(color: Color(0xFFFF0000)),
+            link: const TextStyle(color: Color(0xFF00FF00)),
+          );
+          final namedStyle = SlideStyle(
+            strong: const TextStyle(color: Color(0xFF0000FF)),
+          );
+          final options = DeckOptions(
+            baseStyle: baseStyle,
+            styles: {'accent': namedStyle},
+          );
+          final resolver = TemplateResolver(options);
+
+          final result = resolver.resolve(SlideOptions(style: 'accent'));
+
+          final expected = defaultSlideStyle
+              .merge(baseStyle)
+              .merge(namedStyle);
+          expect(result.style, expected);
+          // Named strong replaces base strong; link from base remains.
+          expect(result.style, isNot(defaultSlideStyle.merge(baseStyle)));
+          expect(result.style, isNot(defaultSlideStyle.merge(namedStyle)));
         },
       );
 

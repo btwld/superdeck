@@ -7,7 +7,7 @@ import '../../styling/components/markdown_codeblock.dart';
 class TextElement {
   final String text;
   final TextSpec spec;
-  final Size size;
+  final Size size; // ignore: unused-code
 
   const TextElement({
     required this.text,

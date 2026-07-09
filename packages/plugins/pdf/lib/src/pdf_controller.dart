@@ -108,7 +108,7 @@ class PdfController {
   final Duration _renderAttachmentTimeout;
 
   /// Whether this controller has been disposed.
-  bool get disposed => _disposed;
+  bool get disposed => _disposed; // ignore: unused-code
 
   /// The page controller used during export.
   PageController get pageController => _pageController;

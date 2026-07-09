@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:mix/mix.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/markdown/markdown_element_builders_registry.dart';
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
+import 'package:superdeck/src/styling/components/markdown_codeblock.dart';
+import 'package:superdeck/src/styling/components/markdown_list.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -38,6 +41,210 @@ void main() {
           expect(find.text('Regular paragraph text.'), findsOneWidget);
         },
       );
+    });
+
+    group('Inline Markdown styles from SlideSpec', () {
+      const strongColor = Color(0xFFFF0000);
+      const emColor = Color(0xFF00FF00);
+      const delColor = Color(0xFF0000FF);
+      const linkColor = Color(0xFFFF00FF);
+      const codeColor = Color(0xFF00FFFF);
+
+      SlideSpec styledSpec() => const SlideSpec(
+        strong: TextStyle(color: strongColor, fontWeight: FontWeight.w900),
+        em: TextStyle(color: emColor, fontStyle: FontStyle.italic),
+        del: TextStyle(
+          color: delColor,
+          decoration: TextDecoration.lineThrough,
+        ),
+        link: TextStyle(
+          color: linkColor,
+          decoration: TextDecoration.underline,
+        ),
+        code: StyleSpec(
+          spec: MarkdownCodeblockSpec(
+            textStyle: TextStyle(color: codeColor, fontFamily: 'Courier'),
+          ),
+        ),
+        textScaleFactor: TextScaler.linear(1.5),
+        p: StyleSpec(
+          spec: TextSpec(style: TextStyle(fontSize: 20, color: Colors.white)),
+        ),
+        h1: StyleSpec(
+          spec: TextSpec(style: TextStyle(fontSize: 40, color: Colors.white)),
+        ),
+        list: StyleSpec(
+          spec: MarkdownListSpec(
+            text: StyleSpec(
+              spec: TextSpec(
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      testWidgets('applies strong style inside a paragraph', (tester) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'Hello **world** there',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('world'), findsOneWidget);
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'world',
+            color: strongColor,
+            fontWeight: FontWeight.w900,
+          ),
+          isNotNull,
+          reason: 'strong text must use SlideSpec.strong, not flattened plain text',
+        );
+      });
+
+      testWidgets('applies em style inside a paragraph', (tester) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'Hello *world* there',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'world',
+            color: emColor,
+            fontStyle: FontStyle.italic,
+          ),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies del style inside a paragraph', (tester) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'Hello ~~world~~ there',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'world',
+            color: delColor,
+            decoration: TextDecoration.lineThrough,
+          ),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies link style inside a paragraph', (tester) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'See [docs](https://example.com) now',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'docs',
+            color: linkColor,
+          ),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies inline code style inside a paragraph', (tester) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'Use `print` please',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'print',
+            color: codeColor,
+          ),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies strong style inside a heading', (tester) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: '# Hello **world**',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'world',
+            color: strongColor,
+            fontWeight: FontWeight.w900,
+          ),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies strong style inside a list item', (tester) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: '- Hello **world**',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'world',
+            color: strongColor,
+            fontWeight: FontWeight.w900,
+          ),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies textScaleFactor from SlideSpec on paragraphs', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'Scaled text here',
+            slideSpec: styledSpec(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final textWidgets = tester.widgetList<Text>(find.byType(Text));
+        final scaled = textWidgets.any(
+          (t) => t.textScaler == const TextScaler.linear(1.5),
+        );
+        expect(
+          scaled,
+          isTrue,
+          reason: 'SlideSpec.textScaleFactor must scale paragraph text',
+        );
+      });
     });
 
     group('BlockConfiguration Access', () {
@@ -174,6 +381,86 @@ void main() {}
   });
 }
 
+/// Finds a [TextStyle] on a rendered [TextSpan] whose text contains [containing]
+/// and matches the optional style predicates.
+TextStyle? _findTextSpanStyle(
+  WidgetTester tester, {
+  required String containing,
+  Color? color,
+  FontWeight? fontWeight,
+  FontStyle? fontStyle,
+  TextDecoration? decoration,
+}) {
+  for (final text in tester.widgetList<Text>(find.byType(Text))) {
+    final root = text.textSpan ?? TextSpan(text: text.data);
+    final match = _searchSpan(
+      root,
+      containing: containing,
+      color: color,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      decoration: decoration,
+    );
+    if (match != null) return match;
+  }
+
+  for (final rich in tester.widgetList<RichText>(find.byType(RichText))) {
+    final match = _searchSpan(
+      rich.text,
+      containing: containing,
+      color: color,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      decoration: decoration,
+    );
+    if (match != null) return match;
+  }
+
+  return null;
+}
+
+TextStyle? _searchSpan(
+  InlineSpan span, {
+  required String containing,
+  Color? color,
+  FontWeight? fontWeight,
+  FontStyle? fontStyle,
+  TextDecoration? decoration,
+  TextStyle? inherited,
+}) {
+  if (span is! TextSpan) return null;
+
+  final style = inherited?.merge(span.style) ?? span.style;
+  final text = span.text;
+  if (text != null && text.contains(containing)) {
+    final matchesColor = color == null || style?.color == color;
+    final matchesWeight = fontWeight == null || style?.fontWeight == fontWeight;
+    final matchesFontStyle = fontStyle == null || style?.fontStyle == fontStyle;
+    final matchesDecoration =
+        decoration == null || style?.decoration == decoration;
+    if (matchesColor &&
+        matchesWeight &&
+        matchesFontStyle &&
+        matchesDecoration) {
+      return style;
+    }
+  }
+
+  for (final child in span.children ?? const <InlineSpan>[]) {
+    final found = _searchSpan(
+      child,
+      containing: containing,
+      color: color,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      decoration: decoration,
+      inherited: style,
+    );
+    if (found != null) return found;
+  }
+  return null;
+}
+
 /// Test harness that provides complete rendering context for markdown elements.
 ///
 /// This harness sets up:
@@ -183,14 +470,17 @@ void main() {}
 /// - MarkdownRenderScope with registry, styleSheet, and extensionSet
 /// - MarkdownBody with all required syntaxes and builders
 class _MarkdownHarness extends StatelessWidget {
-  const _MarkdownHarness({required this.markdown});
+  const _MarkdownHarness({
+    required this.markdown,
+    this.slideSpec = const SlideSpec(),
+  });
 
   final String markdown;
+  final SlideSpec slideSpec;
 
   @override
   Widget build(BuildContext context) {
     final extensionSet = md.ExtensionSet.gitHubWeb;
-    final slideSpec = const SlideSpec();
     final registry = SpecMarkdownBuilders(slideSpec);
     final styleSheet = slideSpec.toStyle();
     final slideConfiguration = SlideConfiguration(
