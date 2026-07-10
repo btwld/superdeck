@@ -34,6 +34,57 @@ DeckOptions(
 )
 ```
 
+#### Named widget block styles
+
+Use `BlockVariant` in a `SlideStyle` stylesheet to target every named widget
+block with an exact, case-sensitive name. The selector applies to the block
+container and its complete widget subtree, so container spacing and descendant
+Mix styles resolve together.
+
+```dart
+import 'package:mix/mix.dart';
+import 'package:superdeck/superdeck.dart';
+
+const webviewBlock = BlockVariant('webview');
+
+final options = DeckOptions(
+  baseStyle: SlideStyle(
+    blockContainer: BoxStyler(
+      padding: EdgeInsetsGeometryMix.all(40),
+    ).variants([
+      VariantStyle(
+        webviewBlock,
+        BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+      ),
+    ]),
+  ),
+);
+```
+
+`BlockVariant('webview')` matches both `@webview` and `@widget` blocks whose
+`name` is `webview`. Custom shorthand annotations work the same way, so
+`@chart` matches `BlockVariant('chart')`. The matching rule uses normal Mix
+precedence after the base style, and its margin and padding are included when
+SuperDeck calculates the child widget's usable size.
+
+SuperDeck already ships this exact zero padding and margin rule for `@webview`
+blocks by default, so a webview renders edge-to-edge without any stylesheet. The
+example above therefore doubles as the pattern for giving any other named block
+its own spacing.
+
+Only `WidgetBlock` names are selectable. Content blocks and section containers
+are not selectable; there are no per-instance IDs, classes, attributes, or
+selector composition. A plain `NamedVariant('image')` remains a manual Mix
+variant and is not activated merely because an `@image` block is rendered.
+Every widget block with the same name receives the same rule. Hardcoded styling
+inside a custom widget is unchanged unless that widget declares Mix styles that
+can respond to the inherited `BlockVariant`.
+
+Fullscreen layout does not create a separate block selector. It only removes
+header and footer chrome, so the same `BlockVariant('webview')` rule applies to
+normal and fullscreen WebView blocks; those two layouts cannot receive
+different rules based on `BlockVariant` alone.
+
 ### `styles`
 **Type:** `Map<String, SlideStyle>` | **Default:** `{}`
 
