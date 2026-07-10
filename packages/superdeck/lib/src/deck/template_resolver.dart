@@ -15,7 +15,7 @@ class TemplateResolutionResult {
   final SlideParts parts;
 
   /// Whether a template was used in the resolution.
-  final bool usingTemplate;
+  final bool usingTemplate; // ignore: unused-code
 
   const TemplateResolutionResult({
     required this.style,

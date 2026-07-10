@@ -1,3 +1,7 @@
+// Documented measurement utility with a dedicated test suite; production
+// paths use other layout tools today. Keep for package consumers and tests.
+// ignore_for_file: unused-code
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';

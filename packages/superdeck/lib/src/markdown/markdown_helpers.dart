@@ -43,13 +43,13 @@ class LerpStringResult {
   final String text;
   final String? fadingChar;
   final double fadeOpacity;
-  final bool isFadingOut;
+  final bool isFadingOut; // ignore: unused-code
 
   /// Remainder drawn with alpha=0 to keep wrapping stable.
   /// By rendering the full final string with invisible characters, we reserve
   /// the correct line-wrapping layout even during transitions, preventing the
   /// "last word flicker" bug where text position shifts as characters fade in.
-  final String ghostSuffix;
+  final String ghostSuffix; // ignore: unused-code
 
   bool get hasFadingChar => fadingChar != null && fadeOpacity > 0.0;
 }

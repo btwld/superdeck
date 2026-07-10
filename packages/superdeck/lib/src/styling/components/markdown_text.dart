@@ -1,17 +1,29 @@
+// Self-references inside this deprecated compatibility surface.
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
 /// Specification for markdown text styling properties.
 ///
-/// Defines styling for regular markdown text including text style,
-/// padding, and alignment.
+/// **Not used by the renderer.** Active text styling goes through
+/// [SlideSpec]/[SlideStyle] (e.g. `p`, `h1`–`h6`, `strong`, `em`) and Mix
+/// [TextStyler]s. Kept for source compatibility only.
+@Deprecated(
+  'MarkdownTextSpec is not wired into rendering. Use SlideStyle / SlideSpec '
+  '(p, h1–h6, strong, em, del, link) with Mix TextStyler instead.',
+)
 final class MarkdownTextSpec extends Spec<MarkdownTextSpec>
     with Diagnosticable {
   final TextStyle? textStyle;
   final EdgeInsets? padding;
   final WrapAlignment? alignment;
 
+  @Deprecated(
+    'MarkdownTextSpec is not wired into rendering. Use SlideStyle / SlideSpec '
+    'instead.',
+  )
   const MarkdownTextSpec({this.textStyle, this.padding, this.alignment});
 
   @override
@@ -53,8 +65,12 @@ final class MarkdownTextSpec extends Spec<MarkdownTextSpec>
 
 /// Style class for configuring [MarkdownTextSpec] properties.
 ///
-/// Provides a fluent API for building markdown text styles with support
-/// for animations, variants, and widget modifiers.
+/// **Not used by the renderer.** Prefer [SlideStyle] / Mix [TextStyler] for
+/// active styling. Kept exported for source compatibility.
+@Deprecated(
+  'MarkdownTextStyle is not wired into rendering. Use SlideStyle with Mix '
+  'TextStyler (p, h1–h6, strong, em, del, link) instead.',
+)
 final class MarkdownTextStyle extends Style<MarkdownTextSpec>
     with
         Diagnosticable,
@@ -65,6 +81,9 @@ final class MarkdownTextStyle extends Style<MarkdownTextSpec>
   final Prop<EdgeInsets>? $padding;
   final Prop<WrapAlignment>? $alignment;
 
+  @Deprecated(
+    'MarkdownTextStyle is not wired into rendering. Use SlideStyle instead.',
+  )
   const MarkdownTextStyle.create({
     Prop<TextStyle>? textStyle,
     Prop<EdgeInsets>? padding,
@@ -76,6 +95,9 @@ final class MarkdownTextStyle extends Style<MarkdownTextSpec>
        $padding = padding,
        $alignment = alignment;
 
+  @Deprecated(
+    'MarkdownTextStyle is not wired into rendering. Use SlideStyle instead.',
+  )
   MarkdownTextStyle({
     TextStyle? textStyle,
     EdgeInsets? padding,
