@@ -35,15 +35,19 @@ Each slide can have YAML front matter with these options:
 
 - `title` – Slide title (appears in navigation and exports)
 - `style` – Named style variant to apply (defined in `DeckOptions.styles`)
+- `layout` – Slide layout mode: `normal` or `fullscreen`
 - `template` – Named template to apply (defined in `DeckOptions.templates`; `'none'` to opt out)
-- Custom keys – Access via `slide.options.args['keyName']` in slide parts
+- Custom keys – Access via `slide.options.args['keyName']` in slide parts. Official keys such as `layout` are not included in `args`
 
 ````markdown
 ---
 title: Product Vision
 style: overview
+layout: fullscreen
 ---
 ````
+
+Use `layout: fullscreen` for chrome-free fullscreen slides. It removes header and footer chrome while keeping the resolved background and style.
 
 ---
 
@@ -132,6 +136,22 @@ Embed interactive DartPad examples.
 For all `@dartpad` arguments, see the [Markdown syntax reference](../reference/markdown-syntax).
 
 > DartPad uses an embedded WebView. Make sure your target platform supports WebViews.
+
+### `@webview`
+
+Embed a persistent web page. Controllers are cached per block (or `cacheKey`) so
+returning to a slide does not reload the page. Reuse is sequential (one live
+mount at a time), not concurrent multi-widget sharing.
+
+````markdown
+@webview {
+  url: "https://example.com"
+  title: "Example"
+  showControls: true
+}
+````
+
+For all `@webview` arguments, see the [Markdown syntax reference](../reference/markdown-syntax).
 
 ### Custom widgets
 

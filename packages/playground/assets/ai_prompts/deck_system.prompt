@@ -70,7 +70,7 @@ Each slide has:
 - `sections`: Array of section blocks (required)
 - `comments`: Speaker notes (optional)
 
-**IMPORTANT**: When generating from an outline, preserve the exact slide keys from the outline. The outline keys (e.g., "intro", "slide-1", "conclusion") are used to link images to slides.
+**IMPORTANT**: When generating from an outline, preserve the exact slide keys from the outline (e.g., "intro", "slide-1", "conclusion").
 
 ## Section Block
 
@@ -115,7 +115,7 @@ Use standard markdown:
 - Blockquotes: > quote text
 - Alerts: > [!NOTE] message
 
-Images: Only use images from the Available Images section below. Include them using markdown syntax: `![description](path)`
+Do not include images. This presentation is text-only.
 
 ## Style Configuration
 
@@ -146,31 +146,5 @@ Font guidelines:
 7. ALWAYS include the "style" object with colors and fonts - this is required for proper rendering
 8. For two-section slides: use `flex: 1` for title, `flex: 3` for body
 9. For single-section slides (Title-Left, Quote, Hero): use `flex: 2`
-10. Use available images where they enhance the slide content (see Available Images section)
-
-## Available Images
-
-{{{availableImages}}}
-
-When an image is available for a slide, use a **single section** (like the Title-Left layout) with the image in its own block. This gives the image the full slide height. Never use a title section on top of image slides. Never embed images inline within text.
-
-Example image slide layout:
-```
-\{
-  "sections": [
-    \{
-      "type": "section",
-      "flex": 2,
-      "blocks": [
-        \{"type": "block", "flex": 3, "content": "### Slide Title\n\nContent..."},
-        \{"type": "block", "flex": 2, "content": "![description](.superdeck/assets/slide-intro-illustration.png)"}
-      ]
-    }
-  ]
-}
-```
-
-Only use images that are listed above. Do not invent image paths.
-Maximum 1 image per presentation. Use `###` (H3) for titles on image slides. Text block gets `flex: 3`, image block gets `flex: 2`.
 
 {{{examples}}}

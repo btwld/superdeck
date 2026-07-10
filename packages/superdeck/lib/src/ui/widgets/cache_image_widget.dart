@@ -38,7 +38,7 @@ ImageProvider getImageProvider(Uri uri) {
 class CachedImage extends StatelessWidget {
   final Uri uri;
 
-  final Size? targetSize;
+  final Size? targetSize; // ignore: unused-code
 
   final StyleSpec<ImageSpec> styleSpec;
 

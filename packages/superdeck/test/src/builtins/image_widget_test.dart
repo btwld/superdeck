@@ -202,6 +202,7 @@ class _ImageHarness extends StatelessWidget {
           spec: const SlideSpec(),
           size: size,
           align: ContentAlignment.center,
+          runtimeKey: 'test-slide:s0:b0',
         ),
         child: Scaffold(body: ImageWidget(args)),
       ),

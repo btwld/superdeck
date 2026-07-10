@@ -4,6 +4,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../thumbnails/thumbnail_service.dart';
 import '../ui/widgets/provider.dart';
+import '../ui/widgets/webview_controller_cache.dart';
 import '../utils/asset_cache_store.dart';
 import 'deck_options.dart';
 import 'deck_presentation_state.dart';
@@ -28,7 +29,8 @@ final class DeckController {
     session = DeckSessionState(deckLoader: deckLoader);
     presentation = DeckPresentationState(
       thumbnailService:
-          thumbnailService ?? ThumbnailService(cacheStore: this.assetCacheStore),
+          thumbnailService ??
+          ThumbnailService(cacheStore: this.assetCacheStore),
       slides: slides,
       transitionDuration: transitionDuration,
     );
@@ -36,6 +38,10 @@ final class DeckController {
 
   /// Asset cache shared by thumbnail capture and in-slide image resolution.
   late final AssetCacheStore assetCacheStore;
+
+  /// Deck-scoped WebView controllers reused across slide remounts.
+  final webViewControllerCache = WebViewControllerCache();
+
   late final Signal<DeckOptions> options;
   late final DeckSessionState session;
   late final DeckPresentationState presentation;
@@ -53,6 +59,7 @@ final class DeckController {
   Future<void> reloadDeck() => session.reload();
 
   void dispose() {
+    webViewControllerCache.clear();
     presentation.dispose();
     session.dispose();
     options.dispose();

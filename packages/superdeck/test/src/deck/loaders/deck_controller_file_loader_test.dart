@@ -1,10 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/deck_controller.dart';
-import 'package:superdeck/src/deck/deck_options.dart';
-import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
-import 'package:superdeck_core/superdeck_core.dart';
+import 'package:superdeck/superdeck.dart';
 
 const _validSlidesJson = '[]';
 
@@ -58,7 +55,10 @@ void main() {
         await _waitUntil(() => controller.session.hasFatalError.value);
         expect(controller.session.isLoading.value, isFalse);
         expect(controller.session.hasFatalError.value, isTrue);
-        expect(controller.session.error.value, missingBuildOutputMessage);
+        expect(
+          controller.session.error.value,
+          contains('No SuperDeck build output found'),
+        );
 
         await controller.reloadDeck();
 
@@ -86,7 +86,10 @@ void main() {
         createController();
 
         await _waitUntil(() => controller.session.hasFatalError.value);
-        expect(controller.session.error.value, missingBuildOutputMessage);
+        expect(
+          controller.session.error.value,
+          contains('No SuperDeck build output found'),
+        );
 
         await config.superdeckDir.create(recursive: true);
         await config.deckJson.writeAsString(_validSlidesJson);

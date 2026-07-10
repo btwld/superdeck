@@ -23,6 +23,7 @@ class MarkdownRenderScope extends InheritedWidget {
   final MarkdownStyleSheet styleSheet;
   final md.ExtensionSet extensionSet;
 
+  // ignore: unused-code
   static MarkdownRenderScope of(BuildContext context) {
     final scope = maybeOf(context);
     if (scope == null) {

@@ -13,6 +13,7 @@ linter:
     public_member_api_docs: false
     always_use_package_imports: false
     prefer_relative_imports: true
+    prefer_initializing_formals: false
     library_private_types_in_public_api: false
     
 dart_code_metrics:

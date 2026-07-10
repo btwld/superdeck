@@ -21,34 +21,36 @@ class SlideThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final presentation = DeckController.of(context).presentation;
 
-    return Watch((context) {
-      final asyncThumbnail = presentation.getThumbnail(slide.key);
+    return SignalBuilder(
+      builder: (context) {
+        final asyncThumbnail = presentation.getThumbnail(slide.key);
 
-      if (asyncThumbnail == null) {
+        if (asyncThumbnail == null) {
+          return _PreviewContainer(
+            selected: selected,
+            child: AspectRatio(
+              aspectRatio: kAspectRatio,
+              child: Container(
+                color: Colors.grey[300],
+                child: const Center(child: IsometricLoading()),
+              ),
+            ),
+          );
+        }
+
         return _PreviewContainer(
           selected: selected,
-          child: AspectRatio(
-            aspectRatio: kAspectRatio,
-            child: Container(
-              color: Colors.grey[300],
-              child: const Center(child: IsometricLoading()),
-            ),
+          child: Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: kAspectRatio,
+                child: asyncThumbnail.build(context),
+              ),
+            ],
           ),
         );
-      }
-
-      return _PreviewContainer(
-        selected: selected,
-        child: Stack(
-          children: [
-            AspectRatio(
-              aspectRatio: kAspectRatio,
-              child: asyncThumbnail.build(context),
-            ),
-          ],
-        ),
-      );
-    });
+      },
+    );
   }
 }
 

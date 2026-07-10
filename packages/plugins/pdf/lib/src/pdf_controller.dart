@@ -108,7 +108,7 @@ class PdfController {
   final Duration _renderAttachmentTimeout;
 
   /// Whether this controller has been disposed.
-  bool get disposed => _disposed;
+  bool get disposed => _disposed; // ignore: unused-code
 
   /// The page controller used during export.
   PageController get pageController => _pageController;
@@ -336,7 +336,7 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
           return saver.saveFile(
             name: name,
             bytes: bytes,
-            ext: ext,
+            fileExtension: ext,
             mimeType: mimeType,
           );
         },
@@ -350,7 +350,7 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
           return saver.saveAs(
             name: name,
             bytes: bytes,
-            ext: ext,
+            fileExtension: ext,
             mimeType: mimeType,
           );
         },

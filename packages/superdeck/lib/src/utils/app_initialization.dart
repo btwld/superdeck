@@ -17,13 +17,13 @@ Future<void> _initializeWindowManager() async {
 
   await windowManager.ensureInitialized();
 
-  final newSize = Size(kResolution.width, kResolution.height);
+  final size = Size(kResolution.width, kResolution.height);
 
   final windowOptions = WindowOptions(
-    size: newSize,
+    size: size,
     backgroundColor: Colors.black,
     skipTaskbar: false,
-    minimumSize: newSize,
+    minimumSize: size,
     windowButtonVisibility: true,
     title: 'Superdeck',
     titleBarStyle: TitleBarStyle.hidden,

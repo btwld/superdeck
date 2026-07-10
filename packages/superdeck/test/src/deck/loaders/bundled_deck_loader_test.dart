@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/src/deck/loaders/bundled_deck_loader.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -27,7 +27,7 @@ void main() {
       expect(events[0], isA<SlidesLoadingEvent>());
       expect(events[1], isA<SlidesErrorEvent>());
       final errorEvent = events[1] as SlidesErrorEvent;
-      expect(errorEvent.message, contains('Superdeck reference error'));
+      expect(errorEvent.message, contains('SuperDeck reference error'));
     });
 
     test('reload replays bundled load cycle', () async {

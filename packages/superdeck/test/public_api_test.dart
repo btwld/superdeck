@@ -13,6 +13,10 @@ void main() {
       expect(ThumbnailService, isNotNull);
       expect(superDeckSlideSize, isNotNull);
       expect(superDeckAspectRatio, isNotNull);
+      expect(DeckLoader, isNotNull);
+      expect(DeckWorkspace, isNotNull);
+      expect(FileDeckLoader, isNotNull);
+      expect(BundledDeckLoader, isNotNull);
       expect(DeckPlugin, isNotNull);
       expect(DeckAction, isNotNull);
       expect(DeckRuntimePlugin, isNotNull);

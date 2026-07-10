@@ -6,6 +6,7 @@ import '../examples/mix/box_with_variants.dart' as mix_variants;
 import '../examples/mix/simple_box.dart' as mix_simple_box;
 import '../examples/select.dart' as naked_select;
 import '../examples/button.dart' as remix_button;
+import 'ack_metric_card.dart';
 
 /// Auto-registered demo widgets for Superdeck presentations.
 ///
@@ -18,6 +19,11 @@ import '../examples/button.dart' as remix_button;
 /// @naked-select
 ///
 /// @remix-button
+///
+/// @ack-metric-card {
+///   label: Activation
+///   value: "72%"
+/// }
 /// ```
 ///
 /// The QR code widget is now a built-in widget available as `@qrcode`.
@@ -40,6 +46,7 @@ Map<String, WidgetFactory> get demoWidgets => {
   'remix-button': (_) => _DemoWrapper(
     child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
   ),
+  'ack-metric-card': AckMetricCard.new,
 };
 
 /// Wrapper widget that constrains demo widgets to their intrinsic size.

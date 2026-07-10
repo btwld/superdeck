@@ -14,6 +14,12 @@ import 'markdown_table.dart';
 ///
 /// This is the main spec that aggregates all markdown styling including headings,
 /// text, alerts, lists, tables, code blocks, and more.
+///
+/// **Active styling path:** block builders read `h1`–`h6`, `p`, and list text
+/// for base typography; inline markdown (`strong`, `em`, `del`, `a`/`link`,
+/// inline `code` via [code].textStyle) and [textScaleFactor] are applied when
+/// rendering paragraphs, headings, and list items. Prefer configuring these
+/// through [SlideStyle] / Mix [TextStyler] — not [MarkdownTextStyle].
 final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
   final StyleSpec<TextSpec>? h1;
   final StyleSpec<TextSpec>? h2;
@@ -23,13 +29,17 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
   final StyleSpec<TextSpec>? h6;
   final StyleSpec<TextSpec>? p;
 
+  /// Anchor style; [link] takes precedence when both are set.
   final TextStyle? a;
   final TextStyle? em;
   final TextStyle? strong;
   final TextStyle? del;
   final TextStyle? img;
+
+  /// Preferred link style (used for `a` tags; overrides [a] when set).
   final TextStyle? link;
 
+  /// Scales markdown text in block builders when set.
   final TextScaler? textScaleFactor;
 
   final StyleSpec<MarkdownAlertSpec> alert;
@@ -174,8 +184,9 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
 
   /// Converts this SlideSpec to a MarkdownStyleSheet for flutter_markdown.
   ///
-  /// This method extracts the relevant properties and converts them to the
-  /// format expected by flutter_markdown.
+  /// Block tags (`p`, `h1`–`h6`, `li`) are rendered by custom builders that
+  /// read inline styles from this [SlideSpec] directly. [toStyle] still maps
+  /// strong/em/del/link/code/textScaler for any non-builder path.
   MarkdownStyleSheet toStyle() {
     return MarkdownStyleSheet(
       h1: h1?.spec.style,
@@ -185,7 +196,12 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       h5: h5?.spec.style,
       h6: h6?.spec.style,
       p: p?.spec.style,
-      a: link,
+      a: link ?? a,
+      em: em,
+      strong: strong,
+      del: del,
+      code: code?.spec.textStyle,
+      textScaler: textScaleFactor,
       listBullet: list?.spec.bullet?.spec.style,
       orderedListAlign: list?.spec.orderedAlignment ?? WrapAlignment.start,
       unorderedListAlign: list?.spec.unorderedAlignment ?? WrapAlignment.start,

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SuperDeck Presentations"
+  short_description: "Build SuperDeck Markdown presentations"
+  default_prompt: "Use $superdeck-presentations to create or refine a SuperDeck slides.md presentation."

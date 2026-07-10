@@ -6,6 +6,7 @@ import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';
+import '../../styling/block_variant.dart';
 import '../../styling/components/slide.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/overflow_clip.dart';
@@ -22,12 +23,14 @@ class _BlockContainer extends StatefulWidget {
     required this.block,
     required this.size,
     required this.configuration,
+    required this.runtimeKey,
     required this.child,
   });
 
   final Block block;
   final Size size;
   final SlideConfiguration configuration;
+  final String runtimeKey;
   final Widget child;
 
   @override
@@ -37,8 +40,12 @@ class _BlockContainer extends StatefulWidget {
 class _BlockContainerState extends State<_BlockContainer> {
   @override
   Widget build(context) {
-    // Get the resolved SlideSpec (provided by SlideView)
-    final spec = SlideSpec.of(context);
+    // Widget blocks resolve their style inside [BlockVariantScope] so a named
+    // block variant affects both the rendered container and its child size.
+    final spec = switch (widget.block) {
+      WidgetBlock() => widget.configuration.style.resolve(context).spec,
+      ContentBlock() => SlideSpec.of(context),
+    };
 
     final blockOffset = spec.blockContainer.spec.calculateBlockOffset;
 
@@ -49,6 +56,7 @@ class _BlockContainerState extends State<_BlockContainer> {
         math.max(0.0, widget.size.width - blockOffset.dx),
         math.max(0.0, widget.size.height - blockOffset.dy),
       ),
+      runtimeKey: widget.runtimeKey,
     );
 
     Widget content = InheritedData(
@@ -164,11 +172,13 @@ class BlockWidget extends StatelessWidget {
     required this.block,
     required this.size,
     required this.configuration,
+    required this.runtimeKey,
   });
 
   final ContentBlock block;
   final Size size;
   final SlideConfiguration configuration;
+  final String runtimeKey;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +186,7 @@ class BlockWidget extends StatelessWidget {
       block: block,
       size: size,
       configuration: configuration,
+      runtimeKey: runtimeKey,
       child: _ContentBlockChild(content: block.content),
     );
   }
@@ -188,29 +199,41 @@ class CustomBlockWidget extends StatelessWidget {
     required this.block,
     required this.size,
     required this.configuration,
+    required this.runtimeKey,
   });
 
   final WidgetBlock block;
   final Size size;
   final SlideConfiguration configuration;
+  final String runtimeKey;
 
   @override
   Widget build(BuildContext context) {
-    return _BlockContainer(
-      block: block,
-      size: size,
-      configuration: configuration,
-      child: _CustomBlockChild(block: block),
+    return BlockVariantScope(
+      name: block.name,
+      child: _BlockContainer(
+        block: block,
+        size: size,
+        configuration: configuration,
+        runtimeKey: runtimeKey,
+        child: _CustomBlockChild(block: block),
+      ),
     );
   }
 }
 
 /// Section widget that layouts child blocks horizontally.
 class SectionWidget extends StatelessWidget {
-  const SectionWidget({super.key, required this.section, required this.size});
+  const SectionWidget({
+    super.key,
+    required this.section,
+    required this.size,
+    required this.sectionIndex,
+  });
 
   final SectionBlock section;
   final Size size;
+  final int sectionIndex;
 
   Positioned _renderDebugInfo(Block block, Size size) {
     const textStyle = TextStyle(color: Colors.black, fontSize: 12);
@@ -238,20 +261,28 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
     double leftOffset = 0;
     final children = <Widget>[];
 
-    for (final block in section.blocks) {
+    for (var blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
+      final block = section.blocks[blockIndex];
       final blockWidth = flexUnit * block.flex;
       final blockSize = Size(blockWidth, size.height);
+      final runtimeKey = buildBlockRuntimeKey(
+        configuration.key,
+        sectionIndex,
+        blockIndex,
+      );
 
       Widget blockWidget = switch (block) {
         WidgetBlock b => CustomBlockWidget(
           block: b,
           size: blockSize,
           configuration: configuration,
+          runtimeKey: runtimeKey,
         ),
         ContentBlock b => BlockWidget(
           block: b,
           size: blockSize,
           configuration: configuration,
+          runtimeKey: runtimeKey,
         ),
       };
 

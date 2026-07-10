@@ -2,7 +2,7 @@
   "$id": "https://superdeck.dev/schema/superdeck.slides.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "items": {
-    "additionalProperties": {},
+    "additionalProperties": true,
     "properties": {
       "comments": {
         "items": {
@@ -14,8 +14,15 @@
         "type": "string"
       },
       "options": {
-        "additionalProperties": {},
+        "additionalProperties": true,
         "properties": {
+          "layout": {
+            "enum": [
+              "normal",
+              "fullscreen"
+            ],
+            "type": "string"
+          },
           "style": {
             "type": "string"
           },
@@ -50,7 +57,7 @@
               "items": {
                 "anyOf": [
                   {
-                    "additionalProperties": {},
+                    "additionalProperties": true,
                     "properties": {
                       "align": {
                         "enum": [
@@ -86,7 +93,7 @@
                     "type": "object"
                   },
                   {
-                    "additionalProperties": {},
+                    "additionalProperties": true,
                     "properties": {
                       "align": {
                         "enum": [

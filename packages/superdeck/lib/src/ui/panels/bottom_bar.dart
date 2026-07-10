@@ -34,9 +34,9 @@ class DeckBottomBar extends StatelessWidget {
     return FlexBox(
       style: _bottomBarContainer,
       children: [
-        // view notes - use Watch for reactive icon
-        Watch(
-          (context) => SDIconButton(
+        // view notes - use SignalBuilder for reactive icon
+        SignalBuilder(
+          builder: (context) => SDIconButton(
             onPressed: presentation.toggleNotes,
             icon: presentation.isNotesOpen.value
                 ? Icons.comment
@@ -75,9 +75,9 @@ class DeckBottomBar extends StatelessWidget {
         ),
         const Spacer(),
 
-        // Page counter - use Watch for reactive text
-        Watch(
-          (context) => Text(
+        // Page counter - use SignalBuilder for reactive text
+        SignalBuilder(
+          builder: (context) => Text(
             '${presentation.currentIndex.value + 1} of ${presentation.totalSlides.value}',
             style: const TextStyle(color: Colors.white),
           ),
