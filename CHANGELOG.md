@@ -1,26 +1,8 @@
-## 1.0.0
+# Changelog
 
-* First stable release of SuperDeck
-* Roll back experimental setext-heading hero parsing; ATX headers continue to use the shared helper
-* Fix image hero-tag parsing to avoid inline parser overruns and keep Flutter/core paths aligned
-* Document the shared `{.hero}` helper and scope so future contributions stay consistent
+SuperDeck is a monorepo; each package keeps its own changelog:
 
-### 0.0.4
-
-* Fix: Better error handling when external asset tooling is not installed
-* Enhancement: Improved asset generation pipeline
-
-### 0.0.3
-
-* Cleaned up dependencies
-* Updated example code
-* Improved logging
-* Fixed and improved asset generation
-
-## 0.0.2
-
-* Added demo and example code
-
-## 0.0.1
-
-* Initial version
+- [`superdeck`](packages/superdeck/CHANGELOG.md) — the Flutter presentation framework
+- [`superdeck_core`](packages/core/CHANGELOG.md) — parsing, models, and schema validation
+- [`superdeck_cli`](packages/cli/CHANGELOG.md) — the `superdeck` command-line tool
+- [`superdeck_builder`](packages/builder/CHANGELOG.md) — build_runner integration
