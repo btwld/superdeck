@@ -1,3 +1,7 @@
+## Unreleased
+
+- Add `SlideLayout` and the `SlideOptions.layout` field to the slide contract.
+
 ## 1.0.0
 
 - First stable release of superdeck_core

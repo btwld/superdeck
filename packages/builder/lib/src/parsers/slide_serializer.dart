@@ -86,6 +86,9 @@ class SlideSerializer {
     final entries = <MapEntry<String, Object?>>[];
     if (options.title != null) entries.add(MapEntry('title', options.title));
     if (options.style != null) entries.add(MapEntry('style', options.style));
+    if (options.layout != null) {
+      entries.add(MapEntry('layout', options.layout!.name));
+    }
     if (options.template != null) {
       entries.add(MapEntry('template', options.template));
     }
@@ -243,21 +246,11 @@ class SlideSerializer {
   }
 
   bool _isYamlKeyword(String value) {
-    const keywords = {
-      'true',
-      'false',
-      'null',
-      'yes',
-      'no',
-      'on',
-      'off',
-      '~',
-    };
+    const keywords = {'true', 'false', 'null', 'yes', 'no', 'on', 'off', '~'};
     return keywords.contains(value.toLowerCase());
   }
 
-  bool _looksNumeric(String value) =>
-      num.tryParse(value) != null;
+  bool _looksNumeric(String value) => num.tryParse(value) != null;
 
   // ---------------------------------------------------------------------------
   // Comments

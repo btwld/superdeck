@@ -2277,6 +2277,55 @@
     "comments": []
   },
   {
+    "key": "zH0cr0qi",
+    "options": {
+      "title": "WebView Normal"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "name": "webview",
+            "flex": 1,
+            "scrollable": false,
+            "type": "widget",
+            "url": "https://www.fluttermix.com",
+            "title": "Flutter Mix",
+            "cacheKey": "fluttermix-normal"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "rJAYnWki",
+    "options": {
+      "title": "WebView Fullscreen",
+      "layout": "fullscreen"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "name": "webview",
+            "flex": 1,
+            "scrollable": false,
+            "type": "widget",
+            "url": "https://www.fluttermix.com",
+            "title": "Flutter Mix",
+            "cacheKey": "fluttermix-fullscreen"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
     "key": "MKokn2KA",
     "options": {},
     "sections": [

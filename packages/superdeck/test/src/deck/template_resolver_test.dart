@@ -1,5 +1,6 @@
-import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mix/mix.dart';
 import 'package:superdeck/src/deck/template_resolver.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -532,6 +533,128 @@ void main() {
         // When using a template, parts come from the template, not options
         expect(withTemplate.parts, template.parts);
         expect(withoutTemplate.parts, options.parts);
+      });
+    });
+
+    group('Fullscreen layout', () {
+      void expectFullscreenChrome(
+        TemplateResolutionResult result, {
+        required Widget background,
+        required bool usingTemplate,
+      }) {
+        expect(result.usingTemplate, usingTemplate);
+        expect(result.parts.header, isNull);
+        expect(result.parts.footer, isNull);
+        expect(result.parts.background, same(background));
+      }
+
+      test('layout normal behaves like omitted layout', () {
+        final baseStyle = SlideStyle();
+        final options = DeckOptions(baseStyle: baseStyle);
+        final resolver = TemplateResolver(options);
+
+        final omitted = resolver.resolve(null);
+        final normal = resolver.resolve(
+          SlideOptions(layout: SlideLayout.normal),
+        );
+
+        expect(normal.usingTemplate, omitted.usingTemplate);
+        expect(normal.parts, same(omitted.parts));
+        expect(normal.style, omitted.style);
+      });
+
+      test(
+        'suppresses deck-level header and footer while preserving background',
+        () {
+          const background = ColoredBox(color: Color(0xFF123456));
+          final options = DeckOptions(
+            parts: const SlideParts(background: background),
+          );
+          final resolver = TemplateResolver(options);
+
+          expectFullscreenChrome(
+            resolver.resolve(SlideOptions(layout: SlideLayout.fullscreen)),
+            background: background,
+            usingTemplate: false,
+          );
+        },
+      );
+
+      test(
+        'suppresses template header and footer while preserving background',
+        () {
+          const background = ColoredBox(color: Color(0xFF654321));
+          final template = SlideTemplate(
+            parts: const SlideParts(background: background),
+          );
+          final options = DeckOptions(templates: {'cover': template});
+          final resolver = TemplateResolver(options);
+
+          expectFullscreenChrome(
+            resolver.resolve(
+              SlideOptions(template: 'cover', layout: SlideLayout.fullscreen),
+            ),
+            background: background,
+            usingTemplate: true,
+          );
+        },
+      );
+
+      test(
+        'suppresses defaultTemplate header and footer while preserving background',
+        () {
+          const background = ColoredBox(color: Color(0xFF112233));
+          final options = DeckOptions(
+            defaultTemplate: SlideTemplate(
+              parts: const SlideParts(background: background),
+            ),
+          );
+          final resolver = TemplateResolver(options);
+
+          expectFullscreenChrome(
+            resolver.resolve(SlideOptions(layout: SlideLayout.fullscreen)),
+            background: background,
+            usingTemplate: true,
+          );
+        },
+      );
+
+      test(
+        'template: none remains deck-level with fullscreen chrome removal',
+        () {
+          const background = ColoredBox(color: Color(0xFFABCDEF));
+          final options = DeckOptions(
+            defaultTemplate: SlideTemplate(),
+            parts: const SlideParts(background: background),
+          );
+          final resolver = TemplateResolver(options);
+
+          expectFullscreenChrome(
+            resolver.resolve(
+              SlideOptions(template: 'none', layout: SlideLayout.fullscreen),
+            ),
+            background: background,
+            usingTemplate: false,
+          );
+        },
+      );
+
+      test('preserves resolved style without layout-specific overrides', () {
+        final baseStyle = SlideStyle(
+          blockContainer: BoxStyler(
+            padding: EdgeInsetsGeometryMix.all(32),
+            margin: EdgeInsetsGeometryMix.all(16),
+          ),
+        );
+        final options = DeckOptions(baseStyle: baseStyle);
+        final resolver = TemplateResolver(options);
+
+        final normal = resolver.resolve(null);
+        final fullscreen = resolver.resolve(
+          SlideOptions(layout: SlideLayout.fullscreen),
+        );
+
+        expect(fullscreen.style, normal.style);
       });
     });
   });

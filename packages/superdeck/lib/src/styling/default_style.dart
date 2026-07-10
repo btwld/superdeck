@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
 
+import 'block_variant.dart';
 import 'components/markdown_alert.dart';
 import 'components/markdown_alert_type.dart';
 import 'components/markdown_blockquote.dart';
@@ -29,6 +30,11 @@ TextStyle get _baseTextStyle => _safeGoogleFont(
 
 const onGist = NamedVariant('gist');
 const onImage = NamedVariant('image');
+
+// A webview fills its own block, so it ships edge-to-edge by default. This uses
+// [BlockVariant] because a plain [NamedVariant] does not activate for a rendered
+// widget block; only [BlockVariant] reliably targets the `@webview` container.
+const onWebview = BlockVariant('webview');
 
 WidgetModifierConfig _pad(EdgeInsetsGeometryMix value) =>
     WidgetModifierConfig.padding(value);
@@ -225,6 +231,13 @@ SlideStyle _createDefaultSlideStyle() {
       VariantStyle(onImage, BoxStyler(padding: EdgeInsetsGeometryMix.all(0))),
       VariantStyle(
         onGist,
+        BoxStyler(
+          padding: EdgeInsetsGeometryMix.all(0),
+          margin: EdgeInsetsGeometryMix.all(0),
+        ),
+      ),
+      VariantStyle(
+        onWebview,
         BoxStyler(
           padding: EdgeInsetsGeometryMix.all(0),
           margin: EdgeInsetsGeometryMix.all(0),

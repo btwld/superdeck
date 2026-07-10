@@ -6,6 +6,7 @@ import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';
+import '../../styling/block_variant.dart';
 import '../../styling/components/slide.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/overflow_clip.dart';
@@ -39,8 +40,12 @@ class _BlockContainer extends StatefulWidget {
 class _BlockContainerState extends State<_BlockContainer> {
   @override
   Widget build(context) {
-    // Get the resolved SlideSpec (provided by SlideView)
-    final spec = SlideSpec.of(context);
+    // Widget blocks resolve their style inside [BlockVariantScope] so a named
+    // block variant affects both the rendered container and its child size.
+    final spec = switch (widget.block) {
+      WidgetBlock() => widget.configuration.style.resolve(context).spec,
+      ContentBlock() => SlideSpec.of(context),
+    };
 
     final blockOffset = spec.blockContainer.spec.calculateBlockOffset;
 
@@ -204,12 +209,15 @@ class CustomBlockWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BlockContainer(
-      block: block,
-      size: size,
-      configuration: configuration,
-      runtimeKey: runtimeKey,
-      child: _CustomBlockChild(block: block),
+    return BlockVariantScope(
+      name: block.name,
+      child: _BlockContainer(
+        block: block,
+        size: size,
+        configuration: configuration,
+        runtimeKey: runtimeKey,
+        child: _CustomBlockChild(block: block),
+      ),
     );
   }
 }
