@@ -11,7 +11,7 @@ void main() {
       test(
         'no template, no style — returns defaultSlideStyle merged with options.baseStyle',
         () {
-          final baseStyle = SlideStyle();
+          final baseStyle = SlideStyler();
           final options = DeckOptions(baseStyle: baseStyle);
           final resolver = TemplateResolver(options);
 
@@ -40,7 +40,7 @@ void main() {
       test(
         'no template, with style — resolves style from options.styles map',
         () {
-          final namedStyle = SlideStyle();
+          final namedStyle = SlideStyler();
           final options = DeckOptions(styles: {'dark': namedStyle});
           final resolver = TemplateResolver(options);
           final slideOptions = SlideOptions(style: 'dark');
@@ -56,12 +56,12 @@ void main() {
         'merge order is defaultSlideStyle -> baseStyle -> named style (last wins)',
         () {
           // Concrete last-wins check: named style overrides baseStyle fields.
-          final baseStyle = SlideStyle(
-            strong: const TextStyle(color: Color(0xFFFF0000)),
-            link: const TextStyle(color: Color(0xFF00FF00)),
+          final baseStyle = SlideStyler(
+            strong: TextStyleMix.color(const Color(0xFFFF0000)),
+            link: TextStyleMix.color(const Color(0xFF00FF00)),
           );
-          final namedStyle = SlideStyle(
-            strong: const TextStyle(color: Color(0xFF0000FF)),
+          final namedStyle = SlideStyler(
+            strong: TextStyleMix.color(const Color(0xFF0000FF)),
           );
           final options = DeckOptions(
             baseStyle: baseStyle,
@@ -71,9 +71,7 @@ void main() {
 
           final result = resolver.resolve(SlideOptions(style: 'accent'));
 
-          final expected = defaultSlideStyle
-              .merge(baseStyle)
-              .merge(namedStyle);
+          final expected = defaultSlideStyle.merge(baseStyle).merge(namedStyle);
           expect(result.style, expected);
           // Named strong replaces base strong; link from base remains.
           expect(result.style, isNot(defaultSlideStyle.merge(baseStyle)));
@@ -82,7 +80,7 @@ void main() {
       );
 
       test('no template, unknown style — throws ArgumentError', () {
-        final options = DeckOptions(styles: {'light': SlideStyle()});
+        final options = DeckOptions(styles: {'light': SlideStyler()});
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(style: 'nonexistent');
 
@@ -96,7 +94,7 @@ void main() {
         'no template, unknown style — exception message includes "in deck" and style name',
         () {
           final options = DeckOptions(
-            styles: {'light': SlideStyle(), 'dark': SlideStyle()},
+            styles: {'light': SlideStyler(), 'dark': SlideStyler()},
           );
           final resolver = TemplateResolver(options);
           final slideOptions = SlideOptions(style: 'missing');
@@ -117,7 +115,7 @@ void main() {
 
     group('With template', () {
       test('valid template — uses template baseStyle and parts', () {
-        final templateBaseStyle = SlideStyle();
+        final templateBaseStyle = SlideStyler();
         final template = SlideTemplate(baseStyle: templateBaseStyle);
         final options = DeckOptions(templates: {'hero': template});
         final resolver = TemplateResolver(options);
@@ -146,7 +144,7 @@ void main() {
       });
 
       test('template + style — uses template styles map', () {
-        final templateStyle = SlideStyle();
+        final templateStyle = SlideStyler();
         final template = SlideTemplate(styles: {'accent': templateStyle});
         final options = DeckOptions(templates: {'branded': template});
         final resolver = TemplateResolver(options);
@@ -162,7 +160,7 @@ void main() {
       });
 
       test('template, unknown style — throws ArgumentError', () {
-        final template = SlideTemplate(styles: {'known': SlideStyle()});
+        final template = SlideTemplate(styles: {'known': SlideStyler()});
         final options = DeckOptions(templates: {'myTemplate': template});
         final resolver = TemplateResolver(options);
         final slideOptions = SlideOptions(
@@ -179,7 +177,7 @@ void main() {
       test(
         'template, unknown style — exception message includes template name and style name',
         () {
-          final template = SlideTemplate(styles: {'valid': SlideStyle()});
+          final template = SlideTemplate(styles: {'valid': SlideStyler()});
           final options = DeckOptions(templates: {'corporate': template});
           final resolver = TemplateResolver(options);
           final slideOptions = SlideOptions(
@@ -257,7 +255,7 @@ void main() {
 
     group('defaultTemplate', () {
       test('defaultTemplate used when slide has no explicit template', () {
-        final templateBaseStyle = SlideStyle();
+        final templateBaseStyle = SlideStyler();
         final defaultTemplate = SlideTemplate(baseStyle: templateBaseStyle);
         final options = DeckOptions(defaultTemplate: defaultTemplate);
         final resolver = TemplateResolver(options);
@@ -273,8 +271,8 @@ void main() {
       });
 
       test('explicit template overrides defaultTemplate', () {
-        final defaultTemplateStyle = SlideStyle();
-        final explicitTemplateStyle = SlideStyle();
+        final defaultTemplateStyle = SlideStyler();
+        final explicitTemplateStyle = SlideStyler();
 
         final defaultTemplate = SlideTemplate(baseStyle: defaultTemplateStyle);
         final explicitTemplate = SlideTemplate(
@@ -311,8 +309,8 @@ void main() {
       });
 
       test('template: "none" opts out of defaultTemplate', () {
-        final defaultTemplate = SlideTemplate(baseStyle: SlideStyle());
-        final baseStyle = SlideStyle();
+        final defaultTemplate = SlideTemplate(baseStyle: SlideStyler());
+        final baseStyle = SlideStyler();
         final options = DeckOptions(
           defaultTemplate: defaultTemplate,
           baseStyle: baseStyle,
@@ -328,8 +326,8 @@ void main() {
       });
 
       test('template: "none" uses deck-level styles, not template styles', () {
-        final deckStyle = SlideStyle();
-        final templateStyle = SlideStyle();
+        final deckStyle = SlideStyler();
+        final templateStyle = SlideStyler();
         final options = DeckOptions(
           defaultTemplate: SlideTemplate(baseStyle: templateStyle),
           styles: {'accent': deckStyle},
@@ -347,7 +345,7 @@ void main() {
         'defaultTemplate unknown style message identifies defaultTemplate',
         () {
           final defaultTemplate = SlideTemplate(
-            styles: {'known': SlideStyle()},
+            styles: {'known': SlideStyler()},
           );
           final options = DeckOptions(defaultTemplate: defaultTemplate);
           final resolver = TemplateResolver(options);
@@ -384,8 +382,8 @@ void main() {
       test(
         'without template: defaultSlideStyle → options.baseStyle → options.styles[style]',
         () {
-          final baseStyle = SlideStyle();
-          final namedStyle = SlideStyle();
+          final baseStyle = SlideStyler();
+          final namedStyle = SlideStyler();
           final options = DeckOptions(
             baseStyle: baseStyle,
             styles: {'variant': namedStyle},
@@ -404,8 +402,8 @@ void main() {
       test(
         'with template: defaultSlideStyle → template.baseStyle → template.styles[style]',
         () {
-          final templateBase = SlideStyle();
-          final templateVariant = SlideStyle();
+          final templateBase = SlideStyler();
+          final templateVariant = SlideStyler();
           final template = SlideTemplate(
             baseStyle: templateBase,
             styles: {'highlight': templateVariant},
@@ -430,7 +428,7 @@ void main() {
       test(
         'with template and no style variant: defaultSlideStyle → template.baseStyle',
         () {
-          final templateBase = SlideStyle();
+          final templateBase = SlideStyler();
           final template = SlideTemplate(baseStyle: templateBase);
           final options = DeckOptions(templates: {'simple': template});
           final resolver = TemplateResolver(options);
@@ -445,8 +443,8 @@ void main() {
       );
 
       test('options.baseStyle is not applied when a named template is used', () {
-        final optionsBaseStyle = SlideStyle();
-        final templateBase = SlideStyle();
+        final optionsBaseStyle = SlideStyler();
+        final templateBase = SlideStyler();
         final template = SlideTemplate(baseStyle: templateBase);
         final options = DeckOptions(
           baseStyle: optionsBaseStyle,
@@ -549,7 +547,7 @@ void main() {
       }
 
       test('layout normal behaves like omitted layout', () {
-        final baseStyle = SlideStyle();
+        final baseStyle = SlideStyler();
         final options = DeckOptions(baseStyle: baseStyle);
         final resolver = TemplateResolver(options);
 
@@ -640,7 +638,7 @@ void main() {
       );
 
       test('preserves resolved style without layout-specific overrides', () {
-        final baseStyle = SlideStyle(
+        final baseStyle = SlideStyler(
           blockContainer: BoxStyler(
             padding: EdgeInsetsGeometryMix.all(32),
             margin: EdgeInsetsGeometryMix.all(16),

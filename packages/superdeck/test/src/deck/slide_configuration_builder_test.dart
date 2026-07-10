@@ -13,7 +13,7 @@ void main() {
     });
 
     test('when no template is set, applies deck styles', () {
-      final baseStyle = SlideStyle();
+      final baseStyle = SlideStyler();
       final options = DeckOptions(baseStyle: baseStyle);
       final slides = [Slide(key: 'slide-1')];
 
@@ -25,7 +25,7 @@ void main() {
     });
 
     test('slide with named style resolves from deck styles', () {
-      final namedStyle = SlideStyle();
+      final namedStyle = SlideStyler();
       final options = DeckOptions(styles: {'dark': namedStyle});
       final slides = [
         Slide(
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('slide with template uses template parts and style', () {
-      final templateBase = SlideStyle();
+      final templateBase = SlideStyler();
       final templateParts = SlideParts();
       final template = SlideTemplate(
         baseStyle: templateBase,
@@ -64,7 +64,7 @@ void main() {
     });
 
     test('slide with template + style uses template style variants', () {
-      final variant = SlideStyle();
+      final variant = SlideStyler();
       final template = SlideTemplate(styles: {'highlight': variant});
       final options = DeckOptions(templates: {'t': template});
       final slides = [
@@ -80,7 +80,7 @@ void main() {
     });
 
     test('defaultTemplate applies to slides without explicit template', () {
-      final defaultTemplate = SlideTemplate(baseStyle: SlideStyle());
+      final defaultTemplate = SlideTemplate(baseStyle: SlideStyler());
       final options = DeckOptions(defaultTemplate: defaultTemplate);
       final slides = [Slide(key: 'default-tmpl')];
 
@@ -90,8 +90,8 @@ void main() {
     });
 
     test('template: "none" opts out of defaultTemplate', () {
-      final defaultTemplate = SlideTemplate(baseStyle: SlideStyle());
-      final deckBase = SlideStyle();
+      final defaultTemplate = SlideTemplate(baseStyle: SlideStyler());
+      final deckBase = SlideStyler();
       final options = DeckOptions(
         defaultTemplate: defaultTemplate,
         baseStyle: deckBase,
@@ -125,8 +125,8 @@ void main() {
     });
 
     test('mixed slides — some with template, some without', () {
-      final template = SlideTemplate(baseStyle: SlideStyle());
-      final deckBase = SlideStyle();
+      final template = SlideTemplate(baseStyle: SlideStyler());
+      final deckBase = SlideStyler();
       final options = DeckOptions(
         baseStyle: deckBase,
         templates: {'t': template},

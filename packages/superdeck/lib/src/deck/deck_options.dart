@@ -10,8 +10,8 @@ part 'deck_options.mapper.dart';
 
 @MappableClass()
 class DeckOptions with DeckOptionsMappable {
-  final SlideStyle? baseStyle;
-  final Map<String, SlideStyle> styles;
+  final SlideStyler? baseStyle;
+  final Map<String, SlideStyler> styles;
   final Map<String, WidgetFactory> widgets;
   final SlideParts parts;
   final bool debug;
@@ -27,7 +27,7 @@ class DeckOptions with DeckOptionsMappable {
 
   DeckOptions({
     this.baseStyle,
-    Map<String, SlideStyle> styles = const <String, SlideStyle>{},
+    Map<String, SlideStyler> styles = const <String, SlideStyler>{},
     Map<String, WidgetFactory> widgets = const <String, WidgetFactory>{},
     this.parts = const SlideParts(),
     this.debug = false,

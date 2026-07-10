@@ -47,7 +47,7 @@ String _thumbnailKey(String key, {String? suffix}) {
 SlideConfiguration _createSlide(String key, {String? thumbnailKey}) {
   return SlideConfiguration(
     slideIndex: 0,
-    style: SlideStyle(),
+    style: SlideStyler(),
     slide: Slide(key: key),
     thumbnailKey: thumbnailKey ?? _thumbnailKey(key),
   );

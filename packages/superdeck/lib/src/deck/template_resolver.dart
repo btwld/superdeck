@@ -9,7 +9,7 @@ import 'slide_template.dart';
 /// Result of resolving a slide's template and style configuration.
 class TemplateResolutionResult {
   /// The fully merged style for the slide.
-  final SlideStyle style;
+  final SlideStyler style;
 
   /// The chrome parts (header, footer, background) for the slide.
   final SlideParts parts;
@@ -107,7 +107,7 @@ class TemplateResolver {
     String? styleName,
     SlideLayout? layout,
   ) {
-    SlideStyle? styleOverride;
+    SlideStyler? styleOverride;
     if (styleName != null) {
       styleOverride = template.styles[styleName];
       if (styleOverride == null) {
@@ -133,7 +133,7 @@ class TemplateResolver {
     String? styleName,
     SlideLayout? layout,
   ) {
-    SlideStyle? styleOverride;
+    SlideStyler? styleOverride;
     if (styleName != null) {
       styleOverride = _options.styles[styleName];
       if (styleOverride == null) {

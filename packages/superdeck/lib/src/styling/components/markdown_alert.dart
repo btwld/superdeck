@@ -1,18 +1,35 @@
+// The styler below stays hand-written on the legacy @MixableStyler mixin
+// path: its fields nest same-package generated stylers
+// (MarkdownAlertTypeStyler), which @MixableSpec's spec_styler_generator can
+// only wire up through @MixableField(setterType:) — and annotation type
+// arguments cannot reference same-package generated classes (build phases
+// hide them from the resolver, degrading silently to value semantics).
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
+import 'package:mix_annotations/mix_annotations.dart';
 
 import 'markdown_alert_type.dart';
+
+part 'markdown_alert.g.dart';
 
 /// Specification for markdown alert container with all alert types.
 ///
 /// Defines styling for different alert types: note, tip, important, warning, and caution.
-final class MarkdownAlertSpec extends Spec<MarkdownAlertSpec>
-    with Diagnosticable {
+@MixableSpec()
+@immutable
+final class MarkdownAlertSpec with _$MarkdownAlertSpec {
+  @override
   final StyleSpec<MarkdownAlertTypeSpec> note;
+  @override
   final StyleSpec<MarkdownAlertTypeSpec> tip;
+  @override
   final StyleSpec<MarkdownAlertTypeSpec> important;
+  @override
   final StyleSpec<MarkdownAlertTypeSpec> warning;
+  @override
   final StyleSpec<MarkdownAlertTypeSpec> caution;
 
   const MarkdownAlertSpec({
@@ -26,66 +43,30 @@ final class MarkdownAlertSpec extends Spec<MarkdownAlertSpec>
        important = important ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
        warning = warning ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
        caution = caution ?? const StyleSpec(spec: MarkdownAlertTypeSpec());
-
-  @override
-  MarkdownAlertSpec copyWith({
-    StyleSpec<MarkdownAlertTypeSpec>? note,
-    StyleSpec<MarkdownAlertTypeSpec>? tip,
-    StyleSpec<MarkdownAlertTypeSpec>? important,
-    StyleSpec<MarkdownAlertTypeSpec>? warning,
-    StyleSpec<MarkdownAlertTypeSpec>? caution,
-  }) {
-    return MarkdownAlertSpec(
-      note: note ?? this.note,
-      tip: tip ?? this.tip,
-      important: important ?? this.important,
-      warning: warning ?? this.warning,
-      caution: caution ?? this.caution,
-    );
-  }
-
-  @override
-  MarkdownAlertSpec lerp(MarkdownAlertSpec? other, double t) {
-    if (other == null) return this;
-
-    return MarkdownAlertSpec(
-      note: MixOps.lerp(note, other.note, t)!,
-      tip: MixOps.lerp(tip, other.tip, t)!,
-      important: MixOps.lerp(important, other.important, t)!,
-      warning: MixOps.lerp(warning, other.warning, t)!,
-      caution: MixOps.lerp(caution, other.caution, t)!,
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('note', note))
-      ..add(DiagnosticsProperty('tip', tip))
-      ..add(DiagnosticsProperty('important', important))
-      ..add(DiagnosticsProperty('warning', warning))
-      ..add(DiagnosticsProperty('caution', caution));
-  }
-
-  @override
-  List<Object?> get props => [note, tip, important, warning, caution];
 }
 
 /// Style class for configuring [MarkdownAlertSpec] properties.
-final class MarkdownAlertStyle extends Style<MarkdownAlertSpec>
-    with
-        Diagnosticable,
-        WidgetModifierStyleMixin<MarkdownAlertStyle, MarkdownAlertSpec>,
-        VariantStyleMixin<MarkdownAlertStyle, MarkdownAlertSpec>,
-        AnimationStyleMixin<MarkdownAlertStyle, MarkdownAlertSpec> {
+@MixableStyler()
+final class MarkdownAlertStyler
+    extends MixStyler<MarkdownAlertStyler, MarkdownAlertSpec>
+    with _$MarkdownAlertStylerMixin {
+  @override
+  @MixableField(ignoreSetter: true)
   final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $note;
+  @override
+  @MixableField(ignoreSetter: true)
   final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $tip;
+  @override
+  @MixableField(ignoreSetter: true)
   final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $important;
+  @override
+  @MixableField(ignoreSetter: true)
   final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $warning;
+  @override
+  @MixableField(ignoreSetter: true)
   final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $caution;
 
-  const MarkdownAlertStyle.create({
+  const MarkdownAlertStyler.create({
     Prop<StyleSpec<MarkdownAlertTypeSpec>>? note,
     Prop<StyleSpec<MarkdownAlertTypeSpec>>? tip,
     Prop<StyleSpec<MarkdownAlertTypeSpec>>? important,
@@ -100,12 +81,12 @@ final class MarkdownAlertStyle extends Style<MarkdownAlertSpec>
        $warning = warning,
        $caution = caution;
 
-  MarkdownAlertStyle({
-    MarkdownAlertTypeStyle? note,
-    MarkdownAlertTypeStyle? tip,
-    MarkdownAlertTypeStyle? important,
-    MarkdownAlertTypeStyle? warning,
-    MarkdownAlertTypeStyle? caution,
+  MarkdownAlertStyler({
+    MarkdownAlertTypeStyler? note,
+    MarkdownAlertTypeStyler? tip,
+    MarkdownAlertTypeStyler? important,
+    MarkdownAlertTypeStyler? warning,
+    MarkdownAlertTypeStyler? caution,
     AnimationConfig? animation,
     List<VariantStyle<MarkdownAlertSpec>>? variants,
     WidgetModifierConfig? modifier,
@@ -120,72 +101,31 @@ final class MarkdownAlertStyle extends Style<MarkdownAlertSpec>
          modifier: modifier,
        );
 
-  @override
-  MarkdownAlertStyle variants(List<VariantStyle<MarkdownAlertSpec>> value) {
-    return merge(MarkdownAlertStyle(variants: value));
+  /// Sets the note alert style.
+  MarkdownAlertStyler note(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(note: value));
   }
 
-  @override
-  MarkdownAlertStyle animate(AnimationConfig value) {
-    return merge(MarkdownAlertStyle(animation: value));
+  /// Sets the tip alert style.
+  MarkdownAlertStyler tip(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(tip: value));
   }
 
-  @override
-  MarkdownAlertStyle wrap(WidgetModifierConfig value) {
-    return merge(MarkdownAlertStyle(modifier: value));
+  /// Sets the important alert style.
+  MarkdownAlertStyler important(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(important: value));
   }
 
-  @override
-  StyleSpec<MarkdownAlertSpec> resolve(BuildContext context) {
-    return StyleSpec(
-      spec: MarkdownAlertSpec(
-        note: MixOps.resolve(context, $note),
-        tip: MixOps.resolve(context, $tip),
-        important: MixOps.resolve(context, $important),
-        warning: MixOps.resolve(context, $warning),
-        caution: MixOps.resolve(context, $caution),
-      ),
-      animation: $animation,
-      widgetModifiers: $modifier?.resolve(context),
-    );
+  /// Sets the warning alert style.
+  MarkdownAlertStyler warning(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(warning: value));
   }
 
-  @override
-  MarkdownAlertStyle merge(MarkdownAlertStyle? other) {
-    if (other == null) return this;
-
-    return MarkdownAlertStyle.create(
-      note: MixOps.merge($note, other.$note),
-      tip: MixOps.merge($tip, other.$tip),
-      important: MixOps.merge($important, other.$important),
-      warning: MixOps.merge($warning, other.$warning),
-      caution: MixOps.merge($caution, other.$caution),
-      animation: MixOps.mergeAnimation($animation, other.$animation),
-      variants: MixOps.mergeVariants($variants, other.$variants),
-      modifier: MixOps.mergeModifier($modifier, other.$modifier),
-    );
+  /// Sets the caution alert style.
+  MarkdownAlertStyler caution(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(caution: value));
   }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('note', $note))
-      ..add(DiagnosticsProperty('tip', $tip))
-      ..add(DiagnosticsProperty('important', $important))
-      ..add(DiagnosticsProperty('warning', $warning))
-      ..add(DiagnosticsProperty('caution', $caution));
-  }
-
-  @override
-  List<Object?> get props => [
-    $note,
-    $tip,
-    $important,
-    $warning,
-    $caution,
-    $animation,
-    $variants,
-    $modifier,
-  ];
 }
+
+/// Legacy alias for [MarkdownAlertStyler] (the pre-codegen class name).
+typedef MarkdownAlertStyle = MarkdownAlertStyler;

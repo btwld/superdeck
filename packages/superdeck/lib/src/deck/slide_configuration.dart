@@ -16,7 +16,7 @@ String buildThumbnailKey(String slideKey) {
 @MappableClass()
 class SlideConfiguration with SlideConfigurationMappable {
   final int slideIndex;
-  final SlideStyle style;
+  final SlideStyler style;
   final Slide slide;
   final bool debug;
   final SlideParts? parts;

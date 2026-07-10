@@ -1,0 +1,39 @@
+targets:
+  $default:
+    builders:
+      # Spec mixins (_$XSpec) for every annotated styling spec.
+      mix_generator:mix_generator:
+        enabled: true
+        generate_for:
+          - lib/src/styling/components/*.dart
+      # Full generated *Styler classes — LEAF specs only. A spec qualifies as a
+      # leaf when every nested StyleSpec<X> field points at a mix built-in
+      # (TextSpec, BoxSpec, ...): @MixableField(setterType:) can only reference
+      # types that already resolve during generation, and same-package
+      # generated stylers never do (build phases hide later-phase outputs from
+      # the resolver), degrading silently to value semantics. Aggregators that
+      # nest SuperDeck's own specs (slide.dart, markdown_alert.dart) are
+      # excluded here and use hand-written stylers with the legacy mixin below.
+      mix_generator:spec_styler_generator:
+        enabled: true
+        generate_for:
+          - lib/src/styling/components/markdown_alert_type.dart
+          - lib/src/styling/components/markdown_blockquote.dart
+          - lib/src/styling/components/markdown_checkbox.dart
+          - lib/src/styling/components/markdown_codeblock.dart
+          - lib/src/styling/components/markdown_list.dart
+          - lib/src/styling/components/markdown_table.dart
+      # Legacy @MixableStyler mixins (_$XStyleMixin) for the hand-written
+      # aggregator stylers noted above.
+      mix_generator:styler_generator:
+        enabled: true
+        generate_for:
+          - lib/src/styling/components/slide.dart
+          - lib/src/styling/components/markdown_alert.dart
+      # Unused mix builders — keep them off superdeck sources.
+      mix_generator:mixable_generator:
+        enabled: false
+      mix_generator:mix_widget_generator:
+        enabled: false
+      mix_generator:modifier_generator:
+        enabled: false
