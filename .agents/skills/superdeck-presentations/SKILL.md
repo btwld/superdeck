@@ -1,6 +1,6 @@
 ---
 name: superdeck-presentations
-description: Create, review, or edit SuperDeck presentations and presentation apps. Use when working with `slides.md`, SuperDeck Markdown syntax, `@section`/`@block`/`@widget` layout, built-in widgets such as `@image`, `@dartpad`, and `@qrcode`, custom Flutter widgets, `DeckOptions`, slide parts, templates, styles, images/assets, CLI builds, plugins, or validation of SuperDeck deck behavior.
+description: Create, review, or edit SuperDeck presentations and presentation apps. Use when working with `slides.md`, SuperDeck Markdown syntax, fullscreen slides, `@section`/`@block`/`@widget` layout, built-in widgets such as `@image`, `@dartpad`, `@webview`, and `@qrcode`, custom Flutter widgets, `DeckOptions`, `BlockVariant`, slide parts, templates, styles, images/assets, CLI builds, plugins, or validation of SuperDeck deck behavior.
 ---
 
 # SuperDeck Presentations
@@ -35,9 +35,11 @@ Load only the reference needed for the task:
 - `@column` is intentionally unsupported; use `@block`.
 - Block and widget `align` controls visible content alignment. Current renderer stores `section.align` but does not apply it to child layout; set `align` on child blocks/widgets when visual placement matters.
 - `scrollable` is valid on `@block` and widget blocks, not on `@section`.
-- Built-ins `image`, `dartpad`, and `qrcode` are always registered and can be overridden by user widgets with the same name.
-- `@dartpad` is the built-in WebView-backed widget; there is no separate built-in `@webview` authoring tag.
+- `layout: fullscreen` removes resolved header/footer chrome while retaining the slide's resolved background and style. `normal` is the default.
+- Built-ins `image`, `dartpad`, `webview`, and `qrcode` are always registered and can be overridden by user widgets with the same name.
+- `@dartpad` and `@webview` use the same deck-scoped WebView controller cache. A `cacheKey` enables sequential reuse across remounts, never concurrent sharing by two live blocks.
 - Custom widgets must be registered in `DeckOptions.widgets`; use shorthand `@widgetName { ... }` in `slides.md` for registered widget names.
+- `BlockVariant('name')` is a Dart/Mix stylesheet selector for all `WidgetBlock`s with that exact, case-sensitive name. It affects the matching container and its widget subtree, not `@block` content.
 - Styles, templates, widgets, slide parts, and plugins are configured in Dart through `DeckOptions`/`SuperDeckApp`, not through a separate `styles.yaml`.
 - The CLI reads `slides.md`, writes `.superdeck/superdeck.json`, and ensures `.superdeck/` is listed in Flutter assets unless `--skip-pubspec` is used.
 
@@ -57,6 +59,7 @@ Use these files to resolve disputes or update this skill:
 - `packages/core/lib/src/deck/block_model.dart`
 - `packages/superdeck/lib/src/rendering/slides/slide_view.dart`
 - `packages/superdeck/lib/src/rendering/blocks/block_widget.dart`
+- `packages/superdeck/lib/src/styling/block_variant.dart`
 - `packages/superdeck/lib/src/builtins/`
 - `packages/superdeck/lib/src/ui/widgets/webview_wrapper.dart`
 - `packages/playground/lib/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart`

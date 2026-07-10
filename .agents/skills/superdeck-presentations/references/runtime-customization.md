@@ -113,7 +113,7 @@ Use Flutter's `LayoutBuilder` for sizing. SuperDeck does not export a public `Me
 
 If a widget factory is missing, SuperDeck renders `Widget not found: <name>`. If the factory throws, SuperDeck renders error details on the slide.
 
-Built-ins `image`, `dartpad`, and `qrcode` are registered first. User widgets with the same name override a built-in only when that name is used by the slide.
+Built-ins `image`, `dartpad`, `webview`, and `qrcode` are registered first. User widgets with the same name override a built-in only when that name is used by the slide.
 
 ### Recommended Custom Widget Pattern
 
@@ -254,7 +254,7 @@ Notes:
 
 - `align`, `flex`, `scrollable`, and `name` are reserved block keys; do not expect them inside `args`.
 - Widget names can include letters, digits, underscores, and hyphens because directive tags match `@[\w-]+`.
-- A custom widget can override a built-in by registering `image`, `dartpad`, or `qrcode`, but do that only intentionally.
+- A custom widget can override a built-in by registering `image`, `dartpad`, `webview`, or `qrcode`, but do that only intentionally.
 - Use `SlideConfiguration.of(context)` for slide metadata and `LayoutBuilder` for block size.
 
 ## Slide Parts
@@ -285,6 +285,8 @@ class DeckHeader extends StatelessWidget implements PreferredSizeWidget {
 
 Header and footer consume vertical space from the 1280x720 slide content area. Background fills the full slide.
 
+Set `layout: fullscreen` in a slide's front matter to remove the resolved header and footer for that slide. This affects deck parts, named-template parts, and `defaultTemplate` parts, but preserves the resolved background and style.
+
 ## Styles and Templates
 
 Slide frontmatter selects styles/templates:
@@ -306,6 +308,32 @@ Resolution order:
 Unknown templates or styles throw `ArgumentError` during configuration build, so verify names.
 
 Template styles are isolated. A slide using `template: brand` and `style: cover` looks up `cover` in `SlideTemplate.styles`, not `DeckOptions.styles`.
+
+### Named Widget Block Styles
+
+Use `BlockVariant` to target every widget block with an exact, case-sensitive name. The selector resolves around the matching block container and its descendants, so container padding/margin and widget subtree styles see the same active variant.
+
+```dart
+import 'package:mix/mix.dart';
+import 'package:superdeck/superdeck.dart';
+
+const webviewBlock = BlockVariant('webview');
+
+final options = DeckOptions(
+  baseStyle: SlideStyle(
+    blockContainer: BoxStyler(
+      padding: EdgeInsetsGeometryMix.all(40),
+    ).variants([
+      VariantStyle(
+        webviewBlock,
+        BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+      ),
+    ]),
+  ),
+);
+```
+
+`BlockVariant('webview')` matches `@webview` and `@widget { name: "webview" }`; `BlockVariant('chart')` matches `@chart`. It does not select Markdown `@block` content, arbitrary `NamedVariant` values, or individual instances. SuperDeck already applies a zero-padding, zero-margin `BlockVariant('webview')` rule by default, so WebView blocks are edge-to-edge unless the style overrides it.
 
 ## Images and Assets
 
@@ -390,27 +418,26 @@ To create a shareable DartPad for a deck:
 
 Use `run: false` for exercises where the audience should edit before running.
 
-## DartPad WebView Runtime
+## WebView Runtime
 
-`@dartpad` renders through `WebViewWrapper`; it is not a generic web embed API. Do not document or use `@webview` unless the app registers its own custom widget.
+`@dartpad` and `@webview` render through `WebViewWrapper`. Live controllers are cached at deck scope by the block runtime key or an explicit `cacheKey`; reuse is sequential, not concurrent. Static rendering produces a placeholder instead of creating a controller.
 
 Behavior:
 
 - Creates a `webview_flutter` `WebViewController`.
 - Enables `JavaScriptMode.unrestricted` because DartPad requires JavaScript.
-- Loads the generated DartPad URL from `DartPadDto.toUrl()`.
-- Allows navigation only when the destination host matches the original DartPad URL host; other hosts are blocked.
+- Loads the generated DartPad URL from `DartPadDto.toUrl()` or the validated `@webview` URL.
+- Allows navigation only to the source host by default; `@webview.allowedHosts` can extend the list. Flutter web cannot enforce this policy because its iframe implementation does not expose navigation callbacks.
 - Hides the WebView initially, then fades it in after `onPageFinished` plus a 500 ms delay.
-- Keeps the state alive with `AutomaticKeepAliveClientMixin`.
-- Reloads when the URL changes.
+- Reuses a cached controller when remounting the same key and URL, and reloads when the URL changes.
 - Displays overlay icon buttons for refresh and clearing the CodeMirror editor.
 
 Platform notes:
 
 - The package depends on `webview_flutter` and `webview_flutter_web`.
-- `superdeck setup` patches macOS network entitlements when a macOS runner exists; run it for desktop decks using DartPad.
-- Embedded DartPad needs network access to `dartpad.dev`; offline presentations should avoid relying on `@dartpad`.
-- Because navigation is host-restricted, use the surrounding slide content for external links instead of expecting links inside DartPad to open other domains.
+- `superdeck setup` patches macOS network entitlements when a macOS runner exists; run it for desktop decks using DartPad or WebView.
+- Embedded DartPad needs network access to `dartpad.dev`; embedded pages need network access to their configured URL.
+- Because navigation is host-restricted on native targets, use surrounding slide content for external links instead of expecting WebView navigation to arbitrary domains.
 
 ## Deployment Notes
 

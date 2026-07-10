@@ -31,8 +31,9 @@ Supported frontmatter keys:
 
 - `title`: Used by navigation/export/chrome.
 - `style`: Named style from `DeckOptions.styles`, or from the active template's `styles`.
+- `layout`: `normal` (default) or `fullscreen`. Fullscreen removes resolved header/footer chrome while retaining the resolved background and style.
 - `template`: Named `DeckOptions.templates` entry. Use `template: none` to opt out of `defaultTemplate`.
-- Any other key: Preserved in `SlideOptions.args`.
+- Any other key: Preserved in `SlideOptions.args`; the official keys above are not included there.
 
 Plain slides without frontmatter are valid:
 
@@ -207,8 +208,9 @@ Arguments:
 - `theme`: `light` or `dark`.
 - `embed`: boolean, default `true`.
 - `run`: boolean, default `true`.
+- `cacheKey`: optional key for sequential controller reuse across remounts.
 
-DartPad renders through SuperDeck's internal `WebViewWrapper`; there is no separate built-in `@webview` tag. Verify the target platform supports WebViews and can reach `https://dartpad.dev`.
+DartPad renders through SuperDeck's internal `WebViewWrapper`. Verify the target platform supports WebViews and can reach `https://dartpad.dev`.
 
 Share a DartPad snippet through a GitHub Gist:
 
@@ -235,7 +237,31 @@ Runtime behavior to remember:
 - The wrapper blocks navigation away from the original host, so links to other domains will not navigate inside the embedded view.
 - The WebView is hidden until the page finishes loading, then fades in after a short delay.
 - The wrapper overlays refresh and clear-editor controls.
-- State is kept alive while the slide tree keeps the widget alive; changing the DartPad URL reloads the WebView.
+- A controller is cached per block by default, or by `cacheKey` when supplied, so returning to a slide does not reload the same URL. A key cannot be shared by two live widgets at once.
+- Changing the DartPad URL reloads the WebView.
+
+### WebView
+
+Use `@webview` to embed a persistent `http` or `https` page. WebView blocks are edge-to-edge by default; use a `BlockVariant` rule in Dart only when a different container treatment is needed.
+
+```markdown
+@webview {
+  url: "https://example.com"
+  title: "Example"
+  showControls: true
+}
+```
+
+Arguments:
+
+- `url` required: absolute `http` or `https` URL.
+- `cacheKey`: optional key for sequential controller reuse across remounts.
+- `title`: label shown for static/thumbnail capture.
+- `allowedHosts`: optional navigation allowlist; defaults to the source host.
+- `showControls`: show a refresh control, default `false`.
+- `javascript`: enable JavaScript, default `true`.
+
+Native implementations enforce `allowedHosts` through the navigation delegate. Flutter web's iframe implementation has no navigation callbacks, so this restriction cannot be enforced there. Static rendering shows the title or a placeholder instead of starting a live WebView.
 
 ### QR Code
 
@@ -309,6 +335,8 @@ Or explicit form:
 ```
 
 All properties become the widget factory's `Map<String, Object?>` arguments. Block-level controls such as `flex`, `align`, and `scrollable` are consumed by SuperDeck and are not passed as custom widget args.
+
+To style every custom block with the same name, declare `BlockVariant('metricCard')` in a Dart `SlideStyle`. The match is exact and case-sensitive, and it applies to the widget block container plus descendants rather than to individual Markdown block instances.
 
 Custom widget authoring rules:
 

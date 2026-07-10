@@ -100,11 +100,12 @@ Unexpected layout:
 - Set `align` on blocks/widgets for visible alignment.
 - Use block/widget `scrollable: true`; do not set `scrollable` on sections.
 - Use `flex` integers; invalid values throw during parse/model validation.
+- For `layout: fullscreen`, verify that header/footer are absent while the intended background and style remain.
 
 Widget does not render:
 
 - Verify the widget name is registered in `DeckOptions.widgets`.
-- Built-ins are `image`, `dartpad`, and `qrcode`.
+- Built-ins are `image`, `dartpad`, `webview`, and `qrcode`.
 - Check that widget arguments do not collide with reserved block keys: `name`, `align`, `flex`, `scrollable`.
 - Remember that reserved block keys are consumed by SuperDeck and are not passed to custom widget args.
 - If using shorthand, verify the directive name exactly matches the registered widget name.
@@ -121,6 +122,13 @@ DartPad fails:
 - For macOS, run `superdeck setup` so required network entitlements are patched.
 - Remember the embedded WebView blocks navigation away from `dartpad.dev`; external-domain links inside DartPad will not navigate in the embedded view.
 - If the WebView stays blank, check whether `onPageFinished` fires and whether the target platform's `webview_flutter` implementation is available.
+
+WebView fails:
+
+- Confirm `url` is an absolute `http` or `https` URL.
+- Check network access to the source page and target platform WebView support.
+- Use `cacheKey` only for sequential reuse; two live blocks with the same key receive separate local controllers.
+- On Flutter web, do not rely on `allowedHosts`, JavaScript injection, or page-finished callbacks: the iframe implementation does not support those controller APIs.
 
 QR code fails:
 
@@ -145,3 +153,4 @@ Style/template errors:
 - Verify style names exist in the correct namespace. Template slides use `SlideTemplate.styles`; non-template slides use `DeckOptions.styles`.
 - Use `template: none` only to opt out of `defaultTemplate`.
 - Do not register a template named `none`; it is reserved.
+- `BlockVariant('name')` matches only widget blocks with that exact, case-sensitive name; it does not select Markdown `@block` content.
