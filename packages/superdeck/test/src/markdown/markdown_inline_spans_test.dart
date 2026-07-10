@@ -62,6 +62,22 @@ void main() {
       return found;
     }
 
+    String plainTextOf(List<InlineSpan> spans) {
+      final buffer = StringBuffer();
+      void walk(InlineSpan span) {
+        if (span is! TextSpan) return;
+        buffer.write(span.text);
+        for (final child in span.children ?? const <InlineSpan>[]) {
+          walk(child);
+        }
+      }
+
+      for (final span in spans) {
+        walk(span);
+      }
+      return buffer.toString();
+    }
+
     test('maps strong from SlideSpec', () {
       final spans = buildMarkdownInlineSpans(
         nodes: parseInline('Hello **world**'),
@@ -129,6 +145,46 @@ void main() {
     test('hasInlineMarkdownElements detects markup', () {
       expect(hasInlineMarkdownElements(parseInline('plain')), isFalse);
       expect(hasInlineMarkdownElements(parseInline('**x**')), isTrue);
+    });
+
+    test('transformText preserves styles across multiple runs', () {
+      final spans = buildMarkdownInlineSpans(
+        nodes: parseInline('Hello **world** and *friends*'),
+        baseStyle: base,
+        slideSpec: slideSpec,
+        transformText: (text) => text.toUpperCase(),
+      );
+
+      expect(plainTextOf(spans), 'HELLO WORLD AND FRIENDS');
+      expect(styleOf(spans, 'WORLD')?.color, strongColor);
+      expect(styleOf(spans, 'FRIENDS')?.color, emColor);
+    });
+
+    test('nested inline styles still compose after transformation', () {
+      final spans = buildMarkdownInlineSpans(
+        nodes: parseInline('***both***'),
+        baseStyle: base,
+        slideSpec: slideSpec,
+        transformText: (text) => text.toUpperCase(),
+      );
+
+      final style = styleOf(spans, 'BOTH');
+      expect(plainTextOf(spans), 'BOTH');
+      expect(style?.fontWeight, FontWeight.w900);
+      expect(style?.fontStyle, FontStyle.italic);
+    });
+
+    test('length-changing transform returns transformed plain text', () {
+      final spans = buildMarkdownInlineSpans(
+        nodes: parseInline('Hello **world**'),
+        baseStyle: base,
+        slideSpec: slideSpec,
+        transformText: (text) => '$text!',
+      );
+
+      expect(plainTextOf(spans), 'Hello world!');
+      expect(spans, hasLength(1));
+      expect(styleOf(spans, 'world')?.color, base.color);
     });
   });
 }

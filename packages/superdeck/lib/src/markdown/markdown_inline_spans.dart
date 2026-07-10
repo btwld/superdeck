@@ -1,8 +1,11 @@
 import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:markdown/markdown.dart' as md;
+import 'package:superdeck_core/superdeck_core.dart'
+    as core
+    show heroAnyBracePattern;
 
 import '../styling/components/slide.dart';
-import 'markdown_helpers.dart';
 
 /// Default inline styles applied when [SlideSpec] omits a field.
 ///
@@ -24,16 +27,30 @@ List<InlineSpan> buildMarkdownInlineSpans({
   required List<md.Node>? nodes,
   required TextStyle baseStyle,
   required SlideSpec slideSpec,
+  String Function(String text)? transformText,
 }) {
   if (nodes == null || nodes.isEmpty) return const [];
 
-  final spans = <InlineSpan>[];
+  final runs = <_TextRun>[];
   for (final node in nodes) {
-    spans.addAll(
-      _spansForNode(node, baseStyle: baseStyle, slideSpec: slideSpec),
+    _collectRunsForNode(
+      node,
+      style: baseStyle,
+      slideSpec: slideSpec,
+      runs: runs,
     );
   }
-  return spans;
+  if (runs.isEmpty) return const [];
+
+  if (transformText == null) return _spansFromRuns(runs);
+
+  final plainText = runs.map((run) => run.text).join();
+  final transformed = transformText(plainText);
+  if (plainText.characters.length != transformed.characters.length) {
+    return [TextSpan(text: transformed, style: baseStyle)];
+  }
+
+  return _spansFromTransformedRuns(runs, transformed);
 }
 
 /// Whether [nodes] contain any inline element that needs styled spans
@@ -69,62 +86,106 @@ TextStyle inlineStyleForTag(String tag, SlideSpec slideSpec) {
   }
 }
 
-List<InlineSpan> _spansForNode(
+void _collectRunsForNode(
   md.Node node, {
-  required TextStyle baseStyle,
+  required TextStyle style,
   required SlideSpec slideSpec,
+  required List<_TextRun> runs,
 }) {
   if (node is md.Text) {
-    final text = _normalizeTextNode(node.text);
-    if (text.isEmpty) return const [];
-    return [TextSpan(text: text, style: baseStyle)];
+    _addRun(runs, _normalizeTextNode(node.text), style);
+    return;
   }
 
   if (node is md.Element) {
-    return _spansForElement(node, baseStyle: baseStyle, slideSpec: slideSpec);
+    _collectRunsForElement(
+      node,
+      style: style,
+      slideSpec: slideSpec,
+      runs: runs,
+    );
   }
-
-  return const [];
 }
 
-List<InlineSpan> _spansForElement(
+void _collectRunsForElement(
   md.Element element, {
-  required TextStyle baseStyle,
+  required TextStyle style,
   required SlideSpec slideSpec,
+  required List<_TextRun> runs,
 }) {
   final tag = element.tag;
 
   if (tag == 'br') {
-    return [TextSpan(text: '\n', style: baseStyle)];
+    _addRun(runs, '\n', style);
+    return;
   }
 
   // Inline images: alt text only (standalone images use ImageElementBuilder).
   if (tag == 'img') {
     final alt = element.attributes['alt'] ?? '';
-    if (alt.isEmpty) return const [];
-    final style = baseStyle.merge(inlineStyleForTag(tag, slideSpec));
-    return [TextSpan(text: alt, style: style)];
+    final imageStyle = style.merge(inlineStyleForTag(tag, slideSpec));
+    _addRun(runs, alt, imageStyle);
+    return;
   }
 
-  final style = baseStyle.merge(inlineStyleForTag(tag, slideSpec));
+  final elementStyle = style.merge(inlineStyleForTag(tag, slideSpec));
   final children = element.children;
   if (children == null || children.isEmpty) {
-    final plain = _normalizeTextNode(element.textContent);
-    if (plain.isEmpty) return const [];
-    return [TextSpan(text: plain, style: style)];
+    _addRun(runs, _normalizeTextNode(element.textContent), elementStyle);
+    return;
   }
 
-  return buildMarkdownInlineSpans(
-    nodes: children,
-    baseStyle: style,
-    slideSpec: slideSpec,
-  );
+  for (final child in children) {
+    _collectRunsForNode(
+      child,
+      style: elementStyle,
+      slideSpec: slideSpec,
+      runs: runs,
+    );
+  }
+}
+
+void _addRun(List<_TextRun> runs, String text, TextStyle style) {
+  if (text.isEmpty) return;
+  runs.add(_TextRun(text, style));
+}
+
+List<InlineSpan> _spansFromRuns(List<_TextRun> runs) {
+  return [for (final run in runs) TextSpan(text: run.text, style: run.style)];
+}
+
+List<InlineSpan> _spansFromTransformedRuns(
+  List<_TextRun> runs,
+  String transformed,
+) {
+  var remaining = transformed.characters;
+  final spans = <InlineSpan>[];
+
+  for (final run in runs) {
+    final length = run.text.characters.length;
+    final text = remaining.take(length).toString();
+    remaining = remaining.skip(length);
+    if (text.isNotEmpty) {
+      spans.add(TextSpan(text: text, style: run.style));
+    }
+  }
+
+  return spans;
 }
 
 String _normalizeTextNode(String raw) {
-  final withoutHero = getTagAndContent(raw).content;
+  final withoutHero = raw.replaceAll(core.heroAnyBracePattern, '');
+  if (withoutHero.trim().isEmpty && withoutHero != raw) return '';
+
   return withoutHero.replaceAll(
     RegExp(r'<br\s*/?>', caseSensitive: false),
     '\n',
   );
+}
+
+final class _TextRun {
+  final String text;
+  final TextStyle style;
+
+  const _TextRun(this.text, this.style);
 }

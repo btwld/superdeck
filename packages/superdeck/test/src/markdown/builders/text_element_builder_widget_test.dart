@@ -50,39 +50,123 @@ void main() {
       const linkColor = Color(0xFFFF00FF);
       const codeColor = Color(0xFF00FFFF);
 
-      SlideSpec styledSpec() => const SlideSpec(
-        strong: TextStyle(color: strongColor, fontWeight: FontWeight.w900),
-        em: TextStyle(color: emColor, fontStyle: FontStyle.italic),
-        del: TextStyle(
-          color: delColor,
-          decoration: TextDecoration.lineThrough,
-        ),
-        link: TextStyle(
-          color: linkColor,
-          decoration: TextDecoration.underline,
-        ),
-        code: StyleSpec(
-          spec: MarkdownCodeblockSpec(
-            textStyle: TextStyle(color: codeColor, fontFamily: 'Courier'),
-          ),
-        ),
-        textScaleFactor: TextScaler.linear(1.5),
-        p: StyleSpec(
-          spec: TextSpec(style: TextStyle(fontSize: 20, color: Colors.white)),
-        ),
-        h1: StyleSpec(
-          spec: TextSpec(style: TextStyle(fontSize: 40, color: Colors.white)),
-        ),
-        list: StyleSpec(
-          spec: MarkdownListSpec(
-            text: StyleSpec(
-              spec: TextSpec(
-                style: TextStyle(fontSize: 18, color: Colors.white),
+      SlideSpec styledSpec({List<Directive<String>>? textDirectives}) =>
+          SlideSpec(
+            strong: const TextStyle(
+              color: strongColor,
+              fontWeight: FontWeight.w900,
+            ),
+            em: const TextStyle(color: emColor, fontStyle: FontStyle.italic),
+            del: const TextStyle(
+              color: delColor,
+              decoration: TextDecoration.lineThrough,
+            ),
+            link: const TextStyle(
+              color: linkColor,
+              decoration: TextDecoration.underline,
+            ),
+            code: const StyleSpec(
+              spec: MarkdownCodeblockSpec(
+                textStyle: TextStyle(color: codeColor, fontFamily: 'Courier'),
               ),
             ),
+            textScaleFactor: const TextScaler.linear(1.5),
+            p: StyleSpec(
+              spec: TextSpec(
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+                textDirectives: textDirectives,
+              ),
+            ),
+            h1: const StyleSpec(
+              spec: TextSpec(
+                style: TextStyle(fontSize: 40, color: Colors.white),
+              ),
+            ),
+            list: const StyleSpec(
+              spec: MarkdownListSpec(
+                text: StyleSpec(
+                  spec: TextSpec(
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          );
+
+      testWidgets('applies uppercase directive without dropping strong style', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'Hello **world**',
+            slideSpec: styledSpec(
+              textDirectives: const [UppercaseStringDirective()],
+            ),
           ),
-        ),
-      );
+        );
+        await tester.pumpAndSettle();
+
+        expect(_hasRenderedText(tester, 'HELLO WORLD'), isTrue);
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'WORLD',
+            color: strongColor,
+            fontWeight: FontWeight.w900,
+          ),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies inline code and link styles under uppercase', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'Use `print` and [docs](https://example.com)',
+            slideSpec: styledSpec(
+              textDirectives: const [UppercaseStringDirective()],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(_hasRenderedText(tester, 'USE PRINT AND DOCS'), isTrue);
+        expect(
+          _findTextSpanStyle(tester, containing: 'PRINT', color: codeColor),
+          isNotNull,
+        );
+        expect(
+          _findTextSpanStyle(tester, containing: 'DOCS', color: linkColor),
+          isNotNull,
+        );
+      });
+
+      testWidgets('applies capitalize directive to the whole paragraph', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _MarkdownHarness(
+            markdown: 'hello **world**',
+            slideSpec: styledSpec(
+              textDirectives: const [CapitalizeStringDirective()],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(_hasRenderedText(tester, 'Hello world'), isTrue);
+        expect(_hasRenderedText(tester, 'Hello World'), isFalse);
+        expect(
+          _findTextSpanStyle(
+            tester,
+            containing: 'world',
+            color: strongColor,
+            fontWeight: FontWeight.w900,
+          ),
+          isNotNull,
+        );
+      });
 
       testWidgets('applies strong style inside a paragraph', (tester) async {
         await tester.pumpWidget(
@@ -102,7 +186,8 @@ void main() {
             fontWeight: FontWeight.w900,
           ),
           isNotNull,
-          reason: 'strong text must use SlideSpec.strong, not flattened plain text',
+          reason:
+              'strong text must use SlideSpec.strong, not flattened plain text',
         );
       });
 
@@ -156,16 +241,14 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          _findTextSpanStyle(
-            tester,
-            containing: 'docs',
-            color: linkColor,
-          ),
+          _findTextSpanStyle(tester, containing: 'docs', color: linkColor),
           isNotNull,
         );
       });
 
-      testWidgets('applies inline code style inside a paragraph', (tester) async {
+      testWidgets('applies inline code style inside a paragraph', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           _MarkdownHarness(
             markdown: 'Use `print` please',
@@ -175,11 +258,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          _findTextSpanStyle(
-            tester,
-            containing: 'print',
-            color: codeColor,
-          ),
+          _findTextSpanStyle(tester, containing: 'print', color: codeColor),
           isNotNull,
         );
       });
@@ -417,6 +496,19 @@ TextStyle? _findTextSpanStyle(
   }
 
   return null;
+}
+
+bool _hasRenderedText(WidgetTester tester, String expected) {
+  for (final text in tester.widgetList<Text>(find.byType(Text))) {
+    final plain = text.data ?? text.textSpan?.toPlainText();
+    if (plain == expected) return true;
+  }
+
+  for (final rich in tester.widgetList<RichText>(find.byType(RichText))) {
+    if (rich.text.toPlainText() == expected) return true;
+  }
+
+  return false;
 }
 
 TextStyle? _searchSpan(

@@ -141,32 +141,11 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
       );
     }
 
-    // Directives apply to the full string; when present, fall back to plain
-    // text so transformations stay consistent with hero flight painting.
-    if (textSpec.textDirectives != null &&
-        textSpec.textDirectives!.isNotEmpty) {
-      return Text(
-        displayText,
-        style: baseStyle,
-        strutStyle: textSpec.strutStyle,
-        textAlign: textSpec.textAlign,
-        textDirection: textSpec.textDirection,
-        locale: textSpec.locale,
-        softWrap: textSpec.softWrap,
-        overflow: textSpec.overflow,
-        textScaler: textScaler,
-        maxLines: textSpec.maxLines,
-        textWidthBasis: textSpec.textWidthBasis,
-        textHeightBehavior: textSpec.textHeightBehavior,
-        selectionColor: textSpec.selectionColor,
-        semanticsLabel: textSpec.semanticsLabel,
-      );
-    }
-
     final spans = buildMarkdownInlineSpans(
       nodes: nodes,
       baseStyle: baseStyle,
       slideSpec: slideSpec,
+      transformText: textSpec.textDirectives?.apply,
     );
 
     return Text.rich(
