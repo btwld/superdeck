@@ -316,6 +316,61 @@
     "comments": []
   },
   {
+    "key": "DGz7HMmA",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "### Ack-Generated Widget Args {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\nAck can validate custom widget arguments and generate typed getters over the same `Map<String, Object?>` payload.\n",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n```markdown\n@ack-metric-card {\n  flex: 2\n  align: center\n  label: Activation\n  value: \"72%\"\n  caption: \"Parsed through Ack-generated typed getters\"\n  tone: green\n}\n```\n",
+            "flex": 3,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "ack-metric-card",
+            "align": "center",
+            "flex": 2,
+            "scrollable": false,
+            "type": "widget",
+            "label": "Activation",
+            "value": "72%",
+            "caption": "Parsed through Ack-generated typed getters",
+            "tone": "green"
+          }
+        ],
+        "flex": 4,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
     "key": "C8r6gb6A",
     "options": {},
     "sections": [
