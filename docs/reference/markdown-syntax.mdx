@@ -44,6 +44,18 @@ SuperDeck supports three core block types.
 
 Built-in widgets (`image`, `dartpad`, `webview`, `qrcode`) use the same widget syntax as `@widget`.
 
+### Styling named widget blocks
+
+Widget names can be selected from Dart stylesheets with `BlockVariant`. For
+example, `@webview` and the equivalent `@widget { name: "webview" }` both
+match `BlockVariant('webview')`; `@chart` matches `BlockVariant('chart')`.
+Matching is exact and case-sensitive.
+
+The selector affects the widget block container and descendants in that widget
+subtree. It does not select `@block`, `@section`, individual block instances,
+or arbitrary `NamedVariant` values. See the [DeckOptions reference](/reference/deck-options#named-widget-block-styles)
+for the stylesheet declaration and limitations.
+
 ## Common block properties
 
 ### `flex`

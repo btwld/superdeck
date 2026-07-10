@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/slide_configuration_builder.dart';
+import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -190,6 +192,61 @@ void main() {
         expect(sectionRect.top, 0);
         expect(sectionRect.size, const Size(1280, 720));
       });
+
+      testWidgets(
+        'fullscreen removes only chrome and preserves named block styles',
+        (tester) async {
+          late Size blockSize;
+          final slide = Slide(
+            key: 'fullscreen-block-variant',
+            options: SlideOptions(layout: SlideLayout.fullscreen),
+            sections: [
+              SectionBlock([WidgetBlock(name: 'webview')]),
+            ],
+          );
+          final configuration =
+              const SlideConfigurationBuilder().buildConfigurations(
+                [slide],
+                DeckOptions(
+                  baseStyle: SlideStyle(
+                    blockContainer:
+                        BoxStyler(
+                          padding: EdgeInsetsGeometryMix.all(40),
+                        ).variants([
+                          VariantStyle(
+                            const BlockVariant('webview'),
+                            BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+                          ),
+                        ]),
+                  ),
+                  widgets: {
+                    'webview': (_) => Builder(
+                      builder: (context) {
+                        blockSize = BlockConfiguration.of(context).size;
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  },
+                  parts: const SlideParts(
+                    header: PreferredSize(
+                      preferredSize: Size.fromHeight(80),
+                      child: SizedBox.shrink(),
+                    ),
+                    footer: PreferredSize(
+                      preferredSize: Size.fromHeight(40),
+                      child: SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ).single;
+
+          await SlideTestHarness.pumpConfiguration(tester, configuration);
+
+          expect(configuration.parts!.header, isNull);
+          expect(configuration.parts!.footer, isNull);
+          expect(blockSize, const Size(1280, 720));
+        },
+      );
     });
 
     group('slide size', () {
