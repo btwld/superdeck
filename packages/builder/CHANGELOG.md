@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Round-trip the `layout` slide frontmatter option in Markdown serialization.
 - Add build-plugin `beginBuild` and `finishBuild` lifecycle hooks.
 - Make `DeckBuilder.dispose()` wait for queued builds before disposing plugins
   and reject new builds after disposal.

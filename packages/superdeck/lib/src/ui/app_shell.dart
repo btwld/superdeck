@@ -274,7 +274,7 @@ class _SplitViewState extends State<SplitView>
         final buildFailure = deckController.session.buildFailure.value;
 
         return Scaffold(
-          backgroundColor: const Color.fromARGB(255, 9, 9, 9),
+          backgroundColor: kSlideBackgroundColor,
           floatingActionButtonLocation:
               FloatingActionButtonLocation.miniEndFloat,
           floatingActionButton: _buildFloatingAction(

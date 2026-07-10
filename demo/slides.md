@@ -447,6 +447,27 @@ template: minimal
 A clean, typography-focused template with no chrome distractions.
 
 ---
+title: WebView Normal
+---
+
+@webview {
+  url: "https://www.fluttermix.com"
+  title: "Flutter Mix"
+  cacheKey: "fluttermix-normal"
+}
+
+---
+title: WebView Fullscreen
+layout: fullscreen
+---
+
+@webview {
+  url: "https://www.fluttermix.com"
+  title: "Flutter Mix"
+  cacheKey: "fluttermix-fullscreen"
+}
+
+---
 
 @section{
   align: bottomCenter

@@ -101,6 +101,12 @@ class SlideView extends StatelessWidget {
       size: kResolution,
       child: Stack(
         children: [
+          // Opaque floor so a slide is never transparent: a transparent or
+          // absent background part would otherwise let other slides bleed
+          // through during cross-fade transitions.
+          const Positioned.fill(
+            child: ColoredBox(color: kSlideBackgroundColor),
+          ),
           // Background fills entire viewport (not affected by modifier)
           Positioned.fill(child: backgroundWidget),
           // Content wrapped with StyleBuilder to apply modifiers

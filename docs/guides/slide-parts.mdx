@@ -107,11 +107,13 @@ Common fields:
 - `slide.slideIndex`
 - `slide.options.title`
 - `slide.options.style`
+- `slide.options.layout`
 - `slide.options.args` (frontmatter extras)
 - `slide.comments` (speaker notes)
 
 ## Tips
 
 - Keep parts lightweight; they rebuild on every slide.
-- Handle missing frontmatter (`title` and `style` can be null).
+- Handle missing frontmatter (`title`, `style`, and `layout` can be null).
+- Use `layout: fullscreen` when a slide should suppress resolved header/footer chrome while keeping its background and style.
 - Use `DeckOptions(debug: true)` while designing layouts.

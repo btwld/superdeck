@@ -8,6 +8,52 @@
 
 part of 'slide_model.dart';
 
+class SlideLayoutMapper extends EnumMapper<SlideLayout> {
+  SlideLayoutMapper._();
+
+  static SlideLayoutMapper? _instance;
+  static SlideLayoutMapper ensureInitialized() {
+    if (_instance == null) {
+      MapperContainer.globals.use(_instance = SlideLayoutMapper._());
+    }
+    return _instance!;
+  }
+
+  static SlideLayout fromValue(dynamic value) {
+    ensureInitialized();
+    return MapperContainer.globals.fromValue(value);
+  }
+
+  @override
+  SlideLayout decode(dynamic value) {
+    switch (value) {
+      case r'normal':
+        return SlideLayout.normal;
+      case r'fullscreen':
+        return SlideLayout.fullscreen;
+      default:
+        throw MapperException.unknownEnumValue(value);
+    }
+  }
+
+  @override
+  dynamic encode(SlideLayout self) {
+    switch (self) {
+      case SlideLayout.normal:
+        return r'normal';
+      case SlideLayout.fullscreen:
+        return r'fullscreen';
+    }
+  }
+}
+
+extension SlideLayoutMapperExtension on SlideLayout {
+  String toValue() {
+    SlideLayoutMapper.ensureInitialized();
+    return MapperContainer.globals.toValue<SlideLayout>(this) as String;
+  }
+}
+
 class SlideMapper extends ClassMapperBase<Slide> {
   SlideMapper._();
 
@@ -190,6 +236,7 @@ class SlideOptionsMapper extends ClassMapperBase<SlideOptions> {
   static SlideOptionsMapper ensureInitialized() {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = SlideOptionsMapper._());
+      SlideLayoutMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -207,6 +254,12 @@ class SlideOptionsMapper extends ClassMapperBase<SlideOptions> {
   static const Field<SlideOptions, String> _f$style = Field(
     'style',
     _$style,
+    opt: true,
+  );
+  static SlideLayout? _$layout(SlideOptions v) => v.layout;
+  static const Field<SlideOptions, SlideLayout> _f$layout = Field(
+    'layout',
+    _$layout,
     opt: true,
   );
   static String? _$template(SlideOptions v) => v.template;
@@ -227,6 +280,7 @@ class SlideOptionsMapper extends ClassMapperBase<SlideOptions> {
   final MappableFields<SlideOptions> fields = const {
     #title: _f$title,
     #style: _f$style,
+    #layout: _f$layout,
     #template: _f$template,
     #args: _f$args,
   };
@@ -239,6 +293,7 @@ class SlideOptionsMapper extends ClassMapperBase<SlideOptions> {
     return SlideOptions(
       title: data.dec(_f$title),
       style: data.dec(_f$style),
+      layout: data.dec(_f$layout),
       template: data.dec(_f$template),
       args: data.dec(_f$args),
     );
@@ -311,6 +366,7 @@ abstract class SlideOptionsCopyWith<$R, $In extends SlideOptions, $Out>
   $R call({
     String? title,
     String? style,
+    SlideLayout? layout,
     String? template,
     Map<String, Object?>? args,
   });
@@ -336,12 +392,14 @@ class _SlideOptionsCopyWithImpl<$R, $Out>
   $R call({
     Object? title = $none,
     Object? style = $none,
+    Object? layout = $none,
     Object? template = $none,
     Map<String, Object?>? args,
   }) => $apply(
     FieldCopyWithData({
       if (title != $none) #title: title,
       if (style != $none) #style: style,
+      if (layout != $none) #layout: layout,
       if (template != $none) #template: template,
       if (args != null) #args: args,
     }),
@@ -350,6 +408,7 @@ class _SlideOptionsCopyWithImpl<$R, $Out>
   SlideOptions $make(CopyWithData data) => SlideOptions(
     title: data.get(#title, or: $value.title),
     style: data.get(#style, or: $value.style),
+    layout: data.get(#layout, or: $value.layout),
     template: data.get(#template, or: $value.template),
     args: data.get(#args, or: $value.args),
   );
