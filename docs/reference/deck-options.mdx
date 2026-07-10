@@ -67,6 +67,11 @@ final options = DeckOptions(
 precedence after the base style, and its margin and padding are included when
 SuperDeck calculates the child widget's usable size.
 
+SuperDeck already ships this exact zero padding and margin rule for `@webview`
+blocks by default, so a webview renders edge-to-edge without any stylesheet. The
+example above therefore doubles as the pattern for giving any other named block
+its own spacing.
+
 Only `WidgetBlock` names are selectable. Content blocks and section containers
 are not selectable; there are no per-instance IDs, classes, attributes, or
 selector composition. A plain `NamedVariant('image')` remains a manual Mix

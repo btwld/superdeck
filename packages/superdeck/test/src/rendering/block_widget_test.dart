@@ -365,6 +365,31 @@ void main() {
         expect(gistSize, const Size(560, 540));
       });
 
+      testWidgets('gives webview blocks zero padding and margin by default', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        late Size webviewSize;
+
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'default-webview-spacing',
+            sections: [
+              SectionBlock([WidgetBlock(name: 'webview')]),
+            ],
+          ),
+          widgets: {
+            'webview': (_) =>
+                _BlockSizeProbe(onBuild: (size) => webviewSize = size),
+          },
+        );
+
+        // Full block size with no padding/margin subtracted (default 40 padding
+        // would yield 1200x540).
+        expect(webviewSize, const Size(1280, 620));
+      });
+
       testWidgets(
         'exposes the active selector to a nested Mix-styled descendant',
         (tester) async {
