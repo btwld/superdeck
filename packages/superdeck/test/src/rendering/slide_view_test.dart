@@ -7,6 +7,7 @@ import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/src/utils/constants.dart' show kSlideBackgroundColor;
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../helpers/layout_assertions.dart';
@@ -32,6 +33,41 @@ void main() {
 
         expect(find.byType(SlideView), findsOneWidget);
         expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('paints an opaque default background when none is set', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(tester, Slide(key: 'no-bg'));
+
+        expect(
+          find.byWidgetPredicate(
+            (w) => w is ColoredBox && w.color == kSlideBackgroundColor,
+          ),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('keeps the opaque floor beneath a configured background', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(key: 'has-bg'),
+          parts: const SlideParts(
+            background: SizedBox(key: ValueKey('custom-bg')),
+          ),
+        );
+
+        expect(find.byKey(const ValueKey('custom-bg')), findsOneWidget);
+        // The floor persists under a custom background so opacity is guaranteed.
+        expect(
+          find.byWidgetPredicate(
+            (w) => w is ColoredBox && w.color == kSlideBackgroundColor,
+          ),
+          findsOneWidget,
+        );
       });
 
       testWidgets('renders in debug mode without throwing', (tester) async {
