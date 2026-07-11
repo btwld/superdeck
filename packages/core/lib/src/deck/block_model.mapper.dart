@@ -227,6 +227,12 @@ class BlockMapper extends ClassMapperBase<Block> {
     opt: true,
     def: 1,
   );
+  static BlockInsets? _$margin(Block v) => v.margin;
+  static const Field<Block, BlockInsets> _f$margin = Field(
+    'margin',
+    _$margin,
+    opt: true,
+  );
   static BlockInsets? _$padding(Block v) => v.padding;
   static const Field<Block, BlockInsets> _f$padding = Field(
     'padding',
@@ -246,6 +252,7 @@ class BlockMapper extends ClassMapperBase<Block> {
     #type: _f$type,
     #align: _f$align,
     #flex: _f$flex,
+    #margin: _f$margin,
     #padding: _f$padding,
     #scrollable: _f$scrollable,
   };
@@ -280,10 +287,12 @@ mixin BlockMappable {
 
 abstract class BlockCopyWith<$R, $In extends Block, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get margin;
   BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding;
   $R call({
     ContentAlignment? align,
     int? flex,
+    BlockInsets? margin,
     BlockInsets? padding,
     bool? scrollable,
   });
@@ -514,6 +523,12 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
     opt: true,
     def: 1,
   );
+  static BlockInsets? _$margin(ContentBlock v) => v.margin;
+  static const Field<ContentBlock, BlockInsets> _f$margin = Field(
+    'margin',
+    _$margin,
+    opt: true,
+  );
   static BlockInsets? _$padding(ContentBlock v) => v.padding;
   static const Field<ContentBlock, BlockInsets> _f$padding = Field(
     'padding',
@@ -539,6 +554,7 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
     #content: _f$content,
     #align: _f$align,
     #flex: _f$flex,
+    #margin: _f$margin,
     #padding: _f$padding,
     #scrollable: _f$scrollable,
     #type: _f$type,
@@ -558,6 +574,7 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
       data.dec(_f$content),
       align: data.dec(_f$align),
       flex: data.dec(_f$flex),
+      margin: data.dec(_f$margin),
       padding: data.dec(_f$padding),
       scrollable: data.dec(_f$scrollable),
     );
@@ -626,12 +643,15 @@ extension ContentBlockValueCopy<$R, $Out>
 abstract class ContentBlockCopyWith<$R, $In extends ContentBlock, $Out>
     implements BlockCopyWith<$R, $In, $Out> {
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get margin;
+  @override
   BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding;
   @override
   $R call({
     String? content,
     ContentAlignment? align,
     int? flex,
+    BlockInsets? margin,
     BlockInsets? padding,
     bool? scrollable,
   });
@@ -647,6 +667,9 @@ class _ContentBlockCopyWithImpl<$R, $Out>
   late final ClassMapperBase<ContentBlock> $mapper =
       ContentBlockMapper.ensureInitialized();
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get margin =>
+      $value.margin?.copyWith.$chain((v) => call(margin: v));
+  @override
   BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding =>
       $value.padding?.copyWith.$chain((v) => call(padding: v));
   @override
@@ -654,6 +677,7 @@ class _ContentBlockCopyWithImpl<$R, $Out>
     Object? content = $none,
     Object? align = $none,
     int? flex,
+    Object? margin = $none,
     Object? padding = $none,
     bool? scrollable,
   }) => $apply(
@@ -661,6 +685,7 @@ class _ContentBlockCopyWithImpl<$R, $Out>
       if (content != $none) #content: content,
       if (align != $none) #align: align,
       if (flex != null) #flex: flex,
+      if (margin != $none) #margin: margin,
       if (padding != $none) #padding: padding,
       if (scrollable != null) #scrollable: scrollable,
     }),
@@ -670,6 +695,7 @@ class _ContentBlockCopyWithImpl<$R, $Out>
     data.get(#content, or: $value.content),
     align: data.get(#align, or: $value.align),
     flex: data.get(#flex, or: $value.flex),
+    margin: data.get(#margin, or: $value.margin),
     padding: data.get(#padding, or: $value.padding),
     scrollable: data.get(#scrollable, or: $value.scrollable),
   );
@@ -718,6 +744,12 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
     opt: true,
     def: 1,
   );
+  static BlockInsets? _$margin(WidgetBlock v) => v.margin;
+  static const Field<WidgetBlock, BlockInsets> _f$margin = Field(
+    'margin',
+    _$margin,
+    opt: true,
+  );
   static BlockInsets? _$padding(WidgetBlock v) => v.padding;
   static const Field<WidgetBlock, BlockInsets> _f$padding = Field(
     'padding',
@@ -744,6 +776,7 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
     #args: _f$args,
     #align: _f$align,
     #flex: _f$flex,
+    #margin: _f$margin,
     #padding: _f$padding,
     #scrollable: _f$scrollable,
     #type: _f$type,
@@ -766,6 +799,7 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
       args: data.dec(_f$args),
       align: data.dec(_f$align),
       flex: data.dec(_f$flex),
+      margin: data.dec(_f$margin),
       padding: data.dec(_f$padding),
       scrollable: data.dec(_f$scrollable),
     );
@@ -834,6 +868,8 @@ abstract class WidgetBlockCopyWith<$R, $In extends WidgetBlock, $Out>
   MapCopyWith<$R, String, Object?, ObjectCopyWith<$R, Object?, Object?>?>
   get args;
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get margin;
+  @override
   BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding;
   @override
   $R call({
@@ -841,6 +877,7 @@ abstract class WidgetBlockCopyWith<$R, $In extends WidgetBlock, $Out>
     Map<String, Object?>? args,
     ContentAlignment? align,
     int? flex,
+    BlockInsets? margin,
     BlockInsets? padding,
     bool? scrollable,
   });
@@ -863,6 +900,9 @@ class _WidgetBlockCopyWithImpl<$R, $Out>
     (v) => call(args: v),
   );
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get margin =>
+      $value.margin?.copyWith.$chain((v) => call(margin: v));
+  @override
   BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding =>
       $value.padding?.copyWith.$chain((v) => call(padding: v));
   @override
@@ -871,6 +911,7 @@ class _WidgetBlockCopyWithImpl<$R, $Out>
     Object? args = $none,
     Object? align = $none,
     int? flex,
+    Object? margin = $none,
     Object? padding = $none,
     bool? scrollable,
   }) => $apply(
@@ -879,6 +920,7 @@ class _WidgetBlockCopyWithImpl<$R, $Out>
       if (args != $none) #args: args,
       if (align != $none) #align: align,
       if (flex != null) #flex: flex,
+      if (margin != $none) #margin: margin,
       if (padding != $none) #padding: padding,
       if (scrollable != null) #scrollable: scrollable,
     }),
@@ -889,6 +931,7 @@ class _WidgetBlockCopyWithImpl<$R, $Out>
     args: data.get(#args, or: $value.args),
     align: data.get(#align, or: $value.align),
     flex: data.get(#flex, or: $value.flex),
+    margin: data.get(#margin, or: $value.margin),
     padding: data.get(#padding, or: $value.padding),
     scrollable: data.get(#scrollable, or: $value.scrollable),
   );

@@ -119,12 +119,46 @@ SuperDeck supports flexible layouts using sections and columns.
 `padding: 16`
 
 @block {
-  padding: {horizontal: 48, vertical: 24}
   align: bottomRight
+  padding: {
+    horizontal: 48,
+    vertical: 24,
+  }
 }
 
 ### Independent axes
 `48 × 24`
+
+---
+style: boxed
+---
+
+## Spacing vs Margin vs Padding {.heading}
+
+@section {
+  spacing: 40
+  align: center
+}
+
+@block
+
+### Spacing
+`spacing: 40` is the shared gap between sibling block frames.
+
+@block { margin: 24 }
+
+### Margin
+`margin: 24` is consumed inside this block's frame, outside its border.
+
+@block {
+  padding: {
+    horizontal: 48,
+    vertical: 24,
+  }
+}
+
+### Padding
+`padding` sits between the border and this content.
 
 ---
 

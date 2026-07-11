@@ -202,7 +202,7 @@
     "comments": []
   },
   {
-    "key": "GeqFbeHP",
+    "key": "rOonJMpU",
     "options": {},
     "sections": [
       {
@@ -261,6 +261,66 @@
         "align": "center",
         "flex": 1,
         "spacing": 32.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "GF2IH5bQ",
+    "options": {
+      "style": "boxed"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Spacing vs Margin vs Padding {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n### Spacing\n`spacing: 40` is the shared gap between sibling block frames.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n### Margin\n`margin: 24` is consumed inside this block's frame, outside its border.\n",
+            "flex": 1,
+            "margin": {
+              "top": 24.0,
+              "right": 24.0,
+              "bottom": 24.0,
+              "left": 24.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "### Padding\n`padding` sits between the border and this content.",
+            "flex": 1,
+            "padding": {
+              "top": 24.0,
+              "right": 48.0,
+              "bottom": 24.0,
+              "left": 48.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 40.0,
         "type": "section"
       }
     ],

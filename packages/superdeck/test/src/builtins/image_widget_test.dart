@@ -52,6 +52,31 @@ void main() {
         expect(explicitNull.scale, 1.0);
       });
 
+      test('accepts integer width, height, and scale authoring', () {
+        final dto = ImageDto.parse({
+          'src': 'assets/logo.png',
+          'width': 300,
+          'height': 300,
+          'scale': 1,
+        });
+
+        expect(dto.width, 300.0);
+        expect(dto.height, 300.0);
+        expect(dto.scale, 1.0);
+      });
+
+      test('rejects non-positive dimensions with one numeric rule', () {
+        for (final field in const ['width', 'height', 'scale']) {
+          for (final value in [0, -1, double.nan, double.infinity]) {
+            expect(
+              () => ImageDto.parse({'src': 'a.png', field: value}),
+              throwsA(anything),
+              reason: '$field: $value',
+            );
+          }
+        }
+      });
+
       test('trims whitespace from src', () {
         final dto = ImageDto.parse({'src': '  assets/logo.png  '});
         expect(dto.src, Uri.parse('assets/logo.png'));

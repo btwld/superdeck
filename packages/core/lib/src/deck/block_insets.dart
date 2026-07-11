@@ -3,32 +3,40 @@ import 'package:dart_mappable/dart_mappable.dart';
 
 part 'block_insets.mapper.dart';
 
-const _paddingAuthoringMessage =
-    'Padding must use a finite non-negative scalar, a non-empty object with '
+String _authoringMessage(String field) =>
+    '$field must use a finite non-negative scalar, a non-empty object with '
     'horizontal and/or vertical, or a non-empty object with top, right, '
     'bottom, and/or left. Symmetric and physical-edge keys cannot be mixed.';
 
-final _paddingValueSchema = Ack.number().min(0).finite();
+const _symmetricKeys = {'horizontal', 'vertical'};
+const _edgeKeys = {'top', 'right', 'bottom', 'left'};
 
-final _symmetricPaddingSchema = Ack.object(
+final _insetValueSchema = Ack.number().min(0).finite();
+
+final _symmetricInsetsSchema = Ack.object(
   {
-    'horizontal': _paddingValueSchema.optional(),
-    'vertical': _paddingValueSchema.optional(),
+    'horizontal': _insetValueSchema.optional(),
+    'vertical': _insetValueSchema.optional(),
   },
   additionalProperties: false,
-).withConstraint(const _NonEmptyPaddingObjectConstraint());
+).withConstraint(const _NonEmptyInsetsObjectConstraint());
 
-final _edgePaddingSchema = Ack.object(
+final _partialEdgeInsetsSchema = Ack.object(
   {
-    'top': _paddingValueSchema.optional(),
-    'right': _paddingValueSchema.optional(),
-    'bottom': _paddingValueSchema.optional(),
-    'left': _paddingValueSchema.optional(),
+    'top': _insetValueSchema.optional(),
+    'right': _insetValueSchema.optional(),
+    'bottom': _insetValueSchema.optional(),
+    'left': _insetValueSchema.optional(),
   },
   additionalProperties: false,
-).withConstraint(const _NonEmptyPaddingObjectConstraint());
+).withConstraint(const _NonEmptyInsetsObjectConstraint());
 
-/// Four normalized physical padding edges for a slide block.
+/// Four normalized physical inset edges for a slide block.
+///
+/// Used for both block `padding` and block `margin`. Authoring shorthand
+/// (scalar, symmetric, or partial physical edges) is normalized by
+/// [parseAuthoring]; compiled contracts only carry the normalized
+/// four-edge form validated by [schema].
 @MappableClass()
 final class BlockInsets with BlockInsetsMappable {
   final double top;
@@ -57,66 +65,99 @@ final class BlockInsets with BlockInsetsMappable {
         left: horizontal,
       );
 
-  static final schema = Ack.anyOf([
-    _paddingValueSchema,
-    _symmetricPaddingSchema,
-    _edgePaddingSchema,
+  /// Normalized contract schema: a closed object with all four physical edges.
+  static final schema = Ack.object({
+    'top': _insetValueSchema,
+    'right': _insetValueSchema,
+    'bottom': _insetValueSchema,
+    'left': _insetValueSchema,
+  }, additionalProperties: false);
+
+  /// Authoring schema: scalar, symmetric map, or physical-edge map.
+  static final authoringSchema = Ack.anyOf([
+    _insetValueSchema,
+    _symmetricInsetsSchema,
+    _partialEdgeInsetsSchema,
   ]);
 
   static final fromMap = BlockInsetsMapper.fromMap;
 
   /// Parses one supported authoring form and normalizes it to physical edges.
-  static BlockInsets parse(Object? value) {
-    if (!schema.safeParse(value).isOk) {
-      throw ArgumentError.value(value, 'padding', _paddingAuthoringMessage);
-    }
-
+  ///
+  /// [field] names the authored option (`padding` or `margin`) so errors
+  /// report the exact field and edge, e.g. `margin.left`.
+  static BlockInsets parseAuthoring(Object? value, {required String field}) {
     if (value is num) {
-      return BlockInsets.all(value.toDouble());
+      return BlockInsets.all(_validateAuthoringValue(value, field));
     }
 
-    final map = Map<String, Object?>.from(value! as Map);
-    if (map.containsKey('horizontal') || map.containsKey('vertical')) {
-      return BlockInsets.symmetric(
-        horizontal: _readEdge(map, 'horizontal'),
-        vertical: _readEdge(map, 'vertical'),
+    if (value is Map) {
+      final map = <String, Object?>{
+        for (final entry in value.entries) '${entry.key}': entry.value,
+      };
+      final keys = map.keys.toSet();
+      final isSymmetric = keys.isNotEmpty && _symmetricKeys.containsAll(keys);
+      final isEdges = keys.isNotEmpty && _edgeKeys.containsAll(keys);
+      if (!isSymmetric && !isEdges) {
+        throw ArgumentError.value(value, field, _authoringMessage(field));
+      }
+
+      double read(String key) {
+        final edgeValue = map[key];
+        if (edgeValue == null) return 0;
+
+        return _validateAuthoringValue(edgeValue, '$field.$key');
+      }
+
+      if (isSymmetric) {
+        return BlockInsets.symmetric(
+          horizontal: read('horizontal'),
+          vertical: read('vertical'),
+        );
+      }
+
+      return BlockInsets(
+        top: read('top'),
+        right: read('right'),
+        bottom: read('bottom'),
+        left: read('left'),
       );
     }
 
-    return BlockInsets(
-      top: _readEdge(map, 'top'),
-      right: _readEdge(map, 'right'),
-      bottom: _readEdge(map, 'bottom'),
-      left: _readEdge(map, 'left'),
-    );
+    throw ArgumentError.value(value, field, _authoringMessage(field));
   }
 
-  static double _readEdge(Map<String, Object?> map, String key) {
-    return (map[key] as num?)?.toDouble() ?? 0;
+  static double _validateAuthoringValue(Object? value, String name) {
+    if (value is num && value.isFinite && value >= 0) return value.toDouble();
+    throw ArgumentError.value(
+      value,
+      name,
+      'Inset values must be finite non-negative numbers.',
+    );
   }
 
   static double _validateEdge(double value, String edge) {
     if (value.isFinite && value >= 0) return value;
     throw ArgumentError.value(
       value,
-      'padding.$edge',
-      'Padding edges must be finite non-negative numbers.',
+      edge,
+      'Inset edges must be finite non-negative numbers.',
     );
   }
 }
 
-final class _NonEmptyPaddingObjectConstraint
+final class _NonEmptyInsetsObjectConstraint
     extends Constraint<Map<String, Object?>>
     with Validator<Map<String, Object?>>, JsonSchemaSpec<Map<String, Object?>> {
-  const _NonEmptyPaddingObjectConstraint()
+  const _NonEmptyInsetsObjectConstraint()
     : super(
-        constraintKey: 'padding_non_empty_object',
-        description: 'Padding objects must contain at least one property.',
+        constraintKey: 'insets_non_empty_object',
+        description: 'Inset objects must contain at least one property.',
       );
 
   @override
   String buildMessage(Map<String, Object?> value) {
-    return 'Padding objects must contain at least one property.';
+    return 'Inset objects must contain at least one property.';
   }
 
   @override

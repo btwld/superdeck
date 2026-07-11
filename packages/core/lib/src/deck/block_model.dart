@@ -5,8 +5,13 @@ import 'block_insets.dart';
 
 part 'block_model.mapper.dart';
 
-final _positiveFlexSchema = Ack.integer().positive();
-final _nonNegativeFiniteNumberSchema = Ack.number().min(0).finite();
+/// Positive flex weight shared by the canonical block/section schemas and the
+/// AI-generation projection in `slide_contract.dart`.
+final positiveFlexSchema = Ack.integer().positive();
+
+/// Finite non-negative number shared by section `spacing` and the
+/// AI-generation projection in `slide_contract.dart`.
+final nonNegativeSpacingSchema = Ack.number().min(0).finite();
 
 int _validateFlex(int flex) {
   if (flex > 0) return flex;
@@ -38,10 +43,16 @@ void _validateSpacingInput(Map<String, Object?> map) {
   }
 }
 
-Map<String, Object?> _normalizeBlockInput(Map<String, Object?> map) {
-  if (!map.containsKey('padding')) return map;
-  final padding = BlockInsets.parse(map['padding']);
-  return {...map, 'padding': padding.toMap()};
+Map<String, Object?> _normalizeAuthoringInsets(Map<String, Object?> map) {
+  var normalized = map;
+  for (final field in const ['margin', 'padding']) {
+    final value = normalized[field];
+    if (value == null) continue;
+    final insets = BlockInsets.parseAuthoring(value, field: field);
+    normalized = {...normalized, field: insets.toMap()};
+  }
+
+  return normalized;
 }
 
 /// Base class for renderable blocks in a slide section.
@@ -53,6 +64,7 @@ sealed class Block with BlockMappable {
   final String type;
   final ContentAlignment? align;
   final int flex;
+  final BlockInsets? margin;
   final BlockInsets? padding;
   final bool scrollable;
 
@@ -60,6 +72,7 @@ sealed class Block with BlockMappable {
     required this.type,
     this.align,
     int flex = 1,
+    this.margin,
     this.padding,
     this.scrollable = false,
   }) : flex = _validateFlex(flex);
@@ -68,18 +81,28 @@ sealed class Block with BlockMappable {
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.optional(),
-    'flex': _positiveFlexSchema.optional(),
+    'flex': positiveFlexSchema.optional(),
+    'margin': BlockInsets.schema.optional(),
     'padding': BlockInsets.schema.optional(),
     'scrollable': Ack.boolean().optional(),
   }, additionalProperties: true);
 
-  /// Parses a block from a JSON map.
+  /// Parses a block from normalized contract data.
   ///
   /// Automatically determines the block type from the discriminator key.
+  /// Insets must already be normalized physical edges; use [parseAuthoring]
+  /// for Markdown directive input.
   static Block parse(Map<String, Object?> map) {
-    final normalized = _normalizeBlockInput(map);
-    _validateFlexInput(normalized);
-    return fromMap(discriminatedSchema.parse(normalized)!);
+    _validateFlexInput(map);
+    return fromMap(discriminatedSchema.parse(map)!);
+  }
+
+  /// Parses a block from authored directive options.
+  ///
+  /// Normalizes `margin` and `padding` shorthand (scalar, symmetric, or
+  /// partial physical edges) before decoding through the contract schema.
+  static Block parseAuthoring(Map<String, Object?> map) {
+    return parse(_normalizeAuthoringInsets(map));
   }
 
   /// Schema for discriminated union of block types.
@@ -167,8 +190,8 @@ class SectionBlock with SectionBlockMappable {
   static final schema = Ack.object({
     'type': Ack.literal(key).optional(),
     'align': ContentAlignment.schema.optional(),
-    'flex': _positiveFlexSchema.optional(),
-    'spacing': _nonNegativeFiniteNumberSchema.optional(),
+    'flex': positiveFlexSchema.optional(),
+    'spacing': nonNegativeSpacingSchema.optional(),
     'blocks': Ack.list(Block.discriminatedSchema).optional(),
   }, additionalProperties: false);
 }
@@ -189,6 +212,7 @@ class ContentBlock extends Block with ContentBlockMappable {
     String? content, {
     super.align,
     super.flex,
+    super.margin,
     super.padding,
     super.scrollable,
   }) : content = content ?? '',
@@ -200,17 +224,17 @@ class ContentBlock extends Block with ContentBlockMappable {
   static final schema = Ack.object({
     'type': Ack.literal(key).optional(),
     'align': ContentAlignment.schema.optional(),
-    'flex': _positiveFlexSchema.optional(),
+    'flex': positiveFlexSchema.optional(),
+    'margin': BlockInsets.schema.optional(),
     'padding': BlockInsets.schema.optional(),
     'scrollable': Ack.boolean().optional(),
     'content': Ack.string().optional(),
   }, additionalProperties: true);
 
-  /// Parses a content block from a JSON map with schema validation.
+  /// Parses a content block from normalized contract data.
   static ContentBlock parse(Map<String, Object?> map) {
-    final normalized = _normalizeBlockInput(map);
-    _validateFlexInput(normalized);
-    return fromMap(schema.parse(normalized)!);
+    _validateFlexInput(map);
+    return fromMap(schema.parse(map)!);
   }
 }
 
@@ -273,6 +297,7 @@ class WidgetBlock extends Block with WidgetBlockMappable {
     'name',
     'align',
     'flex',
+    'margin',
     'padding',
     'scrollable',
   };
@@ -285,6 +310,7 @@ class WidgetBlock extends Block with WidgetBlockMappable {
     Map<String, Object?>? args,
     super.align,
     super.flex,
+    super.margin,
     super.padding,
     super.scrollable,
   }) : args = _validateArgs(args),
@@ -320,17 +346,17 @@ class WidgetBlock extends Block with WidgetBlockMappable {
 
   static final schema = Ack.object({
     'align': ContentAlignment.schema.optional(),
-    'flex': _positiveFlexSchema.optional(),
+    'flex': positiveFlexSchema.optional(),
+    'margin': BlockInsets.schema.optional(),
     'padding': BlockInsets.schema.optional(),
     'scrollable': Ack.boolean().optional(),
     'name': Ack.string(),
   }, additionalProperties: true);
 
-  /// Parses a widget block from a JSON map with schema validation.
+  /// Parses a widget block from normalized contract data.
   static WidgetBlock parse(Map<String, Object?> map) {
-    final normalized = _normalizeBlockInput(map);
-    _validateFlexInput(normalized);
-    return fromMap(schema.parse(normalized)!);
+    _validateFlexInput(map);
+    return fromMap(schema.parse(map)!);
   }
 }
 

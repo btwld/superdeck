@@ -134,7 +134,10 @@ needed:
 # Inherits center
 
 @block {
-  padding: { horizontal: 32, vertical: 16 }
+  padding: {
+    horizontal: 32,
+    vertical: 16,
+  }
   align: bottomRight
 }
 
@@ -150,16 +153,37 @@ Section `spacing` is a finite, non-negative logical-pixel gap between sibling
 blocks only. It never adds leading/trailing space and is clamped when an
 impossible request would place children outside the section.
 
-Block/widget `padding` accepts exactly:
+Block/widget `margin` and `padding` accept exactly:
 
 ```markdown
 padding: 16
-padding: { horizontal: 24, vertical: 16 }
-padding: { top: 12, right: 24, bottom: 12, left: 24 }
+
+padding: {
+  horizontal: 24,
+  vertical: 16,
+}
+
+padding: {
+  top: 12,
+  right: 24,
+  bottom: 12,
+  left: 24,
+}
 ```
 
-Omitted object keys become zero. Never mix symmetric and physical-edge keys.
-All flex values must be positive integers.
+`margin` accepts the same three forms. Omitted object keys become zero. Never
+mix symmetric and physical-edge keys. All flex values must be positive
+integers.
+
+`margin` and `padding` own different layout roles: `margin` is consumed inside
+a block's already-allocated frame, outside its decoration/border, and reduces
+only that block's own usable area — it never creates a shared gutter with
+sibling blocks and never changes flex ratios (unlike CSS margins; use section
+`spacing` for gutters). `padding` is consumed inside the decorated container,
+between the border and the content. An absent (`null`) override inherits the
+resolved style value for that inset; an explicit `0` removes it. A present
+override replaces only the matching inset after style variants resolve —
+decoration, clipping, and animation are preserved.
 
 Use `scrollable: true` on overflowing blocks/widgets, not on sections:
 
@@ -206,9 +230,10 @@ Use `@image` when the image should be its own widget block/column, or when you n
 
 - `src` required: relative asset path, URL, absolute path, `file://`, `data:`, or Windows absolute path.
 - `fit`: `fill`, `contain`, `cover`, `fitWidth`, `fitHeight`, `none`, `scaleDown`; default `contain`.
-- `width`, `height`: positive logical pixels.
-- `scale`: finite number greater than zero, default `1`; changes painted pixels
-  without changing the frame or flex layout and clips using effective alignment.
+- `width`, `height`: positive logical pixels; integer or decimal values are both accepted.
+- `scale`: finite number greater than zero, default `1`; integer or decimal
+  values are both accepted; changes painted pixels without changing the frame
+  or flex layout and clips using effective alignment.
 
 Key differences:
 
@@ -368,8 +393,9 @@ Or explicit form:
 ```
 
 All properties become the widget factory's `Map<String, Object?>` arguments.
-Block-level controls such as `flex`, `align`, `padding`, and `scrollable` are
-consumed by SuperDeck and are not passed as custom widget args.
+Block-level controls such as `flex`, `align`, `margin`, `padding`, and
+`scrollable` are consumed by SuperDeck and are not passed as custom widget
+args.
 
 To style every custom block with the same name, declare `BlockVariant('metricCard')` in a Dart `SlideStyle`. The match is exact and case-sensitive, and it applies to the widget block container plus descendants rather than to individual Markdown block instances.
 

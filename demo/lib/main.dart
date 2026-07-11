@@ -25,7 +25,11 @@ void main() async {
         baseStyle: borderedStyle(),
         widgets: {...demoWidgets, 'twitter': _twitterWidget},
         // debug: true,
-        styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
+        styles: {
+          'announcement': announcementStyle(),
+          'quote': quoteStyle(),
+          'boxed': boxedStyle(),
+        },
         templates: {
           'corporate': corporateTemplate(),
           'minimal': minimalTemplate(),

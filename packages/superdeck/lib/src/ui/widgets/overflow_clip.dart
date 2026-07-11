@@ -129,7 +129,7 @@ class _RenderOverflowDiagnosticProbe extends RenderProxyBox {
        _indicatorColor = indicatorColor;
 
   static const _overflowTolerance = 0.5;
-  static const _indicatorExtent = 12.0;
+  static const _indicatorStrokeWidth = 2.0;
 
   String _slideKey;
   String _runtimeKey;
@@ -283,20 +283,25 @@ class _RenderOverflowDiagnosticProbe extends RenderProxyBox {
     final availableSize = _effectiveAvailableSize;
     final visibleWidth = math.min(size.width, availableSize.width);
     final visibleHeight = math.min(size.height, availableSize.height);
-    final extent = math.min(
-      _indicatorExtent,
-      math.min(visibleWidth, visibleHeight),
-    );
-    if (extent <= 0) return;
+    if (visibleWidth <= 0 || visibleHeight <= 0) return;
 
+    // Outline the visible frame instead of filling a corner so the indicator
+    // never obscures content aligned to any frame edge.
+    final strokeWidth = math.min(
+      _indicatorStrokeWidth,
+      math.min(visibleWidth, visibleHeight) / 2,
+    );
     context.canvas.drawRect(
       Rect.fromLTWH(
-        offset.dx + visibleWidth - extent,
+        offset.dx,
         offset.dy,
-        extent,
-        extent,
-      ),
-      Paint()..color = _indicatorColor,
+        visibleWidth,
+        visibleHeight,
+      ).deflate(strokeWidth / 2),
+      Paint()
+        ..color = _indicatorColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth,
     );
   }
 

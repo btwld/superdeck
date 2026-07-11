@@ -741,7 +741,7 @@
     "comments": []
   },
   {
-    "key": "GeqFbeHP",
+    "key": "rOonJMpU",
     "options": {},
     "sections": [
       {
@@ -920,6 +920,198 @@
         "align": "center",
         "flex": 1,
         "spacing": 32.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "GF2IH5bQ",
+    "options": {
+      "style": "boxed"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Spacing vs Margin vs Padding {.heading}"
+                    }
+                  ],
+                  "generatedId": "spacing-vs-margin-vs-padding-heading"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Spacing"
+                    }
+                  ],
+                  "generatedId": "spacing"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "spacing: 40"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " is the shared gap between sibling block frames."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Margin"
+                    }
+                  ],
+                  "generatedId": "margin"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "margin: 24"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " is consumed inside this block's frame, outside its border."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "margin": {
+              "top": 24.0,
+              "right": 24.0,
+              "bottom": 24.0,
+              "left": 24.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Padding"
+                    }
+                  ],
+                  "generatedId": "padding"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "padding"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " sits between the border and this content."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "padding": {
+              "top": 24.0,
+              "right": 48.0,
+              "bottom": 24.0,
+              "left": 48.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 40.0,
         "type": "section"
       }
     ],

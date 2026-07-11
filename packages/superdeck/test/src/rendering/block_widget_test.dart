@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/superdeck.dart' show BlockVariant, SlideStyle;
+import 'package:superdeck/superdeck.dart'
+    show BlockStyler, BlockVariant, SlideStyle;
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -456,9 +457,9 @@ void main() {
         expect(logs, isEmpty);
       });
 
-      testWidgets('paints a red indicator inside an overflowing frame', (
-        tester,
-      ) async {
+      testWidgets(
+        'outlines an overflowing frame without covering aligned content',
+        (tester) async {
         tester.view.physicalSize = const Size(100, 100);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.resetPhysicalSize);
@@ -497,20 +498,32 @@ void main() {
         final boundary = tester.renderObject<RenderRepaintBoundary>(
           find.byKey(boundaryKey),
         );
-        final rgba = await tester.runAsync(() async {
+        final pixels = await tester.runAsync(() async {
           final image = await boundary.toImage();
           try {
             final bytes = await image.toByteData(
               format: ui.ImageByteFormat.rawRgba,
             );
-            final pixelOffset = (5 * image.width + 95) * 4;
-            return bytes!.buffer.asUint8List(pixelOffset, 4).toList();
+            List<int> pixel(int x, int y) {
+              final pixelOffset = (y * image.width + x) * 4;
+              return bytes!.buffer.asUint8List(pixelOffset, 4).toList();
+            }
+
+            return {
+              'topEdge': pixel(50, 0),
+              'rightEdge': pixel(99, 50),
+              'topRightInterior': pixel(95, 5),
+            };
           } finally {
             image.dispose();
           }
         });
 
-        expect(rgba, [255, 59, 48, 255]);
+        // The frame outline paints on the edges...
+        expect(pixels!['topEdge'], [255, 59, 48, 255]);
+        expect(pixels['rightEdge'], [255, 59, 48, 255]);
+        // ...but content aligned to the top-right corner stays visible.
+        expect(pixels['topRightInterior'], [0, 0, 255, 255]);
       });
 
       testWidgets('allows Hero flights between changing constraints', (
@@ -592,7 +605,7 @@ void main() {
       });
     });
 
-    group('padding overrides', () {
+    group('inset overrides', () {
       testWidgets('absent override retains resolved style padding', (
         tester,
       ) async {
@@ -693,73 +706,74 @@ void main() {
         expect(blockSize, const Size(1250, 550));
       });
 
-      testWidgets('override replaces only padding after variants resolve', (
-        tester,
-      ) async {
-        _setSlideViewport(tester);
-        late BlockConfiguration blockData;
-        const variantColor = Color(0xFFCC3344);
-        final animation = AnimationConfig.ease(
-          const Duration(milliseconds: 120),
-        );
-        await SlideTestHarness.pumpSlide(
-          tester,
-          Slide(
-            key: 'preserved-variant-geometry',
-            sections: [
-              SectionBlock([
-                WidgetBlock.fromMap({
-                  'type': 'widget',
-                  'name': 'chart',
-                  'padding': {'top': 4, 'right': 4, 'bottom': 4, 'left': 4},
-                }),
-              ]),
-            ],
-          ),
-          style: SlideStyle(
-            blockContainer:
-                BoxStyler(
-                      padding: EdgeInsetsGeometryMix.all(10),
-                      margin: EdgeInsetsGeometryMix.all(5),
-                      decoration: BoxDecorationMix(
-                        color: const Color(0xFF224466),
-                        border: BorderMix.all(BorderSideMix(width: 2)),
-                      ),
-                    )
-                    .animate(animation)
-                    .wrap(WidgetModifierConfig.opacity(0.75))
-                    .variants([
-                      VariantStyle(
-                        const BlockVariant('chart'),
-                        BoxStyler(
-                          padding: EdgeInsetsGeometryMix.all(20),
-                          margin: EdgeInsetsGeometryMix.all(10),
-                          decoration: BoxDecorationMix(
-                            color: variantColor,
-                            border: BorderMix.all(BorderSideMix(width: 3)),
+      testWidgets(
+        'overrides replace only matching insets after variants resolve',
+        (tester) async {
+          _setSlideViewport(tester);
+          late BlockConfiguration blockData;
+          const variantColor = Color(0xFFCC3344);
+          final animation = AnimationConfig.ease(
+            const Duration(milliseconds: 120),
+          );
+          await SlideTestHarness.pumpSlide(
+            tester,
+            Slide(
+              key: 'preserved-variant-geometry',
+              sections: [
+                SectionBlock([
+                  WidgetBlock.fromMap({
+                    'type': 'widget',
+                    'name': 'chart',
+                    'padding': {'top': 4, 'right': 4, 'bottom': 4, 'left': 4},
+                    'margin': {'top': 6, 'right': 6, 'bottom': 6, 'left': 6},
+                  }),
+                ]),
+              ],
+            ),
+            style: SlideStyle(
+              blockContainer:
+                  BlockStyler(
+                        padding: EdgeInsetsGeometryMix.all(10),
+                        margin: EdgeInsetsGeometryMix.all(5),
+                        decoration: BoxDecorationMix(
+                          color: const Color(0xFF224466),
+                          border: BorderMix.all(BorderSideMix(width: 2)),
+                        ),
+                      )
+                      .animate(animation)
+                      .variants([
+                        VariantStyle(
+                          const BlockVariant('chart'),
+                          BlockStyler(
+                            padding: EdgeInsetsGeometryMix.all(20),
+                            margin: EdgeInsetsGeometryMix.all(10),
+                            decoration: BoxDecorationMix(
+                              color: variantColor,
+                              border: BorderMix.all(BorderSideMix(width: 3)),
+                            ),
                           ),
                         ),
-                      ),
-                    ]),
-          ),
-          widgets: {
-            'chart': (_) =>
-                _BlockDataProbe(onBuild: (data) => blockData = data),
-          },
-        );
+                      ]),
+            ),
+            widgets: {
+              'chart': (_) =>
+                  _BlockDataProbe(onBuild: (data) => blockData = data),
+            },
+          );
 
-        final container = blockData.spec.blockContainer.spec;
-        final decoration = container.decoration! as BoxDecoration;
-        expect(blockData.size, const Size(1246, 586));
-        expect(container.padding, const EdgeInsets.all(4));
-        expect(container.margin, const EdgeInsets.all(10));
-        expect(decoration.color, variantColor);
-        expect(decoration.border!.dimensions, const EdgeInsets.all(3));
-        expect(blockData.spec.blockContainer.animation, same(animation));
-        final modifier = blockData.spec.blockContainer.widgetModifiers!.single;
-        expect(modifier, isA<OpacityModifier>());
-        expect((modifier as OpacityModifier).opacity, 0.75);
-      });
+          final container = blockData.spec.blockContainer.spec;
+          final decoration = container.decoration! as BoxDecoration;
+          // 1280/620 minus padding 4*2, margin 6*2, border 3*2.
+          expect(blockData.size, const Size(1254, 594));
+          expect(container.padding, const EdgeInsets.all(4));
+          expect(container.margin, const EdgeInsets.all(6));
+          expect(decoration.color, variantColor);
+          expect(decoration.border!.dimensions, const EdgeInsets.all(3));
+          expect(blockData.spec.blockContainer.animation, same(animation));
+          // No modifier can wrap the framework-owned block container.
+          expect(blockData.spec.blockContainer.widgetModifiers, isNull);
+        },
+      );
 
       for (final name in ['image', 'gist', 'webview', 'custom']) {
         testWidgets('$name padding overrides its resolved variant', (
@@ -794,6 +808,124 @@ void main() {
           expect(blockSize, const Size(1256, 596));
         });
       }
+
+      testWidgets('asymmetric margin determines exact usable size', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        late Size blockSize;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'asymmetric-margin',
+            sections: [
+              SectionBlock([
+                WidgetBlock.fromMap({
+                  'type': 'widget',
+                  'name': 'custom',
+                  'margin': {'top': 10, 'right': 20, 'bottom': 30, 'left': 40},
+                }),
+              ]),
+            ],
+          ),
+          widgets: {
+            'custom': (_) =>
+                _BlockSizeProbe(onBuild: (size) => blockSize = size),
+          },
+        );
+
+        // Default style padding 40 plus the authored margin edges.
+        expect(blockSize, const Size(1140, 500));
+      });
+
+      testWidgets('symmetric content-block margin reduces usable size', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'content-margin',
+            sections: [
+              SectionBlock([
+                ContentBlock(
+                  'Content',
+                  margin: BlockInsets.symmetric(horizontal: 10, vertical: 10),
+                ),
+              ]),
+            ],
+          ),
+        );
+
+        final provider = tester.widget<InheritedData<BlockConfiguration>>(
+          find.byWidgetPredicate(
+            (widget) => widget is InheritedData<BlockConfiguration>,
+          ),
+        );
+        // Default style padding 40 plus margin 10 on every edge.
+        expect(provider.data.size, const Size(1180, 520));
+      });
+
+      testWidgets('margin zero with zero padding stays edge-to-edge', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        late Size blockSize;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'zero-insets',
+            sections: [
+              SectionBlock([
+                WidgetBlock(
+                  name: 'custom',
+                  margin: BlockInsets.all(0),
+                  padding: BlockInsets.all(0),
+                ),
+              ]),
+            ],
+          ),
+          widgets: {
+            'custom': (_) =>
+                _BlockSizeProbe(onBuild: (size) => blockSize = size),
+          },
+        );
+
+        expect(blockSize, const Size(1280, 620));
+      });
+
+      testWidgets(
+        'margin consumes only its own frame; spacing and flex are unchanged',
+        (tester) async {
+          _setSlideViewport(tester);
+          late Size marginedSize;
+          late Size siblingSize;
+          await SlideTestHarness.pumpSlide(
+            tester,
+            Slide(
+              key: 'spacing-plus-margin',
+              sections: [
+                SectionBlock([
+                  WidgetBlock(name: 'margined', margin: BlockInsets.all(10)),
+                  WidgetBlock(name: 'sibling'),
+                ], spacing: 40),
+              ],
+            ),
+            widgets: {
+              'margined': (_) =>
+                  _BlockSizeProbe(onBuild: (size) => marginedSize = size),
+              'sibling': (_) =>
+                  _BlockSizeProbe(onBuild: (size) => siblingSize = size),
+            },
+          );
+
+          // Equal flex splits (1280 - 40 spacing) into 620-wide frames. The
+          // margin reduces only the margined block's usable area; the sibling
+          // keeps the full frame minus default padding.
+          expect(marginedSize, const Size(520, 520));
+          expect(siblingSize, const Size(540, 540));
+        },
+      );
     });
 
     group('named widget block variants', () {
@@ -816,11 +948,11 @@ void main() {
               ],
             ),
             style: SlideStyle(
-              blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40))
-                  .variants([
+              blockContainer:
+                  BlockStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
                     VariantStyle(
                       const BlockVariant('chart'),
-                      BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+                      BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
                     ),
                   ]),
             ),
@@ -861,11 +993,11 @@ void main() {
               ],
             ),
             style: SlideStyle(
-              blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40))
-                  .variants([
+              blockContainer:
+                  BlockStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
                     VariantStyle(
                       const BlockVariant('webview'),
-                      BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+                      BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
                     ),
                   ]),
             ),
@@ -898,11 +1030,11 @@ void main() {
             ],
           ),
           style: SlideStyle(
-            blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40))
-                .variants([
+            blockContainer:
+                BlockStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
                   VariantStyle(
                     const NamedVariant('image'),
-                    BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+                    BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
                   ),
                 ]),
           ),
@@ -1009,13 +1141,13 @@ void main() {
             ),
             style: SlideStyle(
               blockContainer:
-                  BoxStyler(
+                  BlockStyler(
                     padding: EdgeInsetsGeometryMix.all(10),
                     margin: EdgeInsetsGeometryMix.all(5),
                   ).variants([
                     VariantStyle(
                       const BlockVariant('webview'),
-                      BoxStyler(
+                      BlockStyler(
                         padding: EdgeInsetsGeometryMix.all(20),
                         margin: EdgeInsetsGeometryMix.all(10),
                       ),

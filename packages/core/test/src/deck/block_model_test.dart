@@ -35,19 +35,21 @@ Matcher _throwsInvalidSpacing() {
   );
 }
 
-Matcher _throwsInvalidPadding() {
+Matcher _throwsInvalidInsets(String name, {required bool structural}) {
   return throwsA(
     isA<ArgumentError>()
-        .having((error) => error.name, 'name', 'padding')
+        .having((error) => error.name, 'name', name)
         .having(
           (error) => error.message.toString(),
           'message',
-          allOf(
-            contains('finite non-negative'),
-            contains('scalar'),
-            contains('horizontal'),
-            contains('top'),
-          ),
+          structural
+              ? allOf(
+                  contains('finite non-negative'),
+                  contains('scalar'),
+                  contains('horizontal'),
+                  contains('top'),
+                )
+              : contains('finite non-negative'),
         ),
   );
 }
@@ -307,7 +309,7 @@ void main() {
       });
     });
 
-    group('block padding authoring', () {
+    group('block insets authoring', () {
       final accepted = <Object, Map<String, Object?>>{
         16: {'top': 16.0, 'right': 16.0, 'bottom': 16.0, 'left': 16.0},
         {'horizontal': 24}: {
@@ -336,55 +338,118 @@ void main() {
         },
       };
 
-      for (final MapEntry(key: input, value: normalized) in accepted.entries) {
-        test('$input normalizes to four physical edges', () {
-          final block = ContentBlock.parse({'type': 'block', 'padding': input});
+      for (final field in const ['padding', 'margin']) {
+        for (final MapEntry(key: input, value: normalized)
+            in accepted.entries) {
+          test('$field: $input normalizes to four physical edges', () {
+            final block = Block.parseAuthoring({
+              'type': 'block',
+              field: input,
+            });
 
-          expect(block.toMap()['padding'], normalized);
-        });
+            expect(block.toMap()[field], normalized);
+          });
+        }
       }
 
-      test('schema accepts the three authoring forms', () {
+      test('authoring schema accepts the three authoring forms', () {
         for (final input in accepted.keys) {
           expect(
-            ContentBlock.schema.safeParse({
-              'type': 'block',
-              'padding': input,
-            }).isOk,
+            BlockInsets.authoringSchema.safeParse(input).isOk,
             isTrue,
-            reason: 'padding: $input',
+            reason: 'insets: $input',
           );
         }
       });
 
-      final invalid = <Object>[
+      test('contract schema rejects authoring shorthand', () {
+        for (final field in const ['padding', 'margin']) {
+          for (final input in [
+            16,
+            {'horizontal': 24},
+            {'top': 12, 'right': 24},
+          ]) {
+            expect(
+              ContentBlock.schema.safeParse({
+                'type': 'block',
+                field: input,
+              }).isOk,
+              isFalse,
+              reason: '$field: $input',
+            );
+          }
+        }
+      });
+
+      test('contract schema accepts normalized four-edge insets', () {
+        for (final field in const ['padding', 'margin']) {
+          expect(
+            ContentBlock.schema.safeParse({
+              'type': 'block',
+              field: {'top': 1, 'right': 2, 'bottom': 3, 'left': 4},
+            }).isOk,
+            isTrue,
+            reason: field,
+          );
+        }
+      });
+
+      final structurallyInvalid = <Object>[
         <String, Object?>{},
         {'unknown': 1},
         {'horizontal': 8, 'top': 4},
-        -1,
-        {'left': -1},
-        double.nan,
-        double.infinity,
       ];
 
-      for (final input in invalid) {
-        test('rejects $input with an actionable padding error', () {
+      for (final field in const ['padding', 'margin']) {
+        for (final input in structurallyInvalid) {
+          test('$field rejects $input naming the field', () {
+            expect(
+              () => Block.parseAuthoring({'type': 'block', field: input}),
+              _throwsInvalidInsets(field, structural: true),
+            );
+          });
+        }
+
+        test('$field rejects invalid scalars naming the field', () {
+          for (final input in [-1, double.nan, double.infinity]) {
+            expect(
+              () => Block.parseAuthoring({'type': 'block', field: input}),
+              _throwsInvalidInsets(field, structural: false),
+              reason: '$field: $input',
+            );
+          }
+        });
+
+        test('$field reports the exact invalid edge', () {
           expect(
-            () => ContentBlock.parse({'type': 'block', 'padding': input}),
-            _throwsInvalidPadding(),
+            () => Block.parseAuthoring({
+              'type': 'block',
+              field: {'left': -1},
+            }),
+            _throwsInvalidInsets('$field.left', structural: false),
+          );
+          expect(
+            () => Block.parseAuthoring({
+              'type': 'block',
+              field: {'vertical': double.nan},
+            }),
+            _throwsInvalidInsets('$field.vertical', structural: false),
           );
         });
       }
 
-      test('schema rejects invalid authoring forms', () {
-        for (final input in invalid) {
+      test('authoring schema rejects invalid forms', () {
+        for (final input in [
+          ...structurallyInvalid,
+          -1,
+          {'left': -1},
+          double.nan,
+          double.infinity,
+        ]) {
           expect(
-            ContentBlock.schema.safeParse({
-              'type': 'block',
-              'padding': input,
-            }).isOk,
+            BlockInsets.authoringSchema.safeParse(input).isOk,
             isFalse,
-            reason: 'padding: $input',
+            reason: 'insets: $input',
           );
         }
       });
@@ -410,7 +475,7 @@ void main() {
             () => BlockInsets(left: value),
             throwsA(
               isA<ArgumentError>()
-                  .having((error) => error.name, 'name', 'padding.left')
+                  .having((error) => error.name, 'name', 'left')
                   .having(
                     (error) => error.message.toString(),
                     'message',
@@ -440,6 +505,20 @@ void main() {
           () => insets.copyWith(left: double.nan),
           throwsA(isA<ArgumentError>()),
         );
+      });
+
+      test('absent insets stay null; explicit zero stays representable', () {
+        final inherited = Block.parseAuthoring({'type': 'block'});
+        expect(inherited.margin, isNull);
+        expect(inherited.padding, isNull);
+
+        final removed = Block.parseAuthoring({
+          'type': 'block',
+          'margin': 0,
+          'padding': 0,
+        });
+        expect(removed.margin, BlockInsets.all(0));
+        expect(removed.padding, BlockInsets.all(0));
       });
     });
 
@@ -1102,6 +1181,7 @@ void main() {
             'align',
             'flex',
             'scrollable',
+            'margin',
             'padding',
           ]) {
             expect(
@@ -1133,21 +1213,31 @@ void main() {
           expect(widget.args, {'custom': 'value', 'count': 42, 'flag': true});
         });
 
-        test('parsed padding is normalized and excluded from args', () {
-          final widget = WidgetBlock.parse({
-            'type': 'widget',
-            'name': 'Test',
-            'padding': {'horizontal': 12, 'vertical': 8},
-            'custom': 'value',
-          });
+        test('authored insets are normalized and excluded from args', () {
+          final widget =
+              Block.parseAuthoring({
+                    'type': 'widget',
+                    'name': 'Test',
+                    'padding': {'horizontal': 12, 'vertical': 8},
+                    'margin': 4,
+                    'custom': 'value',
+                  })
+                  as WidgetBlock;
 
           expect(widget.args.containsKey('padding'), isFalse);
+          expect(widget.args.containsKey('margin'), isFalse);
           expect(widget.args['custom'], 'value');
           expect(widget.toMap()['padding'], {
             'top': 8.0,
             'right': 12.0,
             'bottom': 8.0,
             'left': 12.0,
+          });
+          expect(widget.toMap()['margin'], {
+            'top': 4.0,
+            'right': 4.0,
+            'bottom': 4.0,
+            'left': 4.0,
           });
         });
       });

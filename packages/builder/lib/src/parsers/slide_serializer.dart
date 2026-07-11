@@ -98,7 +98,7 @@ class SlideSerializer {
 
     final buffer = StringBuffer();
     for (final entry in entries) {
-      buffer.writeln('${entry.key}: ${_yamlValue(entry.value)}');
+      buffer.writeln('${entry.key}: ${_flowValue(entry.value)}');
     }
     return buffer.toString();
   }
@@ -148,6 +148,7 @@ class SlideSerializer {
     return block is ContentBlock &&
         block.flex == 1 &&
         block.align == null &&
+        block.margin == null &&
         block.padding == null &&
         !block.scrollable;
   }
@@ -188,6 +189,7 @@ class SlideSerializer {
     if (block.flex != 1) options['flex'] = block.flex;
     if (block.align != null) options['align'] = block.align!.name;
     if (block.padding != null) options['padding'] = block.padding!.toMap();
+    if (block.margin != null) options['margin'] = block.margin!.toMap();
     if (block.scrollable) options['scrollable'] = true;
     return options;
   }
@@ -198,36 +200,73 @@ class SlideSerializer {
 
   /// Renders a `@name` directive with an optional `{ ... }` options block.
   ///
-  /// A single option is rendered inline (`@block { align: center }`); multiple
-  /// options use block-style YAML (newline-separated), because comma-separated
-  /// `key: a, key2: b` without braces is not valid YAML.
+  /// A single non-map option is rendered inline (`@block { padding: 16 }`).
+  /// Any other shape uses multiline braces with one option per line, because
+  /// comma-separated `key: a, key2: b` on one line is not valid YAML inside
+  /// the directive braces.
   String _directive(String name, Map<String, Object?> options) {
     if (options.isEmpty) return '@$name';
     if (options.length == 1) {
       final entry = options.entries.first;
-      return '@$name { ${entry.key}: ${_yamlValue(entry.value)} }';
+      final value = entry.value;
+      if (value is! Map || value.isEmpty) {
+        return '@$name { ${entry.key}: ${_directiveValue(value, 1)} }';
+      }
     }
     final buffer = StringBuffer('@$name {\n');
     for (final entry in options.entries) {
-      buffer.writeln('  ${entry.key}: ${_yamlValue(entry.value)}');
+      buffer.writeln('  ${entry.key}: ${_directiveValue(entry.value, 1)}');
     }
     buffer.write('}');
     return buffer.toString();
   }
 
-  String _yamlValue(Object? value) {
+  /// Formats one directive option value nested at [indentLevel].
+  ///
+  /// Scalars and lists stay inline; non-empty maps become multiline YAML flow
+  /// mappings. Flow-map entries are comma-separated (with a trailing comma)
+  /// because a multiline flow mapping without commas is invalid YAML.
+  String _directiveValue(Object? value, int indentLevel) {
+    if (value is Map && value.isNotEmpty) {
+      final entryIndent = '  ' * (indentLevel + 1);
+      final closeIndent = '  ' * indentLevel;
+      final buffer = StringBuffer('{\n');
+      for (final entry in value.entries) {
+        final nested = _directiveValue(entry.value, indentLevel + 1);
+        buffer.writeln('$entryIndent${entry.key}: $nested,');
+      }
+      buffer.write('$closeIndent}');
+      return buffer.toString();
+    }
+
+    return _flowValue(value);
+  }
+
+  /// Formats a value inline in YAML flow style.
+  String _flowValue(Object? value) {
     if (value == null) return 'null';
-    if (value is bool || value is num) return value.toString();
+    if (value is num) return _numValue(value);
+    if (value is bool) return value.toString();
     if (value is List) {
-      return '[${value.map(_yamlValue).join(', ')}]';
+      return '[${value.map(_flowValue).join(', ')}]';
     }
     if (value is Map) {
       final entries = value.entries
-          .map((e) => '${e.key}: ${_yamlValue(e.value)}')
+          .map((e) => '${e.key}: ${_flowValue(e.value)}')
           .join(', ');
       return '{$entries}';
     }
     return _yamlString(value.toString());
+  }
+
+  /// Emits whole-number doubles (e.g. normalized inset edges) as integers so
+  /// canonical output reads `top: 12` instead of `top: 12.0`. Both re-parse to
+  /// the same normalized value.
+  String _numValue(num value) {
+    if (value is double && value.isFinite && value == value.truncateToDouble()) {
+      return value.truncate().toString();
+    }
+    return value.toString();
   }
 
   /// Quotes a string only when bare emission would be ambiguous or re-parse to

@@ -10,6 +10,8 @@ import '../ui/widgets/provider.dart';
 import '../ui/widgets/resolved_asset_image.dart';
 import '../utils/converters.dart';
 
+final _finitePositiveNumberSchema = Ack.number().finite().positive();
+
 /// Strongly-typed data transfer object for image widget.
 class ImageDto {
   /// Image source.
@@ -41,12 +43,15 @@ class ImageDto {
   }) : scale = _validateScale(scale);
 
   /// Schema for validating image arguments.
+  ///
+  /// `width`, `height`, and `scale` share one finite-positive numeric rule so
+  /// integer authoring (`width: 300`, `scale: 1`) and doubles both validate.
   static final schema = Ack.object({
     'src': Ack.string().notEmpty(),
     'fit': ImageFit.schema.nullable().optional(),
-    'width': Ack.double().positive().nullable().optional(),
-    'height': Ack.double().positive().nullable().optional(),
-    'scale': Ack.double().finite().positive().nullable().optional(),
+    'width': _finitePositiveNumberSchema.nullable().optional(),
+    'height': _finitePositiveNumberSchema.nullable().optional(),
+    'scale': _finitePositiveNumberSchema.nullable().optional(),
   });
 
   /// Parses and validates raw map into typed ImageDto.

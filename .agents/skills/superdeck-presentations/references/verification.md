@@ -98,7 +98,10 @@ Unexpected layout:
 
 - Remember: sections stack vertically; blocks inside a section are horizontal.
 - Alignment resolves from child block to section to `centerLeft`.
-- Use section `spacing` for gaps and block/widget `padding` for internal inset.
+- Use section `spacing` for gaps between blocks, block/widget `margin` for
+  inset inside a block's own frame (outside its decoration), and block/widget
+  `padding` for inset inside the decorated container (between border and
+  content).
 - Use block/widget `scrollable: true`; do not set `scrollable` on sections.
 - Use positive `flex` integers; invalid values throw during parse/model validation.
 - For `layout: fullscreen`, verify that header/footer are absent while the intended background and style remain.
@@ -107,7 +110,7 @@ Widget does not render:
 
 - Verify the widget name is registered in `DeckOptions.widgets`.
 - Built-ins are `image`, `dartpad`, `webview`, and `qrcode`.
-- Check that widget arguments do not collide with reserved block keys: `name`, `align`, `flex`, `padding`, `scrollable`.
+- Check that widget arguments do not collide with reserved block keys: `name`, `align`, `flex`, `margin`, `padding`, `scrollable`.
 - Remember that reserved block keys are consumed by SuperDeck and are not passed to custom widget args.
 - If using shorthand, verify the directive name exactly matches the registered widget name.
 - If using Ack-generated args wrappers, confirm the schema is a top-level `@AckType()` declaration, the `part` file is present, generator dependencies are installed, and `build_runner` has regenerated the `.g.dart` file.

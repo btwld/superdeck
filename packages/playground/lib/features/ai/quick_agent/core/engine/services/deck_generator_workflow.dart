@@ -86,7 +86,7 @@ Future<DeckGenerationResult> _finalizeDeck(
   final slides = _extractSlidesWithKeys(deckJson);
 
   debugLog.log('DECK_GEN', 'Pre-sanitize: ${slides.length} slides');
-  final sanitizedSlides = _sanitizeSlides(slides);
+  final sanitizedSlides = sanitizeGeneratedSlides(slides);
   debugLog.log(
     'DECK_GEN',
     'Post-sanitize: ${sanitizedSlides.length} slides '

@@ -40,6 +40,27 @@ class _BlockContainer extends StatefulWidget {
 }
 
 class _BlockContainerState extends State<_BlockContainer> {
+  /// Applies per-block `margin`/`padding` overrides onto the resolved block
+  /// container after variants resolve.
+  ///
+  /// An absent override retains the resolved style inset; an explicit zero
+  /// removes it. Only the matching inset is replaced — decoration, foreground
+  /// decoration, clipping, and animation are preserved.
+  SlideSpec _applyBlockInsets(SlideSpec spec, Block block) {
+    if (block.margin == null && block.padding == null) return spec;
+
+    final container = spec.blockContainer;
+
+    return spec.copyWith(
+      blockContainer: container.copyWith(
+        spec: container.spec.copyWith(
+          margin: block.margin?.toEdgeInsets,
+          padding: block.padding?.toEdgeInsets,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(context) {
     // Widget blocks resolve their style inside [BlockVariantScope] so a named
@@ -48,16 +69,7 @@ class _BlockContainerState extends State<_BlockContainer> {
       WidgetBlock() => widget.configuration.style.resolve(context).spec,
       ContentBlock() => SlideSpec.of(context),
     };
-    final padding = widget.block.padding;
-    final spec = padding == null
-        ? resolvedSpec
-        : resolvedSpec.copyWith(
-            blockContainer: resolvedSpec.blockContainer.copyWith(
-              spec: resolvedSpec.blockContainer.spec.copyWith(
-                padding: padding.toEdgeInsets,
-              ),
-            ),
-          );
+    final spec = _applyBlockInsets(resolvedSpec, widget.block);
 
     final blockOffset = spec.blockContainer.spec.calculateBlockOffset;
 

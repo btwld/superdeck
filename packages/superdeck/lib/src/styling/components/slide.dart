@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:mix/mix.dart';
 
+import 'block_styler.dart';
 import 'markdown_alert.dart';
 import 'markdown_blockquote.dart';
 import 'markdown_checkbox.dart';
@@ -391,7 +392,7 @@ final class SlideStyle extends Style<SlideSpec>
     MarkdownTableStyle? table,
     MarkdownCodeblockStyle? code,
     MarkdownCheckboxStyle? checkbox,
-    BoxStyler? blockContainer,
+    BlockStyler? blockContainer,
     BoxStyler? slideContainer,
     ImageStyler? image,
     AnimationConfig? animation,

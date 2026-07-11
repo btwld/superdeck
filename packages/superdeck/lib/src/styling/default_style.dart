@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mix/mix.dart';
 
 import 'block_variant.dart';
+import 'components/block_styler.dart';
 import 'components/markdown_alert.dart';
 import 'components/markdown_alert_type.dart';
 import 'components/markdown_blockquote.dart';
@@ -227,23 +228,27 @@ SlideStyle _createDefaultSlideStyle() {
 
     checkbox: MarkdownCheckboxStyle(textStyle: _baseTextStyle),
 
-    blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
-      VariantStyle(onImage, BoxStyler(padding: EdgeInsetsGeometryMix.all(0))),
-      VariantStyle(
-        onGist,
-        BoxStyler(
-          padding: EdgeInsetsGeometryMix.all(0),
-          margin: EdgeInsetsGeometryMix.all(0),
-        ),
-      ),
-      VariantStyle(
-        onWebview,
-        BoxStyler(
-          padding: EdgeInsetsGeometryMix.all(0),
-          margin: EdgeInsetsGeometryMix.all(0),
-        ),
-      ),
-    ]),
+    blockContainer: BlockStyler(padding: EdgeInsetsGeometryMix.all(40))
+        .variants([
+          VariantStyle(
+            onImage,
+            BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
+          ),
+          VariantStyle(
+            onGist,
+            BlockStyler(
+              padding: EdgeInsetsGeometryMix.all(0),
+              margin: EdgeInsetsGeometryMix.all(0),
+            ),
+          ),
+          VariantStyle(
+            onWebview,
+            BlockStyler(
+              padding: EdgeInsetsGeometryMix.all(0),
+              margin: EdgeInsetsGeometryMix.all(0),
+            ),
+          ),
+        ]),
 
     slideContainer: BoxStyler(),
 

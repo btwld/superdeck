@@ -41,14 +41,20 @@ If a slide has no directives, SuperDeck creates one section containing one
 Markdown block. Multiple `@block` directives without `@section` share one
 implicit section.
 
-## Four independent geometry controls
+## Five independent geometry controls
 
-Keep these controls separate:
+Keep these controls separate. They nest in this order:
 
 1. The slide container style supplies the outer slide inset.
 2. `@section { spacing: ... }` creates gaps between sibling blocks.
-3. A block's `padding` creates an inset inside that block.
-4. `align` places the content inside the remaining content rectangle.
+3. A block's `margin` creates an inset inside that block's already-allocated
+   frame, outside its decoration/border — it reduces only that block's own
+   usable area. Unlike CSS margins, it never creates a shared gutter with
+   sibling blocks and never changes flex ratios; use section `spacing` for
+   gutters.
+4. A block's `padding` creates an inset inside the decorated container,
+   between the border and the content.
+5. `align` places the content inside the remaining content rectangle.
 
 ```markdown
 @section {
@@ -63,33 +69,56 @@ Edge to edge inside this column
 Uniform internal inset
 
 @block {
-  padding: { horizontal: 48, vertical: 24 }
+  margin: {
+    horizontal: 16,
+    vertical: 8,
+  }
+  padding: {
+    horizontal: 48,
+    vertical: 24,
+  }
   align: bottomRight
 }
-Independent axes and an explicit alignment override
+Independent margin, padding, and alignment override
 ```
 
 Section spacing exists only between blocks—never before the first or after the
 last. When a requested total gap is wider than the section, SuperDeck clamps
 the actual gap so every block remains inside the section.
 
-## Padding forms
+## Padding and margin forms
 
-Content and widget blocks accept exactly three padding forms:
+Content and widget blocks accept exactly three forms for `padding` and for
+`margin`:
 
 ```markdown
 @block { padding: 16 }
-@block { padding: { horizontal: 24, vertical: 16 } }
-@block { padding: { top: 12, right: 24, bottom: 12, left: 24 } }
+
+@block {
+  padding: {
+    horizontal: 24,
+    vertical: 16,
+  }
+}
+
+@block {
+  padding: {
+    top: 12,
+    right: 24,
+    bottom: 12,
+    left: 24,
+  }
+}
 ```
 
-Omitted keys in an object are zero. Do not mix `horizontal`/`vertical` with
-physical edge keys. Empty objects, unknown keys, negative values, `NaN`, and
-infinity are invalid.
+`margin` accepts the same three forms. Omitted keys in an object are zero. Do
+not mix `horizontal`/`vertical` with physical edge keys. Empty objects,
+unknown keys, negative values, `NaN`, and infinity are invalid.
 
-An omitted padding override retains the resolved Mix block-container padding.
-A present override replaces only that resolved padding after active variants;
-margin, border, decoration, animation, modifiers, and variant behavior remain.
+An omitted `padding`/`margin` override retains the resolved Mix
+block-container value for that inset. A present override replaces only that
+matching inset after active variants; the other inset, border, decoration,
+animation, and variant behavior remain.
 
 ## Alignment inheritance
 
@@ -160,8 +189,8 @@ Two inputs change semantics in the next major release:
 - Section alignment now applies to children without explicit block alignment.
   Add an explicit child alignment where the old no-op behavior must remain.
 
-After adopting `spacing` or `padding`, rebuild `.superdeck/superdeck.json`.
-Downgrading to 1.x requires removing the new authoring properties and rebuilding
-the contract with the 1.x toolchain.
+After adopting `spacing`, `padding`, or `margin`, rebuild
+`.superdeck/superdeck.json`. Downgrading to 1.x requires removing the new
+authoring properties and rebuilding the contract with the 1.x toolchain.
 
 Next: [Block types reference](/reference/block-types)

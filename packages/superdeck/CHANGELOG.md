@@ -2,12 +2,21 @@
 
 - Add clamped gaps between sibling blocks with section `spacing`.
 - Apply alignment with `block align → section align → centerLeft` precedence.
-- Add per-block padding overrides that replace resolved Mix padding while
-  preserving variants, margin, border, decoration, animation, and modifiers.
+- Add per-block `margin` and `padding` overrides that replace only the
+  matching resolved inset after variants resolve, preserving decoration,
+  foreground decoration, clipping, and animation. Margin is consumed inside a
+  block's allocated frame and never changes section spacing or flex ratios.
+- **Breaking:** `SlideStyle.blockContainer` now takes a `BlockStyler` instead
+  of a `BoxStyler`. `BlockStyler` exposes only padding, margin, decoration,
+  foreground decoration, clipping, variants, and animation — widget modifiers,
+  constraints, transforms, and box alignment are unrepresentable for the
+  framework-owned block frame.
 - Add image paint scaling with aligned clipping and an unchanged `scale: 1`
-  rendering path.
-- Add deduplicated debug overflow indicators for supported non-scrollable
-  Markdown without changing wrapping or rebuilding custom widgets.
+  rendering path. Image `width`, `height`, and `scale` accept integers or
+  doubles through one finite-positive rule.
+- Add deduplicated debug overflow diagnostics for supported non-scrollable
+  Markdown without changing wrapping or rebuilding custom widgets; the visual
+  indicator outlines the overflowing frame instead of covering its corner.
 - **Breaking:** section alignment now affects children without an explicit block
   alignment, and non-positive flex values are invalid.
 - Add `BlockVariant` for opt-in, name-based `WidgetBlock` styling in Dart

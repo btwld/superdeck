@@ -38,8 +38,22 @@ Load only the reference needed for the task:
 - `flex` is a positive integer. Section flex controls vertical height; child
   block flex controls horizontal width.
 - Section `spacing` creates finite, non-negative gaps only between sibling
-  blocks. Block `padding` accepts scalar, symmetric, or physical-edge forms and
-  replaces resolved Mix padding after variants while preserving other style data.
+  blocks and affects horizontal space allocation. Block `margin` is consumed
+  inside that block's allocated frame, outside its decoration/border — it
+  reduces only that block's own usable area, never creates a shared gutter,
+  and never changes flex ratios (unlike CSS margins; use section `spacing` for
+  gutters). Block `padding` is consumed inside the decorated container,
+  between the border and the content. Both accept scalar, symmetric, or
+  physical-edge forms. An absent (`null`) override inherits the resolved
+  style value for that inset; an explicit `0` removes it. A present override
+  replaces only the matching inset after variants resolve while preserving
+  other style data (decoration, clipping, animation).
+- `SlideStyle.blockContainer` accepts `BlockStyler`, a constrained Mix styler
+  supporting only `padding`, `margin`, `decoration`, `foregroundDecoration`,
+  `clipBehavior`, context/`BlockVariant` variants, and animation. It cannot
+  express widget modifiers, width/height/constraints, transforms, or box
+  alignment; use `BoxStyler` for other style slots (`slideContainer`, code
+  block containers, alert containers).
 - `scrollable` is valid on `@block` and widget blocks, not on `@section`.
 - `layout: fullscreen` removes resolved header/footer chrome while retaining the slide's resolved background and style. `normal` is the default.
 - Built-ins `image`, `dartpad`, `webview`, and `qrcode` are always registered and can be overridden by user widgets with the same name.

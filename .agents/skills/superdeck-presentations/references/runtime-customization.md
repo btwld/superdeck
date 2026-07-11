@@ -225,7 +225,7 @@ Ack generation constraints that matter for SuperDeck widgets:
 - Generated extension types implement `Map<String, Object?>` and expose `parse`, `safeParse`, and typed getters.
 - Nested object fields should reference named top-level schemas when you need typed nested getters.
 - Do not expect `Ack.any()`/`Ack.anyOf()` or inline anonymous object branches to generate useful typed wrappers.
-- Keep `align`, `flex`, `padding`, `scrollable`, and `name` out of
+- Keep `align`, `flex`, `margin`, `padding`, `scrollable`, and `name` out of
   widget-specific schemas because SuperDeck consumes those reserved block keys
   before calling the factory.
 
@@ -254,8 +254,8 @@ Use it:
 
 Notes:
 
-- `align`, `flex`, `padding`, `scrollable`, and `name` are reserved block keys;
-  do not expect them inside `args`.
+- `align`, `flex`, `margin`, `padding`, `scrollable`, and `name` are reserved
+  block keys; do not expect them inside `args`.
 - Widget names can include letters, digits, underscores, and hyphens because directive tags match `@[\w-]+`.
 - A custom widget can override a built-in by registering `image`, `dartpad`, `webview`, or `qrcode`, but do that only intentionally.
 - Use `SlideConfiguration.of(context)` for slide metadata and `LayoutBuilder` for block size.
@@ -312,6 +312,18 @@ Unknown templates or styles throw `ArgumentError` during configuration build, so
 
 Template styles are isolated. A slide using `template: brand` and `style: cover` looks up `cover` in `SlideTemplate.styles`, not `DeckOptions.styles`.
 
+### `blockContainer` and `BlockStyler`
+
+`SlideStyle.blockContainer` is a `BlockStyler`, not a `BoxStyler`. `BlockStyler`
+is a constrained Mix styler exposing only `padding`, `margin` (plus Mix
+spacing convenience methods), `decoration`, `foregroundDecoration`,
+`clipBehavior`, context/`BlockVariant` variants, and animation. It cannot
+express widget modifiers, width/height/constraints, transforms, or box
+alignment — block/section `align` owns content placement, and section
+`spacing` plus flex own geometry. Use `BoxStyler` for other style slots
+(`slideContainer`, code block containers, alert containers); those are
+unaffected by this constraint.
+
 ### Named Widget Block Styles
 
 Use `BlockVariant` to target every widget block with an exact, case-sensitive name. The selector resolves around the matching block container and its descendants, so container padding/margin and widget subtree styles see the same active variant.
@@ -324,12 +336,12 @@ const webviewBlock = BlockVariant('webview');
 
 final options = DeckOptions(
   baseStyle: SlideStyle(
-    blockContainer: BoxStyler(
+    blockContainer: BlockStyler(
       padding: EdgeInsetsGeometryMix.all(40),
     ).variants([
       VariantStyle(
         webviewBlock,
-        BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+        BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
       ),
     ]),
   ),
@@ -337,6 +349,12 @@ final options = DeckOptions(
 ```
 
 `BlockVariant('webview')` matches `@webview` and `@widget { name: "webview" }`; `BlockVariant('chart')` matches `@chart`. It does not select Markdown `@block` content, arbitrary `NamedVariant` values, or individual instances. SuperDeck already applies a zero-padding, zero-margin `BlockVariant('webview')` rule by default, so WebView blocks are edge-to-edge unless the style overrides it.
+
+A Markdown block-level `margin` or `padding` value applies after these Mix
+variants resolve. It replaces only the matching inset; the other inset,
+decoration, border, animation, and the active selector remain intact. An
+absent (`null`) override inherits the resolved style value; an explicit `0`
+removes it.
 
 ## Images and Assets
 

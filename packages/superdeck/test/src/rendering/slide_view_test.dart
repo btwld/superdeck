@@ -246,12 +246,12 @@ void main() {
                 DeckOptions(
                   baseStyle: SlideStyle(
                     blockContainer:
-                        BoxStyler(
+                        BlockStyler(
                           padding: EdgeInsetsGeometryMix.all(40),
                         ).variants([
                           VariantStyle(
                             const BlockVariant('webview'),
-                            BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+                            BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
                           ),
                         ]),
                   ),

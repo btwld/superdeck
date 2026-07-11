@@ -85,7 +85,10 @@ Renders markdown content. Most slides use one or more columns.
 @block {
   flex: 2
   align: topLeft
-  padding: { horizontal: 32, vertical: 16 }
+  padding: {
+    horizontal: 32,
+    vertical: 16,
+  }
 }
 
 # Promise, Problem, Proof
@@ -103,28 +106,53 @@ these properties to control the two axes and the content inside each rectangle.
   height; child block flex controls width
 - `spacing` – Finite, non-negative gap between sibling blocks; applies to
   sections only and never creates leading or trailing space
-- `padding` – Internal block inset; accepts a scalar, a symmetric object, or a
+- `margin` – Internal block inset consumed inside the block's allocated frame,
+  outside its decoration/border; accepts a scalar, a symmetric object, or a
   physical-edge object
+- `padding` – Internal block inset consumed inside the decorated container,
+  between the border and the content; accepts a scalar, a symmetric object, or
+  a physical-edge object
 - `align` – Content alignment such as `topLeft`, `center`, and `bottomRight`.
   Resolution is block alignment, then inherited section alignment, then
   `centerLeft`
 - `scrollable` – Enable scrolling for overflow content (default: `false`)
 
-These controls are independent: the `SlideStyle.slideContainer` supplies the
-outer slide inset, section `spacing` separates columns, block `padding` reduces
-the usable content rectangle, and `align` positions content in that rectangle.
+These controls are independent and nest in this order: the
+`SlideStyle.slideContainer` supplies the outer slide inset, section `spacing`
+separates columns, block `margin` reduces the usable area of that block's own
+allocated frame, block `padding` reduces the content rectangle inside the
+decorated container, and `align` positions content in that final rectangle.
+Unlike CSS margins, block `margin` never creates a shared gutter with sibling
+blocks and never changes flex ratios — use section `spacing` for gutters.
 
-Accepted padding forms:
+Accepted `padding`/`margin` forms:
 
 ````markdown
 @block { padding: 16 }
-@block { padding: { horizontal: 24, vertical: 16 } }
-@block { padding: { top: 12, right: 24, bottom: 12, left: 24 } }
+
+@block {
+  padding: {
+    horizontal: 24,
+    vertical: 16,
+  }
+}
+
+@block {
+  padding: {
+    top: 12,
+    right: 24,
+    bottom: 12,
+    left: 24,
+  }
+}
 ````
 
-Do not mix symmetric and physical-edge keys. Omitted keys become zero. An
-absent override retains the resolved Mix container padding; a present override
-replaces only padding after variants resolve.
+`margin` accepts the same three forms. Do not mix symmetric and physical-edge
+keys. Omitted keys become zero. An absent (`null`) override retains the
+resolved style value for that inset; an explicit `0` removes it. A present
+override replaces only the matching inset (`padding` replaces padding,
+`margin` replaces margin) after style variants resolve — decoration, border,
+clipping, and animation are preserved.
 
 For complete value definitions, see the [Markdown syntax reference](../reference/markdown-syntax).
 
@@ -199,9 +227,10 @@ Register widgets in `DeckOptions.widgets`, then use them with the shorthand synt
 
 The widget name becomes the block type (`@metricCard`). Widget-specific
 properties are passed to the registered `WidgetFactory` as
-`Map<String, Object?>`; `name`, `align`, `flex`, `padding`, and `scrollable` are
-reserved and consumed by SuperDeck. Your widget (or a helper like
-`MetricCardArgs.parse(args)`) decides how to interpret the remaining values.
+`Map<String, Object?>`; `name`, `align`, `flex`, `margin`, `padding`, and
+`scrollable` are reserved and consumed by SuperDeck. Your widget (or a helper
+like `MetricCardArgs.parse(args)`) decides how to interpret the remaining
+values.
 
 ---
 
@@ -300,8 +329,8 @@ See the [SuperDeck Overview](./superdeck-overview) for more styling options.
 - Replace zero or negative `flex` values with positive integers.
 - Review `@section { align: ... }`. Section alignment now becomes the inherited
   default for children that do not set block alignment.
-- Rebuild `.superdeck/superdeck.json` after adding `spacing`, `padding`, or image
-  `scale`.
+- Rebuild `.superdeck/superdeck.json` after adding `spacing`, `padding`,
+  `margin`, or image `scale`.
 - To downgrade to 1.x, remove the new authoring properties and rebuild the
   contract with the 1.x toolchain.
 

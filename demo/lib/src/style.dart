@@ -23,7 +23,7 @@ SlideStyle announcementStyle() {
         fontWeight: FontWeight.w100,
       ),
     ),
-    blockContainer: BoxStyler(
+    blockContainer: BlockStyler(
       decoration: BoxDecorationMix(
         gradient: LinearGradientMix(
           begin: Alignment.topCenter,
@@ -60,6 +60,23 @@ SlideStyle quoteStyle() {
       TextStyleMix(
         fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),
         fontSize: 20,
+      ),
+    ),
+  );
+}
+
+/// Decorated block containers so the layout demo slides can visibly
+/// distinguish section spacing, block margin, and block padding.
+SlideStyle boxedStyle() {
+  return SlideStyle(
+    blockContainer: BlockStyler(
+      padding: EdgeInsetsGeometryMix.all(24),
+      decoration: BoxDecorationMix(
+        color: Colors.white.withValues(alpha: 0.06),
+        border: BoxBorderMix.all(
+          BorderSideMix(color: Colors.white38, width: 2),
+        ),
+        borderRadius: BorderRadiusMix.all(const Radius.circular(12)),
       ),
     ),
   );

@@ -9,9 +9,9 @@ SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`, `webview
 
 ## Common block properties
 
-Content and widget blocks support `align`, `flex`, `padding`, and `scrollable`.
-Sections support `align`, `flex`, and `spacing`; scrolling is configured on a
-child block or widget.
+Content and widget blocks support `align`, `flex`, `margin`, `padding`, and
+`scrollable`. Sections support `align`, `flex`, and `spacing`; scrolling is
+configured on a child block or widget.
 
 ### `align`
 **Type:** String | **Default:** inherited section alignment, then `centerLeft`
@@ -30,18 +30,61 @@ Effective alignment is `block align`, then inherited `section align`, then
 Controls relative sizing (`flex: 2` takes twice the space of `flex: 1`). Zero,
 negative, fractional, `NaN`, and infinite values are invalid.
 
+### `margin`
+**Type:** Number or object | **Default:** resolved block-container style
+
+Consumed inside the block's already-allocated frame, outside its
+decoration/border. It reduces only that block's own usable area — unlike CSS
+margins, it never creates a shared gutter with sibling blocks and never
+changes flex ratios. Use section `spacing` for gutters between blocks.
+
+Accepted forms:
+
+```markdown
+margin: 16
+
+margin: {
+  horizontal: 24,
+  vertical: 16,
+}
+
+margin: {
+  top: 12,
+  right: 24,
+  bottom: 12,
+  left: 24,
+}
+```
+
+Object keys omitted from an accepted form become zero. Symmetric and physical
+edge keys cannot be mixed. Values must be finite and non-negative.
+
 ### `padding`
 **Type:** Number or object | **Default:** resolved block-container style
 
-Overrides the block's internal padding after Mix variants resolve. It does not
-replace margin, border, decoration, animation, modifiers, or other style fields.
+Consumed inside the decorated block container, between the border and the
+content. Overrides the block's internal padding after Mix variants resolve. A
+present override replaces only the matching inset (`padding` here, `margin`
+above); it does not replace the other inset, border, decoration, animation, or
+other style fields. An absent (`null`) override inherits the resolved style
+value; an explicit `0` removes that inset.
 
 Accepted forms:
 
 ```markdown
 padding: 16
-padding: { horizontal: 24, vertical: 16 }
-padding: { top: 12, right: 24, bottom: 12, left: 24 }
+
+padding: {
+  horizontal: 24,
+  vertical: 16,
+}
+
+padding: {
+  top: 12,
+  right: 24,
+  bottom: 12,
+  left: 24,
+}
 ```
 
 Object keys omitted from an accepted form become zero. Symmetric and physical
@@ -165,8 +208,8 @@ SuperDeckApp(
 
 **Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`)
 syntax. Widget-specific properties pass to your `WidgetFactory` as
-`Map<String, Object?>`; `name`, `align`, `flex`, `padding`, and `scrollable` are
-reserved and consumed by SuperDeck.
+`Map<String, Object?>`; `name`, `align`, `flex`, `margin`, `padding`, and
+`scrollable` are reserved and consumed by SuperDeck.
 
 ## Built-in widgets
 
@@ -189,6 +232,10 @@ Use shorthand syntax for these widgets.
 - `fit` - `fill`, `contain`, `cover`, `fitWidth`, `fitHeight`, `none`, `scaleDown` (default: `contain`)
 - `width`, `height` - Fixed dimensions in pixels
 - `scale` - Finite paint scale greater than zero (default: `1`)
+
+`width`, `height`, and `scale` accept integer or decimal numeric values (for
+example, `width: 300` or `width: 300.5`); both forms validate under the same
+finite-positive rule.
 
 `scale` changes painting, not layout. Scaled pixels clip to an explicit image
 frame when `width` or `height` is supplied, otherwise to the effective content
@@ -336,14 +383,15 @@ or log diagnostics.
 - Review section-level `align`: it now becomes the inherited default for child
   blocks without explicit alignment.
 - Old generated contracts remain readable because new fields are optional.
-  Downgrading to 1.x requires removing `spacing`/`padding`/image `scale` from
-  authoring and rebuilding `.superdeck/superdeck.json` with the 1.x toolchain.
+  Downgrading to 1.x requires removing `spacing`/`padding`/`margin`/image
+  `scale` from authoring and rebuilding `.superdeck/superdeck.json` with the
+  1.x toolchain.
 
 ## Best practices
 
 1. Use `@block` for most content
 2. Combine blocks in `@section` for rich layouts and use `spacing` for gaps
-3. Use block `padding` for internal inset, not section spacing
+3. Use block `padding`/`margin` for internal inset, not section spacing
 4. Set explicit image dimensions to define predictable image frames
 5. Test DartPad IDs before presenting
 6. Document custom widget arguments

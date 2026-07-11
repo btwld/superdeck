@@ -34,6 +34,17 @@ DeckOptions(
 )
 ```
 
+#### `blockContainer` and `BlockStyler`
+
+`SlideStyle.blockContainer` accepts a `BlockStyler`, a constrained Mix styler
+for the framework-owned block container. It supports only `padding`, `margin`
+(plus Mix spacing convenience methods), `decoration`, `foregroundDecoration`
+(color, gradient, border, radius, shadow, image helpers), `clipBehavior`,
+context/`BlockVariant` variants, and animation. It deliberately cannot express
+widget modifiers (`.wrap()`), width/height/constraints, transforms, or box
+alignment — block/section `align` owns content placement, and section
+`spacing` plus flex own geometry.
+
 #### Named widget block styles
 
 Use `BlockVariant` in a `SlideStyle` stylesheet to target every named widget
@@ -49,12 +60,12 @@ const webviewBlock = BlockVariant('webview');
 
 final options = DeckOptions(
   baseStyle: SlideStyle(
-    blockContainer: BoxStyler(
+    blockContainer: BlockStyler(
       padding: EdgeInsetsGeometryMix.all(40),
     ).variants([
       VariantStyle(
         webviewBlock,
-        BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+        BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
       ),
     ]),
   ),
@@ -67,9 +78,12 @@ final options = DeckOptions(
 precedence after the base style, and its margin and padding are included when
 SuperDeck calculates the child widget's usable size.
 
-A Markdown block-level `padding` value is applied after these Mix variants
-resolve. It replaces only the resolved `BoxSpec.padding`; margin, border,
-decoration, animation, widget modifiers, and the active selector remain intact.
+A Markdown block-level `padding` or `margin` value is applied after these Mix
+variants resolve. It replaces only the matching resolved inset (`padding`
+replaces padding, `margin` replaces margin); the other inset, border,
+decoration, animation, and the active selector remain intact. An absent
+(`null`) override inherits the resolved style value; an explicit `0` removes
+that inset.
 
 SuperDeck already ships this exact zero padding and margin rule for `@webview`
 blocks by default, so a webview renders edge-to-edge without any stylesheet. The
