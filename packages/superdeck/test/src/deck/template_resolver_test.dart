@@ -73,9 +73,51 @@ void main() {
 
           final expected = defaultSlideStyle.merge(baseStyle).merge(namedStyle);
           expect(result.style, expected);
-          // Named strong replaces base strong; link from base remains.
+          // Named `strong` overrides the base `strong` color field-wise; `link`
+          // from base remains.
           expect(result.style, isNot(defaultSlideStyle.merge(baseStyle)));
           expect(result.style, isNot(defaultSlideStyle.merge(namedStyle)));
+        },
+      );
+
+      testWidgets(
+        'merged text styles accumulate field-wise through the cascade',
+        (tester) async {
+          const grey = Color(0xFF9E9E9E);
+          const red = Color(0xFFFF0000);
+
+          // Base sets two fields; the named override touches only `color`.
+          final baseStyle = SlideStyler(
+            strong: TextStyleMix(fontSize: 24, color: grey),
+          );
+          final namedStyle = SlideStyler(strong: TextStyleMix.color(red));
+          final options = DeckOptions(
+            baseStyle: baseStyle,
+            styles: {'accent': namedStyle},
+          );
+          final resolver = TemplateResolver(options);
+
+          late final StyleSpec<SlideSpec> resolved;
+          await tester.pumpWidget(
+            Builder(
+              builder: (context) {
+                resolved = resolver
+                    .resolve(SlideOptions(style: 'accent'))
+                    .style
+                    .resolve(context);
+                return const SizedBox();
+              },
+            ),
+          );
+
+          final strong = resolved.spec.strong;
+          expect(strong, isNotNull);
+          // Override wins on the contested field...
+          expect(strong!.color, red);
+          // ...while the base's untouched field survives. Replacement semantics
+          // (Prop.maybe) would resolve `strong` to `{color: red}` alone, leaving
+          // fontSize null — this assertion is the guard against that regression.
+          expect(strong.fontSize, 24.0);
         },
       );
 
