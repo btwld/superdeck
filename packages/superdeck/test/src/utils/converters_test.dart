@@ -5,6 +5,14 @@ import 'package:superdeck/src/utils/converters.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
+  group('BlockInsets.toEdgeInsets', () {
+    test('maps normalized physical edges', () {
+      final insets = BlockInsets(top: 1, right: 2, bottom: 3, left: 4);
+
+      expect(insets.toEdgeInsets, const EdgeInsets.fromLTRB(4, 1, 2, 3));
+    });
+  });
+
   group('hexToColor', () {
     group('6-digit hex', () {
       test('parses with # prefix', () {

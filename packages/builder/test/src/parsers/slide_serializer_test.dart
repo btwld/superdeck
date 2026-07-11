@@ -42,6 +42,7 @@ Map<String, Object?> canonicalSection(SectionBlock section) {
   return {
     'flex': section.flex,
     'align': section.align?.name,
+    'spacing': section.spacing,
     'blocks': section.blocks.map(canonicalBlock).toList(),
   };
 }
@@ -52,6 +53,7 @@ Map<String, Object?> canonicalBlock(Block block) {
       'type': 'block',
       'flex': block.flex,
       'align': block.align?.name,
+      'padding': block.toMap()['padding'],
       'scrollable': block.scrollable,
       'content': block.content.trim(),
     },
@@ -60,6 +62,7 @@ Map<String, Object?> canonicalBlock(Block block) {
       'name': block.name,
       'flex': block.flex,
       'align': block.align?.name,
+      'padding': block.toMap()['padding'],
       'scrollable': block.scrollable,
       'args': block.args,
     },
@@ -133,6 +136,47 @@ void main() {
           'Right content',
         ),
       );
+    });
+
+    test('section spacing', () {
+      final slides = parseDeck(
+        '@section { spacing: 40 }\n'
+        '@block\n'
+        'Left\n'
+        '@block\n'
+        'Right',
+      );
+
+      expect(slides.single.sections.single.spacing, 40);
+      expectRoundTrip(slides);
+    });
+
+    test('content and widget padding normalize and round-trip', () {
+      final slides = parseDeck(
+        '@section\n'
+        '@block { padding: 16 }\n'
+        'Content\n'
+        '@image {\n'
+        '  src: photo.png\n'
+        '  padding: {horizontal: 24, vertical: 12}\n'
+        '}',
+      );
+
+      final blocks = slides.single.sections.single.blocks;
+      expect(blocks[0].toMap()['padding'], {
+        'top': 16.0,
+        'right': 16.0,
+        'bottom': 16.0,
+        'left': 16.0,
+      });
+      expect((blocks[1] as WidgetBlock).args.containsKey('padding'), isFalse);
+      expect(blocks[1].toMap()['padding'], {
+        'top': 12.0,
+        'right': 24.0,
+        'bottom': 12.0,
+        'left': 24.0,
+      });
+      expectRoundTrip(slides);
     });
 
     test('multiple content blocks in one section stay separate', () {

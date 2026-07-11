@@ -33,15 +33,26 @@ Load only the reference needed for the task:
 - Images have two authoring paths. Prefer standalone Markdown `![alt](src)` when the image belongs in the Markdown content flow; use `@image { src: ... }` when the image needs block-level layout control such as `fit`, fixed size, `flex`, `align`, `scrollable`, or `data:` source support.
 - Markdown class markers such as `{.heading}` or `{.title}` drive Hero transitions for supported Markdown elements; the class does not need a `hero-` prefix. Use the same tag on matching elements across adjacent slides, and do not duplicate the same tag on one slide.
 - `@column` is intentionally unsupported; use `@block`.
-- Block and widget `align` controls visible content alignment. Current renderer stores `section.align` but does not apply it to child layout; set `align` on child blocks/widgets when visual placement matters.
+- Effective content alignment is `block align → section align → centerLeft`.
+  Use section alignment as a shared default and child alignment for exceptions.
+- `flex` is a positive integer. Section flex controls vertical height; child
+  block flex controls horizontal width.
+- Section `spacing` creates finite, non-negative gaps only between sibling
+  blocks. Block `padding` accepts scalar, symmetric, or physical-edge forms and
+  replaces resolved Mix padding after variants while preserving other style data.
 - `scrollable` is valid on `@block` and widget blocks, not on `@section`.
 - `layout: fullscreen` removes resolved header/footer chrome while retaining the slide's resolved background and style. `normal` is the default.
 - Built-ins `image`, `dartpad`, `webview`, and `qrcode` are always registered and can be overridden by user widgets with the same name.
+- `@image scale` is a finite number greater than zero. It changes painting, not
+  layout, and clips using the effective alignment and image/content frame.
 - `@dartpad` and `@webview` use the same deck-scoped WebView controller cache. A `cacheKey` enables sequential reuse across remounts, never concurrent sharing by two live blocks.
 - Custom widgets must be registered in `DeckOptions.widgets`; use shorthand `@widgetName { ... }` in `slides.md` for registered widget names.
 - `BlockVariant('name')` is a Dart/Mix stylesheet selector for all `WidgetBlock`s with that exact, case-sensitive name. It affects the matching container and its widget subtree, not `@block` content.
 - Styles, templates, widgets, slide parts, and plugins are configured in Dart through `DeckOptions`/`SuperDeckApp`, not through a separate `styles.yaml`.
 - The CLI reads `slides.md`, writes `.superdeck/superdeck.json`, and ensures `.superdeck/` is listed in Flutter assets unless `--skip-pubspec` is used.
+- `DeckOptions(debug: true)` diagnoses supported non-scrollable Markdown
+  overflow without changing wrapping. It does not intrinsically measure or
+  rebuild arbitrary custom widgets, and static capture omits diagnostics.
 
 ## Source Map
 

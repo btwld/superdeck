@@ -97,16 +97,17 @@ Invalid directive options:
 Unexpected layout:
 
 - Remember: sections stack vertically; blocks inside a section are horizontal.
-- Set `align` on blocks/widgets for visible alignment.
+- Alignment resolves from child block to section to `centerLeft`.
+- Use section `spacing` for gaps and block/widget `padding` for internal inset.
 - Use block/widget `scrollable: true`; do not set `scrollable` on sections.
-- Use `flex` integers; invalid values throw during parse/model validation.
+- Use positive `flex` integers; invalid values throw during parse/model validation.
 - For `layout: fullscreen`, verify that header/footer are absent while the intended background and style remain.
 
 Widget does not render:
 
 - Verify the widget name is registered in `DeckOptions.widgets`.
 - Built-ins are `image`, `dartpad`, `webview`, and `qrcode`.
-- Check that widget arguments do not collide with reserved block keys: `name`, `align`, `flex`, `scrollable`.
+- Check that widget arguments do not collide with reserved block keys: `name`, `align`, `flex`, `padding`, `scrollable`.
 - Remember that reserved block keys are consumed by SuperDeck and are not passed to custom widget args.
 - If using shorthand, verify the directive name exactly matches the registered widget name.
 - If using Ack-generated args wrappers, confirm the schema is a top-level `@AckType()` declaration, the `part` file is present, generator dependencies are installed, and `build_runner` has regenerated the `.g.dart` file.
@@ -143,6 +144,8 @@ Images fail:
 
 - Confirm which image path is being used: Markdown `![Alt](src)` inside content or widget-block `@image { src: ... }`.
 - If the image should behave like normal slide content, use a standalone Markdown image. If it needs `fit`, fixed dimensions, column sizing, alignment, scrolling, or `data:` URI support, use `@image`.
+- Use `scale` only for painting within an image frame; it must be finite and
+  greater than zero and does not change block allocation.
 - For Markdown images, reject `asset:` URLs and `..` traversal.
 - For Markdown images, do not use `data:` URIs; use `@image` for `data:` sources.
 - For web/release, declare project asset directories in `pubspec.yaml`.

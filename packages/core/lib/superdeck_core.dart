@@ -7,6 +7,7 @@ export 'package:ack/ack.dart';
 export 'src/cache/asset_cache_store.dart';
 export 'src/cache/asset_cache_store_io.dart';
 // Presentation
+export 'src/deck/block_insets.dart';
 export 'src/deck/block_model.dart';
 export 'src/deck/deck_build_status.dart';
 export 'src/deck/deck_build_store.dart';

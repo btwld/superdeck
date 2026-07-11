@@ -1,6 +1,10 @@
 ## Unreleased
 
 - Add `SlideLayout` and the `SlideOptions.layout` field to the slide contract.
+- Add optional section `spacing`, normalized block `padding`, and inherited
+  section/block alignment resolution to the layout contract.
+- **Breaking:** require positive integer flex values in schemas and public Dart
+  constructors; zero and negative flex values are no longer accepted.
 
 ## 1.0.0
 

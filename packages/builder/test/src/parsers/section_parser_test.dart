@@ -165,6 +165,20 @@ Footer content column.
 
   // 4. Attribute Tests
   group('Attributes', () {
+    test('Section spacing is parsed', () {
+      const markdown = '''
+@section { spacing: 40 }
+@block
+Left
+@block
+Right
+''';
+
+      final sections = sectionParser.parse(markdown);
+
+      expect(sections.single.toMap()['spacing'], 40);
+    });
+
     group('Column Attributes', () {
       test('Header with columns and flex attribute', () {
         const markdown = '''
@@ -398,6 +412,26 @@ Footer content.
     });
 
     group('Failure Cases', () {
+      for (final flex in [0, -1]) {
+        test('Non-positive block flex $flex is rejected', () {
+          expect(
+            () => sectionParser.parse(
+              '@section\n@block { flex: $flex }\nContent',
+            ),
+            throwsA(anything),
+          );
+        });
+
+        test('Non-positive section flex $flex is rejected', () {
+          expect(
+            () => sectionParser.parse(
+              '@section { flex: $flex }\n@block\nContent',
+            ),
+            throwsA(anything),
+          );
+        });
+      }
+
       test('Invalid flex attribute format', () {
         const markdown = '''
 @section

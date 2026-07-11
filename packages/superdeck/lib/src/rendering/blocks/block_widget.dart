@@ -21,6 +21,7 @@ import 'markdown_viewer.dart';
 class _BlockContainer extends StatefulWidget {
   const _BlockContainer({
     required this.block,
+    required this.align,
     required this.size,
     required this.configuration,
     required this.runtimeKey,
@@ -28,6 +29,7 @@ class _BlockContainer extends StatefulWidget {
   });
 
   final Block block;
+  final ContentAlignment align;
   final Size size;
   final SlideConfiguration configuration;
   final String runtimeKey;
@@ -42,15 +44,25 @@ class _BlockContainerState extends State<_BlockContainer> {
   Widget build(context) {
     // Widget blocks resolve their style inside [BlockVariantScope] so a named
     // block variant affects both the rendered container and its child size.
-    final spec = switch (widget.block) {
+    final resolvedSpec = switch (widget.block) {
       WidgetBlock() => widget.configuration.style.resolve(context).spec,
       ContentBlock() => SlideSpec.of(context),
     };
+    final padding = widget.block.padding;
+    final spec = padding == null
+        ? resolvedSpec
+        : resolvedSpec.copyWith(
+            blockContainer: resolvedSpec.blockContainer.copyWith(
+              spec: resolvedSpec.blockContainer.spec.copyWith(
+                padding: padding.toEdgeInsets,
+              ),
+            ),
+          );
 
     final blockOffset = spec.blockContainer.spec.calculateBlockOffset;
 
     final blockData = BlockConfiguration(
-      align: widget.block.align,
+      align: widget.align,
       spec: spec,
       size: Size(
         math.max(0.0, widget.size.width - blockOffset.dx),
@@ -70,11 +82,7 @@ class _BlockContainerState extends State<_BlockContainer> {
       child: content,
     );
 
-    // Apply alignment, falling back to the block's default when unset.
-    content = Align(
-      alignment: widget.block.resolvedAlign.toAlignment,
-      child: content,
-    );
+    content = Align(alignment: widget.align.toAlignment, child: content);
 
     // Apply size constraints
     content = ConstrainedBox(
@@ -98,20 +106,32 @@ class _BlockContainerState extends State<_BlockContainer> {
 
 /// Helper widget for content block children to access BlockConfiguration context.
 class _ContentBlockChild extends StatelessWidget {
-  const _ContentBlockChild({required this.content});
+  const _ContentBlockChild({
+    required this.content,
+    required this.diagnosticsEnabled,
+  });
 
   final String content;
+  final bool diagnosticsEnabled;
 
   @override
   Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
-    final isStaticRendering = SlideConfiguration.of(context).isStaticRendering;
-    return MarkdownViewer(
+    final slide = SlideConfiguration.of(context);
+    final markdown = MarkdownViewer(
       content: content,
       spec: data.spec,
-      duration: isStaticRendering
+      duration: slide.isStaticRendering
           ? Duration.zero
           : const Duration(milliseconds: 250),
+    );
+    if (!diagnosticsEnabled) return markdown;
+
+    return OverflowDiagnosticProbe(
+      slideKey: slide.key,
+      runtimeKey: data.runtimeKey,
+      availableSize: data.size,
+      child: markdown,
     );
   }
 }
@@ -170,12 +190,14 @@ class BlockWidget extends StatelessWidget {
   const BlockWidget({
     super.key,
     required this.block,
+    required this.align,
     required this.size,
     required this.configuration,
     required this.runtimeKey,
   });
 
   final ContentBlock block;
+  final ContentAlignment align;
   final Size size;
   final SlideConfiguration configuration;
   final String runtimeKey;
@@ -184,10 +206,17 @@ class BlockWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return _BlockContainer(
       block: block,
+      align: align,
       size: size,
       configuration: configuration,
       runtimeKey: runtimeKey,
-      child: _ContentBlockChild(content: block.content),
+      child: _ContentBlockChild(
+        content: block.content,
+        diagnosticsEnabled:
+            configuration.debug &&
+            !configuration.isStaticRendering &&
+            !block.scrollable,
+      ),
     );
   }
 }
@@ -197,12 +226,14 @@ class CustomBlockWidget extends StatelessWidget {
   const CustomBlockWidget({
     super.key,
     required this.block,
+    required this.align,
     required this.size,
     required this.configuration,
     required this.runtimeKey,
   });
 
   final WidgetBlock block;
+  final ContentAlignment align;
   final Size size;
   final SlideConfiguration configuration;
   final String runtimeKey;
@@ -213,6 +244,7 @@ class CustomBlockWidget extends StatelessWidget {
       name: block.name,
       child: _BlockContainer(
         block: block,
+        align: align,
         size: size,
         configuration: configuration,
         runtimeKey: runtimeKey,
@@ -256,13 +288,20 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
   @override
   Widget build(context) {
     final configuration = SlideConfiguration.of(context);
-    final flexUnit = size.width / section.totalBlockFlex;
+    final gapCount = math.max(0, section.blocks.length - 1);
+    final actualSpacing = gapCount == 0
+        ? 0.0
+        : math.min(section.spacing, size.width / gapCount);
+    final availableWidth = math.max(0.0, size.width - actualSpacing * gapCount);
+    final totalFlex = section.totalBlockFlex;
+    final flexUnit = totalFlex == 0 ? 0.0 : availableWidth / totalFlex;
 
     double leftOffset = 0;
     final children = <Widget>[];
 
     for (var blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
       final block = section.blocks[blockIndex];
+      final align = section.resolveBlockAlign(block);
       final blockWidth = flexUnit * block.flex;
       final blockSize = Size(blockWidth, size.height);
       final runtimeKey = buildBlockRuntimeKey(
@@ -274,12 +313,14 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
       Widget blockWidget = switch (block) {
         WidgetBlock b => CustomBlockWidget(
           block: b,
+          align: align,
           size: blockSize,
           configuration: configuration,
           runtimeKey: runtimeKey,
         ),
         ContentBlock b => BlockWidget(
           block: b,
+          align: align,
           size: blockSize,
           configuration: configuration,
           runtimeKey: runtimeKey,
@@ -304,6 +345,9 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
       );
 
       leftOffset += blockWidth;
+      if (blockIndex < section.blocks.length - 1) {
+        leftOffset += actualSpacing;
+      }
     }
 
     return Stack(children: children);

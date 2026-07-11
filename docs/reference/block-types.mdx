@@ -9,24 +9,43 @@ SuperDeck has 3 core block types. Built-in widgets (`image`, `dartpad`, `webview
 
 ## Common block properties
 
-Content and widget blocks support these properties. Sections support `align`
-and `flex`, but scrolling is configured on child blocks or widgets.
+Content and widget blocks support `align`, `flex`, `padding`, and `scrollable`.
+Sections support `align`, `flex`, and `spacing`; scrolling is configured on a
+child block or widget.
 
 ### `align`
-**Type:** String | **Default:** `centerLeft`
+**Type:** String | **Default:** inherited section alignment, then `centerLeft`
 
 Controls content alignment:
 - `topLeft`, `topCenter`, `topRight`
 - `centerLeft`, `center`, `centerRight`
 - `bottomLeft`, `bottomCenter`, `bottomRight`
 
-Blocks default to `centerLeft` because paragraph-like content reads better
-left-aligned. Set `align: center` explicitly for titles or short callouts.
+Effective alignment is `block align`, then inherited `section align`, then
+`centerLeft`. Set `align: center` explicitly for titles or short callouts.
 
 ### `flex`
-**Type:** Number | **Default:** `1`
+**Type:** Positive integer | **Default:** `1`
 
-Controls relative sizing (`flex: 2` takes twice the space of `flex: 1`).
+Controls relative sizing (`flex: 2` takes twice the space of `flex: 1`). Zero,
+negative, fractional, `NaN`, and infinite values are invalid.
+
+### `padding`
+**Type:** Number or object | **Default:** resolved block-container style
+
+Overrides the block's internal padding after Mix variants resolve. It does not
+replace margin, border, decoration, animation, modifiers, or other style fields.
+
+Accepted forms:
+
+```markdown
+padding: 16
+padding: { horizontal: 24, vertical: 16 }
+padding: { top: 12, right: 24, bottom: 12, left: 24 }
+```
+
+Object keys omitted from an accepted form become zero. Symmetric and physical
+edge keys cannot be mixed. Values must be finite and non-negative.
 
 ### `scrollable`
 **Type:** Boolean | **Default:** `false`
@@ -41,6 +60,7 @@ Renders markdown content.
 @block {
   align: center
   flex: 2
+  padding: 16
   scrollable: true
 }
 
@@ -62,6 +82,7 @@ Arranges child blocks horizontally.
 @section {
   align: topCenter
   flex: 1
+  spacing: 24
 }
 
 @block
@@ -73,6 +94,12 @@ Right content
 
 **Properties:**
 - `blocks` - Child blocks (auto-populated)
+- `flex` - Positive integer height weight relative to sibling sections
+- `spacing` - Finite, non-negative logical pixels between sibling blocks only
+- `align` - Default alignment inherited by children without explicit alignment
+
+When the requested total spacing exceeds the section width, SuperDeck clamps
+the actual spacing so every child rectangle remains inside the section.
 
 Use for multi-column layouts and side-by-side content.
 
@@ -136,7 +163,10 @@ SuperDeckApp(
 );
 ```
 
-**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`) syntax. All properties pass to your `WidgetFactory` as `Map<String, Object?>`.
+**Note:** Use explicit (`@widget { name: "chart" }`) or shorthand (`@chart`)
+syntax. Widget-specific properties pass to your `WidgetFactory` as
+`Map<String, Object?>`; `name`, `align`, `flex`, `padding`, and `scrollable` are
+reserved and consumed by SuperDeck.
 
 ## Built-in widgets
 
@@ -150,6 +180,7 @@ Use shorthand syntax for these widgets.
   fit: cover
   width: 400
   height: 300
+  scale: 1.25
 }
 ```
 
@@ -157,6 +188,12 @@ Use shorthand syntax for these widgets.
 - `src` (required) - Asset path, absolute file path (`/Users/...` or `file:///...`), or URL
 - `fit` - `fill`, `contain`, `cover`, `fitWidth`, `fitHeight`, `none`, `scaleDown` (default: `contain`)
 - `width`, `height` - Fixed dimensions in pixels
+- `scale` - Finite paint scale greater than zero (default: `1`)
+
+`scale` changes painting, not layout. Scaled pixels clip to an explicit image
+frame when `width` or `height` is supplied, otherwise to the effective content
+rectangle. The transform origin uses the effective block alignment. `scale: 1`
+uses the untransformed image path.
 
 ### dartpad
 
@@ -255,6 +292,10 @@ Generates QR codes.
 @image {
   src: assets/hero.jpg
   fit: cover
+  width: 1280
+  height: 720
+  scale: 1.1
+  padding: 0
   align: center
 }
 ```
@@ -277,11 +318,33 @@ Generates QR codes.
 }
 ```
 
+## Overflow behavior
+
+Non-scrollable blocks are hard-clipped. Set `scrollable: true` when overflow is
+intentional and should remain reachable.
+
+`DeckOptions(debug: true)` diagnoses supported non-scrollable Markdown overflow
+with a red indicator and a deduplicated console message. Messages include the
+slide key, section/block runtime key, available and measured sizes, and the
+overflow axis. The probe preserves Markdown wrapping. It does not intrinsically
+measure or rebuild arbitrary custom widgets, and static capture does not display
+or log diagnostics.
+
+## Next-major compatibility
+
+- Replace every zero or negative `flex` with a positive integer.
+- Review section-level `align`: it now becomes the inherited default for child
+  blocks without explicit alignment.
+- Old generated contracts remain readable because new fields are optional.
+  Downgrading to 1.x requires removing `spacing`/`padding`/image `scale` from
+  authoring and rebuilding `.superdeck/superdeck.json` with the 1.x toolchain.
+
 ## Best practices
 
 1. Use `@block` for most content
-2. Combine blocks in `@section` for rich layouts
-3. Set explicit image dimensions to prevent shifts
-4. Test DartPad IDs before presenting
-5. Document custom widget arguments
-6. Use consistent alignment patterns
+2. Combine blocks in `@section` for rich layouts and use `spacing` for gaps
+3. Use block `padding` for internal inset, not section spacing
+4. Set explicit image dimensions to define predictable image frames
+5. Test DartPad IDs before presenting
+6. Document custom widget arguments
+7. Use section alignment for shared defaults and block alignment for exceptions

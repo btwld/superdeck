@@ -8,7 +8,7 @@ import 'comment_parser.dart';
 /// [SectionParser] + [BlockParser] + [TagTokenizer] + [CommentParser]).
 ///
 /// Round-tripping `parse(serialize(slides))` reproduces the slides
-/// structurally — options, section/block layout (flex/align/scrollable),
+/// structurally — options, section/block layout (flex/align/spacing/scrollable),
 /// widget names + args, markdown content, and comments — modulo the
 /// content-hash [Slide.key] (regenerated on parse) and insignificant
 /// whitespace inside content blocks.
@@ -122,7 +122,10 @@ class SlideSerializer {
     final multipleSections = sections.length > 1;
     for (final section in sections) {
       final needsDirective =
-          multipleSections || section.flex != 1 || section.align != null;
+          multipleSections ||
+          section.flex != 1 ||
+          section.align != null ||
+          section.spacing != 0;
       if (needsDirective) {
         buffer.writeln(_directive('section', _sectionOptions(section)));
         buffer.writeln();
@@ -137,12 +140,15 @@ class SlideSerializer {
   bool _isImplicitSection(List<SectionBlock> sections) {
     if (sections.length != 1) return false;
     final section = sections.first;
-    if (section.flex != 1 || section.align != null) return false;
+    if (section.flex != 1 || section.align != null || section.spacing != 0) {
+      return false;
+    }
     if (section.blocks.length != 1) return false;
     final block = section.blocks.first;
     return block is ContentBlock &&
         block.flex == 1 &&
         block.align == null &&
+        block.padding == null &&
         !block.scrollable;
   }
 
@@ -173,6 +179,7 @@ class SlideSerializer {
     final options = <String, Object?>{};
     if (section.flex != 1) options['flex'] = section.flex;
     if (section.align != null) options['align'] = section.align!.name;
+    if (section.spacing != 0) options['spacing'] = section.spacing;
     return options;
   }
 
@@ -180,6 +187,7 @@ class SlideSerializer {
     final options = <String, Object?>{};
     if (block.flex != 1) options['flex'] = block.flex;
     if (block.align != null) options['align'] = block.align!.name;
+    if (block.padding != null) options['padding'] = block.padding!.toMap();
     if (block.scrollable) options['scrollable'] = true;
     return options;
   }

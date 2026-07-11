@@ -43,6 +43,7 @@
           }
         ],
         "flex": 2,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -152,6 +153,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -272,6 +274,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -334,6 +337,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -371,6 +375,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -560,6 +565,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -680,6 +686,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -727,6 +734,272 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "GeqFbeHP",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Predictable Layout Primitives {.heading}"
+                    }
+                  ],
+                  "generatedId": "predictable-layout-primitives-heading"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Edge to edge"
+                    }
+                  ],
+                  "generatedId": "edge-to-edge"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "padding: 0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Uniform inset"
+                    }
+                  ],
+                  "generatedId": "uniform-inset"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "padding: 16"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "padding": {
+              "top": 16.0,
+              "right": 16.0,
+              "bottom": 16.0,
+              "left": 16.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Independent axes"
+                    }
+                  ],
+                  "generatedId": "independent-axes"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "48 × 24"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "bottomRight",
+            "flex": 1,
+            "padding": {
+              "top": 24.0,
+              "right": 48.0,
+              "bottom": 24.0,
+              "left": 48.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 32.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "V916Dr35",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Image Framing Scale {.heading}"
+                    }
+                  ],
+                  "generatedId": "image-framing-scale-heading"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "assets/concepta-icon.png",
+            "fit": "contain",
+            "width": 300,
+            "height": 300,
+            "scale": 1
+          },
+          {
+            "name": "image",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "assets/concepta-icon.png",
+            "fit": "contain",
+            "width": 300,
+            "height": 300,
+            "scale": 1.25
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 64.0,
         "type": "section"
       }
     ],
@@ -797,6 +1070,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -835,6 +1109,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -866,6 +1141,7 @@
           }
         ],
         "flex": 2,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -897,6 +1173,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -966,6 +1243,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1026,6 +1304,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1063,6 +1342,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -1107,6 +1387,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -1156,6 +1437,7 @@
           }
         ],
         "flex": 4,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1244,6 +1526,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1323,6 +1606,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1402,6 +1686,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1481,6 +1766,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1541,6 +1827,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1597,6 +1884,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1666,6 +1954,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1710,6 +1999,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1826,6 +2116,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -1964,6 +2255,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2030,6 +2322,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2148,6 +2441,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2236,6 +2530,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2300,6 +2595,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2351,6 +2647,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2401,6 +2698,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2425,6 +2723,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2450,6 +2749,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -2488,6 +2788,7 @@
         ],
         "align": "bottomCenter",
         "flex": 2,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -2589,6 +2890,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],

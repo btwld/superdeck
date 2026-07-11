@@ -67,6 +67,10 @@ final options = DeckOptions(
 precedence after the base style, and its margin and padding are included when
 SuperDeck calculates the child widget's usable size.
 
+A Markdown block-level `padding` value is applied after these Mix variants
+resolve. It replaces only the resolved `BoxSpec.padding`; margin, border,
+decoration, animation, widget modifiers, and the active selector remain intact.
+
 SuperDeck already ships this exact zero padding and margin rule for `@webview`
 blocks by default, so a webview renders edge-to-edge without any stylesheet. The
 example above therefore doubles as the pattern for giving any other named block
@@ -176,7 +180,11 @@ Slides can set `layout: fullscreen` in front matter to suppress the resolved hea
 ### `debug`
 **Type:** `bool` | **Default:** `false`
 
-Enables visual debugging aids.
+Enables section/block boundaries and safe overflow diagnostics for supported
+non-scrollable Markdown content. Overflow paints a red indicator and logs each
+stable slide/block/axis issue once with available and measured sizes. The probe
+preserves wrapping constraints, skips scrolling and static capture, and does
+not rebuild or intrinsically measure arbitrary custom widgets.
 
 ```dart
 DeckOptions(

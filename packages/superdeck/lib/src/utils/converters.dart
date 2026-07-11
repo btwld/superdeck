@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+extension BlockInsetsExtension on BlockInsets {
+  EdgeInsets get toEdgeInsets => EdgeInsets.fromLTRB(left, top, right, bottom);
+}
+
 extension BoxSpecOffsetExtension on BoxSpec {
   /// Calculates the total spacing offset from padding, margin, and border.
   Offset get calculateBlockOffset {

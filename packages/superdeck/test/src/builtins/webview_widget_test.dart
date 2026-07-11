@@ -714,7 +714,7 @@ class _TwoWebViewsHarness extends StatelessWidget {
         data: BlockConfiguration(
           spec: const SlideSpec(),
           size: size,
-          align: null,
+          align: ContentAlignment.centerLeft,
           runtimeKey: runtimeKey,
         ),
         child: WebViewWidget(args),
@@ -776,7 +776,7 @@ class _WebViewHarness extends StatelessWidget {
             data: BlockConfiguration(
               spec: const SlideSpec(),
               size: size,
-              align: null,
+              align: ContentAlignment.centerLeft,
               runtimeKey: runtimeKey,
             ),
             child: Scaffold(body: WebViewWidget(args)),

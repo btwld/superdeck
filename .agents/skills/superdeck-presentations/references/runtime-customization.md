@@ -225,7 +225,9 @@ Ack generation constraints that matter for SuperDeck widgets:
 - Generated extension types implement `Map<String, Object?>` and expose `parse`, `safeParse`, and typed getters.
 - Nested object fields should reference named top-level schemas when you need typed nested getters.
 - Do not expect `Ack.any()`/`Ack.anyOf()` or inline anonymous object branches to generate useful typed wrappers.
-- Keep `align`, `flex`, `scrollable`, and `name` out of widget-specific schemas because SuperDeck consumes those reserved block keys before calling the factory.
+- Keep `align`, `flex`, `padding`, `scrollable`, and `name` out of
+  widget-specific schemas because SuperDeck consumes those reserved block keys
+  before calling the factory.
 
 Register it:
 
@@ -252,7 +254,8 @@ Use it:
 
 Notes:
 
-- `align`, `flex`, `scrollable`, and `name` are reserved block keys; do not expect them inside `args`.
+- `align`, `flex`, `padding`, `scrollable`, and `name` are reserved block keys;
+  do not expect them inside `args`.
 - Widget names can include letters, digits, underscores, and hyphens because directive tags match `@[\w-]+`.
 - A custom widget can override a built-in by registering `image`, `dartpad`, `webview`, or `qrcode`, but do that only intentionally.
 - Use `SlideConfiguration.of(context)` for slide metadata and `LayoutBuilder` for block size.

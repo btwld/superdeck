@@ -101,6 +101,60 @@ SuperDeck supports flexible layouts using sections and columns.
 
 ---
 
+## Predictable Layout Primitives {.heading}
+
+@section {
+  spacing: 32
+  align: center
+}
+
+@block { padding: 0 }
+
+### Edge to edge
+`padding: 0`
+
+@block { padding: 16 }
+
+### Uniform inset
+`padding: 16`
+
+@block {
+  padding: {horizontal: 48, vertical: 24}
+  align: bottomRight
+}
+
+### Independent axes
+`48 × 24`
+
+---
+
+## Image Framing Scale {.heading}
+
+@section {
+  spacing: 64
+  align: center
+}
+
+@image {
+  src: assets/concepta-icon.png
+  fit: contain
+  width: 300
+  height: 300
+  scale: 1
+  padding: 0
+}
+
+@image {
+  src: assets/concepta-icon.png
+  fit: contain
+  width: 300
+  height: 300
+  scale: 1.25
+  padding: 0
+}
+
+---
+
 @block {
   flex: 2
   align: centerRight

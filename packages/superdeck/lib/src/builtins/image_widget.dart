@@ -29,12 +29,16 @@ class ImageDto {
   /// Optional explicit height.
   final double? height;
 
-  const ImageDto({
+  /// Paint scale applied within the image frame.
+  final double scale;
+
+  ImageDto({
     required this.src,
     this.fit = ImageFit.contain,
     this.width,
     this.height,
-  });
+    double scale = 1,
+  }) : scale = _validateScale(scale);
 
   /// Schema for validating image arguments.
   static final schema = Ack.object({
@@ -42,6 +46,7 @@ class ImageDto {
     'fit': ImageFit.schema.nullable().optional(),
     'width': Ack.double().positive().nullable().optional(),
     'height': Ack.double().positive().nullable().optional(),
+    'scale': Ack.double().finite().positive().nullable().optional(),
   });
 
   /// Parses and validates raw map into typed ImageDto.
@@ -52,6 +57,10 @@ class ImageDto {
       ...map,
       if (trimmedSrc is String) 'src': trimmedSrc,
     };
+    final rawScale = normalizedMap['scale'];
+    if (rawScale is num) {
+      _validateScale(rawScale.toDouble());
+    }
     schema.parse(normalizedMap); // Validate first
 
     final src = (normalizedMap['src'] as String).trim();
@@ -70,7 +79,19 @@ class ImageDto {
       fit: fit,
       width: (normalizedMap['width'] as num?)?.toDouble(),
       height: (normalizedMap['height'] as num?)?.toDouble(),
+      scale: (normalizedMap['scale'] as num?)?.toDouble() ?? 1,
     );
+  }
+
+  static double _validateScale(double scale) {
+    if (!scale.isFinite || scale <= 0) {
+      throw ArgumentError.value(
+        scale,
+        'scale',
+        'must be a finite number greater than zero',
+      );
+    }
+    return scale;
   }
 
   /// Parses image source into a [Uri].
@@ -105,6 +126,7 @@ class ImageDto {
 /// - `fit` (optional): ImageFit enum value (cover, contain, fill, etc.) - default: contain
 /// - `width` (optional): Image width in logical pixels
 /// - `height` (optional): Image height in logical pixels
+/// - `scale` (optional): Paint scale within the image frame - default: 1
 class ImageWidget extends StatelessWidget {
   final ImageDto _data;
 
@@ -116,18 +138,20 @@ class ImageWidget extends StatelessWidget {
     final data = BlockConfiguration.of(context);
     final spec = data.spec;
     final alignment = data.align;
+    final flutterAlignment = alignment.toAlignment;
 
     final styleSpec = StyleSpec(
       spec: spec.image.spec.copyWith(
         fit: _data.fit.toBoxFit,
-        alignment: alignment?.toAlignment ?? Alignment.centerLeft,
+        alignment: flutterAlignment,
       ),
     );
 
     // Resolve a bare-key src (e.g. an in-memory AI-generated image) through the
     // slide's asset cache when bound; otherwise render the source directly.
-    final assetCacheStore =
-        InheritedData.maybeOf<SlideConfiguration>(context)?.assetCacheStore;
+    final assetCacheStore = InheritedData.maybeOf<SlideConfiguration>(
+      context,
+    )?.assetCacheStore;
     final Widget image = (assetCacheStore != null && isBareAssetKey(_data.src))
         ? ResolvedAssetImage(
             assetKey: _data.src.path,
@@ -142,13 +166,30 @@ class ImageWidget extends StatelessWidget {
             styleSpec: styleSpec,
           );
 
-    final constrained = (_data.width != null || _data.height != null)
-        ? SizedBox(width: _data.width, height: _data.height, child: image)
-        : image;
+    final hasExplicitSize = _data.width != null || _data.height != null;
+
+    if (_data.scale == 1) {
+      final constrained = hasExplicitSize
+          ? SizedBox(width: _data.width, height: _data.height, child: image)
+          : image;
+      return Align(alignment: flutterAlignment, child: constrained);
+    }
+
+    final transformed = Transform.scale(
+      scale: _data.scale,
+      alignment: flutterAlignment,
+      child: image,
+    );
+    final Widget frame = hasExplicitSize
+        ? SizedBox(width: _data.width, height: _data.height, child: transformed)
+        : SizedBox.fromSize(
+            size: data.size,
+            child: Align(alignment: flutterAlignment, child: transformed),
+          );
 
     return Align(
-      alignment: alignment?.toAlignment ?? Alignment.centerLeft,
-      child: constrained,
+      alignment: flutterAlignment,
+      child: ClipRect(child: frame),
     );
   }
 }

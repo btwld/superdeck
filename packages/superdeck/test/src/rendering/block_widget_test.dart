@@ -1,9 +1,14 @@
-import 'package:flutter/widgets.dart';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart' show BlockVariant, SlideStyle;
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
+import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/src/ui/widgets/overflow_clip.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../fixtures/slide_fixtures.dart';
@@ -71,6 +76,76 @@ void main() {
 
         final align = tester.widget<Align>(find.byType(Align).first);
         expect(align.alignment, Alignment.centerLeft);
+      });
+
+      testWidgets('block inherits section alignment', (tester) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'section-align',
+            sections: [
+              SectionBlock([
+                ContentBlock('# Inherited'),
+              ], align: ContentAlignment.bottomRight),
+            ],
+          ),
+        );
+
+        final align = tester.widget<Align>(find.byType(Align).first);
+        expect(align.alignment, Alignment.bottomRight);
+      });
+
+      testWidgets('resolved alignment reaches BlockConfiguration', (
+        tester,
+      ) async {
+        ContentAlignment? observedAlignment;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'section-configuration-align',
+            sections: [
+              SectionBlock([
+                WidgetBlock(name: 'alignment-probe'),
+              ], align: ContentAlignment.topCenter),
+            ],
+          ),
+          widgets: {
+            'alignment-probe': (_) => _AlignmentProbe(
+              onBuild: (alignment) => observedAlignment = alignment,
+            ),
+          },
+        );
+
+        expect(observedAlignment, ContentAlignment.topCenter);
+      });
+
+      testWidgets('explicit block alignment overrides section alignment', (
+        tester,
+      ) async {
+        ContentAlignment? observedAlignment;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'block-configuration-align',
+            sections: [
+              SectionBlock([
+                WidgetBlock(
+                  name: 'alignment-probe',
+                  align: ContentAlignment.centerRight,
+                ),
+              ], align: ContentAlignment.topLeft),
+            ],
+          ),
+          widgets: {
+            'alignment-probe': (_) => _AlignmentProbe(
+              onBuild: (alignment) => observedAlignment = alignment,
+            ),
+          },
+        );
+
+        final align = tester.widget<Align>(find.byType(Align).first);
+        expect(align.alignment, Alignment.centerRight);
+        expect(observedAlignment, ContentAlignment.centerRight);
       });
     });
 
@@ -176,6 +251,306 @@ void main() {
       );
     });
 
+    group('overflow diagnostics', () {
+      late List<String> logs;
+
+      setUp(() {
+        logs = [];
+        OverflowDiagnostics.resetForTesting();
+        OverflowDiagnostics.logger = logs.add;
+      });
+
+      tearDown(OverflowDiagnostics.resetForTesting);
+
+      testWidgets('does not report content that fits', (tester) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.singleColumn(content: 'Content that fits.'),
+          debug: true,
+        );
+
+        expect(find.byType(OverflowDiagnosticProbe), findsOneWidget);
+        expect(OverflowDiagnostics.activeIssuesForTesting, isEmpty);
+        expect(logs, isEmpty);
+      });
+
+      testWidgets('preserves the assigned markdown wrapping width', (
+        tester,
+      ) async {
+        final content = List.filled(60, 'wrapping sentinel').join(' ');
+        final slide = Slide(
+          key: 'wrapping-width',
+          sections: [
+            SectionBlock([ContentBlock(content)]),
+          ],
+        );
+        final textFinder = find.byWidgetPredicate(
+          (widget) => widget is Text && widget.data == content,
+        );
+
+        await SlideTestHarness.pumpSlide(
+          tester,
+          slide,
+          debug: true,
+          isStaticRendering: true,
+        );
+        final withoutDiagnostics = tester.getSize(textFinder);
+
+        await SlideTestHarness.pumpSlide(tester, slide, debug: true);
+        final withDiagnostics = tester.getSize(textFinder);
+
+        expect(withDiagnostics, withoutDiagnostics);
+      });
+
+      testWidgets('reports vertical markdown overflow with stable identity', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.nonScrollableBlock(lineCount: 100),
+          debug: true,
+        );
+
+        expect(logs, hasLength(1));
+        expect(
+          logs.single,
+          allOf(
+            contains('slide=fixture-non-scrollable-block'),
+            contains('block=fixture-non-scrollable-block:s0:b0'),
+            contains('available='),
+            contains('measured='),
+            contains('axis=vertical'),
+          ),
+        );
+        final issue = OverflowDiagnostics.activeIssuesForTesting.values.single;
+        expect(issue.axes, contains(Axis.vertical));
+      });
+
+      testWidgets('reports unwrapped horizontal markdown overflow', (
+        tester,
+      ) async {
+        final content = List.filled(400, 'W').join();
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'horizontal-overflow',
+            sections: [
+              SectionBlock([ContentBlock(content)]),
+            ],
+          ),
+          style: SlideStyle(p: TextStyler(softWrap: false)),
+          debug: true,
+        );
+
+        expect(logs, hasLength(1));
+        expect(logs.single, contains('axis=horizontal'));
+        final issue = OverflowDiagnostics.activeIssuesForTesting.values.single;
+        expect(issue.axes, contains(Axis.horizontal));
+      });
+
+      testWidgets(
+        'deduplicates stable issues and logs again after resolution',
+        (tester) async {
+          Slide slide(String content) => Slide(
+            key: 'resolving-overflow',
+            sections: [
+              SectionBlock([ContentBlock(content)]),
+            ],
+          );
+          final overflow = List.filled(100, 'Overflow line').join('\n');
+
+          await SlideTestHarness.pumpSlide(
+            tester,
+            slide(overflow),
+            debug: true,
+          );
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 250));
+          expect(logs, hasLength(1));
+
+          await SlideTestHarness.pumpSlide(
+            tester,
+            slide('Resolved content.'),
+            debug: true,
+          );
+          expect(OverflowDiagnostics.activeIssuesForTesting, isEmpty);
+
+          await SlideTestHarness.pumpSlide(
+            tester,
+            slide(overflow),
+            debug: true,
+          );
+          expect(logs, hasLength(2));
+        },
+      );
+
+      testWidgets('logs when the overflow axis changes', (tester) async {
+        final vertical = List.filled(100, 'Overflow line').join('\n');
+        final horizontal = List.filled(400, 'W').join();
+
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'changing-overflow',
+            sections: [
+              SectionBlock([ContentBlock(vertical)]),
+            ],
+          ),
+          debug: true,
+        );
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'changing-overflow',
+            sections: [
+              SectionBlock([ContentBlock(horizontal)]),
+            ],
+          ),
+          style: SlideStyle(p: TextStyler(softWrap: false)),
+          debug: true,
+        );
+
+        expect(logs, hasLength(2));
+        expect(logs.first, contains('axis=vertical'));
+        expect(logs.last, contains('axis=horizontal'));
+      });
+
+      testWidgets('skips scrollable and static content', (tester) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.scrollableBlock(lineCount: 100),
+          debug: true,
+        );
+        expect(find.byType(OverflowDiagnosticProbe), findsNothing);
+
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.nonScrollableBlock(lineCount: 100),
+          debug: true,
+          isStaticRendering: true,
+        );
+        expect(find.byType(OverflowDiagnosticProbe), findsNothing);
+        expect(logs, isEmpty);
+      });
+
+      testWidgets('does not probe or rebuild arbitrary custom widgets', (
+        tester,
+      ) async {
+        var buildCount = 0;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.withCustomWidget(widgetName: 'counting-widget'),
+          widgets: {
+            'counting-widget': (_) => Builder(
+              builder: (context) {
+                buildCount += 1;
+                return const SizedBox(width: 2400, height: 2400);
+              },
+            ),
+          },
+          debug: true,
+        );
+
+        expect(buildCount, 1);
+        expect(find.byType(OverflowDiagnosticProbe), findsNothing);
+        expect(logs, isEmpty);
+      });
+
+      testWidgets('paints a red indicator inside an overflowing frame', (
+        tester,
+      ) async {
+        tester.view.physicalSize = const Size(100, 100);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        const boundaryKey = ValueKey('overflow-indicator-boundary');
+
+        await tester.pumpWidget(
+          const Directionality(
+            textDirection: TextDirection.ltr,
+            child: RepaintBoundary(
+              key: boundaryKey,
+              child: SizedBox(
+                width: 100,
+                height: 100,
+                child: OverflowDiagnosticProbe(
+                  slideKey: 'indicator-slide',
+                  runtimeKey: 'indicator-slide:s0:b0',
+                  availableSize: Size(100, 100),
+                  child: OverflowBox(
+                    maxWidth: 200,
+                    maxHeight: 200,
+                    child: SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: ColoredBox(color: Color(0xFF0000FF)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(OverflowDiagnostics.activeIssuesForTesting, isNotEmpty);
+
+        final boundary = tester.renderObject<RenderRepaintBoundary>(
+          find.byKey(boundaryKey),
+        );
+        final rgba = await tester.runAsync(() async {
+          final image = await boundary.toImage();
+          try {
+            final bytes = await image.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            );
+            final pixelOffset = (5 * image.width + 95) * 4;
+            return bytes!.buffer.asUint8List(pixelOffset, 4).toList();
+          } finally {
+            image.dispose();
+          }
+        });
+
+        expect(rgba, [255, 59, 48, 255]);
+      });
+
+      testWidgets('allows Hero flights between changing constraints', (
+        tester,
+      ) async {
+        Widget route(Size size, Color color) {
+          return Scaffold(
+            body: Center(
+              child: SizedBox.fromSize(
+                size: size,
+                child: OverflowDiagnosticProbe(
+                  slideKey: 'hero-slide',
+                  runtimeKey: 'hero-slide:s0:b0',
+                  availableSize: size,
+                  child: Hero(
+                    tag: 'diagnostic-hero',
+                    child: ColoredBox(color: color),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: route(const Size(320, 200), Colors.blue),
+            routes: {'/next': (_) => route(const Size(180, 120), Colors.green)},
+          ),
+        );
+
+        tester.state<NavigatorState>(find.byType(Navigator)).pushNamed('/next');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 150));
+        expect(tester.takeException(), isNull);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
+    });
+
     group('error handling', () {
       testWidgets('CustomBlockWidget shows error for unknown widget', (
         tester,
@@ -215,6 +590,210 @@ void main() {
         ); // viewport may be smaller than kResolution
         expect(size.height, greaterThan(300)); // header/footer reduce height
       });
+    });
+
+    group('padding overrides', () {
+      testWidgets('absent override retains resolved style padding', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        late Size blockSize;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'default-padding',
+            sections: [
+              SectionBlock([WidgetBlock(name: 'custom')]),
+            ],
+          ),
+          widgets: {
+            'custom': (_) =>
+                _BlockSizeProbe(onBuild: (size) => blockSize = size),
+          },
+        );
+
+        expect(blockSize, const Size(1200, 540));
+      });
+
+      testWidgets('padding zero makes a block edge-to-edge', (tester) async {
+        _setSlideViewport(tester);
+        late Size blockSize;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'zero-padding',
+            sections: [
+              SectionBlock([
+                WidgetBlock.fromMap({
+                  'type': 'widget',
+                  'name': 'custom',
+                  'padding': {'top': 0, 'right': 0, 'bottom': 0, 'left': 0},
+                }),
+              ]),
+            ],
+          ),
+          widgets: {
+            'custom': (_) =>
+                _BlockSizeProbe(onBuild: (size) => blockSize = size),
+          },
+        );
+
+        expect(blockSize, const Size(1280, 620));
+      });
+
+      testWidgets('padding zero makes markdown content edge-to-edge', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'zero-content-padding',
+            sections: [
+              SectionBlock([
+                ContentBlock('Content', padding: BlockInsets.all(0)),
+              ]),
+            ],
+          ),
+        );
+
+        final provider = tester.widget<InheritedData<BlockConfiguration>>(
+          find.byWidgetPredicate(
+            (widget) => widget is InheritedData<BlockConfiguration>,
+          ),
+        );
+        expect(provider.data.size, const Size(1280, 620));
+      });
+
+      testWidgets('asymmetric padding determines exact usable size', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        late Size blockSize;
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'asymmetric-padding',
+            sections: [
+              SectionBlock([
+                WidgetBlock.fromMap({
+                  'type': 'widget',
+                  'name': 'custom',
+                  'padding': {'top': 30, 'right': 20, 'bottom': 40, 'left': 10},
+                }),
+              ]),
+            ],
+          ),
+          widgets: {
+            'custom': (_) =>
+                _BlockSizeProbe(onBuild: (size) => blockSize = size),
+          },
+        );
+
+        expect(blockSize, const Size(1250, 550));
+      });
+
+      testWidgets('override replaces only padding after variants resolve', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        late BlockConfiguration blockData;
+        const variantColor = Color(0xFFCC3344);
+        final animation = AnimationConfig.ease(
+          const Duration(milliseconds: 120),
+        );
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'preserved-variant-geometry',
+            sections: [
+              SectionBlock([
+                WidgetBlock.fromMap({
+                  'type': 'widget',
+                  'name': 'chart',
+                  'padding': {'top': 4, 'right': 4, 'bottom': 4, 'left': 4},
+                }),
+              ]),
+            ],
+          ),
+          style: SlideStyle(
+            blockContainer:
+                BoxStyler(
+                      padding: EdgeInsetsGeometryMix.all(10),
+                      margin: EdgeInsetsGeometryMix.all(5),
+                      decoration: BoxDecorationMix(
+                        color: const Color(0xFF224466),
+                        border: BorderMix.all(BorderSideMix(width: 2)),
+                      ),
+                    )
+                    .animate(animation)
+                    .wrap(WidgetModifierConfig.opacity(0.75))
+                    .variants([
+                      VariantStyle(
+                        const BlockVariant('chart'),
+                        BoxStyler(
+                          padding: EdgeInsetsGeometryMix.all(20),
+                          margin: EdgeInsetsGeometryMix.all(10),
+                          decoration: BoxDecorationMix(
+                            color: variantColor,
+                            border: BorderMix.all(BorderSideMix(width: 3)),
+                          ),
+                        ),
+                      ),
+                    ]),
+          ),
+          widgets: {
+            'chart': (_) =>
+                _BlockDataProbe(onBuild: (data) => blockData = data),
+          },
+        );
+
+        final container = blockData.spec.blockContainer.spec;
+        final decoration = container.decoration! as BoxDecoration;
+        expect(blockData.size, const Size(1246, 586));
+        expect(container.padding, const EdgeInsets.all(4));
+        expect(container.margin, const EdgeInsets.all(10));
+        expect(decoration.color, variantColor);
+        expect(decoration.border!.dimensions, const EdgeInsets.all(3));
+        expect(blockData.spec.blockContainer.animation, same(animation));
+        final modifier = blockData.spec.blockContainer.widgetModifiers!.single;
+        expect(modifier, isA<OpacityModifier>());
+        expect((modifier as OpacityModifier).opacity, 0.75);
+      });
+
+      for (final name in ['image', 'gist', 'webview', 'custom']) {
+        testWidgets('$name padding overrides its resolved variant', (
+          tester,
+        ) async {
+          _setSlideViewport(tester);
+          late Size blockSize;
+          await SlideTestHarness.pumpSlide(
+            tester,
+            Slide(
+              key: '$name-padding',
+              sections: [
+                SectionBlock([
+                  WidgetBlock.fromMap({
+                    'type': 'widget',
+                    'name': name,
+                    'padding': {
+                      'top': 12,
+                      'right': 12,
+                      'bottom': 12,
+                      'left': 12,
+                    },
+                  }),
+                ]),
+              ],
+            ),
+            widgets: {
+              name: (_) => _BlockSizeProbe(onBuild: (size) => blockSize = size),
+            },
+          );
+
+          expect(blockSize, const Size(1256, 596));
+        });
+      }
     });
 
     group('named widget block variants', () {
@@ -504,6 +1083,30 @@ class _BlockSizeProbe extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     onBuild(BlockConfiguration.of(context).size);
+    return const SizedBox.shrink();
+  }
+}
+
+class _BlockDataProbe extends StatelessWidget {
+  const _BlockDataProbe({required this.onBuild});
+
+  final ValueChanged<BlockConfiguration> onBuild;
+
+  @override
+  Widget build(BuildContext context) {
+    onBuild(BlockConfiguration.of(context));
+    return const SizedBox.shrink();
+  }
+}
+
+class _AlignmentProbe extends StatelessWidget {
+  const _AlignmentProbe({required this.onBuild});
+
+  final ValueChanged<ContentAlignment> onBuild;
+
+  @override
+  Widget build(BuildContext context) {
+    onBuild(BlockConfiguration.of(context).align);
     return const SizedBox.shrink();
   }
 }

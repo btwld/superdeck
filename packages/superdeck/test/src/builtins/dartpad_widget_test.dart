@@ -436,7 +436,7 @@ class _DartPadHarness extends StatelessWidget {
             data: BlockConfiguration(
               spec: const SlideSpec(),
               size: size,
-              align: null,
+              align: ContentAlignment.centerLeft,
               runtimeKey: runtimeKey,
             ),
             child: Scaffold(body: DartPadWidget(args)),

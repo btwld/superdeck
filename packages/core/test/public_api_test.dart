@@ -6,11 +6,13 @@ void main() {
     test('exports the supported runtime surface', () {
       final workspace = DeckWorkspace(projectDir: '/tmp/test-deck');
       final slide = Slide(key: 'intro');
+      final padding = BlockInsets.all(8);
 
       expect(workspace.deckJson.path, contains('superdeck.json'));
       expect(DeckPlugin, isNotNull);
       expect(slidesContractSchema, isNotNull);
       expect(parseSlidesContract([slide.toMap()]), hasLength(1));
+      expect(padding.left, 8);
     });
   });
 }

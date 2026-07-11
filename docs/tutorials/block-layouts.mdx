@@ -1,147 +1,167 @@
 ---
 title: Block layouts
-description: Quick overview of SuperDeck's block-based layout system
+description: Build predictable SuperDeck layouts with sections, spacing, padding, alignment, and image frames
 ---
 
 # Block layouts
 
-SuperDeck uses a block-based layout system for flexible content arrangement. Blocks are containers that hold different content types.
+SuperDeck lays out every slide on a logical `1280 x 720` canvas. Sections form
+vertical rows; the blocks inside each section form horizontal columns.
 
-## Core concept
+## The two layout axes
 
-Blocks automatically arrange themselves:
-
-- **Vertical stacking** - Blocks stack vertically by default
-- **Horizontal sections** - Use `@section` for side-by-side layouts
-- **Flexible sizing** - Control space with `flex`
-
-## Common blocks
-
-```markdown
-@block        # Markdown content (most common)
-@section       # Container for horizontal layouts
-@image         # Images with fit options
-@dartpad       # Interactive code examples
-@qrcode        # QR codes
-@widget        # Custom Flutter widgets
+```text
+slide
+├── section 1             vertical allocation between sections
+│   ├── block A           horizontal allocation inside the section
+│   └── block B
+└── section 2
+    └── block C
 ```
 
-## Layout examples
+`flex` controls both axes:
 
-### Single column (default)
+- A section's positive integer `flex` is its height relative to sibling sections.
+- A block's positive integer `flex` is its width relative to sibling blocks.
+
 ```markdown
-# Title
-
-Regular markdown content flows vertically.
-
-More content below.
-```
-
-### Two columns  
-```markdown
-@section
-
+@section { flex: 1 }
 @block
-Left side content
+Top row
 
-@block  
-Right side content
+@section { flex: 2 }
+@block { flex: 2 }
+Wide column
+
+@block { flex: 1 }
+Narrow column
 ```
 
-### Flexible sizing
+If a slide has no directives, SuperDeck creates one section containing one
+Markdown block. Multiple `@block` directives without `@section` share one
+implicit section.
+
+## Four independent geometry controls
+
+Keep these controls separate:
+
+1. The slide container style supplies the outer slide inset.
+2. `@section { spacing: ... }` creates gaps between sibling blocks.
+3. A block's `padding` creates an inset inside that block.
+4. `align` places the content inside the remaining content rectangle.
+
 ```markdown
-@section
+@section {
+  spacing: 32
+  align: center
+}
+
+@block { padding: 0 }
+Edge to edge inside this column
+
+@block { padding: 16 }
+Uniform internal inset
 
 @block {
-  flex: 2
+  padding: { horizontal: 48, vertical: 24 }
+  align: bottomRight
 }
-Takes 2/3 of the space
-
-@block {
-  flex: 1
-}
-Takes 1/3 of the space
+Independent axes and an explicit alignment override
 ```
 
-### Mixed content
+Section spacing exists only between blocks—never before the first or after the
+last. When a requested total gap is wider than the section, SuperDeck clamps
+the actual gap so every block remains inside the section.
+
+## Padding forms
+
+Content and widget blocks accept exactly three padding forms:
+
 ```markdown
-@section
+@block { padding: 16 }
+@block { padding: { horizontal: 24, vertical: 16 } }
+@block { padding: { top: 12, right: 24, bottom: 12, left: 24 } }
+```
+
+Omitted keys in an object are zero. Do not mix `horizontal`/`vertical` with
+physical edge keys. Empty objects, unknown keys, negative values, `NaN`, and
+infinity are invalid.
+
+An omitted padding override retains the resolved Mix block-container padding.
+A present override replaces only that resolved padding after active variants;
+margin, border, decoration, animation, modifiers, and variant behavior remain.
+
+## Alignment inheritance
+
+The effective alignment for each block is:
+
+```text
+block align → section align → centerLeft
+```
+
+Use section alignment for a shared default and block alignment for exceptions:
+
+```markdown
+@section { align: topCenter }
 
 @block
-## Text Content
-- Point one
-- Point two
+Inherits topCenter
 
+@block { align: bottomRight }
+Overrides the section
+```
+
+All nine values are supported: `topLeft`, `topCenter`, `topRight`,
+`centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, and
+`bottomRight`.
+
+## Image framing
+
+`fit` controls how image pixels fit their frame. `scale` enlarges or shrinks
+the painted pixels without changing the frame or the block's flex geometry.
+
+```markdown
 @image {
   src: assets/screenshot.png
-  fit: contain
-}
-```
-
-## Block properties
-
-Content blocks and widgets support these properties. Sections support `flex`
-and `align`; set `scrollable` on the child block or widget that overflows.
-
-- **`flex`** - Relative size (default: 1)
-- **`align`** - Content alignment (center, topLeft, etc.)
-- **`scrollable`** - Enable scrolling (default: false)
-
-```markdown
-@block {
-  flex: 2
-  align: center
-  scrollable: true
-}
-```
-
-## Layout patterns
-
-### Hero section
-```markdown
-@section
-
-@block {
+  fit: cover
+  width: 640
+  height: 360
+  scale: 1.25
   align: center
 }
-# Big Title
-## Subtitle
 ```
 
-### Content + visual
-```markdown
-@section
+Scaled pixels are clipped to explicit `width`/`height` when supplied, otherwise
+to the block's effective content rectangle. The transform origin uses the
+effective block alignment. `scale` defaults to `1` and must be finite and
+greater than zero.
 
-@block {
-  flex: 2
-}
-## Feature Description
-Detailed explanation...
+For a full-canvas image, use `layout: fullscreen`, one image block, an explicit
+`1280 x 720` frame, `fit: cover`, and `padding: 0`. Fullscreen changes chrome;
+it does not change the image framing rules.
 
-@block
-![Feature Screenshot](image.png)
-```
+## Overflow and debugging
 
-### Three columns
-```markdown
-@section
+Non-scrollable content is hard-clipped. Use `scrollable: true` on a content or
+widget block when the audience should be able to reach overflowed content.
 
-@block
-### Option A
+With `DeckOptions(debug: true)`, supported non-scrollable Markdown overflow gets
+a red indicator and a deduplicated console message containing the slide key,
+block key, available size, measured size, and overflow axis. The live probe
+observes the existing Markdown render; it does not change wrapping constraints.
+It intentionally does not rebuild or intrinsically measure arbitrary custom
+widgets, and static capture remains diagnostic-free.
 
-@block  
-### Option B
+## Next-major migration
 
-@block
-### Option C
-```
+Two inputs change semantics in the next major release:
 
-## Key takeaways
+- `flex` must be a positive integer. Replace zero or negative values.
+- Section alignment now applies to children without explicit block alignment.
+  Add an explicit child alignment where the old no-op behavior must remain.
 
-- Start with `@block` blocks
-- Use `@section` for side-by-side layouts
-- Control sizing with `flex`
-- Mix content types freely
-- Layouts adapt to screen size
+After adopting `spacing` or `padding`, rebuild `.superdeck/superdeck.json`.
+Downgrading to 1.x requires removing the new authoring properties and rebuilding
+the contract with the 1.x toolchain.
 
-Next: [First Presentation Tutorial](/tutorials/first-presentation)
+Next: [Block types reference](/reference/block-types)

@@ -38,9 +38,9 @@ SuperDeck supports three core block types.
 
 | Block | Purpose | Key properties |
 |---|---|---|
-| `@section` | Container for horizontal layout | `flex`, `align` |
-| `@block` | Render markdown content | `flex`, `align`, `scrollable` |
-| `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `scrollable` + custom args |
+| `@section` | Container for horizontal layout | `flex`, `align`, `spacing` |
+| `@block` | Render markdown content | `flex`, `align`, `padding`, `scrollable` |
+| `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `padding`, `scrollable` + custom args |
 
 Built-in widgets (`image`, `dartpad`, `webview`, `qrcode`) use the same widget syntax as `@widget`.
 
@@ -60,15 +60,32 @@ for the stylesheet declaration and limitations.
 
 ### `flex`
 
-- Type: number
+- Type: positive integer
 - Default: `1`
 - Meaning: relative size in the parent layout.
 
 ### `align`
 
 - Type: string
-- Default: `centerLeft`
+- Default: inherited section alignment, then `centerLeft`
 - Values: `topLeft`, `topCenter`, `topRight`, `centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, `bottomRight`
+
+### `spacing`
+
+- Type: finite non-negative number
+- Default: `0`
+- Applies to: `@section`
+- Meaning: logical-pixel gaps between sibling blocks only.
+
+### `padding`
+
+- Type: finite non-negative number or object
+- Default: resolved block-container style padding
+- Applies to: `@block` and `@widget`
+- Forms: scalar; `{ horizontal, vertical }`; or `{ top, right, bottom, left }`.
+
+Do not mix symmetric and physical-edge keys. Omitted keys in an object become
+zero. `padding` is reserved and is not passed to custom widget args.
 
 ### `scrollable`
 
@@ -87,7 +104,9 @@ Example:
 @image {
   src: assets/value-loop.png
   fit: contain
+  width: 640
   height: 420
+  scale: 1.2
 }
 ````
 
@@ -97,6 +116,7 @@ Arguments:
 - `fit`: `contain`, `cover`, `fill`, `fitWidth`, `fitHeight`, `none`, `scaleDown`.
 - `width`: number.
 - `height`: number.
+- `scale`: finite number greater than zero (default `1`); changes painting, not layout, and clips to the image frame.
 
 ### `@dartpad`
 

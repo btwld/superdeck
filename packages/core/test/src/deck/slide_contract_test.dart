@@ -1,3 +1,4 @@
+import 'package:superdeck_core/src/deck/block_insets.dart';
 import 'package:superdeck_core/src/deck/block_model.dart';
 import 'package:superdeck_core/src/deck/slide_contract.dart';
 import 'package:superdeck_core/src/deck/slide_model.dart';
@@ -71,7 +72,9 @@ void main() {
           key: 'rt-slide',
           options: SlideOptions(title: 'RT Title'),
           sections: [
-            SectionBlock([ContentBlock('Content')]),
+            SectionBlock([
+              ContentBlock('Content', padding: BlockInsets.all(8)),
+            ], spacing: 12),
           ],
           comments: ['Note'],
         ),
@@ -111,9 +114,47 @@ void main() {
       );
 
       expect(sectionSchema['additionalProperties'], isFalse);
-      expect(sectionProperties.keys, containsAll(['type', 'align', 'flex']));
+      expect(
+        sectionProperties.keys,
+        containsAll(['type', 'align', 'flex', 'spacing']),
+      );
       expect(sectionProperties.containsKey('blocks'), isTrue);
       expect(sectionProperties.containsKey('scrollable'), isFalse);
+
+      final flexSchema = Map<String, Object?>.from(
+        sectionProperties['flex'] as Map,
+      );
+      expect(flexSchema['exclusiveMinimum'], 0);
+
+      final spacingSchema = Map<String, Object?>.from(
+        sectionProperties['spacing'] as Map,
+      );
+      expect(spacingSchema['minimum'], 0);
+    });
+
+    test('json schema exports the exact padding authoring forms', () {
+      final paddingSchema = _propertySchema(
+        ContentBlock.schema.toJsonSchema(),
+        'padding',
+      );
+      final branches = (paddingSchema['anyOf'] as List)
+          .map((branch) => Map<String, Object?>.from(branch as Map))
+          .toList();
+
+      expect(
+        branches,
+        contains(
+          allOf(containsPair('type', 'number'), containsPair('minimum', 0)),
+        ),
+      );
+      final objectBranches = branches
+          .where((branch) => branch['type'] == 'object')
+          .toList();
+      expect(objectBranches, hasLength(2));
+      for (final branch in objectBranches) {
+        expect(branch['additionalProperties'], isFalse);
+        expect(branch['minProperties'], 1);
+      }
     });
   });
 }

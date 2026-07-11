@@ -120,17 +120,46 @@ Left content
 Right content
 ```
 
-Use `align` on child blocks or widget blocks for visible alignment:
+Set a shared alignment on the section and override individual children when
+needed:
 
 ```markdown
-@block { align: center }
+@section {
+  spacing: 32
+  align: center
+}
 
-# Centered title
+@block { padding: 16 }
+
+# Inherits center
+
+@block {
+  padding: { horizontal: 32, vertical: 16 }
+  align: bottomRight
+}
+
+# Overrides the section
 ```
 
 Valid alignments are `topLeft`, `topCenter`, `topRight`, `centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, `bottomRight`.
 
-Current renderer note: `@section { align: ... }` is accepted and stored, but visible content placement is driven by each child block/widget's `align`.
+Effective alignment is explicit child alignment, then inherited section
+alignment, then `centerLeft`.
+
+Section `spacing` is a finite, non-negative logical-pixel gap between sibling
+blocks only. It never adds leading/trailing space and is clamped when an
+impossible request would place children outside the section.
+
+Block/widget `padding` accepts exactly:
+
+```markdown
+padding: 16
+padding: { horizontal: 24, vertical: 16 }
+padding: { top: 12, right: 24, bottom: 12, left: 24 }
+```
+
+Omitted object keys become zero. Never mix symmetric and physical-edge keys.
+All flex values must be positive integers.
 
 Use `scrollable: true` on overflowing blocks/widgets, not on sections:
 
@@ -166,7 +195,9 @@ Use `@image` when the image should be its own widget block/column, or when you n
 @image {
   src: assets/hero.png
   fit: cover
+  width: 640
   height: 420
+  scale: 1.2
   align: center
 }
 ```
@@ -176,6 +207,8 @@ Use `@image` when the image should be its own widget block/column, or when you n
 - `src` required: relative asset path, URL, absolute path, `file://`, `data:`, or Windows absolute path.
 - `fit`: `fill`, `contain`, `cover`, `fitWidth`, `fitHeight`, `none`, `scaleDown`; default `contain`.
 - `width`, `height`: positive logical pixels.
+- `scale`: finite number greater than zero, default `1`; changes painted pixels
+  without changing the frame or flex layout and clips using effective alignment.
 
 Key differences:
 
@@ -334,7 +367,9 @@ Or explicit form:
 }
 ```
 
-All properties become the widget factory's `Map<String, Object?>` arguments. Block-level controls such as `flex`, `align`, and `scrollable` are consumed by SuperDeck and are not passed as custom widget args.
+All properties become the widget factory's `Map<String, Object?>` arguments.
+Block-level controls such as `flex`, `align`, `padding`, and `scrollable` are
+consumed by SuperDeck and are not passed as custom widget args.
 
 To style every custom block with the same name, declare `BlockVariant('metricCard')` in a Dart `SlideStyle`. The match is exact and case-sensitive, and it applies to the widget block container plus descendants rather than to individual Markdown block instances.
 

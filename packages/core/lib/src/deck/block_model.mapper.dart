@@ -204,6 +204,7 @@ class BlockMapper extends ClassMapperBase<Block> {
       ContentBlockMapper.ensureInitialized();
       WidgetBlockMapper.ensureInitialized();
       ContentAlignmentMapper.ensureInitialized();
+      BlockInsetsMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -226,6 +227,12 @@ class BlockMapper extends ClassMapperBase<Block> {
     opt: true,
     def: 1,
   );
+  static BlockInsets? _$padding(Block v) => v.padding;
+  static const Field<Block, BlockInsets> _f$padding = Field(
+    'padding',
+    _$padding,
+    opt: true,
+  );
   static bool _$scrollable(Block v) => v.scrollable;
   static const Field<Block, bool> _f$scrollable = Field(
     'scrollable',
@@ -239,6 +246,7 @@ class BlockMapper extends ClassMapperBase<Block> {
     #type: _f$type,
     #align: _f$align,
     #flex: _f$flex,
+    #padding: _f$padding,
     #scrollable: _f$scrollable,
   };
   @override
@@ -272,7 +280,13 @@ mixin BlockMappable {
 
 abstract class BlockCopyWith<$R, $In extends Block, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
-  $R call({ContentAlignment? align, int? flex, bool? scrollable});
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding;
+  $R call({
+    ContentAlignment? align,
+    int? flex,
+    BlockInsets? padding,
+    bool? scrollable,
+  });
   BlockCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
 
@@ -310,6 +324,13 @@ class SectionBlockMapper extends ClassMapperBase<SectionBlock> {
     opt: true,
     def: 1,
   );
+  static double _$spacing(SectionBlock v) => v.spacing;
+  static const Field<SectionBlock, double> _f$spacing = Field(
+    'spacing',
+    _$spacing,
+    opt: true,
+    def: 0,
+  );
   static String _$type(SectionBlock v) => v.type;
   static const Field<SectionBlock, String> _f$type = Field(
     'type',
@@ -323,6 +344,7 @@ class SectionBlockMapper extends ClassMapperBase<SectionBlock> {
     #blocks: _f$blocks,
     #align: _f$align,
     #flex: _f$flex,
+    #spacing: _f$spacing,
     #type: _f$type,
   };
   @override
@@ -333,6 +355,7 @@ class SectionBlockMapper extends ClassMapperBase<SectionBlock> {
       data.dec(_f$blocks),
       align: data.dec(_f$align),
       flex: data.dec(_f$flex),
+      spacing: data.dec(_f$spacing),
       type: data.dec(_f$type),
     );
   }
@@ -404,6 +427,7 @@ abstract class SectionBlockCopyWith<$R, $In extends SectionBlock, $Out>
     List<Block>? blocks,
     ContentAlignment? align,
     int? flex,
+    double? spacing,
     String? type,
   });
   SectionBlockCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
@@ -429,12 +453,14 @@ class _SectionBlockCopyWithImpl<$R, $Out>
     Object? blocks = $none,
     Object? align = $none,
     int? flex,
+    double? spacing,
     String? type,
   }) => $apply(
     FieldCopyWithData({
       if (blocks != $none) #blocks: blocks,
       if (align != $none) #align: align,
       if (flex != null) #flex: flex,
+      if (spacing != null) #spacing: spacing,
       if (type != null) #type: type,
     }),
   );
@@ -443,6 +469,7 @@ class _SectionBlockCopyWithImpl<$R, $Out>
     data.get(#blocks, or: $value.blocks),
     align: data.get(#align, or: $value.align),
     flex: data.get(#flex, or: $value.flex),
+    spacing: data.get(#spacing, or: $value.spacing),
     type: data.get(#type, or: $value.type),
   );
 
@@ -461,6 +488,7 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
       MapperContainer.globals.use(_instance = ContentBlockMapper._());
       BlockMapper.ensureInitialized().addSubMapper(_instance!);
       ContentAlignmentMapper.ensureInitialized();
+      BlockInsetsMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -486,6 +514,12 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
     opt: true,
     def: 1,
   );
+  static BlockInsets? _$padding(ContentBlock v) => v.padding;
+  static const Field<ContentBlock, BlockInsets> _f$padding = Field(
+    'padding',
+    _$padding,
+    opt: true,
+  );
   static bool _$scrollable(ContentBlock v) => v.scrollable;
   static const Field<ContentBlock, bool> _f$scrollable = Field(
     'scrollable',
@@ -505,6 +539,7 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
     #content: _f$content,
     #align: _f$align,
     #flex: _f$flex,
+    #padding: _f$padding,
     #scrollable: _f$scrollable,
     #type: _f$type,
   };
@@ -523,6 +558,7 @@ class ContentBlockMapper extends SubClassMapperBase<ContentBlock> {
       data.dec(_f$content),
       align: data.dec(_f$align),
       flex: data.dec(_f$flex),
+      padding: data.dec(_f$padding),
       scrollable: data.dec(_f$scrollable),
     );
   }
@@ -590,10 +626,13 @@ extension ContentBlockValueCopy<$R, $Out>
 abstract class ContentBlockCopyWith<$R, $In extends ContentBlock, $Out>
     implements BlockCopyWith<$R, $In, $Out> {
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding;
+  @override
   $R call({
     String? content,
     ContentAlignment? align,
     int? flex,
+    BlockInsets? padding,
     bool? scrollable,
   });
   ContentBlockCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
@@ -608,16 +647,21 @@ class _ContentBlockCopyWithImpl<$R, $Out>
   late final ClassMapperBase<ContentBlock> $mapper =
       ContentBlockMapper.ensureInitialized();
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding =>
+      $value.padding?.copyWith.$chain((v) => call(padding: v));
+  @override
   $R call({
     Object? content = $none,
     Object? align = $none,
     int? flex,
+    Object? padding = $none,
     bool? scrollable,
   }) => $apply(
     FieldCopyWithData({
       if (content != $none) #content: content,
       if (align != $none) #align: align,
       if (flex != null) #flex: flex,
+      if (padding != $none) #padding: padding,
       if (scrollable != null) #scrollable: scrollable,
     }),
   );
@@ -626,6 +670,7 @@ class _ContentBlockCopyWithImpl<$R, $Out>
     data.get(#content, or: $value.content),
     align: data.get(#align, or: $value.align),
     flex: data.get(#flex, or: $value.flex),
+    padding: data.get(#padding, or: $value.padding),
     scrollable: data.get(#scrollable, or: $value.scrollable),
   );
 
@@ -644,6 +689,7 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
       MapperContainer.globals.use(_instance = WidgetBlockMapper._());
       BlockMapper.ensureInitialized().addSubMapper(_instance!);
       ContentAlignmentMapper.ensureInitialized();
+      BlockInsetsMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -672,6 +718,12 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
     opt: true,
     def: 1,
   );
+  static BlockInsets? _$padding(WidgetBlock v) => v.padding;
+  static const Field<WidgetBlock, BlockInsets> _f$padding = Field(
+    'padding',
+    _$padding,
+    opt: true,
+  );
   static bool _$scrollable(WidgetBlock v) => v.scrollable;
   static const Field<WidgetBlock, bool> _f$scrollable = Field(
     'scrollable',
@@ -692,6 +744,7 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
     #args: _f$args,
     #align: _f$align,
     #flex: _f$flex,
+    #padding: _f$padding,
     #scrollable: _f$scrollable,
     #type: _f$type,
   };
@@ -713,6 +766,7 @@ class WidgetBlockMapper extends SubClassMapperBase<WidgetBlock> {
       args: data.dec(_f$args),
       align: data.dec(_f$align),
       flex: data.dec(_f$flex),
+      padding: data.dec(_f$padding),
       scrollable: data.dec(_f$scrollable),
     );
   }
@@ -780,11 +834,14 @@ abstract class WidgetBlockCopyWith<$R, $In extends WidgetBlock, $Out>
   MapCopyWith<$R, String, Object?, ObjectCopyWith<$R, Object?, Object?>?>
   get args;
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding;
+  @override
   $R call({
     String? name,
     Map<String, Object?>? args,
     ContentAlignment? align,
     int? flex,
+    BlockInsets? padding,
     bool? scrollable,
   });
   WidgetBlockCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
@@ -806,11 +863,15 @@ class _WidgetBlockCopyWithImpl<$R, $Out>
     (v) => call(args: v),
   );
   @override
+  BlockInsetsCopyWith<$R, BlockInsets, BlockInsets>? get padding =>
+      $value.padding?.copyWith.$chain((v) => call(padding: v));
+  @override
   $R call({
     String? name,
     Object? args = $none,
     Object? align = $none,
     int? flex,
+    Object? padding = $none,
     bool? scrollable,
   }) => $apply(
     FieldCopyWithData({
@@ -818,6 +879,7 @@ class _WidgetBlockCopyWithImpl<$R, $Out>
       if (args != $none) #args: args,
       if (align != $none) #align: align,
       if (flex != null) #flex: flex,
+      if (padding != $none) #padding: padding,
       if (scrollable != null) #scrollable: scrollable,
     }),
   );
@@ -827,6 +889,7 @@ class _WidgetBlockCopyWithImpl<$R, $Out>
     args: data.get(#args, or: $value.args),
     align: data.get(#align, or: $value.align),
     flex: data.get(#flex, or: $value.flex),
+    padding: data.get(#padding, or: $value.padding),
     scrollable: data.get(#scrollable, or: $value.scrollable),
   );
 

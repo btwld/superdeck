@@ -1,5 +1,15 @@
 ## Unreleased
 
+- Add clamped gaps between sibling blocks with section `spacing`.
+- Apply alignment with `block align → section align → centerLeft` precedence.
+- Add per-block padding overrides that replace resolved Mix padding while
+  preserving variants, margin, border, decoration, animation, and modifiers.
+- Add image paint scaling with aligned clipping and an unchanged `scale: 1`
+  rendering path.
+- Add deduplicated debug overflow indicators for supported non-scrollable
+  Markdown without changing wrapping or rebuilding custom widgets.
+- **Breaking:** section alignment now affects children without an explicit block
+  alignment, and non-positive flex values are invalid.
 - Add `BlockVariant` for opt-in, name-based `WidgetBlock` styling in Dart
   stylesheets.
 - Render `@webview` blocks edge-to-edge (zero padding and margin) by default.

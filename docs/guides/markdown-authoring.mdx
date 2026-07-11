@@ -73,6 +73,7 @@ Groups blocks horizontally. Use sections to create multi-column layouts.
 @section {
   align: center
   flex: 2
+  spacing: 32
 }
 ````
 
@@ -84,6 +85,7 @@ Renders markdown content. Most slides use one or more columns.
 @block {
   flex: 2
   align: topLeft
+  padding: { horizontal: 32, vertical: 16 }
 }
 
 # Promise, Problem, Proof
@@ -94,12 +96,35 @@ Renders markdown content. Most slides use one or more columns.
 
 ### Common properties
 
-Use these properties on blocks. Sections support `flex` and `align`;
-`scrollable` applies to child blocks and widgets.
+Sections stack vertically; blocks within a section lay out horizontally. Use
+these properties to control the two axes and the content inside each rectangle.
 
-- `flex` – Relative size (default: `1`). A column with `flex: 2` takes twice the space of `flex: 1`
-- `align` – Content alignment such as `topLeft`, `center`, and `bottomRight`
+- `flex` – Positive integer relative size (default: `1`). Section flex controls
+  height; child block flex controls width
+- `spacing` – Finite, non-negative gap between sibling blocks; applies to
+  sections only and never creates leading or trailing space
+- `padding` – Internal block inset; accepts a scalar, a symmetric object, or a
+  physical-edge object
+- `align` – Content alignment such as `topLeft`, `center`, and `bottomRight`.
+  Resolution is block alignment, then inherited section alignment, then
+  `centerLeft`
 - `scrollable` – Enable scrolling for overflow content (default: `false`)
+
+These controls are independent: the `SlideStyle.slideContainer` supplies the
+outer slide inset, section `spacing` separates columns, block `padding` reduces
+the usable content rectangle, and `align` positions content in that rectangle.
+
+Accepted padding forms:
+
+````markdown
+@block { padding: 16 }
+@block { padding: { horizontal: 24, vertical: 16 } }
+@block { padding: { top: 12, right: 24, bottom: 12, left: 24 } }
+````
+
+Do not mix symmetric and physical-edge keys. Omitted keys become zero. An
+absent override retains the resolved Mix container padding; a present override
+replaces only padding after variants resolve.
 
 For complete value definitions, see the [Markdown syntax reference](../reference/markdown-syntax).
 
@@ -115,9 +140,16 @@ Display images with fit options.
 @image {
   src: assets/value-loop.png
   fit: contain
+  width: 640
   height: 420
+  scale: 1.2
 }
 ````
+
+`fit` describes the image inside its frame. `scale` changes painted pixels
+without changing that frame or flex geometry, clips to the frame, and uses the
+effective block alignment as its transform origin. It defaults to `1` and must
+be finite and greater than zero.
 
 For all `@image` arguments, see the [Markdown syntax reference](../reference/markdown-syntax).
 
@@ -165,7 +197,11 @@ Register widgets in `DeckOptions.widgets`, then use them with the shorthand synt
 }
 ````
 
-The widget name becomes the block type (`@metricCard`), and all properties are passed to the registered `WidgetFactory` as `Map<String, Object?>`. Your widget (or a helper like `MetricCardArgs.parse(args)`) decides how to interpret them.
+The widget name becomes the block type (`@metricCard`). Widget-specific
+properties are passed to the registered `WidgetFactory` as
+`Map<String, Object?>`; `name`, `align`, `flex`, `padding`, and `scrollable` are
+reserved and consumed by SuperDeck. Your widget (or a helper like
+`MetricCardArgs.parse(args)`) decides how to interpret the remaining values.
 
 ---
 
@@ -218,6 +254,20 @@ Elements with matching class names animate smoothly during slide transitions.
 
 ---
 
+## Overflow diagnostics
+
+Non-scrollable content is hard-clipped. Use `scrollable: true` when overflow is
+intentional and should remain reachable.
+
+Enable `DeckOptions(debug: true)` while authoring to diagnose supported
+non-scrollable Markdown overflow. SuperDeck paints a red indicator and logs one
+message per stable issue with the slide/block keys, available and measured sizes,
+and overflow axis. The probe observes the existing Markdown layout without
+changing its wrapping width. It intentionally does not intrinsically measure or
+rebuild arbitrary custom widgets, and static captures omit diagnostics.
+
+---
+
 ## Styling
 
 Apply named styles to individual slides using front matter:
@@ -242,6 +292,18 @@ DeckOptions(
 ```
 
 See the [SuperDeck Overview](./superdeck-overview) for more styling options.
+
+---
+
+## Upgrading to the next major
+
+- Replace zero or negative `flex` values with positive integers.
+- Review `@section { align: ... }`. Section alignment now becomes the inherited
+  default for children that do not set block alignment.
+- Rebuild `.superdeck/superdeck.json` after adding `spacing`, `padding`, or image
+  `scale`.
+- To downgrade to 1.x, remove the new authoring properties and rebuild the
+  contract with the 1.x toolchain.
 
 ---
 

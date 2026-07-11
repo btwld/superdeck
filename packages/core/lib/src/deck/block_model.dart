@@ -1,7 +1,48 @@
 import 'package:ack/ack.dart';
 import 'package:dart_mappable/dart_mappable.dart';
 
+import 'block_insets.dart';
+
 part 'block_model.mapper.dart';
+
+final _positiveFlexSchema = Ack.integer().positive();
+final _nonNegativeFiniteNumberSchema = Ack.number().min(0).finite();
+
+int _validateFlex(int flex) {
+  if (flex > 0) return flex;
+  throw ArgumentError.value(
+    flex,
+    'flex',
+    'Flex must be an integer greater than zero.',
+  );
+}
+
+double _validateSpacing(double spacing) {
+  if (spacing.isFinite && spacing >= 0) return spacing;
+  throw ArgumentError.value(
+    spacing,
+    'spacing',
+    'Spacing must be a finite number greater than or equal to zero.',
+  );
+}
+
+void _validateFlexInput(Map<String, Object?> map) {
+  if (map['flex'] case final int flex) {
+    _validateFlex(flex);
+  }
+}
+
+void _validateSpacingInput(Map<String, Object?> map) {
+  if (map['spacing'] case final num spacing) {
+    _validateSpacing(spacing.toDouble());
+  }
+}
+
+Map<String, Object?> _normalizeBlockInput(Map<String, Object?> map) {
+  if (!map.containsKey('padding')) return map;
+  final padding = BlockInsets.parse(map['padding']);
+  return {...map, 'padding': padding.toMap()};
+}
 
 /// Base class for renderable blocks in a slide section.
 ///
@@ -12,28 +53,34 @@ sealed class Block with BlockMappable {
   final String type;
   final ContentAlignment? align;
   final int flex;
+  final BlockInsets? padding;
   final bool scrollable;
 
   Block({
     required this.type,
     this.align,
-    this.flex = 1,
+    int flex = 1,
+    this.padding,
     this.scrollable = false,
-  });
+  }) : flex = _validateFlex(flex);
 
   /// Base schema for all block types
   static final schema = Ack.object({
     'type': Ack.string(),
     'align': ContentAlignment.schema.optional(),
-    'flex': Ack.integer().optional(),
+    'flex': _positiveFlexSchema.optional(),
+    'padding': BlockInsets.schema.optional(),
     'scrollable': Ack.boolean().optional(),
   }, additionalProperties: true);
 
   /// Parses a block from a JSON map.
   ///
   /// Automatically determines the block type from the discriminator key.
-  static Block parse(Map<String, Object?> map) =>
-      fromMap(discriminatedSchema.parse(map)!);
+  static Block parse(Map<String, Object?> map) {
+    final normalized = _normalizeBlockInput(map);
+    _validateFlexInput(normalized);
+    return fromMap(discriminatedSchema.parse(normalized)!);
+  }
 
   /// Schema for discriminated union of block types.
   ///
@@ -49,9 +96,11 @@ sealed class Block with BlockMappable {
 
   static final fromMap = BlockMapper.fromMap;
 
-  /// The effective alignment for this block.
+  /// The effective alignment when no section context is available.
   ///
-  /// When [align] is not set explicitly, defaults to
+  /// Section renderers must use [SectionBlock.resolveBlockAlign] so section
+  /// alignment can be inherited. When [align] is not set explicitly, this
+  /// block-only fallback defaults to
   /// [ContentAlignment.centerLeft] because paragraph-like content is easier
   /// to read and scan when left-aligned. Set `align: center` explicitly to
   /// restore the previous default.
@@ -66,6 +115,7 @@ class SectionBlock with SectionBlockMappable {
   final List<Block> blocks;
   final ContentAlignment? align;
   final int flex;
+  final double spacing;
   final String type;
 
   static const key = 'section';
@@ -73,9 +123,12 @@ class SectionBlock with SectionBlockMappable {
   SectionBlock(
     List<Block>? blocks, {
     this.align,
-    this.flex = 1,
+    int flex = 1,
+    double spacing = 0,
     String type = key,
   }) : blocks = List.unmodifiable(blocks ?? const []),
+       flex = _validateFlex(flex),
+       spacing = _validateSpacing(spacing),
        type = _validateType(type);
 
   /// The total flex value of all child blocks.
@@ -83,11 +136,22 @@ class SectionBlock with SectionBlockMappable {
     return blocks.fold(0, (total, block) => total + block.flex);
   }
 
+  /// Resolves a child's alignment in section context.
+  ///
+  /// Explicit block alignment wins, followed by section alignment, then the
+  /// platform-neutral [ContentAlignment.centerLeft] default.
+  ContentAlignment resolveBlockAlign(Block block) {
+    return block.align ?? align ?? ContentAlignment.centerLeft;
+  }
+
   static final fromMap = SectionBlockMapper.fromMap;
 
   /// Parses a section block from a JSON map.
-  static SectionBlock parse(Map<String, Object?> map) =>
-      fromMap(schema.parse(map)!);
+  static SectionBlock parse(Map<String, Object?> map) {
+    _validateFlexInput(map);
+    _validateSpacingInput(map);
+    return fromMap(schema.parse(map)!);
+  }
 
   /// Creates a section block with a single text block.
   static SectionBlock text(String content) {
@@ -103,7 +167,8 @@ class SectionBlock with SectionBlockMappable {
   static final schema = Ack.object({
     'type': Ack.literal(key).optional(),
     'align': ContentAlignment.schema.optional(),
-    'flex': Ack.integer().optional(),
+    'flex': _positiveFlexSchema.optional(),
+    'spacing': _nonNegativeFiniteNumberSchema.optional(),
     'blocks': Ack.list(Block.discriminatedSchema).optional(),
   }, additionalProperties: false);
 }
@@ -120,9 +185,14 @@ class ContentBlock extends Block with ContentBlockMappable {
 
   final String content;
 
-  ContentBlock(String? content, {super.align, super.flex, super.scrollable})
-    : content = content ?? '',
-      super(type: key);
+  ContentBlock(
+    String? content, {
+    super.align,
+    super.flex,
+    super.padding,
+    super.scrollable,
+  }) : content = content ?? '',
+       super(type: key);
 
   static final fromMap = ContentBlockMapper.fromMap;
 
@@ -130,14 +200,18 @@ class ContentBlock extends Block with ContentBlockMappable {
   static final schema = Ack.object({
     'type': Ack.literal(key).optional(),
     'align': ContentAlignment.schema.optional(),
-    'flex': Ack.integer().optional(),
+    'flex': _positiveFlexSchema.optional(),
+    'padding': BlockInsets.schema.optional(),
     'scrollable': Ack.boolean().optional(),
     'content': Ack.string().optional(),
   }, additionalProperties: true);
 
   /// Parses a content block from a JSON map with schema validation.
-  static ContentBlock parse(Map<String, Object?> map) =>
-      fromMap(schema.parse(map)!);
+  static ContentBlock parse(Map<String, Object?> map) {
+    final normalized = _normalizeBlockInput(map);
+    _validateFlexInput(normalized);
+    return fromMap(schema.parse(normalized)!);
+  }
 }
 
 @MappableEnum()
@@ -195,7 +269,13 @@ enum ImageFit {
 )
 class WidgetBlock extends Block with WidgetBlockMappable {
   static const key = 'widget';
-  static const _reservedKeys = {'name', 'align', 'flex', 'scrollable'};
+  static const _reservedKeys = {
+    'name',
+    'align',
+    'flex',
+    'padding',
+    'scrollable',
+  };
 
   final Map<String, Object?> args;
   final String name;
@@ -205,6 +285,7 @@ class WidgetBlock extends Block with WidgetBlockMappable {
     Map<String, Object?>? args,
     super.align,
     super.flex,
+    super.padding,
     super.scrollable,
   }) : args = _validateArgs(args),
        super(type: key);
@@ -239,14 +320,18 @@ class WidgetBlock extends Block with WidgetBlockMappable {
 
   static final schema = Ack.object({
     'align': ContentAlignment.schema.optional(),
-    'flex': Ack.integer().optional(),
+    'flex': _positiveFlexSchema.optional(),
+    'padding': BlockInsets.schema.optional(),
     'scrollable': Ack.boolean().optional(),
     'name': Ack.string(),
   }, additionalProperties: true);
 
   /// Parses a widget block from a JSON map with schema validation.
-  static WidgetBlock parse(Map<String, Object?> map) =>
-      fromMap(schema.parse(map)!);
+  static WidgetBlock parse(Map<String, Object?> map) {
+    final normalized = _normalizeBlockInput(map);
+    _validateFlexInput(normalized);
+    return fromMap(schema.parse(normalized)!);
+  }
 }
 
 @MappableEnum()
