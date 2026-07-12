@@ -266,7 +266,13 @@ class TestApp extends StatelessWidget {
             'twitter': _testTwitterWidget,
             ...extraWidgets,
           },
-          styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
+          // Mirror the deck-level styles registered in `lib/main.dart` so the
+          // harness resolves every `style:` used in `slides.md` (e.g. `boxed`).
+          styles: {
+            'announcement': announcementStyle(),
+            'quote': quoteStyle(),
+            'boxed': boxedStyle(),
+          },
           templates: {
             'corporate': corporateTemplate(),
             'minimal': minimalTemplate(),
