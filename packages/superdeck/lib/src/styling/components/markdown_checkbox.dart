@@ -19,6 +19,3 @@ final class MarkdownCheckboxSpec with _$MarkdownCheckboxSpec {
 
   const MarkdownCheckboxSpec({this.textStyle, this.icon});
 }
-
-/// Legacy alias for [MarkdownCheckboxStyler] (the pre-codegen class name).
-typedef MarkdownCheckboxStyle = MarkdownCheckboxStyler;

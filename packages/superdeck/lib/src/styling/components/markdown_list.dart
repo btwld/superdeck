@@ -30,6 +30,3 @@ final class MarkdownListSpec with _$MarkdownListSpec {
     this.unorderedAlignment,
   });
 }
-
-/// Legacy alias for [MarkdownListStyler] (the pre-codegen class name).
-typedef MarkdownListStyle = MarkdownListStyler;

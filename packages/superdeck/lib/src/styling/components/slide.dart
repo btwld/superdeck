@@ -161,6 +161,3 @@ final class SlideSpec with _$SlideSpec {
     );
   }
 }
-
-/// Legacy alias for [SlideStyler] (the pre-codegen class name).
-typedef SlideStyle = SlideStyler;

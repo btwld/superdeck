@@ -44,6 +44,3 @@ final class MarkdownAlertTypeSpec with _$MarkdownAlertTypeSpec {
        containerFlex = containerFlex ?? const StyleSpec(spec: FlexBoxSpec()),
        headingFlex = headingFlex ?? const StyleSpec(spec: FlexBoxSpec());
 }
-
-/// Legacy alias for [MarkdownAlertTypeStyler] (the pre-codegen class name).
-typedef MarkdownAlertTypeStyle = MarkdownAlertTypeStyler;

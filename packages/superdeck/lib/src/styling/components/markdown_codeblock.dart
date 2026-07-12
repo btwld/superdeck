@@ -22,6 +22,3 @@ final class MarkdownCodeblockSpec with _$MarkdownCodeblockSpec {
 
   const MarkdownCodeblockSpec({this.textStyle, this.container, this.alignment});
 }
-
-/// Legacy alias for [MarkdownCodeblockStyler] (the pre-codegen class name).
-typedef MarkdownCodeblockStyle = MarkdownCodeblockStyler;

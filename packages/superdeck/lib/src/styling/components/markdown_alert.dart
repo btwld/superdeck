@@ -36,6 +36,3 @@ final class MarkdownAlertSpec with _$MarkdownAlertSpec {
        warning = warning ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
        caution = caution ?? const StyleSpec(spec: MarkdownAlertTypeSpec());
 }
-
-/// Legacy alias for [MarkdownAlertStyler] (the pre-codegen class name).
-typedef MarkdownAlertStyle = MarkdownAlertStyler;

@@ -28,6 +28,3 @@ final class MarkdownBlockquoteSpec with _$MarkdownBlockquoteSpec {
     this.alignment,
   });
 }
-
-/// Legacy alias for [MarkdownBlockquoteStyler] (the pre-codegen class name).
-typedef MarkdownBlockquoteStyle = MarkdownBlockquoteStyler;

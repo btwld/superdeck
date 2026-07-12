@@ -44,6 +44,3 @@ final class MarkdownTableSpec with _$MarkdownTableSpec {
     this.verticalAlignment,
   });
 }
-
-/// Legacy alias for [MarkdownTableStyler] (the pre-codegen class name).
-typedef MarkdownTableStyle = MarkdownTableStyler;
