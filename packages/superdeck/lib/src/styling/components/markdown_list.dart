@@ -12,11 +12,9 @@ part 'markdown_list.g.dart';
 @immutable
 final class MarkdownListSpec with _$MarkdownListSpec {
   @override
-  @MixableField(setterType: TextStyler)
   final StyleSpec<TextSpec>? bullet;
 
   @override
-  @MixableField(setterType: TextStyler)
   final StyleSpec<TextSpec>? text;
 
   @override

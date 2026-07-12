@@ -235,34 +235,180 @@ mixin _$SlideSpec implements Spec<SlideSpec>, Diagnosticable {
 typedef _$SlideSpecMethods = _$SlideSpec; // ignore: unused_element
 
 // **************************************************************************
-// StylerGenerator
+// SpecStylerGenerator
 // **************************************************************************
 
-mixin _$SlideStylerMixin on Style<SlideSpec>, Diagnosticable {
-  Prop<StyleSpec<TextSpec>>? get $h1;
-  Prop<StyleSpec<TextSpec>>? get $h2;
-  Prop<StyleSpec<TextSpec>>? get $h3;
-  Prop<StyleSpec<TextSpec>>? get $h4;
-  Prop<StyleSpec<TextSpec>>? get $h5;
-  Prop<StyleSpec<TextSpec>>? get $h6;
-  Prop<StyleSpec<TextSpec>>? get $p;
-  Prop<TextStyle>? get $a;
-  Prop<TextStyle>? get $em;
-  Prop<TextStyle>? get $strong;
-  Prop<TextStyle>? get $del;
-  Prop<TextStyle>? get $img;
-  Prop<TextStyle>? get $link;
-  Prop<TextScaler>? get $textScaleFactor;
-  Prop<StyleSpec<MarkdownAlertSpec>>? get $alert;
-  Prop<BoxDecoration>? get $horizontalRuleDecoration;
-  Prop<StyleSpec<MarkdownBlockquoteSpec>>? get $blockquote;
-  Prop<StyleSpec<MarkdownListSpec>>? get $list;
-  Prop<StyleSpec<MarkdownTableSpec>>? get $table;
-  Prop<StyleSpec<MarkdownCodeblockSpec>>? get $code;
-  Prop<StyleSpec<MarkdownCheckboxSpec>>? get $checkbox;
-  Prop<StyleSpec<BoxSpec>>? get $blockContainer;
-  Prop<StyleSpec<BoxSpec>>? get $slideContainer;
-  Prop<StyleSpec<ImageSpec>>? get $image;
+class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
+  final Prop<StyleSpec<TextSpec>>? $h1;
+  final Prop<StyleSpec<TextSpec>>? $h2;
+  final Prop<StyleSpec<TextSpec>>? $h3;
+  final Prop<StyleSpec<TextSpec>>? $h4;
+  final Prop<StyleSpec<TextSpec>>? $h5;
+  final Prop<StyleSpec<TextSpec>>? $h6;
+  final Prop<StyleSpec<TextSpec>>? $p;
+  final Prop<TextStyle>? $a;
+  final Prop<TextStyle>? $em;
+  final Prop<TextStyle>? $strong;
+  final Prop<TextStyle>? $del;
+  final Prop<TextStyle>? $img;
+  final Prop<TextStyle>? $link;
+  final Prop<TextScaler>? $textScaleFactor;
+  final Prop<StyleSpec<MarkdownAlertSpec>>? $alert;
+  final Prop<BoxDecoration>? $horizontalRuleDecoration;
+  final Prop<StyleSpec<MarkdownBlockquoteSpec>>? $blockquote;
+  final Prop<StyleSpec<MarkdownListSpec>>? $list;
+  final Prop<StyleSpec<MarkdownTableSpec>>? $table;
+  final Prop<StyleSpec<MarkdownCodeblockSpec>>? $code;
+  final Prop<StyleSpec<MarkdownCheckboxSpec>>? $checkbox;
+  final Prop<StyleSpec<BoxSpec>>? $blockContainer;
+  final Prop<StyleSpec<BoxSpec>>? $slideContainer;
+  final Prop<StyleSpec<ImageSpec>>? $image;
+
+  const SlideStyler.create({
+    Prop<StyleSpec<TextSpec>>? h1,
+    Prop<StyleSpec<TextSpec>>? h2,
+    Prop<StyleSpec<TextSpec>>? h3,
+    Prop<StyleSpec<TextSpec>>? h4,
+    Prop<StyleSpec<TextSpec>>? h5,
+    Prop<StyleSpec<TextSpec>>? h6,
+    Prop<StyleSpec<TextSpec>>? p,
+    Prop<TextStyle>? a,
+    Prop<TextStyle>? em,
+    Prop<TextStyle>? strong,
+    Prop<TextStyle>? del,
+    Prop<TextStyle>? img,
+    Prop<TextStyle>? link,
+    Prop<TextScaler>? textScaleFactor,
+    Prop<StyleSpec<MarkdownAlertSpec>>? alert,
+    Prop<BoxDecoration>? horizontalRuleDecoration,
+    Prop<StyleSpec<MarkdownBlockquoteSpec>>? blockquote,
+    Prop<StyleSpec<MarkdownListSpec>>? list,
+    Prop<StyleSpec<MarkdownTableSpec>>? table,
+    Prop<StyleSpec<MarkdownCodeblockSpec>>? code,
+    Prop<StyleSpec<MarkdownCheckboxSpec>>? checkbox,
+    Prop<StyleSpec<BoxSpec>>? blockContainer,
+    Prop<StyleSpec<BoxSpec>>? slideContainer,
+    Prop<StyleSpec<ImageSpec>>? image,
+    super.variants,
+    super.modifier,
+    super.animation,
+  }) : $h1 = h1,
+       $h2 = h2,
+       $h3 = h3,
+       $h4 = h4,
+       $h5 = h5,
+       $h6 = h6,
+       $p = p,
+       $a = a,
+       $em = em,
+       $strong = strong,
+       $del = del,
+       $img = img,
+       $link = link,
+       $textScaleFactor = textScaleFactor,
+       $alert = alert,
+       $horizontalRuleDecoration = horizontalRuleDecoration,
+       $blockquote = blockquote,
+       $list = list,
+       $table = table,
+       $code = code,
+       $checkbox = checkbox,
+       $blockContainer = blockContainer,
+       $slideContainer = slideContainer,
+       $image = image;
+
+  SlideStyler({
+    TextStyler? h1,
+    TextStyler? h2,
+    TextStyler? h3,
+    TextStyler? h4,
+    TextStyler? h5,
+    TextStyler? h6,
+    TextStyler? p,
+    TextStyleMix? a,
+    TextStyleMix? em,
+    TextStyleMix? strong,
+    TextStyleMix? del,
+    TextStyleMix? img,
+    TextStyleMix? link,
+    TextScaler? textScaleFactor,
+    MarkdownAlertStyler? alert,
+    BoxDecoration? horizontalRuleDecoration,
+    MarkdownBlockquoteStyler? blockquote,
+    MarkdownListStyler? list,
+    MarkdownTableStyler? table,
+    MarkdownCodeblockStyler? code,
+    MarkdownCheckboxStyler? checkbox,
+    BoxStyler? blockContainer,
+    BoxStyler? slideContainer,
+    ImageStyler? image,
+    AnimationConfig? animation,
+    WidgetModifierConfig? modifier,
+    List<VariantStyle<SlideSpec>>? variants,
+  }) : this.create(
+         h1: Prop.maybeMix(h1),
+         h2: Prop.maybeMix(h2),
+         h3: Prop.maybeMix(h3),
+         h4: Prop.maybeMix(h4),
+         h5: Prop.maybeMix(h5),
+         h6: Prop.maybeMix(h6),
+         p: Prop.maybeMix(p),
+         a: Prop.maybeMix(a),
+         em: Prop.maybeMix(em),
+         strong: Prop.maybeMix(strong),
+         del: Prop.maybeMix(del),
+         img: Prop.maybeMix(img),
+         link: Prop.maybeMix(link),
+         textScaleFactor: Prop.maybe(textScaleFactor),
+         alert: Prop.maybeMix(alert),
+         horizontalRuleDecoration: Prop.maybe(horizontalRuleDecoration),
+         blockquote: Prop.maybeMix(blockquote),
+         list: Prop.maybeMix(list),
+         table: Prop.maybeMix(table),
+         code: Prop.maybeMix(code),
+         checkbox: Prop.maybeMix(checkbox),
+         blockContainer: Prop.maybeMix(blockContainer),
+         slideContainer: Prop.maybeMix(slideContainer),
+         image: Prop.maybeMix(image),
+         variants: variants,
+         modifier: modifier,
+         animation: animation,
+       );
+
+  factory SlideStyler.h1(TextStyler value) => SlideStyler().h1(value);
+  factory SlideStyler.h2(TextStyler value) => SlideStyler().h2(value);
+  factory SlideStyler.h3(TextStyler value) => SlideStyler().h3(value);
+  factory SlideStyler.h4(TextStyler value) => SlideStyler().h4(value);
+  factory SlideStyler.h5(TextStyler value) => SlideStyler().h5(value);
+  factory SlideStyler.h6(TextStyler value) => SlideStyler().h6(value);
+  factory SlideStyler.p(TextStyler value) => SlideStyler().p(value);
+  factory SlideStyler.a(TextStyleMix value) => SlideStyler().a(value);
+  factory SlideStyler.em(TextStyleMix value) => SlideStyler().em(value);
+  factory SlideStyler.strong(TextStyleMix value) => SlideStyler().strong(value);
+  factory SlideStyler.del(TextStyleMix value) => SlideStyler().del(value);
+  factory SlideStyler.img(TextStyleMix value) => SlideStyler().img(value);
+  factory SlideStyler.link(TextStyleMix value) => SlideStyler().link(value);
+  factory SlideStyler.textScaleFactor(TextScaler value) =>
+      SlideStyler().textScaleFactor(value);
+  factory SlideStyler.alert(MarkdownAlertStyler value) =>
+      SlideStyler().alert(value);
+  factory SlideStyler.horizontalRuleDecoration(BoxDecoration value) =>
+      SlideStyler().horizontalRuleDecoration(value);
+  factory SlideStyler.blockquote(MarkdownBlockquoteStyler value) =>
+      SlideStyler().blockquote(value);
+  factory SlideStyler.list(MarkdownListStyler value) =>
+      SlideStyler().list(value);
+  factory SlideStyler.table(MarkdownTableStyler value) =>
+      SlideStyler().table(value);
+  factory SlideStyler.code(MarkdownCodeblockStyler value) =>
+      SlideStyler().code(value);
+  factory SlideStyler.checkbox(MarkdownCheckboxStyler value) =>
+      SlideStyler().checkbox(value);
+  factory SlideStyler.blockContainer(BoxStyler value) =>
+      SlideStyler().blockContainer(value);
+  factory SlideStyler.slideContainer(BoxStyler value) =>
+      SlideStyler().slideContainer(value);
+  factory SlideStyler.image(ImageStyler value) => SlideStyler().image(value);
 
   /// Sets the h1.
   SlideStyler h1(TextStyler value) {
@@ -334,9 +480,39 @@ mixin _$SlideStylerMixin on Style<SlideSpec>, Diagnosticable {
     return merge(SlideStyler(textScaleFactor: value));
   }
 
+  /// Sets the alert.
+  SlideStyler alert(MarkdownAlertStyler value) {
+    return merge(SlideStyler(alert: value));
+  }
+
   /// Sets the horizontalRuleDecoration.
   SlideStyler horizontalRuleDecoration(BoxDecoration value) {
     return merge(SlideStyler(horizontalRuleDecoration: value));
+  }
+
+  /// Sets the blockquote.
+  SlideStyler blockquote(MarkdownBlockquoteStyler value) {
+    return merge(SlideStyler(blockquote: value));
+  }
+
+  /// Sets the list.
+  SlideStyler list(MarkdownListStyler value) {
+    return merge(SlideStyler(list: value));
+  }
+
+  /// Sets the table.
+  SlideStyler table(MarkdownTableStyler value) {
+    return merge(SlideStyler(table: value));
+  }
+
+  /// Sets the code.
+  SlideStyler code(MarkdownCodeblockStyler value) {
+    return merge(SlideStyler(code: value));
+  }
+
+  /// Sets the checkbox.
+  SlideStyler checkbox(MarkdownCheckboxStyler value) {
+    return merge(SlideStyler(checkbox: value));
   }
 
   /// Sets the blockContainer.
@@ -355,16 +531,19 @@ mixin _$SlideStylerMixin on Style<SlideSpec>, Diagnosticable {
   }
 
   /// Sets the animation configuration.
+  @override
   SlideStyler animate(AnimationConfig value) {
     return merge(SlideStyler(animation: value));
   }
 
   /// Sets the style variants.
+  @override
   SlideStyler variants(List<VariantStyle<SlideSpec>> value) {
     return merge(SlideStyler(variants: value));
   }
 
   /// Wraps with a widget modifier.
+  @override
   SlideStyler wrap(WidgetModifierConfig value) {
     return merge(SlideStyler(modifier: value));
   }

@@ -22,7 +22,7 @@ dependencies:
   go_router: ^17.3.0
   path_provider: ^2.1.4
   mix: ^2.1.0
-  mix_annotations: ^2.1.1
+  mix_annotations: ^2.1.2
   remix: ^0.2.0
   flutter_markdown_plus: ^1.0.5
   superdeck_core: ^1.0.0
@@ -44,7 +44,7 @@ dev_dependencies:
   dart_code_metrics_presets: ^2.19.0
   build_runner: ^2.5.4
   dart_mappable_builder: ^4.7.0
-  mix_generator: ^2.1.1
+  mix_generator: ^2.1.2
   path_provider_platform_interface: ^2.1.2
   superdeck_builder:
     path: ../builder

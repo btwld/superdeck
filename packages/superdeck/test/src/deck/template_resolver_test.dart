@@ -121,6 +121,43 @@ void main() {
         },
       );
 
+      testWidgets(
+        'nested generated stylers accumulate field-wise through the cascade',
+        (tester) async {
+          const grey = Color(0xFF9E9E9E);
+          const red = Color(0xFFFF0000);
+          final baseStyle = SlideStyler(
+            alert: MarkdownAlertStyler(
+              note: MarkdownAlertTypeStyler(
+                heading: TextStyler().style(
+                  TextStyleMix(fontSize: 24, color: grey),
+                ),
+              ),
+            ),
+          );
+          final namedStyle = SlideStyler(
+            alert: MarkdownAlertStyler(
+              note: MarkdownAlertTypeStyler(heading: TextStyler().color(red)),
+            ),
+          );
+
+          late final StyleSpec<SlideSpec> resolved;
+          await tester.pumpWidget(
+            Builder(
+              builder: (context) {
+                resolved = baseStyle.merge(namedStyle).resolve(context);
+                return const SizedBox();
+              },
+            ),
+          );
+
+          final heading = resolved.spec.alert.spec.note.spec.heading.spec.style;
+          expect(heading, isNotNull);
+          expect(heading!.color, red);
+          expect(heading.fontSize, 24.0);
+        },
+      );
+
       test('no template, unknown style — throws ArgumentError', () {
         final options = DeckOptions(styles: {'light': SlideStyler()});
         final resolver = TemplateResolver(options);

@@ -15,7 +15,6 @@ final class MarkdownCheckboxSpec with _$MarkdownCheckboxSpec {
   final TextStyle? textStyle;
 
   @override
-  @MixableField(setterType: IconStyler)
   final StyleSpec<IconSpec>? icon;
 
   const MarkdownCheckboxSpec({this.textStyle, this.icon});

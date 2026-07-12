@@ -15,7 +15,6 @@ final class MarkdownCodeblockSpec with _$MarkdownCodeblockSpec {
   final TextStyle? textStyle;
 
   @override
-  @MixableField(setterType: BoxStyler)
   final StyleSpec<BoxSpec>? container;
 
   @override

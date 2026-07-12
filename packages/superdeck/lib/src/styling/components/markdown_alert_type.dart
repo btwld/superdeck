@@ -13,27 +13,21 @@ part 'markdown_alert_type.g.dart';
 @immutable
 final class MarkdownAlertTypeSpec with _$MarkdownAlertTypeSpec {
   @override
-  @MixableField(setterType: TextStyler)
   final StyleSpec<TextSpec> heading;
 
   @override
-  @MixableField(setterType: TextStyler)
   final StyleSpec<TextSpec> description;
 
   @override
-  @MixableField(setterType: IconStyler)
   final StyleSpec<IconSpec> icon;
 
   @override
-  @MixableField(setterType: BoxStyler)
   final StyleSpec<BoxSpec> container;
 
   @override
-  @MixableField(setterType: FlexBoxStyler)
   final StyleSpec<FlexBoxSpec> containerFlex;
 
   @override
-  @MixableField(setterType: FlexBoxStyler)
   final StyleSpec<FlexBoxSpec> headingFlex;
 
   const MarkdownAlertTypeSpec({

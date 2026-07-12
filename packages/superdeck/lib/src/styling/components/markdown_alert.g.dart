@@ -101,27 +101,102 @@ mixin _$MarkdownAlertSpec implements Spec<MarkdownAlertSpec>, Diagnosticable {
 typedef _$MarkdownAlertSpecMethods = _$MarkdownAlertSpec; // ignore: unused_element
 
 // **************************************************************************
-// StylerGenerator
+// SpecStylerGenerator
 // **************************************************************************
 
-mixin _$MarkdownAlertStylerMixin on Style<MarkdownAlertSpec>, Diagnosticable {
-  Prop<StyleSpec<MarkdownAlertTypeSpec>>? get $note;
-  Prop<StyleSpec<MarkdownAlertTypeSpec>>? get $tip;
-  Prop<StyleSpec<MarkdownAlertTypeSpec>>? get $important;
-  Prop<StyleSpec<MarkdownAlertTypeSpec>>? get $warning;
-  Prop<StyleSpec<MarkdownAlertTypeSpec>>? get $caution;
+class MarkdownAlertStyler
+    extends MixStyler<MarkdownAlertStyler, MarkdownAlertSpec> {
+  final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $note;
+  final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $tip;
+  final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $important;
+  final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $warning;
+  final Prop<StyleSpec<MarkdownAlertTypeSpec>>? $caution;
+
+  const MarkdownAlertStyler.create({
+    Prop<StyleSpec<MarkdownAlertTypeSpec>>? note,
+    Prop<StyleSpec<MarkdownAlertTypeSpec>>? tip,
+    Prop<StyleSpec<MarkdownAlertTypeSpec>>? important,
+    Prop<StyleSpec<MarkdownAlertTypeSpec>>? warning,
+    Prop<StyleSpec<MarkdownAlertTypeSpec>>? caution,
+    super.variants,
+    super.modifier,
+    super.animation,
+  }) : $note = note,
+       $tip = tip,
+       $important = important,
+       $warning = warning,
+       $caution = caution;
+
+  MarkdownAlertStyler({
+    MarkdownAlertTypeStyler? note,
+    MarkdownAlertTypeStyler? tip,
+    MarkdownAlertTypeStyler? important,
+    MarkdownAlertTypeStyler? warning,
+    MarkdownAlertTypeStyler? caution,
+    AnimationConfig? animation,
+    WidgetModifierConfig? modifier,
+    List<VariantStyle<MarkdownAlertSpec>>? variants,
+  }) : this.create(
+         note: Prop.maybeMix(note),
+         tip: Prop.maybeMix(tip),
+         important: Prop.maybeMix(important),
+         warning: Prop.maybeMix(warning),
+         caution: Prop.maybeMix(caution),
+         variants: variants,
+         modifier: modifier,
+         animation: animation,
+       );
+
+  factory MarkdownAlertStyler.note(MarkdownAlertTypeStyler value) =>
+      MarkdownAlertStyler().note(value);
+  factory MarkdownAlertStyler.tip(MarkdownAlertTypeStyler value) =>
+      MarkdownAlertStyler().tip(value);
+  factory MarkdownAlertStyler.important(MarkdownAlertTypeStyler value) =>
+      MarkdownAlertStyler().important(value);
+  factory MarkdownAlertStyler.warning(MarkdownAlertTypeStyler value) =>
+      MarkdownAlertStyler().warning(value);
+  factory MarkdownAlertStyler.caution(MarkdownAlertTypeStyler value) =>
+      MarkdownAlertStyler().caution(value);
+
+  /// Sets the note.
+  MarkdownAlertStyler note(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(note: value));
+  }
+
+  /// Sets the tip.
+  MarkdownAlertStyler tip(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(tip: value));
+  }
+
+  /// Sets the important.
+  MarkdownAlertStyler important(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(important: value));
+  }
+
+  /// Sets the warning.
+  MarkdownAlertStyler warning(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(warning: value));
+  }
+
+  /// Sets the caution.
+  MarkdownAlertStyler caution(MarkdownAlertTypeStyler value) {
+    return merge(MarkdownAlertStyler(caution: value));
+  }
 
   /// Sets the animation configuration.
+  @override
   MarkdownAlertStyler animate(AnimationConfig value) {
     return merge(MarkdownAlertStyler(animation: value));
   }
 
   /// Sets the style variants.
+  @override
   MarkdownAlertStyler variants(List<VariantStyle<MarkdownAlertSpec>> value) {
     return merge(MarkdownAlertStyler(variants: value));
   }
 
   /// Wraps with a widget modifier.
+  @override
   MarkdownAlertStyler wrap(WidgetModifierConfig value) {
     return merge(MarkdownAlertStyler(modifier: value));
   }
