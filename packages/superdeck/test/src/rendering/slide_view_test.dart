@@ -328,6 +328,85 @@ void main() {
 
         expect(size.width, 1280);
       });
+
+      testWidgets('slide container insets reduce the real section frame', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.singleColumn(),
+          parts: const SlideParts(header: null, footer: null),
+          style: SlideStyle(
+            slideContainer: BoxStyler(
+              margin: EdgeInsetsGeometryMix.all(10),
+              padding: EdgeInsetsGeometryMix.all(20),
+              decoration: BoxDecorationMix(
+                border: BorderMix.all(BorderSideMix(width: 5)),
+              ),
+            ),
+          ),
+        );
+
+        expect(
+          tester.getRect(find.byType(SectionWidget)),
+          const Rect.fromLTWH(35, 35, 1210, 650),
+        );
+      });
+
+      testWidgets('slide container constraints define the layout frame', (
+        tester,
+      ) async {
+        await SlideTestHarness.pumpSlide(
+          tester,
+          SlideFixtures.singleColumn(),
+          parts: const SlideParts(header: null, footer: null),
+          style: SlideStyle(
+            slideContainer: BoxStyler(
+              constraints: BoxConstraintsMix(maxWidth: 1000, maxHeight: 600),
+            ),
+          ),
+        );
+
+        expect(
+          tester.getRect(find.byType(SectionWidget)),
+          const Rect.fromLTWH(140, 60, 1000, 600),
+        );
+      });
+
+      testWidgets(
+        'oversized header and footer are constrained proportionally',
+        (tester) async {
+          await SlideTestHarness.pumpSlide(
+            tester,
+            SlideFixtures.singleColumn(),
+            parts: const SlideParts(
+              header: PreferredSize(
+                preferredSize: Size.fromHeight(600),
+                child: SizedBox(key: ValueKey('oversized-header')),
+              ),
+              footer: PreferredSize(
+                preferredSize: Size.fromHeight(300),
+                child: SizedBox(key: ValueKey('oversized-footer')),
+              ),
+            ),
+          );
+
+          expect(
+            tester
+                .getSize(find.byKey(const ValueKey('oversized-header')))
+                .height,
+            480,
+          );
+          expect(
+            tester
+                .getSize(find.byKey(const ValueKey('oversized-footer')))
+                .height,
+            240,
+          );
+          expect(tester.getSize(find.byType(SectionWidget)).height, 0);
+          expect(tester.takeException(), isNull);
+        },
+      );
     });
   });
 }

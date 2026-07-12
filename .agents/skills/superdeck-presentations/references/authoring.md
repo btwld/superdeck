@@ -171,8 +171,9 @@ padding: {
 }
 ```
 
-`margin` accepts the same three forms. Omitted object keys become zero. Never
-mix symmetric and physical-edge keys. All flex values must be positive
+`margin` accepts the same three forms. Omitted object keys become zero, while
+an explicitly authored `null` edge is invalid and reports its exact path.
+Never mix symmetric and physical-edge keys. All flex values must be positive
 integers.
 
 `margin` and `padding` own different layout roles: `margin` is consumed inside

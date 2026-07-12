@@ -118,16 +118,6 @@ sealed class Block with BlockMappable {
   );
 
   static final fromMap = BlockMapper.fromMap;
-
-  /// The effective alignment when no section context is available.
-  ///
-  /// Section renderers must use [SectionBlock.resolveBlockAlign] so section
-  /// alignment can be inherited. When [align] is not set explicitly, this
-  /// block-only fallback defaults to
-  /// [ContentAlignment.centerLeft] because paragraph-like content is easier
-  /// to read and scan when left-aligned. Set `align: center` explicitly to
-  /// restore the previous default.
-  ContentAlignment get resolvedAlign => align ?? ContentAlignment.centerLeft;
 }
 
 /// A section that contains multiple child blocks arranged horizontally.
@@ -153,11 +143,6 @@ class SectionBlock with SectionBlockMappable {
        flex = _validateFlex(flex),
        spacing = _validateSpacing(spacing),
        type = _validateType(type);
-
-  /// The total flex value of all child blocks.
-  int get totalBlockFlex {
-    return blocks.fold(0, (total, block) => total + block.flex);
-  }
 
   /// Resolves a child's alignment in section context.
   ///

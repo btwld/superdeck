@@ -63,11 +63,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
           context: builderContext,
           child: child,
           heroTag: heroTag,
-          heroData: TextElement(
-            text: transformed,
-            spec: spec,
-            size: blockData.size,
-          ),
+          heroData: TextElement(text: transformed, spec: spec),
           buildFlight: _buildStableFlight,
         );
       },
@@ -97,11 +93,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
           context: context,
           child: child,
           heroTag: tag,
-          heroData: TextElement(
-            text: transformed,
-            spec: spec,
-            size: BlockConfiguration.of(context).size,
-          ),
+          heroData: TextElement(text: transformed, spec: spec),
           buildFlight: _buildStableFlight,
         );
       },

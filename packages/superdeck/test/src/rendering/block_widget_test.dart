@@ -5,7 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart'
-    show BlockStyler, BlockVariant, SlideStyle;
+    show BlockStyler, BlockVariant, SlideParts, SlideStyle;
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -50,7 +50,12 @@ void main() {
             SlideFixtures.withAlignment(alignment),
           );
 
-          final alignWidget = find.byType(Align).first;
+          final alignWidget = find
+              .descendant(
+                of: find.byType(BlockWidget),
+                matching: find.byType(Align),
+              )
+              .first;
           final align = tester.widget<Align>(alignWidget);
           expect(align.alignment, _toAlignment(alignment));
         });
@@ -75,7 +80,14 @@ void main() {
           ),
         );
 
-        final align = tester.widget<Align>(find.byType(Align).first);
+        final align = tester.widget<Align>(
+          find
+              .descendant(
+                of: find.byType(BlockWidget),
+                matching: find.byType(Align),
+              )
+              .first,
+        );
         expect(align.alignment, Alignment.centerLeft);
       });
 
@@ -92,7 +104,14 @@ void main() {
           ),
         );
 
-        final align = tester.widget<Align>(find.byType(Align).first);
+        final align = tester.widget<Align>(
+          find
+              .descendant(
+                of: find.byType(BlockWidget),
+                matching: find.byType(Align),
+              )
+              .first,
+        );
         expect(align.alignment, Alignment.bottomRight);
       });
 
@@ -144,10 +163,60 @@ void main() {
           },
         );
 
-        final align = tester.widget<Align>(find.byType(Align).first);
+        final align = tester.widget<Align>(
+          find
+              .descendant(
+                of: find.byType(CustomBlockWidget),
+                matching: find.byType(Align),
+              )
+              .first,
+        );
         expect(align.alignment, Alignment.centerRight);
         expect(observedAlignment, ContentAlignment.centerRight);
       });
+
+      for (final alignment in ContentAlignment.values) {
+        testWidgets('$alignment positions content inside a full block frame', (
+          tester,
+        ) async {
+          const markerKey = ValueKey('alignment-marker');
+          await SlideTestHarness.pumpSlide(
+            tester,
+            Slide(
+              key: 'frame-${alignment.name}',
+              sections: [
+                SectionBlock([WidgetBlock(name: 'fixed', align: alignment)]),
+              ],
+            ),
+            parts: const SlideParts(header: null, footer: null),
+            widgets: {
+              'fixed': (_) =>
+                  const SizedBox(key: markerKey, width: 20, height: 10),
+            },
+          );
+
+          final blockRect = tester.getRect(find.byType(CustomBlockWidget));
+          final boxRect = tester.getRect(
+            find.descendant(
+              of: find.byType(CustomBlockWidget),
+              matching: find.byType(Box),
+            ),
+          );
+          final markerRect = tester.getRect(find.byKey(markerKey));
+          final innerRect = Rect.fromLTRB(
+            blockRect.left + 40,
+            blockRect.top + 40,
+            blockRect.right - 40,
+            blockRect.bottom - 40,
+          );
+
+          expect(boxRect, blockRect);
+          expect(
+            markerRect,
+            _toAlignment(alignment).inscribe(markerRect.size, innerRect),
+          );
+        });
+      }
     });
 
     group('scrollable behavior', () {
@@ -228,7 +297,7 @@ void main() {
       );
 
       testWidgets(
-        'scrollable widget block is NOT scrollable during static rendering',
+        'static scrollable widget is clipped with bounded constraints',
         (tester) async {
           await SlideTestHarness.pumpSlide(
             tester,
@@ -242,12 +311,13 @@ void main() {
             ),
             widgets: {
               'short-widget': (_) =>
-                  const SizedBox(height: 80, child: Text('Static widget')),
+                  const SizedBox.expand(child: Text('Static widget')),
             },
             isStaticRendering: true,
           );
 
           tester.expectNotScrollable(find.byType(CustomBlockWidget));
+          expect(tester.takeException(), isNull);
         },
       );
     });
@@ -434,7 +504,7 @@ void main() {
         expect(logs, isEmpty);
       });
 
-      testWidgets('does not probe or rebuild arbitrary custom widgets', (
+      testWidgets('probes custom widgets once through the shared frame', (
         tester,
       ) async {
         var buildCount = 0;
@@ -445,7 +515,11 @@ void main() {
             'counting-widget': (_) => Builder(
               builder: (context) {
                 buildCount += 1;
-                return const SizedBox(width: 2400, height: 2400);
+                return const OverflowBox(
+                  maxWidth: 2400,
+                  maxHeight: 2400,
+                  child: SizedBox(width: 2400, height: 2400),
+                );
               },
             ),
           },
@@ -453,78 +527,83 @@ void main() {
         );
 
         expect(buildCount, 1);
-        expect(find.byType(OverflowDiagnosticProbe), findsNothing);
-        expect(logs, isEmpty);
+        expect(find.byType(OverflowDiagnosticProbe), findsOneWidget);
+        expect(logs, hasLength(1));
+        expect(
+          logs.single,
+          contains('block=fixture-custom-widget-counting-widget:s0:b0'),
+        );
       });
 
       testWidgets(
         'outlines an overflowing frame without covering aligned content',
         (tester) async {
-        tester.view.physicalSize = const Size(100, 100);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        const boundaryKey = ValueKey('overflow-indicator-boundary');
+          tester.view.physicalSize = const Size(100, 100);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          const boundaryKey = ValueKey('overflow-indicator-boundary');
 
-        await tester.pumpWidget(
-          const Directionality(
-            textDirection: TextDirection.ltr,
-            child: RepaintBoundary(
-              key: boundaryKey,
-              child: SizedBox(
-                width: 100,
-                height: 100,
-                child: OverflowDiagnosticProbe(
-                  slideKey: 'indicator-slide',
-                  runtimeKey: 'indicator-slide:s0:b0',
-                  availableSize: Size(100, 100),
-                  child: OverflowBox(
-                    maxWidth: 200,
-                    maxHeight: 200,
-                    child: SizedBox(
-                      width: 200,
-                      height: 200,
-                      child: ColoredBox(color: Color(0xFF0000FF)),
+          await tester.pumpWidget(
+            const Directionality(
+              textDirection: TextDirection.ltr,
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: OverflowDiagnosticProbe(
+                    slideKey: 'indicator-slide',
+                    runtimeKey: 'indicator-slide:s0:b0',
+                    availableSize: Size(100, 100),
+                    child: OverflowBox(
+                      maxWidth: 200,
+                      maxHeight: 200,
+                      child: SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: ColoredBox(color: Color(0xFF0000FF)),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-        await tester.pump();
-        expect(OverflowDiagnostics.activeIssuesForTesting, isNotEmpty);
+          );
+          await tester.pump();
+          expect(OverflowDiagnostics.activeIssuesForTesting, isNotEmpty);
 
-        final boundary = tester.renderObject<RenderRepaintBoundary>(
-          find.byKey(boundaryKey),
-        );
-        final pixels = await tester.runAsync(() async {
-          final image = await boundary.toImage();
-          try {
-            final bytes = await image.toByteData(
-              format: ui.ImageByteFormat.rawRgba,
-            );
-            List<int> pixel(int x, int y) {
-              final pixelOffset = (y * image.width + x) * 4;
-              return bytes!.buffer.asUint8List(pixelOffset, 4).toList();
+          final boundary = tester.renderObject<RenderRepaintBoundary>(
+            find.byKey(boundaryKey),
+          );
+          final pixels = await tester.runAsync(() async {
+            final image = await boundary.toImage();
+            try {
+              final bytes = await image.toByteData(
+                format: ui.ImageByteFormat.rawRgba,
+              );
+              List<int> pixel(int x, int y) {
+                final pixelOffset = (y * image.width + x) * 4;
+                return bytes!.buffer.asUint8List(pixelOffset, 4).toList();
+              }
+
+              return {
+                'topEdge': pixel(50, 0),
+                'rightEdge': pixel(99, 50),
+                'topRightInterior': pixel(95, 5),
+              };
+            } finally {
+              image.dispose();
             }
+          });
 
-            return {
-              'topEdge': pixel(50, 0),
-              'rightEdge': pixel(99, 50),
-              'topRightInterior': pixel(95, 5),
-            };
-          } finally {
-            image.dispose();
-          }
-        });
-
-        // The frame outline paints on the edges...
-        expect(pixels!['topEdge'], [255, 59, 48, 255]);
-        expect(pixels['rightEdge'], [255, 59, 48, 255]);
-        // ...but content aligned to the top-right corner stays visible.
-        expect(pixels['topRightInterior'], [0, 0, 255, 255]);
-      });
+          // The frame outline paints on the edges...
+          expect(pixels!['topEdge'], [255, 59, 48, 255]);
+          expect(pixels['rightEdge'], [255, 59, 48, 255]);
+          // ...but content aligned to the top-right corner stays visible.
+          expect(pixels['topRightInterior'], [0, 0, 255, 255]);
+        },
+      );
 
       testWidgets('allows Hero flights between changing constraints', (
         tester,
@@ -733,27 +812,25 @@ void main() {
             style: SlideStyle(
               blockContainer:
                   BlockStyler(
-                        padding: EdgeInsetsGeometryMix.all(10),
-                        margin: EdgeInsetsGeometryMix.all(5),
+                    padding: EdgeInsetsGeometryMix.all(10),
+                    margin: EdgeInsetsGeometryMix.all(5),
+                    decoration: BoxDecorationMix(
+                      color: const Color(0xFF224466),
+                      border: BorderMix.all(BorderSideMix(width: 2)),
+                    ),
+                  ).animate(animation).variants([
+                    VariantStyle(
+                      const BlockVariant('chart'),
+                      BlockStyler(
+                        padding: EdgeInsetsGeometryMix.all(20),
+                        margin: EdgeInsetsGeometryMix.all(10),
                         decoration: BoxDecorationMix(
-                          color: const Color(0xFF224466),
-                          border: BorderMix.all(BorderSideMix(width: 2)),
+                          color: variantColor,
+                          border: BorderMix.all(BorderSideMix(width: 3)),
                         ),
-                      )
-                      .animate(animation)
-                      .variants([
-                        VariantStyle(
-                          const BlockVariant('chart'),
-                          BlockStyler(
-                            padding: EdgeInsetsGeometryMix.all(20),
-                            margin: EdgeInsetsGeometryMix.all(10),
-                            decoration: BoxDecorationMix(
-                              color: variantColor,
-                              border: BorderMix.all(BorderSideMix(width: 3)),
-                            ),
-                          ),
-                        ),
-                      ]),
+                      ),
+                    ),
+                  ]),
             ),
             widgets: {
               'chart': (_) =>
@@ -1030,8 +1107,8 @@ void main() {
             ],
           ),
           style: SlideStyle(
-            blockContainer:
-                BlockStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
+            blockContainer: BlockStyler(padding: EdgeInsetsGeometryMix.all(40))
+                .variants([
                   VariantStyle(
                     const NamedVariant('image'),
                     BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),

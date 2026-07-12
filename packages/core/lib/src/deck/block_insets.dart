@@ -103,8 +103,8 @@ final class BlockInsets with BlockInsetsMappable {
       }
 
       double read(String key) {
+        if (!map.containsKey(key)) return 0;
         final edgeValue = map[key];
-        if (edgeValue == null) return 0;
 
         return _validateAuthoringValue(edgeValue, '$field.$key');
       }

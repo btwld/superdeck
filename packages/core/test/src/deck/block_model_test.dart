@@ -342,10 +342,7 @@ void main() {
         for (final MapEntry(key: input, value: normalized)
             in accepted.entries) {
           test('$field: $input normalizes to four physical edges', () {
-            final block = Block.parseAuthoring({
-              'type': 'block',
-              field: input,
-            });
+            final block = Block.parseAuthoring({'type': 'block', field: input});
 
             expect(block.toMap()[field], normalized);
           });
@@ -435,6 +432,27 @@ void main() {
             }),
             _throwsInvalidInsets('$field.vertical', structural: false),
           );
+          expect(
+            () => Block.parseAuthoring({
+              'type': 'block',
+              field: {'left': null},
+            }),
+            _throwsInvalidInsets('$field.left', structural: false),
+          );
+        });
+
+        test('$field omitted edges normalize to zero', () {
+          final block = Block.parseAuthoring({
+            'type': 'block',
+            field: {'top': 12},
+          });
+
+          expect(block.toMap()[field], {
+            'top': 12.0,
+            'right': 0.0,
+            'bottom': 0.0,
+            'left': 0.0,
+          });
         });
       }
 
@@ -584,21 +602,6 @@ void main() {
             () => ContentBlock.parse({'type': 'block', 'flex': 0}),
             _throwsInvalidFlex(),
           );
-        });
-      });
-
-      group('resolvedAlign', () {
-        test('defaults to centerLeft when align is not set', () {
-          final block = ContentBlock('Content');
-
-          expect(block.align, isNull);
-          expect(block.resolvedAlign, ContentAlignment.centerLeft);
-        });
-
-        test('uses explicit align when set', () {
-          final block = ContentBlock('Content', align: ContentAlignment.center);
-
-          expect(block.resolvedAlign, ContentAlignment.center);
         });
       });
 
@@ -952,23 +955,6 @@ void main() {
         });
       });
 
-      group('totalBlockFlex', () {
-        test('returns 0 for empty section', () {
-          final section = SectionBlock([]);
-          expect(section.totalBlockFlex, 0);
-        });
-
-        test('sums child flex values', () {
-          final section = SectionBlock([
-            ContentBlock('A', flex: 1),
-            ContentBlock('B', flex: 2),
-            ContentBlock('C', flex: 3),
-          ]);
-
-          expect(section.totalBlockFlex, 6);
-        });
-      });
-
       group('copyWith', () {
         test('copies with new blocks', () {
           final original = SectionBlock([ContentBlock('A')]);
@@ -1239,24 +1225,6 @@ void main() {
             'bottom': 4.0,
             'left': 4.0,
           });
-        });
-      });
-
-      group('resolvedAlign', () {
-        test('defaults to centerLeft when align is not set', () {
-          final widget = WidgetBlock(name: 'Test');
-
-          expect(widget.align, isNull);
-          expect(widget.resolvedAlign, ContentAlignment.centerLeft);
-        });
-
-        test('uses explicit align when set', () {
-          final widget = WidgetBlock(
-            name: 'Test',
-            align: ContentAlignment.topRight,
-          );
-
-          expect(widget.resolvedAlign, ContentAlignment.topRight);
         });
       });
 

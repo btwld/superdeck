@@ -38,9 +38,9 @@ class GoogleSchemaAdapter {
       'object' => _adaptObject(schema, path),
       'array' => _adaptArray(schema, path),
       'string' => _adaptString(schema),
-      'number' => _adaptScalar(google_ai.Type.number, schema),
-      'integer' => _adaptScalar(google_ai.Type.integer, schema),
-      'boolean' => _adaptScalar(google_ai.Type.boolean, schema),
+      'number' => _adaptScalar(google_ai.Type.number, schema, path),
+      'integer' => _adaptScalar(google_ai.Type.integer, schema, path),
+      'boolean' => _adaptScalar(google_ai.Type.boolean, schema, path),
       'null' => google_ai.Schema(
         type: google_ai.Type.object,
         nullable: true,
@@ -150,9 +150,50 @@ class GoogleSchemaAdapter {
   google_ai.Schema _adaptScalar(
     google_ai.Type type,
     Map<String, Object?> schema,
+    List<String> path,
   ) {
-    return google_ai.Schema(type: type, description: _description(schema));
+    final isInteger = type == google_ai.Type.integer;
+    var minimum = _numericBound(schema['minimum']);
+    var maximum = _numericBound(schema['maximum']);
+
+    if (schema['exclusiveMinimum'] case final num exclusiveMinimum) {
+      if (isInteger) {
+        final inclusiveMinimum = exclusiveMinimum.floorToDouble() + 1;
+        minimum = minimum == null
+            ? inclusiveMinimum
+            : minimum > inclusiveMinimum
+            ? minimum
+            : inclusiveMinimum;
+      } else {
+        _reportUnsupportedKeyword('exclusiveMinimum', path);
+      }
+    }
+
+    if (schema['exclusiveMaximum'] case final num exclusiveMaximum) {
+      if (isInteger) {
+        final inclusiveMaximum = exclusiveMaximum.ceilToDouble() - 1;
+        maximum = maximum == null
+            ? inclusiveMaximum
+            : maximum < inclusiveMaximum
+            ? maximum
+            : inclusiveMaximum;
+      } else {
+        _reportUnsupportedKeyword('exclusiveMaximum', path);
+      }
+    }
+
+    return google_ai.Schema(
+      type: type,
+      description: _description(schema),
+      minimum: minimum,
+      maximum: maximum,
+    );
   }
+
+  double? _numericBound(Object? value) => switch (value) {
+    num value => value.toDouble(),
+    _ => null,
+  };
 
   google_ai.Schema? _unsupportedType(String type, List<String> path) {
     _errors.add(
@@ -205,11 +246,7 @@ class GoogleSchemaAdapter {
       'minLength',
       'maxLength',
       'pattern',
-      'exclusiveMinimum',
-      'exclusiveMaximum',
       'multipleOf',
-      'minimum',
-      'maximum',
     };
 
     for (final keyword in unsupportedKeywords) {
@@ -222,6 +259,15 @@ class GoogleSchemaAdapter {
         );
       }
     }
+  }
+
+  void _reportUnsupportedKeyword(String keyword, List<String> path) {
+    _errors.add(
+      GoogleSchemaAdapterError(
+        'Unsupported keyword "$keyword". It will be ignored.',
+        path: path,
+      ),
+    );
   }
 
   List<String> _stringList(Object? value) {

@@ -22,7 +22,6 @@ class _BlockContainer extends StatefulWidget {
   const _BlockContainer({
     required this.block,
     required this.align,
-    required this.size,
     required this.configuration,
     required this.runtimeKey,
     required this.child,
@@ -30,7 +29,6 @@ class _BlockContainer extends StatefulWidget {
 
   final Block block;
   final ContentAlignment align;
-  final Size size;
   final SlideConfiguration configuration;
   final String runtimeKey;
   final Widget child;
@@ -71,40 +69,48 @@ class _BlockContainerState extends State<_BlockContainer> {
     };
     final spec = _applyBlockInsets(resolvedSpec, widget.block);
 
-    final blockOffset = spec.blockContainer.spec.calculateBlockOffset;
+    Widget content = Box(
+      styleSpec: spec.blockContainer,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final blockData = BlockConfiguration(
+            align: widget.align,
+            spec: spec,
+            size: constraints.biggest,
+            runtimeKey: widget.runtimeKey,
+          );
 
-    final blockData = BlockConfiguration(
-      align: widget.align,
-      spec: spec,
-      size: Size(
-        math.max(0.0, widget.size.width - blockOffset.dx),
-        math.max(0.0, widget.size.height - blockOffset.dy),
+          Widget innerContent = widget.child;
+          final diagnosticsEnabled =
+              widget.configuration.debug &&
+              !widget.configuration.isStaticRendering &&
+              !widget.block.scrollable;
+          if (diagnosticsEnabled) {
+            innerContent = OverflowDiagnosticProbe(
+              slideKey: widget.configuration.key,
+              runtimeKey: widget.runtimeKey,
+              availableSize: blockData.size,
+              child: innerContent,
+            );
+          }
+
+          innerContent = _BlockContentFrame(
+            align: widget.align,
+            size: blockData.size,
+            scrollable: widget.block.scrollable,
+            isStaticRendering: widget.configuration.isStaticRendering,
+            child: innerContent,
+          );
+
+          return InheritedData(data: blockData, child: innerContent);
+        },
       ),
-      runtimeKey: widget.runtimeKey,
-    );
-
-    Widget content = InheritedData(
-      data: blockData,
-      child: Box(styleSpec: spec.blockContainer, child: widget.child),
-    );
-
-    content = OverflowClip(
-      scrollable:
-          widget.block.scrollable && !widget.configuration.isStaticRendering,
-      child: content,
-    );
-
-    content = Align(alignment: widget.align.toAlignment, child: content);
-
-    // Apply size constraints
-    content = ConstrainedBox(
-      constraints: BoxConstraints.loose(widget.size),
-      child: content,
     );
 
     // Add debug border if needed
     if (widget.configuration.debug) {
-      return Container(
+      content = DecoratedBox(
+        position: DecorationPosition.foreground,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.cyan, width: 2),
         ),
@@ -116,15 +122,49 @@ class _BlockContainerState extends State<_BlockContainer> {
   }
 }
 
+class _BlockContentFrame extends StatelessWidget {
+  const _BlockContentFrame({
+    required this.align,
+    required this.size,
+    required this.scrollable,
+    required this.isStaticRendering,
+    required this.child,
+  });
+
+  final ContentAlignment align;
+  final Size size;
+  final bool scrollable;
+  final bool isStaticRendering;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final alignment = align.toAlignment;
+
+    if (scrollable && !isStaticRendering) {
+      return SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: size.height),
+          child: Align(alignment: alignment, child: child),
+        ),
+      );
+    }
+
+    return ClipRect(
+      child: Align(alignment: alignment, child: child),
+    );
+  }
+}
+
 /// Helper widget for content block children to access BlockConfiguration context.
 class _ContentBlockChild extends StatelessWidget {
   const _ContentBlockChild({
     required this.content,
-    required this.diagnosticsEnabled,
+    required this.allowVerticalOverflow,
   });
 
   final String content;
-  final bool diagnosticsEnabled;
+  final bool allowVerticalOverflow;
 
   @override
   Widget build(BuildContext context) {
@@ -137,12 +177,14 @@ class _ContentBlockChild extends StatelessWidget {
           ? Duration.zero
           : const Duration(milliseconds: 250),
     );
-    if (!diagnosticsEnabled) return markdown;
 
-    return OverflowDiagnosticProbe(
-      slideKey: slide.key,
-      runtimeKey: data.runtimeKey,
-      availableSize: data.size,
+    if (!allowVerticalOverflow) return markdown;
+    return OverflowBox(
+      alignment: data.align.toAlignment,
+      minWidth: 0,
+      maxWidth: data.size.width,
+      minHeight: 0,
+      maxHeight: double.infinity,
       child: markdown,
     );
   }
@@ -157,7 +199,6 @@ class _CustomBlockChild extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final slide = SlideConfiguration.of(context);
-    final data = BlockConfiguration.of(context);
     final factory = slide.getWidgetFactory(block.name);
 
     if (factory == null) {
@@ -165,29 +206,7 @@ class _CustomBlockChild extends StatelessWidget {
     }
 
     try {
-      final child = factory(block.args);
-      if (block.scrollable && !slide.isStaticRendering) {
-        return ConstrainedBox(
-          constraints: BoxConstraints(minHeight: data.size.height),
-          child: child,
-        );
-      }
-
-      if (block.scrollable && slide.isStaticRendering) {
-        return SizedBox(
-          height: data.size.height,
-          child: ClipRect(
-            child: OverflowBox(
-              alignment: Alignment.topCenter,
-              minHeight: data.size.height,
-              maxHeight: double.infinity,
-              child: child,
-            ),
-          ),
-        );
-      }
-
-      return SizedBox(height: data.size.height, child: child);
+      return factory(block.args);
     } catch (e, stackTrace) {
       return ErrorWidgets.detailed(
         'Error building widget: ${block.name}',
@@ -203,14 +222,12 @@ class BlockWidget extends StatelessWidget {
     super.key,
     required this.block,
     required this.align,
-    required this.size,
     required this.configuration,
     required this.runtimeKey,
   });
 
   final ContentBlock block;
   final ContentAlignment align;
-  final Size size;
   final SlideConfiguration configuration;
   final String runtimeKey;
 
@@ -219,15 +236,12 @@ class BlockWidget extends StatelessWidget {
     return _BlockContainer(
       block: block,
       align: align,
-      size: size,
       configuration: configuration,
       runtimeKey: runtimeKey,
       child: _ContentBlockChild(
         content: block.content,
-        diagnosticsEnabled:
-            configuration.debug &&
-            !configuration.isStaticRendering &&
-            !block.scrollable,
+        allowVerticalOverflow:
+            configuration.isStaticRendering || !block.scrollable,
       ),
     );
   }
@@ -239,14 +253,12 @@ class CustomBlockWidget extends StatelessWidget {
     super.key,
     required this.block,
     required this.align,
-    required this.size,
     required this.configuration,
     required this.runtimeKey,
   });
 
   final WidgetBlock block;
   final ContentAlignment align;
-  final Size size;
   final SlideConfiguration configuration;
   final String runtimeKey;
 
@@ -257,7 +269,6 @@ class CustomBlockWidget extends StatelessWidget {
       child: _BlockContainer(
         block: block,
         align: align,
-        size: size,
         configuration: configuration,
         runtimeKey: runtimeKey,
         child: _CustomBlockChild(block: block),
@@ -271,12 +282,10 @@ class SectionWidget extends StatelessWidget {
   const SectionWidget({
     super.key,
     required this.section,
-    required this.size,
     required this.sectionIndex,
   });
 
   final SectionBlock section;
-  final Size size;
   final int sectionIndex;
 
   Positioned _renderDebugInfo(Block block, Size size) {
@@ -301,67 +310,68 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
   Widget build(context) {
     final configuration = SlideConfiguration.of(context);
     final gapCount = math.max(0, section.blocks.length - 1);
-    final actualSpacing = gapCount == 0
-        ? 0.0
-        : math.min(section.spacing, size.width / gapCount);
-    final availableWidth = math.max(0.0, size.width - actualSpacing * gapCount);
-    final totalFlex = section.totalBlockFlex;
-    final flexUnit = totalFlex == 0 ? 0.0 : availableWidth / totalFlex;
+    if (section.blocks.isEmpty) return const SizedBox.expand();
 
-    double leftOffset = 0;
-    final children = <Widget>[];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final actualSpacing = gapCount == 0
+            ? 0.0
+            : math.min(section.spacing, constraints.maxWidth / gapCount);
 
-    for (var blockIndex = 0; blockIndex < section.blocks.length; blockIndex++) {
-      final block = section.blocks[blockIndex];
-      final align = section.resolveBlockAlign(block);
-      final blockWidth = flexUnit * block.flex;
-      final blockSize = Size(blockWidth, size.height);
-      final runtimeKey = buildBlockRuntimeKey(
-        configuration.key,
-        sectionIndex,
-        blockIndex,
-      );
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (
+              var blockIndex = 0;
+              blockIndex < section.blocks.length;
+              blockIndex++
+            ) ...[
+              Expanded(
+                flex: section.blocks[blockIndex].flex,
+                child: Builder(
+                  builder: (context) {
+                    final block = section.blocks[blockIndex];
+                    final align = section.resolveBlockAlign(block);
+                    final runtimeKey = buildBlockRuntimeKey(
+                      configuration.key,
+                      sectionIndex,
+                      blockIndex,
+                    );
 
-      Widget blockWidget = switch (block) {
-        WidgetBlock b => CustomBlockWidget(
-          block: b,
-          align: align,
-          size: blockSize,
-          configuration: configuration,
-          runtimeKey: runtimeKey,
-        ),
-        ContentBlock b => BlockWidget(
-          block: b,
-          align: align,
-          size: blockSize,
-          configuration: configuration,
-          runtimeKey: runtimeKey,
-        ),
-      };
+                    Widget blockWidget = switch (block) {
+                      WidgetBlock b => CustomBlockWidget(
+                        block: b,
+                        align: align,
+                        configuration: configuration,
+                        runtimeKey: runtimeKey,
+                      ),
+                      ContentBlock b => BlockWidget(
+                        block: b,
+                        align: align,
+                        configuration: configuration,
+                        runtimeKey: runtimeKey,
+                      ),
+                    };
 
-      // Add debug info overlay if needed
-      if (configuration.debug) {
-        blockWidget = Stack(
-          children: [blockWidget, _renderDebugInfo(block, blockSize)],
+                    if (!configuration.debug) return blockWidget;
+                    return LayoutBuilder(
+                      builder: (context, constraints) => Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          blockWidget,
+                          _renderDebugInfo(block, constraints.biggest),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              if (blockIndex < section.blocks.length - 1)
+                SizedBox(width: actualSpacing),
+            ],
+          ],
         );
-      }
-
-      children.add(
-        Positioned(
-          left: leftOffset,
-          top: 0,
-          width: blockSize.width,
-          height: blockSize.height,
-          child: blockWidget,
-        ),
-      );
-
-      leftOffset += blockWidth;
-      if (blockIndex < section.blocks.length - 1) {
-        leftOffset += actualSpacing;
-      }
-    }
-
-    return Stack(children: children);
+      },
+    );
   }
 }

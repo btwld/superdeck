@@ -2,6 +2,7 @@ import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
+import 'package:json_schema_builder/json_schema_builder.dart' as dsb;
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/google_schema_adapter.dart';
 import 'package:superdeck_core/superdeck_core.dart'
@@ -47,6 +48,8 @@ void main() {
         containsAll(['type', 'align', 'flex', 'spacing', 'blocks']),
       );
       expect(sections.properties.containsKey('scrollable'), isFalse);
+      expect(property(sections, 'flex').minimum, 1);
+      expect(property(sections, 'spacing').minimum, 0);
 
       final blocks = property(sections, 'blocks').items!;
       expect(
@@ -67,6 +70,61 @@ void main() {
         containsAll(['top', 'right', 'bottom', 'left']),
       );
       expect(property(blocks, 'align').enum$, contains('bottomRight'));
+      expect(property(blocks, 'flex').minimum, 1);
+      expect(
+        result.errors.where(
+          (error) =>
+              error.message.contains('minimum') ||
+              error.message.contains('exclusiveMinimum'),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('preserves supported numeric bounds exactly', () {
+      final result = GoogleSchemaAdapter().adapt(
+        dsb.Schema.fromMap({
+          'type': 'object',
+          'properties': {
+            'boundedNumber': {'type': 'number', 'minimum': 1.5, 'maximum': 9.5},
+            'boundedInteger': {
+              'type': 'integer',
+              'exclusiveMinimum': 0,
+              'exclusiveMaximum': 10,
+            },
+          },
+        }),
+      );
+
+      final boundedNumber = result.schema!.properties['boundedNumber']!;
+      final boundedInteger = result.schema!.properties['boundedInteger']!;
+
+      expect(boundedNumber.minimum, 1.5);
+      expect(boundedNumber.maximum, 9.5);
+      expect(boundedInteger.minimum, 1);
+      expect(boundedInteger.maximum, 9);
+      expect(result.errors, isEmpty);
+    });
+
+    test('reports unsupported exclusive bounds on non-integer schemas', () {
+      final result = GoogleSchemaAdapter().adapt(
+        dsb.Schema.fromMap({
+          'type': 'number',
+          'exclusiveMinimum': 0.5,
+          'exclusiveMaximum': 10.5,
+        }),
+      );
+
+      expect(result.schema, isNotNull);
+      expect(result.schema!.minimum, isNull);
+      expect(result.schema!.maximum, isNull);
+      expect(
+        result.errors.map((error) => error.message),
+        containsAll([
+          contains('exclusiveMinimum'),
+          contains('exclusiveMaximum'),
+        ]),
+      );
     });
   });
 

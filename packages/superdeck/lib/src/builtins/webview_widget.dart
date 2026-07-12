@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/webview_wrapper.dart';
 
 /// Strongly-typed data transfer object for the webview widget.
@@ -98,9 +97,7 @@ class WebViewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = BlockConfiguration.of(context);
     return WebViewWrapper(
-      size: data.size,
       url: _data.url,
       cacheKey: _data.cacheKey,
       title: _data.title,

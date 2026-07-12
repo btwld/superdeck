@@ -22,6 +22,7 @@ class SlideTestHarness {
     SlideParts? parts,
   }) async {
     await SyntaxHighlight.initialize();
+    _setLogicalViewport(tester, resolution ?? kResolution);
     final configuration = createConfiguration(
       slide,
       style: style,
@@ -78,6 +79,7 @@ class SlideTestHarness {
     Size? resolution,
   }) async {
     await SyntaxHighlight.initialize();
+    _setLogicalViewport(tester, resolution ?? kResolution);
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -94,5 +96,13 @@ class SlideTestHarness {
     );
 
     await tester.pumpAndSettle();
+  }
+
+  static void _setLogicalViewport(WidgetTester tester, Size size) {
+    tester.view
+      ..physicalSize = size
+      ..devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
   }
 }

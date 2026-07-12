@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
+import 'package:superdeck/superdeck.dart' show BlockStyler, SlideStyle;
 import 'package:superdeck/src/builtins/image_widget.dart';
 import 'package:superdeck/src/builtins/widgets.dart';
 import 'package:superdeck/src/rendering/slides/slide_parts.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
+import 'package:superdeck/src/styling/default_style.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck/src/utils/constants.dart';
@@ -152,9 +154,99 @@ Author text in the second column.
       matchesGoldenFile('image_scale_framing.png'),
     );
   }, tags: ['ci-excluded', 'golden']);
+
+  testWidgets(
+    'decorated block frame fills its allocated cell',
+    (tester) async {
+      await _pumpGoldenSlide(
+        tester,
+        Slide(
+          key: 'golden-decorated-block-frame',
+          sections: [
+            SectionBlock([
+              ContentBlock(
+                '## Decoration fills the frame\n\nContent alignment stays inside.',
+                align: ContentAlignment.bottomRight,
+              ),
+            ]),
+          ],
+        ),
+        style: SlideStyle(
+          blockContainer: BlockStyler(
+            margin: EdgeInsetsGeometryMix.all(56),
+            padding: EdgeInsetsGeometryMix.all(36),
+            decoration: BoxDecorationMix(
+              color: const Color(0xFF172A46),
+              border: BorderMix.all(
+                BorderSideMix(color: const Color(0xFF45D4FF), width: 6),
+              ),
+              borderRadius: BorderRadiusMix.circular(24),
+            ),
+          ),
+        ),
+      );
+
+      await expectLater(
+        find.byType(SlideView),
+        matchesGoldenFile('decorated_block_frame.png'),
+      );
+    },
+    tags: ['ci-excluded', 'golden'],
+  );
+
+  testWidgets(
+    'inset slide container defines the section frame',
+    (tester) async {
+      await _pumpGoldenSlide(
+        tester,
+        Slide(
+          key: 'golden-inset-slide-container',
+          sections: [
+            SectionBlock([
+              ContentBlock(
+                '## Inset slide container\n\nThe section uses the inner frame.',
+              ),
+            ]),
+          ],
+        ),
+        style: SlideStyle(
+          slideContainer: BoxStyler(
+            margin: EdgeInsetsGeometryMix.all(48),
+            padding: EdgeInsetsGeometryMix.all(32),
+            decoration: BoxDecorationMix(
+              color: const Color(0xFF111A2A),
+              border: BorderMix.all(
+                BorderSideMix(color: const Color(0xFFB26BFF), width: 8),
+              ),
+            ),
+          ),
+          blockContainer: BlockStyler(
+            padding: EdgeInsetsGeometryMix.all(24),
+            decoration: BoxDecorationMix(color: const Color(0xFF233554)),
+          ),
+        ),
+        parts: const SlideParts(
+          header: null,
+          footer: null,
+          background: ColoredBox(color: Color(0xFF090909)),
+        ),
+      );
+
+      await expectLater(
+        find.byType(SlideView),
+        matchesGoldenFile('inset_slide_container.png'),
+      );
+    },
+    tags: ['ci-excluded', 'golden'],
+  );
 }
 
-Future<void> _pumpGoldenSlide(WidgetTester tester, Slide slide) async {
+Future<void> _pumpGoldenSlide(
+  WidgetTester tester,
+  Slide slide, {
+  SlideStyle? style,
+  SlideParts? parts,
+}) async {
   tester.view.physicalSize = kResolution;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -162,8 +254,11 @@ Future<void> _pumpGoldenSlide(WidgetTester tester, Slide slide) async {
 
   final configuration = SlideTestHarness.createConfiguration(
     slide,
+    style: style == null ? null : defaultSlideStyle.merge(style),
     widgets: builtInWidgets,
-    parts: const SlideParts(background: ColoredBox(color: Color(0xFF090909))),
+    parts:
+        parts ??
+        const SlideParts(background: ColoredBox(color: Color(0xFF090909))),
   );
 
   await tester.pumpWidget(

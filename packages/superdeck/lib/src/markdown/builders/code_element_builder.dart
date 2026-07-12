@@ -7,7 +7,6 @@ import '../../rendering/blocks/block_provider.dart';
 import '../../styling/components/markdown_codeblock.dart';
 import '../../ui/widgets/hero_element.dart';
 import '../../ui/widgets/overflow_clip.dart';
-import '../../utils/converters.dart';
 import '../../utils/syntax_highlighter.dart';
 import '../markdown_helpers.dart';
 import '../markdown_hero_mixin.dart';
@@ -126,16 +125,6 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
           ],
         );
 
-        final containerSpec = spec.container?.spec;
-        final codeOffset = containerSpec != null
-            ? containerSpec.calculateBlockOffset
-            : Offset.zero;
-
-        final totalSize = Size(
-          blockData.size.width - codeOffset.dx,
-          blockData.size.height - codeOffset.dy,
-        );
-
         return applyHeroIfNeeded<CodeElement>(
           context: builderContext,
           child: codeWidget,
@@ -144,7 +133,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             text: tagAndContent.content.trim(),
             language: language,
             spec: spec,
-            size: totalSize,
+            size: blockData.size,
           ),
           buildFlight: (context, from, to, t) {
             final fromSize = from.size;

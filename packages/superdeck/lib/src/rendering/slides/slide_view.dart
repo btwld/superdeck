@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -6,15 +7,14 @@ import '../../deck/slide_configuration.dart';
 import '../../styling/components/slide.dart';
 import '../../utils/constants.dart';
 import '../blocks/block_widget.dart';
-import 'package:flutter/widgets.dart';
 
 class SlideView extends StatelessWidget {
   final SlideConfiguration slide;
   const SlideView(this.slide, {super.key});
 
-  Widget _renderPreferredSize(PreferredSizeWidget? widget) {
+  Widget _renderPreferredSize(PreferredSizeWidget? widget, double height) {
     return widget != null
-        ? SizedBox.fromSize(size: widget.preferredSize, child: widget)
+        ? SizedBox(height: height, child: widget)
         : const SizedBox.shrink();
   }
 
@@ -34,47 +34,39 @@ class SlideView extends StatelessWidget {
     );
   }
 
-  Widget _renderSections(SlideConfiguration configuration, Size slideSize) {
+  Widget _renderSections(SlideConfiguration configuration) {
     final sections = configuration.sections;
     if (sections.isEmpty) {
-      return const SizedBox.shrink();
+      return const SizedBox.expand();
     }
-    final totalSectionsFlex = sections.fold(
-      0,
-      (previous, section) => previous + section.flex,
-    );
 
-    var topOffset = 0.0;
-    final sectionWidgets = <Widget>[];
-    for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
-      final section = sections[sectionIndex];
-      final heightPercentage = section.flex / totalSectionsFlex;
-      final sectionSize = Size(
-        slideSize.width,
-        slideSize.height * heightPercentage,
-      );
-      sectionWidgets.add(
-        Positioned(
-          left: 0,
-          top: topOffset,
-          width: sectionSize.width,
-          height: sectionSize.height,
-          child: Stack(
-            children: [
-              SectionWidget(
-                section: section,
-                size: sectionSize,
-                sectionIndex: sectionIndex,
-              ),
-              if (configuration.debug) _renderDebugInfo(section, sectionSize),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (
+          var sectionIndex = 0;
+          sectionIndex < sections.length;
+          sectionIndex++
+        )
+          Expanded(
+            flex: sections[sectionIndex].flex,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final section = sections[sectionIndex];
+                final sectionSize = constraints.biggest;
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    SectionWidget(section: section, sectionIndex: sectionIndex),
+                    if (configuration.debug)
+                      _renderDebugInfo(section, sectionSize),
+                  ],
+                );
+              },
+            ),
           ),
-        ),
-      );
-      topOffset += sectionSize.height;
-    }
-
-    return Stack(children: sectionWidgets);
+      ],
+    );
   }
 
   @override
@@ -82,19 +74,7 @@ class SlideView extends StatelessWidget {
     final header = slide.parts?.header;
     final footer = slide.parts?.footer;
 
-    final headerHeight = header != null ? header.preferredSize.height : 0.0;
-    final footerHeight = footer != null ? footer.preferredSize.height : 0.0;
-
-    final footerWidget = _renderPreferredSize(footer);
-    final headerWidget = _renderPreferredSize(header);
     final backgroundWidget = slide.parts?.background ?? const SizedBox.shrink();
-
-    final slideSize = Size(
-      kResolution.width,
-      kResolution.height - headerHeight - footerHeight,
-    );
-
-    final sectionsWidget = _renderSections(slide, slideSize);
 
     // Background should be outside the modifier to fill entire viewport
     return SizedBox.fromSize(
@@ -114,32 +94,40 @@ class SlideView extends StatelessWidget {
             child: StyleBuilder<SlideSpec>(
               style: slide.style,
               builder: (context, spec) {
-                return Box(
-                  styleSpec: spec.slideContainer,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: headerHeight,
-                        child: headerWidget,
-                      ),
-                      Positioned(
-                        top: headerHeight,
-                        left: 0,
-                        right: 0,
-                        height: slideSize.height,
-                        child: sectionsWidget,
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: footerHeight,
-                        child: footerWidget,
-                      ),
-                    ],
+                return Align(
+                  child: Box(
+                    styleSpec: spec.slideContainer,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final availableHeight = constraints.hasBoundedHeight
+                            ? constraints.maxHeight
+                            : kResolution.height;
+                        final preferredHeaderHeight =
+                            header?.preferredSize.height ?? 0.0;
+                        final preferredFooterHeight =
+                            footer?.preferredSize.height ?? 0.0;
+                        final preferredChromeHeight =
+                            preferredHeaderHeight + preferredFooterHeight;
+                        final chromeScale =
+                            preferredChromeHeight > 0 &&
+                                preferredChromeHeight > availableHeight
+                            ? availableHeight / preferredChromeHeight
+                            : 1.0;
+                        final headerHeight =
+                            preferredHeaderHeight * chromeScale;
+                        final footerHeight =
+                            preferredFooterHeight * chromeScale;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _renderPreferredSize(header, headerHeight),
+                            Expanded(child: _renderSections(slide)),
+                            _renderPreferredSize(footer, footerHeight),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 );
               },

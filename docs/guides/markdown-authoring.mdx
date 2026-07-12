@@ -288,12 +288,12 @@ Elements with matching class names animate smoothly during slide transitions.
 Non-scrollable content is hard-clipped. Use `scrollable: true` when overflow is
 intentional and should remain reachable.
 
-Enable `DeckOptions(debug: true)` while authoring to diagnose supported
-non-scrollable Markdown overflow. SuperDeck paints a red indicator and logs one
-message per stable issue with the slide/block keys, available and measured sizes,
-and overflow axis. The probe observes the existing Markdown layout without
-changing its wrapping width. It intentionally does not intrinsically measure or
-rebuild arbitrary custom widgets, and static captures omit diagnostics.
+Enable `DeckOptions(debug: true)` while authoring to diagnose non-scrollable
+Markdown and custom-widget overflow. SuperDeck paints a red indicator and logs
+one message per stable issue with the slide/block keys, available and measured
+sizes, and overflow axis. The probe observes the existing layout without
+changing Markdown wrapping or rebuilding content, and static captures omit
+diagnostics.
 
 ---
 

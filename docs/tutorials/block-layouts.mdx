@@ -7,6 +7,10 @@ description: Build predictable SuperDeck layouts with sections, spacing, padding
 
 SuperDeck lays out every slide on a logical `1280 x 720` canvas. Sections form
 vertical rows; the blocks inside each section form horizontal columns.
+The resolved `slideContainer` margin, border, padding, and constraints define
+the actual frame used by those rows. Header and footer keep their preferred
+heights when possible and shrink proportionally when their combined height is
+larger than that frame.
 
 ## The two layout axes
 
@@ -55,6 +59,9 @@ Keep these controls separate. They nest in this order:
 4. A block's `padding` creates an inset inside the decorated container,
    between the border and the content.
 5. `align` places the content inside the remaining content rectangle.
+
+The decoration always fills the block frame left after margin; alignment never
+shrinks or moves the decorated container itself.
 
 ```markdown
 @section {
@@ -111,9 +118,11 @@ Content and widget blocks accept exactly three forms for `padding` and for
 }
 ```
 
-`margin` accepts the same three forms. Omitted keys in an object are zero. Do
-not mix `horizontal`/`vertical` with physical edge keys. Empty objects,
-unknown keys, negative values, `NaN`, and infinity are invalid.
+`margin` accepts the same three forms. Omitted keys in an object are zero, but
+an explicitly authored `null` edge is invalid and reports its exact path (for
+example, `padding.left`). Do not mix `horizontal`/`vertical` with physical edge
+keys. Empty objects, unknown keys, negative values, `NaN`, and infinity are
+invalid.
 
 An omitted `padding`/`margin` override retains the resolved Mix
 block-container value for that inset. A present override replaces only that

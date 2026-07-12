@@ -159,7 +159,8 @@ object with exactly the four physical-edge keys `top`, `right`, `bottom`, and
 `left` — no scalar, symmetric, or partial-edge form is valid there, and
 unknown keys are rejected. Symmetric and edge keys cannot be mixed while
 authoring; empty/unknown-key objects and negative or non-finite values are
-invalid.
+invalid. Omitted authored edges normalize to zero; an explicitly authored
+`null` edge is invalid and reports its exact path, such as `padding.left`.
 
 ## Contract evolution and downgrade
 

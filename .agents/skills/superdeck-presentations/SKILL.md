@@ -44,8 +44,9 @@ Load only the reference needed for the task:
   and never changes flex ratios (unlike CSS margins; use section `spacing` for
   gutters). Block `padding` is consumed inside the decorated container,
   between the border and the content. Both accept scalar, symmetric, or
-  physical-edge forms. An absent (`null`) override inherits the resolved
-  style value for that inset; an explicit `0` removes it. A present override
+  physical-edge forms. Omitted object edges normalize to zero; explicit `null`
+  edges are invalid. An absent override inherits the resolved style value for
+  that inset; an explicit `0` removes it. A present override
   replaces only the matching inset after variants resolve while preserving
   other style data (decoration, clipping, animation).
 - `SlideStyle.blockContainer` accepts `BlockStyler`, a constrained Mix styler
@@ -64,9 +65,9 @@ Load only the reference needed for the task:
 - `BlockVariant('name')` is a Dart/Mix stylesheet selector for all `WidgetBlock`s with that exact, case-sensitive name. It affects the matching container and its widget subtree, not `@block` content.
 - Styles, templates, widgets, slide parts, and plugins are configured in Dart through `DeckOptions`/`SuperDeckApp`, not through a separate `styles.yaml`.
 - The CLI reads `slides.md`, writes `.superdeck/superdeck.json`, and ensures `.superdeck/` is listed in Flutter assets unless `--skip-pubspec` is used.
-- `DeckOptions(debug: true)` diagnoses supported non-scrollable Markdown
-  overflow without changing wrapping. It does not intrinsically measure or
-  rebuild arbitrary custom widgets, and static capture omits diagnostics.
+- `DeckOptions(debug: true)` diagnoses non-scrollable Markdown and custom
+  widget overflow without changing Markdown wrapping or rebuilding content;
+  static capture omits diagnostics.
 
 ## Source Map
 

@@ -15,6 +15,12 @@
   structured-output adapters).
 - **Breaking:** require positive integer flex values in schemas and public Dart
   constructors; zero and negative flex values are no longer accepted.
+- **Breaking:** remove `Block.resolvedAlign` and
+  `SectionBlock.totalBlockFlex`. Renderers resolve alignment through
+  `SectionBlock.resolveBlockAlign`; layout engines own flex distribution.
+- Reject explicitly authored `null` inset edges with their full field path
+  (for example, `padding.left`) while continuing to normalize omitted edges to
+  zero.
 
 ## 1.0.0
 

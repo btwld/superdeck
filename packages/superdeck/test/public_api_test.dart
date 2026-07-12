@@ -20,6 +20,7 @@ void main() {
       expect(DeckPlugin, isNotNull);
       expect(DeckAction, isNotNull);
       expect(DeckRuntimePlugin, isNotNull);
+      expect(BlockStyler, isNotNull);
     });
   });
 }

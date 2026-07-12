@@ -10,6 +10,7 @@ import 'package:superdeck/src/rendering/blocks/markdown_render_scope.dart';
 import 'package:superdeck/src/styling/components/markdown_codeblock.dart';
 import 'package:superdeck/src/styling/components/markdown_list.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
+import 'package:superdeck/src/ui/widgets/hero_element.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -396,7 +397,7 @@ void main() {
       );
 
       testWidgets(
-        'code blocks with Hero tag access BlockConfiguration for size calculation',
+        'code hero uses the real inner block frame without subtracting again',
         (tester) async {
           const markdown = '''
 ```dart {.code-hero}
@@ -404,16 +405,34 @@ void main() {}
 ```
 ''';
 
-          await tester.pumpWidget(_MarkdownHarness(markdown: markdown));
+          await tester.pumpWidget(
+            _MarkdownHarness(
+              markdown: markdown,
+              slideSpec: SlideSpec(
+                code: StyleSpec(
+                  spec: MarkdownCodeblockSpec(
+                    container: StyleSpec(
+                      spec: BoxSpec(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(border: Border.all(width: 2)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
           await tester.pumpAndSettle();
 
           // Verify code is rendered (uses RichText for syntax highlighting)
           expect(find.byType(RichText), findsWidgets);
 
-          // Verify no BlockConfiguration access errors occurred during size calculation
-          // If BlockConfiguration.of(builderContext) failed, rendering would have thrown
-          final allWidgets = tester.allWidgets.toList();
-          expect(allWidgets, isNotEmpty);
+          final heroElement = tester.widget<HeroElement<CodeElement>>(
+            find.byWidgetPredicate(
+              (widget) => widget is HeroElement<CodeElement>,
+            ),
+          );
+          expect(heroElement.data.size, const Size(800, 600));
         },
       );
     });
@@ -584,7 +603,7 @@ class _MarkdownHarness extends StatelessWidget {
 
     // Provide BlockConfiguration with a reasonable slide size for testing
     final blockData = BlockConfiguration(
-      align: ContentBlock(markdown).resolvedAlign,
+      align: ContentAlignment.centerLeft,
       spec: slideSpec,
       size: const Size(800, 600),
       runtimeKey: 'test-slide:s0:b0',
