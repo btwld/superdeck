@@ -428,6 +428,23 @@ final class SlideStyle extends Style<SlideSpec>
          modifier: modifier,
        );
 
+  static StyleSpec<BoxSpec> _sanitizeBlockContainer(
+    StyleSpec<BoxSpec> container,
+  ) {
+    final spec = container.spec;
+
+    return StyleSpec(
+      spec: BoxSpec(
+        padding: spec.padding,
+        margin: spec.margin,
+        decoration: spec.decoration,
+        foregroundDecoration: spec.foregroundDecoration,
+        clipBehavior: spec.clipBehavior,
+      ),
+      animation: container.animation,
+    );
+  }
+
   @override
   SlideStyle variants(List<VariantStyle<SlideSpec>> value) {
     return merge(SlideStyle(variants: value));
@@ -449,9 +466,10 @@ final class SlideStyle extends Style<SlideSpec>
     final resolvedAlert =
         MixOps.resolve(context, $alert) ??
         const StyleSpec(spec: MarkdownAlertSpec());
-    final resolvedBlockContainer =
-        MixOps.resolve(context, $blockContainer) ??
-        const StyleSpec(spec: BoxSpec());
+    final resolvedBlockContainer = _sanitizeBlockContainer(
+      MixOps.resolve(context, $blockContainer) ??
+          const StyleSpec(spec: BoxSpec()),
+    );
     final resolvedSlideContainer =
         MixOps.resolve(context, $slideContainer) ??
         const StyleSpec(spec: BoxSpec());

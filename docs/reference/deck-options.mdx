@@ -72,6 +72,11 @@ final options = DeckOptions(
 );
 ```
 
+Every `VariantStyle` inside a `BlockStyler` must itself contain a
+`BlockStyler`. Passing a broader `BoxStyler` is rejected immediately so
+constraints, transforms, alignment, and widget modifiers cannot re-enter the
+framework-owned block frame through a raw variant list.
+
 `BlockVariant('webview')` matches both `@webview` and `@widget` blocks whose
 `name` is `webview`. Custom shorthand annotations work the same way, so
 `@chart` matches `BlockVariant('chart')`. The matching rule uses normal Mix

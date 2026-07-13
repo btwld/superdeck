@@ -18,13 +18,17 @@
   of a `BoxStyler`. `BlockStyler` exposes only padding, margin, decoration,
   foreground decoration, clipping, variants, and animation — widget modifiers,
   constraints, transforms, and box alignment are unrepresentable for the
-  framework-owned block frame.
+  framework-owned block frame. Raw variant lists reject non-`BlockStyler`
+  values eagerly and are snapshotted to preserve that invariant; low-level
+  `SlideStyle.create` input is reduced to the same allow-list when it resolves.
 - Add image paint scaling with aligned clipping and an unchanged `scale: 1`
   rendering path. Image `width`, `height`, and `scale` accept integers or
   doubles through one finite-positive rule.
 - Add deduplicated debug overflow diagnostics for non-scrollable Markdown and
   custom widgets without changing wrapping or rebuilding content; the visual
   indicator outlines the overflowing frame instead of covering its corner.
+- Preserve live unbounded child layout for scrollable custom widgets during
+  static capture, then clip the natural-height result to the block frame.
 - Make WebView and DartPad surfaces, including static placeholders, fill their
   received constraints without a copied `Size` parameter.
 - **Breaking:** remove `Block.resolvedAlign`, `SectionBlock.totalBlockFlex`,

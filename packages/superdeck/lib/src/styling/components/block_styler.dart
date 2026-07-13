@@ -36,7 +36,7 @@ final class BlockStyler extends Style<BoxSpec>
   final Prop<Decoration>? $foregroundDecoration;
   final Prop<Clip>? $clipBehavior;
 
-  const BlockStyler.create({
+  const BlockStyler._create({
     Prop<EdgeInsetsGeometry>? padding,
     Prop<EdgeInsetsGeometry>? margin,
     Prop<Decoration>? decoration,
@@ -61,15 +61,33 @@ final class BlockStyler extends Style<BoxSpec>
     Clip? clipBehavior,
     AnimationConfig? animation,
     List<VariantStyle<BoxSpec>>? variants,
-  }) : this.create(
+  }) : this._create(
          padding: Prop.maybeMix(padding),
          margin: Prop.maybeMix(margin),
          decoration: Prop.maybeMix(decoration),
          foregroundDecoration: Prop.maybeMix(foregroundDecoration),
          clipBehavior: Prop.maybe(clipBehavior),
-         variants: variants,
+         variants: _validateVariants(variants),
          animation: animation,
        );
+
+  static List<VariantStyle<BoxSpec>>? _validateVariants(
+    List<VariantStyle<BoxSpec>>? variants,
+  ) {
+    if (variants == null) return null;
+
+    for (final variant in variants) {
+      if (variant.value is! BlockStyler) {
+        throw ArgumentError.value(
+          variant.value,
+          'variants',
+          'BlockStyler variants must contain only BlockStyler values.',
+        );
+      }
+    }
+
+    return List.unmodifiable(variants);
+  }
 
   /// Sets the padding.
   @override
@@ -116,7 +134,7 @@ final class BlockStyler extends Style<BoxSpec>
   BlockStyler merge(BlockStyler? other) {
     if (other == null) return this;
 
-    return BlockStyler.create(
+    return BlockStyler._create(
       padding: MixOps.merge($padding, other.$padding),
       margin: MixOps.merge($margin, other.$margin),
       decoration: MixOps.merge($decoration, other.$decoration),

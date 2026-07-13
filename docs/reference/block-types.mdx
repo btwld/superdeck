@@ -370,6 +370,10 @@ Generates QR codes.
 Non-scrollable blocks are hard-clipped. Set `scrollable: true` when overflow is
 intentional and should remain reachable.
 
+Static capture disables scrolling. For a scrollable custom widget, SuperDeck
+still lays out the child with the same unbounded vertical constraint used by
+the live scroll view, then clips the natural-height result to the block frame.
+
 `DeckOptions(debug: true)` diagnoses supported non-scrollable Markdown overflow
 with a red indicator and a deduplicated console message. Messages include the
 slide key, section/block runtime key, available and measured sizes, and the

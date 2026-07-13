@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/styling/block_variant.dart'
     show BlockVariantScope;
-import 'package:superdeck/superdeck.dart' show BlockStyler, BlockVariant;
+import 'package:superdeck/superdeck.dart'
+    show BlockStyler, BlockVariant, SlideStyle;
 
 /// Resolves [style] inside a widget tree, optionally under a
 /// [BlockVariantScope] named [blockName].
@@ -38,9 +39,7 @@ void main() {
           color: const Color(0xFF112233),
           borderRadius: BorderRadiusMix.circular(10),
         ),
-        foregroundDecoration: BoxDecorationMix(
-          color: const Color(0x22000000),
-        ),
+        foregroundDecoration: BoxDecorationMix(color: const Color(0x22000000)),
         clipBehavior: Clip.antiAlias,
       );
 
@@ -95,11 +94,10 @@ void main() {
     testWidgets('applies a matching BlockVariant after the base style', (
       tester,
     ) async {
-      final style = BlockStyler(padding: EdgeInsetsGeometryMix.all(40))
-          .variant(
-            const BlockVariant('image'),
-            BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
-          );
+      final style = BlockStyler(padding: EdgeInsetsGeometryMix.all(40)).variant(
+        const BlockVariant('image'),
+        BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
+      );
 
       final inScope = await resolveStyle(tester, style, blockName: 'image');
       expect(inScope.spec.padding, EdgeInsets.zero);
@@ -111,10 +109,88 @@ void main() {
       expect(noScope.spec.padding, const EdgeInsets.all(40));
     });
 
+    test('rejects variant styles from the wider BoxStyler surface', () {
+      expect(
+        () => BlockStyler(
+          variants: [
+            VariantStyle(
+              const BlockVariant('image'),
+              BoxStyler(constraints: BoxConstraintsMix(maxWidth: 100)),
+            ),
+          ],
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.message,
+            'message',
+            contains('BlockStyler'),
+          ),
+        ),
+      );
+    });
+
+    testWidgets('snapshots a validated variant list', (tester) async {
+      const image = BlockVariant('image');
+      final variants = <VariantStyle<BoxSpec>>[
+        VariantStyle(image, BlockStyler(padding: EdgeInsetsGeometryMix.all(0))),
+      ];
+      final style = BlockStyler(
+        padding: EdgeInsetsGeometryMix.all(40),
+        variants: variants,
+      );
+
+      variants[0] = VariantStyle(
+        image,
+        BoxStyler(constraints: BoxConstraintsMix(maxWidth: 100)),
+      );
+
+      final resolved = await resolveStyle(tester, style, blockName: 'image');
+      expect(resolved.spec.padding, EdgeInsets.zero);
+      expect(resolved.spec.constraints, isNull);
+    });
+
+    testWidgets('sanitizes raw block specs from SlideStyle.create', (
+      tester,
+    ) async {
+      final style = SlideStyle.create(
+        blockContainer: Prop.value(
+          StyleSpec(
+            spec: BoxSpec(
+              padding: const EdgeInsets.all(12),
+              constraints: const BoxConstraints(maxWidth: 100),
+              transform: Matrix4.diagonal3Values(2, 2, 1),
+              alignment: Alignment.center,
+            ),
+            widgetModifiers: const [],
+          ),
+        ),
+        variants: null,
+        animation: null,
+        modifier: null,
+      );
+      late StyleSpec<BoxSpec> resolved;
+
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Builder(
+            builder: (context) {
+              resolved = style.build(context).spec.blockContainer;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      expect(resolved.spec.padding, const EdgeInsets.all(12));
+      expect(resolved.spec.constraints, isNull);
+      expect(resolved.spec.transform, isNull);
+      expect(resolved.spec.alignment, isNull);
+      expect(resolved.widgetModifiers, isNull);
+    });
+
     testWidgets('supports Mix spacing convenience methods', (tester) async {
-      final style = BlockStyler()
-          .paddingAll(24)
-          .marginOnly(top: 8, bottom: 4);
+      final style = BlockStyler().paddingAll(24).marginOnly(top: 8, bottom: 4);
 
       final resolved = await resolveStyle(tester, style);
 
@@ -146,7 +222,10 @@ void main() {
 
       expect(build(), build());
       expect(build().hashCode, build().hashCode);
-      expect(build(), isNot(BlockStyler(padding: EdgeInsetsGeometryMix.all(1))));
+      expect(
+        build(),
+        isNot(BlockStyler(padding: EdgeInsetsGeometryMix.all(1))),
+      );
     });
   });
 }

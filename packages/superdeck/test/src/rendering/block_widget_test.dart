@@ -297,8 +297,9 @@ void main() {
       );
 
       testWidgets(
-        'static scrollable widget is clipped with bounded constraints',
+        'static scrollable widget lays out naturally and clips to its frame',
         (tester) async {
+          const childKey = ValueKey('static-scrollable-child');
           await SlideTestHarness.pumpSlide(
             tester,
             Slide(
@@ -310,14 +311,78 @@ void main() {
               ],
             ),
             widgets: {
-              'short-widget': (_) =>
-                  const SizedBox.expand(child: Text('Static widget')),
+              'short-widget': (_) => const SizedBox(
+                key: childKey,
+                height: 1000,
+                child: Text('Static widget'),
+              ),
             },
             isStaticRendering: true,
           );
 
           tester.expectNotScrollable(find.byType(CustomBlockWidget));
+          expect(
+            tester.getSize(find.byKey(childKey)).height,
+            greaterThan(tester.getSize(find.byType(CustomBlockWidget)).height),
+          );
           expect(tester.takeException(), isNull);
+        },
+      );
+
+      testWidgets(
+        'static scrollable widget preserves live unbounded child layout',
+        (tester) async {
+          const markerKey = ValueKey('scrollable-widget-top-marker');
+          final observedMaxHeights = <double>[];
+          final slide = Slide(
+            key: 'scrollable-widget-layout-parity',
+            sections: [
+              SectionBlock([
+                WidgetBlock(
+                  name: 'constraint-probe',
+                  align: ContentAlignment.bottomRight,
+                  scrollable: true,
+                ),
+              ]),
+            ],
+          );
+          final widgets = {
+            'constraint-probe': (_) => LayoutBuilder(
+              builder: (context, constraints) {
+                observedMaxHeights.add(constraints.maxHeight);
+                return const SizedBox(
+                  height: 1000,
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(key: markerKey, width: 10, height: 10),
+                  ),
+                );
+              },
+            ),
+          };
+
+          await SlideTestHarness.pumpSlide(tester, slide, widgets: widgets);
+          final liveMaxHeight = observedMaxHeights.last;
+          final liveMarkerOffset =
+              tester.getTopLeft(find.byKey(markerKey)) -
+              tester.getTopLeft(find.byType(CustomBlockWidget));
+
+          observedMaxHeights.clear();
+          await SlideTestHarness.pumpSlide(
+            tester,
+            slide,
+            widgets: widgets,
+            isStaticRendering: true,
+          );
+          final staticMaxHeight = observedMaxHeights.last;
+          final staticMarkerOffset =
+              tester.getTopLeft(find.byKey(markerKey)) -
+              tester.getTopLeft(find.byType(CustomBlockWidget));
+
+          expect(liveMaxHeight.isInfinite, isTrue);
+          expect(staticMaxHeight, liveMaxHeight);
+          expect(staticMarkerOffset, liveMarkerOffset);
+          tester.expectNotScrollable(find.byType(CustomBlockWidget));
         },
       );
     });

@@ -206,7 +206,21 @@ class _CustomBlockChild extends StatelessWidget {
     }
 
     try {
-      return factory(block.args);
+      final child = factory(block.args);
+      if (!block.scrollable || !slide.isStaticRendering) return child;
+
+      final data = BlockConfiguration.of(context);
+      return OverflowBox(
+        alignment: Alignment.topCenter,
+        minWidth: data.size.width,
+        maxWidth: data.size.width,
+        minHeight: data.size.height,
+        maxHeight: double.infinity,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: data.size.height),
+          child: Align(alignment: data.align.toAlignment, child: child),
+        ),
+      );
     } catch (e, stackTrace) {
       return ErrorWidgets.detailed(
         'Error building widget: ${block.name}',
