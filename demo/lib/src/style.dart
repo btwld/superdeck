@@ -5,8 +5,8 @@ import 'package:superdeck/superdeck.dart';
 
 import 'google_font_helpers.dart';
 
-SlideStyle announcementStyle() {
-  return SlideStyle(
+SlideStyler announcementStyle() {
+  return SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(
         fontSize: 140,
@@ -38,18 +38,20 @@ SlideStyle announcementStyle() {
   );
 }
 
-SlideStyle quoteStyle() {
-  return SlideStyle(
+SlideStyler quoteStyle() {
+  return SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(
         fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),
         fontSize: 32,
       ),
     ),
-    blockquote: MarkdownBlockquoteStyle(
-      textStyle: safeGoogleFont(
-        () => GoogleFonts.notoSerif(fontSize: 32),
-        fallback: const TextStyle(fontSize: 32),
+    blockquote: MarkdownBlockquoteStyler(
+      textStyle: TextStyleMix.value(
+        safeGoogleFont(
+          () => GoogleFonts.notoSerif(fontSize: 32),
+          fallback: const TextStyle(fontSize: 32),
+        ),
       ),
       decoration: const BoxDecoration(
         border: Border(left: BorderSide(color: Colors.red, width: 4)),
@@ -65,8 +67,8 @@ SlideStyle quoteStyle() {
   );
 }
 
-SlideStyle borderedStyle() {
-  return SlideStyle(
+SlideStyler borderedStyle() {
+  return SlideStyler(
     modifier: WidgetModifierConfig(
       modifiers: [
         BoxModifierMix(

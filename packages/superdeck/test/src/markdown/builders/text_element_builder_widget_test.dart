@@ -577,7 +577,7 @@ class _MarkdownHarness extends StatelessWidget {
     final styleSheet = slideSpec.toStyle();
     final slideConfiguration = SlideConfiguration(
       slideIndex: 0,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(key: 'test-slide'),
       thumbnailKey: 'thumb.png',
     );

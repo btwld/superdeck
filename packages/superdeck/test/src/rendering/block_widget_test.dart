@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/superdeck.dart' show BlockVariant, SlideStyle;
+import 'package:superdeck/superdeck.dart' show BlockVariant, SlideStyler;
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -236,7 +236,7 @@ void main() {
                 ]),
               ],
             ),
-            style: SlideStyle(
+            style: SlideStyler(
               blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40))
                   .variants([
                     VariantStyle(
@@ -281,7 +281,7 @@ void main() {
                 ]),
               ],
             ),
-            style: SlideStyle(
+            style: SlideStyler(
               blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40))
                   .variants([
                     VariantStyle(
@@ -318,7 +318,7 @@ void main() {
               SectionBlock([WidgetBlock(name: 'image')]),
             ],
           ),
-          style: SlideStyle(
+          style: SlideStyler(
             blockContainer: BoxStyler(padding: EdgeInsetsGeometryMix.all(40))
                 .variants([
                   VariantStyle(
@@ -428,7 +428,7 @@ void main() {
                 SectionBlock([WidgetBlock(name: 'webview')]),
               ],
             ),
-            style: SlideStyle(
+            style: SlideStyler(
               blockContainer:
                   BoxStyler(
                     padding: EdgeInsetsGeometryMix.all(10),

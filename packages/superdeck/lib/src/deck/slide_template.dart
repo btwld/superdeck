@@ -16,15 +16,15 @@ final class SlideTemplate with SlideTemplateMappable {
   final SlideParts parts;
 
   /// Base style applied to all slides using this template.
-  final SlideStyle? baseStyle;
+  final SlideStyler? baseStyle;
 
   /// Named style variants available within this template.
-  final Map<String, SlideStyle> styles;
+  final Map<String, SlideStyler> styles;
 
   const SlideTemplate({
     this.parts = const SlideParts(),
     this.baseStyle,
-    this.styles = const <String, SlideStyle>{},
+    this.styles = const <String, SlideStyler>{},
   });
 
   @override

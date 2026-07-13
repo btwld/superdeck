@@ -23,7 +23,7 @@ List<SlideConfiguration> createTestSlides(int count) {
     count,
     (index) => SlideConfiguration(
       slideIndex: index,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(
         key: 'slide-$index',
         sections: [
@@ -39,13 +39,13 @@ List<SlideConfiguration> createTestSlides(int count) {
 SlideConfiguration createTestSlide({
   required int index,
   String? content,
-  SlideStyle? style,
+  SlideStyler? style,
   String? thumbnailKey,
 }) {
   final slideKey = 'slide-$index';
   return SlideConfiguration(
     slideIndex: index,
-    style: style ?? SlideStyle(),
+    style: style ?? SlideStyler(),
     slide: Slide(
       key: slideKey,
       sections: [
