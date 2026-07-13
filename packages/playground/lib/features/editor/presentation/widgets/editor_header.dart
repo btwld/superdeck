@@ -3,7 +3,7 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
 import 'package:provider/provider.dart';
 
-import '../../domain/stores/deck_file_controller.dart';
+import '../../domain/stores/deck_file_session.dart';
 import 'new_deck_dialog.dart';
 
 /// Bar sitting on top of the text editor: the `New` / `Open` actions on the
@@ -14,8 +14,8 @@ class EditorHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<DeckFileController>();
-    final warning = controller.warning;
+    final session = context.watch<DeckFileSession>();
+    final warning = session.warning;
 
     return ColumnBox(
       style: FlexBoxStyler().mainAxisSize(.min),
@@ -32,10 +32,7 @@ class EditorHeader extends StatelessWidget {
                 .crossAxisAlignment(.center)
                 .spacing(8),
             children: [
-              _FileName(
-                name: controller.fileName,
-                unbound: !controller.isBound,
-              ),
+              _FileName(name: session.fileName, unbound: !session.isBound),
               Spacer(),
               Box(style: BoxStyler().width(1).height(16).color($border())),
               HeroButton(
@@ -43,14 +40,14 @@ class EditorHeader extends StatelessWidget {
                 iconLeft: CupertinoIcons.add,
                 size: .sm,
                 variant: .ghost,
-                onPressed: () => showNewDeckDialog(context, controller),
+                onPressed: () => showNewDeckDialog(context, session),
               ),
               HeroButton(
                 label: 'Open',
                 iconLeft: CupertinoIcons.folder,
                 size: .sm,
                 variant: .ghost,
-                onPressed: controller.openDeck,
+                onPressed: session.openDeck,
               ),
             ],
           ),

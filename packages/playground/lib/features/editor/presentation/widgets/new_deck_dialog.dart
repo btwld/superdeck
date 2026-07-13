@@ -2,30 +2,28 @@ import 'package:flutter/cupertino.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
 
-import '../../../../core/data/data_sources/deck_file_store.dart';
-import '../../domain/stores/deck_file_controller.dart';
+import '../../../../core/result.dart';
+import '../../domain/files/deck_file.dart';
+import '../../domain/stores/deck_file_session.dart';
 
 /// Opens the "New deck" dialog: prompts for a name, creates `<name>.md` in
 /// SuperDeck's sandboxed app storage, and rebinds the editor. On a collision it
 /// re-prompts with an inline error rather than overwriting.
 ///
-/// [controller] is captured from the editor's provider scope; the dialog route
+/// [session] is captured from the editor's provider scope; the dialog route
 /// does not inherit it reliably.
-Future<void> showNewDeckDialog(
-  BuildContext context,
-  DeckFileController controller,
-) {
+Future<void> showNewDeckDialog(BuildContext context, DeckFileSession session) {
   return showRemixDialog<void>(
     context: context,
     barrierDismissible: true,
-    builder: (_) => _NewDeckDialog(controller: controller),
+    builder: (_) => _NewDeckDialog(session: session),
   );
 }
 
 class _NewDeckDialog extends StatefulWidget {
-  const _NewDeckDialog({required this.controller});
+  const _NewDeckDialog({required this.session});
 
-  final DeckFileController controller;
+  final DeckFileSession session;
 
   @override
   State<_NewDeckDialog> createState() => _NewDeckDialogState();
@@ -58,22 +56,21 @@ class _NewDeckDialogState extends State<_NewDeckDialog> {
       _creating = true;
       _error = null;
     });
-    try {
-      await widget.controller.newDeck(name);
-      if (!mounted) return;
-      Navigator.of(context).maybePop();
-    } on DeckNameCollisionException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _creating = false;
-        _error = '${e.fileName} already exists. Choose another name.';
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _creating = false;
-        _error = 'Could not create the deck: $e';
-      });
+    final result = await widget.session.createDeck(name);
+    if (!mounted) return;
+    switch (result) {
+      case Ok():
+        Navigator.of(context).maybePop();
+      case Failure(error: final DeckNameCollisionException error):
+        setState(() {
+          _creating = false;
+          _error = '${error.fileName} already exists. Choose another name.';
+        });
+      case Failure(:final error):
+        setState(() {
+          _creating = false;
+          _error = 'Could not create the deck: $error';
+        });
     }
   }
 

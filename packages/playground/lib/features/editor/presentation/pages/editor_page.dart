@@ -4,7 +4,7 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
 import 'package:provider/provider.dart';
 
-import '../../domain/stores/deck_file_controller.dart';
+import '../../domain/stores/deck_file_session.dart';
 import '../../domain/stores/editor_store.dart';
 import '../widgets/customization_sidebar.dart';
 import '../widgets/editor_controls.dart';
@@ -18,7 +18,7 @@ class EditorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<EditorStore>();
-    final fileController = context.read<DeckFileController>();
+    final fileSession = context.read<DeckFileSession>();
 
     // ⌘N / ⌘O drive the file operations; the file operations otherwise live in
     // the header. Focus (autofocus) gives the shortcuts a target so they work
@@ -26,9 +26,9 @@ class EditorPage extends StatelessWidget {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () =>
-            showNewDeckDialog(context, fileController),
+            showNewDeckDialog(context, fileSession),
         const SingleActivator(LogicalKeyboardKey.keyO, meta: true):
-            fileController.openDeck,
+            fileSession.openDeck,
       },
       child: Focus(
         autofocus: true,

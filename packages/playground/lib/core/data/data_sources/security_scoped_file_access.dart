@@ -1,11 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'deck_file_store_base.dart';
+import '../../../features/editor/domain/files/deck_file.dart';
 
 /// Bridges opaque macOS security-scoped bookmarks to the native runner.
 ///
-/// Other platforms and app-owned files are intentional no-ops.
+/// App-owned files without a bookmark are intentional no-ops.
 class SecurityScopedFileAccess {
   const SecurityScopedFileAccess({
     MethodChannel channel = const MethodChannel(channelName),
@@ -17,11 +16,8 @@ class SecurityScopedFileAccess {
 
   final MethodChannel _channel;
 
-  bool get _isSupported => defaultTargetPlatform == TargetPlatform.macOS;
-
   /// Opens the native panel and returns its path plus persistent access data.
   Future<DeckFileReference?> pickDeckFile() async {
-    if (!_isSupported) return null;
     final result = await _channel.invokeMapMethod<String, Object?>(
       'pickDeckFile',
     );
@@ -32,7 +28,7 @@ class SecurityScopedFileAccess {
   /// Starts access and returns the current path/bookmark after resolution.
   Future<DeckFileReference> startAccessing(DeckFileReference reference) async {
     final bookmark = reference.bookmark;
-    if (!_isSupported || bookmark == null) return reference;
+    if (bookmark == null) return reference;
 
     final result = await _channel.invokeMapMethod<String, Object?>(
       'startAccessing',
@@ -62,7 +58,7 @@ class SecurityScopedFileAccess {
   /// Stops access previously started for [reference].
   Future<void> stopAccessing(DeckFileReference reference) async {
     final bookmark = reference.bookmark;
-    if (!_isSupported || bookmark == null) return;
+    if (bookmark == null) return;
     await _channel.invokeMethod<void>('stopAccessing', bookmark);
   }
 }

@@ -1,79 +1,40 @@
-import 'package:flutter/foundation.dart';
 import 'package:super_editor/super_editor.dart';
 
 import '../../../core/data/data_sources/memory_deck_loader.dart';
-import 'markdown_editor.dart';
+import '../domain/stores/deck_document_store.dart';
 import '../domain/stores/editor_store.dart';
 import 'edit_reaction.dart';
 import 'slide_navigation.dart';
 
-/// Owns the super_editor [Editor] — the single source of truth for the editor's
-/// text — and all super_editor coupling for the editor feature.
+/// Owns the super_editor [Editor] and its coupling to the editor feature.
 ///
-/// It keeps two things in sync with the document:
-/// - the live preview: document edits are forwarded to [MemoryDeckLoader];
-/// - the shared nav state: the caret's slide is written to [EditorStore], and
-///   when that index is set from outside (e.g. a preview tap) the caret scrolls
-///   to match.
-///
-/// External full-document writes arrive through [replaceMarkdown] (the
-/// [MarkdownEditor] port the AI command drives) and are applied in place, so the
-/// view observes them like any other edit.
-class TextEditorController implements MarkdownEditor {
-  TextEditorController({
-    required EditorStore editorStore,
-    required MemoryDeckLoader deckLoader,
-    required String initialText,
-    ValueChanged<String>? onMarkdownChanged,
-  }) : _editorStore = editorStore,
-       _deckLoader = deckLoader,
-       _onMarkdownChanged = onMarkdownChanged {
-    _install(initialText);
-    // Seed the live preview with the initial document.
-    _pushMarkdown(initialText);
-    _editorStore.addListener(_onStoreChanged);
-  }
-
+/// [DeckDocumentStore] is the Markdown authority. This controller adapts the
+/// visual editor to that store, forwards store changes to [MemoryDeckLoader],
+/// and synchronizes the caret with [EditorStore].
+class TextEditorController {
   final EditorStore _editorStore;
   final MemoryDeckLoader _deckLoader;
-
-  /// Notified with the document's plain-text markdown on every real change
-  /// (deduped like the preview). The file controller uses it to auto-save.
-  final ValueChanged<String>? _onMarkdownChanged;
+  final DeckDocumentStore _documentStore;
 
   late final MutableDocument _document;
   late final MutableDocumentComposer _composer;
   late final Editor _editor;
 
-  /// The last markdown pushed to the deck loader, so attribution-only document
-  /// changes (the highlight reactions fire on every keystroke) don't re-parse
-  /// the preview when the plain text is unchanged.
-  String? _lastMarkdown;
-
   /// True while writing the caret's slide into [EditorStore], so the store
-  /// notification that triggers doesn't bounce back and re-scroll the caret.
+  /// notification that triggers does not bounce back and re-scroll the caret.
   bool _syncingFromCaret = false;
 
-  /// The editor consumed by the `TextEditor` view.
-  Editor get editor => _editor;
-
-  @override
-  void replaceMarkdown(String markdown) {
-    final nodes = _nodesFromMarkdown(markdown);
-    // A single transaction: the document and selection listeners each fire once
-    // at its end, pushing the new markdown and setting the caret's slide (0) —
-    // so there's nothing to do after the execute.
-    _editor.execute([
-      ReplaceDocumentRequest(nodes),
-      _caretAtStart(nodes.first.id),
-    ]);
-  }
-
-  void dispose() {
-    _editorStore.removeListener(_onStoreChanged);
-    _composer.selectionNotifier.removeListener(_onSelectionChanged);
-    _document.removeListener(_onDocumentChanged);
-    _editor.dispose();
+  TextEditorController({
+    required EditorStore editorStore,
+    required MemoryDeckLoader deckLoader,
+    required DeckDocumentStore documentStore,
+  }) : _editorStore = editorStore,
+       _deckLoader = deckLoader,
+       _documentStore = documentStore {
+    _install(documentStore.markdown);
+    _deckLoader.updateMarkdown(documentStore.markdown);
+    _documentStore.addListener(_onDocumentStoreChanged);
+    _editorStore.addListener(_onStoreChanged);
   }
 
   void _install(String markdown) {
@@ -82,8 +43,8 @@ class TextEditorController implements MarkdownEditor {
     _composer = MutableDocumentComposer();
     _editor = Editor(
       editables: {Editor.documentKey: _document, Editor.composerKey: _composer},
-      // `ReplaceDocumentRequest` isn't wired in `defaultRequestHandlers`, so map
-      // it to its command here for `replaceMarkdown`.
+      // `ReplaceDocumentRequest` is not wired in `defaultRequestHandlers`, so
+      // map it to its command for store-driven whole-document replacements.
       requestHandlers: [
         (editor, request) => request is ReplaceDocumentRequest
             ? ReplaceDocumentCommand(request.nodes)
@@ -100,17 +61,13 @@ class TextEditorController implements MarkdownEditor {
 
     // Place the caret at the start so the reaction pipeline applies
     // separator/header/block highlighting to the initial content.
-    if (nodes.isNotEmpty) {
-      _editor.execute([_caretAtStart(nodes.first.id)]);
-    }
-
+    _editor.execute([_caretAtStart(nodes.first.id)]);
     _document.addListener(_onDocumentChanged);
     _composer.selectionNotifier.addListener(_onSelectionChanged);
   }
 
-  /// External navigation (e.g. a preview tap set [EditorStore.activeSlideIndex])
-  /// scrolls the caret to that slide. Caret-driven updates set
-  /// [_syncingFromCaret], so this ignores the notification they cause.
+  /// External navigation (e.g. a preview tap setting
+  /// [EditorStore.activeSlideIndex]) scrolls the caret to that slide.
   void _onStoreChanged() {
     if (_syncingFromCaret) return;
     _moveCaretToSlide(_editorStore.activeSlideIndex);
@@ -124,22 +81,30 @@ class TextEditorController implements MarkdownEditor {
     );
   }
 
+  void _onDocumentChanged(DocumentChangeLog _) {
+    _documentStore.replaceMarkdown(_extractText());
+  }
+
+  /// Applies store changes from AI generation, a file reload, or a deck switch
+  /// to the visual document. Local editor changes already match the store and
+  /// only update the preview.
+  void _onDocumentStoreChanged() {
+    final markdown = _documentStore.markdown;
+    _deckLoader.updateMarkdown(markdown);
+    if (markdown == _extractText()) return;
+
+    final nodes = _nodesFromMarkdown(markdown);
+    _editor.execute([
+      ReplaceDocumentRequest(nodes),
+      _caretAtStart(nodes.first.id),
+    ]);
+  }
+
   /// Writes the caret's slide into the store without triggering a re-scroll.
   void _setActiveSlideFromCaret(int index) {
     _syncingFromCaret = true;
     _editorStore.activeSlideIndex = index;
     _syncingFromCaret = false;
-  }
-
-  void _onDocumentChanged(DocumentChangeLog _) {
-    _pushMarkdown(_extractText());
-  }
-
-  void _pushMarkdown(String markdown) {
-    if (markdown == _lastMarkdown) return;
-    _lastMarkdown = markdown;
-    _deckLoader.updateMarkdown(markdown);
-    _onMarkdownChanged?.call(markdown);
   }
 
   void _moveCaretToSlide(int index) {
@@ -170,6 +135,17 @@ class TextEditorController implements MarkdownEditor {
   }
 
   String _extractText() => _document
-      .map((n) => n is TextNode ? n.text.toPlainText() : '')
+      .map((node) => node is TextNode ? node.text.toPlainText() : '')
       .join('\n');
+
+  /// The editor consumed by the `TextEditor` view.
+  Editor get editor => _editor;
+
+  void dispose() {
+    _editorStore.removeListener(_onStoreChanged);
+    _documentStore.removeListener(_onDocumentStoreChanged);
+    _composer.selectionNotifier.removeListener(_onSelectionChanged);
+    _document.removeListener(_onDocumentChanged);
+    _editor.dispose();
+  }
 }

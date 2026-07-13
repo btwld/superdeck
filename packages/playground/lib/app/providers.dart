@@ -3,11 +3,11 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:superdeck/superdeck.dart';
 
-import '../core/data/data_sources/app_settings_store.dart';
-import '../core/data/data_sources/deck_file_store.dart';
 import '../core/data/data_sources/memory_asset_cache_store.dart';
 import '../core/data/data_sources/memory_deck_loader.dart';
 import '../core/domain/stores/deck_customization_store.dart';
+import '../features/editor/data/mac_os_deck_file_repository.dart';
+import '../features/editor/domain/files/deck_file_repository.dart';
 
 /// App-root dependency injection: the deck globals shared across features.
 ///
@@ -20,20 +20,13 @@ import '../core/domain/stores/deck_customization_store.dart';
 /// The editor's `EditorStore` is provided at its route instead. Slides are read
 /// straight off `DeckController.slides` (a signal) in the UI — no bridge store.
 ///
-/// [deckFileStore]/[appSettingsStore] default to the native (filesystem)
-/// implementations; tests inject in-memory fakes so the editor's file-backed
-/// bootstrap runs without touching disk.
+/// [deckFileRepository] defaults to the macOS filesystem implementation; tests
+/// inject an in-memory repository so bootstrap runs without touching disk.
 class AppProviders extends StatelessWidget {
-  const AppProviders({
-    required this.child,
-    this.deckFileStore,
-    this.appSettingsStore,
-    super.key,
-  });
+  const AppProviders({required this.child, this.deckFileRepository, super.key});
 
   final Widget child;
-  final DeckFileStore? deckFileStore;
-  final AppSettingsStore? appSettingsStore;
+  final DeckFileRepository? deckFileRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +42,8 @@ class AppProviders extends StatelessWidget {
           dispose: (_, loader) => loader.dispose(),
         ),
         Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
-        Provider<DeckFileStore>(
-          create: (_) => deckFileStore ?? const NativeDeckFileStore(),
-        ),
-        Provider<AppSettingsStore>(
-          create: (_) => appSettingsStore ?? const NativeAppSettingsStore(),
+        Provider<DeckFileRepository>(
+          create: (_) => deckFileRepository ?? const MacOsDeckFileRepository(),
         ),
         Provider<DeckController>(
           lazy: false,

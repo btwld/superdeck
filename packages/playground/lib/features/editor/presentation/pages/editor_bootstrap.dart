@@ -1,25 +1,26 @@
+import 'dart:async';
 import 'dart:ui' show AppExitResponse;
 
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/data/data_sources/app_settings_store.dart';
-import '../../../../core/data/data_sources/deck_file_store.dart';
 import '../../../../core/data/data_sources/memory_deck_loader.dart';
+import '../../../../core/result.dart';
 import '../../../ai/quick_agent/domain/commands/generate_deck_command.dart';
-import '../../domain/stores/deck_file_controller.dart';
+import '../../domain/files/deck_file.dart';
+import '../../domain/files/deck_file_repository.dart';
+import '../../domain/stores/deck_document_store.dart';
+import '../../domain/stores/deck_file_session.dart';
 import '../../domain/stores/editor_store.dart';
 import '../../utils/text_editor_controller.dart';
 import 'editor_page.dart';
 
-/// Resolves the file-backed deck before the editor mounts.
+/// Resolves the initial file-backed deck before the editor mounts.
 ///
-/// The editor must be seeded with the last-opened file's content (loaded
-/// asynchronously), so this widget owns the [DeckFileController], awaits its
-/// [DeckFileController.initialize], and only then builds the editor's scoped
-/// providers — wiring the controller's auto-save sink and reload port to the
-/// freshly-built [TextEditorController].
+/// The repository performs all bootstrap I/O. Once it returns a snapshot, this
+/// widget scopes the document store, synchronization session, editor controller,
+/// and generation command to the editor route.
 class EditorBootstrap extends StatefulWidget {
   const EditorBootstrap({super.key});
 
@@ -28,12 +29,17 @@ class EditorBootstrap extends StatefulWidget {
 }
 
 class _EditorBootstrapState extends State<EditorBootstrap> {
-  late final DeckFileController _fileController;
+  late final DeckFileRepository _repository;
+  late final Future<Result<DeckFileSnapshot>> _initialDeck;
   late final AppLifecycleListener _lifecycleListener;
-  late final Future<void> _ready;
+
+  DeckDocumentStore? _documentStore;
+  DeckFileSession? _fileSession;
 
   Future<AppExitResponse> _handleExitRequested() async {
-    return await _fileController.flushPendingSave()
+    final session = _fileSession;
+    if (session == null) return AppExitResponse.exit;
+    return await session.flushPendingSave()
         ? AppExitResponse.exit
         : AppExitResponse.cancel;
   }
@@ -41,27 +47,34 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
   @override
   void initState() {
     super.initState();
-    _fileController = DeckFileController(
-      store: context.read<DeckFileStore>(),
-      settings: context.read<AppSettingsStore>(),
+    _repository = context.read<DeckFileRepository>();
+    _initialDeck = _repository.loadInitialDeck(
+      starterMarkdown: kStarterDeckMarkdown,
     );
     _lifecycleListener = AppLifecycleListener(
       onExitRequested: _handleExitRequested,
     );
-    _ready = _fileController.initialize();
   }
 
   @override
   void dispose() {
     _lifecycleListener.dispose();
-    _fileController.dispose();
+    final session = _fileSession;
+    if (session != null) {
+      session.dispose();
+    } else {
+      // A successful load retains a bookmark. If the widget goes away before
+      // the route scope mounts, release that unclaimed reference once ready.
+      unawaited(_releaseUnclaimedInitialDeck());
+    }
+    _documentStore?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: _ready,
+    return FutureBuilder<Result<DeckFileSnapshot>>(
+      future: _initialDeck,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return _BootstrapMessage(
@@ -84,40 +97,67 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
             ),
           );
         }
-        return _buildEditor(context);
+
+        final result = snapshot.requireData;
+        switch (result) {
+          case Failure(:final error):
+            return _BootstrapMessage(
+              child: Text(
+                'Could not open the decks folder.\n$error',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: $muted.resolve(context)),
+              ),
+            );
+          case Ok(:final value):
+            return _buildEditor(value);
+        }
       },
     );
   }
 
-  Widget _buildEditor(BuildContext context) {
+  Widget _buildEditor(DeckFileSnapshot snapshot) {
+    final documentStore = _documentStore ??= DeckDocumentStore(
+      markdown: snapshot.markdown,
+    );
+    final fileSession = _fileSession ??= DeckFileSession(
+      initialSnapshot: snapshot,
+      repository: _repository,
+      documentStore: documentStore,
+    );
+
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<DeckFileController>.value(
-          value: _fileController,
-        ),
+        ChangeNotifierProvider<DeckDocumentStore>.value(value: documentStore),
+        ChangeNotifierProvider<DeckFileSession>.value(value: fileSession),
         ChangeNotifierProvider(create: (_) => EditorStore()),
         Provider<TextEditorController>(
           lazy: false,
-          create: (ctx) {
-            final controller = TextEditorController(
-              editorStore: ctx.read<EditorStore>(),
-              deckLoader: ctx.read<MemoryDeckLoader>(),
-              initialText: _fileController.content,
-              onMarkdownChanged: _fileController.handleEditorChange,
-            );
-            _fileController.attachEditor(controller);
-            return controller;
-          },
+          create: (ctx) => TextEditorController(
+            editorStore: ctx.read<EditorStore>(),
+            deckLoader: ctx.read<MemoryDeckLoader>(),
+            documentStore: ctx.read<DeckDocumentStore>(),
+          ),
           dispose: (_, controller) => controller.dispose(),
         ),
         ListenableProvider<GenerateDeckCommand>(
           create: (ctx) =>
-              GenerateDeckCommand(editor: ctx.read<TextEditorController>()),
+              GenerateDeckCommand(documentStore: ctx.read<DeckDocumentStore>()),
           dispose: (_, command) => command.dispose(),
         ),
       ],
       child: const EditorPage(),
     );
+  }
+
+  Future<void> _releaseUnclaimedInitialDeck() async {
+    try {
+      final result = await _initialDeck;
+      if (result case Ok(:final value)) {
+        await _repository.releaseDeck(value.reference);
+      }
+    } catch (_) {
+      // Bootstrap errors do not retain a usable bookmark.
+    }
   }
 }
 

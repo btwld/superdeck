@@ -2,36 +2,35 @@ import 'dart:async';
 import 'dart:ui' show AppExitResponse;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:playground/app/providers.dart';
 import 'package:playground/app/router.dart';
-import 'package:playground/features/editor/domain/stores/deck_file_controller.dart';
+import 'package:playground/features/editor/domain/files/deck_file.dart';
+import 'package:playground/features/editor/domain/stores/deck_document_store.dart';
+import 'package:playground/features/editor/domain/stores/deck_file_session.dart';
 import 'package:playground/features/editor/presentation/pages/editor_page.dart';
 import 'package:playground/features/editor/presentation/widgets/customization_sidebar.dart';
 import 'package:playground/features/editor/presentation/widgets/new_deck_dialog.dart';
 import 'package:playground/features/editor/presentation/widgets/preview_sidebar.dart';
 import 'package:provider/provider.dart';
 
-import '../../helpers/fake_deck_file_store.dart';
+import '../../helpers/fake_deck_file_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  Widget app({
-    FakeDeckFileStore? deckFileStore,
-    FakeAppSettingsStore? appSettingsStore,
-  }) {
-    // In-memory store/settings so the editor's file-backed bootstrap resolves
-    // without touching disk or spinning a real file watcher.
+  Widget app({FakeDeckFileRepository? deckFileRepository}) {
+    // In-memory repository so the file-backed bootstrap resolves without
+    // touching disk or spinning a real file watcher.
     return MaterialApp.router(
       routerConfig: createRouter(),
       builder: (context, child) => _Theme(
         child: AppProviders(
-          deckFileStore: deckFileStore ?? FakeDeckFileStore(),
-          appSettingsStore: appSettingsStore ?? FakeAppSettingsStore(),
+          deckFileRepository: deckFileRepository ?? FakeDeckFileRepository(),
           child: child!,
         ),
       ),
@@ -64,19 +63,19 @@ void main() {
   });
 
   testWidgets('exit request flushes the final debounced edit', (tester) async {
-    final fileStore = FakeDeckFileStore();
-    await tester.pumpWidget(app(deckFileStore: fileStore));
+    final repository = FakeDeckFileRepository();
+    await tester.pumpWidget(app(deckFileRepository: repository));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     final context = tester.element(find.byType(EditorPage));
-    final controller = context.read<DeckFileController>();
-    final path = controller.boundPath!;
+    final session = context.read<DeckFileSession>();
+    final path = session.boundPath!;
 
-    controller.handleEditorChange('# Final edit');
+    context.read<DeckDocumentStore>().replaceMarkdown('# Final edit');
     final response = await tester.binding.handleRequestAppExit();
 
     expect(response, AppExitResponse.exit);
-    expect(fileStore.files[path], '# Final edit');
+    expect(repository.files[path], '# Final edit');
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 2));
@@ -85,19 +84,19 @@ void main() {
   testWidgets('exit request is cancelled when the final save fails', (
     tester,
   ) async {
-    final fileStore = FakeDeckFileStore();
-    await tester.pumpWidget(app(deckFileStore: fileStore));
+    final repository = FakeDeckFileRepository();
+    await tester.pumpWidget(app(deckFileRepository: repository));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     final context = tester.element(find.byType(EditorPage));
-    final controller = context.read<DeckFileController>();
-    fileStore.failWrites = true;
+    final session = context.read<DeckFileSession>();
+    repository.failWrites = true;
 
-    controller.handleEditorChange('# Cannot persist');
+    context.read<DeckDocumentStore>().replaceMarkdown('# Cannot persist');
     final response = await tester.binding.handleRequestAppExit();
 
     expect(response, AppExitResponse.cancel);
-    expect(controller.warning, isNotNull);
+    expect(session.warning, isNotNull);
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 2));
@@ -111,8 +110,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     final context = tester.element(find.byType(EditorPage));
-    final controller = context.read<DeckFileController>();
-    unawaited(showNewDeckDialog(context, controller));
+    final session = context.read<DeckFileSession>();
+    unawaited(showNewDeckDialog(context, session));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -120,6 +119,43 @@ void main() {
       find.text('Saved as a .md file in SuperDeck app storage'),
       findsOneWidget,
     );
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('Command-N opens the new deck dialog', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
+    await tester.pump();
+
+    expect(find.text('New deck'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('Command-O opens the picked deck', (tester) async {
+    final repository = FakeDeckFileRepository()
+      ..files['/decks/opened.md'] = '# Opened deck'
+      ..pickResult = const DeckFileReference(path: '/decks/opened.md');
+    await tester.pumpWidget(app(deckFileRepository: repository));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final context = tester.element(find.byType(EditorPage));
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyO);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
+    await tester.pump();
+    await tester.pump();
+
+    expect(context.read<DeckFileSession>().boundPath, '/decks/opened.md');
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 2));

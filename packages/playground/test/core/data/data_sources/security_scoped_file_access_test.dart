@@ -4,8 +4,8 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:playground/core/data/data_sources/deck_file_store.dart';
 import 'package:playground/core/data/data_sources/security_scoped_file_access.dart';
+import 'package:playground/features/editor/domain/files/deck_file.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

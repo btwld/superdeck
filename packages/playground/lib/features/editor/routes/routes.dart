@@ -8,9 +8,9 @@ import '../presentation/pages/editor_bootstrap.dart';
 ///
 /// [EditorBootstrap] owns the file-backed deck: it awaits the last-opened file,
 /// then provides the editor's scoped objects seeded with its content —
-/// `DeckFileController` (binds + auto-saves the `.md`), `EditorStore` (nav
-/// state), `TextEditorController` (the super_editor document), and
-/// `GenerateDeckCommand` (AI generation via the `MarkdownEditor` port).
+/// `DeckDocumentStore` (the Markdown authority), `DeckFileSession` (binding +
+/// auto-save), `EditorStore` (nav state), `TextEditorController` (the
+/// super_editor adapter), and `GenerateDeckCommand` (AI generation).
 List<RouteBase> editorRoutes() => [
   GoRoute(path: '/', builder: (context, state) => const EditorBootstrap()),
 ];
