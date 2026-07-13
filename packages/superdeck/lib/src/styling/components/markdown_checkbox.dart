@@ -19,6 +19,3 @@ final class MarkdownCheckboxSpec with _$MarkdownCheckboxSpec {
 
   const MarkdownCheckboxSpec({this.textStyle, this.icon});
 }
-
-@Deprecated('Use MarkdownCheckboxStyler instead.')
-typedef MarkdownCheckboxStyle = MarkdownCheckboxStyler;

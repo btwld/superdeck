@@ -314,7 +314,7 @@ Template styles are isolated. A slide using `template: brand` and `style: cover`
 
 ### `blockContainer` and `BlockStyler`
 
-`SlideStyle.blockContainer` is a `BlockStyler`, not a `BoxStyler`. `BlockStyler`
+`SlideStyler.blockContainer` is a `BlockStyler`, not a `BoxStyler`. `BlockStyler`
 is a constrained Mix styler exposing only `padding`, `margin` (plus Mix
 spacing convenience methods), `decoration`, `foregroundDecoration`,
 `clipBehavior`, context/`BlockVariant` variants, and animation. It cannot
@@ -335,7 +335,7 @@ import 'package:superdeck/superdeck.dart';
 const webviewBlock = BlockVariant('webview');
 
 final options = DeckOptions(
-  baseStyle: SlideStyle(
+  baseStyle: SlideStyler(
     blockContainer: BlockStyler(
       padding: EdgeInsetsGeometryMix.all(40),
     ).variants([

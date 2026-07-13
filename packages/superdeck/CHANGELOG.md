@@ -40,7 +40,7 @@
 - **BREAKING**: Generate the Mix styling layer with `mix_generator` instead of
   hand-writing it. Styler classes are now canonically named `*Styler`
   (`SlideStyler`, `MarkdownAlertStyler`, ...) following the Mix 2.x convention;
-  the previous `*Style` names remain available as typedef aliases.
+  the previous `*Style` names are no longer exported.
 - **BREAKING**: Styler constructor parameters for `TextStyle`-typed fields now
   take `TextStyleMix` (e.g. `SlideStyler(strong:)`,
   `MarkdownCodeblockStyler(textStyle:)`). Wrap existing values with

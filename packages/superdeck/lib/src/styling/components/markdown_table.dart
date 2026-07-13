@@ -44,6 +44,3 @@ final class MarkdownTableSpec with _$MarkdownTableSpec {
     this.verticalAlignment,
   });
 }
-
-@Deprecated('Use MarkdownTableStyler instead.')
-typedef MarkdownTableStyle = MarkdownTableStyler;

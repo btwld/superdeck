@@ -36,6 +36,3 @@ final class MarkdownAlertSpec with _$MarkdownAlertSpec {
        warning = warning ?? const StyleSpec(spec: MarkdownAlertTypeSpec()),
        caution = caution ?? const StyleSpec(spec: MarkdownAlertTypeSpec());
 }
-
-@Deprecated('Use MarkdownAlertStyler instead.')
-typedef MarkdownAlertStyle = MarkdownAlertStyler;

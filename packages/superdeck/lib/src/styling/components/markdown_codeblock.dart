@@ -22,6 +22,3 @@ final class MarkdownCodeblockSpec with _$MarkdownCodeblockSpec {
 
   const MarkdownCodeblockSpec({this.textStyle, this.container, this.alignment});
 }
-
-@Deprecated('Use MarkdownCodeblockStyler instead.')
-typedef MarkdownCodeblockStyle = MarkdownCodeblockStyler;

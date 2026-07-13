@@ -49,7 +49,7 @@ Load only the reference needed for the task:
   that inset; an explicit `0` removes it. A present override
   replaces only the matching inset after variants resolve while preserving
   other style data (decoration, clipping, animation).
-- `SlideStyle.blockContainer` accepts `BlockStyler`, a constrained Mix styler
+- `SlideStyler.blockContainer` accepts `BlockStyler`, a constrained Mix styler
   supporting only `padding`, `margin`, `decoration`, `foregroundDecoration`,
   `clipBehavior`, context/`BlockVariant` variants, and animation. It cannot
   express widget modifiers, width/height/constraints, transforms, or box

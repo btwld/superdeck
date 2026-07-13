@@ -28,6 +28,3 @@ final class MarkdownBlockquoteSpec with _$MarkdownBlockquoteSpec {
     this.alignment,
   });
 }
-
-@Deprecated('Use MarkdownBlockquoteStyler instead.')
-typedef MarkdownBlockquoteStyle = MarkdownBlockquoteStyler;

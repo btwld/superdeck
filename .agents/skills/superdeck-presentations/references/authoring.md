@@ -398,7 +398,7 @@ Block-level controls such as `flex`, `align`, `margin`, `padding`, and
 `scrollable` are consumed by SuperDeck and are not passed as custom widget
 args.
 
-To style every custom block with the same name, declare `BlockVariant('metricCard')` in a Dart `SlideStyle`. The match is exact and case-sensitive, and it applies to the widget block container plus descendants rather than to individual Markdown block instances.
+To style every custom block with the same name, declare `BlockVariant('metricCard')` in a Dart `SlideStyler`. The match is exact and case-sensitive, and it applies to the widget block container plus descendants rather than to individual Markdown block instances.
 
 Custom widget authoring rules:
 

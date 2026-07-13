@@ -70,7 +70,7 @@ Widget-ephemeral (StatefulWidget, disposed locally)
 
 - **`DeckStore`** — subscribe to `controller.slides`; expose `List<SlideConfiguration> slides`; `notifyListeners()` on change. Single read-surface for slides (replaces scattered `controller.slides.value` reads and the unused `SlideConfigurationStore`).
 - **`ThumbnailStore`** — on each `slides` change, reconcile subscriptions to every current `getThumbnail(key).status` signal (subscribe new keys, drop removed); expose `ThumbnailStatus statusFor(SlideKey)`; `notifyListeners()` on any status transition. Owns the dynamic subscription lifecycle.
-- **`DeckCustomizationStore`** — `ChangeNotifier`; owns `background` + per-`TextLevel` `{color,size,weight,family}`; on any setter, recompute `SlideStyle` and write `controller.options.value = DeckOptions(...)`, then `notifyListeners()`. Seeds options in constructor. `applyFromAiStyle` removed.
+- **`DeckCustomizationStore`** — `ChangeNotifier`; owns `background` + per-`TextLevel` `{color,size,weight,family}`; on any setter, recompute `SlideStyler` and write `controller.options.value = DeckOptions(...)`, then `notifyListeners()`. Seeds options in constructor. `applyFromAiStyle` removed.
 
 ## Status
 

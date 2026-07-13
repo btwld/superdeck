@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:superdeck/superdeck.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -23,17 +21,6 @@ void main() {
       expect(DeckAction, isNotNull);
       expect(DeckRuntimePlugin, isNotNull);
       expect(BlockStyler, isNotNull);
-    });
-
-    test('keeps deprecated style aliases constructible', () {
-      expect(SlideStyle(), isA<SlideStyler>());
-      expect(MarkdownAlertStyle(), isA<MarkdownAlertStyler>());
-      expect(MarkdownAlertTypeStyle(), isA<MarkdownAlertTypeStyler>());
-      expect(MarkdownBlockquoteStyle(), isA<MarkdownBlockquoteStyler>());
-      expect(MarkdownCheckboxStyle(), isA<MarkdownCheckboxStyler>());
-      expect(MarkdownCodeblockStyle(), isA<MarkdownCodeblockStyler>());
-      expect(MarkdownListStyle(), isA<MarkdownListStyler>());
-      expect(MarkdownTableStyle(), isA<MarkdownTableStyler>());
     });
   });
 }

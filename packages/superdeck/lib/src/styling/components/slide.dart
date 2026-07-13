@@ -163,6 +163,3 @@ final class SlideSpec with _$SlideSpec {
     );
   }
 }
-
-@Deprecated('Use SlideStyler instead.')
-typedef SlideStyle = SlideStyler;

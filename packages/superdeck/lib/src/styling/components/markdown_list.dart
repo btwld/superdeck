@@ -30,6 +30,3 @@ final class MarkdownListSpec with _$MarkdownListSpec {
     this.unorderedAlignment,
   });
 }
-
-@Deprecated('Use MarkdownListStyler instead.')
-typedef MarkdownListStyle = MarkdownListStyler;

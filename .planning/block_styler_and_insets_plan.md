@@ -11,7 +11,7 @@
 
 ## Objective
 
-- Replace `SlideStyle.blockContainer: BoxStyler?` with a constrained `BlockStyler?` that resolves to Mix `BoxSpec` but cannot add arbitrary widget modifiers.
+- Replace `SlideStyler.blockContainer: BoxStyler?` with a constrained `BlockStyler?` that resolves to Mix `BoxSpec` but cannot add arbitrary widget modifiers.
 - Keep layout ownership explicit: section `spacing` owns sibling gaps; block `margin` owns space inside an allocated block frame but outside its decoration; block `padding` owns space between decoration and content; block/section `align` owns content placement.
 - Add `margin` beside `padding` to content and widget block directives, Dart models, validation, generated contracts, rendering, serializer round-tripping, docs, demo, and tests.
 - Canonicalize nested directive maps so symmetric and physical edges are vertically readable inside nested braces.
@@ -20,7 +20,7 @@
 ### Out of scope
 
 - Serializing Flutter, Mix, `BoxSpec`, or `BlockStyler` objects into the Dart-only core contract.
-- Exposing arbitrary per-block colors, borders, transforms, constraints, or modifiers in Markdown. Visual styling remains a Dart `SlideStyle` concern.
+- Exposing arbitrary per-block colors, borders, transforms, constraints, or modifiers in Markdown. Visual styling remains a Dart `SlideStyler` concern.
 - Adding compatibility aliases, deprecated constructors, adapters from `BoxStyler`, or dual parsing modes for old unreleased branch output.
 - Changing section spacing, flex allocation, or alignment precedence beyond making all consumers use the canonical contract.
 
@@ -54,7 +54,7 @@ Create a public `BlockStyler` in a new `packages/superdeck/lib/src/styling/compo
 - `clipBehavior`;
 - context and `BlockVariant` variants;
 - existing Mix animation metadata;
-- merge, resolve, diagnostics, and equality behavior matching the repository's manual `SlideStyle` pattern.
+- merge, resolve, diagnostics, and equality behavior matching the repository's generated `SlideStyler` pattern.
 
 It will not expose:
 
@@ -86,7 +86,7 @@ Resolution precedence is fixed:
 
 ```text
 default BlockStyler
--> deck/template SlideStyle merges
+-> deck/template SlideStyler merges
 -> matching BlockVariant
 -> per-block margin/padding overrides
 -> rendered Mix Box
@@ -172,7 +172,7 @@ section spacing
 
 ## Compatibility and migration
 
-- This is an intentional hard break. `SlideStyle.blockContainer` changes from `BoxStyler?` to `BlockStyler?`.
+- This is an intentional hard break. `SlideStyler.blockContainer` changes from `BoxStyler?` to `BlockStyler?`.
 - Replace every in-repository `blockContainer: BoxStyler(...)` with `blockContainer: BlockStyler(...)`.
 - Remove block-container modifier examples and tests. Callers needing arbitrary wrappers must own them in custom widget implementations or slide parts, not the framework-owned block frame.
 - Add no aliases, deprecated overloads, conversion factories, or escape hatches.
@@ -231,9 +231,9 @@ section spacing
   - New files: `packages/superdeck/lib/src/styling/components/block_styler.dart`, `packages/superdeck/test/src/styling/components/block_styler_test.dart`.
   - Files: `packages/superdeck/lib/src/styling/components/slide.dart`, `packages/superdeck/lib/src/styling/default_style.dart`, `packages/superdeck/lib/superdeck.dart`.
   - Work:
-    - Implement `BlockStyler extends Style<BoxSpec>` manually, following `SlideStyle` merge/resolve/diagnostic conventions.
+    - Implement `BlockStyler extends Style<BoxSpec>` manually, following `SlideStyler` merge/resolve/diagnostic conventions.
     - Support spacing and decoration convenience APIs, clipping, variants, and animation while hardcoding `modifier: null`.
-    - Change `SlideStyle`'s public `blockContainer` constructor parameter to `BlockStyler?` while retaining the resolved `StyleSpec<BoxSpec>` field.
+    - Change `SlideStyler`'s public `blockContainer` constructor parameter to `BlockStyler?` while retaining the resolved `StyleSpec<BoxSpec>` field.
     - Convert default image/gist/webview `BlockVariant` rules to `BlockStyler`.
     - Export only the intended public style type; do not expose a compatibility adapter.
   - Acceptance:
@@ -304,7 +304,7 @@ section spacing
     - Update core, builder, and superdeck changelogs with the hard API break and new contract.
   - Acceptance:
     - All maintained authoring examples parse and round-trip.
-    - No docs advertise block modifiers or `BoxStyler` for `SlideStyle.blockContainer`.
+    - No docs advertise block modifiers or `BoxStyler` for `SlideStyler.blockContainer`.
     - Generated artifacts match source and include normalized margin/padding.
   - Verification: `cd demo && fvm dart run superdeck_cli:main build`
 
@@ -372,7 +372,7 @@ Expected results:
 
 ## Definition of done
 
-- `BlockStyler` is the only public style accepted by `SlideStyle.blockContainer`, and it cannot express modifiers or competing geometry controls.
+- `BlockStyler` is the only public style accepted by `SlideStyler.blockContainer`, and it cannot express modifiers or competing geometry controls.
 - Padding and margin share one validated authoring model, serialize to normalized physical edges, and render with exact documented precedence.
 - Canonical nested examples use vertically formatted braces with required commas and round-trip through the real parser/serializer.
 - Core, builder, superdeck, Playground, demo, docs, presentation skill, schemas, generated files, changelogs, and PR description agree.
