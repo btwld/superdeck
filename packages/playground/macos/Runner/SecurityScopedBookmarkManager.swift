@@ -33,6 +33,8 @@ final class SecurityScopedBookmarkManager {
       switch call.method {
       case "pickDeckFile":
         result(try pickDeckFile())
+      case "pickDecksDirectory":
+        result(try pickDecksDirectory())
       case "startAccessing":
         guard let bookmark = call.arguments as? String, !bookmark.isEmpty else {
           throw SecurityScopedBookmarkError.invalidArgument(call.method)
@@ -71,14 +73,31 @@ final class SecurityScopedBookmarkManager {
       panel.allowedFileTypes = ["md"]
     }
 
+    return try selectURL(with: panel)
+  }
+
+  private func pickDecksDirectory() throws -> [String: String]? {
+    let panel = NSOpenPanel()
+    panel.title = "Choose where SuperDeck saves decks"
+    panel.message = "Choose a folder. SuperDeck will create its SuperDeck folder inside it."
+    panel.prompt = "Choose"
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = true
+    panel.canChooseFiles = false
+    panel.canCreateDirectories = true
+    panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+      .appendingPathComponent("Documents", isDirectory: true)
+
+    return try selectURL(with: panel)
+  }
+
+  private func selectURL(with panel: NSOpenPanel) throws -> [String: String]? {
     guard panel.runModal() == .OK, let url = panel.url else {
       return nil
     }
 
-    // URLs returned by NSOpenPanel carry temporary Powerbox access. Persist
-    // that access as a bookmark, then balance the temporary grant. Dart starts
-    // the bookmark before reading the selected file.
-    defer { url.stopAccessingSecurityScopedResource() }
+    // NSOpenPanel adds the selected URL to the sandbox. Persist that access;
+    // Dart resolves and activates the bookmark before later file operations.
     let bookmark = try makeBookmark(for: url)
     return ["path": url.path, "bookmark": bookmark]
   }

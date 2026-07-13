@@ -23,7 +23,7 @@ enum DeckBindingStatus {
   bound,
 
   /// The active file disappeared or became unreadable. The document remains
-  /// editable in memory until the user creates or opens another deck.
+  /// editable in memory until the user creates a replacement deck.
   unbound,
 }
 
@@ -84,11 +84,14 @@ class DeckFileSession extends ChangeNotifier {
   /// A user-facing persistence warning, if the latest operation failed.
   String? get warning => _warning;
 
-  /// Creates a new app-owned deck after flushing the current document.
+  /// Creates a new deck in the configured SuperDeck folder.
   ///
-  /// Name collisions are returned so the dialog can display them inline.
+  /// When the previous file was lost, the new deck recovers the in-memory
+  /// document instead of replacing it with the starter template. Name
+  /// collisions are returned so the dialog can display them inline.
   Future<Result<void>> createDeck(String name) async {
-    if (!await flushPendingSave()) {
+    final recovering = _status == DeckBindingStatus.unbound;
+    if (_disposed || (!recovering && !await flushPendingSave())) {
       return Result.error(
         DeckFileWriteException(
           boundPath ?? '<in-memory deck>',
@@ -99,7 +102,7 @@ class DeckFileSession extends ChangeNotifier {
 
     final created = await _repository.createDeck(
       name: name,
-      markdown: kStarterDeckMarkdown,
+      markdown: recovering ? _documentStore.markdown : kStarterDeckMarkdown,
     );
     switch (created) {
       case Failure(:final error):
@@ -124,6 +127,13 @@ class DeckFileSession extends ChangeNotifier {
   /// Cancellation is a no-op. Failures keep the current binding and surface a
   /// warning in the header.
   Future<void> openDeck() async {
+    if (_status == DeckBindingStatus.unbound) {
+      _warning =
+          'Create a new deck to save your recovered work before opening '
+          'another deck.';
+      _notify();
+      return;
+    }
     if (!await flushPendingSave()) return;
 
     final picked = await _repository.pickDeck();
@@ -156,7 +166,7 @@ class DeckFileSession extends ChangeNotifier {
       if (_disposed ||
           _status != DeckBindingStatus.bound ||
           reference == null) {
-        return !_disposed;
+        return false;
       }
       final markdown = _documentStore.markdown;
       if (markdown == _lastSyncedContent) return true;
@@ -214,6 +224,10 @@ class DeckFileSession extends ChangeNotifier {
       switch (result) {
         case Ok():
           _lastSyncedContent = markdown;
+          if (_warning != null) {
+            _warning = null;
+            _notify();
+          }
           return true;
         case Failure():
           _warning =
@@ -315,7 +329,8 @@ class DeckFileSession extends ChangeNotifier {
     _status = DeckBindingStatus.unbound;
     _warning =
         'The file "$fileName" is no longer on disk. '
-        'Your work is kept here — use New or Open to save it to a file.';
+        'Your work is kept here. Create a new deck to save it before opening '
+        'another deck or quitting.';
     unawaited(_repository.releaseDeck(reference));
     _notify();
   }

@@ -102,7 +102,35 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
   });
 
-  testWidgets('new deck dialog describes sandboxed app storage', (
+  testWidgets('exit request is cancelled after the active file is deleted', (
+    tester,
+  ) async {
+    final repository = FakeDeckFileRepository();
+    await tester.pumpWidget(app(deckFileRepository: repository));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final context = tester.element(find.byType(EditorPage));
+    final session = context.read<DeckFileSession>();
+
+    final deletion = repository.externalDelete(session.boundPath!);
+    await tester.pump(const Duration(milliseconds: 10));
+    await deletion;
+    await tester.pump();
+    final response = await tester.binding.handleRequestAppExit();
+
+    expect(response, AppExitResponse.cancel);
+    expect(session.isBound, isFalse);
+    expect(find.textContaining('Create a new deck'), findsOneWidget);
+    final openButton = tester.widget<HeroButton>(
+      find.widgetWithText(HeroButton, 'Open'),
+    );
+    expect(openButton.onPressed, isNull);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('new deck dialog describes the selected SuperDeck folder', (
     tester,
   ) async {
     await tester.pumpWidget(app());
@@ -116,9 +144,31 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(
-      find.text('Saved as a .md file in SuperDeck app storage'),
+      find.text('Saved as a .md file in your SuperDeck folder'),
       findsOneWidget,
     );
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('bootstrap failure can be retried without restarting', (
+    tester,
+  ) async {
+    final repository = FakeDeckFileRepository()..failWrites = true;
+    await tester.pumpWidget(app(deckFileRepository: repository));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.textContaining('Could not open the decks folder'), findsOne);
+    expect(find.text('Try again'), findsOneWidget);
+
+    repository.failWrites = false;
+    await tester.tap(find.text('Try again'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.byType(EditorPage), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 2));

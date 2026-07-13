@@ -43,7 +43,8 @@ class AppProviders extends StatelessWidget {
         ),
         Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
         Provider<DeckFileRepository>(
-          create: (_) => deckFileRepository ?? const MacOsDeckFileRepository(),
+          create: (_) => deckFileRepository ?? MacOsDeckFileRepository(),
+          dispose: (_, repository) => repository.dispose(),
         ),
         Provider<DeckController>(
           lazy: false,

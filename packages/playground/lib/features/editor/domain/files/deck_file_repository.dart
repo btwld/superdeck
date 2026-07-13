@@ -6,7 +6,7 @@ import 'deck_file.dart';
 /// A successful loaded or picked snapshot keeps its bookmark active until the
 /// caller invokes [releaseDeck]. Picker cancellation is an `Ok(null)` result.
 abstract interface class DeckFileRepository {
-  /// Restores the last opened deck, or creates/loads the app-owned default.
+  /// Restores the last opened deck, or creates/loads the selected-folder default.
   Future<Result<DeckFileSnapshot>> loadInitialDeck({
     required String starterMarkdown,
   });
@@ -14,7 +14,7 @@ abstract interface class DeckFileRepository {
   /// Opens the native picker and loads the selected deck.
   Future<Result<DeckFileSnapshot?>> pickDeck();
 
-  /// Creates a new app-owned deck seeded with [markdown].
+  /// Creates a deck in the user-selected SuperDeck folder with [markdown].
   Future<Result<DeckFileSnapshot>> createDeck({
     required String name,
     required String markdown,
@@ -28,4 +28,7 @@ abstract interface class DeckFileRepository {
 
   /// Best-effort cleanup for a reference retained by a successful load/pick.
   Future<Result<void>> releaseDeck(DeckFileReference reference);
+
+  /// Releases repository-owned resources such as the decks-directory bookmark.
+  void dispose();
 }

@@ -30,7 +30,7 @@ class EditorBootstrap extends StatefulWidget {
 
 class _EditorBootstrapState extends State<EditorBootstrap> {
   late final DeckFileRepository _repository;
-  late final Future<Result<DeckFileSnapshot>> _initialDeck;
+  late Future<Result<DeckFileSnapshot>> _initialDeck;
   late final AppLifecycleListener _lifecycleListener;
 
   DeckDocumentStore? _documentStore;
@@ -48,9 +48,7 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
   void initState() {
     super.initState();
     _repository = context.read<DeckFileRepository>();
-    _initialDeck = _repository.loadInitialDeck(
-      starterMarkdown: kStarterDeckMarkdown,
-    );
+    _initialDeck = _loadInitialDeck();
     _lifecycleListener = AppLifecycleListener(
       onExitRequested: _handleExitRequested,
     );
@@ -89,25 +87,13 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
           );
         }
         if (snapshot.hasError) {
-          return _BootstrapMessage(
-            child: Text(
-              'Could not open the decks folder.\n${snapshot.error}',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: $muted.resolve(context)),
-            ),
-          );
+          return _buildFailure(snapshot.error!);
         }
 
         final result = snapshot.requireData;
         switch (result) {
           case Failure(:final error):
-            return _BootstrapMessage(
-              child: Text(
-                'Could not open the decks folder.\n$error',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: $muted.resolve(context)),
-              ),
-            );
+            return _buildFailure(error);
           case Ok(:final value):
             return _buildEditor(value);
         }
@@ -147,6 +133,37 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
       ],
       child: const EditorPage(),
     );
+  }
+
+  Widget _buildFailure(Object error) {
+    return _BootstrapMessage(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Could not open the decks folder.\n$error',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: $muted.resolve(context)),
+          ),
+          const SizedBox(height: 16),
+          HeroButton(
+            label: 'Try again',
+            iconLeft: Icons.refresh,
+            onPressed: _retry,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<Result<DeckFileSnapshot>> _loadInitialDeck() {
+    return _repository.loadInitialDeck(starterMarkdown: kStarterDeckMarkdown);
+  }
+
+  void _retry() {
+    setState(() {
+      _initialDeck = _loadInitialDeck();
+    });
   }
 
   Future<void> _releaseUnclaimedInitialDeck() async {

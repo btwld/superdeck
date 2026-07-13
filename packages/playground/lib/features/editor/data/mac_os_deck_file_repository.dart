@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -13,12 +12,11 @@ import '../domain/files/deck_file_repository.dart';
 
 /// macOS implementation of [DeckFileRepository].
 ///
-/// It owns the one small last-opened-deck setting as well as file I/O,
-/// security-scoped bookmarks, and file watching. A bookmark is retained only
-/// after a successful load and is always released best-effort on a failed
-/// candidate.
+/// It owns the selected decks-directory and last-opened-deck settings, file
+/// I/O, security-scoped bookmarks, and file watching. File bookmarks are
+/// retained only after a successful load and released best-effort on failure.
 class MacOsDeckFileRepository implements DeckFileRepository {
-  const MacOsDeckFileRepository({
+  MacOsDeckFileRepository({
     SecurityScopedFileAccess fileAccess = const SecurityScopedFileAccess(),
   }) : _fileAccess = fileAccess;
 
@@ -26,9 +24,14 @@ class MacOsDeckFileRepository implements DeckFileRepository {
   static const _defaultDeckFileName = 'untitled.md';
   static const _settingsFolder = 'superdeck_playground';
   static const _settingsFileName = 'settings.json';
+  static const _decksDirectoryKey = 'decksDirectory';
   static const _lastOpenedDeckKey = 'lastOpenedDeck';
 
   final SecurityScopedFileAccess _fileAccess;
+
+  SecurityScopedDirectoryReference? _activeDecksDirectory;
+  Future<Directory>? _decksDirectoryRequest;
+  bool _disposed = false;
 
   @override
   Future<Result<DeckFileSnapshot>> loadInitialDeck({
@@ -36,6 +39,16 @@ class MacOsDeckFileRepository implements DeckFileRepository {
   }) async {
     final remembered = await _lastOpenedDeck();
     if (remembered != null) {
+      // Folder decks rely on the parent directory's bookmark for access.
+      if (remembered.bookmark == null) {
+        try {
+          await _decksDirectory();
+        } on DeckFileAccessException catch (error) {
+          return Result.error(error);
+        } catch (error) {
+          return Result.error(DeckFileAccessException(remembered.path, error));
+        }
+      }
       final restored = await _loadCandidate(remembered);
       if (restored case Ok(:final value)) {
         await _remember(value.reference);
@@ -86,6 +99,8 @@ class MacOsDeckFileRepository implements DeckFileRepository {
       );
       await _remember(snapshot.reference);
       return Result.ok(snapshot);
+    } on DeckFileAccessException catch (error) {
+      return Result.error(error);
     } catch (error) {
       return Result.error(DeckFileWriteException(fileName, error));
     }
@@ -147,6 +162,17 @@ class MacOsDeckFileRepository implements DeckFileRepository {
     return const Result.ok(null);
   }
 
+  @override
+  void dispose() {
+    _disposed = true;
+    _decksDirectoryRequest = null;
+    final directory = _activeDecksDirectory;
+    _activeDecksDirectory = null;
+    if (directory != null) {
+      _fileAccess.stopAccessingDirectory(directory).ignore();
+    }
+  }
+
   Future<Result<DeckFileSnapshot>> _loadDefaultDeck(
     String starterMarkdown,
   ) async {
@@ -154,6 +180,8 @@ class MacOsDeckFileRepository implements DeckFileRepository {
     try {
       final directory = await _decksDirectory();
       path = p.join(directory.path, _defaultDeckFileName);
+    } on DeckFileAccessException catch (error) {
+      return Result.error(error);
     } catch (error) {
       return Result.error(DeckFileWriteException(_defaultDeckFileName, error));
     }
@@ -169,12 +197,12 @@ class MacOsDeckFileRepository implements DeckFileRepository {
 
     if (exists) {
       try {
-        return Result.ok(
-          DeckFileSnapshot(
-            reference: DeckFileReference(path: path),
-            markdown: await file.readAsString(),
-          ),
+        final snapshot = DeckFileSnapshot(
+          reference: DeckFileReference(path: path),
+          markdown: await file.readAsString(),
         );
+        await _remember(snapshot.reference);
+        return Result.ok(snapshot);
       } catch (error) {
         // An existing but unreadable default is user data. Never overwrite it.
         return Result.error(DeckFileReadException(path, error));
@@ -230,52 +258,158 @@ class MacOsDeckFileRepository implements DeckFileRepository {
   }
 
   Future<Directory> _decksDirectory() async {
-    final documents = await getApplicationDocumentsDirectory();
-    final directory = Directory(p.join(documents.path, _decksFolderName));
-    await directory.create(recursive: true);
-    return directory;
+    final existingRequest = _decksDirectoryRequest;
+    if (existingRequest != null) return existingRequest;
+
+    final request = _resolveDecksDirectory();
+    _decksDirectoryRequest = request;
+    try {
+      return await request;
+    } catch (_) {
+      if (identical(_decksDirectoryRequest, request)) {
+        _decksDirectoryRequest = null;
+      }
+      rethrow;
+    }
   }
 
-  Future<DeckFileReference?> _lastOpenedDeck() async {
-    try {
-      final file = await _settingsFile();
-      if (!await file.exists()) return null;
-      final decoded = jsonDecode(await file.readAsString());
-      if (decoded is! Map) return null;
+  Future<Directory> _resolveDecksDirectory() async {
+    final remembered = await _storedDecksDirectory();
+    if (remembered != null) {
+      final restored = await _tryActivateDecksDirectory(remembered);
+      if (restored != null) return restored;
+    }
 
-      final stored = decoded[_lastOpenedDeckKey];
-      if (stored is! Map) return null;
-      final path = stored['path'];
-      final bookmark = stored['bookmark'];
-      if (path is! String || path.isEmpty) return null;
-      return DeckFileReference(
-        path: path,
-        bookmark: bookmark is String && bookmark.isNotEmpty ? bookmark : null,
+    SecurityScopedDirectoryReference? selected;
+    try {
+      selected = await _fileAccess.pickDecksDirectory();
+    } catch (error) {
+      throw DeckFileAccessException('<decks directory>', error);
+    }
+    if (selected == null) {
+      throw DeckFileAccessException(
+        '<decks directory>',
+        StateError('Decks directory selection was cancelled.'),
       );
+    }
+
+    try {
+      return await _activateDecksDirectory(selected);
+    } catch (error) {
+      throw DeckFileAccessException(selected.path, error);
+    }
+  }
+
+  Future<Directory?> _tryActivateDecksDirectory(
+    SecurityScopedDirectoryReference reference,
+  ) async {
+    try {
+      return await _activateDecksDirectory(reference);
     } catch (_) {
-      // Corrupt settings are a launch convenience failure, not an app failure.
       return null;
     }
   }
 
-  Future<void> _remember(DeckFileReference reference) async {
+  Future<Directory> _activateDecksDirectory(
+    SecurityScopedDirectoryReference reference,
+  ) async {
+    SecurityScopedDirectoryReference? active;
     try {
-      final file = await _settingsFile();
-      Map<String, dynamic> settings;
-      try {
-        final decoded = await file.exists()
-            ? jsonDecode(await file.readAsString())
-            : <String, dynamic>{};
-        settings = decoded is Map
-            ? Map<String, dynamic>.from(decoded)
-            : <String, dynamic>{};
-      } catch (_) {
-        settings = <String, dynamic>{};
+      active = await _fileAccess.startAccessingDirectory(reference);
+      if (_disposed) {
+        throw StateError('The deck file repository has been disposed.');
       }
+
+      final root = Directory(active.path);
+      if (!await root.exists()) {
+        throw StateError('The selected decks directory no longer exists.');
+      }
+      final directory = Directory(p.join(root.path, _decksFolderName));
+      await directory.create(recursive: true);
+      if (_disposed) {
+        throw StateError('The deck file repository has been disposed.');
+      }
+
+      _activeDecksDirectory = active;
+      await _rememberDecksDirectory(active);
+      return directory;
+    } catch (_) {
+      if (active != null) {
+        try {
+          await _fileAccess.stopAccessingDirectory(active);
+        } catch (_) {
+          // Failed activation must not leak an access scope.
+        }
+      }
+      rethrow;
+    }
+  }
+
+  Future<DeckFileReference?> _lastOpenedDeck() async {
+    final stored = (await _readSettings())[_lastOpenedDeckKey];
+    if (stored is! Map) return null;
+    final path = stored['path'];
+    final bookmark = stored['bookmark'];
+    if (path is! String || path.isEmpty) return null;
+    return DeckFileReference(
+      path: path,
+      bookmark: bookmark is String && bookmark.isNotEmpty ? bookmark : null,
+    );
+  }
+
+  Future<SecurityScopedDirectoryReference?> _storedDecksDirectory() async {
+    final stored = (await _readSettings())[_decksDirectoryKey];
+    if (stored is! Map) return null;
+    final path = stored['path'];
+    final bookmark = stored['bookmark'];
+    if (path is! String ||
+        path.isEmpty ||
+        bookmark is! String ||
+        bookmark.isEmpty) {
+      return null;
+    }
+    return SecurityScopedDirectoryReference(path: path, bookmark: bookmark);
+  }
+
+  Future<void> _remember(DeckFileReference reference) async {
+    await _updateSettings((settings) {
       settings[_lastOpenedDeckKey] = {
         'path': reference.path,
         if (reference.bookmark != null) 'bookmark': reference.bookmark,
       };
+    });
+  }
+
+  Future<void> _rememberDecksDirectory(
+    SecurityScopedDirectoryReference reference,
+  ) async {
+    await _updateSettings((settings) {
+      settings[_decksDirectoryKey] = {
+        'path': reference.path,
+        'bookmark': reference.bookmark,
+      };
+    });
+  }
+
+  Future<Map<String, dynamic>> _readSettings() async {
+    try {
+      final file = await _settingsFile();
+      if (!await file.exists()) return {};
+      final decoded = jsonDecode(await file.readAsString());
+      return decoded is Map ? Map<String, dynamic>.from(decoded) : {};
+    } catch (_) {
+      // Corrupt settings are a launch convenience failure, not an app failure.
+      return {};
+    }
+  }
+
+  Future<void> _updateSettings(
+    void Function(Map<String, dynamic> settings) update,
+  ) async {
+    try {
+      final settings = await _readSettings();
+      update(settings);
+      final file = await _settingsFile();
       await file.writeAsString(jsonEncode(settings));
     } catch (_) {
       // Remembering is best-effort and must not break the active binding.

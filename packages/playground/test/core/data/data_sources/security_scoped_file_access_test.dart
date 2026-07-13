@@ -18,10 +18,21 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
           calls.add(call);
+          if (call.method == 'startAccessing' &&
+              call.arguments == 'created-directory-bookmark') {
+            return {
+              'path': '/Users/test/Documents',
+              'bookmark': 'refreshed-directory-bookmark',
+            };
+          }
           return switch (call.method) {
             'pickDeckFile' => {
               'path': '/outside/talk.md',
               'bookmark': 'created-bookmark',
+            },
+            'pickDecksDirectory' => {
+              'path': '/Users/test/Documents',
+              'bookmark': 'created-directory-bookmark',
             },
             'startAccessing' => {
               'path': '/moved/talk.md',
@@ -72,7 +83,7 @@ void main() {
     ]);
   });
 
-  test('is a no-op for an app-owned file without a bookmark', () async {
+  test('is a no-op for a directory-scoped file without a bookmark', () async {
     const access = SecurityScopedFileAccess();
     const deck = DeckFileReference(path: '/app-storage/talk.md');
 
@@ -80,5 +91,37 @@ void main() {
     await access.stopAccessing(deck);
 
     expect(calls, isEmpty);
+  });
+
+  test('selects, activates, refreshes, and releases a directory', () async {
+    const access = SecurityScopedFileAccess();
+    final picked = await access.pickDecksDirectory();
+    final activated = await access.startAccessingDirectory(picked!);
+    await access.stopAccessingDirectory(activated);
+
+    expect(
+      picked,
+      const SecurityScopedDirectoryReference(
+        path: '/Users/test/Documents',
+        bookmark: 'created-directory-bookmark',
+      ),
+    );
+    expect(
+      activated,
+      const SecurityScopedDirectoryReference(
+        path: '/Users/test/Documents',
+        bookmark: 'refreshed-directory-bookmark',
+      ),
+    );
+    expect(calls.map((call) => call.method), [
+      'pickDecksDirectory',
+      'startAccessing',
+      'stopAccessing',
+    ]);
+    expect(calls.map((call) => call.arguments), [
+      null,
+      'created-directory-bookmark',
+      'refreshed-directory-bookmark',
+    ]);
   });
 }

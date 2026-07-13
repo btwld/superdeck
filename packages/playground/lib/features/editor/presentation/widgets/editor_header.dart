@@ -47,7 +47,7 @@ class EditorHeader extends StatelessWidget {
                 iconLeft: CupertinoIcons.folder,
                 size: .sm,
                 variant: .ghost,
-                onPressed: session.openDeck,
+                onPressed: session.isBound ? session.openDeck : null,
               ),
             ],
           ),

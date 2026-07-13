@@ -28,8 +28,12 @@ class FakeDeckFileRepository implements DeckFileRepository {
   String decksDirectory = '/decks';
   bool failWrites = false;
   bool failRememberWrites = false;
+  int pickCount = 0;
   int watchCount = 0;
   int writeCount = 0;
+
+  @override
+  void dispose() {}
 
   @override
   Future<Result<DeckFileSnapshot>> loadInitialDeck({
@@ -75,6 +79,7 @@ class FakeDeckFileRepository implements DeckFileRepository {
 
   @override
   Future<Result<DeckFileSnapshot?>> pickDeck() async {
+    pickCount++;
     final error = pickError;
     if (error != null) {
       return Result.error(DeckFileAccessException('<selected deck>', error));

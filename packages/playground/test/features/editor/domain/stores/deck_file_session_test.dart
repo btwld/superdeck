@@ -177,6 +177,24 @@ void main() {
       },
     );
 
+    test('a successful retry clears the previous save warning', () async {
+      final repository = FakeDeckFileRepository();
+      final scope = newSession(repository);
+      final path = scope.session.boundPath!;
+      repository.failWrites = true;
+
+      scope.document.replaceMarkdown('# Cannot persist yet');
+      await afterDebounce();
+      expect(scope.session.warning, isNotNull);
+
+      repository.failWrites = false;
+      scope.document.replaceMarkdown('# Persisted after retry');
+      await afterDebounce();
+
+      expect(repository.files[path], '# Persisted after retry');
+      expect(scope.session.warning, isNull);
+    });
+
     test('opening another deck flushes a pending edit first', () async {
       final repository = FakeDeckFileRepository()
         ..files['/elsewhere/other.md'] = '# Other'
@@ -337,6 +355,51 @@ void main() {
         expect(repository.files.containsKey(path), isFalse);
       },
     );
+
+    test('unbound content prevents a successful flush', () async {
+      final repository = FakeDeckFileRepository();
+      final scope = newSession(repository);
+      final path = scope.session.boundPath!;
+      await repository.externalDelete(path);
+      scope.document.replaceMarkdown('# Recovered in memory');
+
+      expect(await scope.session.flushPendingSave(), isFalse);
+      expect(scope.document.markdown, '# Recovered in memory');
+    });
+
+    test('new deck persists unbound content as a recovery', () async {
+      final repository = FakeDeckFileRepository();
+      final scope = newSession(repository);
+      final originalPath = scope.session.boundPath!;
+      await repository.externalDelete(originalPath);
+      scope.document.replaceMarkdown('# Recovered in memory');
+
+      final result = await scope.session.createDeck('recovered');
+
+      final recoveredPath = p.join('/decks', 'recovered.md');
+      expect(result, isA<Ok<void>>());
+      expect(scope.session.isBound, isTrue);
+      expect(scope.session.boundPath, recoveredPath);
+      expect(scope.document.markdown, '# Recovered in memory');
+      expect(repository.files[recoveredPath], '# Recovered in memory');
+    });
+
+    test('open is blocked until unbound content is recovered', () async {
+      final repository = FakeDeckFileRepository()
+        ..files['/elsewhere/other.md'] = '# Other'
+        ..pickResult = const DeckFileReference(path: '/elsewhere/other.md');
+      final scope = newSession(repository);
+      final originalPath = scope.session.boundPath!;
+      await repository.externalDelete(originalPath);
+      scope.document.replaceMarkdown('# Recovered in memory');
+
+      await scope.session.openDeck();
+
+      expect(repository.pickCount, 0);
+      expect(scope.session.isBound, isFalse);
+      expect(scope.document.markdown, '# Recovered in memory');
+      expect(scope.session.warning, contains('Create a new deck'));
+    });
 
     test('a stale watcher read cannot replace a newly opened deck', () async {
       final repository = FakeDeckFileRepository();

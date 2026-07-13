@@ -1,14 +1,15 @@
 /// A persistent reference to a deck file.
 ///
-/// [bookmark] is opaque macOS security-scoped bookmark data. App-owned files
-/// in the playground's documents directory do not need one.
+/// [bookmark] is opaque macOS security-scoped bookmark data. Files created in
+/// the selected SuperDeck directory inherit its active access scope and do not
+/// need individual bookmarks.
 final class DeckFileReference {
   const DeckFileReference({required this.path, this.bookmark});
 
   /// Last resolved absolute path of the deck.
   final String path;
 
-  /// Opaque persistent access data, or `null` for app-owned files.
+  /// Opaque persistent access data, or `null` when directory access covers it.
   final String? bookmark;
 
   @override
