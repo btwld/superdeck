@@ -2,7 +2,7 @@ import 'package:superdeck_builder/superdeck_builder.dart';
 
 import '../../../../../core/command.dart';
 import '../../../../../core/result.dart';
-import '../../../../editor/utils/markdown_editor.dart';
+import '../../../../editor/domain/stores/deck_document_store.dart';
 import '../../core/debug_logger.dart';
 import '../../core/engine/services/deck_generator_service.dart';
 import '../../core/engine/services/generation_progress.dart';
@@ -24,12 +24,13 @@ class GenerationException implements Exception {
 ///
 /// Running / error / result come from [Command1]; [phase] adds the pipeline's
 /// intermediate progress, which the base command's binary running state doesn't
-/// model. On success it serializes the slides to markdown and hands that to the
-/// [MarkdownEditor] (which loads it and forwards to the deck loader for preview).
+/// model. On success it serializes the slides to Markdown and replaces the
+/// shared [DeckDocumentStore].
 class GenerateDeckCommand extends Command1<void, String> {
-  GenerateDeckCommand({required MarkdownEditor editor}) : _editor = editor;
+  GenerateDeckCommand({required DeckDocumentStore documentStore})
+    : _documentStore = documentStore;
 
-  final MarkdownEditor _editor;
+  final DeckDocumentStore _documentStore;
 
   GenerationPhase _phase = GenerationPhase.idle;
 
@@ -66,7 +67,7 @@ class GenerateDeckCommand extends Command1<void, String> {
       }
 
       final markdown = const SlideSerializer().serialize(result.slides);
-      _editor.replaceMarkdown(markdown);
+      _documentStore.replaceMarkdown(markdown);
       debugLog.log(
         'GENERATE_DECK',
         'Loaded ${result.slides.length} slides into editor.',

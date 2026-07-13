@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/stores/deck_file_session.dart';
 import '../../domain/stores/editor_store.dart';
 import '../widgets/customization_sidebar.dart';
 import '../widgets/editor_controls.dart';
+import '../widgets/new_deck_dialog.dart';
 import '../widgets/preview_sidebar.dart';
 import '../widgets/text_editor.dart';
 
@@ -15,67 +18,79 @@ class EditorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<EditorStore>();
+    final fileSession = context.read<DeckFileSession>();
 
-    return Scaffold(
-      backgroundColor: $background.resolve(context),
-      body: Box(
-        style: BoxStyler().color($background()),
-        child: RowBox(
-          children: [
-            _AnimatedSidebar(
-              visible: store.showPreviewSidebar,
-              alignment: Alignment.centerLeft,
-              child: const PreviewSidebar(),
-            ),
+    // ⌘N / ⌘O drive the file operations; the file operations otherwise live in
+    // the header. Focus (autofocus) gives the shortcuts a target so they work
+    // before the editor is clicked, without stealing focus once it is.
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () =>
+            showNewDeckDialog(context, fileSession),
+        const SingleActivator(LogicalKeyboardKey.keyO, meta: true):
+            fileSession.openDeck,
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: $background.resolve(context),
+          body: Box(
+            style: BoxStyler().color($background()),
+            child: RowBox(
+              children: [
+                _AnimatedSidebar(
+                  visible: store.showPreviewSidebar,
+                  alignment: Alignment.centerLeft,
+                  child: const PreviewSidebar(),
+                ),
 
-            Expanded(
-              child: Stack(
-                children: [
-                  TextEditor(),
-                  Align(
-                    alignment: .bottomCenter,
-                    child: Padding(
-                      padding: const .only(bottom: 24),
-                      child: EditorControls(
-                        showPreviewSidebar: store.showPreviewSidebar,
-                        showCustomizationSidebar:
-                            store.showCustomizationSidebar,
-                        onTogglePreviewSidebar: store.togglePreviewSidebar,
-                        onToggleCustomizationSidebar:
-                            store.toggleCustomizationSidebar,
+                // The filename bar sits on top of the editor pane only, not
+                // spanning the sidebars.
+                Expanded(
+                  child: Stack(
+                    children: [
+                      const TextEditor(),
+                      Align(
+                        alignment: .bottomCenter,
+                        child: Padding(
+                          padding: const .only(bottom: 24),
+                          child: EditorControls(
+                            showPreviewSidebar: store.showPreviewSidebar,
+                            showCustomizationSidebar:
+                                store.showCustomizationSidebar,
+                            onTogglePreviewSidebar: store.togglePreviewSidebar,
+                            onToggleCustomizationSidebar:
+                                store.toggleCustomizationSidebar,
+                          ),
+                        ),
                       ),
-                    ),
+                      if (store.showPreviewSidebar)
+                        Align(
+                          alignment: .centerLeft,
+                          child: _SidebarResizeHandle(
+                            onDrag: (delta) =>
+                                store.previewSidebarWidth += delta,
+                          ),
+                        ),
+                      if (store.showCustomizationSidebar)
+                        Align(
+                          alignment: .centerRight,
+                          child: _SidebarResizeHandle(
+                            onDrag: (delta) =>
+                                store.customizationSidebarWidth -= delta,
+                          ),
+                        ),
+                    ],
                   ),
-                  if (store.showPreviewSidebar)
-                    Align(
-                      alignment: .centerLeft,
-                      child: Transform.translate(
-                        offset: Offset(-4, 0),
-                        child: _SidebarResizeHandle(
-                          onDrag: (delta) => store.previewSidebarWidth += delta,
-                        ),
-                      ),
-                    ),
-                  if (store.showCustomizationSidebar)
-                    Align(
-                      alignment: .centerRight,
-                      child: Transform.translate(
-                        offset: Offset(4, 0),
-                        child: _SidebarResizeHandle(
-                          onDrag: (delta) =>
-                              store.customizationSidebarWidth -= delta,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+                ),
+                _AnimatedSidebar(
+                  visible: store.showCustomizationSidebar,
+                  alignment: Alignment.centerRight,
+                  child: const CustomizationSidebar(),
+                ),
+              ],
             ),
-            _AnimatedSidebar(
-              visible: store.showCustomizationSidebar,
-              alignment: Alignment.centerRight,
-              child: const CustomizationSidebar(),
-            ),
-          ],
+          ),
         ),
       ),
     );

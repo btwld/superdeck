@@ -6,6 +6,8 @@ import 'package:superdeck/superdeck.dart';
 import '../core/data/data_sources/memory_asset_cache_store.dart';
 import '../core/data/data_sources/memory_deck_loader.dart';
 import '../core/domain/stores/deck_customization_store.dart';
+import '../features/editor/data/mac_os_deck_file_repository.dart';
+import '../features/editor/domain/files/deck_file_repository.dart';
 
 /// App-root dependency injection: the deck globals shared across features.
 ///
@@ -17,10 +19,14 @@ import '../core/domain/stores/deck_customization_store.dart';
 ///
 /// The editor's `EditorStore` is provided at its route instead. Slides are read
 /// straight off `DeckController.slides` (a signal) in the UI — no bridge store.
+///
+/// [deckFileRepository] defaults to the macOS filesystem implementation; tests
+/// inject an in-memory repository so bootstrap runs without touching disk.
 class AppProviders extends StatelessWidget {
-  const AppProviders({required this.child, super.key});
+  const AppProviders({required this.child, this.deckFileRepository, super.key});
 
   final Widget child;
+  final DeckFileRepository? deckFileRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +41,10 @@ class AppProviders extends StatelessWidget {
           create: (_) => MemoryDeckLoader(),
           dispose: (_, loader) => loader.dispose(),
         ),
-        Provider<MemoryAssetCacheStore>(
-          create: (_) => MemoryAssetCacheStore(),
+        Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
+        Provider<DeckFileRepository>(
+          create: (_) => deckFileRepository ?? MacOsDeckFileRepository(),
+          dispose: (_, repository) => repository.dispose(),
         ),
         Provider<DeckController>(
           lazy: false,
