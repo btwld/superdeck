@@ -1,21 +1,25 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'deck_file_store_base.dart';
+import 'security_scoped_file_access.dart';
 
 /// Native ([dart:io]) implementation of [DeckFileStore].
 ///
-/// Decks live in `~/Documents/SuperDeck/` (via `path_provider`); `pickDeckFile`
-/// can still reach any path on disk.
+/// App-owned decks live in the sandboxed application Documents directory;
+/// `pickDeckFile` can reach user-selected files anywhere on disk.
 class NativeDeckFileStore extends DeckFileStore {
-  const NativeDeckFileStore();
+  const NativeDeckFileStore({
+    SecurityScopedFileAccess fileAccess = const SecurityScopedFileAccess(),
+  }) : _fileAccess = fileAccess;
 
   /// Fixed decks-folder name under the documents directory.
   static const _decksFolderName = 'SuperDeck';
+
+  final SecurityScopedFileAccess _fileAccess;
 
   @override
   Future<String> decksDirectoryPath() async {
@@ -58,18 +62,30 @@ class NativeDeckFileStore extends DeckFileStore {
   }
 
   @override
-  Future<String?> pickDeckFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      dialogTitle: 'Open deck',
-      type: FileType.custom,
-      allowedExtensions: const ['md'],
-    );
-    // Treat an empty/oddly-shaped result or a path-less entry as a cancel
-    // rather than letting `.single` throw a StateError (which openDeck's
-    // narrow catch would not handle) escape the Open action.
-    final files = result?.files;
-    if (files == null || files.isEmpty) return null;
-    return files.first.path;
+  Future<DeckFileReference?> pickDeckFile() async {
+    try {
+      return await _fileAccess.pickDeckFile();
+    } catch (error) {
+      throw DeckFileAccessException('<selected deck>', error);
+    }
+  }
+
+  @override
+  Future<DeckFileReference> startAccessing(DeckFileReference reference) async {
+    try {
+      return await _fileAccess.startAccessing(reference);
+    } catch (error) {
+      throw DeckFileAccessException(reference.path, error);
+    }
+  }
+
+  @override
+  Future<void> stopAccessing(DeckFileReference reference) async {
+    try {
+      await _fileAccess.stopAccessing(reference);
+    } catch (error) {
+      throw DeckFileAccessException(reference.path, error);
+    }
   }
 
   @override

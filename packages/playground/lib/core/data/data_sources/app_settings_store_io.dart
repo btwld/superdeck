@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app_settings_store_base.dart';
+import 'deck_file_store_base.dart';
 
 /// Native [AppSettingsStore] backed by a small JSON file in the app-support
 /// directory (`.../superdeck_playground/settings.json`).
@@ -15,7 +16,8 @@ class NativeAppSettingsStore extends AppSettingsStore {
 
   static const _settingsFolder = 'superdeck_playground';
   static const _settingsFileName = 'settings.json';
-  static const _lastOpenedKey = 'lastOpenedDeckPath';
+  static const _lastOpenedKey = 'lastOpenedDeck';
+  static const _legacyLastOpenedPathKey = 'lastOpenedDeckPath';
 
   Future<File> _settingsFile() async {
     final support = await getApplicationSupportDirectory();
@@ -37,15 +39,36 @@ class NativeAppSettingsStore extends AppSettingsStore {
   }
 
   @override
-  Future<String?> lastOpenedDeckPath() async {
-    final value = (await _read())[_lastOpenedKey];
-    return value is String && value.isNotEmpty ? value : null;
+  Future<DeckFileReference?> lastOpenedDeck() async {
+    final settings = await _read();
+    final value = settings[_lastOpenedKey];
+    if (value is Map) {
+      final deck = Map<String, dynamic>.from(value);
+      final path = deck['path'];
+      final bookmark = deck['bookmark'];
+      if (path is String && path.isNotEmpty) {
+        return DeckFileReference(
+          path: path,
+          bookmark: bookmark is String && bookmark.isNotEmpty ? bookmark : null,
+        );
+      }
+    }
+
+    // Migrate settings written before persistent file references were added.
+    final legacyPath = settings[_legacyLastOpenedPathKey];
+    return legacyPath is String && legacyPath.isNotEmpty
+        ? DeckFileReference(path: legacyPath)
+        : null;
   }
 
   @override
-  Future<void> setLastOpenedDeckPath(String path) async {
+  Future<void> setLastOpenedDeck(DeckFileReference deck) async {
     final settings = await _read();
-    settings[_lastOpenedKey] = path;
+    settings[_lastOpenedKey] = {
+      'path': deck.path,
+      if (deck.bookmark != null) 'bookmark': deck.bookmark,
+    };
+    settings.remove(_legacyLastOpenedPathKey);
     final file = await _settingsFile();
     await file.writeAsString(jsonEncode(settings));
   }

@@ -1,15 +1,17 @@
+import 'deck_file_store_base.dart';
+
 /// Persists the playground's single app-managed setting: the last-opened deck
-/// path, so the editor can reopen it on the next launch.
+/// reference, so the editor can reopen it on the next launch.
 ///
 /// Kept behind an interface (native impl + web stub) to match the storage
 /// pattern used elsewhere in the app.
 abstract class AppSettingsStore {
   const AppSettingsStore();
 
-  /// The absolute path of the last-opened deck, or `null` if none is
-  /// remembered (first run) or it could not be read.
-  Future<String?> lastOpenedDeckPath();
+  /// The last-opened deck, or `null` if none is remembered (first run) or the
+  /// setting could not be read.
+  Future<DeckFileReference?> lastOpenedDeck();
 
-  /// Remembers [path] as the last-opened deck.
-  Future<void> setLastOpenedDeckPath(String path);
+  /// Remembers [deck] as the last-opened deck.
+  Future<void> setLastOpenedDeck(DeckFileReference deck);
 }

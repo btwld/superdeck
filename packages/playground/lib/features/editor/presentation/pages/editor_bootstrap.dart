@@ -1,3 +1,5 @@
+import 'dart:ui' show AppExitResponse;
+
 import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +29,14 @@ class EditorBootstrap extends StatefulWidget {
 
 class _EditorBootstrapState extends State<EditorBootstrap> {
   late final DeckFileController _fileController;
+  late final AppLifecycleListener _lifecycleListener;
   late final Future<void> _ready;
+
+  Future<AppExitResponse> _handleExitRequested() async {
+    return await _fileController.flushPendingSave()
+        ? AppExitResponse.exit
+        : AppExitResponse.cancel;
+  }
 
   @override
   void initState() {
@@ -36,11 +45,15 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
       store: context.read<DeckFileStore>(),
       settings: context.read<AppSettingsStore>(),
     );
+    _lifecycleListener = AppLifecycleListener(
+      onExitRequested: _handleExitRequested,
+    );
     _ready = _fileController.initialize();
   }
 
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _fileController.dispose();
     super.dispose();
   }

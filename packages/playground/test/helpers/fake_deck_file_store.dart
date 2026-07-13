@@ -9,14 +9,18 @@ import 'package:playground/core/data/data_sources/deck_file_store.dart';
 class FakeDeckFileStore extends DeckFileStore {
   final Map<String, String> files = {};
   final Map<String, StreamController<void>> _watchers = {};
+  final Map<DeckFileReference, DeckFileReference> accessResults = {};
+  final List<DeckFileReference> accessStarts = [];
+  final List<DeckFileReference> accessStops = [];
   final Map<String, Completer<void>> readGates = {};
   final Map<String, Completer<void>> readStarted = {};
   final Map<String, Completer<void>> writeGates = {};
   final Map<String, Completer<void>> writeStarted = {};
   final Set<String> failReads = {};
   String decksDir = '/decks';
-  String? pickResult;
+  DeckFileReference? pickResult;
   Object? pickError;
+  Object? accessError;
   int watchCount = 0;
   int writeCount = 0;
 
@@ -63,10 +67,25 @@ class FakeDeckFileStore extends DeckFileStore {
   }
 
   @override
-  Future<String?> pickDeckFile() async {
+  Future<DeckFileReference?> pickDeckFile() async {
     final error = pickError;
     if (error != null) throw error;
     return pickResult;
+  }
+
+  @override
+  Future<DeckFileReference> startAccessing(DeckFileReference reference) async {
+    accessStarts.add(reference);
+    final error = accessError;
+    if (error != null) {
+      throw DeckFileAccessException(reference.path, error);
+    }
+    return accessResults[reference] ?? reference;
+  }
+
+  @override
+  Future<void> stopAccessing(DeckFileReference reference) async {
+    accessStops.add(reference);
   }
 
   @override
@@ -96,21 +115,27 @@ class FakeDeckFileStore extends DeckFileStore {
 }
 
 class FakeAppSettingsStore extends AppSettingsStore {
-  String? path;
+  DeckFileReference? deck;
   Completer<void>? readGate;
   Completer<void>? readStarted;
   bool failWrites = false;
 
-  @override
-  Future<String?> lastOpenedDeckPath() async {
-    readStarted?.complete();
-    await readGate?.future;
-    return path;
+  String? get path => deck?.path;
+
+  set path(String? value) {
+    deck = value == null ? null : DeckFileReference(path: value);
   }
 
   @override
-  Future<void> setLastOpenedDeckPath(String value) async {
+  Future<DeckFileReference?> lastOpenedDeck() async {
+    readStarted?.complete();
+    await readGate?.future;
+    return deck;
+  }
+
+  @override
+  Future<void> setLastOpenedDeck(DeckFileReference value) async {
     if (failWrites) throw Exception('settings write failed');
-    path = value;
+    deck = value;
   }
 }

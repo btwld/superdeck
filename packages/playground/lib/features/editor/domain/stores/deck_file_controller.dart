@@ -17,7 +17,7 @@ const kStarterDeckMarkdown = '''---
 ---
 ''';
 
-/// Filename of the first-run default deck, born in `~/Documents/SuperDeck/`.
+/// Filename of the first-run default deck in SuperDeck's app storage.
 const _defaultDeckFileName = 'untitled.md';
 
 /// Whether the editor is currently backed by a real file on disk.
@@ -63,7 +63,7 @@ class DeckFileController extends ChangeNotifier {
 
   MarkdownEditor? _editor;
 
-  String? _boundPath;
+  DeckFileReference? _boundDeck;
   DeckBindingStatus _status = DeckBindingStatus.bound;
   String _content = kStarterDeckMarkdown;
   String? _warning;
@@ -82,12 +82,12 @@ class DeckFileController extends ChangeNotifier {
   bool _disposed = false;
 
   /// Absolute path of the bound file, or `null` before [initialize].
-  String? get boundPath => _boundPath;
+  String? get boundPath => _boundDeck?.path;
 
   /// The bound file's display name (e.g. `deck.md`), or `Untitled` if unbound
   /// with no path.
   String get fileName =>
-      _boundPath == null ? 'Untitled' : p.basename(_boundPath!);
+      boundPath == null ? 'Untitled' : p.basename(boundPath!);
 
   /// Current binding status.
   DeckBindingStatus get status => _status;
@@ -108,26 +108,21 @@ class DeckFileController extends ChangeNotifier {
 
   /// Resolves the deck to open on launch and binds to it:
   /// the last-opened file if it still exists and reads, otherwise a default
-  /// deck in `~/Documents/SuperDeck/` (created on first run).
+  /// deck in SuperDeck's app storage (created on first run).
   Future<void> initialize() async {
-    final remembered = await _settings.lastOpenedDeckPath();
+    final remembered = await _settings.lastOpenedDeck();
     if (_disposed) return;
-    if (remembered != null && await _store.exists(remembered)) {
+    if (remembered != null) {
+      final loaded = await _loadDeck(remembered);
       if (_disposed) return;
-      try {
-        final content = await _store.read(remembered);
-        if (_disposed) return;
-        _bindState(remembered, content);
-        await _rememberAndWatch(remembered, _bindingEpoch);
+      if (loaded != null) {
+        await _rebind(loaded.reference, loaded.content);
         return;
-      } on DeckFileReadException {
-        // Fall through to the default deck.
       }
     }
     final (path, content) = await _ensureDefaultDeck();
     if (_disposed) return;
-    _bindState(path, content);
-    await _rememberAndWatch(path, _bindingEpoch);
+    await _rebind(DeckFileReference(path: path), content);
   }
 
   /// Creates `<name>.md` in the decks folder, seeds it with the starter
@@ -136,11 +131,11 @@ class DeckFileController extends ChangeNotifier {
   /// Throws [DeckNameCollisionException] on a name clash so the dialog can
   /// re-prompt.
   Future<void> newDeck(String name) async {
-    if (!await _flushPendingSave()) {
+    if (!await flushPendingSave()) {
       throw StateError('Could not save the current deck.');
     }
     final path = await _store.createDeck(name, content: kStarterDeckMarkdown);
-    await _rebind(path, kStarterDeckMarkdown);
+    await _rebind(DeckFileReference(path: path), kStarterDeckMarkdown);
   }
 
   /// Opens a `.md` from anywhere on disk (native picker) and rebinds.
@@ -148,26 +143,26 @@ class DeckFileController extends ChangeNotifier {
   /// A cancelled picker is a no-op. A read failure surfaces a warning and keeps
   /// the current file bound.
   Future<void> openDeck() async {
-    if (!await _flushPendingSave()) return;
-    String? path;
+    if (!await flushPendingSave()) return;
+    DeckFileReference? picked;
     try {
-      path = await _store.pickDeckFile();
+      picked = await _store.pickDeckFile();
     } catch (_) {
       _warning = 'Could not open a deck. Keeping the current deck.';
       _notify();
       return;
     }
-    if (path == null || _disposed) return;
-    try {
-      final content = await _store.read(path);
-      if (_disposed) return;
-      await _rebind(path, content);
-    } on DeckFileReadException {
-      _warning =
-          'Could not open "${p.basename(path)}". '
-          'Keeping the current deck.';
-      _notify();
+    if (picked == null || _disposed) return;
+    final loaded = await _loadDeck(picked);
+    if (_disposed) return;
+    if (loaded != null) {
+      await _rebind(loaded.reference, loaded.content);
+      return;
     }
+    _warning =
+        'Could not open "${p.basename(picked.path)}". '
+        'Keeping the current deck.';
+    _notify();
   }
 
   /// Receives every editor edit. Debounces a write to the bound file; skips
@@ -175,18 +170,40 @@ class DeckFileController extends ChangeNotifier {
   /// writes/reloads.
   void handleEditorChange(String markdown) {
     _content = markdown;
-    if (_status != DeckBindingStatus.bound || _boundPath == null) return;
+    final path = boundPath;
+    if (_status != DeckBindingStatus.bound || path == null) return;
 
     // Cancel any pending save first: if the edit reverted back to the synced
     // content within the debounce window, a stale save must not still fire.
     _debounce?.cancel();
     if (markdown == _lastSyncedContent) return;
-    final path = _boundPath!;
     final epoch = _bindingEpoch;
-    _debounce = Timer(
-      _autoSaveDebounce,
-      () => unawaited(_queueSave(path, epoch, markdown)),
-    );
+    _debounce = Timer(_autoSaveDebounce, () {
+      _debounce = null;
+      unawaited(_queueSave(path, epoch, markdown));
+    });
+  }
+
+  /// Persists all edits made before this method completes.
+  ///
+  /// Returns `false` when the final write fails, allowing an exit request to
+  /// be cancelled while the latest content remains in memory.
+  Future<bool> flushPendingSave() async {
+    while (true) {
+      _debounce?.cancel();
+      _debounce = null;
+      await _saveQueue;
+
+      final path = boundPath;
+      if (_disposed || _status != DeckBindingStatus.bound || path == null) {
+        return !_disposed;
+      }
+      final markdown = _content;
+      if (markdown == _lastSyncedContent) return true;
+      if (!await _queueSave(path, _bindingEpoch, markdown)) return false;
+      // Content can change while a write is in flight. Loop until the latest
+      // editor value, not merely the first snapshot, is confirmed on disk.
+    }
   }
 
   @override
@@ -195,20 +212,9 @@ class DeckFileController extends ChangeNotifier {
     _bindingEpoch++;
     _debounce?.cancel();
     unawaited(_watchSub?.cancel());
+    final boundDeck = _boundDeck;
+    if (boundDeck != null) unawaited(_stopAccessing(boundDeck));
     super.dispose();
-  }
-
-  Future<bool> _flushPendingSave() async {
-    _debounce?.cancel();
-    await _saveQueue;
-
-    final path = _boundPath;
-    if (_disposed || _status != DeckBindingStatus.bound || path == null) {
-      return !_disposed;
-    }
-    final markdown = _content;
-    if (markdown == _lastSyncedContent) return true;
-    return _queueSave(path, _bindingEpoch, markdown);
   }
 
   Future<bool> _queueSave(String path, int epoch, String markdown) {
@@ -239,31 +245,41 @@ class DeckFileController extends ChangeNotifier {
     }
   }
 
-  Future<void> _rebind(String path, String content) async {
-    _bindState(path, content);
+  Future<void> _rebind(DeckFileReference reference, String content) async {
+    if (_disposed) {
+      await _stopAccessing(reference);
+      return;
+    }
+    final previous = _boundDeck;
+    _bindState(reference, content);
     _editor?.replaceMarkdown(content);
-    await _rememberAndWatch(path, _bindingEpoch);
+    if (previous?.bookmark != null &&
+        previous!.bookmark != reference.bookmark) {
+      await _stopAccessing(previous);
+    }
+    await _rememberAndWatch(reference, _bindingEpoch);
   }
 
   /// Updates in-memory binding state (path, content, synced marker, status)
   /// without any I/O or editor/side effects.
-  void _bindState(String path, String content) {
+  void _bindState(DeckFileReference reference, String content) {
     _debounce?.cancel();
     _bindingEpoch++;
-    _boundPath = path;
+    _boundDeck = reference;
     _content = content;
     _lastSyncedContent = content;
     _status = DeckBindingStatus.bound;
     _warning = null;
   }
 
-  Future<void> _rememberAndWatch(String path, int epoch) async {
+  Future<void> _rememberAndWatch(DeckFileReference reference, int epoch) async {
     try {
-      await _settings.setLastOpenedDeckPath(path);
+      await _settings.setLastOpenedDeck(reference);
     } catch (_) {
       // Remembering the path is a launch convenience; it must not break the
       // active binding when the app-support settings file is unavailable.
     }
+    final path = reference.path;
     if (!_isCurrentBinding(path, epoch)) return;
     _startWatching(path, epoch);
     _notify();
@@ -322,6 +338,8 @@ class DeckFileController extends ChangeNotifier {
     unawaited(_watchSub?.cancel());
     _watchSub = null;
     _debounce?.cancel();
+    final boundDeck = _boundDeck;
+    if (boundDeck != null) unawaited(_stopAccessing(boundDeck));
     _bindingEpoch++;
     _status = DeckBindingStatus.unbound;
     _warning =
@@ -340,10 +358,43 @@ class DeckFileController extends ChangeNotifier {
     return (path, kStarterDeckMarkdown);
   }
 
+  Future<({DeckFileReference reference, String content})?> _loadDeck(
+    DeckFileReference reference,
+  ) async {
+    DeckFileReference? accessed;
+    var keepAccess = false;
+    try {
+      accessed = await _store.startAccessing(reference);
+      if (_disposed || !await _store.exists(accessed.path)) return null;
+      if (_disposed) return null;
+      final content = await _store.read(accessed.path);
+      if (_disposed) return null;
+      keepAccess = true;
+      return (reference: accessed, content: content);
+    } on DeckFileAccessException {
+      return null;
+    } on DeckFileReadException {
+      return null;
+    } finally {
+      if (!keepAccess && accessed != null) {
+        await _stopAccessing(accessed);
+      }
+    }
+  }
+
+  Future<void> _stopAccessing(DeckFileReference reference) async {
+    try {
+      await _store.stopAccessing(reference);
+    } catch (_) {
+      // Access is best-effort cleanup. The binding and in-memory content must
+      // remain usable even if the platform cannot release an already-lost URL.
+    }
+  }
+
   bool _isCurrentBinding(String path, int epoch) {
     return !_disposed &&
         _status == DeckBindingStatus.bound &&
-        _boundPath == path &&
+        boundPath == path &&
         _bindingEpoch == epoch;
   }
 

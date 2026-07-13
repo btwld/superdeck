@@ -73,6 +73,29 @@ void main() {
       expect(controller.content, '# Remembered');
     });
 
+    test('restores and refreshes security-scoped access on launch', () async {
+      const remembered = DeckFileReference(
+        path: '/somewhere/deck.md',
+        bookmark: 'old-bookmark',
+      );
+      const restored = DeckFileReference(
+        path: '/moved/deck.md',
+        bookmark: 'refreshed-bookmark',
+      );
+      final store = FakeDeckFileStore()
+        ..accessResults[remembered] = restored
+        ..files[restored.path] = '# Remembered';
+      final settings = FakeAppSettingsStore()..deck = remembered;
+      final controller = newController(store, settings);
+
+      await controller.initialize();
+
+      expect(store.accessStarts, [remembered]);
+      expect(controller.boundPath, restored.path);
+      expect(controller.content, '# Remembered');
+      expect(settings.deck, restored, reason: 'persists refreshed bookmark');
+    });
+
     test('falls back to default when the remembered file is missing', () async {
       final store = FakeDeckFileStore();
       final settings = FakeAppSettingsStore();
@@ -195,7 +218,7 @@ void main() {
     test('switching decks flushes a pending debounced edit', () async {
       final store = FakeDeckFileStore();
       store.files['/elsewhere/other.md'] = '# Other';
-      store.pickResult = '/elsewhere/other.md';
+      store.pickResult = const DeckFileReference(path: '/elsewhere/other.md');
       final controller = newController(store, FakeAppSettingsStore());
       await controller.initialize();
       final originalPath = controller.boundPath!;
@@ -221,7 +244,7 @@ void main() {
       await writeStarted.future;
 
       store.files['/elsewhere/other.md'] = '# Other';
-      store.pickResult = '/elsewhere/other.md';
+      store.pickResult = const DeckFileReference(path: '/elsewhere/other.md');
       final open = controller.openDeck();
       await Future<void>.delayed(Duration.zero);
       allowWrite.complete();
@@ -234,6 +257,54 @@ void main() {
 
       expect(store.writeCount, writesBeforeEcho);
       expect(controller.content, '# Other');
+    });
+
+    test(
+      'flushPendingSave persists an edit before its debounce fires',
+      () async {
+        final store = FakeDeckFileStore();
+        final controller = newController(store, FakeAppSettingsStore());
+        await controller.initialize();
+        final path = controller.boundPath!;
+
+        controller.handleEditorChange('# Last-second edit');
+        final saved = await controller.flushPendingSave();
+
+        expect(saved, isTrue);
+        expect(store.files[path], '# Last-second edit');
+      },
+    );
+
+    test('flushPendingSave reports a failed final write', () async {
+      final store = FakeDeckFileStore();
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      store.failWrites = true;
+
+      controller.handleEditorChange('# Cannot save');
+
+      expect(await controller.flushPendingSave(), isFalse);
+      expect(controller.warning, isNotNull);
+    });
+
+    test('flushPendingSave includes edits made during its write', () async {
+      final store = FakeDeckFileStore();
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final path = controller.boundPath!;
+      final writeStarted = Completer<void>();
+      final allowWrite = Completer<void>();
+      store.writeStarted[path] = writeStarted;
+      store.writeGates[path] = allowWrite;
+
+      controller.handleEditorChange('# First edit');
+      final flush = controller.flushPendingSave();
+      await writeStarted.future;
+      controller.handleEditorChange('# Edit during flush');
+      allowWrite.complete();
+
+      expect(await flush, isTrue);
+      expect(store.files[path], '# Edit during flush');
     });
   });
 
@@ -350,7 +421,7 @@ void main() {
       await readStarted.future;
 
       store.files['/elsewhere/other.md'] = '# Other';
-      store.pickResult = '/elsewhere/other.md';
+      store.pickResult = const DeckFileReference(path: '/elsewhere/other.md');
       await controller.openDeck();
       allowRead.complete();
       await externalChange;
@@ -418,7 +489,10 @@ void main() {
     test('binds the picked file', () async {
       final store = FakeDeckFileStore();
       store.files['/elsewhere/other.md'] = '# Other';
-      store.pickResult = '/elsewhere/other.md';
+      store.pickResult = const DeckFileReference(
+        path: '/elsewhere/other.md',
+        bookmark: 'bookmark',
+      );
       final controller = newController(store, FakeAppSettingsStore());
       await controller.initialize();
       final editor = FakeMarkdownEditor(controller);
@@ -429,6 +503,31 @@ void main() {
       expect(controller.boundPath, '/elsewhere/other.md');
       expect(controller.content, '# Other');
       expect(editor.replaced, ['# Other']);
+      expect(store.accessStarts, [store.pickResult]);
+    });
+
+    test('releases the previous bookmark after a replacement opens', () async {
+      const previous = DeckFileReference(
+        path: '/outside/previous.md',
+        bookmark: 'previous-bookmark',
+      );
+      const replacement = DeckFileReference(
+        path: '/outside/replacement.md',
+        bookmark: 'replacement-bookmark',
+      );
+      final store = FakeDeckFileStore()
+        ..files[previous.path] = '# Previous'
+        ..files[replacement.path] = '# Replacement'
+        ..pickResult = replacement;
+      final settings = FakeAppSettingsStore()..deck = previous;
+      final controller = newController(store, settings);
+      await controller.initialize();
+
+      await controller.openDeck();
+
+      expect(controller.boundPath, replacement.path);
+      expect(store.accessStops, [previous]);
+      expect(settings.deck, replacement);
     });
 
     test('cancelled picker is a no-op', () async {
@@ -445,7 +544,9 @@ void main() {
 
     test('read failure warns and keeps the current file', () async {
       final store = FakeDeckFileStore();
-      store.pickResult = '/elsewhere/missing.md'; // not in files → read throws
+      store.pickResult = const DeckFileReference(
+        path: '/elsewhere/missing.md',
+      ); // not in files → read throws
       final controller = newController(store, FakeAppSettingsStore());
       await controller.initialize();
       final original = controller.boundPath;
@@ -455,6 +556,28 @@ void main() {
       expect(controller.boundPath, original);
       expect(controller.warning, isNotNull);
       expect(controller.isBound, isTrue);
+    });
+
+    test('failed replacement releases only the candidate bookmark', () async {
+      const current = DeckFileReference(
+        path: '/outside/current.md',
+        bookmark: 'current-bookmark',
+      );
+      const candidate = DeckFileReference(
+        path: '/outside/missing.md',
+        bookmark: 'candidate-bookmark',
+      );
+      final store = FakeDeckFileStore()
+        ..files[current.path] = '# Current'
+        ..pickResult = candidate;
+      final settings = FakeAppSettingsStore()..deck = current;
+      final controller = newController(store, settings);
+      await controller.initialize();
+
+      await controller.openDeck();
+
+      expect(controller.boundPath, current.path);
+      expect(store.accessStops, [candidate]);
     });
 
     test('picker failure warns and keeps the current file', () async {

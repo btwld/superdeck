@@ -6,7 +6,7 @@ import '../../../../core/data/data_sources/deck_file_store.dart';
 import '../../domain/stores/deck_file_controller.dart';
 
 /// Opens the "New deck" dialog: prompts for a name, creates `<name>.md` in
-/// `~/Documents/SuperDeck/`, and rebinds the editor. On a name collision it
+/// SuperDeck's sandboxed app storage, and rebinds the editor. On a collision it
 /// re-prompts with an inline error rather than overwriting.
 ///
 /// [controller] is captured from the editor's provider scope; the dialog route
@@ -115,7 +115,7 @@ class _NewDeckDialogState extends State<_NewDeckDialog> {
               enabled: !_creating,
               error: _error != null,
               hintText: 'my-presentation',
-              helperText: 'Saved as a .md file in Documents/SuperDeck',
+              helperText: 'Saved as a .md file in SuperDeck app storage',
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _create(),
             ),

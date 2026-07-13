@@ -30,7 +30,15 @@ class NativeDeckFileStore extends DeckFileStore {
       _unsupported();
 
   @override
-  Future<String?> pickDeckFile() => _unsupported();
+  Future<DeckFileReference?> pickDeckFile() => _unsupported();
+
+  @override
+  Future<DeckFileReference> startAccessing(DeckFileReference reference) async {
+    return reference;
+  }
+
+  @override
+  Future<void> stopAccessing(DeckFileReference reference) async {}
 
   @override
   Stream<void> watch(String path) => _unsupported();

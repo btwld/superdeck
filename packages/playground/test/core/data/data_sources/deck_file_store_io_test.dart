@@ -10,7 +10,7 @@ import 'package:playground/core/data/data_sources/deck_file_store.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 /// Points `path_provider` at a temp directory so the native store's fixed
-/// `~/Documents/SuperDeck/` folder resolves under the test sandbox.
+/// App Documents storage resolves under the test sandbox.
 class _FakePathProvider extends PathProviderPlatform
     with MockPlatformInterfaceMixin {
   _FakePathProvider(this.root);
@@ -40,7 +40,7 @@ void main() {
     if (await temp.exists()) await temp.delete(recursive: true);
   });
 
-  test('decksDirectoryPath creates ~/Documents/SuperDeck', () async {
+  test('decksDirectoryPath creates the SuperDeck app-storage folder', () async {
     final dir = await store.decksDirectoryPath();
     expect(dir, p.join(temp.path, 'SuperDeck'));
     expect(await Directory(dir).exists(), isTrue);
