@@ -40,10 +40,10 @@ const onWebview = BlockVariant('webview');
 WidgetModifierConfig _pad(EdgeInsetsGeometryMix value) =>
     WidgetModifierConfig.padding(value);
 
-/// Creates the base [SlideStyle] used before user overrides are applied.
-SlideStyle _createDefaultSlideStyle() {
-  MarkdownAlertTypeStyle createAlertType(Color color) {
-    return MarkdownAlertTypeStyle(
+/// Creates the base [SlideStyler] used before user overrides are applied.
+SlideStyler _createDefaultSlideStyle() {
+  MarkdownAlertTypeStyler createAlertType(Color color) {
+    return MarkdownAlertTypeStyler(
       heading: TextStyler()
           .style(
             TextStyleMix(
@@ -79,7 +79,7 @@ SlideStyle _createDefaultSlideStyle() {
     );
   }
 
-  return SlideStyle(
+  return SlideStyler(
     h1: TextStyler()
         .style(
           TextStyleMix(
@@ -163,9 +163,11 @@ SlideStyle _createDefaultSlideStyle() {
         )
         .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 12))),
 
-    link: _baseTextStyle.copyWith(color: const Color.fromARGB(255, 66, 82, 96)),
+    link: TextStyleMix.value(
+      _baseTextStyle.copyWith(color: const Color.fromARGB(255, 66, 82, 96)),
+    ),
 
-    alert: MarkdownAlertStyle(
+    alert: MarkdownAlertStyler(
       note: createAlertType(Colors.blue),
       tip: createAlertType(Colors.green),
       important: createAlertType(Colors.deepPurpleAccent),
@@ -173,10 +175,12 @@ SlideStyle _createDefaultSlideStyle() {
       caution: createAlertType(Colors.redAccent),
     ),
 
-    code: MarkdownCodeblockStyle(
-      textStyle: _safeGoogleFont(
-        () => GoogleFonts.jetBrainsMono(fontSize: 18),
-      ).copyWith(height: 1.8),
+    code: MarkdownCodeblockStyler(
+      textStyle: TextStyleMix.value(
+        _safeGoogleFont(
+          () => GoogleFonts.jetBrainsMono(fontSize: 18),
+        ).copyWith(height: 1.8),
+      ),
       container: BoxStyler(
         padding: EdgeInsetsMix.all(32),
         decoration: BoxDecorationMix(
@@ -186,9 +190,11 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ),
 
-    table: MarkdownTableStyle(
-      headStyle: _baseTextStyle.copyWith(fontWeight: FontWeight.bold),
-      bodyStyle: _baseTextStyle,
+    table: MarkdownTableStyler(
+      headStyle: TextStyleMix.value(
+        _baseTextStyle.copyWith(fontWeight: FontWeight.bold),
+      ),
+      bodyStyle: TextStyleMix.value(_baseTextStyle),
       cellPadding: const EdgeInsets.all(12),
       border: TableBorder.all(color: _baseTextStyle.color!, width: 2),
       cellDecoration: BoxDecoration(
@@ -196,8 +202,8 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ),
 
-    blockquote: MarkdownBlockquoteStyle(
-      textStyle: _baseTextStyle.copyWith(fontSize: 32),
+    blockquote: MarkdownBlockquoteStyler(
+      textStyle: TextStyleMix.value(_baseTextStyle.copyWith(fontSize: 32)),
       padding: const EdgeInsets.only(bottom: 12, left: 30),
       decoration: BoxDecoration(
         border: Border(
@@ -206,7 +212,7 @@ SlideStyle _createDefaultSlideStyle() {
       ),
     ),
 
-    list: MarkdownListStyle(
+    list: MarkdownListStyler(
       bullet: TextStyler().style(
         TextStyleMix(
           fontSize: _baseTextStyle.fontSize,
@@ -226,7 +232,9 @@ SlideStyle _createDefaultSlideStyle() {
           .wrap(_pad(EdgeInsetsGeometryMix.only(bottom: 8))),
     ),
 
-    checkbox: MarkdownCheckboxStyle(textStyle: _baseTextStyle),
+    checkbox: MarkdownCheckboxStyler(
+      textStyle: TextStyleMix.value(_baseTextStyle),
+    ),
 
     blockContainer: BlockStyler(padding: EdgeInsetsGeometryMix.all(40))
         .variants([
@@ -260,5 +268,5 @@ SlideStyle _createDefaultSlideStyle() {
   );
 }
 
-/// The shared base [SlideStyle] applied before user overrides.
+/// The shared base [SlideStyler] applied before user overrides.
 final defaultSlideStyle = _createDefaultSlideStyle();

@@ -6,7 +6,7 @@ void main() {
   group('DeckOptions', () {
     group('equality', () {
       test('two instances with same-content maps are equal', () {
-        final style = SlideStyle();
+        final style = SlideStyler();
         final a = DeckOptions(
           styles: {'s': style},
           widgets: {},
@@ -27,10 +27,10 @@ void main() {
       test(
         'modifying original map after construction does not affect stored map',
         () {
-          final styles = <String, SlideStyle>{'a': SlideStyle()};
+          final styles = <String, SlideStyler>{'a': SlideStyler()};
           final options = DeckOptions(styles: styles);
 
-          styles['b'] = SlideStyle();
+          styles['b'] = SlideStyler();
 
           expect(options.styles.length, 1);
           expect(options.styles.containsKey('b'), isFalse);
@@ -38,10 +38,10 @@ void main() {
       );
 
       test('mutation attempt on styles throws UnsupportedError', () {
-        final options = DeckOptions(styles: {'a': SlideStyle()});
+        final options = DeckOptions(styles: {'a': SlideStyler()});
 
         expect(
-          () => options.styles['b'] = SlideStyle(),
+          () => options.styles['b'] = SlideStyler(),
           throwsUnsupportedError,
         );
       });
@@ -67,7 +67,7 @@ void main() {
 
     group('copyWith sentinel', () {
       test('copyWith() with no args preserves existing baseStyle', () {
-        final style = SlideStyle();
+        final style = SlideStyler();
         final options = DeckOptions(baseStyle: style);
         final copy = options.copyWith();
 
@@ -75,7 +75,7 @@ void main() {
       });
 
       test('copyWith(baseStyle: null) clears a previously set baseStyle', () {
-        final style = SlideStyle();
+        final style = SlideStyler();
         final options = DeckOptions(baseStyle: style);
         final copy = options.copyWith(baseStyle: null);
 

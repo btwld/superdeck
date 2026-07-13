@@ -718,7 +718,7 @@ class _TwoWebViewsHarness extends StatelessWidget {
   Widget build(BuildContext context) {
     final slide = SlideConfiguration(
       slideIndex: 0,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(
         key: 'slide-0',
         sections: [
@@ -780,7 +780,7 @@ class _WebViewHarness extends StatelessWidget {
   Widget build(BuildContext context) {
     final slide = SlideConfiguration(
       slideIndex: 0,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(
         key: 'slide-0',
         sections: [

@@ -17,8 +17,8 @@ const _coral = Color(0xFFFF8A65);
 const _violet = Color(0xFFA890FF);
 const _teal = Color(0xFF59D6C8);
 
-SlideStyle showcaseBaseStyle() {
-  return SlideStyle(
+SlideStyler showcaseBaseStyle() {
+  return SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(
         fontFamily: _displayFamily,
@@ -67,19 +67,19 @@ SlideStyle showcaseBaseStyle() {
         color: _mutedInk,
       ),
     ),
-    strong: const TextStyle(fontWeight: FontWeight.w800, color: _ink),
-    em: const TextStyle(fontStyle: FontStyle.italic, color: _coral),
-    del: const TextStyle(
+    strong: TextStyleMix(fontWeight: FontWeight.w800, color: _ink),
+    em: TextStyleMix(fontStyle: FontStyle.italic, color: _coral),
+    del: TextStyleMix(
       color: Color(0xFF77737D),
       decoration: TextDecoration.lineThrough,
       decorationColor: Color(0xFFAAA6AF),
     ),
-    link: const TextStyle(
+    link: TextStyleMix(
       color: _teal,
       decoration: TextDecoration.underline,
       decorationColor: Color(0x9959D6C8),
     ),
-    list: MarkdownListStyle(
+    list: MarkdownListStyler(
       text: TextStyler().style(
         TextStyleMix(
           fontFamily: _bodyFamily,
@@ -97,8 +97,8 @@ SlideStyle showcaseBaseStyle() {
         ),
       ),
     ),
-    blockquote: MarkdownBlockquoteStyle(
-      textStyle: TextStyle(
+    blockquote: MarkdownBlockquoteStyler(
+      textStyle: TextStyleMix(
         fontFamily: _displayFamily,
         fontSize: 25,
         height: 1.35,
@@ -110,15 +110,15 @@ SlideStyle showcaseBaseStyle() {
         border: Border(left: BorderSide(color: Color(0xFFFF8A65), width: 3)),
       ),
     ),
-    alert: MarkdownAlertStyle(
+    alert: MarkdownAlertStyler(
       note: _alertType(const Color(0xFF6CB6FF)),
       tip: _alertType(_teal),
       important: _alertType(_violet),
       warning: _alertType(const Color(0xFFFFB15A)),
       caution: _alertType(const Color(0xFFFF6B7A)),
     ),
-    table: MarkdownTableStyle(
-      headStyle: TextStyle(
+    table: MarkdownTableStyler(
+      headStyle: TextStyleMix(
         fontFamily: _bodyFamily,
         fontSize: 14,
         height: 1.25,
@@ -126,7 +126,7 @@ SlideStyle showcaseBaseStyle() {
         letterSpacing: 0.8,
         color: _coral,
       ),
-      bodyStyle: TextStyle(
+      bodyStyle: TextStyleMix(
         fontFamily: _bodyFamily,
         fontSize: 16,
         height: 1.35,
@@ -143,8 +143,8 @@ SlideStyle showcaseBaseStyle() {
       cellDecoration: const BoxDecoration(color: Color(0x0CFFFFFF)),
       verticalAlignment: TableCellVerticalAlignment.middle,
     ),
-    checkbox: MarkdownCheckboxStyle(
-      textStyle: TextStyle(
+    checkbox: MarkdownCheckboxStyler(
+      textStyle: TextStyleMix(
         fontFamily: _bodyFamily,
         fontSize: 18,
         height: 1.5,
@@ -186,8 +186,8 @@ SlideStyle showcaseBaseStyle() {
   );
 }
 
-SlideStyle showcaseCompactStyle() {
-  return SlideStyle(
+SlideStyler showcaseCompactStyle() {
+  return SlideStyler(
     h2: TextStyler().style(
       TextStyleMix(
         fontFamily: _displayFamily,
@@ -226,7 +226,7 @@ SlideStyle showcaseCompactStyle() {
         color: _mutedInk,
       ),
     ),
-    list: MarkdownListStyle(
+    list: MarkdownListStyler(
       text: TextStyler().style(
         TextStyleMix(
           fontFamily: _bodyFamily,
@@ -244,8 +244,8 @@ SlideStyle showcaseCompactStyle() {
         ),
       ),
     ),
-    blockquote: MarkdownBlockquoteStyle(
-      textStyle: TextStyle(
+    blockquote: MarkdownBlockquoteStyler(
+      textStyle: TextStyleMix(
         fontFamily: _displayFamily,
         fontSize: 20,
         height: 1.34,
@@ -263,9 +263,9 @@ SlideStyle showcaseCompactStyle() {
   );
 }
 
-SlideStyle showcasePanelStyle() {
+SlideStyler showcasePanelStyle() {
   return showcaseCompactStyle().merge(
-    SlideStyle(
+    SlideStyler(
       blockContainer: BlockStyler(
         padding: EdgeInsetsGeometryMix.symmetric(horizontal: 24, vertical: 22),
         margin: EdgeInsetsGeometryMix.symmetric(vertical: 8),
@@ -275,8 +275,8 @@ SlideStyle showcasePanelStyle() {
   );
 }
 
-SlideStyle showcaseCoverStyle() {
-  return SlideStyle(
+SlideStyler showcaseCoverStyle() {
+  return SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(
         fontFamily: _displayFamily,
@@ -302,8 +302,8 @@ SlideStyle showcaseCoverStyle() {
   );
 }
 
-SlideStyle showcaseClosingStyle() {
-  return SlideStyle(
+SlideStyler showcaseClosingStyle() {
+  return SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(
         fontFamily: _displayFamily,
@@ -340,8 +340,8 @@ BoxDecorationMix _panelDecoration({required double radius}) {
   );
 }
 
-MarkdownAlertTypeStyle _alertType(Color color) {
-  return MarkdownAlertTypeStyle(
+MarkdownAlertTypeStyler _alertType(Color color) {
+  return MarkdownAlertTypeStyler(
     heading: TextStyler().style(
       TextStyleMix(
         fontFamily: _bodyFamily,

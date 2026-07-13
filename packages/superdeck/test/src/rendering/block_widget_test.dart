@@ -5,7 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart'
-    show BlockStyler, BlockVariant, SlideParts, SlideStyle;
+    show BlockStyler, BlockVariant, SlideParts, SlideStyler;
 import 'package:superdeck/src/rendering/blocks/block_provider.dart';
 import 'package:superdeck/src/rendering/blocks/block_widget.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
@@ -474,7 +474,7 @@ void main() {
               SectionBlock([ContentBlock(content)]),
             ],
           ),
-          style: SlideStyle(p: TextStyler(softWrap: false)),
+          style: SlideStyler(p: TextStyler(softWrap: false)),
           debug: true,
         );
 
@@ -542,7 +542,7 @@ void main() {
               SectionBlock([ContentBlock(horizontal)]),
             ],
           ),
-          style: SlideStyle(p: TextStyler(softWrap: false)),
+          style: SlideStyler(p: TextStyler(softWrap: false)),
           debug: true,
         );
 
@@ -749,6 +749,54 @@ void main() {
       });
     });
 
+    group('block container safety', () {
+      testWidgets('sanitizes low-level raw styles at the render boundary', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        late BlockConfiguration blockData;
+        final animation = AnimationConfig.linear(
+          const Duration(milliseconds: 100),
+        );
+
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'raw-block-container-style',
+            sections: [
+              SectionBlock([WidgetBlock(name: 'custom')]),
+            ],
+          ),
+          style: SlideStyler.create(
+            blockContainer: Prop.value(
+              StyleSpec(
+                spec: BoxSpec(
+                  padding: const EdgeInsets.all(12),
+                  constraints: const BoxConstraints(maxWidth: 100),
+                  transform: Matrix4.diagonal3Values(2, 2, 1),
+                  alignment: Alignment.center,
+                ),
+                animation: animation,
+                widgetModifiers: const [],
+              ),
+            ),
+          ),
+          widgets: {
+            'custom': (_) =>
+                _BlockDataProbe(onBuild: (data) => blockData = data),
+          },
+        );
+
+        final container = blockData.spec.blockContainer;
+        expect(container.spec.padding, const EdgeInsets.all(12));
+        expect(container.spec.constraints, isNull);
+        expect(container.spec.transform, isNull);
+        expect(container.spec.alignment, isNull);
+        expect(container.widgetModifiers, isNull);
+        expect(container.animation, same(animation));
+      });
+    });
+
     group('inset overrides', () {
       testWidgets('absent override retains resolved style padding', (
         tester,
@@ -874,7 +922,7 @@ void main() {
                 ]),
               ],
             ),
-            style: SlideStyle(
+            style: SlideStyler(
               blockContainer:
                   BlockStyler(
                     padding: EdgeInsetsGeometryMix.all(10),
@@ -1089,7 +1137,7 @@ void main() {
                 ]),
               ],
             ),
-            style: SlideStyle(
+            style: SlideStyler(
               blockContainer:
                   BlockStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
                     VariantStyle(
@@ -1134,7 +1182,7 @@ void main() {
                 ]),
               ],
             ),
-            style: SlideStyle(
+            style: SlideStyler(
               blockContainer:
                   BlockStyler(padding: EdgeInsetsGeometryMix.all(40)).variants([
                     VariantStyle(
@@ -1171,7 +1219,7 @@ void main() {
               SectionBlock([WidgetBlock(name: 'image')]),
             ],
           ),
-          style: SlideStyle(
+          style: SlideStyler(
             blockContainer: BlockStyler(padding: EdgeInsetsGeometryMix.all(40))
                 .variants([
                   VariantStyle(
@@ -1281,7 +1329,7 @@ void main() {
                 SectionBlock([WidgetBlock(name: 'webview')]),
               ],
             ),
-            style: SlideStyle(
+            style: SlideStyler(
               blockContainer:
                   BlockStyler(
                     padding: EdgeInsetsGeometryMix.all(10),

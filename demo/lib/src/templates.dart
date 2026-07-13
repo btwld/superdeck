@@ -8,7 +8,7 @@ import 'google_font_helpers.dart';
 /// A corporate-style template with a branded header and subtle footer.
 SlideTemplate corporateTemplate() {
   return SlideTemplate(
-    baseStyle: SlideStyle(
+    baseStyle: SlideStyler(
       h1: TextStyler().style(
         TextStyleMix(
           fontFamily: safeGoogleFontFamily(GoogleFonts.poppins),
@@ -31,7 +31,7 @@ SlideTemplate corporateTemplate() {
       ),
     ),
     styles: {
-      'highlight': SlideStyle(
+      'highlight': SlideStyler(
         h1: TextStyler().style(
           TextStyleMix(
             color: const Color(0xFF1A73E8),
@@ -63,7 +63,7 @@ SlideTemplate corporateTemplate() {
 /// A minimal template with no chrome — just typography.
 SlideTemplate minimalTemplate() {
   return SlideTemplate(
-    baseStyle: SlideStyle(
+    baseStyle: SlideStyler(
       h1: TextStyler().style(
         TextStyleMix(
           fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),

@@ -12,14 +12,14 @@ void main() {
       final slide = Slide(key: 'slide-1');
       final a = SlideConfiguration(
         slideIndex: 0,
-        style: SlideStyle(),
+        style: SlideStyler(),
         slide: slide,
         thumbnailKey: 'thumbnail_slide-1.png',
         widgets: widgets,
       );
       final b = SlideConfiguration(
         slideIndex: 0,
-        style: SlideStyle(),
+        style: SlideStyler(),
         slide: slide,
         thumbnailKey: 'thumbnail_slide-1.png',
         widgets: widgets,
@@ -32,14 +32,14 @@ void main() {
       final slide = Slide(key: 'slide-1');
       final a = SlideConfiguration(
         slideIndex: 0,
-        style: SlideStyle(),
+        style: SlideStyler(),
         slide: slide,
         thumbnailKey: 'thumbnail_slide-1.png',
         widgets: {'same': _sameWidget},
       );
       final b = SlideConfiguration(
         slideIndex: 0,
-        style: SlideStyle(),
+        style: SlideStyler(),
         slide: slide,
         thumbnailKey: 'thumbnail_slide-1.png',
         widgets: {'same': _sameWidget},

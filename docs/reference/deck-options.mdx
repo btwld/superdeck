@@ -11,8 +11,8 @@ description: Complete API reference for configuring SuperDeck presentations
 
 ```dart
 const DeckOptions({
-  SlideStyle? baseStyle,
-  Map<String, SlideStyle> styles = const {},
+  SlideStyler? baseStyle,
+  Map<String, SlideStyler> styles = const {},
   Map<String, WidgetFactory> widgets = const {},
   SlideParts parts = const SlideParts(),
   bool debug = false,
@@ -24,19 +24,19 @@ const DeckOptions({
 ## Properties
 
 ### `baseStyle`
-**Type:** `SlideStyle?` | **Default:** `null`
+**Type:** `SlideStyler?` | **Default:** `null`
 
 Base style for all slides.
 
 ```dart
 DeckOptions(
-  baseStyle: SlideStyle(),
+  baseStyle: SlideStyler(),
 )
 ```
 
 #### `blockContainer` and `BlockStyler`
 
-`SlideStyle.blockContainer` accepts a `BlockStyler`, a constrained Mix styler
+`SlideStyler.blockContainer` accepts a `BlockStyler`, a constrained Mix styler
 for the framework-owned block container. It supports only `padding`, `margin`
 (plus Mix spacing convenience methods), `decoration`, `foregroundDecoration`
 (color, gradient, border, radius, shadow, image helpers), `clipBehavior`,
@@ -47,7 +47,7 @@ alignment — block/section `align` owns content placement, and section
 
 #### Named widget block styles
 
-Use `BlockVariant` in a `SlideStyle` stylesheet to target every named widget
+Use `BlockVariant` in a `SlideStyler` stylesheet to target every named widget
 block with an exact, case-sensitive name. The selector applies to the block
 container and its complete widget subtree, so container spacing and descendant
 Mix styles resolve together.
@@ -59,7 +59,7 @@ import 'package:superdeck/superdeck.dart';
 const webviewBlock = BlockVariant('webview');
 
 final options = DeckOptions(
-  baseStyle: SlideStyle(
+  baseStyle: SlideStyler(
     blockContainer: BlockStyler(
       padding: EdgeInsetsGeometryMix.all(40),
     ).variants([
@@ -109,7 +109,7 @@ normal and fullscreen WebView blocks; those two layouts cannot receive
 different rules based on `BlockVariant` alone.
 
 ### `styles`
-**Type:** `Map<String, SlideStyle>` | **Default:** `{}`
+**Type:** `Map<String, SlideStyler>` | **Default:** `{}`
 
 Named style variants for specific slides.
 
@@ -119,7 +119,7 @@ and `DeckOptions.styles`. There is no separate `styles.yaml` file to load.
 ```dart
 DeckOptions(
   styles: {
-    'title': SlideStyle(),
+    'title': SlideStyler(),
   },
 )
 ```
@@ -224,7 +224,7 @@ DeckOptions(
         header: BrandHeader(),
         footer: BrandFooter(),
       ),
-      baseStyle: SlideStyle(),
+      baseStyle: SlideStyler(),
     ),
   },
 )
@@ -329,5 +329,5 @@ class MyApp extends StatelessWidget {
 ### Development
 1. Enable `debug: true` during development
 2. Use `dart run superdeck_cli:main build --watch` in one terminal and `flutter run` in another
-3. Version control your `SlideStyle` definitions alongside app code
+3. Version control your `SlideStyler` definitions alongside app code
 4. Document custom components

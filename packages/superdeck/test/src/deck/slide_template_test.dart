@@ -14,8 +14,8 @@ void main() {
 
       test('all-parameter constructor stores supplied values', () {
         final parts = SlideParts();
-        final baseStyle = SlideStyle();
-        final variants = <String, SlideStyle>{'dark': SlideStyle()};
+        final baseStyle = SlideStyler();
+        final variants = <String, SlideStyler>{'dark': SlideStyler()};
 
         final template = SlideTemplate(
           parts: parts,
@@ -43,7 +43,7 @@ void main() {
 
       test('copies baseStyle field when supplied', () {
         const original = SlideTemplate();
-        final newStyle = SlideStyle();
+        final newStyle = SlideStyler();
 
         final copy = original.copyWith(baseStyle: newStyle);
 
@@ -54,7 +54,7 @@ void main() {
 
       test('copies styles field when supplied', () {
         const original = SlideTemplate();
-        final newStyles = <String, SlideStyle>{'light': SlideStyle()};
+        final newStyles = <String, SlideStyler>{'light': SlideStyler()};
 
         final copy = original.copyWith(styles: newStyles);
 
@@ -66,25 +66,25 @@ void main() {
         final parts = SlideParts();
         final original = SlideTemplate(parts: parts);
 
-        final copy = original.copyWith(baseStyle: SlideStyle());
+        final copy = original.copyWith(baseStyle: SlideStyler());
 
         expect(copy.parts, same(parts));
       });
 
       test('preserves baseStyle when not specified', () {
-        final baseStyle = SlideStyle();
+        final baseStyle = SlideStyler();
         final original = SlideTemplate(baseStyle: baseStyle);
 
-        final copy = original.copyWith(styles: {'x': SlideStyle()});
+        final copy = original.copyWith(styles: {'x': SlideStyler()});
 
         expect(copy.baseStyle, same(baseStyle));
       });
 
       test('preserves styles when not specified', () {
-        final styles = <String, SlideStyle>{'a': SlideStyle()};
+        final styles = <String, SlideStyler>{'a': SlideStyler()};
         final original = SlideTemplate(styles: styles);
 
-        final copy = original.copyWith(baseStyle: SlideStyle());
+        final copy = original.copyWith(baseStyle: SlideStyler());
 
         expect(copy.styles, same(styles));
       });
@@ -115,24 +115,24 @@ void main() {
 
       test('templates with different baseStyles are not equal', () {
         final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, baseStyle: SlideStyle());
+        final a = SlideTemplate(parts: parts, baseStyle: SlideStyler());
         final b = SlideTemplate(parts: parts);
 
         expect(a, isNot(equals(b)));
       });
 
       test('templates with equal baseStyles are equal', () {
-        // SlideStyle uses Equatable, so two instances with same args are equal.
+        // SlideStyler uses Equatable, so two instances with same args are equal.
         final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, baseStyle: SlideStyle());
-        final b = SlideTemplate(parts: parts, baseStyle: SlideStyle());
+        final a = SlideTemplate(parts: parts, baseStyle: SlideStyler());
+        final b = SlideTemplate(parts: parts, baseStyle: SlideStyler());
 
         expect(a, equals(b));
       });
 
       test('templates with different styles maps are not equal', () {
         final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
+        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyler()});
         final b = SlideTemplate(parts: parts, styles: {});
 
         expect(a, isNot(equals(b)));
@@ -140,7 +140,7 @@ void main() {
 
       test('templates sharing the same styles map instance are equal', () {
         final parts = SlideParts();
-        final styles = <String, SlideStyle>{'dark': SlideStyle()};
+        final styles = <String, SlideStyler>{'dark': SlideStyler()};
         final a = SlideTemplate(parts: parts, styles: styles);
         final b = SlideTemplate(parts: parts, styles: styles);
 
@@ -149,8 +149,8 @@ void main() {
 
       test('templates with same-content styles maps are not equal', () {
         final parts = SlideParts();
-        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
-        final b = SlideTemplate(parts: parts, styles: {'dark': SlideStyle()});
+        final a = SlideTemplate(parts: parts, styles: {'dark': SlideStyler()});
+        final b = SlideTemplate(parts: parts, styles: {'dark': SlideStyler()});
 
         expect(a, isNot(equals(b)));
       });
@@ -159,8 +159,8 @@ void main() {
     group('hashCode', () {
       test('equal templates have the same hashCode', () {
         final parts = SlideParts();
-        final baseStyle = SlideStyle();
-        final styles = <String, SlideStyle>{'x': SlideStyle()};
+        final baseStyle = SlideStyler();
+        final styles = <String, SlideStyler>{'x': SlideStyler()};
 
         final a = SlideTemplate(
           parts: parts,

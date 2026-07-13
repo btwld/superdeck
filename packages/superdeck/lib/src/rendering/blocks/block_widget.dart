@@ -38,6 +38,37 @@ class _BlockContainer extends StatefulWidget {
 }
 
 class _BlockContainerState extends State<_BlockContainer> {
+  /// Removes geometry that the framework-owned block frame does not delegate
+  /// to styles.
+  ///
+  /// `BlockStyler` makes these properties unavailable through the public
+  /// authoring API. This render-boundary guard also covers low-level
+  /// [SlideStyler.create] and direct [SlideSpec] construction.
+  SlideSpec _sanitizeBlockContainer(SlideSpec spec) {
+    final container = spec.blockContainer;
+    final box = container.spec;
+    final isAlreadySafe =
+        box.alignment == null &&
+        box.constraints == null &&
+        box.transform == null &&
+        box.transformAlignment == null &&
+        container.widgetModifiers == null;
+    if (isAlreadySafe) return spec;
+
+    return spec.copyWith(
+      blockContainer: StyleSpec(
+        spec: BoxSpec(
+          padding: box.padding,
+          margin: box.margin,
+          decoration: box.decoration,
+          foregroundDecoration: box.foregroundDecoration,
+          clipBehavior: box.clipBehavior,
+        ),
+        animation: container.animation,
+      ),
+    );
+  }
+
   /// Applies per-block `margin`/`padding` overrides onto the resolved block
   /// container after variants resolve.
   ///
@@ -67,7 +98,10 @@ class _BlockContainerState extends State<_BlockContainer> {
       WidgetBlock() => widget.configuration.style.resolve(context).spec,
       ContentBlock() => SlideSpec.of(context),
     };
-    final spec = _applyBlockInsets(resolvedSpec, widget.block);
+    final spec = _applyBlockInsets(
+      _sanitizeBlockContainer(resolvedSpec),
+      widget.block,
+    );
 
     Widget content = Box(
       styleSpec: spec.blockContainer,

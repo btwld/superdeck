@@ -7,7 +7,11 @@ import '../../markdown/markdown_element_builders_registry.dart';
 import '../../styling/components/slide.dart';
 import 'markdown_render_scope.dart';
 
-/// Tween for interpolating between SlideSpec values
+/// Tween for interpolating between SlideSpec values.
+///
+/// Deliberately not mix's `SpecTween<SlideSpec>`: that is a `Tween<T?>`, and
+/// this widget's `forEachTween` path needs a non-nullable `SlideSpec` out of
+/// `lerp` without null-coalescing at every evaluate site.
 class SlideSpecTween extends Tween<SlideSpec> {
   SlideSpecTween({super.begin, super.end});
 

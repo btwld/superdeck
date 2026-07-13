@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck/superdeck.dart' show BlockStyler, SlideStyle;
+import 'package:superdeck/superdeck.dart' show BlockStyler, SlideStyler;
 import 'package:superdeck/src/builtins/image_widget.dart';
 import 'package:superdeck/src/builtins/widgets.dart';
 import 'package:superdeck/src/rendering/slides/slide_parts.dart';
@@ -171,7 +171,7 @@ Author text in the second column.
             ]),
           ],
         ),
-        style: SlideStyle(
+        style: SlideStyler(
           blockContainer: BlockStyler(
             margin: EdgeInsetsGeometryMix.all(56),
             padding: EdgeInsetsGeometryMix.all(36),
@@ -209,7 +209,7 @@ Author text in the second column.
             ]),
           ],
         ),
-        style: SlideStyle(
+        style: SlideStyler(
           slideContainer: BoxStyler(
             margin: EdgeInsetsGeometryMix.all(48),
             padding: EdgeInsetsGeometryMix.all(32),
@@ -244,7 +244,7 @@ Author text in the second column.
 Future<void> _pumpGoldenSlide(
   WidgetTester tester,
   Slide slide, {
-  SlideStyle? style,
+  SlideStyler? style,
   SlideParts? parts,
 }) async {
   tester.view.physicalSize = kResolution;

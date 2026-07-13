@@ -23,18 +23,18 @@ class DeckOptionsMapper extends ClassMapperBase<DeckOptions> {
   @override
   final String id = 'DeckOptions';
 
-  static SlideStyle? _$baseStyle(DeckOptions v) => v.baseStyle;
-  static const Field<DeckOptions, SlideStyle> _f$baseStyle = Field(
+  static SlideStyler? _$baseStyle(DeckOptions v) => v.baseStyle;
+  static const Field<DeckOptions, SlideStyler> _f$baseStyle = Field(
     'baseStyle',
     _$baseStyle,
     opt: true,
   );
-  static Map<String, SlideStyle> _$styles(DeckOptions v) => v.styles;
-  static const Field<DeckOptions, Map<String, SlideStyle>> _f$styles = Field(
+  static Map<String, SlideStyler> _$styles(DeckOptions v) => v.styles;
+  static const Field<DeckOptions, Map<String, SlideStyler>> _f$styles = Field(
     'styles',
     _$styles,
     opt: true,
-    def: const <String, SlideStyle>{},
+    def: const <String, SlideStyler>{},
   );
   static Map<String, Widget Function(Map<String, Object?>)> _$widgets(
     DeckOptions v,
@@ -164,8 +164,8 @@ abstract class DeckOptionsCopyWith<$R, $In extends DeckOptions, $Out>
   MapCopyWith<
     $R,
     String,
-    SlideStyle,
-    ObjectCopyWith<$R, SlideStyle, SlideStyle>
+    SlideStyler,
+    ObjectCopyWith<$R, SlideStyler, SlideStyler>
   >
   get styles;
   MapCopyWith<
@@ -188,8 +188,8 @@ abstract class DeckOptionsCopyWith<$R, $In extends DeckOptions, $Out>
   get templates;
   SlideTemplateCopyWith<$R, SlideTemplate, SlideTemplate>? get defaultTemplate;
   $R call({
-    SlideStyle? baseStyle,
-    Map<String, SlideStyle>? styles,
+    SlideStyler? baseStyle,
+    Map<String, SlideStyler>? styles,
     Map<String, Widget Function(Map<String, Object?>)>? widgets,
     SlideParts? parts,
     bool? debug,
@@ -211,8 +211,8 @@ class _DeckOptionsCopyWithImpl<$R, $Out>
   MapCopyWith<
     $R,
     String,
-    SlideStyle,
-    ObjectCopyWith<$R, SlideStyle, SlideStyle>
+    SlideStyler,
+    ObjectCopyWith<$R, SlideStyler, SlideStyler>
   >
   get styles => MapCopyWith(
     $value.styles,
@@ -254,7 +254,7 @@ class _DeckOptionsCopyWithImpl<$R, $Out>
   @override
   $R call({
     Object? baseStyle = $none,
-    Map<String, SlideStyle>? styles,
+    Map<String, SlideStyler>? styles,
     Map<String, Widget Function(Map<String, Object?>)>? widgets,
     SlideParts? parts,
     bool? debug,

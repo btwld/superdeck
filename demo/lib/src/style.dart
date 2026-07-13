@@ -5,8 +5,8 @@ import 'package:superdeck/superdeck.dart';
 
 import 'google_font_helpers.dart';
 
-SlideStyle announcementStyle() {
-  return SlideStyle(
+SlideStyler announcementStyle() {
+  return SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(
         fontSize: 140,
@@ -38,18 +38,20 @@ SlideStyle announcementStyle() {
   );
 }
 
-SlideStyle quoteStyle() {
-  return SlideStyle(
+SlideStyler quoteStyle() {
+  return SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(
         fontFamily: safeGoogleFontFamily(GoogleFonts.notoSerif),
         fontSize: 32,
       ),
     ),
-    blockquote: MarkdownBlockquoteStyle(
-      textStyle: safeGoogleFont(
-        () => GoogleFonts.notoSerif(fontSize: 32),
-        fallback: const TextStyle(fontSize: 32),
+    blockquote: MarkdownBlockquoteStyler(
+      textStyle: TextStyleMix.value(
+        safeGoogleFont(
+          () => GoogleFonts.notoSerif(fontSize: 32),
+          fallback: const TextStyle(fontSize: 32),
+        ),
       ),
       decoration: const BoxDecoration(
         border: Border(left: BorderSide(color: Colors.red, width: 4)),
@@ -67,8 +69,8 @@ SlideStyle quoteStyle() {
 
 /// Decorated block containers so the layout demo slides can visibly
 /// distinguish section spacing, block margin, and block padding.
-SlideStyle boxedStyle() {
-  return SlideStyle(
+SlideStyler boxedStyle() {
+  return SlideStyler(
     blockContainer: BlockStyler(
       padding: EdgeInsetsGeometryMix.all(24),
       decoration: BoxDecorationMix(
@@ -82,8 +84,8 @@ SlideStyle boxedStyle() {
   );
 }
 
-SlideStyle borderedStyle() {
-  return SlideStyle(
+SlideStyler borderedStyle() {
+  return SlideStyler(
     modifier: WidgetModifierConfig(
       modifiers: [
         BoxModifierMix(

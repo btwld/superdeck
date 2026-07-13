@@ -10,7 +10,7 @@ import '../styling/components/slide.dart';
 /// Default inline styles applied when [SlideSpec] omits a field.
 ///
 /// Markdown semantics still need bold/italic/strike even without an explicit
-/// [SlideStyle] override; user styles merge on top via [TextStyle.merge].
+/// [SlideStyler] override; user styles merge on top via [TextStyle.merge].
 const TextStyle kDefaultStrongStyle = TextStyle(fontWeight: FontWeight.bold);
 const TextStyle kDefaultEmStyle = TextStyle(fontStyle: FontStyle.italic);
 const TextStyle kDefaultDelStyle = TextStyle(

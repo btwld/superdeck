@@ -87,7 +87,7 @@ void main() {
         final config = SlideConfiguration(
           slide: slide,
           slideIndex: 0,
-          style: SlideStyle(),
+          style: SlideStyler(),
           thumbnailKey: '',
         );
 
@@ -244,7 +244,7 @@ void main() {
               const SlideConfigurationBuilder().buildConfigurations(
                 [slide],
                 DeckOptions(
-                  baseStyle: SlideStyle(
+                  baseStyle: SlideStyler(
                     blockContainer:
                         BlockStyler(
                           padding: EdgeInsetsGeometryMix.all(40),
@@ -336,7 +336,7 @@ void main() {
           tester,
           SlideFixtures.singleColumn(),
           parts: const SlideParts(header: null, footer: null),
-          style: SlideStyle(
+          style: SlideStyler(
             slideContainer: BoxStyler(
               margin: EdgeInsetsGeometryMix.all(10),
               padding: EdgeInsetsGeometryMix.all(20),
@@ -360,7 +360,7 @@ void main() {
           tester,
           SlideFixtures.singleColumn(),
           parts: const SlideParts(header: null, footer: null),
-          style: SlideStyle(
+          style: SlideStyler(
             slideContainer: BoxStyler(
               constraints: BoxConstraintsMix(maxWidth: 1000, maxHeight: 600),
             ),

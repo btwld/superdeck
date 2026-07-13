@@ -388,7 +388,7 @@ class _ImageHarness extends StatelessWidget {
       tree = InheritedData<SlideConfiguration>(
         data: SlideConfiguration(
           slideIndex: 0,
-          style: SlideStyle(),
+          style: SlideStyler(),
           slide: Slide(key: 'image-test'),
           thumbnailKey: 'image-test-thumbnail.png',
           assetCacheStore: store,

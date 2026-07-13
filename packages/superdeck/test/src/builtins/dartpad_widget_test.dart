@@ -417,7 +417,7 @@ class _DartPadHarness extends StatelessWidget {
   Widget build(BuildContext context) {
     final slide = SlideConfiguration(
       slideIndex: 0,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(
         key: 'slide-0',
         sections: [

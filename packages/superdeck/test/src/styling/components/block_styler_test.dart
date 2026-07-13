@@ -3,8 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/src/styling/block_variant.dart'
     show BlockVariantScope;
-import 'package:superdeck/superdeck.dart'
-    show BlockStyler, BlockVariant, SlideStyle;
+import 'package:superdeck/superdeck.dart' show BlockStyler, BlockVariant;
 
 /// Resolves [style] inside a widget tree, optionally under a
 /// [BlockVariantScope] named [blockName].
@@ -147,46 +146,6 @@ void main() {
       final resolved = await resolveStyle(tester, style, blockName: 'image');
       expect(resolved.spec.padding, EdgeInsets.zero);
       expect(resolved.spec.constraints, isNull);
-    });
-
-    testWidgets('sanitizes raw block specs from SlideStyle.create', (
-      tester,
-    ) async {
-      final style = SlideStyle.create(
-        blockContainer: Prop.value(
-          StyleSpec(
-            spec: BoxSpec(
-              padding: const EdgeInsets.all(12),
-              constraints: const BoxConstraints(maxWidth: 100),
-              transform: Matrix4.diagonal3Values(2, 2, 1),
-              alignment: Alignment.center,
-            ),
-            widgetModifiers: const [],
-          ),
-        ),
-        variants: null,
-        animation: null,
-        modifier: null,
-      );
-      late StyleSpec<BoxSpec> resolved;
-
-      await tester.pumpWidget(
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: Builder(
-            builder: (context) {
-              resolved = style.build(context).spec.blockContainer;
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
-      );
-
-      expect(resolved.spec.padding, const EdgeInsets.all(12));
-      expect(resolved.spec.constraints, isNull);
-      expect(resolved.spec.transform, isNull);
-      expect(resolved.spec.alignment, isNull);
-      expect(resolved.widgetModifiers, isNull);
     });
 
     testWidgets('supports Mix spacing convenience methods', (tester) async {
