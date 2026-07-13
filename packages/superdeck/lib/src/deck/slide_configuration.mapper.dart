@@ -28,8 +28,8 @@ class SlideConfigurationMapper extends ClassMapperBase<SlideConfiguration> {
     'slideIndex',
     _$slideIndex,
   );
-  static SlideStyle _$style(SlideConfiguration v) => v.style;
-  static const Field<SlideConfiguration, SlideStyle> _f$style = Field(
+  static SlideStyler _$style(SlideConfiguration v) => v.style;
+  static const Field<SlideConfiguration, SlideStyler> _f$style = Field(
     'style',
     _$style,
   );
@@ -188,7 +188,7 @@ abstract class SlideConfigurationCopyWith<
   get widgets;
   $R call({
     int? slideIndex,
-    SlideStyle? style,
+    SlideStyler? style,
     Slide? slide,
     bool? debug,
     SlideParts? parts,
@@ -232,7 +232,7 @@ class _SlideConfigurationCopyWithImpl<$R, $Out>
   @override
   $R call({
     int? slideIndex,
-    SlideStyle? style,
+    SlideStyler? style,
     Slide? slide,
     bool? debug,
     Object? parts = $none,

@@ -21,7 +21,6 @@ export 'src/styling/components/markdown_checkbox.dart';
 export 'src/styling/components/markdown_codeblock.dart';
 export 'src/styling/components/markdown_list.dart';
 export 'src/styling/components/markdown_table.dart';
-export 'src/styling/components/markdown_text.dart';
 export 'src/styling/components/slide.dart';
 
 // UI

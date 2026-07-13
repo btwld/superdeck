@@ -152,7 +152,7 @@ class DeckCustomizationStore extends ChangeNotifier {
 
   void _pushOptions() {
     _controller.options.value = DeckOptions(
-      baseStyle: SlideStyle(
+      baseStyle: SlideStyler(
         h1: _stylerFor(TextLevel.h1),
         h2: _stylerFor(TextLevel.h2),
         h3: _stylerFor(TextLevel.h3),

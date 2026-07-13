@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:mix/mix.dart';
+import 'package:mix_annotations/mix_annotations.dart';
 
 import 'markdown_alert.dart';
 import 'markdown_blockquote.dart';
@@ -9,6 +10,8 @@ import 'markdown_checkbox.dart';
 import 'markdown_codeblock.dart';
 import 'markdown_list.dart';
 import 'markdown_table.dart';
+
+part 'slide.g.dart';
 
 /// Root specification for slide styling containing all markdown element styles.
 ///
@@ -19,39 +22,65 @@ import 'markdown_table.dart';
 /// for base typography; inline markdown (`strong`, `em`, `del`, `a`/`link`,
 /// inline `code` via [code].textStyle) and [textScaleFactor] are applied when
 /// rendering paragraphs, headings, and list items. Prefer configuring these
-/// through [SlideStyle] / Mix [TextStyler] — not [MarkdownTextStyle].
-final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
+/// through [SlideStyler] / Mix [TextStyler].
+@MixableSpec()
+@immutable
+final class SlideSpec with _$SlideSpec {
+  @override
   final StyleSpec<TextSpec>? h1;
+  @override
   final StyleSpec<TextSpec>? h2;
+  @override
   final StyleSpec<TextSpec>? h3;
+  @override
   final StyleSpec<TextSpec>? h4;
+  @override
   final StyleSpec<TextSpec>? h5;
+  @override
   final StyleSpec<TextSpec>? h6;
+  @override
   final StyleSpec<TextSpec>? p;
 
   /// Anchor style; [link] takes precedence when both are set.
+  @override
   final TextStyle? a;
+  @override
   final TextStyle? em;
+  @override
   final TextStyle? strong;
+  @override
   final TextStyle? del;
+  @override
   final TextStyle? img;
 
   /// Preferred link style (used for `a` tags; overrides [a] when set).
+  @override
   final TextStyle? link;
 
   /// Scales markdown text in block builders when set.
+  @override
   final TextScaler? textScaleFactor;
 
+  @override
   final StyleSpec<MarkdownAlertSpec> alert;
+  @override
   final BoxDecoration? horizontalRuleDecoration;
+  @override
   final StyleSpec<MarkdownBlockquoteSpec>? blockquote;
+  @override
   final StyleSpec<MarkdownListSpec>? list;
+  @override
   final StyleSpec<MarkdownTableSpec>? table;
+  @override
   final StyleSpec<MarkdownCodeblockSpec>? code;
+  @override
   final StyleSpec<MarkdownCheckboxSpec>? checkbox;
 
+  @override
   final StyleSpec<BoxSpec> blockContainer;
+  @override
   final StyleSpec<BoxSpec> slideContainer;
+  @override
   final StyleSpec<ImageSpec> image;
 
   /// Static helper for context access
@@ -89,98 +118,6 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
        blockContainer = blockContainer ?? const StyleSpec(spec: BoxSpec()),
        slideContainer = slideContainer ?? const StyleSpec(spec: BoxSpec()),
        image = image ?? const StyleSpec(spec: ImageSpec());
-
-  @override
-  SlideSpec copyWith({
-    StyleSpec<TextSpec>? h1,
-    StyleSpec<TextSpec>? h2,
-    StyleSpec<TextSpec>? h3,
-    StyleSpec<TextSpec>? h4,
-    StyleSpec<TextSpec>? h5,
-    StyleSpec<TextSpec>? h6,
-    StyleSpec<TextSpec>? p,
-    TextStyle? a,
-    TextStyle? em,
-    TextStyle? strong,
-    TextStyle? del,
-    TextStyle? img,
-    TextStyle? link,
-    TextScaler? textScaleFactor,
-    StyleSpec<MarkdownAlertSpec>? alert,
-    BoxDecoration? horizontalRuleDecoration,
-    StyleSpec<MarkdownBlockquoteSpec>? blockquote,
-    StyleSpec<MarkdownListSpec>? list,
-    StyleSpec<MarkdownTableSpec>? table,
-    StyleSpec<MarkdownCodeblockSpec>? code,
-    StyleSpec<MarkdownCheckboxSpec>? checkbox,
-    StyleSpec<BoxSpec>? blockContainer,
-    StyleSpec<BoxSpec>? slideContainer,
-    StyleSpec<ImageSpec>? image,
-  }) {
-    return SlideSpec(
-      h1: h1 ?? this.h1,
-      h2: h2 ?? this.h2,
-      h3: h3 ?? this.h3,
-      h4: h4 ?? this.h4,
-      h5: h5 ?? this.h5,
-      h6: h6 ?? this.h6,
-      p: p ?? this.p,
-      a: a ?? this.a,
-      em: em ?? this.em,
-      strong: strong ?? this.strong,
-      del: del ?? this.del,
-      img: img ?? this.img,
-      link: link ?? this.link,
-      textScaleFactor: textScaleFactor ?? this.textScaleFactor,
-      alert: alert ?? this.alert,
-      horizontalRuleDecoration:
-          horizontalRuleDecoration ?? this.horizontalRuleDecoration,
-      blockquote: blockquote ?? this.blockquote,
-      list: list ?? this.list,
-      table: table ?? this.table,
-      code: code ?? this.code,
-      checkbox: checkbox ?? this.checkbox,
-      blockContainer: blockContainer ?? this.blockContainer,
-      slideContainer: slideContainer ?? this.slideContainer,
-      image: image ?? this.image,
-    );
-  }
-
-  @override
-  SlideSpec lerp(SlideSpec? other, double t) {
-    if (other == null) return this;
-
-    return SlideSpec(
-      h1: MixOps.lerp(h1, other.h1, t),
-      h2: MixOps.lerp(h2, other.h2, t),
-      h3: MixOps.lerp(h3, other.h3, t),
-      h4: MixOps.lerp(h4, other.h4, t),
-      h5: MixOps.lerp(h5, other.h5, t),
-      h6: MixOps.lerp(h6, other.h6, t),
-      p: MixOps.lerp(p, other.p, t),
-      a: TextStyle.lerp(a, other.a, t),
-      em: TextStyle.lerp(em, other.em, t),
-      strong: TextStyle.lerp(strong, other.strong, t),
-      del: TextStyle.lerp(del, other.del, t),
-      img: TextStyle.lerp(img, other.img, t),
-      link: TextStyle.lerp(link, other.link, t),
-      textScaleFactor: t < 0.5 ? textScaleFactor : other.textScaleFactor,
-      alert: MixOps.lerp(alert, other.alert, t)!,
-      horizontalRuleDecoration: BoxDecoration.lerp(
-        horizontalRuleDecoration,
-        other.horizontalRuleDecoration,
-        t,
-      ),
-      blockquote: MixOps.lerp(blockquote, other.blockquote, t),
-      list: MixOps.lerp(list, other.list, t),
-      table: MixOps.lerp(table, other.table, t),
-      code: MixOps.lerp(code, other.code, t),
-      checkbox: MixOps.lerp(checkbox, other.checkbox, t),
-      blockContainer: MixOps.lerp(blockContainer, other.blockContainer, t)!,
-      slideContainer: MixOps.lerp(slideContainer, other.slideContainer, t)!,
-      image: MixOps.lerp(image, other.image, t)!,
-    );
-  }
 
   /// Converts this SlideSpec to a MarkdownStyleSheet for flutter_markdown.
   ///
@@ -223,376 +160,4 @@ final class SlideSpec extends Spec<SlideSpec> with Diagnosticable {
       checkbox: checkbox?.spec.textStyle,
     );
   }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('h1', h1))
-      ..add(DiagnosticsProperty('h2', h2))
-      ..add(DiagnosticsProperty('h3', h3))
-      ..add(DiagnosticsProperty('h4', h4))
-      ..add(DiagnosticsProperty('h5', h5))
-      ..add(DiagnosticsProperty('h6', h6))
-      ..add(DiagnosticsProperty('p', p))
-      ..add(DiagnosticsProperty('a', a))
-      ..add(DiagnosticsProperty('link', link))
-      ..add(DiagnosticsProperty('alert', alert))
-      ..add(DiagnosticsProperty('blockquote', blockquote))
-      ..add(DiagnosticsProperty('list', list))
-      ..add(DiagnosticsProperty('table', table))
-      ..add(DiagnosticsProperty('code', code))
-      ..add(DiagnosticsProperty('checkbox', checkbox))
-      ..add(DiagnosticsProperty('blockContainer', blockContainer))
-      ..add(DiagnosticsProperty('slideContainer', slideContainer))
-      ..add(DiagnosticsProperty('image', image));
-  }
-
-  @override
-  List<Object?> get props => [
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    p,
-    a,
-    em,
-    strong,
-    del,
-    img,
-    link,
-    textScaleFactor,
-    alert,
-    horizontalRuleDecoration,
-    blockquote,
-    list,
-    table,
-    code,
-    checkbox,
-    blockContainer,
-    slideContainer,
-    image,
-  ];
-}
-
-/// Root style class for configuring [SlideSpec] properties.
-///
-/// This is the main style that controls all markdown element styling
-/// including headings, text, alerts, lists, tables, code blocks, and more.
-final class SlideStyle extends Style<SlideSpec>
-    with
-        Diagnosticable,
-        WidgetModifierStyleMixin<SlideStyle, SlideSpec>,
-        VariantStyleMixin<SlideStyle, SlideSpec>,
-        AnimationStyleMixin<SlideStyle, SlideSpec> {
-  final Prop<StyleSpec<TextSpec>>? $h1;
-  final Prop<StyleSpec<TextSpec>>? $h2;
-  final Prop<StyleSpec<TextSpec>>? $h3;
-  final Prop<StyleSpec<TextSpec>>? $h4;
-  final Prop<StyleSpec<TextSpec>>? $h5;
-  final Prop<StyleSpec<TextSpec>>? $h6;
-  final Prop<StyleSpec<TextSpec>>? $p;
-
-  final Prop<TextStyle>? $a;
-  final Prop<TextStyle>? $em;
-  final Prop<TextStyle>? $strong;
-  final Prop<TextStyle>? $del;
-  final Prop<TextStyle>? $img;
-  final Prop<TextStyle>? $link;
-
-  final Prop<TextScaler>? $textScaleFactor;
-
-  final Prop<StyleSpec<MarkdownAlertSpec>>? $alert;
-  final Prop<BoxDecoration>? $horizontalRuleDecoration;
-  final Prop<StyleSpec<MarkdownBlockquoteSpec>>? $blockquote;
-  final Prop<StyleSpec<MarkdownListSpec>>? $list;
-  final Prop<StyleSpec<MarkdownTableSpec>>? $table;
-  final Prop<StyleSpec<MarkdownCodeblockSpec>>? $code;
-  final Prop<StyleSpec<MarkdownCheckboxSpec>>? $checkbox;
-
-  final Prop<StyleSpec<BoxSpec>>? $blockContainer;
-  final Prop<StyleSpec<BoxSpec>>? $slideContainer;
-  final Prop<StyleSpec<ImageSpec>>? $image;
-
-  const SlideStyle.create({
-    Prop<StyleSpec<TextSpec>>? h1,
-    Prop<StyleSpec<TextSpec>>? h2,
-    Prop<StyleSpec<TextSpec>>? h3,
-    Prop<StyleSpec<TextSpec>>? h4,
-    Prop<StyleSpec<TextSpec>>? h5,
-    Prop<StyleSpec<TextSpec>>? h6,
-    Prop<StyleSpec<TextSpec>>? p,
-    Prop<TextStyle>? a,
-    Prop<TextStyle>? em,
-    Prop<TextStyle>? strong,
-    Prop<TextStyle>? del,
-    Prop<TextStyle>? img,
-    Prop<TextStyle>? link,
-    Prop<TextScaler>? textScaleFactor,
-    Prop<StyleSpec<MarkdownAlertSpec>>? alert,
-    Prop<BoxDecoration>? horizontalRuleDecoration,
-    Prop<StyleSpec<MarkdownBlockquoteSpec>>? blockquote,
-    Prop<StyleSpec<MarkdownListSpec>>? list,
-    Prop<StyleSpec<MarkdownTableSpec>>? table,
-    Prop<StyleSpec<MarkdownCodeblockSpec>>? code,
-    Prop<StyleSpec<MarkdownCheckboxSpec>>? checkbox,
-    Prop<StyleSpec<BoxSpec>>? blockContainer,
-    Prop<StyleSpec<BoxSpec>>? slideContainer,
-    Prop<StyleSpec<ImageSpec>>? image,
-    required super.variants,
-    required super.animation,
-    required super.modifier,
-  }) : $h1 = h1,
-       $h2 = h2,
-       $h3 = h3,
-       $h4 = h4,
-       $h5 = h5,
-       $h6 = h6,
-       $p = p,
-       $a = a,
-       $em = em,
-       $strong = strong,
-       $del = del,
-       $img = img,
-       $link = link,
-       $textScaleFactor = textScaleFactor,
-       $alert = alert,
-       $horizontalRuleDecoration = horizontalRuleDecoration,
-       $blockquote = blockquote,
-       $list = list,
-       $table = table,
-       $code = code,
-       $checkbox = checkbox,
-       $blockContainer = blockContainer,
-       $slideContainer = slideContainer,
-       $image = image;
-
-  SlideStyle({
-    TextStyler? h1,
-    TextStyler? h2,
-    TextStyler? h3,
-    TextStyler? h4,
-    TextStyler? h5,
-    TextStyler? h6,
-    TextStyler? p,
-    TextStyle? a,
-    TextStyle? em,
-    TextStyle? strong,
-    TextStyle? del,
-    TextStyle? img,
-    TextStyle? link,
-    TextScaler? textScaleFactor,
-    MarkdownAlertStyle? alert,
-    BoxDecoration? horizontalRuleDecoration,
-    MarkdownBlockquoteStyle? blockquote,
-    MarkdownListStyle? list,
-    MarkdownTableStyle? table,
-    MarkdownCodeblockStyle? code,
-    MarkdownCheckboxStyle? checkbox,
-    BoxStyler? blockContainer,
-    BoxStyler? slideContainer,
-    ImageStyler? image,
-    AnimationConfig? animation,
-    List<VariantStyle<SlideSpec>>? variants,
-    WidgetModifierConfig? modifier,
-  }) : this.create(
-         h1: Prop.maybeMix(h1),
-         h2: Prop.maybeMix(h2),
-         h3: Prop.maybeMix(h3),
-         h4: Prop.maybeMix(h4),
-         h5: Prop.maybeMix(h5),
-         h6: Prop.maybeMix(h6),
-         p: Prop.maybeMix(p),
-         a: Prop.maybe(a),
-         em: Prop.maybe(em),
-         strong: Prop.maybe(strong),
-         del: Prop.maybe(del),
-         img: Prop.maybe(img),
-         link: Prop.maybe(link),
-         textScaleFactor: Prop.maybe(textScaleFactor),
-         alert: Prop.maybeMix(alert),
-         horizontalRuleDecoration: Prop.maybe(horizontalRuleDecoration),
-         blockquote: Prop.maybeMix(blockquote),
-         list: Prop.maybeMix(list),
-         table: Prop.maybeMix(table),
-         code: Prop.maybeMix(code),
-         checkbox: Prop.maybeMix(checkbox),
-         blockContainer: Prop.maybeMix(blockContainer),
-         slideContainer: Prop.maybeMix(slideContainer),
-         image: Prop.maybeMix(image),
-         animation: animation,
-         variants: variants,
-         modifier: modifier,
-       );
-
-  @override
-  SlideStyle variants(List<VariantStyle<SlideSpec>> value) {
-    return merge(SlideStyle(variants: value));
-  }
-
-  @override
-  SlideStyle animate(AnimationConfig value) {
-    return merge(SlideStyle(animation: value));
-  }
-
-  @override
-  SlideStyle wrap(WidgetModifierConfig value) {
-    return merge(SlideStyle(modifier: value));
-  }
-
-  @override
-  StyleSpec<SlideSpec> resolve(BuildContext context) {
-    // [SlideSpec] requires concrete defaults for these non-nullable fields.
-    final resolvedAlert =
-        MixOps.resolve(context, $alert) ??
-        const StyleSpec(spec: MarkdownAlertSpec());
-    final resolvedBlockContainer =
-        MixOps.resolve(context, $blockContainer) ??
-        const StyleSpec(spec: BoxSpec());
-    final resolvedSlideContainer =
-        MixOps.resolve(context, $slideContainer) ??
-        const StyleSpec(spec: BoxSpec());
-    final resolvedImage =
-        MixOps.resolve(context, $image) ?? const StyleSpec(spec: ImageSpec());
-
-    return StyleSpec(
-      spec: SlideSpec(
-        h1: MixOps.resolve(context, $h1),
-        h2: MixOps.resolve(context, $h2),
-        h3: MixOps.resolve(context, $h3),
-        h4: MixOps.resolve(context, $h4),
-        h5: MixOps.resolve(context, $h5),
-        h6: MixOps.resolve(context, $h6),
-        p: MixOps.resolve(context, $p),
-        a: MixOps.resolve(context, $a),
-        em: MixOps.resolve(context, $em),
-        strong: MixOps.resolve(context, $strong),
-        del: MixOps.resolve(context, $del),
-        img: MixOps.resolve(context, $img),
-        link: MixOps.resolve(context, $link),
-        textScaleFactor: MixOps.resolve(context, $textScaleFactor),
-        alert: resolvedAlert,
-        horizontalRuleDecoration: MixOps.resolve(
-          context,
-          $horizontalRuleDecoration,
-        ),
-        blockquote: MixOps.resolve(context, $blockquote),
-        list: MixOps.resolve(context, $list),
-        table: MixOps.resolve(context, $table),
-        code: MixOps.resolve(context, $code),
-        checkbox: MixOps.resolve(context, $checkbox),
-        blockContainer: resolvedBlockContainer,
-        slideContainer: resolvedSlideContainer,
-        image: resolvedImage,
-      ),
-      animation: $animation,
-      widgetModifiers: $modifier?.resolve(context),
-    );
-  }
-
-  @override
-  SlideStyle merge(SlideStyle? other) {
-    if (other == null) return this;
-
-    return SlideStyle.create(
-      h1: MixOps.merge($h1, other.$h1),
-      h2: MixOps.merge($h2, other.$h2),
-      h3: MixOps.merge($h3, other.$h3),
-      h4: MixOps.merge($h4, other.$h4),
-      h5: MixOps.merge($h5, other.$h5),
-      h6: MixOps.merge($h6, other.$h6),
-      p: MixOps.merge($p, other.$p),
-      a: MixOps.merge($a, other.$a),
-      em: MixOps.merge($em, other.$em),
-      strong: MixOps.merge($strong, other.$strong),
-      del: MixOps.merge($del, other.$del),
-      img: MixOps.merge($img, other.$img),
-      link: MixOps.merge($link, other.$link),
-      textScaleFactor: MixOps.merge($textScaleFactor, other.$textScaleFactor),
-      alert: MixOps.merge($alert, other.$alert),
-      horizontalRuleDecoration: MixOps.merge(
-        $horizontalRuleDecoration,
-        other.$horizontalRuleDecoration,
-      ),
-      blockquote: MixOps.merge($blockquote, other.$blockquote),
-      list: MixOps.merge($list, other.$list),
-      table: MixOps.merge($table, other.$table),
-      code: MixOps.merge($code, other.$code),
-      checkbox: MixOps.merge($checkbox, other.$checkbox),
-      blockContainer: MixOps.merge($blockContainer, other.$blockContainer),
-      slideContainer: MixOps.merge($slideContainer, other.$slideContainer),
-      image: MixOps.merge($image, other.$image),
-      animation: MixOps.mergeAnimation($animation, other.$animation),
-      variants: MixOps.mergeVariants($variants, other.$variants),
-      modifier: MixOps.mergeModifier($modifier, other.$modifier),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('h1', $h1))
-      ..add(DiagnosticsProperty('h2', $h2))
-      ..add(DiagnosticsProperty('h3', $h3))
-      ..add(DiagnosticsProperty('h4', $h4))
-      ..add(DiagnosticsProperty('h5', $h5))
-      ..add(DiagnosticsProperty('h6', $h6))
-      ..add(DiagnosticsProperty('p', $p))
-      ..add(DiagnosticsProperty('a', $a))
-      ..add(DiagnosticsProperty('em', $em))
-      ..add(DiagnosticsProperty('strong', $strong))
-      ..add(DiagnosticsProperty('del', $del))
-      ..add(DiagnosticsProperty('img', $img))
-      ..add(DiagnosticsProperty('link', $link))
-      ..add(DiagnosticsProperty('textScaleFactor', $textScaleFactor))
-      ..add(DiagnosticsProperty('alert', $alert))
-      ..add(
-        DiagnosticsProperty(
-          'horizontalRuleDecoration',
-          $horizontalRuleDecoration,
-        ),
-      )
-      ..add(DiagnosticsProperty('blockquote', $blockquote))
-      ..add(DiagnosticsProperty('list', $list))
-      ..add(DiagnosticsProperty('table', $table))
-      ..add(DiagnosticsProperty('code', $code))
-      ..add(DiagnosticsProperty('checkbox', $checkbox))
-      ..add(DiagnosticsProperty('blockContainer', $blockContainer))
-      ..add(DiagnosticsProperty('slideContainer', $slideContainer))
-      ..add(DiagnosticsProperty('image', $image));
-  }
-
-  @override
-  List<Object?> get props => [
-    $h1,
-    $h2,
-    $h3,
-    $h4,
-    $h5,
-    $h6,
-    $p,
-    $a,
-    $em,
-    $strong,
-    $del,
-    $img,
-    $link,
-    $textScaleFactor,
-    $alert,
-    $horizontalRuleDecoration,
-    $blockquote,
-    $list,
-    $table,
-    $code,
-    $checkbox,
-    $blockContainer,
-    $slideContainer,
-    $image,
-    $animation,
-    $variants,
-    $modifier,
-  ];
 }

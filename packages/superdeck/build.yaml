@@ -1,0 +1,32 @@
+targets:
+  $default:
+    builders:
+      # Spec mixins (_$XSpec) for every annotated styling spec.
+      mix_generator:mix_generator:
+        enabled: true
+        generate_for:
+          - lib/src/styling/components/*.dart
+      # Full generated stylers for every annotated styling spec. The nested
+      # styler convention derives each StyleSpec<XSpec> field's XStyler,
+      # including SuperDeck's same-package generated stylers.
+      mix_generator:spec_styler_generator:
+        enabled: true
+        generate_for:
+          - lib/src/styling/components/markdown_alert.dart
+          - lib/src/styling/components/markdown_alert_type.dart
+          - lib/src/styling/components/markdown_blockquote.dart
+          - lib/src/styling/components/markdown_checkbox.dart
+          - lib/src/styling/components/markdown_codeblock.dart
+          - lib/src/styling/components/markdown_list.dart
+          - lib/src/styling/components/markdown_table.dart
+          - lib/src/styling/components/slide.dart
+      # All styling classes are now generated from @MixableSpec.
+      mix_generator:styler_generator:
+        enabled: false
+      # Unused mix builders — keep them off superdeck sources.
+      mix_generator:mixable_generator:
+        enabled: false
+      mix_generator:mix_widget_generator:
+        enabled: false
+      mix_generator:modifier_generator:
+        enabled: false

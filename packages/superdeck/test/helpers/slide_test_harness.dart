@@ -14,7 +14,7 @@ class SlideTestHarness {
   static Future<void> pumpSlide(
     WidgetTester tester,
     Slide slide, {
-    SlideStyle? style,
+    SlideStyler? style,
     Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     Size? resolution,
@@ -52,7 +52,7 @@ class SlideTestHarness {
   /// Creates a [SlideConfiguration] with sensible defaults.
   static SlideConfiguration createConfiguration(
     Slide slide, {
-    SlideStyle? style,
+    SlideStyler? style,
     Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     int slideIndex = 0,
