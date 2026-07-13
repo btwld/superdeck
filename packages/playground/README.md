@@ -38,3 +38,14 @@ lib/
 ```bash
 fvm flutter run -t lib/main.dart
 ```
+
+## Deck files
+
+On first launch, choose a parent directory for deck storage. The app creates a
+`SuperDeck` folder inside it and remembers access with a macOS security-scoped
+bookmark. New decks are Markdown files in that folder; **Open** can load a
+Markdown deck from another location.
+
+If the active file is deleted or moved outside the app, the current Markdown
+stays in memory. Create a new deck to recover it before opening another deck or
+quitting.
