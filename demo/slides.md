@@ -178,6 +178,46 @@ Embed interactive Flutter widgets directly in your slides!
 
 ---
 
+### Ack-Generated Widget Args {.heading}
+
+@section {
+  flex: 1
+}
+@block {
+  align: center
+}
+
+Ack can validate custom widget arguments and generate typed getters over the same `Map<String, Object?>` payload.
+
+@section {
+  flex: 4
+}
+@block {
+  flex: 3
+}
+
+```markdown
+@ack-metric-card {
+  flex: 2
+  align: center
+  label: Activation
+  value: "72%"
+  caption: "Parsed through Ack-generated typed getters"
+  tone: green
+}
+```
+
+@ack-metric-card {
+  flex: 2
+  align: center
+  label: Activation
+  value: "72%"
+  caption: "Parsed through Ack-generated typed getters"
+  tone: green
+}
+
+---
+
 ### Mix Box Example {.heading}
 
 @block {
@@ -405,6 +445,27 @@ template: minimal
 # Minimal Template {.heading}
 
 A clean, typography-focused template with no chrome distractions.
+
+---
+title: WebView Normal
+---
+
+@webview {
+  url: "https://www.fluttermix.com"
+  title: "Flutter Mix"
+  cacheKey: "fluttermix-normal"
+}
+
+---
+title: WebView Fullscreen
+layout: fullscreen
+---
+
+@webview {
+  url: "https://www.fluttermix.com"
+  title: "Flutter Mix"
+  cacheKey: "fluttermix-fullscreen"
+}
 
 ---
 

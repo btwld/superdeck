@@ -56,6 +56,7 @@ Build presentations with Markdown and Flutter
 
 - `image` – images with fit options (`cover`, `contain`, `fill`, `fitWidth`, `fitHeight`)
 - `dartpad` – embedded DartPad snippets with live editing
+- `webview` – embed a persistent web page with optional controls
 - `qrcode` – generate QR codes
 
 **Alignment options**: `topLeft`, `topCenter`, `topRight`, `centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, `bottomRight`
@@ -125,18 +126,18 @@ SuperDeck calls the `WidgetFactory` function with the block's arguments to rende
 
 ### Comprehensive styling API
 
-Control every aspect of your presentation through the `SlideStyle` system:
+Control every aspect of your presentation through the `SlideStyler` system:
 
 ```dart
-final customStyle = SlideStyle(
+final customStyle = SlideStyler(
   h1: TextStyler().style(
     TextStyleMix(fontSize: 48, color: Colors.purple),
   ),
   p: TextStyler().style(
     TextStyleMix(fontSize: 18, height: 1.5),
   ),
-  code: MarkdownCodeblockStyle(
-    textStyle: const TextStyle(fontFamily: 'Fira Code', color: Colors.white),
+  code: MarkdownCodeblockStyler(
+    textStyle: TextStyleMix(fontFamily: 'Fira Code', color: Colors.white),
     container: BoxStyler(
       decoration: BoxDecorationMix(
         color: const Color(0xFF1E1E1E),

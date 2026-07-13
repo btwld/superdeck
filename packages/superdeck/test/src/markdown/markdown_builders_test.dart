@@ -237,7 +237,7 @@ class _MarkdownHarness extends StatelessWidget {
     final styleSheet = slideSpec.toStyle();
     final slideConfiguration = SlideConfiguration(
       slideIndex: 0,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(key: 'slide'),
       thumbnailKey: 'thumb.png',
     );
@@ -246,6 +246,7 @@ class _MarkdownHarness extends StatelessWidget {
       align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
+      runtimeKey: 'slide:s0:b0',
     );
 
     return MaterialApp(

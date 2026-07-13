@@ -6,12 +6,6 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import 'json_deck_loader_base.dart';
 
-const missingBuildOutputMessage =
-    'No SuperDeck build output found. '
-    'SuperDeck uses the default workspace layout. '
-    'Run `dart run superdeck_cli:main build --watch` in one terminal and '
-    '`flutter run` in another.';
-
 /// File-based [DeckLoader] implementation for debug IO runtimes.
 ///
 /// [load] returns a long-lived stream:
@@ -50,7 +44,7 @@ class FileDeckLoader extends DeckLoader {
   void _emitMissingBuildOutput(Completer<void> cancel) {
     if (_didEmitMissingBuildOutput) return;
     _didEmitMissingBuildOutput = true;
-    _emit(SlidesErrorEvent(missingBuildOutputMessage), cancel);
+    _emit(SlidesErrorEvent(buildMissingBuildOutputMessage(workspace)), cancel);
   }
 
   Future<void> _emitLoadedSlides(Completer<void> cancel) async {

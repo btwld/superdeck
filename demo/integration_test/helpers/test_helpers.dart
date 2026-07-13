@@ -10,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
-import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'package:superdeck_example/src/parts/background.dart';

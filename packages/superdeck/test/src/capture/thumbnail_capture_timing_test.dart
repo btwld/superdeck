@@ -73,7 +73,7 @@ class _DelayedWidgetState extends State<_DelayedWidget> {
 SlideConfiguration _slide(String key, String content) {
   return SlideConfiguration(
     slideIndex: 0,
-    style: SlideStyle(),
+    style: SlideStyler(),
     slide: Slide(
       key: key,
       sections: [
@@ -87,7 +87,7 @@ SlideConfiguration _slide(String key, String content) {
 SlideConfiguration _slideWithParts(String key, String content) {
   return SlideConfiguration(
     slideIndex: 0,
-    style: SlideStyle(),
+    style: SlideStyler(),
     parts: const SlideParts(),
     slide: Slide(
       key: key,
@@ -105,7 +105,7 @@ SlideConfiguration _delayedSlide({
 }) {
   return SlideConfiguration(
     slideIndex: 0,
-    style: SlideStyle(),
+    style: SlideStyler(),
     slide: Slide(
       key: 'delayed',
       sections: [

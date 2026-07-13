@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/blocks/block_provider.dart';
@@ -14,11 +14,14 @@ class DartPadDto {
 
   final bool run;
 
+  final String? cacheKey;
+
   const DartPadDto({
     required this.id,
     this.theme,
     this.embed = true,
     this.run = true,
+    this.cacheKey,
   });
 
   /// Schema for validating DartPad arguments.
@@ -27,6 +30,7 @@ class DartPadDto {
     'theme': DartPadTheme.schema.nullable().optional(),
     'embed': Ack.boolean().nullable().optional(),
     'run': Ack.boolean().nullable().optional(),
+    'cacheKey': Ack.string().nullable().optional(),
   });
 
   /// Parses and validates raw map into typed DartPadDto.
@@ -42,6 +46,7 @@ class DartPadDto {
       theme: theme,
       embed: map['embed'] as bool? ?? true,
       run: map['run'] as bool? ?? true,
+      cacheKey: map['cacheKey'] as String?,
     );
   }
 
@@ -74,6 +79,7 @@ class DartPadDto {
 /// - `theme` (optional): Theme name (light, dark) - default: light
 /// - `embed` (optional): Whether to embed - default: true
 /// - `run` (optional): Whether to auto-run - default: true
+/// - `cacheKey` (optional): Sequential controller reuse across remounts
 class DartPadWidget extends StatelessWidget {
   final DartPadDto _data;
 
@@ -83,6 +89,14 @@ class DartPadWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = BlockConfiguration.of(context);
-    return WebViewWrapper(size: data.size, url: _data.toUrl());
+    return WebViewWrapper(
+      size: data.size,
+      url: _data.toUrl(),
+      cacheKey: _data.cacheKey,
+      title: 'DartPad',
+      showControls: true,
+      showClearControl: true,
+      javascript: true,
+    );
   }
 }

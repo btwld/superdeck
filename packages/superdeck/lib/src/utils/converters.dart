@@ -50,6 +50,7 @@ extension ContentAlignmentExtension on ContentAlignment {
     };
   }
 
+  // ignore: unused-code
   (MainAxisAlignment mainAxis, CrossAxisAlignment crossAxis) toFlexAlignment(
     Axis axis,
   ) {

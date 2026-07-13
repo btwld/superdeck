@@ -64,6 +64,7 @@ class MarkdownAstConverter {
   }
 
   /// Returns a JSON representation of the Markdown AST.
+  // ignore: unused-code
   String toJson(
     String markdown, {
     bool prettyPrint = false,

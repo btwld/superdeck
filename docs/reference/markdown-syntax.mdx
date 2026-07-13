@@ -15,8 +15,9 @@ Supported keys:
 
 - `title`: Slide title used in navigation and exports.
 - `style`: Named style variant from `DeckOptions.styles`.
+- `layout`: Slide layout mode. Use `normal` or `fullscreen`.
 - `template`: Named template from `DeckOptions.templates` (`'none'` to opt out).
-- Custom keys: Available through `slide.options.args['keyName']`.
+- Custom keys: Available through `slide.options.args['keyName']`. Official keys such as `layout` are not included in `args`.
 
 Example:
 
@@ -24,9 +25,12 @@ Example:
 ---
 title: Product Vision
 style: overview
+layout: fullscreen
 owner: Platform Team
 ---
 ````
+
+`layout: fullscreen` creates a chrome-free fullscreen slide. It removes header and footer chrome from deck parts, named templates, or `defaultTemplate`, while preserving the resolved background and style.
 
 ## Block types
 
@@ -38,7 +42,19 @@ SuperDeck supports three core block types.
 | `@block` | Render markdown content | `flex`, `align`, `scrollable` |
 | `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `scrollable` + custom args |
 
-Built-in widgets (`image`, `dartpad`, `qrcode`) use the same widget syntax as `@widget`.
+Built-in widgets (`image`, `dartpad`, `webview`, `qrcode`) use the same widget syntax as `@widget`.
+
+### Styling named widget blocks
+
+Widget names can be selected from Dart stylesheets with `BlockVariant`. For
+example, `@webview` and the equivalent `@widget { name: "webview" }` both
+match `BlockVariant('webview')`; `@chart` matches `BlockVariant('chart')`.
+Matching is exact and case-sensitive.
+
+The selector affects the widget block container and descendants in that widget
+subtree. It does not select `@block`, `@section`, individual block instances,
+or arbitrary `NamedVariant` values. See the [DeckOptions reference](/reference/deck-options#named-widget-block-styles)
+for the stylesheet declaration and limitations.
 
 ## Common block properties
 
@@ -100,6 +116,28 @@ Arguments:
 - `theme`: `light` or `dark`.
 - `embed`: boolean.
 - `run`: boolean.
+- `cacheKey`: optional key for sequential controller reuse across remounts (not concurrent mounts).
+
+### `@webview`
+
+Example:
+
+````markdown
+@webview {
+  url: "https://example.com"
+  title: "Example"
+  showControls: true
+}
+````
+
+Arguments:
+
+- `url` (required): absolute `http` or `https` URL.
+- `cacheKey`: optional key for sequential controller reuse across remounts (not concurrent mounts).
+- `title`: label shown during static/thumbnail capture.
+- `allowedHosts`: navigation allowlist (default: source host only).
+- `showControls`: show refresh control (default: `false`).
+- `javascript`: enable JavaScript (default: `true`).
 
 ### `@qrcode`
 
@@ -135,9 +173,16 @@ Use GitHub-style alert syntax:
 
 ### Hero classes
 
-Use classes to animate matching elements between slides:
+Use Markdown class markers to animate matching elements between slides. The first valid class name becomes the Flutter Hero tag, so it does not need to start with `hero-`.
 
 ````markdown
+# Overview {.heading}
+## What changes next {.subheading}
+
 # Roadmap {.hero-title}
 ![Diagram](assets/roadmap.png) {.hero-visual}
 ````
+
+Use the same tag for the element that should transition from one slide to the next. For example, one `{.heading}` on slide A can animate to one `{.heading}` on slide B.
+
+Do not use the same tag twice on one slide. Each Hero tag must identify one element per slide, so use separate tags like `{.heading}` and `{.subheading}` when multiple elements should animate.

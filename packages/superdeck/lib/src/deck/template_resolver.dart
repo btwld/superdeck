@@ -9,13 +9,13 @@ import 'slide_template.dart';
 /// Result of resolving a slide's template and style configuration.
 class TemplateResolutionResult {
   /// The fully merged style for the slide.
-  final SlideStyle style;
+  final SlideStyler style;
 
   /// The chrome parts (header, footer, background) for the slide.
   final SlideParts parts;
 
   /// Whether a template was used in the resolution.
-  final bool usingTemplate;
+  final bool usingTemplate; // ignore: unused-code
 
   const TemplateResolutionResult({
     required this.style,
@@ -30,6 +30,9 @@ class TemplateResolutionResult {
 /// - **With template**: `defaultSlideStyle -> template.baseStyle -> template.styles[style]`
 /// - **Without template**: `defaultSlideStyle -> options.baseStyle -> options.styles[style]`
 /// - **With defaultTemplate**: applies when slide has no explicit template
+///
+/// [SlideLayout.fullscreen] clears resolved header/footer while preserving the
+/// resolved background and style.
 class TemplateResolver {
   final DeckOptions _options;
 
@@ -59,6 +62,7 @@ class TemplateResolver {
   TemplateResolutionResult resolve(SlideOptions? slideOptions) {
     final templateName = slideOptions?.template;
     final styleName = slideOptions?.style;
+    final layout = slideOptions?.layout;
 
     // Determine which template to use (explicit > default > none)
     final template = _resolveTemplate(templateName);
@@ -68,10 +72,11 @@ class TemplateResolver {
         template,
         templateName ?? 'defaultTemplate',
         styleName,
+        layout,
       );
     }
 
-    return _resolveWithoutTemplate(styleName);
+    return _resolveWithoutTemplate(styleName, layout);
   }
 
   SlideTemplate? _resolveTemplate(String? templateName) {
@@ -100,8 +105,9 @@ class TemplateResolver {
     SlideTemplate template,
     String templateName,
     String? styleName,
+    SlideLayout? layout,
   ) {
-    SlideStyle? styleOverride;
+    SlideStyler? styleOverride;
     if (styleName != null) {
       styleOverride = template.styles[styleName];
       if (styleOverride == null) {
@@ -118,13 +124,16 @@ class TemplateResolver {
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: template.parts,
+      parts: _resolveParts(template.parts, layout),
       usingTemplate: true,
     );
   }
 
-  TemplateResolutionResult _resolveWithoutTemplate(String? styleName) {
-    SlideStyle? styleOverride;
+  TemplateResolutionResult _resolveWithoutTemplate(
+    String? styleName,
+    SlideLayout? layout,
+  ) {
+    SlideStyler? styleOverride;
     if (styleName != null) {
       styleOverride = _options.styles[styleName];
       if (styleOverride == null) {
@@ -141,8 +150,14 @@ class TemplateResolver {
 
     return TemplateResolutionResult(
       style: mergedStyle,
-      parts: _options.parts,
+      parts: _resolveParts(_options.parts, layout),
       usingTemplate: false,
     );
+  }
+
+  SlideParts _resolveParts(SlideParts parts, SlideLayout? layout) {
+    if (layout != SlideLayout.fullscreen) return parts;
+
+    return SlideParts(header: null, footer: null, background: parts.background);
   }
 }

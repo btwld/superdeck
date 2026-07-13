@@ -59,9 +59,7 @@ void main() {
     testWidgets('without a store, the original render path is unchanged', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        const _MarkdownHarness(markdown: '![x]($_key)'),
-      );
+      await tester.pumpWidget(const _MarkdownHarness(markdown: '![x]($_key)'));
       await tester.pumpAndSettle();
 
       // No cache → no resolver widget; the bare ref is used directly.
@@ -113,7 +111,7 @@ class _MarkdownHarness extends StatelessWidget {
     final styleSheet = slideSpec.toStyle();
     final slideConfiguration = SlideConfiguration(
       slideIndex: 0,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(key: 'slide'),
       thumbnailKey: 'thumb.png',
       assetCacheStore: assetCacheStore,
@@ -122,6 +120,7 @@ class _MarkdownHarness extends StatelessWidget {
       align: ContentBlock(markdown).align,
       spec: slideSpec,
       size: const Size(800, 600),
+      runtimeKey: 'slide:s0:b0',
     );
 
     final tree = InheritedData<SlideConfiguration>(

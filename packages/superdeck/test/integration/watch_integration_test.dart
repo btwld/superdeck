@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
-import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/src/build/build_event.dart';
 import 'package:superdeck_builder/src/build/deck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';

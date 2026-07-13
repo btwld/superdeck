@@ -74,6 +74,10 @@ jobs:
       - name: Install Linux Desktop Dependencies
         timeout-minutes: 8
         run: |
+          sudo grep -rl 'packages.microsoft.com' /etc/apt/sources.list.d 2>/dev/null | while read -r source_file; do
+            echo "Removing flaky Microsoft apt source: $source_file"
+            sudo rm -f "$source_file"
+          done
           sudo apt-get update -o Acquire::Retries=3
           sudo apt-get install -y -o Dpkg::Lock::Timeout=60 libgtk-3-dev ninja-build pkg-config
 
@@ -179,6 +183,10 @@ jobs:
       - name: Install Playwright browsers
         timeout-minutes: 10
         run: |
+          sudo grep -rl 'packages.microsoft.com' /etc/apt/sources.list.d 2>/dev/null | while read -r source_file; do
+            echo "Removing flaky Microsoft apt source: $source_file"
+            sudo rm -f "$source_file"
+          done
           cd demo/e2e
           npx playwright install --with-deps chromium webkit
 

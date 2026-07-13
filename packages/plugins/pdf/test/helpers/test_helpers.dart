@@ -52,7 +52,7 @@ List<SlideConfiguration> createTestSlides(int count) {
     final slideKey = 'slide-$index';
     return SlideConfiguration(
       slideIndex: index,
-      style: SlideStyle(),
+      style: SlideStyler(),
       slide: Slide(
         key: slideKey,
         sections: [
@@ -80,7 +80,7 @@ List<Slide> createTestSlidesPayload({List<Slide>? slides}) {
 class SlideTestHarness {
   static SlideConfiguration createConfiguration(
     Slide slide, {
-    SlideStyle? style,
+    SlideStyler? style,
     Map<String, WidgetFactory> widgets = const {},
     bool debug = false,
     int slideIndex = 0,
@@ -89,7 +89,7 @@ class SlideTestHarness {
   }) {
     return SlideConfiguration(
       slideIndex: slideIndex,
-      style: style ?? SlideStyle(),
+      style: style ?? SlideStyler(),
       slide: slide,
       thumbnailKey: 'test-thumbnail.png',
       debug: debug,

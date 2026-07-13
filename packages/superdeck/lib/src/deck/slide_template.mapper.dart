@@ -29,18 +29,18 @@ class SlideTemplateMapper extends ClassMapperBase<SlideTemplate> {
     opt: true,
     def: const SlideParts(),
   );
-  static SlideStyle? _$baseStyle(SlideTemplate v) => v.baseStyle;
-  static const Field<SlideTemplate, SlideStyle> _f$baseStyle = Field(
+  static SlideStyler? _$baseStyle(SlideTemplate v) => v.baseStyle;
+  static const Field<SlideTemplate, SlideStyler> _f$baseStyle = Field(
     'baseStyle',
     _$baseStyle,
     opt: true,
   );
-  static Map<String, SlideStyle> _$styles(SlideTemplate v) => v.styles;
-  static const Field<SlideTemplate, Map<String, SlideStyle>> _f$styles = Field(
+  static Map<String, SlideStyler> _$styles(SlideTemplate v) => v.styles;
+  static const Field<SlideTemplate, Map<String, SlideStyler>> _f$styles = Field(
     'styles',
     _$styles,
     opt: true,
-    def: const <String, SlideStyle>{},
+    def: const <String, SlideStyler>{},
   );
 
   @override
@@ -123,14 +123,14 @@ abstract class SlideTemplateCopyWith<$R, $In extends SlideTemplate, $Out>
   MapCopyWith<
     $R,
     String,
-    SlideStyle,
-    ObjectCopyWith<$R, SlideStyle, SlideStyle>
+    SlideStyler,
+    ObjectCopyWith<$R, SlideStyler, SlideStyler>
   >
   get styles;
   $R call({
     SlideParts? parts,
-    SlideStyle? baseStyle,
-    Map<String, SlideStyle>? styles,
+    SlideStyler? baseStyle,
+    Map<String, SlideStyler>? styles,
   });
   SlideTemplateCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
@@ -147,8 +147,8 @@ class _SlideTemplateCopyWithImpl<$R, $Out>
   MapCopyWith<
     $R,
     String,
-    SlideStyle,
-    ObjectCopyWith<$R, SlideStyle, SlideStyle>
+    SlideStyler,
+    ObjectCopyWith<$R, SlideStyler, SlideStyler>
   >
   get styles => MapCopyWith(
     $value.styles,
@@ -159,7 +159,7 @@ class _SlideTemplateCopyWithImpl<$R, $Out>
   $R call({
     SlideParts? parts,
     Object? baseStyle = $none,
-    Map<String, SlideStyle>? styles,
+    Map<String, SlideStyler>? styles,
   }) => $apply(
     FieldCopyWithData({
       if (parts != null) #parts: parts,

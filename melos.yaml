@@ -14,7 +14,8 @@ command:
     dependencies:
       collection: ^1.18.0
       mix: ^2.1.0
-      ack: 1.0.0-beta.12
+      remix: ^0.2.0
+      ack: 1.0.1
   # publish:
     # hooks:
     #   pre: melos run gen:build
@@ -40,14 +41,20 @@ scripts:
       dependsOn: "dart_code_metrics_presets"
 
   analyze:dcm:unused-files:
-    run: fvm flutter pub run melos exec -c 10 -- dcm check-unused-files . --fatal-unused
-    description: Check for unused files using DCM.
+    # Public barrels/plugin entrypoints are not cleanup targets (--exclude-public-api).
+    # Generated files use DCM defaults (*.g.dart / *.freezed.dart / *.mapper.dart).
+    # Extra globs: tests + platform conditional files DCM misclassifies as unused.
+    # Quotes must survive melos exec so brace globs are not shell-expanded.
+    run: fvm flutter pub run melos exec -c 10 -- "dcm check-unused-files . --fatal-unused --exclude-public-api -e '{**/*.g.dart,**/*.freezed.dart,**/*.mapper.dart,test/**,**/*_web.dart,**/*_stub.dart,**/*_io.dart,**/measure_size.dart}'"
+    description: Check for unused files using DCM (public API, generated, platform stubs excluded).
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 
   analyze:dcm:unused-code:
-    run: fvm flutter pub run melos exec -c 10 -- dcm check-unused-code . --fatal-unused
-    description: Check for unused code using DCM.
+    # Public API surface stays even if unused in-repo (--exclude-public-api).
+    # Same exclude set as unused-files (generated + platform stubs + tests).
+    run: fvm flutter pub run melos exec -c 10 -- "dcm check-unused-code . --fatal-unused --exclude-public-api -e '{**/*.g.dart,**/*.freezed.dart,**/*.mapper.dart,test/**,**/*_web.dart,**/*_stub.dart,**/*_io.dart}'"
+    description: Check for unused code using DCM (public API, generated, platform stubs excluded).
     packageFilters:
       dependsOn: "dart_code_metrics_presets"
 

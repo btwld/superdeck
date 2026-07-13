@@ -7,7 +7,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:superdeck/src/deck/loaders/file_deck_loader.dart';
+import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:superdeck_mermaid/superdeck_mermaid.dart';

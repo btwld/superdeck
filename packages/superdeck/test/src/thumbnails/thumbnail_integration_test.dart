@@ -39,7 +39,7 @@ String _thumbnailKey(String slideKey) => 'thumbnail_$slideKey.png';
 SlideConfiguration _slide(String key, {String? thumbnailKey}) {
   return SlideConfiguration(
     slideIndex: 0,
-    style: SlideStyle(),
+    style: SlideStyler(),
     slide: Slide(key: key),
     thumbnailKey: thumbnailKey ?? _thumbnailKey(key),
   );

@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/deck/default_deck_setup.dart';
 import 'package:superdeck/src/ui/app_shell.dart';
 import 'package:superdeck/src/ui/panels/bottom_bar.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
@@ -74,8 +78,37 @@ Future<void> _openDeckMenu(WidgetTester tester) async {
   await tester.pump();
 }
 
+ByteData _utf8ByteData(String value) {
+  return ByteData.sublistView(Uint8List.fromList(utf8.encode(value)));
+}
+
+void _mockBundledDeckAsset(DeckWorkspace workspace, List<Slide> slides) {
+  final payload = jsonEncode(
+    slides.map((slide) => slide.toMap()).toList(growable: false),
+  );
+  rootBundle.evict(workspace.bundledDeckJsonPath);
+
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMessageHandler('flutter/assets', (message) async {
+        final assetKey = utf8.decode(
+          message!.buffer.asUint8List(
+            message.offsetInBytes,
+            message.lengthInBytes,
+          ),
+        );
+        if (assetKey != workspace.bundledDeckJsonPath) return null;
+
+        return _utf8ByteData(payload);
+      });
+}
+
 void main() {
   group('SuperDeckApp', () {
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMessageHandler('flutter/assets', null);
+    });
+
     testWidgets(
       'custom loader without workspace or asset cache store fails fast',
       (tester) async {
@@ -105,6 +138,54 @@ void main() {
         ),
       );
 
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('force-bundled loader recipe loads bundled slides', (
+      tester,
+    ) async {
+      final workspace = DeckWorkspace();
+      _mockBundledDeckAsset(workspace, [
+        createSlideFromBlocks([ContentBlock('Bundled recipe slide')]),
+      ]);
+
+      await tester.pumpWidget(
+        SuperDeckApp(
+          options: DeckOptions(),
+          deckLoader: BundledDeckLoader(workspace: workspace),
+          workspace: workspace,
+          transitionDuration: Duration.zero,
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+
+      expect(find.text('Bundled recipe slide'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('auto-selects bundled loader when no project root is found', (
+      tester,
+    ) async {
+      debugSetDefaultDeckSetupFindRootOverride((_) => null);
+      addTearDown(() {
+        debugSetDefaultDeckSetupFindRootOverride(null);
+      });
+
+      final workspace = DeckWorkspace();
+      _mockBundledDeckAsset(workspace, [
+        createSlideFromBlocks([ContentBlock('Auto bundled slide')]),
+      ]);
+
+      await tester.pumpWidget(
+        SuperDeckApp(options: DeckOptions(), transitionDuration: Duration.zero),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+
+      expect(find.text('Auto bundled slide'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

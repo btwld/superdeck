@@ -37,8 +37,9 @@ class PreviewSidebar extends StatelessWidget {
 /// always current and there's nothing to regenerate. `ListView.builder` keeps
 /// this to the on-screen previews.
 ///
-/// Slides come straight from `DeckController.slides` (a signal) via [Watch]; the
-/// active-slide highlight still comes from `EditorStore` through Provider.
+/// Slides come straight from `DeckController.slides` (a signal) via
+/// [SignalBuilder]; the active-slide highlight still comes from `EditorStore`
+/// through Provider.
 class SlidesPreviewList extends StatelessWidget {
   const SlidesPreviewList({super.key});
 
@@ -49,38 +50,40 @@ class SlidesPreviewList extends StatelessWidget {
       (store) => store.activeSlideIndex,
     );
 
-    return Watch((context) {
-      final slides = controller.slides.value;
+    return SignalBuilder(
+      builder: (context) {
+        final slides = controller.slides.value;
 
-      if (slides.isEmpty) {
-        return Center(
-          child: StyledText(
-            'No slides',
-            style: TextStyler().style(.color($muted())),
+        if (slides.isEmpty) {
+          return Center(
+            child: StyledText(
+              'No slides',
+              style: TextStyler().style(.color($muted())),
+            ),
+          );
+        }
+
+        return ScrollConfiguration(
+          behavior: ScrollBehavior().copyWith(scrollbars: false),
+          child: ListView.builder(
+            clipBehavior: .none,
+            itemCount: slides.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const .only(bottom: 24),
+                child: _PreviewItem(
+                  index: index,
+                  configuration: slides[index],
+                  isActive: index == activeIndex,
+                  onTap: () =>
+                      context.read<EditorStore>().activeSlideIndex = index,
+                ),
+              );
+            },
           ),
         );
-      }
-
-      return ScrollConfiguration(
-        behavior: ScrollBehavior().copyWith(scrollbars: false),
-        child: ListView.builder(
-          clipBehavior: .none,
-          itemCount: slides.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const .only(bottom: 24),
-              child: _PreviewItem(
-                index: index,
-                configuration: slides[index],
-                isActive: index == activeIndex,
-                onTap: () =>
-                    context.read<EditorStore>().activeSlideIndex = index,
-              ),
-            );
-          },
-        ),
-      );
-    });
+      },
+    );
   }
 }
 
