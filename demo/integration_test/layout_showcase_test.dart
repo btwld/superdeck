@@ -43,8 +43,12 @@ void main() {
       final controller = findDeckController(tester)!;
       await tester.waitForSlidesLoaded(controller);
 
-      expect(controller.presentation.totalSlides.value, 11);
+      expect(controller.presentation.totalSlides.value, 13);
       expect(find.text('The system makes room.'), findsOneWidget);
+      expect(
+        controller.slides.value.map((slide) => slide.options.title),
+        containsAll(['Image frame matrix', 'Image treatment matrix']),
+      );
 
       final widgetBlocks = controller.slides.value
           .expand((slide) => slide.sections)
@@ -53,7 +57,7 @@ void main() {
           .toList();
       expect(
         widgetBlocks.where((block) => block.name == 'image'),
-        hasLength(11),
+        hasLength(18),
       );
       expect(
         widgetBlocks
@@ -80,7 +84,7 @@ void main() {
       );
       await assertReviewScreenshots(
         outputDir: screenshotsDir,
-        expectedCount: 11,
+        expectedCount: 13,
       );
     });
   });

@@ -1,6 +1,6 @@
 [
   {
-    "key": "OsswPmOD",
+    "key": "ULf9oR1o",
     "options": {
       "title": "The system makes room",
       "style": "cover",
@@ -41,10 +41,10 @@
                   "children": [
                     {
                       "type": "text",
-                      "text": "Eleven frames for layout, image control, and rich Markdown."
+                      "text": "Thirteen frames for layout, image control, and rich Markdown."
                     }
                   ],
-                  "generatedId": "eleven-frames-for-layout-image-control-and-rich-markdown"
+                  "generatedId": "thirteen-frames-for-layout-image-control-and-rich-markdown"
                 },
                 {
                   "type": "element",
@@ -114,7 +114,7 @@
     "comments": []
   },
   {
-    "key": "qZM5IfYl",
+    "key": "vAw6fVN5",
     "options": {
       "title": "The layout model",
       "style": "panels"
@@ -155,6 +155,12 @@
             },
             "align": "centerLeft",
             "flex": 1,
+            "padding": {
+              "top": 14.0,
+              "right": 24.0,
+              "bottom": 14.0,
+              "left": 24.0
+            },
             "scrollable": false,
             "type": "block"
           }
@@ -416,7 +422,7 @@
     "comments": []
   },
   {
-    "key": "4DuBuPsL",
+    "key": "7BuNcOQM",
     "options": {
       "title": "Asymmetric composition",
       "style": "compact"
@@ -638,6 +644,12 @@
             "name": "image",
             "align": "centerLeft",
             "flex": 2,
+            "margin": {
+              "top": 12.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
             "padding": {
               "top": 0.0,
               "right": 0.0,
@@ -681,6 +693,12 @@
             },
             "align": "centerLeft",
             "flex": 4,
+            "margin": {
+              "top": 12.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
             "padding": {
               "top": 0.0,
               "right": 10.0,
@@ -694,6 +712,12 @@
             "name": "image",
             "align": "centerRight",
             "flex": 2,
+            "margin": {
+              "top": 12.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
             "padding": {
               "top": 0.0,
               "right": 0.0,
@@ -907,7 +931,7 @@
     "comments": []
   },
   {
-    "key": "UGQt6YGU",
+    "key": "SyRf8syA",
     "options": {
       "title": "Image placement controls",
       "style": "compact"
@@ -1045,6 +1069,12 @@
               "footnoteReferences": {}
             },
             "flex": 1,
+            "margin": {
+              "top": 14.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
             "scrollable": false,
             "type": "block"
           },
@@ -1079,6 +1109,12 @@
               "footnoteReferences": {}
             },
             "flex": 1,
+            "margin": {
+              "top": 14.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
             "scrollable": false,
             "type": "block"
           },
@@ -1113,6 +1149,12 @@
               "footnoteReferences": {}
             },
             "flex": 1,
+            "margin": {
+              "top": 14.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
             "scrollable": false,
             "type": "block"
           }
@@ -1126,7 +1168,613 @@
     "comments": []
   },
   {
-    "key": "pPw5PDJR",
+    "key": "VaHpsMyO",
+    "options": {
+      "title": "Image frame matrix",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "05 / FRAME SIZE + BLOCK MARGIN"
+                    }
+                  ],
+                  "generatedId": "05--frame-size--block-margin"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Frame size is authored, not guessed."
+                    }
+                  ],
+                  "generatedId": "frame-size-is-authored-not-guessed"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "margin": {
+              "top": 8.0,
+              "right": 66.0,
+              "bottom": 8.0,
+              "left": 66.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "cover",
+            "scale": 1.06
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "margin": {
+              "top": 52.0,
+              "right": 38.0,
+              "bottom": 52.0,
+              "left": 38.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 1,
+            "margin": {
+              "top": 100.0,
+              "right": 4.0,
+              "bottom": 100.0,
+              "left": 4.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "cover",
+            "scale": 1.14
+          }
+        ],
+        "align": "center",
+        "flex": 4,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "PORTRAIT / TALL"
+                    }
+                  ],
+                  "generatedId": "portrait--tall"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Horizontal margin narrows the decorated image block."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "SQUARE / BALANCED"
+                    }
+                  ],
+                  "generatedId": "square--balanced"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Two-axis margin creates a compact focal tile."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "LANDSCAPE / WIDE"
+                    }
+                  ],
+                  "generatedId": "landscape--wide"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Vertical margin produces a cinematic banner."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 1,
+        "spacing": 18.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "UFjcGQIQ",
+    "options": {
+      "title": "Image treatment matrix",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "06 / FIT + SURFACE TREATMENT"
+                    }
+                  ],
+                  "generatedId": "06--fit--surface-treatment"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "One image block can carry many behaviors."
+                    }
+                  ],
+                  "generatedId": "one-image-block-can-carry-many-behaviors"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "FIT WIDTH"
+                    }
+                  ],
+                  "generatedId": "fit-width"
+                },
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Width leads."
+                    }
+                  ],
+                  "generatedId": "width-leads"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "The source fills the horizontal axis first."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 4,
+            "margin": {
+              "top": 10.0,
+              "right": 0.0,
+              "bottom": 10.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "fitWidth",
+            "width": 320,
+            "height": 205
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "FIT HEIGHT"
+                    }
+                  ],
+                  "generatedId": "fit-height"
+                },
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Height leads."
+                    }
+                  ],
+                  "generatedId": "height-leads"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Padding adds an inset inside the frame."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 4,
+            "margin": {
+              "top": 18.0,
+              "right": 0.0,
+              "bottom": 18.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 12.0,
+              "right": 12.0,
+              "bottom": 12.0,
+              "left": 12.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "fitHeight",
+            "width": 320,
+            "height": 205
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "FILL"
+                    }
+                  ],
+                  "generatedId": "fill"
+                },
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Frame leads."
+                    }
+                  ],
+                  "generatedId": "frame-leads"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Pixels stretch to occupy both axes."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 4,
+            "margin": {
+              "top": 10.0,
+              "right": 0.0,
+              "bottom": 10.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "fill",
+            "width": 320,
+            "height": 205
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "SCALE DOWN"
+                    }
+                  ],
+                  "generatedId": "scale-down"
+                },
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Source leads."
+                    }
+                  ],
+                  "generatedId": "source-leads"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Margin and padding create a floating study."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "bottomRight",
+            "flex": 4,
+            "margin": {
+              "top": 16.0,
+              "right": 8.0,
+              "bottom": 16.0,
+              "left": 8.0
+            },
+            "padding": {
+              "top": 18.0,
+              "right": 18.0,
+              "bottom": 18.0,
+              "left": 18.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "scaleDown",
+            "width": 320,
+            "height": 205,
+            "scale": 0.82
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "6D9iENdn",
     "options": {
       "title": "Markdown hierarchy",
       "style": "compact"
@@ -1144,10 +1792,10 @@
                   "children": [
                     {
                       "type": "text",
-                      "text": "05 / RICH MARKDOWN"
+                      "text": "07 / RICH MARKDOWN"
                     }
                   ],
-                  "generatedId": "05--rich-markdown"
+                  "generatedId": "07--rich-markdown"
                 },
                 {
                   "type": "element",
@@ -1609,7 +2257,7 @@
     "comments": []
   },
   {
-    "key": "0x6CGAII",
+    "key": "EpRapYGr",
     "options": {
       "title": "Table-driven storytelling",
       "style": "compact"
@@ -1627,10 +2275,10 @@
                   "children": [
                     {
                       "type": "text",
-                      "text": "06 / TABLES"
+                      "text": "08 / TABLES"
                     }
                   ],
-                  "generatedId": "06--tables"
+                  "generatedId": "08--tables"
                 },
                 {
                   "type": "element",
@@ -2116,7 +2764,7 @@
     "comments": []
   },
   {
-    "key": "zQ5XDOAu",
+    "key": "J51RgH9X",
     "options": {
       "title": "GitHub alerts",
       "style": "compact"
@@ -2134,10 +2782,10 @@
                   "children": [
                     {
                       "type": "text",
-                      "text": "07 / GITHUB ALERTS"
+                      "text": "09 / GITHUB ALERTS"
                     }
                   ],
-                  "generatedId": "07--github-alerts"
+                  "generatedId": "09--github-alerts"
                 },
                 {
                   "type": "element",
@@ -2420,7 +3068,7 @@
     "comments": []
   },
   {
-    "key": "KsAh6LXT",
+    "key": "uhvZJU9L",
     "options": {
       "title": "Indicators and readiness",
       "style": "compact"
@@ -2438,10 +3086,10 @@
                   "children": [
                     {
                       "type": "text",
-                      "text": "08 / INDICATORS"
+                      "text": "10 / INDICATORS"
                     }
                   ],
-                  "generatedId": "08--indicators"
+                  "generatedId": "10--indicators"
                 },
                 {
                   "type": "element",
@@ -2987,7 +3635,7 @@
     "comments": []
   },
   {
-    "key": "mdNuYlwm",
+    "key": "tRy64s9H",
     "options": {
       "title": "A bounded extension point",
       "style": "compact"
@@ -3005,10 +3653,10 @@
                   "children": [
                     {
                       "type": "text",
-                      "text": "09 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED"
+                      "text": "11 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED"
                     }
                   ],
-                  "generatedId": "09--native-first-extensible-when-needed"
+                  "generatedId": "11--native-first-extensible-when-needed"
                 },
                 {
                   "type": "element",
@@ -3202,7 +3850,7 @@
     "comments": []
   },
   {
-    "key": "uq7KhMrJ",
+    "key": "vZXKbD3F",
     "options": {
       "title": "The outcome",
       "style": "closing",
@@ -3243,10 +3891,10 @@
                   "children": [
                     {
                       "type": "text",
-                      "text": "10 / THE OUTCOME"
+                      "text": "12 / THE OUTCOME"
                     }
                   ],
-                  "generatedId": "10--the-outcome"
+                  "generatedId": "12--the-outcome"
                 },
                 {
                   "type": "element",

@@ -19,7 +19,7 @@ layout: fullscreen
 
 # The system makes room.
 
-## Eleven frames for layout, image control, and rich Markdown.
+## Thirteen frames for layout, image control, and rich Markdown.
 
 **Sections. Blocks. Images. Type.** One coherent visual language.
 
@@ -40,7 +40,10 @@ style: panels
 
 @section { flex: 1 }
 
-@block { align: centerLeft }
+@block {
+  align: centerLeft
+  padding: { horizontal: 24, vertical: 14 }
+}
 
 #### 01 / PREDICTABLE GEOMETRY
 
@@ -154,12 +157,14 @@ A strong composition begins with **one dominant relationship**. Here, a 4:7 spli
   flex: 2
   align: centerLeft
   padding: 0
+  margin: { top: 12 }
 }
 
 @block {
   flex: 4
   align: centerLeft
   padding: { horizontal: 10 }
+  margin: { top: 12 }
 }
 
 #### SECONDARY RHYTHM
@@ -173,6 +178,7 @@ Repeated image frames can change proportion without changing the rules around th
   flex: 2
   align: centerRight
   padding: 0
+  margin: { top: 12 }
 }
 
 ---
@@ -284,23 +290,222 @@ style: compact
   align: topLeft
 }
 
-@block { flex: 1 }
+@block {
+  flex: 1
+  margin: { top: 14 }
+}
 
 #### 72% / TOP LEFT
 
 Full image, deliberate quiet space.
 
-@block { flex: 1 }
+@block {
+  flex: 1
+  margin: { top: 14 }
+}
 
 #### 100% / CENTER
 
 The reliable default crop.
 
-@block { flex: 1 }
+@block {
+  flex: 1
+  margin: { top: 14 }
+}
 
 #### 135% / BOTTOM RIGHT
 
 An intentional detail view.
+
+---
+title: Image frame matrix
+style: compact
+---
+
+@section { flex: 1 }
+
+@block { align: centerLeft }
+
+#### 05 / FRAME SIZE + BLOCK MARGIN
+
+## Frame size is authored, not guessed.
+
+@section {
+  flex: 4
+  spacing: 18
+  align: center
+}
+
+@image {
+  src: layout_showcase/assets/material_detail.png
+  fit: cover
+  scale: 1.06
+  flex: 1
+  align: center
+  padding: 0
+  margin: { top: 8, right: 66, bottom: 8, left: 66 }
+}
+
+@image {
+  src: layout_showcase/assets/architectural_steps.png
+  fit: cover
+  flex: 1
+  align: center
+  padding: 0
+  margin: { top: 52, right: 38, bottom: 52, left: 38 }
+}
+
+@image {
+  src: layout_showcase/assets/momentum_ribbon.png
+  fit: cover
+  scale: 1.14
+  flex: 1
+  align: centerRight
+  padding: 0
+  margin: { top: 100, right: 4, bottom: 100, left: 4 }
+}
+
+@section {
+  flex: 1
+  spacing: 18
+  align: topLeft
+}
+
+@block { flex: 1 }
+
+#### PORTRAIT / TALL
+
+Horizontal margin narrows the decorated image block.
+
+@block { flex: 1 }
+
+#### SQUARE / BALANCED
+
+Two-axis margin creates a compact focal tile.
+
+@block { flex: 1 }
+
+#### LANDSCAPE / WIDE
+
+Vertical margin produces a cinematic banner.
+
+---
+title: Image treatment matrix
+style: compact
+---
+
+@section { flex: 1 }
+
+@block { align: centerLeft }
+
+#### 06 / FIT + SURFACE TREATMENT
+
+## One image block can carry many behaviors.
+
+@section {
+  flex: 2
+  spacing: 18
+  align: center
+}
+
+@block {
+  flex: 2
+  align: centerLeft
+  margin: { vertical: 16 }
+}
+
+#### FIT WIDTH
+
+### Width leads.
+
+The source fills the horizontal axis first.
+
+@image {
+  src: layout_showcase/assets/material_detail.png
+  fit: fitWidth
+  width: 320
+  height: 205
+  flex: 4
+  align: center
+  padding: 0
+  margin: { vertical: 10 }
+}
+
+@block {
+  flex: 2
+  align: centerLeft
+  margin: { vertical: 16 }
+}
+
+#### FIT HEIGHT
+
+### Height leads.
+
+Padding adds an inset inside the frame.
+
+@image {
+  src: layout_showcase/assets/architectural_steps.png
+  fit: fitHeight
+  width: 320
+  height: 205
+  flex: 4
+  align: centerRight
+  padding: 12
+  margin: { vertical: 18 }
+}
+
+@section {
+  flex: 2
+  spacing: 18
+  align: center
+}
+
+@block {
+  flex: 2
+  align: centerLeft
+  margin: { vertical: 16 }
+}
+
+#### FILL
+
+### Frame leads.
+
+Pixels stretch to occupy both axes.
+
+@image {
+  src: layout_showcase/assets/momentum_ribbon.png
+  fit: fill
+  width: 320
+  height: 205
+  flex: 4
+  align: center
+  padding: 0
+  margin: { vertical: 10 }
+}
+
+@block {
+  flex: 2
+  align: centerLeft
+  margin: { vertical: 16 }
+}
+
+#### SCALE DOWN
+
+### Source leads.
+
+Margin and padding create a floating study.
+
+@image {
+  src: layout_showcase/assets/material_detail.png
+  fit: scaleDown
+  width: 320
+  height: 205
+  scale: 0.82
+  flex: 4
+  align: bottomRight
+  padding: 18
+  margin: { horizontal: 8, vertical: 16 }
+}
 
 ---
 title: Markdown hierarchy
@@ -311,7 +516,7 @@ style: compact
 
 @block { align: centerLeft }
 
-#### 05 / RICH MARKDOWN
+#### 07 / RICH MARKDOWN
 
 ## The content model has range.
 
@@ -374,7 +579,7 @@ style: compact
 
 @block { align: centerLeft }
 
-#### 06 / TABLES
+#### 08 / TABLES
 
 ## Dense information can still breathe.
 
@@ -419,7 +624,7 @@ style: compact
 
 @block { align: centerLeft }
 
-#### 07 / GITHUB ALERTS
+#### 09 / GITHUB ALERTS
 
 ## Guidance with the right degree of urgency.
 
@@ -469,7 +674,7 @@ style: compact
 
 @block { align: centerLeft }
 
-#### 08 / INDICATORS
+#### 10 / INDICATORS
 
 ## Status should scan before it explains.
 
@@ -513,7 +718,7 @@ style: compact
 
 @block { align: centerLeft }
 
-#### 09 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED
+#### 11 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED
 
 ## One escape hatch, clearly bounded.
 
@@ -583,7 +788,7 @@ layout: fullscreen
   padding: { right: 54 }
 }
 
-#### 10 / THE OUTCOME
+#### 12 / THE OUTCOME
 
 # Built to be seen.
 

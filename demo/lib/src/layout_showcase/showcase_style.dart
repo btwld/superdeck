@@ -268,6 +268,7 @@ SlideStyle showcasePanelStyle() {
     SlideStyle(
       blockContainer: BlockStyler(
         padding: EdgeInsetsGeometryMix.symmetric(horizontal: 24, vertical: 22),
+        margin: EdgeInsetsGeometryMix.symmetric(vertical: 8),
         decoration: _panelDecoration(radius: 22),
       ),
     ),

@@ -1,6 +1,6 @@
 # Layout Showcase
 
-An eleven-slide editorial deck that demonstrates SuperDeck's predictable
+A thirteen-slide editorial deck that demonstrates SuperDeck's predictable
 layout primitives, built-in image controls, and GitHub-flavored Markdown with
 a cohesive visual system.
 
@@ -33,6 +33,19 @@ fvm flutter test integration_test/layout_showcase_test.dart \
 
 The deck source is `slides.md`. Runtime styling, slide parts, and the single
 metric widget live under `demo/lib/src/layout_showcase/`.
+
+## Spacing controls
+
+- `@section spacing` creates horizontal gutters between sibling blocks.
+- Block or widget `margin` creates outer breathing room inside that block's
+  allocated frame. It is also how adjacent vertical section rows are visually
+  separated.
+- Block or widget `padding` controls the inner distance between the decorated
+  frame and its content.
+
+The frame-size and treatment-matrix slides intentionally vary these controls
+alongside `width`, `height`, `fit`, `scale`, and `align` so their effects can be
+compared in captured output.
 
 ## Image assets
 
