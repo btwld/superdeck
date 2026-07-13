@@ -1,0 +1,3318 @@
+[
+  {
+    "key": "OsswPmOD",
+    "options": {
+      "title": "The system makes room",
+      "style": "cover",
+      "layout": "fullscreen"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "NATIVE AUTHORING / VISUAL PROOF"
+                    }
+                  ],
+                  "generatedId": "native-authoring--visual-proof"
+                },
+                {
+                  "type": "element",
+                  "tag": "h1",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "The system makes room."
+                    }
+                  ],
+                  "generatedId": "the-system-makes-room"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Eleven frames for layout, image control, and rich Markdown."
+                    }
+                  ],
+                  "generatedId": "eleven-frames-for-layout-image-control-and-rich-markdown"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Sections. Blocks. Images. Type."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " One coherent visual language."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 5,
+            "padding": {
+              "top": 28.0,
+              "right": 34.0,
+              "bottom": 28.0,
+              "left": 34.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 6,
+            "margin": {
+              "top": 14.0,
+              "right": 14.0,
+              "bottom": 14.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1.04
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 44.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "qZM5IfYl",
+    "options": {
+      "title": "The layout model",
+      "style": "panels"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "01 / PREDICTABLE GEOMETRY"
+                    }
+                  ],
+                  "generatedId": "01--predictable-geometry"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "The layout model explains itself."
+                    }
+                  ],
+                  "generatedId": "the-layout-model-explains-itself"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "SECTION = HEIGHT"
+                    }
+                  ],
+                  "generatedId": "section--height"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Sections stack "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "vertically"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": ". Their flex values decide how much of the slide each row receives."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 2,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "2×"
+                    }
+                  ],
+                  "generatedId": "2"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "This block gets twice the width of its neighbor."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "1×"
+                    }
+                  ],
+                  "generatedId": "1"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "The ratio stays stable as the canvas scales."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "MARGIN"
+                    }
+                  ],
+                  "generatedId": "margin"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Space outside the framed block."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "PADDING"
+                    }
+                  ],
+                  "generatedId": "padding"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Space inside the frame. "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Decoration stays between them"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": ", so the box model remains visible and teachable."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 2,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "ALIGN"
+                    }
+                  ],
+                  "generatedId": "align"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Content lands at any of nine anchor points."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "bottomRight",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "4DuBuPsL",
+    "options": {
+      "title": "Asymmetric composition",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "02 / SECTIONS + BLOCKS + IMAGES"
+                    }
+                  ],
+                  "generatedId": "02--sections--blocks--images"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Editorial, asymmetric, still deterministic."
+                    }
+                  ],
+                  "generatedId": "editorial-asymmetric-still-deterministic"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Build hierarchy before decoration."
+                    }
+                  ],
+                  "generatedId": "build-hierarchy-before-decoration"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "A strong composition begins with "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "one dominant relationship"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": ". Here, a 4:7 split gives the image authority while the copy keeps a clear reading edge."
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "ul",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Flex"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " sets the proportion."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Spacing"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " creates the gutter."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Alignment"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " pins the content."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "blockquote",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "The result feels art-directed because every constraint has a job."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 4,
+            "padding": {
+              "top": 0.0,
+              "right": 18.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 7,
+            "margin": {
+              "top": 6.0,
+              "right": 0.0,
+              "bottom": 6.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1.12
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 28.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "centerLeft",
+            "flex": 2,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "cover"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "SECONDARY RHYTHM"
+                    }
+                  ],
+                  "generatedId": "secondary-rhythm"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Repeated image frames can change proportion without changing the rules around them."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 4,
+            "padding": {
+              "top": 0.0,
+              "right": 10.0,
+              "bottom": 0.0,
+              "left": 10.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 2,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "cover",
+            "scale": 1.18
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 24.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "lFQehDPS",
+    "options": {
+      "title": "Image fit behavior",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "03 / IMAGE FIT"
+                    }
+                  ],
+                  "generatedId": "03--image-fit"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Same source. Two honest choices."
+                    }
+                  ],
+                  "generatedId": "same-source-two-honest-choices"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "CONTAIN / FULL FRAME"
+                    }
+                  ],
+                  "generatedId": "contain--full-frame"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Nothing is cropped."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " Empty space is preserved."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "COVER / FULL BLEED"
+                    }
+                  ],
+                  "generatedId": "cover--full-bleed"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "The frame is filled."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " Edges are intentionally cropped."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 24.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "contain",
+            "width": 560,
+            "height": 420
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "width": 560,
+            "height": 420
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 24.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "UGQt6YGU",
+    "options": {
+      "title": "Image placement controls",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "04 / SCALE + ALIGNMENT"
+                    }
+                  ],
+                  "generatedId": "04--scale--alignment"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Placement is a controlled variable."
+                    }
+                  ],
+                  "generatedId": "placement-is-a-controlled-variable"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "topLeft",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "contain",
+            "scale": 0.72
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1
+          },
+          {
+            "name": "image",
+            "align": "bottomRight",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1.35
+          }
+        ],
+        "align": "center",
+        "flex": 4,
+        "spacing": 22.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "72% / TOP LEFT"
+                    }
+                  ],
+                  "generatedId": "72--top-left"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Full image, deliberate quiet space."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "100% / CENTER"
+                    }
+                  ],
+                  "generatedId": "100--center"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "The reliable default crop."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "135% / BOTTOM RIGHT"
+                    }
+                  ],
+                  "generatedId": "135--bottom-right"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "An intentional detail view."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 1,
+        "spacing": 22.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "pPw5PDJR",
+    "options": {
+      "title": "Markdown hierarchy",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "05 / RICH MARKDOWN"
+                    }
+                  ],
+                  "generatedId": "05--rich-markdown"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "The content model has range."
+                    }
+                  ],
+                  "generatedId": "the-content-model-has-range"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Inline hierarchy"
+                    }
+                  ],
+                  "generatedId": "inline-hierarchy"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Bold establishes consequence."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "em",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Italic adds a second voice."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "del",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Strikethrough retires the old idea."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " A "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": {
+                        "href": "https://superdeck.dev"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "link creates a path"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": ", and "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "inline code"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " names the mechanism."
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "blockquote",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Typography can carry structure before a single custom widget enters the frame."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 5,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "List rhythm"
+                    }
+                  ],
+                  "generatedId": "list-rhythm"
+                },
+                {
+                  "type": "element",
+                  "tag": "ul",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Lead"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " with the decision."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "em",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Qualify"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " it with context."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Use "
+                        },
+                        {
+                          "type": "element",
+                          "tag": "code",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "code"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " for exact syntax."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "ol",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Establish the frame."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Repeat the cadence."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Break the pattern once."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 4,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 4,
+        "spacing": 42.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "STRONG"
+                    }
+                  ],
+                  "generatedId": "strong"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Make "
+                        },
+                        {
+                          "type": "text",
+                          "text": "the "
+                        },
+                        {
+                          "type": "text",
+                          "text": "signal unmistakable."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "EMPHASIS"
+                    }
+                  ],
+                  "generatedId": "emphasis"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "em",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Change "
+                        },
+                        {
+                          "type": "text",
+                          "text": "the "
+                        },
+                        {
+                          "type": "text",
+                          "text": "tone "
+                        },
+                        {
+                          "type": "text",
+                          "text": "without "
+                        },
+                        {
+                          "type": "text",
+                          "text": "changing size."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "LINK + CODE"
+                    }
+                  ],
+                  "generatedId": "link--code"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "a",
+                      "attributes": {
+                        "href": "https://superdeck.dev"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Open the docs"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " or use "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "@section"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": "."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 22.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "0x6CGAII",
+    "options": {
+      "title": "Table-driven storytelling",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "06 / TABLES"
+                    }
+                  ],
+                  "generatedId": "06--tables"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Dense information can still breathe."
+                    }
+                  ],
+                  "generatedId": "dense-information-can-still-breathe"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "table",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "thead",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "th",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Layout signal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "th",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Before"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "th",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "After"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "th",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Movement"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "tbody",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Time to first read"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "8.4 s"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "2."
+                                    },
+                                    {
+                                      "type": "text",
+                                      "text": "6 s"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "−69%"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Competing focal points"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "7"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "2"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "−71%"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Grid exceptions"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "12"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "1"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "−92%"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Review confidence"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "54%"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "91%"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "right"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "+"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "text": "37 pt"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 7,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "THE READING"
+                    }
+                  ],
+                  "generatedId": "the-reading"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "3.2×"
+                    }
+                  ],
+                  "generatedId": "32"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "faster orientation after the hierarchy was simplified."
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "blockquote",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "A table earns attention when the comparison—not the border—is the story."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 3,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 10.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 34.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "zQ5XDOAu",
+    "options": {
+      "title": "GitHub alerts",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "07 / GITHUB ALERTS"
+                    }
+                  ],
+                  "generatedId": "07--github-alerts"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Guidance with the right degree of urgency."
+                    }
+                  ],
+                  "generatedId": "guidance-with-the-right-degree-of-urgency"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": {
+                    "class": "markdown-alert markdown-alert-note"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": {
+                        "class": "markdown-alert-title"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Note"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "Sections own height."
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " Blocks inside them divide the available width."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": {
+                    "class": "markdown-alert markdown-alert-tip"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": {
+                        "class": "markdown-alert-title"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Tip"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Reuse a stable spacing rhythm, then change only the value that carries meaning."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": {
+                    "class": "markdown-alert markdown-alert-important"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": {
+                        "class": "markdown-alert-title"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Important"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Keep the focal relationship obvious at thumbnail size and at full screen."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": {
+                    "class": "markdown-alert markdown-alert-warning"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": {
+                        "class": "markdown-alert-title"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Warning"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Paint-only image scale can crop beyond its original fit. Review the final frame."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "div",
+                  "attributes": {
+                    "class": "markdown-alert markdown-alert-caution"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "attributes": {
+                        "class": "markdown-alert-title"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Caution"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Do not hide critical state in color alone. Pair the accent with a clear label."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 2,
+        "spacing": 24.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "KsAh6LXT",
+    "options": {
+      "title": "Indicators and readiness",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "08 / INDICATORS"
+                    }
+                  ],
+                  "generatedId": "08--indicators"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Status should scan before it explains."
+                    }
+                  ],
+                  "generatedId": "status-should-scan-before-it-explains"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Release readiness"
+                    }
+                  ],
+                  "generatedId": "release-readiness"
+                },
+                {
+                  "type": "element",
+                  "tag": "ul",
+                  "attributes": {
+                    "class": "contains-task-list"
+                  },
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "class": "task-list-item"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "input",
+                          "attributes": {
+                            "type": "checkbox",
+                            "checked": "true"
+                          },
+                          "children": []
+                        },
+                        {
+                          "type": "text",
+                          "text": "Layout contract locked"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "class": "task-list-item"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "input",
+                          "attributes": {
+                            "type": "checkbox",
+                            "checked": "true"
+                          },
+                          "children": []
+                        },
+                        {
+                          "type": "text",
+                          "text": "Image crops reviewed"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "class": "task-list-item"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "input",
+                          "attributes": {
+                            "type": "checkbox",
+                            "checked": "true"
+                          },
+                          "children": []
+                        },
+                        {
+                          "type": "text",
+                          "text": "Contrast checked at 1280 × 720"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "class": "task-list-item"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "input",
+                          "attributes": {
+                            "type": "checkbox"
+                          },
+                          "children": []
+                        },
+                        {
+                          "type": "text",
+                          "text": "Speaker notes approved"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "attributes": {
+                        "class": "task-list-item"
+                      },
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "input",
+                          "attributes": {
+                            "type": "checkbox"
+                          },
+                          "children": []
+                        },
+                        {
+                          "type": "text",
+                          "text": "Final export published"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "blockquote",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "p",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "strong",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "3 / 5 complete."
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " The remaining work is visible without opening another tool."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 5,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Signal board"
+                    }
+                  ],
+                  "generatedId": "signal-board"
+                },
+                {
+                  "type": "element",
+                  "tag": "table",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "thead",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "th",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Workstream"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "th",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "State"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "th",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Owner"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "tbody",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Layout"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "● READY"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Design"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Content"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "● REVIEW"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Editorial"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Capture"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "● READY"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "QA"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "element",
+                          "tag": "tr",
+                          "children": [
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Export"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "element",
+                                  "tag": "strong",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "text": "○ QUEUED"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "element",
+                              "tag": "td",
+                              "attributes": {
+                                "align": "left"
+                              },
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "text": "Release"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "READY"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " means verified. "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "em",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "REVIEW"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " means a decision remains. "
+                    },
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "QUEUED"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " means the path is known."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "flex": 5,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 4,
+        "spacing": 42.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "mdNuYlwm",
+    "options": {
+      "title": "A bounded extension point",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "09 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED"
+                    }
+                  ],
+                  "generatedId": "09--native-first-extensible-when-needed"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "One escape hatch, clearly bounded."
+                    }
+                  ],
+                  "generatedId": "one-escape-hatch-clearly-bounded"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "BUILT-IN AUTHORING"
+                    }
+                  ],
+                  "generatedId": "built-in-authoring"
+                },
+                {
+                  "type": "element",
+                  "tag": "h3",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Most of this deck is only three primitives."
+                    }
+                  ],
+                  "generatedId": "most-of-this-deck-is-only-three-primitives"
+                },
+                {
+                  "type": "element",
+                  "tag": "ul",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "code",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "@section"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " for vertical rhythm"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "code",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "@block"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " for Markdown content"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "element",
+                      "tag": "li",
+                      "children": [
+                        {
+                          "type": "element",
+                          "tag": "code",
+                          "children": [
+                            {
+                              "type": "text",
+                              "text": "@image"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " for visual media"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "No custom content widget is required"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " for the layouts, tables, alerts, checklists, or image studies."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 3,
+            "padding": {
+              "top": 0.0,
+              "right": 8.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 4,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "cover",
+            "scale": 1.08
+          },
+          {
+            "name": "showcaseMetric",
+            "flex": 3,
+            "scrollable": false,
+            "type": "widget",
+            "value": "01",
+            "label": "Registered widget",
+            "detail": "This single metric card is the deliberately custom extension point in the content deck.",
+            "accent": "#59D6C8"
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 26.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "uq7KhMrJ",
+    "options": {
+      "title": "The outcome",
+      "style": "closing",
+      "layout": "fullscreen"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "centerLeft",
+            "flex": 4,
+            "margin": {
+              "top": 26.0,
+              "right": 0.0,
+              "bottom": 26.0,
+              "left": 26.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "cover",
+            "scale": 1.24
+          },
+          {
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h4",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "10 / THE OUTCOME"
+                    }
+                  ],
+                  "generatedId": "10--the-outcome"
+                },
+                {
+                  "type": "element",
+                  "tag": "h1",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Built to be seen."
+                    }
+                  ],
+                  "generatedId": "built-to-be-seen"
+                },
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Every frame can be authored, inspected, and captured."
+                    }
+                  ],
+                  "generatedId": "every-frame-can-be-authored-inspected-and-captured"
+                },
+                {
+                  "type": "element",
+                  "tag": "p",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "strong",
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "Native layouts. Rich Markdown. Controlled imagery."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": " One bounded widget extension and three original image assets."
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            },
+            "align": "centerLeft",
+            "flex": 5,
+            "padding": {
+              "top": 0.0,
+              "right": 54.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 50.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  }
+]
