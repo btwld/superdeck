@@ -1,9 +1,46 @@
 ## Unreleased
 
+- Add clamped gaps between sibling blocks with section `spacing`.
+- Replace manual `Stack`/`Positioned` geometry with constraint-driven
+  `Column`/`Row`/`Expanded` layout. Slide-container insets and constraints now
+  define the real content frame, and oversized header/footer chrome is reduced
+  proportionally.
+- Make each allocated block cell the sizing source: decoration fills the frame,
+  margin sits outside decoration, padding sits inside it, and alignment moves
+  only content. `BlockConfiguration.size` now comes from the resolved inner
+  constraints.
+- Apply alignment with `block align → section align → centerLeft` precedence.
+- Add per-block `margin` and `padding` overrides that replace only the
+  matching resolved inset after variants resolve, preserving decoration,
+  foreground decoration, clipping, and animation. Margin is consumed inside a
+  block's allocated frame and never changes section spacing or flex ratios.
+- **Breaking:** `SlideStyler.blockContainer` now takes a `BlockStyler` instead
+  of a `BoxStyler`. `BlockStyler` exposes only padding, margin, decoration,
+  foreground decoration, clipping, variants, and animation — widget modifiers,
+  constraints, transforms, and box alignment are unrepresentable for the
+  framework-owned block frame. Raw variant lists reject non-`BlockStyler`
+  values eagerly and are snapshotted to preserve that invariant; low-level
+  low-level `SlideStyler.create` input is reduced to the same allow-list at the
+  render boundary.
+- Add image paint scaling with aligned clipping and an unchanged `scale: 1`
+  rendering path. Image `width`, `height`, and `scale` accept integers or
+  doubles through one finite-positive rule.
+- Add deduplicated debug overflow diagnostics for non-scrollable Markdown and
+  custom widgets without changing wrapping or rebuilding content; the visual
+  indicator outlines the overflowing frame instead of covering its corner.
+- Preserve live unbounded child layout for scrollable custom widgets during
+  static capture, then clip the natural-height result to the block frame.
+- Make WebView and DartPad surfaces, including static placeholders, fill their
+  received constraints without a copied `Size` parameter.
+- **Breaking:** remove `Block.resolvedAlign`, `SectionBlock.totalBlockFlex`,
+  and internal redundant geometry helpers. `SectionBlock.resolveBlockAlign`
+  remains the alignment-resolution contract.
+- **Breaking:** section alignment now affects children without an explicit block
+  alignment, and non-positive flex values are invalid.
 - **BREAKING**: Generate the Mix styling layer with `mix_generator` instead of
   hand-writing it. Styler classes are now canonically named `*Styler`
   (`SlideStyler`, `MarkdownAlertStyler`, ...) following the Mix 2.x convention;
-  the previous `*Style` names remain available as typedef aliases.
+  the previous `*Style` names are no longer exported.
 - **BREAKING**: Styler constructor parameters for `TextStyle`-typed fields now
   take `TextStyleMix` (e.g. `SlideStyler(strong:)`,
   `MarkdownCodeblockStyler(textStyle:)`). Wrap existing values with

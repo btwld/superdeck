@@ -4,6 +4,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:mix/mix.dart';
 import 'package:mix_annotations/mix_annotations.dart';
 
+import 'block_styler.dart';
 import 'markdown_alert.dart';
 import 'markdown_blockquote.dart';
 import 'markdown_checkbox.dart';
@@ -76,6 +77,7 @@ final class SlideSpec with _$SlideSpec {
   @override
   final StyleSpec<MarkdownCheckboxSpec>? checkbox;
 
+  @MixableField(setterType: BlockStyler)
   @override
   final StyleSpec<BoxSpec> blockContainer;
   @override

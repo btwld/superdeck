@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mix/mix.dart';
 import 'package:superdeck/src/utils/converters.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
+  group('BlockInsets.toEdgeInsets', () {
+    test('maps normalized physical edges', () {
+      final insets = BlockInsets(top: 1, right: 2, bottom: 3, left: 4);
+
+      expect(insets.toEdgeInsets, const EdgeInsets.fromLTRB(4, 1, 2, 3));
+    });
+  });
+
   group('hexToColor', () {
     group('6-digit hex', () {
       test('parses with # prefix', () {
@@ -143,190 +150,6 @@ void main() {
 
     test('scaleDown returns BoxFit.scaleDown', () {
       expect(ImageFit.scaleDown.toBoxFit, BoxFit.scaleDown);
-    });
-  });
-
-  group('ContentAlignment.toFlexAlignment', () {
-    group('Axis.horizontal (Row)', () {
-      const axis = Axis.horizontal;
-
-      test('topLeft maps to (start, start)', () {
-        final result = ContentAlignment.topLeft.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.start);
-        expect(result.$2, CrossAxisAlignment.start);
-      });
-
-      test('topCenter maps to (center, start)', () {
-        final result = ContentAlignment.topCenter.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.center);
-        expect(result.$2, CrossAxisAlignment.start);
-      });
-
-      test('topRight maps to (end, start)', () {
-        final result = ContentAlignment.topRight.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.end);
-        expect(result.$2, CrossAxisAlignment.start);
-      });
-
-      test('centerLeft maps to (start, center)', () {
-        final result = ContentAlignment.centerLeft.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.start);
-        expect(result.$2, CrossAxisAlignment.center);
-      });
-
-      test('center maps to (center, center)', () {
-        final result = ContentAlignment.center.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.center);
-        expect(result.$2, CrossAxisAlignment.center);
-      });
-
-      test('centerRight maps to (end, center)', () {
-        final result = ContentAlignment.centerRight.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.end);
-        expect(result.$2, CrossAxisAlignment.center);
-      });
-
-      test('bottomLeft maps to (start, end)', () {
-        final result = ContentAlignment.bottomLeft.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.start);
-        expect(result.$2, CrossAxisAlignment.end);
-      });
-
-      test('bottomCenter maps to (center, end)', () {
-        final result = ContentAlignment.bottomCenter.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.center);
-        expect(result.$2, CrossAxisAlignment.end);
-      });
-
-      test('bottomRight maps to (end, end)', () {
-        final result = ContentAlignment.bottomRight.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.end);
-        expect(result.$2, CrossAxisAlignment.end);
-      });
-    });
-
-    group('Axis.vertical (Column)', () {
-      const axis = Axis.vertical;
-
-      test('topLeft maps to (start, start)', () {
-        final result = ContentAlignment.topLeft.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.start);
-        expect(result.$2, CrossAxisAlignment.start);
-      });
-
-      test('topCenter maps to (start, center)', () {
-        final result = ContentAlignment.topCenter.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.start);
-        expect(result.$2, CrossAxisAlignment.center);
-      });
-
-      test('topRight maps to (start, end)', () {
-        final result = ContentAlignment.topRight.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.start);
-        expect(result.$2, CrossAxisAlignment.end);
-      });
-
-      test('centerLeft maps to (center, start)', () {
-        final result = ContentAlignment.centerLeft.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.center);
-        expect(result.$2, CrossAxisAlignment.start);
-      });
-
-      test('center maps to (center, center)', () {
-        final result = ContentAlignment.center.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.center);
-        expect(result.$2, CrossAxisAlignment.center);
-      });
-
-      test('centerRight maps to (center, end)', () {
-        final result = ContentAlignment.centerRight.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.center);
-        expect(result.$2, CrossAxisAlignment.end);
-      });
-
-      test('bottomLeft maps to (end, start)', () {
-        final result = ContentAlignment.bottomLeft.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.end);
-        expect(result.$2, CrossAxisAlignment.start);
-      });
-
-      test('bottomCenter maps to (end, center)', () {
-        final result = ContentAlignment.bottomCenter.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.end);
-        expect(result.$2, CrossAxisAlignment.center);
-      });
-
-      test('bottomRight maps to (end, end)', () {
-        final result = ContentAlignment.bottomRight.toFlexAlignment(axis);
-        expect(result.$1, MainAxisAlignment.end);
-        expect(result.$2, CrossAxisAlignment.end);
-      });
-    });
-  });
-
-  group('BoxSpec.calculateBlockOffset', () {
-    test('empty spec returns Offset.zero', () {
-      final spec = BoxSpec();
-      expect(spec.calculateBlockOffset, Offset.zero);
-    });
-
-    test('padding only calculates horizontal and vertical', () {
-      final spec = BoxSpec(padding: const EdgeInsets.all(10));
-      expect(spec.calculateBlockOffset.dx, 20.0);
-      expect(spec.calculateBlockOffset.dy, 20.0);
-    });
-
-    test('margin only calculates horizontal and vertical', () {
-      final spec = BoxSpec(margin: const EdgeInsets.all(5));
-      expect(spec.calculateBlockOffset.dx, 10.0);
-      expect(spec.calculateBlockOffset.dy, 10.0);
-    });
-
-    test('asymmetric padding calculates correctly', () {
-      final spec = BoxSpec(
-        padding: const EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 15),
-      );
-      expect(spec.calculateBlockOffset.dx, 30.0);
-      expect(spec.calculateBlockOffset.dy, 20.0);
-    });
-
-    test('combined padding and margin sums correctly', () {
-      final spec = BoxSpec(
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.all(5),
-      );
-      expect(spec.calculateBlockOffset.dx, 30.0);
-      expect(spec.calculateBlockOffset.dy, 30.0);
-    });
-
-    test('decoration with border adds border dimensions', () {
-      final spec = BoxSpec(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(border: Border.all(width: 2)),
-      );
-      expect(spec.calculateBlockOffset.dx, 24.0);
-      expect(spec.calculateBlockOffset.dy, 24.0);
-    });
-
-    test('decoration without border does not add extra offset', () {
-      final spec = BoxSpec(
-        padding: const EdgeInsets.all(10),
-        decoration: const BoxDecoration(color: Colors.red),
-      );
-      expect(spec.calculateBlockOffset.dx, 20.0);
-      expect(spec.calculateBlockOffset.dy, 20.0);
-    });
-
-    test('symmetric horizontal padding', () {
-      final spec = BoxSpec(padding: const EdgeInsets.symmetric(horizontal: 15));
-      expect(spec.calculateBlockOffset.dx, 30.0);
-      expect(spec.calculateBlockOffset.dy, 0.0);
-    });
-
-    test('symmetric vertical margin', () {
-      final spec = BoxSpec(margin: const EdgeInsets.symmetric(vertical: 8));
-      expect(spec.calculateBlockOffset.dx, 0.0);
-      expect(spec.calculateBlockOffset.dy, 16.0);
     });
   });
 }

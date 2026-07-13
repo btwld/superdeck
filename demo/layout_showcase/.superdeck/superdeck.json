@@ -1,0 +1,1155 @@
+[
+  {
+    "key": "ULf9oR1o",
+    "options": {
+      "title": "The system makes room",
+      "style": "cover",
+      "layout": "fullscreen"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### NATIVE AUTHORING / VISUAL PROOF\n\n# The system makes room.\n\n## Thirteen frames for layout, image control, and rich Markdown.\n\n**Sections. Blocks. Images. Type.** One coherent visual language.\n",
+            "align": "centerLeft",
+            "flex": 5,
+            "padding": {
+              "top": 28.0,
+              "right": 34.0,
+              "bottom": 28.0,
+              "left": 34.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 6,
+            "margin": {
+              "top": 14.0,
+              "right": 14.0,
+              "bottom": 14.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1.04
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 44.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "vAw6fVN5",
+    "options": {
+      "title": "The layout model",
+      "style": "panels"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 01 / PREDICTABLE GEOMETRY\n\n## The layout model explains itself.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "padding": {
+              "top": 14.0,
+              "right": 24.0,
+              "bottom": 14.0,
+              "left": 24.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n### SECTION = HEIGHT\n\nSections stack **vertically**. Their flex values decide how much of the slide each row receives.\n",
+            "flex": 2,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n### 2×\n\nThis block gets twice the width of its neighbor.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n### 1×\n\nThe ratio stays stable as the canvas scales.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### MARGIN\n\nSpace outside the framed block.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n#### PADDING\n\nSpace inside the frame. **Decoration stays between them**, so the box model remains visible and teachable.\n",
+            "flex": 2,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "#### ALIGN\n\nContent lands at any of nine anchor points.",
+            "align": "bottomRight",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "7BuNcOQM",
+    "options": {
+      "title": "Asymmetric composition",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 02 / SECTIONS + BLOCKS + IMAGES\n\n## Editorial, asymmetric, still deterministic.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n### Build hierarchy before decoration.\n\nA strong composition begins with **one dominant relationship**. Here, a 4:7 split gives the image authority while the copy keeps a clear reading edge.\n\n- **Flex** sets the proportion.\n- **Spacing** creates the gutter.\n- **Alignment** pins the content.\n\n> The result feels art-directed because every constraint has a job.\n",
+            "align": "centerLeft",
+            "flex": 4,
+            "padding": {
+              "top": 0.0,
+              "right": 18.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 7,
+            "margin": {
+              "top": 6.0,
+              "right": 0.0,
+              "bottom": 6.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1.12
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 28.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 12.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "cover"
+          },
+          {
+            "content": "\n\n#### SECONDARY RHYTHM\n\nRepeated image frames can change proportion without changing the rules around them.\n",
+            "align": "centerLeft",
+            "flex": 4,
+            "margin": {
+              "top": 12.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 10.0,
+              "bottom": 0.0,
+              "left": 10.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 2,
+            "margin": {
+              "top": 12.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "cover",
+            "scale": 1.18
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 24.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "lFQehDPS",
+    "options": {
+      "title": "Image fit behavior",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 03 / IMAGE FIT\n\n## Same source. Two honest choices.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### CONTAIN / FULL FRAME\n\n**Nothing is cropped.** Empty space is preserved.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n#### COVER / FULL BLEED\n\n**The frame is filled.** Edges are intentionally cropped.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 24.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "contain",
+            "width": 560,
+            "height": 420
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "width": 560,
+            "height": 420
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 24.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "SyRf8syA",
+    "options": {
+      "title": "Image placement controls",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 04 / SCALE + ALIGNMENT\n\n## Placement is a controlled variable.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "topLeft",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "contain",
+            "scale": 0.72
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1
+          },
+          {
+            "name": "image",
+            "align": "bottomRight",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover",
+            "scale": 1.35
+          }
+        ],
+        "align": "center",
+        "flex": 4,
+        "spacing": 22.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 72% / TOP LEFT\n\nFull image, deliberate quiet space.\n",
+            "flex": 1,
+            "margin": {
+              "top": 14.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n#### 100% / CENTER\n\nThe reliable default crop.\n",
+            "flex": 1,
+            "margin": {
+              "top": 14.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "#### 135% / BOTTOM RIGHT\n\nAn intentional detail view.",
+            "flex": 1,
+            "margin": {
+              "top": 14.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 1,
+        "spacing": 22.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "VaHpsMyO",
+    "options": {
+      "title": "Image frame matrix",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 05 / FRAME SIZE + BLOCK MARGIN\n\n## Frame size is authored, not guessed.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "margin": {
+              "top": 8.0,
+              "right": 66.0,
+              "bottom": 8.0,
+              "left": 66.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "cover",
+            "scale": 1.06
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 1,
+            "margin": {
+              "top": 52.0,
+              "right": 38.0,
+              "bottom": 52.0,
+              "left": 38.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "cover"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 1,
+            "margin": {
+              "top": 100.0,
+              "right": 4.0,
+              "bottom": 100.0,
+              "left": 4.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "cover",
+            "scale": 1.14
+          }
+        ],
+        "align": "center",
+        "flex": 4,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### PORTRAIT / TALL\n\nHorizontal margin narrows the decorated image block.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n#### SQUARE / BALANCED\n\nTwo-axis margin creates a compact focal tile.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "#### LANDSCAPE / WIDE\n\nVertical margin produces a cinematic banner.",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 1,
+        "spacing": 18.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "UFjcGQIQ",
+    "options": {
+      "title": "Image treatment matrix",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 06 / FIT + SURFACE TREATMENT\n\n## One image block can carry many behaviors.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### FIT WIDTH\n\n### Width leads.\n\nThe source fills the horizontal axis first.\n",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 4,
+            "margin": {
+              "top": 10.0,
+              "right": 0.0,
+              "bottom": 10.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "fitWidth",
+            "width": 320,
+            "height": 205
+          },
+          {
+            "content": "\n\n#### FIT HEIGHT\n\n### Height leads.\n\nPadding adds an inset inside the frame.\n",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "centerRight",
+            "flex": 4,
+            "margin": {
+              "top": 18.0,
+              "right": 0.0,
+              "bottom": 18.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 12.0,
+              "right": 12.0,
+              "bottom": 12.0,
+              "left": 12.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/architectural_steps.png",
+            "fit": "fitHeight",
+            "width": 320,
+            "height": 205
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### FILL\n\n### Frame leads.\n\nPixels stretch to occupy both axes.\n",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 4,
+            "margin": {
+              "top": 10.0,
+              "right": 0.0,
+              "bottom": 10.0,
+              "left": 0.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "fill",
+            "width": 320,
+            "height": 205
+          },
+          {
+            "content": "\n\n#### SCALE DOWN\n\n### Source leads.\n\nMargin and padding create a floating study.\n",
+            "align": "centerLeft",
+            "flex": 2,
+            "margin": {
+              "top": 16.0,
+              "right": 0.0,
+              "bottom": 16.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "bottomRight",
+            "flex": 4,
+            "margin": {
+              "top": 16.0,
+              "right": 8.0,
+              "bottom": 16.0,
+              "left": 8.0
+            },
+            "padding": {
+              "top": 18.0,
+              "right": 18.0,
+              "bottom": 18.0,
+              "left": 18.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "scaleDown",
+            "width": 320,
+            "height": 205,
+            "scale": 0.82
+          }
+        ],
+        "align": "center",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "6D9iENdn",
+    "options": {
+      "title": "Markdown hierarchy",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 07 / RICH MARKDOWN\n\n## The content model has range.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n### Inline hierarchy\n\n**Bold establishes consequence.** *Italic adds a second voice.* ~~Strikethrough retires the old idea.~~ A [link creates a path](https://superdeck.dev), and `inline code` names the mechanism.\n\n> Typography can carry structure before a single custom widget enters the frame.\n",
+            "flex": 5,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n### List rhythm\n\n- **Lead** with the decision.\n- *Qualify* it with context.\n- Use `code` for exact syntax.\n\n1. Establish the frame.\n2. Repeat the cadence.\n3. Break the pattern once.\n",
+            "flex": 4,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 4,
+        "spacing": 42.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### STRONG\n\n**Make the signal unmistakable.**\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n#### EMPHASIS\n\n*Change the tone without changing size.*\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "#### LINK + CODE\n\n[Open the docs](https://superdeck.dev) or use `@section`.",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 22.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "EpRapYGr",
+    "options": {
+      "title": "Table-driven storytelling",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 08 / TABLES\n\n## Dense information can still breathe.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n| Layout signal | Before | After | Movement |\n| :-- | --: | --: | --: |\n| Time to first read | 8.4 s | **2.6 s** | **−69%** |\n| Competing focal points | 7 | **2** | **−71%** |\n| Grid exceptions | 12 | **1** | **−92%** |\n| Review confidence | 54% | **91%** | **+37 pt** |\n",
+            "align": "centerLeft",
+            "flex": 7,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "#### THE READING\n\n## 3.2×\n\nfaster orientation after the hierarchy was simplified.\n\n> A table earns attention when the comparison—not the border—is the story.",
+            "align": "centerLeft",
+            "flex": 3,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 10.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 34.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "J51RgH9X",
+    "options": {
+      "title": "GitHub alerts",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 09 / GITHUB ALERTS\n\n## Guidance with the right degree of urgency.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n> [!NOTE]\n> **Sections own height.** Blocks inside them divide the available width.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n> [!TIP]\n> Reuse a stable spacing rhythm, then change only the value that carries meaning.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 2,
+        "spacing": 18.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n> [!IMPORTANT]\n> Keep the focal relationship obvious at thumbnail size and at full screen.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n> [!WARNING]\n> Paint-only image scale can crop beyond its original fit. Review the final frame.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "> [!CAUTION]\n> Do not hide critical state in color alone. Pair the accent with a clear label.",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 2,
+        "spacing": 24.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "uhvZJU9L",
+    "options": {
+      "title": "Indicators and readiness",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 10 / INDICATORS\n\n## Status should scan before it explains.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n### Release readiness\n\n- [x] Layout contract locked\n- [x] Image crops reviewed\n- [x] Contrast checked at 1280 × 720\n- [ ] Speaker notes approved\n- [ ] Final export published\n\n> **3 / 5 complete.** The remaining work is visible without opening another tool.\n",
+            "flex": 5,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "### Signal board\n\n| Workstream | State | Owner |\n| :-- | :-- | :-- |\n| Layout | **● READY** | Design |\n| Content | **● REVIEW** | Editorial |\n| Capture | **● READY** | QA |\n| Export | **○ QUEUED** | Release |\n\n**READY** means verified. *REVIEW* means a decision remains. `QUEUED` means the path is known.",
+            "flex": 5,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "topLeft",
+        "flex": 4,
+        "spacing": 42.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "tRy64s9H",
+    "options": {
+      "title": "A bounded extension point",
+      "style": "compact"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### 11 / NATIVE FIRST, EXTENSIBLE WHEN NEEDED\n\n## One escape hatch, clearly bounded.\n",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n#### BUILT-IN AUTHORING\n\n### Most of this deck is only three primitives.\n\n- `@section` for vertical rhythm\n- `@block` for Markdown content\n- `@image` for visual media\n\n**No custom content widget is required** for the layouts, tables, alerts, checklists, or image studies.\n",
+            "align": "centerLeft",
+            "flex": 3,
+            "padding": {
+              "top": 0.0,
+              "right": 8.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "name": "image",
+            "align": "center",
+            "flex": 4,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/material_detail.png",
+            "fit": "cover",
+            "scale": 1.08
+          },
+          {
+            "name": "showcaseMetric",
+            "flex": 3,
+            "scrollable": false,
+            "type": "widget",
+            "value": "01",
+            "label": "Registered widget",
+            "detail": "This single metric card is the deliberately custom extension point in the content deck.",
+            "accent": "#59D6C8"
+          }
+        ],
+        "align": "center",
+        "flex": 5,
+        "spacing": 26.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "vZXKbD3F",
+    "options": {
+      "title": "The outcome",
+      "style": "closing",
+      "layout": "fullscreen"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "align": "centerLeft",
+            "flex": 4,
+            "margin": {
+              "top": 26.0,
+              "right": 0.0,
+              "bottom": 26.0,
+              "left": 26.0
+            },
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "layout_showcase/assets/momentum_ribbon.png",
+            "fit": "cover",
+            "scale": 1.24
+          },
+          {
+            "content": "#### 12 / THE OUTCOME\n\n# Built to be seen.\n\n## Every frame can be authored, inspected, and captured.\n\n**Native layouts. Rich Markdown. Controlled imagery.** One bounded widget extension and three original image assets.",
+            "align": "centerLeft",
+            "flex": 5,
+            "padding": {
+              "top": 0.0,
+              "right": 54.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 50.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  }
+]

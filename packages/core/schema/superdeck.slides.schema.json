@@ -77,7 +77,64 @@
                         "type": "string"
                       },
                       "flex": {
+                        "exclusiveMinimum": 0,
                         "type": "integer"
+                      },
+                      "margin": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "bottom": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "left": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "right": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "top": {
+                            "minimum": 0,
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "top",
+                          "right",
+                          "bottom",
+                          "left"
+                        ],
+                        "type": "object"
+                      },
+                      "padding": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "bottom": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "left": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "right": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "top": {
+                            "minimum": 0,
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "top",
+                          "right",
+                          "bottom",
+                          "left"
+                        ],
+                        "type": "object"
                       },
                       "scrollable": {
                         "type": "boolean"
@@ -110,10 +167,67 @@
                         "type": "string"
                       },
                       "flex": {
+                        "exclusiveMinimum": 0,
                         "type": "integer"
+                      },
+                      "margin": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "bottom": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "left": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "right": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "top": {
+                            "minimum": 0,
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "top",
+                          "right",
+                          "bottom",
+                          "left"
+                        ],
+                        "type": "object"
                       },
                       "name": {
                         "type": "string"
+                      },
+                      "padding": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "bottom": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "left": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "right": {
+                            "minimum": 0,
+                            "type": "number"
+                          },
+                          "top": {
+                            "minimum": 0,
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "top",
+                          "right",
+                          "bottom",
+                          "left"
+                        ],
+                        "type": "object"
                       },
                       "scrollable": {
                         "type": "boolean"
@@ -134,7 +248,12 @@
               "type": "array"
             },
             "flex": {
+              "exclusiveMinimum": 0,
               "type": "integer"
+            },
+            "spacing": {
+              "minimum": 0,
+              "type": "number"
             },
             "type": {
               "const": "section",

@@ -34,6 +34,17 @@ DeckOptions(
 )
 ```
 
+#### `blockContainer` and `BlockStyler`
+
+`SlideStyler.blockContainer` accepts a `BlockStyler`, a constrained Mix styler
+for the framework-owned block container. It supports only `padding`, `margin`
+(plus Mix spacing convenience methods), `decoration`, `foregroundDecoration`
+(color, gradient, border, radius, shadow, image helpers), `clipBehavior`,
+context/`BlockVariant` variants, and animation. It deliberately cannot express
+widget modifiers (`.wrap()`), width/height/constraints, transforms, or box
+alignment — block/section `align` owns content placement, and section
+`spacing` plus flex own geometry.
+
 #### Named widget block styles
 
 Use `BlockVariant` in a `SlideStyler` stylesheet to target every named widget
@@ -49,23 +60,35 @@ const webviewBlock = BlockVariant('webview');
 
 final options = DeckOptions(
   baseStyle: SlideStyler(
-    blockContainer: BoxStyler(
+    blockContainer: BlockStyler(
       padding: EdgeInsetsGeometryMix.all(40),
     ).variants([
       VariantStyle(
         webviewBlock,
-        BoxStyler(padding: EdgeInsetsGeometryMix.all(0)),
+        BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
       ),
     ]),
   ),
 );
 ```
 
+Every `VariantStyle` inside a `BlockStyler` must itself contain a
+`BlockStyler`. Passing a broader `BoxStyler` is rejected immediately so
+constraints, transforms, alignment, and widget modifiers cannot re-enter the
+framework-owned block frame through a raw variant list.
+
 `BlockVariant('webview')` matches both `@webview` and `@widget` blocks whose
 `name` is `webview`. Custom shorthand annotations work the same way, so
 `@chart` matches `BlockVariant('chart')`. The matching rule uses normal Mix
 precedence after the base style, and its margin and padding are included when
 SuperDeck calculates the child widget's usable size.
+
+A Markdown block-level `padding` or `margin` value is applied after these Mix
+variants resolve. It replaces only the matching resolved inset (`padding`
+replaces padding, `margin` replaces margin); the other inset, border,
+decoration, animation, and the active selector remain intact. An absent
+(`null`) override inherits the resolved style value; an explicit `0` removes
+that inset.
 
 SuperDeck already ships this exact zero padding and margin rule for `@webview`
 blocks by default, so a webview renders edge-to-edge without any stylesheet. The
@@ -176,7 +199,11 @@ Slides can set `layout: fullscreen` in front matter to suppress the resolved hea
 ### `debug`
 **Type:** `bool` | **Default:** `false`
 
-Enables visual debugging aids.
+Enables section/block boundaries and safe overflow diagnostics for supported
+non-scrollable Markdown content. Overflow paints a red indicator and logs each
+stable slide/block/axis issue once with available and measured sizes. The probe
+preserves wrapping constraints, skips scrolling and static capture, and does
+not rebuild or intrinsically measure arbitrary custom widgets.
 
 ```dart
 DeckOptions(

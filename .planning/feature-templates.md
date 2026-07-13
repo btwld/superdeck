@@ -16,7 +16,7 @@ Templates provide reusable **chrome configurations** (background, header, footer
 - **Rationale:** Keep templates simple, focused, and non-invasive to existing markdown authoring
 
 ### 2. Isolated Style Systems
-- Templates bundle their own style hierarchy: `baseStyle` + `Map<String, SlideStyle> styles`
+- Templates bundle their own style hierarchy: `baseStyle` + `Map<String, SlideStyler> styles`
 - When a template is used, deck-level styles are ignored for that slide
 - Style resolution: `defaultSlideStyle → template.baseStyle → template.styles[slide.style]`
 - **Rationale:** Templates provide complete visual control without style conflicts
@@ -61,11 +61,11 @@ final class SlideTemplate {
 
   /// Base style applied to all slides using this template.
   /// Merged after defaultSlideStyle but before named styles.
-  final SlideStyle? baseStyle;
+  final SlideStyler? baseStyle;
 
   /// Named style variants available within this template.
   /// Keys match the `style:` field in slide frontmatter.
-  final Map<String, SlideStyle> styles;
+  final Map<String, SlideStyler> styles;
 
   const SlideTemplate({
     this.parts = const SlideParts(),
@@ -81,8 +81,8 @@ final class SlideTemplate {
 ```dart
 class DeckOptions {
   // Existing fields
-  final SlideStyle? baseStyle;
-  final Map<String, SlideStyle> styles;
+  final SlideStyler? baseStyle;
+  final Map<String, SlideStyler> styles;
   final Map<String, WidgetBlockBuilder> widgets;
   final SlideParts parts;
   final bool debug;
@@ -149,7 +149,7 @@ class TemplateResolver {
 }
 
 class TemplateResolutionResult {
-  final SlideStyle style;      // Fully merged style
+  final SlideStyler style;      // Fully merged style
   final SlideParts parts;      // Resolved parts (template or deck)
   final bool usingTemplate;    // True if template was applied
 }
@@ -519,7 +519,7 @@ final corporateTemplate = SlideTemplate(
       ),
     ),
   ),
-  baseStyle: SlideStyle(
+  baseStyle: SlideStyler(
     h1: TextStyler().style(
       TextStyleMix(fontSize: 64, color: Colors.blue[900]!),
     ),
@@ -528,12 +528,12 @@ final corporateTemplate = SlideTemplate(
     ),
   ),
   styles: {
-    'title': SlideStyle(
+    'title': SlideStyler(
       h1: TextStyler().style(
         TextStyleMix(fontSize: 96, fontWeight: FontWeight.bold),
       ),
     ),
-    'emphasis': SlideStyle(
+    'emphasis': SlideStyler(
       slideContainer: BoxStyler(
         decoration: BoxDecorationMix(
           border: BorderMix.all(BorderSideMix(color: Colors.blue, width: 8)),
@@ -753,7 +753,7 @@ Available styles: announcement, quote, emphasis
 ```dart
 final extendedTemplate = SlideTemplate(
   inheritsFrom: 'corporate',  // Extend another template
-  baseStyle: SlideStyle(...),  // Override specific styles
+  baseStyle: SlideStyler(...),  // Override specific styles
 );
 ```
 

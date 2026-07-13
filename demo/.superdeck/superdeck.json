@@ -14,6 +14,7 @@
           }
         ],
         "flex": 2,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -41,6 +42,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -66,6 +68,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -98,6 +101,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -117,6 +121,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -144,6 +149,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -169,6 +175,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -188,6 +195,194 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "rOonJMpU",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Predictable Layout Primitives {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n### Edge to edge\n`padding: 0`\n",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n### Uniform inset\n`padding: 16`\n",
+            "flex": 1,
+            "padding": {
+              "top": 16.0,
+              "right": 16.0,
+              "bottom": 16.0,
+              "left": 16.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "### Independent axes\n`48 × 24`",
+            "align": "bottomRight",
+            "flex": 1,
+            "padding": {
+              "top": 24.0,
+              "right": 48.0,
+              "bottom": 24.0,
+              "left": 48.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 32.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "GF2IH5bQ",
+    "options": {
+      "style": "boxed"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Spacing vs Margin vs Padding {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "content": "\n\n### Spacing\n`spacing: 40` is the shared gap between sibling block frames.\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "\n\n### Margin\n`margin: 24` is consumed inside this block's frame, outside its border.\n",
+            "flex": 1,
+            "margin": {
+              "top": 24.0,
+              "right": 24.0,
+              "bottom": 24.0,
+              "left": 24.0
+            },
+            "scrollable": false,
+            "type": "block"
+          },
+          {
+            "content": "### Padding\n`padding` sits between the border and this content.",
+            "flex": 1,
+            "padding": {
+              "top": 24.0,
+              "right": 48.0,
+              "bottom": 24.0,
+              "left": 48.0
+            },
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 40.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "V916Dr35",
+    "options": {},
+    "sections": [
+      {
+        "blocks": [
+          {
+            "content": "## Image Framing Scale {.heading}\n",
+            "flex": 1,
+            "scrollable": false,
+            "type": "block"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "name": "image",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "assets/concepta-icon.png",
+            "fit": "contain",
+            "width": 300,
+            "height": 300,
+            "scale": 1
+          },
+          {
+            "name": "image",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
+            "type": "widget",
+            "src": "assets/concepta-icon.png",
+            "fit": "contain",
+            "width": 300,
+            "height": 300,
+            "scale": 1.25
+          }
+        ],
+        "align": "center",
+        "flex": 1,
+        "spacing": 64.0,
         "type": "section"
       }
     ],
@@ -214,6 +409,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -234,6 +430,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -247,6 +444,7 @@
           }
         ],
         "flex": 2,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -260,6 +458,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -285,6 +484,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -310,6 +510,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -329,6 +530,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -342,6 +544,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -365,6 +568,7 @@
           }
         ],
         "flex": 4,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -403,6 +607,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -441,6 +646,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -479,6 +685,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -517,6 +724,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -542,6 +750,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -561,6 +770,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -586,6 +796,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -607,6 +818,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -632,6 +844,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -663,6 +876,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -688,6 +902,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -720,6 +935,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -745,6 +961,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -767,6 +984,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -790,6 +1008,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -812,6 +1031,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -836,6 +1056,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -861,6 +1082,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],
@@ -881,6 +1103,7 @@
         ],
         "align": "bottomCenter",
         "flex": 2,
+        "spacing": 0.0,
         "type": "section"
       },
       {
@@ -911,6 +1134,7 @@
           }
         ],
         "flex": 1,
+        "spacing": 0.0,
         "type": "section"
       }
     ],

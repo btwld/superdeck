@@ -38,9 +38,9 @@ SuperDeck supports three core block types.
 
 | Block | Purpose | Key properties |
 |---|---|---|
-| `@section` | Container for horizontal layout | `flex`, `align` |
-| `@block` | Render markdown content | `flex`, `align`, `scrollable` |
-| `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `scrollable` + custom args |
+| `@section` | Container for horizontal layout | `flex`, `align`, `spacing` |
+| `@block` | Render markdown content | `flex`, `align`, `margin`, `padding`, `scrollable` |
+| `@widget` | Embed custom Flutter widgets | `name`, `flex`, `align`, `margin`, `padding`, `scrollable` + custom args |
 
 Built-in widgets (`image`, `dartpad`, `webview`, `qrcode`) use the same widget syntax as `@widget`.
 
@@ -60,15 +60,48 @@ for the stylesheet declaration and limitations.
 
 ### `flex`
 
-- Type: number
+- Type: positive integer
 - Default: `1`
 - Meaning: relative size in the parent layout.
 
 ### `align`
 
 - Type: string
-- Default: `centerLeft`
+- Default: inherited section alignment, then `centerLeft`
 - Values: `topLeft`, `topCenter`, `topRight`, `centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, `bottomRight`
+
+### `spacing`
+
+- Type: finite non-negative number
+- Default: `0`
+- Applies to: `@section`
+- Meaning: logical-pixel gaps between sibling blocks only.
+
+### `margin`
+
+- Type: finite non-negative number or object
+- Default: resolved block-container style margin
+- Applies to: `@block` and `@widget`
+- Forms: scalar; `{ horizontal, vertical }`; or `{ top, right, bottom, left }`.
+- Meaning: space consumed inside the block's allocated frame, outside its
+  decoration/border. It reduces only that block's own usable area — unlike CSS
+  margins, it never creates a shared gutter with sibling blocks and never
+  changes flex ratios. Use section `spacing` for gutters.
+
+### `padding`
+
+- Type: finite non-negative number or object
+- Default: resolved block-container style padding
+- Applies to: `@block` and `@widget`
+- Forms: scalar; `{ horizontal, vertical }`; or `{ top, right, bottom, left }`.
+- Meaning: space consumed inside the decorated block container, between the
+  border and the content.
+
+Do not mix symmetric and physical-edge keys. Omitted keys in an object become
+zero. `margin` and `padding` are reserved and are not passed to custom widget
+args. An absent (`null`) override inherits the resolved style value for that
+inset; an explicit `0` removes it. A present override replaces only the
+matching inset after style variants resolve.
 
 ### `scrollable`
 
@@ -87,7 +120,9 @@ Example:
 @image {
   src: assets/value-loop.png
   fit: contain
+  width: 640
   height: 420
+  scale: 1.2
 }
 ````
 
@@ -97,6 +132,11 @@ Arguments:
 - `fit`: `contain`, `cover`, `fill`, `fitWidth`, `fitHeight`, `none`, `scaleDown`.
 - `width`: number.
 - `height`: number.
+- `scale`: finite number greater than zero (default `1`); changes painting, not layout, and clips to the image frame.
+
+`width`, `height`, and `scale` accept integer or decimal numeric values (for
+example, `width: 300` or `scale: 1.2`); both forms validate under the same
+finite-positive rule.
 
 ### `@dartpad`
 

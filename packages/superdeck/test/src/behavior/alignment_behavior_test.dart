@@ -31,7 +31,12 @@ void main() {
             SlideFixtures.withAlignment(contentAlign),
           );
 
-          final alignFinder = find.byType(Align).first;
+          final alignFinder = find
+              .descendant(
+                of: find.byType(BlockWidget),
+                matching: find.byType(Align),
+              )
+              .first;
           final alignWidget = tester.widget<Align>(alignFinder);
           expect(alignWidget.alignment, expected);
         });
@@ -97,7 +102,14 @@ void main() {
           ],
         );
         await SlideTestHarness.pumpSlide(tester, slide);
-        final alignWidget = tester.widget<Align>(find.byType(Align).first);
+        final alignWidget = tester.widget<Align>(
+          find
+              .descendant(
+                of: find.byType(BlockWidget),
+                matching: find.byType(Align),
+              )
+              .first,
+        );
         expect(alignWidget.alignment, Alignment.topLeft);
       });
     });

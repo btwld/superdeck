@@ -42,6 +42,7 @@ Map<String, Object?> canonicalSection(SectionBlock section) {
   return {
     'flex': section.flex,
     'align': section.align?.name,
+    'spacing': section.spacing,
     'blocks': section.blocks.map(canonicalBlock).toList(),
   };
 }
@@ -52,6 +53,8 @@ Map<String, Object?> canonicalBlock(Block block) {
       'type': 'block',
       'flex': block.flex,
       'align': block.align?.name,
+      'margin': block.toMap()['margin'],
+      'padding': block.toMap()['padding'],
       'scrollable': block.scrollable,
       'content': block.content.trim(),
     },
@@ -60,6 +63,8 @@ Map<String, Object?> canonicalBlock(Block block) {
       'name': block.name,
       'flex': block.flex,
       'align': block.align?.name,
+      'margin': block.toMap()['margin'],
+      'padding': block.toMap()['padding'],
       'scrollable': block.scrollable,
       'args': block.args,
     },
@@ -135,6 +140,47 @@ void main() {
       );
     });
 
+    test('section spacing', () {
+      final slides = parseDeck(
+        '@section { spacing: 40 }\n'
+        '@block\n'
+        'Left\n'
+        '@block\n'
+        'Right',
+      );
+
+      expect(slides.single.sections.single.spacing, 40);
+      expectRoundTrip(slides);
+    });
+
+    test('content and widget padding normalize and round-trip', () {
+      final slides = parseDeck(
+        '@section\n'
+        '@block { padding: 16 }\n'
+        'Content\n'
+        '@image {\n'
+        '  src: photo.png\n'
+        '  padding: {horizontal: 24, vertical: 12}\n'
+        '}',
+      );
+
+      final blocks = slides.single.sections.single.blocks;
+      expect(blocks[0].toMap()['padding'], {
+        'top': 16.0,
+        'right': 16.0,
+        'bottom': 16.0,
+        'left': 16.0,
+      });
+      expect((blocks[1] as WidgetBlock).args.containsKey('padding'), isFalse);
+      expect(blocks[1].toMap()['padding'], {
+        'top': 12.0,
+        'right': 24.0,
+        'bottom': 12.0,
+        'left': 24.0,
+      });
+      expectRoundTrip(slides);
+    });
+
     test('multiple content blocks in one section stay separate', () {
       expectRoundTrip(
         parseDeck(
@@ -189,6 +235,150 @@ void main() {
       final once = const SlideSerializer().serialize(slides);
       final twice = const SlideSerializer().serialize(parseDeck(once));
       expect(twice, equals(once));
+    });
+  });
+
+  group('SlideSerializer canonical directive formatting', () {
+    test('normalized physical insets serialize one edge per line', () {
+      final slides = parseDeck(
+        '@block {\n'
+        '  padding: {\n'
+        '    top: 12,\n'
+        '    right: 24,\n'
+        '    bottom: 12,\n'
+        '    left: 24,\n'
+        '  }\n'
+        '  margin: {\n'
+        '    top: 8,\n'
+        '    right: 12,\n'
+        '    bottom: 8,\n'
+        '    left: 12,\n'
+        '  }\n'
+        '}\n\n'
+        'Content',
+      );
+
+      const expected =
+          '---\n'
+          '\n'
+          '@block {\n'
+          '  padding: {\n'
+          '    top: 12,\n'
+          '    right: 24,\n'
+          '    bottom: 12,\n'
+          '    left: 24,\n'
+          '  }\n'
+          '  margin: {\n'
+          '    top: 8,\n'
+          '    right: 12,\n'
+          '    bottom: 8,\n'
+          '    left: 12,\n'
+          '  }\n'
+          '}\n'
+          '\n'
+          'Content\n';
+
+      final once = const SlideSerializer().serialize(slides);
+      expect(once, expected);
+      expect(const SlideSerializer().serialize(parseDeck(once)), expected);
+    });
+
+    test('symmetric authoring normalizes to clockwise physical edges', () {
+      final slides = parseDeck(
+        '@block {\n'
+        '  padding: {\n'
+        '    horizontal: 32,\n'
+        '    vertical: 16,\n'
+        '  }\n'
+        '}\n\n'
+        'Content',
+      );
+
+      expect(
+        const SlideSerializer().serialize(slides),
+        contains(
+          '@block {\n'
+          '  padding: {\n'
+          '    top: 16,\n'
+          '    right: 32,\n'
+          '    bottom: 16,\n'
+          '    left: 32,\n'
+          '  }\n'
+          '}',
+        ),
+      );
+    });
+
+    test('scalar margin shorthand normalizes and round-trips', () {
+      final slides = parseDeck('@block { margin: 8 }\n\nContent');
+
+      final block = slides.single.sections.single.blocks.single;
+      expect(block.toMap()['margin'], {
+        'top': 8.0,
+        'right': 8.0,
+        'bottom': 8.0,
+        'left': 8.0,
+      });
+      expectRoundTrip(slides);
+    });
+
+    test('single scalar option stays inline', () {
+      final slides = parseDeck('@block { flex: 2 }\n\nContent');
+
+      expect(
+        const SlideSerializer().serialize(slides),
+        contains('@block { flex: 2 }'),
+      );
+    });
+
+    test('nested widget args, lists, and quoted braces serialize exactly', () {
+      final slides = parseDeck(
+        '@chart {\n'
+        '  title: "Sales: {Q1}, Q2"\n'
+        '  data: {\n'
+        '    series: {\n'
+        '      alpha: 1,\n'
+        '      beta: 2.5,\n'
+        '    },\n'
+        '    labels: [x, y],\n'
+        '  }\n'
+        '}',
+      );
+
+      const expected =
+          '---\n'
+          '\n'
+          '@chart {\n'
+          '  title: "Sales: {Q1}, Q2"\n'
+          '  data: {\n'
+          '    series: {\n'
+          '      alpha: 1,\n'
+          '      beta: 2.5,\n'
+          '    },\n'
+          '    labels: [x, y],\n'
+          '  }\n'
+          '}\n';
+
+      final once = const SlideSerializer().serialize(slides);
+      expect(once, expected);
+      expect(const SlideSerializer().serialize(parseDeck(once)), expected);
+    });
+
+    test('multiline flow maps without commas are invalid YAML', () {
+      // Inside the nested braces the value is a YAML flow mapping; entries on
+      // separate lines must be comma-separated or the document fails to parse.
+      expect(
+        () => parseDeck(
+          '@block {\n'
+          '  padding: {\n'
+          '    top: 12\n'
+          '    right: 24\n'
+          '  }\n'
+          '}\n\n'
+          'Content',
+        ),
+        throwsA(isA<DeckFormatException>()),
+      );
     });
   });
 

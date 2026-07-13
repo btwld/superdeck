@@ -145,7 +145,7 @@ final customStyle = SlideStyler(
       ),
     ),
   ),
-  blockContainer: BoxStyler(
+  blockContainer: BlockStyler(
     decoration: BoxDecorationMix(
       borderRadius: BorderRadiusMix.all(Radius.circular(16)),
     ),
@@ -154,6 +154,13 @@ final customStyle = SlideStyler(
 ```
 
 Import `package:flutter/material.dart` and `package:mix/mix.dart` to access the builders above. Use `customStyle` as `DeckOptions.baseStyle` or as a named style variant.
+
+`blockContainer` accepts `BlockStyler`, a constrained Mix styler that supports
+only `padding`, `margin`, `decoration`, `foregroundDecoration`, `clipBehavior`,
+variants, and animation — it does not support widget modifiers, size
+constraints, transforms, or box alignment. See the
+[DeckOptions reference](../reference/deck-options#named-widget-block-styles)
+for the full styling API.
 
 **Styleable elements**
 

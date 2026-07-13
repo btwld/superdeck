@@ -1,6 +1,9 @@
 part of 'deck_generator_service.dart';
 
-List<Map<String, dynamic>> _sanitizeSlides(List<Map<String, dynamic>> slides) {
+@visibleForTesting
+List<Map<String, dynamic>> sanitizeGeneratedSlides(
+  List<Map<String, dynamic>> slides,
+) {
   return slides.map(_sanitizeSlide).nonNulls.toList();
 }
 

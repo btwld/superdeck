@@ -7,13 +7,8 @@ import '../../styling/components/markdown_codeblock.dart';
 class TextElement {
   final String text;
   final TextSpec spec;
-  final Size size; // ignore: unused-code
 
-  const TextElement({
-    required this.text,
-    required this.spec,
-    required this.size,
-  });
+  const TextElement({required this.text, required this.spec});
 }
 
 /// Immutable data holder for code elements in Hero animations
@@ -54,7 +49,7 @@ class ImageElement {
 /// Usage in builders:
 /// ```dart
 /// return HeroElement(
-///   data: TextElement(text: content, spec: spec, size: size),
+///   data: TextElement(text: content, spec: spec),
 ///   child: widget,
 /// );
 /// ```

@@ -39,7 +39,7 @@ SlideTemplate corporateTemplate() {
             fontWeight: FontWeight.w900,
           ),
         ),
-        blockContainer: BoxStyler(
+        blockContainer: BlockStyler(
           decoration: BoxDecorationMix(
             gradient: LinearGradientMix(
               begin: Alignment.topLeft,
