@@ -11,7 +11,7 @@ import 'app_settings_store_base.dart';
 ///
 /// Deliberately dependency-free (no `shared_preferences`) — one file, one key.
 class NativeAppSettingsStore extends AppSettingsStore {
-  NativeAppSettingsStore();
+  const NativeAppSettingsStore();
 
   static const _settingsFolder = 'superdeck_playground';
   static const _settingsFileName = 'settings.json';
@@ -20,9 +20,7 @@ class NativeAppSettingsStore extends AppSettingsStore {
   Future<File> _settingsFile() async {
     final support = await getApplicationSupportDirectory();
     final dir = Directory(p.join(support.path, _settingsFolder));
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
+    await dir.create(recursive: true);
     return File(p.join(dir.path, _settingsFileName));
   }
 

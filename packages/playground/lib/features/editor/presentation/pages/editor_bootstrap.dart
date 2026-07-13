@@ -27,7 +27,7 @@ class EditorBootstrap extends StatefulWidget {
 
 class _EditorBootstrapState extends State<EditorBootstrap> {
   late final DeckFileController _fileController;
-  late Future<void> _ready;
+  late final Future<void> _ready;
 
   @override
   void initState() {

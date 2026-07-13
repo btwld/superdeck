@@ -50,10 +50,10 @@ class AppProviders extends StatelessWidget {
         ),
         Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
         Provider<DeckFileStore>(
-          create: (_) => deckFileStore ?? NativeDeckFileStore(),
+          create: (_) => deckFileStore ?? const NativeDeckFileStore(),
         ),
         Provider<AppSettingsStore>(
-          create: (_) => appSettingsStore ?? NativeAppSettingsStore(),
+          create: (_) => appSettingsStore ?? const NativeAppSettingsStore(),
         ),
         Provider<DeckController>(
           lazy: false,

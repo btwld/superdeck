@@ -76,6 +76,9 @@ class DeckFileController extends ChangeNotifier {
 
   Timer? _debounce;
   StreamSubscription<void>? _watchSub;
+  Future<void> _saveQueue = Future<void>.value();
+  ({int epoch, String path, String content})? _activeWrite;
+  int _bindingEpoch = 0;
   bool _disposed = false;
 
   /// Absolute path of the bound file, or `null` before [initialize].
@@ -108,19 +111,23 @@ class DeckFileController extends ChangeNotifier {
   /// deck in `~/Documents/SuperDeck/` (created on first run).
   Future<void> initialize() async {
     final remembered = await _settings.lastOpenedDeckPath();
+    if (_disposed) return;
     if (remembered != null && await _store.exists(remembered)) {
+      if (_disposed) return;
       try {
         final content = await _store.read(remembered);
+        if (_disposed) return;
         _bindState(remembered, content);
-        await _rememberAndWatch(remembered);
+        await _rememberAndWatch(remembered, _bindingEpoch);
         return;
       } on DeckFileReadException {
         // Fall through to the default deck.
       }
     }
     final (path, content) = await _ensureDefaultDeck();
+    if (_disposed) return;
     _bindState(path, content);
-    await _rememberAndWatch(path);
+    await _rememberAndWatch(path, _bindingEpoch);
   }
 
   /// Creates `<name>.md` in the decks folder, seeds it with the starter
@@ -129,6 +136,9 @@ class DeckFileController extends ChangeNotifier {
   /// Throws [DeckNameCollisionException] on a name clash so the dialog can
   /// re-prompt.
   Future<void> newDeck(String name) async {
+    if (!await _flushPendingSave()) {
+      throw StateError('Could not save the current deck.');
+    }
     final path = await _store.createDeck(name, content: kStarterDeckMarkdown);
     await _rebind(path, kStarterDeckMarkdown);
   }
@@ -138,10 +148,19 @@ class DeckFileController extends ChangeNotifier {
   /// A cancelled picker is a no-op. A read failure surfaces a warning and keeps
   /// the current file bound.
   Future<void> openDeck() async {
-    final path = await _store.pickDeckFile();
-    if (path == null) return;
+    if (!await _flushPendingSave()) return;
+    String? path;
+    try {
+      path = await _store.pickDeckFile();
+    } catch (_) {
+      _warning = 'Could not open a deck. Keeping the current deck.';
+      _notify();
+      return;
+    }
+    if (path == null || _disposed) return;
     try {
       final content = await _store.read(path);
+      if (_disposed) return;
       await _rebind(path, content);
     } on DeckFileReadException {
       _warning =
@@ -162,45 +181,75 @@ class DeckFileController extends ChangeNotifier {
     // content within the debounce window, a stale save must not still fire.
     _debounce?.cancel();
     if (markdown == _lastSyncedContent) return;
-    _debounce = Timer(_autoSaveDebounce, () => _flushSave(markdown));
+    final path = _boundPath!;
+    final epoch = _bindingEpoch;
+    _debounce = Timer(
+      _autoSaveDebounce,
+      () => unawaited(_queueSave(path, epoch, markdown)),
+    );
   }
 
   @override
   void dispose() {
     _disposed = true;
+    _bindingEpoch++;
     _debounce?.cancel();
     unawaited(_watchSub?.cancel());
     super.dispose();
   }
 
-  Future<void> _flushSave(String markdown) async {
+  Future<bool> _flushPendingSave() async {
+    _debounce?.cancel();
+    await _saveQueue;
+
     final path = _boundPath;
-    if (_status != DeckBindingStatus.bound || path == null) return;
+    if (_disposed || _status != DeckBindingStatus.bound || path == null) {
+      return !_disposed;
+    }
+    final markdown = _content;
+    if (markdown == _lastSyncedContent) return true;
+    return _queueSave(path, _bindingEpoch, markdown);
+  }
+
+  Future<bool> _queueSave(String path, int epoch, String markdown) {
+    final operation = _saveQueue.then((_) => _write(path, epoch, markdown));
+    _saveQueue = operation.then<void>((_) {});
+    return operation;
+  }
+
+  Future<bool> _write(String path, int epoch, String markdown) async {
+    if (!_isCurrentBinding(path, epoch)) return false;
+
+    final activeWrite = (epoch: epoch, path: path, content: markdown);
+    _activeWrite = activeWrite;
     try {
       await _store.write(path, markdown);
-      // Only mark as synced once the write actually succeeds; otherwise the
-      // marker would claim content that never reached disk, and the next
-      // watcher event (reading the real, older disk content) would be treated
-      // as an external change and clobber the editor. The write() future
-      // resolves before the watcher's own change event is delivered, so this
-      // still filters out the self-write.
+      if (!_isCurrentBinding(path, epoch)) return false;
       _lastSyncedContent = markdown;
+      return true;
     } catch (_) {
-      // Best-effort auto-save; a subsequent edit will retry. If the file is
-      // gone the watcher will unbind and warn.
+      if (_isCurrentBinding(path, epoch)) {
+        _warning =
+            'Could not save "$fileName". Your latest edits are in memory.';
+        _notify();
+      }
+      return false;
+    } finally {
+      if (_activeWrite == activeWrite) _activeWrite = null;
     }
   }
 
   Future<void> _rebind(String path, String content) async {
     _bindState(path, content);
     _editor?.replaceMarkdown(content);
-    await _rememberAndWatch(path);
+    await _rememberAndWatch(path, _bindingEpoch);
   }
 
   /// Updates in-memory binding state (path, content, synced marker, status)
   /// without any I/O or editor/side effects.
   void _bindState(String path, String content) {
     _debounce?.cancel();
+    _bindingEpoch++;
     _boundPath = path;
     _content = content;
     _lastSyncedContent = content;
@@ -208,52 +257,72 @@ class DeckFileController extends ChangeNotifier {
     _warning = null;
   }
 
-  Future<void> _rememberAndWatch(String path) async {
-    await _settings.setLastOpenedDeckPath(path);
-    _startWatching(path);
+  Future<void> _rememberAndWatch(String path, int epoch) async {
+    try {
+      await _settings.setLastOpenedDeckPath(path);
+    } catch (_) {
+      // Remembering the path is a launch convenience; it must not break the
+      // active binding when the app-support settings file is unavailable.
+    }
+    if (!_isCurrentBinding(path, epoch)) return;
+    _startWatching(path, epoch);
     _notify();
   }
 
-  void _startWatching(String path) {
+  void _startWatching(String path, int epoch) {
     unawaited(_watchSub?.cancel());
     _watchSub = _store
         .watch(path)
-        .listen((_) => _onFileChanged(), onError: (_) {});
+        .listen((_) => _onFileChanged(path, epoch), onError: (_) {});
   }
 
-  Future<void> _onFileChanged() async {
-    final path = _boundPath;
-    if (path == null || _status != DeckBindingStatus.bound) return;
-
+  Future<void> _onFileChanged(String path, int epoch) async {
+    if (!_isCurrentBinding(path, epoch)) return;
     if (!await _store.exists(path)) {
-      _handleFileLost();
+      _handleFileLost(path, epoch);
       return;
     }
+    if (!_isCurrentBinding(path, epoch)) return;
 
     String diskContent;
     try {
       diskContent = await _store.read(path);
     } on DeckFileReadException {
-      _handleFileLost();
+      _handleFileLost(path, epoch);
+      return;
+    }
+    if (!_isCurrentBinding(path, epoch)) return;
+
+    // Self-write filter: our own auto-save produced this content.
+    final activeWrite = _activeWrite;
+    final hasActiveWrite =
+        activeWrite != null &&
+        activeWrite.epoch == epoch &&
+        activeWrite.path == path;
+    if (diskContent == _lastSyncedContent ||
+        (hasActiveWrite && activeWrite.content == diskContent)) {
       return;
     }
 
-    // Self-write filter: our own auto-save produced this content.
-    if (diskContent == _lastSyncedContent) return;
-
-    // External change → external wins → reload into the editor. Cancel any
-    // pending auto-save so a stale in-flight edit can't clobber the new content.
+    // External change → external wins → reload into the editor. Cancel a
+    // pending save, and if a write is already in flight, queue the external
+    // content behind it so that older write cannot become the final disk value.
     _debounce?.cancel();
     _content = diskContent;
     _lastSyncedContent = diskContent;
     _editor?.replaceMarkdown(diskContent);
+    if (hasActiveWrite) {
+      unawaited(_queueSave(path, epoch, diskContent));
+    }
     _notify();
   }
 
-  void _handleFileLost() {
+  void _handleFileLost(String path, int epoch) {
+    if (!_isCurrentBinding(path, epoch)) return;
     unawaited(_watchSub?.cancel());
     _watchSub = null;
     _debounce?.cancel();
+    _bindingEpoch++;
     _status = DeckBindingStatus.unbound;
     _warning =
         'The file "$fileName" is no longer on disk. '
@@ -265,14 +334,17 @@ class DeckFileController extends ChangeNotifier {
     final dir = await _store.decksDirectoryPath();
     final path = p.join(dir, _defaultDeckFileName);
     if (await _store.exists(path)) {
-      try {
-        return (path, await _store.read(path));
-      } on DeckFileReadException {
-        // Recreate below if it can't be read.
-      }
+      return (path, await _store.read(path));
     }
     await _store.write(path, kStarterDeckMarkdown);
     return (path, kStarterDeckMarkdown);
+  }
+
+  bool _isCurrentBinding(String path, int epoch) {
+    return !_disposed &&
+        _status == DeckBindingStatus.bound &&
+        _boundPath == path &&
+        _bindingEpoch == epoch;
   }
 
   void _notify() {

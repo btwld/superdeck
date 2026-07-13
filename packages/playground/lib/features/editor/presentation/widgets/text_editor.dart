@@ -20,7 +20,7 @@ class TextEditor extends StatelessWidget {
     final editor = context.read<TextEditorController>().editor;
 
     return Padding(
-      padding: const .symmetric(vertical: 16.0, horizontal: 4),
+      padding: const .symmetric(vertical: 16, horizontal: 4),
       child: HeroCard(
         child: Column(
           children: [

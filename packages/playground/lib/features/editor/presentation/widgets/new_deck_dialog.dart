@@ -33,7 +33,6 @@ class _NewDeckDialog extends StatefulWidget {
 
 class _NewDeckDialogState extends State<_NewDeckDialog> {
   late final TextEditingController _textController;
-  late final FocusNode _focusNode;
   String? _error;
   bool _creating = false;
 
@@ -41,13 +40,11 @@ class _NewDeckDialogState extends State<_NewDeckDialog> {
   void initState() {
     super.initState();
     _textController = TextEditingController();
-    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _textController.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -115,7 +112,6 @@ class _NewDeckDialogState extends State<_NewDeckDialog> {
               fullWidth: true,
               autofocus: true,
               controller: _textController,
-              focusNode: _focusNode,
               enabled: !_creating,
               error: _error != null,
               hintText: 'my-presentation',

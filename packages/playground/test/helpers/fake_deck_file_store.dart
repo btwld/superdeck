@@ -9,8 +9,15 @@ import 'package:playground/core/data/data_sources/deck_file_store.dart';
 class FakeDeckFileStore extends DeckFileStore {
   final Map<String, String> files = {};
   final Map<String, StreamController<void>> _watchers = {};
+  final Map<String, Completer<void>> readGates = {};
+  final Map<String, Completer<void>> readStarted = {};
+  final Map<String, Completer<void>> writeGates = {};
+  final Map<String, Completer<void>> writeStarted = {};
+  final Set<String> failReads = {};
   String decksDir = '/decks';
   String? pickResult;
+  Object? pickError;
+  int watchCount = 0;
   int writeCount = 0;
 
   /// When true, [write] throws without touching [files] — simulates a disk
@@ -25,6 +32,11 @@ class FakeDeckFileStore extends DeckFileStore {
 
   @override
   Future<String> read(String path) async {
+    readStarted.remove(path)?.complete();
+    await readGates[path]?.future;
+    if (failReads.contains(path)) {
+      throw DeckFileReadException(path, 'read failed');
+    }
     final content = files[path];
     if (content == null) throw DeckFileReadException(path, 'missing');
     return content;
@@ -32,6 +44,8 @@ class FakeDeckFileStore extends DeckFileStore {
 
   @override
   Future<void> write(String path, String content) async {
+    writeStarted.remove(path)?.complete();
+    await writeGates[path]?.future;
     if (failWrites) throw Exception('write failed');
     writeCount++;
     files[path] = content;
@@ -49,12 +63,19 @@ class FakeDeckFileStore extends DeckFileStore {
   }
 
   @override
-  Future<String?> pickDeckFile() async => pickResult;
+  Future<String?> pickDeckFile() async {
+    final error = pickError;
+    if (error != null) throw error;
+    return pickResult;
+  }
 
   @override
-  Stream<void> watch(String path) => _watchers
-      .putIfAbsent(path, () => StreamController<void>.broadcast())
-      .stream;
+  Stream<void> watch(String path) {
+    watchCount++;
+    return _watchers
+        .putIfAbsent(path, () => StreamController<void>.broadcast())
+        .stream;
+  }
 
   /// Simulates an external tool rewriting [path], then fires the watcher.
   Future<void> externalWrite(String path, String content) async {
@@ -76,10 +97,20 @@ class FakeDeckFileStore extends DeckFileStore {
 
 class FakeAppSettingsStore extends AppSettingsStore {
   String? path;
+  Completer<void>? readGate;
+  Completer<void>? readStarted;
+  bool failWrites = false;
 
   @override
-  Future<String?> lastOpenedDeckPath() async => path;
+  Future<String?> lastOpenedDeckPath() async {
+    readStarted?.complete();
+    await readGate?.future;
+    return path;
+  }
 
   @override
-  Future<void> setLastOpenedDeckPath(String value) async => path = value;
+  Future<void> setLastOpenedDeckPath(String value) async {
+    if (failWrites) throw Exception('settings write failed');
+    path = value;
+  }
 }

@@ -47,46 +47,39 @@ class EditorPage extends StatelessWidget {
                 // The filename bar sits on top of the editor pane only, not
                 // spanning the sidebars.
                 Expanded(
-                  child: Column(
+                  child: Stack(
                     children: [
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            TextEditor(),
-                            Align(
-                              alignment: .bottomCenter,
-                              child: Padding(
-                                padding: const .only(bottom: 24),
-                                child: EditorControls(
-                                  showPreviewSidebar: store.showPreviewSidebar,
-                                  showCustomizationSidebar:
-                                      store.showCustomizationSidebar,
-                                  onTogglePreviewSidebar:
-                                      store.togglePreviewSidebar,
-                                  onToggleCustomizationSidebar:
-                                      store.toggleCustomizationSidebar,
-                                ),
-                              ),
-                            ),
-                            if (store.showPreviewSidebar)
-                              Align(
-                                alignment: .centerLeft,
-                                child: _SidebarResizeHandle(
-                                  onDrag: (delta) =>
-                                      store.previewSidebarWidth += delta,
-                                ),
-                              ),
-                            if (store.showCustomizationSidebar)
-                              Align(
-                                alignment: .centerRight,
-                                child: _SidebarResizeHandle(
-                                  onDrag: (delta) =>
-                                      store.customizationSidebarWidth -= delta,
-                                ),
-                              ),
-                          ],
+                      const TextEditor(),
+                      Align(
+                        alignment: .bottomCenter,
+                        child: Padding(
+                          padding: const .only(bottom: 24),
+                          child: EditorControls(
+                            showPreviewSidebar: store.showPreviewSidebar,
+                            showCustomizationSidebar:
+                                store.showCustomizationSidebar,
+                            onTogglePreviewSidebar: store.togglePreviewSidebar,
+                            onToggleCustomizationSidebar:
+                                store.toggleCustomizationSidebar,
+                          ),
                         ),
                       ),
+                      if (store.showPreviewSidebar)
+                        Align(
+                          alignment: .centerLeft,
+                          child: _SidebarResizeHandle(
+                            onDrag: (delta) =>
+                                store.previewSidebarWidth += delta,
+                          ),
+                        ),
+                      if (store.showCustomizationSidebar)
+                        Align(
+                          alignment: .centerRight,
+                          child: _SidebarResizeHandle(
+                            onDrag: (delta) =>
+                                store.customizationSidebarWidth -= delta,
+                          ),
+                        ),
                     ],
                   ),
                 ),

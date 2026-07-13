@@ -7,7 +7,7 @@ import 'deck_file_store_base.dart';
 /// `dart:io`. An IndexedDB implementation could replace it later (see the
 /// `AssetCacheStore` web impl for the pattern).
 class NativeDeckFileStore extends DeckFileStore {
-  NativeDeckFileStore();
+  const NativeDeckFileStore();
 
   Never _unsupported() => throw UnsupportedError(
     'Deck filesystem persistence is only available on desktop platforms.',

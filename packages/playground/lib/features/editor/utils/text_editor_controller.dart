@@ -7,13 +7,6 @@ import '../domain/stores/editor_store.dart';
 import 'edit_reaction.dart';
 import 'slide_navigation.dart';
 
-/// The markdown shown when the editor first opens.
-const starterMarkdown = '''---\n
-# Title
-## Subtitle\n
----
-''';
-
 /// Owns the super_editor [Editor] — the single source of truth for the editor's
 /// text — and all super_editor coupling for the editor feature.
 ///
@@ -30,7 +23,7 @@ class TextEditorController implements MarkdownEditor {
   TextEditorController({
     required EditorStore editorStore,
     required MemoryDeckLoader deckLoader,
-    String initialText = starterMarkdown,
+    required String initialText,
     ValueChanged<String>? onMarkdownChanged,
   }) : _editorStore = editorStore,
        _deckLoader = deckLoader,

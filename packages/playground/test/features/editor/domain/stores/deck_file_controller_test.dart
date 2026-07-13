@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:playground/core/data/data_sources/deck_file_store.dart';
@@ -10,15 +12,17 @@ import '../../../../helpers/fake_deck_file_store.dart';
 /// real `TextEditorController` forwards document changes to `handleEditorChange`
 /// — so the loop-prevention paths are exercised.
 class FakeMarkdownEditor implements MarkdownEditor {
-  FakeMarkdownEditor(this.controller);
+  FakeMarkdownEditor(this.controller, {this.onReplace});
 
   final DeckFileController controller;
+  final void Function()? onReplace;
   final List<String> replaced = [];
 
   @override
   void replaceMarkdown(String markdown) {
     replaced.add(markdown);
     controller.handleEditorChange(markdown);
+    onReplace?.call();
   }
 }
 
@@ -79,6 +83,33 @@ void main() {
 
       expect(controller.boundPath, p.join('/decks', 'untitled.md'));
     });
+
+    test('binds and watches when remembering the path fails', () async {
+      final store = FakeDeckFileStore();
+      final settings = FakeAppSettingsStore()..failWrites = true;
+      final controller = newController(store, settings);
+
+      await controller.initialize();
+
+      expect(controller.boundPath, p.join('/decks', 'untitled.md'));
+      expect(controller.isBound, isTrue);
+      expect(store.watchCount, 1);
+    });
+
+    test('does not overwrite an unreadable default deck', () async {
+      final store = FakeDeckFileStore();
+      final path = p.join('/decks', 'untitled.md');
+      store.files[path] = '# Existing work';
+      store.failReads.add(path);
+      final controller = newController(store, FakeAppSettingsStore());
+
+      await expectLater(
+        controller.initialize(),
+        throwsA(isA<DeckFileReadException>()),
+      );
+
+      expect(store.files[path], '# Existing work');
+    });
   });
 
   group('auto-save', () {
@@ -109,24 +140,34 @@ void main() {
       expect(store.writeCount, writesBefore);
     });
 
-    test('reverting to synced content mid-debounce cancels the stale save',
-        () async {
-      final store = FakeDeckFileStore();
-      final controller = newController(store, FakeAppSettingsStore());
-      await controller.initialize();
-      final path = controller.boundPath!;
-      final synced = controller.content;
-      final writesBefore = store.writeCount;
+    test(
+      'reverting to synced content mid-debounce cancels the stale save',
+      () async {
+        final store = FakeDeckFileStore();
+        final controller = newController(store, FakeAppSettingsStore());
+        await controller.initialize();
+        final path = controller.boundPath!;
+        final synced = controller.content;
+        final writesBefore = store.writeCount;
 
-      // Type an edit, then revert back to the synced content before the
-      // debounce fires. The pending save of the intermediate edit must not run.
-      controller.handleEditorChange('# Intermediate');
-      controller.handleEditorChange(synced);
-      await afterDebounce();
+        // Type an edit, then revert back to the synced content before the
+        // debounce fires. The pending save of the intermediate edit must not run.
+        controller.handleEditorChange('# Intermediate');
+        controller.handleEditorChange(synced);
+        await afterDebounce();
 
-      expect(store.files[path], synced, reason: 'disk keeps the synced content');
-      expect(store.writeCount, writesBefore, reason: 'stale save was cancelled');
-    });
+        expect(
+          store.files[path],
+          synced,
+          reason: 'disk keeps the synced content',
+        );
+        expect(
+          store.writeCount,
+          writesBefore,
+          reason: 'stale save was cancelled',
+        );
+      },
+    );
 
     test('a failed write does not mark content as synced', () async {
       final store = FakeDeckFileStore();
@@ -149,6 +190,50 @@ void main() {
 
       expect(editor.replaced, ['# External']);
       expect(controller.content, '# External');
+    });
+
+    test('switching decks flushes a pending debounced edit', () async {
+      final store = FakeDeckFileStore();
+      store.files['/elsewhere/other.md'] = '# Other';
+      store.pickResult = '/elsewhere/other.md';
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final originalPath = controller.boundPath!;
+
+      controller.handleEditorChange('# Last-second edit');
+      await controller.openDeck();
+
+      expect(store.files[originalPath], '# Last-second edit');
+      expect(controller.content, '# Other');
+    });
+
+    test('an old save completion cannot dirty the new binding', () async {
+      final store = FakeDeckFileStore();
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final originalPath = controller.boundPath!;
+      final writeStarted = Completer<void>();
+      final allowWrite = Completer<void>();
+      store.writeStarted[originalPath] = writeStarted;
+      store.writeGates[originalPath] = allowWrite;
+
+      controller.handleEditorChange('# Slow save');
+      await writeStarted.future;
+
+      store.files['/elsewhere/other.md'] = '# Other';
+      store.pickResult = '/elsewhere/other.md';
+      final open = controller.openDeck();
+      await Future<void>.delayed(Duration.zero);
+      allowWrite.complete();
+      await open;
+      await afterDebounce();
+
+      final writesBeforeEcho = store.writeCount;
+      controller.handleEditorChange('# Other');
+      await afterDebounce();
+
+      expect(store.writeCount, writesBeforeEcho);
+      expect(controller.content, '# Other');
     });
   });
 
@@ -193,6 +278,39 @@ void main() {
       },
     );
 
+    test('external edit wins over an in-flight auto-save', () async {
+      final store = FakeDeckFileStore();
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final externalApplied = Completer<void>();
+      final editor = FakeMarkdownEditor(
+        controller,
+        onReplace: externalApplied.complete,
+      );
+      controller.attachEditor(editor);
+      final path = controller.boundPath!;
+      final writeStarted = Completer<void>();
+      final allowWrite = Completer<void>();
+      store.writeStarted[path] = writeStarted;
+      store.writeGates[path] = allowWrite;
+
+      controller.handleEditorChange('# Local save');
+      await writeStarted.future;
+      await store.externalWrite(path, '# External wins');
+      await externalApplied.future;
+      allowWrite.complete();
+      await afterDebounce();
+
+      expect(controller.content, '# External wins');
+      expect(
+        store.writeCount,
+        3,
+        reason: 'external content is restored to disk',
+      );
+      expect(store.files[path], '# External wins');
+      expect(editor.replaced, ['# External wins']);
+    });
+
     test('deletion unbinds, warns, and keeps in-memory content', () async {
       final store = FakeDeckFileStore();
       final controller = newController(store, FakeAppSettingsStore());
@@ -215,6 +333,55 @@ void main() {
       expect(store.writeCount, writesBefore);
       expect(store.files.containsKey(path), isFalse);
     });
+
+    test('a stale watcher read cannot replace a newly opened deck', () async {
+      final store = FakeDeckFileStore();
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final editor = FakeMarkdownEditor(controller);
+      controller.attachEditor(editor);
+      final originalPath = controller.boundPath!;
+      final readStarted = Completer<void>();
+      final allowRead = Completer<void>();
+      store.readStarted[originalPath] = readStarted;
+      store.readGates[originalPath] = allowRead;
+
+      final externalChange = store.externalWrite(originalPath, '# Stale read');
+      await readStarted.future;
+
+      store.files['/elsewhere/other.md'] = '# Other';
+      store.pickResult = '/elsewhere/other.md';
+      await controller.openDeck();
+      allowRead.complete();
+      await externalChange;
+      await afterDebounce();
+
+      expect(controller.boundPath, '/elsewhere/other.md');
+      expect(controller.content, '# Other');
+      expect(editor.replaced, ['# Other']);
+    });
+  });
+
+  test('disposing during initialization does not start a watcher', () async {
+    final store = FakeDeckFileStore();
+    final settings = FakeAppSettingsStore();
+    final readStarted = Completer<void>();
+    final allowRead = Completer<void>();
+    settings.readStarted = readStarted;
+    settings.readGate = allowRead;
+    final controller = DeckFileController(
+      store: store,
+      settings: settings,
+      autoSaveDebounce: debounce,
+    );
+
+    final initialize = controller.initialize();
+    await readStarted.future;
+    controller.dispose();
+    allowRead.complete();
+    await initialize;
+
+    expect(store.watchCount, 0);
   });
 
   group('newDeck', () {
@@ -279,6 +446,19 @@ void main() {
     test('read failure warns and keeps the current file', () async {
       final store = FakeDeckFileStore();
       store.pickResult = '/elsewhere/missing.md'; // not in files → read throws
+      final controller = newController(store, FakeAppSettingsStore());
+      await controller.initialize();
+      final original = controller.boundPath;
+
+      await controller.openDeck();
+
+      expect(controller.boundPath, original);
+      expect(controller.warning, isNotNull);
+      expect(controller.isBound, isTrue);
+    });
+
+    test('picker failure warns and keeps the current file', () async {
+      final store = FakeDeckFileStore()..pickError = Exception('picker failed');
       final controller = newController(store, FakeAppSettingsStore());
       await controller.initialize();
       final original = controller.boundPath;

@@ -12,7 +12,7 @@ import 'deck_file_store_base.dart';
 /// Decks live in `~/Documents/SuperDeck/` (via `path_provider`); `pickDeckFile`
 /// can still reach any path on disk.
 class NativeDeckFileStore extends DeckFileStore {
-  NativeDeckFileStore();
+  const NativeDeckFileStore();
 
   /// Fixed decks-folder name under the documents directory.
   static const _decksFolderName = 'SuperDeck';
@@ -21,9 +21,7 @@ class NativeDeckFileStore extends DeckFileStore {
   Future<String> decksDirectoryPath() async {
     final documents = await getApplicationDocumentsDirectory();
     final dir = Directory(p.join(documents.path, _decksFolderName));
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
+    await dir.create(recursive: true);
     return dir.path;
   }
 
@@ -85,7 +83,7 @@ class NativeDeckFileStore extends DeckFileStore {
 
   /// Normalises a user-typed deck name into a safe bare `<name>.md` filename:
   /// strips any directory components and ensures the `.md` extension.
-  String _toMarkdownFileName(String name) {
+  static String _toMarkdownFileName(String name) {
     final bare = p.basename(name.trim());
     if (bare.isEmpty) {
       throw ArgumentError.value(name, 'name', 'Deck name must not be empty');
