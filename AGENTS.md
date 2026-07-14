@@ -70,6 +70,21 @@ fvm dart run melos run test:coverage    # Run tests with coverage
 fvm flutter test <path>    # Run specific test file
 ```
 
+### Running Apps & Live Debugging
+```bash
+cd packages/playground
+fvm flutter run -d macos -t lib/main.dart
+```
+
+When running an app to reproduce or diagnose a UI/runtime issue, launch it with
+`fvm flutter run` and keep that process attached for the entire reproduction.
+Continue reading its output after each UI interaction so Dart exceptions,
+Flutter framework errors, plugin failures, and native macOS logs are captured as
+they happen. Do not use `open <path>.app` as the primary debugging launch: it
+detaches the app from the observable Flutter process and hides the logs needed
+to identify the root cause. Opening a compiled `.app` directly is appropriate
+only for a distribution smoke test where live diagnostics are not required.
+
 ### Cleaning
 ```bash
 fvm dart run melos run clean            # Clean all Flutter build artifacts
