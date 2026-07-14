@@ -66,7 +66,7 @@ Recommended distribution for a 10-slide deck:
 
 Each slide has:
 - `key`: Unique identifier - MUST match the key from the outline if provided
-- `options`: \{ title, style } (optional)
+- `options`: \{ title, layout } (optional)
 - `sections`: Array of section blocks (required)
 - `comments`: Speaker notes (optional)
 
@@ -77,7 +77,7 @@ Each slide has:
 - `type`: Must be "section"
 - `flex`: Layout weight (default: 1)
 - `align`: Alignment (topLeft, topCenter, topRight, centerLeft, center, centerRight, bottomLeft, bottomCenter, bottomRight)
-- `blocks`: Array of content or widget blocks
+- `blocks`: Array of content blocks
 
 ## Content Block (type: "block")
 
@@ -85,19 +85,18 @@ Each slide has:
 - `content`: Markdown text
 - `flex`: Layout weight
 - `align`: Content alignment
+- This generator is text-only; emit content blocks only.
 
 ## Block Validity
 
 - `type: "block"` requires non-empty `content`.
 - Do not emit empty blocks.
-- Do not use widget blocks (reserved for future features).
-- Do not use `scrollable` property (reserved for future features).
 - Set `options.title` on every slide.
-- If a style is provided in the prompt, set `options.style` on every slide.
+- Put the presentation's visual theme only in the top-level `style` object.
+- Never set `options.style` or `options.template`; those names must be registered by the app runtime.
 
 ## DO NOT (Common Mistakes)
 
-- Do NOT use widget blocks or scrollable property - these are reserved for future features
 - Do NOT omit `flex` values on sections - ALWAYS set flex explicitly
 - Do NOT use more than 3 blocks per section (max 2 for most slides)
 - Do NOT use `###` (H3) for column headers in two/three-column layouts - use `####` (H4) instead
@@ -146,5 +145,3 @@ Font guidelines:
 7. ALWAYS include the "style" object with colors and fonts - this is required for proper rendering
 8. For two-section slides: use `flex: 1` for title, `flex: 3` for body
 9. For single-section slides (Title-Left, Quote, Hero): use `flex: 2`
-
-{{{examples}}}

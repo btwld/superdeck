@@ -44,6 +44,21 @@ does not load `.env` automatically; the define-file flag injects it at build
 time. The Wizard shows a configuration error immediately when the key is
 missing.
 
+### Live generation smoke test
+
+Run the complete non-UI generation path against the real Google AI service:
+
+```bash
+fvm flutter test --dart-define-from-file=../../.env \
+  test_live/features/ai/quick_agent/generate_deck_smoke_test.dart
+```
+
+The live test is outside `test/`, so normal local and CI test runs never make
+paid or networked AI requests. It builds a prompt from realistic Wizard data,
+runs `GenerateDeckCommand`, and verifies that the generated Markdown parses
+back into the requested number of non-empty slides and that the generated
+palette and fonts are applied atomically to the active deck options.
+
 ## Deck files
 
 On first launch, choose a parent directory for deck storage. The app creates a

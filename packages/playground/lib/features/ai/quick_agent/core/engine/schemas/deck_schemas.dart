@@ -72,37 +72,3 @@ final slideGenerationSchema = Ack.object({
   ).describe('Array of slides in the presentation'),
   'style': styleSchema,
 }).describe('A SuperDeck presentation with slides and style');
-
-// ============================================================================
-// PROMPT GUIDANCE
-// ============================================================================
-
-/// Prompt guidance for slide generation.
-///
-/// Provides field-specific examples and behavioral context for the AI model.
-/// This should be included in the prompt, not duplicated in schema descriptions.
-///
-/// References field names from the schema to maintain a single source of truth.
-String getSlideGenerationGuidance() {
-  return '''
-## Field Guidance
-
-### Slide Keys
-Use descriptive kebab-case identifiers that reflect slide purpose:
-- Opening slides: "slide-intro", "slide-welcome", "slide-title"
-- Content slides: "slide-overview", "slide-features", "slide-benefits"
-- Closing slides: "slide-summary", "slide-conclusion", "slide-next-steps"
-
-### Flex Values
-Control proportional sizing with flex weights:
-- Use 1:3 ratio for title + body (prevents content cropping)
-- Use equal flex (1:1) for side-by-side comparisons
-- Use weighted flex (2:3) when one column needs emphasis
-
-### Content Alignment
-Position content based on its role:
-- Titles and hero text: "center"
-- Body content and bullets: "topLeft"
-- Captions and attributions: "bottomRight" or "bottomCenter"
-''';
-}

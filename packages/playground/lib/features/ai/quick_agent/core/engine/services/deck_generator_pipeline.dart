@@ -39,6 +39,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
+        thinkingConfig: google_ai.ThinkingConfig(
+          thinkingBudget: thinkingBudget,
+        ),
       ),
       systemInstruction: google_ai.Content(
         parts: [google_ai.Part(text: systemPrompt)],
@@ -108,9 +111,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
-        thinkingConfig: thinkingBudget > 0
-            ? google_ai.ThinkingConfig(thinkingBudget: thinkingBudget)
-            : null,
+        thinkingConfig: google_ai.ThinkingConfig(
+          thinkingBudget: thinkingBudget,
+        ),
       ),
       systemInstruction: google_ai.Content(
         parts: [google_ai.Part(text: systemPrompt)],
@@ -138,17 +141,11 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
 
   /// Builds the system prompt for the final deck phase from the outline.
   String _buildFinalDeckPrompt(Map<String, dynamic> outline) {
-    final basePrompt = PromptRegistry.instance.render(
-      'deck_system',
-      input: {'examples': ExamplesLoader.instance.formatForPrompt()},
-    );
-    final fieldGuidance = getSlideGenerationGuidance();
+    final basePrompt = PromptRegistry.instance.render('deck_system');
     final outlineContext = _formatOutlineForPrompt(outline);
 
     return '''
 $basePrompt
-
-$fieldGuidance
 
 ## Presentation Outline (follow this structure)
 

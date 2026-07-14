@@ -44,8 +44,8 @@ class TextLevelStyle {
 /// Ported from the signal-based original to a plain [ChangeNotifier]: each
 /// mutation updates a field, rebuilds the [DeckOptions], writes it to the
 /// controller, and notifies. All state is in-memory; reloading resets to the
-/// seeded defaults. The AI-style entry point (`applyFromAiStyle`) is omitted —
-/// this slice ships without AI.
+/// seeded defaults. Generated deck themes enter through [applyGeneratedStyle]
+/// and use the same state as manual sidebar edits.
 class DeckCustomizationStore extends ChangeNotifier {
   DeckCustomizationStore(
     this._controller, {
@@ -141,6 +141,39 @@ class DeckCustomizationStore extends ChangeNotifier {
     final target = _levels[level]!;
     if (target.family == family) return;
     target.family = family;
+    _apply();
+  }
+
+  /// Applies a generated deck theme in one controller update and notification.
+  void applyGeneratedStyle({
+    required Color background,
+    required Color heading,
+    required Color body,
+    required String headlineFamily,
+    required String bodyFamily,
+  }) {
+    final headingLevels = TextLevel.values.where(
+      (level) => level != TextLevel.p,
+    );
+    final changed =
+        _background != background ||
+        headingLevels.any((level) {
+          final style = _levels[level]!;
+          return style.color != heading || style.family != headlineFamily;
+        }) ||
+        _levels[TextLevel.p]!.color != body ||
+        _levels[TextLevel.p]!.family != bodyFamily;
+    if (!changed) return;
+
+    _background = background;
+    for (final level in headingLevels) {
+      final style = _levels[level]!;
+      style.color = heading;
+      style.family = headlineFamily;
+    }
+    final paragraph = _levels[TextLevel.p]!;
+    paragraph.color = body;
+    paragraph.family = bodyFamily;
     _apply();
   }
 

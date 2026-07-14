@@ -66,4 +66,3 @@ flutter:
   assets:
     - assets/ai_prompts/
     - assets/ai_prompts/partials/
-    - assets/ai_examples/

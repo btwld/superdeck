@@ -49,8 +49,32 @@ Map<String, dynamic>? _sanitizeSlide(Map<String, dynamic> slide) {
     return null;
   }
 
+  _sanitizeSlideOptions(slide);
   slide['sections'] = sections;
   return slide;
+}
+
+void _sanitizeSlideOptions(Map<String, dynamic> slide) {
+  final rawOptions = slide['options'];
+  if (rawOptions is! Map) {
+    slide.remove('options');
+    return;
+  }
+
+  final options = Map<String, dynamic>.from(rawOptions);
+  final safeOptions = <String, dynamic>{
+    if (options['title'] case final String title when title.trim().isNotEmpty)
+      'title': title,
+    if (options['layout'] case final String layout
+        when layout.trim().isNotEmpty)
+      'layout': layout,
+  };
+
+  if (safeOptions.isEmpty) {
+    slide.remove('options');
+  } else {
+    slide['options'] = safeOptions;
+  }
 }
 
 Map<String, dynamic>? _sanitizeSection(dynamic rawSection) {

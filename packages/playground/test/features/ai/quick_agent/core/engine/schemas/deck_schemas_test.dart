@@ -5,8 +5,7 @@ import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dar
 import 'package:json_schema_builder/json_schema_builder.dart' as dsb;
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/google_schema_adapter.dart';
-import 'package:superdeck_core/superdeck_core.dart'
-    show Slide, aiSlideSchema;
+import 'package:superdeck_core/superdeck_core.dart' show Slide, aiSlideSchema;
 
 Map<String, Object?> validSlide({
   Map<String, Object?>? block,
@@ -28,7 +27,7 @@ Map<String, Object?> validSlide({
 
 void main() {
   group('slideGenerationSchema (Google adapter)', () {
-    test('adapts with the full canonical block surface intact', () {
+    test('adapts the text-only generation surface intact', () {
       final result = GoogleSchemaAdapter().adapt(
         slideGenerationSchema.toJsonSchemaBuilder(),
       );
@@ -43,6 +42,7 @@ void main() {
 
       final slides = property(result.schema!, 'slides').items!;
       final sections = property(slides, 'sections').items!;
+      expect(property(slides, 'sections').minItems, 1);
       expect(
         sections.properties.keys,
         containsAll(['type', 'align', 'flex', 'spacing', 'blocks']),
@@ -52,19 +52,15 @@ void main() {
       expect(property(sections, 'spacing').minimum, 0);
 
       final blocks = property(sections, 'blocks').items!;
+      expect(property(sections, 'blocks').minItems, 1);
       expect(
         blocks.properties.keys,
-        containsAll([
-          'type',
-          'content',
-          'name',
-          'align',
-          'flex',
-          'margin',
-          'padding',
-          'scrollable',
-        ]),
+        containsAll(['type', 'content', 'align', 'flex', 'margin', 'padding']),
       );
+      expect(blocks.properties.containsKey('name'), isFalse);
+      expect(blocks.properties.containsKey('scrollable'), isFalse);
+      expect(blocks.required, containsAll(['type', 'content']));
+      expect(property(blocks, 'content').minLength, 1);
       expect(
         property(blocks, 'margin').properties.keys,
         containsAll(['top', 'right', 'bottom', 'left']),
@@ -129,26 +125,45 @@ void main() {
   });
 
   group('aiSlideSchema parity with the canonical contract', () {
-    test('valid layout data passes the projection and the canonical parser',
-        () {
-      final slide = validSlide(
-        section: {'flex': 2, 'align': 'center', 'spacing': 24},
-        block: {
-          'flex': 3,
-          'align': 'topLeft',
-          'padding': {'top': 12, 'right': 24, 'bottom': 12, 'left': 24},
-          'margin': {'top': 8, 'right': 8, 'bottom': 8, 'left': 8},
-          'scrollable': true,
-        },
-      );
+    test('only exposes AI-safe slide options', () {
+      final properties =
+          (aiSlideSchema.toJsonSchema()['properties'] as Map<Object?, Object?>);
+      final options = properties['options']! as Map<Object?, Object?>;
+      final optionProperties = (options['properties']! as Map<Object?, Object?>)
+          .keys
+          .toSet();
 
-      expect(aiSlideSchema.safeParse(slide).isOk, isTrue);
-      final parsed = Slide.parse(slide);
-      final block = parsed.sections.single.blocks.single;
-      expect(block.margin?.top, 8);
-      expect(block.padding?.right, 24);
-      expect(parsed.sections.single.spacing, 24);
+      expect(optionProperties, {'title', 'layout'});
+      expect(optionProperties, isNot(contains('style')));
+      expect(optionProperties, isNot(contains('template')));
     });
+
+    test(
+      'valid layout data passes the projection and the canonical parser',
+      () {
+        final slide = validSlide(
+          section: {'flex': 2, 'align': 'center', 'spacing': 24},
+          block: {
+            'flex': 3,
+            'align': 'topLeft',
+            'padding': {'top': 12, 'right': 24, 'bottom': 12, 'left': 24},
+            'margin': {'top': 8, 'right': 8, 'bottom': 8, 'left': 8},
+          },
+        );
+
+        final projected = aiSlideSchema.safeParse(slide);
+        expect(
+          projected.isOk,
+          isTrue,
+          reason: projected.isFail ? projected.getError().toString() : null,
+        );
+        final parsed = Slide.parse(slide);
+        final block = parsed.sections.single.blocks.single;
+        expect(block.margin?.top, 8);
+        expect(block.padding?.right, 24);
+        expect(parsed.sections.single.spacing, 24);
+      },
+    );
 
     test('rejects non-positive flex like core', () {
       for (final flex in [0, -1]) {
@@ -196,26 +211,36 @@ void main() {
       expect(() => Slide.parse(slide), throwsA(anything));
     });
 
-    test('block surface matches the core reserved widget fields', () {
+    test('rejects widget blocks and empty content', () {
+      expect(
+        aiSlideSchema
+            .safeParse(validSlide(block: {'type': 'widget', 'name': 'chart'}))
+            .isOk,
+        isFalse,
+      );
+      expect(
+        aiSlideSchema.safeParse(validSlide(block: {'content': ''})).isOk,
+        isFalse,
+      );
+    });
+
+    test('block surface contains only text-generation fields', () {
       final blockProperties =
-          ((((aiSlideSchema.toJsonSchema()['properties']
-                              as Map)['sections']
+          ((((aiSlideSchema.toJsonSchema()['properties'] as Map)['sections']
                           as Map)['items']
                       as Map)['properties']
-                  as Map)['blocks'] as Map;
+                  as Map)['blocks']
+              as Map;
       final properties =
           ((blockProperties['items'] as Map)['properties'] as Map).keys.toSet();
 
-      // Reserved WidgetBlock keys plus the discriminator and content field.
       expect(properties, {
         'type',
         'content',
-        'name',
         'align',
         'flex',
         'margin',
         'padding',
-        'scrollable',
       });
     });
   });

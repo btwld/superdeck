@@ -135,6 +135,8 @@ class GoogleSchemaAdapter {
       type: google_ai.Type.array,
       items: adaptedItems,
       description: _description(schema),
+      minItems: _integerKeyword(schema['minItems']),
+      maxItems: _integerKeyword(schema['maxItems']),
     );
   }
 
@@ -144,6 +146,9 @@ class GoogleSchemaAdapter {
       format: schema['format'] as String? ?? '',
       enum$: _stringList(schema['enum']),
       description: _description(schema),
+      minLength: _integerKeyword(schema['minLength']),
+      maxLength: _integerKeyword(schema['maxLength']),
+      pattern: schema['pattern'] as String? ?? '',
     );
   }
 
@@ -195,6 +200,11 @@ class GoogleSchemaAdapter {
     _ => null,
   };
 
+  int _integerKeyword(Object? value) => switch (value) {
+    num value => value.toInt(),
+    _ => 0,
+  };
+
   google_ai.Schema? _unsupportedType(String type, List<String> path) {
     _errors.add(
       GoogleSchemaAdapterError('Unsupported schema type "$type".', path: path),
@@ -241,11 +251,6 @@ class GoogleSchemaAdapter {
       'minContains',
       'maxContains',
       'uniqueItems',
-      'minItems',
-      'maxItems',
-      'minLength',
-      'maxLength',
-      'pattern',
       'multipleOf',
     };
 

@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
 import 'package:superdeck_core/superdeck_core.dart';
-import '../prompts/examples_loader.dart';
 import '../prompts/prompt_registry.dart';
 import '../schemas/deck_schemas.dart';
 import '../schemas/outline_schema.dart';
@@ -69,9 +68,9 @@ class DeckGenerationResult {
 class DeckGeneratorService {
   DeckGeneratorService({
     required this.apiKey,
-    this.modelName = GeminiModelNames.gemini25Flash,
-    this.outlineModelName = GeminiModelNames.gemini3FlashPreview,
-    this.thinkingBudget = 3072,
+    this.modelName = GeminiModelNames.gemini35Flash,
+    this.outlineModelName = GeminiModelNames.gemini35Flash,
+    this.thinkingBudget = 0,
     RetryPolicy? retryPolicy,
   }) : retryPolicy = retryPolicy ?? RetryPolicy();
 
@@ -79,9 +78,8 @@ class DeckGeneratorService {
 
   /// Model used for the final deck generation (Phase 3).
   ///
-  /// Defaults to `gemini-2.5-flash` so deck generation works on a free-tier
-  /// API key. Pass `GeminiModelNames.gemini25Pro` for higher-quality decks on a
-  /// billing-enabled key.
+  /// Defaults to the stable Gemini 3.5 Flash model for low-latency structured
+  /// deck generation.
   final String modelName;
 
   /// Model used for the outline generation (Phase 1).

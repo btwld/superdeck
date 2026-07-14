@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:playground/core/data/data_sources/memory_deck_loader.dart';
@@ -54,5 +55,36 @@ void main() {
     store.setSize(TextLevel.h1, current);
 
     expect(notifications, 0);
+  });
+
+  test('applies a generated deck style atomically', () {
+    final controller = newController();
+    addTearDown(controller.dispose);
+    final store = DeckCustomizationStore(controller);
+    addTearDown(store.dispose);
+
+    final seeded = controller.options.value;
+    var notifications = 0;
+    store.addListener(() => notifications++);
+
+    store.applyGeneratedStyle(
+      background: const Color(0xFF101820),
+      heading: const Color(0xFFFEE715),
+      body: const Color(0xFFF5F5F5),
+      headlineFamily: 'Montserrat',
+      bodyFamily: 'Lato',
+    );
+
+    expect(store.background, const Color(0xFF101820));
+    for (final level in TextLevel.values.where(
+      (level) => level != TextLevel.p,
+    )) {
+      expect(store.level(level).color, const Color(0xFFFEE715));
+      expect(store.level(level).family, 'Montserrat');
+    }
+    expect(store.level(TextLevel.p).color, const Color(0xFFF5F5F5));
+    expect(store.level(TextLevel.p).family, 'Lato');
+    expect(notifications, 1);
+    expect(identical(controller.options.value, seeded), isFalse);
   });
 }

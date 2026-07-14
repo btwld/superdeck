@@ -4,8 +4,38 @@ import 'package:superdeck_core/superdeck_core.dart' show Slide;
 
 void main() {
   group('sanitizeGeneratedSlides', () {
-    test('preserves spacing, padding, and margin for the canonical parser',
-        () {
+    test('removes runtime registry references from slide options', () {
+      final sanitized = sanitizeGeneratedSlides([
+        {
+          'key': 'slide-safe-options',
+          'options': {
+            'title': 'Safe title',
+            'layout': 'fullscreen',
+            'style': 'editorial-dark',
+            'template': 'hero-split',
+          },
+          'sections': [
+            {
+              'blocks': [
+                {'type': 'block', 'content': '# Hello'},
+              ],
+            },
+          ],
+        },
+      ]);
+
+      expect(sanitized, hasLength(1));
+      expect(sanitized.single['options'], {
+        'title': 'Safe title',
+        'layout': 'fullscreen',
+      });
+      expect(
+        () => Slide.parse(Map<String, Object?>.from(sanitized.single)),
+        returnsNormally,
+      );
+    });
+
+    test('preserves spacing, padding, and margin for the canonical parser', () {
       final sanitized = sanitizeGeneratedSlides([
         {
           'key': 'slide-layout',
@@ -89,10 +119,7 @@ void main() {
 
     test('returns null when the minimum requirement is non-positive', () {
       expect(
-        validateGeneratedSlideCount(
-          expectedSlideCount: 0,
-          actualSlideCount: 0,
-        ),
+        validateGeneratedSlideCount(expectedSlideCount: 0, actualSlideCount: 0),
         isNull,
       );
     });

@@ -1,9 +1,12 @@
 import 'package:superdeck_builder/superdeck_builder.dart';
 
 import '../../../../../core/command.dart';
+import '../../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../../../core/result.dart';
+import '../../../../../core/utils/color_utils.dart';
 import '../../../../editor/domain/stores/deck_document_store.dart';
 import '../../core/debug_logger.dart';
+import '../../core/engine/schemas/deck_schemas.dart';
 import '../../core/engine/services/deck_generator_service.dart';
 import '../../core/engine/services/generation_progress.dart';
 import '../../core/env_config.dart';
@@ -27,10 +30,14 @@ class GenerationException implements Exception {
 /// model. On success it serializes the slides to Markdown and replaces the
 /// shared [DeckDocumentStore].
 class GenerateDeckCommand extends Command1<void, String> {
-  GenerateDeckCommand({required DeckDocumentStore documentStore})
-    : _documentStore = documentStore;
+  GenerateDeckCommand({
+    required DeckDocumentStore documentStore,
+    DeckCustomizationStore? customizationStore,
+  }) : _documentStore = documentStore,
+       _customizationStore = customizationStore;
 
   final DeckDocumentStore _documentStore;
+  final DeckCustomizationStore? _customizationStore;
 
   GenerationPhase _phase = GenerationPhase.idle;
 
@@ -43,7 +50,8 @@ class GenerateDeckCommand extends Command1<void, String> {
       return const Result.error(
         GenerationException(
           'No Gemini API key configured. '
-          'Set GOOGLE_AI_API_KEY via --dart-define.',
+          'Set GOOGLE_AI_API_KEY and launch with '
+          '--dart-define-from-file=../../.env.',
         ),
       );
     }
@@ -64,6 +72,11 @@ class GenerateDeckCommand extends Command1<void, String> {
         return const Result.error(
           GenerationException('No slides were generated. Please try again.'),
         );
+      }
+
+      final style = result.style;
+      if (style != null) {
+        _applyGeneratedStyle(style);
       }
 
       final markdown = const SlideSerializer().serialize(result.slides);
@@ -92,5 +105,26 @@ class GenerateDeckCommand extends Command1<void, String> {
   void _onProgress(GenerationPhase newPhase) {
     _phase = newPhase;
     notifyListeners();
+  }
+
+  void _applyGeneratedStyle(DeckStyleType style) {
+    final background = parseHexColor(style.colors.background);
+    final heading = parseHexColor(style.colors.heading);
+    final body = parseHexColor(style.colors.body);
+    if (!background.isValid || !heading.isValid || !body.isValid) {
+      debugLog.log(
+        'GENERATE_DECK',
+        'Ignored generated style with an invalid color value.',
+      );
+      return;
+    }
+
+    _customizationStore?.applyGeneratedStyle(
+      background: background.color,
+      heading: heading.color,
+      body: body.color,
+      headlineFamily: style.fonts.headline.fontFamily,
+      bodyFamily: style.fonts.body.fontFamily,
+    );
   }
 }

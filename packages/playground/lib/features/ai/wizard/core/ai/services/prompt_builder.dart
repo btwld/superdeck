@@ -14,7 +14,6 @@ String buildPromptFromWizardContext(WizardContext context) {
   _writeColorPalette(buffer, context);
   _writeFontConfiguration(buffer, context);
   _writeImageStyleDirection(buffer, context);
-  _writeLayoutGuidance(buffer);
 
   return buffer.toString();
 }
@@ -102,16 +101,4 @@ void _writeImageStyleDirection(StringBuffer buffer, WizardContext context) {
       );
     }
   }
-}
-
-void _writeLayoutGuidance(StringBuffer buffer) {
-  buffer.writeln();
-  buffer.writeln(
-    'Layout Guidance: Use sections as rows and blocks as columns. Use 1-2 '
-    'blocks per section (never 4+). Put all bullets in a single block. Use '
-    'two sections (title + body) for most slides. Center-align only titles; '
-    'left-align body content. Do not use widget blocks or empty blocks. '
-    'Keep slide titles short (3-5 words max) to prevent text cutoff; use '
-    'smaller heading sizes (### or ####) for longer titles.',
-  );
 }
