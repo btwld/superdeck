@@ -287,8 +287,9 @@ class MermaidGenerator {
     for (final rawPackage in packages.cast<Map<String, dynamic>>()) {
       if (rawPackage['name'] != 'superdeck_mermaid') continue;
 
+      final rawRootUri = rawPackage['rootUri'] as String;
       final rootUri = packageConfig.uri.resolve(
-        rawPackage['rootUri'] as String,
+        rawRootUri.endsWith('/') ? rawRootUri : '$rawRootUri/',
       );
       final packageUri = rawPackage['packageUri'] as String? ?? 'lib/';
 

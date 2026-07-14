@@ -82,8 +82,7 @@ SuperDeck is a Melos workspace pinned via FVM in `.fvmrc`.
 
 ```bash
 fvm use --force
-dart pub global activate melos
-melos bootstrap
-melos run analyze
-melos run test
+fvm dart run melos bootstrap
+fvm dart run melos run analyze
+fvm dart run melos run test
 ```

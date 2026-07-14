@@ -40,6 +40,8 @@ jobs:
 
       - name: Setup Melos
         uses: bluefireteam/melos-action@v3
+        with:
+          melos-version: 7.8.1
 
       - uses: invertase/github-action-dart-analyzer@v1
         with:
@@ -50,7 +52,7 @@ jobs:
         run: fvm flutter pub get
 
       - name: Build Runner
-        run: melos run build_runner:build
+        run: melos run build_runner:build --no-select
         timeout-minutes: 5
 
       - name: Check Contract Schemas
@@ -102,12 +104,14 @@ jobs:
 
       - name: Setup Melos
         uses: bluefireteam/melos-action@v3
+        with:
+          melos-version: 7.8.1
 
       - name: Install dependencies
         run: fvm flutter pub get
 
       - name: Build Runner
-        run: melos run build_runner:build
+        run: melos run build_runner:build --no-select
         timeout-minutes: 5
 
       - name: Build SuperDeck Assets
@@ -150,12 +154,14 @@ jobs:
 
       - name: Setup Melos
         uses: bluefireteam/melos-action@v3
+        with:
+          melos-version: 7.8.1
 
       - name: Install dependencies
         run: fvm flutter pub get
 
       - name: Build Runner
-        run: melos run build_runner:build
+        run: melos run build_runner:build --no-select
         timeout-minutes: 5
 
       - name: Build SuperDeck Assets

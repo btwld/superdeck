@@ -10,7 +10,7 @@ on:
     paths:
       - "demo/**"
       - "packages/**"
-      - "melos.yaml"
+      - ".fvmrc"
       - "pubspec.yaml"
       - "pubspec.lock"
 
@@ -46,9 +46,11 @@ jobs:
 
       - name: Setup Melos
         uses: bluefireteam/melos-action@v3
+        with:
+          melos-version: 7.8.1
 
       - name: Build Runner
-        run: melos run build_runner:build
+        run: melos run build_runner:build --no-select
 
       - name: Build SuperDeck assets
         run: |

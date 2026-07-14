@@ -35,45 +35,44 @@ docs/         # User-facing documentation (MDX format)
 
 ## Environment Setup
 
-This project uses FVM (Flutter Version Management) configured via `.fvmrc` (pinned to Flutter `3.44.0`):
+This project uses FVM (Flutter Version Management) configured via `.fvmrc` (pinned to Flutter `3.44.6`):
 
 ```bash
 fvm use --force
-dart pub global activate melos
-melos bootstrap
+fvm dart run melos bootstrap
 ```
 
 Always work inside the FVM-provided SDK (`.fvm/flutter_sdk`) to avoid toolchain drift.
 
-**Required SDK versions**: Dart >=3.12.0, Flutter >=3.44.0
+**Required SDK versions**: Dart >=3.12.0, Flutter >=3.44.6
 
 ## Common Commands
 
 ### Analysis & Linting
 ```bash
-melos run analyze          # Run dart analyze + DCM analysis
-melos run analyze:all      # Full analysis including unused code/files
-melos run fix              # Apply dart fix + DCM autofixes
-melos run custom_lint_analyze  # Run custom lint rules
+fvm dart run melos run analyze          # Run dart analyze + DCM analysis
+fvm dart run melos run analyze:all      # Full analysis including unused code/files
+fvm dart run melos run fix              # Apply dart fix + DCM autofixes
+fvm dart run melos run custom_lint_analyze  # Run custom lint rules
 ```
 
 ### Code Generation
 ```bash
-melos run build_runner:build   # Generate code (run before tests)
-melos run build_runner:watch   # Watch mode for development
-melos run build_runner:clean   # Clean generated files
+fvm dart run melos run build_runner:build   # Generate code (run before tests)
+fvm dart run melos run build_runner:watch   # Watch mode for development
+fvm dart run melos run build_runner:clean   # Clean generated files
 ```
 
 ### Testing
 ```bash
-melos run test             # Run all tests
-melos run test:coverage    # Run tests with coverage
+fvm dart run melos run test             # Run all tests
+fvm dart run melos run test:coverage    # Run tests with coverage
 fvm flutter test <path>    # Run specific test file
 ```
 
 ### Cleaning
 ```bash
-melos run clean            # Clean all Flutter build artifacts
+fvm dart run melos run clean            # Clean all Flutter build artifacts
 ```
 
 ## Coding Standards
@@ -180,9 +179,9 @@ Styles are defined in Dart through `SlideStyler`, `DeckOptions.baseStyle`, and `
 
 | Task | Command |
 |------|---------|
-| Bootstrap workspace | `melos bootstrap` |
-| Run all analysis | `melos run analyze` |
-| Generate code | `melos run build_runner:build` |
-| Run tests | `melos run test` |
-| Apply fixes | `melos run fix` |
-| Clean workspace | `melos run clean` |
+| Bootstrap workspace | `fvm dart run melos bootstrap` |
+| Run all analysis | `fvm dart run melos run analyze` |
+| Generate code | `fvm dart run melos run build_runner:build` |
+| Run tests | `fvm dart run melos run test` |
+| Apply fixes | `fvm dart run melos run fix` |
+| Clean workspace | `fvm dart run melos run clean` |
