@@ -369,13 +369,47 @@ vec3 heatRadiance(vec2 p) {
   return aces(color * 1.03);
 }
 
+// Fine condensation crystals advect downward at independent depths. Their
+// circular footprint stays below snowflake scale even on a 720p slide.
+float microCrystalLayer(
+  vec2 p,
+  float t,
+  vec2 scale,
+  float speed,
+  float seed,
+  float threshold
+) {
+  vec2 advected = p + vec2(
+    sin(p.y * 9.0 - t * 0.34 + seed) * 0.0045,
+    -t * speed
+  );
+  vec2 grid = (advected + vec2(1.2, 1.0)) * scale;
+  vec2 cell = floor(grid);
+  vec2 local = fract(grid) - 0.5;
+  float id = hash21(cell + seed);
+  vec2 site = vec2(
+    hash21(cell + seed + 17.17),
+    hash21(cell + seed + 43.71)
+  );
+  site = (site - 0.5) * 0.62;
+  float radius = mix(0.085, 0.155, hash21(cell + seed + 71.3));
+  float point = 1.0 - smoothstep(
+    radius * 0.42,
+    radius,
+    length(local - site)
+  );
+  float glint = mix(0.68, 1.0, hash21(cell + seed + 91.7));
+  glint *= 0.88 + 0.12 * sin(t * 1.7 + id * 6.2831);
+  return step(threshold, id) * point * glint;
+}
+
 vec3 coldAirflow(vec2 p) {
   float power = thermalPower();
   float energy = power * power * (3.0 - 2.0 * power);
   float t = mod(uTime, 600.0);
   float fall = clamp(p.y + 0.5, 0.0, 1.0);
-  // Output changes how many currents overlap and how much chilled vapor they
-  // carry. Even a quiet current keeps falling through the full display.
+  // Strength opens more vents and lowers the condensation threshold. It never
+  // changes the direction or shortens a current that is already active.
   float reachLimit = 1.08;
   float reach = 1.0 - smoothstep(
     reachLimit - 0.12,
@@ -396,40 +430,46 @@ vec3 coldAirflow(vec2 p) {
   float ceilingChill = exp(-fall * 6.4);
   color += uColorB * ceilingChill * (0.018 + energy * 0.026);
 
-  float occupiedMist = 0.0;
+  float condensationGuide = 0.0;
   float sourceSlots = 0.0;
 
-  // Five descending currents open in stages. Unlike the warm turbulent vapor,
-  // each cold current has a clean laminar core wrapped in translucent mist.
-  // Noise breaks the cores into moving pockets instead of repeated fabric-like
-  // stripes, while restrained lateral drift keeps the direction unmistakable.
+  // Each vent combines three speeds: a fast pressure core, a medium white
+  // condensation body, and a slow mixing sheath. This mirrors refrigerated air
+  // curtains and aircraft cabin fog, where ambient moisture becomes visible
+  // only after it is entrained downstream.
   for (int i = 0; i < 5; i++) {
     float fi = float(i);
     float lane = (fi - 2.0) * 0.5;
     float edgeLane = abs(lane);
+    float laneVariation = hash21(vec2(fi + 2.3, 19.7));
+    float lanePhase = 6.2831 * hash21(vec2(fi + 7.1, 3.9));
+    float laneRate = mix(0.82, 1.18, laneVariation);
+    float fanPulse = 0.84 + 0.16 * sin(
+      t * mix(0.42, 0.60, laneVariation) + lanePhase
+    );
     float jetPresence = smoothstep(
-      0.02 + edgeLane * 0.34,
-      0.22 + edgeLane * 0.42,
+      0.02 + edgeLane * 0.24,
+      0.22 + edgeLane * 0.34,
       power
     );
     float depth = 0.72 + (1.0 - edgeLane) * 0.18;
     float origin = lane * span * 0.62;
     float fan = lane * span * fall * mix(0.055, 0.14, energy);
     fan += lane * span * sin(fall * 3.14159) * (0.025 + energy * 0.050);
-    float speed = 0.19 * (0.96 + edgeLane * 0.06);
+    float speed = 0.19 * laneRate * (0.96 + edgeLane * 0.06);
     vec2 samplePoint = vec2(
       p.x * (2.26 + edgeLane * 0.14),
       (p.y - t * speed) * (1.72 + edgeLane * 0.08)
     );
     float warp = turbulentFbm(
       samplePoint + vec2(fi * 4.73, fi * 1.83),
-      t * (0.24 + edgeLane * 0.020)
+      t * (0.20 + laneVariation * 0.060)
     );
     float center = origin + fan;
     center += sin(
       fall * (3.6 + edgeLane * 0.6) -
-      t * 0.16 +
-      fi * 1.3
+      t * 0.18 * laneRate +
+      lanePhase
     ) * (0.004 + fall * mix(0.008, 0.020, energy));
     center += (warp - 0.48) * (
       0.005 + fall * mix(0.012, 0.030, energy)
@@ -445,25 +485,76 @@ vec3 coldAirflow(vec2 p) {
 
     float broadMist = fbm3(vec3(
       lateral * 0.34 + fi * 2.7,
-      fall * 3.15 - t * 0.47,
+      fall * 3.15 - t * 0.47 * laneRate,
       t * 0.12 + fi * 4.1
     ));
     float mistDetail = noise31(vec3(
       lateral * 0.82 - fi * 3.3,
-      fall * 7.6 - t * 0.92,
+      fall * 7.6 - t * 0.92 * laneRate,
       t * 0.24 + warp * 2.1
     ));
     float mistField = broadMist * 0.70 + mistDetail * 0.30;
     float mistPockets = smoothstep(
-      mix(0.59, 0.31, energy),
+      mix(0.54, 0.31, energy),
       mix(0.77, 0.67, energy),
       mistField
     );
-    float mistContour = exp(-pow((mistField - 0.52) / 0.12, 2.0));
-    mistContour *= sheath;
+    float interfacePosition = mix(0.76, 1.02, broadMist);
+    float interfaceBand = exp(-pow(
+      (abs(lateral) - interfacePosition) / 0.25,
+      2.0
+    ));
+    float contactField = broadMist * 0.55 + mistDetail * 0.45;
+    float contactPatches = smoothstep(
+      mix(0.62, 0.43, energy),
+      mix(0.78, 0.70, energy),
+      contactField
+    );
+
+    // A slower, wider field lags behind the main condensation body. Its broad
+    // pockets curl around each jet instead of sharing the same silhouette or
+    // speed, producing the rolling fog seen below cold industrial vents.
+    float mixingCenter = center;
+    mixingCenter += sin(
+      fall * (4.1 + laneVariation * 1.2) -
+      t * 0.19 * laneRate +
+      lanePhase * 0.7
+    ) * fall * mix(0.018, 0.060, energy);
+    mixingCenter += (warp - 0.48) * fall * mix(0.020, 0.070, energy);
+    float mixingWidth = width * (
+      1.52 + fall * mix(0.28, 0.68, energy)
+    );
+    float mixingLateral = (p.x - mixingCenter) / max(mixingWidth, 0.001);
+    float mixingEnvelope = exp(-mixingLateral * mixingLateral * 0.36);
+    float slowBroad = fbm3(vec3(
+      mixingLateral * 0.31 + fi * 5.27,
+      fall * 2.55 - t * 0.21 * laneRate,
+      t * 0.070 + lanePhase
+    ));
+    float slowDetail = noise31(vec3(
+      mixingLateral * 0.88 - fi * 2.81,
+      fall * 6.3 - t * 0.53 * laneRate,
+      t * 0.15 + broadMist * 2.4
+    ));
+    float slowField = slowBroad * 0.68 + slowDetail * 0.32;
+    float slowPockets = smoothstep(
+      mix(0.66, 0.48, energy),
+      mix(0.84, 0.75, energy),
+      slowField
+    );
+    float condensationOnset = smoothstep(
+      0.045 + laneVariation * 0.018,
+      0.16 + laneVariation * 0.025,
+      fall
+    );
+    float mixingOnset = smoothstep(
+      0.11 + laneVariation * 0.025,
+      0.29 + laneVariation * 0.035,
+      fall
+    );
 
     float ribbonDrift = noise31(vec3(
-      fall * 3.8 - t * 0.29,
+      fall * 3.8 - t * 0.29 * laneRate,
       fi * 5.3,
       t * 0.11
     )) - 0.5;
@@ -472,7 +563,7 @@ vec3 coldAirflow(vec2 p) {
       2.0
     ));
     float secondaryDrift = noise31(vec3(
-      fall * 4.7 - t * 0.36 + 8.2,
+      fall * 4.7 - t * 0.36 * laneRate + 8.2,
       fi * 3.7 + 11.0,
       t * 0.16
     )) - 0.5;
@@ -482,7 +573,7 @@ vec3 coldAirflow(vec2 p) {
     ));
     secondaryCore *= smoothstep(0.30 + edgeLane * 0.12, 0.76, power);
     float coreBreakup = noise31(vec3(
-      fall * 9.4 - t * 1.15,
+      fall * 9.4 - t * 1.15 * laneRate,
       fi * 5.9 + lateral * 0.12,
       t * 0.19
     ));
@@ -492,7 +583,7 @@ vec3 coldAirflow(vec2 p) {
       smoothstep(0.30, 0.68, coreBreakup)
     );
     float fallingPocket = noise31(vec3(
-      fall * 6.2 - t * 1.34,
+      fall * 6.2 - t * 1.34 * laneRate,
       fi * 4.4,
       t * 0.15 + lateral * 0.18
     ));
@@ -500,32 +591,63 @@ vec3 coldAirflow(vec2 p) {
 
     float flowMask = reach * sourceFade * bottomDissipation * displayMask;
     flowMask *= jetPresence;
-    float vaporVeil = sheath * (0.15 + mistPockets * 0.52);
-    vaporVeil *= fallingPocket * flowMask;
-    float body = bodyEnvelope * (0.11 + broadMist * 0.30);
-    body *= fallingPocket * flowMask;
-    float wispyMist = mistContour * fallingPocket * flowMask;
+    float clearSheath = sheath * (0.015 + mistPockets * 0.14);
+    clearSheath *= fallingPocket * condensationOnset * flowMask;
+    float body = bodyEnvelope * (
+      0.025 + mistPockets * 0.34 + contactPatches * 0.12
+    );
+    body *= fallingPocket * condensationOnset * flowMask;
+    body *= 0.82 + fanPulse * 0.18;
+    float contactCondensation = interfaceBand;
+    contactCondensation *= mix(0.015, 1.0, contactPatches);
+    contactCondensation *= fallingPocket * condensationOnset * flowMask;
     float cores = primaryCore + secondaryCore * 0.58;
     cores *= coreContinuity * bodyEnvelope * fallingPocket * flowMask;
-    float rim = bodyEnvelope * (1.0 - bodyEnvelope) * 3.8 * flowMask;
+    cores *= fanPulse;
+    float cloudDensity = clamp(bodyEnvelope * mistPockets, 0.0, 1.0);
+    float rim = 4.0 * cloudDensity * (1.0 - cloudDensity);
+    rim *= condensationOnset * flowMask;
+    float slowMixing = mixingEnvelope * slowPockets * mixingOnset;
+    slowMixing *= flowMask * (0.88 + fanPulse * 0.12);
     vec3 bodyColor = mix(
-      uColorB * 0.29,
-      uColorA * 0.40,
-      clamp(mistField * 0.72 + fall * 0.10, 0.0, 1.0)
+      uColorB * 0.14,
+      vec3(0.70, 0.92, 0.96),
+      clamp(0.32 + mistField * 0.46 + fall * 0.06, 0.0, 1.0)
     );
     vec3 coreColor = mix(
-      uColorB * 0.74,
-      vec3(0.86, 0.99, 1.0),
-      0.46 + coreBreakup * 0.28
+      vec3(0.52, 0.88, 0.98),
+      vec3(0.95, 1.0, 1.0),
+      0.58 + coreBreakup * 0.24
     );
-    color += bodyColor * vaporVeil * depth * (0.42 + energy * 0.46);
-    color += bodyColor * body * depth * (0.78 + energy * 0.68);
-    color += mix(uColorB * 0.26, uColorA * 0.24, broadMist) *
-      wispyMist * depth * (0.14 + energy * 0.22);
-    color += coreColor * cores * depth * (0.14 + energy * 0.24);
-    color += uColorA * rim * mistPockets * depth * (0.018 + energy * 0.032);
+    vec3 condensationColor = mix(
+      vec3(0.52, 0.84, 0.92),
+      vec3(0.98, 1.0, 1.0),
+      0.62 + mistDetail * 0.28
+    );
+    vec3 mixingColor = mix(
+      uColorB * 0.11,
+      vec3(0.56, 0.82, 0.88),
+      0.30 + slowField * 0.38
+    );
+    color += mixingColor * slowMixing * depth * (0.18 + energy * 0.34);
+    color += bodyColor * clearSheath * depth * (0.24 + energy * 0.34);
+    color += bodyColor * body * depth * (0.62 + energy * 0.72);
+    color += condensationColor * contactCondensation * depth *
+      (0.18 + energy * 0.36);
+    color += coreColor * cores * depth * (0.12 + energy * 0.18);
+    color += vec3(0.90, 0.99, 1.0) * rim * depth *
+      (0.045 + energy * 0.090);
 
-    occupiedMist = max(occupiedMist, sheath * jetPresence);
+    condensationGuide = max(
+      condensationGuide,
+      clamp(
+        sheath * mistPockets * 0.62 +
+        interfaceBand * 0.20 +
+        mixingEnvelope * slowPockets * 0.28,
+        0.0,
+        1.0
+      ) * jetPresence
+    );
     float slot = exp(-pow(
       (p.x - origin) / max(span * 0.050, 0.001),
       2.0
@@ -538,43 +660,46 @@ vec3 coldAirflow(vec2 p) {
   color += uColorB * ventGlow * (0.035 + energy * 0.055);
   color += uColorA * ventGlow * sourceSlots * (0.035 + energy * 0.065);
 
-  // A thin floor-hugging condensation layer appears only once several cold
-  // currents overlap, reinforcing that the descending air is accumulating.
-  float floorNoise = fbm3(vec3(
-    p.x * 2.2 - t * 0.035,
-    fall * 4.8 - t * 0.10,
-    t * 0.08
+  // Dense refrigerated air settles and spreads after the falling curtains
+  // reach the lower cabin or fridge volume. This remains a secondary layer so
+  // it does not turn the entire scene into undirected smoke.
+  float poolField = fbm3(vec3(
+    p.x * 1.85 - t * 0.045,
+    fall * 4.2 - t * 0.12,
+    t * 0.075
   ));
-  float floorMist = smoothstep(0.70, 1.0, fall);
-  floorMist *= smoothstep(mix(0.76, 0.48, energy), 0.82, floorNoise);
-  floorMist *= smoothstep(0.38, 0.92, power) * displayMask;
-  color += mix(uColorB * 0.22, uColorA * 0.12, floorNoise) * floorMist;
+  float coldPool = smoothstep(0.69, 1.0, fall);
+  coldPool *= smoothstep(mix(0.73, 0.50, energy), 0.82, poolField);
+  coldPool *= smoothstep(0.34, 0.88, power) * displayMask;
+  color += mix(
+    uColorB * 0.12,
+    vec3(0.58, 0.84, 0.90),
+    poolField
+  ) * coldPool * (0.055 + energy * 0.12);
 
-  // Sparse elongated crystals ride inside the currents. Strength increases
-  // their count rather than uniformly brightening the same particle field.
-  vec2 particleGrid = vec2(
-    (p.x + 1.2) * 82.0,
-    (p.y - t * 0.145 + 1.0) * 74.0
+  // Two independently advected layers of sub-pixel-to-one-pixel aerosol dots
+  // ride at different speeds. They visualize condensed moisture without
+  // becoming decorative snowflakes.
+  float fineCrystals = microCrystalLayer(
+    p,
+    t,
+    vec2(118.0, 108.0),
+    0.150,
+    17.0,
+    mix(0.9850, 0.9550, energy)
   );
-  vec2 particleCell = floor(particleGrid);
-  vec2 particleLocal = fract(particleGrid) - 0.5;
-  float particleId = hash21(particleCell);
-  vec2 particleSite = vec2(
-    hash21(particleCell + 17.17),
-    hash21(particleCell + 43.71)
+  float nearCrystals = microCrystalLayer(
+    p,
+    t,
+    vec2(88.0, 80.0),
+    0.190,
+    51.0,
+    mix(0.9930, 0.9775, energy)
   );
-  particleSite = (particleSite - 0.5) * 0.56;
-  float particlePoint = 1.0 - smoothstep(
-    0.035,
-    0.15,
-    length((particleLocal - particleSite) * vec2(1.55, 0.58))
-  );
-  float particleThreshold = mix(0.9984, 0.9915, energy);
-  float particles = step(particleThreshold, particleId) * particlePoint;
-  particles *= 0.70 + 0.30 * sin(t * 2.1 + particleId * 6.2831);
-  particles *= smoothstep(0.04, 0.26, occupiedMist);
+  float particles = fineCrystals * 0.72 + nearCrystals;
+  particles *= smoothstep(0.06, 0.42, condensationGuide);
   particles *= reach * sourceFade * bottomDissipation * displayMask;
-  color += mix(uColorB, uColorA, 0.72) * particles * (0.12 + energy * 0.16);
+  color += vec3(0.94, 0.995, 1.0) * particles * (0.30 + energy * 0.40);
   return aces(color * 1.06);
 }
 
