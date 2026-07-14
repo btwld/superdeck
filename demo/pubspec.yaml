@@ -34,6 +34,8 @@ flutter:
   uses-material-design: true
   shaders:
     - shaders/shader_showcase.frag
+    - shaders/thermal_showcase.frag
+    - shaders/heat_refraction.frag
     - shaders/volumetric_smoke.frag
   assets:
     - assets/

@@ -27,6 +27,7 @@ void main() async {
         // debug: true,
         styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
         templates: {
+          'airflow': airflowTemplate(),
           'corporate': corporateTemplate(),
           'minimal': minimalTemplate(),
         },

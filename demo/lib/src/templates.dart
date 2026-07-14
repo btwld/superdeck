@@ -82,6 +82,43 @@ SlideTemplate minimalTemplate() {
   );
 }
 
+/// A neutral, chrome-free frame for the two hero airflow slides.
+SlideTemplate airflowTemplate() {
+  return const SlideTemplate(
+    parts: SlideParts(
+      header: null,
+      footer: null,
+      background: _AirflowBackground(),
+    ),
+  );
+}
+
+class _AirflowBackground extends StatelessWidget {
+  const _AirflowBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    final title = SlideConfiguration.of(context).options.title ?? '';
+    final isHeat = title == 'Heat Airflow';
+    final accent = isHeat ? const Color(0xFFFF8A32) : const Color(0xFF17BFFF);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: isHeat ? Alignment.bottomCenter : Alignment.topCenter,
+          radius: 1.15,
+          colors: [
+            accent.withValues(alpha: 0.17),
+            const Color(0xFF071017),
+            const Color(0xFF020407),
+          ],
+          stops: const [0.0, 0.52, 1.0],
+        ),
+      ),
+    );
+  }
+}
+
 class _CorporateHeader extends StatelessWidget implements PreferredSizeWidget {
   const _CorporateHeader();
 

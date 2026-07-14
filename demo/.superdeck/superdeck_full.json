@@ -1,9 +1,10 @@
 [
   {
-    "key": "Cox8vLKx",
+    "key": "jy1FJpqn",
     "options": {
-      "title": "GPU Shader Effects",
-      "layout": "fullscreen"
+      "title": "Heat Airflow",
+      "layout": "fullscreen",
+      "template": "airflow"
     },
     "sections": [
       {
@@ -13,7 +14,39 @@
             "flex": 1,
             "scrollable": false,
             "type": "widget",
-            "effect": "smoke",
+            "effect": "heatAirflow",
+            "showControls": false,
+            "showReadout": true,
+            "showStrengthControl": true,
+            "speed": 0.8,
+            "intensity": 1.0
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
+    "key": "ujXykxQ8",
+    "options": {
+      "title": "Cold Airflow",
+      "layout": "fullscreen",
+      "template": "airflow"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "name": "shader-showcase",
+            "flex": 1,
+            "scrollable": false,
+            "type": "widget",
+            "effect": "coldAirflow",
+            "showControls": false,
+            "showReadout": true,
+            "showStrengthControl": true,
             "speed": 0.8,
             "intensity": 1.0
           }

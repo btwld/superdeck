@@ -1,10 +1,29 @@
 ---
-title: GPU Shader Effects
+title: Heat Airflow
 layout: fullscreen
+template: airflow
 ---
 
 @shader-showcase {
-  effect: smoke
+  effect: heatAirflow
+  showControls: false
+  showReadout: true
+  showStrengthControl: true
+  speed: 0.8
+  intensity: 1.0
+}
+
+---
+title: Cold Airflow
+layout: fullscreen
+template: airflow
+---
+
+@shader-showcase {
+  effect: coldAirflow
+  showControls: false
+  showReadout: true
+  showStrengthControl: true
   speed: 0.8
   intensity: 1.0
 }

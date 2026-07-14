@@ -268,6 +268,7 @@ class TestApp extends StatelessWidget {
           },
           styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
           templates: {
+            'airflow': airflowTemplate(),
             'corporate': corporateTemplate(),
             'minimal': minimalTemplate(),
           },
