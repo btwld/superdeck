@@ -8,8 +8,7 @@ From the repo root:
 
 ```bash
 fvm use --force
-dart pub global activate melos
-melos bootstrap
+fvm dart run melos bootstrap
 ```
 
 Terminal 1 (build slides):

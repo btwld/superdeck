@@ -14,23 +14,22 @@ Use the repo-pinned Flutter SDK via FVM to avoid version drift.
 
 ```bash
 fvm use --force
-dart pub global activate melos
-melos bootstrap
+fvm dart run melos bootstrap
 ```
 
-> Required by workspace config: Dart `>=3.12.0`, Flutter `>=3.44.0`.
+> Required by workspace config: Dart `>=3.12.0`, Flutter `>=3.44.6`.
 
 ## High-signal commands (run from repo root)
-- Analyze: `melos run analyze`
-- Auto-fix: `melos run fix`
-- Generate code: `melos run build_runner:build`
-- Unit/widget tests: `melos run test`
-- Integration tests (Linux): `melos run test:integration`
-- Web smoke tests: `melos run test:e2e:web`
+- Analyze: `fvm dart run melos run analyze`
+- Auto-fix: `fvm dart run melos run fix`
+- Generate code: `fvm dart run melos run build_runner:build`
+- Unit/widget tests: `fvm dart run melos run test`
+- Integration tests (Linux): `fvm dart run melos run test:integration`
+- Web smoke tests: `fvm dart run melos run test:e2e:web`
 
 ## Agent workflow expectations
 1. Keep changes surgical and package-scoped.
-2. Run `melos run build_runner:build` before tests when touching code that can affect generated output.
+2. Run `fvm dart run melos run build_runner:build` before tests when touching code that can affect generated output.
 3. Commit generated files when they change (`*.g.dart`, `*.mapper.dart`).
 4. Prefer relative imports in Dart files.
 5. Follow existing style: two-space indentation, `snake_case.dart` filenames.
@@ -43,8 +42,7 @@ melos bootstrap
     dart pub global activate fvm
     export PATH="$HOME/.pub-cache/bin:$PATH"
     fvm use --force
-    dart pub global activate melos
-    melos bootstrap
+    fvm dart run melos bootstrap
     ```
 
 - **CI failure while building demo assets (`fvm dart run superdeck_cli:main build`)**

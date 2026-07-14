@@ -8,6 +8,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 const _fixturePath =
     'packages/superdeck/test/integration/fixtures/authoring_deck.md';
 const _builderPackagePath = 'packages/builder';
+const _packageConfigPath = '.dart_tool/package_config.json';
 const _buildScriptSource = r'''
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -201,9 +202,7 @@ Future<List<Slide>> _buildFixtureDeck() async {
 
 Future<void> _runBuilder(Directory repoRoot, DeckWorkspace workspace) async {
   final builderDir = Directory(p.join(repoRoot.path, _builderPackagePath));
-  final packageConfig = File(
-    p.join(builderDir.path, '.dart_tool/package_config.json'),
-  );
+  final packageConfig = File(p.join(repoRoot.path, _packageConfigPath));
   final buildScript = File(
     p.join(workspace.projectDir, 'build_authoring_deck.dart'),
   );
@@ -242,7 +241,7 @@ DeckWorkspace _createTestWorkspace(Directory tempDir) {
 Directory _repoRoot() {
   var current = Directory.current;
 
-  while (!File(p.join(current.path, 'melos.yaml')).existsSync()) {
+  while (!File(p.join(current.path, '.fvmrc')).existsSync()) {
     final parent = current.parent;
     if (parent.path == current.path) {
       fail('Could not locate repository root from ${Directory.current.path}.');

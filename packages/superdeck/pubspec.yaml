@@ -6,8 +6,9 @@ documentation: https://docs.page/btwld/superdeck
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
-  flutter: ">=3.44.0"
+  flutter: ">=3.44.6"
 
+resolution: workspace
 
 dependencies:
   flutter:
@@ -46,8 +47,7 @@ dev_dependencies:
   dart_mappable_builder: ^4.7.0
   mix_generator: ^2.1.2
   path_provider_platform_interface: ^2.1.2
-  superdeck_builder:
-    path: ../builder
+  superdeck_builder: ^1.0.0
 
 flutter:
   uses-material-design: true
