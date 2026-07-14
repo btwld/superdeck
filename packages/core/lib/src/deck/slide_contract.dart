@@ -18,63 +18,115 @@ List<Slide> parseSlidesContract(Object? value) {
 
 /// Flattened slide projection for structured-output AI generation.
 ///
-/// Structured-output schema adapters (e.g. Google Generative AI) cannot
-/// consume the JSON Schema `anyOf` union produced by
-/// [Block.discriminatedSchema], so the discriminated block union is flattened
-/// into one object with a `type` enum. Every field vocabulary (alignment,
+/// The discriminated content/widget union is retained for providers that
+/// support same-type `anyOf` branches. Every field vocabulary (alignment,
 /// flex, spacing, normalized insets, slide options) is shared with the
 /// canonical schemas, so a contract change here reaches AI generation
 /// automatically. Data generated against this projection must still decode
 /// through [Slide.parse] / [parseSlidesContract].
-final aiSlideSchema = Ack.object({
-  'key': Ack.string().describe('Unique slide identifier using kebab-case'),
-  'options': SlideOptions.schema.optional().describe('Slide options'),
-  'comments': Ack.list(
-    Ack.string().describe('A speaker note or talking point for this slide'),
-  ).optional().describe('Speaker notes'),
-  'sections': Ack.list(
-    _aiSectionSchema,
-  ).describe('Horizontal sections in the slide'),
-}).describe('A single slide');
+final aiSlideSchema = buildAiSlideSchema();
 
-final _aiSectionSchema = Ack.object({
-  'type': Ack.literal(SectionBlock.key).describe('Section type discriminator'),
-  'align': ContentAlignment.schema.optional().describe(
-    'Content alignment within the section',
-  ),
-  'flex': positiveFlexSchema.optional().describe(
-    'Flex weight for proportional sizing. Higher values take more space.',
-  ),
-  'spacing': nonNegativeSpacingSchema.optional().describe(
-    'Gap in logical pixels between sibling blocks',
-  ),
-  'blocks': Ack.list(_aiBlockSchema).describe('Content blocks in this section'),
-}).describe('A section containing blocks');
+/// Builds the canonical AI slide projection with optional widget argument
+/// fields supplied by an application generation catalog.
+///
+/// Set [nestWidgetArguments] for model-facing draft payloads so widget-only
+/// fields cannot collide with content-block fields such as `content`. Those
+/// draft `args` objects must be flattened before canonical [Slide.parse].
+ObjectSchema buildAiSlideSchema({
+  Map<String, AckSchema<Object, Object>> widgetArgumentProperties = const {},
+  bool nestWidgetArguments = false,
+  bool requirePresentationOptions = false,
+}) {
+  final widgetProperties = switch ((
+    nestWidgetArguments,
+    widgetArgumentProperties.isEmpty,
+  )) {
+    (_, true) => <String, AckSchema<Object, Object>>{},
+    (true, false) => <String, AckSchema<Object, Object>>{
+      'args': Ack.object(widgetArgumentProperties).optional().describe(
+        'Arguments for the selected widget name. Use only fields allowed by '
+        'that widget catalog entry.',
+      ),
+    },
+    (false, false) => widgetArgumentProperties,
+  };
+  final commonBlockProperties = <String, AckSchema<Object, Object>>{
+    'align': ContentAlignment.schema.optional().describe('Content alignment'),
+    'flex': positiveFlexSchema.optional().describe(
+      'Flex weight for proportional sizing. Higher values take more space.',
+    ),
+    'margin': BlockInsets.schema.optional().describe(
+      'Space inside the block frame but outside its decoration, as normalized '
+      'physical edges',
+    ),
+    'padding': BlockInsets.schema.optional().describe(
+      'Space between the block decoration and its content, as normalized '
+      'physical edges',
+    ),
+    'scrollable': Ack.boolean().optional().describe(
+      'Whether overflowing block content scrolls',
+    ),
+  };
+  final contentBlockSchema = Ack.object({
+    'type': Ack.literal(
+      ContentBlock.key,
+    ).describe('Markdown content block discriminator'),
+    'content': Ack.string()
+        .minLength(1)
+        .describe('Non-empty Markdown content for this block'),
+    ...commonBlockProperties,
+  }).describe('A Markdown content block');
+  final widgetBlockSchema = Ack.object({
+    'type': Ack.literal(
+      WidgetBlock.key,
+    ).describe('Named widget block discriminator'),
+    'name': Ack.string().minLength(1).describe('Registered widget name'),
+    ...commonBlockProperties,
+    ...widgetProperties,
+  }).describe('A named widget block');
+  final blockSchema = Ack.anyOf([
+    contentBlockSchema,
+    widgetBlockSchema,
+  ]).describe('A discriminated content or widget block');
 
-final _aiBlockSchema = Ack.object({
-  'type': Ack.enumString(const [ContentBlock.key, WidgetBlock.key]).describe(
-    'Block type: "block" for markdown content, "widget" for a named widget '
-    'reference',
-  ),
-  'content': Ack.string().optional().describe(
-    'Markdown content (required for type "block")',
-  ),
-  'name': Ack.string().optional().describe(
-    'Widget name (required for type "widget")',
-  ),
-  'align': ContentAlignment.schema.optional().describe('Content alignment'),
-  'flex': positiveFlexSchema.optional().describe(
-    'Flex weight for proportional sizing. Higher values take more space.',
-  ),
-  'margin': BlockInsets.schema.optional().describe(
-    'Space inside the block frame but outside its decoration, as normalized '
-    'physical edges',
-  ),
-  'padding': BlockInsets.schema.optional().describe(
-    'Space between the block decoration and its content, as normalized '
-    'physical edges',
-  ),
-  'scrollable': Ack.boolean().optional().describe(
-    'Whether overflowing block content scrolls',
-  ),
-}).describe('A content or widget block');
+  final sectionSchema = Ack.object({
+    'type': Ack.literal(
+      SectionBlock.key,
+    ).describe('Section type discriminator'),
+    'align': ContentAlignment.schema.optional().describe(
+      'Content alignment within the section',
+    ),
+    'flex': positiveFlexSchema.optional().describe(
+      'Flex weight for proportional sizing. Higher values take more space.',
+    ),
+    'spacing': nonNegativeSpacingSchema.optional().describe(
+      'Gap in logical pixels between sibling blocks',
+    ),
+    'blocks': Ack.list(
+      blockSchema,
+    ).minItems(1).maxItems(3).describe('Content blocks in this section'),
+  }).describe('A section containing blocks');
+  final generationOptionsSchema = Ack.object({
+    'title': Ack.string().minLength(1).describe('Visible slide title'),
+    'style': Ack.string()
+        .minLength(1)
+        .describe('Exact renderer-owned treatment selected in the deck plan'),
+    'layout': SlideLayout.schema.optional(),
+    'template': Ack.string().optional(),
+  });
+
+  return Ack.object({
+    'key': Ack.string().describe('Unique slide identifier using kebab-case'),
+    'options': requirePresentationOptions
+        ? generationOptionsSchema.describe(
+            'Required presentation metadata for generated slides',
+          )
+        : SlideOptions.schema.optional().describe('Slide options'),
+    'comments': Ack.list(
+      Ack.string().describe('A speaker note or talking point for this slide'),
+    ).optional().describe('Speaker notes'),
+    'sections': Ack.list(
+      sectionSchema,
+    ).minItems(1).maxItems(4).describe('Horizontal sections in the slide'),
+  }).describe('A single slide');
+}

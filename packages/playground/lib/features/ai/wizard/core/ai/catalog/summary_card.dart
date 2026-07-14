@@ -241,18 +241,18 @@ final summaryCard = typedCatalogItem<SummaryCardType>(
               final finalContext = extractedContext.merge(resolvedContext);
               debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
 
-              // Build the prompt string from wizard context and hand it to the
-              // existing generation command (loads markdown into the editor).
-              final prompt = buildPromptFromWizardContext(finalContext);
+              // Preserve exact wizard selections in the typed generation
+              // request handed to the shared editor command.
+              final request = buildPromptFromWizardContext(finalContext);
               debugLog.log(
                 'GEN',
                 'Routing generation through GenerateDeckCommand. '
-                    'prompt length: ${prompt.length}',
+                    'slides: ${request.slideCount}',
               );
 
               // Fire-and-forget — the command manages running/phase/result and
               // loads the generated markdown into the editor on success.
-              unawaited(command(prompt));
+              unawaited(command(request));
             }());
           },
         );

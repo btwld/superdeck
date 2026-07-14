@@ -102,6 +102,7 @@ SlideConfiguration _slideWithParts(String key, String content) {
 SlideConfiguration _delayedSlide({
   required Duration delay,
   required Completer<void> settled,
+  String widgetName = 'delayed',
 }) {
   return SlideConfiguration(
     slideIndex: 0,
@@ -109,10 +110,12 @@ SlideConfiguration _delayedSlide({
     slide: Slide(
       key: 'delayed',
       sections: [
-        SectionBlock([WidgetBlock(name: 'delayed', args: const {})]),
+        SectionBlock([WidgetBlock(name: widgetName, args: const {})]),
       ],
     ),
-    widgets: {'delayed': _delayedWidgetFactory(delay: delay, settled: settled)},
+    widgets: {
+      widgetName: _delayedWidgetFactory(delay: delay, settled: settled),
+    },
     thumbnailKey: 'thumbnail_delayed.png',
   );
 }
@@ -163,6 +166,28 @@ void main() {
         );
 
         expect(bytes, isNotEmpty);
+      });
+    });
+
+    testWidgets('waits longer for asynchronous image widget content', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final settled = Completer<void>();
+      final slide = _delayedSlide(
+        delay: const Duration(milliseconds: 400),
+        settled: settled,
+        widgetName: 'image',
+      );
+
+      await tester.runAsync(() async {
+        final bytes = await SlideCaptureService().capture(
+          slide: slide,
+          context: context,
+        );
+
+        expect(bytes, isNotEmpty);
+        expect(settled.isCompleted, isTrue);
       });
     });
 

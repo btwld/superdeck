@@ -3,7 +3,7 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
 
 import '../../../../../core/result.dart';
-import '../../core/engine/services/generation_progress.dart';
+import '../../core/engine/services/deck_generation_request.dart';
 import '../../domain/commands/generate_deck_command.dart';
 
 /// Opens the agent generation panel as a modal dialog.
@@ -33,6 +33,7 @@ class _AgentGeneratePanel extends StatefulWidget {
 class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
+  int _slideCount = 10;
 
   @override
   void initState() {
@@ -51,7 +52,9 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
   Future<void> _generate() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
-    await widget.command(text);
+    await widget.command(
+      DeckGenerationRequest(userIntent: text, slideCount: _slideCount),
+    );
     if (!mounted) return;
     // Close on success; keep open to show the error otherwise.
     if (widget.command.completed) {
@@ -83,6 +86,30 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
                   'Describe your presentation — topic, audience, tone, length…',
             ),
             RowBox(
+              style: FlexBoxStyler().spacing(12),
+              children: [
+                StyledText(
+                  '$_slideCount slides',
+                  style: TextStyler()
+                      .color($foreground())
+                      .style($labelSmall.mix()),
+                ),
+                Expanded(
+                  child: HeroSlider(
+                    min: 5,
+                    max: 20,
+                    snapDivisions: 15,
+                    showOutput: false,
+                    semanticLabel: 'Slide count',
+                    value: _slideCount.toDouble(),
+                    onChanged: (value) {
+                      setState(() => _slideCount = value.round());
+                    },
+                  ),
+                ),
+              ],
+            ),
+            RowBox(
               style: FlexBoxStyler().mainAxisAlignment(.spaceBetween),
               children: [
                 ListenableBuilder(
@@ -90,7 +117,7 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
                   builder: (context, _) {
                     final command = widget.command;
                     if (command.running) {
-                      return _ProgressRow(label: command.phase.label);
+                      return _ProgressRow(label: command.progress.label);
                     }
                     final result = command.result;
                     if (result is Failure) {

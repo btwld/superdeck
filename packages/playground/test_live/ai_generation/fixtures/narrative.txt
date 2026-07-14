@@ -1,0 +1,1 @@
+Create a 6-slide presentation for engineering leaders about moving from reactive incident response to reliability engineering. Build a clear story from operational pain to a practical first 30 days. Use a confident editorial tone, one memorable metric slide, and a dark navy visual system. Do not use external images or embeds.

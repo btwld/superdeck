@@ -5,7 +5,7 @@
 > capabilities, and produces inspectable JSON, Markdown, validation, and rendered
 > artifacts for rapid quality iteration.
 
-Status: Ready to execute
+Status: Complete
 
 ## Objective
 
@@ -104,6 +104,8 @@ Use the existing Flash model constants in
 Keep model selection injectable so live fixtures can compare the existing
 `gemini-2.5-flash` and `gemini-3-flash-preview` configurations without changing
 pipeline code.
+Explicit thinking budgets stay disabled for deck generation so sequential
+outline and slide calls remain fast enough for prompt iteration.
 
 One slide per request is deliberately sequential for v1. It gives the composer
 real continuity and isolates retries to a single slide. Parallel generation is a
@@ -136,12 +138,12 @@ slide context is unnecessary for some slide classes.
 
 ## Work breakdown
 
-- [ ] Task 1: Make model calls and prompts observable and testable
+- [x] Task 1: Make model calls and prompts observable and testable
   - Scope: `packages/playground/lib/features/ai/quick_agent/core/engine/`
   - Introduce an injectable model-client boundary rather than constructing the
     Google service inside the orchestration method.
-  - Split prompt construction into pure builders and load both `PromptRegistry`
-    and `ExamplesLoader` deterministically before generation.
+  - Split prompt construction into pure builders and load `PromptRegistry`
+    deterministically before generation.
   - Add structured trace events for phase, model, elapsed time, attempt, slide
     index/count, rendered prompt, raw response, and validation result. Never log
     the API key.
@@ -149,7 +151,7 @@ slide context is unnecessary for some slide classes.
     and prompt text can be snapshot-tested without the network.
   - Verification: `fvm flutter test test/features/ai/quick_agent`
 
-- [ ] Task 2: Replace the outline with a deck plan
+- [x] Task 2: Replace the outline with a deck plan
   - Scope: `outline_schema.dart`, `outline_system.prompt`, generated schema files,
     and their tests.
   - Preserve `key`, `title`, and `purpose`; add narrative role, content brief,
@@ -163,7 +165,7 @@ slide context is unnecessary for some slide classes.
     slide independently.
   - Verification: schema/adapter tests plus fixture snapshots for three briefs.
 
-- [ ] Task 3: Compose and retry one slide at a time
+- [x] Task 3: Compose and retry one slide at a time
   - Scope: `deck_generator_service.dart`, `deck_generator_pipeline.dart`,
     `deck_generator_workflow.dart`, `generation_progress.dart`, and new
     slide-composer files colocated in the service domain.
@@ -184,9 +186,9 @@ slide context is unnecessary for some slide classes.
   Do not enable richer elements until basic sequential text/table decks are
   deterministic and valid.
 
-- [ ] Task 4: Expose layouts, tables, and generation-capable elements
-  - Scope: generation draft schemas/catalog, `deck_system.prompt`,
-    `_deck_templates.prompt`, example fixtures, sanitizer/normalizer tests.
+- [x] Task 4: Expose layouts, tables, and generation-capable elements
+  - Scope: generation draft schemas/catalog, the single-slide prompt and
+    positive examples, sanitizer/normalizer tests.
   - Teach composition about section rows, flex columns, spacing, alignment,
     normalized insets, fullscreen slides, Markdown tables, and the registered
     element catalog.
@@ -200,7 +202,7 @@ slide context is unnecessary for some slide classes.
   - Verification: schema parity tests, normalizer tests, and renderer tests using
     static fixture payloads.
 
-- [ ] Task 5: Apply generated visual style and make tables presentation-ready
+- [x] Task 5: Apply generated visual style and make tables presentation-ready
   - Scope: `GenerateDeckCommand`, `DeckCustomizationStore`, provider wiring, and
     `test/core/deck_customization_store_test.dart`.
   - Add a typed **applyGeneratedStyle** method that maps the generated
@@ -214,7 +216,7 @@ slide context is unnecessary for some slide classes.
     remains legible on both light and dark generated backgrounds.
   - Verification: store unit tests and light/dark table widget captures.
 
-- [ ] Task 6: Add a live generation lab and artifact bundle
+- [x] Task 6: Add a live generation lab and artifact bundle
   - Scope: a proposed **packages/playground/test_live/ai_generation/** folder, a
     debug-only playground route/surface, `.gitignore`, and
     `packages/playground/README.md`.
@@ -242,7 +244,7 @@ slide context is unnecessary for some slide classes.
   examples using recorded failures; change schemas only when a failure is truly
   contractual rather than aesthetic.
 
-- [ ] Task 7: Regression and cleanup pass
+- [x] Task 7: Regression and cleanup pass
   - Remove the old whole-deck generation path, obsolete `generatingFinalDeck`
     state, stale text-only prompt rules, and dead helpers only after the new path
     is green.

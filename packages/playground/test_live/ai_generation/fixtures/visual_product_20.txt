@@ -1,0 +1,16 @@
+Create a polished launch presentation for "Signal Canvas," a fictional product
+that turns fragmented product analytics, support conversations, and experiment
+results into one evidence workspace for product teams. The presentation should
+work for customers, partners, and developer advocates at a launch event.
+
+Tell a complete product story across four acts: the fragmented evidence problem,
+the new workflow, proof from a six-customer beta, and a concrete adoption path.
+Use these consistent beta facts: six design partners, 38 connected data sources,
+42% less weekly synthesis time, 19% faster experiment decisions, and no change
+to each customer's source-of-truth systems. Cover the evidence inbox, linked
+insights, decision trails, API/webhook extensibility, governance, onboarding,
+pricing shape, and roadmap without turning every slide into a feature list.
+Include the supplied analytics image once where it adds meaning and the supplied
+QR code once on the final call to action. Use purposeful visual variety, concise
+copy, and a strong launch cadence. Do not invent other URLs, customer logos, or
+unsourced claims.

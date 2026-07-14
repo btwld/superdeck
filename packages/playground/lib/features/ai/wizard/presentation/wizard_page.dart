@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../editor/domain/stores/deck_document_store.dart';
 import '../../quick_agent/core/env_config.dart';
 import '../../quick_agent/domain/commands/generate_deck_command.dart';
@@ -32,6 +33,7 @@ class WizardPage extends StatelessWidget {
         ListenableProvider<GenerateDeckCommand>(
           create: (context) => GenerateDeckCommand(
             documentStore: context.read<DeckDocumentStore>(),
+            customizationStore: context.read<DeckCustomizationStore>(),
           ),
           dispose: (_, command) => command.dispose(),
         ),

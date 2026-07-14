@@ -26,9 +26,17 @@ extension type DeckColorsType(Map<String, Object?> _data)
 
   String get background => _data['background'] as String;
 
+  String get surface => _data['surface'] as String;
+
+  String get surfaceAlt => _data['surfaceAlt'] as String;
+
   String get heading => _data['heading'] as String;
 
   String get body => _data['body'] as String;
+
+  String get accent => _data['accent'] as String;
+
+  String get accentContrast => _data['accentContrast'] as String;
 }
 
 /// Extension type for DeckFonts
@@ -48,9 +56,9 @@ extension type DeckFontsType(Map<String, Object?> _data)
     );
   }
 
-  HeadlineFont get headline => _data['headline'] as HeadlineFont;
+  String get headline => _data['headline'] as String;
 
-  BodyFont get body => _data['body'] as BodyFont;
+  String get body => _data['body'] as String;
 }
 
 /// Extension type for DeckStyle
@@ -71,6 +79,12 @@ extension type DeckStyleType(Map<String, Object?> _data)
   }
 
   String get name => _data['name'] as String;
+
+  String get direction => _data['direction'] as String;
+
+  String get density => _data['density'] as String;
+
+  String get typeScale => _data['typeScale'] as String;
 
   DeckColorsType get colors =>
       DeckColorsType(_data['colors'] as Map<String, Object?>);

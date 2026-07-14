@@ -41,3 +41,7 @@ export 'src/deck/loaders/file_deck_loader.dart';
 export 'src/deck/slide_configuration.dart';
 export 'src/deck/slide_template.dart';
 export 'src/deck/widget_factory.dart';
+export 'src/builtins/dartpad_widget.dart' show DartPadDto;
+export 'src/builtins/image_widget.dart' show ImageDto;
+export 'src/builtins/qr_code_widget.dart' show QrCodeDto;
+export 'src/builtins/webview_widget.dart' show WebViewDto;

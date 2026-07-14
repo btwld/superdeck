@@ -649,6 +649,10 @@ void main() {
       await tester.pump();
 
       expect(find.text('Static Title'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.text('Static Title')).style?.color,
+        const Color(0xDD000000),
+      );
       expect(tester.getSize(find.byType(WebViewWrapper)), const Size(640, 480));
       expect(find.byKey(const ValueKey('fake-web-view')), findsNothing);
       expect(webViewPlatform.controllers, isEmpty);

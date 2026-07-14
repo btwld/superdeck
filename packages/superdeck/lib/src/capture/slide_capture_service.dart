@@ -7,6 +7,7 @@ import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mix/mix.dart';
+import 'package:superdeck_core/superdeck_core.dart' show WidgetBlock;
 import '../ui/tokens/colors.dart';
 import '../ui/widgets/provider.dart';
 
@@ -37,8 +38,9 @@ class SlideCaptureService {
   static const _maxConcurrentGenerations = 3;
   static const _kQueuePollInterval = Duration(milliseconds: 50);
   static const _kRenderSettleDelay = Duration(milliseconds: 32);
-  static const _kMaxRenderPasses = 10;
+  static const _kMaxRenderPasses = 30;
   static const _kRequiredStablePasses = 2;
+  static const _kImageMinimumRenderPasses = 16;
 
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
@@ -67,6 +69,9 @@ class SlideCaptureService {
         pixelRatio: quality.pixelRatio,
         context: context,
         targetSize: kResolution,
+        minimumRenderPasses: _containsImageWidget(staticRenderingSlide)
+            ? _kImageMinimumRenderPasses
+            : 0,
       );
 
       final image = await _fromWidgetToImage(
@@ -102,6 +107,14 @@ class SlideCaptureService {
       pixelRatio: quality.pixelRatio * pixelRatio,
     );
     return _imageToUint8List(image);
+  }
+
+  bool _containsImageWidget(SlideConfiguration slide) {
+    return slide.sections.any(
+      (section) => section.blocks.any(
+        (block) => block is WidgetBlock && block.name == 'image',
+      ),
+    );
   }
 
   Future<Uint8List> _imageToUint8List(ui.Image image) async {
@@ -199,7 +212,8 @@ class SlideCaptureService {
         }
 
         stablePasses++;
-        if (stablePasses >= _kRequiredStablePasses) {
+        if (pass + 1 >= config.minimumRenderPasses &&
+            stablePasses >= _kRequiredStablePasses) {
           settled = true;
           break;
         }

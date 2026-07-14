@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 /// Retry helper with exponential backoff and optional jitter.
@@ -80,8 +81,9 @@ class RetryPolicy {
     return Duration(milliseconds: delay.round());
   }
 
-  /// Default retry predicate for service-unavailable (HTTP 503) errors.
+  /// Default retry predicate for transient transport failures.
   static bool defaultRetryDecider(Object error) {
+    if (error is TimeoutException) return true;
     final message = error.toString().toLowerCase();
     return message.contains('503');
   }

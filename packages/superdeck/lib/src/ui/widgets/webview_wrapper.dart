@@ -1,7 +1,7 @@
 import 'dart:async' show FutureOr, unawaited;
 
 import 'package:flutter/foundation.dart' show listEquals;
-import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/material.dart' show BorderRadius, BoxDecoration, Icons;
 import 'package:flutter/widgets.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -337,10 +337,23 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
         : 'WebView unavailable in static capture';
     return SizedBox.expand(
       child: Center(
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 14),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xE6FFFFFF),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xDD000000),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
       ),
     );

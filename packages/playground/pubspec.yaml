@@ -60,10 +60,11 @@ dev_dependencies:
   # against a temp directory.
   path_provider_platform_interface: ^2.1.2
   plugin_platform_interface: ^2.1.8
+  golden_toolkit: ^0.15.0
+  image: ^4.8.0
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/ai_prompts/
-    - assets/ai_prompts/partials/
     - assets/ai_examples/
+    - assets/ai_prompts/

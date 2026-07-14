@@ -44,6 +44,44 @@ does not load `.env` automatically; the define-file flag injects it at build
 time. The Wizard shows a configuration error immediately when the key is
 missing.
 
+## AI generation smoke lab
+
+Generation uses a plan-first pipeline: one model request creates the shared
+narrative/style plan, then the Flash slide model composes and validates each
+slide sequentially with previous/next context. Neither request configures a
+thinking budget. Both default to the existing `gemini-3-flash-preview`
+configuration, keeping live prompt iteration fast while model selection remains
+injectable for comparisons.
+
+Live AI checks are opt-in and live outside `test/`, so normal test runs never
+spend API quota. Run all three versioned briefs with:
+
+```bash
+fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
+  --dart-define-from-file=../../.env --reporter expanded
+```
+
+Set `--dart-define=LIVE_FIXTURE=narrative`, `comparison_table`, or
+`visual_elements` to run one fast fixture. Run the larger quality matrix with:
+
+```bash
+fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
+  --dart-define-from-file=../../.env \
+  --dart-define=LIVE_FIXTURE=large_deck_matrix \
+  --reporter expanded
+```
+
+The matrix generates editorial 10-slide, technical/data 15-slide, and bold
+product 20-slide decks with three exact font pairings. Each run writes an ignored
+artifact bundle under `test_live/ai_generation/artifacts/` containing the typed
+request, brief, deck plan, per-slide prompts and responses, canonical JSON,
+Markdown, validation/timing metadata, slide PNGs, a contact sheet, and a
+machine-readable `quality_report.json`. Captures load the actual selected Google
+font families; they do not register Roboto bytes under aliases.
+
+In debug builds, open `/debug/generation` to exercise the same production
+pipeline interactively with the three fixtures.
+
 ## Deck files
 
 On first launch, choose a parent directory for deck storage. The app creates a

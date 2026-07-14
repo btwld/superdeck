@@ -6,22 +6,30 @@ import 'package:flutter/foundation.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
 import 'package:superdeck_core/superdeck_core.dart';
-import '../prompts/examples_loader.dart';
-import '../prompts/prompt_registry.dart';
+import '../../../../../../core/domain/design/presentation_typography_catalog.dart';
+import '../prompts/generation_prompt_provider.dart';
 import '../schemas/deck_schemas.dart';
 import '../schemas/outline_schema.dart';
+import 'deck_generation_request.dart';
+import 'deck_plan_normalizer.dart';
+import 'deck_plan_validator.dart';
+import 'design_quality_metrics.dart';
 import 'error_classifier.dart';
+import 'generation_model_client.dart';
+import 'generation_element_catalog.dart';
 import 'generation_progress.dart';
+import 'generation_trace.dart';
 import 'google_schema_adapter.dart';
 import 'retry_policy.dart';
-import 'slide_key_utils.dart';
-import 'style_json_serializer.dart';
+import 'source_grounding.dart';
 import '../../constants/gemini_models.dart';
 import '../../debug_logger.dart';
 
 part 'deck_generator_pipeline.dart';
+part 'deck_plan_repair.dart';
 part 'deck_generator_pipeline_helpers.dart';
 part 'deck_generator_workflow.dart';
+part 'generated_slide_validator.dart';
 
 /// Result of deck generation.
 class DeckGenerationResult {
@@ -31,17 +39,19 @@ class DeckGenerationResult {
     this.error,
     List<Slide>? slides,
     this.style,
+    this.plan,
   }) : slides = slides ?? const [];
 
   DeckGenerationResult.success({
     required List<Slide> slides,
-    DeckStyleType? style,
+    required DeckPlanType plan,
   }) : this._(
          success: true,
          message:
              'Successfully generated presentation with ${slides.length} slides.',
          slides: slides,
-         style: style,
+         style: plan.style,
+         plan: plan,
        );
 
   DeckGenerationResult.failure(String error)
@@ -57,78 +67,135 @@ class DeckGenerationResult {
   /// Style configuration extracted from the generated deck.
   final DeckStyleType? style;
 
+  /// The validated, mechanically normalized plan used to compose the deck.
+  final DeckPlanType? plan;
+
   /// Number of slides in the result.
   int get slideCount => slides.length;
 }
 
 /// Service that generates SuperDeck presentations using Google Generative AI.
 ///
-/// Uses a 2-phase pipeline:
-/// 1. Generate outline (structure)
-/// 2. Generate final deck from the outline
+/// Uses a plan-first pipeline, then composes and validates one slide at a time.
 class DeckGeneratorService {
   DeckGeneratorService({
     required this.apiKey,
-    this.modelName = GeminiModelNames.gemini25Flash,
+    this.modelName = GeminiModelNames.gemini3FlashPreview,
     this.outlineModelName = GeminiModelNames.gemini3FlashPreview,
-    this.thinkingBudget = 3072,
+    this.requestTimeout = const Duration(seconds: 45),
+    this.maxOutlineValidationAttempts = 6,
+    this.maxOutlineSlideValidationAttempts = 3,
+    this.maxSlideValidationAttempts = 4,
     RetryPolicy? retryPolicy,
-  }) : retryPolicy = retryPolicy ?? RetryPolicy();
+    GenerationModelClientFactory? modelClientFactory,
+    GenerationPromptProvider? promptProvider,
+    GenerationElementCatalog? elementCatalog,
+    PresentationTypographyCatalog? typographyCatalog,
+  }) : assert(maxOutlineValidationAttempts > 0),
+       assert(maxOutlineSlideValidationAttempts > 0),
+       assert(maxSlideValidationAttempts > 0),
+       retryPolicy = retryPolicy ?? RetryPolicy(maxAttempts: 2),
+       elementCatalog = elementCatalog ?? GenerationElementCatalog.builtIn(),
+       typographyCatalog =
+           typographyCatalog ?? PresentationTypographyCatalog.withDefaults(),
+       _modelClientFactory =
+           modelClientFactory ?? GoogleGenerationModelClient.fromApiKey,
+       _promptProvider = promptProvider ?? AssetGenerationPromptProvider();
+
+  final GenerationElementCatalog elementCatalog;
+
+  final PresentationTypographyCatalog typographyCatalog;
 
   final String apiKey;
 
-  /// Model used for the final deck generation (Phase 3).
+  /// Model used to compose and repair each slide.
   ///
-  /// Defaults to `gemini-2.5-flash` so deck generation works on a free-tier
-  /// API key. Pass `GeminiModelNames.gemini25Pro` for higher-quality decks on a
-  /// billing-enabled key.
+  /// Defaults to the existing `gemini-3-flash-preview` configuration for fast
+  /// sequential composition. Callers can inject another configured model for
+  /// quality and latency comparisons.
   final String modelName;
 
   /// Model used for the outline generation (Phase 1).
   final String outlineModelName;
 
-  /// Token budget for thinking. Set to 0 to disable thinking.
-  final int thinkingBudget;
+  /// Deadline for each outline or slide model call.
+  final Duration requestTimeout;
+
+  /// Bounded initial planning request plus targeted semantic repairs.
+  ///
+  /// Large plans have more cross-field constraints, so bounded follow-up repairs
+  /// can recover when one repair fixes an invariant but disturbs another. The
+  /// sixth and final attempt is only reached after five invalid responses; a
+  /// valid first draft still completes in one request.
+  final int maxOutlineValidationAttempts;
+
+  /// Bounded local repairs for one slide inside an otherwise valid deck plan.
+  ///
+  /// Repairing a small slide object prevents a semantic correction from
+  /// rewriting or regressing the rest of a 10–20-slide blueprint.
+  final int maxOutlineSlideValidationAttempts;
+
+  /// Bounded initial composition plus targeted semantic repairs per slide.
+  ///
+  /// Valid slides still use one request. A fourth and final targeted attempt
+  /// prevents one stubborn semantic miss from forcing a full 10–20-slide deck
+  /// restart after the outline and preceding slides already passed.
+  final int maxSlideValidationAttempts;
 
   /// Retry policy for transient generation failures.
   final RetryPolicy retryPolicy;
 
-  /// Generates a presentation deck from a natural language prompt.
+  final GenerationModelClientFactory _modelClientFactory;
+
+  final GenerationPromptProvider _promptProvider;
+
+  /// Generates a presentation deck from typed user intent.
   ///
-  /// The [prompt] should describe the presentation requirements including:
-  /// - Topic and content
-  /// - Target audience
-  /// - Presentation approach/style
-  /// - Number of slides
-  /// - Visual style preferences
+  /// Contractual fields such as slide count and typography remain typed so they
+  /// can be validated independently from the user's prose.
   ///
-  /// Uses a 2-phase pipeline:
-  /// 1. Generate outline (structure)
-  /// 2. Generate final deck from the outline
+  /// Uses a two-phase pipeline:
+  /// 1. Plan the shared narrative and visual system.
+  /// 2. Compose and validate one slide at a time from that plan.
   ///
   /// Progress updates are reported via [onProgress] if provided.
   Future<DeckGenerationResult> generate(
-    String prompt, {
+    DeckGenerationRequest request, {
     GenerationProgressCallback? onProgress,
+    GenerationTraceCallback? onTrace,
     bool Function()? isCancelled,
   }) async {
-    _logPipelineConfig(this, prompt: prompt);
+    if (request.userIntent.trim().isEmpty) {
+      return DeckGenerationResult.failure(
+        'Describe the presentation to create.',
+      );
+    }
+    if (request.slideCount < 1 || request.slideCount > 50) {
+      return DeckGenerationResult.failure(
+        'Slide count must be between 1 and 50.',
+      );
+    }
+
+    final modelInput = request.toModelInput();
+    _logPipelineConfig(this, prompt: modelInput);
     final pipelineStart = DateTime.now();
-    final service = google_ai.GenerativeService.fromApiKey(apiKey);
+    final service = _modelClientFactory(apiKey);
+    final trace = GenerationTraceEmitter(onTrace);
 
     try {
       bool generationCancelled() => isCancelled?.call() ?? false;
       DeckGenerationResult cancelledResult() =>
           DeckGenerationResult.failure('Generation cancelled.');
 
-      // Ensure dotprompt templates are loaded before any phase renders them.
-      await PromptRegistry.instance.load();
+      await _promptProvider.load();
 
       final outline = await _runOutlinePhase(
         this,
         service: service,
-        prompt: prompt,
+        prompt: modelInput,
+        request: request,
         onProgress: onProgress,
+        trace: trace,
       );
       if (generationCancelled()) {
         return cancelledResult();
@@ -139,12 +206,15 @@ class DeckGeneratorService {
         );
       }
 
-      final deckJson = await _runFinalDeckPhase(
+      final deckJson = await _runSlideCompositionPhase(
         this,
         service: service,
-        prompt: prompt,
+        prompt: modelInput,
+        request: request,
         outline: outline,
         onProgress: onProgress,
+        trace: trace,
+        isCancelled: isCancelled,
       );
       if (generationCancelled()) {
         return cancelledResult();
@@ -152,17 +222,18 @@ class DeckGeneratorService {
 
       if (deckJson == null) {
         return DeckGenerationResult.failure(
-          'Failed to generate final presentation. Please try again.',
+          'Failed while composing presentation slides. Please try again.',
         );
       }
 
       return _finalizeDeck(
         this,
         deckJson: deckJson,
-        expectedSlideCount: (outline['slides'] as List?)?.length ?? 0,
+        plan: outline,
         pipelineStart: pipelineStart,
         onProgress: onProgress,
         isCancelled: isCancelled,
+        trace: trace,
       );
     } catch (e, stack) {
       final totalMs = DateTime.now().difference(pipelineStart).inMilliseconds;

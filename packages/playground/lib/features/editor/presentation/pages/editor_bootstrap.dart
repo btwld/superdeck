@@ -6,6 +6,7 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/data/data_sources/memory_deck_loader.dart';
+import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../../core/result.dart';
 import '../../../ai/quick_agent/domain/commands/generate_deck_command.dart';
 import '../../domain/files/deck_file.dart';
@@ -126,8 +127,10 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
           dispose: (_, controller) => controller.dispose(),
         ),
         ListenableProvider<GenerateDeckCommand>(
-          create: (ctx) =>
-              GenerateDeckCommand(documentStore: ctx.read<DeckDocumentStore>()),
+          create: (ctx) => GenerateDeckCommand(
+            documentStore: ctx.read<DeckDocumentStore>(),
+            customizationStore: ctx.read<DeckCustomizationStore>(),
+          ),
           dispose: (_, command) => command.dispose(),
         ),
       ],

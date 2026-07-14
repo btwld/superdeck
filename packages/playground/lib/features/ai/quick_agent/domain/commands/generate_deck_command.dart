@@ -1,9 +1,12 @@
+import 'package:flutter/widgets.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 
 import '../../../../../core/command.dart';
 import '../../../../../core/result.dart';
 import '../../../../editor/domain/stores/deck_document_store.dart';
+import '../../../../../core/domain/stores/deck_customization_store.dart';
 import '../../core/debug_logger.dart';
+import '../../core/engine/services/deck_generation_request.dart';
 import '../../core/engine/services/deck_generator_service.dart';
 import '../../core/engine/services/generation_progress.dart';
 import '../../core/env_config.dart';
@@ -26,19 +29,25 @@ class GenerationException implements Exception {
 /// intermediate progress, which the base command's binary running state doesn't
 /// model. On success it serializes the slides to Markdown and replaces the
 /// shared [DeckDocumentStore].
-class GenerateDeckCommand extends Command1<void, String> {
-  GenerateDeckCommand({required DeckDocumentStore documentStore})
-    : _documentStore = documentStore;
+class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
+  GenerateDeckCommand({
+    required DeckDocumentStore documentStore,
+    required DeckCustomizationStore customizationStore,
+  }) : _documentStore = documentStore,
+       _customizationStore = customizationStore;
 
   final DeckDocumentStore _documentStore;
+  final DeckCustomizationStore _customizationStore;
 
-  GenerationPhase _phase = GenerationPhase.idle;
+  GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
 
   /// The pipeline stage currently running (outline → deck).
-  GenerationPhase get phase => _phase;
+  GenerationPhase get phase => _progress.phase;
+
+  GenerationProgress get progress => _progress;
 
   @override
-  Future<Result<void>> action(String prompt) async {
+  Future<Result<void>> action(DeckGenerationRequest request) async {
     if (!EnvConfig.hasGeminiApiKey) {
       return const Result.error(
         GenerationException(
@@ -48,12 +57,12 @@ class GenerateDeckCommand extends Command1<void, String> {
       );
     }
 
-    _phase = GenerationPhase.generatingOutline;
+    _progress = const GenerationProgress(GenerationPhase.generatingOutline);
     notifyListeners();
 
     try {
       final service = DeckGeneratorService(apiKey: EnvConfig.geminiApiKey);
-      final result = await service.generate(prompt, onProgress: _onProgress);
+      final result = await service.generate(request, onProgress: _onProgress);
 
       if (!result.success) {
         return Result.error(
@@ -68,6 +77,24 @@ class GenerateDeckCommand extends Command1<void, String> {
 
       final markdown = const SlideSerializer().serialize(result.slides);
       _documentStore.replaceMarkdown(markdown);
+      if (result.style case final style?) {
+        _customizationStore.applyGeneratedStyle(
+          GeneratedDeckStyle(
+            background: _colorFromHex(style.colors.background),
+            surface: _colorFromHex(style.colors.surface),
+            surfaceAlt: _colorFromHex(style.colors.surfaceAlt),
+            heading: _colorFromHex(style.colors.heading),
+            body: _colorFromHex(style.colors.body),
+            accent: _colorFromHex(style.colors.accent),
+            accentContrast: _colorFromHex(style.colors.accentContrast),
+            headlineFamily: style.fonts.headline,
+            bodyFamily: style.fonts.body,
+            direction: style.direction,
+            density: style.density,
+            typeScale: style.typeScale,
+          ),
+        );
+      }
       debugLog.log(
         'GENERATE_DECK',
         'Loaded ${result.slides.length} slides into editor.',
@@ -84,13 +111,18 @@ class GenerateDeckCommand extends Command1<void, String> {
         GenerationException('An unexpected error occurred: $e'),
       );
     } finally {
-      _phase = GenerationPhase.idle;
+      _progress = const GenerationProgress(GenerationPhase.idle);
       notifyListeners();
     }
   }
 
-  void _onProgress(GenerationPhase newPhase) {
-    _phase = newPhase;
+  void _onProgress(GenerationProgress progress) {
+    _progress = progress;
     notifyListeners();
   }
+}
+
+Color _colorFromHex(String value) {
+  final hex = value.replaceFirst('#', '');
+  return Color(int.parse(hex.length == 6 ? 'FF$hex' : hex, radix: 16));
 }

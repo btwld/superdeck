@@ -1,8 +1,6 @@
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
-import 'package:superdeck_core/superdeck_core.dart' show aiSlideSchema;
-
-import '../prompts/font_styles.dart';
+import 'package:superdeck_core/superdeck_core.dart' show HexColorValidation;
 
 part 'deck_schemas.g.dart';
 
@@ -26,26 +24,53 @@ part 'deck_schemas.g.dart';
 /// - body: Body text color
 @AckType(name: 'DeckColors')
 final _deckColorsSchema = Ack.object({
-  'background': Ack.string().describe('Background hex color for slides'),
-  'heading': Ack.string().describe('Hex color for heading text'),
-  'body': Ack.string().describe('Hex color for body text'),
+  'background': Ack.string().hexColor().describe(
+    'Background hex color for slides',
+  ),
+  'surface': Ack.string().hexColor().describe(
+    'Primary elevated surface hex color',
+  ),
+  'surfaceAlt': Ack.string().hexColor().describe(
+    'Secondary elevated surface hex color',
+  ),
+  'heading': Ack.string().hexColor().describe('Hex color for heading text'),
+  'body': Ack.string().hexColor().describe('Hex color for body text'),
+  'accent': Ack.string().hexColor().describe(
+    'Accent hex color for emphasis and decoration',
+  ),
+  'accentContrast': Ack.string().hexColor().describe(
+    'Readable text/icon hex color placed on the accent color',
+  ),
 }).describe('Color palette for the presentation');
 final colorsSchema = _deckColorsSchema;
 
 /// Schema for typography configuration.
 ///
 /// Defines the font families used for headlines and body text.
-/// Uses predefined font enums to ensure only valid Google Fonts are used.
+/// Families are validated against the injected presentation typography catalog
+/// after parsing, which also permits application-registered bundled fonts.
 @AckType(name: 'DeckFonts')
 final _deckFontsSchema = Ack.object({
-  'headline': Ack.enumValues<HeadlineFont>(
-    HeadlineFont.values,
-  ).describe(HeadlineFont.schemaDescription),
-  'body': Ack.enumValues<BodyFont>(
-    BodyFont.values,
-  ).describe(BodyFont.schemaDescription),
+  'headline': Ack.string().describe(
+    'Exact registered font family for display and heading text',
+  ),
+  'body': Ack.string().describe(
+    'Exact registered font family for paragraphs, lists, and tables',
+  ),
 }).describe('Typography configuration');
 final fontsSchema = _deckFontsSchema;
+
+const deckDesignDirections = [
+  'editorial',
+  'minimal',
+  'bold',
+  'technical',
+  'playful',
+];
+
+const deckDensityProfiles = ['spacious', 'balanced', 'compact'];
+
+const deckTypeScales = ['dramatic', 'balanced', 'dense'];
 
 /// Schema for global style configuration.
 ///
@@ -53,25 +78,18 @@ final fontsSchema = _deckFontsSchema;
 @AckType(name: 'DeckStyle')
 final styleSchema = Ack.object({
   'name': Ack.string().describe('Style name identifier'),
+  'direction': Ack.enumString(
+    deckDesignDirections,
+  ).describe('Semantic visual direction mapped to safe Dart styling'),
+  'density': Ack.enumString(
+    deckDensityProfiles,
+  ).describe('Default content-density profile for the deck'),
+  'typeScale': Ack.enumString(
+    deckTypeScales,
+  ).describe('Semantic presentation-scale typography profile'),
   'colors': _deckColorsSchema,
   'fonts': _deckFontsSchema,
 }).describe('Global style configuration for the deck');
-
-// ============================================================================
-// ROOT SCHEMA
-// ============================================================================
-
-/// Schema for the complete slide generation output.
-///
-/// Root schema for SuperDeck presentation generation: the slides array uses
-/// the canonical AI projection exported by `superdeck_core`, so any layout
-/// contract change in core reaches AI generation automatically.
-final slideGenerationSchema = Ack.object({
-  'slides': Ack.list(
-    aiSlideSchema,
-  ).describe('Array of slides in the presentation'),
-  'style': styleSchema,
-}).describe('A SuperDeck presentation with slides and style');
 
 // ============================================================================
 // PROMPT GUIDANCE

@@ -1,0 +1,146 @@
+{
+  "title": {
+    "key": "example",
+    "options": {"title": "A clear promise"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "block", "align": "centerLeft", "content": "# A clear promise\n\nOne sentence establishes why the story matters now."}
+      ]}
+    ]
+  },
+  "content": {
+    "key": "example",
+    "options": {"title": "One idea, fully earned"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "block", "content": "## One idea, fully earned"}
+      ]},
+      {"type": "section", "flex": 3, "blocks": [
+        {"type": "block", "align": "centerLeft", "content": "State the assertion, support it with one concrete example, then make the implication explicit."}
+      ]}
+    ]
+  },
+  "titleLeft": {
+    "key": "example",
+    "options": {"title": "The decision is visible"},
+    "sections": [
+      {"type": "section", "flex": 1, "spacing": 36, "blocks": [
+        {"type": "block", "flex": 2, "align": "centerLeft", "content": "## The decision is visible"},
+        {"type": "block", "flex": 3, "align": "centerLeft", "content": "A concise explanation connects the decision to its consequence.\n\n- Evidence\n- Implication"}
+      ]}
+    ]
+  },
+  "twoColumn": {
+    "key": "example",
+    "options": {"title": "Two operating realities"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "block", "content": "## Two operating realities"}
+      ]},
+      {"type": "section", "flex": 3, "spacing": 32, "blocks": [
+        {"type": "block", "flex": 1, "content": "### Reactive\n\nDecisions follow incidents and fragmented signals."},
+        {"type": "block", "flex": 1, "content": "### Intentional\n\nShared evidence drives earlier, safer decisions."}
+      ]}
+    ]
+  },
+  "threeColumn": {
+    "key": "example",
+    "options": {"title": "Three parts, one system"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "block", "content": "## Three parts, one system"}
+      ]},
+      {"type": "section", "flex": 3, "spacing": 24, "blocks": [
+        {"type": "block", "content": "### Signal\n\nSee the change."},
+        {"type": "block", "content": "### Decision\n\nChoose the response."},
+        {"type": "block", "content": "### Learning\n\nImprove the system."}
+      ]}
+    ]
+  },
+  "table": {
+    "key": "example",
+    "options": {"title": "Compare on shared criteria"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "block", "content": "## Compare on shared criteria"}
+      ]},
+      {"type": "section", "flex": 3, "blocks": [
+        {"type": "block", "content": "| Option | Speed | Control |\n|---|---:|---:|\n| Build | Medium | High |\n| Buy | High | Low |\n| Partner | Medium | Medium |"}
+      ]}
+    ]
+  },
+  "quote": {
+    "key": "example",
+    "options": {"title": "The principle to remember"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "block", "align": "centerLeft", "content": "> A short, sourced idea can create the turn in the story.\n\n— Source or attribution"}
+      ]}
+    ]
+  },
+  "metric": {
+    "key": "example",
+    "options": {"title": "The number changes the decision"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "block", "align": "centerLeft", "content": "# __PLANNED_METRIC__\n\n## The number changes the decision\n\nExplain what moved, compared with what, and why it matters."}
+      ]}
+    ]
+  },
+  "imageSplit": {
+    "key": "example",
+    "options": {"title": "One connected system"},
+    "sections": [
+      {"type": "section", "flex": 1, "spacing": 32, "blocks": [
+        {"type": "block", "flex": 2, "align": "centerLeft", "content": "## One connected system\n\nUse the supplied visual as evidence, then state its implication."},
+        {"type": "widget", "name": "image", "args": {"src": "__SOURCE__", "fit": "cover"}, "flex": 3}
+      ]}
+    ]
+  },
+  "imageFullBleed": {
+    "key": "example",
+    "options": {"title": "The visual carries the idea", "layout": "fullscreen"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "widget", "name": "image", "args": {"src": "__SOURCE__", "fit": "cover"}}
+      ]}
+    ]
+  },
+  "qrcode": {
+    "key": "example",
+    "options": {"title": "Continue the work"},
+    "sections": [
+      {"type": "section", "flex": 1, "spacing": 32, "blocks": [
+        {"type": "block", "flex": 3, "align": "centerLeft", "content": "## Continue the work\n\nScan the supplied destination to take the next action."},
+        {"type": "widget", "name": "qrcode", "args": {"text": "__SOURCE__", "size": 240.0}, "flex": 2}
+      ]}
+    ]
+  },
+  "webview": {
+    "key": "example",
+    "options": {"title": "The live product", "layout": "fullscreen"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "widget", "name": "webview", "args": {"url": "__SOURCE__", "title": "Live product", "showControls": true}}
+      ]}
+    ]
+  },
+  "dartpad": {
+    "key": "example",
+    "options": {"title": "Run the example", "layout": "fullscreen"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "widget", "name": "dartpad", "args": {"id": "__SOURCE__", "embed": true, "run": true}}
+      ]}
+    ]
+  },
+  "custom": {
+    "key": "example",
+    "options": {"title": "Purpose-built visual", "layout": "fullscreen"},
+    "sections": [
+      {"type": "section", "flex": 1, "blocks": [
+        {"type": "widget", "name": "__WIDGET__", "args": {}}
+      ]}
+    ]
+  }
+}

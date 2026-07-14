@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -134,7 +135,11 @@ void main() {
   });
 
   group('defaultRetryDecider', () {
-    test('retries only on 503 markers', () {
+    test('retries timeouts and 503 markers', () {
+      expect(
+        RetryPolicy.defaultRetryDecider(TimeoutException('request timed out')),
+        isTrue,
+      );
       expect(RetryPolicy.defaultRetryDecider(Exception('503')), isTrue);
       expect(RetryPolicy.defaultRetryDecider(Exception('500')), isFalse);
     });

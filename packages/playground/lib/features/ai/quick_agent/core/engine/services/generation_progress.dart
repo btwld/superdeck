@@ -6,8 +6,8 @@ enum GenerationPhase {
   /// Phase 1: Generating presentation outline (structure + layout hints).
   generatingOutline,
 
-  /// Phase 2: Generating final deck from the outline.
-  generatingFinalDeck,
+  /// Phase 2: Composing and validating slides from the deck plan.
+  composingSlides,
 
   /// Writing final JSON and cleaning up.
   finalizing,
@@ -16,14 +16,40 @@ enum GenerationPhase {
   generatingThumbnails,
 }
 
+/// Detailed progress for a generation run.
+final class GenerationProgress {
+  const GenerationProgress(
+    this.phase, {
+    this.slideIndex,
+    this.slideCount,
+    this.isRepairing = false,
+  });
+
+  final GenerationPhase phase;
+  final int? slideIndex;
+  final int? slideCount;
+  final bool isRepairing;
+
+  String get label {
+    final index = slideIndex;
+    final count = slideCount;
+    if (phase == GenerationPhase.composingSlides &&
+        index != null &&
+        count != null) {
+      return '${isRepairing ? 'Repairing' : 'Composing'} slide $index of $count…';
+    }
+    return phase.label;
+  }
+}
+
 /// Callback for generation progress updates.
-typedef GenerationProgressCallback = void Function(GenerationPhase phase);
+typedef GenerationProgressCallback = void Function(GenerationProgress progress);
 
 /// Human-readable label for each [GenerationPhase].
 extension GenerationPhaseLabel on GenerationPhase {
   String get label => switch (this) {
     GenerationPhase.generatingOutline => 'Planning the outline…',
-    GenerationPhase.generatingFinalDeck => 'Writing the slides…',
+    GenerationPhase.composingSlides => 'Composing the slides…',
     GenerationPhase.finalizing => 'Finalizing…',
     GenerationPhase.generatingThumbnails => 'Rendering thumbnails…',
     GenerationPhase.idle => 'Working…',

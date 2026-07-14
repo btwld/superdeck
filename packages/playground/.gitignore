@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+test_live/ai_generation/artifacts/
 
 # Symbolication related
 app.*.symbols

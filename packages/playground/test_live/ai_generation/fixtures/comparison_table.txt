@@ -1,0 +1,1 @@
+Create a 5-slide presentation for a product team choosing between build, buy, and partner approaches for an analytics platform. Include one concise comparison table with consistent columns and no more than five rows, then make a recommendation. Use a light warm visual system with strong table contrast. Do not invent sources or URLs.
