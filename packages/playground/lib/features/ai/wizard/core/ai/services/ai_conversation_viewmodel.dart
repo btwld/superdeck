@@ -185,10 +185,7 @@ final class AiConversationViewModel implements Disposable {
 
     final next = [..._messages.value];
     final index = _streamingAiMessageIndex;
-    if (index != null &&
-        index >= 0 &&
-        index < next.length &&
-        next[index] is SuperdeckAiMessage) {
+    if (index != null && index >= 0 && index < next.length) {
       next[index] = SuperdeckAiMessage(_streamingAiResponse);
     } else {
       _streamingAiMessageIndex = next.length;
