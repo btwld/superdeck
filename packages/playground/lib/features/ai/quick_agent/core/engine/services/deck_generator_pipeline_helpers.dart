@@ -1,19 +1,20 @@
-part of 'deck_generator_service.dart';
+import 'package:superdeck_core/superdeck_core.dart' show WidgetBlock;
 
-@visibleForTesting
+import '../schemas/outline_schema.dart';
+import 'generation_element_catalog.dart';
+
 List<Map<String, dynamic>> sanitizeGeneratedSlides(
   List<Map<String, dynamic>> slides,
 ) {
   return slides.map(_sanitizeSlide).nonNulls.toList();
 }
 
-@visibleForTesting
 Map<String, dynamic> hydrateGeneratedElementSources({
   required Map<String, dynamic> slide,
   required DeckPlanSlideType planSlide,
   required GenerationElementCatalog elementCatalog,
 }) {
-  final hydrated = Map<String, dynamic>.from(slide);
+  final hydrated = Map<String, dynamic>.of(slide);
   final rawSections = slide['sections'];
   if (rawSections is! List) return hydrated;
 
@@ -82,7 +83,7 @@ Map<String, dynamic> _hydrateBlockElementSource(
 }
 
 Map<String, dynamic>? _sanitizeSlide(Map<String, dynamic> slide) {
-  final sanitizedSlide = Map<String, dynamic>.from(slide);
+  final sanitizedSlide = Map<String, dynamic>.of(slide);
   final sections = <Map<String, dynamic>>[];
   final rawSections = slide['sections'];
   if (rawSections is List) {
@@ -102,7 +103,7 @@ Map<String, dynamic>? _sanitizeSlide(Map<String, dynamic> slide) {
   return sanitizedSlide;
 }
 
-Map<String, dynamic>? _sanitizeSection(dynamic rawSection) {
+Map<String, dynamic>? _sanitizeSection(Object? rawSection) {
   if (rawSection is! Map) {
     return null;
   }
@@ -129,7 +130,7 @@ Map<String, dynamic>? _sanitizeSection(dynamic rawSection) {
   return section;
 }
 
-Map<String, dynamic>? _sanitizeBlock(dynamic rawBlock) {
+Map<String, dynamic>? _sanitizeBlock(Object? rawBlock) {
   if (rawBlock is! Map) {
     return null;
   }

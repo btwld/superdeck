@@ -2,6 +2,7 @@ import '../../../../../../core/domain/design/presentation_typography_catalog.dar
 import '../schemas/outline_schema.dart';
 import 'deck_generation_request.dart';
 import 'design_quality_metrics.dart';
+import 'generation_validation_issue.dart';
 import 'source_grounding.dart';
 
 /// Returns semantic errors that are not expressible in the deck-plan schema.
@@ -10,62 +11,155 @@ List<String> validateDeckPlan(
   int? expectedSlideCount,
   PresentationTypographyCatalog? typographyCatalog,
   DeckGenerationRequest? request,
+}) => validateDeckPlanIssues(
+  plan,
+  expectedSlideCount: expectedSlideCount,
+  typographyCatalog: typographyCatalog,
+  request: request,
+).messages;
+
+/// Returns typed semantic issues for pipeline decisions and diagnostics.
+List<GenerationValidationIssue> validateDeckPlanIssues(
+  DeckPlanType plan, {
+  int? expectedSlideCount,
+  PresentationTypographyCatalog? typographyCatalog,
+  DeckGenerationRequest? request,
 }) {
-  final errors = <String>[];
+  final issues = GenerationValidationCollector();
   final usedKeys = <String>{};
   final catalog =
       typographyCatalog ?? PresentationTypographyCatalog.withDefaults();
   final exactSlideCount = request?.slideCount ?? expectedSlideCount;
 
   if (exactSlideCount != null && plan.slides.length != exactSlideCount) {
-    errors.add(
-      'Deck plan has ${plan.slides.length} slides; '
-      'expected exactly $exactSlideCount.',
-    );
+    issues
+        .scoped(code: GenerationValidationCode.slideCount)
+        .add(
+          'Deck plan has ${plan.slides.length} slides; '
+          'expected exactly $exactSlideCount.',
+        );
   }
 
   if (plan.slides.isEmpty) {
-    errors.add('Deck plan has no slides.');
-    return errors;
+    issues
+        .scoped(code: GenerationValidationCode.slideCount)
+        .add('Deck plan has no slides.');
+    return issues.issues.uniqueIssues;
   }
 
   for (final (index, slide) in plan.slides.indexed) {
+    final slideIssues = issues.scoped(
+      code: GenerationValidationCode.planStructure,
+      location: GenerationValidationLocation.planSlide,
+      slideKey: slide.key,
+    );
     final key = slide.key.trim();
     if (key.isEmpty) {
-      errors.add('Slide ${index + 1} has an empty key.');
+      slideIssues.add('Slide ${index + 1} has an empty key.');
       continue;
     }
     if (!usedKeys.add(key)) {
-      errors.add('Duplicate slide key "$key".');
+      slideIssues.add('Duplicate slide key "$key".');
     }
     if (slide.assertion.trim().isEmpty) {
-      errors.add('Slide "$key" has an empty assertion.');
+      slideIssues
+          .scoped(locallyRepairable: true)
+          .add('Slide "$key" has an empty assertion.');
     }
     if (slide.contentUnits.isEmpty ||
         slide.contentUnits.every((unit) => unit.trim().isEmpty)) {
-      errors.add('Slide "$key" has no concrete content units.');
+      slideIssues
+          .scoped(locallyRepairable: true)
+          .add('Slide "$key" has no concrete content units.');
     }
   }
 
-  _validateSections(plan, errors);
-  _validateTypography(plan, catalog, request, errors);
-  _validatePalette(plan, request, errors);
-  _validateElementGrounding(plan, request, errors);
-  _validateVisibleSourceGrounding(plan, request, errors);
-  _validateNumericClaimGrounding(plan, request, errors);
-  _validateNumericClaimContext(plan, request, errors);
-  _validateMetricIntent(plan, request, errors);
-  _validateCommitmentGrounding(plan, request, errors);
-  _validateTreatmentIntent(plan, errors);
-  _validateDesignRhythm(plan, errors);
+  _validateSections(
+    plan,
+    issues.scoped(code: GenerationValidationCode.planStructure),
+  );
+  _validateTypography(
+    plan,
+    catalog,
+    request,
+    issues.scoped(code: GenerationValidationCode.typography),
+  );
+  _validatePalette(
+    plan,
+    request,
+    issues.scoped(
+      code: GenerationValidationCode.paletteContrast,
+      category: GenerationValidationCategory.accessibility,
+    ),
+  );
+  _validateElementGrounding(
+    plan,
+    request,
+    issues.scoped(
+      code: GenerationValidationCode.elementGrounding,
+      category: GenerationValidationCategory.grounding,
+    ),
+  );
+  _validateVisibleSourceGrounding(
+    plan,
+    request,
+    issues.scoped(
+      code: GenerationValidationCode.visibleSourceGrounding,
+      category: GenerationValidationCategory.grounding,
+    ),
+  );
+  _validateNumericClaimGrounding(
+    plan,
+    request,
+    issues.scoped(
+      code: GenerationValidationCode.numericGrounding,
+      category: GenerationValidationCategory.factual,
+    ),
+  );
+  _validateNumericClaimContext(
+    plan,
+    request,
+    issues.scoped(
+      code: GenerationValidationCode.numericMeaning,
+      category: GenerationValidationCategory.factual,
+    ),
+  );
+  _validateMetricIntent(
+    plan,
+    request,
+    issues.scoped(
+      code: GenerationValidationCode.metricIntent,
+      category: GenerationValidationCategory.factual,
+    ),
+  );
+  _validateCommitmentGrounding(
+    plan,
+    request,
+    issues.scoped(
+      code: GenerationValidationCode.commitmentGrounding,
+      category: GenerationValidationCategory.factual,
+    ),
+  );
+  _validateTreatmentIntent(
+    plan,
+    issues.scoped(code: GenerationValidationCode.treatmentIntent),
+  );
+  _validateDesignRhythm(
+    plan,
+    issues.scoped(
+      code: GenerationValidationCode.designRhythm,
+      category: GenerationValidationCategory.quality,
+      severity: GenerationValidationSeverity.diagnostic,
+    ),
+  );
 
-  return errors.toSet().toList();
+  return issues.issues.uniqueIssues;
 }
 
 void _validateMetricIntent(
   DeckPlanType plan,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   if (request == null) return;
   for (final slide in plan.slides) {
@@ -77,7 +171,12 @@ void _validateMetricIntent(
       slide.contentBrief,
     ]);
     if (metrics.isEmpty) {
-      errors.add(
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+        locallyRepairable: true,
+      );
+      slideErrors.add(
         'Slide "${slide.key}" selects composition "metric" without an '
         'explicit audience-facing numeric fact. Put the exact grounded value '
         'and what it measures in contentUnits, or choose a non-metric '
@@ -90,7 +189,7 @@ void _validateMetricIntent(
 void _validateNumericClaimContext(
   DeckPlanType plan,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   if (request == null) return;
   for (final slide in plan.slides) {
@@ -107,7 +206,12 @@ void _validateNumericClaimContext(
       allowSlideContextFallback: true,
     );
     if (mismatches.isNotEmpty) {
-      errors.add(
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+        locallyRepairable: true,
+      );
+      slideErrors.add(
         'Slide "${slide.key}" changes the supplied meaning of numeric '
         'claim(s) ${mismatches.join(', ')}. Preserve each claim\'s original '
         'unit, comparison, and subject.',
@@ -119,7 +223,7 @@ void _validateNumericClaimContext(
 void _validateCommitmentGrounding(
   DeckPlanType plan,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   if (request == null) return;
   final narrativeUnsupported = findUnsupportedCommitmentPhrases(
@@ -155,7 +259,12 @@ void _validateCommitmentGrounding(
       userIntent: request.userIntent,
     );
     if (unsupported.isNotEmpty) {
-      errors.add(
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+        locallyRepairable: true,
+      );
+      slideErrors.add(
         'Slide "${slide.key}" introduces unsupported commitment claim(s): '
         '${unsupported.join(', ')}. Remove them unless userIntent supplied '
         'the exact claim.',
@@ -167,7 +276,7 @@ void _validateCommitmentGrounding(
 void _validateNumericClaimGrounding(
   DeckPlanType plan,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   if (request == null) return;
   final groundedClaims = extractGroundedNumericClaims([request.userIntent]);
@@ -184,7 +293,12 @@ void _validateNumericClaimGrounding(
       groundedClaims: groundedClaims,
     );
     if (ungrounded.isNotEmpty) {
-      errors.add(
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+        locallyRepairable: true,
+      );
+      slideErrors.add(
         'Slide "${slide.key}" uses numeric claim(s) '
         '${ungrounded.join(', ')} that are not present in userIntent. '
         '${unsupportedNumericClaimRepairGuidance(ungrounded)}',
@@ -193,7 +307,10 @@ void _validateNumericClaimGrounding(
   }
 }
 
-void _validateTreatmentIntent(DeckPlanType plan, List<String> errors) {
+void _validateTreatmentIntent(
+  DeckPlanType plan,
+  GenerationValidationCollector errors,
+) {
   for (final slide in plan.slides) {
     final allowed = switch (slide.treatment) {
       'hero' => const {'title'},
@@ -204,7 +321,11 @@ void _validateTreatmentIntent(DeckPlanType plan, List<String> errors) {
       _ => null,
     };
     if (allowed != null && !allowed.contains(slide.composition)) {
-      errors.add(
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+      );
+      slideErrors.add(
         'Slide "${slide.key}" pairs treatment "${slide.treatment}" with '
         'composition "${slide.composition}"; allowed compositions are '
         '${allowed.join(', ')}.',
@@ -216,7 +337,7 @@ void _validateTreatmentIntent(DeckPlanType plan, List<String> errors) {
 void _validateVisibleSourceGrounding(
   DeckPlanType plan,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   if (request == null) return;
   final allowedDomains = extractReferencedDomains([
@@ -224,6 +345,11 @@ void _validateVisibleSourceGrounding(
     for (final element in request.groundedElements) element.source,
   ]);
   for (final slide in plan.slides) {
+    final slideErrors = errors.scoped(
+      location: GenerationValidationLocation.planSlide,
+      slideKey: slide.key,
+      locallyRepairable: true,
+    );
     final referencedDomains = extractReferencedDomains([
       slide.title,
       slide.purpose,
@@ -233,7 +359,7 @@ void _validateVisibleSourceGrounding(
       slide.continuity,
     ]);
     for (final domain in referencedDomains.difference(allowedDomains)) {
-      errors.add(
+      slideErrors.add(
         'Slide "${slide.key}" introduces ungrounded visible domain '
         '"$domain". Use only domains supplied in userIntent or '
         'groundedElements.',
@@ -242,7 +368,10 @@ void _validateVisibleSourceGrounding(
   }
 }
 
-void _validateSections(DeckPlanType plan, List<String> errors) {
+void _validateSections(
+  DeckPlanType plan,
+  GenerationValidationCollector errors,
+) {
   if (plan.sections.isEmpty) {
     errors.add('Deck plan has no narrative sections.');
     return;
@@ -298,7 +427,7 @@ void _validateTypography(
   DeckPlanType plan,
   PresentationTypographyCatalog catalog,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   final headline = catalog.resolve(plan.style.fonts.headline);
   final body = catalog.resolve(plan.style.fonts.body);
@@ -336,7 +465,7 @@ void _validateRequestedFont({
   required String? requested,
   required PresentationFontDescriptor? planned,
   required PresentationTypographyCatalog catalog,
-  required List<String> errors,
+  required GenerationValidationCollector errors,
 }) {
   if (requested == null) return;
   final expected = catalog.resolve(requested);
@@ -355,7 +484,7 @@ void _validateRequestedFont({
 void _validatePalette(
   DeckPlanType plan,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   final colors = plan.style.colors;
   _requireContrast(
@@ -406,7 +535,7 @@ void _validatePalette(
 void _validateElementGrounding(
   DeckPlanType plan,
   DeckGenerationRequest? request,
-  List<String> errors,
+  GenerationValidationCollector errors,
 ) {
   for (final slide in plan.slides) {
     final requiredType = switch (slide.composition) {
@@ -421,7 +550,11 @@ void _validateElementGrounding(
         !(slide.elements ?? const <DeckPlanElementType>[]).any(
           (element) => element.type == requiredType,
         )) {
-      errors.add(
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+      );
+      slideErrors.add(
         'Slide "${slide.key}" uses composition "${slide.composition}" but '
         'does not plan the required $requiredType element.',
       );
@@ -433,12 +566,16 @@ void _validateElementGrounding(
       .map((element) => element.source)
       .toSet();
   for (final slide in plan.slides) {
+    final slideErrors = errors.scoped(
+      location: GenerationValidationLocation.planSlide,
+      slideKey: slide.key,
+    );
     for (final element in slide.elements ?? const <DeckPlanElementType>[]) {
       final source = element.source;
       if (source == null || source.trim().isEmpty) continue;
       if (!structuredSources.contains(source) &&
           !request.userIntent.contains(source)) {
-        errors.add(
+        slideErrors.add(
           'Slide "${slide.key}" uses ungrounded ${element.type} source '
           '"$source".',
         );
@@ -454,7 +591,7 @@ void _validateElementGrounding(
       }
       if (groundedElement == null) continue;
       if (element.purpose.trim() != groundedElement.purpose.trim()) {
-        errors.add(
+        slideErrors.add(
           'Slide "${slide.key}" changes the supplied ${element.type} purpose. '
           'Copy it exactly as "${groundedElement.purpose}".',
         );
@@ -472,11 +609,16 @@ void _validateElementGrounding(
         ],
       );
       if (missingTerms.isNotEmpty) {
-        errors.add(
-          'Slide "${slide.key}" ${element.type} handoff omits grounded '
-          'purpose term(s): ${missingTerms.join(', ')}. Preserve the supplied '
-          'destination or experience identity in audience-facing copy.',
-        );
+        slideErrors
+            .scoped(
+              code: GenerationValidationCode.handoffPurpose,
+              locallyRepairable: true,
+            )
+            .add(
+              'Slide "${slide.key}" ${element.type} handoff omits grounded '
+              'purpose term(s): ${missingTerms.join(', ')}. Preserve the supplied '
+              'destination or experience identity in audience-facing copy.',
+            );
       }
     }
   }
@@ -488,7 +630,10 @@ bool _isAudienceHandoffElement(String type) =>
     type == 'dartpad' ||
     type == 'custom';
 
-void _validateDesignRhythm(DeckPlanType plan, List<String> errors) {
+void _validateDesignRhythm(
+  DeckPlanType plan,
+  GenerationValidationCollector errors,
+) {
   _rejectLongRuns(
     values: plan.slides.map((slide) => slide.composition).toList(),
     label: 'composition',
@@ -521,7 +666,7 @@ void _validateDesignRhythm(DeckPlanType plan, List<String> errors) {
 void _rejectLongRuns({
   required List<String> values,
   required String label,
-  required List<String> errors,
+  required GenerationValidationCollector errors,
 }) {
   var run = 1;
   for (var index = 1; index < values.length; index++) {
@@ -540,7 +685,7 @@ void _requireContrast({
   required String background,
   required double minimum,
   required String label,
-  required List<String> errors,
+  required GenerationValidationCollector errors,
 }) {
   final ratio = calculateContrastRatio(foreground, background);
   if (ratio < minimum) {

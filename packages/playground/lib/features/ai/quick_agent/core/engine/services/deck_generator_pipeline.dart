@@ -9,7 +9,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   ///
   /// Returns the outline JSON or null on failure.
   Future<DeckPlanType?> _generateOutline(
-    GenerationModelClient service,
+    GenerationModelCallExecutor executor,
     String prompt,
     GenerationTraceEmitter trace,
     DeckGenerationRequest request,
@@ -25,8 +25,8 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       return null;
     }
 
-    var validationErrors = <String>[];
-    final repairConstraints = <String>[];
+    var validationIssues = <GenerationValidationIssue>[];
+    final repairConstraints = <GenerationValidationIssue>[];
     Map<String, dynamic>? invalidPlan;
     for (
       var repairAttempt = 1;
@@ -35,7 +35,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     ) {
       final systemPrompt = _promptProvider.buildOutlinePrompt(
         typographyCatalog: typographyCatalog,
-        validationErrors: repairConstraints,
+        validationIssues: repairConstraints,
         invalidPlan: invalidPlan,
       );
       debugLog.log(
@@ -65,39 +65,29 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             ? 'Sending outline request to $outlineModelName...'
             : 'Repairing outline with $outlineModelName...',
       );
-      final response = await retryPolicy.run(() {
-        trace.emit(
-          kind: GenerationTraceKind.request,
-          phase: GenerationTracePhase.outline,
-          model: outlineModelName,
-          attempt: repairAttempt,
-          prompt: systemPrompt,
-        );
-        return service
-            .generateContent(modelRequest)
-            .timeout(
-              requestTimeout,
-              onTimeout: () {
-                throw TimeoutException('Outline generation timed out');
-              },
-            );
-      });
+      final response = await executor.execute(
+        request: modelRequest,
+        phase: GenerationTracePhase.outline,
+        model: outlineModelName,
+        prompt: systemPrompt,
+        semanticAttempt: repairAttempt,
+        isRepair: repairAttempt > 1,
+        timeoutMessage: 'Outline generation timed out',
+      );
       debugLog.log(
         'DECK_GEN',
         'Outline response: ${response.candidates.length} candidates',
       );
-      trace.emit(
-        kind: GenerationTraceKind.response,
-        phase: GenerationTracePhase.outline,
-        model: outlineModelName,
-        attempt: repairAttempt,
-        response: _responseText(response),
-      );
-
       final json = _parseJsonResponse(response, 'outline');
       if (json == null) {
-        validationErrors = const [
-          'Model response was not a JSON deck-plan object.',
+        validationIssues = const [
+          GenerationValidationIssue(
+            code: GenerationValidationCode.invalidResponse,
+            category: GenerationValidationCategory.schema,
+            severity: GenerationValidationSeverity.blocking,
+            location: GenerationValidationLocation.deck,
+            message: 'Model response was not a JSON deck-plan object.',
+          ),
         ];
         invalidPlan = null;
       } else {
@@ -107,27 +97,25 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             DeckPlanType.parse(json),
           );
           invalidPlan = Map<String, dynamic>.from(plan);
-          validationErrors = validateDeckPlan(
+          validationIssues = validateDeckPlanIssues(
             plan,
             request: request,
             typographyCatalog: typographyCatalog,
           );
-          if (_onlySlideScopedPlanErrors(validationErrors)) {
+          if (_onlySlideScopedPlanIssues(validationIssues)) {
             final repairedPlan = await _repairInvalidOutlineSlides(
-              service: service,
+              executor: executor,
               originalPrompt: prompt,
               plan: plan,
               request: request,
-              trace: trace,
-              fullPlanAttempt: repairAttempt,
             );
-            validationErrors = validateDeckPlan(
+            validationIssues = validateDeckPlanIssues(
               repairedPlan,
               request: request,
               typographyCatalog: typographyCatalog,
             );
             invalidPlan = Map<String, dynamic>.from(repairedPlan);
-            if (validationErrors.isEmpty) {
+            if (validationIssues.blockingIssues.isEmpty) {
               trace.emit(
                 kind: GenerationTraceKind.validation,
                 phase: GenerationTracePhase.outline,
@@ -136,7 +124,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
               return repairedPlan;
             }
           }
-          if (validationErrors.isEmpty) {
+          if (validationIssues.blockingIssues.isEmpty) {
             trace.emit(
               kind: GenerationTraceKind.validation,
               phase: GenerationTracePhase.outline,
@@ -145,21 +133,28 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             return plan;
           }
         } catch (error) {
-          validationErrors = ['Deck plan schema was invalid: $error'];
+          validationIssues = [
+            GenerationValidationIssue(
+              code: GenerationValidationCode.invalidSchema,
+              category: GenerationValidationCategory.schema,
+              severity: GenerationValidationSeverity.blocking,
+              location: GenerationValidationLocation.deck,
+              message: 'Deck plan schema was invalid: $error',
+            ),
+          ];
         }
       }
       debugLog.error(
         'DECK_GEN',
-        'Invalid deck plan: ${validationErrors.join(' ')}',
+        'Invalid deck plan: ${validationIssues.messages.join(' ')}',
       );
-      for (final error in validationErrors) {
-        if (!repairConstraints.contains(error)) repairConstraints.add(error);
-      }
+      _appendUniqueIssues(repairConstraints, validationIssues.blockingIssues);
       trace.emit(
         kind: GenerationTraceKind.validation,
         phase: GenerationTracePhase.outline,
         attempt: repairAttempt,
-        validationErrors: validationErrors,
+        validationErrors: validationIssues.messages,
+        validationIssues: validationIssues,
       );
     }
     return null;
@@ -170,7 +165,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   // ===========================================================================
 
   Future<Map<String, dynamic>?> _composeSlides(
-    GenerationModelClient service,
+    GenerationModelCallExecutor executor,
     String prompt,
     DeckPlanType plan,
     DeckGenerationRequest request,
@@ -192,8 +187,8 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           ? plan.slides[index + 1]
           : null;
       Map<String, dynamic>? composed;
-      var validationErrors = <String>[];
-      final repairConstraints = <String>[];
+      var validationIssues = <GenerationValidationIssue>[];
+      final repairConstraints = <GenerationValidationIssue>[];
 
       for (
         var repairAttempt = 1;
@@ -209,22 +204,27 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           ),
         );
         composed = await _generateSingleSlide(
-          service: service,
+          executor: executor,
           originalPrompt: prompt,
           plan: plan,
           current: current,
           previousSlide: slides.lastOrNull,
           next: next,
-          validationErrors: repairConstraints,
+          validationIssues: repairConstraints,
           invalidSlide: composed,
           repairAttempt: repairAttempt,
           slideIndex: index + 1,
           slideCount: plan.slides.length,
-          trace: trace,
         );
         if (composed == null) {
-          validationErrors = const [
-            'Model response was not a JSON slide object.',
+          validationIssues = const [
+            GenerationValidationIssue(
+              code: GenerationValidationCode.invalidResponse,
+              category: GenerationValidationCategory.schema,
+              severity: GenerationValidationSeverity.blocking,
+              location: GenerationValidationLocation.visibleContent,
+              message: 'Model response was not a JSON slide object.',
+            ),
           ];
         } else {
           composed = hydrateGeneratedElementSources(
@@ -236,7 +236,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             rawSlide: composed,
             planSlide: current,
           );
-          validationErrors = validateGeneratedSlide(
+          validationIssues = validateGeneratedSlideIssues(
             expectedKey: current.key,
             rawSlide: composed,
             planSlide: current,
@@ -245,11 +245,11 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           );
           final commentSafeSlide = removeInvalidOptionalSpeakerComments(
             rawSlide: composed,
-            validationErrors: validationErrors,
+            validationIssues: validationIssues,
           );
           if (!identical(commentSafeSlide, composed)) {
             composed = commentSafeSlide;
-            validationErrors = validateGeneratedSlide(
+            validationIssues = validateGeneratedSlideIssues(
               expectedKey: current.key,
               rawSlide: composed,
               planSlide: current,
@@ -264,18 +264,18 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           attempt: repairAttempt,
           slideIndex: index + 1,
           slideCount: plan.slides.length,
-          validationErrors: validationErrors,
+          validationErrors: validationIssues.messages,
+          validationIssues: validationIssues,
         );
-        if (validationErrors.isEmpty) break;
-        for (final error in validationErrors) {
-          if (!repairConstraints.contains(error)) repairConstraints.add(error);
-        }
+        if (validationIssues.blockingIssues.isEmpty) break;
+        _appendUniqueIssues(repairConstraints, validationIssues.blockingIssues);
       }
 
-      if (composed == null || validationErrors.isNotEmpty) {
+      if (composed == null || validationIssues.blockingIssues.isNotEmpty) {
         debugLog.error(
           'DECK_GEN',
-          'Slide ${index + 1} failed validation: ${validationErrors.join(' ')}',
+          'Slide ${index + 1} failed validation: '
+              '${validationIssues.messages.join(' ')}',
         );
         return null;
       }
@@ -299,18 +299,19 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   }
 
   Future<Map<String, dynamic>?> _generateSingleSlide({
-    required GenerationModelClient service,
+    required GenerationModelCallExecutor executor,
     required String originalPrompt,
     required DeckPlanType plan,
     required DeckPlanSlideType current,
     required Map<String, Object?>? previousSlide,
+    // The final slide intentionally has no next-slide context.
+    // ignore: avoid-unnecessary-nullable-parameters
     required DeckPlanSlideType? next,
-    required List<String> validationErrors,
+    required List<GenerationValidationIssue> validationIssues,
     required Map<String, Object?>? invalidSlide,
     required int repairAttempt,
     required int slideIndex,
     required int slideCount,
-    required GenerationTraceEmitter trace,
   }) async {
     // Live Gemini probes confirm that array bounds are supported on the
     // smaller outline schema but push this complete nested slide schema past
@@ -339,7 +340,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       previousSlide: previousSlide,
       next: next,
       elementCatalog: elementCatalog,
-      validationErrors: validationErrors,
+      validationIssues: validationIssues,
       invalidSlide: invalidSlide,
     );
     debugLog.log(
@@ -366,39 +367,21 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     );
 
     debugLog.log('DECK_GEN', 'Composing slide $slideIndex/$slideCount...');
-    final response = await retryPolicy.run(() {
-      trace.emit(
-        kind: GenerationTraceKind.request,
-        phase: GenerationTracePhase.slide,
-        model: modelName,
-        attempt: repairAttempt,
-        slideIndex: slideIndex,
-        slideCount: slideCount,
-        prompt: systemPrompt,
-      );
-      return service
-          .generateContent(request)
-          .timeout(
-            requestTimeout,
-            onTimeout: () {
-              throw TimeoutException('Slide generation timed out');
-            },
-          );
-    });
+    final response = await executor.execute(
+      request: request,
+      phase: GenerationTracePhase.slide,
+      model: modelName,
+      prompt: systemPrompt,
+      semanticAttempt: repairAttempt,
+      isRepair: repairAttempt > 1,
+      timeoutMessage: 'Slide generation timed out',
+      slideIndex: slideIndex,
+      slideCount: slideCount,
+    );
     debugLog.log(
       'DECK_GEN',
       'Slide response: ${response.candidates.length} candidates',
     );
-    trace.emit(
-      kind: GenerationTraceKind.response,
-      phase: GenerationTracePhase.slide,
-      model: modelName,
-      attempt: repairAttempt,
-      slideIndex: slideIndex,
-      slideCount: slideCount,
-      response: _responseText(response),
-    );
-
     return _parseJsonResponse(response, 'slide $slideIndex');
   }
 
@@ -416,7 +399,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       return null;
     }
 
-    final jsonText = _responseText(response);
+    final jsonText = generationResponseText(response);
     if (jsonText == null || jsonText.isEmpty) {
       debugLog.error('DECK_GEN', 'No text content in $context response');
       return null;
@@ -428,15 +411,5 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       debugLog.error('DECK_GEN', 'JSON parse failed for $context: $e');
       return null;
     }
-  }
-
-  String? _responseText(google_ai.GenerateContentResponse response) {
-    if (response.candidates.isEmpty) return null;
-    final textParts = response.candidates.first.content?.parts
-        .where((part) => part.text != null)
-        .map((part) => part.text!)
-        .toList();
-    if (textParts == null || textParts.isEmpty) return null;
-    return textParts.join();
   }
 }

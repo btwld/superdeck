@@ -7,6 +7,7 @@ import 'deck_generation_request.dart';
 import 'deck_plan_validator.dart';
 import 'design_quality_metrics.dart';
 import 'generation_trace.dart';
+import 'generation_validation_issue.dart';
 
 /// One deterministic quality failure with a stable rule identifier.
 final class GenerationQualityIssue {
@@ -14,15 +15,21 @@ final class GenerationQualityIssue {
     required this.rule,
     required this.message,
     this.slideKey,
+    this.severity = GenerationValidationSeverity.diagnostic,
+    this.sourceCode,
   });
 
   final String rule;
   final String message;
   final String? slideKey;
+  final GenerationValidationSeverity severity;
+  final GenerationValidationCode? sourceCode;
 
   Map<String, Object?> toJson() => {
     'rule': rule,
     if (slideKey != null) 'slideKey': slideKey,
+    'severity': severity.name,
+    if (sourceCode != null) 'sourceCode': sourceCode!.name,
     'message': message,
   };
 }
@@ -80,8 +87,16 @@ final class GenerationQualityReport {
       }
     }
 
-    for (final error in validateDeckPlan(plan, request: request)) {
-      issues.add(GenerationQualityIssue(rule: 'plan.semantic', message: error));
+    for (final issue in validateDeckPlanIssues(plan, request: request)) {
+      issues.add(
+        GenerationQualityIssue(
+          rule: 'plan.${issue.code.name}',
+          message: issue.message,
+          slideKey: issue.slideKey,
+          severity: issue.severity,
+          sourceCode: issue.code,
+        ),
+      );
     }
 
     final planKeys = plan.slides.map((slide) => slide.key).toList();
@@ -135,13 +150,14 @@ final class GenerationQualityReport {
         );
       }
       if (planSlide != null && slide.options?.style != planSlide.treatment) {
+        final actualTreatment = slide.options?.style ?? '<none>';
         issues.add(
           GenerationQualityIssue(
             rule: 'slide.treatment',
             slideKey: slide.key,
             message:
                 'Slide "${slide.key}" uses treatment '
-                '"${slide.options?.style}"; expected '
+                '"$actualTreatment"; expected '
                 '"${planSlide.treatment}".',
           ),
         );

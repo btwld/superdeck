@@ -76,8 +76,17 @@ product 20-slide decks with three exact font pairings. Each run writes an ignore
 artifact bundle under `test_live/ai_generation/artifacts/` containing the typed
 request, brief, deck plan, per-slide prompts and responses, canonical JSON,
 Markdown, validation/timing metadata, slide PNGs, a contact sheet, and a
-machine-readable `quality_report.json`. Captures load the actual selected Google
-font families; they do not register Roboto bytes under aliases.
+machine-readable `quality_report.json`. Metadata records total, outline, and
+slide request counts separately. Captures load the actual selected Google font
+families; they do not register Roboto bytes under aliases.
+
+Replay and recapture a saved artifact without making another model request:
+
+```bash
+fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
+  --dart-define=LIVE_ARTIFACT=test_live/ai_generation/artifacts/<artifact-directory> \
+  --reporter expanded
+```
 
 In debug builds, open `/debug/generation` to exercise the same production
 pipeline interactively with the three fixtures.

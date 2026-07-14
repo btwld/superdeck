@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 
 import '../../../../../core/command.dart';
@@ -10,6 +9,7 @@ import '../../core/engine/services/deck_generation_request.dart';
 import '../../core/engine/services/deck_generator_service.dart';
 import '../../core/engine/services/generation_progress.dart';
 import '../../core/env_config.dart';
+import '../generated_deck_style_mapper.dart';
 
 /// Failure raised by [GenerateDeckCommand]. Its [toString] is the user-facing
 /// message (no `Exception:` prefix), so the panel can surface it directly.
@@ -40,6 +40,8 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
   final DeckCustomizationStore _customizationStore;
 
   GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
+  bool _cancelled = false;
+  bool _disposed = false;
 
   /// The pipeline stage currently running (outline → deck).
   GenerationPhase get phase => _progress.phase;
@@ -57,12 +59,17 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
       );
     }
 
+    _cancelled = false;
     _progress = const GenerationProgress(GenerationPhase.generatingOutline);
     notifyListeners();
 
     try {
       final service = DeckGeneratorService(apiKey: EnvConfig.geminiApiKey);
-      final result = await service.generate(request, onProgress: _onProgress);
+      final result = await service.generate(
+        request,
+        onProgress: _onProgress,
+        isCancelled: () => _cancelled,
+      );
 
       if (!result.success) {
         return Result.error(
@@ -74,26 +81,14 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
           GenerationException('No slides were generated. Please try again.'),
         );
       }
+      if (_cancelled) {
+        return const Result.error(GenerationException('Generation cancelled.'));
+      }
 
       final markdown = const SlideSerializer().serialize(result.slides);
       _documentStore.replaceMarkdown(markdown);
       if (result.style case final style?) {
-        _customizationStore.applyGeneratedStyle(
-          GeneratedDeckStyle(
-            background: _colorFromHex(style.colors.background),
-            surface: _colorFromHex(style.colors.surface),
-            surfaceAlt: _colorFromHex(style.colors.surfaceAlt),
-            heading: _colorFromHex(style.colors.heading),
-            body: _colorFromHex(style.colors.body),
-            accent: _colorFromHex(style.colors.accent),
-            accentContrast: _colorFromHex(style.colors.accentContrast),
-            headlineFamily: style.fonts.headline,
-            bodyFamily: style.fonts.body,
-            direction: style.direction,
-            density: style.density,
-            typeScale: style.typeScale,
-          ),
-        );
+        _customizationStore.applyGeneratedStyle(style.toGeneratedDeckStyle());
       }
       debugLog.log(
         'GENERATE_DECK',
@@ -117,12 +112,20 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
   }
 
   void _onProgress(GenerationProgress progress) {
+    if (_cancelled) return;
     _progress = progress;
     notifyListeners();
   }
-}
 
-Color _colorFromHex(String value) {
-  final hex = value.replaceFirst('#', '');
-  return Color(int.parse(hex.length == 6 ? 'FF$hex' : hex, radix: 16));
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _cancelled = true;
+    _disposed = true;
+    super.dispose();
+  }
 }

@@ -6,6 +6,7 @@ import '../schemas/outline_schema.dart';
 import '../services/style_json_serializer.dart';
 import '../services/design_quality_metrics.dart';
 import '../services/generation_element_catalog.dart';
+import '../services/generation_validation_issue.dart';
 import 'composition_example_library.dart';
 import 'prompt_registry.dart';
 
@@ -15,7 +16,7 @@ abstract interface class GenerationPromptProvider {
 
   String buildOutlinePrompt({
     required PresentationTypographyCatalog typographyCatalog,
-    List<String> validationErrors = const [],
+    List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidPlan,
   });
 
@@ -25,14 +26,14 @@ abstract interface class GenerationPromptProvider {
     required Map<String, Object?>? previousSlide,
     required DeckPlanSlideType? next,
     required GenerationElementCatalog elementCatalog,
-    List<String> validationErrors = const [],
+    List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidSlide,
   });
 
   String buildOutlineSlideRepairPrompt({
     required DeckPlanType plan,
     required DeckPlanSlideType current,
-    required List<String> validationErrors,
+    required List<GenerationValidationIssue> validationIssues,
     Map<String, Object?>? invalidSlide,
   });
 }
@@ -55,13 +56,13 @@ final class AssetGenerationPromptProvider implements GenerationPromptProvider {
   @override
   String buildOutlinePrompt({
     required PresentationTypographyCatalog typographyCatalog,
-    List<String> validationErrors = const [],
+    List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidPlan,
   }) {
     final literalRepairChecklist = _outlineLiteralRepairChecklist(
-      validationErrors,
+      validationIssues,
     );
-    final repairSection = validationErrors.isEmpty
+    final repairSection = validationIssues.isEmpty
         ? ''
         : '''
 
@@ -76,7 +77,7 @@ ${const JsonEncoder.withIndent('  ').convert(invalidPlan)}
 
 ## Current and prior deck-plan validation constraints
 
-${validationErrors.map((error) => '- $error').join('\n')}
+${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
 $literalRepairChecklist
 
 This list is cumulative. A constraint may already be fixed in the current base;
@@ -106,7 +107,7 @@ $repairSection
     required Map<String, Object?>? previousSlide,
     required DeckPlanSlideType? next,
     required GenerationElementCatalog elementCatalog,
-    List<String> validationErrors = const [],
+    List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidSlide,
   }) {
     final basePrompt = _promptRegistry.render('slide_system');
@@ -121,7 +122,7 @@ $repairSection
       current: current,
       previousSlide: previousSlide,
       next: next,
-      validationErrors: validationErrors,
+      validationIssues: validationIssues,
       invalidSlide: invalidSlide,
       elementCatalog: elementCatalog,
       compositionExample: compositionExample,
@@ -132,7 +133,7 @@ $repairSection
   String buildOutlineSlideRepairPrompt({
     required DeckPlanType plan,
     required DeckPlanSlideType current,
-    required List<String> validationErrors,
+    required List<GenerationValidationIssue> validationIssues,
     Map<String, Object?>? invalidSlide,
   }) {
     const encoder = JsonEncoder.withIndent('  ');
@@ -193,17 +194,19 @@ ${encoder.convert(invalidSlide ?? Map<String, Object?>.from(current))}
 
 ## Validation errors
 
-${validationErrors.map((error) => '- $error').join('\n')}
+${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
 
 Return only the corrected single-slide plan object.
 ''';
   }
 }
 
-String _outlineLiteralRepairChecklist(List<String> validationErrors) {
+String _outlineLiteralRepairChecklist(
+  List<GenerationValidationIssue> validationIssues,
+) {
   final sections = <String>[];
-  if (validationErrors.any(
-    (error) => error.contains('Delete every occurrence of the word zero'),
+  if (validationIssues.any(
+    (issue) => issue.code == GenerationValidationCode.numericGrounding,
   )) {
     sections.add('''
 ## Mandatory literal sweep
@@ -216,8 +219,8 @@ supplied "no change to source-of-truth systems" fact; remove other zero idioms.
 Do not preserve an invalid phrase merely because its surrounding field is valid.
 ''');
   }
-  if (validationErrors.any(
-    (error) => error.contains('unsupported commitment claim(s)'),
+  if (validationIssues.any(
+    (issue) => issue.code == GenerationValidationCode.commitmentGrounding,
   )) {
     sections.add('''
 ## Mandatory cumulative commitment sweep
@@ -233,7 +236,9 @@ language instead of merely swapping it for a synonym; a supplied metric does
 not authorize an explanation of why it changed or a broader product claim.
 ''');
   }
-  if (validationErrors.any((error) => error.contains('handoff omits'))) {
+  if (validationIssues.any(
+    (issue) => issue.code == GenerationValidationCode.handoffPurpose,
+  )) {
     sections.add('''
 ## Mandatory grounded-handoff sweep
 
@@ -243,8 +248,8 @@ particular, a SuperDeck QR destination must visibly say `SuperDeck`; the deck's
 fictional product name is not a substitute.
 ''');
   }
-  if (validationErrors.any(
-    (error) => error.contains('changes the supplied meaning of numeric'),
+  if (validationIssues.any(
+    (issue) => issue.code == GenerationValidationCode.numericMeaning,
   )) {
     sections.add('''
 ## Mandatory metric-identity sweep
@@ -270,7 +275,7 @@ String buildSingleSlidePrompt({
   required DeckPlanSlideType? next,
   required GenerationElementCatalog elementCatalog,
   required Map<String, Object?> compositionExample,
-  List<String> validationErrors = const [],
+  List<GenerationValidationIssue> validationIssues = const [],
   Map<String, Object?>? invalidSlide,
 }) {
   const encoder = JsonEncoder.withIndent('  ');
@@ -321,7 +326,10 @@ String buildSingleSlidePrompt({
       },
   ];
   final speakerCommentRepairChecklist =
-      validationErrors.any((error) => error.startsWith('Speaker comments '))
+      validationIssues.any(
+        (issue) =>
+            issue.location == GenerationValidationLocation.speakerComments,
+      )
       ? '''
 
 ## Speaker-comment repair
@@ -335,9 +343,8 @@ it is not the factual authority. Do not paraphrase the metric.
 '''
       : '';
   final metricIdentityRepairChecklist =
-      validationErrors.any(
-        (error) =>
-            error.contains('changes the supplied meaning of numeric claim'),
+      validationIssues.any(
+        (issue) => issue.code == GenerationValidationCode.numericMeaning,
       )
       ? '''
 
@@ -353,7 +360,7 @@ cohort. A speaker comment must either copy the same grounded source phrase or be
 deleted.
 '''
       : '';
-  final repairSection = validationErrors.isEmpty
+  final repairSection = validationIssues.isEmpty
       ? ''
       : '''
 ## Invalid slide draft to repair
@@ -365,7 +372,7 @@ every other valid planned field and never reintroduce a resolved violation.
 ${invalidSlide == null ? 'No parseable draft was returned.' : encoder.convert(invalidSlide)}
 
 ## Current and prior validation constraints
-${validationErrors.map((error) => '- $error').join('\n')}
+${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
 $speakerCommentRepairChecklist
 $metricIdentityRepairChecklist
 

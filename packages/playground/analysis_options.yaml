@@ -1,7 +1,62 @@
 include: package:flutter_lints/flutter.yaml
-extends: ../../shared_analysis_options.yaml
 
 linter:
   rules:
     prefer_relative_imports: true
     prefer_initializing_formals: false
+
+dcm:
+  extends:
+    - recommended
+    - metrics-recommended
+  exclude:
+    metrics:
+      - test/**
+      - test_live/**
+    rules:
+      - test/**
+      - test_live/**
+    unused-code:
+      - test/**
+      - test_live/**
+    unused-files:
+      - test/**
+      - test_live/**
+  rules:
+    - newline-before-return
+    - avoid-importing-entrypoint-exports:
+        only-in-src: true
+    - prefer-match-file-name: false
+    - prefer-overriding-parent-equality: false
+    - prefer-correct-callback-field-name: false
+    - prefer-single-widget-per-file: false
+    - match-getter-setter-field-names: false
+    - prefer-dedicated-media-query-methods: false
+    - avoid-shadowing: false
+    - avoid-accessing-collections-by-constant-index: false
+    - enum-constants-ordering: false
+    - avoid-unsafe-collection-methods: false
+    - prefer-prefixed-global-constants: false
+    - avoid-returning-widgets: false
+    - arguments-ordering:
+        last:
+          - child
+    - avoid-nested-conditional-expressions:
+        acceptable-level: 3
+    - member-ordering:
+        order:
+          - public-fields
+          - private-fields
+          - constructors
+          - static-methods
+          - private-methods
+          - private-getters
+          - private-setters
+          - public-getters
+          - public-setters
+          - public-methods
+          - overridden-public-methods
+          - overridden-public-getters
+          - build-method
+    - prefer-named-boolean-parameters:
+        ignore-single: true

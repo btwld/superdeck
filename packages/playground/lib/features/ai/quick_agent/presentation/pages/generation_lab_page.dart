@@ -13,6 +13,7 @@ import '../../core/engine/services/deck_generation_request.dart';
 import '../../core/engine/services/generation_progress.dart';
 import '../../core/engine/services/generation_trace.dart';
 import '../../core/env_config.dart';
+import '../../domain/generated_deck_style_mapper.dart';
 
 class GenerationLabPage extends StatefulWidget {
   const GenerationLabPage({super.key});
@@ -27,9 +28,11 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   DeckGenerationResult? _result;
   String? _error;
   bool _running = false;
+  bool _cancelled = false;
 
   Future<void> _run(_GenerationPreset preset) async {
     setState(() {
+      _cancelled = false;
       _running = true;
       _error = null;
       _result = null;
@@ -41,7 +44,10 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
       onProgress: (progress) {
         if (mounted) setState(() => _progress = progress);
       },
-      onTrace: _traces.add,
+      onTrace: (event) {
+        if (!_cancelled) _traces.add(event);
+      },
+      isCancelled: () => _cancelled || !mounted,
     );
     if (!mounted) return;
     if (result.success) {
@@ -59,24 +65,17 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   void _applyResult(DeckGenerationResult result) {
     final style = result.style!;
     context.read<DeckCustomizationStore>().applyGeneratedStyle(
-      GeneratedDeckStyle(
-        background: _color(style.colors.background),
-        surface: _color(style.colors.surface),
-        surfaceAlt: _color(style.colors.surfaceAlt),
-        heading: _color(style.colors.heading),
-        body: _color(style.colors.body),
-        accent: _color(style.colors.accent),
-        accentContrast: _color(style.colors.accentContrast),
-        headlineFamily: style.fonts.headline,
-        bodyFamily: style.fonts.body,
-        direction: style.direction,
-        density: style.density,
-        typeScale: style.typeScale,
-      ),
+      style.toGeneratedDeckStyle(),
     );
     context.read<MemoryDeckLoader>().updateMarkdown(
       const SlideSerializer().serialize(result.slides),
     );
+  }
+
+  @override
+  void dispose() {
+    _cancelled = true;
+    super.dispose();
   }
 
   @override
@@ -168,10 +167,10 @@ class _SlideGallery extends StatelessWidget {
 }
 
 final class _GenerationPreset {
-  const _GenerationPreset(this.label, this.request);
-
   final String label;
   final DeckGenerationRequest request;
+
+  const _GenerationPreset(this.label, this.request);
 }
 
 const _presets = [
@@ -228,8 +227,3 @@ const _presets = [
     ),
   ),
 ];
-
-Color _color(String value) {
-  final hex = value.replaceFirst('#', '');
-  return Color(int.parse(hex.length == 6 ? 'FF$hex' : hex, radix: 16));
-}

@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_pipeline_helpers.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generated_slide_validator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_element_catalog.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -406,15 +408,36 @@ void main() {
 
     final normalized = removeInvalidOptionalSpeakerComments(
       rawSlide: raw,
-      validationErrors: const [
-        'Speaker comments use numeric claim(s) 50% that are not present.',
+      validationIssues: const [
+        GenerationValidationIssue(
+          code: GenerationValidationCode.numericGrounding,
+          category: GenerationValidationCategory.factual,
+          severity: GenerationValidationSeverity.blocking,
+          location: GenerationValidationLocation.speakerComments,
+          message:
+              'Speaker comments use numeric claim(s) 50% that are not present.',
+        ),
       ],
     );
     final normalizedWithVisibleError = removeInvalidOptionalSpeakerComments(
       rawSlide: raw,
-      validationErrors: const [
-        'Visible content uses numeric claim(s) 50% that are not present.',
-        'Speaker comments use numeric claim(s) 50% that are not present.',
+      validationIssues: const [
+        GenerationValidationIssue(
+          code: GenerationValidationCode.numericGrounding,
+          category: GenerationValidationCategory.factual,
+          severity: GenerationValidationSeverity.blocking,
+          location: GenerationValidationLocation.visibleContent,
+          message:
+              'Visible content uses numeric claim(s) 50% that are not present.',
+        ),
+        GenerationValidationIssue(
+          code: GenerationValidationCode.numericGrounding,
+          category: GenerationValidationCategory.factual,
+          severity: GenerationValidationSeverity.blocking,
+          location: GenerationValidationLocation.speakerComments,
+          message:
+              'Speaker comments use numeric claim(s) 50% that are not present.',
+        ),
       ],
     );
 
@@ -682,6 +705,19 @@ void main() {
   });
 
   test('rejects an unsupported visible commercial commitment', () {
+    final typedIssues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content': '## Continue\n\nStart your free trial today.',
+      }),
+      planSlide: _planSlide(composition: 'content'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+      request: const DeckGenerationRequest(
+        userIntent: 'Invite the audience to continue.',
+        slideCount: 1,
+      ),
+    );
     final errors = validateGeneratedSlide(
       expectedKey: 'test-slide',
       rawSlide: _slideWithBlock({
@@ -728,6 +764,23 @@ void main() {
       contains(
         'Visible content introduces unsupported commitment claim(s): free '
         'trial. Remove them unless userIntent supplied the exact claim.',
+      ),
+    );
+    expect(
+      typedIssues,
+      contains(
+        isA<GenerationValidationIssue>()
+            .having(
+              (issue) => issue.code,
+              'code',
+              GenerationValidationCode.commitmentGrounding,
+            )
+            .having(
+              (issue) => issue.category,
+              'category',
+              GenerationValidationCategory.factual,
+            )
+            .having((issue) => issue.isBlocking, 'isBlocking', isTrue),
       ),
     );
     expect(

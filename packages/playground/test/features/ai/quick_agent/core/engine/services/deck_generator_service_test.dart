@@ -10,6 +10,7 @@ import 'package:playground/features/ai/quick_agent/core/engine/services/deck_gen
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_model_client.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_progress.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/retry_policy.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -582,6 +583,123 @@ void main() {
     expect(client.requests, hasLength(2));
   });
 
+  test('does not start an outline repair after cancellation', () async {
+    var cancelled = false;
+    final client = _FakeGenerationModelClient(
+      [
+        _jsonResponse({
+          'topic': 'Cancel outline repair',
+          'story': 'The first outline has the wrong count.',
+          'style': _testStyle,
+          'slides': [_planSlide(key: 'only-one')],
+        }),
+        _jsonResponse({
+          'topic': 'Cancel outline repair',
+          'story': 'This repair must never be requested.',
+          'style': _testStyle,
+          'slides': [_planSlide(key: 'one'), _planSlide(key: 'two')],
+        }),
+      ],
+      onRequest: (requestCount) {
+        if (requestCount == 1) cancelled = true;
+      },
+    );
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      _request('Create two slides.', slideCount: 2),
+      isCancelled: () => cancelled,
+    );
+
+    expect(result.success, isFalse);
+    expect(result.error, 'Generation cancelled.');
+    expect(client.requests, hasLength(1));
+  });
+
+  test('does not start a slide repair after cancellation', () async {
+    var cancelled = false;
+    final client = _FakeGenerationModelClient(
+      [
+        _jsonResponse({
+          'topic': 'Cancel slide repair',
+          'story': 'Stop while validating the first slide draft.',
+          'style': _testStyle,
+          'slides': [_planSlide(key: 'opening')],
+        }),
+        _jsonResponse({'key': 'opening', 'sections': <Object?>[]}),
+        _jsonResponse(
+          _generatedSlide(key: 'opening', title: 'Opening', style: 'content'),
+        ),
+      ],
+      onRequest: (requestCount) {
+        if (requestCount == 2) cancelled = true;
+      },
+    );
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      _request('Create one slide.', slideCount: 1),
+      isCancelled: () => cancelled,
+    );
+
+    expect(result.success, isFalse);
+    expect(result.error, 'Generation cancelled.');
+    expect(client.requests, hasLength(2));
+  });
+
+  test('traces transport retries separately from semantic repairs', () async {
+    final client = _RetryingSlideModelClient();
+    final traces = <GenerationTraceEvent>[];
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      retryPolicy: RetryPolicy(maxAttempts: 2, baseDelay: Duration.zero),
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      _request('Create one slide.', slideCount: 1),
+      onTrace: traces.add,
+    );
+
+    expect(result.success, isTrue);
+    final slideRequests = traces
+        .where(
+          (event) =>
+              event.kind == GenerationTraceKind.request &&
+              event.phase == GenerationTracePhase.slide,
+        )
+        .map((event) => event.toJson())
+        .toList();
+    expect(slideRequests.map((event) => event['attempt']), [1, 1]);
+    expect(slideRequests.map((event) => event['semanticAttempt']), [1, 1]);
+    expect(slideRequests.map((event) => event['transportAttempt']), [1, 2]);
+  });
+
+  test('caps pathological nested outline requests globally', () async {
+    final client = _RepeatingInvalidOutlineClient();
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      maxOutlineValidationAttempts: 100,
+      maxRepairRequests: 1000,
+      retryPolicy: RetryPolicy(maxAttempts: 1),
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      _request('Create two slides.', slideCount: 2),
+    );
+
+    expect(result.success, isFalse);
+    expect(result.error, contains('request budget'));
+    expect(client.requestCount, lessThan(100));
+  });
+
   test('hydrates an exact planned source into generated widget args', () async {
     final client = _FakeGenerationModelClient([
       _jsonResponse({
@@ -824,5 +942,53 @@ final class _HangingSlideModelClient implements GenerationModelClient {
       );
     }
     return Completer<google_ai.GenerateContentResponse>().future;
+  }
+}
+
+final class _RetryingSlideModelClient implements GenerationModelClient {
+  var requestCount = 0;
+
+  @override
+  void close() {}
+
+  @override
+  Future<google_ai.GenerateContentResponse> generateContent(
+    google_ai.GenerateContentRequest request,
+  ) async {
+    requestCount++;
+    if (requestCount == 1) {
+      return _jsonResponse({
+        'topic': 'Retry trace',
+        'story': 'Distinguish transport retries from semantic repairs.',
+        'style': _testStyle,
+        'slides': [_planSlide(key: 'opening')],
+      });
+    }
+    if (requestCount == 2) {
+      throw TimeoutException('Transient slide timeout.');
+    }
+    return _jsonResponse(
+      _generatedSlide(key: 'opening', title: 'Opening', style: 'content'),
+    );
+  }
+}
+
+final class _RepeatingInvalidOutlineClient implements GenerationModelClient {
+  var requestCount = 0;
+
+  @override
+  void close() {}
+
+  @override
+  Future<google_ai.GenerateContentResponse> generateContent(
+    google_ai.GenerateContentRequest request,
+  ) async {
+    requestCount++;
+    return _jsonResponse({
+      'topic': 'Request budget',
+      'story': 'Keep returning an outline with the wrong slide count.',
+      'style': _testStyle,
+      'slides': [_planSlide(key: 'only-one')],
+    });
   }
 }

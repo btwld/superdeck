@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -41,14 +43,28 @@ class WizardPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: $background.resolve(context),
         body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: const Padding(
-                padding: EdgeInsets.all(32),
-                child: WizardView(),
+          child: Stack(
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: WizardView(),
+                  ),
+                ),
               ),
-            ),
+              if (kDebugMode)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    tooltip: 'Generation lab',
+                    onPressed: () => context.push('/debug/generation'),
+                    icon: const Icon(Icons.science_outlined),
+                  ),
+                ),
+            ],
           ),
         ),
       ),

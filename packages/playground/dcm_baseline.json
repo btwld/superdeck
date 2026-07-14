@@ -1,0 +1,1953 @@
+{
+  "date": "2026-07-14 15:05:26.516800Z",
+  "version": "1.38.0",
+  "sensitivity": "exact",
+  "commands": {
+    "analyze": {
+      "lib/app/providers.dart": {
+        "avoid-inferrable-type-arguments": [
+          "3acfc281a6c9b0d27ea5e0333567aca2",
+          "e696d9c4d2adf40459d446470223c647",
+          "b00b830bdc44ada83b520642853d7e3f"
+        ],
+        "arguments-ordering": [
+          "e4d7ae78f7315a8168e7fa2aa2a6caf8",
+          "19d6f1a9f427cc09abada4fde1762015"
+        ]
+      },
+      "lib/app/router.dart": {
+        "arguments-ordering": [
+          "c889ed10350adc5484399a841b281d8d"
+        ]
+      },
+      "lib/core/command.dart": {
+        "member-ordering": [
+          "c13cc7d233532d01d38e6c853835c222",
+          "bbff11a98f162c65b2eba65457aa3054",
+          "d130e52202b79d8a1e23b22525299046"
+        ]
+      },
+      "lib/core/data/data_sources/memory_asset_cache_store.dart": {
+        "newline-before-return": [
+          "dbdc5c1de5fd5775af210f68a7bdf4b2",
+          "c9a86ff05d122a6107b3409b73dbd024"
+        ]
+      },
+      "lib/core/data/data_sources/memory_deck_loader.dart": {
+        "member-ordering": [
+          "abf4daf187b66d1345a60c8bfba63f21"
+        ],
+        "no-empty-block": [
+          "99914b932bd37a50b983c5e7c90ae93b"
+        ]
+      },
+      "lib/core/data/data_sources/security_scoped_file_access.dart": {
+        "member-ordering": [
+          "be8c26dcc636a143b78001de86957301",
+          "4d906b08741be42f24bff407f0b17938",
+          "1430c4571c14f58ecac407876fdacbe2",
+          "74d2d4912fc7084d7933cf07e59a738d",
+          "ce91d284738a04ce3ae951f7c61efa8d"
+        ],
+        "newline-before-return": [
+          "a7b69a9b65d6bb7620e797ff51b1f2a2",
+          "c9db1f09a26ca1c96a59cea77cf29a8e",
+          "004d60a501680fe4a801c1f382091a6c",
+          "9d1bed3be3f428ef16a7bc10fb4f04d1",
+          "eefb853f7fffca0c5b6d150b8eaa69df"
+        ]
+      },
+      "lib/core/domain/design/generated_deck_theme_factory.dart": {
+        "member-ordering": [
+          "9ad4e5cc03b4696ebf5cf1af9ba89657",
+          "48591792627c948a6627e8fff5b84909",
+          "9416d42d020602a6810e7927999adab8",
+          "670f7872d2027af88101731fb6e3536b",
+          "1b23853f6aa8b6b3ae4b8fc0ac6e31c0",
+          "efb95d2edb53dc9b9912708e353ce780",
+          "07be413d53de668f5d7464360a14a36b",
+          "eef1c5f8f181e943bd14f42fd36068cd",
+          "92d9b7be922c49e382181ff70c5890f2",
+          "ceb85cf965d93e42502cc3cdc21caba6",
+          "226aa56394d48b3c10a35d6d453001ce",
+          "e1cdf59d1ed3f57dda01fa2f758ca67e",
+          "4401ae64f4541c1a4e856256ab855062",
+          "fe1a36bce5489c083752dd128cb22b52",
+          "0519e762b6bf004b7f0f3ae10f9a2063"
+        ],
+        "arguments-ordering": [
+          "1f7f8ff8cfe1482b216593b470a53e77",
+          "2ec21bd4f9c686c798f9c90294c95150",
+          "f131f8299a5fc76536e1eb4237200b8a",
+          "ac1aed4db5a1328646d7bc5cde2b2162",
+          "af8329ffdd2810e35c6a5e00dfabd724",
+          "2c80651eaefc7354f4199020bed5af9d",
+          "22f43181e166ff2a6f06a225c4e63708",
+          "9ed646a9e82c3b3f237ac30c18acdfd6",
+          "aad20f49369c747f4942a698ea0e9499",
+          "dc741e7fb2fc2b4020fd1f5943536410",
+          "ccefe601bca8a6263242a0dd55564573"
+        ],
+        "prefer-shorthands-with-enums": [
+          "f3d70c6aa77da74309195ab874fff66d",
+          "aae503822bbe8bf0e188f42748fa55f7"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "2f0cf70c3eeca3e8aca3157e635e383e"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "f02a8b91e92f721c96c4ab2efb4ec46c",
+          "7619ac479ac9f2834cfe7d877347194d"
+        ],
+        "newline-before-return": [
+          "5869933a1ee60ef96c0a3830cd0a1b8f",
+          "add4c4752c1b812ad5ec73b3197e65b0",
+          "dbc87efa5e92516d3a0a2fba4795baac"
+        ],
+        "prefer-returning-shorthands": [
+          "767ae84aa629503704894ebdeb013a0f",
+          "21f0c1320ef8d61a16c3e682dc834207",
+          "a548f40fbf24cdd7512edadafd6763e7"
+        ]
+      },
+      "lib/core/domain/design/presentation_typography_catalog.dart": {
+        "member-ordering": [
+          "ce5dc1892058a7071a3f7eac9efaae33",
+          "6774f013002454d2afe4cb7795afa23b",
+          "e4e67a4cc9fc7eb46a4cb121a91f0810",
+          "d8e688124fa163508a0c42f31cf8cf78",
+          "6ae2b9abb19d23e130e7c5ee113c399d",
+          "f3f9e7ec26c74319f3aea2083778f0ff",
+          "8a76f6b0f3c01189d03c87299c9462eb",
+          "d5f70da30c81377c198c89b51bc3b134",
+          "d587d8bf7020a0a9da8e541d5f3a26ba"
+        ],
+        "avoid-nullable-interpolation": [
+          "58bf566cd68995fdad8b61b8d5d307c8",
+          "5b8de9294f65ed87a816d71f6036b37d",
+          "58bf566cd68995fdad8b61b8d5d307c8",
+          "5b8de9294f65ed87a816d71f6036b37d"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "9198199045cb3658002cddc74ad31de1"
+        ],
+        "prefer-shorthands-with-enums": [
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e",
+          "f043818bfafa3ade692897207360a20e"
+        ]
+      },
+      "lib/core/domain/stores/deck_customization_store.dart": {
+        "member-ordering": [
+          "9ad4e5cc03b4696ebf5cf1af9ba89657",
+          "48591792627c948a6627e8fff5b84909",
+          "9416d42d020602a6810e7927999adab8",
+          "670f7872d2027af88101731fb6e3536b",
+          "1b23853f6aa8b6b3ae4b8fc0ac6e31c0",
+          "efb95d2edb53dc9b9912708e353ce780",
+          "07be413d53de668f5d7464360a14a36b",
+          "3c42da27cbbf557f27624003ecd9baeb",
+          "a24298df8aec11f34df9c8fe0e38fecb",
+          "37950f0aa20d801bb0d2520795a01a15",
+          "9ab9230fa84dab8ac756d85202a7c834",
+          "33af41f7d9bf6bc22a18458c19276797",
+          "40da4ff6055bc7de309807aed924358c",
+          "9965469f5b0bb2e3d3a1bcdc08339637",
+          "6c9ba227d7adc731b7fa8de198d664e3",
+          "4a7ff0188ade0966be82961c60094ec2",
+          "d82c9b1d4c53960b70f88d4ffef3f190",
+          "8a79f576102d0b0bf88b5ed4e0725ee5",
+          "650d6838bd2525084c04a5011c0c0cc0",
+          "f387e1b4714a343aca8343dcce0e2e31",
+          "d578cab3215570275a25d800742e46c5",
+          "6692757d553cd352930b4da6f83b6f3b",
+          "3d9c803df2f6f4c60245d0d6a005224d",
+          "68cf063ea9cafb0f704092f3d9504016",
+          "7731655f3d118ec92cf0c40d1b413e1c",
+          "1b31c6e8d4f758ad536ac7382370e17e",
+          "29dd2ed95d71deaf80e788726abbe7db",
+          "725420751cd6217abef24034362242b8",
+          "5080a7567606aad800cae682b59d1955",
+          "2bc53cfd3a1b271a58c03bc2ed37cf94",
+          "a4666444545d8dbbcdf90d2577993e63",
+          "387e76f977d40ed456d8813c04715fd9",
+          "1279dda2c109c5f9b735e02e4f6a46d8",
+          "e9ed84632ad8e35d1fa5c4827843028e",
+          "17624d4f779831a988c7e3082fe44ea9"
+        ],
+        "prefer-shorthands-with-enums": [
+          "65384f4b491613277bda0739ad40f805",
+          "a18fefb61010d739ff802caad056ae74",
+          "7bff7f612462dc538f921eb60f4692a7",
+          "37d2b4bb4d81f71166e9cddf21bdda52",
+          "713619fa3d96c97eff6b553bec280e0b",
+          "3beeab99d6eb30affa90fbf04b8f5e85",
+          "fe331f45f8c3eb9aafe615ff64e8ebdd",
+          "fe331f45f8c3eb9aafe615ff64e8ebdd",
+          "52a5f7ed4ad4f0f3e7004594e9c230a8",
+          "ecf4662853240ebdf68c82547aaf4881",
+          "fe331f45f8c3eb9aafe615ff64e8ebdd",
+          "65384f4b491613277bda0739ad40f805",
+          "a18fefb61010d739ff802caad056ae74",
+          "7bff7f612462dc538f921eb60f4692a7",
+          "37d2b4bb4d81f71166e9cddf21bdda52",
+          "713619fa3d96c97eff6b553bec280e0b",
+          "3beeab99d6eb30affa90fbf04b8f5e85",
+          "fe331f45f8c3eb9aafe615ff64e8ebdd",
+          "fe331f45f8c3eb9aafe615ff64e8ebdd",
+          "492ec79db6fde06e4828484c00a2c961",
+          "52a5f7ed4ad4f0f3e7004594e9c230a8",
+          "65384f4b491613277bda0739ad40f805"
+        ],
+        "newline-before-return": [
+          "60fd1e28cefbcfc762ddcc2bd56abbd1",
+          "0742fda00fff0ea7159c3016efacd459",
+          "7420cf27ff9ad9e9b2cae097d2c19db4"
+        ],
+        "arguments-ordering": [
+          "4094bc6910eeaeffab912805c848a22a"
+        ],
+        "avoid-throw-in-catch-block": [
+          "959b7175f88493905e3c324c2bf6f97d",
+          "959b7175f88493905e3c324c2bf6f97d"
+        ]
+      },
+      "lib/core/result.dart": {
+        "member-ordering": [
+          "85eca8e6b45775b517ebcc6aab8021d0",
+          "00c8c3a7775b4bd83b4c7627c1029a39"
+        ]
+      },
+      "lib/core/utils/color_utils.dart": {
+        "newline-before-return": [
+          "ac84b6615d6391fc8cb6a100c0b2aad0",
+          "3a959d00242e1a6e9483824930ad5858",
+          "108ceff8715a5f73a480064664b89bb7"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/debug_logger.dart": {
+        "member-ordering": [
+          "c9e8d09211e0b5eaac505b8ea7fb89e6"
+        ],
+        "prefer-declaring-const-constructor": [
+          "d3f3e8c69da7aac929d0a2b3511be94a"
+        ],
+        "avoid-dynamic": [
+          "b72f3bd391ba731a35708bfd8cd8a68f"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "c596ee1b5e0ebabc0f8379090abe193c"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/prompts/composition_example_library.dart": {
+        "member-ordering": [
+          "7af8781494750ee27e697cd084ffa06e"
+        ],
+        "newline-before-return": [
+          "4c13e9435c615e20d1181215099c8060",
+          "505b97969baa28c3f607a38ee02f4f2d"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "cc230e2f4a0bf2041dae0c9f29040b53",
+          "bfee52d03478ce0c30b1ae2015bc758f"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/prompts/font_styles.dart": {
+        "newline-before-return": [
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/prompts/generation_prompt_provider.dart": {
+        "member-ordering": [
+          "1040911a1c35d617f70255dd83ed97cf",
+          "b917df2b2804122e664e498b1e85075e"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "6debe9693098b85f1b7030aec538457d"
+        ],
+        "newline-before-return": [
+          "f9624b3c96269696d425de21648bb743",
+          "6da07b6856769f2a7d1b146adaa83a51",
+          "0071adb734cdebc575811b747f4e33f2",
+          "e32fbf445ffe800f9827f9d4f66cc0ca",
+          "2352bc8f88ec92a1104aac9b72a84404"
+        ],
+        "prefer-shorthands-with-enums": [
+          "52a5f7ed4ad4f0f3e7004594e9c230a8",
+          "ecf4662853240ebdf68c82547aaf4881",
+          "42a039328ed7ddec9ceee645e01af411",
+          "f6d6ddabaa7b4fc26675965558107402",
+          "14018a1f31ac3d06be19ce7f0c3b86cf",
+          "b3bc42f0e6ddee26002bff76ba0e7f57",
+          "e60b6d41b47a410f4c9703b8df6ac273",
+          "b3bc42f0e6ddee26002bff76ba0e7f57"
+        ],
+        "arguments-ordering": [
+          "9a1327c3f9e40bd369533b3c76b311ef"
+        ],
+        "prefer-iterable-of": [
+          "5b3014a45d37ebc160d58ff9c65f5c70",
+          "76892535997402d7f2636ec3df6728ac",
+          "4aaed52b07a1805c60478e71c4409cf5",
+          "b7b285cc3d4d9a35c3be148899325dd7",
+          "d30004f9ab953749716b83f7accf68d8",
+          "b7b285cc3d4d9a35c3be148899325dd7",
+          "4aaed52b07a1805c60478e71c4409cf5"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/prompts/prompt_registry.dart": {
+        "member-ordering": [
+          "09cc316b8b2f1586b294afe3cd657dfb",
+          "e05e31fa115c901db6534be2c491cbd8",
+          "87f749f46db216778db9c4b5b1061634",
+          "f0bd5be15f7fb94e5d7058b3c3cecfd3",
+          "a0b2f5e0bab5a573f6c38db3999c7089"
+        ],
+        "newline-before-return": [
+          "201d7c8b484c9792e02b1d3659d9d99f",
+          "f64871f6c9b3f25204a4e992d062e61f",
+          "67470f9c2d28aba1afaa38045da87092"
+        ],
+        "avoid-dynamic": [
+          "b72f3bd391ba731a35708bfd8cd8a68f"
+        ],
+        "arguments-ordering": [
+          "309c01ae5d7d829480aa6f823d94c408"
+        ],
+        "prefer-declaring-const-constructor": [
+          "0668cd491890191c84d4244d4552fa91"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_generation_request.dart": {
+        "member-ordering": [
+          "dd5fb45f127330e41528848263ee30d2",
+          "8b0dcee6e21c872a5495109d65261c87",
+          "238ef19bd2a8b4b59bed3d019cbe4019",
+          "3589ff0eefa813650bffb2fb47513c64",
+          "6bd852c2516ec41f37e34d5c5de21a8c",
+          "26904395faf86965ca0a6561df017655",
+          "883ba7b719aca4c93469376d02ace2c2",
+          "a2eef77b00e43c9124ef3743d1f7a993",
+          "3361ba8e6ee4715ab9b7d19751c9389f",
+          "a9ada1c3da67187d1b29fe7f3fb3bde3",
+          "292cfbd38e307172651ac9e552cd7b5c",
+          "77a3e5c9cc82bd77cdbc6b8921091617",
+          "f102e581fa3de65a545bdf9e78d48d87",
+          "2bf527fff622c238263ef4866cb48cfa",
+          "01d3592049ef0ec82f18833ac9925ba3",
+          "b1740d0b91189f96b8d39b7f7eaaeda7"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "bfee52d03478ce0c30b1ae2015bc758f",
+          "a4f5c9920c2235bcf03341de5d2e2d58"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_generator_pipeline.dart": {
+        "newline-before-return": [
+          "bbef19786c08a56d47025fc80a748f53",
+          "005d49e327abc6887bba7647199f4c41",
+          "25cecec7dbf42b97dfd2e7b34c4235d6",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "8df9f5491388f01180cacb95a7e62a81",
+          "bbef19786c08a56d47025fc80a748f53",
+          "fca2323a25a83550a6e52cff3e598e9f",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53"
+        ],
+        "arguments-ordering": [
+          "57218f112ca141359a82afb6b366d0f5",
+          "73e6259b97dd6f2923d2cce94271677d",
+          "a0e98b810fa075d8e62f3ccf775c9a7d",
+          "8ef34893c588497f3f1aed9af9207ccb",
+          "269f695c8530fc002d513ce94d5eafab",
+          "74c97d13b223ce5c9791048cb5ad8159",
+          "765a5d9a0866b45a512edade093aa8f8",
+          "b2d3f9d0506d5614294f89c0bc3b9e70"
+        ],
+        "prefer-shorthands-with-enums": [
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "293747ef512b9fc631c9c7b873c7c4cc",
+          "4b8f6b4995d7dbcb19ca9ce8e1eeb0a0",
+          "9dce48609c0651c2c8f674034f551935",
+          "0ed28c58b36808138703631dc6b50850",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "7f3ba2420ac76423548c578cd238e9c3",
+          "4b8f6b4995d7dbcb19ca9ce8e1eeb0a0",
+          "9dce48609c0651c2c8f674034f551935",
+          "0ed28c58b36808138703631dc6b50850",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "e0702dd3f4b0189360f889335f47c078",
+          "484e030ddc01f745ff9f110e4d0f9561",
+          "e26fb406d5089a687500bbd71144d876",
+          "293747ef512b9fc631c9c7b873c7c4cc",
+          "4b8f6b4995d7dbcb19ca9ce8e1eeb0a0",
+          "9dce48609c0651c2c8f674034f551935",
+          "65806845bc752e0fde82bc202bb4b228",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "484e030ddc01f745ff9f110e4d0f9561",
+          "698a8a56a2fb9a1a9d5ef1dda2d5989a",
+          "484e030ddc01f745ff9f110e4d0f9561",
+          "484e030ddc01f745ff9f110e4d0f9561"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_generator_pipeline_helpers.dart": {
+        "newline-before-return": [
+          "37f174f893dbd1037d85918476d1ea24",
+          "159fb2fb3c31f528814f62ecf60487da",
+          "b50f844ae7c36b711a238efd1a64bd3b",
+          "0d7da24a7b06a3161cae3da03140a137",
+          "c71a859075bc26760aeae76ee9ce45f0",
+          "159fb2fb3c31f528814f62ecf60487da",
+          "0d7da24a7b06a3161cae3da03140a137",
+          "0d7da24a7b06a3161cae3da03140a137",
+          "0d7da24a7b06a3161cae3da03140a137",
+          "f23fa8c148ddb010a1ef0db563d595da"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_generator_service.dart": {
+        "member-ordering": [
+          "bfb9332d95780558339beb75b6f66688",
+          "c459bc45c82c87be24e5b20511105b75",
+          "8c50807abb401de95112928cce8662e2",
+          "92306e847b2581cc3f76ad4bfba8d081",
+          "5291a91240883b487d2e095753b5cc36",
+          "307ddaef49fe745a274b8adafd0efef4",
+          "97a9e09d2f34cc780c2fd03778db616e",
+          "7ed736006250498e182e1f3b13cd02a9",
+          "41ba320a0569871b53d8ec0a409d4b56",
+          "92d4d9d6f35d57e99011d4809a969c30",
+          "1763e3eb8a64672863e59fb4b3f9bf12",
+          "f3587e2750d9e4d53524256ebe754431",
+          "420017253de0cea3fdd811116e81c210",
+          "5bbf75a485b6c5d5b69cf4ed54254646",
+          "50fb72d68622975411d79bc8eeb540e0",
+          "ac2efb1e85b0de7d8bdb7d5058ef7f6b",
+          "12574c5f7c2918f41ba427db65da4d11",
+          "e9a8a11933a99f82be749b8117fbe464",
+          "c2823e38eb95beb817c8ef4bea957ea7"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "b32d9275721f7438582b42bf815a6d85"
+        ],
+        "prefer-returning-shorthands": [
+          "b05f5675ee46ef5472aecd00258b68ae"
+        ],
+        "newline-before-return": [
+          "0178a7777f57a299786afbd6507c3f74",
+          "f9b3329ab821e075b201a604ea000621"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_generator_workflow.dart": {
+        "prefer-shorthands-with-enums": [
+          "e0702dd3f4b0189360f889335f47c078",
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "bbfc1d5b729389800243cd8eacf3d25a",
+          "698a8a56a2fb9a1a9d5ef1dda2d5989a",
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "e0702dd3f4b0189360f889335f47c078",
+          "42160826cb5be0b284033d14b883c0e5",
+          "e26fb406d5089a687500bbd71144d876",
+          "698a8a56a2fb9a1a9d5ef1dda2d5989a",
+          "42160826cb5be0b284033d14b883c0e5",
+          "12a1033fd7ad23c01c1dc20306c807f1",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "315b6f26ad24c48e1410f258de8e0282",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "315b6f26ad24c48e1410f258de8e0282",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "315b6f26ad24c48e1410f258de8e0282",
+          "cac3cf1480722792fbc6ff1a19f9900a",
+          "315b6f26ad24c48e1410f258de8e0282"
+        ],
+        "newline-before-return": [
+          "bbef19786c08a56d47025fc80a748f53",
+          "cd51033dd4c0836b4ea5f02b4d3d99be",
+          "bbef19786c08a56d47025fc80a748f53",
+          "025d8ff6548c2a15a43ab53d1978c089",
+          "8367772ab39d5f8a626ad9c9817f6cf2",
+          "c35c2b61e3238860c4e12067cea6a0ff",
+          "803717c439377cbe4e05faa2bf7c2c74",
+          "33f2b90b54c24956fa3b09b93311afa3",
+          "bbef19786c08a56d47025fc80a748f53",
+          "47448feb6d03d4f5af61645f9dd94f02"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "3e96796766444d3b71d6f8a066d11fcd",
+          "91fb37915e0b137471ffed358a98df47",
+          "bfee52d03478ce0c30b1ae2015bc758f"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_plan_normalizer.dart": {
+        "prefer-iterable-of": [
+          "8b3431f86d333cae0662eb0a25988485",
+          "0f147e91e20d318f80c8e4762f425156",
+          "d7f3e33d4276df2e4be3c177b3745942"
+        ],
+        "newline-before-return": [
+          "47eccdae510ae628e884051f68245268"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_plan_repair.dart": {
+        "newline-before-return": [
+          "094ceb69155587ee47b1d557dfe685c7",
+          "005d49e327abc6887bba7647199f4c41",
+          "bbef19786c08a56d47025fc80a748f53",
+          "db352cb5be7ecf757794710f9eb35d95",
+          "afd514b82d145f35d8fcdd98a574b0fc",
+          "f7a9dac86a9f03d1896a924b0cab0e45"
+        ],
+        "arguments-ordering": [
+          "d310c55ef71a6bca11dd5bba6fb84278",
+          "38f69b0378c1c534cf8d899fe8a4f20b",
+          "97c4481238baf85ed42e00d1e158be64",
+          "29a69c8e8a0fc115b9050f06a7f20d56",
+          "b2d3f9d0506d5614294f89c0bc3b9e70"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "64e70628263d3324821fdc58d3514c41"
+        ],
+        "prefer-shorthands-with-enums": [
+          "ebcb05238a3f0eb7b46ced43963886f5",
+          "75983efcc0ec4f6d762f7af43f8daa97",
+          "9dce48609c0651c2c8f674034f551935",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "3d5d2e3c3d76cb3d3bbc677082bff044"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/deck_plan_validator.dart": {
+        "prefer-shorthands-with-enums": [
+          "c9dc47c9fe3fd49df082e47b2aaf7fd2",
+          "c9dc47c9fe3fd49df082e47b2aaf7fd2",
+          "ebcb05238a3f0eb7b46ced43963886f5",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "ebcb05238a3f0eb7b46ced43963886f5",
+          "dee56c42d4dca9ebeb1655e201026985",
+          "7a8a4b700dbf2a6df8ad0540cef59537",
+          "e6ae8f3621ced35e0decab78369cfc76",
+          "0f2ce7e8187e96b33f7471985307de00",
+          "91973e0159d0ff9daee66bdd0d85a604",
+          "0d07e265c118cb0e4630e61680355d12",
+          "91973e0159d0ff9daee66bdd0d85a604",
+          "42a039328ed7ddec9ceee645e01af411",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "b3bc42f0e6ddee26002bff76ba0e7f57",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "83d5930a437df131a38cce05ba985231",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "f6d6ddabaa7b4fc26675965558107402",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "9692ae73752b055424e232978227c894",
+          "0f3941d1f44eb842dcd8e21d62013f14",
+          "58dfc4fe116e9efe1e0ae5e54c92fd67",
+          "7200d1a0cff6a30bef330ef76c904bab",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14395f65ca8b5e131243ac407d25ecc9",
+          "14018a1f31ac3d06be19ce7f0c3b86cf"
+        ],
+        "newline-before-return": [
+          "f78c5ea403f52a491171efc3c7a631f9",
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "2e913be2539392ddf88e8ee8b320b20e"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/design_quality_metrics.dart": {
+        "newline-before-return": [
+          "122428c769833165a82a579de6b440d4",
+          "882da0c35bc3a6bb638ea2521b141495",
+          "aecc7a118b1650fe049e3deafabb2974",
+          "07fea4ab534099ab6201c8035f98fe5e",
+          "010268b2b3a75a2e9a1897eed68c2fe6",
+          "618cab4d89b093875feab49b2cca4e07"
+        ],
+        "no-equal-switch-expression-cases": [
+          "6ea2ef7311b482724a9b7b0bc0dd85c6"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/error_classifier.dart": {
+        "member-ordering": [
+          "3acce24f1b36cbe21619ebd3112d9289"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "d1282214abfb701b0edb5b2ecb0e3380"
+        ],
+        "avoid-missing-enum-constant-in-map": [
+          "79b2206701eac50637a708a021a869c0"
+        ],
+        "prefer-shorthands-with-enums": [
+          "beb069993c7bf588df4bc9ad0b9ae18a"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/generated_slide_validator.dart": {
+        "avoid-inferrable-type-arguments": [
+          "91fb37915e0b137471ffed358a98df47",
+          "bfee52d03478ce0c30b1ae2015bc758f"
+        ],
+        "newline-before-return": [
+          "9ab6decc421aaab99e8f8bfddbf8d339",
+          "058cb43bb486d25c8ba709865ebd83cb",
+          "ecd68d0a2f017878e0cec32b5f4c58a8",
+          "0d7da24a7b06a3161cae3da03140a137",
+          "f78c5ea403f52a491171efc3c7a631f9",
+          "f78c5ea403f52a491171efc3c7a631f9",
+          "afd514b82d145f35d8fcdd98a574b0fc",
+          "ceb01d9ed98374201d362585ceac9d39",
+          "afd514b82d145f35d8fcdd98a574b0fc",
+          "e6978464917fa08dc31df29c37084eee",
+          "47941be0d0a25d6e9915e503b0b57e66",
+          "ade9f8d86ad545ce61de1b6171c2c8fd",
+          "939b375474fe15b4af21be027ea4bda2",
+          "afd514b82d145f35d8fcdd98a574b0fc",
+          "d0fb1625c2453fc80769deb4b7780c87",
+          "d0fb1625c2453fc80769deb4b7780c87",
+          "ed0e87f5bbeef8fee8cce371743ea722",
+          "afd514b82d145f35d8fcdd98a574b0fc"
+        ],
+        "prefer-shorthands-with-enums": [
+          "e60b6d41b47a410f4c9703b8df6ac273",
+          "65806845bc752e0fde82bc202bb4b228",
+          "a3029833c8b39817fbfc5a42c915a73c",
+          "9a0db6cdce80c25fc29d077f1518fc4f",
+          "9a0db6cdce80c25fc29d077f1518fc4f",
+          "760cc2150cc2203dc6af6b06dbca2170",
+          "8192aeb34a7f329dc584289e878049ba",
+          "8192aeb34a7f329dc584289e878049ba",
+          "7f3ba2420ac76423548c578cd238e9c3",
+          "4b8f6b4995d7dbcb19ca9ce8e1eeb0a0",
+          "f483c5c9333ad4e60c8b313467dedb4e",
+          "65806845bc752e0fde82bc202bb4b228",
+          "14018a1f31ac3d06be19ce7f0c3b86cf",
+          "91973e0159d0ff9daee66bdd0d85a604",
+          "0d07e265c118cb0e4630e61680355d12",
+          "91973e0159d0ff9daee66bdd0d85a604",
+          "42a039328ed7ddec9ceee645e01af411",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "b3bc42f0e6ddee26002bff76ba0e7f57",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "f6d6ddabaa7b4fc26675965558107402",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "e60b6d41b47a410f4c9703b8df6ac273",
+          "0d07e265c118cb0e4630e61680355d12",
+          "91973e0159d0ff9daee66bdd0d85a604",
+          "42a039328ed7ddec9ceee645e01af411",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "b3bc42f0e6ddee26002bff76ba0e7f57",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "f6d6ddabaa7b4fc26675965558107402",
+          "ea4beca5477206d91a543c6f0116ba02",
+          "536d0fddb78b7eec7bbfa72836c7747f",
+          "58dfc4fe116e9efe1e0ae5e54c92fd67",
+          "536d0fddb78b7eec7bbfa72836c7747f",
+          "58dfc4fe116e9efe1e0ae5e54c92fd67"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/generation_element_catalog.dart": {
+        "member-ordering": [
+          "fd95321f1ed8a76e53ca4a25c53f0642",
+          "e4e67a4cc9fc7eb46a4cb121a91f0810",
+          "16cbc35c0e0fb2c271aef07e3e6f37d1",
+          "48981b6d46d42a97bd3555882dc25729",
+          "ae2fa10cc915b04b632fae0f199f47e8",
+          "5b53270114c4e4d625d815c9bad017fe"
+        ],
+        "newline-before-return": [
+          "32963f816d14f5a0cda82b2ab90227c9",
+          "ed0e87f5bbeef8fee8cce371743ea722",
+          "dd2e62cd25e81e63d148afa31baaa93f",
+          "6254131e633f4d5bda091f3ef6cd2e16",
+          "04482b5e96cebdb25fb9e03e10eab3c7"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "addd37a8065b52cea0ed98d80d259435"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/generation_model_client.dart": {
+        "member-ordering": [
+          "4981409a7f3ab044ec5b677457aa58d7"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/generation_progress.dart": {
+        "member-ordering": [
+          "021b52cc78fedd40747b4e9beded97a4",
+          "b7446d8b8d558b054007c6960e8a99d5",
+          "7f2aa349764eb1c6b2595080eecdd426",
+          "d08f4c598505c608639c720f6fe34d13"
+        ],
+        "prefer-shorthands-with-enums": [
+          "e26fb406d5089a687500bbd71144d876",
+          "bbfc1d5b729389800243cd8eacf3d25a",
+          "e26fb406d5089a687500bbd71144d876",
+          "12a1033fd7ad23c01c1dc20306c807f1",
+          "648d2b4434bcb866e1ce79539d37a784",
+          "9d8cd4c8f6b2f7f01a366c97c50b2311"
+        ],
+        "newline-before-return": [
+          "eb3984d433df779e562f5b8284d5909e"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/generation_quality_report.dart": {
+        "member-ordering": [
+          "3ff13792b3f83562e15a0cf94eff2c08",
+          "93ac312546071a4932c9cb72821b311a",
+          "084e7cc24e6c0fcbc62e9ae65640fc95",
+          "4336cc761053aa2c68fa4e5d43908703",
+          "3636853fb8f8a6a159b0a1d92bc1397d",
+          "37b8b481254586ecabf1409cb29ad2b7",
+          "59896d1bd10774a554f9176e57e79b01",
+          "13fc839703ffc6f7d1767a645baa11b9",
+          "e5dcf8684482230d3ffecf7dd87050c8",
+          "50ca591007dffe24ca949bef3c522887",
+          "66e8e909e965be201f174ea354bc209a",
+          "4505d7887b416191173668490afe1e9e",
+          "c977d4111626ecf73ab432b8deab1b17",
+          "c53cbb53caebbc68cf959044aa9375e5",
+          "484a23d5d0d2a6df50f626b462b5bcfb",
+          "0243c6c5fde3edeb483686d7ca2af9c3",
+          "a0f1268cf6a9afd47eea602b07514cd8",
+          "9c32ae933b3728d071e892cafdbaf122",
+          "17295ed91f8b5f7e1838e6e78d4374df",
+          "15de6afc7474bb7fcabd98da254dcdbd",
+          "f8018ad751f2d8f94b204dbcffefbbf6",
+          "579000f49fcaa9db96c09b9bb8a7e6b2"
+        ],
+        "prefer-null-aware-elements": [
+          "ea7844bc16bdebeeb3afaf5610b72770"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "b32d9275721f7438582b42bf815a6d85"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "64d0333cf654a2dd73c21d1a4e625170"
+        ],
+        "arguments-ordering": [
+          "4e60f0557c7da89bee4ab65d328a44b4",
+          "81a9098eace5b6a77d05ab5893094186"
+        ],
+        "prefer-shorthands-with-enums": [
+          "357de952d8a6483178f38cbaceca5563",
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "484e030ddc01f745ff9f110e4d0f9561",
+          "3d5d2e3c3d76cb3d3bbc677082bff044",
+          "484e030ddc01f745ff9f110e4d0f9561"
+        ],
+        "newline-before-return": [
+          "2730b3df559d43dc48d96baf458458fc",
+          "4d3b26779d4203337a5da5512d574319",
+          "2e913be2539392ddf88e8ee8b320b20e",
+          "2e913be2539392ddf88e8ee8b320b20e"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/generation_trace.dart": {
+        "prefer-null-aware-elements": [
+          "c66904102d6d77800b117d207228b251",
+          "fd8b6032d202e81c1896005759922c08",
+          "a8d7f20f0a3732690c297d24e4072d70",
+          "f8e3b11e3d4ed4ed1b0bb126f0bfee2a",
+          "920a92511bb8dac13caaa7e770fb8a72"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/google_schema_adapter.dart": {
+        "member-ordering": [
+          "93ac312546071a4932c9cb72821b311a",
+          "51cc5f257902301cca542637defeb0a4",
+          "c6f96455e9f0740df48d45a73093457c",
+          "592478d0301d179ad70e944cb9f3e7cd",
+          "16ede01395c85a2041d68165b7370840",
+          "11ef070a0ad8096711a4c655bb03c3aa",
+          "416dac0ebb1270ad93be62abd32468bf",
+          "aa19ac6d3cfafc1fa6b58129ef359738",
+          "9b5de1ce1e4f1ff537f47bb2c082d9a4",
+          "c3104074beb9c519d7294f605f41d56d",
+          "e8271c3142aefe45c95f7f2fa3f87c53",
+          "c3c9992ccdea7732115dd3d0b76bebd4",
+          "b061e04973aeeaf0516c34a55d2757e2",
+          "7ee9f0d087a0df48eede16c71e0b424e",
+          "b84dbfa2523b877bbd52be3b9aa4d989",
+          "833607e1bed0d0998e8aa6d98922300b",
+          "2868cd10f04b85973b419f377458b0c1",
+          "fd6f9d87cf10a965b63a1f092c42992b",
+          "367475447bec2d3d4c6922063dc693af"
+        ],
+        "newline-before-return": [
+          "817b84d1b6be6eadf62fe88f44e14d20",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "6b1497ab86f62bac6c8f5cb6a4c27aa8",
+          "bbef19786c08a56d47025fc80a748f53",
+          "86202c1401f9e55d676bb2996de7c09f",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "2da5d80d7bc17c57701f9f6b6212d298"
+        ],
+        "arguments-ordering": [
+          "d5563b7893a498006269b3854e0543b2",
+          "5d70a1e772c9073ca9a98732bdf9b219",
+          "ac1c7daaea13c73377aed73503c3bf27",
+          "d090138b12569fb42daf71fda8657920",
+          "71df2e8b12d75dc5cb685c5df549e945"
+        ],
+        "move-variable-closer-to-its-usage": [
+          "3c6e0b8a9c15224a8228b9a98ca1531d"
+        ],
+        "function-always-returns-null": [
+          "c6ad57ad6dd31cc333d959e18d3b3358"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/retry_policy.dart": {
+        "member-ordering": [
+          "b24769fd1b2d68dd809f5b9f4a9e02f7",
+          "19562df09e962929d946a1b8ee35e347",
+          "04023b2fdf415c9bcb4163a6b472be76",
+          "f88d82b268949c3dc522149195fde7e4",
+          "c3aa23179489fdbca6c20c6548d2cbef",
+          "36c5488bee5a23239980940803d179f3",
+          "2c38d0c7ee16b998dd0b59f56f3add0c"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "b32d9275721f7438582b42bf815a6d85",
+          "b32d9275721f7438582b42bf815a6d85",
+          "b32d9275721f7438582b42bf815a6d85"
+        ],
+        "newline-before-return": [
+          "5420701ded68ecea0dfa74dfeadad4b4"
+        ]
+      },
+      "lib/features/ai/quick_agent/core/engine/services/source_grounding.dart": {
+        "newline-before-return": [
+          "1b5e7b2454b1233e4bba6f24f4ea8a70",
+          "566bac91bf51eff670cec6d89acb2e53",
+          "e7e34e71382cec74649982dcafd1c485",
+          "1761907fc2f0b385e459e1d15b76f4bd",
+          "c53b1733ef9aff677372a41546805237",
+          "880c0cec95355c41819e7af80fe52bcb",
+          "880c0cec95355c41819e7af80fe52bcb",
+          "848002e079a6d5e101ca300ffc499f07",
+          "02068285decc93571ae033d1d87eefbb",
+          "81b94c6f16ecfe6242f9c2bfaee6766f",
+          "d7fddf33ffb8a9945554150e523cf4ac",
+          "a21dadc60a9424e510dc3ba9e4ee7f96",
+          "8b7e31ba85a9b7b82771b6e16b6eb87b",
+          "d7fddf33ffb8a9945554150e523cf4ac",
+          "3762046baf08479b60aafb78f6608051",
+          "c0f9174ebd08f2a6075151b560fa583b",
+          "9f6561ebf93c6d58554dc13e33095aa2",
+          "e7e34e71382cec74649982dcafd1c485",
+          "9f6561ebf93c6d58554dc13e33095aa2",
+          "ff213c70e20583d4a8461e8a7fdc6769"
+        ]
+      },
+      "lib/features/ai/quick_agent/domain/commands/generate_deck_command.dart": {
+        "member-ordering": [
+          "93ac312546071a4932c9cb72821b311a",
+          "0ea62933d196c387856ef1a10cb4ed2a",
+          "8a0c32ad468260fc4fec223c4ae6fa54",
+          "562305e717db0bc575c3b3164c69a6a5",
+          "fe3c76af1b2fb8a5b18010b6fea6c7f8",
+          "7c5d3f311125d65ce50413677b0848a0",
+          "e1cab01410358f7490cc39fa0cc9abda"
+        ],
+        "prefer-shorthands-with-enums": [
+          "9d8cd4c8f6b2f7f01a366c97c50b2311",
+          "bbfc1d5b729389800243cd8eacf3d25a",
+          "9d8cd4c8f6b2f7f01a366c97c50b2311"
+        ],
+        "newline-before-return": [
+          "92bc3a2631bf7f0106dc346803864748"
+        ]
+      },
+      "lib/features/ai/quick_agent/presentation/pages/generation_lab_page.dart": {
+        "prefer-shorthands-with-enums": [
+          "9d8cd4c8f6b2f7f01a366c97c50b2311"
+        ],
+        "newline-before-return": [
+          "6709faced1c59e613e270d62adfdfdb4"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "25d70aceeb5c316696c392bd922e2a3d",
+          "7619ac479ac9f2834cfe7d877347194d",
+          "946405a29e13e101d76b4f487157091b"
+        ],
+        "arguments-ordering": [
+          "a8a23a1abccd94a98763e6004de4bb5a",
+          "bcce95b8af165a092ef546e7a7732a36"
+        ]
+      },
+      "lib/features/ai/quick_agent/presentation/widgets/agent_generate_panel.dart": {
+        "avoid-inferrable-type-arguments": [
+          "3f63415e4669117ff49f73960a4719d0"
+        ],
+        "arguments-ordering": [
+          "6326f0a8f7d22bcf44408b4b40766394",
+          "8232e166fa8a8e0a94a441a6c3a01d42",
+          "96595505e89aeecacf57a685d06b08a0",
+          "094f9f454ebc330a63b3bff5cdc4609c",
+          "182748331b10a62fe44266e10eb6fd69"
+        ],
+        "member-ordering": [
+          "b5835f6e92a662adefd7198c41a57a4d"
+        ],
+        "avoid-flexible-outside-flex": [
+          "63f6baf1d88963b8c8210751c8530e94"
+        ],
+        "newline-before-return": [
+          "97f35e09dd652b8cc9c05af8f77d59df",
+          "22b210e70c24cf6aeb85ae1d1219afa6"
+        ],
+        "avoid-passing-async-when-sync-expected": [
+          "f5cdc7a986cf2cda9c809339d8f575fc"
+        ]
+      },
+      "lib/features/ai/wizard/chat/chat_message.dart": {
+        "member-ordering": [
+          "63b0312b8498059c5c4d70303cf9305b",
+          "63b0312b8498059c5c4d70303cf9305b",
+          "63b0312b8498059c5c4d70303cf9305b",
+          "e34856fe666cdbf4e6908a5e57c35be9",
+          "75bcff17819a72de4ea0dc6f20103360"
+        ]
+      },
+      "lib/features/ai/wizard/chat/view/widgets/chat_bubble.dart": {
+        "member-ordering": [
+          "46cc7c3073328e3b7eb97fb5df56f6c1",
+          "3dd6caecaf0591596acb8e3974aee0c2"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "e87e1e04cd379d61fd8ee02dc86a8de6",
+          "e87e1e04cd379d61fd8ee02dc86a8de6"
+        ],
+        "prefer-shorthands-with-enums": [
+          "08a14347d022dfdc11735818fd900919",
+          "1ca9077e7fb63c5f9668bc361ec2bcfc",
+          "9c35600ca1cbb8d7f48b8e9b77857741",
+          "ddf95cbd75caa38bea8f6cc36f2eb4c2"
+        ],
+        "arguments-ordering": [
+          "84f684e82e0246b40a7d752a6bb45447"
+        ]
+      },
+      "lib/features/ai/wizard/chat/view/widgets/chat_genui_panels.dart": {
+        "arguments-ordering": [
+          "f1068a141959cac88ac9aa909094cf5c",
+          "d25f62b6ecbb0ba92011eea72fc2c5ca",
+          "5ef4bc3769fd14e1ba646d3bcd03e421"
+        ],
+        "prefer-returning-shorthands": [
+          "a548f40fbf24cdd7512edadafd6763e7"
+        ],
+        "prefer-shorthands-with-enums": [
+          "09121fdc5a685f7523093cd7cbd10592",
+          "09121fdc5a685f7523093cd7cbd10592",
+          "45da23b7c939e966a0ac561b5884cfe7",
+          "82b00b0ba6459d9f8ba85adcfb54b412"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "25d70aceeb5c316696c392bd922e2a3d",
+          "7619ac479ac9f2834cfe7d877347194d",
+          "f02a8b91e92f721c96c4ab2efb4ec46c"
+        ],
+        "move-variable-closer-to-its-usage": [
+          "bf516925bb37a8544c8ee19a24e15c05",
+          "e780ee052657fd85be0373cf0de55bc8",
+          "897a779351421523cadbafccdce22efe"
+        ]
+      },
+      "lib/features/ai/wizard/chat/view/widgets/chat_input.dart": {
+        "member-ordering": [
+          "0e1194069150afe787323a9ea5a4b537"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "86747cb1f8d1d1b6c1ba5fcd39c97fa9"
+        ],
+        "arguments-ordering": [
+          "32b4837af9dfe271919eb0586596a5f0"
+        ],
+        "prefer-shorthands-with-enums": [
+          "073d46a91eac968762dd2d96bfea9403"
+        ]
+      },
+      "lib/features/ai/wizard/chat/view/widgets/empty_state.dart": {
+        "arguments-ordering": [
+          "ba38a75e760fa742565bbbf567ef5ec1",
+          "c1e42b95c6a8fee989b0efefee99722a",
+          "078bfb735bed6a8a8276ce8be677f86a"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "f02a8b91e92f721c96c4ab2efb4ec46c"
+        ],
+        "prefer-shorthands-with-enums": [
+          "e5df4f9378d3812a4ffb549a6ba06738"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/ask_user_checkbox.dart": {
+        "member-ordering": [
+          "c2095f18c968094d8f689ea9c8a1e32c",
+          "74c4e039cbcbcf18fee31fb15f53e3f5"
+        ],
+        "newline-before-return": [
+          "2e913be2539392ddf88e8ee8b320b20e",
+          "b93e99b59297b149853fc54ca8b965f1",
+          "b86ea9e38c925b2d5f8a3a53442bb6eb"
+        ],
+        "arguments-ordering": [
+          "02b18320334898f096199af04e02cdd0"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/ask_user_question_cards.dart": {
+        "prefer-returning-shorthands": [
+          "767ae84aa629503704894ebdeb013a0f",
+          "767ae84aa629503704894ebdeb013a0f"
+        ],
+        "member-ordering": [
+          "c0b5933772ce51548e6a3752b52db33e",
+          "1638a404b5fbf796e158d136dabb035e",
+          "ee949bb3f26491a48d1c7c8c46e8c1f5",
+          "4e630725a18afb8b9eca0b9a14eb0263",
+          "fca00657909e37f3deb317155a7b1d5e",
+          "0ba5a93af0980ce790c245be74677737",
+          "adccfd76cb6fa3c94398a3d213a1ce65"
+        ],
+        "prefer-shorthands-with-enums": [
+          "45da23b7c939e966a0ac561b5884cfe7",
+          "09121fdc5a685f7523093cd7cbd10592",
+          "45da23b7c939e966a0ac561b5884cfe7",
+          "e5a9547b011274b87d41f70afa9257bd",
+          "e5a9547b011274b87d41f70afa9257bd",
+          "4b5e6559a090af31173473cecc19dca7",
+          "e5df4f9378d3812a4ffb549a6ba06738",
+          "09121fdc5a685f7523093cd7cbd10592"
+        ],
+        "arguments-ordering": [
+          "8ef7dbab916df52a368ed52223df8832",
+          "edf041c2d0746d6c9fd7636662d6471d",
+          "7b6a33e673f3878a8023bda9b5e41dbd",
+          "a87d61f5ae6d976fe10b873c70679319",
+          "9fb4896ff29d758f68674dc23ad394d9",
+          "7866ca92e57455add0b1d4845ebe7304",
+          "8f73cd2ada134880c79dc02d6be37ee4"
+        ],
+        "avoid-flexible-outside-flex": [
+          "63f6baf1d88963b8c8210751c8530e94"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "8dcb7b6afd119e76bc9c6a3d399be02f",
+          "e87e1e04cd379d61fd8ee02dc86a8de6",
+          "25d70aceeb5c316696c392bd922e2a3d"
+        ],
+        "avoid-missing-image-alt": [
+          "4d115435d3b22bf0162e64bef1619330"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/ask_user_radio.dart": {
+        "member-ordering": [
+          "dfa89e34a41102ff8c03740e79d05c9b",
+          "a8a9fdacb3553ef0f390438218ede1ec"
+        ],
+        "newline-before-return": [
+          "6ca441258dee8e009654647f3b18b68d",
+          "b93e99b59297b149853fc54ca8b965f1"
+        ],
+        "arguments-ordering": [
+          "cc78ff5a946aab2404afeb82ae5cd9ef"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/ask_user_slider.dart": {
+        "member-ordering": [
+          "c96664e19effa7e7bdb3ce6bc7962d89",
+          "771ae4667587f37d18482a763b8d2aa1",
+          "c08410ed416e910329e969f08a1f7cfe",
+          "63168b23fa1791429b06c3d8e4f7c117",
+          "bf7dbb0f05d78cd9a53f0314fe98f0fc"
+        ],
+        "newline-before-return": [
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "40e43344e157582eff1d17f4399ca40f"
+        ],
+        "arguments-ordering": [
+          "b9b84c561cea0ac8dcb058355a089a2d",
+          "cbbbf594ca530ee01d9e408777c466e8",
+          "7313a877c16fed0383ee29bc61a3745a"
+        ],
+        "prefer-shorthands-with-enums": [
+          "d96f0ba5d14e073d9febca47eb88bf24"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/ask_user_style.dart": {
+        "member-ordering": [
+          "c2cda96dc64dde670da5f012a956f113",
+          "74d7cb180dd5b721c3a109a9e2e6753e"
+        ],
+        "newline-before-return": [
+          "d8cfe155f6465ad0394e452a1407953e"
+        ],
+        "arguments-ordering": [
+          "cc78ff5a946aab2404afeb82ae5cd9ef"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/ask_user_text.dart": {
+        "member-ordering": [
+          "2e0b689bf50d2dff11cc5551e3912df0",
+          "805b1b6d58c5ff3f3bcc9b9a62183284",
+          "ae90abdfb0acde94d004bcce1970b295"
+        ],
+        "newline-before-return": [
+          "401a69a7273354f2e163844347997876"
+        ],
+        "arguments-ordering": [
+          "449c0c6198638327e42c1264329c330c",
+          "b8e36f4d62ab6a4da9a15613ff0dcb91",
+          "ceb0874df2f329e47fb4465997c1db18"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "3822ca846f4fe90d5a104da064b7d9fa"
+        ],
+        "avoid-empty-setstate": [
+          "f3edb0bd9219cb00a7d9ee2aa2b831bd"
+        ],
+        "no-empty-block": [
+          "99914b932bd37a50b983c5e7c90ae93b"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/component_schema.dart": {
+        "prefer-iterable-of": [
+          "712fe1a31d915efe9c554b504c82975e"
+        ],
+        "avoid-nullable-tostring": [
+          "9b71f8224875d86396b1a510742682b9"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/summary_card.dart": {
+        "newline-before-return": [
+          "3c46563e1e0cd9579abfcd3b7879ac75",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "1265da10052e3159efe6337f1d94d808"
+        ],
+        "prefer-shorthands-with-enums": [
+          "8cb6d6c1c59290c8f6bcef74cc63199f",
+          "8e419166ff6af5c9a21ec612acbe5b9f",
+          "b43e16f7eb270cc5abe2a1f86fca74ba"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/summary_card_view.dart": {
+        "avoid-dynamic": [
+          "b72f3bd391ba731a35708bfd8cd8a68f"
+        ],
+        "newline-before-return": [
+          "79b41d9794649affbf62bb719e838127",
+          "79b41d9794649affbf62bb719e838127",
+          "694de16e1ee451b02cb7672b2ca1b5c8"
+        ],
+        "member-ordering": [
+          "6fd3bc62e6c790fcb05e5f36d557a986",
+          "119dc50299bb803842595eed2c1940c7",
+          "bce74364514a8de47ddea46e86e4e0e3",
+          "1cb7d6a97bac26c656ca7851fcdb8549",
+          "149af29b6859828c3d9b2afd2e80dd26",
+          "c7309f02d7a0fe3d11f0fb41759b469c"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "e87e1e04cd379d61fd8ee02dc86a8de6"
+        ],
+        "prefer-shorthands-with-enums": [
+          "45da23b7c939e966a0ac561b5884cfe7",
+          "45da23b7c939e966a0ac561b5884cfe7"
+        ],
+        "arguments-ordering": [
+          "6779e53e250f7c811495424e63c1ff63"
+        ],
+        "prefer-returning-shorthands": [
+          "767ae84aa629503704894ebdeb013a0f"
+        ],
+        "move-variable-closer-to-its-usage": [
+          "d967b24e73a186833ff02f0ff8bd1657",
+          "cf18e3967849120aa9c6346524ba2c07",
+          "74ac8602f028dfb26f4f1ba0a6f8917b",
+          "6b604e1b520587315730f032671ed71d"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/typed_catalog_item.dart": {
+        "arguments-ordering": [
+          "754121f3aea159058a85b9847dbff8c6"
+        ],
+        "newline-before-return": [
+          "9ea432b3d1192b021f0de5a38fdc4413",
+          "9d70f6dd0908dea6b637430b19ac476f",
+          "da570c56c245fd0c2c48bd7573f8a42e"
+        ],
+        "avoid-unnecessary-nullable-parameters": [
+          "5476e74be12b7b2392d5dd04aa69d6d8"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/catalog/user_action_dispatch.dart": {
+        "newline-before-return": [
+          "bbef19786c08a56d47025fc80a748f53"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/prompts/image_style_prompts.dart": {
+        "newline-before-return": [
+          "691e538a256533401966cf20427df3d4",
+          "bbef19786c08a56d47025fc80a748f53",
+          "ee6336c31f00a661659d93543f999079"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/schemas/wizard_context_keys.dart": {
+        "member-ordering": [
+          "73fb0fd7a80e739f7a1088859a8d38ff"
+        ],
+        "newline-before-return": [
+          "3df9a68a6b584e934b0caac182bcbe0d"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/services/ai_conversation_profile.dart": {
+        "member-ordering": [
+          "bb233f42e25fd11f76b91ca8158016a7",
+          "7ee0723ebc4cc8ce1777d1ed94e3b2f1",
+          "4d486864641d4b995918ddd8607926a8",
+          "8eeeaf9edc109141eb2603935b63cac8"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/services/ai_conversation_viewmodel.dart": {
+        "member-ordering": [
+          "3b37b34c6f7955e78d4b7b698cbe3cab",
+          "556d95735b500722cca4159fcbab5800",
+          "e8982e68f4754e7cc46519e33da7d7de",
+          "fd36d558c167db5fe4bda0d1524c615a",
+          "38efecb86232b05030845d9c54d39549",
+          "1acc8dc6bdd56338900e200437ee61b4",
+          "71f0ce4976d7a3892fff7995f864b6b1",
+          "5e7bb3093f8657ff28c99aff609c0e3e",
+          "44d60ad12ae58eefcf031919d27bcd85",
+          "a664d08066a3873a7ba1b24748afede4",
+          "ca66ab451eea2c970b145ce4a2c70ccf",
+          "bcf9a39cd669a1c61409aa87200d779e",
+          "f04c235f3081306c651e7314653dc219",
+          "b290730973c7b2dd1062661f81de2f4c",
+          "c2d138d17eb91b7f63419ea9a3925551",
+          "0173a3be08e3450b5262b43f6ed617b2",
+          "3e639ad6f7a48861042c9de2f29a45ac",
+          "fb5e1d11f94d98832a3d9890598a6e36",
+          "fb3361b3fbf270eb23aa21927ced40d9",
+          "706a18ce023e9299a409de3ba5c59aed",
+          "c555a404bd8dd9e323e2e7a155d13d63"
+        ],
+        "arguments-ordering": [
+          "a3aff7443548ce429ca08f122f5ebe8f"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "a4ce78f10642531236c337ef3ce2df5b",
+          "a4ce78f10642531236c337ef3ce2df5b",
+          "a4ce78f10642531236c337ef3ce2df5b"
+        ],
+        "newline-before-return": [
+          "2e913be2539392ddf88e8ee8b320b20e",
+          "d0fb1625c2453fc80769deb4b7780c87",
+          "2e956a5a13c19dde92a7d4337f577c69"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/services/genui_conversation_session.dart": {
+        "member-ordering": [
+          "6ce22b0a4bc0752289f587332fa2ec9b",
+          "c459bc45c82c87be24e5b20511105b75",
+          "54eda7e668401110595a662c7871c7a6",
+          "ffb5ae6933ada6f23d63c5c340de35a1",
+          "0bafd4d9f7d2ecf841fc88fb5d030e5e",
+          "a91ddbf47a56333253f94255e066a40c",
+          "b1d7bad4eb546c0b72a0611d9a8d0b48",
+          "3b3c7451f58440261ac15f9799fa1284",
+          "33baefcfe582bf118f120ea677acdbe2",
+          "aa13b07e21394833dff81935b920bee0",
+          "9cc1855cd4a858a8b5771aafdff1587d",
+          "c7a33b5758d04f29022a188cbc5e4392",
+          "f445e42d922f724219e80a90272e8a7f",
+          "bc7fbdc2ed5eb8cb7951d3d4c4253336",
+          "cf3c6a8b76bb1f23cf984390acaa4061",
+          "2dd740e1b6b4584b87046cf9dae66b39",
+          "03c55bc1fdc2070aec054176420b672f",
+          "6f728271125f02f2ffccc0843ca05fa6",
+          "2e4d8c871f37677886d8761fe50bf928",
+          "40b5171cba901df3ba97d8df02783999",
+          "958613bfe632d10d2120e15be795ea36",
+          "3bbcc0e8ef1c9367e37b74363c0ca903",
+          "871408fd9c7d5169ad2658b8467d195c",
+          "2321d4df92e1c709b8f58594f6f84567",
+          "f6c2079cd24ceb71e0ab1af888e06a55",
+          "a9a38464c1c779b429bbf2669e88e8f4",
+          "35bb6bd1f6b83e1f1080b29c8be76bd2",
+          "238d041b79e7729bf420d22de3c31c8e",
+          "bf91ac48f248ea5095888bd0860aa1d7",
+          "9e11e6526bb42352021fbed50d583a69",
+          "5b523eb6f390016a2550c35a3b382fa5",
+          "eec4865bd248609a0cb961178df24429",
+          "1848f7e6b068f163129b56cb5afb3b68",
+          "06d3a7aa46007e7e5162d8fc84c424f0",
+          "18e71386ebcfd245efc279db26492bce",
+          "17c5edc186baf366d87eb5a3ea3c7300",
+          "1f4eb37ea19542195af509790c2429b0",
+          "a1590a599e768fcd3c1b4cfd2fa9994b"
+        ],
+        "avoid-unnecessary-local-late": [
+          "f2c67381db28fa11c59fe7a6df0f2587"
+        ],
+        "newline-before-return": [
+          "e3710941dc477f56d513d66a33f5b719",
+          "1b529c0e1845e89a192291da90153e44",
+          "1f3e64776bce11118c0d85c0487eb7cf",
+          "1f3e64776bce11118c0d85c0487eb7cf",
+          "716db0189ac75ca240515de87fd5d869",
+          "2752b224a537dadddcd8cea66edcc011",
+          "f74e8ad5e90a36e15ccce02e2d9e95b2",
+          "bbef19786c08a56d47025fc80a748f53",
+          "bbef19786c08a56d47025fc80a748f53",
+          "2e956a5a13c19dde92a7d4337f577c69"
+        ],
+        "arguments-ordering": [
+          "189bde2fc2374bf59c510e1b1fff9dd2"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/services/prompt_builder.dart": {
+        "newline-before-return": [
+          "921af52a1578d676b6c81099dc5e2669",
+          "b7a71c53eb1fd797e31c55762a8a7b63"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/services/superdeck_a2ui_transport.dart": {
+        "member-ordering": [
+          "5bc3982daadf3770c73438c01006fcd4",
+          "04cb1e3684676f925263d0b43d5bdf68",
+          "545cea0d320370cda131d8655f63f8dc",
+          "238d041b79e7729bf420d22de3c31c8e",
+          "dfacb8e26b84aeba519ec0aafb13c7e0",
+          "cf9f4f17dcebb365f6fb438125b9c0f8",
+          "e0226267986b59eb3d314a44f0c2d856"
+        ],
+        "prefer-returning-shorthands": [
+          "20874bc552ce6f3f938fd7da9c4d1879"
+        ],
+        "avoid-unconditional-break": [
+          "505b97969baa28c3f607a38ee02f4f2d"
+        ],
+        "newline-before-return": [
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "4548aef834a931b20266c20fed02dae2"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/services/superdeck_agent_client.dart": {
+        "member-ordering": [
+          "63b0312b8498059c5c4d70303cf9305b",
+          "97d4c78006be08421bb5523f258f4870",
+          "0b972dd38fdaae47248e754e3eab8d9e"
+        ],
+        "no-empty-block": [
+          "99914b932bd37a50b983c5e7c90ae93b"
+        ]
+      },
+      "lib/features/ai/wizard/core/ai/wizard_context.dart": {
+        "member-ordering": [
+          "2be2d45acceb3c77381520dccb93b4ae"
+        ],
+        "newline-before-return": [
+          "50ae119e2ea02fc585a5fa1961d855aa",
+          "ed94e543d1a13dbb675bcf12cfac5a63",
+          "52d1c6caac1c32aed2842dd6e99fb8cd",
+          "c7fdaf84e4be1c6d7c92b59a9552125e",
+          "bbef19786c08a56d47025fc80a748f53"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/components/sd_buttons.dart": {
+        "arguments-ordering": [
+          "d43e02732d7412646ec0130a13355095",
+          "9ea6d60a7aecbc21134498e1e606288c",
+          "51e38ba722703508b5dee5927e9b1967"
+        ],
+        "prefer-shorthands-with-enums": [
+          "b4971ec5d0487250b8149b82e614fc18",
+          "7b7f2cbfaac9584dfc4663f3aa1b48d7"
+        ],
+        "newline-before-return": [
+          "2fd9db99a79f959a47f9cb4db8a54077"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/components/sd_custom.dart": {
+        "prefer-shorthands-with-constructors": [
+          "e87e1e04cd379d61fd8ee02dc86a8de6",
+          "e87e1e04cd379d61fd8ee02dc86a8de6"
+        ],
+        "newline-before-return": [
+          "27d7fbc8cd20f382411ee2859f9f1951"
+        ],
+        "arguments-ordering": [
+          "7afb4643e4a4a677715ce188de23b4fa"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "60b33964c4bd64d6c65676ee0b27190a",
+          "86747cb1f8d1d1b6c1ba5fcd39c97fa9"
+        ],
+        "prefer-shorthands-with-enums": [
+          "45da23b7c939e966a0ac561b5884cfe7"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/components/sd_feedback.dart": {
+        "prefer-shorthands-with-constructors": [
+          "e87e1e04cd379d61fd8ee02dc86a8de6",
+          "e87e1e04cd379d61fd8ee02dc86a8de6"
+        ],
+        "prefer-shorthands-with-enums": [
+          "ddf95cbd75caa38bea8f6cc36f2eb4c2",
+          "d96f0ba5d14e073d9febca47eb88bf24",
+          "82b00b0ba6459d9f8ba85adcfb54b412",
+          "98e83ac00d67c8f8c3cf8f16ca3092c8",
+          "e5443a483d0e324bea39442dd927f957"
+        ],
+        "newline-before-return": [
+          "c28fb355b2c33f0083c62d39d8f5ee59"
+        ],
+        "arguments-ordering": [
+          "b3823f19681475c3bdf3923240dbb505",
+          "3418fee5a36cb06a430985f1371aeda0"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/components/sd_form.dart": {
+        "arguments-ordering": [
+          "3cf09c62246f69990162d61edec9b86f",
+          "6212f5ea3308c42acd3ffaa68970c90e",
+          "e6f7139343a923fb7ab635d172c5a2b6",
+          "7b201d6f7ba66fc4688a9c1bdf0b98bb",
+          "6ed07ee417b7f8771e7c550aa7cbb8b0",
+          "b86cce62e2b9eb30a2d336e4a43a195b"
+        ],
+        "member-ordering": [
+          "b69f26e123e25c1579bcfe8b8e2574a0",
+          "a8e1a409b83079901b5fe1a326fed5c4",
+          "6432551e57c98286610a0ffa318dd1a1"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "f7399366cd6336ecbea702c3289d9432"
+        ],
+        "newline-before-return": [
+          "2ea8d92bdf645ebf45941453c2b9c8fe"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/components/sd_typography.dart": {
+        "newline-before-return": [
+          "7703cf205c169cdd606a8632a6817025",
+          "7703cf205c169cdd606a8632a6817025",
+          "7703cf205c169cdd606a8632a6817025",
+          "7703cf205c169cdd606a8632a6817025",
+          "7703cf205c169cdd606a8632a6817025"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/widgets/catalog_next_button.dart": {
+        "prefer-shorthands-with-constructors": [
+          "7619ac479ac9f2834cfe7d877347194d"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/widgets/header.dart": {
+        "arguments-ordering": [
+          "801979137471c1e5fb1750d69c099bcf"
+        ]
+      },
+      "lib/features/ai/wizard/core/ui/widgets/wizard_loading_state.dart": {
+        "member-ordering": [
+          "8b7e1fe6048ba625d48c997e51b62c3b"
+        ]
+      },
+      "lib/features/ai/wizard/core/utils/color_utils.dart": {
+        "newline-before-return": [
+          "ac84b6615d6391fc8cb6a100c0b2aad0",
+          "3a959d00242e1a6e9483824930ad5858",
+          "108ceff8715a5f73a480064664b89bb7"
+        ]
+      },
+      "lib/features/ai/wizard/core/viewmodel_scope.dart": {
+        "member-ordering": [
+          "860af37859861c5a733a69e05e6a1e9e",
+          "405339e0c808ded0232076745dc2b7b4"
+        ],
+        "newline-before-return": [
+          "115f6149095a9822ccec9815455f25b4"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "f7399366cd6336ecbea702c3289d9432"
+        ]
+      },
+      "lib/features/ai/wizard/presentation/view/loading.dart": {
+        "arguments-ordering": [
+          "6439e0edfc4c7dca706660559e89fe79"
+        ],
+        "newline-before-return": [
+          "6698104d7c8dd7ff2835272b106c980f"
+        ],
+        "prefer-declaring-const-constructor": [
+          "3bd46a7affec9cc13b02cfd56c43b73b"
+        ],
+        "prefer-shorthands-with-enums": [
+          "27fb40e9766fcfcd2cc70a5ef9308f4d",
+          "27fb40e9766fcfcd2cc70a5ef9308f4d",
+          "27fb40e9766fcfcd2cc70a5ef9308f4d",
+          "27fb40e9766fcfcd2cc70a5ef9308f4d"
+        ]
+      },
+      "lib/features/ai/wizard/presentation/wizard_page.dart": {
+        "avoid-inferrable-type-arguments": [
+          "bb9ba2fa6d63f9448496a5e277869998",
+          "e696d9c4d2adf40459d446470223c647"
+        ],
+        "arguments-ordering": [
+          "98fcb55044336a2bb210a60fb323b5cc",
+          "b4d805e3057aca097846da31845c03fd",
+          "ec227b2057a7d9c7dbd595a224e39f4a",
+          "fd2e76e04f1f1c219fd378177267d89d"
+        ],
+        "prefer-shorthands-with-constructors": [
+          "25d70aceeb5c316696c392bd922e2a3d",
+          "25d70aceeb5c316696c392bd922e2a3d"
+        ],
+        "prefer-shorthands-with-enums": [
+          "09121fdc5a685f7523093cd7cbd10592",
+          "ca84476bcef57522ee2a8ab81af423b9",
+          "ca84476bcef57522ee2a8ab81af423b9"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "86747cb1f8d1d1b6c1ba5fcd39c97fa9"
+        ]
+      },
+      "lib/features/ai/wizard/presentation/wizard_view.dart": {
+        "avoid-inferrable-type-arguments": [
+          "ed839eb7bf2c1c2a04ad2c5a05315409"
+        ],
+        "avoid-undisposed-instances": [
+          "d0a656787ae67e991b84fb5fee67c5c4"
+        ],
+        "member-ordering": [
+          "dfeb0b6ca24e37768a08be01bed57c1a"
+        ]
+      },
+      "lib/features/editor/data/mac_os_deck_file_repository.dart": {
+        "member-ordering": [
+          "61583f66c352086f625389bc4ec09021",
+          "fe3c5f76041302ca56fa2b9a2d8e5bb8",
+          "f2a5b394cc08c2d1d3858687110b3e3c",
+          "e38bd19dad0e32b1de36b4c63785eaa5",
+          "bea9afc203854cfac0ea530e8a1f6e37",
+          "d4770d7dde3618d4fd6246f3e1b5cde6",
+          "b1f63da170cf8be0becbaecb6fd42204",
+          "c0571bb3bc54506aa599dde3bdb4ecae",
+          "9c1c1af7a5bd604dc9d8d3a17633814b",
+          "7c5d3f311125d65ce50413677b0848a0",
+          "a5325d91d264d106aa29c0dc85e040df",
+          "a094e3bb5adad62a7b32b85cb5c61f29",
+          "ee305b8ba526e1893318dc05bba5430e",
+          "30cc7c5b21586551726810d0cd4d43bc",
+          "8b23f0c3af08fa157c757de9878ef8ee",
+          "ac4269ef67ed74b93cda267b43206c69",
+          "02384a1078a73e8be254c95b3a249241",
+          "b7d338dba32395c4ff833a7e77d3505e",
+          "cac40f6301b09de3894205d9b2e4aad0",
+          "2ac1d9197942bd12e2c0f89839c0e59d",
+          "23e14a48452a1a533807727b01040c18",
+          "d9d85e9c7b2c389f6640a0cb95074a0a",
+          "a9ac5627806d7d2619a028a77b615677",
+          "dd8de04404a29aff3d0dd3cd441290dd"
+        ],
+        "newline-before-return": [
+          "91b07d2f59e53033238af396a151fdcc",
+          "5b13a5f22af000168fb43624f4c5e30d",
+          "7f0cab5db84d38ae4cf80b20c16985dd",
+          "aa7a7d5299fc46c3295977ab5b977f88",
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "aa7a7d5299fc46c3295977ab5b977f88",
+          "7f0cab5db84d38ae4cf80b20c16985dd",
+          "7f0cab5db84d38ae4cf80b20c16985dd",
+          "cca1137add70ca0139c19f0870da0d08",
+          "a3197ed059a2770f9613ee8d3f1853a0",
+          "c0c1fb2d771c5e23460368028f9c3ac5",
+          "580ea924302c212de4d376f6876e3127",
+          "d194a91f80ac759937b191156ba15dc7",
+          "8b7adf8726b22b17c204aeca8312e063",
+          "7d7e97fc617d1d6d2eb2dc89a49bdd6b"
+        ],
+        "avoid-unnecessary-local-late": [
+          "f2c67381db28fa11c59fe7a6df0f2587"
+        ],
+        "avoid-unused-assignment": [
+          "b3e1e9dcd03f9d3d459fd80e8cf33395"
+        ],
+        "avoid-throw-in-catch-block": [
+          "959b7175f88493905e3c324c2bf6f97d",
+          "959b7175f88493905e3c324c2bf6f97d"
+        ],
+        "prefer-null-aware-elements": [
+          "57f7b0a0cdf14ad8caafe195cce8b6ef"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "91fb37915e0b137471ffed358a98df47"
+        ]
+      },
+      "lib/features/editor/domain/files/deck_file.dart": {
+        "member-ordering": [
+          "e2d8f6a392cae18de2345a18e98b9dad",
+          "a4bf12cad1b7e45fa0b783b1d7d2b55c",
+          "1aa40d100698ed08fc6ff488d6c979ae",
+          "af74e680814898972d72f0d395f924e0",
+          "6b96878b5a62afdb18f1f10afe089726",
+          "8a471518a3589e64e269981b1ad4f3a5",
+          "7d63454bc73388949594a19405262cfb",
+          "8a471518a3589e64e269981b1ad4f3a5",
+          "ddb043095f98ae8064bc32218e627e79",
+          "be8c26dcc636a143b78001de86957301",
+          "a6ae710537c5749c910b8cc49a716d7a",
+          "be8c26dcc636a143b78001de86957301",
+          "a6ae710537c5749c910b8cc49a716d7a",
+          "be8c26dcc636a143b78001de86957301",
+          "a6ae710537c5749c910b8cc49a716d7a"
+        ]
+      },
+      "lib/features/editor/domain/stores/deck_document_store.dart": {
+        "member-ordering": [
+          "91ad2f066c7b26baefd76cd473e37991"
+        ]
+      },
+      "lib/features/editor/domain/stores/deck_file_session.dart": {
+        "member-ordering": [
+          "8922a3f0dcbbae6a4b1a02040a1ec1af",
+          "630f69deeef01d03ccf5d50ce70adbb7",
+          "8f384ac6d1e3a31809ad223d4133439a",
+          "be9361f9577f2afcea775b29f0acd0dc",
+          "241460c16dde8c69276eecac54904d5e",
+          "76b53ca63f31a7acab5d0eb87669ddbc",
+          "1af7570a71e03fba43cbda87c237afae",
+          "3696a97859b3657b6dbf7845208fdf2b",
+          "749dffe5db1373029f75dcb8732c56b6",
+          "9c90309785d2262d131e84dcee4fb54c"
+        ],
+        "prefer-shorthands-with-enums": [
+          "aa071c1154e0c2a1a966ae5e9ba4cdcb",
+          "aa071c1154e0c2a1a966ae5e9ba4cdcb",
+          "d0f1730bd6a052818f96347b2602dff7",
+          "d0f1730bd6a052818f96347b2602dff7",
+          "aa071c1154e0c2a1a966ae5e9ba4cdcb",
+          "aa071c1154e0c2a1a966ae5e9ba4cdcb",
+          "aa071c1154e0c2a1a966ae5e9ba4cdcb",
+          "d0f1730bd6a052818f96347b2602dff7",
+          "aa071c1154e0c2a1a966ae5e9ba4cdcb"
+        ],
+        "avoid-explicit-pattern-field-name": [
+          "2063c1608d6e0baf80249c42e2be5804",
+          "2063c1608d6e0baf80249c42e2be5804"
+        ],
+        "avoid-unnecessary-type-assertions": [
+          "02bf8d3cf8169dcdd6fbd16ba219f220"
+        ],
+        "newline-before-return": [
+          "cf7d3bedb9b566e7bf05fbe1d4f9b527",
+          "aa7a7d5299fc46c3295977ab5b977f88",
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "505b97969baa28c3f607a38ee02f4f2d",
+          "13a19489a554a2f1393d0b243b42300c",
+          "2e913be2539392ddf88e8ee8b320b20e",
+          "d0fb1625c2453fc80769deb4b7780c87",
+          "505b97969baa28c3f607a38ee02f4f2d"
+        ],
+        "no-empty-block": [
+          "99914b932bd37a50b983c5e7c90ae93b"
+        ]
+      },
+      "lib/features/editor/presentation/pages/editor_bootstrap.dart": {
+        "member-ordering": [
+          "2fda142e702c104ac2d1dba8eb5e4008",
+          "bdbda3ee4f18a73d8572c33ce50905de",
+          "3a6a12a61c0830f5df785c0463d82faf",
+          "3de5cc500a0e533c4c72bb6017f4c5e3",
+          "0adab035fab662c40897d6ea1b491a26",
+          "3157750d0ebdab544976f3fadf332632"
+        ],
+        "newline-before-return": [
+          "46e4c2b3161e333714f1c17e4f194bbd"
+        ],
+        "prefer-shorthands-with-enums": [
+          "2fb447c7564c2415535ac785c401d9e9",
+          "09121fdc5a685f7523093cd7cbd10592",
+          "ca84476bcef57522ee2a8ab81af423b9"
+        ],
+        "arguments-ordering": [
+          "2e586805e1da05ba5cbbb014bd1d337e",
+          "1def888a6ccb4653203079fe4b44f4ca",
+          "0a5b69544522a5243a3d73d2ea34e4e4",
+          "808a1822c1e024c34f42bb156b1b3a0f"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "bb9ba2fa6d63f9448496a5e277869998",
+          "9772b903b9ec7a48c0b1f7c812bc7819",
+          "bfd922d88a4d97c4357586a293d1996d",
+          "5f7efaf080b60420d599580ae6dc96b5",
+          "bb9ba2fa6d63f9448496a5e277869998",
+          "bb9ba2fa6d63f9448496a5e277869998",
+          "e696d9c4d2adf40459d446470223c647"
+        ],
+        "prefer-spacing": [
+          "1976d7f704de389d9fe064e08ea35b2d"
+        ],
+        "dispose-fields": [
+          "fbaeb96efaa627fe0086f3085ce7b208"
+        ]
+      },
+      "lib/features/editor/presentation/pages/editor_page.dart": {
+        "prefer-shorthands-with-static-fields": [
+          "6cccba5231bfbb08e0b2daef3de25229",
+          "4a3f84f00650af06d1e5833a82a463fe",
+          "415fa17381f186fe57ec7f1abbc608a0",
+          "c85833e43ec2eabb53e14a78c045ced4"
+        ],
+        "arguments-ordering": [
+          "4665a00097aa7b49046b0b115971348c",
+          "ace5a9b34f1b89caf9886445defbd06e",
+          "54c31391e9717ca0902f89f9c2b4adc1"
+        ],
+        "avoid-flexible-outside-flex": [
+          "63f6baf1d88963b8c8210751c8530e94"
+        ],
+        "prefer-shorthands-with-enums": [
+          "93a8349bb1ba0d0d7dd38cee75cda07c"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/color_control.dart": {
+        "member-ordering": [
+          "f2ad75afca5f2dea07b66387fd09d7fa"
+        ],
+        "newline-before-return": [
+          "f32cefc2bc90e20f597987f052bab928"
+        ],
+        "arguments-ordering": [
+          "15162e31fd85e9f9f696fafa2d416a59"
+        ],
+        "prefer-shorthands-with-enums": [
+          "1a43318b6aa6d3969cd534097a9b35f8"
+        ],
+        "prefer-declaring-const-constructor": [
+          "ccbff554cea742890218ec2cc549d4c4"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/committed_text_field.dart": {
+        "member-ordering": [
+          "5c5693934be35425e66e96c9e53205c6",
+          "9fdb867da7097a6856ee3f4033c35e57"
+        ],
+        "newline-before-return": [
+          "505b97969baa28c3f607a38ee02f4f2d"
+        ],
+        "arguments-ordering": [
+          "e993f6c13609c08e76e80682c5d4f4f5"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/customization_sidebar.dart": {
+        "prefer-shorthands-with-constructors": [
+          "f02a8b91e92f721c96c4ab2efb4ec46c",
+          "7619ac479ac9f2834cfe7d877347194d"
+        ],
+        "avoid-flexible-outside-flex": [
+          "63f6baf1d88963b8c8210751c8530e94"
+        ],
+        "prefer-shorthands-with-enums": [
+          "cccb0164ac1854ef081278e0c9957698",
+          "65384f4b491613277bda0739ad40f805",
+          "a18fefb61010d739ff802caad056ae74",
+          "7bff7f612462dc538f921eb60f4692a7",
+          "37d2b4bb4d81f71166e9cddf21bdda52",
+          "713619fa3d96c97eff6b553bec280e0b",
+          "3beeab99d6eb30affa90fbf04b8f5e85",
+          "fe331f45f8c3eb9aafe615ff64e8ebdd"
+        ],
+        "avoid-inferrable-type-arguments": [
+          "3c3f6530e00e9f4ea603911863a90a6c",
+          "3c3f6530e00e9f4ea603911863a90a6c",
+          "a4f5c9920c2235bcf03341de5d2e2d58",
+          "01b4d30c4566f2bce2f348c8ea97828c"
+        ],
+        "newline-before-return": [
+          "4e33c61e4293a9cfaa27322398f024f8",
+          "12daece9ad2d65c67b9702af7bb9de8d"
+        ],
+        "member-ordering": [
+          "3055d749cfc00745b52ce797d02dc5fb",
+          "09078a29d0fb566461b09a3d34277aba"
+        ],
+        "arguments-ordering": [
+          "007a61ca375e5264fbb7a12a82b5513d",
+          "de5ee6b2d67865cbc3b72ae112e22b77",
+          "9676eb77ec4fb21fce14d873c327b906",
+          "c21714beeb161f80eafb3413c9f0ba9a"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/editor_controls.dart": {
+        "arguments-ordering": [
+          "9e056fab164a8e52503f23613b7c0dec",
+          "0e9a6bfeb18997f83290c99cd0506781"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/editor_header.dart": {
+        "prefer-shorthands-with-static-fields": [
+          "c52645537c6ab5d7f975731fba0f51fb",
+          "c52645537c6ab5d7f975731fba0f51fb"
+        ],
+        "arguments-ordering": [
+          "40b32e296b138447fb6f36c185bb0cc2",
+          "97b9475b2474e6dc7fa85090243af89e"
+        ],
+        "avoid-passing-async-when-sync-expected": [
+          "5386071a6701c922773bb4d79fe6c8c2"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/labels.dart": {
+        "avoid-nested-shorthands": [
+          "1b9f5562501632c961c2a1941df643fa"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/new_deck_dialog.dart": {
+        "avoid-inferrable-type-arguments": [
+          "3f63415e4669117ff49f73960a4719d0"
+        ],
+        "arguments-ordering": [
+          "17c54337e65c3088f7be183597d79490",
+          "00169233536c07b4060c89351486d8e2",
+          "082cc69453174f90fd51edd2960a38b6"
+        ],
+        "member-ordering": [
+          "3c835028f65367a04fa7471b9eadbe57"
+        ],
+        "newline-before-return": [
+          "505b97969baa28c3f607a38ee02f4f2d"
+        ],
+        "avoid-explicit-pattern-field-name": [
+          "cb5e100e5a9a3e7f6d1fd97512215282"
+        ],
+        "prefer-shorthands-with-enums": [
+          "1a43318b6aa6d3969cd534097a9b35f8"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "c52645537c6ab5d7f975731fba0f51fb"
+        ],
+        "avoid-passing-async-when-sync-expected": [
+          "ded299993aecd79e8a394c6d7b6693dc"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/preview_sidebar.dart": {
+        "avoid-flexible-outside-flex": [
+          "63f6baf1d88963b8c8210751c8530e94"
+        ],
+        "arguments-ordering": [
+          "821004b6f85223b79054e98e34d845e4"
+        ]
+      },
+      "lib/features/editor/presentation/widgets/text_editor.dart": {
+        "arguments-ordering": [
+          "8f8753de2732c69653d49c7410c46ed3",
+          "cfc526a459c22b011ae984f916d29e30",
+          "b18ed831f98b2838e62ea6dafd828681"
+        ],
+        "prefer-shorthands-with-static-fields": [
+          "4105ec7836e4cc697f33afa3b6b9b7c1",
+          "4c41a8c08da6df7cda65c40c9384cff8"
+        ],
+        "newline-before-return": [
+          "864a08bf2e563e78afb0cc3b038fe615"
+        ]
+      },
+      "lib/features/editor/utils/edit_reaction.dart": {
+        "prefer-returning-shorthands": [
+          "f9ed261a4a72bb61f69a6c97b43f4661"
+        ],
+        "member-ordering": [
+          "8950853c7250da9c19c8d63c67904b4c",
+          "5aa519f1defa2119b09590d8a019435a",
+          "a9bf9ebb2122599a489fcd6856bbc73e",
+          "f2168e94e8aad4a006773fe48465160f"
+        ],
+        "prefer-declaring-const-constructor": [
+          "31dcb21bc8dda167157618d29b14eee9"
+        ]
+      },
+      "lib/features/editor/utils/slide_navigation.dart": {
+        "newline-before-return": [
+          "fd3b4022619434ef02dd8bcdce80a954",
+          "6035c38641c02142fe249c287a985c86",
+          "bbef19786c08a56d47025fc80a748f53"
+        ]
+      },
+      "lib/features/editor/utils/text_editor_controller.dart": {
+        "prefer-shorthands-with-enums": [
+          "3c59534c2e89509c7cd82960f9a265b3"
+        ],
+        "newline-before-return": [
+          "e4a60cdf936c0d20dbc367d602943658"
+        ],
+        "dispose-class-fields": [
+          "1500740cd68882286797953d281dc599",
+          "07993c6c9c0086e4fe2dca83f59f70d7"
+        ]
+      },
+      "lib/features/presentation/presentation/pages/presentation_page.dart": {
+        "arguments-ordering": [
+          "ae98919610014a68ef4167073420111c"
+        ]
+      },
+      "lib/features/presentation/routes/routes.dart": {
+        "newline-before-return": [
+          "63b87429615bcc975022c817c5c1c095"
+        ],
+        "arguments-ordering": [
+          "148f49241f269520d7f401aaec473046"
+        ]
+      },
+      "lib/main.dart": {
+        "avoid-commented-out-code": [
+          "2ff31c73a1170c1a0d71272f98d88e0b"
+        ],
+        "avoid-redundant-async": [
+          "0df93e34273b367bb63bad28c94c78d5"
+        ],
+        "avoid-unnecessary-futures": [
+          "696e8b56222a77c1a1038bd671b480d1"
+        ],
+        "arguments-ordering": [
+          "4029e549212eec27f33ccd065c1e4d83"
+        ],
+        "dispose-fields": [
+          "cc513854023c24bc8ab87b8a428b8bf4"
+        ],
+        "prefer-shorthands-with-enums": [
+          "3ca54d8a1a4173a817e65f67926bd2cd"
+        ]
+      }
+    }
+  }
+}

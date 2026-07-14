@@ -1,22 +1,23 @@
 part of 'deck_generator_service.dart';
 
-final _slideScopedPlanErrorPattern = RegExp(r'^Slide "([^"]+)" ');
-
-bool _onlySlideScopedPlanErrors(List<String> errors) =>
-    errors.isNotEmpty && errors.every(_slideScopedPlanErrorPattern.hasMatch);
+bool _onlySlideScopedPlanIssues(List<GenerationValidationIssue> issues) {
+  final blocking = issues.blockingIssues;
+  return blocking.isNotEmpty &&
+      blocking.every(
+        (issue) => issue.locallyRepairable && issue.slideKey != null,
+      );
+}
 
 extension _DeckPlanRepair on DeckGeneratorService {
   Future<DeckPlanType> _repairInvalidOutlineSlides({
-    required GenerationModelClient service,
+    required GenerationModelCallExecutor executor,
     required String originalPrompt,
     required DeckPlanType plan,
     required DeckGenerationRequest request,
-    required GenerationTraceEmitter trace,
-    required int fullPlanAttempt,
   }) async {
     var repairedPlan = plan;
-    final errorsByKey = _groupSlidePlanErrors(
-      validateDeckPlan(
+    final errorsByKey = _groupSlidePlanIssues(
+      validateDeckPlanIssues(
         repairedPlan,
         request: request,
         typographyCatalog: typographyCatalog,
@@ -29,8 +30,8 @@ extension _DeckPlanRepair on DeckGeneratorService {
       );
       if (index < 0) continue;
       final original = repairedPlan.slides[index];
-      var repairBase = Map<String, Object?>.from(original);
-      var constraints = List<String>.from(entry.value);
+      var repairBase = Map<String, Object?>.of(original);
+      var constraints = List<GenerationValidationIssue>.of(entry.value);
 
       for (
         var localAttempt = 1;
@@ -38,26 +39,35 @@ extension _DeckPlanRepair on DeckGeneratorService {
         localAttempt++
       ) {
         final candidate = await _generateOutlineSlideRepair(
-          service: service,
+          executor: executor,
           originalPrompt: originalPrompt,
           plan: repairedPlan,
           current: original,
-          validationErrors: constraints,
+          validationIssues: constraints,
           invalidSlide: repairBase,
-          trace: trace,
-          fullPlanAttempt: fullPlanAttempt,
           localAttempt: localAttempt,
           slideIndex: index,
         );
         if (candidate == null) continue;
-        repairBase = Map<String, Object?>.from(candidate);
+        repairBase = Map<String, Object?>.of(candidate);
 
         final invariantErrors = _outlineSlideInvariantErrors(
           original: original,
           candidate: candidate,
         );
         if (invariantErrors.isNotEmpty) {
-          _appendUnique(constraints, invariantErrors);
+          _appendUniqueIssues(constraints, [
+            for (final message in invariantErrors)
+              GenerationValidationIssue(
+                code: GenerationValidationCode.planStructure,
+                category: GenerationValidationCategory.structure,
+                severity: GenerationValidationSeverity.blocking,
+                location: GenerationValidationLocation.planSlide,
+                slideKey: entry.key,
+                locallyRepairable: true,
+                message: message,
+              ),
+          ]);
           continue;
         }
 
@@ -66,33 +76,31 @@ extension _DeckPlanRepair on DeckGeneratorService {
           index: index,
           slide: candidate,
         );
-        final candidateErrors = validateDeckPlan(
+        final candidateIssues = validateDeckPlanIssues(
           candidatePlan,
           request: request,
           typographyCatalog: typographyCatalog,
         );
-        final localErrors = candidateErrors
-            .where((error) => error.startsWith('Slide "${entry.key}" '))
+        final localIssues = candidateIssues
+            .where((issue) => issue.isBlocking && issue.slideKey == entry.key)
             .toList();
-        if (localErrors.isEmpty) {
+        if (localIssues.isEmpty) {
           repairedPlan = candidatePlan;
           break;
         }
-        _appendUnique(constraints, localErrors);
+        _appendUniqueIssues(constraints, localIssues);
       }
     }
     return repairedPlan;
   }
 
   Future<DeckPlanSlideType?> _generateOutlineSlideRepair({
-    required GenerationModelClient service,
+    required GenerationModelCallExecutor executor,
     required String originalPrompt,
     required DeckPlanType plan,
     required DeckPlanSlideType current,
-    required List<String> validationErrors,
+    required List<GenerationValidationIssue> validationIssues,
     required Map<String, Object?> invalidSlide,
-    required GenerationTraceEmitter trace,
-    required int fullPlanAttempt,
     required int localAttempt,
     required int slideIndex,
   }) async {
@@ -103,10 +111,9 @@ extension _DeckPlanRepair on DeckGeneratorService {
     final systemPrompt = _promptProvider.buildOutlineSlideRepairPrompt(
       plan: plan,
       current: current,
-      validationErrors: validationErrors,
+      validationIssues: validationIssues,
       invalidSlide: invalidSlide,
     );
-    final traceAttempt = fullPlanAttempt + localAttempt;
     final modelRequest = google_ai.GenerateContentRequest(
       model: outlineModelName,
       contents: [
@@ -129,33 +136,16 @@ extension _DeckPlanRepair on DeckGeneratorService {
       'Repairing outline slide ${slideIndex + 1}/${plan.slides.length} '
           '(${current.key}), attempt $localAttempt...',
     );
-    final response = await retryPolicy.run(() {
-      trace.emit(
-        kind: GenerationTraceKind.request,
-        phase: GenerationTracePhase.outline,
-        model: outlineModelName,
-        attempt: traceAttempt,
-        slideIndex: slideIndex + 1,
-        slideCount: plan.slides.length,
-        prompt: systemPrompt,
-      );
-      return service
-          .generateContent(modelRequest)
-          .timeout(
-            requestTimeout,
-            onTimeout: () {
-              throw TimeoutException('Outline slide repair timed out');
-            },
-          );
-    });
-    trace.emit(
-      kind: GenerationTraceKind.response,
+    final response = await executor.execute(
+      request: modelRequest,
       phase: GenerationTracePhase.outline,
       model: outlineModelName,
-      attempt: traceAttempt,
+      prompt: systemPrompt,
+      semanticAttempt: localAttempt,
+      isRepair: true,
+      timeoutMessage: 'Outline slide repair timed out',
       slideIndex: slideIndex + 1,
       slideCount: plan.slides.length,
-      response: _responseText(response),
     );
     final json = _parseJsonResponse(response, 'outline slide ${current.key}');
     if (json == null) return null;
@@ -171,18 +161,32 @@ extension _DeckPlanRepair on DeckGeneratorService {
   }
 }
 
-Map<String, List<String>> _groupSlidePlanErrors(List<String> errors) {
-  final grouped = <String, List<String>>{};
-  for (final error in errors) {
-    final key = _slideScopedPlanErrorPattern.firstMatch(error)?.group(1);
-    if (key != null) grouped.putIfAbsent(key, () => []).add(error);
+Map<String, List<GenerationValidationIssue>> _groupSlidePlanIssues(
+  List<GenerationValidationIssue> issues,
+) {
+  final grouped = <String, List<GenerationValidationIssue>>{};
+  for (final issue in issues.blockingIssues) {
+    final key = issue.slideKey;
+    if (key != null && issue.locallyRepairable) {
+      grouped.putIfAbsent(key, () => []).add(issue);
+    }
   }
   return grouped;
 }
 
-void _appendUnique(List<String> target, Iterable<String> additions) {
+void _appendUniqueIssues(
+  List<GenerationValidationIssue> target,
+  Iterable<GenerationValidationIssue> additions,
+) {
   for (final addition in additions) {
-    if (!target.contains(addition)) target.add(addition);
+    final exists = target.any(
+      (issue) =>
+          issue.code == addition.code &&
+          issue.location == addition.location &&
+          issue.slideKey == addition.slideKey &&
+          issue.message == addition.message,
+    );
+    if (!exists) target.add(addition);
   }
 }
 
@@ -216,9 +220,9 @@ DeckPlanType _replacePlanSlide(
   required DeckPlanSlideType slide,
 }) {
   final slides = [
-    for (final existing in plan.slides) Map<String, Object?>.from(existing),
+    for (final existing in plan.slides) Map<String, Object?>.of(existing),
   ];
-  slides[index] = Map<String, Object?>.from(slide);
-  final data = Map<String, Object?>.from(plan)..['slides'] = slides;
+  slides[index] = Map<String, Object?>.of(slide);
+  final data = Map<String, Object?>.of(plan)..['slides'] = slides;
   return DeckPlanType.parse(data);
 }

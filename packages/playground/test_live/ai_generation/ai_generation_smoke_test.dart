@@ -18,6 +18,7 @@ import 'package:playground/features/ai/quick_agent/core/engine/services/deck_gen
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_plan_validator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_element_catalog.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generated_slide_validator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_quality_report.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/style_json_serializer.dart';
@@ -376,12 +377,12 @@ Future<void> _writeTraceArtifacts(
       p.join(output.path, 'deck_plan.json'),
     ).writeAsString(const JsonEncoder.withIndent('  ').convert(plan));
   }
-  var requestIndex = 0;
+  var slideRequestIndex = 0;
   for (final event in traces.where(
     (event) => event.phase == GenerationTracePhase.slide,
   )) {
     if (event.kind == GenerationTraceKind.request) {
-      requestIndex++;
+      slideRequestIndex++;
       await File(
         p.join(
           output.path,
@@ -397,6 +398,12 @@ Future<void> _writeTraceArtifacts(
       ).writeAsString(event.response ?? '');
     }
   }
+  final requestEvents = traces
+      .where((event) => event.kind == GenerationTraceKind.request)
+      .toList(growable: false);
+  final outlineRequestCount = requestEvents
+      .where((event) => event.phase == GenerationTracePhase.outline)
+      .length;
   await File(p.join(output.path, 'metadata.json')).writeAsString(
     const JsonEncoder.withIndent('  ').convert({
       'models': traces
@@ -405,7 +412,9 @@ Future<void> _writeTraceArtifacts(
           .toSet()
           .toList(),
       'elapsedMs': traces.isEmpty ? 0 : traces.last.elapsed.inMilliseconds,
-      'requestCount': requestIndex,
+      'requestCount': requestEvents.length,
+      'outlineRequestCount': outlineRequestCount,
+      'slideRequestCount': slideRequestIndex,
       'generatedAt': DateTime.now().toUtc().toIso8601String(),
     }),
   );

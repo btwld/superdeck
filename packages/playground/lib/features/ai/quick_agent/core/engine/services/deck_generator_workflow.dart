@@ -12,7 +12,7 @@ void _logPipelineConfig(DeckGeneratorService owner, {required String prompt}) {
 
 Future<DeckPlanType?> _runOutlinePhase(
   DeckGeneratorService owner, {
-  required GenerationModelClient service,
+  required GenerationModelCallExecutor executor,
   required String prompt,
   required DeckGenerationRequest request,
   required GenerationProgressCallback? onProgress,
@@ -25,7 +25,12 @@ Future<DeckPlanType?> _runOutlinePhase(
   );
   onProgress?.call(const GenerationProgress(GenerationPhase.generatingOutline));
   final outlineStart = DateTime.now();
-  final outline = await owner._generateOutline(service, prompt, trace, request);
+  final outline = await owner._generateOutline(
+    executor,
+    prompt,
+    trace,
+    request,
+  );
   final outlineMs = DateTime.now().difference(outlineStart).inMilliseconds;
 
   if (outline == null) {
@@ -51,7 +56,7 @@ Future<DeckPlanType?> _runOutlinePhase(
 
 Future<Map<String, dynamic>?> _runSlideCompositionPhase(
   DeckGeneratorService owner, {
-  required GenerationModelClient service,
+  required GenerationModelCallExecutor executor,
   required String prompt,
   required DeckGenerationRequest request,
   required DeckPlanType outline,
@@ -67,7 +72,7 @@ Future<Map<String, dynamic>?> _runSlideCompositionPhase(
   onProgress?.call(const GenerationProgress(GenerationPhase.composingSlides));
   final deckStart = DateTime.now();
   final deckJson = await owner._composeSlides(
-    service,
+    executor,
     prompt,
     outline,
     request,
@@ -97,15 +102,14 @@ Future<Map<String, dynamic>?> _runSlideCompositionPhase(
   return deckJson;
 }
 
-Future<DeckGenerationResult> _finalizeDeck(
-  DeckGeneratorService owner, {
+DeckGenerationResult _finalizeDeck({
   required Map<String, dynamic> deckJson,
   required DeckPlanType plan,
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,
   required bool Function()? isCancelled,
   required GenerationTraceEmitter trace,
-}) async {
+}) {
   debugLog.section('Finalize');
   onProgress?.call(const GenerationProgress(GenerationPhase.finalizing));
 
@@ -179,9 +183,9 @@ List<Map<String, dynamic>> _extractSlides(Map<String, dynamic> deckJson) {
 
   final slides = <Map<String, dynamic>>[];
   for (final entry in rawSlides.asMap().entries) {
-    final index = entry.key;
     final rawSlide = entry.value;
     if (rawSlide is! Map) {
+      final index = entry.key;
       debugLog.log('DECK_GEN', 'Discarding non-object slide at index $index');
       continue;
     }

@@ -33,12 +33,18 @@ class RetryPolicy {
   final Future<void> Function(Duration) _delayFn;
 
   /// Runs [action] with retry/backoff.
-  Future<T> run<T>(Future<T> Function() action) async {
+  Future<T> run<T>(Future<T> Function() action) =>
+      runWithAttempt((_) => action());
+
+  /// Runs [action] and exposes the one-based transport attempt number.
+  Future<T> runWithAttempt<T>(
+    Future<T> Function(int transportAttempt) action,
+  ) async {
     var attempt = 0;
     while (true) {
       attempt++;
       try {
-        return await action();
+        return await action(attempt);
       } catch (error) {
         final retryDecider = shouldRetry ?? defaultRetryDecider;
         final canRetry = attempt < maxAttempts && retryDecider(error);

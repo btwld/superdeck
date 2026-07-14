@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_pipeline_helpers.dart';
 import 'package:superdeck_core/superdeck_core.dart' show Slide;
 
 void main() {

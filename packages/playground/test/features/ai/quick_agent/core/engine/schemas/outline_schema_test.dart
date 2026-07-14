@@ -5,6 +5,7 @@ import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_s
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_plan_validator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/google_schema_adapter.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 
 void main() {
   test('accepts a styled deck plan with narrative and element intent', () {
@@ -258,6 +259,32 @@ void main() {
             'consecutively.',
       ]),
     );
+  });
+
+  test('reports design rhythm as typed non-blocking diagnostics', () {
+    final data = _hierarchicalPlan();
+    final slides = data['slides']! as List<Map<String, Object?>>;
+    for (final slide in slides) {
+      slide['treatment'] = 'content';
+    }
+
+    final issues = validateDeckPlanIssues(DeckPlanType.parse(data));
+    final rhythmIssues = issues
+        .where((issue) => issue.code == GenerationValidationCode.designRhythm)
+        .toList();
+
+    expect(rhythmIssues, isNotEmpty);
+    expect(
+      rhythmIssues,
+      everyElement(
+        isA<GenerationValidationIssue>().having(
+          (issue) => issue.severity,
+          'severity',
+          GenerationValidationSeverity.diagnostic,
+        ),
+      ),
+    );
+    expect(issues.where((issue) => issue.isBlocking), isEmpty);
   });
 
   test(

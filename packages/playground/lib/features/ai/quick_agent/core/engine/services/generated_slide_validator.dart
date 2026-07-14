@@ -1,4 +1,12 @@
-part of 'deck_generator_service.dart';
+import 'package:superdeck_core/superdeck_core.dart';
+
+import '../schemas/outline_schema.dart';
+import 'deck_generation_request.dart';
+import 'deck_generator_pipeline_helpers.dart';
+import 'design_quality_metrics.dart';
+import 'generation_element_catalog.dart';
+import 'generation_validation_issue.dart';
+import 'source_grounding.dart';
 
 /// Applies renderer-safe mechanical normalization without rewriting content.
 ///
@@ -9,7 +17,7 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
   required Map<String, dynamic> rawSlide,
   required DeckPlanSlideType planSlide,
 }) {
-  final normalized = Map<String, dynamic>.from(rawSlide);
+  final normalized = Map<String, dynamic>.of(rawSlide);
   final rawSections = rawSlide['sections'];
   if (rawSections is! List) return normalized;
   normalized['sections'] = [
@@ -44,10 +52,13 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
 /// visible issue. The remaining visible errors are validated independently.
 Map<String, dynamic> removeInvalidOptionalSpeakerComments({
   required Map<String, dynamic> rawSlide,
-  required List<String> validationErrors,
+  required List<GenerationValidationIssue> validationIssues,
 }) {
-  if (validationErrors.isEmpty ||
-      !validationErrors.any((error) => error.startsWith('Speaker comments '))) {
+  if (validationIssues.isEmpty ||
+      !validationIssues.any(
+        (issue) =>
+            issue.location == GenerationValidationLocation.speakerComments,
+      )) {
     return rawSlide;
   }
   final comments = rawSlide['comments'];
@@ -106,7 +117,7 @@ Map<String, dynamic> _normalizeBlockHeading(Map<String, dynamic> block) {
         (line) => RegExp(r'^\s*#\s+\S').hasMatch(line)
             ? line.replaceFirstMapped(
                 RegExp(r'^(\s*)#(\s+)'),
-                (match) => '${match.group(1)}##${match.group(2)}',
+                (match) => '${match.group(1)!}##${match.group(2)!}',
               )
             : line,
       )
@@ -121,40 +132,75 @@ List<String> validateGeneratedSlide({
   required GenerationElementCatalog elementCatalog,
   DeckPlanSlideType? planSlide,
   DeckGenerationRequest? request,
+}) => validateGeneratedSlideIssues(
+  expectedKey: expectedKey,
+  rawSlide: rawSlide,
+  elementCatalog: elementCatalog,
+  planSlide: planSlide,
+  request: request,
+).messages;
+
+/// Returns typed issues for one generated slide draft.
+List<GenerationValidationIssue> validateGeneratedSlideIssues({
+  required String expectedKey,
+  required Map<String, dynamic> rawSlide,
+  required GenerationElementCatalog elementCatalog,
+  DeckPlanSlideType? planSlide,
+  DeckGenerationRequest? request,
 }) {
-  final errors = <String>[];
+  final issues = GenerationValidationCollector(
+    location: GenerationValidationLocation.visibleContent,
+    slideKey: expectedKey,
+  );
   if (rawSlide['key'] != expectedKey) {
-    errors.add('Slide key must be exactly "$expectedKey".');
+    issues
+        .scoped(code: GenerationValidationCode.slideIdentity)
+        .add('Slide key must be exactly "$expectedKey".');
   }
-  errors.addAll(_validateRawDraftStructure(rawSlide));
+  issues
+      .scoped(code: GenerationValidationCode.slideStructure)
+      .addAll(_validateRawDraftStructure(rawSlide));
 
   final sanitized = sanitizeGeneratedSlides([rawSlide]);
   if (sanitized.isEmpty) {
-    errors.add(
-      'Slide must contain at least one usable section and content block.',
-    );
-    return errors;
+    issues
+        .scoped(code: GenerationValidationCode.slideStructure)
+        .add(
+          'Slide must contain at least one usable section and content block.',
+        );
+    return issues.issues.uniqueIssues;
   }
 
   try {
     final slide = Slide.parse(Map<String, Object?>.from(sanitized.single));
     if (planSlide != null) {
-      errors.addAll(_validatePlanFulfillment(slide, planSlide, request));
+      issues.issues.addAll(_validatePlanFulfillment(slide, planSlide, request));
     }
     for (final section in slide.sections) {
       for (final block in section.blocks) {
         if (block is WidgetBlock) {
-          errors.addAll(elementCatalog.validate(block.name, block.args));
+          issues
+              .scoped(code: GenerationValidationCode.widgetArguments)
+              .addAll(elementCatalog.validate(block.name, block.args));
         } else if (block is ContentBlock) {
-          errors.addAll(_validateMarkdownSeparators(block.content));
-          errors.addAll(_validateMarkdownTables(block.content));
+          issues
+              .scoped(code: GenerationValidationCode.markdownContract)
+              .addAll(_validateMarkdownSeparators(block.content));
+          issues
+              .scoped(code: GenerationValidationCode.markdownContract)
+              .addAll(_validateMarkdownTables(block.content));
         }
       }
     }
   } catch (error) {
-    errors.add('Slide does not match the canonical contract: $error');
+    issues
+        .scoped(
+          code: GenerationValidationCode.invalidSchema,
+          category: GenerationValidationCategory.schema,
+        )
+        .add('Slide does not match the canonical contract: $error');
   }
-  return errors.toSet().toList(growable: false);
+  return issues.issues.uniqueIssues;
 }
 
 List<String> _validateRawDraftStructure(Map<String, dynamic> rawSlide) {
@@ -191,12 +237,16 @@ List<String> _validateRawDraftStructure(Map<String, dynamic> rawSlide) {
   return errors;
 }
 
-List<String> _validatePlanFulfillment(
+List<GenerationValidationIssue> _validatePlanFulfillment(
   Slide slide,
   DeckPlanSlideType planSlide,
   DeckGenerationRequest? request,
 ) {
-  final errors = <String>[];
+  final errors = GenerationValidationCollector(
+    code: GenerationValidationCode.planFulfillment,
+    location: GenerationValidationLocation.visibleContent,
+    slideKey: planSlide.key,
+  );
   if (slide.sections.length > 2) {
     errors.add(
       'Composition "${planSlide.composition}" supports at most 2 sections; '
@@ -230,8 +280,6 @@ List<String> _validatePlanFulfillment(
             (count) => count + 1,
             ifAbsent: () => 1,
           );
-        case SectionBlock():
-          break;
       }
     }
   }
@@ -257,60 +305,124 @@ List<String> _validatePlanFulfillment(
   }
 
   final markdown = contentBlocks.map((block) => block.content).join('\n\n');
-  errors.addAll(_validateHandoffPurpose(markdown, planSlide));
-  errors.addAll(
-    _validateVisibleSourceGrounding(
-      [markdown],
-      planSlide,
-      label: 'Visible content',
-    ),
-  );
-  errors.addAll(
-    _validateNumericClaimGrounding(
-      [markdown],
-      request,
-      label: 'Visible content',
-    ),
-  );
-  errors.addAll(
-    _validateNumericClaimContext([markdown], request, label: 'Visible content'),
-  );
-  errors.addAll(
-    _validateCommitmentGrounding([markdown], request, label: 'Visible content'),
-  );
+  errors
+      .scoped(
+        code: GenerationValidationCode.handoffPurpose,
+        category: GenerationValidationCategory.grounding,
+      )
+      .addAll(_validateHandoffPurpose(markdown, planSlide));
+  errors
+      .scoped(
+        code: GenerationValidationCode.visibleSourceGrounding,
+        category: GenerationValidationCategory.grounding,
+      )
+      .addAll(
+        _validateVisibleSourceGrounding(
+          [markdown],
+          planSlide,
+          label: 'Visible content',
+        ),
+      );
+  errors
+      .scoped(
+        code: GenerationValidationCode.numericGrounding,
+        category: GenerationValidationCategory.factual,
+      )
+      .addAll(
+        _validateNumericClaimGrounding(
+          [markdown],
+          request,
+          label: 'Visible content',
+        ),
+      );
+  errors
+      .scoped(
+        code: GenerationValidationCode.numericMeaning,
+        category: GenerationValidationCategory.factual,
+      )
+      .addAll(
+        _validateNumericClaimContext(
+          [markdown],
+          request,
+          label: 'Visible content',
+        ),
+      );
+  errors
+      .scoped(
+        code: GenerationValidationCode.commitmentGrounding,
+        category: GenerationValidationCategory.factual,
+      )
+      .addAll(
+        _validateCommitmentGrounding(
+          [markdown],
+          request,
+          label: 'Visible content',
+        ),
+      );
   if (slide.comments.isNotEmpty) {
-    errors.addAll(
-      _validateVisibleSourceGrounding(
-        slide.comments,
-        planSlide,
-        label: 'Speaker comments',
-      ),
+    final commentErrors = errors.scoped(
+      location: GenerationValidationLocation.speakerComments,
     );
-    errors.addAll(
-      _validateNumericClaimGrounding(
-        slide.comments,
-        request,
-        label: 'Speaker comments',
-      ),
-    );
-    errors.addAll(
-      _validateNumericClaimContext(
-        slide.comments,
-        request,
-        label: 'Speaker comments',
-      ),
-    );
-    errors.addAll(
-      _validateCommitmentGrounding(
-        slide.comments,
-        request,
-        label: 'Speaker comments',
-      ),
-    );
+    commentErrors
+        .scoped(
+          code: GenerationValidationCode.visibleSourceGrounding,
+          category: GenerationValidationCategory.grounding,
+        )
+        .addAll(
+          _validateVisibleSourceGrounding(
+            slide.comments,
+            planSlide,
+            label: 'Speaker comments',
+          ),
+        );
+    commentErrors
+        .scoped(
+          code: GenerationValidationCode.numericGrounding,
+          category: GenerationValidationCategory.factual,
+        )
+        .addAll(
+          _validateNumericClaimGrounding(
+            slide.comments,
+            request,
+            label: 'Speaker comments',
+          ),
+        );
+    commentErrors
+        .scoped(
+          code: GenerationValidationCode.numericMeaning,
+          category: GenerationValidationCategory.factual,
+        )
+        .addAll(
+          _validateNumericClaimContext(
+            slide.comments,
+            request,
+            label: 'Speaker comments',
+          ),
+        );
+    commentErrors
+        .scoped(
+          code: GenerationValidationCode.commitmentGrounding,
+          category: GenerationValidationCategory.factual,
+        )
+        .addAll(
+          _validateCommitmentGrounding(
+            slide.comments,
+            request,
+            label: 'Speaker comments',
+          ),
+        );
   }
-  errors.addAll(
-    _validateDisplayHeadings(contentBlocks, composition: planSlide.composition),
-  );
+  errors
+      .scoped(
+        code: GenerationValidationCode.contentDensity,
+        category: GenerationValidationCategory.quality,
+      )
+      .addAll(
+        _validateDisplayHeadings(
+          contentBlocks,
+          composition: planSlide.composition,
+        ),
+      );
   final visibleCharacters = countVisibleMarkdownCharacters(
     contentBlocks.map((block) => block.content),
   );
@@ -319,10 +431,15 @@ List<String> _validatePlanFulfillment(
     composition: planSlide.composition,
   );
   if (visibleCharacters > characterLimit) {
-    errors.add(
-      'Slide exceeds the ${planSlide.density} content budget of '
-      '$characterLimit visible characters.',
-    );
+    errors
+        .scoped(
+          code: GenerationValidationCode.contentDensity,
+          category: GenerationValidationCategory.quality,
+        )
+        .add(
+          'Slide exceeds the ${planSlide.density} content budget of '
+          '$characterLimit visible characters.',
+        );
   }
   final composition = planSlide.composition;
   final hasTable = _containsMarkdownTable(markdown);
@@ -398,7 +515,7 @@ List<String> _validatePlanFulfillment(
         );
       }
   }
-  return errors;
+  return errors.issues.uniqueIssues;
 }
 
 List<String> _validateHandoffPurpose(
@@ -591,7 +708,8 @@ List<String> _validateMarkdownSeparators(String markdown) {
     if (fence != null) {
       if (openFence == null) {
         openFence = fence;
-      } else if (fence[0] == openFence[0] && fence.length >= openFence.length) {
+      } else if (fence.startsWith(openFence.substring(0, 1)) &&
+          fence.length >= openFence.length) {
         openFence = null;
       }
       continue;

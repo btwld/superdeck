@@ -54,6 +54,20 @@ void main() {
       expect(calls, 3);
     });
 
+    test('reports each one-based transport attempt', () async {
+      final attempts = <int>[];
+      final policy = RetryPolicy(maxAttempts: 3, delayFn: (_) async {});
+
+      final result = await policy.runWithAttempt((attempt) async {
+        attempts.add(attempt);
+        if (attempt < 3) throw TimeoutException('retry');
+        return 'recovered';
+      });
+
+      expect(result, 'recovered');
+      expect(attempts, [1, 2, 3]);
+    });
+
     test('does not retry non-retryable errors', () async {
       var calls = 0;
       final policy = RetryPolicy(delayFn: (_) async {});

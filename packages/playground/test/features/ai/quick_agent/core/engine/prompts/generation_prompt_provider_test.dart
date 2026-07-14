@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/prompts/generation_prompt_provider.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_element_catalog.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 
 void main() {
   test('assembles bounded single-slide context deterministically', () {
@@ -70,7 +71,16 @@ void main() {
           },
         ],
       },
-      validationErrors: const ['Slide key must be exactly "evidence".'],
+      validationIssues: const [
+        GenerationValidationIssue(
+          code: GenerationValidationCode.slideIdentity,
+          category: GenerationValidationCategory.structure,
+          severity: GenerationValidationSeverity.blocking,
+          location: GenerationValidationLocation.visibleContent,
+          slideKey: 'evidence',
+          message: 'Slide key must be exactly "evidence".',
+        ),
+      ],
       invalidSlide: const {
         'key': 'wrong-key',
         'options': {'title': 'Keep this title', 'style': 'content'},
@@ -145,9 +155,21 @@ void main() {
         next: null,
         elementCatalog: GenerationElementCatalog.builtIn(),
         compositionExample: const {},
-        validationErrors: const [
-          'Visible content changes the supplied meaning of numeric claim(s) 12.',
-          'Speaker comments change the supplied meaning of numeric claim(s) 12.',
+        validationIssues: const [
+          GenerationValidationIssue(
+            code: GenerationValidationCode.numericMeaning,
+            category: GenerationValidationCategory.factual,
+            severity: GenerationValidationSeverity.blocking,
+            location: GenerationValidationLocation.visibleContent,
+            message: 'Metric meaning needs repair.',
+          ),
+          GenerationValidationIssue(
+            code: GenerationValidationCode.numericMeaning,
+            category: GenerationValidationCategory.factual,
+            severity: GenerationValidationSeverity.blocking,
+            location: GenerationValidationLocation.speakerComments,
+            message: 'Comment metric needs repair.',
+          ),
         ],
         invalidSlide: const {'key': 'roadmap-trap'},
       );

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
 import 'package:superdeck_core/superdeck_core.dart';
@@ -11,25 +10,25 @@ import '../prompts/generation_prompt_provider.dart';
 import '../schemas/deck_schemas.dart';
 import '../schemas/outline_schema.dart';
 import 'deck_generation_request.dart';
+import 'deck_generator_pipeline_helpers.dart';
 import 'deck_plan_normalizer.dart';
 import 'deck_plan_validator.dart';
-import 'design_quality_metrics.dart';
 import 'error_classifier.dart';
 import 'generation_model_client.dart';
 import 'generation_element_catalog.dart';
+import 'generation_model_call_executor.dart';
 import 'generation_progress.dart';
 import 'generation_trace.dart';
+import 'generation_validation_issue.dart';
+import 'generated_slide_validator.dart';
 import 'google_schema_adapter.dart';
 import 'retry_policy.dart';
-import 'source_grounding.dart';
 import '../../constants/gemini_models.dart';
 import '../../debug_logger.dart';
 
 part 'deck_generator_pipeline.dart';
 part 'deck_plan_repair.dart';
-part 'deck_generator_pipeline_helpers.dart';
 part 'deck_generator_workflow.dart';
-part 'generated_slide_validator.dart';
 
 /// Result of deck generation.
 class DeckGenerationResult {
@@ -86,6 +85,9 @@ class DeckGeneratorService {
     this.maxOutlineValidationAttempts = 6,
     this.maxOutlineSlideValidationAttempts = 3,
     this.maxSlideValidationAttempts = 4,
+    this.maxModelRequests = 96,
+    this.maxRepairRequests = 72,
+    this.runTimeout = const Duration(minutes: 15),
     RetryPolicy? retryPolicy,
     GenerationModelClientFactory? modelClientFactory,
     GenerationPromptProvider? promptProvider,
@@ -94,6 +96,9 @@ class DeckGeneratorService {
   }) : assert(maxOutlineValidationAttempts > 0),
        assert(maxOutlineSlideValidationAttempts > 0),
        assert(maxSlideValidationAttempts > 0),
+       assert(maxModelRequests > 0),
+       assert(maxRepairRequests > 0),
+       assert(runTimeout > Duration.zero),
        retryPolicy = retryPolicy ?? RetryPolicy(maxAttempts: 2),
        elementCatalog = elementCatalog ?? GenerationElementCatalog.builtIn(),
        typographyCatalog =
@@ -142,6 +147,15 @@ class DeckGeneratorService {
   /// restart after the outline and preceding slides already passed.
   final int maxSlideValidationAttempts;
 
+  /// Maximum provider calls across the whole run, including transport retries.
+  final int maxModelRequests;
+
+  /// Maximum semantic repair calls across outline and slide generation.
+  final int maxRepairRequests;
+
+  /// Wall-clock limit shared by every phase and model request in one run.
+  final Duration runTimeout;
+
   /// Retry policy for transient generation failures.
   final RetryPolicy retryPolicy;
 
@@ -181,17 +195,26 @@ class DeckGeneratorService {
     final pipelineStart = DateTime.now();
     final service = _modelClientFactory(apiKey);
     final trace = GenerationTraceEmitter(onTrace);
+    bool generationCancelled() => isCancelled?.call() ?? false;
+    DeckGenerationResult cancelledResult() =>
+        DeckGenerationResult.failure('Generation cancelled.');
+    final executor = GenerationModelCallExecutor(
+      client: service,
+      retryPolicy: retryPolicy,
+      trace: trace,
+      requestTimeout: requestTimeout,
+      isCancelled: generationCancelled,
+      maxModelRequests: maxModelRequests,
+      maxRepairRequests: maxRepairRequests,
+      runTimeout: runTimeout,
+    );
 
     try {
-      bool generationCancelled() => isCancelled?.call() ?? false;
-      DeckGenerationResult cancelledResult() =>
-          DeckGenerationResult.failure('Generation cancelled.');
-
       await _promptProvider.load();
 
       final outline = await _runOutlinePhase(
         this,
-        service: service,
+        executor: executor,
         prompt: modelInput,
         request: request,
         onProgress: onProgress,
@@ -208,7 +231,7 @@ class DeckGeneratorService {
 
       final deckJson = await _runSlideCompositionPhase(
         this,
-        service: service,
+        executor: executor,
         prompt: modelInput,
         request: request,
         outline: outline,
@@ -227,7 +250,6 @@ class DeckGeneratorService {
       }
 
       return _finalizeDeck(
-        this,
         deckJson: deckJson,
         plan: outline,
         pipelineStart: pipelineStart,
@@ -235,6 +257,16 @@ class DeckGeneratorService {
         isCancelled: isCancelled,
         trace: trace,
       );
+    } on GenerationCancelledException {
+      return cancelledResult();
+    } on GenerationBudgetExceededException catch (error, stack) {
+      final totalMs = DateTime.now().difference(pipelineStart).inMilliseconds;
+      debugLog.error(
+        'DECK_GEN',
+        'Pipeline stopped after ${totalMs}ms: ${error.message}',
+        stack,
+      );
+      return DeckGenerationResult.failure(error.message);
     } catch (e, stack) {
       final totalMs = DateTime.now().difference(pipelineStart).inMilliseconds;
       debugLog.error(
