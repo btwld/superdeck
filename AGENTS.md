@@ -73,8 +73,13 @@ fvm flutter test <path>    # Run specific test file
 ### Running Apps & Live Debugging
 ```bash
 cd packages/playground
-fvm flutter run -d macos -t lib/main.dart
+fvm flutter run -d macos -t lib/main.dart --dart-define-from-file=../../.env
 ```
+
+The playground reads `GOOGLE_AI_API_KEY` from the ignored repository-root
+`.env` file through Flutter's compile-time define-file option. Without that
+flag, the Wizard intentionally shows a configuration error before accepting
+input.
 
 When running an app to reproduce or diagnose a UI/runtime issue, launch it with
 `fvm flutter run` and keep that process attached for the entire reproduction.

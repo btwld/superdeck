@@ -36,8 +36,13 @@ lib/
 ## Run
 
 ```bash
-fvm flutter run -t lib/main.dart
+fvm flutter run -d macos -t lib/main.dart --dart-define-from-file=../../.env
 ```
+
+Set `GOOGLE_AI_API_KEY` in the ignored repository-root `.env` file. Flutter
+does not load `.env` automatically; the define-file flag injects it at build
+time. The Wizard shows a configuration error immediately when the key is
+missing.
 
 ## Deck files
 

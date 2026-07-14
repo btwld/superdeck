@@ -1,15 +1,13 @@
 import 'package:go_router/go_router.dart';
 
+import '../features/ai/wizard/routes/routes.dart';
 import '../features/editor/routes/routes.dart';
 import '../features/presentation/routes/routes.dart';
 
 /// The app's [GoRouter], composing each feature's routes.
-GoRouter createRouter() {
+GoRouter createRouter({String initialLocation = '/'}) {
   return GoRouter(
-    initialLocation: '/',
-    routes: [
-      ...editorRoutes(),
-      ...presentationRoutes(),
-    ],
+    initialLocation: initialLocation,
+    routes: [...wizardRoutes(), ...editorRoutes(), ...presentationRoutes()],
   );
 }
