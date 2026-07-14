@@ -64,38 +64,19 @@ Future<List<GeneratedImageAsset>> generateImagesForOutline({
         styledSubject,
         backgroundColor: configuration.backgroundColor,
       );
-      ImageGenerationResult result;
-      try {
-        result = await generator.generate(
-          ImageGenerationRequest(
-            prompt: prompt,
-            aspectRatio: GeneratedImageAspectRatio.slide3x4,
-          ),
-        );
-      } catch (error) {
-        result = ImageGenerationFailure(
-          const ErrorClassifier().getUserMessage(error),
-        );
-      }
-
-      results[workIndex] = switch (result) {
-        ImageGenerationSuccess(:final bytes) => GeneratedImageAsset.success(
-          assetKey: image.assetKey,
-          slideKey: image.slideKey,
-          subject: image.subject,
-          prompt: prompt,
-          aspectRatio: GeneratedImageAspectRatio.slide3x4,
-          bytes: bytes,
-        ),
-        ImageGenerationFailure(:final message) => GeneratedImageAsset.failure(
-          assetKey: image.assetKey,
-          slideKey: image.slideKey,
-          subject: image.subject,
-          prompt: prompt,
-          aspectRatio: GeneratedImageAspectRatio.slide3x4,
-          error: message,
-        ),
-      };
+      const aspectRatio = GeneratedImageAspectRatio.slide3x4;
+      final result = await generateImageSafely(
+        generator,
+        ImageGenerationRequest(prompt: prompt, aspectRatio: aspectRatio),
+      );
+      results[workIndex] = generatedImageAssetFromResult(
+        result: result,
+        assetKey: image.assetKey,
+        slideKey: image.slideKey,
+        subject: image.subject,
+        prompt: prompt,
+        aspectRatio: aspectRatio,
+      );
       completed++;
       onProgress?.call(completed, planned.length);
     }
@@ -133,14 +114,7 @@ List<_PlannedImage> _plannedImages(Map<String, dynamic> outline) {
 
 @visibleForTesting
 String buildGeneratedAssetKey(int slideIndex, String slideKey) {
-  final slug = slideKey
-      .toLowerCase()
-      .replaceAll(RegExp('[^a-z0-9]+'), '-')
-      .replaceAll(RegExp('^-+|-+\$'), '');
-  final safeSlug = slug.isEmpty ? 'slide' : slug;
-  final filenameSlug = safeSlug.length <= 64
-      ? safeSlug
-      : safeSlug.substring(0, 64).replaceFirst(RegExp('-+\$'), '');
+  final filenameSlug = toFileSlug(slideKey, fallback: 'slide');
   final number = (slideIndex + 1).toString().padLeft(2, '0');
   return 'slide-$number-$filenameSlug-illustration.png';
 }

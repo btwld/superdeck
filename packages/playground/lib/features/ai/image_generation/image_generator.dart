@@ -40,6 +40,50 @@ abstract interface class ImageGenerator {
   Future<ImageGenerationResult> generate(ImageGenerationRequest request);
 }
 
+/// Converts unexpected provider exceptions into the same safe failure type
+/// returned by conforming [ImageGenerator] implementations.
+Future<ImageGenerationResult> generateImageSafely(
+  ImageGenerator generator,
+  ImageGenerationRequest request,
+) async {
+  try {
+    return await generator.generate(request);
+  } catch (error) {
+    return ImageGenerationFailure(
+      const ErrorClassifier().getUserMessage(error),
+    );
+  }
+}
+
+/// Combines generation output with the metadata needed to persist and retry it.
+GeneratedImageAsset generatedImageAssetFromResult({
+  required ImageGenerationResult result,
+  required String assetKey,
+  required String slideKey,
+  required String subject,
+  required String prompt,
+  required GeneratedImageAspectRatio aspectRatio,
+}) {
+  return switch (result) {
+    ImageGenerationSuccess(:final bytes) => GeneratedImageAsset.success(
+      assetKey: assetKey,
+      slideKey: slideKey,
+      subject: subject,
+      prompt: prompt,
+      aspectRatio: aspectRatio,
+      bytes: bytes,
+    ),
+    ImageGenerationFailure(:final message) => GeneratedImageAsset.failure(
+      assetKey: assetKey,
+      slideKey: slideKey,
+      subject: subject,
+      prompt: prompt,
+      aspectRatio: aspectRatio,
+      error: message,
+    ),
+  };
+}
+
 /// Used when image generation is unavailable in the current app environment.
 final class UnavailableImageGenerator implements ImageGenerator {
   const UnavailableImageGenerator([

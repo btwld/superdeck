@@ -4,9 +4,9 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/files/deck_image_manifest.dart';
 import '../../domain/stores/deck_file_session.dart';
 import '../../domain/stores/deck_image_issue_store.dart';
-import '../../domain/files/deck_image_manifest.dart';
 import 'new_deck_dialog.dart';
 
 /// Bar sitting on top of the text editor: the `New` / `Open` actions on the
@@ -73,6 +73,11 @@ class _ImageIssuesBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final issues = store.issues;
     final count = issues.length;
+    final title = switch (count) {
+      0 => 'Image issues unavailable',
+      1 => '1 image needs attention',
+      _ => '$count images need attention',
+    };
     return Material(
       key: const ValueKey('editor-image-issues'),
       color: $danger.resolve(context).withValues(alpha: 0.08),
@@ -84,11 +89,7 @@ class _ImageIssuesBanner extends StatelessWidget {
           color: $danger.resolve(context),
         ),
         title: Text(
-          count == 0
-              ? 'Image issues unavailable'
-              : count == 1
-              ? '1 image needs attention'
-              : '$count images need attention',
+          title,
           style: TextStyle(color: $danger.resolve(context), fontSize: 12),
         ),
         subtitle: store.errorMessage == null

@@ -48,12 +48,12 @@ class _ResolvedAssetImageState extends State<ResolvedAssetImage> {
   @override
   void didUpdateWidget(ResolvedAssetImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.store != widget.store) {
+    final storeChanged = oldWidget.store != widget.store;
+    if (storeChanged) {
       _detachStoreListener(oldWidget.store);
       _attachStoreListener(widget.store);
     }
-    if (oldWidget.assetKey != widget.assetKey ||
-        oldWidget.store != widget.store) {
+    if (oldWidget.assetKey != widget.assetKey || storeChanged) {
       _resolved = _resolve();
     }
   }

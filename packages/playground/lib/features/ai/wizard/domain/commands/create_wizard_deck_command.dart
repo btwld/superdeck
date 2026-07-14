@@ -124,7 +124,7 @@ class CreateWizardDeckCommand
         );
       }
       return created;
-    } catch (error, stackTrace) {
+    } catch (_, stackTrace) {
       debugLog.error(
         'WIZARD',
         'Unexpected Wizard generation failure',

@@ -4,13 +4,13 @@ import 'dart:typed_data';
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../../core/domain/generated_image_asset.dart';
 import '../../../../image_generation/image_generator.dart';
-import '../../../../quick_agent/core/engine/services/error_classifier.dart';
 import '../prompts/image_style_prompts.dart';
 import '../schemas/genui_action_schema.dart';
 import '../schemas/wizard_context_keys.dart';
@@ -83,7 +83,6 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
   final Set<int> _loadingImages = {};
   final Set<int> _failedImages = {};
 
-  int? _selectedIndex;
   ImageStyle? _selectedStyle;
   int _generationId = 0;
 
@@ -99,7 +98,7 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
   void didUpdateWidget(covariant _AskUserImageStyleContent oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.data.subject == widget.data.subject &&
-        _sameStyles(oldWidget.data.imageStyles, widget.data.imageStyles)) {
+        listEquals(oldWidget.data.imageStyles, widget.data.imageStyles)) {
       return;
     }
     _reset();
@@ -161,19 +160,13 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
       style.buildPrompt(widget.data.subject),
     );
     debugLog.log('IMG', 'Generating Wizard preview ${style.name}');
-    ImageGenerationResult result;
-    try {
-      result = await generator.generate(
-        ImageGenerationRequest(
-          prompt: prompt,
-          aspectRatio: GeneratedImageAspectRatio.preview16x9,
-        ),
-      );
-    } catch (error) {
-      result = ImageGenerationFailure(
-        const ErrorClassifier().getUserMessage(error),
-      );
-    }
+    final result = await generateImageSafely(
+      generator,
+      ImageGenerationRequest(
+        prompt: prompt,
+        aspectRatio: GeneratedImageAspectRatio.preview16x9,
+      ),
+    );
     if (!_isCurrent(generationId)) return;
 
     setState(() {
@@ -191,7 +184,6 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
 
   void _reset() {
     _generationId++;
-    _selectedIndex = null;
     _selectedStyle = null;
     _generatedImages.clear();
     _loadingImages.clear();
@@ -199,14 +191,6 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
   }
 
   bool _isCurrent(int generationId) => mounted && generationId == _generationId;
-
-  bool _sameStyles(List<ImageStyle> first, List<ImageStyle> second) {
-    if (first.length != second.length) return false;
-    for (var index = 0; index < first.length; index++) {
-      if (first[index] != second[index]) return false;
-    }
-    return true;
-  }
 
   Map<String, dynamic> _buildActionContext() {
     final style = _selectedStyle;
@@ -256,11 +240,8 @@ class _AskUserImageStyleContentState extends State<_AskUserImageStyleContent> {
               imageBytes: _generatedImages[index],
               isLoading: _loadingImages.contains(index),
               hasFailed: _failedImages.contains(index),
-              selected: _selectedIndex == index,
-              onTap: () => setState(() {
-                _selectedIndex = index;
-                _selectedStyle = entry.value;
-              }),
+              selected: _selectedStyle == entry.value,
+              onTap: () => setState(() => _selectedStyle = entry.value),
               onRetry: _failedImages.contains(index)
                   ? () => unawaited(_retryPreview(index))
                   : null,

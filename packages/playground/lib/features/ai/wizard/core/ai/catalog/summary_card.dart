@@ -212,10 +212,11 @@ final summaryCard = typedCatalogItem<SummaryCardType>(
   parse: SummaryCardType.parse,
   widgetBuilder: (catalogContext, data) {
     final action = data.generateSlidesAction;
+    final items = data.items.toList();
     return prov.Consumer<CreateWizardDeckCommand>(
       builder: (context, command, _) => SummaryCard(
         title: data.title,
-        items: data.items.toList(),
+        items: items,
         generating: command.running,
         progressLabel: command.running ? command.progressLabel : null,
         errorMessage: command.errorMessage,
@@ -225,9 +226,7 @@ final summaryCard = typedCatalogItem<SummaryCardType>(
                 unawaited(() async {
                   debugLog.section('Generate Slides Triggered');
 
-                  final extractedContext = _extractContextFromItems(
-                    data.items.toList(),
-                  );
+                  final extractedContext = _extractContextFromItems(items);
                   debugLog.userAction(
                     'GENERATE_SLIDES',
                     extractedContext.toMap(),

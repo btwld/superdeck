@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
-import 'package:playground/core/result.dart';
 import 'package:playground/core/domain/generated_image_asset.dart';
+import 'package:playground/core/result.dart';
+import 'package:playground/core/utils/file_slug.dart';
 import 'package:playground/features/editor/domain/files/deck_file.dart';
 import 'package:playground/features/editor/domain/files/deck_file_repository.dart';
 import 'package:playground/features/editor/domain/files/deck_image_manifest.dart';
@@ -140,7 +141,7 @@ class FakeDeckFileRepository implements DeckFileRepository {
     required String markdown,
     required List<GeneratedImageAsset> images,
   }) async {
-    final base = _topicSlug(name);
+    final base = toFileSlug(name, fallback: 'untitled');
     var suffix = 1;
     late String path;
     while (true) {
@@ -307,15 +308,6 @@ class FakeDeckFileRepository implements DeckFileRepository {
 
   void _remember(DeckFileReference reference) {
     if (!failRememberWrites) rememberedDeck = reference;
-  }
-
-  String _topicSlug(String name) {
-    final value = name
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp('[^a-z0-9]+'), '-')
-        .replaceAll(RegExp('^-+|-+\$'), '');
-    return value.isEmpty ? 'untitled' : value;
   }
 
   Future<void> _settle() =>

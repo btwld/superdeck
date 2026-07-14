@@ -56,15 +56,7 @@ class AppProviders extends StatelessWidget {
           create: (_) => deckFileRepository ?? MacOsDeckFileRepository(),
           dispose: (_, repository) => repository.dispose(),
         ),
-        Provider<ImageGenerator>(
-          create: (_) =>
-              imageGenerator ??
-              (EnvConfig.hasGeminiApiKey
-                  ? DartanticImageGenerator(apiKey: EnvConfig.geminiApiKey)
-                  : const UnavailableImageGenerator(
-                      'No Gemini API key is configured.',
-                    )),
-        ),
+        Provider<ImageGenerator>(create: (_) => _createImageGenerator()),
         Provider<DeckController>(
           lazy: false,
           create: (ctx) => DeckController(
@@ -85,5 +77,14 @@ class AppProviders extends StatelessWidget {
       ],
       child: child,
     );
+  }
+
+  ImageGenerator _createImageGenerator() {
+    final provided = imageGenerator;
+    if (provided != null) return provided;
+    if (EnvConfig.hasGeminiApiKey) {
+      return DartanticImageGenerator(apiKey: EnvConfig.geminiApiKey);
+    }
+    return const UnavailableImageGenerator('No Gemini API key is configured.');
   }
 }

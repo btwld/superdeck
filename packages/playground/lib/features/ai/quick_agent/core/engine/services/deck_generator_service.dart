@@ -7,6 +7,7 @@ import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dar
     as google_ai;
 import 'package:superdeck_core/superdeck_core.dart';
 import '../../../../../../core/domain/generated_image_asset.dart';
+import '../../../../../../core/utils/file_slug.dart';
 import '../../../../image_generation/image_generator.dart';
 import '../prompts/examples_loader.dart';
 import '../prompts/prompt_registry.dart';

@@ -8,20 +8,20 @@ import '../files/deck_image_manifest.dart';
 
 /// Resolves bare generated-image keys against the active deck's sidecar.
 class DeckAssetCacheStore extends ChangeNotifier implements AssetCacheStore {
-  Directory? _directory;
+  IoAssetCacheStore? _store;
 
-  String? get directoryPath => _directory?.path;
+  String? get directoryPath => _store?.cacheDir.path;
 
   void bind(DeckFileReference reference, {bool notify = true}) {
     final path = deckAssetsDirectoryPath(reference.path);
-    if (_directory?.path == path) return;
-    _directory = Directory(path);
+    if (directoryPath == path) return;
+    _store = IoAssetCacheStore(cacheDir: Directory(path));
     if (notify) notifyListeners();
   }
 
   void unbind() {
-    if (_directory == null) return;
-    _directory = null;
+    if (_store == null) return;
+    _store = null;
     notifyListeners();
   }
 
@@ -47,11 +47,6 @@ class DeckAssetCacheStore extends ChangeNotifier implements AssetCacheStore {
     final store = _requireStore();
     await store.delete(assetKey);
     notifyListeners();
-  }
-
-  IoAssetCacheStore? get _store {
-    final directory = _directory;
-    return directory == null ? null : IoAssetCacheStore(cacheDir: directory);
   }
 
   IoAssetCacheStore _requireStore() {

@@ -5,12 +5,13 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/domain/generated_image_asset.dart';
 import '../../../../core/result.dart';
 import '../../../ai/image_generation/image_generator.dart';
-import '../../../ai/quick_agent/core/engine/services/error_classifier.dart';
 import '../files/deck_file.dart';
 import '../files/deck_file_repository.dart';
 import '../files/deck_image_manifest.dart';
 import 'deck_asset_cache_store.dart';
 import 'deck_file_session.dart';
+
+const _retrySaveErrorMessage = 'Could not save the image retry. Try again.';
 
 /// Tracks failed generated images for the active deck and retries them on demand.
 class DeckImageIssueStore extends ChangeNotifier {
@@ -57,8 +58,21 @@ class DeckImageIssueStore extends ChangeNotifier {
     _errorMessage = null;
     _notify();
     try {
-      final result = await _generate(entry);
-      final asset = _toAsset(entry, result);
+      final result = await generateImageSafely(
+        _imageGenerator,
+        ImageGenerationRequest(
+          prompt: entry.prompt,
+          aspectRatio: entry.aspectRatio,
+        ),
+      );
+      final asset = generatedImageAssetFromResult(
+        result: result,
+        assetKey: entry.assetKey,
+        slideKey: entry.slideKey,
+        subject: entry.subject,
+        prompt: entry.prompt,
+        aspectRatio: entry.aspectRatio,
+      );
       final persisted = await _repository.updateGeneratedImage(
         reference,
         asset,
@@ -74,55 +88,16 @@ class DeckImageIssueStore extends ChangeNotifier {
             _assetCacheStore.refresh();
           }
         case Failure():
-          _errorMessage = 'Could not save the image retry. Try again.';
+          _errorMessage = _retrySaveErrorMessage;
       }
     } catch (_) {
       if (!_disposed && _loadedReference == reference) {
-        _errorMessage = 'Could not save the image retry. Try again.';
+        _errorMessage = _retrySaveErrorMessage;
       }
     } finally {
       _retrying.remove(entry.assetKey);
       if (!_disposed && _loadedReference == reference) _notify();
     }
-  }
-
-  Future<ImageGenerationResult> _generate(DeckImageManifestEntry entry) async {
-    try {
-      return await _imageGenerator.generate(
-        ImageGenerationRequest(
-          prompt: entry.prompt,
-          aspectRatio: entry.aspectRatio,
-        ),
-      );
-    } catch (error) {
-      return ImageGenerationFailure(
-        const ErrorClassifier().getUserMessage(error),
-      );
-    }
-  }
-
-  GeneratedImageAsset _toAsset(
-    DeckImageManifestEntry entry,
-    ImageGenerationResult result,
-  ) {
-    return switch (result) {
-      ImageGenerationSuccess(:final bytes) => GeneratedImageAsset.success(
-        assetKey: entry.assetKey,
-        slideKey: entry.slideKey,
-        subject: entry.subject,
-        prompt: entry.prompt,
-        aspectRatio: entry.aspectRatio,
-        bytes: bytes,
-      ),
-      ImageGenerationFailure(:final message) => GeneratedImageAsset.failure(
-        assetKey: entry.assetKey,
-        slideKey: entry.slideKey,
-        subject: entry.subject,
-        prompt: entry.prompt,
-        aspectRatio: entry.aspectRatio,
-        error: message,
-      ),
-    };
   }
 
   void _onSessionChanged() {

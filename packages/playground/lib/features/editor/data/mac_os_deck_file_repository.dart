@@ -9,6 +9,7 @@ import 'package:superdeck_core/superdeck_core.dart'
 import '../../../core/data/data_sources/security_scoped_file_access.dart';
 import '../../../core/domain/generated_image_asset.dart';
 import '../../../core/result.dart';
+import '../../../core/utils/file_slug.dart';
 import '../domain/files/deck_file.dart';
 import '../domain/files/deck_file_repository.dart';
 import '../domain/files/deck_image_manifest.dart';
@@ -551,7 +552,7 @@ class MacOsDeckFileRepository implements DeckFileRepository {
 
   Future<({String stem, String deckPath, String assetsPath})>
   _uniqueGeneratedDeckPaths(Directory directory, String name) async {
-    final base = _toTopicSlug(name);
+    final base = toFileSlug(name, fallback: 'untitled');
     var suffix = 1;
     while (true) {
       final stem = suffix == 1 ? base : '$base-$suffix';
@@ -563,18 +564,6 @@ class MacOsDeckFileRepository implements DeckFileRepository {
       }
       suffix++;
     }
-  }
-
-  String _toTopicSlug(String name) {
-    final slug = name
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp('[^a-z0-9]+'), '-')
-        .replaceAll(RegExp('^-+|-+\$'), '');
-    if (slug.isEmpty) return 'untitled';
-    return slug.length <= 64
-        ? slug
-        : slug.substring(0, 64).replaceFirst(RegExp('-+\$'), '');
   }
 
   Future<void> _deleteIfPresent(File? file) async {
