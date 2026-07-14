@@ -7,6 +7,7 @@ import '../examples/mix/simple_box.dart' as mix_simple_box;
 import '../examples/select.dart' as naked_select;
 import '../examples/button.dart' as remix_button;
 import 'ack_metric_card.dart';
+import 'shader_showcase.dart';
 
 /// Auto-registered demo widgets for Superdeck presentations.
 ///
@@ -47,6 +48,7 @@ Map<String, WidgetFactory> get demoWidgets => {
     child: Transform.scale(scale: 1.2, child: remix_button.ButtonExample()),
   ),
   'ack-metric-card': AckMetricCard.new,
+  'shader-showcase': ShaderShowcase.fromArgs,
 };
 
 /// Wrapper widget that constrains demo widgets to their intrinsic size.

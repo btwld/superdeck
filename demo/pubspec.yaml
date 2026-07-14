@@ -32,6 +32,9 @@ dev_dependencies:
   superdeck_pdf: ^1.0.0
 flutter:
   uses-material-design: true
+  shaders:
+    - shaders/shader_showcase.frag
+    - shaders/volumetric_smoke.frag
   assets:
     - assets/
     - .superdeck/

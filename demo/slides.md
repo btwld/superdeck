@@ -1,4 +1,15 @@
 ---
+title: GPU Shader Effects
+layout: fullscreen
+---
+
+@shader-showcase {
+  effect: smoke
+  speed: 0.8
+  intensity: 1.0
+}
+
+---
 
 @section {
   flex: 2

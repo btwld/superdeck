@@ -1,5 +1,30 @@
 [
   {
+    "key": "Cox8vLKx",
+    "options": {
+      "title": "GPU Shader Effects",
+      "layout": "fullscreen"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "name": "shader-showcase",
+            "flex": 1,
+            "scrollable": false,
+            "type": "widget",
+            "effect": "smoke",
+            "speed": 0.8,
+            "intensity": 1.0
+          }
+        ],
+        "flex": 1,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
     "key": "twqj0tSm",
     "options": {},
     "sections": [
