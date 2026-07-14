@@ -7,7 +7,6 @@ import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mix/mix.dart';
-import 'package:superdeck_core/superdeck_core.dart' show WidgetBlock;
 import '../ui/tokens/colors.dart';
 import '../ui/widgets/provider.dart';
 
@@ -15,6 +14,7 @@ import '../rendering/slides/slide_view.dart';
 import '../utils/constants.dart';
 import '../deck/slide_configuration.dart';
 import 'render_config.dart';
+import 'slide_capture_readiness.dart';
 
 enum SlideCaptureQuality {
   thumbnail(0.3),
@@ -40,7 +40,6 @@ class SlideCaptureService {
   static const _kRenderSettleDelay = Duration(milliseconds: 32);
   static const _kMaxRenderPasses = 30;
   static const _kRequiredStablePasses = 2;
-  static const _kImageMinimumRenderPasses = 16;
 
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
@@ -69,9 +68,6 @@ class SlideCaptureService {
         pixelRatio: quality.pixelRatio,
         context: context,
         targetSize: kResolution,
-        minimumRenderPasses: _containsImageWidget(staticRenderingSlide)
-            ? _kImageMinimumRenderPasses
-            : 0,
       );
 
       final image = await _fromWidgetToImage(
@@ -109,14 +105,6 @@ class SlideCaptureService {
     return _imageToUint8List(image);
   }
 
-  bool _containsImageWidget(SlideConfiguration slide) {
-    return slide.sections.any(
-      (section) => section.blocks.any(
-        (block) => block is WidgetBlock && block.name == 'image',
-      ),
-    );
-  }
-
   Future<Uint8List> _imageToUint8List(ui.Image image) async {
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     image.dispose();
@@ -133,18 +121,21 @@ class SlideCaptureService {
   ) async {
     try {
       final mixScope = MixScope.maybeOf(config.context);
-      final child = InheritedTheme.captureAll(
-        config.context,
-        MediaQuery(
-          data: MediaQuery.of(config.context),
-          child: MaterialApp(
-            theme: Theme.of(config.context),
-            debugShowCheckedModeBanner: false,
+      final readiness = SlideCaptureReadiness();
+      final child = readiness.bind(
+        InheritedTheme.captureAll(
+          config.context,
+          MediaQuery(
+            data: MediaQuery.of(config.context),
+            child: MaterialApp(
+              theme: Theme.of(config.context),
+              debugShowCheckedModeBanner: false,
 
-            home: Scaffold(
-              body: MixScope(
-                tokens: {...?mixScope?.tokens, ...SDColors.colorMap},
-                child: widget,
+              home: Scaffold(
+                body: MixScope(
+                  tokens: {...?mixScope?.tokens, ...SDColors.colorMap},
+                  child: widget,
+                ),
               ),
             ),
           ),
@@ -206,22 +197,27 @@ class SlideCaptureService {
 
         await Future<void>.delayed(_kRenderSettleDelay);
 
-        if (isDirty) {
+        if (isDirty || !readiness.isReady) {
           stablePasses = 0;
           continue;
         }
 
         stablePasses++;
-        if (pass + 1 >= config.minimumRenderPasses &&
-            stablePasses >= _kRequiredStablePasses) {
+        if (stablePasses >= _kRequiredStablePasses) {
           settled = true;
           break;
         }
       }
 
       if (!settled) {
+        final pendingLabels = readiness.pendingLabels.join(', ');
+        final pendingDetails = pendingLabels.isEmpty
+            ? ''
+            : ' Pending: $pendingLabels.';
         log(
-          'Slide capture reached the settle limit. Capturing the last rendered frame.',
+          'Slide capture reached the settle limit with '
+          '${readiness.pendingCount} readiness task(s) pending. '
+          'Capturing the last rendered frame.$pendingDetails',
         );
       }
 

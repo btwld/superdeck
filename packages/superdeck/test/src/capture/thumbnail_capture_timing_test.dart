@@ -45,13 +45,34 @@ class _DelayedWidget extends StatefulWidget {
 }
 
 class _DelayedWidgetState extends State<_DelayedWidget> {
+  SlideCaptureReadinessHandle? _readiness;
+  var _isReady = false;
   late final Future<void> _future = Future<void>.delayed(widget.delay).then((
     _,
   ) {
+    _isReady = true;
+    _readiness?.complete();
     if (!widget.settled.isCompleted) {
       widget.settled.complete();
     }
   });
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isReady && _readiness == null) {
+      _readiness = SlideCaptureReadiness.track(
+        context,
+        label: 'delayed-test-widget',
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _readiness?.complete();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +89,35 @@ class _DelayedWidgetState extends State<_DelayedWidget> {
       },
     );
   }
+}
+
+class _NeverReadyWidget extends StatefulWidget {
+  const _NeverReadyWidget();
+
+  @override
+  State<_NeverReadyWidget> createState() => _NeverReadyWidgetState();
+}
+
+class _NeverReadyWidgetState extends State<_NeverReadyWidget> {
+  SlideCaptureReadinessHandle? _readiness;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _readiness ??= SlideCaptureReadiness.track(
+      context,
+      label: 'never-ready-test-widget',
+    );
+  }
+
+  @override
+  void dispose() {
+    _readiness?.complete();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.expand();
 }
 
 SlideConfiguration _slide(String key, String content) {
@@ -117,6 +167,21 @@ SlideConfiguration _delayedSlide({
       widgetName: _delayedWidgetFactory(delay: delay, settled: settled),
     },
     thumbnailKey: 'thumbnail_delayed.png',
+  );
+}
+
+SlideConfiguration _neverReadySlide() {
+  return SlideConfiguration(
+    slideIndex: 0,
+    style: SlideStyler(),
+    slide: Slide(
+      key: 'never-ready',
+      sections: [
+        SectionBlock([WidgetBlock(name: 'never-ready', args: const {})]),
+      ],
+    ),
+    widgets: {'never-ready': (_) => const _NeverReadyWidget()},
+    thumbnailKey: 'thumbnail_never_ready.png',
   );
 }
 
@@ -188,6 +253,49 @@ void main() {
 
         expect(bytes, isNotEmpty);
         expect(settled.isCompleted, isTrue);
+      });
+    });
+
+    testWidgets('does not impose a fixed delay on an already-ready image', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final settled = Completer<void>();
+      final slide = _delayedSlide(
+        delay: Duration.zero,
+        settled: settled,
+        widgetName: 'image',
+      );
+
+      await tester.runAsync(() async {
+        final stopwatch = Stopwatch()..start();
+        final bytes = await SlideCaptureService().capture(
+          slide: slide,
+          context: context,
+        );
+        stopwatch.stop();
+
+        expect(bytes, isNotEmpty);
+        expect(settled.isCompleted, isTrue);
+        expect(stopwatch.elapsed, lessThan(const Duration(milliseconds: 350)));
+      });
+    });
+
+    testWidgets('bounds capture when registered readiness never completes', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+
+      await tester.runAsync(() async {
+        final stopwatch = Stopwatch()..start();
+        final bytes = await SlideCaptureService().capture(
+          slide: _neverReadySlide(),
+          context: context,
+        );
+        stopwatch.stop();
+
+        expect(bytes, isNotEmpty);
+        expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
       });
     });
 

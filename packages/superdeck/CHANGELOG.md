@@ -64,6 +64,9 @@
   project root at runtime.
 - Improve missing build output diagnostics with checked paths and desktop app
   guidance.
+- Add bounded asynchronous capture readiness so built-in images and custom
+  widgets can signal when their capture-safe visual state is ready, replacing
+  image-specific fixed render delays.
 
 ## 1.0.0
 

@@ -5,6 +5,7 @@ export 'package:superdeck_core/superdeck_core.dart'
     show DeckLoader, DeckPlugin, DeckWorkspace;
 
 export 'src/capture/slide_capture_service.dart';
+export 'src/capture/slide_capture_readiness.dart';
 export 'src/rendering/slides/slide_constants.dart';
 export 'src/rendering/slides/slide_parts.dart';
 export 'src/rendering/slides/slide_render_view.dart';
