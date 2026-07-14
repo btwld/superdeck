@@ -27,7 +27,7 @@ void main() {
     // In-memory repository so the file-backed bootstrap resolves without
     // touching disk or spinning a real file watcher.
     return MaterialApp.router(
-      routerConfig: createRouter(),
+      routerConfig: createRouter(initialLocation: '/editor'),
       builder: (context, child) => _Theme(
         child: AppProviders(
           deckFileRepository: deckFileRepository ?? FakeDeckFileRepository(),
@@ -47,12 +47,7 @@ void main() {
     expect(find.byType(EditorPage), findsOneWidget);
     expect(find.byType(PreviewSidebar), findsOneWidget);
     expect(find.byType(CustomizationSidebar), findsOneWidget);
-
-    // The customization sidebar defaults to the Wizard tab; switch to the
-    // Editor tab so its 'Background' section label renders.
-    await tester.tap(find.text('Editor'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Wizard'), findsNothing);
     expect(find.text('Background'), findsOneWidget);
 
     // Unmount so the editor's controllers/coordinator dispose and cancel their

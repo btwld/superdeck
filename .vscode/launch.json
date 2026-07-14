@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Superdeck Playground (macOS)",
+            "cwd": "packages/playground",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "macos",
+            "toolArgs": [
+                "--dart-define-from-file=../../.env"
+            ]
+        },
+        {
             "name": "Superdeck Demo",
             "cwd": "demo",
             "request": "launch",

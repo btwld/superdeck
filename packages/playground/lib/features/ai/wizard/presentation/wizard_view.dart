@@ -10,13 +10,12 @@ import '../chat/view/widgets/empty_state.dart';
 import '../core/ai/services/ai_conversation_viewmodel.dart';
 import '../core/viewmodel_scope.dart';
 
-/// Single-column conversational wizard, hosted inside the editor's customization
-/// sidebar.
+/// Single-column conversational Wizard hosted by its standalone playground page.
 ///
 /// Owns an [AiConversationViewModel] (via [ViewModelScope]) driving the GenUI
 /// catalog: the model asks one question at a time, each rendered as a catalog
-/// surface. The terminal summary card routes generation through
-/// `GenerateDeckCommand`, which loads the resulting markdown into the editor.
+/// surface. The host supplies the `GenerateDeckCommand` used by the terminal
+/// summary card.
 class WizardView extends StatelessWidget {
   const WizardView({super.key});
 

@@ -8,7 +8,6 @@ import 'package:remix/remix.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../ai/quick_agent/domain/commands/generate_deck_command.dart';
 import '../../../ai/quick_agent/presentation/widgets/agent_generate_panel.dart';
-import '../../../ai/wizard/presentation/wizard_view.dart';
 import '../../domain/stores/editor_store.dart';
 import 'color_control.dart';
 import 'committed_text_field.dart';
@@ -53,41 +52,7 @@ class _CustomizationSidebarState extends State<CustomizationSidebar> {
             child: const HeroDivider(),
           ),
           Expanded(
-            child: HeroTabs(
-              initialId: _SidebarTab.wizard.name,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  HeroTabBar(
-                    children: [
-                      HeroTab(label: 'Wizard', tabId: _SidebarTab.wizard.name),
-                      HeroTab(label: 'Editor', tabId: _SidebarTab.editor.name),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: HeroTabPanel(
-                            tabId: _SidebarTab.wizard.name,
-                            child: const WizardView(),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: HeroTabPanel(
-                            tabId: _SidebarTab.editor.name,
-                            child: _EditorTab(
-                              accordionController: _accordionController,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: _EditorTab(accordionController: _accordionController),
           ),
         ],
       ),
@@ -326,8 +291,8 @@ class _Toolbar extends StatelessWidget {
       style: FlexBoxStyler().spacing(8),
       children: [
         const Spacer(),
-        // TODO(ai): re-introduce the remaining AI entry points (deck-edit,
-        // wizard) once those features are ported.
+        // TODO(ai): re-introduce the remaining deck-edit entry points once
+        // those features are ported.
         SizedBox(
           width: 48,
           child: HeroIconButton(
@@ -354,6 +319,3 @@ class _Toolbar extends StatelessWidget {
     );
   }
 }
-
-/// The two views the customization sidebar can show.
-enum _SidebarTab { wizard, editor }
