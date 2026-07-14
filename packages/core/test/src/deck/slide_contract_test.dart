@@ -1,3 +1,4 @@
+import 'package:superdeck_core/src/deck/block_insets.dart';
 import 'package:superdeck_core/src/deck/block_model.dart';
 import 'package:superdeck_core/src/deck/slide_contract.dart';
 import 'package:superdeck_core/src/deck/slide_model.dart';
@@ -71,7 +72,9 @@ void main() {
           key: 'rt-slide',
           options: SlideOptions(title: 'RT Title'),
           sections: [
-            SectionBlock([ContentBlock('Content')]),
+            SectionBlock([
+              ContentBlock('Content', padding: BlockInsets.all(8)),
+            ], spacing: 12),
           ],
           comments: ['Note'],
         ),
@@ -111,9 +114,80 @@ void main() {
       );
 
       expect(sectionSchema['additionalProperties'], isFalse);
-      expect(sectionProperties.keys, containsAll(['type', 'align', 'flex']));
+      expect(
+        sectionProperties.keys,
+        containsAll(['type', 'align', 'flex', 'spacing']),
+      );
       expect(sectionProperties.containsKey('blocks'), isTrue);
       expect(sectionProperties.containsKey('scrollable'), isFalse);
+
+      final flexSchema = Map<String, Object?>.from(
+        sectionProperties['flex'] as Map,
+      );
+      expect(flexSchema['exclusiveMinimum'], 0);
+
+      final spacingSchema = Map<String, Object?>.from(
+        sectionProperties['spacing'] as Map,
+      );
+      expect(spacingSchema['minimum'], 0);
+    });
+
+    test('json schema exports normalized four-edge insets only', () {
+      for (final field in const ['padding', 'margin']) {
+        final insetsSchema = _propertySchema(
+          ContentBlock.schema.toJsonSchema(),
+          field,
+        );
+
+        expect(insetsSchema['type'], 'object', reason: field);
+        expect(insetsSchema['additionalProperties'], isFalse, reason: field);
+        expect(
+          insetsSchema['required'],
+          containsAll(['top', 'right', 'bottom', 'left']),
+          reason: field,
+        );
+      }
+    });
+
+    test('contract rejects authoring shorthand insets', () {
+      final invalid = [
+        {
+          'key': 'shorthand',
+          'sections': [
+            {
+              'type': 'section',
+              'blocks': [
+                {'type': 'block', 'content': '', 'padding': 16},
+              ],
+            },
+          ],
+        },
+      ];
+
+      expect(slidesContractSchema.safeParse(invalid).isOk, isFalse);
+      expect(() => parseSlidesContract(invalid), throwsA(anything));
+    });
+
+    test('round-trips normalized margin through the contract', () {
+      final original = [
+        Slide(
+          key: 'margin-slide',
+          sections: [
+            SectionBlock([
+              ContentBlock(
+                'Content',
+                margin: BlockInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ]),
+          ],
+        ),
+      ];
+
+      final restored = parseSlidesContract(
+        original.map((slide) => slide.toMap()).toList(),
+      );
+
+      expect(restored, original);
     });
   });
 }

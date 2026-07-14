@@ -51,7 +51,9 @@ class SectionParser {
       if (parsedBlock.type == SectionBlock.key) {
         aggregator.addSection(SectionBlock.parse(parsedBlock.data));
       } else {
-        aggregator.addBlock(Block.parse(parsedBlock.data));
+        // Directive options are authored shorthand; normalize insets before
+        // the contract-only decoder sees them.
+        aggregator.addBlock(Block.parseAuthoring(parsedBlock.data));
       }
 
       aggregator.addContent(blockContent);

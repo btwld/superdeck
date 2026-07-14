@@ -22,7 +22,7 @@ class BlockConfiguration {
 
   final SlideSpec spec;
   final Size size;
-  final ContentAlignment? align;
+  final ContentAlignment align;
 
   /// Slide-local identity derived from slide key + section/block indices.
   final String runtimeKey;
@@ -45,10 +45,5 @@ class BlockConfiguration {
       throw FlutterError('BlockConfiguration not found');
     }
     return data;
-  }
-
-  // ignore: unused-code
-  static BlockConfiguration? maybeOf(BuildContext context) {
-    return InheritedData.maybeOf<BlockConfiguration>(context);
   }
 }

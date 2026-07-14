@@ -287,6 +287,19 @@ More content
       expect(blocks[1].data['flex'], 2);
     });
 
+    test('@block preserves structured padding input', () {
+      const text = '''
+@block {
+  padding: {horizontal: 24, vertical: 16}
+}
+Content
+''';
+
+      final block = const BlockParser().parse(text).single;
+
+      expect(block.data['padding'], {'horizontal': 24, 'vertical': 16});
+    });
+
     test('rejects unsupported @column directives', () {
       const text = '@column{flex: 1}';
 

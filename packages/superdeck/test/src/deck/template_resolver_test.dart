@@ -718,7 +718,7 @@ void main() {
 
       test('preserves resolved style without layout-specific overrides', () {
         final baseStyle = SlideStyler(
-          blockContainer: BoxStyler(
+          blockContainer: BlockStyler(
             padding: EdgeInsetsGeometryMix.all(32),
             margin: EdgeInsetsGeometryMix.all(16),
           ),

@@ -1,5 +1,6 @@
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
+import 'package:superdeck_core/superdeck_core.dart' show aiSlideSchema;
 
 import '../prompts/font_styles.dart';
 
@@ -7,8 +8,10 @@ part 'deck_schemas.g.dart';
 
 /// Schema definitions for SuperDeck presentation generation.
 ///
-/// These schemas use the ACK fluent API for consistency with catalog schemas.
-/// They are compatible with Google Generative AI via `.toJsonSchemaBuilder()`.
+/// The slide portion comes from `superdeck_core`'s [aiSlideSchema], the
+/// AI-compatible projection of the canonical slide contract — Playground owns
+/// only the style schema and prompt guidance. Schemas are compatible with
+/// Google Generative AI via `.toJsonSchemaBuilder()`.
 
 // ============================================================================
 // STYLE SCHEMAS
@@ -55,139 +58,20 @@ final styleSchema = Ack.object({
 }).describe('Global style configuration for the deck');
 
 // ============================================================================
-// SLIDE CONTENT SCHEMAS
-// ============================================================================
-
-const _alignmentValues = [
-  'topLeft',
-  'topCenter',
-  'topRight',
-  'centerLeft',
-  'center',
-  'centerRight',
-  'bottomLeft',
-  'bottomCenter',
-  'bottomRight',
-];
-
-/// Schema for a content or widget block.
-///
-/// Blocks can be either:
-/// - Content blocks (type: "block"): Contain markdown content
-/// - Widget blocks (type: "widget"): Reference named widgets
-@AckType(name: 'SlideBlock')
-final _slideBlockSchema = Ack.object({
-  'type': Ack.enumString(['block', 'widget']).describe(
-    'Block type: "block" for markdown content, "widget" for named widget reference',
-  ),
-  'content': Ack.string().optional().describe(
-    'Markdown content (required for type "block")',
-  ),
-  'name': Ack.string().optional().describe(
-    'Widget name (required for type "widget")',
-  ),
-  'flex': Ack.integer().optional().describe(
-    'Flex weight for proportional sizing. Higher values take more space.',
-  ),
-  'align': Ack.enumString(
-    _alignmentValues,
-  ).optional().describe('Content alignment'),
-  'scrollable': Ack.boolean().optional().describe(
-    'Whether this block is scrollable',
-  ),
-}).describe('A content or widget block');
-final blockSchema = _slideBlockSchema;
-
-/// Schema for a section containing blocks.
-///
-/// Sections represent horizontal rows in a slide, containing one or more
-/// blocks laid out as columns.
-@AckType(name: 'SlideSection')
-final _slideSectionSchema = Ack.object({
-  'type': Ack.literal('section').describe('Section type discriminator'),
-  'flex': Ack.integer().optional().describe(
-    'Flex weight for proportional sizing. Higher values take more space.',
-  ),
-  'align': Ack.enumString(
-    _alignmentValues,
-  ).optional().describe('Content alignment within section'),
-  'scrollable': Ack.boolean().optional().describe(
-    'Whether this section is scrollable',
-  ),
-  'blocks': Ack.list(
-    _slideBlockSchema,
-  ).describe('Content blocks in this section'),
-}).describe('A section containing blocks');
-final sectionSchema = _slideSectionSchema;
-
-// ============================================================================
-// SLIDE SCHEMAS
-// ============================================================================
-
-/// Schema for slide options.
-///
-/// Contains metadata about the slide such as title and style reference.
-@AckType(name: 'SlideOptions')
-final _slideOptionsSchema = Ack.object({
-  'title': Ack.string().optional().describe(
-    'Slide title displayed in navigation',
-  ),
-  'style': Ack.string().optional().describe(
-    'Style name reference matching a defined style',
-  ),
-}).describe('Slide options');
-final slideOptionsSchema = _slideOptionsSchema;
-
-/// Schema for a single slide.
-///
-/// Each slide contains a unique key, optional metadata, and a vertical stack
-/// of sections.
-@AckType(name: 'Slide')
-final slideSchema = Ack.object({
-  'key': Ack.string().describe('Unique slide identifier using kebab-case'),
-  'options': _slideOptionsSchema.optional(),
-  'comments': Ack.list(
-    Ack.string().describe('A speaker note or talking point for this slide'),
-  ).optional().describe('Speaker notes'),
-  'sections': Ack.list(
-    _slideSectionSchema,
-  ).describe('Horizontal sections in the slide'),
-}).describe('A single slide');
-
-/// Schema for slide creation payloads.
-///
-/// Matches [slideSchema], but allows omitting `key` so callers can request
-/// automatic key generation.
-@AckType(name: 'CreateSlide')
-final createSlideSchema = Ack.object({
-  'key': Ack.string().optional().describe(
-    'Optional slide identifier. When missing, a key can be generated.',
-  ),
-  'options': _slideOptionsSchema.optional(),
-  'comments': Ack.list(
-    Ack.string().describe('A speaker note or talking point for this slide'),
-  ).optional().describe('Speaker notes'),
-  'sections': Ack.list(
-    _slideSectionSchema,
-  ).describe('Horizontal sections in the slide'),
-}).describe('A slide payload accepted by createSlide');
-
-// ============================================================================
 // ROOT SCHEMA
 // ============================================================================
 
 /// Schema for the complete slide generation output.
 ///
-/// Root schema for SuperDeck presentation generation, containing the slides
-/// array and global style configuration.
-@AckType(name: 'SlideGeneration')
-final _slideGenerationSchema = Ack.object({
+/// Root schema for SuperDeck presentation generation: the slides array uses
+/// the canonical AI projection exported by `superdeck_core`, so any layout
+/// contract change in core reaches AI generation automatically.
+final slideGenerationSchema = Ack.object({
   'slides': Ack.list(
-    slideSchema,
+    aiSlideSchema,
   ).describe('Array of slides in the presentation'),
   'style': styleSchema,
 }).describe('A SuperDeck presentation with slides and style');
-final slideGenerationSchema = _slideGenerationSchema;
 
 // ============================================================================
 // PROMPT GUIDANCE

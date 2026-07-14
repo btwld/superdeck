@@ -108,7 +108,7 @@ Every state construct found today maps to exactly one new pattern.
 | `DeckToolsAdapter` (`_activeInvocations`, `isIdle`) | `features/ai/core/tools/deck_tools_adapter.dart` | fold into **DeckToolsStore** | `features/ai/domain/stores/` |
 | `DeckStore` / `InMemoryDeckStore` (in-memory deck document) | `features/ai/core/tools/{deck_store,in_memory_deck_store}.dart` | **DeckRepository** interface + **InMemoryDeckRepository** impl (returns `Result<T>`) | `core/{domain/repositories,data/repositories}/` |
 | `DeckEditCoordinator` (session orchestration) | `features/ai/deck_edit/deck_edit_coordinator.dart` | **ApplyDeckEditCommand** + reads DeckDocumentStore | `features/ai/domain/commands/` |
-| `DeckCustomizationStore` (background, per-`TextLevel` signals, computed SlideStyle) | `stores/deck_customization_store.dart` | **DeckCustomizationStore** as `ChangeNotifier`; computed `slideStyle` → plain getter | `core/domain/stores/` (shared: editor + AI) |
+| `DeckCustomizationStore` (background, per-`TextLevel` signals, computed SlideStyler) | `stores/deck_customization_store.dart` | **DeckCustomizationStore** as `ChangeNotifier`; computed `slideStyle` → plain getter | `core/domain/stores/` (shared: editor + AI) |
 | `EditorState` (`activeSlideIndex`) | `stores/editor_state.dart` | **EditorStore** (`activeSlideIndex`, setters) | `features/editor/domain/stores/` |
 | `SlideConfigurationStore` (already `ChangeNotifier`) | `stores/slide_configuration_store.dart` | Keep as `ChangeNotifier`; move to core domain | `core/domain/stores/` |
 | `TextEditorController` | `utils/text_editor_controller.dart` | **Ephemeral** — owned by editor `StatefulWidget`, disposed | `features/editor/presentation/widgets/` |
@@ -201,7 +201,7 @@ No feature-specific store — the page reads the shared `DeckDocumentStore` and
 - **`DeckDocumentStore`** (`ChangeNotifier`) — single source of truth for the live
   deck (slides/markdown). Replaces `InMemoryDeckStore` as *state*; IO becomes `DeckRepository`.
 - **`DeckCustomizationStore`** (`ChangeNotifier`) — background color, per-`TextLevel`
-  color/size/weight/family; `SlideStyle get slideStyle` becomes a computed getter.
+  color/size/weight/family; `SlideStyler get slideStyle` becomes a computed getter.
 - **`SlideConfigurationStore`** — already a `ChangeNotifier`, moved here as-is.
 
 `lib/core/data`:

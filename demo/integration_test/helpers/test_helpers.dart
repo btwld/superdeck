@@ -123,6 +123,40 @@ Future<Directory?> captureAllSlidesForReview(
   return outputDir;
 }
 
+/// Captures clean, static slide frames without interactive app-shell chrome.
+Future<Directory?> captureRenderedSlidesForReview(
+  WidgetTester tester,
+  DeckController controller, {
+  required String suiteName,
+  required String scenarioName,
+}) async {
+  if (Platform.environment['SUPERDECK_CAPTURE_SLIDES'] != '1') return null;
+
+  final outputDir = await _createReviewScreenshotOutputDir(
+    suiteName: suiteName,
+    scenarioName: scenarioName,
+  );
+  final renderContext = tester.element(find.byType(Scaffold).first);
+  final captureService = SlideCaptureService();
+  final slides = controller.slides.value;
+
+  for (var index = 0; index < slides.length; index++) {
+    final slide = slides[index];
+    final slideNumber = (index + 1).toString().padLeft(2, '0');
+    final title = slide.options.title ?? slide.key;
+    final fileName = '${slideNumber}_${_slug(title)}.png';
+    final bytes = await captureService.capture(
+      quality: SlideCaptureQuality.good,
+      slide: slide,
+      context: renderContext,
+    );
+
+    await File('${outputDir.path}/$fileName').writeAsBytes(bytes, flush: true);
+  }
+
+  return outputDir;
+}
+
 Future<Directory?> captureCurrentViewForReview(
   WidgetTester tester, {
   required String suiteName,
@@ -229,12 +263,14 @@ class TestApp extends StatelessWidget {
     super.key,
     this.deckLoader,
     this.workspace,
+    this.options,
     this.extraWidgets = const {},
     this.plugins = const [],
   });
 
   final DeckLoader? deckLoader;
   final DeckWorkspace? workspace;
+  final DeckOptions? options;
   final Map<String, WidgetFactory> extraWidgets;
   final List<DeckRuntimePlugin> plugins;
 
@@ -259,24 +295,32 @@ class TestApp extends StatelessWidget {
         deckLoader: deckLoader,
         workspace: workspace,
         assetCacheStore: const _TransparentThumbnailCacheStore(),
-        options: DeckOptions(
-          baseStyle: borderedStyle(),
-          widgets: {
-            ...demoWidgets,
-            'twitter': _testTwitterWidget,
-            ...extraWidgets,
-          },
-          styles: {'announcement': announcementStyle(), 'quote': quoteStyle()},
-          templates: {
-            'corporate': corporateTemplate(),
-            'minimal': minimalTemplate(),
-          },
-          parts: const SlideParts(
-            header: HeaderPart(),
-            footer: FooterPart(),
-            background: BackgroundPart(),
-          ),
-        ),
+        options:
+            options ??
+            DeckOptions(
+              baseStyle: borderedStyle(),
+              widgets: {
+                ...demoWidgets,
+                'twitter': _testTwitterWidget,
+                ...extraWidgets,
+              },
+              // Mirror the deck-level styles registered in `lib/main.dart` so
+              // the harness resolves every `style:` used in `slides.md`.
+              styles: {
+                'announcement': announcementStyle(),
+                'quote': quoteStyle(),
+                'boxed': boxedStyle(),
+              },
+              templates: {
+                'corporate': corporateTemplate(),
+                'minimal': minimalTemplate(),
+              },
+              parts: const SlideParts(
+                header: HeaderPart(),
+                footer: FooterPart(),
+                background: BackgroundPart(),
+              ),
+            ),
         transitionDuration: _testSlideTransitionDuration,
         plugins: plugins,
       ),

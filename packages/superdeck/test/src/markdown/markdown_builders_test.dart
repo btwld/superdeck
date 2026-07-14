@@ -243,7 +243,7 @@ class _MarkdownHarness extends StatelessWidget {
     );
 
     final blockData = BlockConfiguration(
-      align: ContentBlock(markdown).align,
+      align: ContentAlignment.centerLeft,
       spec: slideSpec,
       size: const Size(800, 600),
       runtimeKey: 'slide:s0:b0',

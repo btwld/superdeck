@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../rendering/blocks/block_provider.dart';
 import '../ui/widgets/webview_wrapper.dart';
 
 /// Strongly-typed data transfer object for DartPad widget.
@@ -88,9 +87,7 @@ class DartPadWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = BlockConfiguration.of(context);
     return WebViewWrapper(
-      size: data.size,
       url: _data.toUrl(),
       cacheKey: _data.cacheKey,
       title: 'DartPad',

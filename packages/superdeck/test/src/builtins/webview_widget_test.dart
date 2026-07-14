@@ -138,7 +138,7 @@ void main() {
       final wrapper = tester.widget<WebViewWrapper>(
         find.byType(WebViewWrapper),
       );
-      expect(wrapper.size, size);
+      expect(tester.getSize(find.byType(WebViewWrapper)), size);
       expect(wrapper.url, 'https://example.com/demo');
       expect(wrapper.showControls, isFalse);
       expect(find.byKey(const ValueKey('fake-web-view')), findsOneWidget);
@@ -184,6 +184,24 @@ void main() {
         webViewPlatform.controllers.single.loadedRequests.single.uri.toString(),
         'https://example.com/web',
       );
+    });
+
+    testWidgets('fills the block viewport under scrollable constraints', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _WebViewHarness(
+          deckController: deckController,
+          size: const Size(640, 480),
+          runtimeKey: 'slide-0:s0:b0',
+          unboundedHeight: true,
+          args: {'url': 'https://example.com/scrollable'},
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.getSize(find.byType(WebViewWrapper)), const Size(640, 480));
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('reuses controller on remount with same cache identity', (
@@ -631,6 +649,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Static Title'), findsOneWidget);
+      expect(tester.getSize(find.byType(WebViewWrapper)), const Size(640, 480));
       expect(find.byKey(const ValueKey('fake-web-view')), findsNothing);
       expect(webViewPlatform.controllers, isEmpty);
       expect(deckController.webViewControllerCache.length, 0);
@@ -710,14 +729,17 @@ class _TwoWebViewsHarness extends StatelessWidget {
     );
 
     Widget webView(String runtimeKey) {
-      return InheritedData<BlockConfiguration>(
-        data: BlockConfiguration(
-          spec: const SlideSpec(),
-          size: size,
-          align: null,
-          runtimeKey: runtimeKey,
+      return SizedBox.fromSize(
+        size: size,
+        child: InheritedData<BlockConfiguration>(
+          data: BlockConfiguration(
+            spec: const SlideSpec(),
+            size: size,
+            align: ContentAlignment.centerLeft,
+            runtimeKey: runtimeKey,
+          ),
+          child: WebViewWidget(args),
         ),
-        child: WebViewWidget(args),
       );
     }
 
@@ -743,6 +765,7 @@ class _WebViewHarness extends StatelessWidget {
   final Size size;
   final String runtimeKey;
   final bool isStaticRendering;
+  final bool unboundedHeight;
 
   const _WebViewHarness({
     required this.deckController,
@@ -750,6 +773,7 @@ class _WebViewHarness extends StatelessWidget {
     required this.size,
     required this.runtimeKey,
     this.isStaticRendering = false,
+    this.unboundedHeight = false,
   });
 
   @override
@@ -767,19 +791,30 @@ class _WebViewHarness extends StatelessWidget {
       isStaticRendering: isStaticRendering,
     );
 
+    final webView = InheritedData<BlockConfiguration>(
+      data: BlockConfiguration(
+        spec: const SlideSpec(),
+        size: size,
+        align: ContentAlignment.centerLeft,
+        runtimeKey: runtimeKey,
+      ),
+      child: WebViewWidget(args),
+    );
+
     return MaterialApp(
       home: InheritedData<DeckController>(
         data: deckController,
         child: InheritedData<SlideConfiguration>(
           data: slide,
-          child: InheritedData<BlockConfiguration>(
-            data: BlockConfiguration(
-              spec: const SlideSpec(),
-              size: size,
-              align: null,
-              runtimeKey: runtimeKey,
-            ),
-            child: Scaffold(body: WebViewWidget(args)),
+          child: Scaffold(
+            body: unboundedHeight
+                ? SingleChildScrollView(
+                    child: SizedBox(width: size.width, child: webView),
+                  )
+                : Align(
+                    alignment: Alignment.topLeft,
+                    child: SizedBox.fromSize(size: size, child: webView),
+                  ),
           ),
         ),
       ),

@@ -7,13 +7,15 @@ import 'package:superdeck_core/superdeck_core.dart';
 class MemoryDeckLoader extends DeckLoader {
   final _controller = StreamController<SlidesEvent>.broadcast();
   bool _disposed = false;
+  String? _lastLoadedMarkdown;
 
   @override
   Stream<SlidesEvent> load() => _controller.stream;
 
   /// Parses the given markdown and emits a [SlidesLoadedEvent].
   void updateMarkdown(String markdown) {
-    if (_disposed) return;
+    if (_disposed || markdown == _lastLoadedMarkdown) return;
+    _lastLoadedMarkdown = markdown;
 
     try {
       final rawSlides = const MarkdownParser().parse(markdown);

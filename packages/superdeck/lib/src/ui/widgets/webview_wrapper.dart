@@ -24,7 +24,6 @@ import 'webview_controller_cache.dart';
 /// and never creates a controller.
 class WebViewWrapper extends StatefulWidget {
   final String url;
-  final Size size;
   final String? cacheKey;
   final String? title;
   final List<String>? allowedHosts;
@@ -35,7 +34,6 @@ class WebViewWrapper extends StatefulWidget {
   const WebViewWrapper({
     super.key,
     required this.url,
-    required this.size,
     this.cacheKey,
     this.title,
     this.allowedHosts,
@@ -337,9 +335,7 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
     final label = (title != null && title.isNotEmpty)
         ? title
         : 'WebView unavailable in static capture';
-    return SizedBox(
-      width: widget.size.width,
-      height: widget.size.height,
+    return SizedBox.expand(
       child: Center(
         child: Text(
           label,
@@ -350,21 +346,19 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSurface() {
     if (_isStaticRendering) return _buildPlaceholder();
 
     final controller = _controller;
     if (controller == null) {
-      return SizedBox(width: widget.size.width, height: widget.size.height);
+      return const SizedBox.expand();
     }
 
     final showToolbar = widget.showControls || widget.showClearControl;
 
-    return SizedBox(
-      width: widget.size.width,
-      height: widget.size.height,
+    return SizedBox.expand(
       child: Stack(
+        fit: StackFit.expand,
         children: [
           AnimatedOpacity(
             opacity: _hide ? 0 : 1,
@@ -372,19 +366,40 @@ class _WebViewWrapperState extends State<WebViewWrapper> {
             child: WebViewWidget(controller: controller),
           ),
           if (showToolbar)
-            Row(
-              children: [
-                if (widget.showControls)
-                  SDIconButton(onPressed: _reload, icon: Icons.refresh),
-                if (widget.showClearControl)
-                  SDIconButton(
-                    onPressed: _clearDartPadEditor,
-                    icon: Icons.clear,
-                  ),
-              ],
+            Align(
+              alignment: Alignment.topLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.showControls)
+                    SDIconButton(onPressed: _reload, icon: Icons.refresh),
+                  if (widget.showClearControl)
+                    SDIconButton(
+                      onPressed: _clearDartPadEditor,
+                      icon: Icons.clear,
+                    ),
+                ],
+              ),
             ),
         ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final blockSize = BlockConfiguration.of(context).size;
+        final width = constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : blockSize.width;
+        final height = constraints.hasBoundedHeight
+            ? constraints.maxHeight
+            : blockSize.height;
+
+        return SizedBox(width: width, height: height, child: _buildSurface());
+      },
     );
   }
 }

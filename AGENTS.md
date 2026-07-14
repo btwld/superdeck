@@ -168,7 +168,7 @@ Slides use `@tag` directives in Markdown to define layout and content:
 - Any unrecognized `@name` becomes a `WidgetBlock` (e.g., `@image`, `@chart`, `@callout`)
 
 ### Style System
-Styles are defined in Dart through `SlideStyle`, `DeckOptions.baseStyle`, and `DeckOptions.styles`.
+Styles are defined in Dart through `SlideStyler`, `DeckOptions.baseStyle`, and `DeckOptions.styles`.
 
 ## Documentation Locations
 

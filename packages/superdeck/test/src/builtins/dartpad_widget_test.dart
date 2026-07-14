@@ -183,7 +183,7 @@ void main() {
         find.byType(WebViewWrapper),
       );
 
-      expect(wrapper.size, size);
+      expect(tester.getSize(find.byType(WebViewWrapper)), size);
       expect(
         wrapper.url,
         'https://dartpad.dev/?id=snippet&theme=light&embed=true&run=false',
@@ -432,14 +432,22 @@ class _DartPadHarness extends StatelessWidget {
         data: deckController,
         child: InheritedData<SlideConfiguration>(
           data: slide,
-          child: InheritedData<BlockConfiguration>(
-            data: BlockConfiguration(
-              spec: const SlideSpec(),
-              size: size,
-              align: null,
-              runtimeKey: runtimeKey,
+          child: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox.fromSize(
+                size: size,
+                child: InheritedData<BlockConfiguration>(
+                  data: BlockConfiguration(
+                    spec: const SlideSpec(),
+                    size: size,
+                    align: ContentAlignment.centerLeft,
+                    runtimeKey: runtimeKey,
+                  ),
+                  child: DartPadWidget(args),
+                ),
+              ),
             ),
-            child: Scaffold(body: DartPadWidget(args)),
           ),
         ),
       ),

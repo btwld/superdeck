@@ -1,5 +1,58 @@
+import 'package:superdeck_core/src/deck/block_insets.dart';
 import 'package:superdeck_core/src/deck/block_model.dart';
 import 'package:test/test.dart';
+
+Matcher _throwsInvalidFlex() {
+  return throwsA(
+    isA<ArgumentError>()
+        .having((error) => error.name, 'name', 'flex')
+        .having(
+          (error) => error.message.toString(),
+          'message',
+          contains('greater than zero'),
+        ),
+  );
+}
+
+Matcher _throwsMappedInvalidFlex() {
+  return throwsA(
+    predicate<Object>((error) {
+      final message = error.toString();
+      return message.contains('flex') && message.contains('greater than zero');
+    }, 'an error naming flex and requiring a value greater than zero'),
+  );
+}
+
+Matcher _throwsInvalidSpacing() {
+  return throwsA(
+    isA<ArgumentError>()
+        .having((error) => error.name, 'name', 'spacing')
+        .having(
+          (error) => error.message.toString(),
+          'message',
+          allOf(contains('finite'), contains('greater than or equal to zero')),
+        ),
+  );
+}
+
+Matcher _throwsInvalidInsets(String name, {required bool structural}) {
+  return throwsA(
+    isA<ArgumentError>()
+        .having((error) => error.name, 'name', name)
+        .having(
+          (error) => error.message.toString(),
+          'message',
+          structural
+              ? allOf(
+                  contains('finite non-negative'),
+                  contains('scalar'),
+                  contains('horizontal'),
+                  contains('top'),
+                )
+              : contains('finite non-negative'),
+        ),
+  );
+}
 
 void main() {
   group('Block Model', () {
@@ -256,6 +309,237 @@ void main() {
       });
     });
 
+    group('block insets authoring', () {
+      final accepted = <Object, Map<String, Object?>>{
+        16: {'top': 16.0, 'right': 16.0, 'bottom': 16.0, 'left': 16.0},
+        {'horizontal': 24}: {
+          'top': 0.0,
+          'right': 24.0,
+          'bottom': 0.0,
+          'left': 24.0,
+        },
+        {'vertical': 12}: {
+          'top': 12.0,
+          'right': 0.0,
+          'bottom': 12.0,
+          'left': 0.0,
+        },
+        {'horizontal': 24, 'vertical': 16}: {
+          'top': 16.0,
+          'right': 24.0,
+          'bottom': 16.0,
+          'left': 24.0,
+        },
+        {'top': 12, 'right': 24}: {
+          'top': 12.0,
+          'right': 24.0,
+          'bottom': 0.0,
+          'left': 0.0,
+        },
+      };
+
+      for (final field in const ['padding', 'margin']) {
+        for (final MapEntry(key: input, value: normalized)
+            in accepted.entries) {
+          test('$field: $input normalizes to four physical edges', () {
+            final block = Block.parseAuthoring({'type': 'block', field: input});
+
+            expect(block.toMap()[field], normalized);
+          });
+        }
+      }
+
+      test('authoring schema accepts the three authoring forms', () {
+        for (final input in accepted.keys) {
+          expect(
+            BlockInsets.authoringSchema.safeParse(input).isOk,
+            isTrue,
+            reason: 'insets: $input',
+          );
+        }
+      });
+
+      test('contract schema rejects authoring shorthand', () {
+        for (final field in const ['padding', 'margin']) {
+          for (final input in [
+            16,
+            {'horizontal': 24},
+            {'top': 12, 'right': 24},
+          ]) {
+            expect(
+              ContentBlock.schema.safeParse({
+                'type': 'block',
+                field: input,
+              }).isOk,
+              isFalse,
+              reason: '$field: $input',
+            );
+          }
+        }
+      });
+
+      test('contract schema accepts normalized four-edge insets', () {
+        for (final field in const ['padding', 'margin']) {
+          expect(
+            ContentBlock.schema.safeParse({
+              'type': 'block',
+              field: {'top': 1, 'right': 2, 'bottom': 3, 'left': 4},
+            }).isOk,
+            isTrue,
+            reason: field,
+          );
+        }
+      });
+
+      final structurallyInvalid = <Object>[
+        <String, Object?>{},
+        {'unknown': 1},
+        {'horizontal': 8, 'top': 4},
+      ];
+
+      for (final field in const ['padding', 'margin']) {
+        for (final input in structurallyInvalid) {
+          test('$field rejects $input naming the field', () {
+            expect(
+              () => Block.parseAuthoring({'type': 'block', field: input}),
+              _throwsInvalidInsets(field, structural: true),
+            );
+          });
+        }
+
+        test('$field rejects invalid scalars naming the field', () {
+          for (final input in [-1, double.nan, double.infinity]) {
+            expect(
+              () => Block.parseAuthoring({'type': 'block', field: input}),
+              _throwsInvalidInsets(field, structural: false),
+              reason: '$field: $input',
+            );
+          }
+        });
+
+        test('$field reports the exact invalid edge', () {
+          expect(
+            () => Block.parseAuthoring({
+              'type': 'block',
+              field: {'left': -1},
+            }),
+            _throwsInvalidInsets('$field.left', structural: false),
+          );
+          expect(
+            () => Block.parseAuthoring({
+              'type': 'block',
+              field: {'vertical': double.nan},
+            }),
+            _throwsInvalidInsets('$field.vertical', structural: false),
+          );
+          expect(
+            () => Block.parseAuthoring({
+              'type': 'block',
+              field: {'left': null},
+            }),
+            _throwsInvalidInsets('$field.left', structural: false),
+          );
+        });
+
+        test('$field omitted edges normalize to zero', () {
+          final block = Block.parseAuthoring({
+            'type': 'block',
+            field: {'top': 12},
+          });
+
+          expect(block.toMap()[field], {
+            'top': 12.0,
+            'right': 0.0,
+            'bottom': 0.0,
+            'left': 0.0,
+          });
+        });
+      }
+
+      test('authoring schema rejects invalid forms', () {
+        for (final input in [
+          ...structurallyInvalid,
+          -1,
+          {'left': -1},
+          double.nan,
+          double.infinity,
+        ]) {
+          expect(
+            BlockInsets.authoringSchema.safeParse(input).isOk,
+            isFalse,
+            reason: 'insets: $input',
+          );
+        }
+      });
+
+      test('public constructors create normalized insets', () {
+        expect(BlockInsets.all(8).toMap(), {
+          'top': 8.0,
+          'right': 8.0,
+          'bottom': 8.0,
+          'left': 8.0,
+        });
+        expect(BlockInsets.symmetric(horizontal: 12, vertical: 6).toMap(), {
+          'top': 6.0,
+          'right': 12.0,
+          'bottom': 6.0,
+          'left': 12.0,
+        });
+      });
+
+      test('public constructor rejects invalid edges', () {
+        for (final value in [-1.0, double.nan, double.infinity]) {
+          expect(
+            () => BlockInsets(left: value),
+            throwsA(
+              isA<ArgumentError>()
+                  .having((error) => error.name, 'name', 'left')
+                  .having(
+                    (error) => error.message.toString(),
+                    'message',
+                    contains('finite non-negative'),
+                  ),
+            ),
+          );
+        }
+      });
+
+      test('generated map and copy paths preserve invariants', () {
+        final insets = BlockInsets.fromMap({
+          'top': 1,
+          'right': 2,
+          'bottom': 3,
+          'left': 4,
+        });
+
+        expect(insets.toMap(), {
+          'top': 1.0,
+          'right': 2.0,
+          'bottom': 3.0,
+          'left': 4.0,
+        });
+        expect(insets.copyWith(left: 5).left, 5);
+        expect(
+          () => insets.copyWith(left: double.nan),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('absent insets stay null; explicit zero stays representable', () {
+        final inherited = Block.parseAuthoring({'type': 'block'});
+        expect(inherited.margin, isNull);
+        expect(inherited.padding, isNull);
+
+        final removed = Block.parseAuthoring({
+          'type': 'block',
+          'margin': 0,
+          'padding': 0,
+        });
+        expect(removed.margin, BlockInsets.all(0));
+        expect(removed.padding, BlockInsets.all(0));
+      });
+    });
+
     group('ContentBlock', () {
       test('creates with default values', () {
         final block = ContentBlock('Hello');
@@ -263,6 +547,7 @@ void main() {
         expect(block.content, 'Hello');
         expect(block.type, 'block');
         expect(block.flex, 1);
+        expect(block.padding, isNull);
         expect(block.scrollable, false);
         expect(block.align, isNull);
       });
@@ -278,27 +563,45 @@ void main() {
           'Content',
           align: ContentAlignment.center,
           flex: 2,
+          padding: BlockInsets.all(8),
           scrollable: true,
         );
 
         expect(block.content, 'Content');
         expect(block.align, ContentAlignment.center);
         expect(block.flex, 2);
+        expect(block.padding, BlockInsets.all(8));
         expect(block.scrollable, true);
       });
 
-      group('resolvedAlign', () {
-        test('defaults to centerLeft when align is not set', () {
+      group('constructor validation', () {
+        for (final flex in [0, -1]) {
+          test('rejects flex $flex', () {
+            expect(
+              () => ContentBlock('Content', flex: flex),
+              _throwsInvalidFlex(),
+            );
+          });
+        }
+
+        test('copyWith rejects non-positive flex', () {
           final block = ContentBlock('Content');
 
-          expect(block.align, isNull);
-          expect(block.resolvedAlign, ContentAlignment.centerLeft);
+          expect(() => block.copyWith(flex: 0), _throwsInvalidFlex());
         });
 
-        test('uses explicit align when set', () {
-          final block = ContentBlock('Content', align: ContentAlignment.center);
+        test('fromMap rejects non-positive flex', () {
+          expect(
+            () => ContentBlock.fromMap({'type': 'block', 'flex': -1}),
+            _throwsMappedInvalidFlex(),
+          );
+        });
 
-          expect(block.resolvedAlign, ContentAlignment.center);
+        test('parse reports the flex field and accepted range', () {
+          expect(
+            () => ContentBlock.parse({'type': 'block', 'flex': 0}),
+            _throwsInvalidFlex(),
+          );
         });
       });
 
@@ -338,6 +641,7 @@ void main() {
             'Content',
             align: ContentAlignment.center,
             flex: 2,
+            padding: BlockInsets.all(8),
             scrollable: true,
           );
           final copy = original.copyWith();
@@ -345,6 +649,7 @@ void main() {
           expect(copy.content, original.content);
           expect(copy.align, original.align);
           expect(copy.flex, original.flex);
+          expect(copy.padding, original.padding);
           expect(copy.scrollable, original.scrollable);
         });
       });
@@ -366,6 +671,7 @@ void main() {
             'Content',
             align: ContentAlignment.center,
             flex: 2,
+            padding: BlockInsets.symmetric(horizontal: 12, vertical: 8),
             scrollable: true,
           );
           final map = block.toMap();
@@ -374,6 +680,12 @@ void main() {
           expect(map['content'], 'Content');
           expect(map['align'], 'center');
           expect(map['flex'], 2);
+          expect(map['padding'], {
+            'top': 8.0,
+            'right': 12.0,
+            'bottom': 8.0,
+            'left': 12.0,
+          });
           expect(map['scrollable'], true);
         });
       });
@@ -395,6 +707,7 @@ void main() {
             'content': 'Content',
             'align': 'center',
             'flex': 2,
+            'padding': {'top': 1, 'right': 2, 'bottom': 3, 'left': 4},
             'scrollable': true,
           };
           final block = ContentBlock.fromMap(map);
@@ -402,6 +715,10 @@ void main() {
           expect(block.content, 'Content');
           expect(block.align, ContentAlignment.center);
           expect(block.flex, 2);
+          expect(
+            block.padding,
+            BlockInsets(top: 1, right: 2, bottom: 3, left: 4),
+          );
           expect(block.scrollable, true);
         });
 
@@ -432,6 +749,7 @@ void main() {
             'Test content',
             align: ContentAlignment.bottomRight,
             flex: 3,
+            padding: BlockInsets.all(6),
             scrollable: true,
           );
 
@@ -494,6 +812,17 @@ void main() {
 
           expect(result.isOk, isFalse);
         });
+
+        test('rejects non-positive flex', () {
+          for (final flex in [0, -1]) {
+            final result = ContentBlock.schema.safeParse({
+              'type': 'block',
+              'flex': flex,
+            });
+
+            expect(result.isOk, isFalse, reason: 'flex: $flex');
+          }
+        });
       });
     });
 
@@ -504,6 +833,7 @@ void main() {
         expect(section.blocks, isEmpty);
         expect(section.type, 'section');
         expect(section.flex, 1);
+        expect(section.spacing, 0);
       });
 
       test('creates with child blocks', () {
@@ -528,26 +858,100 @@ void main() {
           [ContentBlock('Test')],
           align: ContentAlignment.center,
           flex: 2,
+          spacing: 24,
         );
 
         expect(section.align, ContentAlignment.center);
         expect(section.flex, 2);
+        expect(section.spacing, 24);
       });
 
-      group('totalBlockFlex', () {
-        test('returns 0 for empty section', () {
+      group('constructor validation', () {
+        for (final flex in [0, -1]) {
+          test('rejects flex $flex', () {
+            expect(() => SectionBlock([], flex: flex), _throwsInvalidFlex());
+          });
+        }
+
+        test('copyWith rejects non-positive flex', () {
           final section = SectionBlock([]);
-          expect(section.totalBlockFlex, 0);
+
+          expect(() => section.copyWith(flex: 0), _throwsInvalidFlex());
         });
 
-        test('sums child flex values', () {
-          final section = SectionBlock([
-            ContentBlock('A', flex: 1),
-            ContentBlock('B', flex: 2),
-            ContentBlock('C', flex: 3),
-          ]);
+        test('fromMap rejects non-positive flex', () {
+          expect(
+            () => SectionBlock.fromMap({'type': 'section', 'flex': -1}),
+            _throwsMappedInvalidFlex(),
+          );
+        });
 
-          expect(section.totalBlockFlex, 6);
+        test('parse reports the flex field and accepted range', () {
+          expect(
+            () => SectionBlock.parse({'type': 'section', 'flex': 0}),
+            _throwsInvalidFlex(),
+          );
+        });
+
+        for (final spacing in [-1.0, double.nan, double.infinity]) {
+          test('rejects spacing $spacing', () {
+            expect(
+              () => SectionBlock([], spacing: spacing),
+              _throwsInvalidSpacing(),
+            );
+          });
+        }
+
+        test('copyWith rejects invalid spacing', () {
+          final section = SectionBlock([]);
+
+          expect(
+            () => section.copyWith(spacing: double.infinity),
+            _throwsInvalidSpacing(),
+          );
+        });
+
+        test('parse reports the spacing field and accepted range', () {
+          for (final spacing in [-1.0, double.nan, double.infinity]) {
+            expect(
+              () => SectionBlock.parse({'spacing': spacing}),
+              _throwsInvalidSpacing(),
+              reason: 'spacing: $spacing',
+            );
+          }
+        });
+      });
+
+      group('resolveBlockAlign', () {
+        test('defaults to centerLeft without explicit alignment', () {
+          final block = ContentBlock('Content');
+          final section = SectionBlock([block]);
+
+          expect(section.resolveBlockAlign(block), ContentAlignment.centerLeft);
+        });
+
+        test('inherits section alignment', () {
+          final block = ContentBlock('Content');
+          final section = SectionBlock([
+            block,
+          ], align: ContentAlignment.bottomCenter);
+
+          expect(
+            section.resolveBlockAlign(block),
+            ContentAlignment.bottomCenter,
+          );
+        });
+
+        test('prefers explicit block alignment', () {
+          final block = ContentBlock(
+            'Content',
+            align: ContentAlignment.topRight,
+          );
+          final section = SectionBlock([
+            block,
+          ], align: ContentAlignment.bottomLeft);
+
+          expect(section.resolveBlockAlign(block), ContentAlignment.topRight);
         });
       });
 
@@ -565,12 +969,20 @@ void main() {
             [ContentBlock('Test')],
             align: ContentAlignment.center,
             flex: 2,
+            spacing: 16,
           );
           final copy = original.copyWith();
 
           expect(copy.blocks.length, original.blocks.length);
           expect(copy.align, original.align);
           expect(copy.flex, original.flex);
+          expect(copy.spacing, original.spacing);
+        });
+
+        test('copies with new spacing', () {
+          final original = SectionBlock([]);
+
+          expect(original.copyWith(spacing: 32).spacing, 32);
         });
       });
 
@@ -581,16 +993,18 @@ void main() {
 
           expect(map['type'], 'section');
           expect(map['blocks'], isEmpty);
+          expect(map['spacing'], 0);
           expect(map.containsKey('scrollable'), isFalse);
         });
 
         test('serializes section with blocks', () {
-          final section = SectionBlock([ContentBlock('Test')]);
+          final section = SectionBlock([ContentBlock('Test')], spacing: 20);
           final map = section.toMap();
 
           expect(map['type'], 'section');
           expect(map['blocks'], isA<List>());
           expect((map['blocks'] as List).length, 1);
+          expect(map['spacing'], 20);
           expect(map.containsKey('scrollable'), isFalse);
         });
       });
@@ -609,11 +1023,13 @@ void main() {
             'blocks': [
               {'type': 'block', 'content': 'Test'},
             ],
+            'spacing': 18,
           };
           final section = SectionBlock.fromMap(map);
 
           expect(section.blocks.length, 1);
           expect((section.blocks[0] as ContentBlock).content, 'Test');
+          expect(section.spacing, 18);
         });
       });
 
@@ -650,6 +1066,34 @@ void main() {
           });
 
           expect(result.isOk, isFalse);
+        });
+
+        test('accepts finite non-negative spacing', () {
+          for (final spacing in [0, 12.5, 40]) {
+            final result = SectionBlock.schema.safeParse({
+              'spacing': spacing,
+              'blocks': <Object?>[],
+            });
+
+            expect(result.isOk, isTrue, reason: 'spacing: $spacing');
+          }
+        });
+
+        test('rejects non-positive flex and invalid spacing', () {
+          for (final flex in [0, -1]) {
+            expect(
+              SectionBlock.schema.safeParse({'flex': flex}).isOk,
+              isFalse,
+              reason: 'flex: $flex',
+            );
+          }
+          for (final spacing in [-1, double.nan, double.infinity]) {
+            expect(
+              SectionBlock.schema.safeParse({'spacing': spacing}).isOk,
+              isFalse,
+              reason: 'spacing: $spacing',
+            );
+          }
         });
       });
 
@@ -708,12 +1152,23 @@ void main() {
       });
 
       group('constructor validation', () {
+        for (final flex in [0, -1]) {
+          test('rejects flex $flex', () {
+            expect(
+              () => WidgetBlock(name: 'Test', flex: flex),
+              _throwsInvalidFlex(),
+            );
+          });
+        }
+
         test('throws ArgumentError when args contain reserved keys', () {
           for (final reservedKey in const [
             'name',
             'align',
             'flex',
             'scrollable',
+            'margin',
+            'padding',
           ]) {
             expect(
               () => WidgetBlock(
@@ -743,23 +1198,33 @@ void main() {
 
           expect(widget.args, {'custom': 'value', 'count': 42, 'flag': true});
         });
-      });
 
-      group('resolvedAlign', () {
-        test('defaults to centerLeft when align is not set', () {
-          final widget = WidgetBlock(name: 'Test');
+        test('authored insets are normalized and excluded from args', () {
+          final widget =
+              Block.parseAuthoring({
+                    'type': 'widget',
+                    'name': 'Test',
+                    'padding': {'horizontal': 12, 'vertical': 8},
+                    'margin': 4,
+                    'custom': 'value',
+                  })
+                  as WidgetBlock;
 
-          expect(widget.align, isNull);
-          expect(widget.resolvedAlign, ContentAlignment.centerLeft);
-        });
-
-        test('uses explicit align when set', () {
-          final widget = WidgetBlock(
-            name: 'Test',
-            align: ContentAlignment.topRight,
-          );
-
-          expect(widget.resolvedAlign, ContentAlignment.topRight);
+          expect(widget.args.containsKey('padding'), isFalse);
+          expect(widget.args.containsKey('margin'), isFalse);
+          expect(widget.args['custom'], 'value');
+          expect(widget.toMap()['padding'], {
+            'top': 8.0,
+            'right': 12.0,
+            'bottom': 8.0,
+            'left': 12.0,
+          });
+          expect(widget.toMap()['margin'], {
+            'top': 4.0,
+            'right': 4.0,
+            'bottom': 4.0,
+            'left': 4.0,
+          });
         });
       });
 
@@ -984,6 +1449,13 @@ void main() {
           final block = Block.parse(map);
 
           expect(block, isA<WidgetBlock>());
+        });
+
+        test('reports the flex field and accepted range', () {
+          expect(
+            () => Block.parse({'type': 'widget', 'name': 'Test', 'flex': -1}),
+            _throwsInvalidFlex(),
+          );
         });
       });
 

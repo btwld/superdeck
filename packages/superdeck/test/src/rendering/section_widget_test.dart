@@ -38,6 +38,149 @@ void main() {
     });
 
     group('horizontal flex distribution', () {
+      testWidgets('spacing zero preserves existing equal rectangles', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'zero-spacing',
+            sections: [
+              SectionBlock([ContentBlock('Left'), ContentBlock('Right')]),
+            ],
+          ),
+        );
+
+        final sectionRect = tester.getRect(find.byType(SectionWidget));
+        final blocks = find.byType(BlockWidget);
+        final firstRect = tester.getRect(blocks.at(0));
+        final secondRect = tester.getRect(blocks.at(1));
+
+        expect(sectionRect.width, 1280);
+        expect(firstRect.width, 640);
+        expect(secondRect.width, 640);
+        expect(firstRect.left, sectionRect.left);
+        expect(secondRect.left, sectionRect.left + 640);
+      });
+
+      testWidgets('one block ignores spacing and fills the section', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'single-block-spacing',
+            sections: [
+              SectionBlock([ContentBlock('Only')], spacing: 40),
+            ],
+          ),
+        );
+
+        final sectionRect = tester.getRect(find.byType(SectionWidget));
+        final blockRect = tester.getRect(find.byType(BlockWidget));
+
+        expect(blockRect, sectionRect);
+      });
+
+      testWidgets('two equal blocks reserve requested spacing', (tester) async {
+        _setSlideViewport(tester);
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'two-block-spacing',
+            sections: [
+              SectionBlock([
+                ContentBlock('Left'),
+                ContentBlock('Right'),
+              ], spacing: 40),
+            ],
+          ),
+        );
+
+        final sectionRect = tester.getRect(find.byType(SectionWidget));
+        final blocks = find.byType(BlockWidget);
+        final firstRect = tester.getRect(blocks.at(0));
+        final secondRect = tester.getRect(blocks.at(1));
+
+        expect(firstRect.width, 620);
+        expect(secondRect.width, 620);
+        expect(firstRect.left, sectionRect.left);
+        expect(secondRect.left, sectionRect.left + 660);
+      });
+
+      testWidgets('three weighted blocks preserve flex after gaps', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'weighted-spacing',
+            sections: [
+              SectionBlock([
+                ContentBlock('One', flex: 1),
+                ContentBlock('Two', flex: 2),
+                ContentBlock('Three', flex: 1),
+              ], spacing: 20),
+            ],
+          ),
+        );
+
+        final sectionRect = tester.getRect(find.byType(SectionWidget));
+        final blocks = find.byType(BlockWidget);
+        final firstRect = tester.getRect(blocks.at(0));
+        final secondRect = tester.getRect(blocks.at(1));
+        final thirdRect = tester.getRect(blocks.at(2));
+
+        expect(firstRect.width, 310);
+        expect(secondRect.width, 620);
+        expect(thirdRect.width, 310);
+        expect(firstRect.left, sectionRect.left);
+        expect(secondRect.left, sectionRect.left + 330);
+        expect(thirdRect.left, sectionRect.left + 970);
+      });
+
+      testWidgets('oversized spacing clamps children inside the section', (
+        tester,
+      ) async {
+        _setSlideViewport(tester);
+        await SlideTestHarness.pumpSlide(
+          tester,
+          Slide(
+            key: 'oversized-spacing',
+            sections: [
+              SectionBlock([
+                ContentBlock('One'),
+                ContentBlock('Two'),
+                ContentBlock('Three'),
+              ], spacing: 1000),
+            ],
+          ),
+        );
+
+        final sectionRect = tester.getRect(find.byType(SectionWidget));
+        final blocks = find.byType(BlockWidget);
+        final rects = [
+          tester.getRect(blocks.at(0)),
+          tester.getRect(blocks.at(1)),
+          tester.getRect(blocks.at(2)),
+        ];
+
+        for (final rect in rects) {
+          expect(rect.width.isFinite, isTrue);
+          expect(rect.width, greaterThanOrEqualTo(0));
+          expect(rect.left, greaterThanOrEqualTo(sectionRect.left));
+          expect(rect.right, lessThanOrEqualTo(sectionRect.right));
+        }
+        expect(rects.map((rect) => rect.left - sectionRect.left), [
+          0,
+          640,
+          1280,
+        ]);
+      });
+
       testWidgets('two blocks with equal flex have equal widths', (
         tester,
       ) async {
@@ -158,4 +301,11 @@ void main() {
       });
     });
   });
+}
+
+void _setSlideViewport(WidgetTester tester) {
+  tester.view.physicalSize = const Size(1280, 720);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
 }

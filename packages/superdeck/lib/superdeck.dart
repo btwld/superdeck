@@ -13,6 +13,7 @@ export 'src/thumbnails/thumbnail_service.dart';
 
 // Styling
 export 'src/styling/block_variant.dart' show BlockVariant;
+export 'src/styling/components/block_styler.dart';
 export 'src/styling/default_style.dart';
 export 'src/styling/components/markdown_alert.dart';
 export 'src/styling/components/markdown_alert_type.dart';

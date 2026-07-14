@@ -339,7 +339,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
     MarkdownTableStyler? table,
     MarkdownCodeblockStyler? code,
     MarkdownCheckboxStyler? checkbox,
-    BoxStyler? blockContainer,
+    BlockStyler? blockContainer,
     BoxStyler? slideContainer,
     ImageStyler? image,
     AnimationConfig? animation,
@@ -404,7 +404,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
       SlideStyler().code(value);
   factory SlideStyler.checkbox(MarkdownCheckboxStyler value) =>
       SlideStyler().checkbox(value);
-  factory SlideStyler.blockContainer(BoxStyler value) =>
+  factory SlideStyler.blockContainer(BlockStyler value) =>
       SlideStyler().blockContainer(value);
   factory SlideStyler.slideContainer(BoxStyler value) =>
       SlideStyler().slideContainer(value);
@@ -516,7 +516,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
   }
 
   /// Sets the blockContainer.
-  SlideStyler blockContainer(BoxStyler value) {
+  SlideStyler blockContainer(BlockStyler value) {
     return merge(SlideStyler(blockContainer: value));
   }
 

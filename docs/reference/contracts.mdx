@@ -25,17 +25,29 @@ The compiled payload is a raw JSON array of slide objects — no root wrapper, n
       {
         "align": "center",
         "flex": 1,
+        "spacing": 40,
         "blocks": [
           {
             "type": "block",
             "content": "# Hello, SuperDeck!",
-            "align": "center",
-            "flex": 2
+            "flex": 2,
+            "margin": {
+              "top": 8,
+              "right": 12,
+              "bottom": 8,
+              "left": 12
+            },
+            "padding": {
+              "top": 16,
+              "right": 24,
+              "bottom": 16,
+              "left": 24
+            }
           },
           {
             "type": "widget",
             "name": "qrcode",
-            "args": { "text": "https://superdeck.dev" },
+            "text": "https://superdeck.dev",
             "flex": 1
           }
         ]
@@ -72,11 +84,15 @@ Each section groups child blocks into a horizontal row.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `align` | `enum` | Content alignment within the section |
-| `flex` | `integer?` | Flex weight relative to sibling sections |
+| `align` | `enum?` | Alignment inherited by children without explicit alignment |
+| `flex` | `positive integer?` | Height weight relative to sibling sections |
+| `spacing` | `non-negative number?` | Logical-pixel gap between sibling blocks |
 | `blocks` | `array` | Ordered list of content or widget blocks |
 
 The `align` enum accepts nine compass values: `topLeft`, `topCenter`, `topRight`, `centerLeft`, `center`, `centerRight`, `bottomLeft`, `bottomCenter`, `bottomRight`.
+
+Spacing is applied only between blocks. The renderer clamps impossible total
+spacing to keep all allocated rectangles inside the section.
 
 ## Block types
 
@@ -90,8 +106,10 @@ Renders parsed Markdown content.
 |-------|------|-------------|
 | `type` | `"block"` | Discriminator |
 | `content` | `string` | Raw Markdown content |
-| `align` | `enum?` | Content alignment |
-| `flex` | `integer?` | Flex weight relative to sibling blocks |
+| `align` | `enum?` | Content alignment; overrides inherited section alignment |
+| `flex` | `positive integer?` | Width weight relative to sibling blocks |
+| `margin` | `object?` | Normalized physical edges (`top`, `right`, `bottom`, `left`); space inside the block frame, outside its decoration |
+| `padding` | `object?` | Normalized physical edges (`top`, `right`, `bottom`, `left`); space between the block decoration and its content |
 | `scrollable` | `boolean?` | Enable scrolling for overflow content |
 
 ### Widget block (`type: "widget"`)
@@ -102,10 +120,59 @@ Renders a named Flutter widget with arguments.
 |-------|------|-------------|
 | `type` | `"widget"` | Discriminator |
 | `name` | `string` | Widget factory name (registered in `DeckOptions.widgets`) |
-| `args` | `object` | Key-value arguments passed to the widget factory |
-| `align` | `enum?` | Content alignment |
-| `flex` | `integer?` | Flex weight relative to sibling blocks |
+| Additional fields | JSON values | Widget arguments flattened into the block and passed to the factory |
+| `align` | `enum?` | Content alignment; overrides inherited section alignment |
+| `flex` | `positive integer?` | Width weight relative to sibling blocks |
+| `margin` | `object?` | Normalized physical edges (`top`, `right`, `bottom`, `left`); space inside the block frame, outside its decoration |
+| `padding` | `object?` | Normalized physical edges (`top`, `right`, `bottom`, `left`); space between the block decoration and its content |
 | `scrollable` | `boolean?` | Enable scrolling for overflow content |
+
+`name`, `align`, `flex`, `margin`, `padding`, `scrollable`, and `type` are
+reserved block fields and are not included in `WidgetBlock.args`. Built-in
+widget fields such as image `scale` remain widget arguments and are validated
+by the built-in DTO.
+
+## Inset normalization
+
+Markdown authoring accepts a scalar, a symmetric object, or a physical-edge
+object for both `padding` and `margin`:
+
+```yaml
+padding: 16
+
+padding: {
+  horizontal: 24,
+  vertical: 16,
+}
+
+padding: {
+  top: 12,
+  right: 24,
+  bottom: 12,
+  left: 24,
+}
+```
+
+`margin` accepts the same three forms. This authoring shorthand exists only in
+Markdown. In the compiled contract, `padding` and `margin` are always a closed
+object with exactly the four physical-edge keys `top`, `right`, `bottom`, and
+`left` — no scalar, symmetric, or partial-edge form is valid there, and
+unknown keys are rejected. Symmetric and edge keys cannot be mixed while
+authoring; empty/unknown-key objects and negative or non-finite values are
+invalid. Omitted authored edges normalize to zero; an explicitly authored
+`null` edge is invalid and reports its exact path, such as `padding.left`.
+
+## Contract evolution and downgrade
+
+`spacing`, `padding`, and `margin` are optional/defaulted, so the next-major
+runtime reads existing 1.x contracts. A 1.x runtime is not required to read
+contracts authored with these new fields.
+
+Before upgrading, replace non-positive flex values and review every section
+alignment because section alignment now affects children without explicit block
+alignment. After using any new authoring property, regenerate the contract.
+To downgrade, remove the new properties, restore 1.x-compatible alignment/flex
+input, and rebuild `.superdeck/superdeck.json` with the 1.x toolchain.
 
 ## Machine-readable schema
 
