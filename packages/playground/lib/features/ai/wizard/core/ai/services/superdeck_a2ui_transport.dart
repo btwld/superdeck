@@ -57,57 +57,75 @@ class SuperdeckA2uiTransport implements genui.Transport {
     final prompt = _promptFromMessage(message);
     if (prompt.trim().isEmpty) return;
 
-    final fallbackResponse = StringBuffer();
-    final generatedMessages = <dartantic.ChatMessage>[];
-    var streamedTextChars = 0;
-    var chunkCount = 0;
-    debugLog.log('AGENT', 'Stream opened');
-    await for (final chunk in _client.sendStream(prompt, history: _history)) {
+    for (var attempt = 1; attempt <= 2; attempt++) {
+      final fallbackResponse = StringBuffer();
+      final generatedMessages = <dartantic.ChatMessage>[];
+      var streamedTextChars = 0;
+      var chunkCount = 0;
+      debugLog.log('AGENT', 'Stream opened (attempt $attempt/2)');
+      await for (final chunk in _client.sendStream(prompt, history: _history)) {
+        if (_disposed) return;
+
+        chunkCount++;
+        if (chunk.text.isNotEmpty) {
+          streamedTextChars += chunk.text.length;
+          fallbackResponse.write(chunk.text);
+          _adapter.addChunk(chunk.text);
+        }
+        generatedMessages.addAll(chunk.messages);
+      }
+
       if (_disposed) return;
 
-      chunkCount++;
-      if (chunk.text.isNotEmpty) {
-        streamedTextChars += chunk.text.length;
-        fallbackResponse.write(chunk.text);
-        _adapter.addChunk(chunk.text);
-      }
-      generatedMessages.addAll(chunk.messages);
-    }
-
-    if (_disposed) return;
-
-    // Some providers (notably Google) deliver the full response as a final
-    // model message with no incremental `output` deltas. When that happens the
-    // A2UI parser never saw the text, so recover it from the model messages
-    // here — otherwise no surfaces or chat text are ever emitted.
-    if (streamedTextChars == 0) {
-      final modelText = generatedMessages
-          .where((m) => m.role == dartantic.ChatMessageRole.model)
-          .map((m) => m.parts.text)
-          .join();
+      // Some providers (notably Google) deliver the full response as a final
+      // model message with no incremental `output` deltas. When that happens
+      // the A2UI parser never saw the text, so recover it from the model
+      // messages here.
+      final modelText = streamedTextChars == 0
+          ? generatedMessages
+                .where((m) => m.role == dartantic.ChatMessageRole.model)
+                .map((m) => m.parts.text)
+                .join()
+          : '';
       if (modelText.isNotEmpty) {
         _adapter.addChunk(modelText);
       }
-      debugLog.log(
-        'AGENT',
-        'Stream closed ($chunkCount chunks, no deltas; '
-            'fed ${modelText.length} model-message chars)',
-      );
-    } else {
-      debugLog.log(
-        'AGENT',
-        'Stream closed ($chunkCount chunks, $streamedTextChars delta chars)',
-      );
-    }
 
-    if (generatedMessages.isNotEmpty) {
-      _history.addAll(generatedMessages);
+      if (streamedTextChars == 0 && modelText.isEmpty) {
+        if (attempt == 1) {
+          debugLog.log(
+            'AGENT',
+            'Stream closed ($chunkCount chunks, empty response); retrying',
+          );
+          continue;
+        }
+
+        throw StateError('The model returned an empty response after retry.');
+      }
+
+      if (streamedTextChars == 0) {
+        debugLog.log(
+          'AGENT',
+          'Stream closed ($chunkCount chunks, no deltas; '
+              'fed ${modelText.length} model-message chars)',
+        );
+      } else {
+        debugLog.log(
+          'AGENT',
+          'Stream closed ($chunkCount chunks, $streamedTextChars delta chars)',
+        );
+      }
+
+      if (generatedMessages.isNotEmpty) {
+        _history.addAll(generatedMessages);
+        return;
+      }
+
+      _history
+        ..add(dartantic.ChatMessage.user(prompt))
+        ..add(dartantic.ChatMessage.model(fallbackResponse.toString()));
       return;
     }
-
-    _history
-      ..add(dartantic.ChatMessage.user(prompt))
-      ..add(dartantic.ChatMessage.model(fallbackResponse.toString()));
   }
 
   String _promptFromMessage(genui.ChatMessage message) {
