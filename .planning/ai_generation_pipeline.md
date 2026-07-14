@@ -5,7 +5,13 @@
 > capabilities, and produces inspectable JSON, Markdown, validation, and rendered
 > artifacts for rapid quality iteration.
 
-Status: Complete
+Status: Baseline complete; quality follow-up paused at a stabilization checkpoint
+
+Follow-up plan: [`large_deck_generation_quality.md`](large_deck_generation_quality.md)
+
+The verified-context section below records the repository state before this
+baseline was implemented. Some paths were intentionally removed or replaced by
+the completed work and should not be treated as current architecture.
 
 ## Objective
 
