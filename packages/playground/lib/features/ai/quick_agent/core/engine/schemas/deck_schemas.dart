@@ -2,94 +2,61 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:superdeck_core/superdeck_core.dart' show HexColorValidation;
 
+import '../../../../../../../core/domain/design/presentation_theme_catalog.dart';
+
 part 'deck_schemas.g.dart';
 
 /// Schema definitions for SuperDeck presentation generation.
 ///
 /// The slide portion comes from `superdeck_core`'s [aiSlideSchema], the
 /// AI-compatible projection of the canonical slide contract — Playground owns
-/// only the style schema and prompt guidance. Schemas are compatible with
+/// only the generation theme contract and prompt guidance. Schemas are compatible with
 /// Google Generative AI via `.toJsonSchemaBuilder()`.
 
 // ============================================================================
-// STYLE SCHEMAS
+// THEME REFERENCE SCHEMAS
 // ============================================================================
 
-/// Schema for color palette configuration.
-///
-/// Defines the background, heading, and body colors for the presentation theme.
-/// Colors must be provided as hex strings. The semantic roles are:
-/// - background: Slide background color
-/// - heading: Heading/title text color
-/// - body: Body text color
-@AckType(name: 'DeckColors')
-final _deckColorsSchema = Ack.object({
-  'background': Ack.string().hexColor().describe(
-    'Background hex color for slides',
-  ),
-  'surface': Ack.string().hexColor().describe(
-    'Primary elevated surface hex color',
-  ),
-  'surfaceAlt': Ack.string().hexColor().describe(
-    'Secondary elevated surface hex color',
-  ),
-  'heading': Ack.string().hexColor().describe('Hex color for heading text'),
-  'body': Ack.string().hexColor().describe('Hex color for body text'),
-  'accent': Ack.string().hexColor().describe(
-    'Accent hex color for emphasis and decoration',
-  ),
-  'accentContrast': Ack.string().hexColor().describe(
-    'Readable text/icon hex color placed on the accent color',
-  ),
-}).describe('Color palette for the presentation');
-final colorsSchema = _deckColorsSchema;
+const deckDesignDirections = presentationThemeDirections;
+const deckDensityProfiles = presentationThemeDensityProfiles;
+const deckTypeScales = presentationThemeTypeScales;
 
-/// Schema for typography configuration.
-///
-/// Defines the font families used for headlines and body text.
-/// Families are validated against the injected presentation typography catalog
-/// after parsing, which also permits application-registered bundled fonts.
-@AckType(name: 'DeckFonts')
-final _deckFontsSchema = Ack.object({
-  'headline': Ack.string().describe(
-    'Exact registered font family for display and heading text',
+@AckType(name: 'DeckBrandColors')
+final deckBrandColorsSchema = Ack.object({
+  'background': Ack.string().hexColor().optional(),
+  'surface': Ack.string().hexColor().optional(),
+  'surfaceAlt': Ack.string().hexColor().optional(),
+  'heading': Ack.string().hexColor().optional(),
+  'body': Ack.string().hexColor().optional(),
+  'accent': Ack.string().hexColor().optional(),
+  'accentContrast': Ack.string().hexColor().optional(),
+}).describe('Only exact palette roles supplied by the user');
+
+@AckType(name: 'DeckBrandFonts')
+final deckBrandFontsSchema = Ack.object({
+  'headline': Ack.string().optional(),
+  'body': Ack.string().optional(),
+}).describe('Only exact registered font families supplied by the user');
+
+@AckType(name: 'DeckBrandOverride')
+final deckBrandOverrideSchema = Ack.object({
+  'colors': deckBrandColorsSchema.optional(),
+  'fonts': deckBrandFontsSchema.optional(),
+}).describe('Validated user-only overrides layered on the selected theme');
+
+@AckType(name: 'DeckThemeReference')
+final deckThemeReferenceSchema = Ack.object({
+  'id': Ack.string().notEmpty().describe('Stable catalog theme ID'),
+  'version': Ack.integer().positive().describe(
+    'Exact catalog version attached by the application',
   ),
-  'body': Ack.string().describe(
-    'Exact registered font family for paragraphs, lists, and tables',
-  ),
-}).describe('Typography configuration');
-final fontsSchema = _deckFontsSchema;
-
-const deckDesignDirections = [
-  'editorial',
-  'minimal',
-  'bold',
-  'technical',
-  'playful',
-];
-
-const deckDensityProfiles = ['spacious', 'balanced', 'compact'];
-
-const deckTypeScales = ['dramatic', 'balanced', 'dense'];
-
-/// Schema for global style configuration.
-///
-/// Combines color palette and typography settings with a style name.
-@AckType(name: 'DeckStyle')
-final styleSchema = Ack.object({
-  'name': Ack.string().describe('Style name identifier'),
-  'direction': Ack.enumString(
-    deckDesignDirections,
-  ).describe('Semantic visual direction mapped to safe Dart styling'),
   'density': Ack.enumString(
     deckDensityProfiles,
-  ).describe('Default content-density profile for the deck'),
-  'typeScale': Ack.enumString(
-    deckTypeScales,
-  ).describe('Semantic presentation-scale typography profile'),
-  'colors': _deckColorsSchema,
-  'fonts': _deckFontsSchema,
-}).describe('Global style configuration for the deck');
+  ).describe('Resolved deck density supported by the selected theme'),
+  'brandOverride': deckBrandOverrideSchema.optional().describe(
+    'Exact user-supplied palette or typography constraints, if any',
+  ),
+}).describe('Canonical versioned presentation-theme reference');
 
 // ============================================================================
 // PROMPT GUIDANCE

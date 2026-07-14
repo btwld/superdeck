@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:genui/genui.dart' as genui;
 
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../debug_logger.dart';
 import '../../env_config.dart';
 import '../prompts/prompt_registry.dart';
@@ -78,21 +80,11 @@ final class _SessionBindings {
 }
 
 final class GenUiConversationSession {
-  GenUiConversationSession({
-    required AiConversationProfile profile,
-    required ConversationSessionHandlers handlers,
-    SuperdeckTransportFactory? transportFactory,
-    SuperdeckAgentClientFactory agentClientFactory =
-        DartanticSuperdeckAgentClient.new,
-  }) : _profile = profile,
-       _handlers = handlers,
-       _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
-       _agentClientFactory = agentClientFactory;
-
   final AiConversationProfile _profile;
   final ConversationSessionHandlers _handlers;
   final SuperdeckTransportFactory _transportFactory;
   final SuperdeckAgentClientFactory _agentClientFactory;
+  final PresentationThemeCatalog _themeCatalog;
 
   genui.SurfaceController? _controller;
   SuperdeckA2uiTransport? _transport;
@@ -104,6 +96,56 @@ final class GenUiConversationSession {
   Future<void> _requestQueue = Future<void>.value();
   var _sessionEpoch = 0;
   var _disposed = false;
+
+  GenUiConversationSession({
+    required AiConversationProfile profile,
+    required ConversationSessionHandlers handlers,
+    SuperdeckTransportFactory? transportFactory,
+    SuperdeckAgentClientFactory agentClientFactory =
+        DartanticSuperdeckAgentClient.new,
+  }) : _profile = profile,
+       _handlers = handlers,
+       _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
+       _agentClientFactory = agentClientFactory,
+       _themeCatalog = profile.themeCatalog;
+
+  String _buildSystemPrompt(String systemInstruction) {
+    final fragments = [
+      systemInstruction,
+      buildWizardThemeCatalogPrompt(_themeCatalog),
+      // The A2UI prompt tells the model to use "the catalog ID provided in
+      // system instructions", but never states the actual value — so the model
+      // hallucinates ids like "a2ui" and surface rendering fails with
+      // "Catalog with id ... not found". Provide the real id explicitly.
+      if (_profile.catalog.catalogId case final catalogId?)
+        '${genui.PromptBuilder.defaultImportancePrefix}When creating a surface, '
+            'the `catalogId` field MUST be exactly "$catalogId". '
+            'Never use any other value.',
+      genui.PromptFragments.acknowledgeUser(),
+      genui.PromptFragments.requireAtLeastOneSubmitElement(
+        prefix: genui.PromptBuilder.defaultImportancePrefix,
+      ),
+      genui.PromptFragments.uiGenerationRestriction(
+        prefix: genui.PromptBuilder.defaultImportancePrefix,
+      ),
+    ];
+
+    if (_profile.tools.isEmpty) {
+      return genui.PromptBuilder.chat(
+        catalog: _profile.catalog,
+        systemPromptFragments: fragments,
+      ).systemPromptJoined();
+    }
+
+    return genui.PromptBuilder.custom(
+      catalog: _profile.catalog,
+      allowedOperations: genui.SurfaceOperations.createOnly(dataModel: false),
+      systemPromptFragments: fragments,
+      technicalPossibilities: const genui.TechnicalPossibilities(
+        toolCall: true,
+      ),
+    ).systemPromptJoined();
+  }
 
   genui.SurfaceController? get controller => _controller;
 
@@ -251,43 +293,6 @@ final class GenUiConversationSession {
     }
   }
 
-  String _buildSystemPrompt(String systemInstruction) {
-    final fragments = [
-      systemInstruction,
-      // The A2UI prompt tells the model to use "the catalog ID provided in
-      // system instructions", but never states the actual value — so the model
-      // hallucinates ids like "a2ui" and surface rendering fails with
-      // "Catalog with id ... not found". Provide the real id explicitly.
-      if (_profile.catalog.catalogId case final catalogId?)
-        '${genui.PromptBuilder.defaultImportancePrefix}When creating a surface, '
-            'the `catalogId` field MUST be exactly "$catalogId". '
-            'Never use any other value.',
-      genui.PromptFragments.acknowledgeUser(),
-      genui.PromptFragments.requireAtLeastOneSubmitElement(
-        prefix: genui.PromptBuilder.defaultImportancePrefix,
-      ),
-      genui.PromptFragments.uiGenerationRestriction(
-        prefix: genui.PromptBuilder.defaultImportancePrefix,
-      ),
-    ];
-
-    if (_profile.tools.isEmpty) {
-      return genui.PromptBuilder.chat(
-        catalog: _profile.catalog,
-        systemPromptFragments: fragments,
-      ).systemPromptJoined();
-    }
-
-    return genui.PromptBuilder.custom(
-      catalog: _profile.catalog,
-      allowedOperations: genui.SurfaceOperations.createOnly(dataModel: false),
-      systemPromptFragments: fragments,
-      technicalPossibilities: const genui.TechnicalPossibilities(
-        toolCall: true,
-      ),
-    ).systemPromptJoined();
-  }
-
   _SessionBindings _bindSession({
     required genui.SurfaceController controller,
     required SuperdeckA2uiTransport transport,
@@ -383,4 +388,22 @@ final class GenUiConversationSession {
     final str = error.toString();
     return str.replaceAll(RegExp(r'[A-Za-z0-9_-]{20,}'), '[REDACTED]');
   }
+}
+
+/// Compact, catalog-derived Wizard guidance. Renderer recipes deliberately stay
+/// out of the model prompt and are resolved by the cards after selection.
+String buildWizardThemeCatalogPrompt(PresentationThemeCatalog themeCatalog) {
+  final candidates = themeCatalog.currentThemes
+      .map((theme) => theme.toModelCandidate())
+      .toList(growable: false);
+
+  return '''
+## Registered presentation themes
+
+Use only these exact IDs in `AskUserStyle.themeIds` and
+`SummaryCard.items[].themeId`. The application owns all palette, typography,
+spacing, component, and treatment tokens.
+
+${const JsonEncoder.withIndent('  ').convert(candidates)}
+''';
 }

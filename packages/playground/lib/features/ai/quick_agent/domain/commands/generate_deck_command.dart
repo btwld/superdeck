@@ -87,8 +87,8 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
 
       final markdown = const SlideSerializer().serialize(result.slides);
       _documentStore.replaceMarkdown(markdown);
-      if (result.style case final style?) {
-        _customizationStore.applyGeneratedStyle(style.toGeneratedDeckStyle());
+      if (result.theme case final theme?) {
+        _customizationStore.applyGeneratedStyle(theme.toGeneratedDeckStyle());
       }
       debugLog.log(
         'GENERATE_DECK',

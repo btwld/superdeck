@@ -30,6 +30,12 @@ abstract final class WizardContextKeys {
   /// The visual style name.
   static const style = 'style';
 
+  /// Stable ID of the selected presentation theme.
+  static const themeId = 'themeId';
+
+  /// Optional preferred content-density profile.
+  static const density = 'density';
+
   // Style-related keys
 
   /// Color palette as list of hex strings.

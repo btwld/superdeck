@@ -19,8 +19,9 @@ extension _DeckPlanRepair on DeckGeneratorService {
     final errorsByKey = _groupSlidePlanIssues(
       validateDeckPlanIssues(
         repairedPlan,
-        request: request,
         typographyCatalog: typographyCatalog,
+        themeCatalog: themeCatalog,
+        request: request,
       ),
     );
 
@@ -78,8 +79,9 @@ extension _DeckPlanRepair on DeckGeneratorService {
         );
         final candidateIssues = validateDeckPlanIssues(
           candidatePlan,
-          request: request,
           typographyCatalog: typographyCatalog,
+          themeCatalog: themeCatalog,
+          request: request,
         );
         final localIssues = candidateIssues
             .where((issue) => issue.isBlocking && issue.slideKey == entry.key)

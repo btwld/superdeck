@@ -13,7 +13,9 @@ void main() {
       audience: 'Engineering leaders',
       approach: 'Decision-oriented narrative',
       emphasis: ['evidence', 'first 30 days'],
+      themeId: 'editorial-midnight',
       designDirection: 'Editorial',
+      density: 'spacious',
       colors: ['#101828', '#F9FAFB', '#D0D5DD'],
       headlineFont: 'Fraunces',
       bodyFont: 'Inter',
@@ -32,6 +34,8 @@ void main() {
     final payload = jsonDecode(input) as Map<String, Object?>;
 
     expect(payload['slideCount'], 14);
+    expect(payload['themeId'], 'editorial-midnight');
+    expect(payload['density'], 'spacious');
     expect(payload['headlineFont'], 'Fraunces');
     expect(payload['bodyFont'], 'Inter');
     expect(payload['colors'], ['#101828', '#F9FAFB', '#D0D5DD']);
@@ -51,6 +55,7 @@ void main() {
       approach: 'Persuasive',
       emphasis: ['metrics', 'operating model'],
       slideCount: 12,
+      themeId: 'bold-product',
       style: 'Bold editorial',
       colors: ['#101828', '#F9FAFB', '#D0D5DD'],
       headlineFont: 'Playfair Display',
@@ -63,6 +68,7 @@ void main() {
     final input = request.toModelInput();
 
     expect(request.slideCount, 12);
+    expect(request.themeId, 'bold-product');
     expect(request.headlineFont, 'Playfair Display');
     expect(request.bodyFont, 'Inter');
     expect(input, isNot(contains('Do not use widget blocks')));

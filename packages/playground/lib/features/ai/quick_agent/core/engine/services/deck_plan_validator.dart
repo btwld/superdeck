@@ -1,20 +1,26 @@
+import 'dart:convert';
+
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../../../../../core/domain/design/presentation_typography_catalog.dart';
 import '../schemas/outline_schema.dart';
 import 'deck_generation_request.dart';
-import 'design_quality_metrics.dart';
+import 'deck_theme_resolution.dart';
 import 'generation_validation_issue.dart';
 import 'source_grounding.dart';
+import 'theme_json_serializer.dart';
 
 /// Returns semantic errors that are not expressible in the deck-plan schema.
 List<String> validateDeckPlan(
   DeckPlanType plan, {
   int? expectedSlideCount,
   PresentationTypographyCatalog? typographyCatalog,
+  PresentationThemeCatalog? themeCatalog,
   DeckGenerationRequest? request,
 }) => validateDeckPlanIssues(
   plan,
   expectedSlideCount: expectedSlideCount,
   typographyCatalog: typographyCatalog,
+  themeCatalog: themeCatalog,
   request: request,
 ).messages;
 
@@ -23,12 +29,14 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
   DeckPlanType plan, {
   int? expectedSlideCount,
   PresentationTypographyCatalog? typographyCatalog,
+  PresentationThemeCatalog? themeCatalog,
   DeckGenerationRequest? request,
 }) {
   final issues = GenerationValidationCollector();
   final usedKeys = <String>{};
   final catalog =
       typographyCatalog ?? PresentationTypographyCatalog.withDefaults();
+  final themes = themeCatalog ?? PresentationThemeCatalog.withDefaults();
   final exactSlideCount = request?.slideCount ?? expectedSlideCount;
 
   if (exactSlideCount != null && plan.slides.length != exactSlideCount) {
@@ -78,18 +86,14 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
     plan,
     issues.scoped(code: GenerationValidationCode.planStructure),
   );
-  _validateTypography(
+  _validateTheme(
     plan,
+    themes,
     catalog,
     request,
-    issues.scoped(code: GenerationValidationCode.typography),
-  );
-  _validatePalette(
-    plan,
-    request,
     issues.scoped(
-      code: GenerationValidationCode.paletteContrast,
-      category: GenerationValidationCategory.accessibility,
+      code: .themeResolution,
+      category: .structure,
     ),
   );
   _validateElementGrounding(
@@ -423,112 +427,51 @@ void _validateSections(
   }
 }
 
-void _validateTypography(
+void _validateTheme(
   DeckPlanType plan,
-  PresentationTypographyCatalog catalog,
+  PresentationThemeCatalog themeCatalog,
+  PresentationTypographyCatalog typographyCatalog,
   DeckGenerationRequest? request,
   GenerationValidationCollector errors,
 ) {
-  final headline = catalog.resolve(plan.style.fonts.headline);
-  final body = catalog.resolve(plan.style.fonts.body);
-  if (headline == null ||
-      !headline.roles.contains(PresentationFontRole.headline)) {
-    errors.add(
-      'Headline font "${plan.style.fonts.headline}" is not registered for '
-      'headline use.',
+  try {
+    final resolved = resolveDeckThemeReference(
+      plan.theme,
+      themeCatalog: themeCatalog,
+      typographyCatalog: typographyCatalog,
     );
-  }
-  if (body == null || !body.roles.contains(PresentationFontRole.body)) {
-    errors.add(
-      'Body font "${plan.style.fonts.body}" is not registered for body use.',
-    );
-  }
-
-  _validateRequestedFont(
-    role: 'headline',
-    requested: request?.headlineFont,
-    planned: headline,
-    catalog: catalog,
-    errors: errors,
-  );
-  _validateRequestedFont(
-    role: 'body',
-    requested: request?.bodyFont,
-    planned: body,
-    catalog: catalog,
-    errors: errors,
-  );
-}
-
-void _validateRequestedFont({
-  required String role,
-  required String? requested,
-  required PresentationFontDescriptor? planned,
-  required PresentationTypographyCatalog catalog,
-  required GenerationValidationCollector errors,
-}) {
-  if (requested == null) return;
-  final expected = catalog.resolve(requested);
-  if (expected == null) {
-    errors.add('Requested $role font "$requested" is not registered.');
-    return;
-  }
-  if (planned != expected) {
-    errors.add(
-      'Deck plan changed the requested $role font from '
-      '"${expected.family}" to "${planned?.family ?? 'unknown'}".',
-    );
-  }
-}
-
-void _validatePalette(
-  DeckPlanType plan,
-  DeckGenerationRequest? request,
-  GenerationValidationCollector errors,
-) {
-  final colors = plan.style.colors;
-  _requireContrast(
-    foreground: colors.heading,
-    background: colors.background,
-    minimum: 3,
-    label: 'Heading/background',
-    errors: errors,
-  );
-  _requireContrast(
-    foreground: colors.body,
-    background: colors.background,
-    minimum: 4.5,
-    label: 'Body/background',
-    errors: errors,
-  );
-  _requireContrast(
-    foreground: colors.body,
-    background: colors.surface,
-    minimum: 4.5,
-    label: 'Body/surface',
-    errors: errors,
-  );
-  _requireContrast(
-    foreground: colors.accentContrast,
-    background: colors.accent,
-    minimum: 4.5,
-    label: 'Accent contrast',
-    errors: errors,
-  );
-
-  final requested = request?.colors ?? const <String>[];
-  final planned = [colors.background, colors.heading, colors.body];
-  for (
-    var index = 0;
-    index < requested.length && index < planned.length;
-    index++
-  ) {
-    if (requested[index].toUpperCase() != planned[index].toUpperCase()) {
+    if (request == null) return;
+    if (request.themeId case final explicitTheme?
+        when explicitTheme != plan.theme.id) {
       errors.add(
-        'Deck plan changed requested color ${index + 1} from '
-        '"${requested[index]}" to "${planned[index]}".',
+        'Deck plan changed requested theme "$explicitTheme" to '
+        '"${plan.theme.id}".',
       );
     }
+    final expected = buildDeckThemeReference(
+      descriptor: resolved.descriptor,
+      request: request,
+      typographyCatalog: typographyCatalog,
+    );
+    resolveDeckThemeMap(
+      expected,
+      themeCatalog: themeCatalog,
+      typographyCatalog: typographyCatalog,
+    );
+    final actual = serializeDeckThemeReference(plan.theme);
+    if (jsonEncode(actual) != jsonEncode(expected)) {
+      errors.add(
+        'Deck theme reference does not exactly preserve the requested '
+        'density, palette, and typography overrides.',
+      );
+    }
+  } catch (error) {
+    errors.add(
+      error
+          .toString()
+          .replaceFirst('Invalid argument(s): ', '')
+          .replaceFirst('Invalid argument: ', ''),
+    );
   }
 }
 
@@ -677,22 +620,6 @@ void _rejectLongRuns({
         'more than three times consecutively.',
       );
     }
-  }
-}
-
-void _requireContrast({
-  required String foreground,
-  required String background,
-  required double minimum,
-  required String label,
-  required GenerationValidationCollector errors,
-}) {
-  final ratio = calculateContrastRatio(foreground, background);
-  if (ratio < minimum) {
-    errors.add(
-      '$label contrast is ${ratio.toStringAsFixed(2)}:1; '
-      'expected at least ${minimum.toStringAsFixed(1)}:1.',
-    );
   }
 }
 

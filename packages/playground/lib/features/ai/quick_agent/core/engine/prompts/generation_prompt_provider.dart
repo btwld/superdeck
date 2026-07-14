@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import '../../../../../../core/domain/design/presentation_typography_catalog.dart';
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../schemas/deck_schemas.dart';
 import '../schemas/outline_schema.dart';
-import '../services/style_json_serializer.dart';
+import '../services/theme_json_serializer.dart';
 import '../services/design_quality_metrics.dart';
 import '../services/generation_element_catalog.dart';
 import '../services/generation_validation_issue.dart';
@@ -15,7 +15,7 @@ abstract interface class GenerationPromptProvider {
   Future<void> load();
 
   String buildOutlinePrompt({
-    required PresentationTypographyCatalog typographyCatalog,
+    required List<PresentationThemeDescriptor> themeCandidates,
     List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidPlan,
   });
@@ -55,7 +55,7 @@ final class AssetGenerationPromptProvider implements GenerationPromptProvider {
 
   @override
   String buildOutlinePrompt({
-    required PresentationTypographyCatalog typographyCatalog,
+    required List<PresentationThemeDescriptor> themeCandidates,
     List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidPlan,
   }) {
@@ -84,18 +84,17 @@ This list is cumulative. A constraint may already be fixed in the current base;
 if so, preserve that fix. Mechanically re-check every constraint before returning
 JSON so a repair never reintroduces an earlier factual or structural error.
 ''';
+
     return '''
 ${_promptRegistry.render('outline_system')}
 
-## Registered typography catalog
+## Eligible presentation themes
 
-Use an exact `family` value from the appropriate list. Never invent a family.
+Choose exactly one `theme.id` from the compact candidates below. Return only
+that ID inside the theme object. Never return a version, palette, font family,
+brand override, or runtime styling token; the application owns those values.
 
-Headline families:
-${_formatFonts(typographyCatalog.forRole(PresentationFontRole.headline))}
-
-Body families:
-${_formatFonts(typographyCatalog.forRole(PresentationFontRole.body))}
+${const JsonEncoder.withIndent('  ').convert(themeCandidates.map((theme) => theme.toModelCandidate()).toList())}
 $repairSection
 ''';
   }
@@ -263,9 +262,6 @@ steps, future targets, or another feature.
   return sections.join('\n');
 }
 
-String _formatFonts(List<PresentationFontDescriptor> fonts) =>
-    fonts.map((font) => '- `${font.family}`: ${font.description}').join('\n');
-
 String buildSingleSlidePrompt({
   required String basePrompt,
   required String fieldGuidance,
@@ -379,6 +375,7 @@ $metricIdentityRepairChecklist
 This list is cumulative. Preserve every resolved constraint while fixing the
 remaining draft.
 ''';
+
   return '''
 $basePrompt
 
@@ -388,7 +385,7 @@ $fieldGuidance
 
 Deck topic: ${plan.topic}
 Deck story: ${plan.story}
-Deck style: ${encoder.convert(serializeDeckStyleForJson(plan.style))}
+Deck theme reference: ${encoder.convert(serializeDeckThemeForSlidePrompt(plan.theme))}
 
 ## Current narrative section
 ${encoder.convert(Map<String, Object?>.from(currentSection))}

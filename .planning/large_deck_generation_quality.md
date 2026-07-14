@@ -5,8 +5,9 @@
 > described, versioned theme selection, end-to-end typography, custom-font
 > support, and the same catalog pattern for deferred image-style selection.
 
-Status: Paused after implementation checkpoint; theme-catalog implementation
-and final quality acceptance pending
+Status: In progress; Tasks 1–6, the 12-theme runtime family, representative
+render qualification, and the deterministic ten-slide checkpoint are complete.
+The repeated real 10/15/20 quality matrix and final regression remain pending.
 
 Checkpoint: `cf463294` (`feat: improve AI deck generation quality`), pushed to
 `origin/leoafarias/iterative-ai-generation` on 2026-07-14.
@@ -473,7 +474,7 @@ table/data legibility, element relevance, and blank/overflow detection.
   - Verification: prompt snapshots, schema parity, sanitizer, validator, and
     renderer fixture tests.
 
-- [ ] Task 5a: Land the described theme catalog and selection contract
+- [x] Task 5a: Land the described theme catalog and selection contract
   - Dependencies: Task 3; can proceed alongside Task 4 after catalogs stabilize.
   - Scope: the style/theme schema and serializer under
     `packages/playground/lib/features/ai/quick_agent/core/engine/`, a new
@@ -498,11 +499,29 @@ table/data legibility, element relevance, and blank/overflow detection.
     distinct directions without adding another provider call.
   - Verification: catalog/selector/schema/request round-trip tests, prompt
     snapshots, fake-outline selection tests, and retained-artifact replay.
-  - Current status: the parameterized theme factory, semantic treatments, and
-    typography catalog exist. The descriptor registry, selector, plan-schema
-    migration, and exact-ID validation remain pending.
+  - Completed evidence: the shared injectable catalog contains three described,
+    versioned representative recipes; local selection builds a deterministic
+    compact shortlist without a provider call; the model-facing schema accepts
+    only eligible IDs; Dart attaches and validates the canonical
+    `{id, version, density, brandOverride?}` reference before composition; and
+    Wizard, generation lab, runtime mapping, live artifacts, and retained
+    artifact replay all resolve through the same catalog.
+  - Final injection audit: `AiConversationProfile` owns the catalog instance and
+    derives the Wizard prompt, `AskUserStyle`/`SummaryCard` model schemas and
+    examples, parsing, selection context, and card rendering from it. A custom-
+    ID regression proves no Wizard surface silently reverts to the default
+    catalog, while unknown IDs still fail before rendering or generation.
+  - Shortlist note: an unconstrained brief receives all three seed directions.
+    Explicit choices return one candidate, and hard direction/brightness/density
+    constraints may deliberately narrow below three rather than padding the
+    shortlist with incompatible themes. Task 5b's 10–12-theme expansion gives
+    constrained briefs enough compatible depth for the normal three-to-five
+    range.
+  - Verified on 2026-07-14: focused Task 5a contract tests (15), the broader
+    theme/schema/Wizard/generation regression set (76), all workspace tests
+    (694), workspace `analyze:all`, and `git diff --check` passed.
 
-- [ ] Task 5b: Expand and render-qualify the curated theme family
+- [x] Task 5b: Expand and render-qualify the curated theme family
   - Dependencies: Task 5a.
   - Scope: `generated_deck_theme_factory.dart`,
     `deck_customization_store.dart`, customization sidebar, generation command/
@@ -523,12 +542,31 @@ table/data legibility, element relevance, and blank/overflow detection.
     description and no accepted entry is merely a palette duplicate.
   - Verification: store/theme/override unit tests plus representative golden and
     full-size/contact-sheet captures.
-  - Current status: the shared runtime factory and unit coverage exist. Curated
-    recipes, brand-overlay validation, and multi-theme rendered acceptance remain
-    pending.
+  - Completed evidence: the catalog contains 12 described recipes with distinct
+    non-palette runtime signatures; all seven semantic treatments, surfaces,
+    decorations, tables, code, quotes, links, built-in/custom widget containers,
+    exact registered weights, and validated brand overlays resolve through one
+    renderer-owned factory while manual edits retain the recipe. Focused coverage
+    includes light/dark table contrast and all 12 font pairs. Editorial Midnight,
+    Technical Paper, and Bold Product each render the deterministic ten-slide
+    fixture at 1280×720 with actual declared fonts. Thirty full-size captures,
+    three reviewed contact sheets, and three byte-stable opt-in golden baselines
+    pass without generated header/footer chrome, title clipping, or uninitialized
+    syntax highlighting. The render review also exposed dark-only syntax colors
+    on Technical Paper's light code surface; SuperDeck now selects the syntax
+    palette from the resolved code-container background and raises every token
+    to at least 4.5:1 contrast. Light/dark widget regressions and a fresh
+    30-slide golden qualification prove both paths.
 
 - Checkpoint: run deterministic 10-slide generation with a fake model and inspect
   the serialized design ledger, resolved styles, and captured layout fixtures.
+  - Completed evidence: `LIVE_FAKE_CHECKPOINT=true` performs one outline request
+    plus ten sequential slide requests with no repairs or thinking configuration,
+    verifies every compact three-slide ledger window, serializes the canonical
+    theme/plan/deck/prompts, records declared and loaded runtime font identities,
+    replays ten Markdown slides, captures ten PNGs and a contact sheet, and passes
+    the machine quality report with eight composition families and exact 10/10
+    planned/generated/replayed/captured counts.
 
 - [x] Task 6: Expand the live lab into a 10/15/20 quality harness
   - Dependencies: Tasks 1–4 for the foundational harness. Theme-specific matrix
@@ -563,6 +601,13 @@ table/data legibility, element relevance, and blank/overflow detection.
     story, readable hierarchy, useful variation, and visibly correct typography.
   - Verification: codegen, focused tests, full playground tests, workspace
     analysis/tests, `git diff --check`, and final live artifact matrix.
+  - Current deterministic evidence: codegen passes; the focused AI/theme/Wizard
+    suite passes 187 tests; `analyze:all` passes Dart, DCM, unused-file, and
+    unused-code gates; the ten-slide fake checkpoint and 12-theme render
+    qualification pass. The qualification includes the corrected light/dark
+    syntax-token contrast and reviewed byte-stable baselines. The repeated real
+    10/15/20 matrix and human review are still required before this task can
+    close.
 
 - [ ] Task 8: Introduce the deferred described image-style catalog
   - Dependencies: Task 7 and a separate decision to reactivate image generation.

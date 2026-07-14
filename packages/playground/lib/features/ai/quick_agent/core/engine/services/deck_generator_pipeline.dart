@@ -13,9 +13,13 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     String prompt,
     GenerationTraceEmitter trace,
     DeckGenerationRequest request,
+    List<PresentationThemeDescriptor> themeCandidates,
   ) async {
+    final draftSchema = buildDeckPlanDraftSchema(
+      themeCandidates.map((candidate) => candidate.id).toList(growable: false),
+    );
     final adapter = GoogleSchemaAdapter();
-    final adaptResult = adapter.adapt(deckPlanSchema.toJsonSchemaBuilder());
+    final adaptResult = adapter.adapt(draftSchema.toJsonSchemaBuilder());
 
     if (adaptResult.schema == null) {
       debugLog.error(
@@ -34,7 +38,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       repairAttempt++
     ) {
       final systemPrompt = _promptProvider.buildOutlinePrompt(
-        typographyCatalog: typographyCatalog,
+        themeCandidates: themeCandidates,
         validationIssues: repairConstraints,
         invalidPlan: invalidPlan,
       );
@@ -93,14 +97,21 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       } else {
         invalidPlan = json;
         try {
-          final plan = normalizeDeckPlanAccentContrast(
-            DeckPlanType.parse(json),
+          final plan = resolveDeckPlanDraft(
+            draft: json,
+            candidates: themeCandidates,
+            request: request,
+            themeCatalog: themeCatalog,
+            typographyCatalog: typographyCatalog,
           );
-          invalidPlan = Map<String, dynamic>.from(plan);
+          invalidPlan = Map<String, dynamic>.from(
+            serializeDeckPlanDraftForRepair(plan),
+          );
           validationIssues = validateDeckPlanIssues(
             plan,
-            request: request,
             typographyCatalog: typographyCatalog,
+            themeCatalog: themeCatalog,
+            request: request,
           );
           if (_onlySlideScopedPlanIssues(validationIssues)) {
             final repairedPlan = await _repairInvalidOutlineSlides(
@@ -111,10 +122,13 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             );
             validationIssues = validateDeckPlanIssues(
               repairedPlan,
-              request: request,
               typographyCatalog: typographyCatalog,
+              themeCatalog: themeCatalog,
+              request: request,
             );
-            invalidPlan = Map<String, dynamic>.from(repairedPlan);
+            invalidPlan = Map<String, dynamic>.from(
+              serializeDeckPlanDraftForRepair(repairedPlan),
+            );
             if (validationIssues.blockingIssues.isEmpty) {
               trace.emit(
                 kind: GenerationTraceKind.validation,

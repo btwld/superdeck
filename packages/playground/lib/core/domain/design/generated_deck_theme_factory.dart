@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 
+import 'presentation_theme_catalog.dart';
+
 final class GeneratedThemePalette {
+  final Color background;
+  final Color surface;
+  final Color surfaceAlt;
+  final Color heading;
+  final Color body;
+  final Color accent;
+  final Color accentContrast;
+
   const GeneratedThemePalette({
     required this.background,
     required this.surface,
@@ -12,17 +22,17 @@ final class GeneratedThemePalette {
     required this.accent,
     required this.accentContrast,
   });
-
-  final Color background;
-  final Color surface;
-  final Color surfaceAlt;
-  final Color heading;
-  final Color body;
-  final Color accent;
-  final Color accentContrast;
 }
 
 final class PresentationTextStyles {
+  final TextStyle h1;
+  final TextStyle h2;
+  final TextStyle h3;
+  final TextStyle h4;
+  final TextStyle h5;
+  final TextStyle h6;
+  final TextStyle body;
+
   const PresentationTextStyles({
     required this.h1,
     required this.h2,
@@ -32,44 +42,24 @@ final class PresentationTextStyles {
     required this.h6,
     required this.body,
   });
-
-  final TextStyle h1;
-  final TextStyle h2;
-  final TextStyle h3;
-  final TextStyle h4;
-  final TextStyle h5;
-  final TextStyle h6;
-  final TextStyle body;
 }
 
-/// Maps semantic generation choices to safe renderer-owned slide styling.
+/// Maps one resolved renderer-owned recipe to presentation-scale styling.
 final class GeneratedDeckThemeFactory {
-  const GeneratedDeckThemeFactory();
+  static const treatmentNames = presentationThemeTreatmentNames;
 
-  static const treatmentNames = {
-    'hero',
-    'section',
-    'content',
-    'data',
-    'quote',
-    'visual',
-    'closing',
-  };
+  const GeneratedDeckThemeFactory();
 
   DeckOptions build({
     required GeneratedThemePalette palette,
     required PresentationTextStyles text,
-    required String direction,
     required String density,
+    required PresentationThemeRuntimeRecipe runtime,
   }) {
     final borderColor = Color.lerp(palette.surface, palette.body, 0.4)!;
-    final codeBackground = Color.lerp(
-      palette.surface,
-      palette.heading,
-      palette.background.computeLuminance() < 0.5 ? 0.1 : 0.05,
-    )!;
     final tableFontSize = text.body.fontSize! > 20 ? 20.0 : text.body.fontSize!;
     final tableText = text.body.copyWith(fontSize: tableFontSize, height: 1.15);
+    final componentDecoration = _componentDecoration(palette, runtime);
     final baseStyle = SlideStyler(
       h1: _text(text.h1),
       h2: _text(text.h2),
@@ -78,11 +68,35 @@ final class GeneratedDeckThemeFactory {
       h5: _text(text.h5),
       h6: _text(text.h6),
       p: _text(text.body),
-      list: MarkdownListStyler(
-        bullet: _text(text.body),
-        text: _text(text.body),
+      link: TextStyleMix.value(
+        text.body.copyWith(color: palette.accent, decoration: .underline),
       ),
-      link: TextStyleMix(color: palette.accent),
+      horizontalRuleDecoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: palette.accent,
+            width: _atLeast(runtime.borderWidth, 1),
+          ),
+        ),
+      ),
+      blockquote: MarkdownBlockquoteStyler(
+        textStyle: TextStyleMix.value(
+          text.body.copyWith(fontSize: text.body.fontSize! * 1.35, height: 1.3),
+        ),
+        padding: EdgeInsets.only(
+          left: 28 * runtime.spacingScale,
+          bottom: 12 * runtime.spacingScale,
+        ),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: palette.accent,
+              width: runtime.quoteRuleWidth,
+            ),
+          ),
+        ),
+      ),
+      list: _list(text.body),
       table: MarkdownTableStyler(
         headStyle: TextStyleMix.value(
           tableText.copyWith(
@@ -91,217 +105,301 @@ final class GeneratedDeckThemeFactory {
           ),
         ),
         bodyStyle: TextStyleMix.value(tableText),
-        cellPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        border: TableBorder.all(color: borderColor, width: 1.5),
-        cellDecoration: BoxDecoration(color: palette.surfaceAlt),
+        border: TableBorder.all(color: borderColor, width: runtime.borderWidth),
+        cellPadding: EdgeInsets.symmetric(
+          vertical: 6 * runtime.spacingScale,
+          horizontal: 12 * runtime.spacingScale,
+        ),
+        cellDecoration: _componentBoxDecoration(palette, runtime),
         verticalAlignment: TableCellVerticalAlignment.middle,
-      ),
-      blockquote: MarkdownBlockquoteStyler(
-        textStyle: TextStyleMix.value(
-          text.body.copyWith(fontSize: text.body.fontSize! * 1.35, height: 1.3),
-        ),
-        padding: const EdgeInsets.only(bottom: 12, left: 28),
-        decoration: BoxDecoration(
-          border: Border(left: BorderSide(color: palette.accent, width: 5)),
-        ),
       ),
       code: MarkdownCodeblockStyler(
         textStyle: TextStyleMix.value(text.body.copyWith(height: 1.45)),
         container: BoxStyler(
-          padding: EdgeInsetsMix.all(24),
-          decoration: BoxDecorationMix(
-            color: codeBackground,
-            borderRadius: BorderRadiusMix.circular(12),
-          ),
+          padding: EdgeInsetsMix.all(24 * runtime.spacingScale),
+          decoration: componentDecoration,
         ),
       ),
-      slideContainer: _slideContainer(palette.background, density: density),
+      blockContainer: _blockContainer(palette, runtime, .none),
+      slideContainer: _slideContainer(
+        palette.background,
+        palette,
+        density: density,
+        runtime: runtime,
+      ),
     );
+    final styles = <String, SlideStyler>{
+      for (final entry in runtime.treatments.byName.entries)
+        entry.key: _treatmentStyle(
+          entry.key,
+          entry.value,
+          palette,
+          text,
+          density,
+          runtime,
+        ),
+    };
 
     return DeckOptions(
       baseStyle: baseStyle,
-      styles: {
-        'hero': _heroStyle(palette, text, direction, density),
-        'section': _sectionStyle(palette, text, direction, density),
-        'content': SlideStyler(
-          h1: _text(
-            text.h2.copyWith(fontSize: text.h2.fontSize! * 0.8, height: 1),
-          ),
-          h2: _text(
-            text.h3.copyWith(fontSize: text.h3.fontSize! * 0.78, height: 1),
-          ),
-          h3: _text(
-            text.h4.copyWith(fontSize: text.h4.fontSize! * 0.8, height: 1.05),
-          ),
-          slideContainer: _slideContainer(palette.background, density: density),
-        ),
-        'data': SlideStyler(
-          h1: _text(text.h2.copyWith(height: 1)),
-          h2: _text(
-            text.h3.copyWith(fontSize: text.h3.fontSize! * 0.78, height: 1),
-          ),
-          h3: _text(
-            text.h4.copyWith(fontSize: text.h4.fontSize! * 0.8, height: 1.05),
-          ),
-          slideContainer: _slideContainer(palette.surface, density: density),
-          blockContainer: BlockStyler(
-            decoration: BoxDecorationMix(
-              color: palette.surfaceAlt,
-              borderRadius: BorderRadiusMix.circular(
-                direction == 'playful' ? 24 : 12,
-              ),
-            ),
-          ),
-        ),
-        'quote': SlideStyler(
-          slideContainer: _slideContainer(
-            direction == 'editorial' ? palette.surface : palette.background,
-            density: density,
-          ),
-          h1: _text(
-            text.h2.copyWith(
-              color: palette.accent,
-              fontSize: text.h2.fontSize! * 0.9,
-              height: 1,
-            ),
-          ),
-          h2: _text(
-            text.h3.copyWith(
-              color: palette.accent,
-              fontSize: text.h3.fontSize! * 0.78,
-              height: 1,
-            ),
-          ),
-        ),
-        'visual': SlideStyler(
-          h1: _text(
-            text.h2.copyWith(fontSize: text.h2.fontSize! * 0.8, height: 1),
-          ),
-          h2: _text(
-            text.h3.copyWith(fontSize: text.h3.fontSize! * 0.78, height: 1),
-          ),
-          slideContainer: _slideContainer(
-            palette.surfaceAlt,
-            density: 'compact',
-          ),
-        ),
-        'closing': _closingStyle(palette, text, direction, density),
-      },
+      styles: styles,
       parts: SlideParts(
+        header: null,
+        footer: null,
         background: Box(style: BoxStyler().color(palette.background)),
       ),
     );
   }
 }
 
-SlideStyler _heroStyle(
+SlideStyler _treatmentStyle(
+  String name,
+  PresentationThemeTreatmentRecipe treatment,
   GeneratedThemePalette palette,
   PresentationTextStyles text,
-  String direction,
   String density,
+  PresentationThemeRuntimeRecipe runtime,
 ) {
-  final useAccent = direction == 'bold' || direction == 'playful';
-  final foreground = useAccent ? palette.accentContrast : palette.heading;
-  final background = switch (direction) {
-    'bold' => palette.accent,
-    'playful' => palette.surfaceAlt,
-    'editorial' => palette.surface,
-    _ => palette.background,
+  final heading = _textColor(treatment.heading, palette);
+  final body = _textColor(treatment.body, palette);
+  final background = _backgroundColor(treatment.background, palette);
+  final headlineBase = name == 'hero' ? text.h1 : text.h2;
+  final supportScale = treatment.headlineScale > 1
+      ? 1.0
+      : treatment.headlineScale;
+  final headlineStyle = headlineBase.copyWith(
+    color: heading,
+    fontSize: headlineBase.fontSize! * treatment.headlineScale,
+    fontStyle: treatment.italicHeadline ? FontStyle.italic : .normal,
+    height: 1,
+  );
+  final h2 = text.h3.copyWith(
+    color: heading,
+    fontSize: text.h3.fontSize! * supportScale,
+    height: 1.05,
+  );
+  final h3 = text.h4.copyWith(
+    color: heading,
+    fontSize: text.h4.fontSize! * supportScale,
+    height: 1.1,
+  );
+  final bodyStyle = text.body.copyWith(color: body);
+
+  return SlideStyler(
+    h1: _text(headlineStyle),
+    h2: _text(h2),
+    h3: _text(h3),
+    p: _text(bodyStyle),
+    link: TextStyleMix.value(bodyStyle.copyWith(decoration: .underline)),
+    list: _list(bodyStyle),
+    blockContainer: _blockContainer(palette, runtime, treatment.blockStyle),
+    slideContainer: _slideContainer(
+      background,
+      palette,
+      density: density,
+      runtime: runtime,
+    ),
+  );
+}
+
+BlockStyler _blockContainer(
+  GeneratedThemePalette palette,
+  PresentationThemeRuntimeRecipe runtime,
+  PresentationThemeBlockStyle style,
+) => .new(
+  padding: EdgeInsetsGeometryMix.all(
+    style == .none ? 0 : 20 * runtime.spacingScale,
+  ),
+  decoration: _blockDecoration(style, palette, runtime),
+  clipBehavior: .antiAlias,
+  variants: [
+    VariantStyle(
+      const BlockVariant('image'),
+      BlockStyler(
+        padding: EdgeInsetsGeometryMix.all(0),
+        margin: EdgeInsetsGeometryMix.all(0),
+        decoration: _transparentDecoration(runtime),
+        clipBehavior: .antiAlias,
+      ),
+    ),
+    for (final name in const ['webview', 'dartpad', 'gist'])
+      VariantStyle(
+        BlockVariant(name),
+        BlockStyler(
+          padding: EdgeInsetsGeometryMix.all(0),
+          margin: EdgeInsetsGeometryMix.all(0),
+          decoration: _blockDecoration(.outlined, palette, runtime),
+          clipBehavior: .antiAlias,
+        ),
+      ),
+    VariantStyle(
+      const BlockVariant('qrcode'),
+      BlockStyler(
+        padding: EdgeInsetsGeometryMix.all(24 * runtime.spacingScale),
+        decoration: _blockDecoration(.tonal, palette, runtime),
+        clipBehavior: .antiAlias,
+      ),
+    ),
+  ],
+);
+
+BoxDecorationMix _blockDecoration(
+  PresentationThemeBlockStyle style,
+  GeneratedThemePalette palette,
+  PresentationThemeRuntimeRecipe runtime,
+) => switch (style) {
+  .none => _transparentDecoration(runtime),
+  .tonal => .new(
+    borderRadius: BorderRadiusMix.circular(runtime.cornerRadius),
+    color: palette.surfaceAlt,
+  ),
+  .outlined => .new(
+    border: BorderMix.all(
+      BorderSideMix(
+        color: Color.lerp(palette.surface, palette.body, 0.4),
+        width: runtime.borderWidth,
+      ),
+    ),
+    borderRadius: BorderRadiusMix.circular(runtime.cornerRadius),
+    color: palette.surface,
+  ),
+};
+
+BoxDecorationMix _transparentDecoration(
+  PresentationThemeRuntimeRecipe runtime,
+) => .new(
+  border: BorderMix.all(BorderSideMix(color: Colors.transparent, width: 0)),
+  borderRadius: BorderRadiusMix.circular(runtime.cornerRadius),
+  color: Colors.transparent,
+);
+
+BoxDecorationMix _componentDecoration(
+  GeneratedThemePalette palette,
+  PresentationThemeRuntimeRecipe runtime,
+) => switch (runtime.surfaceStyle) {
+  .flat => .new(
+    borderRadius: BorderRadiusMix.circular(runtime.cornerRadius),
+    color: palette.surface,
+  ),
+  .tonal => .new(
+    borderRadius: BorderRadiusMix.circular(runtime.cornerRadius),
+    color: palette.surfaceAlt,
+  ),
+  .outlined => .new(
+    border: BorderMix.all(
+      BorderSideMix(
+        color: Color.lerp(palette.surface, palette.body, 0.4),
+        width: runtime.borderWidth,
+      ),
+    ),
+    borderRadius: BorderRadiusMix.circular(runtime.cornerRadius),
+    color: palette.surface,
+  ),
+};
+
+BoxDecoration _componentBoxDecoration(
+  GeneratedThemePalette palette,
+  PresentationThemeRuntimeRecipe runtime,
+) {
+  final borderRadius = BorderRadius.circular(runtime.cornerRadius);
+  final outlineBorder = Border.all(
+    color: Color.lerp(palette.surface, palette.body, 0.4)!,
+    width: runtime.borderWidth,
+  );
+
+  return switch (runtime.surfaceStyle) {
+    .flat => .new(color: palette.surface, borderRadius: borderRadius),
+    .tonal => .new(color: palette.surfaceAlt, borderRadius: borderRadius),
+    .outlined => .new(
+      color: palette.surface,
+      border: outlineBorder,
+      borderRadius: borderRadius,
+    ),
   };
-  return SlideStyler(
-    h1: _text(
-      text.h1.copyWith(
-        color: foreground,
-        fontSize: text.h1.fontSize! * (direction == 'minimal' ? 0.9 : 1.08),
-        fontStyle: direction == 'editorial' ? FontStyle.italic : null,
-        height: 1,
-      ),
-    ),
-    h2: _text(text.h3.copyWith(color: foreground, height: 1)),
-    p: _text(text.body.copyWith(color: foreground)),
-    list: _list(text.body.copyWith(color: foreground)),
-    link: TextStyleMix(color: foreground),
-    slideContainer: _slideContainer(background, density: density),
-  );
 }
 
-SlideStyler _sectionStyle(
-  GeneratedThemePalette palette,
-  PresentationTextStyles text,
-  String direction,
-  String density,
-) {
-  final background = direction == 'minimal'
-      ? palette.surfaceAlt
-      : palette.accent;
-  final foreground = direction == 'minimal'
-      ? palette.heading
-      : palette.accentContrast;
-  return SlideStyler(
-    h1: _text(
-      text.h2.copyWith(
-        color: foreground,
-        fontSize: text.h2.fontSize! * 0.9,
-        height: 1,
-      ),
-    ),
-    h2: _text(
-      text.h3.copyWith(
-        color: foreground,
-        fontSize: text.h3.fontSize! * 0.78,
-        height: 1,
-      ),
-    ),
-    h3: _text(
-      text.h4.copyWith(
-        color: foreground,
-        fontSize: text.h4.fontSize! * 0.8,
-        height: 1.05,
-      ),
-    ),
-    p: _text(text.body.copyWith(color: foreground)),
-    list: _list(text.body.copyWith(color: foreground)),
-    link: TextStyleMix(color: foreground),
-    slideContainer: _slideContainer(background, density: density),
-  );
-}
+BoxStyler _slideContainer(
+  Color color,
+  GeneratedThemePalette palette, {
+  required String density,
+  required PresentationThemeRuntimeRecipe runtime,
+}) => BoxStyler(
+  padding: EdgeInsetsMix.all(
+    switch (density) {
+          'spacious' => 72,
+          'compact' => 40,
+          _ => 56,
+        } *
+        runtime.spacingScale,
+  ),
+  decoration: BoxDecorationMix(
+    border: _decorativeBorder(palette, runtime),
+    color: color,
+  ),
+);
 
-SlideStyler _closingStyle(
+BorderMix? _decorativeBorder(
   GeneratedThemePalette palette,
-  PresentationTextStyles text,
-  String direction,
-  String density,
-) {
-  final useAccent = direction != 'minimal';
-  final background = useAccent ? palette.accent : palette.surface;
-  final foreground = useAccent ? palette.accentContrast : palette.heading;
-  return SlideStyler(
-    h1: _text(
-      text.h2.copyWith(
-        color: foreground,
-        fontSize: text.h2.fontSize! * 0.9,
-        height: 1,
-      ),
+  PresentationThemeRuntimeRecipe runtime,
+) => switch (runtime.decorativeStyle) {
+  .none => null,
+  .rule => .bottom(
+    BorderSideMix(
+      color: palette.accent,
+      width: _atLeast(runtime.borderWidth * 2, 2),
     ),
-    h2: _text(text.h3.copyWith(color: foreground, height: 1)),
-    p: _text(text.body.copyWith(color: foreground)),
-    list: _list(text.body.copyWith(color: foreground)),
-    link: TextStyleMix(color: foreground),
-    slideContainer: _slideContainer(background, density: density),
-  );
-}
+  ),
+  .frame => .all(
+    BorderSideMix(
+      color: palette.accent,
+      width: _atLeast(runtime.borderWidth, 1),
+    ),
+  ),
+  .grid => .new(
+    top: BorderSideMix(
+      color: palette.accent,
+      width: _atLeast(runtime.borderWidth, 1),
+    ),
+    bottom: BorderSideMix(
+      color: palette.accent,
+      width: _atLeast(runtime.borderWidth, 1),
+    ),
+    left: BorderSideMix(color: palette.body, width: runtime.borderWidth),
+    right: BorderSideMix(color: palette.body, width: runtime.borderWidth),
+  ),
+  .poster => .left(
+    BorderSideMix(
+      color: palette.accent,
+      width: _atLeast(runtime.quoteRuleWidth, 8),
+    ),
+  ),
+};
+
+Color _backgroundColor(
+  PresentationThemeColorRole role,
+  GeneratedThemePalette palette,
+) => switch (role) {
+  .background => palette.background,
+  .surface => palette.surface,
+  .surfaceAlt => palette.surfaceAlt,
+  .accent => palette.accent,
+};
+
+Color _textColor(
+  PresentationThemeTextColorRole role,
+  GeneratedThemePalette palette,
+) => switch (role) {
+  .heading => palette.heading,
+  .body => palette.body,
+  .accent => palette.accent,
+  .accentContrast => palette.accentContrast,
+};
+
+double _atLeast(double value, double minimum) =>
+    value < minimum ? minimum : value;
 
 TextStyler _text(TextStyle style) =>
     TextStyler().style(TextStyleMix.value(style));
 
 MarkdownListStyler _list(TextStyle style) =>
     MarkdownListStyler(bullet: _text(style), text: _text(style));
-
-BoxStyler _slideContainer(Color color, {required String density}) => BoxStyler(
-  padding: EdgeInsetsMix.all(switch (density) {
-    'spacious' => 72,
-    'compact' => 40,
-    _ => 56,
-  }),
-  decoration: BoxDecorationMix(color: color),
-);

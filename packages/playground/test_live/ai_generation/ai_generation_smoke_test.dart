@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -7,21 +8,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
+    as google_ai;
 import 'package:image/image.dart' as image;
 import 'package:path/path.dart' as p;
 import 'package:playground/core/data/data_sources/memory_asset_cache_store.dart';
 import 'package:playground/core/data/data_sources/memory_deck_loader.dart';
+import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
+import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
 import 'package:playground/core/domain/stores/deck_customization_store.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_plan_validator.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/deck_theme_resolution.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_element_catalog.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generation_model_client.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generated_slide_validator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_quality_report.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/style_json_serializer.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/theme_json_serializer.dart';
+import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
+import 'package:superdeck/src/utils/syntax_highlighter.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart' show Slide, WidgetBlock;
@@ -32,12 +40,18 @@ const _selectedFixture = String.fromEnvironment(
   defaultValue: 'all',
 );
 const _artifactPath = String.fromEnvironment('LIVE_ARTIFACT');
+const _renderThemeQualification = bool.fromEnvironment(
+  'LIVE_THEME_QUALIFICATION',
+);
+const _runFakeCheckpoint = bool.fromEnvironment('LIVE_FAKE_CHECKPOINT');
 const _smokeFixtures = ['narrative', 'comparison_table', 'visual_elements'];
 const _largeDeckFixtures = [
   'narrative_10',
   'decision_data_15',
   'visual_product_20',
 ];
+final _themeCatalog = PresentationThemeCatalog.withDefaults();
+final _typographyCatalog = PresentationTypographyCatalog.withDefaults();
 
 typedef _CaptureResult = ({
   List<File> pngs,
@@ -48,6 +62,11 @@ typedef _CaptureResult = ({
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // Initialize SuperDeck's fallback style while runtime fetching is disabled;
+  // generated captures replace its typography, and this prevents the fallback
+  // Poppins request from contaminating GoogleFonts.pendingFonts().
+  GoogleFonts.config.allowRuntimeFetching = false;
+  final _ = defaultSlideStyle;
   // This file is explicitly opt-in and must bypass flutter_test's HTTP 400
   // isolation so the production Gemini client can reach the network.
   HttpOverrides.global = null;
@@ -57,6 +76,225 @@ void main() {
         const MethodChannel('plugins.flutter.io/path_provider'),
         (call) async => Directory.systemTemp.path,
       );
+
+  if (_renderThemeQualification) {
+    testWidgets(
+      'captures the deterministic representative theme matrix',
+      (tester) async {
+        final markdown = (await tester.runAsync(
+          () => File(
+            'test_live/ai_generation/fixtures/theme_qualification.md',
+          ).readAsString(),
+        ))!;
+        final output = (await tester.runAsync(
+          () => _createRunDirectory('theme_qualification'),
+        ))!;
+        final manifest = <Map<String, Object?>>[];
+
+        for (final themeId in featuredPresentationThemeIds) {
+          final descriptor = _themeCatalog.current(themeId)!;
+          final theme = _themeCatalog.resolve(
+            id: descriptor.id,
+            version: descriptor.version,
+            typographyCatalog: _typographyCatalog,
+          );
+          final themeOutput = (await tester.runAsync(
+            () => Directory(p.join(output.path, themeId)).create(),
+          ))!;
+          final capture = await _captureSlides(
+            tester: tester,
+            output: themeOutput,
+            markdown: markdown,
+            theme: theme,
+            expectedSlideCount: 10,
+          );
+          final contactSheet = (await tester.runAsync(
+            () => _writeContactSheet(themeOutput, capture.pngs),
+          ))!;
+          await tester.runAsync(
+            () => _expectThemeGolden(themeId, contactSheet),
+          );
+          manifest.add(_themeQualificationEntry(theme, capture));
+          expect(capture.pngs, hasLength(10), reason: themeId);
+        }
+
+        await tester.runAsync(
+          () => File(p.join(output.path, 'manifest.json')).writeAsString(
+            const JsonEncoder.withIndent('  ').convert({
+              'fixture': 'theme_qualification.md',
+              'logicalResolution': {'width': 1280, 'height': 720},
+              'themes': manifest,
+            }),
+          ),
+        );
+        // ignore: avoid_print
+        print('Theme qualification artifacts: ${output.path}');
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+    return;
+  }
+
+  if (_runFakeCheckpoint) {
+    testWidgets(
+      'runs the deterministic ten-slide fake-model checkpoint',
+      (tester) async {
+        const request = DeckGenerationRequest(
+          userIntent:
+              'Create a ten-slide internal decision story. Teams spent 42% '
+              'less weekly synthesis time.',
+          slideCount: 10,
+          audience: 'Product and engineering leaders',
+          approach: 'Evidence-led operating narrative',
+          themeId: 'technical-paper',
+        );
+        final client = _FakeCheckpointModelClient();
+        final traces = <GenerationTraceEvent>[];
+        final result = await DeckGeneratorService(
+          apiKey: 'deterministic-fake-key',
+          modelClientFactory: (_) => client,
+        ).generate(request, onTrace: traces.add);
+
+        expect(
+          result.success,
+          isTrue,
+          reason: const JsonEncoder.withIndent('  ').convert({
+            'error': result.error,
+            'validation': traces
+                .where((event) => event.kind == GenerationTraceKind.validation)
+                .map((event) => event.toJson())
+                .toList(),
+          }),
+        );
+        expect(result.slides, hasLength(10));
+        expect(result.plan!.slides, hasLength(10));
+        expect(result.plan!.theme.id, 'technical-paper');
+        expect(result.plan!.theme.version, 1);
+        expect(client.requests, hasLength(11));
+        expect(
+          client.requests.map(
+            (modelRequest) => modelRequest.generationConfig!.thinkingConfig,
+          ),
+          everyElement(isNull),
+        );
+
+        final slideRequests = traces
+            .where(
+              (event) =>
+                  event.kind == GenerationTraceKind.request &&
+                  event.phase == GenerationTracePhase.slide,
+            )
+            .toList(growable: false);
+        expect(slideRequests, hasLength(10));
+        final ledgers = <List<Map<String, Object?>>>[];
+        for (final (index, event) in slideRequests.indexed) {
+          final ledger = _parseDesignLedger(event.prompt!);
+          ledgers.add(ledger);
+          final expectedStart = index > 3 ? index - 3 : 0;
+          expect(
+            ledger.map((entry) => entry['key']),
+            result.plan!.slides
+                .sublist(expectedStart, index)
+                .map((slide) => slide.key),
+            reason: 'slide ${index + 1} design ledger',
+          );
+          expect(
+            ledger.every(
+              (entry) => entry.keys.toSet().difference(const {
+                'key',
+                'sectionKey',
+                'composition',
+                'treatment',
+                'density',
+              }).isEmpty,
+            ),
+            isTrue,
+            reason: 'slide ${index + 1} compact design ledger',
+          );
+        }
+
+        final output = (await tester.runAsync(
+          () => _createRunDirectory('fake_checkpoint_10'),
+        ))!;
+        final markdown = const SlideSerializer().serialize(result.slides);
+        final deckJson = {
+          'theme': serializeDeckThemeReference(result.plan!.theme),
+          'slides': result.slides.map((slide) => slide.toMap()).toList(),
+        };
+        await tester.runAsync(() async {
+          const encoder = JsonEncoder.withIndent('  ');
+          await File(
+            p.join(output.path, 'request.json'),
+          ).writeAsString(encoder.convert(request.toMap()));
+          await File(
+            p.join(output.path, 'deck.json'),
+          ).writeAsString(encoder.convert(deckJson));
+          await File(p.join(output.path, 'slides.md')).writeAsString(markdown);
+          await File(p.join(output.path, 'trace.json')).writeAsString(
+            encoder.convert(traces.map((event) => event.toJson()).toList()),
+          );
+          await _writeTraceArtifacts(output, traces, plan: result.plan);
+        });
+
+        final capture = await _captureSlides(
+          tester: tester,
+          output: output,
+          markdown: markdown,
+          theme: result.theme!,
+          expectedSlideCount: 10,
+        );
+        final contactSheet = (await tester.runAsync(
+          () => _writeContactSheet(output, capture.pngs),
+        ))!;
+        final styleSnapshot = await _resolvedStyleSnapshot(
+          tester,
+          result.theme!,
+        );
+        expect(styleSnapshot['headlineFamily'], 'Space Grotesk');
+        expect(
+          styleSnapshot['headlineRuntimeFamily'],
+          startsWith('SpaceGrotesk_'),
+        );
+        expect(styleSnapshot['bodyFamily'], 'Open Sans');
+        expect(styleSnapshot['bodyRuntimeFamily'], startsWith('OpenSans_'));
+        expect(styleSnapshot['header'], isNull);
+        expect(styleSnapshot['footer'], isNull);
+        expect(
+          styleSnapshot['treatments'],
+          presentationThemeTreatmentNames.toList()..sort(),
+        );
+        final report = GenerationQualityReport.evaluate(
+          request: request,
+          plan: result.plan!,
+          slides: result.slides,
+          traces: traces,
+          replayedSlideCount: capture.replayedSlideCount,
+          capturedSlideCount: capture.pngs.length,
+          resolvedFontFamilies: capture.resolvedFontFamilies,
+          captureElapsed: capture.elapsed,
+        );
+        await tester.runAsync(() async {
+          const encoder = JsonEncoder.withIndent('  ');
+          await File(p.join(output.path, 'checkpoint.json')).writeAsString(
+            encoder.convert({
+              'designLedgers': ledgers,
+              'resolvedStyle': styleSnapshot,
+              'qualityReport': report.toJson(),
+              'contactSheet': p.basename(contactSheet.path),
+            }),
+          );
+        });
+
+        expect(capture.replayedSlideCount, 10);
+        expect(capture.pngs, hasLength(10));
+        expect(report.passed, isTrue, reason: jsonEncode(report.toJson()));
+        // ignore: avoid_print
+        print('Fake checkpoint artifacts: ${output.path}');
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+    return;
+  }
 
   if (_artifactPath.isNotEmpty) {
     testWidgets(
@@ -85,12 +323,20 @@ void main() {
                     ).readAsString(),
                   )
                   as Map<String, Object?>;
+          final themeReference = Map<String, Object?>.from(
+            deckJson['theme']! as Map,
+          );
           return (
             output: output,
             markdown: await File(
               p.join(output.path, 'slides.md'),
             ).readAsString(),
-            style: DeckStyleType.parse(deckJson['style']),
+            theme: resolveDeckThemeMap(
+              themeReference,
+              themeCatalog: _themeCatalog,
+              typographyCatalog: _typographyCatalog,
+            ),
+            themeReference: themeReference,
             slideCount: (deckJson['slides'] as List).length,
             plan: DeckPlanType.parse(planJson),
             request: DeckGenerationRequest.fromMap(requestJson),
@@ -101,6 +347,9 @@ void main() {
           );
         }))!;
         final auditErrors = <String>[
+          if (jsonEncode(artifact.themeReference) !=
+              jsonEncode(serializeDeckThemeReference(artifact.plan.theme)))
+            'deck.json theme does not match deck_plan.json theme.',
           ...validateDeckPlan(artifact.plan, request: artifact.request),
           for (final (index, rawSlide) in artifact.rawSlides.indexed)
             ...validateGeneratedSlide(
@@ -122,7 +371,7 @@ void main() {
           tester: tester,
           output: artifact.output,
           markdown: artifact.markdown,
-          style: artifact.style,
+          theme: artifact.theme,
           expectedSlideCount: artifact.slideCount,
         );
         // ignore: avoid_print
@@ -141,7 +390,7 @@ void main() {
     group('live generation: $fixture', () {
       late Directory output;
       late String markdown;
-      late DeckStyleType style;
+      late ResolvedPresentationTheme theme;
       late DeckPlanType plan;
       late DeckGenerationRequest request;
       late List<Slide> slides;
@@ -176,14 +425,14 @@ void main() {
           plan = result.plan!;
           slides = result.slides;
           final deckJson = {
-            'style': serializeDeckStyleForJson(result.style!),
+            'theme': serializeDeckThemeReference(result.plan!.theme),
             'slides': result.slides.map((slide) => slide.toMap()).toList(),
           };
           await File(
             p.join(output.path, 'deck.json'),
           ).writeAsString(const JsonEncoder.withIndent('  ').convert(deckJson));
           markdown = const SlideSerializer().serialize(result.slides);
-          style = result.style!;
+          theme = result.theme!;
           expectedSlideCount = result.slideCount;
           await File(p.join(output.path, 'slides.md')).writeAsString(markdown);
           await File(p.join(output.path, 'validation.json')).writeAsString(
@@ -213,7 +462,7 @@ void main() {
             tester: tester,
             output: output,
             markdown: markdown,
-            style: style,
+            theme: theme,
             expectedSlideCount: expectedSlideCount,
           );
           await tester.runAsync(() => _writeContactSheet(output, capture.pngs));
@@ -247,6 +496,58 @@ void main() {
   }
 }
 
+Map<String, Object?> _themeQualificationEntry(
+  ResolvedPresentationTheme theme,
+  _CaptureResult capture,
+) {
+  final runtime = theme.descriptor.recipe.runtime;
+
+  return {
+    'id': theme.descriptor.id,
+    'version': theme.descriptor.version,
+    'title': theme.descriptor.title,
+    'description': theme.descriptor.description,
+    'direction': theme.direction,
+    'density': theme.density,
+    'typeScale': theme.typeScale,
+    'palette': {
+      'background': theme.palette.background,
+      'surface': theme.palette.surface,
+      'surfaceAlt': theme.palette.surfaceAlt,
+      'heading': theme.palette.heading,
+      'body': theme.palette.body,
+      'accent': theme.palette.accent,
+      'accentContrast': theme.palette.accentContrast,
+    },
+    'fonts': {
+      'headline': theme.headlineFamily,
+      'body': theme.bodyFamily,
+      'resolved': capture.resolvedFontFamilies.toList()..sort(),
+    },
+    'runtime': {
+      'spacingScale': runtime.spacingScale,
+      'cornerRadius': runtime.cornerRadius,
+      'borderWidth': runtime.borderWidth,
+      'quoteRuleWidth': runtime.quoteRuleWidth,
+      'surfaceStyle': runtime.surfaceStyle.name,
+      'decorativeStyle': runtime.decorativeStyle.name,
+      'treatments': {
+        for (final entry in runtime.treatments.byName.entries)
+          entry.key: {
+            'background': entry.value.background.name,
+            'heading': entry.value.heading.name,
+            'body': entry.value.body.name,
+            'headlineScale': entry.value.headlineScale,
+            'italicHeadline': entry.value.italicHeadline,
+            'blockStyle': entry.value.blockStyle.name,
+          },
+      },
+    },
+    'captures': capture.pngs.length,
+    'captureElapsedMs': capture.elapsed.inMilliseconds,
+  };
+}
+
 DeckGenerationRequest _requestForFixture(String fixture, String brief) {
   return switch (fixture) {
     'narrative' => DeckGenerationRequest(
@@ -254,6 +555,7 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       slideCount: 6,
       audience: 'Engineering leaders',
       approach: 'Confident editorial narrative',
+      themeId: 'editorial-midnight',
       designDirection: 'Dark navy editorial',
     ),
     'comparison_table' => DeckGenerationRequest(
@@ -261,6 +563,7 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       slideCount: 5,
       audience: 'Product team',
       approach: 'Evidence-led decision deck',
+      themeId: 'technical-paper',
       designDirection: 'Light warm',
     ),
     'visual_elements' => DeckGenerationRequest(
@@ -268,6 +571,7 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       slideCount: 5,
       audience: 'Developers and technical leaders',
       approach: 'Product launch briefing',
+      themeId: 'bold-product',
       designDirection: 'Bold dark',
       groundedElements: const [
         GroundedGenerationElement(
@@ -293,6 +597,7 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       slideCount: 10,
       audience: 'Senior product and engineering leaders',
       approach: 'Editorial strategy narrative with a strong opening and close',
+      themeId: 'editorial-midnight',
       emphasis: const [
         'one clear assertion per slide',
         'purposeful pacing across three acts',
@@ -307,6 +612,7 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       slideCount: 15,
       audience: 'Executive investment committee',
       approach: 'Evidence-led decision memo presented as a technical deck',
+      themeId: 'technical-paper',
       emphasis: const [
         'readable tables and metrics',
         'clear trade-offs',
@@ -321,6 +627,7 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       slideCount: 20,
       audience: 'Customers, partners, and developer advocates',
       approach: 'Bold product launch story with varied visual rhythm',
+      themeId: 'bold-product',
       emphasis: const [
         'product value before feature detail',
         'meaningful layout variation',
@@ -420,23 +727,102 @@ Future<void> _writeTraceArtifacts(
   );
 }
 
+List<Map<String, Object?>> _parseDesignLedger(String prompt) {
+  const startMarker = '## Recent design ledger\n';
+  const endMarker = '\n\n## Current slide plan';
+  final start = prompt.indexOf(startMarker);
+  final end = prompt.indexOf(endMarker, start + startMarker.length);
+  if (start < 0 || end < 0) {
+    throw FormatException('Slide prompt does not contain a design ledger.');
+  }
+  final payload = prompt.substring(start + startMarker.length, end).trim();
+  if (payload.startsWith('None')) return const [];
+  final decoded = jsonDecode(payload);
+  if (decoded is! List) {
+    throw FormatException('Design ledger is not a JSON list.');
+  }
+  return [
+    for (final entry in decoded)
+      if (entry is Map) Map<String, Object?>.from(entry),
+  ];
+}
+
+Future<Map<String, Object?>> _resolvedStyleSnapshot(
+  WidgetTester tester,
+  ResolvedPresentationTheme theme,
+) async {
+  late BuildContext context;
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Builder(
+        builder: (value) {
+          context = value;
+          return const SizedBox();
+        },
+      ),
+    ),
+  );
+  if (!context.mounted) {
+    throw StateError('Resolved-style context was unmounted.');
+  }
+  final loader = MemoryDeckLoader();
+  final controller = DeckController(deckLoader: loader, options: DeckOptions());
+  final customization = DeckCustomizationStore(controller);
+  try {
+    customization.applyGeneratedStyle(theme.toGeneratedDeckStyle());
+    final options = controller.options.value;
+    final base = options.baseStyle!.resolve(context).spec;
+    final headline = base.h1!.spec.style!;
+    final body = base.p!.spec.style!;
+    return {
+      'theme': {
+        'id': theme.descriptor.id,
+        'version': theme.descriptor.version,
+        'density': theme.density,
+      },
+      'headlineFamily': theme.headlineFamily,
+      'headlineRuntimeFamily': headline.fontFamily,
+      'headlineWeight': headline.fontWeight!.value,
+      'bodyFamily': theme.bodyFamily,
+      'bodyRuntimeFamily': body.fontFamily,
+      'bodyWeight': body.fontWeight!.value,
+      'header': options.parts.header?.runtimeType.toString(),
+      'footer': options.parts.footer?.runtimeType.toString(),
+      'treatments': options.styles.keys.toList()..sort(),
+      'runtime': {
+        'spacingScale': theme.descriptor.recipe.runtime.spacingScale,
+        'cornerRadius': theme.descriptor.recipe.runtime.cornerRadius,
+        'borderWidth': theme.descriptor.recipe.runtime.borderWidth,
+        'quoteRuleWidth': theme.descriptor.recipe.runtime.quoteRuleWidth,
+        'surfaceStyle': theme.descriptor.recipe.runtime.surfaceStyle.name,
+        'decorativeStyle': theme.descriptor.recipe.runtime.decorativeStyle.name,
+      },
+    };
+  } finally {
+    customization.dispose();
+    controller.dispose();
+    loader.dispose();
+  }
+}
+
 Future<_CaptureResult> _captureSlides({
   required WidgetTester tester,
   required Directory output,
   required String markdown,
-  required DeckStyleType style,
+  required ResolvedPresentationTheme theme,
   required int expectedSlideCount,
 }) async {
   final startedAt = DateTime.now();
   // ignore: avoid_print
   print('Preparing capture context');
+  await tester.runAsync(SyntaxHighlight.initialize);
   final resolvedFontFamilies = (await tester.runAsync(
-    () => _loadCaptureFonts(style),
+    () => _loadCaptureFonts(theme),
   ))!;
   late BuildContext context;
   await tester.pumpWidget(
     MaterialApp(
-      theme: ThemeData(fontFamily: style.fonts.body),
+      theme: ThemeData(fontFamily: theme.bodyFamily),
       home: Builder(
         builder: (value) {
           context = value;
@@ -457,22 +843,7 @@ Future<_CaptureResult> _captureSlides({
   addTearDown(customization.dispose);
   addTearDown(controller.dispose);
   addTearDown(loader.dispose);
-  customization.applyGeneratedStyle(
-    GeneratedDeckStyle(
-      background: _color(style.colors.background),
-      surface: _color(style.colors.surface),
-      surfaceAlt: _color(style.colors.surfaceAlt),
-      heading: _color(style.colors.heading),
-      body: _color(style.colors.body),
-      accent: _color(style.colors.accent),
-      accentContrast: _color(style.colors.accentContrast),
-      headlineFamily: style.fonts.headline,
-      bodyFamily: style.fonts.body,
-      direction: style.direction,
-      density: style.density,
-      typeScale: style.typeScale,
-    ),
-  );
+  customization.applyGeneratedStyle(theme.toGeneratedDeckStyle());
   loader.updateMarkdown(markdown);
   await tester.pump();
   final parsedConfigurations = controller.slides.value;
@@ -609,37 +980,49 @@ bool _isNetworkSource(String source) {
   return scheme == 'http' || scheme == 'https';
 }
 
-Future<Set<String>> _loadCaptureFonts(DeckStyleType style) async {
-  final families = {style.fonts.headline, style.fonts.body};
+Future<Set<String>> _loadCaptureFonts(ResolvedPresentationTheme theme) async {
+  final families = {theme.headlineFamily, theme.bodyFamily};
   final fontStyles = <TextStyle>[];
   for (final family in families) {
-    if (!GoogleFonts.asMap().containsKey(family)) {
+    final descriptor = _typographyCatalog.resolve(family);
+    if (descriptor == null || !GoogleFonts.asMap().containsKey(family)) {
       throw StateError(
         'Live capture cannot resolve Google font "$family". '
         'Registered bundled fonts need an explicit capture loader.',
       );
     }
-    for (final weight in const [
-      FontWeight.w400,
-      FontWeight.w500,
-      FontWeight.w600,
-      FontWeight.w700,
-      FontWeight.w800,
-    ]) {
-      fontStyles.add(GoogleFonts.getFont(family, fontWeight: weight));
+    for (final weight in descriptor.weights) {
+      fontStyles.add(
+        GoogleFonts.getFont(
+          family,
+          fontWeight: FontWeight.values.firstWhere(
+            (candidate) => candidate.value == weight,
+          ),
+        ),
+      );
     }
   }
-  await GoogleFonts.pendingFonts(fontStyles);
+  try {
+    await GoogleFonts.pendingFonts(
+      fontStyles,
+    ).timeout(const Duration(seconds: 30));
+  } on TimeoutException {
+    throw StateError(
+      'Timed out resolving live capture fonts: ${families.join(', ')}.',
+    );
+  }
   return families;
 }
 
-Future<void> _writeContactSheet(Directory output, List<File> files) async {
+Future<File> _writeContactSheet(Directory output, List<File> files) async {
   final decoded = <image.Image>[];
   for (final file in files) {
     final value = image.decodePng(await file.readAsBytes());
     if (value != null) decoded.add(image.copyResize(value, width: 480));
   }
-  if (decoded.isEmpty) return;
+  if (decoded.isEmpty) {
+    throw StateError('Cannot create a contact sheet without decoded captures.');
+  }
   const columns = 2;
   final cellWidth = decoded.first.width;
   final cellHeight = decoded
@@ -659,12 +1042,332 @@ Future<void> _writeContactSheet(Directory output, List<File> files) async {
       dstY: (index ~/ columns) * cellHeight,
     );
   }
-  await File(
-    p.join(output.path, 'contact_sheet.png'),
-  ).writeAsBytes(image.encodePng(sheet));
+  final file = File(p.join(output.path, 'contact_sheet.png'));
+  await file.writeAsBytes(image.encodePng(sheet));
+  return file;
 }
 
-Color _color(String value) {
-  final hex = value.replaceFirst('#', '');
-  return Color(int.parse(hex.length == 6 ? 'FF$hex' : hex, radix: 16));
+Future<void> _expectThemeGolden(String themeId, File actualFile) async {
+  final expectedFile = File(
+    p.join('test_live', 'ai_generation', 'goldens', '$themeId.png'),
+  );
+  if (!expectedFile.existsSync()) {
+    throw StateError(
+      'Missing reviewed theme golden for "$themeId": ${expectedFile.path}',
+    );
+  }
+  final actual = image.decodePng(await actualFile.readAsBytes());
+  final expected = image.decodePng(await expectedFile.readAsBytes());
+  if (actual == null || expected == null) {
+    throw StateError('Could not decode the "$themeId" theme golden pair.');
+  }
+  if (actual.width != expected.width || actual.height != expected.height) {
+    throw TestFailure(
+      'Theme golden "$themeId" changed dimensions from '
+      '${expected.width}x${expected.height} to '
+      '${actual.width}x${actual.height}.',
+    );
+  }
+  final actualPixels = actual.getBytes(order: image.ChannelOrder.rgba);
+  final expectedPixels = expected.getBytes(order: image.ChannelOrder.rgba);
+  for (var index = 0; index < actualPixels.length; index++) {
+    if (actualPixels[index] != expectedPixels[index]) {
+      throw TestFailure(
+        'Theme golden "$themeId" differs at RGBA byte $index. '
+        'Review the generated contact sheet before updating the baseline.',
+      );
+    }
+  }
 }
+
+final class _FakeCheckpointModelClient implements GenerationModelClient {
+  _FakeCheckpointModelClient()
+    : _responses = [
+        _checkpointResponse(_checkpointPlanDraft()),
+        for (final slide in _checkpointSlides()) _checkpointResponse(slide),
+      ];
+
+  final List<google_ai.GenerateContentResponse> _responses;
+  final requests = <google_ai.GenerateContentRequest>[];
+  var _responseIndex = 0;
+
+  @override
+  void close() {}
+
+  @override
+  Future<google_ai.GenerateContentResponse> generateContent(
+    google_ai.GenerateContentRequest request,
+  ) async {
+    requests.add(request);
+    if (_responseIndex >= _responses.length) {
+      throw StateError(
+        'The deterministic fake received an unexpected repair request.',
+      );
+    }
+    return _responses[_responseIndex++];
+  }
+}
+
+google_ai.GenerateContentResponse _checkpointResponse(
+  Map<String, Object?> value,
+) => google_ai.GenerateContentResponse(
+  candidates: [
+    google_ai.Candidate(
+      content: google_ai.Content(
+        role: 'model',
+        parts: [google_ai.Part(text: jsonEncode(value))],
+      ),
+    ),
+  ],
+);
+
+Map<String, Object?> _checkpointPlanDraft() {
+  const slideKeys = [
+    'opening',
+    'signals',
+    'synthesis',
+    'choices',
+    'alignment',
+    'practice',
+    'principle',
+    'verification',
+    'action',
+    'close',
+  ];
+  const sectionKeys = [
+    'tension',
+    'tension',
+    'tension',
+    'system',
+    'system',
+    'system',
+    'system',
+    'action',
+    'action',
+    'action',
+  ];
+  const titles = [
+    'Evidence Becomes Momentum',
+    'Signals Arrive Before Decisions',
+    'Synthesis Time Shifted',
+    'Choose the Operating Model',
+    'Align the Decision Frame',
+    'Build a Shared Practice',
+    'Trust Needs a Visible Trail',
+    'Verify the Working Contract',
+    'Make the Practice Explicit',
+    'Decide, Learn, Repeat',
+  ];
+  const compositions = [
+    'title',
+    'content',
+    'metric',
+    'table',
+    'twoColumn',
+    'threeColumn',
+    'quote',
+    'content',
+    'titleLeft',
+    'title',
+  ];
+  const treatments = [
+    'hero',
+    'content',
+    'data',
+    'data',
+    'content',
+    'data',
+    'quote',
+    'content',
+    'section',
+    'closing',
+  ];
+  const roles = [
+    'opening',
+    'problem',
+    'evidence',
+    'comparison',
+    'insight',
+    'process',
+    'takeaway',
+    'process',
+    'transition',
+    'closing',
+  ];
+
+  return {
+    'topic': 'Evidence-led product decisions',
+    'story':
+        'Move from scattered observations to a shared, reviewable decision '
+        'practice.',
+    'theme': {'id': 'technical-paper'},
+    'sections': [
+      {
+        'key': 'tension',
+        'title': 'The tension',
+        'purpose': 'Make the decision delay concrete.',
+        'transition': 'Move from the delay to the operating choices.',
+        'slideKeys': slideKeys.sublist(0, 3),
+      },
+      {
+        'key': 'system',
+        'title': 'The system',
+        'purpose': 'Explain the shared evidence practice.',
+        'transition': 'Translate the practice into an explicit next action.',
+        'slideKeys': slideKeys.sublist(3, 7),
+      },
+      {
+        'key': 'action',
+        'title': 'The action',
+        'purpose': 'Make the next review cycle practical.',
+        'transition': 'Close with a clear decision rhythm.',
+        'slideKeys': slideKeys.sublist(7),
+      },
+    ],
+    'slides': [
+      for (var index = 0; index < slideKeys.length; index++)
+        {
+          'key': slideKeys[index],
+          'title': titles[index],
+          'purpose': 'Advance the evidence-led decision story.',
+          'sectionKey': sectionKeys[index],
+          'assertion': index == 2
+              ? 'Teams spent 42% less weekly synthesis time.'
+              : 'The ${titles[index].toLowerCase()} idea advances the story.',
+          'contentUnits': index == 2
+              ? ['Teams spent 42% less weekly synthesis time.']
+              : [
+                  'Concrete evidence for ${slideKeys[index]}.',
+                  'Practical implication for ${slideKeys[index]}.',
+                ],
+          'narrativeRole': roles[index],
+          'contentBrief': 'Keep the slide concise and decision-oriented.',
+          'continuity': 'Connect this idea to the surrounding decision flow.',
+          'composition': compositions[index],
+          'treatment': treatments[index],
+          'density': index % 3 == 0 ? 'spacious' : 'balanced',
+          'elements': <Object?>[],
+        },
+    ],
+  };
+}
+
+List<Map<String, Object?>> _checkpointSlides() => [
+  _checkpointSlide(
+    key: 'opening',
+    title: 'Evidence Becomes Momentum',
+    style: 'hero',
+    blocks: [
+      '# Evidence Becomes Momentum\n\n'
+          'A shared evidence practice turns observation into a decision.',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'signals',
+    title: 'Signals Arrive Before Decisions',
+    style: 'content',
+    blocks: [
+      '## Signals arrive before decisions\n\n'
+          'Research, support, and product observations accumulate while the '
+          'decision frame stays implicit.',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'synthesis',
+    title: 'Synthesis Time Shifted',
+    style: 'data',
+    blocks: [
+      '# Teams spent 42% less weekly synthesis time\n\n'
+          'The operating gain comes from reviewing a connected evidence '
+          'trail.',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'choices',
+    title: 'Choose the Operating Model',
+    style: 'data',
+    blocks: [
+      '## Choose the operating model\n\n'
+          '| Model | Decision pace | Evidence trail |\n'
+          '| --- | --- | --- |\n'
+          '| Quarterly review | Slow | Fragmented |\n'
+          '| Team dashboard | Medium | Local |\n'
+          '| Shared loop | Fast | Connected |',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'alignment',
+    title: 'Align the Decision Frame',
+    style: 'content',
+    blocks: [
+      '### Evidence\n\nKeep claims linked to their source.',
+      '### Decision\n\nName the owner, trade-off, and review date.',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'practice',
+    title: 'Build a Shared Practice',
+    style: 'data',
+    blocks: [
+      '### Capture\n\nCollect the relevant signal.',
+      '### Connect\n\nRelate it to the decision.',
+      '### Commit\n\nRecord the next review action.',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'principle',
+    title: 'Trust Needs a Visible Trail',
+    style: 'quote',
+    blocks: [
+      '> A recommendation earns trust when evidence and next action stay '
+          'together.\n\nDecision design principle',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'verification',
+    title: 'Verify the Working Contract',
+    style: 'content',
+    blocks: [
+      '## Verify the working contract\n\n'
+          '- Keep the selected theme reference stable\n'
+          '- Replay the canonical Markdown\n'
+          '- Inspect every full-size capture',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'action',
+    title: 'Make the Practice Explicit',
+    style: 'section',
+    blocks: [
+      '## Make the practice explicit\n\n'
+          'Use a shared review rhythm and record what changes next.',
+    ],
+  ),
+  _checkpointSlide(
+    key: 'close',
+    title: 'Decide, Learn, Repeat',
+    style: 'closing',
+    blocks: [
+      '# Decide, learn, repeat\n\n'
+          'Keep evidence, decisions, and learning in the same operating loop.',
+    ],
+  ),
+];
+
+Map<String, Object?> _checkpointSlide({
+  required String key,
+  required String title,
+  required String style,
+  required List<String> blocks,
+}) => {
+  'key': key,
+  'options': {'title': title, 'style': style},
+  'sections': [
+    {
+      'type': 'section',
+      'blocks': [
+        for (final content in blocks) {'type': 'block', 'content': content},
+      ],
+    },
+  ],
+};

@@ -8,11 +8,11 @@ import 'package:playground/features/ai/quick_agent/core/engine/services/google_s
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 
 void main() {
-  test('accepts a styled deck plan with narrative and element intent', () {
+  test('accepts a theme-referenced plan with narrative and element intent', () {
     final result = deckPlanSchema.safeParse({
       'topic': 'Reliable systems',
       'story': 'Move from operational uncertainty to measurable confidence.',
-      'style': _validStyle,
+      'theme': _validTheme,
       'sections': [
         {
           'key': 'main',
@@ -87,7 +87,7 @@ void main() {
       final schema = result.schema!;
       expect(
         schema.properties.keys,
-        containsAll(['topic', 'story', 'style', 'sections', 'slides']),
+        containsAll(['topic', 'story', 'theme', 'sections', 'slides']),
       );
       final slide = schema.properties['slides']!.items!;
       expect(
@@ -115,7 +115,7 @@ void main() {
     final result = deckPlanSchema.safeParse({
       'topic': 'Invalid plan',
       'story': 'This should fail.',
-      'style': _validStyle,
+      'theme': _validTheme,
       'sections': [
         {
           'key': 'main',
@@ -151,7 +151,7 @@ void main() {
     final plan = DeckPlanType.parse({
       'topic': 'Duplicate keys',
       'story': 'A short story.',
-      'style': _validStyle,
+      'theme': _validTheme,
       'sections': [
         {
           'key': 'main',
@@ -181,7 +181,7 @@ void main() {
     final plan = DeckPlanType.parse({
       'topic': 'Count contract',
       'story': 'Every requested slide must be planned.',
-      'style': _validStyle,
+      'theme': _validTheme,
       'sections': [
         {
           'key': 'main',
@@ -287,34 +287,30 @@ void main() {
     expect(issues.where((issue) => issue.isBlocking), isEmpty);
   });
 
-  test(
-    'rejects unknown fonts, weak contrast, and broken section membership',
-    () {
-      final data = _hierarchicalPlan();
-      final style = data['style']! as Map<String, Object?>;
-      final fonts = style['fonts']! as Map<String, Object?>;
-      final colors = style['colors']! as Map<String, Object?>;
-      final sections = data['sections']! as List<Map<String, Object?>>;
-      fonts['headline'] = 'Invented Display';
-      colors['body'] = '#172033';
-      final finalSectionKeys = sections.last['slideKeys']! as List<String>;
-      finalSectionKeys.removeLast();
-      final plan = DeckPlanType.parse(data);
+  test('rejects a stale theme and broken section membership', () {
+    final data = _hierarchicalPlan();
+    final theme = Map<String, Object?>.of(
+      data['theme']! as Map<String, Object?>,
+    );
+    data['theme'] = theme;
+    final sections = data['sections']! as List<Map<String, Object?>>;
+    theme['version'] = 999;
+    final finalSectionKeys = sections.last['slideKeys']! as List<String>;
+    finalSectionKeys.removeLast();
+    final plan = DeckPlanType.parse(data);
 
-      final errors = validateDeckPlan(plan);
+    final errors = validateDeckPlan(plan);
 
-      expect(
-        errors,
-        containsAll([
-          contains('not registered for headline use'),
-          contains('Body/background contrast'),
-          contains('partition all deck slides'),
-        ]),
-      );
-    },
-  );
+    expect(
+      errors,
+      containsAll([
+        contains('Unknown or stale presentation theme'),
+        contains('partition all deck slides'),
+      ]),
+    );
+  });
 
-  test('rejects changes to exact requested palette and font selections', () {
+  test('rejects changes to exact requested theme and font selections', () {
     final plan = DeckPlanType.parse(_hierarchicalPlan());
 
     final errors = validateDeckPlan(
@@ -322,19 +318,16 @@ void main() {
       request: const DeckGenerationRequest(
         userIntent: 'Explain reliable delivery.',
         slideCount: 10,
-        colors: ['#FFFFFF', '#111111', '#333333'],
+        themeId: 'technical-paper',
         headlineFont: 'Lora',
-        bodyFont: 'Inter',
       ),
     );
 
     expect(
       errors,
       containsAll([
-        contains('changed the requested headline font'),
-        contains('changed requested color 1'),
-        contains('changed requested color 2'),
-        contains('changed requested color 3'),
+        contains('changed requested theme'),
+        contains('does not exactly preserve the requested'),
       ]),
     );
   });
@@ -1083,21 +1076,10 @@ Map<String, Object?> _validSlide({required String key}) => {
   'elements': <Object?>[],
 };
 
-const _validStyle = <String, Object?>{
-  'name': 'midnight',
-  'direction': 'editorial',
+const _validTheme = <String, Object?>{
+  'id': 'editorial-midnight',
+  'version': 1,
   'density': 'balanced',
-  'typeScale': 'dramatic',
-  'colors': {
-    'background': '#101828',
-    'surface': '#1D2939',
-    'surfaceAlt': '#344054',
-    'heading': '#F9FAFB',
-    'body': '#D0D5DD',
-    'accent': '#6941C6',
-    'accentContrast': '#FFFFFF',
-  },
-  'fonts': {'headline': 'Montserrat', 'body': 'Inter'},
 };
 
 Map<String, Object?> _hierarchicalPlan() {
@@ -1153,22 +1135,7 @@ Map<String, Object?> _hierarchicalPlan() {
   return {
     'topic': 'Reliable software delivery',
     'story': 'Move from release anxiety to measurable confidence.',
-    'style': {
-      'name': 'midnight-signal',
-      'direction': 'editorial',
-      'density': 'balanced',
-      'typeScale': 'dramatic',
-      'colors': {
-        'background': '#101828',
-        'surface': '#1D2939',
-        'surfaceAlt': '#344054',
-        'heading': '#F9FAFB',
-        'body': '#D0D5DD',
-        'accent': '#7F56D9',
-        'accentContrast': '#FFFFFF',
-      },
-      'fonts': {'headline': 'Playfair Display', 'body': 'Inter'},
-    },
+    'theme': _validTheme,
     'sections': [
       {
         'key': 'tension',
@@ -1258,7 +1225,7 @@ Map<String, Object?> _scaledHierarchicalPlan(int count) {
   return {
     'topic': 'Scaled quality fixture',
     'story': 'Move through a complete evidence-led narrative.',
-    'style': _validStyle,
+    'theme': _validTheme,
     'sections': sections,
     'slides': [
       for (var index = 0; index < count; index++)

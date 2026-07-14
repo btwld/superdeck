@@ -5,14 +5,14 @@ import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
 import 'package:superdeck_core/superdeck_core.dart';
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../../../../../core/domain/design/presentation_typography_catalog.dart';
 import '../prompts/generation_prompt_provider.dart';
-import '../schemas/deck_schemas.dart';
 import '../schemas/outline_schema.dart';
 import 'deck_generation_request.dart';
 import 'deck_generator_pipeline_helpers.dart';
-import 'deck_plan_normalizer.dart';
 import 'deck_plan_validator.dart';
+import 'deck_theme_resolution.dart';
 import 'error_classifier.dart';
 import 'generation_model_client.dart';
 import 'generation_element_catalog.dart';
@@ -23,6 +23,7 @@ import 'generation_validation_issue.dart';
 import 'generated_slide_validator.dart';
 import 'google_schema_adapter.dart';
 import 'retry_policy.dart';
+import 'theme_json_serializer.dart';
 import '../../constants/gemini_models.dart';
 import '../../debug_logger.dart';
 
@@ -32,30 +33,6 @@ part 'deck_generator_workflow.dart';
 
 /// Result of deck generation.
 class DeckGenerationResult {
-  const DeckGenerationResult._({
-    required this.success,
-    this.message,
-    this.error,
-    List<Slide>? slides,
-    this.style,
-    this.plan,
-  }) : slides = slides ?? const [];
-
-  DeckGenerationResult.success({
-    required List<Slide> slides,
-    required DeckPlanType plan,
-  }) : this._(
-         success: true,
-         message:
-             'Successfully generated presentation with ${slides.length} slides.',
-         slides: slides,
-         style: plan.style,
-         plan: plan,
-       );
-
-  DeckGenerationResult.failure(String error)
-    : this._(success: false, error: error);
-
   final bool success;
   final String? message;
   final String? error;
@@ -63,11 +40,36 @@ class DeckGenerationResult {
   /// Generated slides (in-memory, not written to disk).
   final List<Slide> slides;
 
-  /// Style configuration extracted from the generated deck.
-  final DeckStyleType? style;
+  /// Exact catalog theme resolved for runtime application.
+  final ResolvedPresentationTheme? theme;
 
   /// The validated, mechanically normalized plan used to compose the deck.
   final DeckPlanType? plan;
+
+  const DeckGenerationResult._({
+    required this.success,
+    this.message,
+    this.error,
+    List<Slide>? slides,
+    this.theme,
+    this.plan,
+  }) : slides = slides ?? const [];
+
+  DeckGenerationResult.success({
+    required List<Slide> slides,
+    required DeckPlanType plan,
+    required ResolvedPresentationTheme theme,
+  }) : this._(
+         success: true,
+         message:
+             'Successfully generated presentation with ${slides.length} slides.',
+         slides: slides,
+         theme: theme,
+         plan: plan,
+       );
+
+  DeckGenerationResult.failure(String error)
+    : this._(success: false, error: error);
 
   /// Number of slides in the result.
   int get slideCount => slides.length;
@@ -77,39 +79,11 @@ class DeckGenerationResult {
 ///
 /// Uses a plan-first pipeline, then composes and validates one slide at a time.
 class DeckGeneratorService {
-  DeckGeneratorService({
-    required this.apiKey,
-    this.modelName = GeminiModelNames.gemini3FlashPreview,
-    this.outlineModelName = GeminiModelNames.gemini3FlashPreview,
-    this.requestTimeout = const Duration(seconds: 45),
-    this.maxOutlineValidationAttempts = 6,
-    this.maxOutlineSlideValidationAttempts = 3,
-    this.maxSlideValidationAttempts = 4,
-    this.maxModelRequests = 96,
-    this.maxRepairRequests = 72,
-    this.runTimeout = const Duration(minutes: 15),
-    RetryPolicy? retryPolicy,
-    GenerationModelClientFactory? modelClientFactory,
-    GenerationPromptProvider? promptProvider,
-    GenerationElementCatalog? elementCatalog,
-    PresentationTypographyCatalog? typographyCatalog,
-  }) : assert(maxOutlineValidationAttempts > 0),
-       assert(maxOutlineSlideValidationAttempts > 0),
-       assert(maxSlideValidationAttempts > 0),
-       assert(maxModelRequests > 0),
-       assert(maxRepairRequests > 0),
-       assert(runTimeout > Duration.zero),
-       retryPolicy = retryPolicy ?? RetryPolicy(maxAttempts: 2),
-       elementCatalog = elementCatalog ?? GenerationElementCatalog.builtIn(),
-       typographyCatalog =
-           typographyCatalog ?? PresentationTypographyCatalog.withDefaults(),
-       _modelClientFactory =
-           modelClientFactory ?? GoogleGenerationModelClient.fromApiKey,
-       _promptProvider = promptProvider ?? AssetGenerationPromptProvider();
-
   final GenerationElementCatalog elementCatalog;
 
   final PresentationTypographyCatalog typographyCatalog;
+
+  final PresentationThemeCatalog themeCatalog;
 
   final String apiKey;
 
@@ -163,6 +137,38 @@ class DeckGeneratorService {
 
   final GenerationPromptProvider _promptProvider;
 
+  DeckGeneratorService({
+    required this.apiKey,
+    this.modelName = GeminiModelNames.gemini3FlashPreview,
+    this.outlineModelName = GeminiModelNames.gemini3FlashPreview,
+    this.requestTimeout = const Duration(seconds: 45),
+    this.maxOutlineValidationAttempts = 6,
+    this.maxOutlineSlideValidationAttempts = 3,
+    this.maxSlideValidationAttempts = 4,
+    this.maxModelRequests = 96,
+    this.maxRepairRequests = 72,
+    this.runTimeout = const Duration(minutes: 15),
+    RetryPolicy? retryPolicy,
+    GenerationModelClientFactory? modelClientFactory,
+    GenerationPromptProvider? promptProvider,
+    GenerationElementCatalog? elementCatalog,
+    PresentationTypographyCatalog? typographyCatalog,
+    PresentationThemeCatalog? themeCatalog,
+  }) : assert(maxOutlineValidationAttempts > 0),
+       assert(maxOutlineSlideValidationAttempts > 0),
+       assert(maxSlideValidationAttempts > 0),
+       assert(maxModelRequests > 0),
+       assert(maxRepairRequests > 0),
+       assert(runTimeout > Duration.zero),
+       retryPolicy = retryPolicy ?? RetryPolicy(maxAttempts: 2),
+       elementCatalog = elementCatalog ?? GenerationElementCatalog.builtIn(),
+       typographyCatalog =
+           typographyCatalog ?? PresentationTypographyCatalog.withDefaults(),
+       themeCatalog = themeCatalog ?? PresentationThemeCatalog.withDefaults(),
+       _modelClientFactory =
+           modelClientFactory ?? GoogleGenerationModelClient.fromApiKey,
+       _promptProvider = promptProvider ?? AssetGenerationPromptProvider();
+
   /// Generates a presentation deck from typed user intent.
   ///
   /// Contractual fields such as slide count and typography remain typed so they
@@ -187,6 +193,19 @@ class DeckGeneratorService {
     if (request.slideCount < 1 || request.slideCount > 50) {
       return DeckGenerationResult.failure(
         'Slide count must be between 1 and 50.',
+      );
+    }
+
+    final List<PresentationThemeDescriptor> themeCandidates;
+    try {
+      themeCandidates = themeCandidatesForRequest(
+        request: request,
+        themeCatalog: themeCatalog,
+        typographyCatalog: typographyCatalog,
+      );
+    } catch (error) {
+      return DeckGenerationResult.failure(
+        'Theme selection is invalid: ${_argumentMessage(error)}',
       );
     }
 
@@ -217,6 +236,7 @@ class DeckGeneratorService {
         executor: executor,
         prompt: modelInput,
         request: request,
+        themeCandidates: themeCandidates,
         onProgress: onProgress,
         trace: trace,
       );
@@ -250,6 +270,7 @@ class DeckGeneratorService {
       }
 
       return _finalizeDeck(
+        this,
         deckJson: deckJson,
         plan: outline,
         pipelineStart: pipelineStart,

@@ -1,22 +1,23 @@
 import 'package:flutter/widgets.dart';
 
+import '../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
-import '../core/engine/schemas/deck_schemas.dart';
 
-extension GeneratedDeckStyleMapping on DeckStyleType {
+extension GeneratedDeckStyleMapping on ResolvedPresentationTheme {
   GeneratedDeckStyle toGeneratedDeckStyle() => .new(
-    background: _colorFromHex(colors.background),
-    surface: _colorFromHex(colors.surface),
-    surfaceAlt: _colorFromHex(colors.surfaceAlt),
-    heading: _colorFromHex(colors.heading),
-    body: _colorFromHex(colors.body),
-    accent: _colorFromHex(colors.accent),
-    accentContrast: _colorFromHex(colors.accentContrast),
-    headlineFamily: fonts.headline,
-    bodyFamily: fonts.body,
+    background: _colorFromHex(palette.background),
+    surface: _colorFromHex(palette.surface),
+    surfaceAlt: _colorFromHex(palette.surfaceAlt),
+    heading: _colorFromHex(palette.heading),
+    body: _colorFromHex(palette.body),
+    accent: _colorFromHex(palette.accent),
+    accentContrast: _colorFromHex(palette.accentContrast),
+    headlineFamily: headlineFamily,
+    bodyFamily: bodyFamily,
     direction: direction,
     density: density,
     typeScale: typeScale,
+    runtime: descriptor.recipe.runtime,
   );
 }
 

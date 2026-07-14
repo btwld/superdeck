@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
+import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_model_client.dart';
@@ -21,37 +22,37 @@ void main() {
       _jsonResponse({
         'topic': 'Count contract',
         'story': 'The outline must have the requested number of slides.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'only-one')],
       }),
       _jsonResponse({
         'topic': 'Count contract',
         'story': 'The repaired outline is still incomplete.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'still-only-one')],
       }),
       _jsonResponse({
         'topic': 'Count contract',
         'story': 'The final outline repair is still incomplete.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'still-incomplete')],
       }),
       _jsonResponse({
         'topic': 'Count contract',
         'story': 'The bounded outline repairs remain incomplete.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'still-invalid')],
       }),
       _jsonResponse({
         'topic': 'Count contract',
         'story': 'The final bounded repair remains incomplete.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'still-invalid-final')],
       }),
       _jsonResponse({
         'topic': 'Count contract',
         'story': 'The extra semantic sweep remains incomplete.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'still-invalid-extra')],
       }),
     ]);
@@ -80,13 +81,13 @@ void main() {
       _jsonResponse({
         'topic': 'Repair contract',
         'story': 'The first outline has the wrong count.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'only-one')],
       }),
       _jsonResponse({
         'topic': 'Repair contract',
         'story': 'The repaired outline now has the exact requested count.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'opening'), _planSlide(key: 'closing')],
       }),
       _jsonResponse(
@@ -135,7 +136,7 @@ void main() {
       _jsonResponse({
         'topic': 'Local plan repair',
         'story': 'Repair only the invalid slide content.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [invalidSlide],
       }),
       _jsonResponse(_planSlide(key: 'opening')),
@@ -177,20 +178,12 @@ void main() {
     ]);
   });
 
-  test('normalizes derived accent contrast without a model repair', () async {
-    final lowContrastStyle = <String, Object?>{
-      ..._testStyle,
-      'colors': {
-        ..._testStyle['colors']! as Map<String, Object?>,
-        'accent': '#FF8A00',
-        'accentContrast': '#FFFFFF',
-      },
-    };
+  test('resolves the selected catalog theme without a model repair', () async {
     final client = _FakeGenerationModelClient([
       _jsonResponse({
-        'topic': 'Accessible palette',
-        'story': 'Keep the generated accent and derive readable foreground.',
-        'style': lowContrastStyle,
+        'topic': 'Catalog theme',
+        'story': 'Resolve the selected theme locally.',
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'opening')],
       }),
       _jsonResponse(
@@ -203,15 +196,143 @@ void main() {
     );
 
     final result = await service.generate(
-      _request('Create one accessible slide.', slideCount: 1),
+      _request('Create one themed slide.', slideCount: 1),
     );
 
     expect(result.success, isTrue);
-    expect(result.plan, isNotNull);
-    expect(result.plan!.style.colors.accent, '#FF8A00');
-    expect(result.plan!.style.colors.accentContrast, '#000000');
+    expect(result.plan!.theme.id, 'technical-paper');
+    expect(result.plan!.theme.version, 1);
+    expect(result.theme!.descriptor.id, 'technical-paper');
+    expect(result.theme!.palette.accent, '#0967D2');
     expect(client.requests, hasLength(2));
   });
+
+  test('an explicit theme is the only model-eligible ID', () async {
+    final client = _FakeGenerationModelClient([
+      _jsonResponse({
+        'topic': 'Explicit theme',
+        'story': 'Keep the exact user-selected theme.',
+        'theme': const {'id': 'bold-product'},
+        'slides': [_planSlide(key: 'opening')],
+      }),
+      _jsonResponse(
+        _generatedSlide(key: 'opening', title: 'Opening', style: 'content'),
+      ),
+    ]);
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      const DeckGenerationRequest(
+        userIntent: 'Create one product slide.',
+        slideCount: 1,
+        themeId: 'bold-product',
+      ),
+    );
+
+    expect(result.success, isTrue);
+    expect(result.plan!.theme.id, 'bold-product');
+    final schema = client.requests.first.generationConfig!.responseSchema!;
+    expect(schema.properties['theme']!.properties['id']!.enum$, [
+      'bold-product',
+    ]);
+  });
+
+  for (final themeId in defaultPresentationThemeIds) {
+    test('resolves $themeId through plan, slide, and runtime output', () async {
+      final client = _FakeGenerationModelClient([
+        _jsonResponse({
+          'topic': 'Representative theme',
+          'story': 'Carry one exact theme through the full fake pipeline.',
+          'theme': {'id': themeId},
+          'slides': [_planSlide(key: 'opening')],
+        }),
+        _jsonResponse(
+          _generatedSlide(key: 'opening', title: 'Opening', style: 'content'),
+        ),
+      ]);
+      final result =
+          await DeckGeneratorService(
+            apiKey: 'test-key',
+            modelClientFactory: (_) => client,
+          ).generate(
+            DeckGenerationRequest(
+              userIntent: 'Create one representative themed slide.',
+              slideCount: 1,
+              themeId: themeId,
+            ),
+          );
+
+      expect(result.success, isTrue, reason: result.error);
+      expect(result.plan!.theme.id, themeId);
+      expect(result.plan!.theme.version, 1);
+      expect(result.theme!.descriptor.id, themeId);
+      expect(result.slides, hasLength(1));
+    });
+  }
+
+  test('rejects an unknown explicit theme before any provider call', () async {
+    final client = _FakeGenerationModelClient(const []);
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      const DeckGenerationRequest(
+        userIntent: 'Create one product slide.',
+        slideCount: 1,
+        themeId: 'missing-theme',
+      ),
+    );
+
+    expect(result.success, isFalse);
+    expect(result.error, contains('Unknown presentation theme'));
+    expect(client.requests, isEmpty);
+  });
+
+  test('rejects an unknown exact font before any provider call', () async {
+    final client = _FakeGenerationModelClient(const []);
+    final result =
+        await DeckGeneratorService(
+          apiKey: 'test-key',
+          modelClientFactory: (_) => client,
+        ).generate(
+          const DeckGenerationRequest(
+            userIntent: 'Create one branded slide.',
+            slideCount: 1,
+            headlineFont: 'Invented Display',
+          ),
+        );
+
+    expect(result.success, isFalse);
+    expect(result.error, contains('is not registered'));
+    expect(client.requests, isEmpty);
+  });
+
+  test(
+    'rejects an unreadable palette override before any provider call',
+    () async {
+      final client = _FakeGenerationModelClient(const []);
+      final result =
+          await DeckGeneratorService(
+            apiKey: 'test-key',
+            modelClientFactory: (_) => client,
+          ).generate(
+            const DeckGenerationRequest(
+              userIntent: 'Create one branded slide.',
+              slideCount: 1,
+              colors: ['#FFFFFF', '#FFFFFF', '#FFFFFF'],
+            ),
+          );
+
+      expect(result.success, isFalse);
+      expect(result.error, contains('expected at least'));
+      expect(client.requests, isEmpty);
+    },
+  );
 
   test(
     'drops invalid optional comments without another model request',
@@ -220,7 +341,7 @@ void main() {
         _jsonResponse({
           'topic': 'Comment fallback',
           'story': 'Visible evidence stays intact.',
-          'style': _testStyle,
+          'theme': _testThemeSelection,
           'slides': [_planSlide(key: 'evidence')],
         }),
         _jsonResponse({
@@ -252,7 +373,7 @@ void main() {
       _jsonResponse({
         'topic': 'Test topic',
         'story': 'Introduce and explain the test topic.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'intro')],
       }),
       _jsonResponse(
@@ -280,8 +401,9 @@ void main() {
         client.requests.first.systemInstruction!.parts.single.text;
     expect(outlinePrompt, contains('narrativeRole'));
     expect(outlinePrompt, contains('composition'));
-    expect(outlinePrompt, contains('one shared design system'));
-    expect(outlinePrompt, contains('Registered typography catalog'));
+    expect(outlinePrompt, contains('## Eligible presentation themes'));
+    expect(outlinePrompt, contains('Choose exactly one `theme.id`'));
+    expect(outlinePrompt, isNot(contains('Registered typography catalog')));
     expect(outlinePrompt, contains('ordered narrative acts'));
     final slidePrompt =
         client.requests.last.systemInstruction!.parts.single.text;
@@ -331,42 +453,15 @@ void main() {
 
   test('stops after an outline with duplicate slide keys', () async {
     final client = _FakeGenerationModelClient([
-      _jsonResponse({
-        'topic': 'Invalid plan',
-        'story': 'A plan that should not reach composition.',
-        'style': _testStyle,
-        'slides': [_planSlide(key: 'duplicate'), _planSlide(key: 'duplicate')],
-      }),
-      _jsonResponse({
-        'topic': 'Invalid plan',
-        'story': 'The repair still has duplicate keys.',
-        'style': _testStyle,
-        'slides': [_planSlide(key: 'duplicate'), _planSlide(key: 'duplicate')],
-      }),
-      _jsonResponse({
-        'topic': 'Invalid plan',
-        'story': 'The final repair still has duplicate keys.',
-        'style': _testStyle,
-        'slides': [_planSlide(key: 'duplicate'), _planSlide(key: 'duplicate')],
-      }),
-      _jsonResponse({
-        'topic': 'Invalid plan',
-        'story': 'The bounded repairs still have duplicate keys.',
-        'style': _testStyle,
-        'slides': [_planSlide(key: 'duplicate'), _planSlide(key: 'duplicate')],
-      }),
-      _jsonResponse({
-        'topic': 'Invalid plan',
-        'story': 'The final bounded repair still has duplicate keys.',
-        'style': _testStyle,
-        'slides': [_planSlide(key: 'duplicate'), _planSlide(key: 'duplicate')],
-      }),
-      _jsonResponse({
-        'topic': 'Invalid plan',
-        'story': 'The extra semantic sweep still has duplicate keys.',
-        'style': _testStyle,
-        'slides': [_planSlide(key: 'duplicate'), _planSlide(key: 'duplicate')],
-      }),
+      for (final story in const [
+        'A plan that should not reach composition.',
+        'The repair still has duplicate keys.',
+        'The final repair still has duplicate keys.',
+        'The bounded repairs still have duplicate keys.',
+        'The final bounded repair still has duplicate keys.',
+        'The extra semantic sweep still has duplicate keys.',
+      ])
+        _jsonResponse(_duplicateKeyPlan(story)),
     ]);
     final traces = <GenerationTraceEvent>[];
     final service = DeckGeneratorService(
@@ -375,7 +470,11 @@ void main() {
     );
 
     final result = await service.generate(
-      _request('Create an invalid plan.', slideCount: 2),
+      const DeckGenerationRequest(
+        userIntent: 'Create an invalid plan.',
+        slideCount: 2,
+        themeId: 'technical-paper',
+      ),
       onTrace: traces.add,
     );
 
@@ -404,7 +503,7 @@ void main() {
         _jsonResponse({
           'topic': 'Flow',
           'story': 'A connected three-slide story.',
-          'style': _testStyle,
+          'theme': _testThemeSelection,
           'slides': [
             _planSlide(key: 'opening', composition: 'title'),
             _planSlide(key: 'evidence'),
@@ -487,7 +586,7 @@ void main() {
       _jsonResponse({
         'topic': 'Bounded repair',
         'story': 'Repair one display heading without restarting the deck.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'evidence')],
       }),
       _jsonResponse(
@@ -557,7 +656,7 @@ void main() {
         _jsonResponse({
           'topic': 'Cancel',
           'story': 'Stop after one slide.',
-          'style': _testStyle,
+          'theme': _testThemeSelection,
           'slides': [_planSlide(key: 'one'), _planSlide(key: 'two')],
         }),
         _jsonResponse(
@@ -590,13 +689,13 @@ void main() {
         _jsonResponse({
           'topic': 'Cancel outline repair',
           'story': 'The first outline has the wrong count.',
-          'style': _testStyle,
+          'theme': _testThemeSelection,
           'slides': [_planSlide(key: 'only-one')],
         }),
         _jsonResponse({
           'topic': 'Cancel outline repair',
           'story': 'This repair must never be requested.',
-          'style': _testStyle,
+          'theme': _testThemeSelection,
           'slides': [_planSlide(key: 'one'), _planSlide(key: 'two')],
         }),
       ],
@@ -626,7 +725,7 @@ void main() {
         _jsonResponse({
           'topic': 'Cancel slide repair',
           'story': 'Stop while validating the first slide draft.',
-          'style': _testStyle,
+          'theme': _testThemeSelection,
           'slides': [_planSlide(key: 'opening')],
         }),
         _jsonResponse({'key': 'opening', 'sections': <Object?>[]}),
@@ -705,7 +804,7 @@ void main() {
       _jsonResponse({
         'topic': 'Elements',
         'story': 'Show a supplied visual.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [
           _planSlide(
             key: 'visual',
@@ -787,22 +886,7 @@ void main() {
   });
 }
 
-const _testStyle = <String, Object?>{
-  'name': 'test',
-  'direction': 'technical',
-  'density': 'balanced',
-  'typeScale': 'balanced',
-  'colors': {
-    'background': '#101010',
-    'surface': '#202020',
-    'surfaceAlt': '#303030',
-    'heading': '#FFFFFF',
-    'body': '#E5E5E5',
-    'accent': '#6941C6',
-    'accentContrast': '#FFFFFF',
-  },
-  'fonts': {'headline': 'Montserrat', 'body': 'Inter'},
-};
+const _testThemeSelection = <String, Object?>{'id': 'technical-paper'};
 
 DeckGenerationRequest _request(String userIntent, {required int slideCount}) =>
     DeckGenerationRequest(userIntent: userIntent, slideCount: slideCount);
@@ -830,6 +914,22 @@ Map<String, Object?> _planSlide({
   },
   'density': 'balanced',
   'elements': elements,
+};
+
+Map<String, Object?> _duplicateKeyPlan(String story) => {
+  'topic': 'Invalid plan',
+  'story': story,
+  'theme': _testThemeSelection,
+  'sections': [
+    {
+      'key': 'main',
+      'title': 'Main story',
+      'purpose': 'Advance the test narrative.',
+      'transition': 'Carry the story to its conclusion.',
+      'slideKeys': ['duplicate', 'duplicate'],
+    },
+  ],
+  'slides': [_planSlide(key: 'duplicate'), _planSlide(key: 'duplicate')],
 };
 
 Map<String, Object?> _generatedSlide({
@@ -936,7 +1036,7 @@ final class _HangingSlideModelClient implements GenerationModelClient {
         _jsonResponse({
           'topic': 'Timeout',
           'story': 'Verify the request deadline.',
-          'style': _testStyle,
+          'theme': _testThemeSelection,
           'slides': [_planSlide(key: 'intro')],
         }),
       );
@@ -960,7 +1060,7 @@ final class _RetryingSlideModelClient implements GenerationModelClient {
       return _jsonResponse({
         'topic': 'Retry trace',
         'story': 'Distinguish transport retries from semantic repairs.',
-        'style': _testStyle,
+        'theme': _testThemeSelection,
         'slides': [_planSlide(key: 'opening')],
       });
     }
@@ -987,7 +1087,7 @@ final class _RepeatingInvalidOutlineClient implements GenerationModelClient {
     return _jsonResponse({
       'topic': 'Request budget',
       'story': 'Keep returning an outline with the wrong slide count.',
-      'style': _testStyle,
+      'theme': _testThemeSelection,
       'slides': [_planSlide(key: 'only-one')],
     });
   }

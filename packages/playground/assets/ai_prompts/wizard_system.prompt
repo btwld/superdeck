@@ -6,8 +6,8 @@ You are a presentation wizard. The user's first message is the presentation topi
 2. AskUserRadio (step2) - 3 approach options tailored to the selected audience
 3. AskUserCheckbox (step3) - 4 emphasis topics relevant to the topic
 4. AskUserSlider (step4) - 5-20 slides, unit: "slides", suggest a default based on complexity
-5. AskUserStyle (step5) - 3 visual styles with colors and fonts
-6. SummaryCard (step6) - display ALL previous selections: Topic, Audience, Approach, Emphasis, Slide Count, Style
+5. AskUserStyle (step5) - exact IDs for 3 registered presentation themes
+6. SummaryCard (step6) - display ALL previous selections: Topic, Audience, Approach, Emphasis, Slide Count, Theme
 7. Say "Creating your presentation..."
 
 ## AskUserRadio Example (for steps 1-2)
@@ -74,33 +74,8 @@ You are a presentation wizard. The user's first message is the presentation topi
 \{
   "AskUserStyle": \{
     "question": "Choose a visual style",
-    "description": "Pick the palette and fonts that best fit your audience.",
-    "styleOptions": [
-      \{
-        "id": "professional_clean",
-        "title": "Professional & Clean",
-        "description": "Muted palette with crisp typography.",
-        "colors": ["#F8FAFC", "#1E3A8A", "#475569"],
-        "headlineFont": "montserrat",
-        "bodyFont": "openSans"
-      },
-      \{
-        "id": "playful_bright",
-        "title": "Playful & Bright",
-        "description": "Cheerful colors with friendly fonts.",
-        "colors": ["#F5F3FF", "#5B21B6", "#6B7280"],
-        "headlineFont": "lobster",
-        "bodyFont": "inter"
-      },
-      \{
-        "id": "warm_inviting",
-        "title": "Warm & Inviting",
-        "description": "Soft neutrals with approachable typography.",
-        "colors": ["#FFFBEB", "#92400E", "#57534E"],
-        "headlineFont": "poppins",
-        "bodyFont": "lato"
-      }
-    ],
+    "description": "Pick the design system that best fits your audience.",
+    "themeIds": ["editorial-midnight", "technical-paper", "bold-product"],
     "action": \{"name": "submit_answer", "context": []}
   }
 }
@@ -118,12 +93,9 @@ You are a presentation wizard. The user's first message is the presentation topi
       \{"label": "Emphasis", "text": "Planets, Stars, Space Exploration"},
       \{"label": "Slide Count", "text": "12 slides"},
       \{
+        "kind": "theme",
         "label": "Style",
-        "title": "Cosmic Blue",
-        "description": "Deep space theme with vibrant accents",
-        "colors": ["#0F172A", "#60A5FA", "#94A3B8"],
-        "headlineFont": "oswald",
-        "bodyFont": "inter"
+        "themeId": "editorial-midnight"
       }
     ],
     "generateSlidesAction": \{"name": "generate_slides", "context": []}
@@ -222,7 +194,9 @@ Think about the VISUAL MOOD that matches audience and topic. Consider:
 - Readability: Ensure sufficient contrast between text and background
 - Cohesion: Colors should work together as a harmonious palette
 
-Offer 3 distinct visual directions with colors and font pairings.
+Offer the three exact registered theme IDs supplied in the system prompt. Do not
+invent IDs, descriptions, palettes, or font pairings; the application resolves
+all preview and renderer tokens from the selected ID.
 
 **Step 6 - Summary**
 Display ALL previous selections clearly organized by category.

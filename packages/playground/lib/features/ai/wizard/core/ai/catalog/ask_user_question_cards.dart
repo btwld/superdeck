@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
 
-import '../prompts/font_styles.dart';
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../prompts/image_style_prompts.dart';
 import '../../ui/ui.dart';
 import '../../utils/color_utils.dart';
@@ -107,24 +107,16 @@ class CheckboxOptionCard extends StatelessWidget {
 
 /// Style option card with color swatches and font previews.
 class StyleOptionCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final List<String> colors;
-  final String headlineFontId;
-  final String bodyFontId;
-  final bool selected;
-  final VoidCallback? onTap;
-
   const StyleOptionCard({
     super.key,
-    required this.title,
-    required this.description,
-    required this.colors,
-    required this.headlineFontId,
-    required this.bodyFontId,
+    required this.theme,
     required this.selected,
     this.onTap,
   });
+
+  final PresentationThemeDescriptor theme;
+  final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -136,22 +128,18 @@ class StyleOptionCard extends StatelessWidget {
 
     final colorRow = FlexBoxStyler().paddingY(5).row();
 
-    final headlineFont = HeadlineFont.fromId(headlineFontId);
-    final bodyFont = BodyFont.fromId(bodyFontId);
-
-    final headlineFontFamily = headlineFont?.fontFamily ?? headlineFontId;
-    final bodyFontFamily = bodyFont?.fontFamily ?? bodyFontId;
+    final recipe = theme.recipe;
 
     final bodyStyle = selectedBodyStyle(selected);
     final captionStyle = selectedCaptionStyle(selected);
 
-    final headlineFontLoaded = tryGetGoogleFontFamily(headlineFontFamily);
-    final bodyFontLoaded = tryGetGoogleFontFamily(bodyFontFamily);
+    final headlineFontLoaded = tryGetGoogleFontFamily(recipe.headlineFamily);
+    final bodyFontLoaded = tryGetGoogleFontFamily(recipe.bodyFamily);
 
     return Semantics(
-      inMutuallyExclusiveGroup: true,
       selected: selected,
-      label: 'Style: $title, $description',
+      inMutuallyExclusiveGroup: true,
+      label: 'Style: ${theme.title}, ${theme.description}',
       child: Pressable(
         onPress: onTap,
         child: SdCard(
@@ -159,10 +147,10 @@ class StyleOptionCard extends StatelessWidget {
           style: FlexBoxStyler().minHeight(SdTokens.cardMinHeight),
           child: content(
             children: [
-              SdBody(title, style: bodyStyle),
-              SdCaption(description, style: captionStyle),
+              SdBody(theme.title, style: bodyStyle),
+              SdCaption(theme.description, style: captionStyle),
               colorRow(
-                children: colors
+                children: recipe.palette.previewColors
                     .map(
                       (color) => SdColorCircle(
                         color: hexToColor(color),
@@ -172,7 +160,7 @@ class StyleOptionCard extends StatelessWidget {
                     .toList(),
               ),
               SdBody(
-                headlineFont?.title ?? headlineFontId,
+                recipe.headlineFamily,
                 style: headlineFontLoaded != null
                     ? TextStyler()
                           .fontFamily(headlineFontLoaded)
@@ -180,7 +168,7 @@ class StyleOptionCard extends StatelessWidget {
                     : bodyStyle,
               ),
               SdCaption(
-                bodyFont?.title ?? bodyFontId,
+                recipe.bodyFamily,
                 style: bodyFontLoaded != null
                     ? TextStyler()
                           .fontFamily(bodyFontLoaded)
@@ -216,45 +204,6 @@ class ImageStyleOptionCard extends StatelessWidget {
     this.onRetry,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final content = FlexBoxStyler().column().crossAxisAlignment(
-      CrossAxisAlignment.stretch,
-    );
-
-    return Semantics(
-      inMutuallyExclusiveGroup: true,
-      selected: selected,
-      label: 'Image style: ${style.title}',
-      child: Pressable(
-        onPress: onTap,
-        child: SdCard(
-          isSelected: selected,
-          style: FlexBoxStyler()
-              .crossAxisAlignment(CrossAxisAlignment.stretch)
-              .paddingAll(0),
-          child: content(
-            children: [
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(SdTokens.cardInnerRadius),
-                  ),
-                  child: _buildImagePreview(context),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: SdBody(style.title, style: selectedBodyStyle(selected)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildImagePreview(BuildContext context) {
     if (isLoading) {
       return Box(
@@ -282,9 +231,7 @@ class ImageStyleOptionCard extends StatelessWidget {
 
   Widget _buildRetryPlaceholder(BuildContext context) {
     return Box(
-      style: BoxStyler()
-          .color($surfaceSecondary())
-          .alignment(Alignment.center),
+      style: BoxStyler().color($surfaceSecondary()).alignment(Alignment.center),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 8,
@@ -300,11 +247,7 @@ class ImageStyleOptionCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               spacing: 4,
               children: [
-                Icon(
-                  Icons.refresh,
-                  color: $accent.resolve(context),
-                  size: 16,
-                ),
+                Icon(Icons.refresh, size: 16, color: $accent.resolve(context)),
                 Text(
                   'Retry',
                   style: $paragraphSmall
@@ -322,13 +265,50 @@ class ImageStyleOptionCard extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     return Box(
-      style: BoxStyler()
-          .color($surfaceSecondary())
-          .alignment(Alignment.center),
+      style: BoxStyler().color($surfaceSecondary()).alignment(Alignment.center),
       child: Icon(
         Icons.image_outlined,
         color: $muted.resolve(context),
         size: 40,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final content = FlexBoxStyler().column().crossAxisAlignment(
+      CrossAxisAlignment.stretch,
+    );
+
+    return Semantics(
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      label: 'Image style: ${style.title}',
+      child: Pressable(
+        onPress: onTap,
+        child: SdCard(
+          isSelected: selected,
+          style: FlexBoxStyler()
+              .crossAxisAlignment(CrossAxisAlignment.stretch)
+              .paddingAll(0),
+          child: content(
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(SdTokens.cardInnerRadius),
+                  ),
+                  child: _buildImagePreview(context),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SdBody(style.title, style: selectedBodyStyle(selected)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -37,13 +37,30 @@ final class GroundedGenerationElement {
 /// The exact slide count and explicit design choices stay separate from prose,
 /// so the pipeline can validate them instead of asking the model to infer them.
 final class DeckGenerationRequest {
+  final String userIntent;
+  final int slideCount;
+  final String? audience;
+  final String? approach;
+  final List<String> emphasis;
+  final String? themeId;
+  final String? designDirection;
+  final String? density;
+  final List<String> colors;
+  final String? headlineFont;
+  final String? bodyFont;
+  final String? imageStyleName;
+  final String? imageStyleDescription;
+  final List<GroundedGenerationElement> groundedElements;
+
   const DeckGenerationRequest({
     required this.userIntent,
     required this.slideCount,
     this.audience,
     this.approach,
     this.emphasis = const [],
+    this.themeId,
     this.designDirection,
+    this.density,
     this.colors = const [],
     this.headlineFont,
     this.bodyFont,
@@ -59,7 +76,9 @@ final class DeckGenerationRequest {
         audience: map['audience'] as String?,
         approach: map['approach'] as String?,
         emphasis: _stringList(map['emphasis']),
+        themeId: map['themeId'] as String?,
         designDirection: map['designDirection'] as String?,
+        density: map['density'] as String?,
         colors: _stringList(map['colors']),
         headlineFont: map['headlineFont'] as String?,
         bodyFont: map['bodyFont'] as String?,
@@ -76,19 +95,6 @@ final class DeckGenerationRequest {
         },
       );
 
-  final String userIntent;
-  final int slideCount;
-  final String? audience;
-  final String? approach;
-  final List<String> emphasis;
-  final String? designDirection;
-  final List<String> colors;
-  final String? headlineFont;
-  final String? bodyFont;
-  final String? imageStyleName;
-  final String? imageStyleDescription;
-  final List<GroundedGenerationElement> groundedElements;
-
   Map<String, Object?> toMap() => {
     'userIntent': userIntent,
     'slideCount': slideCount,
@@ -98,7 +104,9 @@ final class DeckGenerationRequest {
     'audience': ?audience,
     'approach': ?approach,
     if (emphasis.isNotEmpty) 'emphasis': emphasis,
+    'themeId': ?themeId,
     'designDirection': ?designDirection,
+    'density': ?density,
     if (colors.isNotEmpty) 'colors': colors,
     'headlineFont': ?headlineFont,
     'bodyFont': ?bodyFont,

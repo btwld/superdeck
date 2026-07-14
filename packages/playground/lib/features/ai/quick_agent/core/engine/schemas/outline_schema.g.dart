@@ -132,8 +132,8 @@ extension type DeckPlanType(Map<String, Object?> _data)
 
   String get story => _data['story'] as String;
 
-  DeckStyleType get style =>
-      DeckStyleType(_data['style'] as Map<String, Object?>);
+  DeckThemeReferenceType get theme =>
+      DeckThemeReferenceType(_data['theme'] as Map<String, Object?>);
 
   List<DeckPlanSectionType> get sections => (_data['sections'] as List)
       .map((e) => DeckPlanSectionType(e as Map<String, Object?>))

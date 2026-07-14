@@ -19,7 +19,9 @@ DeckGenerationRequest buildPromptFromWizardContext(WizardContext context) {
             .where((item) => item.isNotEmpty)
             .toList() ??
         const [],
+    themeId: _sanitizedOrNull(context.themeId),
     designDirection: _sanitizedOrNull(context.style),
+    density: _sanitizedOrNull(context.density),
     colors:
         context.colors
             ?.map(_sanitize)

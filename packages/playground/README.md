@@ -80,6 +80,21 @@ machine-readable `quality_report.json`. Metadata records total, outline, and
 slide request counts separately. Captures load the actual selected Google font
 families; they do not register Roboto bytes under aliases.
 
+Run the deterministic ten-slide fake-model checkpoint without an API key:
+
+```bash
+fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
+  --dart-define=LIVE_FAKE_CHECKPOINT=true \
+  --reporter expanded
+```
+
+It verifies a zero-repair 11-call plan-to-slide run, each compact design ledger,
+the resolved theme/font/style snapshot, Markdown replay, ten full-size captures,
+a contact sheet, and the machine quality report. Run the reviewed featured-theme
+goldens separately with `--dart-define=LIVE_THEME_QUALIFICATION=true`; those
+render 30 slides with actual fonts and compare three exact contact-sheet
+baselines under `test_live/ai_generation/goldens/`.
+
 Replay and recapture a saved artifact without making another model request:
 
 ```bash

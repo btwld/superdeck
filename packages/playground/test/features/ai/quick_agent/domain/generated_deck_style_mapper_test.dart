@@ -1,40 +1,32 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart';
+import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
+import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
 import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
 
 void main() {
   test('maps generated palette and typography into renderer style', () {
-    final source = DeckStyleType.parse({
-      'name': 'Technical editorial',
-      'direction': 'technical',
-      'density': 'compact',
-      'typeScale': 'dense',
-      'colors': {
-        'background': '#102030',
-        'surface': '#203040',
-        'surfaceAlt': '#304050',
-        'heading': '#F0E0D0',
-        'body': '#D0C0B0',
-        'accent': '#A0B0C0',
-        'accentContrast': '#001020',
-      },
-      'fonts': {'headline': 'Bebas Neue', 'body': 'Inter'},
-    });
+    final source = PresentationThemeCatalog.withDefaults().resolve(
+      id: 'technical-paper',
+      version: 1,
+      density: 'compact',
+      typographyCatalog: PresentationTypographyCatalog.withDefaults(),
+    );
 
     final result = source.toGeneratedDeckStyle();
 
-    expect(result.background, const Color(0xFF102030));
-    expect(result.surface, const Color(0xFF203040));
-    expect(result.surfaceAlt, const Color(0xFF304050));
-    expect(result.heading, const Color(0xFFF0E0D0));
-    expect(result.body, const Color(0xFFD0C0B0));
-    expect(result.accent, const Color(0xFFA0B0C0));
-    expect(result.accentContrast, const Color(0xFF001020));
-    expect(result.headlineFamily, 'Bebas Neue');
-    expect(result.bodyFamily, 'Inter');
+    expect(result.background, const Color(0xFFF5F7FA));
+    expect(result.surface, const Color(0xFFFFFFFF));
+    expect(result.surfaceAlt, const Color(0xFFE7EDF4));
+    expect(result.heading, const Color(0xFF102A43));
+    expect(result.body, const Color(0xFF243B53));
+    expect(result.accent, const Color(0xFF0967D2));
+    expect(result.accentContrast, const Color(0xFFFFFFFF));
+    expect(result.headlineFamily, 'Space Grotesk');
+    expect(result.bodyFamily, 'Open Sans');
     expect(result.direction, 'technical');
     expect(result.density, 'compact');
-    expect(result.typeScale, 'dense');
+    expect(result.typeScale, 'balanced');
+    expect(result.runtime, same(source.descriptor.recipe.runtime));
   });
 }

@@ -1,5 +1,7 @@
 import 'package:genui/genui.dart';
 
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
+
 import 'ask_user_checkbox.dart';
 import 'ask_user_radio.dart';
 import 'ask_user_slider.dart';
@@ -21,15 +23,19 @@ export 'summary_card.dart';
 /// - [askUserCheckbox] - Checkbox multiple selection
 /// - [askUserSlider] - Slider numeric input
 /// - [askUserText] - Free-form text input
-/// - [askUserStyle] - Visual style selection with colors and fonts
+/// - [askUserStyle] - Catalog-backed presentation theme selection
 /// - [summaryCard] - Wizard summary with aggregated selections
 ///
 /// Image-style selection is intentionally omitted for v1 (no image generation).
-final chatCatalog = Catalog([
-  askUserRadio,
-  askUserCheckbox,
-  askUserSlider,
-  askUserText,
-  askUserStyle,
-  summaryCard,
-], catalogId: 'com.superdeck.ai.chat');
+Catalog chatCatalogFor(PresentationThemeCatalog themeCatalog) {
+  return Catalog([
+    askUserRadio,
+    askUserCheckbox,
+    askUserSlider,
+    askUserText,
+    askUserStyleFor(themeCatalog),
+    summaryCardFor(themeCatalog),
+  ], catalogId: 'com.superdeck.ai.chat');
+}
+
+final chatCatalog = chatCatalogFor(PresentationThemeCatalog.withDefaults());

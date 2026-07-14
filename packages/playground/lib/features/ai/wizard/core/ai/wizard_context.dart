@@ -10,7 +10,9 @@ class WizardContext {
   final String? approach;
   final List<String>? emphasis;
   final int? slideCount;
+  final String? themeId;
   final String? style;
+  final String? density;
   final List<String>? colors;
   final String? headlineFont;
   final String? bodyFont;
@@ -24,7 +26,9 @@ class WizardContext {
     this.approach,
     this.emphasis,
     this.slideCount,
+    this.themeId,
     this.style,
+    this.density,
     this.colors,
     this.headlineFont,
     this.bodyFont,
@@ -33,13 +37,37 @@ class WizardContext {
     this.imageStyleDescription,
   });
 
+  /// Parse a [WizardContext] from a loose map.
+  factory WizardContext.fromMap(Map<String, dynamic> map) {
+    return WizardContext(
+      topic: _stringOrNull(map[WizardContextKeys.topic]),
+      audience: _stringOrNull(map[WizardContextKeys.audience]),
+      approach: _stringOrNull(map[WizardContextKeys.approach]),
+      emphasis: _stringListOrNull(map[WizardContextKeys.emphasis]),
+      slideCount: _intOrNull(map[WizardContextKeys.slideCount]),
+      themeId: _stringOrNull(map[WizardContextKeys.themeId]),
+      style: _stringOrNull(map[WizardContextKeys.style]),
+      density: _stringOrNull(map[WizardContextKeys.density]),
+      colors: _stringListOrNull(map[WizardContextKeys.colors]),
+      headlineFont: _stringOrNull(map[WizardContextKeys.headlineFont]),
+      bodyFont: _stringOrNull(map[WizardContextKeys.bodyFont]),
+      imageStyleId: _stringOrNull(map[WizardContextKeys.imageStyleId]),
+      imageStyleName: _stringOrNull(map[WizardContextKeys.imageStyleName]),
+      imageStyleDescription: _stringOrNull(
+        map[WizardContextKeys.imageStyleDescription],
+      ),
+    );
+  }
+
   WizardContext copyWith({
     String? topic,
     String? audience,
     String? approach,
     List<String>? emphasis,
     int? slideCount,
+    String? themeId,
     String? style,
+    String? density,
     List<String>? colors,
     String? headlineFont,
     String? bodyFont,
@@ -53,7 +81,9 @@ class WizardContext {
       approach: approach ?? this.approach,
       emphasis: emphasis ?? this.emphasis,
       slideCount: slideCount ?? this.slideCount,
+      themeId: themeId ?? this.themeId,
       style: style ?? this.style,
+      density: density ?? this.density,
       colors: colors ?? this.colors,
       headlineFont: headlineFont ?? this.headlineFont,
       bodyFont: bodyFont ?? this.bodyFont,
@@ -72,7 +102,9 @@ class WizardContext {
       approach: other.approach ?? approach,
       emphasis: other.emphasis ?? emphasis,
       slideCount: other.slideCount ?? slideCount,
+      themeId: other.themeId ?? themeId,
       style: other.style ?? style,
+      density: other.density ?? density,
       colors: other.colors ?? colors,
       headlineFont: other.headlineFont ?? headlineFont,
       bodyFont: other.bodyFont ?? bodyFont,
@@ -96,7 +128,9 @@ class WizardContext {
     setIfNonNull(WizardContextKeys.approach, approach);
     setIfNonNull(WizardContextKeys.emphasis, emphasis);
     setIfNonNull(WizardContextKeys.slideCount, slideCount);
+    setIfNonNull(WizardContextKeys.themeId, themeId);
     setIfNonNull(WizardContextKeys.style, style);
+    setIfNonNull(WizardContextKeys.density, density);
     setIfNonNull(WizardContextKeys.colors, colors);
     setIfNonNull(WizardContextKeys.headlineFont, headlineFont);
     setIfNonNull(WizardContextKeys.bodyFont, bodyFont);
@@ -108,26 +142,6 @@ class WizardContext {
     );
 
     return map;
-  }
-
-  /// Parse a [WizardContext] from a loose map.
-  factory WizardContext.fromMap(Map<String, dynamic> map) {
-    return WizardContext(
-      topic: _stringOrNull(map[WizardContextKeys.topic]),
-      audience: _stringOrNull(map[WizardContextKeys.audience]),
-      approach: _stringOrNull(map[WizardContextKeys.approach]),
-      emphasis: _stringListOrNull(map[WizardContextKeys.emphasis]),
-      slideCount: _intOrNull(map[WizardContextKeys.slideCount]),
-      style: _stringOrNull(map[WizardContextKeys.style]),
-      colors: _stringListOrNull(map[WizardContextKeys.colors]),
-      headlineFont: _stringOrNull(map[WizardContextKeys.headlineFont]),
-      bodyFont: _stringOrNull(map[WizardContextKeys.bodyFont]),
-      imageStyleId: _stringOrNull(map[WizardContextKeys.imageStyleId]),
-      imageStyleName: _stringOrNull(map[WizardContextKeys.imageStyleName]),
-      imageStyleDescription: _stringOrNull(
-        map[WizardContextKeys.imageStyleDescription],
-      ),
-    );
   }
 }
 

@@ -12,6 +12,7 @@ import 'package:superdeck/src/styling/components/markdown_list.dart';
 import 'package:superdeck/src/styling/components/slide.dart';
 import 'package:superdeck/src/ui/widgets/hero_element.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
+import 'package:superdeck/src/utils/syntax_highlighter.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -368,6 +369,58 @@ void main() {
     });
 
     group('Code Block Rendering', () {
+      for (final (description, background, textColor) in const [
+        ('light', Color(0xFFF8FAFC), Color(0xFF102A43)),
+        ('dark', Color(0xFF0F172A), Color(0xFFE2E8F0)),
+      ]) {
+        testWidgets('code tokens stay readable on a $description container', (
+          tester,
+        ) async {
+          await SyntaxHighlight.initialize();
+          const markdown = '''
+```dart
+final theme = catalog.resolve(id: id, version: version);
+```
+''';
+
+          await tester.pumpWidget(
+            _MarkdownHarness(
+              markdown: markdown,
+              slideSpec: SlideSpec(
+                code: StyleSpec(
+                  spec: MarkdownCodeblockSpec(
+                    textStyle: TextStyle(color: textColor),
+                    container: StyleSpec(
+                      spec: BoxSpec(
+                        decoration: BoxDecoration(color: background),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final tokenColors = _renderedColorsForText(
+            tester,
+            containing: 'final theme',
+          );
+          expect(tokenColors, isNotEmpty);
+          expect(
+            tokenColors.map((color) => _contrastRatio(color, background)),
+            everyElement(greaterThanOrEqualTo(4.5)),
+            reason: tokenColors
+                .map(
+                  (color) =>
+                      '${color.toARGB32().toRadixString(16)}: '
+                      '${_contrastRatio(color, background)}',
+                )
+                .join(', '),
+          );
+        });
+      }
+
       testWidgets(
         'code blocks access BlockConfiguration from StyleSpecBuilder context',
         (tester) async {
@@ -477,6 +530,47 @@ void main() {}
       });
     });
   });
+}
+
+Set<Color> _renderedColorsForText(
+  WidgetTester tester, {
+  required String containing,
+}) {
+  final colors = <Color>{};
+  for (final richText in tester.widgetList<RichText>(find.byType(RichText))) {
+    if (!richText.text.toPlainText().contains(containing)) continue;
+    _collectSpanColors(richText.text, inherited: null, colors: colors);
+  }
+
+  return colors;
+}
+
+void _collectSpanColors(
+  InlineSpan span, {
+  required TextStyle? inherited,
+  required Set<Color> colors,
+}) {
+  if (span is! TextSpan) return;
+  final style = inherited?.merge(span.style) ?? span.style;
+  if (span.text?.isNotEmpty ?? false) {
+    if (style?.color case final color?) colors.add(color);
+  }
+  for (final child in span.children ?? const <InlineSpan>[]) {
+    _collectSpanColors(child, inherited: style, colors: colors);
+  }
+}
+
+double _contrastRatio(Color foreground, Color background) {
+  final foregroundLuminance = foreground.computeLuminance();
+  final backgroundLuminance = background.computeLuminance();
+  final lighter = foregroundLuminance > backgroundLuminance
+      ? foregroundLuminance
+      : backgroundLuminance;
+  final darker = foregroundLuminance > backgroundLuminance
+      ? backgroundLuminance
+      : foregroundLuminance;
+
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 /// Finds a [TextStyle] on a rendered [TextSpan] whose text contains [containing]

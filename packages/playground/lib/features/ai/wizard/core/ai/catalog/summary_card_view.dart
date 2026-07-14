@@ -4,7 +4,9 @@ part of 'summary_card.dart';
 ///
 /// Uses [WizardContextKeys] for standardized label-to-key mapping.
 /// Logs warnings for any unmapped labels to aid debugging.
-WizardContext _extractContextFromItems(List<SummaryItemType> items) {
+WizardContext extractWizardContextFromSummaryItems(
+  List<SummaryItemType> items,
+) {
   final contextMap = <String, dynamic>{};
   final unmappedLabels = <String>[];
 
@@ -28,27 +30,16 @@ WizardContext _extractContextFromItems(List<SummaryItemType> items) {
     final itemTitle = item.title;
     final itemDescription = item.description;
     final itemText = item.text;
-    final itemColors = item.colors;
-    final itemHeadlineFont = item.headlineFont;
-    final itemBodyFont = item.bodyFont;
+    final itemThemeId = item.themeId;
     final itemImageStyleId = item.imageStyleId;
 
     // Extract the primary value
-    if (itemText != null) {
+    if (itemThemeId != null) {
+      contextMap[WizardContextKeys.themeId] = itemThemeId;
+    } else if (itemText != null) {
       contextMap[key] = _parseContextValue(key, itemText);
     } else if (itemTitle != null) {
       contextMap[key] = itemTitle;
-    }
-
-    // Extract style-related data using standardized keys
-    if (itemColors != null && itemColors.isNotEmpty) {
-      contextMap[WizardContextKeys.colors] = itemColors;
-    }
-    if (itemHeadlineFont != null) {
-      contextMap[WizardContextKeys.headlineFont] = itemHeadlineFont.name;
-    }
-    if (itemBodyFont != null) {
-      contextMap[WizardContextKeys.bodyFont] = itemBodyFont.name;
     }
 
     // Extract image style data for generation context
@@ -116,16 +107,18 @@ void _validateRequiredContext(WizardContext context) {
 
 /// The main summary card widget.
 class SummaryCard extends StatelessWidget {
-  final String title;
-  final List<SummaryItemType> items;
-  final VoidCallback? generateSlides;
-
   const SummaryCard({
     super.key,
     required this.title,
     required this.items,
+    required this.themeCatalog,
     this.generateSlides,
   });
+
+  final String title;
+  final List<SummaryItemType> items;
+  final PresentationThemeCatalog themeCatalog;
+  final VoidCallback? generateSlides;
 
   FlexBoxStyler get _container => .new()
       .borderRadiusAll(Radius.circular(SdTokens.cardRadius))
@@ -153,7 +146,12 @@ class SummaryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 16,
                 children: items
-                    .map((item) => _SummaryCardItem(item: item))
+                    .map(
+                      (item) => _SummaryCardItem(
+                        item: item,
+                        themeCatalog: themeCatalog,
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -173,28 +171,16 @@ class SummaryCard extends StatelessWidget {
 }
 
 class _SummaryCardItem extends StatelessWidget {
-  final SummaryItemType item;
+  const _SummaryCardItem({required this.item, required this.themeCatalog});
 
-  const _SummaryCardItem({required this.item});
+  final SummaryItemType item;
+  final PresentationThemeCatalog themeCatalog;
 
   // Label with fixed width for consistent alignment
   TextStyler get _label => TextStyler()
       .color($foreground())
       .style($paragraphMedium.mix())
       .wrap(WidgetModifierConfig.sizedBox(width: 140));
-
-  @override
-  Widget build(BuildContext context) {
-    return SdPanel(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _label(item.label),
-          Expanded(child: _buildContent()),
-        ],
-      ),
-    );
-  }
 
   Widget _buildContent() {
     final shapeError = item.shapeValidationError;
@@ -213,20 +199,13 @@ class _SummaryCardItem extends StatelessWidget {
     final itemTitle = item.title;
     final itemDescription = item.description;
     final itemText = item.text;
-    final itemColors = item.colors;
-    final itemHeadlineFont = item.headlineFont;
-    final itemBodyFont = item.bodyFont;
     final itemImageStyleId = item.imageStyleId;
 
-    // Style items with colors and fonts
-    if (item.hasStyleData) {
-      return _SummaryCardItemStyle(
-        title: itemTitle ?? '',
-        description: itemDescription ?? '',
-        colors: itemColors!,
-        headlineFont: itemHeadlineFont!.name,
-        bodyFont: itemBodyFont!.name,
-      );
+    // Theme items resolve all preview metadata from the shared catalog.
+    if (item.hasThemeData) {
+      final itemThemeId = item.themeId!;
+      final theme = themeCatalog.current(itemThemeId);
+      if (theme != null) return _SummaryCardItemTheme(theme: theme);
     }
 
     // Image style items
@@ -238,6 +217,19 @@ class _SummaryCardItem extends StatelessWidget {
     return _SummaryCardItemTitleDescription(
       title: itemTitle ?? itemText ?? '',
       description: itemDescription,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SdPanel(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label(item.label),
+          Expanded(child: _buildContent()),
+        ],
+      ),
     );
   }
 }
@@ -268,20 +260,10 @@ class _SummaryCardItemTitleDescription extends StatelessWidget {
   }
 }
 
-class _SummaryCardItemStyle extends StatelessWidget {
-  final String title;
-  final String description;
-  final List<String> colors;
-  final String headlineFont;
-  final String bodyFont;
+class _SummaryCardItemTheme extends StatelessWidget {
+  const _SummaryCardItemTheme({required this.theme});
 
-  const _SummaryCardItemStyle({
-    required this.title,
-    required this.description,
-    required this.colors,
-    required this.headlineFont,
-    required this.bodyFont,
-  });
+  final PresentationThemeDescriptor theme;
 
   @override
   Widget build(BuildContext context) {
@@ -293,35 +275,27 @@ class _SummaryCardItemStyle extends StatelessWidget {
 
     final colorRow = FlexBoxStyler().paddingY(5).row();
 
-    // Convert enum IDs to font metadata
-    final headlineFontData = HeadlineFont.fromId(headlineFont);
-    final bodyFontData = BodyFont.fromId(bodyFont);
-
-    // Get actual font family names for GoogleFonts (fallback to raw value)
-    final headlineFontFamily = headlineFontData?.fontFamily ?? headlineFont;
-    final bodyFontFamily = bodyFontData?.fontFamily ?? bodyFont;
-
-    // Safely load fonts - fall back to default if unavailable
-    final headlineFontLoaded = tryGetGoogleFontFamily(headlineFontFamily);
-    final bodyFontLoaded = tryGetGoogleFontFamily(bodyFontFamily);
+    final recipe = theme.recipe;
+    final headlineFontLoaded = tryGetGoogleFontFamily(recipe.headlineFamily);
+    final bodyFontLoaded = tryGetGoogleFontFamily(recipe.bodyFamily);
 
     return flex(
       children: [
-        SdBody(title),
-        SdCaption(description),
+        SdBody(theme.title),
+        SdCaption(theme.description),
         colorRow(
-          children: colors
+          children: recipe.palette.previewColors
               .map((color) => SdColorCircle(color: hexToColor(color)))
               .toList(),
         ),
         SdBody(
-          headlineFontData?.title ?? headlineFont,
+          recipe.headlineFamily,
           style: headlineFontLoaded != null
               ? TextStyler().fontFamily(headlineFontLoaded)
               : null,
         ),
         SdCaption(
-          bodyFontData?.title ?? bodyFont,
+          recipe.bodyFamily,
           style: bodyFontLoaded != null
               ? TextStyler().fontFamily(bodyFontLoaded)
               : null,

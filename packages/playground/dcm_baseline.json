@@ -497,16 +497,6 @@
           "bfee52d03478ce0c30b1ae2015bc758f"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_plan_normalizer.dart": {
-        "prefer-iterable-of": [
-          "8b3431f86d333cae0662eb0a25988485",
-          "0f147e91e20d318f80c8e4762f425156",
-          "d7f3e33d4276df2e4be3c177b3745942"
-        ],
-        "newline-before-return": [
-          "47eccdae510ae628e884051f68245268"
-        ]
-      },
       "lib/features/ai/quick_agent/core/engine/services/deck_plan_repair.dart": {
         "newline-before-return": [
           "094ceb69155587ee47b1d557dfe685c7",

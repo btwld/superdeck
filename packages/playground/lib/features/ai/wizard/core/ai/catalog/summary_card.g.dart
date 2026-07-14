@@ -7,8 +7,6 @@
 
 part of 'summary_card.dart';
 
-List<T> _$ackListCast<T>(Object? value) => (value as List).cast<T>();
-
 /// Extension type for SummaryItem
 extension type SummaryItemType(Map<String, Object?> _data)
     implements Map<String, Object?> {
@@ -36,12 +34,7 @@ extension type SummaryItemType(Map<String, Object?> _data)
 
   String? get text => _data['text'] as String?;
 
-  List<String>? get colors =>
-      _data['colors'] != null ? _$ackListCast<String>(_data['colors']) : null;
-
-  HeadlineFont? get headlineFont => _data['headlineFont'] as HeadlineFont?;
-
-  BodyFont? get bodyFont => _data['bodyFont'] as BodyFont?;
+  String? get themeId => _data['themeId'] as String?;
 
   ImageStyle? get imageStyleId => _data['imageStyleId'] as ImageStyle?;
 }

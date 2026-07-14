@@ -2,9 +2,12 @@ import 'dart:math' as math;
 
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
+import '../../../../../../core/domain/design/presentation_typography_catalog.dart';
 import '../schemas/outline_schema.dart';
 import 'deck_generation_request.dart';
 import 'deck_plan_validator.dart';
+import 'deck_theme_resolution.dart';
 import 'design_quality_metrics.dart';
 import 'generation_trace.dart';
 import 'generation_validation_issue.dart';
@@ -36,6 +39,25 @@ final class GenerationQualityIssue {
 
 /// Machine-readable quality evidence for one complete generation and capture.
 final class GenerationQualityReport {
+  final List<GenerationQualityIssue> issues;
+  final Map<String, int> counts;
+  final Map<String, int> compositionDistribution;
+  final Map<String, int> treatmentDistribution;
+  final Map<String, int> densityDistribution;
+  final Map<String, int> modelRequests;
+  final List<Map<String, Object?>> contentDensity;
+  final Map<String, double> contrastRatios;
+  final Map<String, int> plannedElements;
+  final Map<String, int> generatedElements;
+  final Map<String, Object?> fonts;
+  final Map<String, Object?> theme;
+  final int generationElapsedMs;
+  final int captureElapsedMs;
+  final int sectionCount;
+  final int distinctCompositionCount;
+  final int maxCompositionRun;
+  final int maxTreatmentRun;
+
   const GenerationQualityReport._({
     required this.issues,
     required this.counts,
@@ -48,6 +70,7 @@ final class GenerationQualityReport {
     required this.plannedElements,
     required this.generatedElements,
     required this.fonts,
+    required this.theme,
     required this.generationElapsedMs,
     required this.captureElapsedMs,
     required this.sectionCount,
@@ -64,9 +87,31 @@ final class GenerationQualityReport {
     required int replayedSlideCount,
     required int capturedSlideCount,
     required Set<String> resolvedFontFamilies,
+    PresentationThemeCatalog? themeCatalog,
+    PresentationTypographyCatalog? typographyCatalog,
     Duration captureElapsed = Duration.zero,
   }) {
     final issues = <GenerationQualityIssue>[];
+    final themes = themeCatalog ?? PresentationThemeCatalog.withDefaults();
+    final typography =
+        typographyCatalog ?? PresentationTypographyCatalog.withDefaults();
+    ResolvedPresentationTheme? resolvedTheme;
+    try {
+      resolvedTheme = resolveDeckThemeReference(
+        plan.theme,
+        themeCatalog: themes,
+        typographyCatalog: typography,
+      );
+    } catch (error) {
+      issues.add(
+        GenerationQualityIssue(
+          rule: 'theme.resolution',
+          message: error.toString(),
+          severity: .blocking,
+          sourceCode: .themeResolution,
+        ),
+      );
+    }
     final counts = <String, int>{
       'requested': request.slideCount,
       'planned': plan.slides.length,
@@ -87,7 +132,12 @@ final class GenerationQualityReport {
       }
     }
 
-    for (final issue in validateDeckPlanIssues(plan, request: request)) {
+    for (final issue in validateDeckPlanIssues(
+      plan,
+      typographyCatalog: typography,
+      themeCatalog: themes,
+      request: request,
+    )) {
       issues.add(
         GenerationQualityIssue(
           rule: 'plan.${issue.code.name}',
@@ -127,7 +177,7 @@ final class GenerationQualityReport {
           for (final block in section.blocks)
             if (block case final ContentBlock content) content.content,
       ]);
-      final density = planSlide?.density ?? plan.style.density;
+      final density = planSlide?.density ?? plan.theme.density;
       final maximum = visibleCharacterLimit(
         density,
         composition: planSlide?.composition,
@@ -164,10 +214,15 @@ final class GenerationQualityReport {
       }
     }
 
-    final expectedFonts = {plan.style.fonts.headline, plan.style.fonts.body};
+    final expectedFonts = {
+      ?resolvedTheme?.headlineFamily,
+      ?resolvedTheme?.bodyFamily,
+    };
     for (final font in expectedFonts) {
       if (!resolvedFontFamilies.contains(font)) {
-        final role = font == plan.style.fonts.headline ? 'headline' : 'body';
+        final role = font == resolvedTheme?.headlineFamily
+            ? 'headline'
+            : 'body';
         issues.add(
           GenerationQualityIssue(
             rule: 'font.$role',
@@ -207,7 +262,7 @@ final class GenerationQualityReport {
 
     final compositions = plan.slides.map((slide) => slide.composition).toList();
     final treatments = plan.slides.map((slide) => slide.treatment).toList();
-    final colors = plan.style.colors;
+    final colors = resolvedTheme?.palette;
     final plannedElements = _distribution(
       plan.slides.expand(
         (slide) => slide.elements?.map((element) => element.type) ?? const [],
@@ -245,26 +300,34 @@ final class GenerationQualityReport {
       }),
       contentDensity: List.unmodifiable(contentDensity),
       contrastRatios: Map.unmodifiable({
-        'headingOnBackground': calculateContrastRatio(
-          colors.heading,
-          colors.background,
-        ),
-        'bodyOnBackground': calculateContrastRatio(
-          colors.body,
-          colors.background,
-        ),
-        'bodyOnSurface': calculateContrastRatio(colors.body, colors.surface),
-        'accentContrast': calculateContrastRatio(
-          colors.accentContrast,
-          colors.accent,
-        ),
+        if (colors != null) ...{
+          'headingOnBackground': calculateContrastRatio(
+            colors.heading,
+            colors.background,
+          ),
+          'bodyOnBackground': calculateContrastRatio(
+            colors.body,
+            colors.background,
+          ),
+          'bodyOnSurface': calculateContrastRatio(colors.body, colors.surface),
+          'accentContrast': calculateContrastRatio(
+            colors.accentContrast,
+            colors.accent,
+          ),
+        },
       }),
       plannedElements: Map.unmodifiable(plannedElements),
       generatedElements: Map.unmodifiable(generatedElements),
       fonts: Map.unmodifiable({
-        'headline': plan.style.fonts.headline,
-        'body': plan.style.fonts.body,
+        'headline': ?resolvedTheme?.headlineFamily,
+        'body': ?resolvedTheme?.bodyFamily,
         'resolved': resolvedFontFamilies.toList()..sort(),
+      }),
+      theme: Map.unmodifiable({
+        'id': plan.theme.id,
+        'version': plan.theme.version,
+        'density': plan.theme.density,
+        'resolved': resolvedTheme != null,
       }),
       generationElapsedMs: lastElapsed.inMilliseconds,
       captureElapsedMs: captureElapsed.inMilliseconds,
@@ -274,24 +337,6 @@ final class GenerationQualityReport {
       maxTreatmentRun: _maxRun(treatments),
     );
   }
-
-  final List<GenerationQualityIssue> issues;
-  final Map<String, int> counts;
-  final Map<String, int> compositionDistribution;
-  final Map<String, int> treatmentDistribution;
-  final Map<String, int> densityDistribution;
-  final Map<String, int> modelRequests;
-  final List<Map<String, Object?>> contentDensity;
-  final Map<String, double> contrastRatios;
-  final Map<String, int> plannedElements;
-  final Map<String, int> generatedElements;
-  final Map<String, Object?> fonts;
-  final int generationElapsedMs;
-  final int captureElapsedMs;
-  final int sectionCount;
-  final int distinctCompositionCount;
-  final int maxCompositionRun;
-  final int maxTreatmentRun;
 
   bool get passed => issues.isEmpty;
 
@@ -316,6 +361,7 @@ final class GenerationQualityReport {
     ),
     'elements': {'planned': plannedElements, 'generated': generatedElements},
     'fonts': fonts,
+    'theme': theme,
     'modelRequests': modelRequests,
     'timings': {
       'generationElapsedMs': generationElapsedMs,

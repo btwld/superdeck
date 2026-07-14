@@ -1,30 +1,44 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/prompts/generation_prompt_provider.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_element_catalog.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  test(
+    'outline prompt exposes only compact eligible theme candidates',
+    () async {
+      final catalog = PresentationThemeCatalog.withDefaults();
+      final provider = AssetGenerationPromptProvider();
+      await provider.load();
+
+      final prompt = provider.buildOutlinePrompt(
+        themeCandidates: catalog.shortlist(
+          const PresentationThemeSelectionCriteria(
+            userIntent: 'Create a clear presentation.',
+          ),
+        ),
+      );
+
+      expect(prompt, contains('editorial-midnight'));
+      expect(prompt, contains('technical-paper'));
+      expect(prompt, contains('bold-product'));
+      expect(prompt, contains('Dark cinematic editorial system'));
+      expect(prompt, isNot(contains('#0D1626')));
+      expect(prompt, isNot(contains('Playfair Display')));
+      expect(prompt, isNot(contains('Open Sans')));
+      expect(prompt, isNot(contains('accentContrast')));
+    },
+  );
+
   test('assembles bounded single-slide context deterministically', () {
     final plan = DeckPlanType.parse({
       'topic': 'Reliable systems',
       'story': 'Move from uncertainty to a reliable operating rhythm.',
-      'style': {
-        'name': 'midnight',
-        'direction': 'editorial',
-        'density': 'balanced',
-        'typeScale': 'dramatic',
-        'colors': {
-          'background': '#101010',
-          'surface': '#202020',
-          'surfaceAlt': '#303030',
-          'heading': '#FFFFFF',
-          'body': '#E5E5E5',
-          'accent': '#6941C6',
-          'accentContrast': '#FFFFFF',
-        },
-        'fonts': {'headline': 'Montserrat', 'body': 'Inter'},
-      },
+      'theme': _themeReference,
       'sections': [
         {
           'key': 'main',
@@ -113,22 +127,7 @@ void main() {
       final plan = DeckPlanType.parse({
         'topic': 'Planning',
         'story': 'Replace roadmap theater with continuous planning.',
-        'style': {
-          'name': 'midnight',
-          'direction': 'editorial',
-          'density': 'balanced',
-          'typeScale': 'dramatic',
-          'colors': {
-            'background': '#101010',
-            'surface': '#202020',
-            'surfaceAlt': '#303030',
-            'heading': '#FFFFFF',
-            'body': '#E5E5E5',
-            'accent': '#6941C6',
-            'accentContrast': '#FFFFFF',
-          },
-          'fonts': {'headline': 'Montserrat', 'body': 'Inter'},
-        },
+        'theme': _themeReference,
         'sections': [
           {
             'key': 'main',
@@ -184,6 +183,12 @@ void main() {
     },
   );
 }
+
+const _themeReference = <String, Object?>{
+  'id': 'editorial-midnight',
+  'version': 1,
+  'density': 'balanced',
+};
 
 Map<String, Object?> _planSlide(String key, String title) => {
   'key': key,

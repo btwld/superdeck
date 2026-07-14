@@ -63,9 +63,9 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   }
 
   void _applyResult(DeckGenerationResult result) {
-    final style = result.style!;
+    final theme = result.theme!;
     context.read<DeckCustomizationStore>().applyGeneratedStyle(
-      style.toGeneratedDeckStyle(),
+      theme.toGeneratedDeckStyle(),
     );
     context.read<MemoryDeckLoader>().updateMarkdown(
       const SlideSerializer().serialize(result.slides),
@@ -183,6 +183,7 @@ const _presets = [
       slideCount: 10,
       audience: 'Engineering leaders',
       approach: 'Confident editorial narrative',
+      themeId: 'editorial-midnight',
       designDirection: 'Dark navy editorial',
     ),
   ),
@@ -195,6 +196,7 @@ const _presets = [
       slideCount: 15,
       audience: 'Product and engineering decision makers',
       approach: 'Evidence-led decision deck',
+      themeId: 'technical-paper',
       designDirection: 'Light warm technical',
     ),
   ),
@@ -205,6 +207,7 @@ const _presets = [
       slideCount: 20,
       audience: 'Developers and technical leaders',
       approach: 'Bold product launch story',
+      themeId: 'bold-product',
       designDirection: 'Bold dark product',
       groundedElements: [
         GroundedGenerationElement(

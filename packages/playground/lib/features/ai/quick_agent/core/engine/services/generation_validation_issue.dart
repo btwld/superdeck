@@ -5,6 +5,7 @@ enum GenerationValidationCode {
   slideCount,
   slideIdentity,
   planStructure,
+  themeResolution,
   typography,
   paletteContrast,
   elementGrounding,

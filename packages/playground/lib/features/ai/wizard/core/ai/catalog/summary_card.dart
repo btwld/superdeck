@@ -4,11 +4,12 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter/material.dart';
+import 'package:genui/genui.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart' as prov;
 import 'package:remix/remix.dart';
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../wizard_context.dart';
-import '../prompts/font_styles.dart';
 import '../prompts/image_style_prompts.dart';
 import '../schemas/genui_action_schema.dart';
 import '../schemas/wizard_context_keys.dart';
@@ -19,13 +20,14 @@ import '../../utils/color_utils.dart';
 import '../../utils/font_utils.dart';
 import '../../../../quick_agent/domain/commands/generate_deck_command.dart';
 import 'component_schema.dart';
+import 'presentation_theme_component_schema.dart';
 import 'typed_catalog_item.dart';
 import 'user_action_dispatch.dart';
 
 part 'summary_card.g.dart';
 part 'summary_card_view.dart';
 
-enum SummaryItemKind { text, style, imageStyle }
+enum SummaryItemKind { text, theme, imageStyle }
 
 /// Schema for summary item with optional fields for different item types.
 @AckType(name: 'SummaryItem')
@@ -43,15 +45,9 @@ final _summaryItemSchema = Ack.object({
   'text': Ack.string().optional().describe(
     'Plain text content for simple display items',
   ),
-  'colors': Ack.list(
-    Ack.string().describe('Hex color value'),
-  ).optional().describe('List of hex color strings for the style palette'),
-  'headlineFont': Ack.enumValues<HeadlineFont>(
-    HeadlineFont.values,
-  ).optional().describe(HeadlineFont.schemaDescription),
-  'bodyFont': Ack.enumValues<BodyFont>(
-    BodyFont.values,
-  ).optional().describe(BodyFont.schemaDescription),
+  'themeId': Ack.string().optional().describe(
+    'Exact registered presentation theme ID',
+  ),
   'imageStyleId': Ack.enumValues<ImageStyle>(
     ImageStyle.values,
   ).optional().describe(ImageStyle.schemaDescription()),
@@ -72,9 +68,8 @@ final _summaryCardSchema =
 
 /// Extension for SummaryItemType to add computed properties.
 extension SummaryItemExt on SummaryItemType {
-  /// Returns true if this item has style data (colors and fonts).
-  bool get hasStyleData =>
-      colors != null && headlineFont != null && bodyFont != null;
+  /// Returns true if this item references a registered presentation theme.
+  bool get hasThemeData => themeId != null;
 
   /// Returns true if this item has image style data.
   bool get hasImageStyleData => imageStyleId != null;
@@ -87,56 +82,43 @@ extension SummaryItemExt on SummaryItemType {
   }
 
   /// Validates supported field combinations for summary rendering.
-  ///
-  /// This keeps backward compatibility with the current schema while surfacing
-  /// malformed payloads early.
   String? get shapeValidationError {
-    final hasAnyStyleFields =
-        colors != null || headlineFont != null || bodyFont != null;
-
     final explicitKind = kind;
     if (explicitKind != null) {
       switch (explicitKind) {
-        case SummaryItemKind.style:
-          if (!hasStyleData) {
-            return 'style kind requires colors/headlineFont/bodyFont';
+        case .theme:
+          if (!hasThemeData) {
+            return 'theme kind requires themeId';
           }
           if (imageStyleId != null) {
-            return 'style kind should not include imageStyleId';
-          }
-          if (!hasTitleOrText) {
-            return 'style kind requires title or text';
+            return 'theme kind should not include imageStyleId';
           }
           return null;
         case SummaryItemKind.imageStyle:
           if (imageStyleId == null) {
             return 'imageStyle kind requires imageStyleId';
           }
-          if (hasAnyStyleFields) {
-            return 'imageStyle kind should not include style palette fields';
+          if (themeId != null) {
+            return 'imageStyle kind should not include themeId';
           }
           return null;
         case SummaryItemKind.text:
           if (!hasTitleOrText) {
             return 'text kind requires title or text';
           }
-          if (hasAnyStyleFields || imageStyleId != null) {
-            return 'text kind should not include style or imageStyle fields';
+          if (themeId != null || imageStyleId != null) {
+            return 'text kind should not include theme or imageStyle fields';
           }
           return null;
       }
     }
 
-    if (hasAnyStyleFields && !hasStyleData) {
-      return 'style item is missing colors/headlineFont/bodyFont';
+    if (hasImageStyleData && hasThemeData) {
+      return 'imageStyleId should not be combined with themeId';
     }
 
-    if (hasImageStyleData && hasAnyStyleFields) {
-      return 'imageStyleId should not be combined with style palette fields';
-    }
-
-    if (!hasStyleData && !hasImageStyleData && !hasTitleOrText) {
-      return 'item must include either title or text';
+    if (!hasThemeData && !hasImageStyleData && !hasTitleOrText) {
+      return 'item must include themeId, imageStyleId, title, or text';
     }
 
     return null;
@@ -145,13 +127,25 @@ extension SummaryItemExt on SummaryItemType {
 
 /// A summary card that displays a recap of all user selections before finalizing.
 ///
-/// Shows multiple items with labels and values. Items with color and font data
-/// are rendered as style previews, otherwise they display as title/description pairs.
-final summaryCard = typedCatalogItem<SummaryCardType>(
-  name: 'SummaryCard',
-  dataSchema: componentSchema(_summaryCardSchema.toJsonSchemaBuilder()),
-  exampleData: [
-    () => '''
+/// Shows multiple items with labels and values. Theme items resolve their
+/// preview from the injected catalog; other items show text details.
+CatalogItem summaryCardFor(PresentationThemeCatalog themeCatalog) {
+  final exampleThemeId = themeCatalog.currentThemes.first.id;
+
+  return typedCatalogItem<SummaryCardType>(
+    name: 'SummaryCard',
+    dataSchema: componentSchema(
+      schemaWithPresentationThemeIds(
+        _summaryCardSchema.toJsonSchemaBuilder(),
+        themeCatalog,
+        paths: const [
+          ['properties', 'items', 'items', 'properties', 'themeId'],
+        ],
+      ),
+    ),
+    exampleData: [
+      () =>
+          '''
       [
         {
           "id": "root",
@@ -187,13 +181,9 @@ final summaryCard = typedCatalogItem<SummaryCardType>(
               "text": "12 slides"
             },
             {
-              "kind": "style",
+              "kind": "theme",
               "label": "Style",
-              "title": "Cosmic Blue",
-              "description": "Deep space theme with vibrant accents",
-              "colors": ["#0F172A", "#60A5FA", "#94A3B8"],
-              "headlineFont": "oswald",
-              "bodyFont": "inter"
+              "themeId": "$exampleThemeId"
             },
             {
               "kind": "imageStyle",
@@ -208,55 +198,82 @@ final summaryCard = typedCatalogItem<SummaryCardType>(
         }
       ]
     ''',
-  ],
-  parse: SummaryCardType.parse,
-  widgetBuilder: (catalogContext, data) {
-    final action = data.generateSlidesAction;
-    return Builder(
-      builder: (buildContext) {
-        return SummaryCard(
-          title: data.title,
-          items: data.items.toList(),
-          generateSlides: () {
-            unawaited(() async {
-              debugLog.section('Generate Slides Triggered');
-              final command = prov.Provider.of<GenerateDeckCommand>(
-                buildContext,
-                listen: false,
-              );
+    ],
+    parse: (data) => parseSummaryCard(data, themeCatalog: themeCatalog),
+    widgetBuilder: (catalogContext, data) {
+      final action = data.generateSlidesAction;
 
-              // Extract context from displayed summary items
-              final extractedContext = _extractContextFromItems(
-                data.items.toList(),
-              );
-              debugLog.userAction('GENERATE_SLIDES', extractedContext.toMap());
+      return Builder(
+        builder: (buildContext) {
+          return SummaryCard(
+            title: data.title,
+            items: data.items.toList(),
+            themeCatalog: themeCatalog,
+            generateSlides: () {
+              unawaited(() async {
+                debugLog.section('Generate Slides Triggered');
+                final command = prov.Provider.of<GenerateDeckCommand>(
+                  buildContext,
+                  listen: false,
+                );
 
-              // Merge with any path-resolved context from the action
-              final resolvedContext = WizardContext.fromMap(
-                await resolveCatalogActionContext(
-                  itemContext: catalogContext,
-                  action: action,
-                ),
-              );
-              final finalContext = extractedContext.merge(resolvedContext);
-              debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
+                // Extract context from displayed summary items
+                final extractedContext = extractWizardContextFromSummaryItems(
+                  data.items.toList(),
+                );
+                debugLog.userAction(
+                  'GENERATE_SLIDES',
+                  extractedContext.toMap(),
+                );
 
-              // Preserve exact wizard selections in the typed generation
-              // request handed to the shared editor command.
-              final request = buildPromptFromWizardContext(finalContext);
-              debugLog.log(
-                'GEN',
-                'Routing generation through GenerateDeckCommand. '
-                    'slides: ${request.slideCount}',
-              );
+                // Merge with any path-resolved context from the action
+                final resolvedContext = WizardContext.fromMap(
+                  await resolveCatalogActionContext(
+                    itemContext: catalogContext,
+                    action: action,
+                  ),
+                );
+                final finalContext = extractedContext.merge(resolvedContext);
+                debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
 
-              // Fire-and-forget — the command manages running/phase/result and
-              // loads the generated markdown into the editor on success.
-              unawaited(command(request));
-            }());
-          },
-        );
-      },
+                // Preserve exact wizard selections in the typed generation
+                // request handed to the shared editor command.
+                final request = buildPromptFromWizardContext(finalContext);
+                debugLog.log(
+                  'GEN',
+                  'Routing generation through GenerateDeckCommand. '
+                      'slides: ${request.slideCount}',
+                );
+
+                // Fire-and-forget — the command manages running/phase/result and
+                // loads the generated markdown into the editor on success.
+                unawaited(command(request));
+              }());
+            },
+          );
+        },
+      );
+    },
+  );
+}
+
+final summaryCard = summaryCardFor(PresentationThemeCatalog.withDefaults());
+
+SummaryCardType parseSummaryCard(
+  Object? data, {
+  required PresentationThemeCatalog themeCatalog,
+}) {
+  final parsed = SummaryCardType.parse(data);
+  final unknownIds = parsed.items
+      .map((item) => item.themeId)
+      .whereType<String>()
+      .where((themeId) => themeCatalog.current(themeId) == null)
+      .toSet();
+  if (unknownIds.isNotEmpty) {
+    throw FormatException(
+      'Unknown presentation theme IDs: ${unknownIds.join(", ")}.',
     );
-  },
-);
+  }
+
+  return parsed;
+}

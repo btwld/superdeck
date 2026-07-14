@@ -11,8 +11,6 @@ void main() {
       request: const DeckGenerationRequest(
         userIntent: 'Explain the decision.',
         slideCount: 3,
-        headlineFont: 'Playfair Display',
-        bodyFont: 'Inter',
       ),
       plan: _plan(),
       slides: _slides(),
@@ -50,6 +48,12 @@ void main() {
     expect(report.toJson()['timings'], {
       'generationElapsedMs': 80,
       'captureElapsedMs': 640,
+    });
+    expect(report.toJson()['theme'], {
+      'id': 'editorial-midnight',
+      'version': 1,
+      'density': 'spacious',
+      'resolved': true,
     });
   });
 
@@ -134,22 +138,7 @@ void main() {
 DeckPlanType _plan() => DeckPlanType.parse({
   'topic': 'Decision quality',
   'story': 'Move from context to evidence to a clear choice.',
-  'style': {
-    'name': 'decision-editorial',
-    'colors': {
-      'background': '#101828',
-      'surface': '#1D2939',
-      'surfaceAlt': '#344054',
-      'heading': '#FFFFFF',
-      'body': '#F2F4F7',
-      'accent': '#FDB022',
-      'accentContrast': '#101828',
-    },
-    'fonts': {'headline': 'Playfair Display', 'body': 'Inter'},
-    'direction': 'editorial',
-    'density': 'balanced',
-    'typeScale': 'dramatic',
-  },
+  'theme': {'id': 'editorial-midnight', 'version': 1, 'density': 'spacious'},
   'sections': [
     {
       'key': 'decision',

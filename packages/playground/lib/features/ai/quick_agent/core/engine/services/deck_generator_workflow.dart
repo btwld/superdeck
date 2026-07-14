@@ -15,6 +15,7 @@ Future<DeckPlanType?> _runOutlinePhase(
   required GenerationModelCallExecutor executor,
   required String prompt,
   required DeckGenerationRequest request,
+  required List<PresentationThemeDescriptor> themeCandidates,
   required GenerationProgressCallback? onProgress,
   required GenerationTraceEmitter trace,
 }) async {
@@ -30,6 +31,7 @@ Future<DeckPlanType?> _runOutlinePhase(
     prompt,
     trace,
     request,
+    themeCandidates,
   );
   final outlineMs = DateTime.now().difference(outlineStart).inMilliseconds;
 
@@ -102,7 +104,8 @@ Future<Map<String, dynamic>?> _runSlideCompositionPhase(
   return deckJson;
 }
 
-DeckGenerationResult _finalizeDeck({
+DeckGenerationResult _finalizeDeck(
+  DeckGeneratorService owner, {
   required Map<String, dynamic> deckJson,
   required DeckPlanType plan,
   required DateTime pipelineStart,
@@ -171,8 +174,23 @@ DeckGenerationResult _finalizeDeck({
     phase: GenerationTracePhase.finalize,
   );
 
-  return DeckGenerationResult.success(slides: parsedSlides, plan: plan);
+  final theme = resolveDeckThemeReference(
+    plan.theme,
+    themeCatalog: owner.themeCatalog,
+    typographyCatalog: owner.typographyCatalog,
+  );
+
+  return DeckGenerationResult.success(
+    slides: parsedSlides,
+    plan: plan,
+    theme: theme,
+  );
 }
+
+String _argumentMessage(Object error) => error
+    .toString()
+    .replaceFirst('Invalid argument(s): ', '')
+    .replaceFirst('Invalid argument: ', '');
 
 bool _generationCancelled(bool Function()? isCancelled) =>
     isCancelled?.call() ?? false;

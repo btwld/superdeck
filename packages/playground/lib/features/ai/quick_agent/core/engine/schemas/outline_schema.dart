@@ -7,7 +7,7 @@ part 'outline_schema.g.dart';
 
 /// Schema definitions for presentation planning (Phase 1).
 ///
-/// The deck plan captures the narrative, shared style, and enough composition
+/// The deck plan captures the narrative, shared theme, and enough composition
 /// intent to generate each slide independently in a later phase.
 ///
 /// This is generated first so the AI can plan the deck structure before
@@ -160,8 +160,8 @@ final deckPlanSchema =
       'story': Ack.string().describe(
         'One-sentence narrative through-line for the complete presentation',
       ),
-      'style': styleSchema.describe(
-        'Shared palette and typography selected once for the complete deck',
+      'theme': deckThemeReferenceSchema.describe(
+        'Application-resolved theme reference for the complete deck',
       ),
       'sections': Ack.list(deckPlanSectionSchema).describe(
         'Ordered narrative sections whose slide keys partition the deck',
@@ -170,5 +170,33 @@ final deckPlanSchema =
         deckPlanSlideSchema,
       ).describe('Ordered list of slides in the presentation'),
     }).describe(
-      'Presentation deck plan with narrative, style, and composition intent',
+      'Presentation deck plan with narrative, theme, and composition intent',
     );
+
+/// Builds the model-facing deck-plan schema for one deterministic shortlist.
+///
+/// The model can select only one eligible ID. Catalog version, density, full
+/// recipe, and user brand overrides are attached by Dart after parsing.
+ObjectSchema buildDeckPlanDraftSchema(List<String> eligibleThemeIds) {
+  if (eligibleThemeIds.isEmpty) {
+    throw ArgumentError('At least one eligible theme ID is required.');
+  }
+
+  return Ack.object({
+    'topic': Ack.string().describe('Main topic of the presentation'),
+    'story': Ack.string().describe(
+      'One-sentence narrative through-line for the complete presentation',
+    ),
+    'theme': Ack.object({
+      'id': Ack.enumString(
+        eligibleThemeIds,
+      ).describe('Exact ID selected from the eligible theme candidates'),
+    }).describe('Model-selected theme ID only'),
+    'sections': Ack.list(deckPlanSectionSchema).describe(
+      'Ordered narrative sections whose slide keys partition the deck',
+    ),
+    'slides': Ack.list(
+      deckPlanSlideSchema,
+    ).describe('Ordered list of slides in the presentation'),
+  }).describe('Model-facing deck-plan draft with bounded theme selection');
+}

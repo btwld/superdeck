@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:superdeck/superdeck.dart';
 
 import '../design/generated_deck_theme_factory.dart';
+import '../design/presentation_theme_catalog.dart';
 import '../design/presentation_typography_catalog.dart';
 
 /// Neutral fallbacks used when no theme-resolved seed colors are supplied
@@ -17,6 +18,20 @@ final playgroundFontFamilies =
 
 /// Renderer-ready style selected by the generation pipeline.
 final class GeneratedDeckStyle {
+  final Color background;
+
+  final Color surface;
+  final Color surfaceAlt;
+  final Color heading;
+  final Color body;
+  final Color accent;
+  final Color accentContrast;
+  final String headlineFamily;
+  final String bodyFamily;
+  final String direction;
+  final String density;
+  final String typeScale;
+  final PresentationThemeRuntimeRecipe runtime;
   const GeneratedDeckStyle({
     required this.background,
     required this.surface,
@@ -30,20 +45,8 @@ final class GeneratedDeckStyle {
     required this.direction,
     required this.density,
     required this.typeScale,
+    required this.runtime,
   });
-
-  final Color background;
-  final Color surface;
-  final Color surfaceAlt;
-  final Color heading;
-  final Color body;
-  final Color accent;
-  final Color accentContrast;
-  final String headlineFamily;
-  final String bodyFamily;
-  final String direction;
-  final String density;
-  final String typeScale;
 }
 
 enum TextLevel { h1, h2, h3, h4, h5, h6, p }
@@ -71,6 +74,31 @@ class TextLevelStyle {
 /// controller, and notifies. All state is in-memory; reloading resets to the
 /// seeded defaults.
 class DeckCustomizationStore extends ChangeNotifier {
+  final DeckController _controller;
+
+  final PresentationTypographyCatalog _typographyCatalog;
+
+  static const _themeFactory = GeneratedDeckThemeFactory();
+
+  Color _background;
+
+  late Color _surface;
+
+  late Color _surfaceAlt;
+
+  late Color _accent;
+
+  late Color _accentContrast;
+
+  String _density = 'balanced';
+
+  PresentationThemeRuntimeRecipe _runtime = defaultPresentationThemeCatalog
+      .current('technical-paper')!
+      .recipe
+      .runtime;
+
+  late final Map<TextLevel, TextLevelStyle> _levels;
+
   DeckCustomizationStore(
     this._controller, {
     Color background = _defaultBackground,
@@ -131,95 +159,6 @@ class DeckCustomizationStore extends ChangeNotifier {
     _pushOptions();
   }
 
-  final DeckController _controller;
-
-  final PresentationTypographyCatalog _typographyCatalog;
-
-  static const _themeFactory = GeneratedDeckThemeFactory();
-
-  Color _background;
-
-  late Color _surface;
-
-  late Color _surfaceAlt;
-
-  late Color _accent;
-
-  late Color _accentContrast;
-
-  String _direction = 'minimal';
-
-  String _density = 'balanced';
-
-  late final Map<TextLevel, TextLevelStyle> _levels;
-
-  Color get background => _background;
-
-  set background(Color value) {
-    if (_background == value) return;
-    _background = value;
-    _apply();
-  }
-
-  TextLevelStyle level(TextLevel level) => _levels[level]!;
-
-  void setColor(TextLevel level, Color color) {
-    final target = _levels[level]!;
-    if (target.color == color) return;
-    target.color = color;
-    _apply();
-  }
-
-  void setSize(TextLevel level, double size) {
-    final target = _levels[level]!;
-    if (target.size == size) return;
-    target.size = size;
-    _apply();
-  }
-
-  void setWeight(TextLevel level, int weight) {
-    final target = _levels[level]!;
-    if (target.weight == weight) return;
-    target.weight = weight;
-    _apply();
-  }
-
-  void setFamily(TextLevel level, String family) {
-    final target = _levels[level]!;
-    final role = level == TextLevel.p
-        ? PresentationFontRole.body
-        : PresentationFontRole.headline;
-    final descriptor = _requireFont(family, role);
-    if (target.family == descriptor.family) return;
-    target.family = descriptor.family;
-    _apply();
-  }
-
-  /// Applies one generated visual system and pushes one coherent option update.
-  void applyGeneratedStyle(GeneratedDeckStyle style) {
-    final headline = _requireFont(
-      style.headlineFamily,
-      PresentationFontRole.headline,
-    );
-    final body = _requireFont(style.bodyFamily, PresentationFontRole.body);
-    _background = style.background;
-    _surface = style.surface;
-    _surfaceAlt = style.surfaceAlt;
-    _accent = style.accent;
-    _accentContrast = style.accentContrast;
-    _direction = style.direction;
-    _density = style.density;
-    _applyTypeScale(style.typeScale);
-    for (final level in TextLevel.values) {
-      final target = _levels[level]!;
-      final heading = level != TextLevel.p;
-      target.color = heading ? style.heading : style.body;
-      target.family = heading ? headline.family : body.family;
-      if (heading) target.weight = _headlineWeight(style.direction, level);
-    }
-    _apply();
-  }
-
   /// Rebuilds and pushes [DeckOptions], then notifies listeners.
   void _apply() {
     _pushOptions();
@@ -246,8 +185,8 @@ class DeckCustomizationStore extends ChangeNotifier {
         h6: _textStyleFor(TextLevel.h6),
         body: _textStyleFor(TextLevel.p),
       ),
-      direction: _direction,
       density: _density,
+      runtime: _runtime,
     );
   }
 
@@ -325,8 +264,104 @@ class DeckCustomizationStore extends ChangeNotifier {
     return direction == 'minimal' ? 500 : 600;
   }
 
+  int _nearestSupportedWeight(
+    PresentationFontDescriptor descriptor,
+    int requested,
+  ) {
+    if (descriptor.weights.isEmpty) {
+      throw ArgumentError(
+        'Registered font "${descriptor.family}" has no supported weights.',
+      );
+    }
+    final weights = descriptor.weights.toList()..sort();
+
+    return weights.reduce(
+      (best, candidate) =>
+          (candidate - requested).abs() < (best - requested).abs()
+          ? candidate
+          : best,
+    );
+  }
+
   FontWeight _fontWeightFor(int value) => FontWeight.values.firstWhere(
     (weight) => weight.value == value,
     orElse: () => FontWeight.w400,
   );
+
+  Color get background => _background;
+
+  set background(Color value) {
+    if (_background == value) return;
+    _background = value;
+    _apply();
+  }
+
+  TextLevelStyle level(TextLevel level) => _levels[level]!;
+
+  void setColor(TextLevel level, Color color) {
+    final target = _levels[level]!;
+    if (target.color == color) return;
+    target.color = color;
+    _apply();
+  }
+
+  void setSize(TextLevel level, double size) {
+    final target = _levels[level]!;
+    if (target.size == size) return;
+    target.size = size;
+    _apply();
+  }
+
+  void setWeight(TextLevel level, int weight) {
+    final target = _levels[level]!;
+    final role = level == TextLevel.p
+        ? PresentationFontRole.body
+        : PresentationFontRole.headline;
+    final descriptor = _requireFont(target.family, role);
+    final supportedWeight = _nearestSupportedWeight(descriptor, weight);
+    if (target.weight == supportedWeight) return;
+    target.weight = supportedWeight;
+    _apply();
+  }
+
+  void setFamily(TextLevel level, String family) {
+    final target = _levels[level]!;
+    final role = level == TextLevel.p
+        ? PresentationFontRole.body
+        : PresentationFontRole.headline;
+    final descriptor = _requireFont(family, role);
+    if (target.family == descriptor.family) return;
+    target.family = descriptor.family;
+    _apply();
+  }
+
+  /// Applies one generated visual system and pushes one coherent option update.
+  void applyGeneratedStyle(GeneratedDeckStyle style) {
+    final headline = _requireFont(
+      style.headlineFamily,
+      PresentationFontRole.headline,
+    );
+    final body = _requireFont(style.bodyFamily, PresentationFontRole.body);
+    _background = style.background;
+    _surface = style.surface;
+    _surfaceAlt = style.surfaceAlt;
+    _accent = style.accent;
+    _accentContrast = style.accentContrast;
+    _density = style.density;
+    _runtime = style.runtime;
+    _applyTypeScale(style.typeScale);
+    for (final level in TextLevel.values) {
+      final target = _levels[level]!;
+      final heading = level != TextLevel.p;
+      target.color = heading ? style.heading : style.body;
+      target.family = heading ? headline.family : body.family;
+      if (heading) {
+        target.weight = _nearestSupportedWeight(
+          headline,
+          _headlineWeight(style.direction, level),
+        );
+      }
+    }
+    _apply();
+  }
 }

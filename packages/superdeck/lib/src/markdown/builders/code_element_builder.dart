@@ -47,6 +47,14 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     return baseStyle;
   }
 
+  Color? _codeBackground(MarkdownCodeblockSpec spec) {
+    final decoration = spec.container?.spec.decoration;
+    return switch (decoration) {
+      BoxDecoration(:final color?) => color,
+      _ => null,
+    };
+  }
+
   InlineSpan _buildFadingLineSpan(
     TextSpan lineSpan, {
     required bool isLastLine,
@@ -92,11 +100,6 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     final tagAndContent = getTagAndContent(element.textContent);
     final heroTag = attributeHero ?? tagAndContent.tag;
 
-    final spans = SyntaxHighlight.render(
-      tagAndContent.content.trim(),
-      language,
-    );
-
     return StyleSpecBuilder<MarkdownCodeblockSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
@@ -105,6 +108,11 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
         // InheritedWidget is available in the widget tree. The method parameter context comes
         // from flutter_markdown_plus and may not have Mix framework ancestors yet.
         final blockData = BlockConfiguration.of(builderContext);
+        final spans = SyntaxHighlight.render(
+          tagAndContent.content.trim(),
+          language,
+          backgroundColor: _codeBackground(spec),
+        );
 
         // Build the code widget
         Widget codeWidget = Row(
@@ -151,6 +159,7 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
             final highlightedLines = SyntaxHighlight.render(
               committedText,
               to.language,
+              backgroundColor: _codeBackground(interpolatedSpec),
             );
             final trailingStyle = _resolveTrailingStyle(
               highlightedLines,
