@@ -14,7 +14,7 @@ import '../core/viewmodel_scope.dart';
 ///
 /// Owns an [AiConversationViewModel] (via [ViewModelScope]) driving the GenUI
 /// catalog: the model asks one question at a time, each rendered as a catalog
-/// surface. The host supplies the `GenerateDeckCommand` used by the terminal
+/// surface. The host supplies the create-and-open command used by the terminal
 /// summary card.
 class WizardView extends StatelessWidget {
   const WizardView({super.key});

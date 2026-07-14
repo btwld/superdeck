@@ -73,6 +73,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     google_ai.GenerativeService service,
     String prompt,
     Map<String, dynamic> outline,
+    List<GeneratedImageAsset> generatedImages,
   ) async {
     final adapter = GoogleSchemaAdapter();
     final adaptResult = adapter.adapt(
@@ -87,7 +88,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       return null;
     }
 
-    final systemPrompt = _buildFinalDeckPrompt(outline);
+    final systemPrompt = _buildFinalDeckPrompt(outline, generatedImages);
     debugLog.log(
       'DECK_GEN',
       'Final deck system prompt (${systemPrompt.length} chars)',
@@ -137,13 +138,17 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   }
 
   /// Builds the system prompt for the final deck phase from the outline.
-  String _buildFinalDeckPrompt(Map<String, dynamic> outline) {
+  String _buildFinalDeckPrompt(
+    Map<String, dynamic> outline,
+    List<GeneratedImageAsset> generatedImages,
+  ) {
     final basePrompt = PromptRegistry.instance.render(
       'deck_system',
       input: {'examples': ExamplesLoader.instance.formatForPrompt()},
     );
     final fieldGuidance = getSlideGenerationGuidance();
     final outlineContext = _formatOutlineForPrompt(outline);
+    final imageContext = formatGeneratedImagesForPrompt(generatedImages);
 
     return '''
 $basePrompt
@@ -153,6 +158,8 @@ $fieldGuidance
 ## Presentation Outline (follow this structure)
 
 $outlineContext
+
+$imageContext
 ''';
   }
 
@@ -172,6 +179,10 @@ $outlineContext
       buffer.writeln('- **${slide['key']}**: ${slide['title']}');
       buffer.writeln('  Layout: ${slide['layoutHint']}');
       buffer.writeln('  Purpose: ${slide['purpose']}');
+      final requirement = slide['imageRequirement'];
+      if (requirement is Map && requirement['subject'] != null) {
+        buffer.writeln('  Image subject: ${requirement['subject']}');
+      }
       buffer.writeln('');
     }
 

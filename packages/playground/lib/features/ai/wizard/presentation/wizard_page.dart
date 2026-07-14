@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../../../editor/domain/stores/deck_document_store.dart';
+import '../../../editor/domain/files/deck_file_repository.dart';
+import '../../image_generation/image_generator.dart';
 import '../../quick_agent/core/env_config.dart';
-import '../../quick_agent/domain/commands/generate_deck_command.dart';
+import '../domain/commands/create_wizard_deck_command.dart';
 import 'wizard_view.dart';
 
 /// Isolated host for exercising the conversational Wizard without the editor.
 ///
-/// Generated Markdown is kept in memory so opening this screen never requests a
-/// deck-storage folder. The production integration can provide its own document
-/// destination when the Wizard is embedded outside the playground.
+/// Successful generation creates a persistent deck and opens it in the editor.
 class WizardPage extends StatelessWidget {
   const WizardPage({this.isConfigured, super.key});
 
@@ -28,10 +27,10 @@ class WizardPage extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => DeckDocumentStore(markdown: '')),
-        ListenableProvider<GenerateDeckCommand>(
-          create: (context) => GenerateDeckCommand(
-            documentStore: context.read<DeckDocumentStore>(),
+        ListenableProvider<CreateWizardDeckCommand>(
+          create: (context) => CreateWizardDeckCommand(
+            repository: context.read<DeckFileRepository>(),
+            imageGenerator: context.read<ImageGenerator>(),
           ),
           dispose: (_, command) => command.dispose(),
         ),

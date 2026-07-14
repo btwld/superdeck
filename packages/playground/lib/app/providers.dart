@@ -3,11 +3,13 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:superdeck/superdeck.dart';
 
-import '../core/data/data_sources/memory_asset_cache_store.dart';
 import '../core/data/data_sources/memory_deck_loader.dart';
 import '../core/domain/stores/deck_customization_store.dart';
 import '../features/editor/data/mac_os_deck_file_repository.dart';
 import '../features/editor/domain/files/deck_file_repository.dart';
+import '../features/editor/domain/stores/deck_asset_cache_store.dart';
+import '../features/ai/image_generation/image_generator.dart';
+import '../features/ai/quick_agent/core/env_config.dart';
 
 /// App-root dependency injection: the deck globals shared across features.
 ///
@@ -23,10 +25,16 @@ import '../features/editor/domain/files/deck_file_repository.dart';
 /// [deckFileRepository] defaults to the macOS filesystem implementation; tests
 /// inject an in-memory repository so bootstrap runs without touching disk.
 class AppProviders extends StatelessWidget {
-  const AppProviders({required this.child, this.deckFileRepository, super.key});
+  const AppProviders({
+    required this.child,
+    this.deckFileRepository,
+    this.imageGenerator,
+    super.key,
+  });
 
   final Widget child;
   final DeckFileRepository? deckFileRepository;
+  final ImageGenerator? imageGenerator;
 
   @override
   Widget build(BuildContext context) {
@@ -41,17 +49,28 @@ class AppProviders extends StatelessWidget {
           create: (_) => MemoryDeckLoader(),
           dispose: (_, loader) => loader.dispose(),
         ),
-        Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
+        ChangeNotifierProvider<DeckAssetCacheStore>(
+          create: (_) => DeckAssetCacheStore(),
+        ),
         Provider<DeckFileRepository>(
           create: (_) => deckFileRepository ?? MacOsDeckFileRepository(),
           dispose: (_, repository) => repository.dispose(),
+        ),
+        Provider<ImageGenerator>(
+          create: (_) =>
+              imageGenerator ??
+              (EnvConfig.hasGeminiApiKey
+                  ? DartanticImageGenerator(apiKey: EnvConfig.geminiApiKey)
+                  : const UnavailableImageGenerator(
+                      'No Gemini API key is configured.',
+                    )),
         ),
         Provider<DeckController>(
           lazy: false,
           create: (ctx) => DeckController(
             deckLoader: ctx.read<MemoryDeckLoader>(),
             options: DeckOptions(),
-            assetCacheStore: ctx.read<MemoryAssetCacheStore>(),
+            assetCacheStore: ctx.read<DeckAssetCacheStore>(),
           ),
           dispose: (_, controller) => controller.dispose(),
         ),

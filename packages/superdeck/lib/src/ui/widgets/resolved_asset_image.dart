@@ -12,8 +12,9 @@ import 'cache_image_widget.dart';
 /// cache miss the [fallback] URI is used, preserving the renderer's default
 /// behavior for keys that aren't cached.
 ///
-/// Resolution happens once per [assetKey] (re-run only when the key or store
-/// changes), so live re-renders of the slide don't re-resolve on every frame.
+/// Resolution runs when the key or store changes. If the store also implements
+/// [Listenable], notifications re-resolve the key so a newly written asset can
+/// replace a previous cache miss without rebuilding the deck.
 class ResolvedAssetImage extends StatefulWidget {
   const ResolvedAssetImage({
     super.key,
@@ -40,15 +41,46 @@ class _ResolvedAssetImageState extends State<ResolvedAssetImage> {
   @override
   void initState() {
     super.initState();
+    _attachStoreListener(widget.store);
     _resolved = _resolve();
   }
 
   @override
   void didUpdateWidget(ResolvedAssetImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.assetKey != widget.assetKey || oldWidget.store != widget.store) {
+    if (oldWidget.store != widget.store) {
+      _detachStoreListener(oldWidget.store);
+      _attachStoreListener(widget.store);
+    }
+    if (oldWidget.assetKey != widget.assetKey ||
+        oldWidget.store != widget.store) {
       _resolved = _resolve();
     }
+  }
+
+  @override
+  void dispose() {
+    _detachStoreListener(widget.store);
+    super.dispose();
+  }
+
+  void _attachStoreListener(AssetCacheStore store) {
+    if (store case final Listenable listenable) {
+      listenable.addListener(_onStoreChanged);
+    }
+  }
+
+  void _detachStoreListener(AssetCacheStore store) {
+    if (store case final Listenable listenable) {
+      listenable.removeListener(_onStoreChanged);
+    }
+  }
+
+  void _onStoreChanged() {
+    if (!mounted) return;
+    setState(() {
+      _resolved = _resolve();
+    });
   }
 
   Future<Uri?> _resolve() async {

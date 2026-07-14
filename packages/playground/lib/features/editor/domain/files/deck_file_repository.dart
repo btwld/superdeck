@@ -1,5 +1,7 @@
 import '../../../../core/result.dart';
+import '../../../../core/domain/generated_image_asset.dart';
 import 'deck_file.dart';
+import 'deck_image_manifest.dart';
 
 /// Owns editable deck-file persistence and macOS security-scoped access.
 ///
@@ -19,6 +21,24 @@ abstract interface class DeckFileRepository {
     required String name,
     required String markdown,
   });
+
+  /// Creates a uniquely named Wizard deck and its generated-image sidecar.
+  Future<Result<DeckFileSnapshot>> createGeneratedDeck({
+    required String name,
+    required String markdown,
+    required List<GeneratedImageAsset> images,
+  });
+
+  /// Loads generated-image retry metadata for [reference], if it exists.
+  Future<Result<DeckImageManifest?>> loadImageManifest(
+    DeckFileReference reference,
+  );
+
+  /// Persists one manual retry outcome and updates its manifest entry.
+  Future<Result<void>> updateGeneratedImage(
+    DeckFileReference reference,
+    GeneratedImageAsset image,
+  );
 
   /// Writes [markdown] to the currently active [reference].
   Future<Result<void>> writeDeck(DeckFileReference reference, String markdown);

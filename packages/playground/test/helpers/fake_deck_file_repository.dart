@@ -2,13 +2,17 @@ import 'dart:async';
 
 import 'package:path/path.dart' as p;
 import 'package:playground/core/result.dart';
+import 'package:playground/core/domain/generated_image_asset.dart';
 import 'package:playground/features/editor/domain/files/deck_file.dart';
 import 'package:playground/features/editor/domain/files/deck_file_repository.dart';
+import 'package:playground/features/editor/domain/files/deck_image_manifest.dart';
 
 /// In-memory [DeckFileRepository] with controllable reads, writes, and watch
 /// events for synchronization and bootstrap tests.
 class FakeDeckFileRepository implements DeckFileRepository {
   final Map<String, String> files = {};
+  final Map<String, List<int>> assets = {};
+  final Map<String, DeckImageManifest> imageManifests = {};
   final Map<String, StreamController<DeckFileEvent>> _watchers = {};
   final Map<DeckFileReference, DeckFileReference> accessResults = {};
   final List<DeckFileReference> accessStarts = [];
@@ -131,6 +135,87 @@ class FakeDeckFileRepository implements DeckFileRepository {
   }
 
   @override
+  Future<Result<DeckFileSnapshot>> createGeneratedDeck({
+    required String name,
+    required String markdown,
+    required List<GeneratedImageAsset> images,
+  }) async {
+    final base = _topicSlug(name);
+    var suffix = 1;
+    late String path;
+    while (true) {
+      final stem = suffix == 1 ? base : '$base-$suffix';
+      path = p.join(decksDirectory, '$stem.md');
+      if (!files.containsKey(path) &&
+          !imageManifests.containsKey(deckAssetsDirectoryPath(path))) {
+        break;
+      }
+      suffix++;
+    }
+    if (failWrites) {
+      return Result.error(
+        DeckFileWriteException(path, Exception('write failed')),
+      );
+    }
+
+    files[path] = markdown;
+    final assetsPath = deckAssetsDirectoryPath(path);
+    imageManifests[assetsPath] = DeckImageManifest.fromAssets(images);
+    for (final image in images) {
+      final bytes = image.bytes;
+      if (bytes != null) {
+        assets[p.join(assetsPath, image.assetKey)] = bytes;
+      }
+    }
+    writeCount++;
+    final snapshot = DeckFileSnapshot(
+      reference: DeckFileReference(path: path),
+      markdown: markdown,
+    );
+    _remember(snapshot.reference);
+    return Result.ok(snapshot);
+  }
+
+  @override
+  Future<Result<DeckImageManifest?>> loadImageManifest(
+    DeckFileReference reference,
+  ) async {
+    return Result.ok(imageManifests[deckAssetsDirectoryPath(reference.path)]);
+  }
+
+  @override
+  Future<Result<void>> updateGeneratedImage(
+    DeckFileReference reference,
+    GeneratedImageAsset image,
+  ) async {
+    if (failWrites) {
+      return Result.error(
+        DeckFileWriteException(reference.path, Exception('write failed')),
+      );
+    }
+    final assetsPath = deckAssetsDirectoryPath(reference.path);
+    final manifest = imageManifests[assetsPath];
+    if (manifest == null) {
+      return Result.error(
+        DeckFileWriteException(reference.path, Exception('missing manifest')),
+      );
+    }
+    try {
+      imageManifests[assetsPath] = manifest.replace(
+        DeckImageManifestEntry.fromAsset(image),
+      );
+      final bytes = image.bytes;
+      if (bytes != null) {
+        assets[p.join(assetsPath, image.assetKey)] = bytes;
+      }
+      writeCount++;
+      return const Result.ok(null);
+    } catch (error) {
+      return Result.error(DeckFileWriteException(reference.path, error));
+    }
+  }
+
+  @override
   Future<Result<void>> writeDeck(
     DeckFileReference reference,
     String markdown,
@@ -222,6 +307,15 @@ class FakeDeckFileRepository implements DeckFileRepository {
 
   void _remember(DeckFileReference reference) {
     if (!failRememberWrites) rememberedDeck = reference;
+  }
+
+  String _topicSlug(String name) {
+    final value = name
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp('[^a-z0-9]+'), '-')
+        .replaceAll(RegExp('^-+|-+\$'), '');
+    return value.isEmpty ? 'untitled' : value;
   }
 
   Future<void> _settle() =>

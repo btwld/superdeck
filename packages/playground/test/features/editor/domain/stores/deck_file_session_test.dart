@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:playground/core/result.dart';
 import 'package:playground/features/editor/domain/files/deck_file.dart';
+import 'package:playground/features/editor/domain/stores/deck_asset_cache_store.dart';
 import 'package:playground/features/editor/domain/stores/deck_document_store.dart';
 import 'package:playground/features/editor/domain/stores/deck_file_session.dart';
 
@@ -24,6 +25,7 @@ void main() {
         reference ?? const DeckFileReference(path: '/decks/a.md');
     repository.files.putIfAbsent(deckReference.path, () => markdown);
     final document = DeckDocumentStore(markdown: markdown);
+    final assetStore = DeckAssetCacheStore();
     final session = DeckFileSession(
       initialSnapshot: DeckFileSnapshot(
         reference: deckReference,
@@ -31,11 +33,13 @@ void main() {
       ),
       repository: repository,
       documentStore: document,
+      assetCacheStore: assetStore,
       autoSaveDebounce: debounce,
     );
     addTearDown(() {
       session.dispose();
       document.dispose();
+      assetStore.dispose();
     });
     return (document: document, session: session);
   }

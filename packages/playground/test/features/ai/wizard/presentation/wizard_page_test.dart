@@ -3,9 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:playground/app/router.dart';
+import 'package:playground/app/providers.dart';
+import 'package:playground/features/ai/image_generation/image_generator.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_page.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_view.dart';
 import 'package:playground/features/editor/presentation/pages/editor_page.dart';
+
+import '../../../../helpers/fake_deck_file_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -35,8 +39,14 @@ void main() {
   testWidgets('configured page opens the isolated Wizard', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        builder: (context, child) =>
-            HeroTheme(data: HeroThemeData.light(), child: child!),
+        builder: (context, child) => HeroTheme(
+          data: HeroThemeData.light(),
+          child: AppProviders(
+            deckFileRepository: FakeDeckFileRepository(),
+            imageGenerator: const UnavailableImageGenerator(),
+            child: child!,
+          ),
+        ),
         home: const WizardPage(isConfigured: true),
       ),
     );

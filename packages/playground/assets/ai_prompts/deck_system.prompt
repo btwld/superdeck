@@ -115,7 +115,9 @@ Use standard markdown:
 - Blockquotes: > quote text
 - Alerts: > [!NOTE] message
 
-Do not include images. This presentation is text-only.
+Use Markdown images only when the system prompt supplies a Generated Image
+Assets list. Put each supplied image on its matching slide using the exact bare
+asset key. When no image assets are supplied, keep the presentation text-only.
 
 ## Style Configuration
 

@@ -7,6 +7,7 @@ import '../../../../core/result.dart';
 import '../files/deck_file.dart';
 import '../files/deck_file_repository.dart';
 import 'deck_document_store.dart';
+import 'deck_asset_cache_store.dart';
 
 /// Markdown used to seed the first deck and every newly created deck.
 const kStarterDeckMarkdown = '''---
@@ -35,6 +36,7 @@ enum DeckBindingStatus {
 class DeckFileSession extends ChangeNotifier {
   final DeckFileRepository _repository;
   final DeckDocumentStore _documentStore;
+  final DeckAssetCacheStore _assetCacheStore;
   final Duration _autoSaveDebounce;
 
   DeckFileReference? _boundDeck;
@@ -55,12 +57,17 @@ class DeckFileSession extends ChangeNotifier {
     required DeckFileSnapshot initialSnapshot,
     required DeckFileRepository repository,
     required DeckDocumentStore documentStore,
+    required DeckAssetCacheStore assetCacheStore,
     Duration autoSaveDebounce = const Duration(milliseconds: 400),
   }) : _repository = repository,
        _documentStore = documentStore,
+       _assetCacheStore = assetCacheStore,
        _autoSaveDebounce = autoSaveDebounce,
        _boundDeck = initialSnapshot.reference,
        _lastSyncedContent = initialSnapshot.markdown {
+    // The session is constructed while EditorBootstrap is building. No image
+    // consumer exists yet, so avoid notifying Provider during that build.
+    _assetCacheStore.bind(initialSnapshot.reference, notify: false);
     if (documentStore.markdown != initialSnapshot.markdown) {
       documentStore.replaceMarkdown(initialSnapshot.markdown);
     }
@@ -70,6 +77,8 @@ class DeckFileSession extends ChangeNotifier {
 
   /// The bound file path, retained after loss so its name can still be shown.
   String? get boundPath => _boundDeck?.path;
+
+  DeckFileReference? get boundReference => _boundDeck;
 
   /// Filename for the header, or `Untitled` before a deck is bound.
   String get fileName =>
@@ -249,6 +258,7 @@ class DeckFileSession extends ChangeNotifier {
     _watchSubscription = null;
 
     _boundDeck = snapshot.reference;
+    _assetCacheStore.bind(snapshot.reference);
     _lastSyncedContent = snapshot.markdown;
     _status = DeckBindingStatus.bound;
     _warning = null;
@@ -327,6 +337,7 @@ class DeckFileSession extends ChangeNotifier {
     _debounce = null;
     _bindingEpoch++;
     _status = DeckBindingStatus.unbound;
+    _assetCacheStore.unbind();
     _warning =
         'The file "$fileName" is no longer on disk. '
         'Your work is kept here. Create a new deck to save it before opening '
@@ -355,6 +366,7 @@ class DeckFileSession extends ChangeNotifier {
     unawaited(_watchSubscription?.cancel());
     final reference = _boundDeck;
     if (reference != null) unawaited(_repository.releaseDeck(reference));
+    _assetCacheStore.unbind();
     super.dispose();
   }
 }

@@ -7,11 +7,14 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/data/data_sources/memory_deck_loader.dart';
 import '../../../../core/result.dart';
+import '../../../ai/image_generation/image_generator.dart';
 import '../../../ai/quick_agent/domain/commands/generate_deck_command.dart';
 import '../../domain/files/deck_file.dart';
 import '../../domain/files/deck_file_repository.dart';
+import '../../domain/stores/deck_asset_cache_store.dart';
 import '../../domain/stores/deck_document_store.dart';
 import '../../domain/stores/deck_file_session.dart';
+import '../../domain/stores/deck_image_issue_store.dart';
 import '../../domain/stores/editor_store.dart';
 import '../../utils/text_editor_controller.dart';
 import 'editor_page.dart';
@@ -109,12 +112,21 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
       initialSnapshot: snapshot,
       repository: _repository,
       documentStore: documentStore,
+      assetCacheStore: context.read<DeckAssetCacheStore>(),
     );
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<DeckDocumentStore>.value(value: documentStore),
         ChangeNotifierProvider<DeckFileSession>.value(value: fileSession),
+        ChangeNotifierProvider<DeckImageIssueStore>(
+          create: (ctx) => DeckImageIssueStore(
+            fileSession: fileSession,
+            repository: _repository,
+            imageGenerator: ctx.read<ImageGenerator>(),
+            assetCacheStore: ctx.read<DeckAssetCacheStore>(),
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => EditorStore()),
         Provider<TextEditorController>(
           lazy: false,

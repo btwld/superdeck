@@ -2,7 +2,7 @@ import '../wizard_context.dart';
 
 /// Builds a deck generation prompt from wizard context data.
 ///
-/// Extracts user selections from the 8-step wizard workflow and formats
+/// Extracts user selections from the seven-step Wizard workflow and formats
 /// them into a structured prompt for the AI generation service.
 String buildPromptFromWizardContext(WizardContext context) {
   final buffer = StringBuffer();

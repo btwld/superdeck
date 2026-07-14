@@ -43,7 +43,7 @@ dependencies:
   ack: 1.0.1
   ack_annotations: 1.0.1
   ack_json_schema_builder: 1.0.1
-  dartantic_ai: ^3.1.0
+  dartantic_ai: ^3.3.0
   json_schema_builder: ^0.1.5
   # Filesystem persistence for the playground editor (desktop-only).
   path_provider: ^2.1.4

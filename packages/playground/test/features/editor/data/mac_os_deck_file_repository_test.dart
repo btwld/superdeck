@@ -8,9 +8,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:playground/core/data/data_sources/security_scoped_file_access.dart';
+import 'package:playground/core/domain/generated_image_asset.dart';
 import 'package:playground/core/result.dart';
 import 'package:playground/features/editor/data/mac_os_deck_file_repository.dart';
 import 'package:playground/features/editor/domain/files/deck_file.dart';
+import 'package:playground/features/editor/domain/files/deck_image_manifest.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class _FakePathProvider extends PathProviderPlatform
@@ -355,6 +357,163 @@ void main() {
       (second as Failure<DeckFileSnapshot>).error,
       isA<DeckNameCollisionException>(),
     );
+  });
+
+  test('creates uniquely named generated decks with image sidecars', () async {
+    final images = [
+      GeneratedImageAsset.success(
+        assetKey: 'slide-01-opening-illustration.png',
+        slideKey: 'opening',
+        subject: 'a sunrise over a city',
+        prompt: 'paint a sunrise',
+        aspectRatio: GeneratedImageAspectRatio.slide3x4,
+        bytes: [1, 2, 3],
+      ),
+      const GeneratedImageAsset.failure(
+        assetKey: 'slide-02-risk-illustration.png',
+        slideKey: 'risk',
+        subject: 'a fragile bridge',
+        prompt: 'paint a bridge',
+        aspectRatio: GeneratedImageAspectRatio.slide3x4,
+        error: 'Provider unavailable',
+      ),
+    ];
+
+    final first = await repository.createGeneratedDeck(
+      name: 'My Topic!',
+      markdown: '# First',
+      images: images,
+    );
+    final second = await repository.createGeneratedDeck(
+      name: 'My Topic!',
+      markdown: '# Second',
+      images: const [],
+    );
+
+    expect(first, isA<Ok<DeckFileSnapshot>>());
+    expect(second, isA<Ok<DeckFileSnapshot>>());
+    final firstSnapshot = (first as Ok<DeckFileSnapshot>).value;
+    final secondSnapshot = (second as Ok<DeckFileSnapshot>).value;
+    expect(p.basename(firstSnapshot.reference.path), 'my-topic.md');
+    expect(p.basename(secondSnapshot.reference.path), 'my-topic-2.md');
+
+    final assetsPath = deckAssetsDirectoryPath(firstSnapshot.reference.path);
+    expect(
+      await File(
+        p.join(assetsPath, 'slide-01-opening-illustration.png'),
+      ).readAsBytes(),
+      [1, 2, 3],
+    );
+    expect(
+      await File(p.join(assetsPath, 'slide-02-risk-illustration.png')).exists(),
+      isFalse,
+    );
+    final manifest = DeckImageManifest.fromJsonString(
+      await File(p.join(assetsPath, deckImageManifestFileName)).readAsString(),
+    );
+    expect(manifest.version, 1);
+    expect(manifest.images.map((image) => image.status), [
+      GeneratedImageStatus.ready,
+      GeneratedImageStatus.failed,
+    ]);
+  });
+
+  test('falls back to untitled when a topic has no slug characters', () async {
+    final result = await repository.createGeneratedDeck(
+      name: '🌈 ✨',
+      markdown: '# Untitled',
+      images: const [],
+    );
+
+    expect(result, isA<Ok<DeckFileSnapshot>>());
+    expect(
+      p.basename((result as Ok<DeckFileSnapshot>).value.reference.path),
+      'untitled.md',
+    );
+  });
+
+  test('manual retry writes the original key and marks it ready', () async {
+    const failed = GeneratedImageAsset.failure(
+      assetKey: 'slide-01-risk-illustration.png',
+      slideKey: 'risk',
+      subject: 'a fragile bridge',
+      prompt: 'paint a bridge',
+      aspectRatio: GeneratedImageAspectRatio.slide3x4,
+      error: 'Provider unavailable',
+    );
+    final created = await repository.createGeneratedDeck(
+      name: 'Retry Topic',
+      markdown: '# Retry',
+      images: [failed],
+    );
+    final snapshot = (created as Ok<DeckFileSnapshot>).value;
+
+    final result = await repository.updateGeneratedImage(
+      snapshot.reference,
+      GeneratedImageAsset.success(
+        assetKey: failed.assetKey,
+        slideKey: failed.slideKey,
+        subject: failed.subject,
+        prompt: failed.prompt,
+        aspectRatio: failed.aspectRatio,
+        bytes: [9, 8, 7],
+      ),
+    );
+
+    expect(result, isA<Ok<void>>());
+    final manifestResult = await repository.loadImageManifest(
+      snapshot.reference,
+    );
+    final manifest = (manifestResult as Ok<DeckImageManifest?>).value!;
+    expect(manifest.images.single.status, GeneratedImageStatus.ready);
+    expect(manifest.images.single.error, isNull);
+    expect(
+      await File(
+        p.join(
+          deckAssetsDirectoryPath(snapshot.reference.path),
+          failed.assetKey,
+        ),
+      ).readAsBytes(),
+      [9, 8, 7],
+    );
+  });
+
+  test('generated deck creation cleans staging artifacts on failure', () async {
+    final result = await repository.createGeneratedDeck(
+      name: 'Unsafe Asset',
+      markdown: '# Unsafe',
+      images: [
+        GeneratedImageAsset.success(
+          assetKey: '../escape.png',
+          slideKey: 'unsafe',
+          subject: 'unsafe',
+          prompt: 'unsafe',
+          aspectRatio: GeneratedImageAspectRatio.slide3x4,
+          bytes: [1],
+        ),
+      ],
+    );
+
+    expect(result, isA<Failure<DeckFileSnapshot>>());
+    final decks = Directory(p.join(temp.path, 'SuperDeck'));
+    final names = await decks
+        .list()
+        .map((entry) => p.basename(entry.path))
+        .toList();
+    expect(names.where((name) => name.contains('unsafe-asset')), isEmpty);
+  });
+
+  test('existing decks without a sidecar return no image manifest', () async {
+    final created = await repository.createDeck(
+      name: 'Plain',
+      markdown: '# Plain',
+    );
+    final snapshot = (created as Ok<DeckFileSnapshot>).value;
+
+    final manifest = await repository.loadImageManifest(snapshot.reference);
+
+    expect(manifest, isA<Ok<DeckImageManifest?>>());
+    expect((manifest as Ok<DeckImageManifest?>).value, isNull);
   });
 
   test('returns typed failures for failed reads and writes', () async {

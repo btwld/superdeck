@@ -43,6 +43,14 @@ final outlineSlideSchema = Ack.object({
   'layoutHint': Ack.enumString(
     _layoutHintValues,
   ).describe('Suggested layout type for this slide'),
+  'imageRequirement':
+      Ack.object({
+        'subject': Ack.string().describe(
+          'Concrete visual subject that reinforces this slide without text',
+        ),
+      }).optional().describe(
+        'Omit when imagery would be decorative, distracting, or redundant',
+      ),
 }).describe('A single slide in the presentation outline');
 
 // ============================================================================

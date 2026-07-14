@@ -1,9 +1,6 @@
 part of 'deck_generator_service.dart';
 
-void _logPipelineConfig(
-  DeckGeneratorService owner, {
-  required String prompt,
-}) {
+void _logPipelineConfig(DeckGeneratorService owner, {required String prompt}) {
   debugLog.section('Deck Generation Pipeline');
   debugLog.log(
     'DECK_GEN',
@@ -48,18 +45,24 @@ Future<Map<String, dynamic>?> _runFinalDeckPhase(
   required google_ai.GenerativeService service,
   required String prompt,
   required Map<String, dynamic> outline,
+  required List<GeneratedImageAsset> generatedImages,
   required GenerationProgressCallback? onProgress,
 }) async {
-  debugLog.section('Phase 2: Generate Final Deck');
+  debugLog.section('Final phase: Generate Deck');
   onProgress?.call(GenerationPhase.generatingFinalDeck);
   final deckStart = DateTime.now();
-  final deckJson = await owner._generateFinalDeck(service, prompt, outline);
+  final deckJson = await owner._generateFinalDeck(
+    service,
+    prompt,
+    outline,
+    generatedImages,
+  );
   final deckMs = DateTime.now().difference(deckStart).inMilliseconds;
 
   if (deckJson == null) {
     debugLog.error(
       'DECK_GEN',
-      'Phase 2 FAILED after ${deckMs}ms - no deck JSON returned',
+      'Final deck FAILED after ${deckMs}ms - no deck JSON returned',
     );
     return null;
   }
@@ -67,7 +70,7 @@ Future<Map<String, dynamic>?> _runFinalDeckPhase(
   final deckSlides = (deckJson['slides'] as List?)?.length ?? 0;
   debugLog.log(
     'DECK_GEN',
-    'Phase 2 COMPLETE in ${deckMs}ms - $deckSlides raw slides',
+    'Final deck COMPLETE in ${deckMs}ms - $deckSlides raw slides',
   );
   return deckJson;
 }
@@ -76,6 +79,7 @@ Future<DeckGenerationResult> _finalizeDeck(
   DeckGeneratorService owner, {
   required Map<String, dynamic> deckJson,
   required int expectedSlideCount,
+  required List<GeneratedImageAsset> generatedImages,
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,
   required bool Function()? isCancelled,
@@ -97,6 +101,8 @@ Future<DeckGenerationResult> _finalizeDeck(
     debugLog.error('DECK_GEN', 'No slides survived sanitization');
     return DeckGenerationResult.failure('No slides generated');
   }
+
+  ensureGeneratedImageReferences(sanitizedSlides, generatedImages);
 
   final slideCountError = validateGeneratedSlideCount(
     expectedSlideCount: expectedSlideCount,
@@ -124,7 +130,11 @@ Future<DeckGenerationResult> _finalizeDeck(
     'Pipeline COMPLETE in ${totalMs}ms - ${sanitizedSlides.length} slides',
   );
 
-  return DeckGenerationResult.success(slides: parsedSlides, style: styleData);
+  return DeckGenerationResult.success(
+    slides: parsedSlides,
+    generatedImages: generatedImages,
+    style: styleData,
+  );
 }
 
 bool _generationCancelled(bool Function()? isCancelled) =>

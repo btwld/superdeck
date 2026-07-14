@@ -4,6 +4,7 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart' as prov;
 import 'package:remix/remix.dart';
@@ -12,12 +13,11 @@ import '../prompts/font_styles.dart';
 import '../prompts/image_style_prompts.dart';
 import '../schemas/genui_action_schema.dart';
 import '../schemas/wizard_context_keys.dart';
-import '../services/prompt_builder.dart';
 import '../../debug_logger.dart';
 import '../../ui/ui.dart';
 import '../../utils/color_utils.dart';
 import '../../utils/font_utils.dart';
-import '../../../../quick_agent/domain/commands/generate_deck_command.dart';
+import '../../../domain/commands/create_wizard_deck_command.dart';
 import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 import 'user_action_dispatch.dart';
@@ -212,51 +212,42 @@ final summaryCard = typedCatalogItem<SummaryCardType>(
   parse: SummaryCardType.parse,
   widgetBuilder: (catalogContext, data) {
     final action = data.generateSlidesAction;
-    return Builder(
-      builder: (buildContext) {
-        return SummaryCard(
-          title: data.title,
-          items: data.items.toList(),
-          generateSlides: () {
-            unawaited(() async {
-              debugLog.section('Generate Slides Triggered');
-              final command = prov.Provider.of<GenerateDeckCommand>(
-                buildContext,
-                listen: false,
-              );
+    return prov.Consumer<CreateWizardDeckCommand>(
+      builder: (context, command, _) => SummaryCard(
+        title: data.title,
+        items: data.items.toList(),
+        generating: command.running,
+        progressLabel: command.running ? command.progressLabel : null,
+        errorMessage: command.errorMessage,
+        generateSlides: command.running
+            ? null
+            : () {
+                unawaited(() async {
+                  debugLog.section('Generate Slides Triggered');
 
-              // Extract context from displayed summary items
-              final extractedContext = _extractContextFromItems(
-                data.items.toList(),
-              );
-              debugLog.userAction('GENERATE_SLIDES', extractedContext.toMap());
+                  final extractedContext = _extractContextFromItems(
+                    data.items.toList(),
+                  );
+                  debugLog.userAction(
+                    'GENERATE_SLIDES',
+                    extractedContext.toMap(),
+                  );
 
-              // Merge with any path-resolved context from the action
-              final resolvedContext = WizardContext.fromMap(
-                await resolveCatalogActionContext(
-                  itemContext: catalogContext,
-                  action: action,
-                ),
-              );
-              final finalContext = extractedContext.merge(resolvedContext);
-              debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
+                  final resolvedContext = WizardContext.fromMap(
+                    await resolveCatalogActionContext(
+                      itemContext: catalogContext,
+                      action: action,
+                    ),
+                  );
+                  final finalContext = extractedContext.merge(resolvedContext);
+                  debugLog.log('GEN', 'Final context: ${finalContext.toMap()}');
 
-              // Build the prompt string from wizard context and hand it to the
-              // existing generation command (loads markdown into the editor).
-              final prompt = buildPromptFromWizardContext(finalContext);
-              debugLog.log(
-                'GEN',
-                'Routing generation through GenerateDeckCommand. '
-                    'prompt length: ${prompt.length}',
-              );
-
-              // Fire-and-forget — the command manages running/phase/result and
-              // loads the generated markdown into the editor on success.
-              unawaited(command(prompt));
-            }());
-          },
-        );
-      },
+                  await command(finalContext);
+                  if (!context.mounted || !command.completed) return;
+                  context.go('/editor');
+                }());
+              },
+      ),
     );
   },
 );

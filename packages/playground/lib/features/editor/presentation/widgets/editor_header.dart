@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show ExpansionTile, Material;
 import 'package:hero_ui/hero_ui.dart';
 import 'package:mix/mix.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/stores/deck_file_session.dart';
+import '../../domain/stores/deck_image_issue_store.dart';
+import '../../domain/files/deck_image_manifest.dart';
 import 'new_deck_dialog.dart';
 
 /// Bar sitting on top of the text editor: the `New` / `Open` actions on the
@@ -15,6 +18,7 @@ class EditorHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<DeckFileSession>();
+    final imageIssues = context.watch<DeckImageIssueStore>();
     final warning = session.warning;
 
     return ColumnBox(
@@ -53,7 +57,90 @@ class EditorHeader extends StatelessWidget {
           ),
         ),
         if (warning != null) _WarningBanner(message: warning),
+        if (imageIssues.issues.isNotEmpty || imageIssues.errorMessage != null)
+          _ImageIssuesBanner(store: imageIssues),
       ],
+    );
+  }
+}
+
+class _ImageIssuesBanner extends StatelessWidget {
+  const _ImageIssuesBanner({required this.store});
+
+  final DeckImageIssueStore store;
+
+  @override
+  Widget build(BuildContext context) {
+    final issues = store.issues;
+    final count = issues.length;
+    return Material(
+      key: const ValueKey('editor-image-issues'),
+      color: $danger.resolve(context).withValues(alpha: 0.08),
+      child: ExpansionTile(
+        dense: true,
+        leading: Icon(
+          CupertinoIcons.photo_fill_on_rectangle_fill,
+          size: 16,
+          color: $danger.resolve(context),
+        ),
+        title: Text(
+          count == 0
+              ? 'Image issues unavailable'
+              : count == 1
+              ? '1 image needs attention'
+              : '$count images need attention',
+          style: TextStyle(color: $danger.resolve(context), fontSize: 12),
+        ),
+        subtitle: store.errorMessage == null
+            ? null
+            : Text(store.errorMessage!, style: const TextStyle(fontSize: 11)),
+        children: issues
+            .map((issue) => _ImageIssueRow(store: store, issue: issue))
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _ImageIssueRow extends StatelessWidget {
+  const _ImageIssueRow({required this.store, required this.issue});
+
+  final DeckImageIssueStore store;
+  final DeckImageManifestEntry issue;
+
+  @override
+  Widget build(BuildContext context) {
+    final retrying = store.isRetrying(issue.assetKey);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(48, 4, 16, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(issue.slideKey, style: const TextStyle(fontSize: 12)),
+                Text(
+                  issue.error ?? 'Image generation failed.',
+                  style: TextStyle(
+                    color: $muted.resolve(context),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          HeroButton(
+            key: ValueKey('editor-image-retry-${issue.assetKey}'),
+            label: 'Retry',
+            iconLeft: CupertinoIcons.refresh,
+            size: .sm,
+            variant: .ghost,
+            loading: retrying,
+            onPressed: retrying ? null : () => store.retry(issue),
+          ),
+        ],
+      ),
     );
   }
 }

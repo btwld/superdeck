@@ -3,12 +3,15 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:superdeck_core/superdeck_core.dart' show FileWatcher;
+import 'package:superdeck_core/superdeck_core.dart'
+    show AssetCacheStore, FileWatcher;
 
 import '../../../core/data/data_sources/security_scoped_file_access.dart';
+import '../../../core/domain/generated_image_asset.dart';
 import '../../../core/result.dart';
 import '../domain/files/deck_file.dart';
 import '../domain/files/deck_file_repository.dart';
+import '../domain/files/deck_image_manifest.dart';
 
 /// macOS implementation of [DeckFileRepository].
 ///
@@ -103,6 +106,129 @@ class MacOsDeckFileRepository implements DeckFileRepository {
       return Result.error(error);
     } catch (error) {
       return Result.error(DeckFileWriteException(fileName, error));
+    }
+  }
+
+  @override
+  Future<Result<DeckFileSnapshot>> createGeneratedDeck({
+    required String name,
+    required String markdown,
+    required List<GeneratedImageAsset> images,
+  }) async {
+    String? deckPath;
+    Directory? stagingDirectory;
+    Directory? publishedDirectory;
+    File? stagingMarkdown;
+    try {
+      final directory = await _decksDirectory();
+      final paths = await _uniqueGeneratedDeckPaths(directory, name);
+      deckPath = paths.deckPath;
+      final transactionId = DateTime.now().microsecondsSinceEpoch;
+      stagingDirectory = Directory(
+        p.join(directory.path, '.${paths.stem}.assets.tmp-$transactionId'),
+      );
+      stagingMarkdown = File(
+        p.join(directory.path, '.${paths.stem}.md.tmp-$transactionId'),
+      );
+      await stagingDirectory.create();
+
+      for (final image in images) {
+        final key = AssetCacheStore.validateAssetKey(image.assetKey);
+        final bytes = image.bytes;
+        if (bytes == null) continue;
+        await File(
+          p.join(stagingDirectory.path, key),
+        ).writeAsBytes(bytes, flush: true);
+      }
+      await File(
+        p.join(stagingDirectory.path, deckImageManifestFileName),
+      ).writeAsString(
+        DeckImageManifest.fromAssets(images).toJsonString(),
+        flush: true,
+      );
+
+      publishedDirectory = await stagingDirectory.rename(paths.assetsPath);
+      stagingDirectory = null;
+      await stagingMarkdown.writeAsString(markdown, flush: true);
+      await stagingMarkdown.rename(deckPath);
+      stagingMarkdown = null;
+
+      final snapshot = DeckFileSnapshot(
+        reference: DeckFileReference(path: deckPath),
+        markdown: markdown,
+      );
+      await _remember(snapshot.reference);
+      return Result.ok(snapshot);
+    } on DeckFileAccessException catch (error) {
+      return Result.error(error);
+    } catch (error) {
+      await _deleteIfPresent(stagingMarkdown);
+      await _deleteDirectoryIfPresent(stagingDirectory);
+      await _deleteDirectoryIfPresent(publishedDirectory);
+      return Result.error(DeckFileWriteException(deckPath ?? name, error));
+    }
+  }
+
+  @override
+  Future<Result<DeckImageManifest?>> loadImageManifest(
+    DeckFileReference reference,
+  ) async {
+    final file = File(
+      p.join(
+        deckAssetsDirectoryPath(reference.path),
+        deckImageManifestFileName,
+      ),
+    );
+    try {
+      if (!await file.exists()) return const Result.ok(null);
+      return Result.ok(
+        DeckImageManifest.fromJsonString(await file.readAsString()),
+      );
+    } catch (error) {
+      return Result.error(DeckFileReadException(file.path, error));
+    }
+  }
+
+  @override
+  Future<Result<void>> updateGeneratedImage(
+    DeckFileReference reference,
+    GeneratedImageAsset image,
+  ) async {
+    final directory = Directory(deckAssetsDirectoryPath(reference.path));
+    final manifestFile = File(
+      p.join(directory.path, deckImageManifestFileName),
+    );
+    final transactionId = DateTime.now().microsecondsSinceEpoch;
+    final manifestStaging = File('${manifestFile.path}.tmp-$transactionId');
+    File? imageStaging;
+    try {
+      final manifestResult = await loadImageManifest(reference);
+      final manifest = switch (manifestResult) {
+        Ok(:final value?) => value,
+        Ok(value: null) => throw StateError(
+          'The deck has no generated-image manifest.',
+        ),
+        Failure(:final error) => throw error,
+      };
+      final key = AssetCacheStore.validateAssetKey(image.assetKey);
+      final updated = manifest.replace(DeckImageManifestEntry.fromAsset(image));
+      final bytes = image.bytes;
+      if (bytes != null) {
+        imageStaging = File(p.join(directory.path, '.$key.tmp-$transactionId'));
+        await imageStaging.writeAsBytes(bytes, flush: true);
+      }
+      await manifestStaging.writeAsString(updated.toJsonString(), flush: true);
+
+      if (imageStaging != null) {
+        await imageStaging.rename(p.join(directory.path, key));
+        imageStaging = null;
+      }
+      await manifestStaging.rename(manifestFile.path);
+      return const Result.ok(null);
+    } catch (error) {
+      await _deleteIfPresent(imageStaging);
+      await _deleteIfPresent(manifestStaging);
+      return Result.error(DeckFileWriteException(reference.path, error));
     }
   }
 
@@ -421,6 +547,46 @@ class MacOsDeckFileRepository implements DeckFileRepository {
     final directory = Directory(p.join(support.path, _settingsFolder));
     await directory.create(recursive: true);
     return File(p.join(directory.path, _settingsFileName));
+  }
+
+  Future<({String stem, String deckPath, String assetsPath})>
+  _uniqueGeneratedDeckPaths(Directory directory, String name) async {
+    final base = _toTopicSlug(name);
+    var suffix = 1;
+    while (true) {
+      final stem = suffix == 1 ? base : '$base-$suffix';
+      final deckPath = p.join(directory.path, '$stem.md');
+      final assetsPath = p.join(directory.path, '$stem.assets');
+      if (!await File(deckPath).exists() &&
+          !await Directory(assetsPath).exists()) {
+        return (stem: stem, deckPath: deckPath, assetsPath: assetsPath);
+      }
+      suffix++;
+    }
+  }
+
+  String _toTopicSlug(String name) {
+    final slug = name
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp('[^a-z0-9]+'), '-')
+        .replaceAll(RegExp('^-+|-+\$'), '');
+    if (slug.isEmpty) return 'untitled';
+    return slug.length <= 64
+        ? slug
+        : slug.substring(0, 64).replaceFirst(RegExp('-+\$'), '');
+  }
+
+  Future<void> _deleteIfPresent(File? file) async {
+    if (file != null && await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  Future<void> _deleteDirectoryIfPresent(Directory? directory) async {
+    if (directory != null && await directory.exists()) {
+      await directory.delete(recursive: true);
+    }
   }
 
   String _toMarkdownFileName(String name) {

@@ -13,6 +13,7 @@ Each slide should have:
 - `title`: Working title (will be refined in final generation)
 - `purpose`: What this slide will communicate (1-2 sentences)
 - `layoutHint`: Suggested layout type
+- `imageRequirement`: Optional object with a concrete `subject`
 
 ## Layout Hints
 
@@ -29,6 +30,10 @@ Each slide should have:
 2. One clear idea per slide
 3. Vary layout hints - don't repeat the same layout consecutively
 4. Use descriptive kebab-case keys that reflect slide purpose
+5. Add `imageRequirement` to every slide where an illustration materially
+   improves understanding or emotional impact. Omit it for data comparisons,
+   dense tables, quotes, and slides where an image would only be decorative.
+6. Image subjects must be concrete, visually depictable, and contain no text.
 
 ## Example Output
 

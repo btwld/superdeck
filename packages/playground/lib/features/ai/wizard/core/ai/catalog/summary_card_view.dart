@@ -119,12 +119,18 @@ class SummaryCard extends StatelessWidget {
   final String title;
   final List<SummaryItemType> items;
   final VoidCallback? generateSlides;
+  final bool generating;
+  final String? progressLabel;
+  final String? errorMessage;
 
   const SummaryCard({
     super.key,
     required this.title,
     required this.items,
     this.generateSlides,
+    this.generating = false,
+    this.progressLabel,
+    this.errorMessage,
   });
 
   FlexBoxStyler get _container => .new()
@@ -159,12 +165,30 @@ class SummaryCard extends StatelessWidget {
             ),
           ),
         ),
+        if (progressLabel != null)
+          Row(
+            spacing: 8,
+            children: [
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SdCaption(progressLabel!),
+            ],
+          ),
+        if (errorMessage != null)
+          SdCaption(
+            errorMessage!,
+            style: TextStyler().color(Colors.red.shade400),
+          ),
         Align(
           alignment: Alignment.centerRight,
           child: SdButton(
             label: 'Generate Slides',
             icon: Icons.generating_tokens,
             onPressed: generateSlides,
+            loading: generating,
           ),
         ),
       ],

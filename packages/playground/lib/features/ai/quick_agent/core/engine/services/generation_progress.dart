@@ -6,7 +6,10 @@ enum GenerationPhase {
   /// Phase 1: Generating presentation outline (structure + layout hints).
   generatingOutline,
 
-  /// Phase 2: Generating final deck from the outline.
+  /// Generating optional slide imagery planned by the outline.
+  generatingImages,
+
+  /// Generating the final deck from the outline and any planned imagery.
   generatingFinalDeck,
 
   /// Writing final JSON and cleaning up.
@@ -23,6 +26,7 @@ typedef GenerationProgressCallback = void Function(GenerationPhase phase);
 extension GenerationPhaseLabel on GenerationPhase {
   String get label => switch (this) {
     GenerationPhase.generatingOutline => 'Planning the outline…',
+    GenerationPhase.generatingImages => 'Creating slide artwork…',
     GenerationPhase.generatingFinalDeck => 'Writing the slides…',
     GenerationPhase.finalizing => 'Finalizing…',
     GenerationPhase.generatingThumbnails => 'Rendering thumbnails…',

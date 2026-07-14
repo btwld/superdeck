@@ -67,10 +67,32 @@ void main() {
       final cached = tester.widget<CachedImage>(find.byType(CachedImage));
       expect(cached.uri.scheme, isEmpty);
     });
+
+    testWidgets('a listenable store refresh replaces a previous cache miss', (
+      tester,
+    ) async {
+      final store = _FakeCacheStore(const {});
+      await tester.pumpWidget(
+        _MarkdownHarness(markdown: '![x]($_key)', assetCacheStore: store),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<CachedImage>(find.byType(CachedImage)).uri.scheme,
+        isEmpty,
+      );
+
+      await store.write(_key, _onePixelPng);
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<CachedImage>(find.byType(CachedImage)).uri.scheme,
+        'data',
+      );
+    });
   });
 }
 
-class _FakeCacheStore implements AssetCacheStore {
+class _FakeCacheStore extends ChangeNotifier implements AssetCacheStore {
   _FakeCacheStore(Map<String, Uint8List> seed)
     : _bytes = Map<String, Uint8List>.from(seed);
 
@@ -88,12 +110,14 @@ class _FakeCacheStore implements AssetCacheStore {
     final key = AssetCacheStore.validateAssetKey(assetKey);
     final data = Uint8List.fromList(bytes);
     _bytes[key] = data;
+    notifyListeners();
     return Uri.dataFromBytes(data, mimeType: 'image/png');
   }
 
   @override
   Future<void> delete(String assetKey) async {
     _bytes.remove(AssetCacheStore.validateAssetKey(assetKey));
+    notifyListeners();
   }
 }
 

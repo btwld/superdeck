@@ -245,6 +245,7 @@ class ImageStyleOptionCard extends StatelessWidget {
                 ),
               ),
               Padding(
+                key: ValueKey('wizard-image-style-select-${style.id}'),
                 padding: const EdgeInsets.all(12),
                 child: SdBody(style.title, style: selectedBodyStyle(selected)),
               ),
@@ -282,9 +283,7 @@ class ImageStyleOptionCard extends StatelessWidget {
 
   Widget _buildRetryPlaceholder(BuildContext context) {
     return Box(
-      style: BoxStyler()
-          .color($surfaceSecondary())
-          .alignment(Alignment.center),
+      style: BoxStyler().color($surfaceSecondary()).alignment(Alignment.center),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 8,
@@ -295,23 +294,14 @@ class ImageStyleOptionCard extends StatelessWidget {
             size: 32,
           ),
           GestureDetector(
+            key: ValueKey('wizard-image-style-retry-${style.id}'),
             onTap: onRetry,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 4,
               children: [
-                Icon(
-                  Icons.refresh,
-                  color: $accent.resolve(context),
-                  size: 16,
-                ),
-                Text(
-                  'Retry',
-                  style: $paragraphSmall
-                      .mix()
-                      .resolve(context)
-                      .copyWith(color: $accent.resolve(context)),
-                ),
+                Icon(Icons.refresh, color: $accent.resolve(context), size: 16),
+                SdCaption('Retry', style: TextStyler().color($accent())),
               ],
             ),
           ),
@@ -322,9 +312,7 @@ class ImageStyleOptionCard extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     return Box(
-      style: BoxStyler()
-          .color($surfaceSecondary())
-          .alignment(Alignment.center),
+      style: BoxStyler().color($surfaceSecondary()).alignment(Alignment.center),
       child: Icon(
         Icons.image_outlined,
         color: $muted.resolve(context),
