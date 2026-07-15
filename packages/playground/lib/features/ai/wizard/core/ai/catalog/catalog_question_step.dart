@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:remix/remix.dart';
+
 import '../../ui/ui.dart';
 
 /// Shared layout for catalog question widgets with a header, body, and CTA.

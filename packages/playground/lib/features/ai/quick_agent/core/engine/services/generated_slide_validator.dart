@@ -275,15 +275,19 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
     location: GenerationValidationLocation.visibleContent,
     slideKey: planSlide.key,
   );
+  final compositionGuidance = errors.scoped(
+    category: GenerationValidationCategory.quality,
+    severity: GenerationValidationSeverity.diagnostic,
+  );
   if (slide.sections.length > 2) {
-    errors.add(
+    compositionGuidance.add(
       'Composition "${planSlide.composition}" supports at most 2 sections; '
       'found ${slide.sections.length}. Simplify the slide instead of stacking '
       'another content row.',
     );
   }
   if (planSlide.composition == 'title' && slide.sections.length != 1) {
-    errors.add(
+    compositionGuidance.add(
       'Composition "title" must use exactly 1 section so the display heading '
       'has enough vertical room; found ${slide.sections.length}. Put the H1 '
       'and optional short support copy in one content block.',
@@ -489,13 +493,13 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
     multiLine: true,
   ).hasMatch(markdown);
   if (composition == 'title' && (hasTable || hasList || hasBlockquote)) {
-    errors.add(
+    compositionGuidance.add(
       'Composition "title" must stay minimal: use display headings and at '
       'most one short supporting paragraph, without lists, tables, or quotes.',
     );
   }
   if (composition != 'table' && hasTable) {
-    errors.add(
+    compositionGuidance.add(
       'Markdown tables require composition "table"; the plan selected '
       '"$composition".',
     );
@@ -509,48 +513,60 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       break;
     case 'table':
       if (!hasTable) {
-        errors.add('Composition "table" requires a Markdown table.');
+        compositionGuidance.add(
+          'Composition "table" requires a Markdown table.',
+        );
       }
     case 'twoColumn':
       if (!slide.sections.any((section) => section.blocks.length == 2)) {
-        errors.add('Composition "twoColumn" requires a two-block section.');
+        compositionGuidance.add(
+          'Composition "twoColumn" requires a two-block section.',
+        );
       }
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "twoColumn" requires substantive content beyond a title.',
         );
       }
     case 'threeColumn':
       if (!slide.sections.any((section) => section.blocks.length == 3)) {
-        errors.add('Composition "threeColumn" requires a three-block section.');
+        compositionGuidance.add(
+          'Composition "threeColumn" requires a three-block section.',
+        );
       }
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "threeColumn" requires substantive content beyond a title.',
         );
       }
     case 'quote':
       if (!RegExp(r'^\s*>\s*\S+', multiLine: true).hasMatch(markdown)) {
-        errors.add('Composition "quote" requires a Markdown blockquote.');
+        compositionGuidance.add(
+          'Composition "quote" requires a Markdown blockquote.',
+        );
       }
     case 'metric':
       if (!RegExp(r'\d').hasMatch(markdown)) {
-        errors.add('Composition "metric" requires at least one numeric value.');
+        compositionGuidance.add(
+          'Composition "metric" requires at least one numeric value.',
+        );
       }
     case 'imageLeft':
     case 'imageRight':
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "$composition" requires substantive text beside the image.',
         );
       }
     case 'qrcode':
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add('Composition "qrcode" requires a clear text handoff.');
+        compositionGuidance.add(
+          'Composition "qrcode" requires a clear text handoff.',
+        );
       }
     default:
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "$composition" requires substantive content beyond a title.',
         );
       }

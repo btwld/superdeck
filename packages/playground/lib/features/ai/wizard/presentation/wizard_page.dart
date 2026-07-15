@@ -5,9 +5,11 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/domain/stores/deck_customization_store.dart';
+import '../../../../core/result.dart';
 import '../../../editor/domain/stores/deck_document_store.dart';
 import '../../quick_agent/core/env_config.dart';
 import '../../quick_agent/domain/commands/generate_deck_command.dart';
+import 'wizard_generation_status.dart';
 import 'wizard_view.dart';
 
 /// Isolated host for exercising the conversational Wizard without the editor.
@@ -40,32 +42,91 @@ class WizardPage extends StatelessWidget {
           dispose: (_, command) => command.dispose(),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: $background.resolve(context),
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: WizardView(),
+      child: const _WizardExperience(),
+    );
+  }
+}
+
+class _WizardExperience extends StatelessWidget {
+  const _WizardExperience();
+
+  @override
+  Widget build(BuildContext context) {
+    final command = context.watch<GenerateDeckCommand>();
+    final result = command.result;
+
+    final Widget? status;
+    if (command.running) {
+      status = WizardGenerationStatus(
+        kind: WizardGenerationStatusKind.running,
+        progress: command.progress,
+      );
+    } else if (result case Failure(:final error)) {
+      status = WizardGenerationStatus(
+        kind: WizardGenerationStatusKind.failed,
+        errorMessage: error.toString(),
+        onDismiss: command.clearResult,
+      );
+    } else if (command.completed) {
+      status = WizardGenerationStatus(
+        kind: WizardGenerationStatusKind.completed,
+        noticeMessage: command.completionNotice,
+        onDismiss: command.clearResult,
+      );
+    } else {
+      status = null;
+    }
+
+    return Scaffold(
+      backgroundColor: $background.resolve(context),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) => Center(
+                child: SizedBox(
+                  width: constraints.constrainWidth(1080),
+                  height: constraints.maxHeight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Offstage(
+                          offstage: status != null,
+                          child: const WizardView(),
+                        ),
+                        if (status != null)
+                          Positioned.fill(
+                            child: ColoredBox(
+                              color: $background.resolve(context),
+                              child: Center(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 620,
+                                  ),
+                                  child: status,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              if (kDebugMode)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: IconButton(
-                    tooltip: 'Generation lab',
-                    onPressed: () => context.push('/debug/generation'),
-                    icon: const Icon(Icons.science_outlined),
-                  ),
+            ),
+            if (kDebugMode)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  tooltip: 'Generation lab',
+                  onPressed: () => context.push('/debug/generation'),
+                  icon: const Icon(Icons.science_outlined),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

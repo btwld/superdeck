@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:signals/signals_flutter.dart';
 
 import '../chat/chat_conversation_profile.dart';
 import '../chat/view/widgets/chat_input.dart';
@@ -65,47 +64,42 @@ class _WizardBodyState extends State<_WizardBody> {
   Widget build(BuildContext context) {
     final viewModel = context.read<AiConversationViewModel>();
 
-    return SignalBuilder(
-      builder: (context) {
-        final started = viewModel.hasConversationStarted.value;
-        final messages = viewModel.messages.value;
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        final surfaceController = viewModel.controller;
+        final started = surfaceController != null;
         final isThinking = viewModel.isThinking.value;
 
         final input = ChatInput(
           controller: _controller,
           focusNode: _focusNode,
           enabled: !isThinking,
+          hintText: !started
+              ? 'Describe your presentation topic…'
+              : 'Add a detail or ask for a change…',
           onSubmitted: _submit,
         );
 
         // Before the first message: show the empty state with the topic prompt.
         // It centers when it fits and scrolls when the sidebar is too short.
-        if (!started && messages.isEmpty) {
-          return Column(
-            children: [
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) => SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: EmptyState(onSuggestionTap: _submit),
-                    ),
-                  ),
-                ),
+        if (!started) {
+          return LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: EmptyState(input: input),
               ),
-              input,
-            ],
+            ),
           );
         }
 
         // Conversation in progress: render the current surface + input inline.
         return AiSurfacesPanel(
-          controller: viewModel.controller,
-          surfaceIds: viewModel.surfaceIds,
-          isThinking: viewModel.isThinking,
-          messages: viewModel.messages,
+          controller: surfaceController,
+          surfaceIds: viewModel.surfaceIds.value,
+          isThinking: isThinking,
+          errorMessage: viewModel.errorMessage,
           inputWidget: input,
         );
       },

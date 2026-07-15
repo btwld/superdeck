@@ -24,6 +24,7 @@ dependencies:
   remix: ^0.2.0
   super_editor: 0.3.0-dev.52
   google_fonts: ^8.1.0
+  lucide_icons_flutter: ^3.1.15
   hero_ui:
     git:
       url: https://github.com/tilucasoli/hero_ui

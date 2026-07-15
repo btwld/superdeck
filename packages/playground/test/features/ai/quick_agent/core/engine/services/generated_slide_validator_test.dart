@@ -306,6 +306,38 @@ void main() {
     expect(densityIssue.isBlocking, isFalse);
   });
 
+  test('keeps a missing quote treatment as non-blocking guidance', () {
+    final issues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: {
+        'key': 'test-slide',
+        'options': {'title': 'Protecting homes', 'style': 'content'},
+        'sections': [
+          {
+            'type': 'section',
+            'blocks': [
+              {
+                'type': 'block',
+                'content':
+                    '## Protecting homes\n\n'
+                    'Resilience starts before the next storm arrives.',
+              },
+            ],
+          },
+        ],
+      },
+      planSlide: _planSlide(composition: 'quote'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+    );
+    final quoteIssue = issues.singleWhere(
+      (issue) => issue.message.contains('requires a Markdown blockquote'),
+    );
+
+    expect(quoteIssue.category, GenerationValidationCategory.quality);
+    expect(quoteIssue.severity, GenerationValidationSeverity.diagnostic);
+    expect(issues.blockingIssues, isEmpty);
+  });
+
   test('rejects a display heading that is too long for a title row', () {
     final issues = validateGeneratedSlideIssues(
       expectedKey: 'test-slide',

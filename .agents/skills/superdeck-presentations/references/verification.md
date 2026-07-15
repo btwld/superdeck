@@ -69,7 +69,7 @@ melos run build_runner:build
 Validate the skill folder:
 
 ```bash
-python3 /Users/leofarias/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/superdeck-presentations
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .agents/skills/superdeck-presentations
 ```
 
 Also check for stale template markers:

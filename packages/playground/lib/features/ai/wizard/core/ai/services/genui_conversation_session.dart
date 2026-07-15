@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:genui/genui.dart' as genui;
 
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
@@ -130,22 +131,21 @@ final class GenUiConversationSession {
       ),
     ];
 
-    if (_profile.tools.isEmpty) {
-      return genui.PromptBuilder.chat(
-        catalog: _profile.catalog,
-        systemPromptFragments: fragments,
-      ).systemPromptJoined();
-    }
-
     return genui.PromptBuilder.custom(
       catalog: _profile.catalog,
-      allowedOperations: genui.SurfaceOperations.createOnly(dataModel: false),
+      allowedOperations: genui.SurfaceOperations.createAndUpdate(
+        dataModel: false,
+      ),
       systemPromptFragments: fragments,
-      technicalPossibilities: const genui.TechnicalPossibilities(
-        toolCall: true,
+      technicalPossibilities: genui.TechnicalPossibilities(
+        toolCall: _profile.tools.isNotEmpty,
       ),
     ).systemPromptJoined();
   }
+
+  @visibleForTesting
+  String buildSystemPromptForTesting(String systemInstruction) =>
+      _buildSystemPrompt(systemInstruction);
 
   genui.SurfaceController? get controller => _controller;
 

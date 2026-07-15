@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'package:hero_ui/hero_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:remix/remix.dart';
 
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
@@ -14,36 +15,46 @@ import '../../utils/font_utils.dart';
 // ─────────────────────────────────── STYLING UTILITIES ───────────────────────────────────
 
 /// Returns body text style for selected state.
-TextStyler? selectedBodyStyle(bool selected) =>
-    selected ? TextStyler().color($accent()) : null;
+TextStyler? selectedBodyStyle(bool selected) => selected
+    ? TextStyler().color($foreground()).fontWeight(FontWeight.w600)
+    : null;
 
 /// Returns caption text style for selected state.
 TextStyler? selectedCaptionStyle(bool selected) =>
-    selected ? TextStyler().color($accent()) : null;
+    selected ? TextStyler().color($muted()) : null;
 
 // ─────────────────────────────────── CARD WIDGETS ───────────────────────────────────
 
 /// Radio option card with title and optional description.
 class RadioOptionCard extends StatelessWidget {
-  final String title;
-  final String? description;
-  final bool selected;
-  final VoidCallback? onTap;
-
   const RadioOptionCard({
     super.key,
     required this.title,
     this.description,
+    this.icon = LucideIcons.presentation,
     required this.selected,
     this.onTap,
   });
+
+  final String title;
+  final String? description;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final content = FlexBoxStyler()
         .column()
-        .spacing(4)
+        .spacing(8)
         .crossAxisAlignment(CrossAxisAlignment.start);
+
+    final iconColor = selected
+        ? $accent.resolve(context)
+        : $muted.resolve(context);
+    final iconBackground = selected
+        ? $accentSoft.resolve(context)
+        : $surfaceTertiary.resolve(context);
 
     return Semantics(
       inMutuallyExclusiveGroup: true,
@@ -56,6 +67,16 @@ class RadioOptionCard extends StatelessWidget {
           style: FlexBoxStyler().minHeight(SdTokens.cardMinHeight),
           child: content(
             children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: iconBackground,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 20, color: iconColor),
+              ),
               SdBody(title, style: selectedBodyStyle(selected)),
               if (description != null && description!.isNotEmpty)
                 SdCaption(description!, style: selectedCaptionStyle(selected)),
@@ -105,7 +126,7 @@ class CheckboxOptionCard extends StatelessWidget {
   }
 }
 
-/// Style option card with color swatches and font previews.
+/// Style option card with a composed palette and typography preview.
 class StyleOptionCard extends StatelessWidget {
   const StyleOptionCard({
     super.key,
@@ -122,19 +143,12 @@ class StyleOptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final content = FlexBoxStyler()
         .column()
-        .mainAxisSize(MainAxisSize.min)
-        .spacing(4)
-        .crossAxisAlignment(CrossAxisAlignment.start);
-
-    final colorRow = FlexBoxStyler().paddingY(5).row();
-
-    final recipe = theme.recipe;
+        .crossAxisAlignment(CrossAxisAlignment.stretch)
+        .spacing(12)
+        .mainAxisSize(MainAxisSize.min);
 
     final bodyStyle = selectedBodyStyle(selected);
     final captionStyle = selectedCaptionStyle(selected);
-
-    final headlineFontLoaded = tryGetGoogleFontFamily(recipe.headlineFamily);
-    final bodyFontLoaded = tryGetGoogleFontFamily(recipe.bodyFamily);
 
     return Semantics(
       selected: selected,
@@ -147,37 +161,81 @@ class StyleOptionCard extends StatelessWidget {
           style: FlexBoxStyler().minHeight(SdTokens.cardMinHeight),
           child: content(
             children: [
+              _ThemeSamplePreview(theme: theme),
               SdBody(theme.title, style: bodyStyle),
               SdCaption(theme.description, style: captionStyle),
-              colorRow(
-                children: recipe.palette.previewColors
-                    .map(
-                      (color) => SdColorCircle(
-                        color: hexToColor(color),
-                        interactive: true,
-                      ),
-                    )
-                    .toList(),
-              ),
-              SdBody(
-                recipe.headlineFamily,
-                style: headlineFontLoaded != null
-                    ? TextStyler()
-                          .fontFamily(headlineFontLoaded)
-                          .merge(bodyStyle)
-                    : bodyStyle,
-              ),
-              SdCaption(
-                recipe.bodyFamily,
-                style: bodyFontLoaded != null
-                    ? TextStyler()
-                          .fontFamily(bodyFontLoaded)
-                          .merge(captionStyle)
-                    : captionStyle,
-              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ThemeSamplePreview extends StatelessWidget {
+  const _ThemeSamplePreview({required this.theme});
+
+  final PresentationThemeDescriptor theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final recipe = theme.recipe;
+    final palette = recipe.palette;
+    final headlineFamily = tryGetGoogleFontFamily(recipe.headlineFamily);
+    final bodyFamily = tryGetGoogleFontFamily(recipe.bodyFamily);
+    final background = hexToColor(palette.background);
+    final surface = hexToColor(palette.surface);
+    final heading = hexToColor(palette.heading);
+    final body = hexToColor(palette.body);
+    final accent = hexToColor(palette.accent);
+
+    return Container(
+      width: double.infinity,
+      height: 148,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: surface, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 4,
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            'Build what’s next',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: heading,
+              fontFamily: headlineFamily,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              height: 1.05,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'A clear story, beautifully presented.',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: body,
+              fontFamily: bodyFamily,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              height: 1.25,
+            ),
+          ),
+        ],
       ),
     );
   }

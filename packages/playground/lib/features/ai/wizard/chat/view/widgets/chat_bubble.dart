@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
-import '../../../core/ui/ui.dart';
 
 /// Type of chat message bubble for styling differentiation.
 ///
@@ -27,21 +26,40 @@ class TextBubble extends StatelessWidget {
   const TextBubble({super.key, required this.text, required this.type});
 
   BoxStyler get _userStyle => .new()
-      .borderRadiusAll(Radius.circular(SdTokens.cardRadius))
-      .paddingAll(12)
+      .borderRadius(
+        BorderRadiusMix.value(
+          const BorderRadius.only(
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18),
+            bottomRight: Radius.circular(5),
+          ),
+        ),
+      )
+      .paddingX(16)
+      .paddingY(12)
+      .maxWidth(540)
       .color($accentSoft())
       .wrap(
         WidgetModifierConfig //
             .align(alignment: .centerRight)
             .defaultTextStyle(style: $paragraphMedium.mix())
-            .defaultTextStyle(
-              style: TextStyleMix(color: $muted()),
-            ),
+            .defaultTextStyle(style: TextStyleMix(color: $muted())),
       );
 
   BoxStyler get _aiStyle => _userStyle
-      .color(Colors.transparent)
-      .borderAll(color: $separator())
+      .borderRadius(
+        BorderRadiusMix.value(
+          const BorderRadius.only(
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(5),
+            bottomRight: Radius.circular(18),
+          ),
+        ),
+      )
+      .color($surfaceSecondary())
+      .borderAll(color: $border())
       .wrap(
         WidgetModifierConfig //
             .align(alignment: .centerLeft)
@@ -59,9 +77,7 @@ class TextBubble extends StatelessWidget {
       .wrap(
         WidgetModifierConfig //
             .defaultTextStyle(style: $paragraphSmall.mix())
-            .defaultTextStyle(
-              style: TextStyleMix(color: $muted()),
-            ),
+            .defaultTextStyle(style: TextStyleMix(color: $muted())),
       );
 
   @override

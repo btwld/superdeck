@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:genui/genui.dart';
 import 'package:hero_ui/hero_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:remix/remix.dart';
 import 'package:signals/signals_flutter.dart';
 import '../../../presentation/view/loading.dart';
@@ -8,25 +9,15 @@ import '../../chat_message.dart';
 import 'chat_bubble.dart';
 import '../../../core/ui/ui.dart';
 
-/// Shared bubble border radius for iOS-style chat bubbles.
-const _bubbleBorderRadius = BorderRadius.only(
-  topLeft: .circular(20),
-  topRight: .circular(20),
-  bottomRight: .circular(20),
-  bottomLeft: .circular(6),
-);
-
-/// Typing indicator bubble - shows only when AI is thinking.
-class TypingBubble extends SignalWidget {
+/// Typing indicator - shows only when AI is thinking.
+class TypingBubble extends StatelessWidget {
   const TypingBubble({super.key, required this.isThinking});
 
-  final ReadonlySignal<bool> isThinking;
+  final bool isThinking;
 
   @override
   Widget build(BuildContext context) {
-    final thinking = isThinking.value;
-
-    if (!thinking) return const SizedBox.shrink();
+    if (!isThinking) return const SizedBox.shrink();
 
     return RowBox(
       style: FlexBoxStyler().spacing(8).padding(.bottom(12)),
@@ -47,71 +38,29 @@ class TypingBubble extends SignalWidget {
   }
 }
 
-/// Message bubble - shows the last AI message (hidden when thinking).
-class GenUiMessageBubble extends SignalWidget {
-  const GenUiMessageBubble({
-    super.key,
-    required this.isThinking,
-    required this.messages,
-  });
-
-  final ReadonlySignal<bool> isThinking;
-  final ReadonlySignal<List<SuperdeckChatMessage>> messages;
-
-  BoxStyler get _bubbleStyle => BoxStyler()
-      .color($background())
-      .borderRadius(BorderRadiusMix.value(_bubbleBorderRadius))
-      .paddingX(24)
-      .paddingY(16)
-      .maxWidth(600)
-      .marginOnly(left: 48, bottom: 16)
-      .wrap(.align(alignment: .centerLeft));
-
-  @override
-  Widget build(BuildContext context) {
-    final currentMessages = messages.value;
-    final thinking = isThinking.value;
-
-    final lastAiMessage = currentMessages.reversed
-        .whereType<SuperdeckAiMessage>()
-        .firstOrNull;
-
-    if (thinking || lastAiMessage == null) {
-      return const SizedBox.shrink();
-    }
-
-    return _bubbleStyle(
-      child: SdBody(
-        lastAiMessage.text,
-        style: TextStyler().color($foreground()).style($paragraphMedium.mix()),
-      ),
-    );
-  }
-}
-
 /// Shared surfaces panel used by AI conversation screens.
-class AiSurfacesPanel extends SignalWidget {
+class AiSurfacesPanel extends StatelessWidget {
   const AiSurfacesPanel({
     super.key,
     required this.controller,
     required this.surfaceIds,
     required this.isThinking,
-    required this.messages,
+    this.errorMessage,
     this.inputWidget,
   });
 
   final SurfaceController? controller;
-  final ReadonlySignal<List<String>> surfaceIds;
-  final ReadonlySignal<bool> isThinking;
-  final ReadonlySignal<List<SuperdeckChatMessage>> messages;
+  final List<String> surfaceIds;
+  final bool isThinking;
+  final String? errorMessage;
 
   /// Optional input widget to display at bottom when chat panel is hidden.
   final Widget? inputWidget;
 
   @override
   Widget build(BuildContext context) {
-    final ids = surfaceIds.value;
-    final thinking = isThinking.value;
+    final ids = surfaceIds;
+    final thinking = isThinking;
 
     final flex = FlexBoxStyler()
         .spacing(16)
@@ -127,8 +76,8 @@ class AiSurfacesPanel extends SignalWidget {
             padding: const EdgeInsets.all(24),
             child: AnimatedSwitcher(
               duration: SdTokens.motionMedium,
-              switchInCurve: Curves.easeIn,
-              switchOutCurve: Curves.easeOut,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
               child: AnimatedOpacity(
                 duration: SdTokens.motionFast,
                 opacity: thinking ? 0.5 : 1.0,
@@ -157,31 +106,39 @@ class AiSurfacesPanel extends SignalWidget {
       }
     }
 
+    final errorWidget = errorMessage == null
+        ? null
+        : Padding(
+            padding: const EdgeInsets.all(24),
+            child: SdCallout(
+              text: errorMessage,
+              icon: LucideIcons.triangleAlert,
+            ),
+          );
+
     if (inputWidget == null) {
-      return surfacesWidget ?? const SizedBox.shrink();
+      return surfacesWidget ?? errorWidget ?? const SizedBox.shrink();
     }
 
-    return Column(
-      children: [
-        Expanded(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GenUiMessageBubble(
-                    isThinking: isThinking,
-                    messages: messages,
-                  ),
-                  ?surfacesWidget,
-                ],
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [?surfacesWidget, ?errorWidget],
+                ),
               ),
             ),
           ),
-        ),
-        TypingBubble(isThinking: isThinking),
-        inputWidget ?? const SizedBox.shrink(),
-      ],
+          TypingBubble(isThinking: thinking),
+          inputWidget ?? const SizedBox.shrink(),
+        ],
+      ),
     );
   }
 }

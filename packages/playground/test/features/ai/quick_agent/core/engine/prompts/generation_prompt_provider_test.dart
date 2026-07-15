@@ -170,6 +170,13 @@ void main() {
     expect(prompt, contains('- Slide key must be exactly "evidence".'));
     expect(prompt, contains('no more than 70 visible words'));
     expect(prompt, contains('a list of at most three short bullets'));
+    expect(
+      prompt,
+      contains(
+        'Treat the composition as visual guidance, not factual authority.',
+      ),
+    );
+    expect(prompt, contains('Never invent a quotation, metric, or table data'));
     expect(prompt, endsWith('generate future slides.\n'));
   });
 

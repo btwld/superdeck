@@ -3,8 +3,6 @@
 A playground app for experimenting with Mix, Remix, and Hero UI, built on a
 layered architecture using **Provider + Command + ChangeNotifier**.
 
-See [`.planning/architecture.md`](.planning/architecture.md) for the full design.
-
 ## Layers (folders, single package)
 
 ```

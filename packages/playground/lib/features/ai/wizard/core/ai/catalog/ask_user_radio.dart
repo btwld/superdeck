@@ -4,7 +4,6 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:genui/genui.dart';
-import 'package:remix/remix.dart';
 
 import '../schemas/genui_action_schema.dart';
 import 'user_action_dispatch.dart';
@@ -15,6 +14,7 @@ import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
 import 'component_schema.dart';
 import 'typed_catalog_item.dart';
+import 'wizard_option_icon.dart';
 
 part 'ask_user_radio.g.dart';
 
@@ -25,6 +25,9 @@ part 'ask_user_radio.g.dart';
 final _inputOptionSchema = Ack.object({
   'title': Ack.string().describe('Option title displayed to user'),
   'description': Ack.string().optional().describe('Optional description text'),
+  'icon': Ack.enumValues<WizardOptionIcon>(
+    WizardOptionIcon.values,
+  ).optional().describe('Semantic icon for this option card'),
 }).describe('Option with title and optional description');
 
 /// Schema for AskUserRadio component.
@@ -57,9 +60,9 @@ final askUserRadio = typedCatalogItem<AskUserRadioType>(
           "question": "Who is your target audience?",
           "description": "Select the group that best describes your viewers.",
           "options": [
-            {"title": "Business Professionals", "description": "Corporate stakeholders"},
-            {"title": "Students", "description": "Academic learners"},
-            {"title": "General Public", "description": "Broad audience"}
+            {"title": "Business Professionals", "description": "Corporate stakeholders", "icon": "business"},
+            {"title": "Students", "description": "Academic learners", "icon": "education"},
+            {"title": "General Public", "description": "Broad audience", "icon": "global"}
           ],
           "action": {"name": "submit_answer", "context": []}
         }
@@ -118,32 +121,45 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
 
   Widget _buildOptions() {
     final options = widget.data.options;
-    final optionsRow = FlexBoxStyler()
-        .spacing(16)
-        .wrap(WidgetModifierConfig.intrinsicHeight());
 
     if (options.isEmpty) {
       debugLog.log('AskUserRadio', 'WARNING: radio input has no options.');
       return const SdBody('No options available');
     }
 
-    return optionsRow(
-      children: options.asMap().entries.map((entry) {
-        final index = entry.key;
-        final option = entry.value;
-        final isSelected = _selectedIndex == index;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columnCount = constraints.maxWidth >= 620
+            ? 3
+            : constraints.maxWidth >= 420
+            ? 2
+            : 1;
+        const spacing = 12.0;
+        final cardWidth =
+            (constraints.maxWidth - spacing * (columnCount - 1)) / columnCount;
 
-        return Expanded(
-          child: RadioOptionCard(
-            title: option.title,
-            description: option.description,
-            selected: isSelected,
-            onTap: () {
-              setState(() => _selectedIndex = index);
-            },
-          ),
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: options.asMap().entries.map((entry) {
+            final index = entry.key;
+            final option = entry.value;
+            final isSelected = _selectedIndex == index;
+
+            return SizedBox(
+              width: cardWidth,
+              child: RadioOptionCard(
+                title: option.title,
+                description: option.description,
+                icon: (option.icon ?? WizardOptionIcon.fallbackFor(index))
+                    .iconData,
+                selected: isSelected,
+                onTap: () => setState(() => _selectedIndex = index),
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 }

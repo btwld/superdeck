@@ -33,13 +33,17 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
   GenerateDeckCommand({
     required DeckDocumentStore documentStore,
     required DeckCustomizationStore customizationStore,
+    DeckGeneratorService? service,
   }) : _documentStore = documentStore,
-       _customizationStore = customizationStore;
+       _customizationStore = customizationStore,
+       _service = service;
 
   final DeckDocumentStore _documentStore;
   final DeckCustomizationStore _customizationStore;
+  final DeckGeneratorService? _service;
 
   GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
+  String? _completionNotice;
   bool _cancelled = false;
   bool _disposed = false;
 
@@ -48,9 +52,12 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
 
   GenerationProgress get progress => _progress;
 
+  /// Non-blocking detail for a completed partial generation.
+  String? get completionNotice => _completionNotice;
+
   @override
   Future<Result<void>> action(DeckGenerationRequest request) async {
-    if (!EnvConfig.hasGeminiApiKey) {
+    if (_service == null && !EnvConfig.hasGeminiApiKey) {
       return const Result.error(
         GenerationException(
           'No Gemini API key configured. '
@@ -60,18 +67,20 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
     }
 
     _cancelled = false;
+    _completionNotice = null;
     _progress = const GenerationProgress(GenerationPhase.generatingOutline);
     notifyListeners();
 
     try {
-      final service = DeckGeneratorService(apiKey: EnvConfig.geminiApiKey);
+      final service =
+          _service ?? DeckGeneratorService(apiKey: EnvConfig.geminiApiKey);
       final result = await service.generate(
         request,
         onProgress: _onProgress,
         isCancelled: () => _cancelled,
       );
 
-      if (!result.success) {
+      if (!result.success && !result.isPartial) {
         return Result.error(
           GenerationException(result.error ?? 'Unknown generation error.'),
         );
@@ -90,9 +99,13 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
       if (result.theme case final theme?) {
         _customizationStore.applyGeneratedStyle(theme.toGeneratedDeckStyle());
       }
+      if (result.isPartial) {
+        _completionNotice = result.error;
+      }
       debugLog.log(
         'GENERATE_DECK',
-        'Loaded ${result.slides.length} slides into editor.',
+        'Loaded ${result.slides.length} slides into editor'
+            '${result.isPartial ? ' with ${result.slideFailures.length} unresolved' : ''}.',
       );
 
       return const Result.ok(null);
@@ -115,6 +128,12 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
     if (_cancelled) return;
     _progress = progress;
     notifyListeners();
+  }
+
+  @override
+  void clearResult() {
+    _completionNotice = null;
+    super.clearResult();
   }
 
   @override

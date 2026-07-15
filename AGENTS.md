@@ -23,7 +23,6 @@ packages/
   builder/    # Code generators and build_runner integration
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
-.planning/    # Internal development docs (not published)
 ```
 
 ### Key Package Responsibilities
@@ -208,7 +207,6 @@ Styles are defined in Dart through `SlideStyler`, `DeckOptions.baseStyle`, and `
 ## Documentation Locations
 
 - **User docs**: `docs/` (getting-started, guides, reference)
-- **Internal planning**: `.planning/` (architecture decisions, feature specs)
 - **Package READMEs**: Each package has its own README
 
 ## Quick Reference

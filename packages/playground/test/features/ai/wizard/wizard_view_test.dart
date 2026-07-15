@@ -29,8 +29,8 @@ void main() {
 
     expect(find.byType(WizardView), findsOneWidget);
     expect(find.byType(EmptyState), findsOneWidget);
-    // Starter suggestion chips render before any conversation begins.
-    expect(find.text('Startup pitch deck'), findsOneWidget);
+    expect(find.text('What is the presentation about?'), findsOneWidget);
+    expect(find.text('Describe your presentation topic…'), findsOneWidget);
 
     // Unmount so the view model disposes its session/signals cleanly.
     await tester.pumpWidget(const SizedBox());

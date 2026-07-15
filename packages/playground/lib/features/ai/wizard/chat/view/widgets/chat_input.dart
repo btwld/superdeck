@@ -11,6 +11,7 @@ class ChatInput extends StatelessWidget {
   final FocusNode? focusNode;
   final bool enabled;
   final ValueChanged<String> onSubmitted;
+  final String hintText;
 
   const ChatInput({
     super.key,
@@ -18,6 +19,7 @@ class ChatInput extends StatelessWidget {
     this.focusNode,
     required this.enabled,
     required this.onSubmitted,
+    this.hintText = 'Type a message...',
   });
 
   @override
@@ -28,7 +30,7 @@ class ChatInput extends StatelessWidget {
         .fontWeight(FontWeight.w600);
 
     return HeroTextField(
-      hintText: 'Type a message...',
+      hintText: hintText,
       trailing: trailingStyle('Press Enter'),
       textInputAction: TextInputAction.send,
       controller: controller,
@@ -37,7 +39,9 @@ class ChatInput extends StatelessWidget {
       semanticLabel: 'Chat message input',
       style: RemixTextFieldStyle()
           .padding(.horizontal(16).vertical(14))
-          .border(.color($border())),
+          .backgroundColor($surfaceSecondary())
+          .border(.color($border()))
+          .borderRadiusAll(const Radius.circular(14)),
       onSubmitted: enabled ? onSubmitted : null,
     );
   }

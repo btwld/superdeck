@@ -13,6 +13,15 @@ class MainFlutterWindow: NSWindow {
     self.contentViewController = flutterViewController
     self.setFrame(windowFrame, display: true)
 
+    // Keep the standard macOS window controls while letting Flutter paint
+    // beneath the title bar. This removes the redundant native title and the
+    // opaque frame without sacrificing resizing or familiar window behavior.
+    self.title = ""
+    self.titleVisibility = .hidden
+    self.titlebarAppearsTransparent = true
+    self.styleMask.insert(.fullSizeContentView)
+    self.isMovableByWindowBackground = true
+
     // Both editor sidebars are visible by default. The template's 800-point
     // window leaves the central editor with almost no width, so start at a
     // useful desktop size and prevent the window from shrinking back into that

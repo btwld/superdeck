@@ -701,7 +701,10 @@ $repairSection
 Return exactly one slide object, not a deck and not a `slides` array.
 The slide key must be exactly `${current.key}`. Compose only this slide. Fulfill
 its assertion, content units, composition, treatment, density, and planned
-elements while preserving continuity. Keep all visible Markdown at or below
+elements while preserving continuity. Treat the composition as visual guidance, not factual authority.
+Never invent a quotation, metric, or table data just to
+match its visual device; preserve grounded, useful content in the nearest clear
+layout when the supplied material cannot support that device. Keep all visible Markdown at or below
 $contentBudget characters and no more than $wordBudget visible words for the
 `${current.density}` density. Count headings, labels, and table cells in both
 limits. Synthesize the planned content units instead of expanding each into a

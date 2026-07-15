@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
+import 'package:playground/app/providers.dart';
 import 'package:playground/app/router.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_page.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_view.dart';
@@ -18,8 +19,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(
         routerConfig: createRouter(),
-        builder: (context, child) =>
-            HeroTheme(data: HeroThemeData.light(), child: child!),
+        builder: (context, child) => HeroTheme(
+          data: HeroThemeData.light(),
+          child: AppProviders(child: child!),
+        ),
       ),
     );
     await tester.pump();
@@ -36,8 +39,10 @@ void main() {
   testWidgets('configured page opens the isolated Wizard', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        builder: (context, child) =>
-            HeroTheme(data: HeroThemeData.light(), child: child!),
+        builder: (context, child) => HeroTheme(
+          data: HeroThemeData.light(),
+          child: AppProviders(child: child!),
+        ),
         home: const WizardPage(isConfigured: true),
       ),
     );
@@ -45,7 +50,8 @@ void main() {
 
     expect(find.byType(WizardView), findsOneWidget);
     expect(find.byType(EditorPage), findsNothing);
-    expect(find.text('Startup pitch deck'), findsOneWidget);
+    expect(find.text('What is the presentation about?'), findsOneWidget);
+    expect(find.text('Describe your presentation topic…'), findsOneWidget);
     expect(find.byTooltip('Generation lab'), findsOneWidget);
   });
 
@@ -67,8 +73,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(
         routerConfig: router,
-        builder: (context, child) =>
-            HeroTheme(data: HeroThemeData.light(), child: child!),
+        builder: (context, child) => HeroTheme(
+          data: HeroThemeData.light(),
+          child: AppProviders(child: child!),
+        ),
       ),
     );
     await tester.pump();

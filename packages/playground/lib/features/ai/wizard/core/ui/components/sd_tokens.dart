@@ -1,7 +1,7 @@
 /// Shared design tokens for Sd components.
 abstract final class SdTokens {
-  static const double cardRadius = 8;
-  static const double cardInnerRadius = 7;
+  static const double cardRadius = 14;
+  static const double cardInnerRadius = 12;
   static const double cardPadding = 16;
   static const double cardMinHeight = 140;
 

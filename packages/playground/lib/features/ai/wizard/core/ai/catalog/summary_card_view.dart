@@ -121,11 +121,12 @@ class SummaryCard extends StatelessWidget {
   final VoidCallback? generateSlides;
 
   FlexBoxStyler get _container => .new()
-      .borderRadiusAll(Radius.circular(SdTokens.cardRadius))
+      .borderRadiusAll(const Radius.circular(20))
       .mainAxisSize(.min)
-      .spacing(16)
+      .spacing(20)
       .crossAxisAlignment(.start)
-      .paddingAll(SdTokens.cardPadding)
+      .paddingAll(24)
+      .color($surfaceSecondary())
       .borderAll(color: $border())
       .column();
 
@@ -133,26 +134,58 @@ class SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _container(
       children: [
-        SdHeadline(title),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 12,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: $accentSoft.resolve(context),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                LucideIcons.layers,
+                size: 21,
+                color: $accent.resolve(context),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 4,
+                children: [
+                  SdHeadline(title),
+                  const SdCaption(
+                    'Review the plan before building your slides.',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         LayoutBuilder(
-          builder: (context, constraints) => ConstrainedBox(
+          builder: (context, _) => ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: (constraints.maxHeight * 0.6).clamp(200.0, 500.0),
+              maxHeight: (MediaQuery.sizeOf(context).height * 0.43).clamp(
+                260.0,
+                380.0,
+              ),
             ),
             child: SingleChildScrollView(
               primary: false,
               physics: const ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 16,
-                children: items
-                    .map(
-                      (item) => _SummaryCardItem(
-                        item: item,
-                        themeCatalog: themeCatalog,
-                      ),
-                    )
-                    .toList(),
+                children: [
+                  for (final (index, item) in items.indexed) ...[
+                    if (index > 0)
+                      Divider(height: 1, color: $separator.resolve(context)),
+                    _SummaryCardItem(item: item, themeCatalog: themeCatalog),
+                  ],
+                ],
               ),
             ),
           ),
@@ -160,8 +193,8 @@ class SummaryCard extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: SdButton(
-            label: 'Generate Slides',
-            icon: Icons.generating_tokens,
+            label: 'Generate slides',
+            icon: LucideIcons.sparkles,
             onPressed: generateSlides,
           ),
         ),
@@ -176,11 +209,11 @@ class _SummaryCardItem extends StatelessWidget {
   final SummaryItemType item;
   final PresentationThemeCatalog themeCatalog;
 
-  // Label with fixed width for consistent alignment
+  // Labels share a visual column on roomy layouts.
   TextStyler get _label => TextStyler()
-      .color($foreground())
-      .style($paragraphMedium.mix())
-      .wrap(WidgetModifierConfig.sizedBox(width: 140));
+      .color($muted())
+      .style($labelSmall.mix())
+      .fontWeight(FontWeight.w600);
 
   Widget _buildContent() {
     final shapeError = item.shapeValidationError;
@@ -222,13 +255,26 @@ class _SummaryCardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SdPanel(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _label(item.label),
-          Expanded(child: _buildContent()),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 480) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
+              children: [_label(item.label), _buildContent()],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 120, child: _label(item.label)),
+              Expanded(child: _buildContent()),
+            ],
+          );
+        },
       ),
     );
   }
@@ -276,30 +322,16 @@ class _SummaryCardItemTheme extends StatelessWidget {
     final colorRow = FlexBoxStyler().paddingY(5).row();
 
     final recipe = theme.recipe;
-    final headlineFontLoaded = tryGetGoogleFontFamily(recipe.headlineFamily);
-    final bodyFontLoaded = tryGetGoogleFontFamily(recipe.bodyFamily);
 
     return flex(
       children: [
         SdBody(theme.title),
-        SdCaption(theme.description),
         colorRow(
           children: recipe.palette.previewColors
               .map((color) => SdColorCircle(color: hexToColor(color)))
               .toList(),
         ),
-        SdBody(
-          recipe.headlineFamily,
-          style: headlineFontLoaded != null
-              ? TextStyler().fontFamily(headlineFontLoaded)
-              : null,
-        ),
-        SdCaption(
-          recipe.bodyFamily,
-          style: bodyFontLoaded != null
-              ? TextStyler().fontFamily(bodyFontLoaded)
-              : null,
-        ),
+        SdCaption('${recipe.headlineFamily} + ${recipe.bodyFamily}'),
       ],
     );
   }
