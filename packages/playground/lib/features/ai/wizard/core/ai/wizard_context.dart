@@ -37,28 +37,6 @@ class WizardContext {
     this.imageStyleDescription,
   });
 
-  /// Parse a [WizardContext] from a loose map.
-  factory WizardContext.fromMap(Map<String, dynamic> map) {
-    return WizardContext(
-      topic: _stringOrNull(map[WizardContextKeys.topic]),
-      audience: _stringOrNull(map[WizardContextKeys.audience]),
-      approach: _stringOrNull(map[WizardContextKeys.approach]),
-      emphasis: _stringListOrNull(map[WizardContextKeys.emphasis]),
-      slideCount: _intOrNull(map[WizardContextKeys.slideCount]),
-      themeId: _stringOrNull(map[WizardContextKeys.themeId]),
-      style: _stringOrNull(map[WizardContextKeys.style]),
-      density: _stringOrNull(map[WizardContextKeys.density]),
-      colors: _stringListOrNull(map[WizardContextKeys.colors]),
-      headlineFont: _stringOrNull(map[WizardContextKeys.headlineFont]),
-      bodyFont: _stringOrNull(map[WizardContextKeys.bodyFont]),
-      imageStyleId: _stringOrNull(map[WizardContextKeys.imageStyleId]),
-      imageStyleName: _stringOrNull(map[WizardContextKeys.imageStyleName]),
-      imageStyleDescription: _stringOrNull(
-        map[WizardContextKeys.imageStyleDescription],
-      ),
-    );
-  }
-
   WizardContext copyWith({
     String? topic,
     String? audience,
@@ -94,27 +72,6 @@ class WizardContext {
     );
   }
 
-  /// Merge [other] into this context, preferring non-null values from [other].
-  WizardContext merge(WizardContext other) {
-    return WizardContext(
-      topic: other.topic ?? topic,
-      audience: other.audience ?? audience,
-      approach: other.approach ?? approach,
-      emphasis: other.emphasis ?? emphasis,
-      slideCount: other.slideCount ?? slideCount,
-      themeId: other.themeId ?? themeId,
-      style: other.style ?? style,
-      density: other.density ?? density,
-      colors: other.colors ?? colors,
-      headlineFont: other.headlineFont ?? headlineFont,
-      bodyFont: other.bodyFont ?? bodyFont,
-      imageStyleId: other.imageStyleId ?? imageStyleId,
-      imageStyleName: other.imageStyleName ?? imageStyleName,
-      imageStyleDescription:
-          other.imageStyleDescription ?? imageStyleDescription,
-    );
-  }
-
   /// Convert to a map using [WizardContextKeys].
   Map<String, dynamic> toMap() {
     final map = <String, dynamic>{};
@@ -143,37 +100,4 @@ class WizardContext {
 
     return map;
   }
-}
-
-String? _stringOrNull(Object? value) {
-  if (value == null) return null;
-  final text = value.toString().trim();
-  return text.isEmpty ? null : text;
-}
-
-List<String>? _stringListOrNull(Object? value) {
-  if (value == null) return null;
-  if (value is List) {
-    final items = value
-        .map((item) => _stringOrNull(item))
-        .whereType<String>()
-        .toList();
-    return items.isEmpty ? null : items;
-  }
-  final text = _stringOrNull(value);
-  if (text == null) return null;
-  return [text];
-}
-
-int? _intOrNull(Object? value) {
-  if (value is int) return value > 0 ? value : null;
-  if (value is num) {
-    final i = value.toInt();
-    return i > 0 ? i : null;
-  }
-  if (value is String) {
-    final parsed = int.tryParse(value.trim());
-    if (parsed != null && parsed > 0) return parsed;
-  }
-  return null;
 }

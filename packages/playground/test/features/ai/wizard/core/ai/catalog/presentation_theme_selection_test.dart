@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/features/ai/wizard/core/ai/catalog/ask_user_style.dart';
-import 'package:playground/features/ai/wizard/core/ai/catalog/summary_card.dart';
 import 'package:playground/features/ai/wizard/chat/chat_conversation_profile.dart';
 import 'package:playground/features/ai/wizard/core/ai/schemas/wizard_context_keys.dart';
 import 'package:playground/features/ai/wizard/core/ai/services/genui_conversation_session.dart';
@@ -46,23 +45,6 @@ void main() {
       expect(context, isNot(contains(WizardContextKeys.bodyFont)));
     });
 
-    test('summary restores the stable theme ID only', () {
-      final item = SummaryItemType.parse({
-        'kind': 'theme',
-        'label': 'Style',
-        'themeId': 'technical-paper',
-      });
-
-      expect(item.shapeValidationError, isNull);
-      final context = extractWizardContextFromSummaryItems([item]);
-
-      expect(context.themeId, 'technical-paper');
-      expect(context.style, isNull);
-      expect(context.colors, isNull);
-      expect(context.headlineFont, isNull);
-      expect(context.bodyFont, isNull);
-    });
-
     test('Wizard prompt exposes compact catalog metadata without recipes', () {
       final prompt = buildWizardThemeCatalogPrompt(
         PresentationThemeCatalog.withDefaults(),
@@ -105,23 +87,17 @@ void main() {
           ]),
           customIds,
         );
-        expect(
-          _enumAt(items['SummaryCard']!.dataSchema.value, [
-            'properties',
-            'items',
-            'items',
-            'properties',
-            'themeId',
-          ]),
-          customIds,
+        expect(items.keys, {
+          'AskUserRadio',
+          'AskUserCheckbox',
+          'AskUserSlider',
+          'AskUserStyle',
+        });
+        final examples = items['AskUserStyle']!.exampleData.map(
+          (build) => build(),
         );
-        for (final componentName in ['AskUserStyle', 'SummaryCard']) {
-          final examples = items[componentName]!.exampleData.map(
-            (build) => build(),
-          );
-          expect(examples, everyElement(isNot(contains('editorial-midnight'))));
-          expect(examples.join(), contains(customIds.first));
-        }
+        expect(examples, everyElement(isNot(contains('editorial-midnight'))));
+        expect(examples.join(), contains(customIds.first));
         final prompt = buildWizardThemeCatalogPrompt(profile.themeCatalog);
         for (final id in customIds) {
           expect(prompt, contains(id));
@@ -139,19 +115,6 @@ void main() {
             customIds.first,
             themeCatalog: catalog,
           )[WizardContextKeys.themeId],
-          customIds.first,
-        );
-        expect(
-          parseSummaryCard({
-            'title': 'Summary',
-            'items': [
-              {'kind': 'theme', 'label': 'Style', 'themeId': customIds.first},
-            ],
-            'generateSlidesAction': {
-              'name': 'generate_slides',
-              'context': <Object?>[],
-            },
-          }, themeCatalog: catalog).items.single.themeId,
           customIds.first,
         );
       },

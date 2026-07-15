@@ -97,7 +97,6 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
     return {
       'selectedOption': option.title,
       'selectedDescription': option.description,
-      'message': option.title,
     };
   }
 

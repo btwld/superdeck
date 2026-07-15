@@ -86,6 +86,7 @@ final class GenUiConversationSession {
   final SuperdeckTransportFactory _transportFactory;
   final SuperdeckAgentClientFactory _agentClientFactory;
   final PresentationThemeCatalog _themeCatalog;
+  final String? _apiKey;
 
   genui.SurfaceController? _controller;
   SuperdeckA2uiTransport? _transport;
@@ -101,6 +102,7 @@ final class GenUiConversationSession {
   GenUiConversationSession({
     required AiConversationProfile profile,
     required ConversationSessionHandlers handlers,
+    String? apiKey,
     SuperdeckTransportFactory? transportFactory,
     SuperdeckAgentClientFactory agentClientFactory =
         DartanticSuperdeckAgentClient.new,
@@ -108,7 +110,8 @@ final class GenUiConversationSession {
        _handlers = handlers,
        _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
        _agentClientFactory = agentClientFactory,
-       _themeCatalog = profile.themeCatalog;
+       _themeCatalog = profile.themeCatalog,
+       _apiKey = apiKey;
 
   String _buildSystemPrompt(String systemInstruction) {
     final fragments = [
@@ -122,7 +125,6 @@ final class GenUiConversationSession {
         '${genui.PromptBuilder.defaultImportancePrefix}When creating a surface, '
             'the `catalogId` field MUST be exactly "$catalogId". '
             'Never use any other value.',
-      genui.PromptFragments.acknowledgeUser(),
       genui.PromptFragments.requireAtLeastOneSubmitElement(
         prefix: genui.PromptBuilder.defaultImportancePrefix,
       ),
@@ -269,6 +271,7 @@ final class GenUiConversationSession {
   }
 
   String? _readApiKey() {
+    if (_apiKey case final apiKey?) return apiKey;
     try {
       return EnvConfig.geminiApiKey;
     } on StateError {
@@ -400,9 +403,8 @@ String buildWizardThemeCatalogPrompt(PresentationThemeCatalog themeCatalog) {
   return '''
 ## Registered presentation themes
 
-Use only these exact IDs in `AskUserStyle.themeIds` and
-`SummaryCard.items[].themeId`. The application owns all palette, typography,
-spacing, component, and treatment tokens.
+Use only these exact IDs in `AskUserStyle.themeIds`. The application owns all
+palette, typography, spacing, component, and treatment tokens.
 
 ${const JsonEncoder.withIndent('  ').convert(candidates)}
 ''';

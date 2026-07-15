@@ -6,15 +6,11 @@ import 'ask_user_checkbox.dart';
 import 'ask_user_radio.dart';
 import 'ask_user_slider.dart';
 import 'ask_user_style.dart';
-import 'ask_user_text.dart';
-import 'summary_card.dart';
 
 export 'ask_user_checkbox.dart';
 export 'ask_user_radio.dart';
 export 'ask_user_slider.dart';
 export 'ask_user_style.dart';
-export 'ask_user_text.dart';
-export 'summary_card.dart';
 
 /// SuperDeck AI chat catalog with GenUI components.
 ///
@@ -22,9 +18,7 @@ export 'summary_card.dart';
 /// - [askUserRadio] - Radio button single selection
 /// - [askUserCheckbox] - Checkbox multiple selection
 /// - [askUserSlider] - Slider numeric input
-/// - [askUserText] - Free-form text input
 /// - [askUserStyle] - Catalog-backed presentation theme selection
-/// - [summaryCard] - Wizard summary with aggregated selections
 ///
 /// Image-style selection is intentionally omitted for v1 (no image generation).
 Catalog chatCatalogFor(PresentationThemeCatalog themeCatalog) {
@@ -32,9 +26,7 @@ Catalog chatCatalogFor(PresentationThemeCatalog themeCatalog) {
     askUserRadio,
     askUserCheckbox,
     askUserSlider,
-    askUserText,
     askUserStyleFor(themeCatalog),
-    summaryCardFor(themeCatalog),
   ], catalogId: 'com.superdeck.ai.chat');
 }
 

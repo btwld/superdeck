@@ -1,6 +1,5 @@
-import 'package:superdeck_builder/superdeck_builder.dart';
-
 import '../../../../../core/command.dart';
+import '../../../../../core/data/data_sources/memory_deck_loader.dart';
 import '../../../../../core/result.dart';
 import '../../../../editor/domain/stores/deck_document_store.dart';
 import '../../../../../core/domain/stores/deck_customization_store.dart';
@@ -9,7 +8,7 @@ import '../../core/engine/services/deck_generation_request.dart';
 import '../../core/engine/services/deck_generator_service.dart';
 import '../../core/engine/services/generation_progress.dart';
 import '../../core/env_config.dart';
-import '../generated_deck_style_mapper.dart';
+import '../generated_deck_result_applier.dart';
 
 /// Failure raised by [GenerateDeckCommand]. Its [toString] is the user-facing
 /// message (no `Exception:` prefix), so the panel can surface it directly.
@@ -33,13 +32,16 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
   GenerateDeckCommand({
     required DeckDocumentStore documentStore,
     required DeckCustomizationStore customizationStore,
+    MemoryDeckLoader? deckLoader,
     DeckGeneratorService? service,
   }) : _documentStore = documentStore,
        _customizationStore = customizationStore,
+       _deckLoader = deckLoader,
        _service = service;
 
   final DeckDocumentStore _documentStore;
   final DeckCustomizationStore _customizationStore;
+  final MemoryDeckLoader? _deckLoader;
   final DeckGeneratorService? _service;
 
   GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
@@ -94,11 +96,12 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
         return const Result.error(GenerationException('Generation cancelled.'));
       }
 
-      final markdown = const SlideSerializer().serialize(result.slides);
-      _documentStore.replaceMarkdown(markdown);
-      if (result.theme case final theme?) {
-        _customizationStore.applyGeneratedStyle(theme.toGeneratedDeckStyle());
-      }
+      applyGeneratedDeckResult(
+        result: result,
+        documentStore: _documentStore,
+        deckLoader: _deckLoader,
+        customizationStore: _customizationStore,
+      );
       if (result.isPartial) {
         _completionNotice = result.error;
       }

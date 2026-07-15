@@ -8,7 +8,7 @@ import '../core/ui/ui.dart';
 
 enum WizardGenerationStatusKind { running, completed, failed }
 
-/// Focused, full-screen status content for the terminal generation step.
+/// Focused, full-screen feedback for generation progress and outcomes.
 class WizardGenerationStatus extends StatelessWidget {
   const WizardGenerationStatus({
     super.key,
@@ -16,14 +16,36 @@ class WizardGenerationStatus extends StatelessWidget {
     this.progress = const GenerationProgress(GenerationPhase.idle),
     this.errorMessage,
     this.noticeMessage,
-    this.onDismiss,
+    this.slideCount,
+    this.failedSlideCount = 0,
+    this.elapsed,
+    this.planAvailable = false,
+    this.onCancel,
+    this.onRetry,
+    this.onBack,
+    this.backLabel = 'Edit outline',
+    this.onPresent,
+    this.onRetryFailed,
+    this.onEditOutline,
+    this.onStartOver,
   });
 
   final WizardGenerationStatusKind kind;
   final GenerationProgress progress;
   final String? errorMessage;
   final String? noticeMessage;
-  final VoidCallback? onDismiss;
+  final int? slideCount;
+  final int failedSlideCount;
+  final Duration? elapsed;
+  final bool planAvailable;
+  final VoidCallback? onCancel;
+  final VoidCallback? onRetry;
+  final VoidCallback? onBack;
+  final String backLabel;
+  final VoidCallback? onPresent;
+  final VoidCallback? onRetryFailed;
+  final VoidCallback? onEditOutline;
+  final VoidCallback? onStartOver;
 
   @override
   Widget build(BuildContext context) {
@@ -36,20 +58,30 @@ class WizardGenerationStatus extends StatelessWidget {
     final (:icon, :title, :description) = switch (kind) {
       WizardGenerationStatusKind.running => (
         icon: LucideIcons.sparkles,
-        title: 'Building your presentation',
-        description:
-            'Shaping the story, composing each slide, and checking the final deck.',
+        title: progress.phase == GenerationPhase.generatingOutline
+            ? 'Creating your outline'
+            : 'Building your presentation',
+        description: progress.phase == GenerationPhase.generatingOutline
+            ? 'Shaping a clear story before you review and approve it.'
+            : 'Composing the approved story and checking each slide.',
       ),
       WizardGenerationStatusKind.completed => (
         icon: LucideIcons.circleCheck,
-        title: 'Your presentation is ready',
-        description: 'The generated slides are ready in this session.',
+        title: failedSlideCount > 0
+            ? 'Your presentation is almost ready'
+            : 'Your presentation is ready',
+        description: failedSlideCount > 0
+            ? 'Keep the finished slides and retry only the ones that need attention.'
+            : 'Open the deck now, or return to the outline for changes.',
       ),
       WizardGenerationStatusKind.failed => (
         icon: LucideIcons.triangleAlert,
-        title: 'We couldn\'t finish the deck',
-        description:
-            'Your plan is still here, so you can return and try again.',
+        title: planAvailable
+            ? 'We couldn\'t finish the deck'
+            : 'We couldn\'t create the outline',
+        description: planAvailable
+            ? 'Your plan is still here, so you can return and try again.'
+            : 'Your setup is still here, so you can retry or make a new selection.',
       ),
     };
 
@@ -89,6 +121,7 @@ class WizardGenerationStatus extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(999),
                 child: LinearProgressIndicator(
+                  value: _progressValue(progress),
                   minHeight: 5,
                   color: $accent.resolve(context),
                   backgroundColor: $border.resolve(context),
@@ -96,7 +129,26 @@ class WizardGenerationStatus extends StatelessWidget {
                 ),
               ),
               _GenerationStages(progress: progress),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 16,
+                children: [
+                  const SdCaption('Usually 20–30 seconds'),
+                  TextButton.icon(
+                    onPressed: onCancel,
+                    icon: const Icon(LucideIcons.x, size: 16),
+                    label: const Text('Cancel'),
+                  ),
+                ],
+              ),
             ],
+            if (kind == WizardGenerationStatusKind.completed &&
+                slideCount != null &&
+                elapsed != null)
+              SdTitle(
+                '$slideCount ${slideCount == 1 ? 'slide' : 'slides'} • '
+                '${elapsed!.inSeconds}s',
+              ),
             if (highlightedMessage != null)
               Container(
                 width: double.infinity,
@@ -110,20 +162,80 @@ class WizardGenerationStatus extends StatelessWidget {
                   style: TextStyler().color(highlightedColor),
                 ),
               ),
-            if (kind != WizardGenerationStatusKind.running)
-              Align(
-                alignment: Alignment.centerRight,
-                child: SdButton(
-                  label: 'Back to deck plan',
-                  icon: LucideIcons.arrowLeft,
-                  onPressed: onDismiss,
-                ),
+            if (kind == WizardGenerationStatusKind.failed)
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  TextButton(onPressed: onBack, child: Text(backLabel)),
+                  SdButton(
+                    label: 'Retry',
+                    icon: LucideIcons.refreshCw,
+                    onPressed: onRetry,
+                  ),
+                ],
+              ),
+            if (kind == WizardGenerationStatusKind.completed)
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  TextButton(
+                    onPressed: onStartOver,
+                    child: const Text('Start over'),
+                  ),
+                  OutlinedButton(
+                    onPressed: onEditOutline,
+                    child: const Text('Edit outline'),
+                  ),
+                  if (failedSlideCount > 0)
+                    OutlinedButton.icon(
+                      onPressed: onRetryFailed,
+                      icon: const Icon(LucideIcons.refreshCw, size: 17),
+                      label: Text(
+                        'Retry $failedSlideCount '
+                        '${failedSlideCount == 1 ? 'slide' : 'slides'}',
+                      ),
+                    ),
+                  SdButton(
+                    label: 'Present deck',
+                    icon: LucideIcons.play,
+                    onPressed: onPresent,
+                  ),
+                ],
               ),
           ],
         ),
       ),
     );
   }
+}
+
+double _progressValue(GenerationProgress progress) {
+  return switch (progress.phase) {
+    GenerationPhase.idle => 0.05,
+    GenerationPhase.generatingOutline => 0.15,
+    GenerationPhase.composingSlides => _compositionProgress(progress),
+    GenerationPhase.finalizing => 0.94,
+    GenerationPhase.generatingThumbnails => 0.98,
+  };
+}
+
+double _compositionProgress(GenerationProgress progress) {
+  final slideIndex = progress.slideIndex;
+  final slideCount = progress.slideCount;
+  if (slideIndex != null && slideCount != null && slideCount > 0) {
+    return (0.2 + 0.7 * (slideIndex / slideCount)).clamp(0.2, 0.9);
+  }
+
+  final sectionIndex = progress.sectionIndex;
+  final sectionCount = progress.sectionCount;
+  if (sectionIndex != null && sectionCount != null && sectionCount > 0) {
+    return (0.2 + 0.7 * (sectionIndex / sectionCount)).clamp(0.2, 0.9);
+  }
+  return 0.25;
 }
 
 class _StatusIcon extends StatelessWidget {

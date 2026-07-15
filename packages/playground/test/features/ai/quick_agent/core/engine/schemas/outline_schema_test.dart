@@ -1136,18 +1136,30 @@ void main() {
     );
   });
 
-  test('rejects a display treatment on a structural composition', () {
+  test('reports a display treatment mismatch without blocking the plan', () {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides[6]['treatment'] = 'hero';
     final plan = DeckPlanType.parse(data);
+    final issues = validateDeckPlanIssues(plan);
 
     expect(
-      validateDeckPlan(plan),
-      contains(
-        'Slide "process" pairs treatment "hero" with composition '
-        '"threeColumn"; allowed compositions are title.',
-      ),
+      issues.singleWhere((issue) => issue.code == .treatmentIntent),
+      isA<GenerationValidationIssue>()
+          .having(
+            (issue) => issue.severity,
+            'severity',
+            GenerationValidationSeverity.diagnostic,
+          )
+          .having((issue) => issue.isBlocking, 'isBlocking', isFalse)
+          .having(
+            (issue) => issue.message,
+            'message',
+            contains(
+              'Slide "process" pairs treatment "hero" with composition '
+              '"threeColumn"; allowed compositions are title.',
+            ),
+          ),
     );
   });
 

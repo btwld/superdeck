@@ -6,10 +6,12 @@ Return one JSON object containing only a `slides` array. Produce exactly one
 canonical slide for every supplied plan item, in the same order, with the exact
 planned key. Never add, omit, merge, split, or reorder slides.
 
-Each slide may contain `key`, `options`, `comments`, and `sections`. Slides stack
-sections vertically; each section lays out blocks horizontally. Markdown blocks
-use `type: "block"`. Registered elements use `type: "widget"`, their exact
-catalog `name`, and a nested `args` object. Use only supported schema fields.
+Each slide must contain `key`, `options`, and `sections`; `comments` are optional.
+Set `options.title` and set `options.style` to the exact planned treatment.
+Slides stack sections vertically; each section lays out blocks horizontally.
+Markdown blocks use `type: "block"`. Registered elements use `type: "widget"`,
+their exact catalog `name`, and a nested `args` object. Use only supported schema
+fields.
 
 ## Composition
 

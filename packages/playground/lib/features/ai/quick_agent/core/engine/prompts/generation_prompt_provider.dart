@@ -148,7 +148,6 @@ complete corrected deck-plan object.
   }) {
     if (validationIssues.isNotEmpty) {
       return buildSingleSlideRepairPrompt(
-        plan: plan,
         current: current,
         previousSlide: previousSlide,
         next: next,
@@ -364,7 +363,6 @@ Return only the corrected single-slide plan object.
 }
 
 String buildSingleSlideRepairPrompt({
-  required DeckPlanType plan,
   required DeckPlanSlideType current,
   required Map<String, Object?>? previousSlide,
   required DeckPlanSlideType? next,

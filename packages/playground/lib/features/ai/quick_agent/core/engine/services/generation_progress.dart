@@ -40,7 +40,7 @@ final class GenerationProgress {
     if (phase == GenerationPhase.composingSlides &&
         currentSection != null &&
         totalSections != null) {
-      return 'Composing section $currentSection of $totalSections…';
+      return 'Composed section $currentSection of $totalSections…';
     }
     final index = slideIndex;
     final count = slideCount;

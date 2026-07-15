@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
+import 'package:playground/features/ai/wizard/chat/chat_conversation_profile.dart';
 import 'package:playground/features/ai/wizard/chat/view/widgets/empty_state.dart';
+import 'package:playground/features/ai/wizard/core/ai/services/ai_conversation_viewmodel.dart';
+import 'package:playground/features/ai/wizard/core/viewmodel_scope.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_view.dart';
 
 /// Smoke test: the wizard mounts and shows its empty state without touching the
@@ -16,8 +19,12 @@ void main() {
     return MaterialApp(
       home: HeroTheme(
         data: HeroThemeData.light(),
-        child: const Scaffold(
-          body: SizedBox(width: 360, height: 720, child: WizardView()),
+        child: Scaffold(
+          body: ViewModelScope<AiConversationViewModel>(
+            create: () =>
+                AiConversationViewModel(profile: chatConversationProfile()),
+            child: const SizedBox(width: 360, height: 720, child: WizardView()),
+          ),
         ),
       ),
     );

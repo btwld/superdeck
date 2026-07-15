@@ -3,7 +3,7 @@ import '../wizard_context.dart';
 
 /// Builds a deck generation prompt from wizard context data.
 ///
-/// Extracts exact user selections from the 8-step wizard workflow without
+/// Extracts exact user selections from the Wizard workflow without
 /// flattening contractual fields into layout instructions.
 DeckGenerationRequest buildPromptFromWizardContext(WizardContext context) {
   return DeckGenerationRequest(

@@ -3,10 +3,7 @@ import 'package:genui/genui.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:remix/remix.dart';
-import 'package:signals/signals_flutter.dart';
 import '../../../presentation/view/loading.dart';
-import '../../chat_message.dart';
-import 'chat_bubble.dart';
 import '../../../core/ui/ui.dart';
 
 /// Typing indicator - shows only when AI is thinking.
@@ -54,7 +51,7 @@ class AiSurfacesPanel extends StatelessWidget {
   final bool isThinking;
   final String? errorMessage;
 
-  /// Optional input widget to display at bottom when chat panel is hidden.
+  /// Optional input displayed below the active Wizard surface.
   final Widget? inputWidget;
 
   @override
@@ -81,23 +78,20 @@ class AiSurfacesPanel extends StatelessWidget {
               child: AnimatedOpacity(
                 duration: SdTokens.motionFast,
                 opacity: thinking ? 0.5 : 1.0,
-                child: WizardLoadingState(
-                  isLoading: thinking,
-                  child: flex(
-                    key: ValueKey(ids.last),
-                    children: ids.map((surfaceId) {
-                      return IgnorePointer(
-                        key: ValueKey('ignore_$surfaceId'),
-                        ignoring: thinking,
-                        child: Surface(
-                          key: ValueKey('surface_$surfaceId'),
-                          surfaceContext: resolvedController.contextFor(
-                            surfaceId,
-                          ),
+                child: flex(
+                  key: ValueKey(ids.last),
+                  children: ids.map((surfaceId) {
+                    return IgnorePointer(
+                      key: ValueKey('ignore_$surfaceId'),
+                      ignoring: thinking,
+                      child: Surface(
+                        key: ValueKey('surface_$surfaceId'),
+                        surfaceContext: resolvedController.contextFor(
+                          surfaceId,
                         ),
-                      );
-                    }).toList(),
-                  ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -136,112 +130,9 @@ class AiSurfacesPanel extends StatelessWidget {
             ),
           ),
           TypingBubble(isThinking: thinking),
-          inputWidget ?? const SizedBox.shrink(),
+          inputWidget!,
         ],
       ),
-    );
-  }
-}
-
-/// Shared chat body panel used by AI conversation screens.
-class ChatBodyPanel extends SignalWidget {
-  const ChatBodyPanel({
-    super.key,
-    required this.messages,
-    required this.isThinking,
-    required this.emptyState,
-    this.inputWidget,
-  });
-
-  final ReadonlySignal<List<SuperdeckChatMessage>> messages;
-  final ReadonlySignal<bool> isThinking;
-  final Widget emptyState;
-
-  /// Optional input widget to display at bottom when chat panel is visible.
-  final Widget? inputWidget;
-
-  @override
-  Widget build(BuildContext context) {
-    final thinking = isThinking.value;
-
-    return Column(
-      children: [
-        Expanded(
-          child: MessageList(messages: messages, emptyState: emptyState),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 8,
-            children: [if (thinking) const LoadingResponse(), ?inputWidget],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Shared message list used by AI conversation body panels.
-class MessageList extends SignalWidget {
-  const MessageList({
-    super.key,
-    required this.messages,
-    required this.emptyState,
-  });
-
-  final ReadonlySignal<List<SuperdeckChatMessage>> messages;
-  final Widget emptyState;
-
-  @override
-  Widget build(BuildContext context) {
-    final currentMessages = messages.value;
-    final reversedMessages = currentMessages.reversed.toList();
-
-    if (currentMessages.isEmpty) {
-      return emptyState;
-    }
-
-    return ListView.builder(
-      reverse: true,
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      itemCount: reversedMessages.length * 2,
-      itemBuilder: (context, index) {
-        if (index.isEven) {
-          return const SizedBox(height: 16);
-        }
-
-        final message = reversedMessages[index ~/ 2];
-
-        switch (message) {
-          case SuperdeckUserMessage():
-            return TextBubble(text: message.text, type: .user);
-          case SuperdeckAiMessage():
-            return TextBubble(text: message.text, type: .ai);
-          case SuperdeckDebugMessage():
-            return TextBubble(text: message.text, type: .debug);
-          case SuperdeckJsonDebugMessage():
-            return TextBubble(text: message.text, type: .debug);
-        }
-      },
-    );
-  }
-}
-
-class LoadingResponse extends StatelessWidget {
-  const LoadingResponse({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final text = TextStyler().color($muted()).style($labelXSmall.mix());
-
-    final row = FlexBoxStyler().spacing(6);
-
-    return row(
-      children: [
-        SdSpinner(size: SdSpinnerSize.size1),
-        text('Thinking...'),
-      ],
     );
   }
 }

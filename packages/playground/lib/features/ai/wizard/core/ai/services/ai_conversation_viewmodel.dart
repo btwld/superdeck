@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:genui/genui.dart' as genui;
 import 'package:signals/signals_flutter.dart';
 
 import '../../../../quick_agent/core/constants/gemini_models.dart';
-import '../../../chat/chat_message.dart';
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
+import '../schemas/user_action_payload.dart';
+import '../wizard_session_state.dart';
 import '../../debug_logger.dart';
 import '../../viewmodel_scope.dart';
 import 'ai_conversation_profile.dart';
@@ -32,16 +35,37 @@ MissingSurfaceAction decideMissingSurfaceAction({
       : MissingSurfaceAction.showError;
 }
 
+@visibleForTesting
+String? expectedWizardComponentType(WizardStep step) => switch (step) {
+  WizardStep.audience || WizardStep.approach => 'AskUserRadio',
+  WizardStep.emphasis => 'AskUserCheckbox',
+  WizardStep.slideCount => 'AskUserSlider',
+  WizardStep.theme => 'AskUserStyle',
+  WizardStep.topic || WizardStep.review => null,
+};
+
+@visibleForTesting
+bool isExpectedWizardSurface(
+  genui.SurfaceDefinition definition,
+  WizardStep step,
+) {
+  final expectedType = expectedWizardComponentType(step);
+  return expectedType != null &&
+      definition.components['root']?.type == expectedType;
+}
+
 final class AiConversationViewModel extends ChangeNotifier
     implements Disposable {
   AiConversationViewModel({
     required AiConversationProfile profile,
     @visibleForTesting SuperdeckTransportFactory? transportFactory,
+    @visibleForTesting String? apiKey,
     SuperdeckAgentClientFactory agentClientFactory =
         DartanticSuperdeckAgentClient.new,
-  }) {
+  }) : themeCatalog = profile.themeCatalog {
     _session = GenUiConversationSession(
       profile: profile,
+      apiKey: apiKey,
       transportFactory: transportFactory,
       agentClientFactory: agentClientFactory,
       handlers: ConversationSessionHandlers(
@@ -58,47 +82,32 @@ final class AiConversationViewModel extends ChangeNotifier
   /// The Wizard favors the current Flash Lite model for short, structured
   /// surface turns. There is intentionally no in-wizard model picker.
   static const _modelName = GeminiModelNames.gemini31FlashLite;
-  static const _missingSurfaceRecoveryPrompt = '''
-The previous response did not include a renderable Wizard surface. Continue
-from the current Wizard state and return exactly one valid surface for the next
-unanswered step. Use the registered catalog ID, include a submit control, and
-do not answer with text only.
-''';
   static const _missingSurfaceError =
       'I couldn\'t prepare the next step. Add a detail below to try again.';
 
+  final PresentationThemeCatalog themeCatalog;
+
   final surfaceIds = Signal<List<String>>([]);
   final _controller = Signal<genui.SurfaceController?>(null);
-  final debugMode = Signal<bool>(false);
-  final showChat = Signal<bool>(true);
-  final Signal<List<SuperdeckChatMessage>> _messages = signal([]);
   final _isProcessing = Signal<bool>(false);
 
   late final GenUiConversationSession _session;
   DateTime? _lastRequestTime;
-  String _streamingAiResponse = '';
-  int? _streamingAiMessageIndex;
   String? _errorMessage;
+  String? _surfaceRecoveryReason;
   var _surfaceRecoveryAttempts = 0;
   var _requestProducedSurface = false;
   var _disposed = false;
+  var _wizardState = WizardSessionState.initial();
 
   genui.SurfaceController? get controller => _controller.value;
 
   String? get errorMessage => _errorMessage;
 
+  WizardSessionState get wizardState => _wizardState;
+
   late final Computed<bool> isThinking = computed(() {
     return _isProcessing.value;
-  });
-
-  late final Computed<List<SuperdeckChatMessage>> messages = computed(() {
-    if (debugMode.value) {
-      return _messages.value;
-    }
-
-    return _messages.value.where((e) {
-      return e is SuperdeckUserMessage || e is SuperdeckAiMessage;
-    }).toList();
   });
 
   late final Computed<bool> hasConversationStarted = computed(
@@ -117,7 +126,6 @@ do not answer with text only.
 
     final message = result.message;
     if (message != null && !_disposed) {
-      _messages.add(SuperdeckAiMessage(message));
       _errorMessage = message;
       _notifyView();
     }
@@ -126,22 +134,50 @@ do not answer with text only.
 
   Future<void> sendMessage(String raw) async {
     final message = raw.trim();
-    if (message.isEmpty || _disposed) return;
+    if (message.isEmpty || _disposed || _isProcessing.value) return;
+
+    _isProcessing.value = true;
+    _notifyView();
 
     debugLog.userAction('SEND_MESSAGE', {'message': message});
     debugLog.section('New Message');
 
-    if (!hasConversationStarted.value) {
+    final isFirstTurn = !hasConversationStarted.value;
+    WizardSessionState? topicState;
+    if (isFirstTurn) {
+      topicState = _wizardState.startTopic(message);
+      if (topicState == null) {
+        _isProcessing.value = false;
+        _notifyView();
+        return;
+      }
       debugLog.log('CONV', 'Building new conversation');
       final ok = await ensureConversationStarted();
-      if (!ok) return;
+      if (!ok) {
+        _isProcessing.value = false;
+        _notifyView();
+        return;
+      }
+      _wizardState = topicState;
     }
 
-    if (!_session.hasActiveSession) return;
+    if (!_session.hasActiveSession || _wizardState.step == WizardStep.review) {
+      _isProcessing.value = false;
+      _notifyView();
+      return;
+    }
 
     _surfaceRecoveryAttempts = 0;
-    _messages.add(SuperdeckUserMessage(message));
-    await _enqueueRequest(genui.ChatMessage.user(message));
+    await _enqueueRequest(
+      genui.ChatMessage.user(
+        buildWizardTurnPrompt(
+          userInput: isFirstTurn
+              ? 'Presentation topic: $message'
+              : 'User request for the current step: $message',
+          state: _wizardState,
+        ),
+      ),
+    );
   }
 
   void restartConversation() {
@@ -149,12 +185,11 @@ do not answer with text only.
     _session.restart();
     _controller.value = null;
     _isProcessing.value = false;
-    _streamingAiResponse = '';
-    _streamingAiMessageIndex = null;
     _errorMessage = null;
+    _surfaceRecoveryReason = null;
     _surfaceRecoveryAttempts = 0;
     _requestProducedSurface = false;
-    _messages.value = [];
+    _wizardState = WizardSessionState.initial();
     surfaceIds.value = [];
     _notifyView();
   }
@@ -167,12 +202,8 @@ do not answer with text only.
 
     surfaceIds.dispose();
     _controller.dispose();
-    debugMode.dispose();
-    showChat.dispose();
-    _messages.dispose();
     _isProcessing.dispose();
     isThinking.dispose();
-    messages.dispose();
     hasConversationStarted.dispose();
     super.dispose();
   }
@@ -183,8 +214,6 @@ do not answer with text only.
 
   void _handleRequestStarted() {
     _lastRequestTime = DateTime.now();
-    _streamingAiResponse = '';
-    _streamingAiMessageIndex = null;
     _errorMessage = null;
     _requestProducedSurface = false;
     _isProcessing.value = true;
@@ -206,15 +235,14 @@ do not answer with text only.
     )) {
       case MissingSurfaceAction.recover:
         _surfaceRecoveryAttempts++;
+        final recoveryPrompt = _buildSurfaceRecoveryPrompt();
+        _surfaceRecoveryReason = null;
         debugLog.log(
           'CONV',
-          'Response had no Wizard surface; requesting one recovery turn',
+          'Response did not produce the expected Wizard surface; '
+              'requesting one recovery turn',
         );
-        unawaited(
-          _enqueueRequest(
-            genui.ChatMessage.user(_missingSurfaceRecoveryPrompt),
-          ),
-        );
+        unawaited(_enqueueRequest(genui.ChatMessage.user(recoveryPrompt)));
         return;
       case MissingSurfaceAction.showError:
         _errorMessage = _missingSurfaceError;
@@ -228,93 +256,155 @@ do not answer with text only.
   }
 
   void _handleUiSubmit(genui.ChatMessage message) {
+    if (_isProcessing.value) {
+      debugLog.log('USER', 'Ignored a duplicate Wizard interaction.');
+      return;
+    }
     _surfaceRecoveryAttempts = 0;
     final interactionParts = message.parts.uiInteractionParts.toList();
-    if (interactionParts.isEmpty) {
-      debugLog.log('USER', 'Received submit message without interaction part');
-      _addDebugMessage('Received unexpected action format');
+    if (interactionParts.length != 1) {
+      _rejectUiAction('Expected exactly one Wizard interaction.');
+      return;
     }
 
-    for (final part in interactionParts) {
-      final rawJson = part.interaction;
-      final parsed = UserActionPayload.tryParse(rawJson);
-      if (parsed == null) {
-        debugLog.log('USER', 'Failed to parse user action: $rawJson');
-        _addDebugMessage('Received unexpected action format');
-      } else {
-        _messages.add(SuperdeckUserMessage(parsed.displayMessage));
-      }
-      _addJsonDebugMessage(rawJson);
-      debugLog.userAction('UI_ACTION', parsed?.context ?? {'raw': rawJson});
+    final rawJson = interactionParts.single.interaction;
+    final parsed = UserActionPayload.tryParse(rawJson);
+    if (parsed == null || parsed.actionName != 'submit_answer') {
+      _rejectUiAction('Received an invalid Wizard action.');
+      return;
     }
 
+    final previousStep = _wizardState.step;
+    final nextState = _wizardState.advance(parsed.context);
+    if (nextState == null) {
+      _rejectUiAction(
+        'That selection does not match the current ${previousStep.name} step.',
+      );
+      return;
+    }
+
+    _wizardState = nextState;
+    debugLog.userAction('UI_ACTION', parsed.context);
+
+    if (nextState.step == WizardStep.review) {
+      _notifyView();
+      return;
+    }
+
+    _isProcessing.value = true;
     _notifyView();
-    unawaited(_enqueueRequest(message));
+
+    unawaited(
+      _enqueueRequest(
+        genui.ChatMessage.user(
+          buildWizardTurnPrompt(
+            userInput:
+                'The user completed ${previousStep.name} with '
+                '${jsonEncode(parsed.context)}.',
+            state: nextState,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _rejectUiAction(String reason) {
+    debugLog.log('USER', reason);
+    _errorMessage = 'That choice could not be applied. Please try again.';
+    _notifyView();
   }
 
   void _handleTextResponse(String value) {
     _logElapsed('TEXT_RESPONSE received');
     debugLog.aiResponse('TEXT', value);
-    _streamingAiResponse = mergeFinalOutputSegments(
-      _streamingAiResponse,
-      value,
-    );
-
-    final next = [..._messages.value];
-    final index = _streamingAiMessageIndex;
-    if (index != null && index >= 0 && index < next.length) {
-      next[index] = SuperdeckAiMessage(_streamingAiResponse);
-    } else {
-      _streamingAiMessageIndex = next.length;
-      next.add(SuperdeckAiMessage(_streamingAiResponse));
-    }
-    _messages.value = next;
-    _notifyView();
   }
 
   void _handleSurfaceUpdate(genui.SurfaceUpdate value) {
     switch (value) {
-      case genui.SurfaceAdded(:final surfaceId):
-        _handleSurfaceAdded(surfaceId);
-      case genui.ComponentsUpdated(:final surfaceId):
-        _handleSurfaceUpdated(surfaceId);
+      case genui.SurfaceAdded(:final surfaceId, :final definition):
+        _handleSurfaceAdded(surfaceId, definition);
+      case genui.ComponentsUpdated(:final surfaceId, :final definition):
+        _handleSurfaceUpdated(surfaceId, definition);
       case genui.SurfaceRemoved(:final surfaceId):
         _handleSurfaceDeleted(surfaceId);
     }
   }
 
-  void _handleSurfaceAdded(String surfaceId) {
+  void _handleSurfaceAdded(
+    String surfaceId,
+    genui.SurfaceDefinition definition,
+  ) {
     _logElapsed('SURFACE_ADDED: $surfaceId');
     debugLog.surface('ADDED', surfaceId);
+    if (!_acceptSurfaceForCurrentStep(surfaceId, definition)) return;
     _requestProducedSurface = true;
     if (!surfaceIds.value.contains(surfaceId)) {
       _errorMessage = null;
       _surfaceRecoveryAttempts = 0;
       surfaceIds.value = [...surfaceIds.value, surfaceId];
-      _addDebugMessage('Surface added: $surfaceId');
       _notifyView();
     }
   }
 
-  void _handleSurfaceUpdated(String surfaceId) {
+  void _handleSurfaceUpdated(
+    String surfaceId,
+    genui.SurfaceDefinition definition,
+  ) {
     _logElapsed('SURFACE_UPDATED: $surfaceId');
     debugLog.surface('UPDATED', surfaceId);
+    if (!_acceptSurfaceForCurrentStep(surfaceId, definition)) return;
     _requestProducedSurface = true;
     _errorMessage = null;
     _surfaceRecoveryAttempts = 0;
     if (!surfaceIds.value.contains(surfaceId)) {
       surfaceIds.value = [...surfaceIds.value, surfaceId];
-      _addDebugMessage('Surface added via update: $surfaceId');
     }
-    _addDebugMessage('Surface updated: $surfaceId');
     _notifyView();
+  }
+
+  bool _acceptSurfaceForCurrentStep(
+    String surfaceId,
+    genui.SurfaceDefinition definition,
+  ) {
+    if (isExpectedWizardSurface(definition, _wizardState.step)) {
+      _surfaceRecoveryReason = null;
+      return true;
+    }
+
+    final expectedType = expectedWizardComponentType(_wizardState.step);
+    final actualType = definition.components['root']?.type;
+    final expectedLabel = expectedType ?? 'no generated component';
+    final actualLabel = actualType ?? 'no root component';
+    _surfaceRecoveryReason =
+        'The previous response rendered $actualLabel, '
+        'but the canonical ${_wizardState.step.name} step requires '
+        '$expectedLabel.';
+    surfaceIds.value = surfaceIds.value.where((id) => id != surfaceId).toList();
+    debugLog.log(
+      'CONV',
+      'Rejected mismatched Wizard surface: '
+          'expected=$expectedLabel, actual=$actualLabel',
+    );
+    _notifyView();
+    return false;
+  }
+
+  String _buildSurfaceRecoveryPrompt() {
+    final reason =
+        _surfaceRecoveryReason ??
+        'The previous response did not include a renderable Wizard surface.';
+    return buildWizardTurnPrompt(
+      userInput:
+          '$reason Return the registered component for the next unanswered '
+          'step with a submit action; do not answer with text.',
+      state: _wizardState,
+    );
   }
 
   void _handleSurfaceDeleted(String surfaceId) {
     _logElapsed('SURFACE_DELETED: $surfaceId');
     debugLog.surface('DELETED', surfaceId);
     surfaceIds.value = surfaceIds.value.where((id) => id != surfaceId).toList();
-    _addDebugMessage('Surface deleted: $surfaceId');
     _notifyView();
   }
 
@@ -322,9 +412,7 @@ do not answer with text only.
     _logElapsed('ERROR received');
     debugLog.error('GenUI', _sanitizeError(error), stackTrace);
     _errorMessage = _getErrorMessage(error);
-    _messages.add(SuperdeckAiMessage(_errorMessage!));
     _isProcessing.value = false;
-    _streamingAiMessageIndex = null;
     _notifyView();
   }
 
@@ -338,14 +426,6 @@ do not answer with text only.
     debugLog.log('TIMING', '$event at +${elapsed.inMilliseconds}ms');
   }
 
-  void _addDebugMessage(String message) {
-    _messages.add(SuperdeckDebugMessage(message));
-  }
-
-  void _addJsonDebugMessage(String json) {
-    _messages.add(SuperdeckJsonDebugMessage(json));
-  }
-
   static const _errorClassifier = ErrorClassifier();
 
   String _getErrorMessage(Object error) =>
@@ -357,19 +437,18 @@ do not answer with text only.
   }
 }
 
-/// Joins complete final-output segments without collapsing their word boundary.
-///
-/// The A2UI adapter can emit one final sentence as multiple decoded text
-/// segments with leading whitespace removed. Punctuation still joins directly.
 @visibleForTesting
-String mergeFinalOutputSegments(String existing, String next) {
-  if (existing.isEmpty || next.isEmpty) return '$existing$next';
-  if (RegExp(r'\s$').hasMatch(existing) || RegExp(r'^\s').hasMatch(next)) {
-    return '$existing$next';
-  }
-  const punctuation = ''',.;:!?)]}'"”’''';
-  if (punctuation.contains(next[0])) {
-    return '$existing$next';
-  }
-  return '$existing $next';
+String buildWizardTurnPrompt({
+  required String userInput,
+  required WizardSessionState state,
+}) {
+  return '''
+$userInput
+
+Canonical selections: ${jsonEncode(state.context.toMap())}
+Expected next step: ${state.step.name}
+
+Generate exactly one ${state.step.name} surface. Keep every canonical selection
+unchanged and emit surface messages only.
+''';
 }

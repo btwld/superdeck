@@ -145,7 +145,11 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
   );
   _validateTreatmentIntent(
     plan,
-    issues.scoped(code: GenerationValidationCode.treatmentIntent),
+    issues.scoped(
+      code: GenerationValidationCode.treatmentIntent,
+      category: GenerationValidationCategory.quality,
+      severity: GenerationValidationSeverity.diagnostic,
+    ),
   );
   _validateDesignRhythm(
     plan,

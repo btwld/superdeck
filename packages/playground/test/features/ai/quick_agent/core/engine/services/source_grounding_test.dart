@@ -160,4 +160,27 @@ void main() {
 
     expect(unsupported, isNot(contains('compliance')));
   });
+
+  test('matches short commitment phrases as tokens, not substrings', () {
+    final unsupported = findUnsupportedCommitmentPhrases(
+      values: const [
+        'A neighborhood association can coordinate shared garden plots.',
+      ],
+      userIntent: 'Explain community coordination for urban gardens.',
+    );
+
+    expect(unsupported, isNot(contains('sso')));
+  });
+
+  test('allows ordinary policy language outside product commitment claims', () {
+    final unsupported = findUnsupportedCommitmentPhrases(
+      values: const [
+        'Permanent tree canopy protections and land-use classification can '
+            'support long-term neighborhood resilience.',
+      ],
+      userIntent: 'Create an urban policy presentation.',
+    );
+
+    expect(unsupported, isEmpty);
+  });
 }

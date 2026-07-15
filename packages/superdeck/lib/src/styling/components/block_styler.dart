@@ -18,8 +18,8 @@ import 'package:mix/mix.dart';
 /// It intentionally cannot express widget modifiers, width/height or other
 /// constraints, transforms, box alignment, or widget-state variants — those
 /// would create competing geometry owners with section `spacing`, block
-/// `flex`, and block/section `align`. Extending this allow-list is a design
-/// decision, not a convenience patch; see `.planning` notes for PR #99.
+/// `flex`, and block/section `align`. Extending this allow-list is a framework
+/// design decision because it changes which layer owns block geometry.
 final class BlockStyler extends Style<BoxSpec>
     with
         Diagnosticable,

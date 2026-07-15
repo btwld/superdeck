@@ -73,7 +73,7 @@ final _metricAmplificationPattern = RegExp(
   caseSensitive: false,
 );
 final _implementationDetailPattern = RegExp(
-  r'\b(?:automat(?:e|ed|es|ic|ically|ing|ion)|classification|correlation|'
+  r'\b(?:automat(?:e|ed|es|ic|ically|ing|ion)|correlation|'
   r'documentation|launch team|notifications?|prioriti[sz](?:e|ed|es|ation)|'
   r'self-serve|smart triage|tagging)\b',
   caseSensitive: false,
@@ -88,7 +88,8 @@ final _absoluteCapabilityPattern = RegExp(
   r'designed (?:for|to)|diverse industries|'
   r'every(?:\s+[a-z-]+){0,2}\s+signal|fast onboarding|high-velocity|immutable|'
   r'maps? back to|never lost|no(?:\s+[a-z-]+){0,2}\s+(?:disruption|migration)|'
-  r'operates alongside|overlay analytics|permanent|predictable scaling|pure overlay|'
+  r'operates alongside|overlay analytics|predictable scaling|pure overlay|'
+  r'permanent(?=(?:\s*,?\s+[a-z-]+){0,2}\s+(?:archive|history|links?|logs?|memory|records?|trace))|'
   r'rapid(?:\s+[a-z-]+){0,2}\s+(?:adoption|deployment|setup)|'
   r'shareable summaries|source data pristine|team sizes|time-to-value|'
   r'traceable links|universal capture|'
@@ -798,8 +799,8 @@ Set<String> findUnsupportedCommitmentPhrases({
       final copy = context.toLowerCase();
       final qualified = _nonCommitmentQualifierPattern.hasMatch(copy);
       for (final phrase in _highRiskCommitmentPhrases) {
-        if (copy.contains(phrase) &&
-            !supplied.contains(phrase) &&
+        if (_containsStandalonePhrase(copy, phrase) &&
+            !_containsStandalonePhrase(supplied, phrase) &&
             !qualified &&
             !_isBenignCommitmentUse(copy, phrase) &&
             !_isNegatedPhrase(copy, phrase)) {
@@ -838,6 +839,14 @@ Set<String> findUnsupportedCommitmentPhrases({
     }
   }
   return unsupported;
+}
+
+bool _containsStandalonePhrase(String value, String phrase) {
+  final escaped = RegExp.escape(phrase);
+  return RegExp(
+    '(?:^|[^a-z0-9])$escaped(?=\$|[^a-z0-9])',
+    caseSensitive: false,
+  ).hasMatch(value);
 }
 
 /// Whether unsupported commitment findings are concrete enough to block.

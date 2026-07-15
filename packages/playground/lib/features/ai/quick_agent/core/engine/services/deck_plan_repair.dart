@@ -209,7 +209,7 @@ List<String> _outlineSlideInvariantErrors({
   required DeckPlanSlideType candidate,
 }) {
   final errors = <String>[];
-  void requireSame(String field, Object? before, Object? after) {
+  void requireSame(String field, Object before, Object after) {
     if (jsonEncode(before) != jsonEncode(after)) {
       errors.add(
         'Repair changed immutable field `$field`; restore its exact original '

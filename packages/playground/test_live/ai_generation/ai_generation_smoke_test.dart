@@ -30,6 +30,7 @@ import 'package:playground/features/ai/quick_agent/core/engine/services/generati
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/theme_json_serializer.dart';
 import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
+import 'package:playground/features/ai/wizard/presentation/wizard_generation_controller.dart';
 import 'package:superdeck/src/utils/syntax_highlighter.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
@@ -152,10 +153,26 @@ void main() {
         );
         final client = _FakeCheckpointModelClient();
         final traces = <GenerationTraceEvent>[];
-        final result = await DeckGeneratorService(
+        final service = DeckGeneratorService(
           apiKey: 'deterministic-fake-key',
           modelClientFactory: (_) => client,
-        ).generate(request, onTrace: traces.add);
+        );
+        final planningStopwatch = Stopwatch()..start();
+        final planning = await service.plan(request, onTrace: traces.add);
+        planningStopwatch.stop();
+        expect(planning.success, isTrue, reason: planning.error);
+        final approvedPlan = planning.plan!;
+        final compositionStopwatch = Stopwatch()..start();
+        final result = await service.generateFromPlan(
+          request,
+          approvedPlan,
+          onTrace: traces.add,
+        );
+        compositionStopwatch.stop();
+        expect(
+          planningStopwatch.elapsed + compositionStopwatch.elapsed,
+          lessThanOrEqualTo(WizardGenerationController.generationBudget),
+        );
 
         expect(
           result.success,
@@ -231,6 +248,18 @@ void main() {
           await File(
             p.join(output.path, 'request.json'),
           ).writeAsString(encoder.convert(request.toMap()));
+          await File(
+            p.join(output.path, 'approved_outline.json'),
+          ).writeAsString(encoder.convert(approvedPlan));
+          await File(p.join(output.path, 'timing.json')).writeAsString(
+            encoder.convert({
+              'planningMs': planningStopwatch.elapsedMilliseconds,
+              'compositionMs': compositionStopwatch.elapsedMilliseconds,
+              'combinedGenerationMs':
+                  planningStopwatch.elapsedMilliseconds +
+                  compositionStopwatch.elapsedMilliseconds,
+            }),
+          );
           await File(
             p.join(output.path, 'deck.json'),
           ).writeAsString(encoder.convert(deckJson));
@@ -416,12 +445,45 @@ void main() {
           ).readAsString();
           final service = DeckGeneratorService(apiKey: _apiKey);
           request = _requestForFixture(fixture, brief);
-          final result = await service.generate(request, onTrace: traces.add);
+          final planningStopwatch = Stopwatch()..start();
+          final planning = await service.plan(request, onTrace: traces.add);
+          planningStopwatch.stop();
+          expect(planning.success, isTrue, reason: planning.error);
+          final approvedPlan = planning.plan!;
+          final compositionStopwatch = Stopwatch()..start();
+          final result = await service.generateFromPlan(
+            request,
+            approvedPlan,
+            onTrace: traces.add,
+          );
+          compositionStopwatch.stop();
+          expect(
+            planningStopwatch.elapsed + compositionStopwatch.elapsed,
+            lessThanOrEqualTo(WizardGenerationController.generationBudget),
+            reason: 'Split generation exceeded the 30-second booth budget.',
+          );
           output = await _createRunDirectory(fixture);
 
           await File(p.join(output.path, 'brief.txt')).writeAsString(brief);
           await File(p.join(output.path, 'request.json')).writeAsString(
             const JsonEncoder.withIndent('  ').convert(request.toMap()),
+          );
+          await File(
+            p.join(output.path, 'approved_outline.json'),
+          ).writeAsString(
+            const JsonEncoder.withIndent('  ').convert(approvedPlan),
+          );
+          await File(p.join(output.path, 'timing.json')).writeAsString(
+            const JsonEncoder.withIndent('  ').convert({
+              'planningMs': planningStopwatch.elapsedMilliseconds,
+              'compositionMs': compositionStopwatch.elapsedMilliseconds,
+              'combinedGenerationMs':
+                  planningStopwatch.elapsedMilliseconds +
+                  compositionStopwatch.elapsedMilliseconds,
+              'withinThirtySecondTarget':
+                  planningStopwatch.elapsed + compositionStopwatch.elapsed <=
+                  WizardGenerationController.generationBudget,
+            }),
           );
           await File(p.join(output.path, 'trace.json')).writeAsString(
             const JsonEncoder.withIndent(

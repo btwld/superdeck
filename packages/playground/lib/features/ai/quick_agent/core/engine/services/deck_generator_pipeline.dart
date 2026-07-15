@@ -233,18 +233,29 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       slideCount: plan.slides.length,
     );
 
+    var completedSections = 0;
     final sectionResults = await Future.wait([
       for (final (sectionIndex, section) in plan.sections.indexed)
-        _composeSection(
-          executor: executor,
-          originalPrompt: prompt,
-          plan: plan,
-          section: section,
-          sectionIndex: sectionIndex,
-          request: request,
-          trace: trace,
-          onProgress: onProgress,
-        ),
+        () async {
+          final result = await _composeSection(
+            executor: executor,
+            originalPrompt: prompt,
+            plan: plan,
+            section: section,
+            sectionIndex: sectionIndex,
+            request: request,
+            trace: trace,
+          );
+          completedSections++;
+          onProgress?.call(
+            GenerationProgress(
+              GenerationPhase.composingSlides,
+              sectionIndex: completedSections,
+              sectionCount: plan.sections.length,
+            ),
+          );
+          return result;
+        }(),
     ]);
     if (isCancelled?.call() ?? false) return null;
 
@@ -271,7 +282,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     required int sectionIndex,
     required DeckGenerationRequest request,
     required GenerationTraceEmitter trace,
-    required GenerationProgressCallback? onProgress,
   }) async {
     final plannedSlides = [
       for (final slide in plan.slides)
@@ -291,13 +301,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         ? plan.slides[lastIndex + 1]
         : null;
 
-    onProgress?.call(
-      GenerationProgress(
-        GenerationPhase.composingSlides,
-        sectionIndex: sectionIndex + 1,
-        sectionCount: plan.sections.length,
-      ),
-    );
     final systemPrompt = _promptProvider.buildSectionPrompt(
       plan: plan,
       section: section,
@@ -588,10 +591,18 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     DeckGenerationRequest request,
     GenerationTraceEmitter trace,
     GenerationProgressCallback? onProgress,
-    bool Function()? isCancelled,
-  ) async {
+    bool Function()? isCancelled, {
+    // Passed by retryFailedSlides from another part of this library.
+    // ignore: avoid-never-passed-parameters
+    Set<String>? targetSlideKeys,
+    // ignore: avoid-never-passed-parameters
+    Map<String, Map<String, dynamic>> existingSlidesByKey = const {},
+  }) async {
     final slides = <Map<String, dynamic>>[];
     final failures = <SlideGenerationFailure>[];
+    final availableSlidesByKey = Map<String, Map<String, dynamic>>.of(
+      existingSlidesByKey,
+    );
     trace.emit(
       kind: GenerationTraceKind.phaseStarted,
       phase: GenerationTracePhase.slide,
@@ -601,9 +612,17 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     for (var index = 0; index < plan.slides.length; index++) {
       if (isCancelled?.call() ?? false) return null;
       final current = plan.slides[index];
+      if (targetSlideKeys != null && !targetSlideKeys.contains(current.key)) {
+        continue;
+      }
       final next = index + 1 < plan.slides.length
           ? plan.slides[index + 1]
           : null;
+      Map<String, dynamic>? previousSlide;
+      for (var previousIndex = index - 1; previousIndex >= 0; previousIndex--) {
+        previousSlide = availableSlidesByKey[plan.slides[previousIndex].key];
+        if (previousSlide != null) break;
+      }
       Map<String, dynamic>? composed;
       var validationIssues = <GenerationValidationIssue>[];
       final repairConstraints = <GenerationValidationIssue>[];
@@ -634,7 +653,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             originalPrompt: prompt,
             plan: plan,
             current: current,
-            previousSlide: slides.lastOrNull,
+            previousSlide: previousSlide,
             next: next,
             validationIssues: repairConstraints,
             invalidSlide: composed,
@@ -768,6 +787,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         continue;
       }
       slides.add(canonicalSlide);
+      availableSlidesByKey[current.key] = canonicalSlide;
     }
 
     trace.emit(

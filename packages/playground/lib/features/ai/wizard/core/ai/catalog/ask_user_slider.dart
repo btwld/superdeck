@@ -51,7 +51,7 @@ final askUserSlider = typedCatalogItem<AskUserSliderType>(
           "component": "AskUserSlider",
           "question": "How many slides do you need?",
           "minValue": 5,
-          "maxValue": 25,
+          "maxValue": 20,
           "defaultValue": 10,
           "unit": "slides",
           "action": {"name": "submit_answer", "context": []}
@@ -316,11 +316,7 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
   }
 
   Map<String, dynamic> _buildActionContext() {
-    final unit = widget.data.unit ?? '';
-    return {
-      'value': _sliderValue,
-      'message': '$_sliderValue${unit.isNotEmpty ? ' $unit' : ''}',
-    };
+    return {'value': _sliderValue};
   }
 
   void _submitAction() => submitCatalogActionIfValid(

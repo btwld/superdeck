@@ -133,14 +133,19 @@ DeckGenerationResult _finalizeDeck(
         '(${slides.length - sanitizedSlides.length} removed)',
   );
 
-  if (sanitizedSlides.isEmpty && composition.failures.isEmpty) {
-    debugLog.error('DECK_GEN', 'No slides survived sanitization');
+  if (sanitizedSlides.isEmpty) {
+    final failureSummary = composition.failures.isEmpty
+        ? 'No slides generated.'
+        : 'No slides could be generated; '
+              '${composition.failures.length} '
+              '${composition.failures.length == 1 ? 'slide failed' : 'slides failed'}.';
+    debugLog.error('DECK_GEN', failureSummary);
     trace.emit(
       kind: GenerationTraceKind.validation,
       phase: GenerationTracePhase.finalize,
-      validationErrors: const ['No slides generated'],
+      validationErrors: [failureSummary],
     );
-    return DeckGenerationResult.failure('No slides generated');
+    return DeckGenerationResult.failure(failureSummary);
   }
 
   final expectedAcceptedCount =

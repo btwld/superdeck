@@ -201,6 +201,5 @@ Map<String, dynamic> buildThemeSelectionContext(
     WizardContextKeys.themeId: theme.id,
     WizardContextKeys.title: theme.title,
     WizardContextKeys.description: theme.description,
-    WizardContextKeys.message: theme.title,
   };
 }

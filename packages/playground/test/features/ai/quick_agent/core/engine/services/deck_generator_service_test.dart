@@ -18,6 +18,69 @@ import 'package:superdeck_core/superdeck_core.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('returns a failure when the model client cannot be created', () async {
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => throw StateError('client unavailable'),
+    );
+
+    final planning = await service.plan(
+      _request('Create one test slide.', slideCount: 1),
+    );
+
+    expect(planning.success, isFalse);
+    expect(planning.error, isNotEmpty);
+  });
+
+  test('plans and composes an approved outline in separate calls', () async {
+    final request = _request('Create one approved slide.', slideCount: 1);
+    final planningClient = _FakeGenerationModelClient([
+      _jsonResponse({
+        'topic': 'Approved outline',
+        'story': 'One clear idea becomes one focused slide.',
+        'theme': _testThemeSelection,
+        'slides': [_planSlide(key: 'approved')],
+      }),
+    ]);
+    final planningService = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => planningClient,
+    );
+
+    final planning = await planningService.plan(request);
+
+    expect(planning.success, isTrue);
+    expect(planning.plan, isNotNull);
+    expect(planningClient.requests, hasLength(1));
+    expect(planningClient.requests.single.model, 'models/gemini-3.5-flash');
+    expect(planningClient.isClosed, isTrue);
+
+    final compositionClient = _FakeGenerationModelClient([
+      _jsonResponse(
+        _generatedSlide(key: 'approved', title: 'Approved', style: 'content'),
+      ),
+    ]);
+    final compositionService = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => compositionClient,
+    );
+
+    final result = await compositionService.generateFromPlan(
+      request,
+      planning.plan!,
+    );
+
+    expect(result.success, isTrue);
+    expect(result.slides, hasLength(1));
+    expect(result.plan, same(planning.plan));
+    expect(compositionClient.requests, hasLength(1));
+    expect(
+      compositionClient.requests.single.model,
+      'models/gemini-3.1-flash-lite',
+    );
+    expect(compositionClient.isClosed, isTrue);
+  });
+
   test('rejects an outline that violates the typed request count', () async {
     final client = _FakeGenerationModelClient([
       _jsonResponse({
@@ -322,7 +385,6 @@ void main() {
       final invalidOpening = {
         ..._planSlide(key: 'opening'),
         'contentUnits': ['Start your free trial today'],
-        'treatment': 'data',
       };
       final invalidClosing = {
         ..._planSlide(key: 'closing'),
@@ -332,7 +394,7 @@ void main() {
         _jsonResponse({
           'topic': 'Layered plan repair',
           'story': 'Repair the global shape, then the remaining local copy.',
-          'theme': _testThemeSelection,
+          'theme': {..._testThemeSelection, 'id': 'unknown-theme'},
           'slides': [invalidOpening, invalidClosing],
         }),
         _jsonResponse({
@@ -928,6 +990,64 @@ void main() {
     );
   });
 
+  test('retries only failed slides and restores the original order', () async {
+    final initialClient = _FakeGenerationModelClient([
+      _jsonResponse({
+        'topic': 'Targeted retry',
+        'story': 'Keep accepted work and replace only one failed slide.',
+        'theme': _testThemeSelection,
+        'slides': [
+          _planSlide(key: 'opening', composition: 'title'),
+          _planSlide(key: 'evidence'),
+          _planSlide(key: 'closing', composition: 'titleLeft'),
+        ],
+      }),
+      _jsonResponse(
+        _generatedSlide(key: 'opening', title: 'Start here', style: 'hero'),
+      ),
+      _jsonResponse({'key': 'evidence', 'sections': <Object?>[]}),
+      _jsonResponse({'key': 'evidence', 'sections': <Object?>[]}),
+      _jsonResponse(
+        _generatedSlide(key: 'closing', title: 'Take action', style: 'closing'),
+      ),
+    ]);
+    final request = _request('Create a resilient deck.', slideCount: 3);
+    final partial = await DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => initialClient,
+    ).generate(request);
+    expect(partial.isPartial, isTrue);
+
+    final retryClient = _FakeGenerationModelClient([
+      _jsonResponse(
+        _generatedSlide(
+          key: 'evidence',
+          title: 'The evidence',
+          style: 'content',
+        ),
+      ),
+    ]);
+    final recovered = await DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => retryClient,
+    ).retryFailedSlides(request, partial);
+
+    expect(recovered.success, isTrue, reason: recovered.error);
+    expect(recovered.slides.map((slide) => slide.key), [
+      'opening',
+      'evidence',
+      'closing',
+    ]);
+    expect(recovered.slides.first.toMap(), partial.slides.first.toMap());
+    expect(recovered.slides.last.toMap(), partial.slides.last.toMap());
+    expect(retryClient.requests, hasLength(1));
+    expect(retryClient.requests.single.model, 'models/gemini-3.1-flash-lite');
+    expect(
+      retryClient.requests.single.systemInstruction!.parts.single.text,
+      contains('Start here'),
+    );
+  });
+
   test('uses one targeted semantic repair per slide by default', () async {
     final client = _FakeGenerationModelClient([
       _jsonResponse({
@@ -1275,9 +1395,9 @@ void main() {
     );
 
     expect(result.success, isFalse);
-    expect(result.isPartial, isTrue);
-    expect(result.error, contains('Connection issue'));
-    expect(result.slideFailures.single.slideKey, 'intro');
+    expect(result.isPartial, isFalse);
+    expect(result.slides, isEmpty);
+    expect(result.error, contains('No slides could be generated'));
     expect(client.requestCount, 3);
   });
 }

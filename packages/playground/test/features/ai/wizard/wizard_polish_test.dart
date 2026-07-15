@@ -8,7 +8,6 @@ import 'package:playground/features/ai/wizard/chat/view/widgets/chat_genui_panel
 import 'package:playground/features/ai/wizard/core/ai/catalog/ask_user_question_cards.dart';
 import 'package:playground/features/ai/wizard/core/ai/catalog/ask_user_slider.dart';
 import 'package:playground/features/ai/wizard/core/ai/catalog/catalog_question_step.dart';
-import 'package:playground/features/ai/wizard/core/ai/catalog/summary_card.dart';
 import 'package:playground/features/ai/wizard/core/utils/color_utils.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_generation_status.dart';
 
@@ -150,22 +149,30 @@ void main() {
   ) async {
     await tester.pumpWidget(
       host(
-        const WizardGenerationStatus(
+        WizardGenerationStatus(
           kind: WizardGenerationStatusKind.running,
-          progress: GenerationProgress(
+          progress: const GenerationProgress(
             GenerationPhase.composingSlides,
             sectionIndex: 2,
             sectionCount: 4,
           ),
+          onCancel: () {},
         ),
       ),
     );
 
     expect(find.text('Building your presentation'), findsOneWidget);
-    expect(find.text('Composing section 2 of 4…'), findsOneWidget);
+    expect(find.text('Composed section 2 of 4…'), findsOneWidget);
     expect(find.text('Shape the story'), findsOneWidget);
     expect(find.text('Compose the slides'), findsOneWidget);
     expect(find.text('Polish the deck'), findsOneWidget);
+    expect(find.text('Usually 20–30 seconds'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    final indicator = tester.widget<LinearProgressIndicator>(
+      find.byType(LinearProgressIndicator),
+    );
+    expect(indicator.value, isNotNull);
+    expect(indicator.value, greaterThan(0));
   });
 
   testWidgets('generation failure keeps a path back to the deck plan', (
@@ -173,9 +180,12 @@ void main() {
   ) async {
     await tester.pumpWidget(
       host(
-        const WizardGenerationStatus(
+        WizardGenerationStatus(
           kind: WizardGenerationStatusKind.failed,
+          planAvailable: true,
           errorMessage: 'The service did not return valid slide JSON.',
+          onRetry: () {},
+          onBack: () {},
         ),
       ),
     );
@@ -185,7 +195,8 @@ void main() {
       find.text('The service did not return valid slide JSON.'),
       findsOneWidget,
     );
-    expect(find.text('Back to deck plan'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
+    expect(find.text('Edit outline'), findsOneWidget);
   });
 
   testWidgets('partial generation completes with a visible warning', (
@@ -193,52 +204,30 @@ void main() {
   ) async {
     await tester.pumpWidget(
       host(
-        const WizardGenerationStatus(
+        WizardGenerationStatus(
           kind: WizardGenerationStatusKind.completed,
           noticeMessage: 'Generated 11 of 12 slides; one slide was skipped.',
+          slideCount: 11,
+          failedSlideCount: 1,
+          elapsed: const Duration(seconds: 24),
+          onRetryFailed: () {},
+          onPresent: () {},
+          onEditOutline: () {},
+          onStartOver: () {},
         ),
       ),
     );
 
-    expect(find.text('Your presentation is ready'), findsOneWidget);
+    expect(find.text('Your presentation is almost ready'), findsOneWidget);
     expect(
       find.text('Generated 11 of 12 slides; one slide was skipped.'),
       findsOneWidget,
     );
-    expect(find.text('Back to deck plan'), findsOneWidget);
-  });
-
-  testWidgets('summary ends with a sentence-case generation action', (
-    tester,
-  ) async {
-    final items = [
-      SummaryItemType.parse({
-        'kind': 'text',
-        'label': 'Audience',
-        'title': 'Executive leadership',
-        'description': 'Decisive and concise',
-      }),
-      SummaryItemType.parse({
-        'kind': 'text',
-        'label': 'Length',
-        'text': '12 slides',
-      }),
-    ];
-
-    await tester.pumpWidget(
-      host(
-        SummaryCard(
-          title: 'Your deck plan',
-          items: items,
-          themeCatalog: PresentationThemeCatalog.withDefaults(),
-        ),
-      ),
-    );
-
-    expect(find.text('Your deck plan'), findsOneWidget);
-    expect(find.text('Audience'), findsOneWidget);
-    expect(find.text('12 slides'), findsOneWidget);
-    expect(find.text('Generate slides'), findsOneWidget);
+    expect(find.text('11 slides • 24s'), findsOneWidget);
+    expect(find.text('Present deck'), findsOneWidget);
+    expect(find.text('Retry 1 slide'), findsOneWidget);
+    expect(find.text('Edit outline'), findsOneWidget);
+    expect(find.text('Start over'), findsOneWidget);
   });
 
   testWidgets('deck length uses a counter and useful presets', (tester) async {
