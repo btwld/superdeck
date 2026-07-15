@@ -39,6 +39,11 @@ lib/
 fvm flutter run -d macos -t lib/main.dart --dart-define-from-file=../../.env
 ```
 
+Add `--dart-define=SUPERDECK_DEBUG_LAYOUT=true` to show the slide layout
+overlay: magenta sections, cyan block allocations, orange margin edges, and
+green padding/content edges. The flag is preserved when Playground themes or
+typography settings change.
+
 Set `GOOGLE_AI_API_KEY` in the ignored repository-root `.env` file. Flutter
 does not load `.env` automatically; the define-file flag injects it at build
 time. The Wizard shows a configuration error immediately when the key is
@@ -106,6 +111,10 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
   --dart-define=LIVE_ARTIFACT=test_live/ai_generation/artifacts/<artifact-directory> \
   --reporter expanded
 ```
+
+Add `--dart-define=LIVE_DEBUG_LAYOUT=true` to include the section, block,
+margin, and padding guides in the recaptured slide PNGs and contact sheet.
+Normal captures remain clean by default.
 
 In debug builds, open `/debug/generation` to exercise the same production
 pipeline interactively with the three fixtures.

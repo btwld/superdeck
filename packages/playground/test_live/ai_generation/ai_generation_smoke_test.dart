@@ -41,6 +41,7 @@ const _selectedFixture = String.fromEnvironment(
   defaultValue: 'all',
 );
 const _artifactPath = String.fromEnvironment('LIVE_ARTIFACT');
+const _includeDebugLayout = bool.fromEnvironment('LIVE_DEBUG_LAYOUT');
 const _renderThemeQualification = bool.fromEnvironment(
   'LIVE_THEME_QUALIFICATION',
 );
@@ -891,6 +892,7 @@ Future<_CaptureResult> _captureSlides({
               quality: SlideCaptureQuality.good,
               slide: configuration,
               context: context,
+              includeDebugLayout: _includeDebugLayout,
             )
             .timeout(const Duration(seconds: 45));
         final file = File(

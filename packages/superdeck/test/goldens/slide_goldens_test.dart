@@ -239,6 +239,55 @@ Author text in the second column.
     },
     tags: ['ci-excluded', 'golden'],
   );
+
+  testWidgets(
+    'debug layout shows sections, blocks, margin, and padding',
+    (tester) async {
+      await _pumpGoldenSlide(
+        tester,
+        Slide(
+          key: 'golden-debug-layout',
+          sections: [
+            SectionBlock([
+              ContentBlock(
+                '### First block\n\nBoth insets are visible.',
+                margin: BlockInsets.all(16),
+                padding: BlockInsets.all(32),
+              ),
+              ContentBlock(
+                '### Second block\n\nDifferent insets.',
+                margin: BlockInsets.symmetric(horizontal: 28, vertical: 12),
+                padding: BlockInsets.symmetric(horizontal: 40, vertical: 24),
+              ),
+            ], spacing: 24),
+            SectionBlock([
+              ContentBlock(
+                '### Second section\n\nOutlined independently.',
+                margin: BlockInsets.symmetric(horizontal: 48, vertical: 20),
+                padding: BlockInsets.all(36),
+              ),
+            ]),
+          ],
+        ),
+        debug: true,
+      );
+
+      expect(find.textContaining('SECTION 1'), findsOneWidget);
+      expect(find.textContaining('SECTION 2'), findsOneWidget);
+      expect(find.textContaining('BLOCK 1'), findsNWidgets(2));
+      expect(find.textContaining('BLOCK 2'), findsOneWidget);
+      expect(find.text('SECTION'), findsOneWidget);
+      expect(find.text('BLOCK'), findsOneWidget);
+      expect(find.text('MARGIN'), findsOneWidget);
+      expect(find.text('PADDING'), findsOneWidget);
+
+      await expectLater(
+        find.byType(SlideView),
+        matchesGoldenFile('debug_layout_overlay.png'),
+      );
+    },
+    tags: ['ci-excluded', 'golden'],
+  );
 }
 
 Future<void> _pumpGoldenSlide(
@@ -246,6 +295,7 @@ Future<void> _pumpGoldenSlide(
   Slide slide, {
   SlideStyler? style,
   SlideParts? parts,
+  bool debug = false,
 }) async {
   tester.view.physicalSize = kResolution;
   tester.view.devicePixelRatio = 1.0;
@@ -256,6 +306,7 @@ Future<void> _pumpGoldenSlide(
     slide,
     style: style == null ? null : defaultSlideStyle.merge(style),
     widgets: builtInWidgets,
+    debug: debug,
     parts:
         parts ??
         const SlideParts(background: ColoredBox(color: Color(0xFF090909))),

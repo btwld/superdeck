@@ -55,6 +55,7 @@ final class GeneratedDeckThemeFactory {
     required PresentationTextStyles text,
     required String density,
     required PresentationThemeRuntimeRecipe runtime,
+    bool debug = false,
   }) {
     final borderColor = Color.lerp(palette.surface, palette.body, 0.4)!;
     final tableFontSize = text.body.fontSize! > 20 ? 20.0 : text.body.fontSize!;
@@ -141,6 +142,7 @@ final class GeneratedDeckThemeFactory {
     };
 
     return DeckOptions(
+      debug: debug,
       baseStyle: baseStyle,
       styles: styles,
       parts: SlideParts(

@@ -31,6 +31,23 @@ void main() {
     expect(controller.options.value.baseStyle, isNotNull);
   });
 
+  test('preserves the deck debug flag through theme updates', () {
+    final controller = DeckController(
+      deckLoader: MemoryDeckLoader(),
+      options: DeckOptions(debug: true),
+    );
+    addTearDown(controller.dispose);
+
+    final store = DeckCustomizationStore(controller);
+    addTearDown(store.dispose);
+
+    expect(controller.options.value.debug, isTrue);
+
+    store.setSize(TextLevel.h1, 64);
+
+    expect(controller.options.value.debug, isTrue);
+  });
+
   test('mutations push new options and notify once', () {
     final controller = newController();
     addTearDown(controller.dispose);

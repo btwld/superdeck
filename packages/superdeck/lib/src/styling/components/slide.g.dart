@@ -21,6 +21,7 @@ mixin _$SlideSpec implements Spec<SlideSpec>, Diagnosticable {
   TextStyle? get img;
   TextStyle? get link;
   TextScaler? get textScaleFactor;
+  double? get blockSpacing;
   StyleSpec<MarkdownAlertSpec> get alert;
   BoxDecoration? get horizontalRuleDecoration;
   StyleSpec<MarkdownBlockquoteSpec>? get blockquote;
@@ -51,6 +52,7 @@ mixin _$SlideSpec implements Spec<SlideSpec>, Diagnosticable {
     TextStyle? img,
     TextStyle? link,
     TextScaler? textScaleFactor,
+    double? blockSpacing,
     StyleSpec<MarkdownAlertSpec>? alert,
     BoxDecoration? horizontalRuleDecoration,
     StyleSpec<MarkdownBlockquoteSpec>? blockquote,
@@ -77,6 +79,7 @@ mixin _$SlideSpec implements Spec<SlideSpec>, Diagnosticable {
       img: img ?? this.img,
       link: link ?? this.link,
       textScaleFactor: textScaleFactor ?? this.textScaleFactor,
+      blockSpacing: blockSpacing ?? this.blockSpacing,
       alert: alert ?? this.alert,
       horizontalRuleDecoration:
           horizontalRuleDecoration ?? this.horizontalRuleDecoration,
@@ -112,6 +115,7 @@ mixin _$SlideSpec implements Spec<SlideSpec>, Diagnosticable {
         other?.textScaleFactor,
         t,
       ),
+      blockSpacing: MixOps.lerp(blockSpacing, other?.blockSpacing, t),
       alert: alert.lerp(other?.alert, t),
       horizontalRuleDecoration: MixOps.lerp(
         horizontalRuleDecoration,
@@ -145,6 +149,7 @@ mixin _$SlideSpec implements Spec<SlideSpec>, Diagnosticable {
     img,
     link,
     textScaleFactor,
+    blockSpacing,
     alert,
     horizontalRuleDecoration,
     blockquote,
@@ -211,6 +216,7 @@ mixin _$SlideSpec implements Spec<SlideSpec>, Diagnosticable {
       ..add(DiagnosticsProperty('img', img))
       ..add(DiagnosticsProperty('link', link))
       ..add(DiagnosticsProperty('textScaleFactor', textScaleFactor))
+      ..add(DoubleProperty('blockSpacing', blockSpacing))
       ..add(DiagnosticsProperty('alert', alert))
       ..add(
         DiagnosticsProperty(
@@ -253,6 +259,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
   final Prop<TextStyle>? $img;
   final Prop<TextStyle>? $link;
   final Prop<TextScaler>? $textScaleFactor;
+  final Prop<double>? $blockSpacing;
   final Prop<StyleSpec<MarkdownAlertSpec>>? $alert;
   final Prop<BoxDecoration>? $horizontalRuleDecoration;
   final Prop<StyleSpec<MarkdownBlockquoteSpec>>? $blockquote;
@@ -279,6 +286,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
     Prop<TextStyle>? img,
     Prop<TextStyle>? link,
     Prop<TextScaler>? textScaleFactor,
+    Prop<double>? blockSpacing,
     Prop<StyleSpec<MarkdownAlertSpec>>? alert,
     Prop<BoxDecoration>? horizontalRuleDecoration,
     Prop<StyleSpec<MarkdownBlockquoteSpec>>? blockquote,
@@ -306,6 +314,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
        $img = img,
        $link = link,
        $textScaleFactor = textScaleFactor,
+       $blockSpacing = blockSpacing,
        $alert = alert,
        $horizontalRuleDecoration = horizontalRuleDecoration,
        $blockquote = blockquote,
@@ -332,6 +341,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
     TextStyleMix? img,
     TextStyleMix? link,
     TextScaler? textScaleFactor,
+    double? blockSpacing,
     MarkdownAlertStyler? alert,
     BoxDecoration? horizontalRuleDecoration,
     MarkdownBlockquoteStyler? blockquote,
@@ -360,6 +370,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
          img: Prop.maybeMix(img),
          link: Prop.maybeMix(link),
          textScaleFactor: Prop.maybe(textScaleFactor),
+         blockSpacing: Prop.maybe(blockSpacing),
          alert: Prop.maybeMix(alert),
          horizontalRuleDecoration: Prop.maybe(horizontalRuleDecoration),
          blockquote: Prop.maybeMix(blockquote),
@@ -390,6 +401,8 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
   factory SlideStyler.link(TextStyleMix value) => SlideStyler().link(value);
   factory SlideStyler.textScaleFactor(TextScaler value) =>
       SlideStyler().textScaleFactor(value);
+  factory SlideStyler.blockSpacing(double value) =>
+      SlideStyler().blockSpacing(value);
   factory SlideStyler.alert(MarkdownAlertStyler value) =>
       SlideStyler().alert(value);
   factory SlideStyler.horizontalRuleDecoration(BoxDecoration value) =>
@@ -478,6 +491,11 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
   /// Sets the textScaleFactor.
   SlideStyler textScaleFactor(TextScaler value) {
     return merge(SlideStyler(textScaleFactor: value));
+  }
+
+  /// Sets the blockSpacing.
+  SlideStyler blockSpacing(double value) {
+    return merge(SlideStyler(blockSpacing: value));
   }
 
   /// Sets the alert.
@@ -571,6 +589,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
       img: MixOps.merge($img, other?.$img),
       link: MixOps.merge($link, other?.$link),
       textScaleFactor: MixOps.merge($textScaleFactor, other?.$textScaleFactor),
+      blockSpacing: MixOps.merge($blockSpacing, other?.$blockSpacing),
       alert: MixOps.merge($alert, other?.$alert),
       horizontalRuleDecoration: MixOps.merge(
         $horizontalRuleDecoration,
@@ -608,6 +627,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
       img: MixOps.resolve(context, $img),
       link: MixOps.resolve(context, $link),
       textScaleFactor: MixOps.resolve(context, $textScaleFactor),
+      blockSpacing: MixOps.resolve(context, $blockSpacing),
       alert: MixOps.resolve(context, $alert),
       horizontalRuleDecoration: MixOps.resolve(
         context,
@@ -648,6 +668,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
       ..add(DiagnosticsProperty('img', $img))
       ..add(DiagnosticsProperty('link', $link))
       ..add(DiagnosticsProperty('textScaleFactor', $textScaleFactor))
+      ..add(DiagnosticsProperty('blockSpacing', $blockSpacing))
       ..add(DiagnosticsProperty('alert', $alert))
       ..add(
         DiagnosticsProperty(
@@ -681,6 +702,7 @@ class SlideStyler extends MixStyler<SlideStyler, SlideSpec> {
     $img,
     $link,
     $textScaleFactor,
+    $blockSpacing,
     $alert,
     $horizontalRuleDecoration,
     $blockquote,
