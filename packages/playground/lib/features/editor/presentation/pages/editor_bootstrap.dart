@@ -31,19 +31,11 @@ class EditorBootstrap extends StatefulWidget {
 
 class _EditorBootstrapState extends State<EditorBootstrap> {
   late final DeckFileRepository _repository;
-  late Future<Result<DeckFileSnapshot>> _initialDeck;
   late final AppLifecycleListener _lifecycleListener;
+  late Future<Result<DeckFileSnapshot>> _initialDeck;
 
   DeckDocumentStore? _documentStore;
   DeckFileSession? _fileSession;
-
-  Future<AppExitResponse> _handleExitRequested() async {
-    final session = _fileSession;
-    if (session == null) return AppExitResponse.exit;
-    return await session.flushPendingSave()
-        ? AppExitResponse.exit
-        : AppExitResponse.cancel;
-  }
 
   @override
   void initState() {
@@ -55,51 +47,12 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
     );
   }
 
-  @override
-  void dispose() {
-    _lifecycleListener.dispose();
+  Future<AppExitResponse> _handleExitRequested() async {
     final session = _fileSession;
-    if (session != null) {
-      session.dispose();
-    } else {
-      // A successful load retains a bookmark. If the widget goes away before
-      // the route scope mounts, release that unclaimed reference once ready.
-      unawaited(_releaseUnclaimedInitialDeck());
-    }
-    _documentStore?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Result<DeckFileSnapshot>>(
-      future: _initialDeck,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return _BootstrapMessage(
-            child: SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: $accent.resolve(context),
-              ),
-            ),
-          );
-        }
-        if (snapshot.hasError) {
-          return _buildFailure(snapshot.error!);
-        }
-
-        final result = snapshot.requireData;
-        switch (result) {
-          case Failure(:final error):
-            return _buildFailure(error);
-          case Ok(:final value):
-            return _buildEditor(value);
-        }
-      },
-    );
+    if (session == null) return AppExitResponse.exit;
+    return await session.flushPendingSave()
+        ? AppExitResponse.exit
+        : AppExitResponse.cancel;
   }
 
   Widget _buildEditor(DeckFileSnapshot snapshot) {
@@ -130,6 +83,8 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
           create: (ctx) => GenerateDeckCommand(
             documentStore: ctx.read<DeckDocumentStore>(),
             customizationStore: ctx.read<DeckCustomizationStore>(),
+            deckLoader: ctx.read<MemoryDeckLoader>(),
+            assetCacheStore: ctx.read(),
           ),
           dispose: (_, command) => command.dispose(),
         ),
@@ -178,6 +133,53 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
     } catch (_) {
       // Bootstrap errors do not retain a usable bookmark.
     }
+  }
+
+  @override
+  void dispose() {
+    _lifecycleListener.dispose();
+    final session = _fileSession;
+    if (session != null) {
+      session.dispose();
+    } else {
+      // A successful load retains a bookmark. If the widget goes away before
+      // the route scope mounts, release that unclaimed reference once ready.
+      unawaited(_releaseUnclaimedInitialDeck());
+    }
+    _documentStore?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Result<DeckFileSnapshot>>(
+      future: _initialDeck,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return _BootstrapMessage(
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: $accent.resolve(context),
+              ),
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return _buildFailure(snapshot.error!);
+        }
+
+        final result = snapshot.requireData;
+        switch (result) {
+          case Failure(:final error):
+            return _buildFailure(error);
+          case Ok(:final value):
+            return _buildEditor(value);
+        }
+      },
+    );
   }
 }
 

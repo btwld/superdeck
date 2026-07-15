@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
+import 'package:playground/features/ai/image_generation/image_generator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_model_client.dart';
@@ -79,6 +80,132 @@ void main() {
       'models/gemini-3.1-flash-lite',
     );
     expect(compositionClient.isClosed, isTrue);
+  });
+
+  test('generates planned artwork before composing its image block', () async {
+    final client = _FakeGenerationModelClient([
+      _jsonResponse({
+        'topic': 'Visual story',
+        'story': 'One strong visual anchors one clear idea.',
+        'theme': _testThemeSelection,
+        'slides': [
+          _planSlide(
+            key: 'visual',
+            composition: 'imageFullBleed',
+            elements: const [
+              {
+                'type': 'image',
+                'purpose': 'Make the central idea tangible',
+                'generationPrompt': 'a luminous city garden at sunrise',
+              },
+            ],
+          ),
+        ],
+      }),
+      _jsonResponse({
+        'key': 'visual',
+        'options': {'style': 'visual'},
+        'sections': [
+          {
+            'type': 'section',
+            'blocks': [
+              {
+                'type': 'widget',
+                'name': 'image',
+                'args': {'fit': 'cover'},
+              },
+            ],
+          },
+        ],
+      }),
+    ]);
+    final imageGenerator = _RecordingImageGenerator();
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      imageGenerator: imageGenerator,
+      assetRunIdFactory: () => 'test-run',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      const DeckGenerationRequest(
+        userIntent: 'Create one visual slide.',
+        slideCount: 1,
+        imageStyleId: 'minimalist',
+        imageStyleVersion: 1,
+      ),
+    );
+
+    expect(result.success, isTrue);
+    expect(result.generatedImages, hasLength(1));
+    expect(result.generatedImages.single.bytes, isNotEmpty);
+    expect(result.generatedImageCount, 1);
+    expect(result.failedImageCount, 0);
+    expect(result.hasImageFailures, isFalse);
+    expect(
+      result.plan!.slides.single.elements!.single.source,
+      'wizard-test-run-slide-01-visual.png',
+    );
+    final widget = result.slides.single.sections.single.blocks.single;
+    expect(widget, isA<WidgetBlock>());
+    expect(
+      (widget as WidgetBlock).args['src'],
+      'wizard-test-run-slide-01-visual.png',
+    );
+  });
+
+  test('keeps the deck valid when planned artwork fails', () async {
+    final client = _FakeGenerationModelClient([
+      _jsonResponse({
+        'topic': 'Resilient visual story',
+        'story': 'The core message survives an unavailable visual.',
+        'theme': _testThemeSelection,
+        'slides': [
+          _planSlide(
+            key: 'fallback',
+            composition: 'imageRight',
+            elements: const [
+              {
+                'type': 'image',
+                'purpose': 'Support the central idea',
+                'generationPrompt': 'a thriving rooftop garden at sunrise',
+              },
+            ],
+          ),
+        ],
+      }),
+      _jsonResponse(
+        _generatedSlide(
+          key: 'fallback',
+          title: 'The story still works',
+          style: 'content',
+        ),
+      ),
+    ]);
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      imageGenerator: const UnavailableImageGenerator('provider unavailable'),
+      assetRunIdFactory: () => 'failed-run',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.generate(
+      const DeckGenerationRequest(
+        userIntent: 'Create one resilient visual slide.',
+        slideCount: 1,
+        imageStyleId: 'minimalist',
+        imageStyleVersion: 1,
+      ),
+    );
+
+    expect(result.success, isTrue);
+    expect(result.generatedImages.single.error, 'provider unavailable');
+    expect(result.generatedImageCount, 0);
+    expect(result.failedImageCount, 1);
+    expect(result.hasImageFailures, isTrue);
+    expect(result.plan!.slides.single.elements, isEmpty);
+    expect(result.plan!.slides.single.composition, 'content');
+    expect(result.slides, hasLength(1));
   });
 
   test('rejects an outline that violates the typed request count', () async {
@@ -1534,6 +1661,16 @@ final class _FakeGenerationModelClient implements GenerationModelClient {
     requests.add(request);
     onRequest?.call(requests.length);
     return _responses.removeFirst();
+  }
+}
+
+final class _RecordingImageGenerator implements ImageGenerator {
+  final requests = <ImageGenerationRequest>[];
+
+  @override
+  Future<ImageGenerationResult> generate(ImageGenerationRequest request) async {
+    requests.add(request);
+    return ImageGenerationSuccess([1, 2, 3]);
   }
 }
 

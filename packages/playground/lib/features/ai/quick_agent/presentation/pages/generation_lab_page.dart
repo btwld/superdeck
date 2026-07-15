@@ -82,6 +82,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   Widget build(BuildContext context) {
     if (!kDebugMode) return const SizedBox.shrink();
     final result = _result;
+
     return Scaffold(
       appBar: AppBar(title: const Text('AI generation lab')),
       body: ListView(

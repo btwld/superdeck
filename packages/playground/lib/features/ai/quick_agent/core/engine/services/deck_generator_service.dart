@@ -5,8 +5,11 @@ import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
 import 'package:superdeck_core/superdeck_core.dart';
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../../../../../core/domain/design/presentation_typography_catalog.dart';
+import '../../../../../../core/domain/generated_image_asset.dart';
+import '../../../../image_generation/image_generator.dart';
 import '../prompts/generation_prompt_provider.dart';
 import '../schemas/outline_schema.dart';
 import 'deck_generation_request.dart';
@@ -28,22 +31,23 @@ import '../../constants/gemini_models.dart';
 import '../../debug_logger.dart';
 
 part 'deck_generator_pipeline.dart';
+part 'deck_generator_images.dart';
 part 'deck_plan_repair.dart';
 part 'deck_generator_workflow.dart';
 
 /// One slide slot that could not be composed into a valid canonical slide.
 final class SlideGenerationFailure {
+  final int slideIndex;
+
+  final String slideKey;
+  final List<GenerationValidationIssue> issues;
+  final bool retryable;
   const SlideGenerationFailure({
     required this.slideIndex,
     required this.slideKey,
     required this.issues,
     this.retryable = true,
   });
-
-  final int slideIndex;
-  final String slideKey;
-  final List<GenerationValidationIssue> issues;
-  final bool retryable;
 
   String get message => issues.messages.join(' ');
 
@@ -73,26 +77,36 @@ class DeckGenerationResult {
   /// Ordered slide slots that remain unresolved and can be retried.
   final List<SlideGenerationFailure> slideFailures;
 
+  /// Ordered final-artwork outcomes produced for this generation run.
+  ///
+  /// Failed outcomes are retained for diagnostics, while the validated plan
+  /// references only assets whose bytes are available.
+  final List<GeneratedImageAsset> generatedImages;
+
   const DeckGenerationResult._({
     required this.success,
     this.message,
     this.error,
     List<Slide>? slides,
     List<SlideGenerationFailure>? slideFailures,
+    List<GeneratedImageAsset>? generatedImages,
     this.theme,
     this.plan,
   }) : slides = slides ?? const [],
-       slideFailures = slideFailures ?? const [];
+       slideFailures = slideFailures ?? const [],
+       generatedImages = generatedImages ?? const [];
 
   DeckGenerationResult.success({
     required List<Slide> slides,
     required DeckPlanType plan,
     required ResolvedPresentationTheme theme,
+    List<GeneratedImageAsset> generatedImages = const [],
   }) : this._(
          success: true,
          message:
              'Successfully generated presentation with ${slides.length} slides.',
          slides: slides,
+         generatedImages: generatedImages,
          theme: theme,
          plan: plan,
        );
@@ -102,6 +116,7 @@ class DeckGenerationResult {
     required List<SlideGenerationFailure> slideFailures,
     required DeckPlanType plan,
     required ResolvedPresentationTheme theme,
+    List<GeneratedImageAsset> generatedImages = const [],
   }) : this._(
          success: false,
          error:
@@ -110,6 +125,7 @@ class DeckGenerationResult {
                  '(${failure.message})').join(', ')}.',
          slides: slides,
          slideFailures: slideFailures,
+         generatedImages: generatedImages,
          theme: theme,
          plan: plan,
        );
@@ -120,18 +136,32 @@ class DeckGenerationResult {
   /// Number of slides in the result.
   int get slideCount => slides.length;
 
+  int get generatedImageCount => generatedImages
+      .where((asset) => asset.bytes != null && asset.bytes!.isNotEmpty)
+      .length;
+
+  int get failedImageCount => generatedImages.length - generatedImageCount;
+
+  bool get hasImageFailures => failedImageCount > 0;
+
   bool get isPartial => plan != null && slideFailures.isNotEmpty;
 }
 
 final class _SlideCompositionResult {
-  const _SlideCompositionResult({required this.slides, required this.failures});
-
   final List<Map<String, dynamic>> slides;
+
   final List<SlideGenerationFailure> failures;
+  const _SlideCompositionResult({required this.slides, required this.failures});
 }
 
 /// Result of generating and validating the deck plan before slide composition.
 final class DeckPlanningResult {
+  final bool success;
+
+  final DeckPlanType? plan;
+
+  final String? error;
+
   const DeckPlanningResult._({required this.success, this.plan, this.error});
 
   const DeckPlanningResult.success(DeckPlanType plan)
@@ -139,10 +169,6 @@ final class DeckPlanningResult {
 
   const DeckPlanningResult.failure(String error)
     : this._(success: false, error: error);
-
-  final bool success;
-  final DeckPlanType? plan;
-  final String? error;
 }
 
 /// Service that generates SuperDeck presentations using Google Generative AI.
@@ -154,6 +180,12 @@ class DeckGeneratorService {
   final PresentationTypographyCatalog typographyCatalog;
 
   final PresentationThemeCatalog themeCatalog;
+
+  final PresentationImageStyleCatalog imageStyleCatalog;
+
+  /// Optional final-artwork provider. Missing providers degrade visual slides
+  /// to valid content layouts instead of failing the whole deck.
+  final ImageGenerator? imageGenerator;
 
   final String apiKey;
 
@@ -211,6 +243,8 @@ class DeckGeneratorService {
 
   final GenerationPromptProvider _promptProvider;
 
+  final String Function() _assetRunIdFactory;
+
   DeckGeneratorService({
     required this.apiKey,
     this.modelName = GeminiModelNames.gemini31FlashLite,
@@ -230,6 +264,9 @@ class DeckGeneratorService {
     GenerationElementCatalog? elementCatalog,
     PresentationTypographyCatalog? typographyCatalog,
     PresentationThemeCatalog? themeCatalog,
+    PresentationImageStyleCatalog? imageStyleCatalog,
+    this.imageGenerator,
+    String Function()? assetRunIdFactory,
   }) : assert(sectionBatchThreshold > 0),
        assert(maxOutlineValidationAttempts > 0),
        assert(maxOutlineSlideValidationAttempts > 0),
@@ -242,9 +279,67 @@ class DeckGeneratorService {
        typographyCatalog =
            typographyCatalog ?? PresentationTypographyCatalog.withDefaults(),
        themeCatalog = themeCatalog ?? PresentationThemeCatalog.withDefaults(),
+       imageStyleCatalog =
+           imageStyleCatalog ?? PresentationImageStyleCatalog.withDefaults(),
        _modelClientFactory =
            modelClientFactory ?? GoogleGenerationModelClient.fromApiKey,
-       _promptProvider = promptProvider ?? AssetGenerationPromptProvider();
+       _promptProvider = promptProvider ?? AssetGenerationPromptProvider(),
+       _assetRunIdFactory = assetRunIdFactory ?? _newAssetRunId;
+
+  String? _validateRequest(DeckGenerationRequest request) {
+    if (request.userIntent.trim().isEmpty) {
+      return 'Describe the presentation to create.';
+    }
+    if (request.slideCount < 1 || request.slideCount > 50) {
+      return 'Slide count must be between 1 and 50.';
+    }
+    if (request.maxGeneratedImages < 0 || request.maxGeneratedImages > 4) {
+      return 'Generated image count must be between 0 and 4.';
+    }
+    try {
+      request.resolveImageStyle(imageStyleCatalog);
+    } catch (error) {
+      return 'Image style selection is invalid: ${_argumentMessage(error)}';
+    }
+
+    return null;
+  }
+
+  List<PresentationThemeDescriptor> _themeCandidates(
+    DeckGenerationRequest request,
+  ) {
+    return themeCandidatesForRequest(
+      request: request,
+      themeCatalog: themeCatalog,
+      typographyCatalog: typographyCatalog,
+    );
+  }
+
+  GenerationModelCallExecutor _createExecutor({
+    required GenerationModelClient client,
+    required GenerationTraceEmitter trace,
+    required DeckGenerationRequest request,
+    required bool Function() isCancelled,
+  }) {
+    final repairBudget =
+        maxRepairRequests ?? _defaultRepairBudget(request.slideCount);
+    debugLog.log(
+      'DECK_GEN',
+      'Run budgets: repairs=$repairBudget, requests=$maxModelRequests, '
+          'timeout=${runTimeout.inSeconds}s',
+    );
+
+    return GenerationModelCallExecutor(
+      client: client,
+      retryPolicy: retryPolicy,
+      trace: trace,
+      requestTimeout: requestTimeout,
+      isCancelled: isCancelled,
+      maxModelRequests: maxModelRequests,
+      maxRepairRequests: repairBudget,
+      runTimeout: runTimeout,
+    );
+  }
 
   /// Generates and validates the shared deck plan without composing slides.
   Future<DeckPlanningResult> plan(
@@ -298,6 +393,7 @@ class DeckGeneratorService {
           'Failed to generate presentation outline. Please try again.',
         );
       }
+
       return DeckPlanningResult.success(outline);
     } on GenerationCancelledException {
       return const DeckPlanningResult.failure('Generation cancelled.');
@@ -308,6 +404,7 @@ class DeckGeneratorService {
         'Planning stopped after ${totalMs}ms: ${error.message}',
         stack,
       );
+
       return DeckPlanningResult.failure(error.message);
     } catch (error, stack) {
       final totalMs = DateTime.now().difference(pipelineStart).inMilliseconds;
@@ -316,6 +413,7 @@ class DeckGeneratorService {
         'Planning FAILED after ${totalMs}ms: $error',
         stack,
       );
+
       return DeckPlanningResult.failure(
         const ErrorClassifier().getUserMessage(error),
       );
@@ -338,6 +436,7 @@ class DeckGeneratorService {
     final planIssues = validateDeckPlanIssues(
       approvedPlan,
       typographyCatalog: typographyCatalog,
+      imageStyleCatalog: imageStyleCatalog,
       themeCatalog: themeCatalog,
       request: request,
     ).blockingIssues;
@@ -363,12 +462,23 @@ class DeckGeneratorService {
         isCancelled: generationCancelled,
       );
       await _promptProvider.load();
+      final images = await _runImagePhase(
+        this,
+        plan: approvedPlan,
+        request: request,
+        onProgress: onProgress,
+        trace: trace,
+        isCancelled: generationCancelled,
+      );
+      if (generationCancelled()) {
+        return DeckGenerationResult.failure('Generation cancelled.');
+      }
       final composition = await _runSlideCompositionPhase(
         this,
         executor: executor,
         prompt: modelInput,
         request: request,
-        outline: approvedPlan,
+        outline: images.plan,
         onProgress: onProgress,
         trace: trace,
         isCancelled: isCancelled,
@@ -381,10 +491,12 @@ class DeckGeneratorService {
           'Failed while composing presentation slides. Please try again.',
         );
       }
+
       return _finalizeDeck(
         this,
         composition: composition,
-        plan: approvedPlan,
+        plan: images.plan,
+        generatedImages: images.assets,
         pipelineStart: pipelineStart,
         onProgress: onProgress,
         isCancelled: isCancelled,
@@ -407,6 +519,7 @@ class DeckGeneratorService {
         'Composition FAILED after ${totalMs}ms: $error',
         stack,
       );
+
       return DeckGenerationResult.failure(
         const ErrorClassifier().getUserMessage(error),
       );
@@ -444,8 +557,13 @@ class DeckGeneratorService {
     final planIssues = validateDeckPlanIssues(
       plan,
       typographyCatalog: typographyCatalog,
+      imageStyleCatalog: imageStyleCatalog,
       themeCatalog: themeCatalog,
       request: request,
+      knownGeneratedAssetKeys: partialResult.generatedImages
+          .where((asset) => asset.bytes != null)
+          .map((asset) => asset.assetKey)
+          .toSet(),
     ).blockingIssues;
     if (planIssues.isNotEmpty) {
       return DeckGenerationResult.failure(
@@ -469,9 +587,7 @@ class DeckGeneratorService {
         isCancelled: generationCancelled,
       );
       await _promptProvider.load();
-      onProgress?.call(
-        const GenerationProgress(GenerationPhase.composingSlides),
-      );
+      onProgress?.call(const GenerationProgress(.composingSlides));
       final existingSlidesByKey = {
         for (final slide in partialResult.slides)
           slide.key: Map<String, dynamic>.of(slide.toMap()),
@@ -512,10 +628,12 @@ class DeckGeneratorService {
         ]),
         failures: List.unmodifiable(remainingFailures),
       );
+
       return _finalizeDeck(
         this,
         composition: merged,
         plan: plan,
+        generatedImages: partialResult.generatedImages,
         pipelineStart: pipelineStart,
         onProgress: onProgress,
         isCancelled: generationCancelled,
@@ -538,6 +656,7 @@ class DeckGeneratorService {
         'Targeted retry FAILED after ${totalMs}ms: $error',
         stack,
       );
+
       return DeckGenerationResult.failure(
         const ErrorClassifier().getUserMessage(error),
       );
@@ -551,9 +670,10 @@ class DeckGeneratorService {
   /// Contractual fields such as slide count and typography remain typed so they
   /// can be validated independently from the user's prose.
   ///
-  /// Uses a two-phase pipeline:
+  /// Uses a three-phase pipeline:
   /// 1. Plan the shared narrative and visual system.
-  /// 2. Compose and validate the slides from that plan, grouping larger decks
+  /// 2. Generate the bounded set of planned artwork concurrently.
+  /// 3. Compose and validate the slides from that plan, grouping larger decks
   ///    by narrative section for lower latency and stronger continuity.
   ///
   /// Progress updates are reported via [onProgress] if provided.
@@ -612,12 +732,23 @@ class DeckGeneratorService {
         );
       }
 
+      final images = await _runImagePhase(
+        this,
+        plan: outline,
+        request: request,
+        onProgress: onProgress,
+        trace: trace,
+        isCancelled: generationCancelled,
+      );
+      if (generationCancelled()) {
+        return cancelledResult();
+      }
       final composition = await _runSlideCompositionPhase(
         this,
         executor: executor,
         prompt: modelInput,
         request: request,
-        outline: outline,
+        outline: images.plan,
         onProgress: onProgress,
         trace: trace,
         isCancelled: isCancelled,
@@ -635,7 +766,8 @@ class DeckGeneratorService {
       return _finalizeDeck(
         this,
         composition: composition,
-        plan: outline,
+        plan: images.plan,
+        generatedImages: images.assets,
         pipelineStart: pipelineStart,
         onProgress: onProgress,
         isCancelled: isCancelled,
@@ -664,49 +796,13 @@ class DeckGeneratorService {
       client?.close();
     }
   }
+}
 
-  String? _validateRequest(DeckGenerationRequest request) {
-    if (request.userIntent.trim().isEmpty) {
-      return 'Describe the presentation to create.';
-    }
-    if (request.slideCount < 1 || request.slideCount > 50) {
-      return 'Slide count must be between 1 and 50.';
-    }
-    return null;
-  }
+var _assetRunSequence = 0;
 
-  List<PresentationThemeDescriptor> _themeCandidates(
-    DeckGenerationRequest request,
-  ) {
-    return themeCandidatesForRequest(
-      request: request,
-      themeCatalog: themeCatalog,
-      typographyCatalog: typographyCatalog,
-    );
-  }
+String _newAssetRunId() {
+  final timestamp = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
+  final sequence = (_assetRunSequence++).toRadixString(36);
 
-  GenerationModelCallExecutor _createExecutor({
-    required GenerationModelClient client,
-    required GenerationTraceEmitter trace,
-    required DeckGenerationRequest request,
-    required bool Function() isCancelled,
-  }) {
-    final repairBudget =
-        maxRepairRequests ?? _defaultRepairBudget(request.slideCount);
-    debugLog.log(
-      'DECK_GEN',
-      'Run budgets: repairs=$repairBudget, requests=$maxModelRequests, '
-          'timeout=${runTimeout.inSeconds}s',
-    );
-    return GenerationModelCallExecutor(
-      client: client,
-      retryPolicy: retryPolicy,
-      trace: trace,
-      requestTimeout: requestTimeout,
-      isCancelled: isCancelled,
-      maxModelRequests: maxModelRequests,
-      maxRepairRequests: repairBudget,
-      runTimeout: runTimeout,
-    );
-  }
+  return '$timestamp-$sequence';
 }

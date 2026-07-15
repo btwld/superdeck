@@ -152,7 +152,7 @@ class _AskUserStyleContentState extends State<_AskUserStyleContent> {
 
     return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: .stretch,
         spacing: 16,
         children: [
           for (final (index, theme) in options.indexed)

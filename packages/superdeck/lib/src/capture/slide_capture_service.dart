@@ -4,15 +4,20 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
-import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
-import '../ui/tokens/colors.dart';
-import '../ui/widgets/provider.dart';
+import 'package:superdeck_core/superdeck_core.dart';
 
-import '../rendering/slides/slide_view.dart';
-import '../utils/constants.dart';
+import '../builtins/image_widget.dart';
+import '../builtins/widgets.dart';
 import '../deck/slide_configuration.dart';
+import '../markdown/builders/image_element_builder.dart' show isBareAssetKey;
+import '../rendering/slides/slide_view.dart';
+import '../ui/tokens/colors.dart';
+import '../ui/widgets/cache_image_widget.dart';
+import '../ui/widgets/provider.dart';
+import '../utils/constants.dart';
 import 'render_config.dart';
 import 'slide_capture_readiness.dart';
 
@@ -40,6 +45,7 @@ class SlideCaptureService {
   static const _kRenderSettleDelay = Duration(milliseconds: 32);
   static const _kMaxRenderPasses = 30;
   static const _kRequiredStablePasses = 2;
+  static const _kImageDecodeTimeout = Duration(seconds: 1);
 
   Future<Uint8List> capture({
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
@@ -57,7 +63,7 @@ class SlideCaptureService {
 
       _generationQueue.add(queueKey);
 
-      final staticRenderingSlide = slide.copyWith(
+      var staticRenderingSlide = slide.copyWith(
         debug: includeDebugLayout,
         isStaticRendering: true,
       );
@@ -67,26 +73,127 @@ class SlideCaptureService {
         throw Exception('BuildContext is no longer mounted');
       }
 
+      final imageConfiguration = createLocalImageConfiguration(context);
+      final decodedImages = await _decodeBuiltInImages(
+        staticRenderingSlide,
+        imageConfiguration,
+      );
+      if (!context.mounted) {
+        for (final image in decodedImages.values) {
+          image.dispose();
+        }
+        throw Exception('BuildContext is no longer mounted');
+      }
+      if (decodedImages.isNotEmpty) {
+        final originalImageFactory = staticRenderingSlide.widgets['image']!;
+        staticRenderingSlide = staticRenderingSlide.copyWith(
+          widgets: {
+            ...staticRenderingSlide.widgets,
+            'image': (args) {
+              final src = (args['src'] as String?)?.trim();
+              final decodedImage = decodedImages[src];
+              return decodedImage == null
+                  ? originalImageFactory(args)
+                  : ImageWidget(args, decodedImage: decodedImage);
+            },
+          },
+        );
+      }
+
       final config = RenderConfig(
         pixelRatio: quality.pixelRatio,
         context: context,
         targetSize: kResolution,
       );
 
-      final image = await _fromWidgetToImage(
-        InheritedData(
-          data: staticRenderingSlide,
-          child: SlideView(staticRenderingSlide),
-        ),
-        config,
-      );
+      try {
+        final image = await _fromWidgetToImage(
+          InheritedData(
+            data: staticRenderingSlide,
+            child: SlideView(staticRenderingSlide),
+          ),
+          config,
+        );
 
-      return _imageToUint8List(image);
+        return _imageToUint8List(image);
+      } finally {
+        for (final image in decodedImages.values) {
+          image.dispose();
+        }
+      }
     } catch (e, stackTrace) {
       log('Error generating image: $e', stackTrace: stackTrace);
       rethrow;
     } finally {
       _generationQueue.remove(queueKey);
+    }
+  }
+
+  Future<Map<String, ui.Image>> _decodeBuiltInImages(
+    SlideConfiguration slide,
+    ImageConfiguration imageConfiguration,
+  ) async {
+    if (slide.widgets['image'] != builtInWidgets['image']) return const {};
+
+    final sources = <String>{};
+    for (final section in slide.sections) {
+      for (final block in section.blocks) {
+        if (block is! WidgetBlock || block.name != 'image') continue;
+        final source = block.args['src'];
+        if (source is String && source.trim().isNotEmpty) {
+          sources.add(source.trim());
+        }
+      }
+    }
+    if (sources.isEmpty) return const {};
+
+    final entries = await Future.wait(
+      sources.map((source) async {
+        try {
+          final data = ImageDto.parse({'src': source});
+          final uri = isBareAssetKey(data.src)
+              ? await slide.assetCacheStore?.resolve(data.src.path)
+              : data.src;
+          if (uri == null) return null;
+
+          final image = await _decodeImage(
+            getImageProvider(uri),
+            imageConfiguration,
+          );
+          return image == null ? null : MapEntry(source, image);
+        } catch (_) {
+          return null;
+        }
+      }),
+    );
+
+    return Map.fromEntries(entries.whereType<MapEntry<String, ui.Image>>());
+  }
+
+  Future<ui.Image?> _decodeImage(
+    ImageProvider<Object> provider,
+    ImageConfiguration imageConfiguration,
+  ) async {
+    final stream = provider.resolve(imageConfiguration);
+    final completer = Completer<ui.Image?>();
+    final listener = ImageStreamListener(
+      (info, _) {
+        if (!completer.isCompleted) {
+          completer.complete(info.image.clone());
+        }
+      },
+      onError: (_, _) {
+        if (!completer.isCompleted) completer.complete(null);
+      },
+    );
+    stream.addListener(listener);
+    try {
+      return await completer.future.timeout(
+        _kImageDecodeTimeout,
+        onTimeout: () => null,
+      );
+    } finally {
+      stream.removeListener(listener);
     }
   }
 

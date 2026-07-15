@@ -5,6 +5,7 @@ const _maxTargetedOutlineSlidesPerPass = 2;
 bool _onlySlideScopedPlanIssues(List<GenerationValidationIssue> issues) {
   final blocking = issues.blockingIssues;
   final affectedSlideKeys = {for (final issue in blocking) ?issue.slideKey};
+
   return blocking.isNotEmpty &&
       affectedSlideKeys.length <= _maxTargetedOutlineSlidesPerPass &&
       blocking.every(
@@ -24,6 +25,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       validateDeckPlanIssues(
         repairedPlan,
         typographyCatalog: typographyCatalog,
+        imageStyleCatalog: imageStyleCatalog,
         themeCatalog: themeCatalog,
         request: request,
       ),
@@ -91,6 +93,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
         final candidateIssues = validateDeckPlanIssues(
           candidatePlan,
           typographyCatalog: typographyCatalog,
+          imageStyleCatalog: imageStyleCatalog,
           themeCatalog: themeCatalog,
           request: request,
         );
@@ -129,6 +132,9 @@ extension _DeckPlanRepair on DeckGeneratorService {
     );
     final modelRequest = google_ai.GenerateContentRequest(
       model: outlineRepairModelName,
+      systemInstruction: google_ai.Content(
+        parts: [google_ai.Part(text: systemPrompt)],
+      ),
       contents: [
         google_ai.Content(
           role: 'user',
@@ -139,9 +145,6 @@ extension _DeckPlanRepair on DeckGeneratorService {
         responseMimeType: 'application/json',
         responseSchema: adapted.schema,
         thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
-      ),
-      systemInstruction: google_ai.Content(
-        parts: [google_ai.Part(text: systemPrompt)],
       ),
     );
 

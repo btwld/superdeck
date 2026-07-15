@@ -35,6 +35,13 @@ void main() {
     state = state.advance({'value': 10})!;
     state = state.advance({'themeId': 'civic-blueprint'})!;
 
+    expect(state.step.name, 'imageStyle');
+    expect(state.isReviewReady, isFalse);
+    state = state.advance({
+      'imageStyleId': 'minimalist',
+      'imageStyleVersion': 1,
+    })!;
+
     expect(state.step, WizardStep.review);
     expect(state.isReviewReady, isTrue);
     expect(state.context.topic, 'Urban gardens');
@@ -43,6 +50,8 @@ void main() {
     expect(state.context.emphasis, ['Zoning', 'Community funding']);
     expect(state.context.slideCount, 10);
     expect(state.context.themeId, 'civic-blueprint');
+    expect(state.context.toMap()['imageStyleId'], 'minimalist');
+    expect(state.context.toMap()['imageStyleVersion'], 1);
     expect(state.advance({'selectedOption': 'Unexpected'}), isNull);
   });
 
@@ -59,5 +68,22 @@ void main() {
     expect(state.step, WizardStep.slideCount);
     expect(state.advance({'value': 4}), isNull);
     expect(state.advance({'value': 21}), isNull);
+  });
+
+  test('can roll out without image generation in release builds', () {
+    var state = WizardSessionState.initial(
+      imageStyleEnabled: false,
+    ).startTopic('Urban gardens')!;
+    state = state.advance({'selectedOption': 'City planners'})!;
+    state = state.advance({'selectedOption': 'Policy blueprint'})!;
+    state = state.advance({
+      'selectedOptions': ['Zoning'],
+    })!;
+    state = state.advance({'value': 10})!;
+    state = state.advance({'themeId': 'civic-blueprint'})!;
+
+    expect(state.step, WizardStep.review);
+    expect(state.isReviewReady, isTrue);
+    expect(state.context.imageStyleId, isNull);
   });
 }

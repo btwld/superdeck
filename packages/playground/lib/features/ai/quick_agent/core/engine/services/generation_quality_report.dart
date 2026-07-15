@@ -90,6 +90,7 @@ final class GenerationQualityReport {
     PresentationThemeCatalog? themeCatalog,
     PresentationTypographyCatalog? typographyCatalog,
     Duration captureElapsed = Duration.zero,
+    Set<String> knownGeneratedAssetKeys = const {},
   }) {
     final issues = <GenerationQualityIssue>[];
     final themes = themeCatalog ?? PresentationThemeCatalog.withDefaults();
@@ -137,6 +138,7 @@ final class GenerationQualityReport {
       typographyCatalog: typography,
       themeCatalog: themes,
       request: request,
+      knownGeneratedAssetKeys: knownGeneratedAssetKeys,
     )) {
       issues.add(
         GenerationQualityIssue(
@@ -192,17 +194,17 @@ final class GenerationQualityReport {
         issues.add(
           GenerationQualityIssue(
             rule: 'slide.content_density',
+            message:
+                'Slide "${slide.key}" has $characters visible characters; '
+                '$density allows at most $maximum.',
             slideKey: slide.key,
             severity:
                 isHardContentDensityOverage(
                   visibleCharacters: characters,
                   characterLimit: maximum,
                 )
-                ? GenerationValidationSeverity.blocking
-                : GenerationValidationSeverity.diagnostic,
-            message:
-                'Slide "${slide.key}" has $characters visible characters; '
-                '$density allows at most $maximum.',
+                ? .blocking
+                : .diagnostic,
           ),
         );
       }
@@ -345,9 +347,7 @@ final class GenerationQualityReport {
     );
   }
 
-  bool get passed => issues.every(
-    (issue) => issue.severity != GenerationValidationSeverity.blocking,
-  );
+  bool get passed => issues.every((issue) => issue.severity != .blocking);
 
   Map<String, Object?> toJson() => {
     'passed': passed,

@@ -145,56 +145,6 @@ final class GenUiConversationSession {
     ).systemPromptJoined();
   }
 
-  @visibleForTesting
-  String buildSystemPromptForTesting(String systemInstruction) =>
-      _buildSystemPrompt(systemInstruction);
-
-  genui.SurfaceController? get controller => _controller;
-
-  bool get hasActiveSession {
-    return !_disposed && _controller != null && _transport != null;
-  }
-
-  Future<ConversationStartResult> ensureStarted({required String modelName}) {
-    if (_disposed) {
-      return Future.value(const ConversationStartResult.cancelled());
-    }
-    if (_controller != null) {
-      return Future.value(const ConversationStartResult.started());
-    }
-
-    final starting = _startingConversation;
-    if (starting != null) return starting;
-
-    late final Future<ConversationStartResult> future;
-    future = _start(modelName: modelName).whenComplete(() {
-      if (identical(_startingConversation, future)) {
-        _startingConversation = null;
-      }
-    });
-    _startingConversation = future;
-    return future;
-  }
-
-  Future<void> sendRequest(genui.ChatMessage message) {
-    final epoch = _sessionEpoch;
-    final queued = _requestQueue
-        .catchError(_handleRequestQueueError)
-        .then((_) => _sendRequest(message, sessionEpoch: epoch));
-    _requestQueue = queued;
-    return queued;
-  }
-
-  void restart() {
-    _disposeSession();
-  }
-
-  void dispose() {
-    if (_disposed) return;
-    _disposed = true;
-    _disposeSession();
-  }
-
   Future<ConversationStartResult> _start({required String modelName}) async {
     final epoch = _sessionEpoch;
     final apiKey = _readApiKey();
@@ -390,6 +340,56 @@ final class GenUiConversationSession {
   String _sanitizeError(Object error) {
     final str = error.toString();
     return str.replaceAll(RegExp(r'[A-Za-z0-9_-]{20,}'), '[REDACTED]');
+  }
+
+  genui.SurfaceController? get controller => _controller;
+
+  bool get hasActiveSession {
+    return !_disposed && _controller != null && _transport != null;
+  }
+
+  @visibleForTesting
+  String buildSystemPromptForTesting(String systemInstruction) =>
+      _buildSystemPrompt(systemInstruction);
+
+  Future<ConversationStartResult> ensureStarted({required String modelName}) {
+    if (_disposed) {
+      return Future.value(const ConversationStartResult.cancelled());
+    }
+    if (_controller != null) {
+      return Future.value(const ConversationStartResult.started());
+    }
+
+    final starting = _startingConversation;
+    if (starting != null) return starting;
+
+    late final Future<ConversationStartResult> future;
+    future = _start(modelName: modelName).whenComplete(() {
+      if (identical(_startingConversation, future)) {
+        _startingConversation = null;
+      }
+    });
+    _startingConversation = future;
+    return future;
+  }
+
+  Future<void> sendRequest(genui.ChatMessage message) {
+    final epoch = _sessionEpoch;
+    final queued = _requestQueue
+        .catchError(_handleRequestQueueError)
+        .then((_) => _sendRequest(message, sessionEpoch: epoch));
+    _requestQueue = queued;
+    return queued;
+  }
+
+  void restart() {
+    _disposeSession();
+  }
+
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _disposeSession();
   }
 }
 

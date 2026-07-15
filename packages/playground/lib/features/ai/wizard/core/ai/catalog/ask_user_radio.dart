@@ -94,6 +94,7 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
   Map<String, dynamic> _buildActionContext() {
     if (_selectedIndex == null) return {};
     final option = widget.data.options[_selectedIndex!];
+
     return {
       'selectedOption': option.title,
       'selectedDescription': option.description,
@@ -106,17 +107,6 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
     action: widget.data.action,
     contextBuilder: _buildActionContext,
   );
-
-  @override
-  Widget build(BuildContext context) {
-    return CatalogQuestionStep(
-      question: widget.data.question,
-      description: widget.data.description,
-      body: _buildOptions(),
-      canSubmit: _canSubmit,
-      onSubmit: _submitAction,
-    );
-  }
 
   Widget _buildOptions() {
     final options = widget.data.options;
@@ -159,6 +149,17 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
           }).toList(),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CatalogQuestionStep(
+      question: widget.data.question,
+      description: widget.data.description,
+      body: _buildOptions(),
+      canSubmit: _canSubmit,
+      onSubmit: _submitAction,
     );
   }
 }

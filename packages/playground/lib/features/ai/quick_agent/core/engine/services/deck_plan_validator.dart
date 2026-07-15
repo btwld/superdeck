@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../../../../../core/domain/design/presentation_typography_catalog.dart';
 import '../schemas/outline_schema.dart';
@@ -14,14 +15,18 @@ List<String> validateDeckPlan(
   DeckPlanType plan, {
   int? expectedSlideCount,
   PresentationTypographyCatalog? typographyCatalog,
+  PresentationImageStyleCatalog? imageStyleCatalog,
   PresentationThemeCatalog? themeCatalog,
   DeckGenerationRequest? request,
+  Set<String> knownGeneratedAssetKeys = const {},
 }) => validateDeckPlanIssues(
   plan,
   expectedSlideCount: expectedSlideCount,
   typographyCatalog: typographyCatalog,
+  imageStyleCatalog: imageStyleCatalog,
   themeCatalog: themeCatalog,
   request: request,
+  knownGeneratedAssetKeys: knownGeneratedAssetKeys,
 ).messages;
 
 /// Returns typed semantic issues for pipeline decisions and diagnostics.
@@ -29,14 +34,18 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
   DeckPlanType plan, {
   int? expectedSlideCount,
   PresentationTypographyCatalog? typographyCatalog,
+  PresentationImageStyleCatalog? imageStyleCatalog,
   PresentationThemeCatalog? themeCatalog,
   DeckGenerationRequest? request,
+  Set<String> knownGeneratedAssetKeys = const {},
 }) {
   final issues = GenerationValidationCollector();
   final usedKeys = <String>{};
   final catalog =
       typographyCatalog ?? PresentationTypographyCatalog.withDefaults();
   final themes = themeCatalog ?? PresentationThemeCatalog.withDefaults();
+  final imageStyles =
+      imageStyleCatalog ?? PresentationImageStyleCatalog.withDefaults();
   final exactSlideCount = request?.slideCount ?? expectedSlideCount;
 
   if (exactSlideCount != null && plan.slides.length != exactSlideCount) {
@@ -96,6 +105,16 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
   _validateElementGrounding(
     plan,
     request,
+    knownGeneratedAssetKeys,
+    issues.scoped(
+      code: GenerationValidationCode.elementGrounding,
+      category: GenerationValidationCategory.grounding,
+    ),
+  );
+  _validateGeneratedImageIntent(
+    plan,
+    request,
+    imageStyles,
     issues.scoped(
       code: GenerationValidationCode.elementGrounding,
       category: GenerationValidationCategory.grounding,
@@ -161,6 +180,103 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
   );
 
   return issues.issues.uniqueIssues;
+}
+
+void _validateGeneratedImageIntent(
+  DeckPlanType plan,
+  DeckGenerationRequest? request,
+  PresentationImageStyleCatalog imageStyleCatalog,
+  GenerationValidationCollector errors,
+) {
+  var generatedImageCount = 0;
+  final hasImageStyle = _hasResolvedImageStyle(
+    request,
+    imageStyleCatalog,
+    errors,
+  );
+
+  for (final slide in plan.slides) {
+    final slideErrors = errors.scoped(
+      location: GenerationValidationLocation.planSlide,
+      slideKey: slide.key,
+    );
+    final elements = slide.elements ?? const <DeckPlanElementType>[];
+    final imageCount = elements
+        .where((element) => element.type == 'image')
+        .length;
+    if (imageCount > 1) {
+      slideErrors.add(
+        'Slide "${slide.key}" plans $imageCount image elements; '
+        'image compositions support one.',
+      );
+    }
+
+    for (final element in elements) {
+      final source = element.source?.trim();
+      final prompt = element.generationPrompt?.trim();
+      final hasSource = source != null && source.isNotEmpty;
+      final hasPrompt = prompt != null && prompt.isNotEmpty;
+
+      if (element.type != 'image') {
+        if (hasPrompt) {
+          slideErrors.add(
+            'Slide "${slide.key}" uses generationPrompt on non-image '
+            'element type "${element.type}".',
+          );
+        }
+        continue;
+      }
+
+      if (hasSource == hasPrompt) {
+        slideErrors.add(
+          'Slide "${slide.key}" image element must provide exactly one of '
+          'source or generationPrompt.',
+        );
+        continue;
+      }
+      if (!hasPrompt) continue;
+
+      generatedImageCount++;
+      if (!hasImageStyle) {
+        slideErrors.add(
+          'Slide "${slide.key}" requests a generated image without an exact '
+          'image-style reference.',
+        );
+      }
+    }
+  }
+
+  final budget = request?.maxGeneratedImages ?? 0;
+  if (generatedImageCount > budget) {
+    errors.add(
+      'Deck plan requests $generatedImageCount generated images; the configured '
+      'maximum is $budget.',
+    );
+  }
+}
+
+bool _hasResolvedImageStyle(
+  DeckGenerationRequest? request,
+  PresentationImageStyleCatalog imageStyleCatalog,
+  GenerationValidationCollector errors,
+) {
+  if (request == null ||
+      (request.imageStyleId == null && request.imageStyleVersion == null)) {
+    return false;
+  }
+  try {
+    request.resolveImageStyle(imageStyleCatalog);
+    return true;
+  } on ArgumentError catch (error) {
+    errors.add(
+      error
+          .toString()
+          .replaceFirst('Invalid argument(s): ', '')
+          .replaceFirst('Invalid argument: ', ''),
+    );
+
+    return false;
+  }
 }
 
 void _validateMetricIntent(
@@ -243,7 +359,7 @@ void _validateCommitmentGrounding(
     errors
         .scoped(
           severity: hasBlockingCommitmentClaim(narrativeUnsupported)
-              ? GenerationValidationSeverity.blocking
+              ? .blocking
               : GenerationValidationSeverity.diagnostic,
         )
         .add(
@@ -260,7 +376,7 @@ void _validateCommitmentGrounding(
     if (unsupported.isNotEmpty) {
       final slideErrors = errors.scoped(
         severity: hasBlockingCommitmentClaim(unsupported)
-            ? GenerationValidationSeverity.blocking
+            ? .blocking
             : GenerationValidationSeverity.diagnostic,
         location: GenerationValidationLocation.planSlide,
         slideKey: slide.key,
@@ -470,6 +586,7 @@ void _validateTheme(
 void _validateElementGrounding(
   DeckPlanType plan,
   DeckGenerationRequest? request,
+  Set<String> knownGeneratedAssetKeys,
   GenerationValidationCollector errors,
 ) {
   for (final slide in plan.slides) {
@@ -508,6 +625,7 @@ void _validateElementGrounding(
     for (final element in slide.elements ?? const <DeckPlanElementType>[]) {
       final source = element.source;
       if (source == null || source.trim().isEmpty) continue;
+      if (knownGeneratedAssetKeys.contains(source)) continue;
       if (!structuredSources.contains(source) &&
           !request.userIntent.contains(source)) {
         slideErrors.add(

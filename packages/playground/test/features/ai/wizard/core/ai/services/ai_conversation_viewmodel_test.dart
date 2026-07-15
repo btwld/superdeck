@@ -4,6 +4,9 @@ import 'package:dartantic_ai/dartantic_ai.dart' as dartantic;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genui/genui.dart' as genui;
+import 'package:playground/core/domain/design/presentation_image_style_catalog.dart';
+import 'package:playground/features/ai/image_generation/image_generator.dart';
+import 'package:playground/features/ai/image_generation/image_style_preview_coordinator.dart';
 import 'package:playground/features/ai/wizard/chat/chat_conversation_profile.dart';
 import 'package:playground/features/ai/wizard/core/ai/wizard_session_state.dart';
 import 'package:playground/features/ai/wizard/core/ai/services/ai_conversation_viewmodel.dart';
@@ -68,6 +71,10 @@ void main() {
       isFalse,
     );
     expect(expectedWizardComponentType(WizardStep.theme), 'AskUserStyle');
+    expect(
+      expectedWizardComponentType(WizardStep.imageStyle),
+      'AskUserImageStyle',
+    );
   });
 
   test('turn prompt pins canonical selections and the expected next step', () {
@@ -107,6 +114,54 @@ void main() {
     await first;
   });
 
+  test('prefetches image styles as soon as the topic is accepted', () async {
+    final client = _DelayedAgentClient();
+    final generator = _RecordingImageGenerator();
+    final previews = ImageStylePreviewCoordinator(
+      generator: generator,
+      catalog: PresentationImageStyleCatalog.withDefaults(),
+    );
+    final viewModel = AiConversationViewModel(
+      profile: chatConversationProfile(),
+      apiKey: 'test-key',
+      imageStylePreviews: previews,
+      agentClientFactory:
+          ({required apiKey, required modelName, required tools}) => client,
+    );
+    addTearDown(viewModel.dispose);
+    addTearDown(previews.dispose);
+
+    final send = viewModel.sendMessage('Urban gardens');
+    await client.started.future.timeout(const Duration(seconds: 2));
+
+    expect(previews.topic, 'Urban gardens');
+    expect(generator.requests, hasLength(3));
+
+    client.release.complete();
+    await send;
+  });
+
+  test('restarting the conversation clears prefetched images', () async {
+    final generator = _RecordingImageGenerator();
+    final previews = ImageStylePreviewCoordinator(
+      generator: generator,
+      catalog: PresentationImageStyleCatalog.withDefaults(),
+    );
+    final viewModel = AiConversationViewModel(
+      profile: chatConversationProfile(),
+      apiKey: 'test-key',
+      imageStylePreviews: previews,
+    );
+    addTearDown(viewModel.dispose);
+    addTearDown(previews.dispose);
+
+    previews.prefetch('Urban gardens');
+    viewModel.restartConversation();
+
+    expect(previews.topic, isNull);
+    expect(previews.previews, isEmpty);
+  });
+
   test('Wizard system prompt permits its single-surface replacement flow', () {
     final session = GenUiConversationSession(
       profile: chatConversationProfile(),
@@ -144,6 +199,8 @@ void main() {
 
       expect(prompt, contains('updateComponents'));
       expect(prompt, contains('surface messages only'));
+      expect(prompt, contains('AskUserImageStyle (step6)'));
+      expect(prompt, contains('application owns the three preview styles'));
       expect(prompt, isNot(contains('provideFinalOutput')));
       expect(prompt, isNot(contains('deleteSurface')));
       expect(prompt, isNot(contains('beginRendering')));
@@ -168,4 +225,14 @@ final class _DelayedAgentClient implements SuperdeckAgentClient {
 
   @override
   void dispose() {}
+}
+
+final class _RecordingImageGenerator implements ImageGenerator {
+  final requests = <ImageGenerationRequest>[];
+
+  @override
+  Future<ImageGenerationResult> generate(ImageGenerationRequest request) async {
+    requests.add(request);
+    return const ImageGenerationFailure('Not needed by this test.');
+  }
 }

@@ -80,6 +80,10 @@ The playground reads `GOOGLE_AI_API_KEY` from the ignored repository-root
 flag, the Wizard intentionally shows a configuration error before accepting
 input.
 
+Wizard image generation is enabled by default for local/debug demos and is
+opt-in for release builds. Validate the image-enabled smoke flow before adding
+`--dart-define=SUPERDECK_WIZARD_IMAGE_GENERATION=true` to a release launch.
+
 When running an app to reproduce or diagnose a UI/runtime issue, launch it with
 `fvm flutter run` and keep that process attached for the entire reproduction.
 Continue reading its output after each UI interaction so Dart exceptions,

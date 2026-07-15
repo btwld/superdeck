@@ -49,13 +49,13 @@ class AppProviders extends StatelessWidget {
           dispose: (_, repository) => repository.dispose(),
         ),
         Provider<DeckController>(
-          lazy: false,
           create: (ctx) => DeckController(
             deckLoader: ctx.read<MemoryDeckLoader>(),
             options: DeckOptions(debug: _debugDeckLayout),
             assetCacheStore: ctx.read<MemoryAssetCacheStore>(),
           ),
           dispose: (_, controller) => controller.dispose(),
+          lazy: false,
         ),
         ChangeNotifierProvider<DeckCustomizationStore>(
           lazy: false,

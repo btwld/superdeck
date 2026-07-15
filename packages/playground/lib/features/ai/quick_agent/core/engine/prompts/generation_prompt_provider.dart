@@ -50,14 +50,62 @@ abstract interface class GenerationPromptProvider {
 
 /// Flutter-asset backed prompt provider used by the production app.
 final class AssetGenerationPromptProvider implements GenerationPromptProvider {
+  final PromptRegistry _promptRegistry;
+
+  final AssetCompositionExampleLibrary _exampleLibrary;
   AssetGenerationPromptProvider({
     PromptRegistry? promptRegistry,
     AssetCompositionExampleLibrary? exampleLibrary,
   }) : _promptRegistry = promptRegistry ?? PromptRegistry.instance,
        _exampleLibrary = exampleLibrary ?? AssetCompositionExampleLibrary();
 
-  final PromptRegistry _promptRegistry;
-  final AssetCompositionExampleLibrary _exampleLibrary;
+  String _buildOutlineRepairPrompt({
+    required List<PresentationThemeDescriptor> themeCandidates,
+    required List<GenerationValidationIssue> validationIssues,
+    required Map<String, Object?>? invalidPlan,
+  }) {
+    const encoder = JsonEncoder.withIndent(' ');
+    final literalRepairChecklist = _outlineLiteralRepairChecklist(
+      validationIssues,
+    );
+
+    return '''
+You repair one SuperDeck deck plan. Return one complete replacement deck-plan
+JSON object matching the response schema—no commentary or Markdown fence.
+
+The original typed user message is the only authority for facts, numbers,
+domains, supplied elements, evidence status, availability, security/compliance,
+and commercial commitments. Use the invalid plan as the repair base. Fix every
+blocking issue below while preserving all valid keys, ordering, narrative,
+content, facts, theme choice, and design decisions. Do not redesign the deck.
+
+Hard contract:
+- preserve the requested slide count, slide order, unique keys, section
+  membership, and exact supported composition/treatment values
+- keep audience-facing claims grounded in the original request
+- keep each planned element's exact type, source or generationPrompt, purpose,
+  and cardinality
+- choose one eligible theme ID; never author palette, font, or runtime tokens
+- return the complete plan, including every valid unchanged section and slide
+
+## Eligible theme IDs
+
+${encoder.convert(themeCandidates.map((theme) => theme.id).toList())}
+
+## Invalid plan
+
+${invalidPlan == null ? 'No parseable plan was returned.' : encoder.convert(invalidPlan)}
+
+## Blocking issues
+
+${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
+$literalRepairChecklist
+
+The blocking list is cumulative. Before returning JSON, re-check every item and
+preserve any correction already present in the repair base. Return only the
+complete corrected deck-plan object.
+''';
+  }
 
   @override
   Future<void> load() =>
@@ -87,52 +135,6 @@ that ID inside the theme object. Never return a version, palette, font family,
 brand override, or runtime styling token; the application owns those values.
 
 ${const JsonEncoder.withIndent('  ').convert(themeCandidates.map((theme) => theme.toModelCandidate()).toList())}
-''';
-  }
-
-  String _buildOutlineRepairPrompt({
-    required List<PresentationThemeDescriptor> themeCandidates,
-    required List<GenerationValidationIssue> validationIssues,
-    required Map<String, Object?>? invalidPlan,
-  }) {
-    const encoder = JsonEncoder.withIndent(' ');
-    final literalRepairChecklist = _outlineLiteralRepairChecklist(
-      validationIssues,
-    );
-    return '''
-You repair one SuperDeck deck plan. Return one complete replacement deck-plan
-JSON object matching the response schema—no commentary or Markdown fence.
-
-The original typed user message is the only authority for facts, numbers,
-domains, supplied elements, evidence status, availability, security/compliance,
-and commercial commitments. Use the invalid plan as the repair base. Fix every
-blocking issue below while preserving all valid keys, ordering, narrative,
-content, facts, theme choice, and design decisions. Do not redesign the deck.
-
-Hard contract:
-- preserve the requested slide count, slide order, unique keys, section
-  membership, and exact supported composition/treatment values
-- keep audience-facing claims grounded in the original request
-- keep each planned element's exact type, source, purpose, and cardinality
-- choose one eligible theme ID; never author palette, font, or runtime tokens
-- return the complete plan, including every valid unchanged section and slide
-
-## Eligible theme IDs
-
-${encoder.convert(themeCandidates.map((theme) => theme.id).toList())}
-
-## Invalid plan
-
-${invalidPlan == null ? 'No parseable plan was returned.' : encoder.convert(invalidPlan)}
-
-## Blocking issues
-
-${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
-$literalRepairChecklist
-
-The blocking list is cumulative. Before returning JSON, re-check every item and
-preserve any correction already present in the repair base. Return only the
-complete corrected deck-plan object.
 ''';
   }
 
@@ -377,15 +379,15 @@ String buildSingleSlideRepairPrompt({
   );
   final requiresElementContext = validationIssues.any(
     (issue) =>
-        issue.code == GenerationValidationCode.elementGrounding ||
-        issue.code == GenerationValidationCode.widgetArguments ||
+        issue.code == .elementGrounding ||
+        issue.code == .widgetArguments ||
         issue.code == GenerationValidationCode.handoffPurpose,
   );
   final requiresNumericContext = validationIssues.any(
     (issue) =>
         issue.code == GenerationValidationCode.numericGrounding ||
         issue.code == GenerationValidationCode.numericMeaning ||
-        issue.code == GenerationValidationCode.metricIntent,
+        issue.code == .metricIntent,
   );
   final hasCommentIssue = validationIssues.any(
     (issue) => issue.location == GenerationValidationLocation.speakerComments,

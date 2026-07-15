@@ -36,11 +36,11 @@ final class GenerationModelCallExecutor {
          timeout: runTimeout,
        );
 
-  bool get hasRepairCapacity => _budget.hasRepairCapacity;
-
   void _throwIfCancelled() {
     if (_isCancelled()) throw const GenerationCancelledException();
   }
+
+  bool get hasRepairCapacity => _budget.hasRepairCapacity;
 
   Future<google_ai.GenerateContentResponse> execute({
     required google_ai.GenerateContentRequest request,
@@ -114,17 +114,18 @@ final class GenerationRunBudget {
     required this.timeout,
   }) : _stopwatch = Stopwatch()..start();
 
-  bool get hasRepairCapacity {
-    _throwIfTimedOut();
-    return _repairRequests < maxRepairRequests;
-  }
-
   void _throwIfTimedOut() {
     if (_stopwatch.elapsed >= timeout) {
       throw GenerationBudgetExceededException(
         'Generation time budget exhausted after ${timeout.inSeconds} seconds.',
       );
     }
+  }
+
+  bool get hasRepairCapacity {
+    _throwIfTimedOut();
+
+    return _repairRequests < maxRepairRequests;
   }
 
   void beginSemanticRequest({required bool isRepair}) {

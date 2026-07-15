@@ -341,6 +341,90 @@ void main() {
     );
   });
 
+  test('accepts generated image intent with an exact style reference', () {
+    final data = _hierarchicalPlan();
+    final slides = data['slides']! as List<Map<String, Object?>>;
+    slides[1]
+      ..['composition'] = 'imageRight'
+      ..['treatment'] = 'visual'
+      ..['elements'] = [
+        {
+          'type': 'image',
+          'purpose': 'Make the operating tension tangible',
+          'generationPrompt':
+              'an operations team tracing one critical signal through noise',
+        },
+      ];
+    final plan = DeckPlanType.parse(data);
+
+    final errors = validateDeckPlan(
+      plan,
+      request: const DeckGenerationRequest(
+        userIntent: 'Explain reliable delivery.',
+        slideCount: 10,
+        imageStyleId: 'minimalist',
+        imageStyleVersion: 1,
+      ),
+    );
+
+    expect(plan.slides[1].elements!.single.generationPrompt, isNotEmpty);
+    expect(
+      errors.where(
+        (error) =>
+            error.contains('source or generationPrompt') ||
+            error.contains('without an exact image-style reference') ||
+            error.contains('generated images'),
+      ),
+      isEmpty,
+    );
+  });
+
+  test('requires an exact style and enforces the generated-image budget', () {
+    final data = _hierarchicalPlan();
+    final slides = data['slides']! as List<Map<String, Object?>>;
+    for (var index = 0; index < 5; index++) {
+      slides[index]
+        ..['composition'] = 'imageRight'
+        ..['treatment'] = 'visual'
+        ..['elements'] = [
+          {
+            'type': 'image',
+            'purpose': 'Reinforce slide ${index + 1}',
+            'generationPrompt': 'a concrete visual subject for slide $index',
+          },
+        ];
+    }
+    final plan = DeckPlanType.parse(data);
+
+    final withoutStyle = validateDeckPlan(
+      plan,
+      request: const DeckGenerationRequest(
+        userIntent: 'Explain reliable delivery.',
+        slideCount: 10,
+      ),
+    );
+    final overBudget = validateDeckPlan(
+      plan,
+      request: const DeckGenerationRequest(
+        userIntent: 'Explain reliable delivery.',
+        slideCount: 10,
+        imageStyleId: 'watercolor',
+        imageStyleVersion: 1,
+      ),
+    );
+
+    expect(
+      withoutStyle,
+      contains(contains('without an exact image-style reference')),
+    );
+    expect(
+      overBudget,
+      contains(
+        'Deck plan requests 5 generated images; the configured maximum is 4.',
+      ),
+    );
+  });
+
   test('rejects an invented visible domain but allows a supplied one', () {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;

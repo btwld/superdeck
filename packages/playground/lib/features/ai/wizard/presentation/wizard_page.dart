@@ -6,12 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
-import '../../../../core/data/data_sources/memory_deck_loader.dart';
+import '../../../../core/data/data_sources/memory_asset_cache_store.dart';
 import '../../../editor/domain/stores/deck_document_store.dart';
 import '../../quick_agent/core/engine/services/deck_generator_service.dart';
 import '../../quick_agent/core/env_config.dart';
 import '../../quick_agent/domain/generated_deck_result_applier.dart';
+import '../../image_generation/image_generator.dart';
+import '../../image_generation/image_style_preview_coordinator.dart';
 import '../chat/chat_conversation_profile.dart';
 import '../core/ai/services/ai_conversation_viewmodel.dart';
 import '../core/viewmodel_scope.dart';
@@ -26,13 +29,25 @@ import 'wizard_view.dart';
 /// deck-storage folder. The production integration can provide its own document
 /// destination when the Wizard is embedded outside the playground.
 class WizardPage extends StatelessWidget {
-  const WizardPage({this.isConfigured, this.generationService, super.key});
+  const WizardPage({
+    this.isConfigured,
+    this.generationService,
+    this.imageGenerator,
+    this.imageGenerationEnabled,
+    super.key,
+  });
 
   /// Overrides environment detection in tests and previews.
   final bool? isConfigured;
 
   /// Overrides the live Gemini-backed service in tests and previews.
   final DeckGeneratorService? generationService;
+
+  /// Overrides the live Flash Lite image provider in tests and previews.
+  final ImageGenerator? imageGenerator;
+
+  /// Overrides the debug-on, release-opt-in image rollout policy.
+  final bool? imageGenerationEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -41,36 +56,77 @@ class WizardPage extends StatelessWidget {
     if (!hasApiKey) {
       return const _MissingApiKeyView();
     }
+    final imagesEnabled =
+        imageGenerationEnabled ?? EnvConfig.wizardImageGenerationEnabled;
+    final imageStyles = PresentationImageStyleCatalog.withDefaults();
+    final previewImageGenerator = !imagesEnabled
+        ? const UnavailableImageGenerator()
+        : (imageGenerator ??
+              (EnvConfig.hasGeminiApiKey
+                  ? DartanticImageGenerator(apiKey: EnvConfig.geminiApiKey)
+                  : const UnavailableImageGenerator()));
+    final finalImageGenerator = !imagesEnabled
+        ? null
+        : (imageGenerator ??
+              (EnvConfig.hasGeminiApiKey
+                  ? DartanticImageGenerator(
+                      apiKey: EnvConfig.geminiApiKey,
+                      modelName: geminiImageGenerationModel,
+                    )
+                  : const UnavailableImageGenerator()));
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DeckDocumentStore(markdown: '')),
-        ChangeNotifierProvider<WizardGenerationController>(
-          create: (context) => WizardGenerationController(
-            service:
-                generationService ??
-                DeckGeneratorService(apiKey: EnvConfig.geminiApiKey),
-            applyResult: (result) => applyGeneratedDeckResult(
-              result: result,
+        ChangeNotifierProvider(
+          create: (_) => ImageStylePreviewCoordinator(
+            generator: previewImageGenerator,
+            catalog: imageStyles,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) {
+            final resultApplier = GeneratedDeckResultApplier(
               documentStore: Provider.of<DeckDocumentStore>(
                 context,
                 listen: false,
               ),
-              deckLoader: Provider.of<MemoryDeckLoader>(context, listen: false),
+              deckLoader: Provider.of(context, listen: false),
+              assetCacheStore: Provider.of<MemoryAssetCacheStore>(
+                context,
+                listen: false,
+              ),
               customizationStore: Provider.of<DeckCustomizationStore>(
                 context,
                 listen: false,
               ),
-            ),
-          ),
+            );
+
+            return WizardGenerationController(
+              service:
+                  generationService ??
+                  DeckGeneratorService(
+                    apiKey: EnvConfig.geminiApiKey,
+                    imageGenerator: finalImageGenerator,
+                  ),
+              applyResult: resultApplier.apply,
+            );
+          },
         ),
       ],
-      child: ViewModelScope<AiConversationViewModel>(
-        create: () {
-          // ViewModelScope owns and disposes the created conversation model.
-          return AiConversationViewModel(profile: chatConversationProfile());
-        },
-        child: const _WizardExperience(),
+      child: Builder(
+        builder: (context) => ViewModelScope(
+          create: () {
+            // ViewModelScope owns and disposes the conversation model. The
+            // Wizard provider owns and disposes the preview coordinator.
+            return AiConversationViewModel(
+              profile: chatConversationProfile(imageStyleCatalog: imageStyles),
+              imageStylePreviews: imagesEnabled ? context.read() : null,
+              imageStyleEnabled: imagesEnabled,
+            );
+          },
+          child: const _WizardExperience(),
+        ),
       ),
     );
   }
@@ -83,16 +139,15 @@ class _WizardExperience extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.watch<WizardGenerationController>();
     final overlay = switch (controller.stage) {
-      WizardGenerationStage.setup => null,
-      WizardGenerationStage.planning ||
-      WizardGenerationStage.composing => _CenteredScrollable(
+      .setup => null,
+      .planning || .composing => _CenteredScrollable(
         child: WizardGenerationStatus(
-          kind: WizardGenerationStatusKind.running,
+          kind: .running,
           progress: controller.progress,
           onCancel: controller.cancel,
         ),
       ),
-      WizardGenerationStage.outlineReview => WizardOutlineReview(
+      .outlineReview => WizardOutlineReview(
         plan: controller.plan!,
         planRevision: controller.planRevision,
         onSlideChanged: (index, title, assertion) =>
@@ -105,31 +160,33 @@ class _WizardExperience extends StatelessWidget {
           unawaited(controller.generateSlides());
         },
       ),
-      WizardGenerationStage.failed => _CenteredScrollable(
+      .failed => _CenteredScrollable(
         child: WizardGenerationStatus(
-          kind: WizardGenerationStatusKind.failed,
+          kind: .failed,
           errorMessage: controller.errorMessage,
           planAvailable: controller.plan != null,
           onRetry: () {
             unawaited(controller.retry());
           },
-          backLabel: controller.plan != null ? 'Edit outline' : 'Back to setup',
           onBack: controller.plan != null
               ? controller.returnToOutline
               : controller.reset,
+          backLabel: controller.plan != null ? 'Edit outline' : 'Back to setup',
         ),
       ),
-      WizardGenerationStage.completed => _CenteredScrollable(
+      .completed => _CenteredScrollable(
         child: WizardGenerationStatus(
-          kind: WizardGenerationStatusKind.completed,
-          noticeMessage: _partialResultNotice(controller.result),
+          kind: .completed,
+          noticeMessage: _completionNotice(controller.result),
           slideCount: controller.result?.slides.length,
           failedSlideCount: controller.result?.slideFailures.length ?? 0,
+          artworkCount: controller.result?.generatedImageCount ?? 0,
+          failedArtworkCount: controller.result?.failedImageCount ?? 0,
           elapsed: controller.elapsed,
+          onPresent: () => context.push('/present/0'),
           onRetryFailed: () {
             unawaited(controller.retryFailedSlides());
           },
-          onPresent: () => context.push('/present/0'),
           onEditOutline: controller.editOutline,
           onStartOver: () {
             controller.reset();
@@ -142,7 +199,6 @@ class _WizardExperience extends StatelessWidget {
     };
 
     return Scaffold(
-      backgroundColor: $background.resolve(context),
       body: SafeArea(
         child: Stack(
           children: [
@@ -154,11 +210,10 @@ class _WizardExperience extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Stack(
-                      fit: StackFit.expand,
+                      fit: .expand,
                       children: [
                         Offstage(
-                          offstage:
-                              controller.stage != WizardGenerationStage.setup,
+                          offstage: controller.stage != .setup,
                           child: const WizardView(),
                         ),
                         ?overlay,
@@ -173,23 +228,39 @@ class _WizardExperience extends StatelessWidget {
                 top: 8,
                 right: 8,
                 child: IconButton(
-                  tooltip: 'Generation lab',
                   onPressed: () => context.push('/debug/generation'),
+                  tooltip: 'Generation lab',
                   icon: const Icon(Icons.science_outlined),
                 ),
               ),
           ],
         ),
       ),
+      backgroundColor: $background.resolve(context),
     );
   }
 }
 
-String? _partialResultNotice(DeckGenerationResult? result) {
-  if (result == null || !result.isPartial) return null;
-  final failed = result.slideFailures.length;
-  return '${result.slides.length} slides are ready. '
-      '$failed ${failed == 1 ? 'slide needs' : 'slides need'} another pass.';
+String? _completionNotice(DeckGenerationResult? result) {
+  if (result == null) return null;
+  final messages = <String>[];
+  if (result.isPartial) {
+    final failed = result.slideFailures.length;
+    messages.add(
+      '${result.slides.length} slides are ready. '
+      '$failed ${failed == 1 ? 'slide needs' : 'slides need'} another pass.',
+    );
+  }
+  if (result.hasImageFailures) {
+    final failed = result.failedImageCount;
+    messages.add(
+      'Created ${result.generatedImageCount} of '
+      '${result.generatedImages.length} planned artworks. '
+      '$failed ${failed == 1 ? 'image uses' : 'images use'} a text-first fallback.',
+    );
+  }
+
+  return messages.isEmpty ? null : messages.join(' ');
 }
 
 class _CenteredScrollable extends StatelessWidget {

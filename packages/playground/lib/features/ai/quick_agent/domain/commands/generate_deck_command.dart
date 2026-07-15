@@ -1,5 +1,6 @@
 import '../../../../../core/command.dart';
 import '../../../../../core/data/data_sources/memory_deck_loader.dart';
+import '../../../../../core/data/data_sources/memory_asset_cache_store.dart';
 import '../../../../../core/result.dart';
 import '../../../../editor/domain/stores/deck_document_store.dart';
 import '../../../../../core/domain/stores/deck_customization_store.dart';
@@ -29,25 +30,33 @@ class GenerationException implements Exception {
 /// model. On success it serializes the slides to Markdown and replaces the
 /// shared [DeckDocumentStore].
 class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
+  final GeneratedDeckResultApplier _resultApplier;
+
+  final DeckGeneratorService? _service;
+  GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
+
+  String? _completionNotice;
+  bool _cancelled = false;
+  bool _disposed = false;
   GenerateDeckCommand({
     required DeckDocumentStore documentStore,
     required DeckCustomizationStore customizationStore,
     MemoryDeckLoader? deckLoader,
+    MemoryAssetCacheStore? assetCacheStore,
     DeckGeneratorService? service,
-  }) : _documentStore = documentStore,
-       _customizationStore = customizationStore,
-       _deckLoader = deckLoader,
+  }) : _resultApplier = GeneratedDeckResultApplier(
+         documentStore: documentStore,
+         deckLoader: deckLoader,
+         assetCacheStore: assetCacheStore,
+         customizationStore: customizationStore,
+       ),
        _service = service;
 
-  final DeckDocumentStore _documentStore;
-  final DeckCustomizationStore _customizationStore;
-  final MemoryDeckLoader? _deckLoader;
-  final DeckGeneratorService? _service;
-
-  GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
-  String? _completionNotice;
-  bool _cancelled = false;
-  bool _disposed = false;
+  void _onProgress(GenerationProgress progress) {
+    if (_cancelled) return;
+    _progress = progress;
+    notifyListeners();
+  }
 
   /// The pipeline stage currently running (outline → deck).
   GenerationPhase get phase => _progress.phase;
@@ -96,14 +105,14 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
         return const Result.error(GenerationException('Generation cancelled.'));
       }
 
-      applyGeneratedDeckResult(
-        result: result,
-        documentStore: _documentStore,
-        deckLoader: _deckLoader,
-        customizationStore: _customizationStore,
-      );
+      await _resultApplier.apply(result);
       if (result.isPartial) {
         _completionNotice = result.error;
+      } else if (result.hasImageFailures) {
+        _completionNotice =
+            'Created ${result.generatedImageCount} of '
+            '${result.generatedImages.length} planned artworks; '
+            '${result.failedImageCount} used a text-first fallback.';
       }
       debugLog.log(
         'GENERATE_DECK',
@@ -125,12 +134,6 @@ class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
       _progress = const GenerationProgress(GenerationPhase.idle);
       notifyListeners();
     }
-  }
-
-  void _onProgress(GenerationProgress progress) {
-    if (_cancelled) return;
-    _progress = progress;
-    notifyListeners();
   }
 
   @override

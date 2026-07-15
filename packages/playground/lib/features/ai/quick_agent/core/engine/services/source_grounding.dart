@@ -545,6 +545,7 @@ String unsupportedNumericClaimRepairGuidance(Set<String> claims) {
             'says "no change", preserve those exact qualitative words; '
             'otherwise remove the claim.'
       : '';
+
   return 'Remove them or label the containing copy as a projection, estimate, '
       'assumption, calculation, scenario, or planned target.'
       '$qualitativeZeroGuidance';
@@ -762,6 +763,7 @@ bool _matchesAnyAnchorGroup(
 ) => anchorGroups.any((required) {
   final matched = required.intersection(copyWords).length;
   if (matched == required.length) return true;
+
   return required.length >= 3 && matched >= required.length - 1;
 });
 
@@ -843,6 +845,7 @@ Set<String> findUnsupportedCommitmentPhrases({
 
 bool _containsStandalonePhrase(String value, String phrase) {
   final escaped = RegExp.escape(phrase);
+
   return RegExp(
     '(?:^|[^a-z0-9])$escaped(?=\$|[^a-z0-9])',
     caseSensitive: false,
@@ -914,6 +917,7 @@ String _normalizeFactWord(String value) {
   if (word.length > 4 && word.endsWith('s') && !word.endsWith('ss')) {
     word = word.substring(0, word.length - 1);
   }
+
   return switch (word) {
     'adoption' || 'migration' || 'rollout' || 'transition' => 'adoption',
     'canvas' || 'place' || 'surface' => 'workspace',

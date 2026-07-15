@@ -6,8 +6,8 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:remix/remix.dart';
 
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
-import '../prompts/image_style_prompts.dart';
 import '../../ui/ui.dart';
 import '../../utils/color_utils.dart';
 import '../../utils/font_utils.dart';
@@ -15,9 +15,8 @@ import '../../utils/font_utils.dart';
 // ─────────────────────────────────── STYLING UTILITIES ───────────────────────────────────
 
 /// Returns body text style for selected state.
-TextStyler? selectedBodyStyle(bool selected) => selected
-    ? TextStyler().color($foreground()).fontWeight(FontWeight.w600)
-    : null;
+TextStyler? selectedBodyStyle(bool selected) =>
+    selected ? TextStyler().color($foreground()).fontWeight(.w600) : null;
 
 /// Returns caption text style for selected state.
 TextStyler? selectedCaptionStyle(bool selected) =>
@@ -57,8 +56,8 @@ class RadioOptionCard extends StatelessWidget {
         : $surfaceTertiary.resolve(context);
 
     return Semantics(
-      inMutuallyExclusiveGroup: true,
       selected: selected,
+      inMutuallyExclusiveGroup: true,
       label: 'Option: $title${description != null ? ', $description' : ''}',
       child: Pressable(
         onPress: onTap,
@@ -68,13 +67,13 @@ class RadioOptionCard extends StatelessWidget {
           child: content(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: iconBackground,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: .circular(10),
                 ),
-                alignment: Alignment.center,
+                width: 38,
+                height: 38,
                 child: Icon(icon, size: 20, color: iconColor),
               ),
               SdBody(title, style: selectedBodyStyle(selected)),
@@ -190,50 +189,50 @@ class _ThemeSamplePreview extends StatelessWidget {
     final accent = hexToColor(palette.accent);
 
     return Container(
-      width: double.infinity,
-      height: 148,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: surface, width: 2),
+        border: .all(color: surface, width: 2),
+        borderRadius: .circular(12),
       ),
+      width: .infinity,
+      height: 148,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 4,
             decoration: BoxDecoration(
               color: accent,
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: .circular(999),
             ),
+            width: 38,
+            height: 4,
           ),
           const Spacer(),
           Text(
             'Build what’s next',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: heading,
-              fontFamily: headlineFamily,
               fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontWeight: .w700,
               height: 1.05,
+              fontFamily: headlineFamily,
             ),
+            overflow: .ellipsis,
+            maxLines: 2,
           ),
           const SizedBox(height: 8),
           Text(
             'A clear story, beautifully presented.',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: body,
-              fontFamily: bodyFamily,
               fontSize: 12,
-              fontWeight: FontWeight.w400,
+              fontWeight: .w400,
               height: 1.25,
+              fontFamily: bodyFamily,
             ),
+            overflow: .ellipsis,
+            maxLines: 2,
           ),
         ],
       ),
@@ -243,7 +242,7 @@ class _ThemeSamplePreview extends StatelessWidget {
 
 /// Image style option card with generated preview image.
 class ImageStyleOptionCard extends StatelessWidget {
-  final ImageStyle style;
+  final PresentationImageStyleDescriptor style;
   final Uint8List? imageBytes;
   final bool isLoading;
   final bool hasFailed;
@@ -294,25 +293,19 @@ class ImageStyleOptionCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 8,
         children: [
-          Icon(
-            Icons.broken_image_outlined,
-            color: $muted.resolve(context),
-            size: 32,
-          ),
+          Icon(LucideIcons.imageOff, size: 32, color: $muted.resolve(context)),
           GestureDetector(
             onTap: onRetry,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 4,
               children: [
-                Icon(Icons.refresh, size: 16, color: $accent.resolve(context)),
-                Text(
-                  'Retry',
-                  style: $paragraphSmall
-                      .mix()
-                      .resolve(context)
-                      .copyWith(color: $accent.resolve(context)),
+                Icon(
+                  LucideIcons.refreshCw,
+                  size: 16,
+                  color: $accent.resolve(context),
                 ),
+                SdCaption('Retry', style: TextStyler().color($accent())),
               ],
             ),
           ),
@@ -324,11 +317,7 @@ class ImageStyleOptionCard extends StatelessWidget {
   Widget _buildPlaceholder(BuildContext context) {
     return Box(
       style: BoxStyler().color($surfaceSecondary()).alignment(Alignment.center),
-      child: Icon(
-        Icons.image_outlined,
-        color: $muted.resolve(context),
-        size: 40,
-      ),
+      child: Icon(LucideIcons.image, size: 40, color: $muted.resolve(context)),
     );
   }
 
@@ -362,7 +351,17 @@ class ImageStyleOptionCard extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: SdBody(style.title, style: selectedBodyStyle(selected)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4,
+                  children: [
+                    SdBody(style.title, style: selectedBodyStyle(selected)),
+                    SdCaption(
+                      style.description,
+                      style: selectedCaptionStyle(selected),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

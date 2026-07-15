@@ -34,17 +34,7 @@ class WizardOutlineReview extends StatefulWidget {
 class _WizardOutlineReviewState extends State<WizardOutlineReview> {
   final _invalidSlideKeys = <String>{};
 
-  @override
-  void didUpdateWidget(covariant WizardOutlineReview oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.planRevision != widget.planRevision) {
-      _invalidSlideKeys.clear();
-    }
-    final currentKeys = widget.plan.slides.map((slide) => slide.key).toSet();
-    _invalidSlideKeys.removeWhere((key) => !currentKeys.contains(key));
-  }
-
-  void _setSlideValidity(String key, bool isValid) {
+  void _setSlideValidity(String key, {required bool isValid}) {
     setState(() {
       if (isValid) {
         _invalidSlideKeys.remove(key);
@@ -55,29 +45,39 @@ class _WizardOutlineReviewState extends State<WizardOutlineReview> {
   }
 
   @override
+  void didUpdateWidget(covariant WizardOutlineReview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.planRevision != widget.planRevision) {
+      _invalidSlideKeys.clear();
+    }
+    final currentKeys = widget.plan.slides.map((slide) => slide.key).toSet();
+    _invalidSlideKeys.removeWhere((key) => !currentKeys.contains(key));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const .symmetric(vertical: 8),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: .stretch,
             spacing: 18,
             children: [
               SdPanel(
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   spacing: 14,
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: $accentSoft.resolve(context),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: .circular(12),
                       ),
-                      alignment: Alignment.center,
+                      width: 44,
+                      height: 44,
                       child: Icon(
                         LucideIcons.listTree,
                         size: 22,
@@ -86,7 +86,7 @@ class _WizardOutlineReviewState extends State<WizardOutlineReview> {
                     ),
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: .start,
                         spacing: 6,
                         children: [
                           const SdHeadline('Review the story'),
@@ -114,7 +114,7 @@ class _WizardOutlineReviewState extends State<WizardOutlineReview> {
                   planRevision: widget.planRevision,
                 ),
               Wrap(
-                alignment: WrapAlignment.end,
+                alignment: .end,
                 spacing: 10,
                 runSpacing: 10,
                 children: [
@@ -129,10 +129,10 @@ class _WizardOutlineReviewState extends State<WizardOutlineReview> {
                   ),
                   SdButton(
                     label: 'Approve & build',
-                    icon: LucideIcons.sparkles,
                     onPressed: _invalidSlideKeys.isEmpty
                         ? widget.onApprove
                         : null,
+                    icon: LucideIcons.sparkles,
                   ),
                 ],
               ),
@@ -156,19 +156,20 @@ class _OutlineSection extends StatelessWidget {
   final DeckPlanSectionType section;
   final List<({int index, DeckPlanSlideType slide})> slides;
   final UpdateOutlineSlide onSlideChanged;
-  final void Function(String key, bool isValid) onSlideValidityChanged;
+  final void Function(String key, {required bool isValid})
+  onSlideValidityChanged;
   final int planRevision;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: .stretch,
       spacing: 10,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const .symmetric(horizontal: 4),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             spacing: 4,
             children: [SdTitle(section.title), SdCaption(section.purpose)],
           ),
@@ -180,7 +181,7 @@ class _OutlineSection extends StatelessWidget {
             slide: item.slide,
             onChanged: onSlideChanged,
             onValidityChanged: (isValid) =>
-                onSlideValidityChanged(item.slide.key, isValid),
+                onSlideValidityChanged(item.slide.key, isValid: isValid),
             planRevision: planRevision,
           ),
       ],
@@ -220,6 +221,26 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
     _assertionController = TextEditingController(text: widget.slide.assertion);
   }
 
+  void _submitEdit(String _) {
+    final title = _titleController.text.trim();
+    final assertion = _assertionController.text.trim();
+    if (title.isEmpty || assertion.isEmpty) {
+      setState(() {
+        _validationMessage = 'Add both a slide title and core message.';
+      });
+      widget.onValidityChanged(false);
+
+      return;
+    }
+    final accepted = widget.onChanged(widget.index, title, assertion);
+    setState(() {
+      _validationMessage = accepted
+          ? null
+          : 'This edit conflicts with the approved deck constraints.';
+    });
+    widget.onValidityChanged(accepted);
+  }
+
   @override
   void didUpdateWidget(covariant _OutlineSlideEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -227,6 +248,7 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
       _titleController.text = widget.slide.title;
       _assertionController.text = widget.slide.assertion;
       _validationMessage = null;
+
       return;
     }
     if (oldWidget.slide.title != widget.slide.title &&
@@ -246,25 +268,6 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
     super.dispose();
   }
 
-  void _submitEdit(String _) {
-    final title = _titleController.text.trim();
-    final assertion = _assertionController.text.trim();
-    if (title.isEmpty || assertion.isEmpty) {
-      setState(() {
-        _validationMessage = 'Add both a slide title and core message.';
-      });
-      widget.onValidityChanged(false);
-      return;
-    }
-    final accepted = widget.onChanged(widget.index, title, assertion);
-    setState(() {
-      _validationMessage = accepted
-          ? null
-          : 'This edit conflicts with the approved deck constraints.';
-    });
-    widget.onValidityChanged(accepted);
-  }
-
   @override
   Widget build(BuildContext context) {
     final slide = widget.slide;
@@ -272,41 +275,41 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
 
     return SdPanel(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         spacing: 14,
         children: [
           Container(
-            width: 58,
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            alignment: Alignment.center,
+            padding: const .symmetric(vertical: 8),
             decoration: BoxDecoration(
               color: $surfaceTertiary.resolve(context),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor),
+              border: .all(color: borderColor),
+              borderRadius: .circular(10),
             ),
-            alignment: Alignment.center,
+            width: 58,
             child: SdCaption('Slide ${widget.index + 1}'),
           ),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               spacing: 12,
               children: [
                 SdTextField(
                   key: ValueKey('outline-title-${slide.key}'),
                   controller: _titleController,
                   label: 'Slide title',
-                  semanticLabel: 'Slide ${widget.index + 1} title',
-                  textInputAction: TextInputAction.next,
                   onChanged: _submitEdit,
+                  textInputAction: .next,
+                  semanticLabel: 'Slide ${widget.index + 1} title',
                 ),
                 SdTextField(
                   key: ValueKey('outline-assertion-${slide.key}'),
                   controller: _assertionController,
                   label: 'Core message',
-                  semanticLabel: 'Slide ${widget.index + 1} core message',
-                  minLines: 1,
-                  maxLines: 2,
                   onChanged: _submitEdit,
+                  maxLines: 2,
+                  minLines: 1,
+                  semanticLabel: 'Slide ${widget.index + 1} core message',
                 ),
                 if (_validationMessage case final message?)
                   Text(
@@ -323,6 +326,11 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
                     _PlanChip(label: slide.narrativeRole),
                     _PlanChip(label: slide.composition),
                     _PlanChip(label: slide.treatment),
+                    if ((slide.elements ?? const <DeckPlanElementType>[]).any(
+                      (element) =>
+                          element.generationPrompt?.trim().isNotEmpty == true,
+                    ))
+                      const _PlanChip(label: 'artwork planned'),
                   ],
                 ),
               ],
@@ -342,10 +350,10 @@ class _PlanChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      padding: const .symmetric(vertical: 5, horizontal: 9),
       decoration: BoxDecoration(
         color: $surfaceTertiary.resolve(context),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: .circular(999),
       ),
       child: SdCaption(label),
     );

@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -134,9 +136,11 @@ class ImageDto {
 /// - `scale` (optional): Paint scale within the image frame - default: 1
 class ImageWidget extends StatelessWidget {
   final ImageDto _data;
+  final ui.Image? _decodedImage;
 
-  ImageWidget(Map<String, Object?> args, {super.key})
-    : _data = ImageDto.parse(args);
+  ImageWidget(Map<String, Object?> args, {super.key, ui.Image? decodedImage})
+    : _data = ImageDto.parse(args),
+      _decodedImage = decodedImage;
 
   @override
   Widget build(BuildContext context) {
@@ -157,19 +161,25 @@ class ImageWidget extends StatelessWidget {
     final assetCacheStore = InheritedData.maybeOf<SlideConfiguration>(
       context,
     )?.assetCacheStore;
-    final Widget image = (assetCacheStore != null && isBareAssetKey(_data.src))
-        ? ResolvedAssetImage(
-            assetKey: _data.src.path,
-            store: assetCacheStore,
-            fallback: _data.src,
-            targetSize: data.size,
-            styleSpec: styleSpec,
-          )
-        : CachedImage(
-            uri: _data.src,
-            targetSize: data.size,
-            styleSpec: styleSpec,
-          );
+    final Widget image = switch (_decodedImage) {
+      final decodedImage? => _DecodedImage(
+        image: decodedImage,
+        styleSpec: styleSpec,
+      ),
+      null when assetCacheStore != null && isBareAssetKey(_data.src) =>
+        ResolvedAssetImage(
+          assetKey: _data.src.path,
+          store: assetCacheStore,
+          fallback: _data.src,
+          targetSize: data.size,
+          styleSpec: styleSpec,
+        ),
+      null => CachedImage(
+        uri: _data.src,
+        targetSize: data.size,
+        styleSpec: styleSpec,
+      ),
+    };
 
     final hasExplicitSize = _data.width != null || _data.height != null;
 
@@ -195,6 +205,32 @@ class ImageWidget extends StatelessWidget {
     return Align(
       alignment: flutterAlignment,
       child: ClipRect(child: frame),
+    );
+  }
+}
+
+class _DecodedImage extends StatelessWidget {
+  const _DecodedImage({required this.image, required this.styleSpec});
+
+  final ui.Image image;
+  final StyleSpec<ImageSpec> styleSpec;
+
+  @override
+  Widget build(BuildContext context) {
+    final spec = styleSpec.spec;
+    return RawImage(
+      image: image,
+      width: spec.width,
+      height: spec.height,
+      color: spec.color,
+      colorBlendMode: spec.colorBlendMode,
+      fit: spec.fit,
+      alignment: spec.alignment ?? Alignment.center,
+      repeat: spec.repeat ?? ImageRepeat.noRepeat,
+      centerSlice: spec.centerSlice,
+      matchTextDirection: spec.matchTextDirection ?? false,
+      filterQuality: spec.filterQuality ?? FilterQuality.medium,
+      isAntiAlias: spec.isAntiAlias ?? false,
     );
   }
 }

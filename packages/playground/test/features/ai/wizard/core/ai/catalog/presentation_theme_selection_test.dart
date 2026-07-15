@@ -92,6 +92,7 @@ void main() {
           'AskUserCheckbox',
           'AskUserSlider',
           'AskUserStyle',
+          'AskUserImageStyle',
         });
         final examples = items['AskUserStyle']!.exampleData.map(
           (build) => build(),

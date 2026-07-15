@@ -66,7 +66,8 @@ Choose layout from information shape:
 - `metric`: one to three grounded numbers with their meaning
 - `quote`: short supplied voice or emphasized takeaway
 - `titleLeft`: assertion/context beside supporting detail
-- `imageLeft`, `imageRight`, `imageFullBleed`: supplied image plus appropriate copy
+- `imageLeft`, `imageRight`, `imageFullBleed`: supplied or generated image plus
+  appropriate copy
 - `qrcode`, `webview`, `dartpad`, `custom`: matching supplied element only
 
 Treatments are semantic: `hero`, `section`, `content`, `data`, `quote`, `visual`,
@@ -96,6 +97,24 @@ metric, or table composition. A supplied handoff purpose is exhaustive—do not
 rename it as documentation, signup, support, early access, or another promise.
 Use each grounded element only as often as the story genuinely needs it.
 
+## Generated artwork
+
+When the typed request includes exact `imageStyleId` and `imageStyleVersion`,
+you may plan two to four generated visuals, at most `maxGeneratedImages`. Use
+them only where a visual materially clarifies,
+anchors, or varies the story; a deck does not need an image on every slide.
+
+For each generated visual, add one `image` element with a concrete,
+topic-specific `generationPrompt` and no `source`. Describe the subject and
+scene, not the selected treatment: the application owns and applies the exact
+versioned style. Keep the subject simple, presentation-safe, and free of text,
+logos, brands, UI screenshots, and unsupported factual claims. An image element
+must contain exactly one input—never both `source` and `generationPrompt`.
+
+If the exact image-style fields are absent, do not author a `generationPrompt`;
+use only supplied grounded image sources. Use no more than one image element per
+slide, and pair every image composition with its matching image element.
+
 ## Theme selection
 
 Select exactly one eligible theme candidate by stable `id` and return only that
@@ -109,6 +128,7 @@ tokens or add theme fields outside the schema.
 1. Match `slideCount` exactly and keep section membership/order consistent.
 2. Give every slide one assertion and enough concrete content to compose alone.
 3. Preserve exact facts and grounded elements without invention or amplification.
-4. Use tables only for uniform comparisons and columns for independent ideas.
-5. End with the decision, action, or synthesis appropriate to the audience.
-6. Return schema-supported JSON only, without commentary or Markdown fences.
+4. Keep generated artwork within its exact style and count contract.
+5. Use tables only for uniform comparisons and columns for independent ideas.
+6. End with the decision, action, or synthesis appropriate to the audience.
+7. Return schema-supported JSON only, without commentary or Markdown fences.

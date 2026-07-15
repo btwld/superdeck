@@ -6,7 +6,9 @@ import 'package:genui/genui.dart' as genui;
 import 'package:signals/signals_flutter.dart';
 
 import '../../../../quick_agent/core/constants/gemini_models.dart';
+import '../../../../image_generation/image_style_preview_coordinator.dart';
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../schemas/user_action_payload.dart';
 import '../wizard_session_state.dart';
 import '../../debug_logger.dart';
@@ -28,20 +30,20 @@ MissingSurfaceAction decideMissingSurfaceAction({
   required int recoveryAttempts,
 }) {
   if (hasError || !hasController || requestProducedSurface) {
-    return MissingSurfaceAction.none;
+    return .none;
   }
-  return recoveryAttempts == 0
-      ? MissingSurfaceAction.recover
-      : MissingSurfaceAction.showError;
+
+  return recoveryAttempts == 0 ? .recover : .showError;
 }
 
 @visibleForTesting
 String? expectedWizardComponentType(WizardStep step) => switch (step) {
-  WizardStep.audience || WizardStep.approach => 'AskUserRadio',
-  WizardStep.emphasis => 'AskUserCheckbox',
-  WizardStep.slideCount => 'AskUserSlider',
-  WizardStep.theme => 'AskUserStyle',
-  WizardStep.topic || WizardStep.review => null,
+  .audience || .approach => 'AskUserRadio',
+  .emphasis => 'AskUserCheckbox',
+  .slideCount => 'AskUserSlider',
+  .theme => 'AskUserStyle',
+  .imageStyle => 'AskUserImageStyle',
+  .topic || .review => null,
 };
 
 @visibleForTesting
@@ -50,24 +52,63 @@ bool isExpectedWizardSurface(
   WizardStep step,
 ) {
   final expectedType = expectedWizardComponentType(step);
+
   return expectedType != null &&
       definition.components['root']?.type == expectedType;
 }
 
 final class AiConversationViewModel extends ChangeNotifier
     implements Disposable {
+  final PresentationImageStyleCatalog imageStyleCatalog;
+
+  final PresentationThemeCatalog themeCatalog;
+  final bool imageStyleEnabled;
+
+  final surfaceIds = Signal<List<String>>([]);
+  late final Computed<bool> isThinking = computed(() {
+    return _isProcessing.value;
+  });
+  late final Computed<bool> hasConversationStarted = computed(
+    () => _controller.value != null,
+  );
+
+  /// The Wizard favors the current Flash Lite model for short, structured
+  /// surface turns. There is intentionally no in-wizard model picker.
+  static const _modelName = GeminiModelNames.gemini31FlashLite;
+  static const _missingSurfaceError =
+      'I couldn\'t prepare the next step. Add a detail below to try again.';
+  final _controller = Signal<genui.SurfaceController?>(null);
+  final _isProcessing = Signal<bool>(false);
+
+  final ImageStylePreviewCoordinator? _imageStylePreviews;
+  late final GenUiConversationSession _session;
+  DateTime? _lastRequestTime;
+  String? _errorMessage;
+  String? _surfaceRecoveryReason;
+  var _surfaceRecoveryAttempts = 0;
+  var _requestProducedSurface = false;
+  var _disposed = false;
+
+  WizardSessionState _wizardState;
+
+  static const _errorClassifier = ErrorClassifier();
+
   AiConversationViewModel({
     required AiConversationProfile profile,
     @visibleForTesting SuperdeckTransportFactory? transportFactory,
     @visibleForTesting String? apiKey,
+    ImageStylePreviewCoordinator? imageStylePreviews,
+    this.imageStyleEnabled = true,
     SuperdeckAgentClientFactory agentClientFactory =
         DartanticSuperdeckAgentClient.new,
-  }) : themeCatalog = profile.themeCatalog {
+  }) : imageStyleCatalog = profile.imageStyleCatalog,
+       themeCatalog = profile.themeCatalog,
+       _imageStylePreviews = imageStylePreviews,
+       _wizardState = WizardSessionState.initial(
+         imageStyleEnabled: imageStyleEnabled,
+       ) {
     _session = GenUiConversationSession(
       profile: profile,
-      apiKey: apiKey,
-      transportFactory: transportFactory,
-      agentClientFactory: agentClientFactory,
       handlers: ConversationSessionHandlers(
         onRequestStarted: _handleRequestStarted,
         onRequestFinished: _handleRequestFinished,
@@ -76,136 +117,10 @@ final class AiConversationViewModel extends ChangeNotifier
         onTextResponse: _handleTextResponse,
         onError: _handleTransportError,
       ),
+      apiKey: apiKey,
+      transportFactory: transportFactory,
+      agentClientFactory: agentClientFactory,
     );
-  }
-
-  /// The Wizard favors the current Flash Lite model for short, structured
-  /// surface turns. There is intentionally no in-wizard model picker.
-  static const _modelName = GeminiModelNames.gemini31FlashLite;
-  static const _missingSurfaceError =
-      'I couldn\'t prepare the next step. Add a detail below to try again.';
-
-  final PresentationThemeCatalog themeCatalog;
-
-  final surfaceIds = Signal<List<String>>([]);
-  final _controller = Signal<genui.SurfaceController?>(null);
-  final _isProcessing = Signal<bool>(false);
-
-  late final GenUiConversationSession _session;
-  DateTime? _lastRequestTime;
-  String? _errorMessage;
-  String? _surfaceRecoveryReason;
-  var _surfaceRecoveryAttempts = 0;
-  var _requestProducedSurface = false;
-  var _disposed = false;
-  var _wizardState = WizardSessionState.initial();
-
-  genui.SurfaceController? get controller => _controller.value;
-
-  String? get errorMessage => _errorMessage;
-
-  WizardSessionState get wizardState => _wizardState;
-
-  late final Computed<bool> isThinking = computed(() {
-    return _isProcessing.value;
-  });
-
-  late final Computed<bool> hasConversationStarted = computed(
-    () => _controller.value != null,
-  );
-
-  Future<bool> ensureConversationStarted() async {
-    if (_disposed) return false;
-
-    final result = await _session.ensureStarted(modelName: _modelName);
-    if (result.started) {
-      _controller.value = _session.controller;
-      _notifyView();
-      return true;
-    }
-
-    final message = result.message;
-    if (message != null && !_disposed) {
-      _errorMessage = message;
-      _notifyView();
-    }
-    return false;
-  }
-
-  Future<void> sendMessage(String raw) async {
-    final message = raw.trim();
-    if (message.isEmpty || _disposed || _isProcessing.value) return;
-
-    _isProcessing.value = true;
-    _notifyView();
-
-    debugLog.userAction('SEND_MESSAGE', {'message': message});
-    debugLog.section('New Message');
-
-    final isFirstTurn = !hasConversationStarted.value;
-    WizardSessionState? topicState;
-    if (isFirstTurn) {
-      topicState = _wizardState.startTopic(message);
-      if (topicState == null) {
-        _isProcessing.value = false;
-        _notifyView();
-        return;
-      }
-      debugLog.log('CONV', 'Building new conversation');
-      final ok = await ensureConversationStarted();
-      if (!ok) {
-        _isProcessing.value = false;
-        _notifyView();
-        return;
-      }
-      _wizardState = topicState;
-    }
-
-    if (!_session.hasActiveSession || _wizardState.step == WizardStep.review) {
-      _isProcessing.value = false;
-      _notifyView();
-      return;
-    }
-
-    _surfaceRecoveryAttempts = 0;
-    await _enqueueRequest(
-      genui.ChatMessage.user(
-        buildWizardTurnPrompt(
-          userInput: isFirstTurn
-              ? 'Presentation topic: $message'
-              : 'User request for the current step: $message',
-          state: _wizardState,
-        ),
-      ),
-    );
-  }
-
-  void restartConversation() {
-    debugLog.section('Conversation Restarted');
-    _session.restart();
-    _controller.value = null;
-    _isProcessing.value = false;
-    _errorMessage = null;
-    _surfaceRecoveryReason = null;
-    _surfaceRecoveryAttempts = 0;
-    _requestProducedSurface = false;
-    _wizardState = WizardSessionState.initial();
-    surfaceIds.value = [];
-    _notifyView();
-  }
-
-  @override
-  void dispose() {
-    if (_disposed) return;
-    _disposed = true;
-    _session.dispose();
-
-    surfaceIds.dispose();
-    _controller.dispose();
-    _isProcessing.dispose();
-    isThinking.dispose();
-    hasConversationStarted.dispose();
-    super.dispose();
   }
 
   Future<void> _enqueueRequest(genui.ChatMessage message) {
@@ -233,7 +148,7 @@ final class AiConversationViewModel extends ChangeNotifier
       requestProducedSurface: _requestProducedSurface,
       recoveryAttempts: _surfaceRecoveryAttempts,
     )) {
-      case MissingSurfaceAction.recover:
+      case .recover:
         _surfaceRecoveryAttempts++;
         final recoveryPrompt = _buildSurfaceRecoveryPrompt();
         _surfaceRecoveryReason = null;
@@ -243,11 +158,12 @@ final class AiConversationViewModel extends ChangeNotifier
               'requesting one recovery turn',
         );
         unawaited(_enqueueRequest(genui.ChatMessage.user(recoveryPrompt)));
+
         return;
-      case MissingSurfaceAction.showError:
+      case .showError:
         _errorMessage = _missingSurfaceError;
         break;
-      case MissingSurfaceAction.none:
+      case .none:
         break;
     }
 
@@ -258,12 +174,14 @@ final class AiConversationViewModel extends ChangeNotifier
   void _handleUiSubmit(genui.ChatMessage message) {
     if (_isProcessing.value) {
       debugLog.log('USER', 'Ignored a duplicate Wizard interaction.');
+
       return;
     }
     _surfaceRecoveryAttempts = 0;
     final interactionParts = message.parts.uiInteractionParts.toList();
     if (interactionParts.length != 1) {
       _rejectUiAction('Expected exactly one Wizard interaction.');
+
       return;
     }
 
@@ -271,6 +189,7 @@ final class AiConversationViewModel extends ChangeNotifier
     final parsed = UserActionPayload.tryParse(rawJson);
     if (parsed == null || parsed.actionName != 'submit_answer') {
       _rejectUiAction('Received an invalid Wizard action.');
+
       return;
     }
 
@@ -280,14 +199,16 @@ final class AiConversationViewModel extends ChangeNotifier
       _rejectUiAction(
         'That selection does not match the current ${previousStep.name} step.',
       );
+
       return;
     }
 
     _wizardState = nextState;
     debugLog.userAction('UI_ACTION', parsed.context);
 
-    if (nextState.step == WizardStep.review) {
+    if (nextState.step == .review) {
       _notifyView();
+
       return;
     }
 
@@ -393,6 +314,7 @@ final class AiConversationViewModel extends ChangeNotifier
     final reason =
         _surfaceRecoveryReason ??
         'The previous response did not include a renderable Wizard surface.';
+
     return buildWizardTurnPrompt(
       userInput:
           '$reason Return the registered component for the next unanswered '
@@ -426,14 +348,119 @@ final class AiConversationViewModel extends ChangeNotifier
     debugLog.log('TIMING', '$event at +${elapsed.inMilliseconds}ms');
   }
 
-  static const _errorClassifier = ErrorClassifier();
-
   String _getErrorMessage(Object error) =>
       _errorClassifier.getUserMessage(error);
 
   String _sanitizeError(Object error) {
     final str = error.toString();
     return str.replaceAll(RegExp(r'[A-Za-z0-9_-]{20,}'), '[REDACTED]');
+  }
+
+  genui.SurfaceController? get controller => _controller.value;
+
+  String? get errorMessage => _errorMessage;
+
+  WizardSessionState get wizardState => _wizardState;
+
+  Future<bool> ensureConversationStarted() async {
+    if (_disposed) return false;
+
+    final result = await _session.ensureStarted(modelName: _modelName);
+    if (result.started) {
+      _controller.value = _session.controller;
+      _notifyView();
+      return true;
+    }
+
+    final message = result.message;
+    if (message != null && !_disposed) {
+      _errorMessage = message;
+      _notifyView();
+    }
+    return false;
+  }
+
+  Future<void> sendMessage(String raw) async {
+    final message = raw.trim();
+    if (message.isEmpty || _disposed || _isProcessing.value) return;
+
+    _isProcessing.value = true;
+    _notifyView();
+
+    debugLog.userAction('SEND_MESSAGE', {'message': message});
+    debugLog.section('New Message');
+
+    final isFirstTurn = !hasConversationStarted.value;
+    WizardSessionState? topicState;
+    if (isFirstTurn) {
+      topicState = _wizardState.startTopic(message);
+      if (topicState == null) {
+        _isProcessing.value = false;
+        _notifyView();
+
+        return;
+      }
+      _imageStylePreviews?.prefetch(message);
+      debugLog.log('CONV', 'Building new conversation');
+      final ok = await ensureConversationStarted();
+      if (!ok) {
+        _isProcessing.value = false;
+        _notifyView();
+
+        return;
+      }
+      _wizardState = topicState;
+    }
+
+    if (!_session.hasActiveSession || _wizardState.step == .review) {
+      _isProcessing.value = false;
+      _notifyView();
+
+      return;
+    }
+
+    _surfaceRecoveryAttempts = 0;
+    await _enqueueRequest(
+      genui.ChatMessage.user(
+        buildWizardTurnPrompt(
+          userInput: isFirstTurn
+              ? 'Presentation topic: $message'
+              : 'User request for the current step: $message',
+          state: _wizardState,
+        ),
+      ),
+    );
+  }
+
+  void restartConversation() {
+    debugLog.section('Conversation Restarted');
+    _session.restart();
+    _controller.value = null;
+    _isProcessing.value = false;
+    _errorMessage = null;
+    _surfaceRecoveryReason = null;
+    _surfaceRecoveryAttempts = 0;
+    _requestProducedSurface = false;
+    _wizardState = WizardSessionState.initial(
+      imageStyleEnabled: imageStyleEnabled,
+    );
+    _imageStylePreviews?.reset();
+    surfaceIds.value = [];
+    _notifyView();
+  }
+
+  @override
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _session.dispose();
+
+    surfaceIds.dispose();
+    _controller.dispose();
+    _isProcessing.dispose();
+    isThinking.dispose();
+    hasConversationStarted.dispose();
+    super.dispose();
   }
 }
 

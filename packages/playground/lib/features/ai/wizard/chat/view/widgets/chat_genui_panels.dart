@@ -76,8 +76,8 @@ class AiSurfacesPanel extends StatelessWidget {
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.easeInCubic,
               child: AnimatedOpacity(
-                duration: SdTokens.motionFast,
                 opacity: thinking ? 0.5 : 1.0,
+                duration: SdTokens.motionFast,
                 child: flex(
                   key: ValueKey(ids.last),
                   children: ids.map((surfaceId) {
@@ -115,9 +115,9 @@ class AiSurfacesPanel extends StatelessWidget {
     }
 
     return SizedBox(
-      width: double.infinity,
+      width: .infinity,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: .stretch,
         children: [
           Expanded(
             child: Center(

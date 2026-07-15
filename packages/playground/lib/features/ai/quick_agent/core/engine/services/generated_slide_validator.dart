@@ -58,6 +58,7 @@ Map<String, dynamic> _normalizeBlockForPlan(
   if (planSlide.composition == 'title') {
     normalized = _flattenTitleListMarkers(normalized);
   }
+
   return normalized;
 }
 
@@ -277,7 +278,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
   );
   final compositionGuidance = errors.scoped(
     category: GenerationValidationCategory.quality,
-    severity: GenerationValidationSeverity.diagnostic,
+    severity: .diagnostic,
   );
   if (slide.sections.length > 2) {
     compositionGuidance.add(
@@ -359,7 +360,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       .scoped(
         code: GenerationValidationCode.numericGrounding,
         category: GenerationValidationCategory.factual,
-        severity: GenerationValidationSeverity.diagnostic,
+        severity: .diagnostic,
       )
       .addAll(
         _validateNumericClaimGrounding(
@@ -372,7 +373,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       .scoped(
         code: GenerationValidationCode.numericMeaning,
         category: GenerationValidationCategory.factual,
-        severity: GenerationValidationSeverity.diagnostic,
+        severity: .diagnostic,
       )
       .addAll(
         _validateNumericClaimContext(
@@ -413,7 +414,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.numericGrounding,
           category: GenerationValidationCategory.factual,
-          severity: GenerationValidationSeverity.diagnostic,
+          severity: .diagnostic,
         )
         .addAll(
           _validateNumericClaimGrounding(
@@ -426,7 +427,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.numericMeaning,
           category: GenerationValidationCategory.factual,
-          severity: GenerationValidationSeverity.diagnostic,
+          severity: .diagnostic,
         )
         .addAll(
           _validateNumericClaimContext(
@@ -452,7 +453,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       .scoped(
         code: GenerationValidationCode.contentDensity,
         category: GenerationValidationCategory.quality,
-        severity: GenerationValidationSeverity.diagnostic,
+        severity: .diagnostic,
       )
       .addAll(
         _validateDisplayHeadings(
@@ -477,8 +478,8 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
                 visibleCharacters: visibleCharacters,
                 characterLimit: characterLimit,
               )
-              ? GenerationValidationSeverity.blocking
-              : GenerationValidationSeverity.diagnostic,
+              ? .blocking
+              : .diagnostic,
         )
         .add(
           'Slide exceeds the ${planSlide.density} content budget of '
@@ -645,6 +646,7 @@ _validateCommitmentGrounding(
     );
   }
   final verb = label == 'Speaker comments' ? 'introduce' : 'introduces';
+
   return (
     messages: [
       '$label $verb unsupported commitment claim(s): '

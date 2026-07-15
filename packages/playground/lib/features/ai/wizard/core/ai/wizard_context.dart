@@ -17,8 +17,7 @@ class WizardContext {
   final String? headlineFont;
   final String? bodyFont;
   final String? imageStyleId;
-  final String? imageStyleName;
-  final String? imageStyleDescription;
+  final int? imageStyleVersion;
 
   const WizardContext({
     this.topic,
@@ -33,8 +32,7 @@ class WizardContext {
     this.headlineFont,
     this.bodyFont,
     this.imageStyleId,
-    this.imageStyleName,
-    this.imageStyleDescription,
+    this.imageStyleVersion,
   });
 
   WizardContext copyWith({
@@ -50,8 +48,7 @@ class WizardContext {
     String? headlineFont,
     String? bodyFont,
     String? imageStyleId,
-    String? imageStyleName,
-    String? imageStyleDescription,
+    int? imageStyleVersion,
   }) {
     return WizardContext(
       topic: topic ?? this.topic,
@@ -66,9 +63,7 @@ class WizardContext {
       headlineFont: headlineFont ?? this.headlineFont,
       bodyFont: bodyFont ?? this.bodyFont,
       imageStyleId: imageStyleId ?? this.imageStyleId,
-      imageStyleName: imageStyleName ?? this.imageStyleName,
-      imageStyleDescription:
-          imageStyleDescription ?? this.imageStyleDescription,
+      imageStyleVersion: imageStyleVersion ?? this.imageStyleVersion,
     );
   }
 
@@ -92,11 +87,7 @@ class WizardContext {
     setIfNonNull(WizardContextKeys.headlineFont, headlineFont);
     setIfNonNull(WizardContextKeys.bodyFont, bodyFont);
     setIfNonNull(WizardContextKeys.imageStyleId, imageStyleId);
-    setIfNonNull(WizardContextKeys.imageStyleName, imageStyleName);
-    setIfNonNull(
-      WizardContextKeys.imageStyleDescription,
-      imageStyleDescription,
-    );
+    setIfNonNull(WizardContextKeys.imageStyleVersion, imageStyleVersion);
 
     return map;
   }

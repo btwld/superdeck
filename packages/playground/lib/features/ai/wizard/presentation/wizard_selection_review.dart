@@ -3,6 +3,7 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/domain/design/presentation_theme_catalog.dart';
+import '../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../core/ai/wizard_context.dart';
 import '../core/ui/ui.dart';
 import '../core/utils/color_utils.dart';
@@ -12,15 +13,19 @@ class WizardSelectionReview extends StatelessWidget {
   const WizardSelectionReview({
     super.key,
     required this.wizardContext,
+    required this.imageStyleCatalog,
     required this.themeCatalog,
     required this.onCreateOutline,
     this.onStartOver,
+    this.showArtwork = true,
   });
 
   final WizardContext wizardContext;
+  final PresentationImageStyleCatalog imageStyleCatalog;
   final PresentationThemeCatalog themeCatalog;
   final VoidCallback onCreateOutline;
   final VoidCallback? onStartOver;
+  final bool showArtwork;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +33,7 @@ class WizardSelectionReview extends StatelessWidget {
         ? null
         : themeCatalog.current(wizardContext.themeId!);
     final emphasis = wizardContext.emphasis?.join(', ') ?? '';
+    final imageStyle = _resolveImageStyle(wizardContext, imageStyleCatalog);
 
     return Center(
       child: SingleChildScrollView(
@@ -35,21 +41,21 @@ class WizardSelectionReview extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 760),
           child: SdPanel(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               spacing: 20,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   spacing: 12,
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: $accentSoft.resolve(context),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: .circular(12),
                       ),
-                      alignment: Alignment.center,
+                      width: 42,
+                      height: 42,
                       child: Icon(
                         LucideIcons.layers,
                         size: 21,
@@ -58,7 +64,7 @@ class WizardSelectionReview extends StatelessWidget {
                     ),
                     const Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: .start,
                         spacing: 4,
                         children: [
                           SdHeadline('Review your deck setup'),
@@ -82,9 +88,11 @@ class WizardSelectionReview extends StatelessWidget {
                     ),
                   ],
                   theme: theme,
+                  imageStyle: imageStyle,
+                  showArtwork: showArtwork,
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: .end,
                   spacing: 12,
                   children: [
                     if (onStartOver != null)
@@ -94,8 +102,8 @@ class WizardSelectionReview extends StatelessWidget {
                       ),
                     SdButton(
                       label: 'Create outline',
-                      icon: LucideIcons.sparkles,
                       onPressed: onCreateOutline,
+                      icon: LucideIcons.sparkles,
                     ),
                   ],
                 ),
@@ -109,17 +117,24 @@ class WizardSelectionReview extends StatelessWidget {
 }
 
 final class _ReviewItem {
-  const _ReviewItem(this.label, this.value);
-
   final String label;
+
   final String value;
+  const _ReviewItem(this.label, this.value);
 }
 
 class _ReviewItems extends StatelessWidget {
-  const _ReviewItems({required this.items, required this.theme});
+  const _ReviewItems({
+    required this.items,
+    required this.theme,
+    required this.imageStyle,
+    required this.showArtwork,
+  });
 
   final List<_ReviewItem> items;
   final PresentationThemeDescriptor? theme;
+  final PresentationImageStyleDescriptor? imageStyle;
+  final bool showArtwork;
 
   @override
   Widget build(BuildContext context) {
@@ -136,8 +151,38 @@ class _ReviewItems extends StatelessWidget {
               ? const SdBody('Theme unavailable')
               : _ThemeSummary(theme: theme!),
         ),
+        if (showArtwork) ...[
+          Divider(height: 1, color: $separator.resolve(context)),
+          _ReviewRow(
+            label: 'Artwork',
+            child: imageStyle == null
+                ? const SdBody('Artwork direction unavailable')
+                : Column(
+                    crossAxisAlignment: .start,
+                    spacing: 4,
+                    children: [
+                      SdBody(imageStyle!.title),
+                      SdCaption(imageStyle!.description),
+                    ],
+                  ),
+          ),
+        ],
       ],
     );
+  }
+}
+
+PresentationImageStyleDescriptor? _resolveImageStyle(
+  WizardContext context,
+  PresentationImageStyleCatalog catalog,
+) {
+  final id = context.imageStyleId;
+  final version = context.imageStyleVersion;
+  if (id == null || version == null) return null;
+  try {
+    return catalog.resolve(id: id, version: version);
+  } on ArgumentError {
+    return null;
   }
 }
 
@@ -150,19 +195,19 @@ class _ReviewRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const .symmetric(vertical: 14),
       child: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth < 480) {
             return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               spacing: 8,
               children: [SdCaption(label), child],
             );
           }
 
           return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               SizedBox(width: 120, child: SdCaption(label)),
               Expanded(child: child),
@@ -182,8 +227,9 @@ class _ThemeSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recipe = theme.recipe;
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       spacing: 6,
       children: [
         SdBody(theme.title),

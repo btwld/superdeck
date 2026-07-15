@@ -87,6 +87,7 @@ class DeckLengthSelector extends StatelessWidget {
     final values = unit.toLowerCase().contains('slide')
         ? [min, 8, 10, 12, 15, 20, max]
         : [min, ((min + max) / 2).round(), max];
+
     return values.where((item) => item >= min && item <= max).toSet().toList()
       ..sort();
   }
@@ -97,23 +98,23 @@ class DeckLengthSelector extends StatelessWidget {
     final mutedColor = $muted.resolve(context);
 
     final identity = Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: .min,
       spacing: 12,
       children: [
         Container(
-          width: 44,
-          height: 44,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: $accentSoft.resolve(context),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: .circular(12),
           ),
-          alignment: Alignment.center,
+          width: 44,
+          height: 44,
           child: Icon(LucideIcons.presentation, size: 22, color: iconColor),
         ),
         const Flexible(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
             children: [
               SdBody('Deck length'),
               SdCaption('Choose a pace that fits your story'),
@@ -124,30 +125,30 @@ class DeckLengthSelector extends StatelessWidget {
     );
 
     final counter = Container(
+      padding: const .symmetric(vertical: 4, horizontal: 4),
       decoration: BoxDecoration(
         color: $background.resolve(context),
-        border: Border.all(color: $border.resolve(context)),
-        borderRadius: BorderRadius.circular(14),
+        border: .all(color: $border.resolve(context)),
+        borderRadius: .circular(14),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           IconButton(
-            tooltip: 'One fewer slide',
             onPressed: value > min ? () => onChanged(value - 1) : null,
+            tooltip: 'One fewer slide',
             icon: const Icon(LucideIcons.minus, size: 18),
           ),
-          SizedBox(
-            width: 76,
+          ConstrainedBox(
+            constraints: const BoxConstraints.tightFor(width: 76),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: .min,
               children: [
                 Text(
                   '$value',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: $foreground.resolve(context),
-                    fontWeight: FontWeight.w700,
+                    fontWeight: .w700,
                     height: 1,
                   ),
                 ),
@@ -162,8 +163,8 @@ class DeckLengthSelector extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'One more slide',
             onPressed: value < max ? () => onChanged(value + 1) : null,
+            tooltip: 'One more slide',
             icon: const Icon(LucideIcons.plus, size: 18),
           ),
         ],
@@ -172,20 +173,21 @@ class DeckLengthSelector extends StatelessWidget {
 
     return SdPanel(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         spacing: 18,
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
               if (constraints.maxWidth < 520) {
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   spacing: 16,
                   children: [identity, counter],
                 );
               }
+
               return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: .spaceBetween,
                 spacing: 16,
                 children: [
                   Expanded(child: identity),
@@ -226,35 +228,35 @@ class _DeckLengthPreset extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      button: true,
       selected: selected,
+      button: true,
       label: '$value slides',
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
           onTap: onTap,
+          borderRadius: .circular(10),
           child: AnimatedContainer(
-            duration: SdTokens.motionFast,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            padding: const .symmetric(vertical: 9, horizontal: 14),
             decoration: BoxDecoration(
               color: selected
                   ? $accentSoft.resolve(context)
                   : $background.resolve(context),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
+              border: .all(
                 color: selected
                     ? $accent.resolve(context)
                     : $border.resolve(context),
               ),
+              borderRadius: .circular(10),
             ),
+            duration: SdTokens.motionFast,
             child: Text(
               '$value',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: selected
                     ? $accent.resolve(context)
                     : $muted.resolve(context),
-                fontWeight: FontWeight.w600,
+                fontWeight: .w600,
               ),
             ),
           ),
@@ -277,10 +279,6 @@ class _AskUserSliderContent extends StatefulWidget {
 class _AskUserSliderContentState extends State<_AskUserSliderContent> {
   int _sliderValue = 0;
 
-  int _clampToRange(int value, {required int min, required int max}) {
-    return value.clamp(min, max).toInt();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -288,6 +286,35 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
     final maxVal = widget.data.maxValue;
     final defaultVal = widget.data.defaultValue;
     _sliderValue = _clampToRange(defaultVal, min: minVal, max: maxVal);
+  }
+
+  int _clampToRange(int value, {required int min, required int max}) {
+    return value.clamp(min, max).toInt();
+  }
+
+  Map<String, dynamic> _buildActionContext() {
+    return {'value': _sliderValue};
+  }
+
+  void _submitAction() => submitCatalogActionIfValid(
+    canSubmit: true,
+    itemContext: widget.itemContext,
+    action: widget.data.action,
+    contextBuilder: _buildActionContext,
+  );
+
+  Widget _buildSlider() {
+    final minValue = widget.data.minValue;
+    final maxValue = widget.data.maxValue;
+    final unit = widget.data.unit ?? '';
+
+    return DeckLengthSelector(
+      value: _sliderValue,
+      min: minValue,
+      max: maxValue,
+      onChanged: (value) => setState(() => _sliderValue = value),
+      unit: unit,
+    );
   }
 
   @override
@@ -315,17 +342,6 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
     }
   }
 
-  Map<String, dynamic> _buildActionContext() {
-    return {'value': _sliderValue};
-  }
-
-  void _submitAction() => submitCatalogActionIfValid(
-    canSubmit: true,
-    itemContext: widget.itemContext,
-    action: widget.data.action,
-    contextBuilder: _buildActionContext,
-  );
-
   @override
   Widget build(BuildContext context) {
     return CatalogQuestionStep(
@@ -333,20 +349,6 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
       description: widget.data.description,
       body: _buildSlider(),
       onSubmit: _submitAction,
-    );
-  }
-
-  Widget _buildSlider() {
-    final minValue = widget.data.minValue;
-    final maxValue = widget.data.maxValue;
-    final unit = widget.data.unit ?? '';
-
-    return DeckLengthSelector(
-      value: _sliderValue,
-      min: minValue,
-      max: maxValue,
-      unit: unit,
-      onChanged: (value) => setState(() => _sliderValue = value),
     );
   }
 }

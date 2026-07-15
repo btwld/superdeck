@@ -33,6 +33,10 @@ void main() {
       expect(prompt, isNot(contains('Playfair Display')));
       expect(prompt, isNot(contains('Open Sans')));
       expect(prompt, isNot(contains('accentContrast')));
+      expect(prompt, contains('exact `imageStyleId` and `imageStyleVersion`'));
+      expect(prompt, contains('at most `maxGeneratedImages`'));
+      expect(prompt, contains('never both `source` and `generationPrompt`'));
+      expect(prompt, contains('two to four generated visuals'));
     },
   );
 

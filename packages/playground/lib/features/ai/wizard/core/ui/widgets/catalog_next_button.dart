@@ -16,8 +16,8 @@ class CatalogNextButton extends StatelessWidget {
         padding: const EdgeInsets.only(top: 16),
         child: SdButton(
           label: 'Continue',
-          icon: LucideIcons.arrowRight,
           onPressed: onPressed,
+          icon: LucideIcons.arrowRight,
           semanticLabel: 'Next step',
         ),
       ),

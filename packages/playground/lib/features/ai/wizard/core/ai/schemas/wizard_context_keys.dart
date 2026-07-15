@@ -47,14 +47,11 @@ abstract final class WizardContextKeys {
 
   // Image style keys
 
-  /// Image style identifier (enum name).
+  /// Stable image-style catalog ID.
   static const imageStyleId = 'imageStyleId';
 
-  /// Image style display name.
-  static const imageStyleName = 'imageStyleName';
-
-  /// Image style description for generation guidance.
-  static const imageStyleDescription = 'imageStyleDescription';
+  /// Exact version paired with [imageStyleId].
+  static const imageStyleVersion = 'imageStyleVersion';
 
   // Common keys used across components
 

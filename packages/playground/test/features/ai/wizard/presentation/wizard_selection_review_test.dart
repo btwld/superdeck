@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
+import 'package:playground/core/domain/design/presentation_image_style_catalog.dart';
 import 'package:playground/features/ai/wizard/core/ai/wizard_context.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_selection_review.dart';
 
@@ -15,7 +16,9 @@ void main() {
   ) async {
     var createOutlineCalls = 0;
     final themeCatalog = PresentationThemeCatalog.withDefaults();
+    final imageStyleCatalog = PresentationImageStyleCatalog.withDefaults();
     final theme = themeCatalog.currentThemes.first;
+    final imageStyle = imageStyleCatalog.currentStyles.first;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -30,8 +33,11 @@ void main() {
                 emphasis: const ['Zoning', 'Community funding'],
                 slideCount: 10,
                 themeId: theme.id,
+                imageStyleId: imageStyle.id,
+                imageStyleVersion: imageStyle.version,
               ),
               themeCatalog: themeCatalog,
+              imageStyleCatalog: imageStyleCatalog,
               onCreateOutline: () => createOutlineCalls++,
             ),
           ),
@@ -47,7 +53,9 @@ void main() {
     expect(find.text('Zoning, Community funding'), findsOneWidget);
     expect(find.text('10 slides'), findsOneWidget);
     expect(find.text(theme.title), findsOneWidget);
+    expect(find.text(imageStyle.title), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Create outline'));
     await tester.tap(find.text('Create outline'));
     expect(createOutlineCalls, 1);
   });

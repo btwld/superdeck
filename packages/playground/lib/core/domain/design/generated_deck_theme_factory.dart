@@ -142,7 +142,6 @@ final class GeneratedDeckThemeFactory {
     };
 
     return DeckOptions(
-      debug: debug,
       baseStyle: baseStyle,
       styles: styles,
       parts: SlideParts(
@@ -150,6 +149,7 @@ final class GeneratedDeckThemeFactory {
         footer: null,
         background: Box(style: BoxStyler().color(palette.background)),
       ),
+      debug: debug,
     );
   }
 }

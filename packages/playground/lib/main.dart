@@ -29,10 +29,10 @@ class _SuperdeckAppState extends State<SuperdeckApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Superdeck',
-      debugShowCheckedModeBanner: false,
       routerConfig: _router,
       builder: (context, child) => _Theme(child: AppProviders(child: child!)),
+      title: 'Superdeck',
+      debugShowCheckedModeBanner: false,
     );
   }
 }

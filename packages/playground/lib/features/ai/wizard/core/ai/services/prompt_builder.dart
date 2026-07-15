@@ -1,3 +1,4 @@
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../quick_agent/core/engine/services/deck_generation_request.dart';
 import '../wizard_context.dart';
 
@@ -5,8 +6,11 @@ import '../wizard_context.dart';
 ///
 /// Extracts exact user selections from the Wizard workflow without
 /// flattening contractual fields into layout instructions.
-DeckGenerationRequest buildPromptFromWizardContext(WizardContext context) {
-  return DeckGenerationRequest(
+DeckGenerationRequest buildPromptFromWizardContext(
+  WizardContext context, {
+  PresentationImageStyleCatalog? imageStyleCatalog,
+}) {
+  final request = DeckGenerationRequest(
     userIntent: _sanitize(context.topic).isEmpty
         ? 'Create a coherent presentation.'
         : _sanitize(context.topic),
@@ -30,9 +34,14 @@ DeckGenerationRequest buildPromptFromWizardContext(WizardContext context) {
         const [],
     headlineFont: _sanitizedOrNull(context.headlineFont),
     bodyFont: _sanitizedOrNull(context.bodyFont),
-    imageStyleName: _sanitizedOrNull(context.imageStyleName),
-    imageStyleDescription: _sanitizedOrNull(context.imageStyleDescription),
+    imageStyleId: _sanitizedOrNull(context.imageStyleId),
+    imageStyleVersion: context.imageStyleVersion,
   );
+  request.resolveImageStyle(
+    imageStyleCatalog ?? PresentationImageStyleCatalog.withDefaults(),
+  );
+
+  return request;
 }
 
 /// Maximum length for user-provided text fields.

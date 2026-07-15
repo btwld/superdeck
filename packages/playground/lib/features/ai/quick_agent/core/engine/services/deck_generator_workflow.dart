@@ -13,6 +13,7 @@ void _logPipelineConfig(DeckGeneratorService owner, {required String prompt}) {
 
 int _defaultRepairBudget(int slideCount) {
   final proportionalBudget = (slideCount * 15) ~/ 100;
+
   return proportionalBudget < 3 ? 3 : proportionalBudget;
 }
 
@@ -72,7 +73,7 @@ Future<_SlideCompositionResult?> _runSlideCompositionPhase(
   required GenerationTraceEmitter trace,
   required bool Function()? isCancelled,
 }) async {
-  debugLog.section('Phase 2: Compose Slides');
+  debugLog.section('Phase 3: Compose Slides');
   trace.emit(
     kind: GenerationTraceKind.phaseStarted,
     phase: GenerationTracePhase.composition,
@@ -93,7 +94,7 @@ Future<_SlideCompositionResult?> _runSlideCompositionPhase(
   if (composition == null) {
     debugLog.error(
       'DECK_GEN',
-      'Phase 2 FAILED after ${deckMs}ms - no deck JSON returned',
+      'Phase 3 FAILED after ${deckMs}ms - no deck JSON returned',
     );
     return null;
   }
@@ -101,13 +102,14 @@ Future<_SlideCompositionResult?> _runSlideCompositionPhase(
   final deckSlides = composition.slides.length;
   debugLog.log(
     'DECK_GEN',
-    'Phase 2 COMPLETE in ${deckMs}ms - $deckSlides accepted, '
+    'Phase 3 COMPLETE in ${deckMs}ms - $deckSlides accepted, '
         '${composition.failures.length} failed',
   );
   trace.emit(
     kind: GenerationTraceKind.phaseDone,
     phase: GenerationTracePhase.composition,
   );
+
   return composition;
 }
 
@@ -115,6 +117,7 @@ DeckGenerationResult _finalizeDeck(
   DeckGeneratorService owner, {
   required _SlideCompositionResult composition,
   required DeckPlanType plan,
+  List<GeneratedImageAsset> generatedImages = const [],
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,
   required bool Function()? isCancelled,
@@ -145,6 +148,7 @@ DeckGenerationResult _finalizeDeck(
       phase: GenerationTracePhase.finalize,
       validationErrors: [failureSummary],
     );
+
     return DeckGenerationResult.failure(failureSummary);
   }
 
@@ -200,6 +204,7 @@ DeckGenerationResult _finalizeDeck(
       slideFailures: composition.failures,
       plan: plan,
       theme: theme,
+      generatedImages: generatedImages,
     );
   }
 
@@ -207,6 +212,7 @@ DeckGenerationResult _finalizeDeck(
     slides: parsedSlides,
     plan: plan,
     theme: theme,
+    generatedImages: generatedImages,
   );
 }
 

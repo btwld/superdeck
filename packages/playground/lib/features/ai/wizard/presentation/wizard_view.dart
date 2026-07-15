@@ -42,19 +42,19 @@ class _WizardBodyState extends State<_WizardBody> {
     _focusNode = FocusNode();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
   void _submit(String value) {
     if (value.trim().isEmpty) return;
     unawaited(
       ViewModelScope.of<AiConversationViewModel>(context).sendMessage(value),
     );
     _controller.clear();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,11 +71,12 @@ class _WizardBodyState extends State<_WizardBody> {
         if (viewModel.wizardState.isReviewReady) {
           return WizardSelectionReview(
             wizardContext: viewModel.wizardState.context,
+            imageStyleCatalog: viewModel.imageStyleCatalog,
             themeCatalog: viewModel.themeCatalog,
-            onStartOver: viewModel.restartConversation,
             onCreateOutline: () {
               final request = buildPromptFromWizardContext(
                 viewModel.wizardState.context,
+                imageStyleCatalog: viewModel.imageStyleCatalog,
               );
               unawaited(
                 prov.Provider.of<WizardGenerationController>(
@@ -84,17 +85,20 @@ class _WizardBodyState extends State<_WizardBody> {
                 ).createOutline(request),
               );
             },
+            onStartOver: viewModel.restartConversation,
+            showArtwork: viewModel.imageStyleEnabled,
           );
         }
 
         final input = ChatInput(
           controller: _controller,
           focusNode: _focusNode,
+          autofocus: !started,
           enabled: !isThinking,
+          onSubmitted: _submit,
           hintText: !started
               ? 'Describe your presentation topic…'
               : 'Add a detail or ask for a change…',
-          onSubmitted: _submit,
         );
 
         // Before the first message: show the empty state with the topic prompt.
@@ -104,7 +108,10 @@ class _WizardBodyState extends State<_WizardBody> {
             builder: (context, constraints) => SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: EmptyState(input: input),
+                child: EmptyState(
+                  input: input,
+                  errorMessage: viewModel.errorMessage,
+                ),
               ),
             ),
           );

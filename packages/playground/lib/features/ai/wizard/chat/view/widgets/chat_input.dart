@@ -7,20 +7,23 @@ import 'package:remix/remix.dart';
 /// Provides consistent behavior: disabled while thinking, unified hint text,
 /// and proper TextInputAction.send for enter-to-submit.
 class ChatInput extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode? focusNode;
-  final bool enabled;
-  final ValueChanged<String> onSubmitted;
-  final String hintText;
-
   const ChatInput({
     super.key,
     required this.controller,
     this.focusNode,
+    this.autofocus = false,
     required this.enabled,
     required this.onSubmitted,
     this.hintText = 'Type a message...',
   });
+
+  final TextEditingController controller;
+  final FocusNode? focusNode;
+  final bool autofocus;
+  final bool enabled;
+  final ValueChanged<String> onSubmitted;
+
+  final String hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -30,19 +33,20 @@ class ChatInput extends StatelessWidget {
         .fontWeight(FontWeight.w600);
 
     return HeroTextField(
+      enabled: enabled,
+      autofocus: autofocus,
+      controller: controller,
+      focusNode: focusNode,
       hintText: hintText,
       trailing: trailingStyle('Press Enter'),
       textInputAction: TextInputAction.send,
-      controller: controller,
-      focusNode: focusNode,
-      enabled: enabled,
+      onSubmitted: enabled ? onSubmitted : null,
       semanticLabel: 'Chat message input',
       style: RemixTextFieldStyle()
           .padding(.horizontal(16).vertical(14))
           .backgroundColor($surfaceSecondary())
           .border(.color($border()))
-          .borderRadiusAll(const Radius.circular(14)),
-      onSubmitted: enabled ? onSubmitted : null,
+          .borderRadiusAll(const .circular(14)),
     );
   }
 }

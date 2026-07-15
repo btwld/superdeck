@@ -51,6 +51,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           : outlineRepairModelName;
       final modelRequest = google_ai.GenerateContentRequest(
         model: selectedModel,
+        systemInstruction: google_ai.Content(
+          parts: [google_ai.Part(text: systemPrompt)],
+        ),
         contents: [
           google_ai.Content(
             role: 'user',
@@ -61,9 +64,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           responseMimeType: 'application/json',
           responseSchema: adaptResult.schema,
           thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
-        ),
-        systemInstruction: google_ai.Content(
-          parts: [google_ai.Part(text: systemPrompt)],
         ),
       );
 
@@ -114,6 +114,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           validationIssues = validateDeckPlanIssues(
             plan,
             typographyCatalog: typographyCatalog,
+            imageStyleCatalog: imageStyleCatalog,
             themeCatalog: themeCatalog,
             request: request,
           );
@@ -127,6 +128,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             validationIssues = validateDeckPlanIssues(
               repairedPlan,
               typographyCatalog: typographyCatalog,
+              imageStyleCatalog: imageStyleCatalog,
               themeCatalog: themeCatalog,
               request: request,
             );
@@ -204,6 +206,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         isCancelled,
       );
     }
+
     return _composeSlidesSequentially(
       executor,
       prompt,
@@ -254,6 +257,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
               sectionCount: plan.sections.length,
             ),
           );
+
           return result;
         }(),
     ]);
@@ -264,6 +268,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       phase: GenerationTracePhase.slide,
       slideCount: plan.slides.length,
     );
+
     return _SlideCompositionResult(
       slides: List.unmodifiable([
         for (final result in sectionResults) ...result.slides,
@@ -338,6 +343,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
 
     final modelRequest = google_ai.GenerateContentRequest(
       model: modelName,
+      systemInstruction: google_ai.Content(
+        parts: [google_ai.Part(text: systemPrompt)],
+      ),
       contents: [
         google_ai.Content(
           role: 'user',
@@ -348,9 +356,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
         thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
-      ),
-      systemInstruction: google_ai.Content(
-        parts: [google_ai.Part(text: systemPrompt)],
       ),
     );
 
@@ -373,12 +378,13 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       rethrow;
     } catch (error, stack) {
       final category = const ErrorClassifier().classify(error);
-      if (category != ErrorCategory.network) rethrow;
+      if (category != .network) rethrow;
       debugLog.error(
         'DECK_GEN',
         'Section ${section.key} transport failed; preserving other sections.',
         stack,
       );
+
       return _failedSection(
         plan: plan,
         slides: plannedSlides,
@@ -481,6 +487,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         issues: issues,
       );
     }
+
     return _SlideCompositionResult(
       slides: const [],
       failures: List.unmodifiable([
@@ -527,8 +534,8 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     var issues = validateGeneratedSlideIssues(
       expectedKey: planSlide.key,
       rawSlide: normalized,
-      planSlide: planSlide,
       elementCatalog: elementCatalog,
+      planSlide: planSlide,
       request: request,
     );
     final commentSafeSlide = removeInvalidOptionalSpeakerComments(
@@ -540,8 +547,8 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       issues = validateGeneratedSlideIssues(
         expectedKey: planSlide.key,
         rawSlide: normalized,
-        planSlide: planSlide,
         elementCatalog: elementCatalog,
+        planSlide: planSlide,
         request: request,
       );
     }
@@ -563,6 +570,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         ],
       );
     }
+
     return (canonical: canonical, issues: issues);
   }
 
@@ -667,7 +675,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           rethrow;
         } catch (error, stack) {
           final category = const ErrorClassifier().classify(error);
-          if (category != ErrorCategory.network) rethrow;
+          if (category != .network) rethrow;
           validationIssues = [
             GenerationValidationIssue(
               code: GenerationValidationCode.invalidResponse,
@@ -795,6 +803,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       phase: GenerationTracePhase.slide,
       slideCount: plan.slides.length,
     );
+
     return _SlideCompositionResult(
       slides: List.unmodifiable(slides),
       failures: List.unmodifiable(failures),
@@ -854,6 +863,9 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
 
     final request = google_ai.GenerateContentRequest(
       model: modelName,
+      systemInstruction: google_ai.Content(
+        parts: [google_ai.Part(text: systemPrompt)],
+      ),
       contents: [
         google_ai.Content(
           role: 'user',
@@ -864,9 +876,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
         thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
-      ),
-      systemInstruction: google_ai.Content(
-        parts: [google_ai.Part(text: systemPrompt)],
       ),
     );
 

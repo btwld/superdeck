@@ -90,6 +90,9 @@ final deckPlanElementSchema = Ack.object({
   'source': Ack.string().optional().describe(
     'User-supplied asset path, URL, text, or gist identifier when available',
   ),
+  'generationPrompt': Ack.string().optional().describe(
+    'Concrete visual subject to generate when an image style is configured',
+  ),
   'widgetName': Ack.string().optional().describe(
     'Registered widget name when type is custom',
   ),

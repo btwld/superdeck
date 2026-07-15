@@ -149,6 +149,39 @@ void main() {
     expect(controller.stage, WizardGenerationStage.setup);
   });
 
+  testWidgets('keeps composing after the 30-second performance target', (
+    tester,
+  ) async {
+    const request = DeckGenerationRequest(
+      userIntent: 'Urban gardens',
+      slideCount: 1,
+      themeId: 'technical-paper',
+    );
+    final pending = Completer<DeckGenerationResult>();
+    final service = _FakeWizardGenerationService(_plan(request))
+      ..pendingComposition = pending;
+    final controller = WizardGenerationController(
+      service: service,
+      applyResult: (_) {},
+    );
+    addTearDown(controller.dispose);
+
+    await controller.createOutline(request);
+    final composition = controller.generateSlides();
+    await tester.pump();
+    await tester.pump(
+      WizardGenerationController.generationBudget + const Duration(seconds: 1),
+    );
+
+    expect(controller.stage, WizardGenerationStage.composing);
+    expect(controller.errorMessage, isNull);
+
+    pending.complete(_successfulResult(service, controller.plan!));
+    await composition;
+
+    expect(controller.stage, WizardGenerationStage.completed);
+  });
+
   test('keeps the edited outline when regeneration fails', () async {
     const request = DeckGenerationRequest(
       userIntent: 'Urban gardens',
@@ -236,6 +269,7 @@ final class _FakeWizardGenerationService extends DeckGeneratorService {
   final bool partialComposition;
   DeckPlanType? approvedPlan;
   Completer<DeckPlanningResult>? pendingPlanning;
+  Completer<DeckGenerationResult>? pendingComposition;
   String? planningError;
   var retryCalls = 0;
 
@@ -262,6 +296,7 @@ final class _FakeWizardGenerationService extends DeckGeneratorService {
     isCancelled,
   }) async {
     this.approvedPlan = approvedPlan;
+    if (pendingComposition case final pending?) return pending.future;
     if (compositionError case final error?) {
       return DeckGenerationResult.failure(error);
     }
@@ -291,15 +326,7 @@ final class _FakeWizardGenerationService extends DeckGeneratorService {
         ),
       );
     }
-    return DeckGenerationResult.success(
-      slides: [_generatedSlide('opening')],
-      plan: approvedPlan,
-      theme: resolveDeckThemeReference(
-        approvedPlan.theme,
-        themeCatalog: themeCatalog,
-        typographyCatalog: typographyCatalog,
-      ),
-    );
+    return _successfulResult(this, approvedPlan);
   }
 
   @override
@@ -318,6 +345,19 @@ final class _FakeWizardGenerationService extends DeckGeneratorService {
     );
   }
 }
+
+DeckGenerationResult _successfulResult(
+  DeckGeneratorService service,
+  DeckPlanType plan,
+) => DeckGenerationResult.success(
+  slides: [_generatedSlide('opening')],
+  plan: plan,
+  theme: resolveDeckThemeReference(
+    plan.theme,
+    themeCatalog: service.themeCatalog,
+    typographyCatalog: service.typographyCatalog,
+  ),
+);
 
 Slide _generatedSlide(String key) => Slide.parse({
   'key': key,
