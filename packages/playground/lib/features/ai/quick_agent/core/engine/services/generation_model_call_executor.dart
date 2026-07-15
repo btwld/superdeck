@@ -36,6 +36,8 @@ final class GenerationModelCallExecutor {
          timeout: runTimeout,
        );
 
+  bool get hasRepairCapacity => _budget.hasRepairCapacity;
+
   void _throwIfCancelled() {
     if (_isCancelled()) throw const GenerationCancelledException();
   }
@@ -111,6 +113,11 @@ final class GenerationRunBudget {
     required this.maxRepairRequests,
     required this.timeout,
   }) : _stopwatch = Stopwatch()..start();
+
+  bool get hasRepairCapacity {
+    _throwIfTimedOut();
+    return _repairRequests < maxRepairRequests;
+  }
 
   void _throwIfTimedOut() {
     if (_stopwatch.elapsed >= timeout) {

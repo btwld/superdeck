@@ -50,7 +50,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
       isCancelled: () => _cancelled || !mounted,
     );
     if (!mounted) return;
-    if (result.success) {
+    if (result.slides.isNotEmpty && result.theme != null) {
       _applyResult(result);
       await Future<void>.delayed(const Duration(milliseconds: 50));
     }
@@ -81,6 +81,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   @override
   Widget build(BuildContext context) {
     if (!kDebugMode) return const SizedBox.shrink();
+    final result = _result;
     return Scaffold(
       appBar: AppBar(title: const Text('AI generation lab')),
       body: ListView(
@@ -111,10 +112,22 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
             ),
           if (_error case final error?)
             Text(error, style: const TextStyle(color: Colors.red)),
-          if (_result?.success ?? false) ...[
+          if (result != null && result.slideFailures.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Unresolved slides',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            for (final failure in result.slideFailures)
+              Text(
+                '${failure.slideIndex}. ${failure.slideKey}: '
+                '${failure.message}',
+              ),
+          ],
+          if (result != null && result.slides.isNotEmpty) ...[
             const SizedBox(height: 24),
             Text(
-              'Generated slides',
+              result.isPartial ? 'Accepted slides' : 'Generated slides',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),

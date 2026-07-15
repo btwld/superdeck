@@ -230,7 +230,7 @@ void main() {
     }
   });
 
-  test('reports every overlong treatment run in one repair pass', () {
+  test('allows a treatment run when compositions still vary', () {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     const compositions = [
@@ -250,21 +250,14 @@ void main() {
 
     final errors = validateDeckPlan(DeckPlanType.parse(data));
 
-    expect(
-      errors,
-      containsAll([
-        'Deck plan repeats treatment "content" more than three times '
-            'consecutively.',
-        'Deck plan repeats treatment "data" more than three times '
-            'consecutively.',
-      ]),
-    );
+    expect(errors.where((error) => error.contains('treatment')), isEmpty);
   });
 
   test('reports design rhythm as typed non-blocking diagnostics', () {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     for (final slide in slides) {
+      slide['composition'] = 'content';
       slide['treatment'] = 'content';
     }
 
@@ -420,11 +413,47 @@ void main() {
       contains(
         'Slide "close" uses numeric claim(s) 100%, 90 that are not present '
         'in userIntent. Remove them or label the containing copy as a '
-        'projection, estimate, assumption, calculation, or scenario.',
+        'projection, estimate, assumption, calculation, scenario, or planned '
+        'target.',
+      ),
+    );
+    final numericIssues = validateDeckPlanIssues(
+      unqualified,
+      request: const DeckGenerationRequest(
+        userIntent: 'Create a ten-slide story using the supplied 42% result.',
+        slideCount: 10,
+      ),
+    ).where((issue) => issue.code == GenerationValidationCode.numericGrounding);
+    expect(numericIssues, isNotEmpty);
+    expect(
+      numericIssues,
+      everyElement(
+        isA<GenerationValidationIssue>().having(
+          (issue) => issue.severity,
+          'severity',
+          GenerationValidationSeverity.diagnostic,
+        ),
+      ),
+    );
+    expect(numericIssues.where((issue) => issue.isBlocking), isEmpty);
+    expect(
+      allowed.where((error) => error.contains('uses numeric claim(s)')),
+      isEmpty,
+    );
+
+    slides.last['contentUnits'] = [
+      'Planned target: 50% adoption after the proposed 90-day pilot',
+    ];
+    final plannedTarget = validateDeckPlan(
+      DeckPlanType.parse(data),
+      request: const DeckGenerationRequest(
+        userIntent:
+            'Describe a future pilot without claiming observed results.',
+        slideCount: 10,
       ),
     );
     expect(
-      allowed.where((error) => error.contains('uses numeric claim(s)')),
+      plannedTarget.where((error) => error.contains('uses numeric claim(s)')),
       isEmpty,
     );
 
@@ -561,6 +590,33 @@ void main() {
     );
   });
 
+  test('does not ground internal planning prose as audience-facing copy', () {
+    final data = _hierarchicalPlan();
+    final slides = data['slides']! as List<Map<String, Object?>>;
+    slides.last
+      ..['purpose'] = 'Prioritize the 13 internal review checkpoints.'
+      ..['contentBrief'] = 'Designed to reduce review friction in 13 drafts.'
+      ..['continuity'] = 'Transition after the 13 internal checkpoints.';
+
+    final issues = validateDeckPlanIssues(
+      DeckPlanType.parse(data),
+      request: const DeckGenerationRequest(
+        userIntent: 'Close with a practical decision.',
+        slideCount: 10,
+      ),
+    );
+
+    expect(
+      issues.where(
+        (issue) =>
+            issue.slideKey == 'close' &&
+            (issue.code == GenerationValidationCode.numericGrounding ||
+                issue.code == GenerationValidationCode.commitmentGrounding),
+      ),
+      isEmpty,
+    );
+  });
+
   test('rejects an unsupported commercial commitment', () {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
@@ -591,6 +647,34 @@ void main() {
       ).singleWhere((error) => error.contains('soc2')),
       allOf(contains('unsupported commitment claim(s)'), contains('soc2')),
     );
+  });
+
+  test('reports broad editorial commitments without blocking the plan', () {
+    final data = _hierarchicalPlan();
+    final slides = data['slides']! as List<Map<String, Object?>>;
+    slides.last['contentUnits'] = ['Prioritize evidence before commitments'];
+
+    final issues = validateDeckPlanIssues(
+      DeckPlanType.parse(data),
+      request: const DeckGenerationRequest(
+        userIntent: 'Close with an evidence-led operating decision.',
+        slideCount: 10,
+      ),
+    );
+    final commitmentIssues = issues
+        .where(
+          (issue) =>
+              issue.code == GenerationValidationCode.commitmentGrounding &&
+              issue.slideKey == 'close',
+        )
+        .toList();
+
+    expect(commitmentIssues, hasLength(1));
+    expect(
+      commitmentIssues.single.severity,
+      GenerationValidationSeverity.diagnostic,
+    );
+    expect(commitmentIssues.where((issue) => issue.isBlocking), isEmpty);
   });
 
   test('rejects invented availability, production, and delivery claims', () {
@@ -876,7 +960,7 @@ void main() {
     );
   });
 
-  test('grounds section transitions and slide continuity', () {
+  test('keeps internal narrative grounding non-blocking', () {
     final data = _hierarchicalPlan();
     final sections = data['sections']! as List<Map<String, Object?>>;
     final slides = data['slides']! as List<Map<String, Object?>>;
@@ -885,7 +969,7 @@ void main() {
     slides.last['continuity'] =
         'The workflow was validated during the fictional beta.';
 
-    final errors = validateDeckPlan(
+    final issues = validateDeckPlanIssues(
       DeckPlanType.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe a fictional beta using only supplied facts.',
@@ -893,13 +977,21 @@ void main() {
       ),
     );
 
-    expect(
-      errors.singleWhere((error) => error.startsWith('Deck narrative')),
-      allOf(contains('already proven'), contains('rigorous results')),
+    final narrativeIssue = issues.singleWhere(
+      (issue) => issue.message.startsWith('Deck narrative'),
     );
     expect(
-      errors.singleWhere((error) => error.startsWith('Slide "close"')),
-      contains('validated during'),
+      narrativeIssue.message,
+      allOf(contains('already proven'), contains('rigorous results')),
+    );
+    expect(narrativeIssue.severity, GenerationValidationSeverity.diagnostic);
+    expect(
+      issues.where(
+        (issue) =>
+            issue.slideKey == 'close' &&
+            issue.code == GenerationValidationCode.commitmentGrounding,
+      ),
+      isEmpty,
     );
   });
 
@@ -937,7 +1029,7 @@ void main() {
     );
   });
 
-  test('rejects a supplied metric reused with a different meaning', () {
+  test('reports a supplied metric reused with a different meaning', () {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides.last['contentUnits'] = ['Reclaiming 42% of the work week'];
@@ -948,6 +1040,25 @@ void main() {
         slideCount: 10,
       ),
     );
+    final changedMeaningIssues = validateDeckPlanIssues(
+      DeckPlanType.parse(data),
+      request: const DeckGenerationRequest(
+        userIntent: 'Teams spent 42% less weekly synthesis time.',
+        slideCount: 10,
+      ),
+    ).where((issue) => issue.code == GenerationValidationCode.numericMeaning);
+    expect(changedMeaningIssues, isNotEmpty);
+    expect(
+      changedMeaningIssues,
+      everyElement(
+        isA<GenerationValidationIssue>().having(
+          (issue) => issue.severity,
+          'severity',
+          GenerationValidationSeverity.diagnostic,
+        ),
+      ),
+    );
+    expect(changedMeaningIssues.where((issue) => issue.isBlocking), isEmpty);
     slides.last['contentUnits'] = ['42% less weekly synthesis time'];
     final preservedMeaning = validateDeckPlan(
       DeckPlanType.parse(data),

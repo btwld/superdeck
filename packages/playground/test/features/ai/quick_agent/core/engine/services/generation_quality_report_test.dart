@@ -3,6 +3,7 @@ import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_s
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_quality_report.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 void main() {
@@ -94,6 +95,49 @@ void main() {
           .slideKey,
       'evidence',
     );
+    expect(
+      report.issues
+          .where((issue) => issue.rule == 'slide.content_density')
+          .single
+          .severity,
+      GenerationValidationSeverity.diagnostic,
+    );
+    expect(
+      report.issues
+          .where((issue) => issue.rule == 'count.captured')
+          .single
+          .severity,
+      GenerationValidationSeverity.blocking,
+    );
+  });
+
+  test('does not fail the quality gate for design rhythm diagnostics', () {
+    final report = GenerationQualityReport.evaluate(
+      request: const DeckGenerationRequest(
+        userIntent: 'Explain a four-step decision.',
+        slideCount: 4,
+      ),
+      plan: _rhythmPlan(),
+      slides: _rhythmSlides(),
+      traces: const [],
+      replayedSlideCount: 4,
+      capturedSlideCount: 4,
+      resolvedFontFamilies: const {'Playfair Display', 'Inter'},
+    );
+
+    final diagnostics = report.issues
+        .where(
+          (issue) => issue.sourceCode == GenerationValidationCode.designRhythm,
+        )
+        .toList();
+    expect(diagnostics, isNotEmpty);
+    expect(
+      diagnostics.every(
+        (issue) => issue.severity == GenerationValidationSeverity.diagnostic,
+      ),
+      isTrue,
+    );
+    expect(report.passed, isTrue);
   });
 
   test('separates outline and slide repair requests', () {
@@ -234,4 +278,37 @@ List<GenerationTraceEvent> _traces() => [
     phase: GenerationTracePhase.finalize,
     elapsed: Duration(milliseconds: 80),
   ),
+];
+
+DeckPlanType _rhythmPlan() => DeckPlanType.parse({
+  'topic': 'Decision rhythm',
+  'story': 'Move through four clear steps.',
+  'theme': {'id': 'editorial-midnight', 'version': 1, 'density': 'spacious'},
+  'sections': [
+    {
+      'key': 'decision',
+      'title': 'Decision',
+      'purpose': 'Explain the decision.',
+      'transition': 'Land on the recommendation.',
+      'slideKeys': ['step-1', 'step-2', 'step-3', 'step-4'],
+    },
+  ],
+  'slides': [
+    for (var index = 1; index <= 4; index++)
+      _planSlide(
+        key: 'step-$index',
+        composition: 'content',
+        treatment: 'content',
+        density: 'spacious',
+      ),
+  ],
+});
+
+List<Slide> _rhythmSlides() => [
+  for (var index = 1; index <= 4; index++)
+    Slide(
+      key: 'step-$index',
+      options: SlideOptions(style: 'content'),
+      sections: [SectionBlock.text('## Step $index\n\nA concrete point.')],
+    ),
 ];

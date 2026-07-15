@@ -46,8 +46,11 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         'DECK_GEN',
         'Outline system prompt (${systemPrompt.length} chars)',
       );
+      final selectedModel = repairAttempt == 1
+          ? outlineModelName
+          : outlineRepairModelName;
       final modelRequest = google_ai.GenerateContentRequest(
-        model: outlineModelName,
+        model: selectedModel,
         contents: [
           google_ai.Content(
             role: 'user',
@@ -57,6 +60,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         generationConfig: google_ai.GenerationConfig(
           responseMimeType: 'application/json',
           responseSchema: adaptResult.schema,
+          thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
         ),
         systemInstruction: google_ai.Content(
           parts: [google_ai.Part(text: systemPrompt)],
@@ -66,13 +70,13 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       debugLog.log(
         'DECK_GEN',
         repairAttempt == 1
-            ? 'Sending outline request to $outlineModelName...'
-            : 'Repairing outline with $outlineModelName...',
+            ? 'Sending outline request to $selectedModel...'
+            : 'Repairing outline with $selectedModel...',
       );
       final response = await executor.execute(
         request: modelRequest,
         phase: GenerationTracePhase.outline,
-        model: outlineModelName,
+        model: selectedModel,
         prompt: systemPrompt,
         semanticAttempt: repairAttempt,
         isRepair: repairAttempt > 1,
@@ -146,6 +150,8 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             );
             return plan;
           }
+        } on GenerationBudgetExceededException {
+          rethrow;
         } catch (error) {
           validationIssues = [
             GenerationValidationIssue(
@@ -175,10 +181,407 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   }
 
   // ===========================================================================
-  // PHASE 2: Compose Slides Sequentially
+  // PHASE 2: Compose Slides
   // ===========================================================================
 
-  Future<Map<String, dynamic>?> _composeSlides(
+  Future<_SlideCompositionResult?> _composeSlides(
+    GenerationModelCallExecutor executor,
+    String prompt,
+    DeckPlanType plan,
+    DeckGenerationRequest request,
+    GenerationTraceEmitter trace,
+    GenerationProgressCallback? onProgress,
+    bool Function()? isCancelled,
+  ) {
+    if (plan.slides.length >= sectionBatchThreshold) {
+      return _composeSlidesBySection(
+        executor,
+        prompt,
+        plan,
+        request,
+        trace,
+        onProgress,
+        isCancelled,
+      );
+    }
+    return _composeSlidesSequentially(
+      executor,
+      prompt,
+      plan,
+      request,
+      trace,
+      onProgress,
+      isCancelled,
+    );
+  }
+
+  /// Composes all narrative sections concurrently and accepts valid slides
+  /// independently. This is the latency-first production path for normal decks.
+  Future<_SlideCompositionResult?> _composeSlidesBySection(
+    GenerationModelCallExecutor executor,
+    String prompt,
+    DeckPlanType plan,
+    DeckGenerationRequest request,
+    GenerationTraceEmitter trace,
+    GenerationProgressCallback? onProgress,
+    bool Function()? isCancelled,
+  ) async {
+    if (isCancelled?.call() ?? false) return null;
+    trace.emit(
+      kind: GenerationTraceKind.phaseStarted,
+      phase: GenerationTracePhase.slide,
+      slideCount: plan.slides.length,
+    );
+
+    final sectionResults = await Future.wait([
+      for (final (sectionIndex, section) in plan.sections.indexed)
+        _composeSection(
+          executor: executor,
+          originalPrompt: prompt,
+          plan: plan,
+          section: section,
+          sectionIndex: sectionIndex,
+          request: request,
+          trace: trace,
+          onProgress: onProgress,
+        ),
+    ]);
+    if (isCancelled?.call() ?? false) return null;
+
+    trace.emit(
+      kind: GenerationTraceKind.phaseDone,
+      phase: GenerationTracePhase.slide,
+      slideCount: plan.slides.length,
+    );
+    return _SlideCompositionResult(
+      slides: List.unmodifiable([
+        for (final result in sectionResults) ...result.slides,
+      ]),
+      failures: List.unmodifiable([
+        for (final result in sectionResults) ...result.failures,
+      ]),
+    );
+  }
+
+  Future<_SlideCompositionResult> _composeSection({
+    required GenerationModelCallExecutor executor,
+    required String originalPrompt,
+    required DeckPlanType plan,
+    required DeckPlanSectionType section,
+    required int sectionIndex,
+    required DeckGenerationRequest request,
+    required GenerationTraceEmitter trace,
+    required GenerationProgressCallback? onProgress,
+  }) async {
+    final plannedSlides = [
+      for (final slide in plan.slides)
+        if (slide.sectionKey == section.key) slide,
+    ];
+    if (plannedSlides.isEmpty) {
+      return const _SlideCompositionResult(slides: [], failures: []);
+    }
+    final firstIndex = plan.slides.indexWhere(
+      (slide) => slide.key == plannedSlides.first.key,
+    );
+    final lastIndex = plan.slides.indexWhere(
+      (slide) => slide.key == plannedSlides.last.key,
+    );
+    final previous = firstIndex > 0 ? plan.slides[firstIndex - 1] : null;
+    final next = lastIndex + 1 < plan.slides.length
+        ? plan.slides[lastIndex + 1]
+        : null;
+
+    onProgress?.call(
+      GenerationProgress(
+        GenerationPhase.composingSlides,
+        sectionIndex: sectionIndex + 1,
+        sectionCount: plan.sections.length,
+      ),
+    );
+    final systemPrompt = _promptProvider.buildSectionPrompt(
+      plan: plan,
+      section: section,
+      slides: plannedSlides,
+      previous: previous,
+      next: next,
+      elementCatalog: elementCatalog,
+    );
+    debugLog.log(
+      'DECK_GEN',
+      'Section ${sectionIndex + 1}/${plan.sections.length} prompt '
+          '(${systemPrompt.length} chars, ${plannedSlides.length} slides)',
+    );
+
+    final adapter = GoogleSchemaAdapter(forwardArrayBounds: false);
+    final adaptResult = adapter.adapt(
+      Ack.object({
+        'slides': Ack.list(
+          buildAiSlideSchema(
+            widgetArgumentProperties: elementCatalog.argumentProperties,
+            nestWidgetArguments: true,
+            requirePresentationOptions: true,
+          ),
+        ),
+      }).toJsonSchemaBuilder(),
+    );
+    if (adaptResult.schema == null) {
+      return _failedSection(
+        plan: plan,
+        slides: plannedSlides,
+        trace: trace,
+        message: 'Section response schema could not be prepared.',
+      );
+    }
+
+    final modelRequest = google_ai.GenerateContentRequest(
+      model: modelName,
+      contents: [
+        google_ai.Content(
+          role: 'user',
+          parts: [google_ai.Part(text: originalPrompt)],
+        ),
+      ],
+      generationConfig: google_ai.GenerationConfig(
+        responseMimeType: 'application/json',
+        responseSchema: adaptResult.schema,
+        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
+      ),
+      systemInstruction: google_ai.Content(
+        parts: [google_ai.Part(text: systemPrompt)],
+      ),
+    );
+
+    final google_ai.GenerateContentResponse response;
+    try {
+      response = await executor.execute(
+        request: modelRequest,
+        phase: GenerationTracePhase.slide,
+        model: modelName,
+        prompt: systemPrompt,
+        semanticAttempt: 1,
+        isRepair: false,
+        timeoutMessage: 'Section generation timed out',
+        slideIndex: firstIndex + 1,
+        slideCount: plan.slides.length,
+      );
+    } on GenerationCancelledException {
+      rethrow;
+    } on GenerationBudgetExceededException {
+      rethrow;
+    } catch (error, stack) {
+      final category = const ErrorClassifier().classify(error);
+      if (category != ErrorCategory.network) rethrow;
+      debugLog.error(
+        'DECK_GEN',
+        'Section ${section.key} transport failed; preserving other sections.',
+        stack,
+      );
+      return _failedSection(
+        plan: plan,
+        slides: plannedSlides,
+        trace: trace,
+        message: '${category.userMessage} Retry this section.',
+      );
+    }
+
+    final json = _parseJsonResponse(response, 'section ${section.key}');
+    final rawSlides = json?['slides'];
+    if (rawSlides is! List) {
+      return _failedSection(
+        plan: plan,
+        slides: plannedSlides,
+        trace: trace,
+        message: 'Model response was not a JSON section with a slides array.',
+      );
+    }
+    final draftsByKey = <String, Map<String, dynamic>>{};
+    for (final rawSlide in rawSlides) {
+      if (rawSlide is! Map) continue;
+      final draft = Map<String, dynamic>.from(rawSlide);
+      final key = draft['key'];
+      if (key is String && !draftsByKey.containsKey(key)) {
+        draftsByKey[key] = draft;
+      }
+    }
+
+    final accepted = <Map<String, dynamic>>[];
+    final failures = <SlideGenerationFailure>[];
+    for (final plannedSlide in plannedSlides) {
+      final slideIndex = plan.slides.indexWhere(
+        (slide) => slide.key == plannedSlide.key,
+      );
+      final draft = draftsByKey[plannedSlide.key];
+      if (draft == null) {
+        final issues = _invalidSectionSlideIssues(
+          'Section response omitted slide "${plannedSlide.key}".',
+        );
+        failures.add(
+          SlideGenerationFailure(
+            slideIndex: slideIndex + 1,
+            slideKey: plannedSlide.key,
+            issues: issues,
+          ),
+        );
+        _traceSectionSlideValidation(
+          trace: trace,
+          slideIndex: slideIndex,
+          slideCount: plan.slides.length,
+          issues: issues,
+        );
+        continue;
+      }
+
+      final validation = _validateSectionSlide(
+        draft: draft,
+        planSlide: plannedSlide,
+        request: request,
+      );
+      _traceSectionSlideValidation(
+        trace: trace,
+        slideIndex: slideIndex,
+        slideCount: plan.slides.length,
+        issues: validation.issues,
+      );
+      if (validation.canonical == null) {
+        failures.add(
+          SlideGenerationFailure(
+            slideIndex: slideIndex + 1,
+            slideKey: plannedSlide.key,
+            issues: validation.issues.blockingIssues,
+          ),
+        );
+        continue;
+      }
+      accepted.add(validation.canonical!);
+    }
+
+    return _SlideCompositionResult(
+      slides: List.unmodifiable(accepted),
+      failures: List.unmodifiable(failures),
+    );
+  }
+
+  _SlideCompositionResult _failedSection({
+    required DeckPlanType plan,
+    required List<DeckPlanSlideType> slides,
+    required GenerationTraceEmitter trace,
+    required String message,
+  }) {
+    final issues = _invalidSectionSlideIssues(message);
+    for (final slide in slides) {
+      _traceSectionSlideValidation(
+        trace: trace,
+        slideIndex: plan.slides.indexWhere(
+          (candidate) => candidate.key == slide.key,
+        ),
+        slideCount: plan.slides.length,
+        issues: issues,
+      );
+    }
+    return _SlideCompositionResult(
+      slides: const [],
+      failures: List.unmodifiable([
+        for (final slide in slides)
+          SlideGenerationFailure(
+            slideIndex:
+                plan.slides.indexWhere(
+                  (candidate) => candidate.key == slide.key,
+                ) +
+                1,
+            slideKey: slide.key,
+            issues: issues,
+          ),
+      ]),
+    );
+  }
+
+  List<GenerationValidationIssue> _invalidSectionSlideIssues(String message) =>
+      [
+        GenerationValidationIssue(
+          code: GenerationValidationCode.invalidResponse,
+          category: GenerationValidationCategory.schema,
+          severity: GenerationValidationSeverity.blocking,
+          location: GenerationValidationLocation.visibleContent,
+          message: message,
+        ),
+      ];
+
+  ({Map<String, dynamic>? canonical, List<GenerationValidationIssue> issues})
+  _validateSectionSlide({
+    required Map<String, dynamic> draft,
+    required DeckPlanSlideType planSlide,
+    required DeckGenerationRequest request,
+  }) {
+    var normalized = hydrateGeneratedElementSources(
+      slide: draft,
+      planSlide: planSlide,
+      elementCatalog: elementCatalog,
+    );
+    normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: normalized,
+      planSlide: planSlide,
+    );
+    var issues = validateGeneratedSlideIssues(
+      expectedKey: planSlide.key,
+      rawSlide: normalized,
+      planSlide: planSlide,
+      elementCatalog: elementCatalog,
+      request: request,
+    );
+    final commentSafeSlide = removeInvalidOptionalSpeakerComments(
+      rawSlide: normalized,
+      validationIssues: issues,
+    );
+    if (!identical(commentSafeSlide, normalized)) {
+      normalized = commentSafeSlide;
+      issues = validateGeneratedSlideIssues(
+        expectedKey: planSlide.key,
+        rawSlide: normalized,
+        planSlide: planSlide,
+        elementCatalog: elementCatalog,
+        request: request,
+      );
+    }
+    if (issues.blockingIssues.isNotEmpty) {
+      return (canonical: null, issues: issues);
+    }
+    final canonical = sanitizeGeneratedSlides([normalized]).singleOrNull;
+    if (canonical == null) {
+      return (
+        canonical: null,
+        issues: const [
+          GenerationValidationIssue(
+            code: GenerationValidationCode.invalidSchema,
+            category: GenerationValidationCategory.schema,
+            severity: GenerationValidationSeverity.blocking,
+            location: GenerationValidationLocation.visibleContent,
+            message: 'Generated slide could not be normalized.',
+          ),
+        ],
+      );
+    }
+    return (canonical: canonical, issues: issues);
+  }
+
+  void _traceSectionSlideValidation({
+    required GenerationTraceEmitter trace,
+    required int slideIndex,
+    required int slideCount,
+    required List<GenerationValidationIssue> issues,
+  }) {
+    trace.emit(
+      kind: GenerationTraceKind.validation,
+      phase: GenerationTracePhase.slide,
+      attempt: 1,
+      slideIndex: slideIndex + 1,
+      slideCount: slideCount,
+      validationErrors: issues.messages,
+      validationIssues: issues,
+    );
+  }
+
+  /// Retained for small, focused generation and repair diagnostics.
+  Future<_SlideCompositionResult?> _composeSlidesSequentially(
     GenerationModelCallExecutor executor,
     String prompt,
     DeckPlanType plan,
@@ -188,6 +591,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     bool Function()? isCancelled,
   ) async {
     final slides = <Map<String, dynamic>>[];
+    final failures = <SlideGenerationFailure>[];
     trace.emit(
       kind: GenerationTraceKind.phaseStarted,
       phase: GenerationTracePhase.slide,
@@ -209,6 +613,13 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         repairAttempt <= maxSlideValidationAttempts;
         repairAttempt++
       ) {
+        if (repairAttempt > 1 && !executor.hasRepairCapacity) {
+          debugLog.log(
+            'DECK_GEN',
+            'Slide ${index + 1} repair skipped: run repair budget exhausted.',
+          );
+          break;
+        }
         onProgress?.call(
           GenerationProgress(
             GenerationPhase.composingSlides,
@@ -217,19 +628,52 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
             isRepairing: repairAttempt > 1,
           ),
         );
-        composed = await _generateSingleSlide(
-          executor: executor,
-          originalPrompt: prompt,
-          plan: plan,
-          current: current,
-          previousSlide: slides.lastOrNull,
-          next: next,
-          validationIssues: repairConstraints,
-          invalidSlide: composed,
-          repairAttempt: repairAttempt,
-          slideIndex: index + 1,
-          slideCount: plan.slides.length,
-        );
+        try {
+          composed = await _generateSingleSlide(
+            executor: executor,
+            originalPrompt: prompt,
+            plan: plan,
+            current: current,
+            previousSlide: slides.lastOrNull,
+            next: next,
+            validationIssues: repairConstraints,
+            invalidSlide: composed,
+            repairAttempt: repairAttempt,
+            slideIndex: index + 1,
+            slideCount: plan.slides.length,
+          );
+        } on GenerationCancelledException {
+          rethrow;
+        } on GenerationBudgetExceededException {
+          rethrow;
+        } catch (error, stack) {
+          final category = const ErrorClassifier().classify(error);
+          if (category != ErrorCategory.network) rethrow;
+          validationIssues = [
+            GenerationValidationIssue(
+              code: GenerationValidationCode.invalidResponse,
+              category: GenerationValidationCategory.schema,
+              severity: GenerationValidationSeverity.blocking,
+              location: GenerationValidationLocation.visibleContent,
+              message: '${category.userMessage} Retry this slide.',
+            ),
+          ];
+          debugLog.error(
+            'DECK_GEN',
+            'Slide ${index + 1} transport failed; continuing with the deck.',
+            stack,
+          );
+          trace.emit(
+            kind: GenerationTraceKind.validation,
+            phase: GenerationTracePhase.slide,
+            attempt: repairAttempt,
+            slideIndex: index + 1,
+            slideCount: plan.slides.length,
+            validationErrors: validationIssues.messages,
+            validationIssues: validationIssues,
+          );
+          break;
+        }
         if (composed == null) {
           validationIssues = const [
             GenerationValidationIssue(
@@ -291,7 +735,14 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           'Slide ${index + 1} failed validation: '
               '${validationIssues.messages.join(' ')}',
         );
-        return null;
+        failures.add(
+          SlideGenerationFailure(
+            slideIndex: index + 1,
+            slideKey: current.key,
+            issues: List.unmodifiable(validationIssues.blockingIssues),
+          ),
+        );
+        continue;
       }
       final canonicalSlide = sanitizeGeneratedSlides([composed]).singleOrNull;
       if (canonicalSlide == null) {
@@ -299,7 +750,22 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
           'DECK_GEN',
           'Slide ${index + 1} could not be normalized after validation.',
         );
-        return null;
+        failures.add(
+          SlideGenerationFailure(
+            slideIndex: index + 1,
+            slideKey: current.key,
+            issues: const [
+              GenerationValidationIssue(
+                code: GenerationValidationCode.invalidSchema,
+                category: GenerationValidationCategory.schema,
+                severity: GenerationValidationSeverity.blocking,
+                location: GenerationValidationLocation.visibleContent,
+                message: 'Generated slide could not be normalized.',
+              ),
+            ],
+          ),
+        );
+        continue;
       }
       slides.add(canonicalSlide);
     }
@@ -309,7 +775,10 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       phase: GenerationTracePhase.slide,
       slideCount: plan.slides.length,
     );
-    return {'slides': slides};
+    return _SlideCompositionResult(
+      slides: List.unmodifiable(slides),
+      failures: List.unmodifiable(failures),
+    );
   }
 
   Future<Map<String, dynamic>?> _generateSingleSlide({
@@ -374,6 +843,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
+        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
       systemInstruction: google_ai.Content(
         parts: [google_ai.Part(text: systemPrompt)],

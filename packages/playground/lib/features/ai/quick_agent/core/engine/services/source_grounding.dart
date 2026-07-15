@@ -10,7 +10,7 @@ final _numericClaimPattern = RegExp(
 );
 final _projectionQualifierPattern = RegExp(
   r'\b(?:assum(?:e|ed|ption)|calculat(?:e|ed|ion)|derived?|estimat(?:e|ed)|'
-  r'illustrative|project(?:ed|ion)|scenario)\b',
+  r'goal|illustrative|planned|project(?:ed|ion)|proposed|scenario|target)\b',
   caseSensitive: false,
 );
 final _nonCommitmentQualifierPattern = RegExp(
@@ -20,9 +20,9 @@ final _nonCommitmentQualifierPattern = RegExp(
   caseSensitive: false,
 );
 final _structuralCountPattern = RegExp(
-  r'\b(?:act|canvas|capability|category|channel|column|component|deck|'
-  r'dimension|group|home|horizon|hub|inbox|input|layer|level|lever|option|package|'
-  r'part|path|phase|pillar|place|plan|point|principle|section|segment|silo|slide|'
+  r'\b(?:act|canvas|capability|category|channel|column|comparison|component|deck|'
+  r'decision|dimension|group|home|horizon|hub|inbox|input|layer|level|lever|option|package|'
+  r'part|path|phase|pillar|pilot|place|plan|point|principle|section|segment|silo|slide|'
   r'source|stage|step|stream|surface|system|theme|thread|tier|track|variable|'
   r'view|way|workspace)s?\b',
   caseSensitive: false,
@@ -33,6 +33,10 @@ final _noChangePattern = RegExp(
 );
 final _qualitativeZeroPattern = RegExp(
   r'\bzero[-\s]+friction\b',
+  caseSensitive: false,
+);
+final _nonNumericOnePattern = RegExp(
+  r'\bone[-\s]+(?:off|time)\b',
   caseSensitive: false,
 );
 final _unsourcedTemporalClaimPattern = RegExp(
@@ -49,7 +53,7 @@ final _unsourcedTemporalClaimPattern = RegExp(
 final _pricingTierLabelPattern = RegExp(
   r'(?:^|\|)\s*(?:[*_`]{1,3})?\s*'
   r'(free|starter|basic|team|pro|professional|business|growth|enterprise)'
-  r'\s*(?:[*_`]{1,3})?\s*(?=[:|—–-])',
+  r'\s*(?:[*_`]{1,3})?\s*(?=[:|—–]|\s+-\s+)',
   caseSensitive: false,
 );
 final _evidenceAmplificationPattern = RegExp(
@@ -287,6 +291,53 @@ const _highRiskCommitmentPhrases = {
   'without requiring data migration',
   'without requiring migration',
 };
+
+// Only concrete claims with meaningful legal, commercial, security,
+// availability, or credential risk should force another model request. Broader
+// editorial and evidence-strength language remains useful diagnostic evidence,
+// but regex matches such as "prioritizes" or "designed to" are not reliable
+// enough to block a generated deck.
+const _blockingCommitmentPhrases = {
+  'access controls',
+  'audit logs',
+  'audit logging',
+  'audit-ready',
+  'available to everyone',
+  'award-winning',
+  'certification',
+  'certified',
+  'compliant',
+  'compliant with',
+  'data residency',
+  'early access',
+  'enterprise-grade',
+  'enterprise ready',
+  'free trial',
+  'gdpr',
+  'granular permission',
+  'granular permissions',
+  'guaranteed',
+  'hipaa',
+  'is open',
+  'money-back',
+  'no credit card',
+  'now live',
+  'oauth',
+  'opening access',
+  'patented',
+  'production environments',
+  'production-scale',
+  'proven in production',
+  'rbac',
+  'read-only',
+  'security validated',
+  'seat-based pricing',
+  'sign up',
+  'soc 2',
+  'soc2',
+  'sso',
+  'waitlist',
+};
 const _numberWords = {
   'zero': '0',
   'one': '1',
@@ -438,7 +489,9 @@ Set<String> _groundedPurposeTerms(String value) =>
 Set<String> extractNumericClaims(Iterable<String> values) {
   final claims = <String>{};
   for (final value in values) {
-    final numericWordSource = value.replaceAll(_qualitativeZeroPattern, '');
+    final numericWordSource = value
+        .replaceAll(_qualitativeZeroPattern, '')
+        .replaceAll(_nonNumericOnePattern, '');
     for (final match in _numericClaimPattern.allMatches(value)) {
       claims.add(match.group(0)!.toUpperCase().replaceAll(',', ''));
     }
@@ -492,7 +545,8 @@ String unsupportedNumericClaimRepairGuidance(Set<String> claims) {
             'otherwise remove the claim.'
       : '';
   return 'Remove them or label the containing copy as a projection, estimate, '
-      'assumption, calculation, or scenario.$qualitativeZeroGuidance';
+      'assumption, calculation, scenario, or planned target.'
+      '$qualitativeZeroGuidance';
 }
 
 /// Extracts audience-facing metrics while omitting small structural counts.
@@ -670,6 +724,7 @@ Set<String> findNumericContextMismatches({
     for (final context in _numericFactContexts(value)) {
       final copyWords = _significantWords(context);
       for (final claim in _nonStructuralNumericClaims(context)) {
+        if (_isStructuralEnumeration(context, claim)) continue;
         final claimAnchorGroups = anchorGroups[claim];
         if (claimAnchorGroups == null || claimAnchorGroups.isEmpty) continue;
         if (_addsOpenEndedQualifier(
@@ -703,7 +758,11 @@ Set<String> findNumericContextMismatches({
 bool _matchesAnyAnchorGroup(
   Set<String> copyWords,
   List<Set<String>> anchorGroups,
-) => anchorGroups.any((required) => required.difference(copyWords).isEmpty);
+) => anchorGroups.any((required) {
+  final matched = required.intersection(copyWords).length;
+  if (matched == required.length) return true;
+  return required.length >= 3 && matched >= required.length - 1;
+});
 
 bool _changesNumericClaimOwnership({
   required String context,
@@ -742,6 +801,7 @@ Set<String> findUnsupportedCommitmentPhrases({
         if (copy.contains(phrase) &&
             !supplied.contains(phrase) &&
             !qualified &&
+            !_isBenignCommitmentUse(copy, phrase) &&
             !_isNegatedPhrase(copy, phrase)) {
           unsupported.add(phrase);
         }
@@ -780,12 +840,26 @@ Set<String> findUnsupportedCommitmentPhrases({
   return unsupported;
 }
 
+/// Whether unsupported commitment findings are concrete enough to block.
+bool hasBlockingCommitmentClaim(Iterable<String> phrases) => phrases.any(
+  (phrase) =>
+      _blockingCommitmentPhrases.contains(phrase) ||
+      phrase.startsWith('pricing tier "'),
+);
+
 bool _userSuppliesPricingTier(String supplied, String label) => RegExp(
   '(?:\\b${RegExp.escape(label)}\\b.{0,24}\\btier\\b|'
   '\\btier\\b.{0,24}\\b${RegExp.escape(label)}\\b|'
   '\\b${RegExp.escape(label)}\\b\\s*[:|])',
   caseSensitive: false,
 ).hasMatch(supplied);
+
+bool _isBenignCommitmentUse(String copy, String phrase) =>
+    phrase == 'compliance' &&
+    RegExp(
+      r'\b(?:plan|planning|process|roadmap|schedule) compliance\b',
+      caseSensitive: false,
+    ).hasMatch(copy);
 
 bool _addsOpenEndedQualifier({
   required String context,
@@ -832,6 +906,7 @@ String _normalizeFactWord(String value) {
     word = word.substring(0, word.length - 1);
   }
   return switch (word) {
+    'adoption' || 'migration' || 'rollout' || 'transition' => 'adoption',
     'canvas' || 'place' || 'surface' => 'workspace',
     'company' || 'customer' || 'enterprise' || 'organization' => 'partner',
     'connector' || 'integration' || 'toolchain' => 'source',

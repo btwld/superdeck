@@ -31,6 +31,30 @@ part 'deck_generator_pipeline.dart';
 part 'deck_plan_repair.dart';
 part 'deck_generator_workflow.dart';
 
+/// One slide slot that could not be composed into a valid canonical slide.
+final class SlideGenerationFailure {
+  const SlideGenerationFailure({
+    required this.slideIndex,
+    required this.slideKey,
+    required this.issues,
+    this.retryable = true,
+  });
+
+  final int slideIndex;
+  final String slideKey;
+  final List<GenerationValidationIssue> issues;
+  final bool retryable;
+
+  String get message => issues.messages.join(' ');
+
+  Map<String, Object?> toJson() => {
+    'slideIndex': slideIndex,
+    'slideKey': slideKey,
+    'retryable': retryable,
+    'issues': [for (final issue in issues) issue.toJson()],
+  };
+}
+
 /// Result of deck generation.
 class DeckGenerationResult {
   final bool success;
@@ -46,14 +70,19 @@ class DeckGenerationResult {
   /// The validated, mechanically normalized plan used to compose the deck.
   final DeckPlanType? plan;
 
+  /// Ordered slide slots that remain unresolved and can be retried.
+  final List<SlideGenerationFailure> slideFailures;
+
   const DeckGenerationResult._({
     required this.success,
     this.message,
     this.error,
     List<Slide>? slides,
+    List<SlideGenerationFailure>? slideFailures,
     this.theme,
     this.plan,
-  }) : slides = slides ?? const [];
+  }) : slides = slides ?? const [],
+       slideFailures = slideFailures ?? const [];
 
   DeckGenerationResult.success({
     required List<Slide> slides,
@@ -68,16 +97,42 @@ class DeckGenerationResult {
          plan: plan,
        );
 
+  DeckGenerationResult.partial({
+    required List<Slide> slides,
+    required List<SlideGenerationFailure> slideFailures,
+    required DeckPlanType plan,
+    required ResolvedPresentationTheme theme,
+  }) : this._(
+         success: false,
+         error:
+             'Generated ${slides.length} of ${plan.slides.length} slides; '
+             'failed: ${slideFailures.map((failure) => '${failure.slideKey} '
+                 '(${failure.message})').join(', ')}.',
+         slides: slides,
+         slideFailures: slideFailures,
+         theme: theme,
+         plan: plan,
+       );
+
   DeckGenerationResult.failure(String error)
     : this._(success: false, error: error);
 
   /// Number of slides in the result.
   int get slideCount => slides.length;
+
+  bool get isPartial => plan != null && slideFailures.isNotEmpty;
+}
+
+final class _SlideCompositionResult {
+  const _SlideCompositionResult({required this.slides, required this.failures});
+
+  final List<Map<String, dynamic>> slides;
+  final List<SlideGenerationFailure> failures;
 }
 
 /// Service that generates SuperDeck presentations using Google Generative AI.
 ///
-/// Uses a plan-first pipeline, then composes and validates one slide at a time.
+/// Uses a plan-first pipeline, then composes and validates narrative sections.
 class DeckGeneratorService {
   final GenerationElementCatalog elementCatalog;
 
@@ -89,23 +144,27 @@ class DeckGeneratorService {
 
   /// Model used to compose and repair each slide.
   ///
-  /// Defaults to the existing `gemini-3-flash-preview` configuration for fast
-  /// sequential composition. Callers can inject another configured model for
-  /// quality and latency comparisons.
+  /// Defaults to stable Flash-Lite for latency-sensitive composition.
   final String modelName;
 
   /// Model used for the outline generation (Phase 1).
+  ///
+  /// Planning uses the current stable Flash model; the validated sections then
+  /// compose concurrently on the current stable Flash-Lite model.
   final String outlineModelName;
+
+  /// Fast model used only when the validated global plan needs correction.
+  final String outlineRepairModelName;
+
+  /// Decks at or above this size compose one request per narrative section.
+  ///
+  /// Smaller decks retain the sequential path for focused repair diagnostics.
+  final int sectionBatchThreshold;
 
   /// Deadline for each outline or slide model call.
   final Duration requestTimeout;
 
-  /// Bounded initial planning request plus targeted semantic repairs.
-  ///
-  /// Large plans have more cross-field constraints, so bounded follow-up repairs
-  /// can recover when one repair fixes an invariant but disturbs another. The
-  /// sixth and final attempt is only reached after five invalid responses; a
-  /// valid first draft still completes in one request.
+  /// Bounded initial planning request plus one targeted semantic repair.
   final int maxOutlineValidationAttempts;
 
   /// Bounded local repairs for one slide inside an otherwise valid deck plan.
@@ -114,18 +173,18 @@ class DeckGeneratorService {
   /// rewriting or regressing the rest of a 10–20-slide blueprint.
   final int maxOutlineSlideValidationAttempts;
 
-  /// Bounded initial composition plus targeted semantic repairs per slide.
-  ///
-  /// Valid slides still use one request. A fourth and final targeted attempt
-  /// prevents one stubborn semantic miss from forcing a full 10–20-slide deck
-  /// restart after the outline and preceding slides already passed.
+  /// Bounded initial composition plus one targeted semantic repair per slide.
   final int maxSlideValidationAttempts;
 
   /// Maximum provider calls across the whole run, including transport retries.
   final int maxModelRequests;
 
-  /// Maximum semantic repair calls across outline and slide generation.
-  final int maxRepairRequests;
+  /// Optional semantic repair ceiling across outline and slide generation.
+  ///
+  /// When omitted, the run uses a small slide-count-aware budget: two repairs
+  /// for decks below 20 slides and roughly 15% of the requested slides after
+  /// that. This prevents independent per-slide retries from multiplying latency.
+  final int? maxRepairRequests;
 
   /// Wall-clock limit shared by every phase and model request in one run.
   final Duration runTimeout;
@@ -139,14 +198,16 @@ class DeckGeneratorService {
 
   DeckGeneratorService({
     required this.apiKey,
-    this.modelName = GeminiModelNames.gemini3FlashPreview,
-    this.outlineModelName = GeminiModelNames.gemini3FlashPreview,
+    this.modelName = GeminiModelNames.gemini31FlashLite,
+    this.outlineModelName = GeminiModelNames.gemini35Flash,
+    this.outlineRepairModelName = GeminiModelNames.gemini31FlashLite,
+    this.sectionBatchThreshold = 5,
     this.requestTimeout = const Duration(seconds: 45),
-    this.maxOutlineValidationAttempts = 6,
-    this.maxOutlineSlideValidationAttempts = 3,
-    this.maxSlideValidationAttempts = 4,
+    this.maxOutlineValidationAttempts = 2,
+    this.maxOutlineSlideValidationAttempts = 2,
+    this.maxSlideValidationAttempts = 2,
     this.maxModelRequests = 96,
-    this.maxRepairRequests = 72,
+    this.maxRepairRequests,
     this.runTimeout = const Duration(minutes: 15),
     RetryPolicy? retryPolicy,
     GenerationModelClientFactory? modelClientFactory,
@@ -154,11 +215,12 @@ class DeckGeneratorService {
     GenerationElementCatalog? elementCatalog,
     PresentationTypographyCatalog? typographyCatalog,
     PresentationThemeCatalog? themeCatalog,
-  }) : assert(maxOutlineValidationAttempts > 0),
+  }) : assert(sectionBatchThreshold > 0),
+       assert(maxOutlineValidationAttempts > 0),
        assert(maxOutlineSlideValidationAttempts > 0),
        assert(maxSlideValidationAttempts > 0),
        assert(maxModelRequests > 0),
-       assert(maxRepairRequests > 0),
+       assert(maxRepairRequests == null || maxRepairRequests > 0),
        assert(runTimeout > Duration.zero),
        retryPolicy = retryPolicy ?? RetryPolicy(maxAttempts: 2),
        elementCatalog = elementCatalog ?? GenerationElementCatalog.builtIn(),
@@ -217,6 +279,13 @@ class DeckGeneratorService {
     bool generationCancelled() => isCancelled?.call() ?? false;
     DeckGenerationResult cancelledResult() =>
         DeckGenerationResult.failure('Generation cancelled.');
+    final repairBudget =
+        maxRepairRequests ?? _defaultRepairBudget(request.slideCount);
+    debugLog.log(
+      'DECK_GEN',
+      'Run budgets: repairs=$repairBudget, requests=$maxModelRequests, '
+          'timeout=${runTimeout.inSeconds}s',
+    );
     final executor = GenerationModelCallExecutor(
       client: service,
       retryPolicy: retryPolicy,
@@ -224,7 +293,7 @@ class DeckGeneratorService {
       requestTimeout: requestTimeout,
       isCancelled: generationCancelled,
       maxModelRequests: maxModelRequests,
-      maxRepairRequests: maxRepairRequests,
+      maxRepairRequests: repairBudget,
       runTimeout: runTimeout,
     );
 
@@ -249,7 +318,7 @@ class DeckGeneratorService {
         );
       }
 
-      final deckJson = await _runSlideCompositionPhase(
+      final composition = await _runSlideCompositionPhase(
         this,
         executor: executor,
         prompt: modelInput,
@@ -263,7 +332,7 @@ class DeckGeneratorService {
         return cancelledResult();
       }
 
-      if (deckJson == null) {
+      if (composition == null) {
         return DeckGenerationResult.failure(
           'Failed while composing presentation slides. Please try again.',
         );
@@ -271,7 +340,7 @@ class DeckGeneratorService {
 
       return _finalizeDeck(
         this,
-        deckJson: deckJson,
+        composition: composition,
         plan: outline,
         pipelineStart: pipelineStart,
         onProgress: onProgress,

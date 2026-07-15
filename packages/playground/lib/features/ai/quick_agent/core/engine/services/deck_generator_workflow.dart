@@ -5,9 +5,15 @@ void _logPipelineConfig(DeckGeneratorService owner, {required String prompt}) {
   debugLog.log(
     'DECK_GEN',
     'Config: outlineModel=${owner.outlineModelName}, '
-        'slideModel=${owner.modelName}, thinking=disabled',
+        'outlineRepairModel=${owner.outlineRepairModelName}, '
+        'slideModel=${owner.modelName}, thinkingBudget=0',
   );
   debugLog.log('DECK_GEN', 'Prompt (${prompt.length} chars):\n$prompt');
+}
+
+int _defaultRepairBudget(int slideCount) {
+  final proportionalBudget = (slideCount * 15) ~/ 100;
+  return proportionalBudget < 3 ? 3 : proportionalBudget;
 }
 
 Future<DeckPlanType?> _runOutlinePhase(
@@ -56,7 +62,7 @@ Future<DeckPlanType?> _runOutlinePhase(
   return outline;
 }
 
-Future<Map<String, dynamic>?> _runSlideCompositionPhase(
+Future<_SlideCompositionResult?> _runSlideCompositionPhase(
   DeckGeneratorService owner, {
   required GenerationModelCallExecutor executor,
   required String prompt,
@@ -73,7 +79,7 @@ Future<Map<String, dynamic>?> _runSlideCompositionPhase(
   );
   onProgress?.call(const GenerationProgress(GenerationPhase.composingSlides));
   final deckStart = DateTime.now();
-  final deckJson = await owner._composeSlides(
+  final composition = await owner._composeSlides(
     executor,
     prompt,
     outline,
@@ -84,7 +90,7 @@ Future<Map<String, dynamic>?> _runSlideCompositionPhase(
   );
   final deckMs = DateTime.now().difference(deckStart).inMilliseconds;
 
-  if (deckJson == null) {
+  if (composition == null) {
     debugLog.error(
       'DECK_GEN',
       'Phase 2 FAILED after ${deckMs}ms - no deck JSON returned',
@@ -92,21 +98,22 @@ Future<Map<String, dynamic>?> _runSlideCompositionPhase(
     return null;
   }
 
-  final deckSlides = (deckJson['slides'] as List?)?.length ?? 0;
+  final deckSlides = composition.slides.length;
   debugLog.log(
     'DECK_GEN',
-    'Phase 2 COMPLETE in ${deckMs}ms - $deckSlides raw slides',
+    'Phase 2 COMPLETE in ${deckMs}ms - $deckSlides accepted, '
+        '${composition.failures.length} failed',
   );
   trace.emit(
     kind: GenerationTraceKind.phaseDone,
     phase: GenerationTracePhase.composition,
   );
-  return deckJson;
+  return composition;
 }
 
 DeckGenerationResult _finalizeDeck(
   DeckGeneratorService owner, {
-  required Map<String, dynamic> deckJson,
+  required _SlideCompositionResult composition,
   required DeckPlanType plan,
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,
@@ -116,7 +123,7 @@ DeckGenerationResult _finalizeDeck(
   debugLog.section('Finalize');
   onProgress?.call(const GenerationProgress(GenerationPhase.finalizing));
 
-  final slides = _extractSlides(deckJson);
+  final slides = composition.slides;
 
   debugLog.log('DECK_GEN', 'Pre-sanitize: ${slides.length} slides');
   final sanitizedSlides = sanitizeGeneratedSlides(slides);
@@ -126,7 +133,7 @@ DeckGenerationResult _finalizeDeck(
         '(${slides.length - sanitizedSlides.length} removed)',
   );
 
-  if (sanitizedSlides.isEmpty) {
+  if (sanitizedSlides.isEmpty && composition.failures.isEmpty) {
     debugLog.error('DECK_GEN', 'No slides survived sanitization');
     trace.emit(
       kind: GenerationTraceKind.validation,
@@ -136,10 +143,12 @@ DeckGenerationResult _finalizeDeck(
     return DeckGenerationResult.failure('No slides generated');
   }
 
-  if (sanitizedSlides.length != plan.slides.length) {
+  final expectedAcceptedCount =
+      plan.slides.length - composition.failures.length;
+  if (sanitizedSlides.length != expectedAcceptedCount) {
     final message =
         'Generated ${sanitizedSlides.length} usable slides; '
-        'expected exactly ${plan.slides.length}.';
+        'expected $expectedAcceptedCount accepted slide results.';
     debugLog.error('DECK_GEN', message);
     trace.emit(
       kind: GenerationTraceKind.validation,
@@ -180,6 +189,15 @@ DeckGenerationResult _finalizeDeck(
     typographyCatalog: owner.typographyCatalog,
   );
 
+  if (composition.failures.isNotEmpty) {
+    return DeckGenerationResult.partial(
+      slides: parsedSlides,
+      slideFailures: composition.failures,
+      plan: plan,
+      theme: theme,
+    );
+  }
+
   return DeckGenerationResult.success(
     slides: parsedSlides,
     plan: plan,
@@ -194,24 +212,6 @@ String _argumentMessage(Object error) => error
 
 bool _generationCancelled(bool Function()? isCancelled) =>
     isCancelled?.call() ?? false;
-
-List<Map<String, dynamic>> _extractSlides(Map<String, dynamic> deckJson) {
-  final rawSlides = deckJson['slides'];
-  if (rawSlides is! List) return const <Map<String, dynamic>>[];
-
-  final slides = <Map<String, dynamic>>[];
-  for (final entry in rawSlides.asMap().entries) {
-    final rawSlide = entry.value;
-    if (rawSlide is! Map) {
-      final index = entry.key;
-      debugLog.log('DECK_GEN', 'Discarding non-object slide at index $index');
-      continue;
-    }
-    slides.add(Map<String, dynamic>.from(rawSlide));
-  }
-
-  return slides;
-}
 
 List<Slide>? _parseSanitizedSlides(List<Map<String, dynamic>> slides) {
   final parsed = <Slide>[];

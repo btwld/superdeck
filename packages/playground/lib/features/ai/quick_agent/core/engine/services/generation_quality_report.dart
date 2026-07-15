@@ -18,7 +18,7 @@ final class GenerationQualityIssue {
     required this.rule,
     required this.message,
     this.slideKey,
-    this.severity = GenerationValidationSeverity.diagnostic,
+    this.severity = GenerationValidationSeverity.blocking,
     this.sourceCode,
   });
 
@@ -193,6 +193,13 @@ final class GenerationQualityReport {
           GenerationQualityIssue(
             rule: 'slide.content_density',
             slideKey: slide.key,
+            severity:
+                isHardContentDensityOverage(
+                  visibleCharacters: characters,
+                  characterLimit: maximum,
+                )
+                ? GenerationValidationSeverity.blocking
+                : GenerationValidationSeverity.diagnostic,
             message:
                 'Slide "${slide.key}" has $characters visible characters; '
                 '$density allows at most $maximum.',
@@ -338,7 +345,9 @@ final class GenerationQualityReport {
     );
   }
 
-  bool get passed => issues.isEmpty;
+  bool get passed => issues.every(
+    (issue) => issue.severity != GenerationValidationSeverity.blocking,
+  );
 
   Map<String, Object?> toJson() => {
     'passed': passed,

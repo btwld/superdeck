@@ -7,6 +7,7 @@ import '../services/theme_json_serializer.dart';
 import '../services/design_quality_metrics.dart';
 import '../services/generation_element_catalog.dart';
 import '../services/generation_validation_issue.dart';
+import '../services/source_grounding.dart';
 import 'composition_example_library.dart';
 import 'prompt_registry.dart';
 
@@ -28,6 +29,15 @@ abstract interface class GenerationPromptProvider {
     required GenerationElementCatalog elementCatalog,
     List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidSlide,
+  });
+
+  String buildSectionPrompt({
+    required DeckPlanType plan,
+    required DeckPlanSectionType section,
+    required List<DeckPlanSlideType> slides,
+    required DeckPlanSlideType? previous,
+    required DeckPlanSlideType? next,
+    required GenerationElementCatalog elementCatalog,
   });
 
   String buildOutlineSlideRepairPrompt({
@@ -59,31 +69,13 @@ final class AssetGenerationPromptProvider implements GenerationPromptProvider {
     List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidPlan,
   }) {
-    final literalRepairChecklist = _outlineLiteralRepairChecklist(
-      validationIssues,
-    );
-    final repairSection = validationIssues.isEmpty
-        ? ''
-        : '''
-
-## Invalid deck plan to repair
-
-Use this invalid plan as the repair base and return a complete replacement plan.
-Make only the field edits needed to satisfy the constraints below. Preserve all
-other valid keys, ordering, content, facts, and design decisions. Do not merely
-explain the changes.
-
-${const JsonEncoder.withIndent('  ').convert(invalidPlan)}
-
-## Current and prior deck-plan validation constraints
-
-${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
-$literalRepairChecklist
-
-This list is cumulative. A constraint may already be fixed in the current base;
-if so, preserve that fix. Mechanically re-check every constraint before returning
-JSON so a repair never reintroduces an earlier factual or structural error.
-''';
+    if (validationIssues.isNotEmpty) {
+      return _buildOutlineRepairPrompt(
+        themeCandidates: themeCandidates,
+        validationIssues: validationIssues,
+        invalidPlan: invalidPlan,
+      );
+    }
 
     return '''
 ${_promptRegistry.render('outline_system')}
@@ -95,7 +87,52 @@ that ID inside the theme object. Never return a version, palette, font family,
 brand override, or runtime styling token; the application owns those values.
 
 ${const JsonEncoder.withIndent('  ').convert(themeCandidates.map((theme) => theme.toModelCandidate()).toList())}
-$repairSection
+''';
+  }
+
+  String _buildOutlineRepairPrompt({
+    required List<PresentationThemeDescriptor> themeCandidates,
+    required List<GenerationValidationIssue> validationIssues,
+    required Map<String, Object?>? invalidPlan,
+  }) {
+    const encoder = JsonEncoder.withIndent(' ');
+    final literalRepairChecklist = _outlineLiteralRepairChecklist(
+      validationIssues,
+    );
+    return '''
+You repair one SuperDeck deck plan. Return one complete replacement deck-plan
+JSON object matching the response schema—no commentary or Markdown fence.
+
+The original typed user message is the only authority for facts, numbers,
+domains, supplied elements, evidence status, availability, security/compliance,
+and commercial commitments. Use the invalid plan as the repair base. Fix every
+blocking issue below while preserving all valid keys, ordering, narrative,
+content, facts, theme choice, and design decisions. Do not redesign the deck.
+
+Hard contract:
+- preserve the requested slide count, slide order, unique keys, section
+  membership, and exact supported composition/treatment values
+- keep audience-facing claims grounded in the original request
+- keep each planned element's exact type, source, purpose, and cardinality
+- choose one eligible theme ID; never author palette, font, or runtime tokens
+- return the complete plan, including every valid unchanged section and slide
+
+## Eligible theme IDs
+
+${encoder.convert(themeCandidates.map((theme) => theme.id).toList())}
+
+## Invalid plan
+
+${invalidPlan == null ? 'No parseable plan was returned.' : encoder.convert(invalidPlan)}
+
+## Blocking issues
+
+${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
+$literalRepairChecklist
+
+The blocking list is cumulative. Before returning JSON, re-check every item and
+preserve any correction already present in the repair base. Return only the
+complete corrected deck-plan object.
 ''';
   }
 
@@ -109,6 +146,17 @@ $repairSection
     List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidSlide,
   }) {
+    if (validationIssues.isNotEmpty) {
+      return buildSingleSlideRepairPrompt(
+        plan: plan,
+        current: current,
+        previousSlide: previousSlide,
+        next: next,
+        validationIssues: validationIssues,
+        invalidSlide: invalidSlide,
+        elementCatalog: elementCatalog,
+      );
+    }
     final basePrompt = _promptRegistry.render('slide_system');
     final compositionExample = _exampleLibrary.buildFor(
       current: current,
@@ -126,6 +174,121 @@ $repairSection
       elementCatalog: elementCatalog,
       compositionExample: compositionExample,
     );
+  }
+
+  @override
+  String buildSectionPrompt({
+    required DeckPlanType plan,
+    required DeckPlanSectionType section,
+    required List<DeckPlanSlideType> slides,
+    required DeckPlanSlideType? previous,
+    required DeckPlanSlideType? next,
+    required GenerationElementCatalog elementCatalog,
+  }) {
+    if (slides.isEmpty) {
+      throw ArgumentError.value(slides, 'slides', 'Section cannot be empty.');
+    }
+    if (slides.any((slide) => slide.sectionKey != section.key)) {
+      throw ArgumentError('Every slide must belong to section ${section.key}.');
+    }
+
+    const encoder = JsonEncoder.withIndent('  ');
+    final plannedElements = [for (final slide in slides) ...?slide.elements];
+    final numericUnits = <String, List<String>>{
+      for (final slide in slides)
+        slide.key: [
+          for (final unit in [slide.assertion, ...slide.contentUnits])
+            if (extractNumericClaims([unit]).isNotEmpty) unit,
+        ],
+    }..removeWhere((_, units) => units.isEmpty);
+    final budgets = [
+      for (final slide in slides)
+        {
+          'key': slide.key,
+          'maximumVisibleCharacters':
+              (visibleCharacterLimit(
+                    slide.density,
+                    composition: slide.composition,
+                  ) *
+                  3) ~/
+              4,
+          'maximumVisibleWords':
+              ((visibleCharacterLimit(
+                        slide.density,
+                        composition: slide.composition,
+                      ) *
+                      3) ~/
+                  4) ~/
+              8,
+        },
+    ];
+    final shapeExamples = <Map<String, Object?>>[];
+    final exampleCompositions = <String>{};
+    for (final slide in slides) {
+      if (!exampleCompositions.add(slide.composition)) continue;
+      final example = _exampleLibrary.buildFor(
+        current: slide,
+        elementCatalog: elementCatalog,
+      );
+      example['key'] = 'example-${slide.composition}';
+      shapeExamples.add(example);
+    }
+
+    return '''
+${_promptRegistry.render('section_system')}
+
+## Deck context
+
+Topic: ${plan.topic}
+Story: ${plan.story}
+Theme: ${encoder.convert(serializeDeckThemeForSlidePrompt(plan.theme))}
+
+## Current narrative section
+
+${encoder.convert(Map<String, Object?>.from(section))}
+
+## Ordered slide plans
+
+${encoder.convert(slides.map(Map<String, Object?>.from).toList())}
+
+## Boundary context
+
+Previous plan item: ${previous == null ? 'None.' : encoder.convert(Map<String, Object?>.from(previous))}
+Next plan item: ${next == null ? 'None.' : encoder.convert(Map<String, Object?>.from(next))}
+
+## Per-slide visible-content budgets
+
+${encoder.convert(budgets)}
+
+These are hard output maxima, not suggestions. Count every heading, label,
+bullet, table cell, and paragraph. Remove secondary explanation until each slide
+fits its own maximum; never borrow another slide's budget.
+
+## Canonical shape examples
+
+The objects below are valid individual slide shapes, one per composition used
+in this section. Follow their section/block structure, but never return an
+`example-*` key or copy their generic wording. The ordered plans remain the
+authority for content, treatment, density, elements, and slide keys.
+
+${encoder.convert(shapeExamples)}
+
+## Numeric copy contract
+
+${numericUnits.isEmpty ? 'No numeric unit is planned in this section.' : '''For the units grouped by slide key below, copy each complete unit verbatim into that slide or omit its number. Never shorten, relabel, calculate from, move to another slide, or paraphrase a number. Preserve every explicit planned, proposed, projected, target, or illustrative qualifier in the same visible line.
+
+${encoder.convert(numericUnits)}'''}
+
+## Available elements
+
+${plannedElements.isEmpty ? 'No elements are planned in this section.' : elementCatalog.formatForPrompt()}
+
+## Final task
+
+Return one `slides` array containing exactly ${slides.length} slides with keys,
+in order: ${slides.map((slide) => '`${slide.key}`').join(', ')}. Fulfill each
+plan item without borrowing facts or elements from another slide.
+''';
   }
 
   @override
@@ -198,6 +361,89 @@ ${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
 Return only the corrected single-slide plan object.
 ''';
   }
+}
+
+String buildSingleSlideRepairPrompt({
+  required DeckPlanType plan,
+  required DeckPlanSlideType current,
+  required Map<String, Object?>? previousSlide,
+  required DeckPlanSlideType? next,
+  required List<GenerationValidationIssue> validationIssues,
+  required Map<String, Object?>? invalidSlide,
+  required GenerationElementCatalog elementCatalog,
+}) {
+  const encoder = JsonEncoder.withIndent('  ');
+  final contentBudget = visibleCharacterLimit(
+    current.density,
+    composition: current.composition,
+  );
+  final requiresElementContext = validationIssues.any(
+    (issue) =>
+        issue.code == GenerationValidationCode.elementGrounding ||
+        issue.code == GenerationValidationCode.widgetArguments ||
+        issue.code == GenerationValidationCode.handoffPurpose,
+  );
+  final requiresNumericContext = validationIssues.any(
+    (issue) =>
+        issue.code == GenerationValidationCode.numericGrounding ||
+        issue.code == GenerationValidationCode.numericMeaning ||
+        issue.code == GenerationValidationCode.metricIntent,
+  );
+  final hasCommentIssue = validationIssues.any(
+    (issue) => issue.location == GenerationValidationLocation.speakerComments,
+  );
+  final targetedGuidance = [
+    if (requiresNumericContext)
+      'For numeric errors, use the original user request and its '
+          '`groundedNumericFacts` as authority. Preserve the complete subject, '
+          'unit, comparison, and time period somewhere on this slide; delete or '
+          'visibly qualify unsupported values.',
+    if (hasCommentIssue)
+      'Speaker comments are optional. Delete an offending comment instead of '
+          'rewriting valid visible content.',
+    if (requiresElementContext)
+      'Preserve planned widget names, exact sources, purposes, and cardinality. '
+          'Do not invent or substitute an element.',
+  ];
+
+  return '''
+You repair one SuperDeck slide. Return one complete canonical slide JSON object
+matching the response schema—no deck wrapper, commentary, or Markdown fence.
+
+The original typed user message is the only factual authority. Use the invalid
+draft as the repair base. Fix every blocking issue below while preserving valid
+copy, layout, sources, and comments. Do not redesign the slide.
+
+Hard invariants:
+- key: `${current.key}`
+- options.style: `${current.treatment}`
+- planned composition: `${current.composition}`
+- visible content budget: at most $contentBudget characters
+- one or two sections, 1–3 blocks per section, supported fields only
+- no invented facts, numbers, URLs, domains, elements, capabilities, evidence
+  status, security/compliance claims, availability, or commercial commitments
+
+## Current slide plan
+${encoder.convert(Map<String, Object?>.from(current))}
+
+## Neighbor context
+Previous accepted slide:
+${previousSlide == null ? 'None.' : encoder.convert(previousSlide)}
+
+Next plan item:
+${next == null ? 'None.' : encoder.convert(Map<String, Object?>.from(next))}
+
+## Invalid draft
+${invalidSlide == null ? 'No parseable draft was returned.' : encoder.convert(invalidSlide)}
+
+## Blocking issues
+${validationIssues.map((issue) => '- ${issue.message}').join('\n')}
+
+${targetedGuidance.join('\n')}
+${requiresElementContext ? '\n## Available elements\n${elementCatalog.formatForPrompt()}' : ''}
+
+Return only the corrected slide object.
+''';
 }
 
 String _outlineLiteralRepairChecklist(
@@ -321,6 +567,42 @@ String buildSingleSlidePrompt({
         'density': slide.density,
       },
   ];
+  final previousContext = previousSlide == null
+      ? null
+      : _compactPreviousSlideContext(previousSlide);
+  final elementContext = current.elements == null || current.elements!.isEmpty
+      ? 'None planned for this slide.'
+      : elementCatalog.formatForPrompt();
+  final numericPlanUnits = {
+    for (final unit in [current.assertion, ...current.contentUnits])
+      if (extractNumericClaims([unit]).isNotEmpty) unit,
+  };
+  final hypotheticalNumericUnits = [
+    for (final unit in numericPlanUnits)
+      if (hasProjectionQualifier(unit)) unit,
+  ];
+  final groundedNumericUnits = [
+    for (final unit in numericPlanUnits)
+      if (!hasProjectionQualifier(unit)) unit,
+  ];
+  final numericCopyContract = numericPlanUnits.isEmpty
+      ? ''
+      : '''
+
+## Numeric copy contract
+
+For each grounded numeric unit below, copy the complete unit verbatim into one
+visible line or omit its number. Do not shorten, split, relabel, or paraphrase
+its subject, unit, comparison, or time period.
+
+${groundedNumericUnits.isEmpty ? 'No grounded numeric unit is required.' : encoder.convert(groundedNumericUnits)}
+
+For any hypothetical numeric unit below, preserve its explicit hypothetical label
+(`planned`, `proposed`, `projected`, `target`, or `illustrative`) in the same
+visible line and in any speaker comment that repeats the value.
+
+${hypotheticalNumericUnits.isEmpty ? 'No hypothetical numeric unit is required.' : encoder.convert(hypotheticalNumericUnits)}
+''';
   final speakerCommentRepairChecklist =
       validationIssues.any(
         (issue) =>
@@ -395,16 +677,17 @@ ${recentLedger.isEmpty ? 'None (this is the first planned slide).' : encoder.con
 
 ## Current slide plan
 ${encoder.convert(Map<String, Object?>.from(current))}
+$numericCopyContract
 
 ## Neighbor context
 Previous canonical slide:
-${previousSlide == null ? 'None (this is the first slide).' : encoder.convert(previousSlide)}
+${previousContext == null ? 'None (this is the first slide).' : encoder.convert(previousContext)}
 
 Next plan item:
 ${next == null ? 'None (this is the final slide).' : encoder.convert(Map<String, Object?>.from(next))}
 
 ## Available elements
-${elementCatalog.formatForPrompt()}
+$elementContext
 
 ## Relevant composition example
 Use this one example for structural guidance only. Replace its generic words
@@ -425,4 +708,48 @@ limits. Synthesize the planned content units instead of expanding each into a
 separate paragraph. $compositionBudgetGuidance Do not repeat the previous slide
 or generate future slides.
 ''';
+}
+
+Map<String, Object?> _compactPreviousSlideContext(
+  Map<String, Object?> previousSlide,
+) {
+  const visibleLimit = 700;
+  final visibleParts = <String>[];
+  final rawSections = previousSlide['sections'];
+  if (rawSections is List) {
+    for (final rawSection in rawSections) {
+      if (rawSection is! Map) continue;
+      final rawBlocks = rawSection['blocks'];
+      if (rawBlocks is! List) continue;
+      for (final rawBlock in rawBlocks) {
+        if (rawBlock is! Map) continue;
+        final content = rawBlock['content'];
+        if (content is String && content.trim().isNotEmpty) {
+          visibleParts.add(content.trim());
+          continue;
+        }
+        final name = rawBlock['name'];
+        if (name is String && name.trim().isNotEmpty) {
+          visibleParts.add('[${name.trim()} widget]');
+        }
+      }
+    }
+  }
+  final visibleText = visibleParts.join('\n\n');
+  final options = previousSlide['options'];
+  final compactOptions = options is Map
+      ? {
+          if (options['title'] case final String title) 'title': title,
+          if (options['style'] case final String style) 'style': style,
+        }
+      : const <String, Object?>{};
+
+  return {
+    if (previousSlide['key'] case final String key) 'key': key,
+    if (compactOptions.isNotEmpty) 'options': compactOptions,
+    if (visibleText.isNotEmpty)
+      'visibleContent': visibleText.length <= visibleLimit
+          ? visibleText
+          : '${visibleText.substring(0, visibleLimit).trimRight()}…',
+  };
 }

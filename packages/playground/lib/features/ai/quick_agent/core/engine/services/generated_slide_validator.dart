@@ -18,6 +18,11 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
   required DeckPlanSlideType planSlide,
 }) {
   final normalized = Map<String, dynamic>.of(rawSlide);
+  final rawOptions = rawSlide['options'];
+  normalized['options'] = {
+    if (rawOptions is Map) ...Map<String, dynamic>.from(rawOptions),
+    'style': planSlide.treatment,
+  };
   final rawSections = rawSlide['sections'];
   if (rawSections is! List) return normalized;
   normalized['sections'] = [
@@ -29,11 +34,10 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
             'blocks': [
               for (final rawBlock in rawBlocks)
                 if (rawBlock is Map)
-                  _planPermitsH1(planSlide)
-                      ? Map<String, dynamic>.from(rawBlock)
-                      : _normalizeBlockHeading(
-                          Map<String, dynamic>.from(rawBlock),
-                        )
+                  _normalizeBlockForPlan(
+                    Map<String, dynamic>.from(rawBlock),
+                    planSlide,
+                  )
                 else
                   rawBlock,
             ],
@@ -42,6 +46,30 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
         rawSection,
   ];
   return _normalizeImplicitVerticalAlignment(normalized, planSlide);
+}
+
+Map<String, dynamic> _normalizeBlockForPlan(
+  Map<String, dynamic> block,
+  DeckPlanSlideType planSlide,
+) {
+  var normalized = _planPermitsH1(planSlide)
+      ? block
+      : _normalizeBlockHeading(block);
+  if (planSlide.composition == 'title') {
+    normalized = _flattenTitleListMarkers(normalized);
+  }
+  return normalized;
+}
+
+Map<String, dynamic> _flattenTitleListMarkers(Map<String, dynamic> block) {
+  if (block['type'] != ContentBlock.key || block['content'] is! String) {
+    return block;
+  }
+  block['content'] = (block['content'] as String).replaceAllMapped(
+    RegExp(r'^(\s*)(?:[-+*]|\d+[.)])\s+', multiLine: true),
+    (match) => match.group(1)!,
+  );
+  return block;
 }
 
 /// Removes optional speaker comments whenever their content is invalid.
@@ -327,6 +355,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       .scoped(
         code: GenerationValidationCode.numericGrounding,
         category: GenerationValidationCategory.factual,
+        severity: GenerationValidationSeverity.diagnostic,
       )
       .addAll(
         _validateNumericClaimGrounding(
@@ -339,6 +368,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       .scoped(
         code: GenerationValidationCode.numericMeaning,
         category: GenerationValidationCategory.factual,
+        severity: GenerationValidationSeverity.diagnostic,
       )
       .addAll(
         _validateNumericClaimContext(
@@ -347,18 +377,18 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
           label: 'Visible content',
         ),
       );
+  final visibleCommitment = _validateCommitmentGrounding(
+    [markdown],
+    request,
+    label: 'Visible content',
+  );
   errors
       .scoped(
         code: GenerationValidationCode.commitmentGrounding,
         category: GenerationValidationCategory.factual,
+        severity: visibleCommitment.severity,
       )
-      .addAll(
-        _validateCommitmentGrounding(
-          [markdown],
-          request,
-          label: 'Visible content',
-        ),
-      );
+      .addAll(visibleCommitment.messages);
   if (slide.comments.isNotEmpty) {
     final commentErrors = errors.scoped(
       location: GenerationValidationLocation.speakerComments,
@@ -379,6 +409,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.numericGrounding,
           category: GenerationValidationCategory.factual,
+          severity: GenerationValidationSeverity.diagnostic,
         )
         .addAll(
           _validateNumericClaimGrounding(
@@ -391,6 +422,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.numericMeaning,
           category: GenerationValidationCategory.factual,
+          severity: GenerationValidationSeverity.diagnostic,
         )
         .addAll(
           _validateNumericClaimContext(
@@ -399,23 +431,24 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
             label: 'Speaker comments',
           ),
         );
+    final commentCommitment = _validateCommitmentGrounding(
+      slide.comments,
+      request,
+      label: 'Speaker comments',
+    );
     commentErrors
         .scoped(
           code: GenerationValidationCode.commitmentGrounding,
           category: GenerationValidationCategory.factual,
+          severity: commentCommitment.severity,
         )
-        .addAll(
-          _validateCommitmentGrounding(
-            slide.comments,
-            request,
-            label: 'Speaker comments',
-          ),
-        );
+        .addAll(commentCommitment.messages);
   }
   errors
       .scoped(
         code: GenerationValidationCode.contentDensity,
         category: GenerationValidationCategory.quality,
+        severity: GenerationValidationSeverity.diagnostic,
       )
       .addAll(
         _validateDisplayHeadings(
@@ -435,6 +468,13 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.contentDensity,
           category: GenerationValidationCategory.quality,
+          severity:
+              isHardContentDensityOverage(
+                visibleCharacters: visibleCharacters,
+                characterLimit: characterLimit,
+              )
+              ? GenerationValidationSeverity.blocking
+              : GenerationValidationSeverity.diagnostic,
         )
         .add(
           'Slide exceeds the ${planSlide.density} content budget of '
@@ -555,6 +595,7 @@ List<String> _validateNumericClaimContext(
   final mismatches = findNumericContextMismatches(
     values: values,
     userIntent: request.userIntent,
+    allowSlideContextFallback: label == 'Visible content',
   );
   if (mismatches.isEmpty) return const [];
   final verb = label == 'Speaker comments' ? 'change' : 'changes';
@@ -565,23 +606,39 @@ List<String> _validateNumericClaimContext(
   ];
 }
 
-List<String> _validateCommitmentGrounding(
+({List<String> messages, GenerationValidationSeverity severity})
+_validateCommitmentGrounding(
   Iterable<String> values,
   DeckGenerationRequest? request, {
   required String label,
 }) {
-  if (request == null) return const [];
+  if (request == null) {
+    return (
+      messages: const [],
+      severity: GenerationValidationSeverity.diagnostic,
+    );
+  }
   final unsupported = findUnsupportedCommitmentPhrases(
     values: values,
     userIntent: request.userIntent,
   );
-  if (unsupported.isEmpty) return const [];
+  if (unsupported.isEmpty) {
+    return (
+      messages: const [],
+      severity: GenerationValidationSeverity.diagnostic,
+    );
+  }
   final verb = label == 'Speaker comments' ? 'introduce' : 'introduces';
-  return [
-    '$label $verb unsupported commitment claim(s): '
-        '${unsupported.join(', ')}. Remove them unless userIntent supplied '
-        'the exact claim.',
-  ];
+  return (
+    messages: [
+      '$label $verb unsupported commitment claim(s): '
+          '${unsupported.join(', ')}. Remove them unless userIntent supplied '
+          'the exact claim.',
+    ],
+    severity: hasBlockingCommitmentClaim(unsupported)
+        ? GenerationValidationSeverity.blocking
+        : GenerationValidationSeverity.diagnostic,
+  );
 }
 
 List<String> _validateNumericClaimGrounding(

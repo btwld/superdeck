@@ -35,8 +35,8 @@ int visibleCharacterLimit(String density, {String? composition}) {
   };
   final compositionLimit = switch (composition) {
     'title' => 250,
-    'titleLeft' => 440,
-    'twoColumn' => 400,
+    'titleLeft' => 480,
+    'twoColumn' => 500,
     'threeColumn' => 480,
     'table' => 620,
     'quote' => 360,
@@ -50,6 +50,15 @@ int visibleCharacterLimit(String density, {String? composition}) {
   };
   return math.min(densityLimit, compositionLimit);
 }
+
+/// Whether copy exceeds the soft pacing budget enough to risk actual overflow.
+///
+/// A modest overage remains useful review evidence for the POC. Twice the
+/// composition-aware budget is treated as structurally unsafe.
+bool isHardContentDensityOverage({
+  required int visibleCharacters,
+  required int characterLimit,
+}) => visibleCharacters > characterLimit * 2;
 
 /// Counts approximate audience-visible characters, excluding Markdown syntax.
 int countVisibleMarkdownCharacters(Iterable<String> markdownBlocks) {

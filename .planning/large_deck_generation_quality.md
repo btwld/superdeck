@@ -6,8 +6,10 @@
 > support, and the same catalog pattern for deferred image-style selection.
 
 Status: In progress; Tasks 1–6, the 12-theme runtime family, representative
-render qualification, and the deterministic ten-slide checkpoint are complete.
-The repeated real 10/15/20 quality matrix and final regression remain pending.
+render qualification, the deterministic ten-slide checkpoint, and the real
+ten-slide narrative qualification are complete. Task 7 now uses the stable
+Flash/Lite model split and concurrent section composition. Repeated real 15/20
+visual qualification and the broader monorepo regression remain pending.
 
 Checkpoint: `cf463294` (`feat: improve AI deck generation quality`), pushed to
 `origin/leoafarias/iterative-ai-generation` on 2026-07-14.
@@ -16,8 +18,10 @@ Current handoff: [`ai_generation_session_status_2026_07_14.md`](ai_generation_se
 
 ## Verdict
 
-**Refine, not rewrite.** Keep the plan-first, one-slide-at-a-time Flash pipeline
-and its inspectable artifacts. Replace open-ended model-authored global style
+**Refine, not rewrite.** Keep the plan-first pipeline and its inspectable
+artifacts. Use one `gemini-3.5-flash` request for global narrative planning, then
+compose the validated narrative sections concurrently with
+`gemini-3.1-flash-lite`. Replace open-ended model-authored global style
 tokens with selection from a curated, described, versioned theme catalog while
 retaining per-slide composition/treatment decisions and explicit user brand
 overrides. Reuse that catalog-selection contract for image style when image
@@ -42,9 +46,93 @@ prompts and validators are not yet a sufficient quality contract.
 - Quality outcome: prompt/schema changes are evaluated with deterministic
   fixtures, exact structural/semantic checks, real rendered slides, contact
   sheets, and an opt-in visual-review rubric before they are accepted.
-- Performance constraint: retain the configured Flash model and keep explicit
-  thinking disabled. Do not add a production critic call until measurements show
-  that its quality gain justifies the latency and cost.
+- Performance constraint: use `gemini-3.5-flash` for global planning and
+  `gemini-3.1-flash-lite` for section composition and targeted repair. Keep the
+  lowest supported thinking setting and do not add a production critic call
+  until measurements show that its quality gain justifies the latency and cost.
+
+## Task 7 generation policy: performance, context, and recovery
+
+The first real 10/15/20 matrix proved that the plan-first architecture is worth
+keeping, but the original acceptance policy is too broad and too expensive. A
+10-slide success used 25 model requests instead of the ideal 11, a 20-slide
+success used 50 instead of 21, and one 15-slide run exhausted outline repairs.
+Every request used `thinkingBudget: 0`, the lowest setting supported by the
+current client/model combination. The repeated calls came from deterministic
+false positives and all-or-nothing retry behavior, not from model reasoning.
+
+Latest real checkpoint (2026-07-15): `narrative_10` generated and rendered all
+10 slides in 23.4 seconds using four provider calls (one Flash outline plus
+three concurrent Flash-Lite sections), zero repairs, eight composition families,
+and no repeated composition run. The machine-readable quality gate passed and
+the contact sheet showed no visible overflow. Local artifact:
+`packages/playground/test_live/ai_generation/artifacts/narrative_10_2026-07-15T01-15-32.776783Z/`.
+
+Use three explicit validation tiers:
+
+- **Hard contract:** schema/parseability, requested count and order, unique keys,
+  section membership, exact selected theme and user overrides, grounded element
+  source/name/cardinality, invented URLs/domains, renderer-safe structure, and
+  concrete legal, compliance, credential, availability, security, or commercial
+  claims. These may trigger one targeted repair; a deck-global failure can stop
+  the run.
+- **Repairable slide defect:** missing substantive content, broken Markdown or
+  table structure, composition mismatch, invalid widget arguments, excessive
+  density beyond twice the composition-aware budget, or a malformed heading
+  hierarchy. Compose once and repair the current slide at most once. If it still
+  fails, record that slide as failed and continue composing later slide slots.
+- **Diagnostic quality signal:** unsupplied numbers, possible changes to a
+  supplied number's meaning, design rhythm, composition diversity, broad
+  editorial verbs, evidence-strength wording without a concrete high-risk claim,
+  moderate density overages, and other heuristic quality observations. The
+  prompt still asks the model to preserve supplied metrics, qualify new numbers
+  as planned or illustrative, and respect density budgets, but a lexical or
+  pacing heuristic does not prevent a renderable POC deck. Record these in traces
+  and the quality report; never spend a production repair call on them.
+
+Grounding applies to audience-facing plan fields (`title`, `assertion`, and
+`contentUnits`) and final visible slide copy. Internal planning prose (`purpose`,
+`contentBrief`, `continuity`, and section transitions) guides composition but is
+not itself published evidence and must not create factual repair loops. A
+grounded value may use its subject elsewhere on the same slide; labels such as
+`31%` do not need to repeat a full source sentence in every block.
+
+Do not silently skip a failed slide or discard already accepted slides. The
+composition phase returns ordered per-slide outcomes. Later slides continue
+using the validated plan and the most recent accepted slide as context. After
+the pass, the caller receives the accepted slides plus exact failed slide keys,
+typed issues, and retryability. The product UI keeps failed slots visible and
+retryable; canonical deck persistence still requires every slot to resolve.
+
+Performance budgets for the final matrix:
+
+- Normal request path: one global outline plus one concurrent request per
+  narrative section, normally three to five section requests for 10–20 slides.
+- Accepted repair ceiling: at most one global outline repair followed by a small
+  deck-wide budget of targeted slide-plan repairs. Generated section failures
+  are returned per slide rather than restarting the deck.
+- Target total requests: normally 4–6 before transport retries; any additional
+  request must be visible in the artifact trace.
+- Target repair rate: no more than 15% of slide requests across two samples.
+- Initial outline prompt target: at most 10,000 characters; initial slide prompt
+  target: at most 11,000. Each slide repair prompt must be smaller than its
+  failed initial request. A deck-global outline repair may include the complete
+  invalid plan, but uses dedicated compact instructions and runs at most once.
+  These are regression budgets, not model token guarantees.
+- Target pre-render generation time is 20 seconds, with 30 seconds as the normal
+  maximum. Report provider latency separately from local capture.
+
+Context is intentionally compact: the original typed request remains the user
+message; the outline sees a concise planning contract and eligible theme
+candidates; each section sees its ordered plan items, adjacent boundary plan
+items, exact facts/elements, per-slide density budgets, and one deduplicated
+canonical JSON shape example per composition used in that section. Dedicated
+repair prompts contain the invalid current object, current blocking issues, and
+only the guardrail snippets needed for those issue codes.
+
+Compose narrative sections concurrently. The validated global blueprint and
+adjacent boundary items preserve deck flow without serializing 10–20 provider
+round trips. Preserve accepted slides when another slide or section fails.
 
 Out of scope for the first quality pass:
 
@@ -65,8 +153,9 @@ Out of scope for the first quality pass:
   structured output for complex JSON, and iterative evaluation against observed
   responses. It also warns that too many examples can cause overfitting:
   [Gemini prompt design strategies](https://ai.google.dev/gemini-api/docs/prompting-strategies).
-- Gemini structured outputs support `minItems` and `maxItems`, and still require
-  application-level semantic validation:
+- Gemini structured output constrains responses to syntactically valid JSON that
+  follows the supported schema, but still requires application-level semantic
+  validation:
   [Gemini structured outputs](https://ai.google.dev/gemini-api/docs/structured-output?lang=rest).
 - Recent presentation-generation work independently converges on hierarchical
   planning, separating page design from implementation, and reviewing rendered
@@ -225,12 +314,12 @@ status is the operational handoff.
    three-to-five acts/sections for a 10–20-slide deck, one exact selected theme
    ID, and an ordered visual rhythm with a concrete brief for each slide. The
    application resolves and records the catalog version.
-4. Each slide is composed against its current act, neighboring slide briefs, and
-   a compact design ledger. The ledger records recent composition/treatment and
-   prevents accidental repetition without forcing random layouts.
+4. Each narrative section is composed against its ordered slide briefs and the
+   adjacent boundary briefs. The plan owns composition/treatment rhythm; compact
+   canonical examples demonstrate only the layout families used by that section.
 5. Model-facing structured output bounds arrays and uses the strongest supported
-   types. A semantic validator checks the current slide against its plan before
-   accepting it as context for the next slide.
+   types. Dart validates every returned slide independently against its plan,
+   keeps valid slides, and exposes failed slots for targeted retry.
 6. Dart resolves the selected theme into one coherent `DeckOptions` base style
    plus named treatments such as hero, section, content, data, quote, visual, and
    closing. The model selects semantic treatments; Dart owns font sizes,
@@ -375,7 +464,8 @@ Deck-level deterministic checks:
 
 - generated, serialized, parsed, and captured slide counts equal the request;
 - every plan key appears exactly once and every section has its planned slides;
-- no accidental run of more than two identical composition/treatment families;
+- no accidental run of more than three identical compositions; treatments may
+  repeat when the information shape and composition still vary meaningfully;
 - 10/15/20-slide general-purpose fixtures use enough distinct purposeful
   composition families (target at least 5/6/7 unless the brief constrains them);
 - body and heading colors meet 4.5:1 and 3:1 contrast respectively;
@@ -559,10 +649,11 @@ table/data legibility, element relevance, and blank/overflow detection.
     30-slide golden qualification prove both paths.
 
 - Checkpoint: run deterministic 10-slide generation with a fake model and inspect
-  the serialized design ledger, resolved styles, and captured layout fixtures.
-  - Completed evidence: `LIVE_FAKE_CHECKPOINT=true` performs one outline request
-    plus ten sequential slide requests with no repairs or thinking configuration,
-    verifies every compact three-slide ledger window, serializes the canonical
+  ordered section plans, resolved styles, and captured layout fixtures.
+  - Completed evidence: `LIVE_FAKE_CHECKPOINT=true` performs one Flash outline
+    request plus three Flash-Lite narrative-section requests with no repairs,
+    verifies the exact model/thinking configuration, ordered section plans, and
+    deduplicated canonical shape examples, serializes the canonical
     theme/plan/deck/prompts, records declared and loaded runtime font identities,
     replays ten Markdown slides, captures ten PNGs and a contact sheet, and passes
     the machine quality report with eight composition families and exact 10/10
@@ -594,8 +685,9 @@ table/data legibility, element relevance, and blank/overflow detection.
     font rendering, and latency.
   - Change prompts/examples for recurring aesthetic/content failures; change
     schemas/validators only for real contractual failures.
-  - Preserve Flash and no explicit thinking. Record request count and wall time
-    for 10/15/20 slides and reject changes that add unexplained calls.
+  - Preserve the documented Flash/Lite split and lowest thinking setting. Record
+    request count and wall time for 10/15/20 slides and reject changes that add
+    unexplained calls.
   - Acceptance: all deterministic gates pass across the final large-deck matrix,
     no known blank/duplicate regression recurs, and human review confirms coherent
     story, readable hierarchy, useful variation, and visibly correct typography.
@@ -633,13 +725,13 @@ table/data legibility, element relevance, and blank/overflow detection.
 - Unit: schema adaptation bounds, typed request serialization, plan hierarchy,
   theme descriptor validation and candidate filtering, exact theme resolution,
   contrast, typography catalog resolution, composition contracts, element
-  cardinality, density budgets, design ledger, and theme factory. Add equivalent
-  image-style catalog/request tests only in the deferred phase.
+  cardinality, density budgets, section shape examples, and theme factory. Add
+  equivalent image-style catalog/request tests only in the deferred phase.
 - Regression fixtures: commit the four known-bad model responses and prove they
   fail before repair; keep representative valid table/image/QR/WebView slides.
 - Widget/golden: base typography scale, named treatment variants, light/dark
   table and quote styles, actual selected family, and custom registered family.
-- Integration: fake-client 10/15/20 plan-to-slide orchestration, repair isolation,
+- Integration: fake-client 10/15/20 plan-to-section orchestration, repair isolation,
   exact count, cancellation, Markdown replay, and selected-theme application.
 - Live: real Flash 10/15/20 runs save the complete artifact bundle, quality report,
   actual-font PNGs, and contact sheets. These remain opt-in and outside normal CI.
@@ -703,10 +795,10 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
 - Risk: visual review adds cost/latency without reliable signal. Mitigation: keep
   it opt-in and informational until repeated human/artifact comparisons calibrate
   thresholds.
-- Risk: 20 sequential slide calls are slow. Mitigation: measure before changing
-  orchestration, keep Flash/no-thinking, compact context, and avoid a mandatory
-  second model pass. Consider bounded parallel composition only after the richer
-  blueprint proves that generated-previous-slide context is not required.
+- Risk: section concurrency weakens slide-to-slide continuity. Mitigation: keep
+  one validated global blueprint, provide each section its adjacent boundary
+  plan items, preserve exact ordered slide keys, and compare rendered contact
+  sheets rather than relying on JSON success alone.
 - Stop prompt tuning if a failure is caused by schema/sanitizer/rendering behavior;
   fix the contractual layer first.
 - Stop schema expansion if the same outcome can be enforced more safely in Dart.

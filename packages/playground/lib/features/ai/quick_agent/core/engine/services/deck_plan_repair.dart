@@ -1,8 +1,12 @@
 part of 'deck_generator_service.dart';
 
+const _maxTargetedOutlineSlidesPerPass = 2;
+
 bool _onlySlideScopedPlanIssues(List<GenerationValidationIssue> issues) {
   final blocking = issues.blockingIssues;
+  final affectedSlideKeys = {for (final issue in blocking) ?issue.slideKey};
   return blocking.isNotEmpty &&
+      affectedSlideKeys.length <= _maxTargetedOutlineSlidesPerPass &&
       blocking.every(
         (issue) => issue.locallyRepairable && issue.slideKey != null,
       );
@@ -39,6 +43,13 @@ extension _DeckPlanRepair on DeckGeneratorService {
         localAttempt <= maxOutlineSlideValidationAttempts;
         localAttempt++
       ) {
+        if (!executor.hasRepairCapacity) {
+          debugLog.log(
+            'DECK_GEN',
+            'Outline slide repair skipped: run repair budget exhausted.',
+          );
+          break;
+        }
         final candidate = await _generateOutlineSlideRepair(
           executor: executor,
           originalPrompt: originalPrompt,
@@ -117,7 +128,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       invalidSlide: invalidSlide,
     );
     final modelRequest = google_ai.GenerateContentRequest(
-      model: outlineModelName,
+      model: outlineRepairModelName,
       contents: [
         google_ai.Content(
           role: 'user',
@@ -127,6 +138,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adapted.schema,
+        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
       systemInstruction: google_ai.Content(
         parts: [google_ai.Part(text: systemPrompt)],
@@ -141,7 +153,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
     final response = await executor.execute(
       request: modelRequest,
       phase: GenerationTracePhase.outline,
-      model: outlineModelName,
+      model: outlineRepairModelName,
       prompt: systemPrompt,
       semanticAttempt: localAttempt,
       isRepair: true,
@@ -212,7 +224,11 @@ List<String> _outlineSlideInvariantErrors({
   requireSame('composition', original.composition, candidate.composition);
   requireSame('treatment', original.treatment, candidate.treatment);
   requireSame('density', original.density, candidate.density);
-  requireSame('elements', original.elements, candidate.elements);
+  requireSame(
+    'elements',
+    original.elements ?? const <DeckPlanElementType>[],
+    candidate.elements ?? const <DeckPlanElementType>[],
+  );
   return errors;
 }
 

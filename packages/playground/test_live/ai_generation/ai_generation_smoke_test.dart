@@ -27,6 +27,7 @@ import 'package:playground/features/ai/quick_agent/core/engine/services/generati
 import 'package:playground/features/ai/quick_agent/core/engine/services/generated_slide_validator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_quality_report.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/theme_json_serializer.dart';
 import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
 import 'package:superdeck/src/utils/syntax_highlighter.dart';
@@ -170,46 +171,49 @@ void main() {
         expect(result.plan!.slides, hasLength(10));
         expect(result.plan!.theme.id, 'technical-paper');
         expect(result.plan!.theme.version, 1);
-        expect(client.requests, hasLength(11));
+        expect(client.requests, hasLength(4));
         expect(
           client.requests.map(
-            (modelRequest) => modelRequest.generationConfig!.thinkingConfig,
+            (modelRequest) =>
+                modelRequest.generationConfig!.thinkingConfig!.thinkingBudget,
           ),
-          everyElement(isNull),
+          everyElement(0),
         );
+        expect(client.requests.map((modelRequest) => modelRequest.model), [
+          'models/gemini-3.5-flash',
+          'models/gemini-3.1-flash-lite',
+          'models/gemini-3.1-flash-lite',
+          'models/gemini-3.1-flash-lite',
+        ]);
 
-        final slideRequests = traces
+        final sectionRequests = traces
             .where(
               (event) =>
                   event.kind == GenerationTraceKind.request &&
                   event.phase == GenerationTracePhase.slide,
             )
             .toList(growable: false);
-        expect(slideRequests, hasLength(10));
-        final ledgers = <List<Map<String, Object?>>>[];
-        for (final (index, event) in slideRequests.indexed) {
-          final ledger = _parseDesignLedger(event.prompt!);
-          ledgers.add(ledger);
-          final expectedStart = index > 3 ? index - 3 : 0;
+        expect(sectionRequests, hasLength(3));
+        expect(sectionRequests.map((event) => event.slideIndex), [1, 4, 8]);
+        const expectedSectionKeys = [
+          ['opening', 'signals', 'synthesis'],
+          ['choices', 'alignment', 'practice', 'principle'],
+          ['verification', 'action', 'close'],
+        ];
+        final sectionPlanKeys = [
+          for (final event in sectionRequests)
+            _parseSectionPlanKeys(event.prompt!),
+        ];
+        for (final (index, event) in sectionRequests.indexed) {
           expect(
-            ledger.map((entry) => entry['key']),
-            result.plan!.slides
-                .sublist(expectedStart, index)
-                .map((slide) => slide.key),
-            reason: 'slide ${index + 1} design ledger',
+            sectionPlanKeys[index],
+            expectedSectionKeys[index],
+            reason: 'section ${index + 1} ordered plan',
           );
           expect(
-            ledger.every(
-              (entry) => entry.keys.toSet().difference(const {
-                'key',
-                'sectionKey',
-                'composition',
-                'treatment',
-                'density',
-              }).isEmpty,
-            ),
-            isTrue,
-            reason: 'slide ${index + 1} compact design ledger',
+            event.prompt,
+            contains('## Canonical shape examples'),
+            reason: 'section ${index + 1} canonical examples',
           );
         }
 
@@ -277,7 +281,7 @@ void main() {
           const encoder = JsonEncoder.withIndent('  ');
           await File(p.join(output.path, 'checkpoint.json')).writeAsString(
             encoder.convert({
-              'designLedgers': ledgers,
+              'sectionPlanKeys': sectionPlanKeys,
               'resolvedStyle': styleSnapshot,
               'qualityReport': report.toJson(),
               'contactSheet': p.basename(contactSheet.path),
@@ -350,15 +354,20 @@ void main() {
           if (jsonEncode(artifact.themeReference) !=
               jsonEncode(serializeDeckThemeReference(artifact.plan.theme)))
             'deck.json theme does not match deck_plan.json theme.',
-          ...validateDeckPlan(artifact.plan, request: artifact.request),
+          ...validateDeckPlanIssues(
+            artifact.plan,
+            request: artifact.request,
+          ).blockingIssues.map((issue) => issue.message),
           for (final (index, rawSlide) in artifact.rawSlides.indexed)
-            ...validateGeneratedSlide(
+            ...validateGeneratedSlideIssues(
               expectedKey: artifact.plan.slides[index].key,
               rawSlide: rawSlide,
               planSlide: artifact.plan.slides[index],
               request: artifact.request,
               elementCatalog: GenerationElementCatalog.builtIn(),
-            ).map((error) => 'Slide ${index + 1}: $error'),
+            ).blockingIssues.map(
+              (issue) => 'Slide ${index + 1}: ${issue.message}',
+            ),
         ];
         expect(
           auditErrors,
@@ -727,23 +736,22 @@ Future<void> _writeTraceArtifacts(
   );
 }
 
-List<Map<String, Object?>> _parseDesignLedger(String prompt) {
-  const startMarker = '## Recent design ledger\n';
-  const endMarker = '\n\n## Current slide plan';
+List<String> _parseSectionPlanKeys(String prompt) {
+  const startMarker = '## Ordered slide plans\n';
+  const endMarker = '\n\n## Boundary context';
   final start = prompt.indexOf(startMarker);
   final end = prompt.indexOf(endMarker, start + startMarker.length);
   if (start < 0 || end < 0) {
-    throw FormatException('Slide prompt does not contain a design ledger.');
+    throw FormatException('Section prompt does not contain ordered plans.');
   }
   final payload = prompt.substring(start + startMarker.length, end).trim();
-  if (payload.startsWith('None')) return const [];
   final decoded = jsonDecode(payload);
   if (decoded is! List) {
-    throw FormatException('Design ledger is not a JSON list.');
+    throw FormatException('Ordered section plans are not a JSON list.');
   }
   return [
     for (final entry in decoded)
-      if (entry is Map) Map<String, Object?>.from(entry),
+      if (entry is Map && entry['key'] is String) entry['key']! as String,
   ];
 }
 
@@ -1084,7 +1092,8 @@ final class _FakeCheckpointModelClient implements GenerationModelClient {
   _FakeCheckpointModelClient()
     : _responses = [
         _checkpointResponse(_checkpointPlanDraft()),
-        for (final slide in _checkpointSlides()) _checkpointResponse(slide),
+        for (final slides in _checkpointSectionSlides())
+          _checkpointResponse({'slides': slides}),
       ];
 
   final List<google_ai.GenerateContentResponse> _responses;
@@ -1353,6 +1362,11 @@ List<Map<String, Object?>> _checkpointSlides() => [
     ],
   ),
 ];
+
+List<List<Map<String, Object?>>> _checkpointSectionSlides() {
+  final slides = _checkpointSlides();
+  return [slides.sublist(0, 3), slides.sublist(3, 7), slides.sublist(7)];
+}
 
 Map<String, Object?> _checkpointSlide({
   required String key,

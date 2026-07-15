@@ -91,10 +91,7 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
     themes,
     catalog,
     request,
-    issues.scoped(
-      code: .themeResolution,
-      category: .structure,
-    ),
+    issues.scoped(code: .themeResolution, category: .structure),
   );
   _validateElementGrounding(
     plan,
@@ -118,6 +115,7 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
     issues.scoped(
       code: GenerationValidationCode.numericGrounding,
       category: GenerationValidationCategory.factual,
+      severity: GenerationValidationSeverity.diagnostic,
     ),
   );
   _validateNumericClaimContext(
@@ -126,6 +124,7 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
     issues.scoped(
       code: GenerationValidationCode.numericMeaning,
       category: GenerationValidationCategory.factual,
+      severity: GenerationValidationSeverity.diagnostic,
     ),
   );
   _validateMetricIntent(
@@ -198,14 +197,7 @@ void _validateNumericClaimContext(
   if (request == null) return;
   for (final slide in plan.slides) {
     final mismatches = findNumericContextMismatches(
-      values: [
-        slide.title,
-        slide.purpose,
-        slide.assertion,
-        ...slide.contentUnits,
-        slide.contentBrief,
-        slide.continuity,
-      ],
+      values: _audienceFacingPlanCopy(slide),
       userIntent: request.userIntent,
       allowSlideContextFallback: true,
     );
@@ -244,26 +236,28 @@ void _validateCommitmentGrounding(
     inspectMetricCausality: false,
   );
   if (narrativeUnsupported.isNotEmpty) {
-    errors.add(
-      'Deck narrative introduces unsupported commitment claim(s): '
-      '${narrativeUnsupported.join(', ')}. Remove them unless userIntent '
-      'supplied the exact claim.',
-    );
+    errors
+        .scoped(
+          severity: hasBlockingCommitmentClaim(narrativeUnsupported)
+              ? GenerationValidationSeverity.blocking
+              : GenerationValidationSeverity.diagnostic,
+        )
+        .add(
+          'Deck narrative introduces unsupported commitment claim(s): '
+          '${narrativeUnsupported.join(', ')}. Remove them unless userIntent '
+          'supplied the exact claim.',
+        );
   }
   for (final slide in plan.slides) {
     final unsupported = findUnsupportedCommitmentPhrases(
-      values: [
-        slide.title,
-        slide.purpose,
-        slide.assertion,
-        ...slide.contentUnits,
-        slide.contentBrief,
-        slide.continuity,
-      ],
+      values: _audienceFacingPlanCopy(slide),
       userIntent: request.userIntent,
     );
     if (unsupported.isNotEmpty) {
       final slideErrors = errors.scoped(
+        severity: hasBlockingCommitmentClaim(unsupported)
+            ? GenerationValidationSeverity.blocking
+            : GenerationValidationSeverity.diagnostic,
         location: GenerationValidationLocation.planSlide,
         slideKey: slide.key,
         locallyRepairable: true,
@@ -286,14 +280,7 @@ void _validateNumericClaimGrounding(
   final groundedClaims = extractGroundedNumericClaims([request.userIntent]);
   for (final slide in plan.slides) {
     final ungrounded = findUnsupportedNumericClaims(
-      values: [
-        slide.title,
-        slide.purpose,
-        slide.assertion,
-        ...slide.contentUnits,
-        slide.contentBrief,
-        slide.continuity,
-      ],
+      values: _audienceFacingPlanCopy(slide),
       groundedClaims: groundedClaims,
     );
     if (ungrounded.isNotEmpty) {
@@ -355,12 +342,7 @@ void _validateVisibleSourceGrounding(
       locallyRepairable: true,
     );
     final referencedDomains = extractReferencedDomains([
-      slide.title,
-      slide.purpose,
-      slide.assertion,
-      ...slide.contentUnits,
-      slide.contentBrief,
-      slide.continuity,
+      ..._audienceFacingPlanCopy(slide),
     ]);
     for (final domain in referencedDomains.difference(allowedDomains)) {
       slideErrors.add(
@@ -371,6 +353,12 @@ void _validateVisibleSourceGrounding(
     }
   }
 }
+
+List<String> _audienceFacingPlanCopy(DeckPlanSlideType slide) => [
+  slide.title,
+  slide.assertion,
+  ...slide.contentUnits,
+];
 
 void _validateSections(
   DeckPlanType plan,
@@ -580,11 +568,6 @@ void _validateDesignRhythm(
   _rejectLongRuns(
     values: plan.slides.map((slide) => slide.composition).toList(),
     label: 'composition',
-    errors: errors,
-  );
-  _rejectLongRuns(
-    values: plan.slides.map((slide) => slide.treatment).toList(),
-    label: 'treatment',
     errors: errors,
   );
 

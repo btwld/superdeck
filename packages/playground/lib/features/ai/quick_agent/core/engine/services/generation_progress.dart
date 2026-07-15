@@ -22,15 +22,26 @@ final class GenerationProgress {
     this.phase, {
     this.slideIndex,
     this.slideCount,
+    this.sectionIndex,
+    this.sectionCount,
     this.isRepairing = false,
   });
 
   final GenerationPhase phase;
   final int? slideIndex;
   final int? slideCount;
+  final int? sectionIndex;
+  final int? sectionCount;
   final bool isRepairing;
 
   String get label {
+    final currentSection = sectionIndex;
+    final totalSections = sectionCount;
+    if (phase == GenerationPhase.composingSlides &&
+        currentSection != null &&
+        totalSections != null) {
+      return 'Composing section $currentSection of $totalSections…';
+    }
     final index = slideIndex;
     final count = slideCount;
     if (phase == GenerationPhase.composingSlides &&
