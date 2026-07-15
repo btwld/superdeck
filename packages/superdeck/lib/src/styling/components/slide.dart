@@ -62,6 +62,13 @@ final class SlideSpec with _$SlideSpec {
   @override
   final TextScaler? textScaleFactor;
 
+  /// Vertical gap between top-level markdown elements.
+  ///
+  /// An unset value resolves to zero so spacing is owned by SuperDeck styles,
+  /// not by flutter_markdown_plus package defaults.
+  @override
+  final double? blockSpacing;
+
   @override
   final StyleSpec<MarkdownAlertSpec> alert;
   @override
@@ -106,6 +113,7 @@ final class SlideSpec with _$SlideSpec {
     this.img,
     this.link,
     this.textScaleFactor,
+    this.blockSpacing,
     StyleSpec<MarkdownAlertSpec>? alert,
     this.horizontalRuleDecoration,
     this.blockquote,
@@ -141,6 +149,7 @@ final class SlideSpec with _$SlideSpec {
       del: del,
       code: code?.spec.textStyle,
       textScaler: textScaleFactor,
+      blockSpacing: blockSpacing ?? 0,
       listBullet: list?.spec.bullet?.spec.style,
       orderedListAlign: list?.spec.orderedAlignment ?? WrapAlignment.start,
       unorderedListAlign: list?.spec.unorderedAlignment ?? WrapAlignment.start,

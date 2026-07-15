@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -7,6 +6,7 @@ import '../../deck/slide_configuration.dart';
 import '../../styling/components/slide.dart';
 import '../../utils/constants.dart';
 import '../blocks/block_widget.dart';
+import '../layout_debug_overlay.dart';
 
 class SlideView extends StatelessWidget {
   final SlideConfiguration slide;
@@ -18,18 +18,20 @@ class SlideView extends StatelessWidget {
         : const SizedBox.shrink();
   }
 
-  Positioned _renderDebugInfo(SectionBlock section, Size slideSize) {
-    final label = '''
-@section | blocks: ${section.blocks.length} | ${slideSize.width.toStringAsFixed(2)} x ${slideSize.height.toStringAsFixed(2)} | align: ${section.align} | flex: ${section.flex}''';
-
-    const textStyle = TextStyle(color: Colors.black, fontSize: 12);
+  Positioned _renderDebugInfo(
+    SectionBlock section,
+    int sectionIndex,
+    Size slideSize,
+  ) {
     return Positioned(
       bottom: 0,
-      left: 0,
-      child: Container(
-        color: Colors.cyan,
-        padding: const EdgeInsets.all(8),
-        child: Text(label, style: textStyle),
+      right: 0,
+      child: LayoutDebugLabel(
+        color: debugSectionColor,
+        text:
+            'SECTION ${sectionIndex + 1}  blocks:${section.blocks.length}  '
+            '${slideSize.width.toStringAsFixed(0)} × '
+            '${slideSize.height.toStringAsFixed(0)}',
       ),
     );
   }
@@ -57,9 +59,22 @@ class SlideView extends StatelessWidget {
                 return Stack(
                   fit: StackFit.expand,
                   children: [
-                    SectionWidget(section: section, sectionIndex: sectionIndex),
                     if (configuration.debug)
-                      _renderDebugInfo(section, sectionSize),
+                      LayoutDebugFrame(
+                        color: debugSectionColor,
+                        strokeWidth: 4,
+                        child: SectionWidget(
+                          section: section,
+                          sectionIndex: sectionIndex,
+                        ),
+                      )
+                    else
+                      SectionWidget(
+                        section: section,
+                        sectionIndex: sectionIndex,
+                      ),
+                    if (configuration.debug)
+                      _renderDebugInfo(section, sectionIndex, sectionSize),
                   ],
                 );
               },
@@ -133,6 +148,12 @@ class SlideView extends StatelessWidget {
               },
             ),
           ),
+          if (slide.debug)
+            const Positioned(
+              left: 8,
+              bottom: 8,
+              child: IgnorePointer(child: LayoutDebugLegend()),
+            ),
         ],
       ),
     );
