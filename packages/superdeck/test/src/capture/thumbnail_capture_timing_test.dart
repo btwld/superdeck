@@ -234,6 +234,30 @@ void main() {
       });
     });
 
+    testWidgets('only includes debug layout guides when requested', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final slide = _slide('debug-layout', '# Layout guides');
+      final capture = SlideCaptureService();
+
+      await tester.runAsync(() async {
+        final cleanBytes = await capture.capture(
+          quality: SlideCaptureQuality.good,
+          slide: slide,
+          context: context,
+        );
+        final debugBytes = await capture.capture(
+          quality: SlideCaptureQuality.good,
+          slide: slide,
+          context: context,
+          includeDebugLayout: true,
+        );
+
+        expect(cleanBytes, isNot(equals(debugBytes)));
+      });
+    });
+
     testWidgets('waits longer for asynchronous image widget content', (
       tester,
     ) async {

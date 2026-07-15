@@ -45,8 +45,11 @@ class SlideCaptureService {
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
     required SlideConfiguration slide,
     required BuildContext context,
+    bool includeDebugLayout = false,
   }) async {
-    final queueKey = shortHash(slide.key + quality.name);
+    final queueKey = shortHash(
+      '${slide.key}${quality.name}$includeDebugLayout',
+    );
     try {
       while (_generationQueue.length >= _maxConcurrentGenerations) {
         await Future.delayed(_kQueuePollInterval);
@@ -55,7 +58,7 @@ class SlideCaptureService {
       _generationQueue.add(queueKey);
 
       final staticRenderingSlide = slide.copyWith(
-        debug: false,
+        debug: includeDebugLayout,
         isStaticRendering: true,
       );
 

@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -12,6 +11,7 @@ import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/overflow_clip.dart';
 import '../../ui/widgets/provider.dart';
 import '../../utils/converters.dart';
+import '../layout_debug_overlay.dart';
 import 'block_provider.dart';
 import 'markdown_viewer.dart';
 
@@ -141,13 +141,11 @@ class _BlockContainerState extends State<_BlockContainer> {
       ),
     );
 
-    // Add debug border if needed
-    if (widget.configuration.debug) {
-      content = DecoratedBox(
-        position: DecorationPosition.foreground,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.cyan, width: 2),
-        ),
+    final debugLayoutEnabled = widget.configuration.debug;
+    if (debugLayoutEnabled) {
+      content = BlockLayoutDebugOverlay(
+        margin: spec.blockContainer.spec.margin,
+        padding: spec.blockContainer.spec.padding,
         child: content,
       );
     }
@@ -336,20 +334,15 @@ class SectionWidget extends StatelessWidget {
   final SectionBlock section;
   final int sectionIndex;
 
-  Positioned _renderDebugInfo(Block block, Size size) {
-    const textStyle = TextStyle(color: Colors.black, fontSize: 12);
-    final label =
-        '''
-@${block.type}
-${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
-
+  Positioned _renderDebugInfo(Block block, int blockIndex, Size size) {
     return Positioned(
       top: 0,
       right: 0,
-      child: Container(
-        color: Colors.cyan,
-        padding: const EdgeInsets.all(8),
-        child: Text(label, style: textStyle),
+      child: LayoutDebugLabel(
+        color: debugBlockColor,
+        text:
+            'BLOCK ${blockIndex + 1}  @${block.type}\n'
+            '${size.width.toStringAsFixed(0)} × ${size.height.toStringAsFixed(0)}',
       ),
     );
   }
@@ -401,13 +394,18 @@ ${size.width.toStringAsFixed(2)} x ${size.height.toStringAsFixed(2)}''';
                       ),
                     };
 
-                    if (!configuration.debug) return blockWidget;
+                    final debugLayoutEnabled = configuration.debug;
+                    if (!debugLayoutEnabled) return blockWidget;
                     return LayoutBuilder(
                       builder: (context, constraints) => Stack(
                         fit: StackFit.expand,
                         children: [
                           blockWidget,
-                          _renderDebugInfo(block, constraints.biggest),
+                          _renderDebugInfo(
+                            block,
+                            blockIndex,
+                            constraints.biggest,
+                          ),
                         ],
                       ),
                     );
