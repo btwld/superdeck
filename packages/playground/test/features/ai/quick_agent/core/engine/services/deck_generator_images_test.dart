@@ -21,11 +21,17 @@ void main() {
         ),
         generator: generator,
         runId: 'run-42',
+        backgroundColor: '#BASE00',
+        backgroundColorsByTreatment: const {'visual': '#VISUAL'},
         onProgress: (completed, total) => progress.add((completed, total)),
       );
 
       expect(generator.requests, hasLength(3));
       expect(generator.maximumActive, 3);
+      expect(
+        generator.requests.map((request) => request.prompt),
+        everyElement(allOf(contains('#VISUAL'), isNot(contains('#BASE00')))),
+      );
       expect(result.assets, hasLength(3));
       expect(result.assets.map((asset) => asset.assetKey), [
         'wizard-run-42-slide-01-opening-wave.png',

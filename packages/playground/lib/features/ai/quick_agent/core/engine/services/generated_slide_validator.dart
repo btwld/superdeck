@@ -45,7 +45,38 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
       else
         rawSection,
   ];
-  return _normalizeImplicitVerticalAlignment(normalized, planSlide);
+
+  return _normalizeImageSplitFlex(
+    _normalizeImplicitVerticalAlignment(normalized, planSlide),
+    planSlide,
+  );
+}
+
+Map<String, dynamic> _normalizeImageSplitFlex(
+  Map<String, dynamic> slide,
+  DeckPlanSlideType planSlide,
+) {
+  if (planSlide.composition != 'imageLeft' &&
+      planSlide.composition != 'imageRight') {
+    return slide;
+  }
+  final sections = slide['sections'];
+  if (sections is! List || sections.length != 1) return slide;
+  final section = sections.single;
+  if (section is! Map) return slide;
+  final blocks = section['blocks'];
+  if (blocks is! List || blocks.length != 2) return slide;
+  final hasImage = blocks.whereType<Map>().any(
+    (block) => block['type'] == WidgetBlock.key && block['name'] == 'image',
+  );
+  final hasContent = blocks.whereType<Map>().any(
+    (block) => block['type'] == ContentBlock.key,
+  );
+  if (!hasImage || !hasContent) return slide;
+  for (final block in blocks.whereType<Map>()) {
+    block['flex'] = 1;
+  }
+  return slide;
 }
 
 Map<String, dynamic> _normalizeBlockForPlan(
@@ -126,7 +157,24 @@ Map<String, dynamic> _normalizeImplicitVerticalAlignment(
       ).hasMatch(titleBlock['content'] as String)) {
     return slide;
   }
-  titleBlock.putIfAbsent('align', () => 'bottomLeft');
+  final titleContent = titleBlock['content'] as String;
+  final hasSupportingCopy = titleContent
+      .split('\n')
+      .any(
+        (line) => line.trim().isNotEmpty && !line.trimLeft().startsWith('#'),
+      );
+  final titleFlex = titleSection['flex'];
+  final bodyFlex = bodySection['flex'];
+  if (hasSupportingCopy &&
+      (titleFlex == null || titleFlex == 1) &&
+      (bodyFlex == null || bodyFlex == 3)) {
+    titleSection['flex'] = 1;
+    bodySection['flex'] = 2;
+  }
+  titleBlock.putIfAbsent(
+    'align',
+    () => hasSupportingCopy ? 'topLeft' : 'bottomLeft',
+  );
   for (final bodyBlock in bodyBlocks.whereType<Map>()) {
     if (bodyBlock['type'] == ContentBlock.key) {
       bodyBlock.putIfAbsent('align', () => 'topLeft');

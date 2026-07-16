@@ -8,6 +8,8 @@ import '../quick_agent/core/engine/services/error_classifier.dart';
 
 const geminiImagePreviewModel = 'gemini-3.1-flash-lite-image';
 const geminiImageGenerationModel = 'gemini-3.1-flash-image';
+const imagePreviewTimeout = Duration(seconds: 8);
+const imageGenerationTimeout = Duration(seconds: 12);
 
 /// Input for one image-generation request.
 final class ImageGenerationRequest {
@@ -86,9 +88,18 @@ final class DartanticImageGenerator implements ImageGenerator {
   DartanticImageGenerator({
     required this.apiKey,
     this.modelName = geminiImagePreviewModel,
-    this.timeout = const Duration(seconds: 8),
+    Duration? timeout,
     DartanticMediaModelFactory? modelFactory,
-  }) : _modelFactory = modelFactory ?? _createGoogleModel;
+  }) : timeout = timeout ?? _defaultTimeout(modelName),
+       _modelFactory = modelFactory ?? _createGoogleModel;
+
+  static Duration _defaultTimeout(String modelName) {
+    if (modelName == geminiImageGenerationModel) {
+      return imageGenerationTimeout;
+    }
+
+    return imagePreviewTimeout;
+  }
 
   static MediaGenerationModel<GoogleMediaGenerationModelOptions>
   _createGoogleModel({
@@ -132,9 +143,11 @@ final class DartanticImageGenerator implements ImageGenerator {
         'The provider returned no image. Try again.',
       );
     } on TimeoutException {
-      return const ImageGenerationFailure(
-        'Image preview took too long. Try again.',
-      );
+      final operation = modelName == geminiImageGenerationModel
+          ? 'Image generation'
+          : 'Image preview';
+
+      return ImageGenerationFailure('$operation took too long. Try again.');
     } catch (error) {
       return ImageGenerationFailure(
         const ErrorClassifier().getUserMessage(error),
@@ -181,8 +194,10 @@ String buildPresentationImagePrompt(
 }) {
   final background = backgroundColor == null || backgroundColor.isEmpty
       ? ''
-      : '\nUse $backgroundColor as the dominant background color. Keep the '
-            'subject clearly distinguishable from it.';
+      : '\nRender the entire background as a flat, untextured $backgroundColor '
+            'field so it blends into the slide. Do not add a paper rectangle, '
+            'frame, border, vignette, gradient, or shadow behind the subject. '
+            'Keep the subject clearly distinguishable from the background.';
 
   return '''
 $stylePrompt

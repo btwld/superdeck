@@ -6,6 +6,17 @@ import 'package:playground/core/domain/generated_image_asset.dart';
 import 'package:playground/features/ai/image_generation/image_generator.dart';
 
 void main() {
+  test('uses separate preview and final-generation deadlines', () {
+    final preview = DartanticImageGenerator(apiKey: 'test-key');
+    final finalGeneration = DartanticImageGenerator(
+      apiKey: 'test-key',
+      modelName: geminiImageGenerationModel,
+    );
+
+    expect(preview.timeout, imagePreviewTimeout);
+    expect(finalGeneration.timeout, imageGenerationTimeout);
+  });
+
   test('applies the timeout to total image-generation wall time', () async {
     final model = _ProgressOnlyMediaModel();
     final generator = DartanticImageGenerator(
@@ -32,6 +43,29 @@ void main() {
     expect(timer.elapsed, lessThan(const Duration(milliseconds: 200)));
     expect(model.disposed, isTrue);
     expect(model.cancelled, isTrue);
+  });
+
+  test('labels final-generation timeouts accurately', () async {
+    final generator = DartanticImageGenerator(
+      apiKey: 'test-key',
+      modelName: geminiImageGenerationModel,
+      timeout: const Duration(milliseconds: 40),
+      modelFactory: ({required apiKey, required modelName, required options}) =>
+          _ProgressOnlyMediaModel(),
+    );
+
+    final result = await generator.generate(
+      const ImageGenerationRequest(
+        prompt: 'A presentation-safe abstract illustration',
+        aspectRatio: GeneratedImageAspectRatio.landscape16x9,
+      ),
+    );
+
+    expect(result, isA<ImageGenerationFailure>());
+    expect(
+      (result as ImageGenerationFailure).message,
+      'Image generation took too long. Try again.',
+    );
   });
 }
 

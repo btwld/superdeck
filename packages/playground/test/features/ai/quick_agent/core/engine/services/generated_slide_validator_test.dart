@@ -538,6 +538,80 @@ void main() {
     );
   });
 
+  test('top-aligns a title row that also contains supporting copy', () {
+    final raw = {
+      'key': 'test-slide',
+      'options': {'title': 'Grow With Us', 'style': 'data'},
+      'sections': [
+        {
+          'type': 'section',
+          'blocks': [
+            {
+              'type': 'block',
+              'content':
+                  '## Grow With Us\n\n'
+                  'Sponsor support determines the next planting season.',
+            },
+          ],
+        },
+        {
+          'type': 'section',
+          'blocks': [
+            {'type': 'block', 'content': '### Families\n\nJoin a workday.'},
+            {'type': 'block', 'content': '### Staff\n\nNominate a site.'},
+            {'type': 'block', 'content': '### Sponsors\n\nFund materials.'},
+          ],
+        },
+      ],
+    };
+
+    final normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: raw,
+      planSlide: _planSlide(composition: 'threeColumn'),
+    );
+    final sections = normalized['sections']! as List;
+    final titleBlock =
+        ((sections.first as Map)['blocks']! as List).single as Map;
+
+    expect(titleBlock['align'], 'topLeft');
+    expect((sections.first as Map)['flex'], 1);
+    expect((sections.last as Map)['flex'], 2);
+  });
+
+  test('balances image split columns to preserve text height', () {
+    final raw = {
+      'key': 'test-slide',
+      'options': {'title': 'Making Meadow Magic', 'style': 'visual'},
+      'sections': [
+        {
+          'type': 'section',
+          'blocks': [
+            {
+              'type': 'widget',
+              'name': 'image',
+              'args': {'src': 'assets/meadow.png'},
+              'flex': 3,
+            },
+            {
+              'type': 'block',
+              'content': '## Making Meadow Magic\n\n- One\n- Two\n- Three',
+              'flex': 2,
+            },
+          ],
+        },
+      ],
+    };
+
+    final normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: raw,
+      planSlide: _planSlide(composition: 'imageLeft', treatment: 'visual'),
+    );
+    final blocks =
+        (((normalized['sections'] as List).single as Map)['blocks'] as List);
+
+    expect(blocks.map((block) => (block as Map)['flex']), everyElement(1));
+  });
+
   test('drops invalid optional comments while preserving visible content', () {
     final raw = _slideWithBlock({
       'type': 'block',

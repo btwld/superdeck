@@ -18,12 +18,14 @@ final class _PlannedImage {
   final String subject;
   final String assetKey;
   final GeneratedImageAspectRatio aspectRatio;
+  final String? backgroundColor;
   const _PlannedImage({
     required this.slideIndex,
     required this.elementIndex,
     required this.subject,
     required this.assetKey,
     required this.aspectRatio,
+    required this.backgroundColor,
   });
 }
 
@@ -54,6 +56,11 @@ Future<DeckImageGenerationResult> _runImagePhase(
     generator: owner.imageGenerator ?? const UnavailableImageGenerator(),
     runId: owner._assetRunIdFactory(),
     backgroundColor: resolvedTheme.palette.background,
+    backgroundColorsByTreatment: {
+      for (final treatment
+          in plan.slides.map((slide) => slide.treatment).toSet())
+        treatment: _imageBackgroundForTreatment(resolvedTheme, treatment),
+    },
     onProgress: (completed, total) => onProgress?.call(
       GenerationProgress(
         .generatingImages,
@@ -88,6 +95,7 @@ Future<DeckImageGenerationResult> generateImagesForPlan({
   required ImageGenerator generator,
   required String runId,
   String? backgroundColor,
+  Map<String, String> backgroundColorsByTreatment = const {},
   ImageGenerationProgressCallback? onProgress,
   bool Function()? isCancelled,
   int maxConcurrency = 4,
@@ -99,7 +107,12 @@ Future<DeckImageGenerationResult> generateImagesForPlan({
       'Must be positive.',
     );
   }
-  final planned = _plannedImages(plan, runId);
+  final planned = _plannedImages(
+    plan,
+    runId,
+    backgroundColor: backgroundColor,
+    backgroundColorsByTreatment: backgroundColorsByTreatment,
+  );
   if (planned.isEmpty) {
     onProgress?.call(0, 0);
 
@@ -122,7 +135,7 @@ Future<DeckImageGenerationResult> generateImagesForPlan({
         ImageGenerationRequest(
           prompt: buildPresentationImagePrompt(
             imageStyle.buildPrompt(image.subject),
-            backgroundColor: backgroundColor,
+            backgroundColor: image.backgroundColor,
           ),
           aspectRatio: image.aspectRatio,
         ),
@@ -157,7 +170,12 @@ Future<DeckImageGenerationResult> generateImagesForPlan({
   );
 }
 
-List<_PlannedImage> _plannedImages(DeckPlanType plan, String runId) {
+List<_PlannedImage> _plannedImages(
+  DeckPlanType plan,
+  String runId, {
+  required String? backgroundColor,
+  required Map<String, String> backgroundColorsByTreatment,
+}) {
   final planned = <_PlannedImage>[];
   for (final (slideIndex, slide) in plan.slides.indexed) {
     for (final (elementIndex, element)
@@ -179,12 +197,29 @@ List<_PlannedImage> _plannedImages(DeckPlanType plan, String runId) {
           aspectRatio: slide.composition == 'imageFullBleed'
               ? .landscape16x9
               : .slide3x4,
+          backgroundColor:
+              backgroundColorsByTreatment[slide.treatment] ?? backgroundColor,
         ),
       );
     }
   }
 
   return planned;
+}
+
+String _imageBackgroundForTreatment(
+  ResolvedPresentationTheme theme,
+  String treatment,
+) {
+  final role =
+      theme.descriptor.recipe.runtime.treatments.byName[treatment]?.background;
+
+  return switch (role) {
+    .surface => theme.palette.surface,
+    .surfaceAlt => theme.palette.surfaceAlt,
+    .accent => theme.palette.accent,
+    .background || null => theme.palette.background,
+  };
 }
 
 DeckPlanType _rewriteGeneratedImageSources(
