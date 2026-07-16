@@ -137,10 +137,14 @@ final class WizardGenerationController extends ChangeNotifier {
     _notify();
   }
 
-  Future<void> _completeComposition(DeckGenerationResult generated) async {
+  Future<void> _completeComposition(
+    int operation,
+    DeckGenerationResult generated,
+  ) async {
     try {
       await _applyResult(generated);
     } catch (error) {
+      if (_isOperationCancelled(operation) || _disposed) return;
       _fail(
         .composition,
         'Slides were generated but could not be loaded: $error',
@@ -148,6 +152,7 @@ final class WizardGenerationController extends ChangeNotifier {
 
       return;
     }
+    if (_isOperationCancelled(operation) || _disposed) return;
     _result = generated;
     _stage = .completed;
     _progress = const GenerationProgress(.idle);
@@ -272,7 +277,7 @@ final class WizardGenerationController extends ChangeNotifier {
       return;
     }
 
-    await _completeComposition(generated);
+    await _completeComposition(operation, generated);
   }
 
   Future<void> retryFailedSlides() async {
@@ -321,7 +326,7 @@ final class WizardGenerationController extends ChangeNotifier {
       return;
     }
 
-    await _completeComposition(generated);
+    await _completeComposition(operation, generated);
   }
 
   Future<void> retry() async {

@@ -945,7 +945,7 @@ _outlineDraftCapabilities(DeckGenerationRequest request) {
   final hasGeneratedImages =
       request.imageStyleId != null && request.maxGeneratedImages > 0;
   final elementTypes = {...groundedTypes, if (hasGeneratedImages) 'image'};
-  final compositions = <String>{
+  final compositions = {
     'title',
     'content',
     'twoColumn',

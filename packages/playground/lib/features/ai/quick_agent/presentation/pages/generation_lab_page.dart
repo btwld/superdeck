@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -96,7 +97,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
       _compositionDuration = null;
       _planningTraces.clear();
       _compositionTraces.clear();
-      _progress = const GenerationProgress(GenerationPhase.generatingOutline);
+      _progress = const GenerationProgress(.generatingOutline);
     });
 
     final timer = Stopwatch()..start();
@@ -131,7 +132,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
       _result = null;
       _compositionDuration = null;
       _compositionTraces.clear();
-      _progress = const GenerationProgress(GenerationPhase.generatingImages);
+      _progress = const GenerationProgress(.generatingImages);
     });
 
     final timer = Stopwatch()..start();
@@ -210,9 +211,9 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
             children: [
               for (final preset in _presets)
                 ChoiceChip(
-                  selected: identical(_preset, preset),
-                  onSelected: running ? null : (_) => _selectPreset(preset),
                   label: Text(preset.label),
+                  onSelected: running ? null : (_) => _selectPreset(preset),
+                  selected: identical(_preset, preset),
                 ),
             ],
           ),
@@ -231,7 +232,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
               FilledButton.icon(
                 onPressed: running || !_isConfigured
                     ? null
-                    : _generateStoryBeats,
+                    : () => unawaited(_generateStoryBeats()),
                 icon: const Icon(Icons.auto_stories_outlined),
                 label: Text(
                   plan == null
@@ -240,7 +241,9 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
                 ),
               ),
               OutlinedButton.icon(
-                onPressed: running || plan == null ? null : _buildSlides,
+                onPressed: running || plan == null
+                    ? null
+                    : () => unawaited(_buildSlides()),
                 icon: const Icon(Icons.slideshow_outlined),
                 label: Text(result == null ? 'Build slides' : 'Rebuild slides'),
               ),
@@ -336,7 +339,7 @@ class _SelectionSummary extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             Text(preset.topic, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
@@ -402,7 +405,7 @@ class _SelectionPill extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
     ),
     child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const .symmetric(vertical: 6, horizontal: 10),
       child: Text(label, style: Theme.of(context).textTheme.labelMedium),
     ),
   );
@@ -417,13 +420,13 @@ class _ColorSwatch extends StatelessWidget {
   Widget build(BuildContext context) => Tooltip(
     message: hex,
     child: Container(
-      width: 24,
-      height: 24,
       decoration: BoxDecoration(
         color: _parseColor(hex),
-        shape: BoxShape.circle,
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        border: .all(color: Theme.of(context).colorScheme.outlineVariant),
+        shape: .circle,
       ),
+      width: 24,
+      height: 24,
     ),
   );
 }
@@ -438,7 +441,7 @@ class _StoryBeatReview extends StatelessWidget {
     final slidesByKey = {for (final slide in plan.slides) slide.key: slide};
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
         Text('Story beats', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 4),
@@ -449,7 +452,7 @@ class _StoryBeatReview extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: .start,
                 children: [
                   Text(
                     'Act ${sectionIndex + 1} · ${section.title}',
@@ -463,7 +466,7 @@ class _StoryBeatReview extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: .start,
                           children: [
                             SizedBox(
                               width: 34,
@@ -471,13 +474,11 @@ class _StoryBeatReview extends StatelessWidget {
                             ),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: .start,
                                 children: [
                                   Text(
                                     slide.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: const TextStyle(fontWeight: .w600),
                                   ),
                                   Text(slide.assertion),
                                   Text(
@@ -555,19 +556,19 @@ class _GeneratedArtwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+    crossAxisAlignment: .start,
+    spacing: 12,
     children: [
       Text('Generated artwork', style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(height: 12),
       Wrap(
         spacing: 12,
         runSpacing: 12,
         children: [
-          for (final asset in result.generatedImages)
+          for (final (index, asset) in result.generatedImages.indexed)
             SizedBox(
               width: 240,
               child: Card(
-                clipBehavior: Clip.antiAlias,
+                clipBehavior: .antiAlias,
                 child: asset.bytes == null
                     ? Padding(
                         padding: const EdgeInsets.all(16),
@@ -575,8 +576,9 @@ class _GeneratedArtwork extends StatelessWidget {
                       )
                     : Image.memory(
                         asset.bytes!,
+                        semanticLabel: 'Generated artwork ${index + 1}',
                         height: 160,
-                        fit: BoxFit.cover,
+                        fit: .cover,
                       ),
               ),
             ),
@@ -612,32 +614,32 @@ class _SlideGallery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GridView.builder(
-    shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
+    shrinkWrap: true,
     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: 520,
-      childAspectRatio: 16 / 9,
-      crossAxisSpacing: 16,
       mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 16 / 9,
     ),
-    itemCount: configurations.length,
     itemBuilder: (context, index) => ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: SlideRenderView(configurations[index]),
     ),
+    itemCount: configurations.length,
   );
 }
 
 final class _GenerationPreset {
+  final String label;
+
+  final String topic;
+  final DeckGenerationRequest request;
   const _GenerationPreset({
     required this.label,
     required this.topic,
     required this.request,
   });
-
-  final String label;
-  final String topic;
-  final DeckGenerationRequest request;
 }
 
 const _presets = [
@@ -719,6 +721,7 @@ const _presets = [
 
 Color _parseColor(String hex) {
   final value = hex.replaceFirst('#', '');
+
   return Color(int.parse('FF$value', radix: 16));
 }
 

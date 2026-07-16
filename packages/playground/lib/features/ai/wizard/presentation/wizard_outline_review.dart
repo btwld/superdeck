@@ -146,13 +146,13 @@ class _WizardOutlineReviewState extends State<WizardOutlineReview> {
                     SdButton(
                       label: 'Back',
                       onPressed: widget.onBack,
-                      variant: SdButtonVariant.ghost,
+                      variant: .ghost,
                     ),
                     SdButton(
                       label: 'Regenerate outline',
                       onPressed: widget.onRegenerate,
                       icon: LucideIcons.refreshCw,
-                      variant: SdButtonVariant.outline,
+                      variant: .outline,
                     ),
                     SdButton(
                       label: 'Approve & build',
@@ -369,7 +369,7 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
             label: widget.editing ? 'Done' : 'Edit slide ${widget.index + 1}',
             onPressed: () => widget.onEdit(widget.editing ? null : slide.key),
             icon: widget.editing ? LucideIcons.check : LucideIcons.pencil,
-            variant: SdButtonVariant.ghost,
+            variant: .ghost,
           ),
         ],
       ),

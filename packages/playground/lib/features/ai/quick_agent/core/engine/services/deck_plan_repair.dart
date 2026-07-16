@@ -173,6 +173,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
         for (final slide in plan.slides) serializeDeckPlanSlideDraft(slide),
       ];
       slides[slideIndex] = Map<String, Object?>.of(parsed);
+
       return DeckPlanSlideType.parse(
         enrichDeckPlanDraftSlide(
           slides[slideIndex],

@@ -84,20 +84,19 @@ DeckPlanType resolveDeckPlanDraft({
   final slides = (parsed['slides']! as List<Object?>)
       .map((slide) => Map<String, Object?>.from(slide! as Map))
       .toList(growable: false);
-  final enrichedSlides = [
-    for (final (index, slide) in slides.indexed)
-      enrichDeckPlanDraftSlide(
-        slide,
-        index: index,
-        slides: slides,
-        density: request.density ?? descriptor.recipe.defaultDensity,
-      ),
-  ];
 
   return DeckPlanType.parse(
     Map<String, Object?>.of(parsed)
       ..['theme'] = reference
-      ..['slides'] = enrichedSlides,
+      ..['slides'] = [
+        for (final (index, slide) in slides.indexed)
+          enrichDeckPlanDraftSlide(
+            slide,
+            index: index,
+            slides: slides,
+            density: request.density ?? descriptor.recipe.defaultDensity,
+          ),
+      ],
   );
 }
 
@@ -125,15 +124,20 @@ String _deriveContinuity(int index, List<Map<String, Object?>> slides) {
     return 'Open the deck with this idea and establish the through-line.';
   }
   if (index == 0) {
+    final nextTitle = slides[1]['title']! as String;
+
     return 'Open the deck with this idea, then lead into '
-        '"${slides[1]['title']}".';
+        '"$nextTitle".';
   }
   if (index == slides.length - 1) {
-    return 'Build from "${slides[index - 1]['title']}" and close the deck.';
-  }
+    final previousTitle = slides[index - 1]['title']! as String;
 
-  return 'Build from "${slides[index - 1]['title']}" and lead into '
-      '"${slides[index + 1]['title']}".';
+    return 'Build from "$previousTitle" and close the deck.';
+  }
+  final previousTitle = slides[index - 1]['title']! as String;
+  final nextTitle = slides[index + 1]['title']! as String;
+
+  return 'Build from "$previousTitle" and lead into "$nextTitle".';
 }
 
 String _deriveTreatment(String role, String composition) {

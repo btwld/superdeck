@@ -99,7 +99,7 @@ class WizardSelectionReview extends StatelessWidget {
                       SdButton(
                         label: 'Start over',
                         onPressed: onStartOver,
-                        variant: SdButtonVariant.ghost,
+                        variant: .ghost,
                       ),
                     SdButton(
                       label: 'Create outline',

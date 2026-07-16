@@ -30,24 +30,24 @@ class SdButton extends StatelessWidget {
   final SdButtonVariant variant;
 
   HeroButtonVariant get _heroVariant => switch (variant) {
-    SdButtonVariant.primary => HeroButtonVariant.primary,
-    SdButtonVariant.outline => HeroButtonVariant.outline,
-    SdButtonVariant.ghost => HeroButtonVariant.ghost,
+    .primary => HeroButtonVariant.primary,
+    .outline => .outline,
+    .ghost => .ghost,
   };
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      enabled: enabled && !loading,
       button: true,
       label: semanticLabel ?? label,
-      enabled: enabled && !loading,
       child: HeroButton(
         label: label,
-        onPressed: onPressed,
-        iconLeft: icon,
-        enabled: enabled,
-        loading: loading,
         variant: _heroVariant,
+        iconLeft: icon,
+        loading: loading,
+        enabled: enabled,
+        onPressed: onPressed,
         style: style,
       ),
     );

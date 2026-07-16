@@ -140,7 +140,7 @@ class WizardGenerationStatus extends StatelessWidget {
                     label: 'Cancel',
                     onPressed: onCancel,
                     icon: LucideIcons.x,
-                    variant: SdButtonVariant.ghost,
+                    variant: .ghost,
                   ),
                 ],
               ),
@@ -174,7 +174,7 @@ class WizardGenerationStatus extends StatelessWidget {
                   SdButton(
                     label: backLabel,
                     onPressed: onBack,
-                    variant: SdButtonVariant.ghost,
+                    variant: .ghost,
                   ),
                   SdButton(
                     label: 'Retry',
@@ -192,12 +192,12 @@ class WizardGenerationStatus extends StatelessWidget {
                   SdButton(
                     label: 'Start over',
                     onPressed: onStartOver,
-                    variant: SdButtonVariant.ghost,
+                    variant: .ghost,
                   ),
                   SdButton(
                     label: 'Edit outline',
                     onPressed: onEditOutline,
-                    variant: SdButtonVariant.outline,
+                    variant: .outline,
                   ),
                   if (failedSlideCount > 0)
                     SdButton(
@@ -206,7 +206,7 @@ class WizardGenerationStatus extends StatelessWidget {
                           '${failedSlideCount == 1 ? 'slide' : 'slides'}',
                       onPressed: onRetryFailed,
                       icon: LucideIcons.refreshCw,
-                      variant: SdButtonVariant.outline,
+                      variant: .outline,
                     ),
                   SdButton(
                     label: 'Present deck',

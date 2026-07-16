@@ -149,6 +149,39 @@ void main() {
     expect(controller.stage, WizardGenerationStage.setup);
   });
 
+  test('ignores a late deck application after cancellation', () async {
+    const request = DeckGenerationRequest(
+      userIntent: 'Urban gardens',
+      slideCount: 1,
+      themeId: 'technical-paper',
+    );
+    final service = _FakeWizardGenerationService(_plan(request));
+    final applicationStarted = Completer<void>();
+    final pendingApplication = Completer<void>();
+    final controller = WizardGenerationController(
+      service: service,
+      applyResult: (_) {
+        applicationStarted.complete();
+
+        return pendingApplication.future;
+      },
+    );
+    addTearDown(controller.dispose);
+
+    await controller.createOutline(request);
+    final composition = controller.generateSlides();
+    await applicationStarted.future;
+
+    controller.cancel();
+    expect(controller.stage, WizardGenerationStage.outlineReview);
+
+    pendingApplication.complete();
+    await composition;
+
+    expect(controller.stage, WizardGenerationStage.outlineReview);
+    expect(controller.result, isNull);
+  });
+
   testWidgets('keeps composing after the 30-second performance target', (
     tester,
   ) async {
