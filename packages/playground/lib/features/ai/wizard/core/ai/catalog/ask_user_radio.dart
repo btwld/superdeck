@@ -124,29 +124,43 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
             ? 2
             : 1;
         const spacing = 12.0;
-        final cardWidth =
-            (constraints.maxWidth - spacing * (columnCount - 1)) / columnCount;
 
-        return Wrap(
+        return Column(
           spacing: spacing,
-          runSpacing: spacing,
-          children: options.asMap().entries.map((entry) {
-            final index = entry.key;
-            final option = entry.value;
-            final isSelected = _selectedIndex == index;
-
-            return SizedBox(
-              width: cardWidth,
-              child: RadioOptionCard(
-                title: option.title,
-                description: option.description,
-                icon: (option.icon ?? WizardOptionIcon.fallbackFor(index))
-                    .iconData,
-                selected: isSelected,
-                onTap: () => setState(() => _selectedIndex = index),
+          children: [
+            for (
+              var rowStart = 0;
+              rowStart < options.length;
+              rowStart += columnCount
+            )
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: .stretch,
+                  children: [
+                    for (var column = 0; column < columnCount; column++) ...[
+                      if (column > 0) const SizedBox(width: spacing),
+                      Expanded(
+                        child: switch (rowStart + column) {
+                          final index when index < options.length =>
+                            RadioOptionCard(
+                              title: options[index].title,
+                              description: options[index].description,
+                              icon:
+                                  (options[index].icon ??
+                                          WizardOptionIcon.fallbackFor(index))
+                                      .iconData,
+                              selected: _selectedIndex == index,
+                              onTap: () =>
+                                  setState(() => _selectedIndex = index),
+                            ),
+                          _ => const SizedBox.shrink(),
+                        },
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            );
-          }).toList(),
+          ],
         );
       },
     );
