@@ -153,6 +153,14 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
   }
 
   @override
+  void didUpdateWidget(covariant _AskUserRadioContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.data.question != widget.data.question) {
+      _selectedIndex = null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return CatalogQuestionStep(
       question: widget.data.question,
