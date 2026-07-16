@@ -43,6 +43,7 @@ const _selectedFixture = String.fromEnvironment(
   'LIVE_FIXTURE',
   defaultValue: 'all',
 );
+const _liveRunCount = int.fromEnvironment('LIVE_RUNS', defaultValue: 1);
 const _artifactPath = String.fromEnvironment('LIVE_ARTIFACT');
 const _includeDebugLayout = bool.fromEnvironment('LIVE_DEBUG_LAYOUT');
 const _renderThemeQualification = bool.fromEnvironment(
@@ -55,15 +56,23 @@ const _largeDeckFixtures = [
   'decision_data_15',
   'visual_product_20',
 ];
-const _focusedFixtures = ['superdeck_demo_10'];
+const _focusedFixtures = ['superdeck_demo_10', 'playful_giraffes_10'];
 final _themeCatalog = PresentationThemeCatalog.withDefaults();
 final _typographyCatalog = PresentationTypographyCatalog.withDefaults();
+final _loadedCaptureFontFamilies = <String>{};
 
 typedef _CaptureResult = ({
   List<File> pngs,
   int replayedSlideCount,
   Set<String> resolvedFontFamilies,
   Duration elapsed,
+});
+
+typedef _CompletedLiveRun = ({
+  String fixture,
+  int runNumber,
+  Directory output,
+  File contactSheet,
 });
 
 void main() {
@@ -433,167 +442,202 @@ void main() {
     return;
   }
 
+  if (_liveRunCount < 1 || _liveRunCount > 10) {
+    throw ArgumentError.value(
+      _liveRunCount,
+      'LIVE_RUNS',
+      'Use a value from 1 to 10.',
+    );
+  }
+
+  final completedRuns = <_CompletedLiveRun>[];
+  tearDownAll(() async {
+    if (completedRuns.length < 2) return;
+    final review = await _writeMultiRunReview(
+      selectedFixture: _selectedFixture,
+      requestedRuns: _liveRunCount,
+      runs: completedRuns,
+    );
+    // ignore: avoid_print
+    print('Multi-run review artifacts: ${review.path}');
+  });
+
   for (final fixture in _selectedFixtures()) {
-    group('live generation: $fixture', () {
-      late Directory output;
-      late String markdown;
-      late ResolvedPresentationTheme theme;
-      late DeckPlanType plan;
-      late DeckGenerationRequest request;
-      late List<Slide> slides;
-      List<GeneratedImageAsset> generatedImages = const [];
-      var traces = <GenerationTraceEvent>[];
-      var expectedSlideCount = 0;
-      var generationReady = false;
+    for (var runIndex = 0; runIndex < _liveRunCount; runIndex++) {
+      final runNumber = runIndex + 1;
+      group('live generation: $fixture [$runNumber/$_liveRunCount]', () {
+        late Directory output;
+        late String markdown;
+        late ResolvedPresentationTheme theme;
+        late DeckPlanType plan;
+        late DeckGenerationRequest request;
+        late List<Slide> slides;
+        List<GeneratedImageAsset> generatedImages = const [];
+        var traces = <GenerationTraceEvent>[];
+        var expectedSlideCount = 0;
+        var generationReady = false;
 
-      test(
-        'generates and writes model artifacts',
-        () async {
-          final brief = await File(
-            'test_live/ai_generation/fixtures/$fixture.txt',
-          ).readAsString();
-          final service = DeckGeneratorService(
-            apiKey: _apiKey,
-            imageGenerator: DartanticImageGenerator(
+        test(
+          'generates and writes model artifacts',
+          () async {
+            final brief = await File(
+              'test_live/ai_generation/fixtures/$fixture.txt',
+            ).readAsString();
+            final service = DeckGeneratorService(
               apiKey: _apiKey,
-              modelName: geminiImageGenerationModel,
-            ),
-          );
-          request = _requestForFixture(fixture, brief);
-          final planningStopwatch = Stopwatch()..start();
-          final planning = await service.plan(request, onTrace: traces.add);
-          planningStopwatch.stop();
-          expect(planning.success, isTrue, reason: planning.error);
-          final approvedPlan = planning.plan!;
-          final compositionStopwatch = Stopwatch()..start();
-          final result = await service.generateFromPlan(
-            request,
-            approvedPlan,
-            onTrace: traces.add,
-          );
-          compositionStopwatch.stop();
-          output = await _createRunDirectory(fixture);
-          await File(p.join(output.path, 'timing.json')).writeAsString(
-            const JsonEncoder.withIndent('  ').convert({
-              'planningMs': planningStopwatch.elapsedMilliseconds,
-              'compositionMs': compositionStopwatch.elapsedMilliseconds,
-              'combinedGenerationMs':
-                  planningStopwatch.elapsedMilliseconds +
-                  compositionStopwatch.elapsedMilliseconds,
-              'withinThirtySecondTarget':
-                  planningStopwatch.elapsed + compositionStopwatch.elapsed <=
-                  WizardGenerationController.generationBudget,
-            }),
-          );
-          await File(p.join(output.path, 'brief.txt')).writeAsString(brief);
-          await File(p.join(output.path, 'request.json')).writeAsString(
-            const JsonEncoder.withIndent('  ').convert(request.toMap()),
-          );
-          await File(
-            p.join(output.path, 'approved_outline.json'),
-          ).writeAsString(
-            const JsonEncoder.withIndent('  ').convert(approvedPlan),
-          );
-          await File(p.join(output.path, 'trace.json')).writeAsString(
-            const JsonEncoder.withIndent(
-              '  ',
-            ).convert(traces.map((event) => event.toJson()).toList()),
-          );
-          await _writeTraceArtifacts(output, traces, plan: result.plan);
-
-          expect(
-            planningStopwatch.elapsed + compositionStopwatch.elapsed,
-            lessThanOrEqualTo(WizardGenerationController.generationBudget),
-            reason: 'Split generation exceeded the 30-second booth budget.',
-          );
-
-          expect(result.success, isTrue, reason: result.error);
-          expect(result.slides, isNotEmpty);
-          plan = result.plan!;
-          slides = result.slides;
-          generatedImages = result.generatedImages;
-          await _writeGeneratedImages(output, generatedImages);
-          if (request.imageStyleId != null) {
-            expect(
-              generatedImages.where((asset) => asset.bytes != null),
-              isNotEmpty,
-              reason: 'Image-enabled smoke produced no usable artwork.',
+              imageGenerator: DartanticImageGenerator(
+                apiKey: _apiKey,
+                modelName: geminiImageGenerationModel,
+              ),
             );
-          }
-          final deckJson = {
-            'theme': serializeDeckThemeReference(result.plan!.theme),
-            'slides': result.slides.map((slide) => slide.toMap()).toList(),
-          };
-          await File(
-            p.join(output.path, 'deck.json'),
-          ).writeAsString(const JsonEncoder.withIndent('  ').convert(deckJson));
-          markdown = const SlideSerializer().serialize(result.slides);
-          theme = result.theme!;
-          expectedSlideCount = result.slideCount;
-          await File(p.join(output.path, 'slides.md')).writeAsString(markdown);
-          await File(p.join(output.path, 'validation.json')).writeAsString(
-            const JsonEncoder.withIndent('  ').convert({
-              'success': result.success,
-              'slideCount': result.slideCount,
-              'validationEvents': traces
-                  .where(
-                    (event) => event.kind == GenerationTraceKind.validation,
-                  )
-                  .map((event) => event.toJson())
-                  .toList(),
-            }),
-          );
+            request = _requestForFixture(fixture, brief);
+            final planningStopwatch = Stopwatch()..start();
+            final planning = await service.plan(request, onTrace: traces.add);
+            planningStopwatch.stop();
+            expect(planning.success, isTrue, reason: planning.error);
+            final approvedPlan = planning.plan!;
+            final compositionStopwatch = Stopwatch()..start();
+            final result = await service.generateFromPlan(
+              request,
+              approvedPlan,
+              onTrace: traces.add,
+            );
+            compositionStopwatch.stop();
+            output = await _createRunDirectory(fixture);
+            await File(p.join(output.path, 'timing.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert({
+                'planningMs': planningStopwatch.elapsedMilliseconds,
+                'compositionMs': compositionStopwatch.elapsedMilliseconds,
+                'combinedGenerationMs':
+                    planningStopwatch.elapsedMilliseconds +
+                    compositionStopwatch.elapsedMilliseconds,
+                'withinThirtySecondTarget':
+                    planningStopwatch.elapsed + compositionStopwatch.elapsed <=
+                    WizardGenerationController.generationBudget,
+              }),
+            );
+            await File(p.join(output.path, 'brief.txt')).writeAsString(brief);
+            await File(p.join(output.path, 'request.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert(request.toMap()),
+            );
+            await File(
+              p.join(output.path, 'approved_outline.json'),
+            ).writeAsString(
+              const JsonEncoder.withIndent('  ').convert(approvedPlan),
+            );
+            await File(p.join(output.path, 'trace.json')).writeAsString(
+              const JsonEncoder.withIndent(
+                '  ',
+              ).convert(traces.map((event) => event.toJson()).toList()),
+            );
+            await _writeTraceArtifacts(output, traces, plan: result.plan);
 
-          generationReady = true;
-        },
-        skip: _apiKey.isEmpty,
-        timeout: const Timeout(Duration(minutes: 15)),
-      );
+            expect(
+              planningStopwatch.elapsed + compositionStopwatch.elapsed,
+              lessThanOrEqualTo(WizardGenerationController.generationBudget),
+              reason: 'Split generation exceeded the 30-second booth budget.',
+            );
 
-      testWidgets(
-        'captures PNGs and contact sheet',
-        (tester) async {
-          if (!generationReady) return;
-          final capture = await _captureSlides(
-            tester: tester,
-            output: output,
-            markdown: markdown,
-            theme: theme,
-            expectedSlideCount: expectedSlideCount,
-            generatedImages: generatedImages,
-          );
-          await tester.runAsync(() => _writeContactSheet(output, capture.pngs));
-          final report = GenerationQualityReport.evaluate(
-            request: request,
-            plan: plan,
-            slides: slides,
-            traces: traces,
-            replayedSlideCount: capture.replayedSlideCount,
-            capturedSlideCount: capture.pngs.length,
-            resolvedFontFamilies: capture.resolvedFontFamilies,
-            captureElapsed: capture.elapsed,
-            knownGeneratedAssetKeys: {
-              for (final asset in generatedImages)
-                if (asset.bytes != null) asset.assetKey,
-            },
-          );
-          await tester.runAsync(
-            () =>
-                File(p.join(output.path, 'quality_report.json')).writeAsString(
-                  const JsonEncoder.withIndent('  ').convert(report.toJson()),
-                ),
-          );
-          expect(capture.pngs, hasLength(expectedSlideCount));
-          expect(
-            report.passed,
-            isTrue,
-            reason: const JsonEncoder.withIndent('  ').convert(report.toJson()),
-          );
-        },
-        skip: _apiKey.isEmpty,
-        timeout: const Timeout(Duration(minutes: 5)),
-      );
-    });
+            expect(result.success, isTrue, reason: result.error);
+            expect(result.slides, isNotEmpty);
+            plan = result.plan!;
+            slides = result.slides;
+            generatedImages = result.generatedImages;
+            await _writeGeneratedImages(output, generatedImages);
+            if (request.imageStyleId != null) {
+              expect(
+                generatedImages.where((asset) => asset.bytes != null),
+                isNotEmpty,
+                reason: 'Image-enabled smoke produced no usable artwork.',
+              );
+            }
+            final deckJson = {
+              'theme': serializeDeckThemeReference(result.plan!.theme),
+              'slides': result.slides.map((slide) => slide.toMap()).toList(),
+            };
+            await File(p.join(output.path, 'deck.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert(deckJson),
+            );
+            markdown = const SlideSerializer().serialize(result.slides);
+            theme = result.theme!;
+            expectedSlideCount = result.slideCount;
+            await File(
+              p.join(output.path, 'slides.md'),
+            ).writeAsString(markdown);
+            await File(p.join(output.path, 'validation.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert({
+                'success': result.success,
+                'slideCount': result.slideCount,
+                'validationEvents': traces
+                    .where(
+                      (event) => event.kind == GenerationTraceKind.validation,
+                    )
+                    .map((event) => event.toJson())
+                    .toList(),
+              }),
+            );
+
+            generationReady = true;
+          },
+          skip: _apiKey.isEmpty,
+          timeout: const Timeout(Duration(minutes: 15)),
+        );
+
+        testWidgets(
+          'captures PNGs and contact sheet',
+          (tester) async {
+            if (!generationReady) return;
+            final capture = await _captureSlides(
+              tester: tester,
+              output: output,
+              markdown: markdown,
+              theme: theme,
+              expectedSlideCount: expectedSlideCount,
+              generatedImages: generatedImages,
+            );
+            final contactSheet = (await tester.runAsync(
+              () => _writeContactSheet(output, capture.pngs),
+            ))!;
+            final report = GenerationQualityReport.evaluate(
+              request: request,
+              plan: plan,
+              slides: slides,
+              traces: traces,
+              replayedSlideCount: capture.replayedSlideCount,
+              capturedSlideCount: capture.pngs.length,
+              resolvedFontFamilies: capture.resolvedFontFamilies,
+              captureElapsed: capture.elapsed,
+              knownGeneratedAssetKeys: {
+                for (final asset in generatedImages)
+                  if (asset.bytes != null) asset.assetKey,
+              },
+            );
+            await tester.runAsync(
+              () => File(p.join(output.path, 'quality_report.json'))
+                  .writeAsString(
+                    const JsonEncoder.withIndent('  ').convert(report.toJson()),
+                  ),
+            );
+            completedRuns.add((
+              fixture: fixture,
+              runNumber: runNumber,
+              output: output,
+              contactSheet: contactSheet,
+            ));
+            expect(capture.pngs, hasLength(expectedSlideCount));
+            expect(
+              report.passed,
+              isTrue,
+              reason: const JsonEncoder.withIndent(
+                '  ',
+              ).convert(report.toJson()),
+            );
+          },
+          skip: _apiKey.isEmpty,
+          timeout: const Timeout(Duration(minutes: 5)),
+        );
+      });
+    }
   }
 }
 
@@ -721,6 +765,25 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       headlineFont: 'Montserrat',
       bodyFont: 'DM Sans',
       imageStyleId: 'gradient',
+      imageStyleVersion: 1,
+      maxGeneratedImages: 3,
+    ),
+    'playful_giraffes_10' => DeckGenerationRequest(
+      userIntent: brief,
+      slideCount: 10,
+      audience: 'Families, children, and playful demo visitors',
+      approach:
+          'Whimsical storybook event recap with a clear beginning and end',
+      themeId: 'playful-learning',
+      emphasis: const [
+        'preserve every supplied story fact exactly',
+        'make each giraffe scene expressive and easy to understand',
+        'clearly distinguish the completed party from the proposed next party',
+      ],
+      designDirection: 'Sunny, whimsical, colorful, and storybook-like',
+      headlineFont: 'Lobster',
+      bodyFont: 'Open Sans',
+      imageStyleId: 'watercolor',
       imageStyleVersion: 1,
       maxGeneratedImages: 3,
     ),
@@ -1150,6 +1213,7 @@ bool _isNetworkSource(String source) {
 
 Future<Set<String>> _loadCaptureFonts(ResolvedPresentationTheme theme) async {
   final families = {theme.headlineFamily, theme.bodyFamily};
+  if (_loadedCaptureFontFamilies.containsAll(families)) return families;
   final fontStyles = <TextStyle>[];
   for (final family in families) {
     final descriptor = _typographyCatalog.resolve(family);
@@ -1174,6 +1238,7 @@ Future<Set<String>> _loadCaptureFonts(ResolvedPresentationTheme theme) async {
     await GoogleFonts.pendingFonts(
       fontStyles,
     ).timeout(const Duration(seconds: 30));
+    _loadedCaptureFontFamilies.addAll(families);
   } on TimeoutException {
     throw StateError(
       'Timed out resolving live capture fonts: ${families.join(', ')}.',
@@ -1212,6 +1277,129 @@ Future<File> _writeContactSheet(Directory output, List<File> files) async {
   }
   final file = File(p.join(output.path, 'contact_sheet.png'));
   await file.writeAsBytes(image.encodePng(sheet));
+  return file;
+}
+
+Future<Directory> _writeMultiRunReview({
+  required String selectedFixture,
+  required int requestedRuns,
+  required List<_CompletedLiveRun> runs,
+}) async {
+  final safeFixture = selectedFixture.replaceAll(
+    RegExp(r'[^a-zA-Z0-9_-]'),
+    '_',
+  );
+  final output = await _createRunDirectory('review_$safeFixture');
+  final entries = <Map<String, Object?>>[];
+  final generationTimes = <int>[];
+  var passedRuns = 0;
+  var diagnosticCount = 0;
+
+  for (final run in runs) {
+    final timing = await _readJsonObject(
+      File(p.join(run.output.path, 'timing.json')),
+    );
+    final quality = await _readJsonObject(
+      File(p.join(run.output.path, 'quality_report.json')),
+    );
+    final generationMs = timing['combinedGenerationMs'] as int?;
+    if (generationMs != null) generationTimes.add(generationMs);
+    if (quality['passed'] == true) passedRuns++;
+    final issues = quality['issues'];
+    if (issues is List) diagnosticCount += issues.length;
+
+    entries.add({
+      'fixture': run.fixture,
+      'runNumber': run.runNumber,
+      'artifactDirectory': p.basename(run.output.path),
+      'contactSheet': p.basename(run.contactSheet.path),
+      'timing': timing,
+      'quality': {
+        'passed': quality['passed'],
+        'issues': quality['issues'],
+        'counts': quality['counts'],
+        'plan': quality['plan'],
+        'distributions': quality['distributions'],
+        'modelRequests': quality['modelRequests'],
+      },
+    });
+  }
+
+  final board = await _writeReviewBoard(output, runs);
+  final averageGenerationMs = generationTimes.isEmpty
+      ? null
+      : generationTimes.reduce((a, b) => a + b) ~/ generationTimes.length;
+  await File(p.join(output.path, 'manifest.json')).writeAsString(
+    const JsonEncoder.withIndent('  ').convert({
+      'selectedFixture': selectedFixture,
+      'requestedRunsPerFixture': requestedRuns,
+      'completedRuns': runs.length,
+      'reviewBoard': p.basename(board.path),
+      'aggregate': {
+        'passedRuns': passedRuns,
+        'diagnosticIssueCount': diagnosticCount,
+        'averageGenerationMs': averageGenerationMs,
+        'minimumGenerationMs': generationTimes.isEmpty
+            ? null
+            : generationTimes.reduce((a, b) => a < b ? a : b),
+        'maximumGenerationMs': generationTimes.isEmpty
+            ? null
+            : generationTimes.reduce((a, b) => a > b ? a : b),
+        'allWithinThirtySecondTarget': entries.every(
+          (entry) =>
+              ((entry['timing'] as Map)['withinThirtySecondTarget'] as bool?) ??
+              false,
+        ),
+      },
+      'runs': entries,
+    }),
+  );
+  return output;
+}
+
+Future<Map<String, Object?>> _readJsonObject(File file) async {
+  final decoded = jsonDecode(await file.readAsString());
+  if (decoded is! Map) {
+    throw StateError('Expected a JSON object in ${file.path}.');
+  }
+  return Map<String, Object?>.from(decoded);
+}
+
+Future<File> _writeReviewBoard(
+  Directory output,
+  List<_CompletedLiveRun> runs,
+) async {
+  final sheets = <image.Image>[];
+  for (final run in runs) {
+    final decoded = image.decodePng(await run.contactSheet.readAsBytes());
+    if (decoded != null) sheets.add(image.copyResize(decoded, width: 480));
+  }
+  if (sheets.isEmpty) {
+    throw StateError('Cannot create a review board without contact sheets.');
+  }
+
+  final columns = sheets.length < 3 ? sheets.length : 3;
+  final rows = (sheets.length + columns - 1) ~/ columns;
+  final cellWidth = sheets.first.width;
+  final cellHeight = sheets
+      .map((sheet) => sheet.height)
+      .reduce((a, b) => a > b ? a : b);
+  final board = image.Image(
+    width: cellWidth * columns,
+    height: cellHeight * rows,
+  );
+  image.fill(board, color: image.ColorRgb8(24, 24, 27));
+  for (var index = 0; index < sheets.length; index++) {
+    image.compositeImage(
+      board,
+      sheets[index],
+      dstX: (index % columns) * cellWidth,
+      dstY: (index ~/ columns) * cellHeight,
+    );
+  }
+
+  final file = File(p.join(output.path, 'review_board.png'));
+  await file.writeAsBytes(image.encodePng(board));
   return file;
 }
 

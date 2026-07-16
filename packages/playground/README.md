@@ -67,7 +67,28 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
 ```
 
 Set `--dart-define=LIVE_FIXTURE=narrative`, `comparison_table`, or
-`visual_elements` to run one fast fixture. Run the larger quality matrix with:
+`visual_elements` to run one fast fixture.
+
+Use `--dart-define=LIVE_FIXTURE=superdeck_demo_10` for the booth product story
+or `--dart-define=LIVE_FIXTURE=playful_giraffes_10` for the fictional Great
+Giraffe Garden Party with exact story beats and three watercolor illustrations.
+
+Repeat a fixture to evaluate consistency across independent generations:
+
+```bash
+fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
+  --dart-define-from-file=../../.env \
+  --dart-define=LIVE_FIXTURE=playful_giraffes_10 \
+  --dart-define=LIVE_RUNS=3 \
+  --reporter expanded
+```
+
+`LIVE_RUNS` accepts 1–10. Two or more completed runs also produce a consolidated
+`review_*` artifact directory containing `review_board.png` and `manifest.json`
+with each run's artifact path, timing, validation diagnostics, composition
+distribution, and model-request counts.
+
+Run the larger quality matrix with:
 
 ```bash
 fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
