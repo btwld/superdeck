@@ -273,6 +273,9 @@ void main() {
     expect(find.text('Retry 1 slide'), findsOneWidget);
     expect(find.text('Edit outline'), findsOneWidget);
     expect(find.text('Start over'), findsOneWidget);
+    expect(find.byType(TextButton), findsNothing);
+    expect(find.byType(OutlinedButton), findsNothing);
+    expect(find.byType(HeroButton), findsNWidgets(4));
   });
 
   testWidgets('artwork fallback stays visible on successful completion', (
@@ -311,7 +314,9 @@ void main() {
     );
   });
 
-  testWidgets('deck length uses a counter and useful presets', (tester) async {
+  testWidgets('deck length offers four plain slide-count choices', (
+    tester,
+  ) async {
     var selectedValue = 10;
 
     await tester.pumpWidget(
@@ -328,13 +333,14 @@ void main() {
     );
 
     expect(find.text('Deck length'), findsOneWidget);
-    expect(find.text('10'), findsNWidgets(2));
+    expect(find.text('5 slides'), findsOneWidget);
+    expect(find.text('10 slides'), findsOneWidget);
+    expect(find.text('15 slides'), findsOneWidget);
+    expect(find.text('20 slides'), findsOneWidget);
+    expect(find.text('Custom'), findsNothing);
+    expect(find.byTooltip('One more slide'), findsNothing);
 
-    await tester.tap(find.byTooltip('One more slide'));
-    await tester.pump();
-    expect(find.text('11'), findsOneWidget);
-
-    await tester.tap(find.text('20'));
+    await tester.tap(find.text('20 slides'));
     await tester.pump();
     expect(selectedValue, 20);
   });

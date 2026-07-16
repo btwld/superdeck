@@ -96,9 +96,10 @@ class WizardSelectionReview extends StatelessWidget {
                   spacing: 12,
                   children: [
                     if (onStartOver != null)
-                      TextButton(
+                      SdButton(
+                        label: 'Start over',
                         onPressed: onStartOver,
-                        child: const Text('Start over'),
+                        variant: SdButtonVariant.ghost,
                       ),
                     SdButton(
                       label: 'Create outline',

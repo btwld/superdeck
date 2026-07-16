@@ -134,7 +134,7 @@ Choose exactly one `theme.id` from the compact candidates below. Return only
 that ID inside the theme object. Never return a version, palette, font family,
 brand override, or runtime styling token; the application owns those values.
 
-${const JsonEncoder.withIndent('  ').convert(themeCandidates.map((theme) => theme.toModelCandidate()).toList())}
+${jsonEncode(themeCandidates.map((theme) => theme.toModelCandidate()).toList())}
 ''';
   }
 

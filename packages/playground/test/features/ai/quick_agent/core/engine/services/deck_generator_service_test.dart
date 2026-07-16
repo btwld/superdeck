@@ -9,6 +9,7 @@ import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/features/ai/image_generation/image_generator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/deck_theme_resolution.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_model_client.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_progress.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
@@ -80,6 +81,68 @@ void main() {
       'models/gemini-3.1-flash-lite',
     );
     expect(compositionClient.isClosed, isTrue);
+  });
+
+  test('enriches a lean model outline into the canonical deck plan', () async {
+    final client = _FakeGenerationModelClient([
+      _jsonResponse({
+        'topic': 'Lean outline',
+        'story': 'A small model response still drives complete composition.',
+        'theme': _testThemeSelection,
+        'slides': [_leanPlanSlide(key: 'opening')],
+      }),
+    ]);
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.plan(
+      _request('Create one concise slide.', slideCount: 1),
+    );
+
+    expect(result.success, isTrue, reason: result.error);
+    final slide = result.plan!.slides.single;
+    expect(slide.purpose, slide.assertion);
+    expect(slide.contentBrief, 'One concrete supporting point');
+    expect(slide.continuity, contains('Open the deck'));
+    expect(slide.treatment, 'hero');
+    expect(slide.density, 'balanced');
+    final properties = client
+        .requests
+        .single
+        .generationConfig!
+        .responseSchema!
+        .properties['slides']!
+        .items!
+        .properties;
+    expect(properties.keys, {
+      'key',
+      'title',
+      'sectionKey',
+      'assertion',
+      'contentUnits',
+      'narrativeRole',
+      'composition',
+      'elements',
+    });
+  });
+
+  test('derives a treatment compatible with the selected composition', () {
+    final slide = _leanPlanSlide(
+      key: 'transition',
+      narrativeRole: 'transition',
+      composition: 'threeColumn',
+    );
+
+    final enriched = enrichDeckPlanDraftSlide(
+      slide,
+      index: 0,
+      slides: [slide],
+      density: 'balanced',
+    );
+
+    expect(enriched['treatment'], 'data');
   });
 
   test('generates planned artwork before composing its image block', () async {
@@ -791,6 +854,7 @@ void main() {
     ]);
     final outlinePrompt =
         client.requests.first.systemInstruction!.parts.single.text;
+    expect(outlinePrompt!.length, lessThanOrEqualTo(6000));
     expect(outlinePrompt, contains('narrativeRole'));
     expect(outlinePrompt, contains('composition'));
     expect(outlinePrompt, contains('## Eligible presentation themes'));
@@ -1542,22 +1606,27 @@ Map<String, Object?> _planSlide({
 }) => {
   'key': key,
   'title': 'Test title',
-  'purpose': 'Introduce the test topic',
   'sectionKey': sectionKey,
   'assertion': 'The test topic matters now.',
   'contentUnits': ['One concrete supporting point'],
   'narrativeRole': 'insight',
-  'contentBrief': 'Explain the core idea.',
-  'continuity': 'Connect the surrounding ideas.',
   'composition': composition,
-  'treatment': switch (composition) {
-    'title' => 'hero',
-    'titleLeft' => 'closing',
-    'imageFullBleed' => 'visual',
-    _ => 'content',
-  },
-  'density': 'balanced',
   'elements': elements,
+};
+
+Map<String, Object?> _leanPlanSlide({
+  required String key,
+  String narrativeRole = 'opening',
+  String composition = 'title',
+}) => {
+  'key': key,
+  'title': 'Test title',
+  'sectionKey': 'main',
+  'assertion': 'The test topic matters now.',
+  'contentUnits': ['One concrete supporting point'],
+  'narrativeRole': narrativeRole,
+  'composition': composition,
+  'elements': <Object?>[],
 };
 
 Map<String, Object?> _duplicateKeyPlan(String story) => {

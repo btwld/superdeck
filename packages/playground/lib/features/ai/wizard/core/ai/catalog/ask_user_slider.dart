@@ -83,20 +83,16 @@ class DeckLengthSelector extends StatelessWidget {
   final String unit;
   final ValueChanged<int> onChanged;
 
-  List<int> get _presets {
-    final values = unit.toLowerCase().contains('slide')
-        ? [min, 8, 10, 12, 15, 20, max]
-        : [min, ((min + max) / 2).round(), max];
-
-    return values.where((item) => item >= min && item <= max).toSet().toList()
-      ..sort();
-  }
+  List<int> get _choices => [
+    5,
+    10,
+    15,
+    20,
+  ].where((choice) => choice >= min && choice <= max).toList(growable: false);
 
   @override
   Widget build(BuildContext context) {
     final iconColor = $accent.resolve(context);
-    final mutedColor = $muted.resolve(context);
-
     final identity = Row(
       mainAxisSize: .min,
       spacing: 12,
@@ -124,87 +120,21 @@ class DeckLengthSelector extends StatelessWidget {
       ],
     );
 
-    final counter = Container(
-      padding: const .symmetric(vertical: 4, horizontal: 4),
-      decoration: BoxDecoration(
-        color: $background.resolve(context),
-        border: .all(color: $border.resolve(context)),
-        borderRadius: .circular(14),
-      ),
-      child: Row(
-        mainAxisSize: .min,
-        children: [
-          IconButton(
-            onPressed: value > min ? () => onChanged(value - 1) : null,
-            tooltip: 'One fewer slide',
-            icon: const Icon(LucideIcons.minus, size: 18),
-          ),
-          ConstrainedBox(
-            constraints: const BoxConstraints.tightFor(width: 76),
-            child: Column(
-              mainAxisSize: .min,
-              children: [
-                Text(
-                  '$value',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: $foreground.resolve(context),
-                    fontWeight: .w700,
-                    height: 1,
-                  ),
-                ),
-                if (unit.isNotEmpty)
-                  Text(
-                    unit,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(color: mutedColor),
-                  ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: value < max ? () => onChanged(value + 1) : null,
-            tooltip: 'One more slide',
-            icon: const Icon(LucideIcons.plus, size: 18),
-          ),
-        ],
-      ),
-    );
-
     return SdPanel(
       child: Column(
         crossAxisAlignment: .start,
         spacing: 18,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 520) {
-                return Column(
-                  crossAxisAlignment: .start,
-                  spacing: 16,
-                  children: [identity, counter],
-                );
-              }
-
-              return Row(
-                mainAxisAlignment: .spaceBetween,
-                spacing: 16,
-                children: [
-                  Expanded(child: identity),
-                  counter,
-                ],
-              );
-            },
-          ),
+          identity,
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final preset in _presets)
+              for (final choice in _choices)
                 _DeckLengthPreset(
-                  value: preset,
-                  selected: preset == value,
-                  onTap: () => onChanged(preset),
+                  value: choice,
+                  selected: choice == value,
+                  onTap: () => onChanged(choice),
                 ),
             ],
           ),
@@ -237,7 +167,7 @@ class _DeckLengthPreset extends StatelessWidget {
           onTap: onTap,
           borderRadius: .circular(10),
           child: AnimatedContainer(
-            padding: const .symmetric(vertical: 9, horizontal: 14),
+            padding: const .symmetric(vertical: 11, horizontal: 16),
             decoration: BoxDecoration(
               color: selected
                   ? $accentSoft.resolve(context)
@@ -251,11 +181,11 @@ class _DeckLengthPreset extends StatelessWidget {
             ),
             duration: SdTokens.motionFast,
             child: Text(
-              '$value',
+              '$value slides',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: selected
                     ? $accent.resolve(context)
-                    : $muted.resolve(context),
+                    : $foreground.resolve(context),
                 fontWeight: .w600,
               ),
             ),
@@ -284,8 +214,15 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
     super.initState();
     final minVal = widget.data.minValue;
     final maxVal = widget.data.maxValue;
-    final defaultVal = widget.data.defaultValue;
+    final defaultVal = _initialValue(min: minVal, max: maxVal);
     _sliderValue = _clampToRange(defaultVal, min: minVal, max: maxVal);
+  }
+
+  int _initialValue({required int min, required int max}) {
+    final unit = (widget.data.unit ?? '').toLowerCase();
+    if (unit.contains('slide') && min <= 10 && max >= 10) return 10;
+
+    return widget.data.defaultValue;
   }
 
   int _clampToRange(int value, {required int min, required int max}) {
@@ -330,7 +267,7 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
     final maxValue = widget.data.maxValue;
     if (defaultChanged) {
       _sliderValue = _clampToRange(
-        widget.data.defaultValue,
+        _initialValue(min: minValue, max: maxValue),
         min: minValue,
         max: maxValue,
       );

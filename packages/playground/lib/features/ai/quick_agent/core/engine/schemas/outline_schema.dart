@@ -199,7 +199,27 @@ ObjectSchema buildDeckPlanDraftSchema(List<String> eligibleThemeIds) {
       'Ordered narrative sections whose slide keys partition the deck',
     ),
     'slides': Ack.list(
-      deckPlanSlideSchema,
+      deckPlanDraftSlideSchema,
     ).describe('Ordered list of slides in the presentation'),
   }).describe('Model-facing deck-plan draft with bounded theme selection');
 }
+
+/// Lean model-owned fields; Dart derives the remaining canonical plan fields.
+final deckPlanDraftSlideSchema = Ack.object({
+  'key': Ack.string().describe('Unique descriptive kebab-case slide ID'),
+  'title': Ack.string().describe('Short working slide title'),
+  'sectionKey': Ack.string().describe('Owning narrative section key'),
+  'assertion': Ack.string().describe('Single audience-facing claim'),
+  'contentUnits': Ack.list(
+    Ack.string(),
+  ).describe('Concrete evidence, examples, or implications'),
+  'narrativeRole': Ack.enumString(
+    deckPlanNarrativeRoles,
+  ).describe('Narrative job performed by the slide'),
+  'composition': Ack.enumString(
+    deckPlanCompositionIntents,
+  ).describe('Semantic composition chosen for the information shape'),
+  'elements': Ack.list(deckPlanElementSchema).optional().describe(
+    'Optional grounded or generated elements required by the slide',
+  ),
+}).describe('Lean slide plan enriched by the application after generation');

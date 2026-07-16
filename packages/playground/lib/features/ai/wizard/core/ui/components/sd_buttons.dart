@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
 
-/// Pre-styled solid (primary) button.
+enum SdButtonVariant { primary, outline, ghost }
+
+/// Application-owned button with a consistent Wizard action hierarchy.
 class SdButton extends StatelessWidget {
   const SdButton({
     super.key,
@@ -13,6 +15,7 @@ class SdButton extends StatelessWidget {
     this.loading = false,
     this.semanticLabel,
     this.style,
+    this.variant = SdButtonVariant.primary,
   });
 
   final String label;
@@ -24,6 +27,13 @@ class SdButton extends StatelessWidget {
   /// Semantic label for accessibility. Defaults to [label] if not provided.
   final String? semanticLabel;
   final RemixButtonStyle? style;
+  final SdButtonVariant variant;
+
+  HeroButtonVariant get _heroVariant => switch (variant) {
+    SdButtonVariant.primary => HeroButtonVariant.primary,
+    SdButtonVariant.outline => HeroButtonVariant.outline,
+    SdButtonVariant.ghost => HeroButtonVariant.ghost,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +47,7 @@ class SdButton extends StatelessWidget {
         iconLeft: icon,
         enabled: enabled,
         loading: loading,
-        variant: HeroButtonVariant.primary,
+        variant: _heroVariant,
         style: style,
       ),
     );

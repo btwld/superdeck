@@ -33,6 +33,7 @@ class WizardOutlineReview extends StatefulWidget {
 
 class _WizardOutlineReviewState extends State<WizardOutlineReview> {
   final _invalidSlideKeys = <String>{};
+  String? _editingSlideKey;
 
   void _setSlideValidity(String key, {required bool isValid}) {
     setState(() {
@@ -49,6 +50,7 @@ class _WizardOutlineReviewState extends State<WizardOutlineReview> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.planRevision != widget.planRevision) {
       _invalidSlideKeys.clear();
+      _editingSlideKey = null;
     }
     final currentKeys = widget.plan.slides.map((slide) => slide.key).toSet();
     _invalidSlideKeys.removeWhere((key) => !currentKeys.contains(key));
@@ -57,87 +59,113 @@ class _WizardOutlineReviewState extends State<WizardOutlineReview> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SingleChildScrollView(
-        padding: const .symmetric(vertical: 8),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
-          child: Column(
-            crossAxisAlignment: .stretch,
-            spacing: 18,
-            children: [
-              SdPanel(
-                child: Row(
-                  crossAxisAlignment: .start,
-                  spacing: 14,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Column(
+          crossAxisAlignment: .stretch,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const .symmetric(vertical: 8),
+                child: Column(
+                  crossAxisAlignment: .stretch,
+                  spacing: 18,
                   children: [
-                    Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: $accentSoft.resolve(context),
-                        borderRadius: .circular(12),
-                      ),
-                      width: 44,
-                      height: 44,
-                      child: Icon(
-                        LucideIcons.listTree,
-                        size: 22,
-                        color: $accent.resolve(context),
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
+                    SdPanel(
+                      child: Row(
                         crossAxisAlignment: .start,
-                        spacing: 6,
+                        spacing: 14,
                         children: [
-                          const SdHeadline('Review the story'),
-                          SdBody(widget.plan.story),
-                          SdCaption(
-                            '${widget.plan.slides.length} slides across '
-                            '${widget.plan.sections.length} sections',
+                          Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: $accentSoft.resolve(context),
+                              borderRadius: .circular(12),
+                            ),
+                            width: 44,
+                            height: 44,
+                            child: Icon(
+                              LucideIcons.listTree,
+                              size: 22,
+                              color: $accent.resolve(context),
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: .start,
+                              spacing: 6,
+                              children: [
+                                const SdHeadline('Review the story'),
+                                SdBody(widget.plan.story),
+                                SdCaption(
+                                  '${widget.plan.slides.length} slides across '
+                                  '${widget.plan.sections.length} sections',
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
+                    for (final section in widget.plan.sections)
+                      _OutlineSection(
+                        section: section,
+                        slides: [
+                          for (final (index, slide)
+                              in widget.plan.slides.indexed)
+                            if (slide.sectionKey == section.key)
+                              (index: index, slide: slide),
+                        ],
+                        editingSlideKey: _editingSlideKey,
+                        onEdit: (key) => setState(() {
+                          _editingSlideKey = key;
+                        }),
+                        onSlideChanged: widget.onSlideChanged,
+                        onSlideValidityChanged: _setSlideValidity,
+                        planRevision: widget.planRevision,
+                      ),
                   ],
                 ),
               ),
-              for (final section in widget.plan.sections)
-                _OutlineSection(
-                  section: section,
-                  slides: [
-                    for (final (index, slide) in widget.plan.slides.indexed)
-                      if (slide.sectionKey == section.key)
-                        (index: index, slide: slide),
-                  ],
-                  onSlideChanged: widget.onSlideChanged,
-                  onSlideValidityChanged: _setSlideValidity,
-                  planRevision: widget.planRevision,
+            ),
+            SafeArea(
+              top: false,
+              child: Container(
+                padding: const .symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: $background.resolve(context),
+                  border: Border(
+                    top: BorderSide(color: $border.resolve(context)),
+                  ),
                 ),
-              Wrap(
-                alignment: .end,
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  TextButton(
-                    onPressed: widget.onBack,
-                    child: const Text('Back'),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: widget.onRegenerate,
-                    icon: const Icon(LucideIcons.refreshCw, size: 17),
-                    label: const Text('Regenerate outline'),
-                  ),
-                  SdButton(
-                    label: 'Approve & build',
-                    onPressed: _invalidSlideKeys.isEmpty
-                        ? widget.onApprove
-                        : null,
-                    icon: LucideIcons.sparkles,
-                  ),
-                ],
+                child: Wrap(
+                  alignment: .end,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    SdButton(
+                      label: 'Back',
+                      onPressed: widget.onBack,
+                      variant: SdButtonVariant.ghost,
+                    ),
+                    SdButton(
+                      label: 'Regenerate outline',
+                      onPressed: widget.onRegenerate,
+                      icon: LucideIcons.refreshCw,
+                      variant: SdButtonVariant.outline,
+                    ),
+                    SdButton(
+                      label: 'Approve & build',
+                      onPressed: _invalidSlideKeys.isEmpty
+                          ? widget.onApprove
+                          : null,
+                      icon: LucideIcons.sparkles,
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -148,6 +176,8 @@ class _OutlineSection extends StatelessWidget {
   const _OutlineSection({
     required this.section,
     required this.slides,
+    required this.editingSlideKey,
+    required this.onEdit,
     required this.onSlideChanged,
     required this.onSlideValidityChanged,
     required this.planRevision,
@@ -155,6 +185,8 @@ class _OutlineSection extends StatelessWidget {
 
   final DeckPlanSectionType section;
   final List<({int index, DeckPlanSlideType slide})> slides;
+  final String? editingSlideKey;
+  final ValueChanged<String?> onEdit;
   final UpdateOutlineSlide onSlideChanged;
   final void Function(String key, {required bool isValid})
   onSlideValidityChanged;
@@ -169,7 +201,7 @@ class _OutlineSection extends StatelessWidget {
         Padding(
           padding: const .symmetric(horizontal: 4),
           child: Column(
-            crossAxisAlignment: .start,
+            crossAxisAlignment: .stretch,
             spacing: 4,
             children: [SdTitle(section.title), SdCaption(section.purpose)],
           ),
@@ -179,6 +211,8 @@ class _OutlineSection extends StatelessWidget {
             key: ValueKey(item.slide.key),
             index: item.index,
             slide: item.slide,
+            editing: editingSlideKey == item.slide.key,
+            onEdit: onEdit,
             onChanged: onSlideChanged,
             onValidityChanged: (isValid) =>
                 onSlideValidityChanged(item.slide.key, isValid: isValid),
@@ -194,6 +228,8 @@ class _OutlineSlideEditor extends StatefulWidget {
     super.key,
     required this.index,
     required this.slide,
+    required this.editing,
+    required this.onEdit,
     required this.onChanged,
     required this.onValidityChanged,
     required this.planRevision,
@@ -201,6 +237,8 @@ class _OutlineSlideEditor extends StatefulWidget {
 
   final int index;
   final DeckPlanSlideType slide;
+  final bool editing;
+  final ValueChanged<String?> onEdit;
   final UpdateOutlineSlide onChanged;
   final ValueChanged<bool> onValidityChanged;
   final int planRevision;
@@ -292,25 +330,30 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
           Expanded(
             child: Column(
               crossAxisAlignment: .start,
-              spacing: 12,
+              spacing: widget.editing ? 12 : 4,
               children: [
-                SdTextField(
-                  key: ValueKey('outline-title-${slide.key}'),
-                  controller: _titleController,
-                  label: 'Slide title',
-                  onChanged: _submitEdit,
-                  textInputAction: .next,
-                  semanticLabel: 'Slide ${widget.index + 1} title',
-                ),
-                SdTextField(
-                  key: ValueKey('outline-assertion-${slide.key}'),
-                  controller: _assertionController,
-                  label: 'Core message',
-                  onChanged: _submitEdit,
-                  maxLines: 2,
-                  minLines: 1,
-                  semanticLabel: 'Slide ${widget.index + 1} core message',
-                ),
+                if (widget.editing) ...[
+                  SdTextField(
+                    key: ValueKey('outline-title-${slide.key}'),
+                    controller: _titleController,
+                    label: 'Slide title',
+                    onChanged: _submitEdit,
+                    textInputAction: .next,
+                    semanticLabel: 'Slide ${widget.index + 1} title',
+                  ),
+                  SdTextField(
+                    key: ValueKey('outline-assertion-${slide.key}'),
+                    controller: _assertionController,
+                    label: 'Core message',
+                    onChanged: _submitEdit,
+                    maxLines: 2,
+                    minLines: 1,
+                    semanticLabel: 'Slide ${widget.index + 1} core message',
+                  ),
+                ] else ...[
+                  SdTitle(slide.title),
+                  SdBody(slide.assertion),
+                ],
                 if (_validationMessage case final message?)
                   Text(
                     message,
@@ -319,43 +362,17 @@ class _OutlineSlideEditorState extends State<_OutlineSlideEditor> {
                       fontSize: 12,
                     ),
                   ),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _PlanChip(label: slide.narrativeRole),
-                    _PlanChip(label: slide.composition),
-                    _PlanChip(label: slide.treatment),
-                    if ((slide.elements ?? const <DeckPlanElementType>[]).any(
-                      (element) =>
-                          element.generationPrompt?.trim().isNotEmpty == true,
-                    ))
-                      const _PlanChip(label: 'artwork planned'),
-                  ],
-                ),
               ],
             ),
           ),
+          SdButton(
+            label: widget.editing ? 'Done' : 'Edit slide ${widget.index + 1}',
+            onPressed: () => widget.onEdit(widget.editing ? null : slide.key),
+            icon: widget.editing ? LucideIcons.check : LucideIcons.pencil,
+            variant: SdButtonVariant.ghost,
+          ),
         ],
       ),
-    );
-  }
-}
-
-class _PlanChip extends StatelessWidget {
-  const _PlanChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const .symmetric(vertical: 5, horizontal: 9),
-      decoration: BoxDecoration(
-        color: $surfaceTertiary.resolve(context),
-        borderRadius: .circular(999),
-      ),
-      child: SdCaption(label),
     );
   }
 }

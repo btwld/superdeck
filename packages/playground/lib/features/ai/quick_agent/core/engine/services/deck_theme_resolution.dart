@@ -81,9 +81,78 @@ DeckPlanType resolveDeckPlanDraft({
     typographyCatalog: typographyCatalog,
   );
 
+  final slides = (parsed['slides']! as List<Object?>)
+      .map((slide) => Map<String, Object?>.from(slide! as Map))
+      .toList(growable: false);
+  final enrichedSlides = [
+    for (final (index, slide) in slides.indexed)
+      enrichDeckPlanDraftSlide(
+        slide,
+        index: index,
+        slides: slides,
+        density: request.density ?? descriptor.recipe.defaultDensity,
+      ),
+  ];
+
   return DeckPlanType.parse(
-    Map<String, Object?>.of(parsed)..['theme'] = reference,
+    Map<String, Object?>.of(parsed)
+      ..['theme'] = reference
+      ..['slides'] = enrichedSlides,
   );
+}
+
+Map<String, Object?> enrichDeckPlanDraftSlide(
+  Map<String, Object?> slide, {
+  required int index,
+  required List<Map<String, Object?>> slides,
+  required String density,
+}) {
+  final assertion = slide['assertion']! as String;
+  final contentUnits = (slide['contentUnits']! as List<Object?>).cast<String>();
+  final role = slide['narrativeRole']! as String;
+  final composition = slide['composition']! as String;
+
+  return Map<String, Object?>.of(slide)
+    ..['purpose'] = assertion
+    ..['contentBrief'] = contentUnits.join(' ')
+    ..['continuity'] = _deriveContinuity(index, slides)
+    ..['treatment'] = _deriveTreatment(role, composition)
+    ..['density'] = density;
+}
+
+String _deriveContinuity(int index, List<Map<String, Object?>> slides) {
+  if (slides.length == 1) {
+    return 'Open the deck with this idea and establish the through-line.';
+  }
+  if (index == 0) {
+    return 'Open the deck with this idea, then lead into '
+        '"${slides[1]['title']}".';
+  }
+  if (index == slides.length - 1) {
+    return 'Build from "${slides[index - 1]['title']}" and close the deck.';
+  }
+
+  return 'Build from "${slides[index - 1]['title']}" and lead into '
+      '"${slides[index + 1]['title']}".';
+}
+
+String _deriveTreatment(String role, String composition) {
+  if (role == 'closing' &&
+      const {'title', 'titleLeft', 'quote', 'qrcode'}.contains(composition)) {
+    return 'closing';
+  }
+  if (role == 'transition' &&
+      const {'title', 'titleLeft'}.contains(composition)) {
+    return 'section';
+  }
+
+  return switch (composition) {
+    'title' => 'hero',
+    'quote' => 'quote',
+    'metric' || 'table' || 'twoColumn' || 'threeColumn' => 'data',
+    'imageLeft' || 'imageRight' || 'imageFullBleed' => 'visual',
+    _ => 'content',
+  };
 }
 
 /// Creates the application-owned canonical reference for one selected theme.

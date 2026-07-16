@@ -47,6 +47,12 @@ void main() {
     );
     expect(find.text('Opening'), findsOneWidget);
     expect(find.text('Slide 1'), findsOneWidget);
+    expect(find.text('opening'), findsNothing);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.text('Edit slide 1'), findsOneWidget);
+
+    await tester.tap(find.text('Edit slide 1'));
+    await tester.pump();
 
     await tester.enterText(
       find.byKey(const ValueKey('outline-title-opening')),
@@ -64,6 +70,41 @@ void main() {
 
     await tester.tap(find.text('Approve & build'));
     expect(approved, 1);
+  });
+
+  testWidgets('outline actions stay available while the outline scrolls', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HeroTheme(
+          data: HeroThemeData.light(),
+          child: Scaffold(
+            body: SizedBox(
+              width: 900,
+              height: 360,
+              child: WizardOutlineReview(
+                plan: _planWithSlides(12),
+                onSlideChanged: (_, _, _) => true,
+                onBack: () {},
+                onRegenerate: () {},
+                onApprove: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Approve & build').hitTestable(), findsOneWidget);
+    expect(find.text('Regenerate outline').hitTestable(), findsOneWidget);
+    expect(find.text('Slide 12').hitTestable(), findsNothing);
+
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -1200));
+    await tester.pump();
+
+    expect(find.text('Approve & build').hitTestable(), findsOneWidget);
   });
 
   testWidgets('blocks approval while a visible outline edit is invalid', (
@@ -100,6 +141,8 @@ void main() {
       ),
     );
 
+    await tester.tap(find.text('Edit slide 1'));
+    await tester.pump();
     await tester.enterText(
       find.byKey(const ValueKey('outline-title-opening')),
       '',
@@ -120,18 +163,8 @@ void main() {
     await tester.pump();
 
     expect(find.text('Add both a slide title and core message.'), findsNothing);
-    expect(
-      tester
-          .widget<EditableText>(
-            find.descendant(
-              of: find.byKey(const ValueKey('outline-title-opening')),
-              matching: find.byType(EditableText),
-            ),
-          )
-          .controller
-          .text,
-      'Urban gardens matter',
-    );
+    expect(find.text('Urban gardens matter'), findsOneWidget);
+    expect(find.byKey(const ValueKey('outline-title-opening')), findsNothing);
     await tester.tap(find.text('Approve & build'));
     expect(approved, 1);
   });
@@ -168,3 +201,22 @@ DeckPlanType _plan() => DeckPlanType.parse({
     },
   ],
 });
+
+DeckPlanType _planWithSlides(int count) {
+  final data = Map<String, Object?>.from(_plan());
+  final section = Map<String, Object?>.from(
+    (data['sections']! as List<Object?>).single! as Map<String, Object?>,
+  );
+  final source = Map<String, Object?>.from(
+    (data['slides']! as List<Object?>).single! as Map<String, Object?>,
+  );
+  final slides = [
+    for (var index = 0; index < count; index++)
+      {...source, 'key': 'slide-$index', 'title': 'Slide title ${index + 1}'},
+  ];
+  section['slideKeys'] = slides.map((slide) => slide['key']).toList();
+  data['sections'] = [section];
+  data['slides'] = slides;
+
+  return DeckPlanType.parse(data);
+}

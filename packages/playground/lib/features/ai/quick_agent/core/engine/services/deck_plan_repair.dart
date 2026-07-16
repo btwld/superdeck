@@ -37,7 +37,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       );
       if (index < 0) continue;
       final original = repairedPlan.slides[index];
-      var repairBase = Map<String, Object?>.of(original);
+      var repairBase = serializeDeckPlanSlideDraft(original);
       var constraints = List<GenerationValidationIssue>.of(entry.value);
 
       for (
@@ -63,7 +63,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
           slideIndex: index,
         );
         if (candidate == null) continue;
-        repairBase = Map<String, Object?>.of(candidate);
+        repairBase = serializeDeckPlanSlideDraft(candidate);
 
         final invariantErrors = _outlineSlideInvariantErrors(
           original: original,
@@ -121,7 +121,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
     required int slideIndex,
   }) async {
     final adapted = GoogleSchemaAdapter().adapt(
-      deckPlanSlideSchema.toJsonSchemaBuilder(),
+      deckPlanDraftSlideSchema.toJsonSchemaBuilder(),
     );
     if (adapted.schema == null) return null;
     final systemPrompt = _promptProvider.buildOutlineSlideRepairPrompt(
@@ -167,7 +167,20 @@ extension _DeckPlanRepair on DeckGeneratorService {
     final json = _parseJsonResponse(response, 'outline slide ${current.key}');
     if (json == null) return null;
     try {
-      return DeckPlanSlideType.parse(json);
+      final parsed = deckPlanDraftSlideSchema.parse(json);
+      if (parsed == null) return null;
+      final slides = [
+        for (final slide in plan.slides) serializeDeckPlanSlideDraft(slide),
+      ];
+      slides[slideIndex] = Map<String, Object?>.of(parsed);
+      return DeckPlanSlideType.parse(
+        enrichDeckPlanDraftSlide(
+          slides[slideIndex],
+          index: slideIndex,
+          slides: slides,
+          density: current.density,
+        ),
+      );
     } catch (error) {
       debugLog.error(
         'DECK_GEN',

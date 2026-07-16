@@ -136,10 +136,11 @@ class WizardGenerationStatus extends StatelessWidget {
                 spacing: 16,
                 children: [
                   const SdCaption('Usually 20–30 seconds'),
-                  TextButton.icon(
+                  SdButton(
+                    label: 'Cancel',
                     onPressed: onCancel,
-                    icon: const Icon(LucideIcons.x, size: 16),
-                    label: const Text('Cancel'),
+                    icon: LucideIcons.x,
+                    variant: SdButtonVariant.ghost,
                   ),
                 ],
               ),
@@ -170,7 +171,11 @@ class WizardGenerationStatus extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  TextButton(onPressed: onBack, child: Text(backLabel)),
+                  SdButton(
+                    label: backLabel,
+                    onPressed: onBack,
+                    variant: SdButtonVariant.ghost,
+                  ),
                   SdButton(
                     label: 'Retry',
                     onPressed: onRetry,
@@ -184,22 +189,24 @@ class WizardGenerationStatus extends StatelessWidget {
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  TextButton(
+                  SdButton(
+                    label: 'Start over',
                     onPressed: onStartOver,
-                    child: const Text('Start over'),
+                    variant: SdButtonVariant.ghost,
                   ),
-                  OutlinedButton(
+                  SdButton(
+                    label: 'Edit outline',
                     onPressed: onEditOutline,
-                    child: const Text('Edit outline'),
+                    variant: SdButtonVariant.outline,
                   ),
                   if (failedSlideCount > 0)
-                    OutlinedButton.icon(
+                    SdButton(
+                      label:
+                          'Retry $failedSlideCount '
+                          '${failedSlideCount == 1 ? 'slide' : 'slides'}',
                       onPressed: onRetryFailed,
-                      icon: const Icon(LucideIcons.refreshCw, size: 17),
-                      label: Text(
-                        'Retry $failedSlideCount '
-                        '${failedSlideCount == 1 ? 'slide' : 'slides'}',
-                      ),
+                      icon: LucideIcons.refreshCw,
+                      variant: SdButtonVariant.outline,
                     ),
                   SdButton(
                     label: 'Present deck',
