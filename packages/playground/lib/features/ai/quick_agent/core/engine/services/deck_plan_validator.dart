@@ -427,7 +427,7 @@ void _validateTreatmentIntent(
       'hero' => const {'title'},
       'section' => const {'title', 'titleLeft'},
       'quote' => const {'quote'},
-      'closing' => const {'title', 'titleLeft', 'quote', 'qrcode'},
+      'closing' => const {'title', 'titleLeft', 'quote'},
       'data' => const {'metric', 'table', 'twoColumn', 'threeColumn'},
       _ => null,
     };
@@ -592,7 +592,6 @@ void _validateElementGrounding(
   for (final slide in plan.slides) {
     final requiredType = switch (slide.composition) {
       'imageLeft' || 'imageRight' || 'imageFullBleed' => 'image',
-      'qrcode' => 'qrcode',
       'webview' => 'webview',
       'dartpad' => 'dartpad',
       'custom' => 'custom',
@@ -678,10 +677,7 @@ void _validateElementGrounding(
 }
 
 bool _isAudienceHandoffElement(String type) =>
-    type == 'qrcode' ||
-    type == 'webview' ||
-    type == 'dartpad' ||
-    type == 'custom';
+    type == 'webview' || type == 'dartpad' || type == 'custom';
 
 void _validateDesignRhythm(
   DeckPlanType plan,

@@ -164,18 +164,16 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
 
   Future<void> _applyResult(DeckGenerationResult result) async {
     final cache = context.read<MemoryAssetCacheStore>();
+    final customization = context.read<DeckCustomizationStore>();
+    final deckLoader = context.read<MemoryDeckLoader>();
     for (final asset in result.generatedImages) {
       final bytes = asset.bytes;
       if (bytes != null && bytes.isNotEmpty) {
         await cache.write(asset.assetKey, bytes);
       }
     }
-    context.read<DeckCustomizationStore>().applyGeneratedStyle(
-      result.theme!.toGeneratedDeckStyle(),
-    );
-    context.read<MemoryDeckLoader>().updateMarkdown(
-      const SlideSerializer().serialize(result.slides),
-    );
+    customization.applyGeneratedStyle(result.theme!.toGeneratedDeckStyle());
+    deckLoader.updateMarkdown(const SlideSerializer().serialize(result.slides));
   }
 
   @override

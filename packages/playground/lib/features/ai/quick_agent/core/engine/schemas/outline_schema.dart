@@ -43,19 +43,12 @@ const deckPlanCompositionIntents = [
   'imageRight',
   'imageFullBleed',
   'metric',
-  'qrcode',
   'webview',
   'dartpad',
   'custom',
 ];
 
-const deckPlanElementTypes = [
-  'image',
-  'qrcode',
-  'webview',
-  'dartpad',
-  'custom',
-];
+const deckPlanElementTypes = ['image', 'webview', 'dartpad', 'custom'];
 
 const deckPlanTreatments = [
   'hero',
@@ -180,9 +173,18 @@ final deckPlanSchema =
 ///
 /// The model can select only one eligible ID. Catalog version, density, full
 /// recipe, and user brand overrides are attached by Dart after parsing.
-ObjectSchema buildDeckPlanDraftSchema(List<String> eligibleThemeIds) {
+ObjectSchema buildDeckPlanDraftSchema(
+  List<String> eligibleThemeIds, {
+  List<String> allowedCompositionIntents = deckPlanCompositionIntents,
+  List<String> allowedElementTypes = deckPlanElementTypes,
+  bool allowElementSources = true,
+  bool requireImageGenerationPrompt = false,
+}) {
   if (eligibleThemeIds.isEmpty) {
     throw ArgumentError('At least one eligible theme ID is required.');
+  }
+  if (allowedCompositionIntents.isEmpty) {
+    throw ArgumentError('At least one composition intent is required.');
   }
 
   return Ack.object({
@@ -199,9 +201,66 @@ ObjectSchema buildDeckPlanDraftSchema(List<String> eligibleThemeIds) {
       'Ordered narrative sections whose slide keys partition the deck',
     ),
     'slides': Ack.list(
-      deckPlanDraftSlideSchema,
+      buildDeckPlanDraftSlideSchema(
+        allowedCompositionIntents: allowedCompositionIntents,
+        allowedElementTypes: allowedElementTypes,
+        allowElementSources: allowElementSources,
+        requireImageGenerationPrompt: requireImageGenerationPrompt,
+      ),
     ).describe('Ordered list of slides in the presentation'),
   }).describe('Model-facing deck-plan draft with bounded theme selection');
+}
+
+/// Builds the model-facing slide plan from capabilities present in the request.
+ObjectSchema buildDeckPlanDraftSlideSchema({
+  List<String> allowedCompositionIntents = deckPlanCompositionIntents,
+  List<String> allowedElementTypes = deckPlanElementTypes,
+  bool allowElementSources = true,
+  bool requireImageGenerationPrompt = false,
+}) {
+  final elementSchema = allowedElementTypes.isEmpty
+      ? null
+      : Ack.object({
+          'type': Ack.enumString(
+            allowedElementTypes,
+          ).describe('Generation-capable element needed by the slide'),
+          'purpose': Ack.string().describe(
+            'Why this element belongs on the slide',
+          ),
+          if (allowElementSources)
+            'source': Ack.string().optional().describe(
+              'Exact user-supplied source when available',
+            ),
+          'generationPrompt': requireImageGenerationPrompt
+              ? Ack.string().describe('Concrete visual subject to generate')
+              : Ack.string().optional().describe(
+                  'Concrete visual subject to generate for an image',
+                ),
+          if (allowedElementTypes.contains('custom'))
+            'widgetName': Ack.string().optional().describe(
+              'Registered widget name when type is custom',
+            ),
+        });
+
+  return Ack.object({
+    'key': Ack.string().describe('Unique descriptive kebab-case slide ID'),
+    'title': Ack.string().describe('Short working slide title'),
+    'sectionKey': Ack.string().describe('Owning narrative section key'),
+    'assertion': Ack.string().describe('Single audience-facing claim'),
+    'contentUnits': Ack.list(
+      Ack.string(),
+    ).describe('Concrete evidence, examples, or implications'),
+    'narrativeRole': Ack.enumString(
+      deckPlanNarrativeRoles,
+    ).describe('Narrative job performed by the slide'),
+    'composition': Ack.enumString(
+      allowedCompositionIntents,
+    ).describe('Semantic composition chosen for the information shape'),
+    if (elementSchema != null)
+      'elements': Ack.list(elementSchema).optional().describe(
+        'Optional grounded or generated elements required by the slide',
+      ),
+  }).describe('Lean slide plan enriched by the application after generation');
 }
 
 /// Lean model-owned fields; Dart derives the remaining canonical plan fields.

@@ -44,7 +44,6 @@ int visibleCharacterLimit(String density, {String? composition}) {
     'content' => 560,
     'imageLeft' || 'imageRight' => 380,
     'imageFullBleed' => 120,
-    'qrcode' => 320,
     'webview' || 'dartpad' || 'custom' => 160,
     _ => densityLimit,
   };

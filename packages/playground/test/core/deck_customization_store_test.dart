@@ -291,6 +291,9 @@ void main() {
     final dataBlock = data.blockContainer.spec.decoration! as BoxDecoration;
     expect(dataBlock.color, resolved.toGeneratedDeckStyle().surface);
     expect((dataBlock.border! as Border).top.width, 1.5);
+    final dataBlockMargin = data.blockContainer.spec.margin! as EdgeInsets;
+    expect(dataBlockMargin.left, closeTo(11.4, 0.01));
+    expect(dataBlockMargin.top, closeTo(11.4, 0.01));
   });
 
   testWidgets('keeps generated hero slides chrome-free and unpadded', (
@@ -327,6 +330,7 @@ void main() {
     expect(options.parts.header, isNull);
     expect(options.parts.footer, isNull);
     expect(hero.blockContainer.spec.padding, EdgeInsets.zero);
+    expect(hero.blockContainer.spec.margin, EdgeInsets.zero);
   });
 
   testWidgets(

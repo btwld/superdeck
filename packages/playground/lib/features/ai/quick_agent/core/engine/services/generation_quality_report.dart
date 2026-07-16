@@ -392,7 +392,7 @@ Iterable<String> _generatedElementTypes(Slide slide) sync* {
     for (final block in section.blocks) {
       if (block case final WidgetBlock widget) {
         yield switch (widget.name) {
-          'image' || 'qrcode' || 'webview' || 'dartpad' => widget.name,
+          'image' || 'webview' || 'dartpad' => widget.name,
           _ => 'custom',
         };
       }

@@ -296,6 +296,17 @@ class DeckGeneratorService {
     if (request.maxGeneratedImages < 0 || request.maxGeneratedImages > 4) {
       return 'Generated image count must be between 0 and 4.';
     }
+    final unsupportedElementTypes =
+        request.groundedElements
+            .map((element) => element.type)
+            .where((type) => !deckPlanElementTypes.contains(type))
+            .toSet()
+            .toList()
+          ..sort();
+    if (unsupportedElementTypes.isNotEmpty) {
+      return 'Generation does not support element type(s): '
+          '${unsupportedElementTypes.join(', ')}.';
+    }
     try {
       request.resolveImageStyle(imageStyleCatalog);
     } catch (error) {

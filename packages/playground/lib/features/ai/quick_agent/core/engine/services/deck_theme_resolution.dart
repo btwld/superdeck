@@ -138,7 +138,7 @@ String _deriveContinuity(int index, List<Map<String, Object?>> slides) {
 
 String _deriveTreatment(String role, String composition) {
   if (role == 'closing' &&
-      const {'title', 'titleLeft', 'quote', 'qrcode'}.contains(composition)) {
+      const {'title', 'titleLeft', 'quote'}.contains(composition)) {
     return 'closing';
   }
   if (role == 'transition' &&

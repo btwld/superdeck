@@ -124,8 +124,36 @@ void main() {
       'contentUnits',
       'narrativeRole',
       'composition',
-      'elements',
     });
+  });
+
+  test('rejects qrcode elements before calling a model', () async {
+    final client = _FakeGenerationModelClient(const []);
+    final service = DeckGeneratorService(
+      apiKey: 'test-key',
+      modelClientFactory: (_) => client,
+    );
+
+    final result = await service.plan(
+      const DeckGenerationRequest(
+        userIntent: 'Create a concise presentation.',
+        slideCount: 5,
+        groundedElements: [
+          GroundedGenerationElement(
+            type: 'qrcode',
+            source: 'https://example.com',
+            purpose: 'Open the website',
+          ),
+        ],
+      ),
+    );
+
+    expect(result.success, isFalse);
+    expect(
+      result.error,
+      'Generation does not support element type(s): qrcode.',
+    );
+    expect(client.requests, isEmpty);
   });
 
   test('derives a treatment compatible with the selected composition', () {
@@ -882,7 +910,11 @@ void main() {
     expect(widgetSchema.properties, contains('args'));
     expect(
       widgetSchema.properties['args']!.properties.keys,
-      containsAll(['src', 'text', 'url', 'id']),
+      containsAll(['src', 'url', 'id']),
+    );
+    expect(
+      widgetSchema.properties['args']!.properties,
+      isNot(contains('text')),
     );
     expect(widgetSchema.properties, isNot(contains('text')));
     expect(

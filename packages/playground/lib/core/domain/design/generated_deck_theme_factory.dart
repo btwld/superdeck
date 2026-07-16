@@ -212,6 +212,9 @@ BlockStyler _blockContainer(
   padding: EdgeInsetsGeometryMix.all(
     style == .none ? 0 : 20 * runtime.spacingScale,
   ),
+  margin: EdgeInsetsGeometryMix.all(
+    style == .none ? 0 : 12 * runtime.spacingScale,
+  ),
   decoration: _blockDecoration(style, palette, runtime),
   clipBehavior: .antiAlias,
   variants: [

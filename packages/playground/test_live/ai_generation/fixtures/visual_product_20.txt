@@ -11,6 +11,6 @@ to each customer's source-of-truth systems. Cover the evidence inbox, linked
 insights, decision trails, API/webhook extensibility, governance, onboarding,
 pricing shape, and roadmap without turning every slide into a feature list.
 Include the supplied analytics image once where it adds meaning and the supplied
-QR code once on the final call to action. Use purposeful visual variety, concise
+Use the supplied product image once. Use purposeful visual variety, concise
 copy, and a strong launch cadence. Do not invent other URLs, customer logos, or
 unsourced claims.

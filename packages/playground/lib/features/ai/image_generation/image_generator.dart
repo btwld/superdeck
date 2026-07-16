@@ -118,19 +118,15 @@ final class DartanticImageGenerator implements ImageGenerator {
         modelName: modelName,
         options: options,
       );
-      await for (final chunk
-          in model
-              .generateMediaStream(
-                request.prompt,
-                mimeTypes: const ['image/png'],
-                options: options,
-              )
-              .timeout(timeout)) {
-        final image = chunk.assets.whereType<DataPart>().firstOrNull;
-        if (image == null || image.bytes.isEmpty) continue;
-
-        return ImageGenerationSuccess(image.bytes);
-      }
+      final image = await _firstImageWithin(
+        model.generateMediaStream(
+          request.prompt,
+          mimeTypes: const ['image/png'],
+          options: options,
+        ),
+        timeout,
+      );
+      if (image != null) return ImageGenerationSuccess(image.bytes);
 
       return const ImageGenerationFailure(
         'The provider returned no image. Try again.',
@@ -150,6 +146,31 @@ final class DartanticImageGenerator implements ImageGenerator {
         // Cleanup must not replace a typed provider result with an exception.
       }
     }
+  }
+}
+
+/// Waits for the first usable image under one wall-clock deadline.
+///
+/// `Stream.timeout` measures inactivity between chunks. Media providers can
+/// emit progress chunks indefinitely, so a shrinking deadline is required to
+/// keep the complete image request inside [timeout].
+Future<DataPart?> _firstImageWithin(
+  Stream<MediaGenerationResult> stream,
+  Duration timeout,
+) async {
+  final timer = Stopwatch()..start();
+  final iterator = StreamIterator(stream);
+  try {
+    while (timer.elapsed < timeout) {
+      final remaining = timeout - timer.elapsed;
+      final hasNext = await iterator.moveNext().timeout(remaining);
+      if (!hasNext) return null;
+      final image = iterator.current.assets.whereType<DataPart>().firstOrNull;
+      if (image != null && image.bytes.isNotEmpty) return image;
+    }
+    throw TimeoutException('Image generation exceeded its deadline.');
+  } finally {
+    await iterator.cancel();
   }
 }
 

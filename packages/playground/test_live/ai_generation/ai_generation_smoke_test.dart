@@ -55,6 +55,7 @@ const _largeDeckFixtures = [
   'decision_data_15',
   'visual_product_20',
 ];
+const _focusedFixtures = ['superdeck_demo_10'];
 final _themeCatalog = PresentationThemeCatalog.withDefaults();
 final _typographyCatalog = PresentationTypographyCatalog.withDefaults();
 
@@ -484,12 +485,6 @@ void main() {
                   WizardGenerationController.generationBudget,
             }),
           );
-          expect(
-            planningStopwatch.elapsed + compositionStopwatch.elapsed,
-            lessThanOrEqualTo(WizardGenerationController.generationBudget),
-            reason: 'Split generation exceeded the 30-second booth budget.',
-          );
-
           await File(p.join(output.path, 'brief.txt')).writeAsString(brief);
           await File(p.join(output.path, 'request.json')).writeAsString(
             const JsonEncoder.withIndent('  ').convert(request.toMap()),
@@ -505,6 +500,12 @@ void main() {
             ).convert(traces.map((event) => event.toJson()).toList()),
           );
           await _writeTraceArtifacts(output, traces, plan: result.plan);
+
+          expect(
+            planningStopwatch.elapsed + compositionStopwatch.elapsed,
+            lessThanOrEqualTo(WizardGenerationController.generationBudget),
+            reason: 'Split generation exceeded the 30-second booth budget.',
+          );
 
           expect(result.success, isTrue, reason: result.error);
           expect(result.slides, isNotEmpty);
@@ -681,11 +682,6 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
           purpose: 'Ground the platform story in a developer workspace',
         ),
         GroundedGenerationElement(
-          type: 'qrcode',
-          source: 'https://example.com/developer-platform',
-          purpose: 'Let the audience open the developer platform',
-        ),
-        GroundedGenerationElement(
           type: 'webview',
           source: 'https://example.com',
           purpose: 'Demonstrate the live product surface',
@@ -707,6 +703,24 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       headlineFont: 'Playfair Display',
       bodyFont: 'Inter',
       imageStyleId: 'minimalist',
+      imageStyleVersion: 1,
+      maxGeneratedImages: 3,
+    ),
+    'superdeck_demo_10' => DeckGenerationRequest(
+      userIntent: brief,
+      slideCount: 10,
+      audience: 'Conference booth visitors and product builders',
+      approach: 'Fast visual product story with a clear reveal',
+      themeId: 'bold-product',
+      emphasis: const [
+        'GenUI-guided choices',
+        'story beats before slide writing',
+        'visible generated artwork and final quality',
+      ],
+      designDirection: 'Bold, modern, energetic, and product-forward',
+      headlineFont: 'Montserrat',
+      bodyFont: 'DM Sans',
+      imageStyleId: 'gradient',
       imageStyleVersion: 1,
       maxGeneratedImages: 3,
     ),
@@ -745,11 +759,6 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
           source: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71',
           purpose: 'Show a polished analytics product surface',
         ),
-        GroundedGenerationElement(
-          type: 'qrcode',
-          source: 'https://superdeck-dev.web.app',
-          purpose: 'Let the audience open the live SuperDeck experience',
-        ),
       ],
     ),
     _ => throw ArgumentError.value(fixture, 'fixture', 'Unknown fixture'),
@@ -761,7 +770,8 @@ List<String> _selectedFixtures() => switch (_selectedFixture) {
   'large_deck_matrix' => _largeDeckFixtures,
   final fixture
       when _smokeFixtures.contains(fixture) ||
-          _largeDeckFixtures.contains(fixture) =>
+          _largeDeckFixtures.contains(fixture) ||
+          _focusedFixtures.contains(fixture) =>
     [fixture],
   _ => throw ArgumentError.value(
     _selectedFixture,

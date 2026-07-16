@@ -445,7 +445,7 @@ void main() {
         slideCount: 10,
         groundedElements: [
           GroundedGenerationElement(
-            type: 'qrcode',
+            type: 'webview',
             source: 'https://signal-canvas.com/launch',
             purpose: 'Continue the experience.',
           ),
@@ -711,7 +711,7 @@ void main() {
       validateDeckPlan(
         plan,
         request: const DeckGenerationRequest(
-          userIntent: 'Invite the audience to scan the supplied QR code.',
+          userIntent: 'Invite the audience to learn more.',
           slideCount: 10,
         ),
       ),
@@ -992,57 +992,6 @@ void main() {
       );
     },
   );
-
-  test('preserves grounded handoff identity in a qrcode plan', () {
-    final data = _hierarchicalPlan();
-    final slides = data['slides']! as List<Map<String, Object?>>;
-    slides.last
-      ..['composition'] = 'qrcode'
-      ..['contentUnits'] = ['Scan to explore the live Signal Canvas experience']
-      ..['elements'] = [
-        {
-          'type': 'qrcode',
-          'source': 'https://superdeck-dev.web.app',
-          'purpose': 'Let the audience open the live SuperDeck experience',
-        },
-      ];
-    const request = DeckGenerationRequest(
-      userIntent: 'End with the supplied QR code.',
-      slideCount: 10,
-      groundedElements: [
-        GroundedGenerationElement(
-          type: 'qrcode',
-          source: 'https://superdeck-dev.web.app',
-          purpose: 'Let the audience open the live SuperDeck experience',
-        ),
-      ],
-    );
-
-    final rejected = validateDeckPlan(
-      DeckPlanType.parse(data),
-      request: request,
-    );
-    expect(
-      rejected,
-      contains(
-        'Slide "close" qrcode handoff omits grounded purpose term(s): '
-        'superdeck. Preserve the supplied destination or experience identity '
-        'in audience-facing copy.',
-      ),
-    );
-
-    slides.last['contentUnits'] = [
-      'Scan to open the live SuperDeck experience',
-    ];
-    final preserved = validateDeckPlan(
-      DeckPlanType.parse(data),
-      request: request,
-    );
-    expect(
-      preserved.where((candidate) => candidate.contains('handoff omits')),
-      isEmpty,
-    );
-  });
 
   test('keeps internal narrative grounding non-blocking', () {
     final data = _hierarchicalPlan();

@@ -118,6 +118,23 @@ void main() {
     );
   });
 
+  test('does not drop a valid table for a long cell', () {
+    final errors = validateGeneratedSlide(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content':
+            '| Approach | Result |\n'
+            '|---|---|\n'
+            '| Narrative planning | '
+            'A deliberately descriptive comparison that remains valid copy |',
+      }),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+    );
+
+    expect(errors, isEmpty);
+  });
+
   test('rejects slide separators but allows them inside fenced code', () {
     final catalog = GenerationElementCatalog.builtIn();
     final unsafeErrors = validateGeneratedSlide(
@@ -1492,68 +1509,15 @@ void main() {
     },
   );
 
-  test(
-    'preserves the supplied qrcode destination identity in visible copy',
-    () {
-      Map<String, dynamic> qrcodeSlide(String content) => {
-        'key': 'test-slide',
-        'options': {'title': 'Continue', 'style': 'closing'},
-        'sections': [
-          {
-            'type': 'section',
-            'blocks': [
-              {'type': 'block', 'content': content},
-              {
-                'type': 'widget',
-                'name': 'qrcode',
-                'args': {'text': 'https://superdeck-dev.web.app'},
-              },
-            ],
-          },
-        ],
-      };
+  test('does not expose qrcode to AI generation', () {
+    final catalog = GenerationElementCatalog.builtIn();
 
-      final plan = _planSlide(
-        composition: 'qrcode',
-        treatment: 'closing',
-        elements: const [
-          {
-            'type': 'qrcode',
-            'source': 'https://superdeck-dev.web.app',
-            'purpose': 'Let the audience open the live SuperDeck experience',
-          },
-        ],
-      );
-      final rejected = validateGeneratedSlide(
-        expectedKey: 'test-slide',
-        rawSlide: qrcodeSlide(
-          '## Continue\n\nScan to explore the live Signal Canvas experience.',
-        ),
-        planSlide: plan,
-        elementCatalog: GenerationElementCatalog.builtIn(),
-      );
-      final preserved = validateGeneratedSlide(
-        expectedKey: 'test-slide',
-        rawSlide: qrcodeSlide(
-          '## Continue\n\nScan to open the live SuperDeck experience.',
-        ),
-        planSlide: plan,
-        elementCatalog: GenerationElementCatalog.builtIn(),
-      );
-
-      expect(
-        rejected,
-        contains(
-          'Visible qrcode handoff omits grounded purpose term(s): superdeck. '
-          'Preserve the supplied destination or experience identity.',
-        ),
-      );
-      expect(
-        preserved.where((candidate) => candidate.contains('handoff omits')),
-        isEmpty,
-      );
-    },
-  );
+    expect(catalog.names, isNot(contains('qrcode')));
+    expect(
+      catalog.validate('qrcode', {'text': 'https://example.com'}),
+      contains('Widget "qrcode" is not registered for generation.'),
+    );
+  });
 }
 
 Map<String, dynamic> _slideWithBlock(Map<String, Object?> block) => {

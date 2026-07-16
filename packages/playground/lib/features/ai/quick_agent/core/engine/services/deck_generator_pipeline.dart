@@ -15,8 +15,13 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
     DeckGenerationRequest request,
     List<PresentationThemeDescriptor> themeCandidates,
   ) async {
+    final capabilities = _outlineDraftCapabilities(request);
     final draftSchema = buildDeckPlanDraftSchema(
       themeCandidates.map((candidate) => candidate.id).toList(growable: false),
+      allowedCompositionIntents: capabilities.compositions,
+      allowedElementTypes: capabilities.elementTypes,
+      allowElementSources: capabilities.allowElementSources,
+      requireImageGenerationPrompt: capabilities.requireImageGenerationPrompt,
     );
     final adapter = GoogleSchemaAdapter();
     final adaptResult = adapter.adapt(draftSchema.toJsonSchemaBuilder());
@@ -925,4 +930,48 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       return null;
     }
   }
+}
+
+({
+  List<String> compositions,
+  List<String> elementTypes,
+  bool allowElementSources,
+  bool requireImageGenerationPrompt,
+})
+_outlineDraftCapabilities(DeckGenerationRequest request) {
+  final groundedTypes = {
+    for (final element in request.groundedElements) element.type,
+  }..retainAll(deckPlanElementTypes);
+  final hasGeneratedImages =
+      request.imageStyleId != null && request.maxGeneratedImages > 0;
+  final elementTypes = {...groundedTypes, if (hasGeneratedImages) 'image'};
+  final compositions = <String>{
+    'title',
+    'content',
+    'twoColumn',
+    'threeColumn',
+    'table',
+    'quote',
+    'titleLeft',
+    'metric',
+    if (elementTypes.contains('image')) ...{
+      'imageLeft',
+      'imageRight',
+      'imageFullBleed',
+    },
+    if (elementTypes.contains('webview')) 'webview',
+    if (elementTypes.contains('dartpad')) 'dartpad',
+    if (elementTypes.contains('custom')) 'custom',
+  };
+  final hasGroundedImage = request.groundedElements.any(
+    (element) => element.type == 'image',
+  );
+
+  return (
+    compositions: List.unmodifiable(compositions),
+    elementTypes: List.unmodifiable(elementTypes),
+    allowElementSources: request.groundedElements.isNotEmpty,
+    requireImageGenerationPrompt:
+        hasGeneratedImages && elementTypes.length == 1 && !hasGroundedImage,
+  );
 }

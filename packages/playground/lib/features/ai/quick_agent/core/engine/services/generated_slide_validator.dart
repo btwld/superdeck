@@ -559,12 +559,6 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
           'Composition "$composition" requires substantive text beside the image.',
         );
       }
-    case 'qrcode':
-      if (!_hasSubstantiveContent(contentBlocks)) {
-        compositionGuidance.add(
-          'Composition "qrcode" requires a clear text handoff.',
-        );
-      }
     default:
       if (!_hasSubstantiveContent(contentBlocks)) {
         compositionGuidance.add(
@@ -598,10 +592,7 @@ List<String> _validateHandoffPurpose(
 }
 
 bool _requiresVisibleHandoffPurpose(String type) =>
-    type == 'qrcode' ||
-    type == 'webview' ||
-    type == 'dartpad' ||
-    type == 'custom';
+    type == 'webview' || type == 'dartpad' || type == 'custom';
 
 List<String> _validateNumericClaimContext(
   Iterable<String> values,
@@ -832,12 +823,6 @@ List<String> _validateMarkdownTables(String markdown) {
   }
   if (tableLines.any((line) => columnCount(line) != columns)) {
     errors.add('Markdown table rows must have a consistent column count.');
-  }
-  final cells = tableLines.expand(
-    (line) => line.split('|').map((cell) => cell.trim()),
-  );
-  if (cells.any((cell) => cell.length > 60)) {
-    errors.add('Markdown table cells must contain at most 60 characters.');
   }
   return errors;
 }

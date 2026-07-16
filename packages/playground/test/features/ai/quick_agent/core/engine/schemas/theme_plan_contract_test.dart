@@ -16,8 +16,65 @@ void main() {
       'technical-paper',
     ]);
 
-    expect(schema.safeParse(_draftPlan('editorial-midnight')).isOk, isTrue);
+    final eligible = schema.safeParse(_draftPlan('editorial-midnight'));
+    expect(
+      eligible.isOk,
+      isTrue,
+      reason: eligible.isFail ? eligible.getError().toMap().toString() : null,
+    );
     expect(schema.safeParse(_draftPlan('bold-product')).isOk, isFalse);
+  });
+
+  test('request-bounded draft schema excludes unavailable elements', () {
+    final schema = buildDeckPlanDraftSchema(
+      const ['bold-product'],
+      allowedCompositionIntents: const [
+        'title',
+        'content',
+        'imageLeft',
+        'imageRight',
+        'imageFullBleed',
+      ],
+      allowedElementTypes: const ['image'],
+      allowElementSources: false,
+      requireImageGenerationPrompt: true,
+    );
+    final valid = _draftPlan('bold-product');
+    final validSlide =
+        Map<String, Object?>.from((valid['slides']! as List).single as Map)
+          ..['composition'] = 'imageRight'
+          ..['elements'] = [
+            {
+              'type': 'image',
+              'purpose': 'Support the product reveal',
+              'generationPrompt': 'Abstract presentation canvas transforming',
+            },
+          ];
+    valid['slides'] = [validSlide];
+    final unavailable = _draftPlan('bold-product');
+    final unavailableSlide =
+        Map<String, Object?>.from(
+            (unavailable['slides']! as List).single as Map,
+          )
+          ..['composition'] = 'qrcode'
+          ..['elements'] = [
+            {
+              'type': 'qrcode',
+              'purpose': 'Open an invented destination',
+              'source': 'https://example.com',
+            },
+          ];
+    unavailable['slides'] = [unavailableSlide];
+
+    final parsedValid = schema.safeParse(valid);
+    expect(
+      parsedValid.isOk,
+      isTrue,
+      reason: parsedValid.isFail
+          ? parsedValid.getError().toMap().toString()
+          : null,
+    );
+    expect(schema.safeParse(unavailable).isOk, isFalse);
   });
 
   test('canonical plan requires application-owned version and density', () {
@@ -25,17 +82,24 @@ void main() {
       deckPlanSchema.safeParse(_draftPlan('editorial-midnight')).isOk,
       isFalse,
     );
-    expect(
-      deckPlanSchema.safeParse({
-        ..._draftPlan('editorial-midnight'),
-        'theme': {
-          'id': 'editorial-midnight',
-          'version': 1,
+    final canonical = _draftPlan('editorial-midnight');
+    canonical['theme'] = {
+      'id': 'editorial-midnight',
+      'version': 1,
+      'density': 'spacious',
+    };
+    canonical['slides'] = [
+      for (final rawSlide in canonical['slides']! as List)
+        {
+          ...Map<String, Object?>.from(rawSlide as Map),
+          'purpose': 'Frame the operating problem.',
+          'contentBrief': 'Open with the core operating tension.',
+          'continuity': 'Establish the premise for the deck.',
+          'treatment': 'hero',
           'density': 'spacious',
         },
-      }).isOk,
-      isTrue,
-    );
+    ];
+    expect(deckPlanSchema.safeParse(canonical).isOk, isTrue);
   });
 
   test('replays a retained versioned theme artifact exactly', () async {
@@ -80,16 +144,11 @@ Map<String, Object?> _draftPlan(String themeId) => {
     {
       'key': 'opening',
       'title': 'Reliability starts here',
-      'purpose': 'Frame the operating problem.',
       'sectionKey': 'main',
       'assertion': 'A reliable system begins with shared priorities.',
       'contentUnits': ['One concrete supporting point'],
       'narrativeRole': 'opening',
-      'contentBrief': 'Open with the core operating tension.',
-      'continuity': 'Establish the premise for the deck.',
       'composition': 'title',
-      'treatment': 'hero',
-      'density': 'spacious',
       'elements': <Object?>[],
     },
   ],
