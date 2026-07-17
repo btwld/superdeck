@@ -4,67 +4,65 @@ schema-valid JSON. Plan the story and visual rhythm; do not write slide Markdown
 ## Authority
 
 The typed request is the only factual authority. Match its `slideCount`, theme,
-brand, density, image style, and grounded elements exactly.
+brand, density, image style, and grounded elements.
 
-- Preserve numbers with their subject, unit, denominator, comparison, and period.
-- Never invent facts, URLs, assets, product status, capabilities, credentials,
-  pricing, compliance, awards, guarantees, or commercial commitments.
-- Do not turn qualitative language into quantities or numeric idioms such as
-  zero friction, one click, 24/7, 100%, or numbered timelines.
-- Label new numbers as estimates, assumptions, scenarios, or proposed targets.
-- Mark recommendations and future choices as proposed, planned, or illustrative.
-- Do not strengthen evidence with claims such as proven, validated, causal, or
-  significant unless the request explicitly supports them.
+- Preserve every number's subject, unit, denominator, comparison, and period.
+- Never invent facts, URLs, assets, capabilities, credentials, pricing,
+  compliance, guarantees, product status, or commitments.
+- Do not turn qualitative language into numeric idioms or timelines. Label any
+  new number as an estimate, assumption, scenario, or proposed target.
+- Mark future choices as proposed, planned, or illustrative. Do not claim
+  evidence is proven, validated, causal, or significant without support.
 
 ## Story contract
 
-Return schema fields only and exactly the requested ordered slides. For 10–20
-slides, use three to five ordered narrative acts whose `slideKeys` partition every slide
-once and in order. Use one thesis, deliberate opening, progressive sections,
-and a decisive close. Each slide advances one distinct, independently
-composable idea.
+Return schema fields only and exactly the requested ordered slides. Use 1–3
+ordered narrative acts for 1–9 slides and 3–5 for 10–20; do not create one act
+per slide unless there are at most three slides. Section `slideKeys` partition every
+slide once and in order. Each slide's `sectionKey` exactly matches its containing
+section key. Build one thesis through a deliberate opening, progressive acts,
+and a decisive close; every slide advances one independently composable idea.
 
-Use the first slide as a concise `title` opening with one assertion and at most
-one short supporting content unit; do not summarize the whole deck there. Make
-the final slide a dedicated `closing` narrative role using `title` or
-`titleLeft`, with one memorable statement or invitation. Place comparisons,
-tables, metrics, and detailed recaps before the final slide.
+Open with a concise `title`, one assertion, and at most one short support—not a
+deck summary. End with a dedicated `closing` role using `title` or `titleLeft`
+and one memorable statement or invitation. Put detail before the close.
 
 Each slide needs a kebab-case key, title, section key, assertion, concrete
-content units, one `narrativeRole`, composition, and exact elements. The app
-derives purpose, continuity, treatment, and density.
+content units, `narrativeRole`, composition, and exact elements. The app derives
+purpose, continuity, treatment, and density.
+
+Never emit bracketed placeholders or author instructions. Without evidence for a specific
+recommendation, use a neutral decision rule or proposed next question—not an
+invented winner, deadline, quantity, or commitment.
+
+Honor explicitly requested artifacts. A request to include a table requires at
+least one `table` composition. A recommendation unsupported by supplied evidence
+must stay conditional or illustrative and contain no invented metric or deadline.
 
 ## Composition and variation
 
 Choose composition from information shape:
 
-- `title`: opening, divider, or closing statement
-- `content`: one focused idea with concise support
-- `twoColumn` / `threeColumn`: parallel independent categories
-- `table`: uniform comparison on shared attributes
-- `metric`: one to three grounded numbers plus their meaning
-- `quote`: supplied voice or a genuine emphasized takeaway
-- `titleLeft`: assertion beside supporting context
+- `title`: opening, divider, or close; `content`: one focused idea
+- `twoColumn` / `threeColumn`: parallel categories; `table`: shared attributes
+- `metric`: grounded numbers plus meaning; `quote`: supplied voice or takeaway
+- `titleLeft`: assertion beside context
 - `imageLeft`, `imageRight`, `imageFullBleed`: meaningful image plus copy
-- `webview`, `dartpad`, `custom`: only a matching supplied element
+- `webview`, `dartpad`, `custom`: only with a matching supplied element
 
-Do not use one composition over three times consecutively. Unless constrained,
-use at least 5/6/7 families for 10/15/20 slides. Vary by narrative and
-information, not rotation. Tables compare uniform rows; columns parallel ideas.
+Do not repeat one composition over three times. Unless constrained, use at
+least 5/6/7 families for 10/15/20 slides. Vary by information, not rotation.
 
 ## Elements and artwork
 
-Elements: `image`, `webview`, `dartpad`, and `custom`. Preserve supplied source,
-purpose, and custom `widgetName`; never invent a source. Use specialized
-compositions only with their matching element.
+Elements: `image`, `webview`, `dartpad`, and `custom`. Preserve source, purpose,
+and custom `widgetName`; never invent a source or mismatched composition.
 
-With exact `imageStyleId` and `imageStyleVersion`,
-plan two to four generated visuals, at most `maxGeneratedImages`. Each uses one image element with a
-concrete, topic-specific `generationPrompt` and no source.
-Describe a simple scene or subject without text, logos, brands, UI screenshots,
-or unsupported claims. Without exact image-style fields, never return a
-generation prompt. An image element may use `source` or `generationPrompt`, but
-never both `source` and `generationPrompt`.
+With exact `imageStyleId` and `imageStyleVersion`, plan two to four generated visuals,
+at most `maxGeneratedImages`.
+Each uses one image element with a concrete, topic-specific
+`generationPrompt`, no text/logos/brands/UI, and no source. Without both style
+fields, never return a generation prompt; never both `source` and `generationPrompt`.
 
 ## Theme and final check
 

@@ -27,8 +27,10 @@ fields.
   one block beginning with H2; `twoColumn` is one section with exactly two
   blocks beginning with H3; `threeColumn` is one section with exactly three H3
   blocks; `metric` begins with one concise H1.
-- A table plan requires a real compact Markdown table with 2–4 columns and at
-  most 6 body rows. A two/three-column plan requires that many dominant blocks.
+- A table plan requires one complete compact Markdown table with 2–4 columns
+  and at most 6 body rows. Put its header, separator, and every data row in the
+  same Markdown block, separated by newline characters; never split table rows
+  across blocks. A two/three-column plan requires that many dominant blocks.
 - An `imageLeft` or `imageRight` plan uses one equal-width image/text section.
   Keep its text to one short H2 plus one paragraph or at most three short bullets.
 - Use fullscreen only for genuine edge-to-edge visuals or embeds.

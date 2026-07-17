@@ -37,6 +37,14 @@ void main() {
       expect(prompt, contains('at most `maxGeneratedImages`'));
       expect(prompt, contains('never both `source` and `generationPrompt`'));
       expect(prompt, contains('two to four generated visuals'));
+      expect(prompt, contains('do not create one act'));
+      expect(prompt, contains('per slide unless'));
+      expect(prompt, contains("Each slide's `sectionKey` exactly matches"));
+      expect(prompt, contains('Never emit bracketed placeholders'));
+      expect(
+        prompt,
+        contains('A request to include a table requires at\nleast one `table`'),
+      );
     },
   );
 
@@ -355,6 +363,7 @@ void main() {
     );
     expect(prompt, contains('copy each complete unit verbatim'));
     expect(prompt, contains('## Canonical shape examples'));
+    expect(prompt, contains('never split table rows\n  across blocks'));
     expect(prompt, contains('"key": "example-content"'));
     expect(RegExp('"key": "example-content"').allMatches(prompt), hasLength(1));
     expect(prompt, isNot(contains('"key": "example-table"')));

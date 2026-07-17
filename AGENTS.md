@@ -184,12 +184,11 @@ The project uses Signals for reactive state management. `DeckController` is the 
 
 ### AI Generation Models
 
-Use the current stable Gemini model split for the Playground deck-generation
-pipeline:
+Use only the stable Gemini text models below in the Playground:
 
-- `gemini-3.5-flash` for the single global outline/planning request
-- `gemini-3.1-flash-lite` for concurrent narrative-section composition and
-  targeted outline/slide repair
+- `gemini-3.5-flash` for the single global outline/story-planning request
+- `gemini-3.1-flash-lite` for the Wizard GenUI conversation, concurrent
+  narrative-section composition, and targeted outline/slide repair
 
 Keep model thinking at the lowest supported setting for this latency-sensitive
 workflow. Do not silently switch back to an older model, a preview model, or

@@ -54,6 +54,28 @@ void main() {
     );
     expect(client.attempts, 2);
   });
+
+  test('delivers parsed A2UI before sendRequest completes', () async {
+    final transport = SuperdeckA2uiTransport(
+      apiKey: 'test-key',
+      modelName: 'test-model',
+      systemPrompt: 'test-system-prompt',
+      tools: const [],
+      agentClientFactory:
+          ({required apiKey, required modelName, required tools}) =>
+              _A2uiAgentClient(),
+    );
+    addTearDown(transport.dispose);
+    var receivedMessage = false;
+    final subscription = transport.incomingMessages.listen((_) {
+      receivedMessage = true;
+    });
+    addTearDown(subscription.cancel);
+
+    await transport.sendRequest(genui.ChatMessage.user('Build a pitch deck'));
+
+    expect(receivedMessage, isTrue);
+  });
 }
 
 final class _EmptyThenSuccessfulAgentClient implements SuperdeckAgentClient {
@@ -105,4 +127,21 @@ final class _AlwaysEmptyAgentClient implements SuperdeckAgentClient {
 
   @override
   void dispose() {}
+}
+
+final class _A2uiAgentClient implements SuperdeckAgentClient {
+  @override
+  void dispose() {}
+
+  @override
+  Stream<SuperdeckAgentResponseChunk> sendStream(
+    String prompt, {
+    required Iterable<dartantic.ChatMessage> history,
+  }) async* {
+    yield const SuperdeckAgentResponseChunk(
+      text:
+          '{"version":"v0.9","createSurface":{"surfaceId":"wizard",'
+          '"catalogId":"test","sendDataModel":false}}',
+    );
+  }
 }

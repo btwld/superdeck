@@ -91,6 +91,11 @@ class SuperdeckA2uiTransport implements genui.Transport {
         _adapter.addChunk(modelText);
       }
 
+      // A2uiTransportAdapter uses asynchronous stream controllers. Give its
+      // parser and downstream surface controller one event-loop turn to
+      // deliver all events before the request is reported as finished.
+      await Future<void>.delayed(Duration.zero);
+
       if (streamedTextChars == 0 && modelText.isEmpty) {
         if (attempt == 1) {
           debugLog.log(

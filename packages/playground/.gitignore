@@ -33,6 +33,7 @@ migrate_working_dir/
 /build/
 /coverage/
 test_live/ai_generation/artifacts/
+test_live/wizard/artifacts/
 
 # Symbolication related
 app.*.symbols

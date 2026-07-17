@@ -47,13 +47,17 @@ does not load `.env` automatically; the define-file flag injects it at build
 time. The Wizard shows a configuration error immediately when the key is
 missing.
 
+The Wizard GenUI conversation uses `gemini-3.1-flash-lite` for its short,
+structured UI turns.
+
 ## AI generation smoke lab
 
 Generation uses a plan-first pipeline. `gemini-3.5-flash` creates the shared
 narrative/style plan, then `gemini-3.1-flash-lite` composes each narrative
-section concurrently. Every call uses the lowest thinking-budget compatibility
-setting exposed by the pinned client. Gemini structured output constrains each
-response to JSON and a response schema; Dart still performs semantic,
+section concurrently and performs targeted repairs. Every call uses the lowest
+thinking-budget compatibility setting exposed by the pinned client. Gemini
+structured output constrains each response to JSON and a response schema; Dart
+still performs semantic,
 grounding, layout, density, and canonical parsing checks before accepting it.
 Invalid slides remain isolated failures so valid slides and later sections can
 continue.
@@ -64,6 +68,14 @@ spend API quota. Run all three versioned briefs with:
 ```bash
 fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
   --dart-define-from-file=../../.env --reporter expanded
+```
+
+Benchmark and validate the canonical six-step Wizard flow with:
+
+```bash
+fvm flutter test test_live/wizard/wizard_model_smoke_test.dart \
+  --dart-define-from-file=../../.env \
+  --dart-define=RUN_LIVE_WIZARD_MODEL_TESTS=true --reporter expanded
 ```
 
 Set `--dart-define=LIVE_FIXTURE=narrative`, `comparison_table`, or
