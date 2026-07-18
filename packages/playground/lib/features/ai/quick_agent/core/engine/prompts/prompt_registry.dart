@@ -16,37 +16,6 @@ class PromptRegistry {
   bool _loaded = false;
   Future<void>? _loading;
 
-  bool get isLoaded => _loaded;
-
-  /// Loads prompts from a map for testing purposes.
-  ///
-  /// This bypasses asset loading and directly sets the prompts.
-  void loadForTest({
-    Map<String, String> prompts = const {},
-    Map<String, String> partials = const {},
-  }) {
-    assert(() {
-      return true;
-    }(), 'loadForTest should only be called in tests');
-    _loading = null;
-    _prompts.clear();
-    _partials.clear();
-    _prompts.addAll(prompts);
-    _partials.addAll(partials);
-    _loaded = true;
-  }
-
-  /// Resets the registry to unloaded state (for testing).
-  void reset() {
-    assert(() {
-      return true;
-    }(), 'reset should only be called in tests');
-    _prompts.clear();
-    _partials.clear();
-    _loaded = false;
-    _loading = null;
-  }
-
   Future<void> load() {
     if (_loaded) {
       return Future.value();

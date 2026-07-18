@@ -1,7 +1,7 @@
 import 'generation_validation_issue.dart';
 
 /// Logical stages represented in generation trace artifacts.
-enum GenerationTracePhase { outline, composition, slide, finalize }
+enum GenerationTracePhase { outline, image, composition, slide, finalize }
 
 /// Observable event types emitted by the generation pipeline.
 enum GenerationTraceKind {

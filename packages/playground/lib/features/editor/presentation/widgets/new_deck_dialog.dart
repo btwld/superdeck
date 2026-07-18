@@ -78,7 +78,7 @@ class _NewDeckDialogState extends State<_NewDeckDialog> {
   Widget build(BuildContext context) {
     return Center(
       child: HeroCard(
-        style: RemixCardStyle().maxWidth(440).paddingAll(24),
+        style: RemixCardStyler().maxWidth(440).paddingAll(24),
         child: ColumnBox(
           style: FlexBoxStyler()
               .mainAxisSize(.min)
@@ -130,7 +130,7 @@ class _NewDeckDialogState extends State<_NewDeckDialog> {
               ),
             HeroButton(
               label: 'Create',
-              iconLeft: CupertinoIcons.add,
+              leadingIcon: CupertinoIcons.add,
               loading: _creating,
               onPressed: _creating ? null : _create,
             ),

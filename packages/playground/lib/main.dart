@@ -13,26 +13,26 @@ Future<void> main() async {
   SignalsObserver.instance = null;
 
   // debugRepaintRainbowEnabled = true;
-  runApp(const PlaygroundRefactorApp());
+  runApp(const SuperdeckApp());
 }
 
-class PlaygroundRefactorApp extends StatefulWidget {
-  const PlaygroundRefactorApp({super.key});
+class SuperdeckApp extends StatefulWidget {
+  const SuperdeckApp({super.key});
 
   @override
-  State<PlaygroundRefactorApp> createState() => _PlaygroundRefactorAppState();
+  State<SuperdeckApp> createState() => _SuperdeckAppState();
 }
 
-class _PlaygroundRefactorAppState extends State<PlaygroundRefactorApp> {
+class _SuperdeckAppState extends State<SuperdeckApp> {
   final _router = createRouter();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Superdeck Playground (refactor)',
-      debugShowCheckedModeBanner: false,
       routerConfig: _router,
       builder: (context, child) => _Theme(child: AppProviders(child: child!)),
+      title: 'Superdeck',
+      debugShowCheckedModeBanner: false,
     );
   }
 }

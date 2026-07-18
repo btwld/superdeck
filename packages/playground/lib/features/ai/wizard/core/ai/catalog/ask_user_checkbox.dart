@@ -106,10 +106,7 @@ class _AskUserCheckboxContentState extends State<_AskUserCheckboxContent> {
   }
 
   Map<String, dynamic> _buildActionContext() {
-    return {
-      'selectedOptions': _selectedChoices.toList(),
-      'message': _selectedChoices.join(', '),
-    };
+    return {'selectedOptions': _selectedChoices.toList()};
   }
 
   void _submitAction() => submitCatalogActionIfValid(

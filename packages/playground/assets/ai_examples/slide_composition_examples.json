@@ -92,8 +92,8 @@
     "options": {"title": "One connected system"},
     "sections": [
       {"type": "section", "flex": 1, "spacing": 32, "blocks": [
-        {"type": "block", "flex": 2, "align": "centerLeft", "content": "## One connected system\n\nUse the supplied visual as evidence, then state its implication."},
-        {"type": "widget", "name": "image", "args": {"src": "__SOURCE__", "fit": "cover"}, "flex": 3}
+        {"type": "block", "flex": 1, "align": "centerLeft", "content": "## One connected system\n\nUse the supplied visual as evidence, then state its implication."},
+        {"type": "widget", "name": "image", "args": {"src": "__SOURCE__", "fit": "cover"}, "flex": 1}
       ]}
     ]
   },

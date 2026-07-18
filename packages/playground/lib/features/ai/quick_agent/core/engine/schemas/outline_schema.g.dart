@@ -60,6 +60,8 @@ extension type DeckPlanElementType(Map<String, Object?> _data)
 
   String? get source => _data['source'] as String?;
 
+  String? get generationPrompt => _data['generationPrompt'] as String?;
+
   String? get widgetName => _data['widgetName'] as String?;
 }
 

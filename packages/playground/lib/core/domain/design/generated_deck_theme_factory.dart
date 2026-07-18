@@ -55,6 +55,7 @@ final class GeneratedDeckThemeFactory {
     required PresentationTextStyles text,
     required String density,
     required PresentationThemeRuntimeRecipe runtime,
+    bool debug = false,
   }) {
     final borderColor = Color.lerp(palette.surface, palette.body, 0.4)!;
     final tableFontSize = text.body.fontSize! > 20 ? 20.0 : text.body.fontSize!;
@@ -148,6 +149,7 @@ final class GeneratedDeckThemeFactory {
         footer: null,
         background: Box(style: BoxStyler().color(palette.background)),
       ),
+      debug: debug,
     );
   }
 }
@@ -209,6 +211,9 @@ BlockStyler _blockContainer(
 ) => .new(
   padding: EdgeInsetsGeometryMix.all(
     style == .none ? 0 : 20 * runtime.spacingScale,
+  ),
+  margin: EdgeInsetsGeometryMix.all(
+    style == .none ? 0 : 12 * runtime.spacingScale,
   ),
   decoration: _blockDecoration(style, palette, runtime),
   clipBehavior: .antiAlias,

@@ -109,13 +109,6 @@ List<Map<String, Object?>> _elementsFor(String composition) =>
           'source': 'assets/example.png',
         },
       ],
-      'qrcode' => const [
-        {
-          'type': 'qrcode',
-          'purpose': 'Continue to the supplied destination',
-          'source': 'https://example.test/continue',
-        },
-      ],
       'webview' => const [
         {
           'type': 'webview',

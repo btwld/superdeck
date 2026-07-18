@@ -19,8 +19,8 @@ void main() {
       colors: ['#101828', '#F9FAFB', '#D0D5DD'],
       headlineFont: 'Fraunces',
       bodyFont: 'Inter',
-      imageStyleName: 'Documentary',
-      imageStyleDescription: 'Natural light and real teams',
+      imageStyleId: 'minimalist',
+      imageStyleVersion: 1,
       groundedElements: [
         GroundedGenerationElement(
           type: 'image',
@@ -38,6 +38,8 @@ void main() {
     expect(payload['density'], 'spacious');
     expect(payload['headlineFont'], 'Fraunces');
     expect(payload['bodyFont'], 'Inter');
+    expect(payload['imageStyleId'], 'minimalist');
+    expect(payload['imageStyleVersion'], 1);
     expect(payload['colors'], ['#101828', '#F9FAFB', '#D0D5DD']);
     expect(
       payload['groundedElements'],
@@ -60,8 +62,8 @@ void main() {
       colors: ['#101828', '#F9FAFB', '#D0D5DD'],
       headlineFont: 'Playfair Display',
       bodyFont: 'Inter',
-      imageStyleName: 'Editorial photography',
-      imageStyleDescription: 'Candid, high contrast, human',
+      imageStyleId: 'watercolor',
+      imageStyleVersion: 1,
     );
 
     final request = buildPromptFromWizardContext(context);
@@ -71,6 +73,8 @@ void main() {
     expect(request.themeId, 'bold-product');
     expect(request.headlineFont, 'Playfair Display');
     expect(request.bodyFont, 'Inter');
+    expect(request.imageStyleId, 'watercolor');
+    expect(request.imageStyleVersion, 1);
     expect(input, isNot(contains('Do not use widget blocks')));
     expect(input, isNot(contains('two sections (title + body) for most')));
   });

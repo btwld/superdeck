@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
 import 'source_grounding.dart';
 
 /// A user-supplied element whose source is safe for generation to reference.
@@ -48,8 +49,9 @@ final class DeckGenerationRequest {
   final List<String> colors;
   final String? headlineFont;
   final String? bodyFont;
-  final String? imageStyleName;
-  final String? imageStyleDescription;
+  final String? imageStyleId;
+  final int? imageStyleVersion;
+  final int maxGeneratedImages;
   final List<GroundedGenerationElement> groundedElements;
 
   const DeckGenerationRequest({
@@ -64,10 +66,16 @@ final class DeckGenerationRequest {
     this.colors = const [],
     this.headlineFont,
     this.bodyFont,
-    this.imageStyleName,
-    this.imageStyleDescription,
+    this.imageStyleId,
+    this.imageStyleVersion,
+    this.maxGeneratedImages = 4,
     this.groundedElements = const [],
-  }) : assert(slideCount > 0 && slideCount <= 50);
+  }) : assert(slideCount > 0 && slideCount <= 50),
+       assert(maxGeneratedImages >= 0 && maxGeneratedImages <= 4),
+       assert(
+         (imageStyleId == null) == (imageStyleVersion == null),
+         'Image style ID and version must be supplied together.',
+       );
 
   factory DeckGenerationRequest.fromMap(Map<String, Object?> map) =>
       DeckGenerationRequest(
@@ -82,8 +90,9 @@ final class DeckGenerationRequest {
         colors: _stringList(map['colors']),
         headlineFont: map['headlineFont'] as String?,
         bodyFont: map['bodyFont'] as String?,
-        imageStyleName: map['imageStyleName'] as String?,
-        imageStyleDescription: map['imageStyleDescription'] as String?,
+        imageStyleId: map['imageStyleId'] as String?,
+        imageStyleVersion: map['imageStyleVersion'] as int?,
+        maxGeneratedImages: map['maxGeneratedImages'] as int? ?? 4,
         groundedElements: switch (map['groundedElements']) {
           final List values => [
             for (final value in values)
@@ -110,8 +119,9 @@ final class DeckGenerationRequest {
     if (colors.isNotEmpty) 'colors': colors,
     'headlineFont': ?headlineFont,
     'bodyFont': ?bodyFont,
-    'imageStyleName': ?imageStyleName,
-    'imageStyleDescription': ?imageStyleDescription,
+    'imageStyleId': ?imageStyleId,
+    'imageStyleVersion': ?imageStyleVersion,
+    if (imageStyleId != null) 'maxGeneratedImages': maxGeneratedImages,
     if (groundedElements.isNotEmpty)
       'groundedElements': groundedElements
           .map((element) => element.toMap())
@@ -120,6 +130,22 @@ final class DeckGenerationRequest {
 
   /// JSON data supplied as the model's user content.
   String toModelInput() => const JsonEncoder.withIndent('  ').convert(toMap());
+
+  /// Resolves the selected exact version before any provider call.
+  PresentationImageStyleDescriptor? resolveImageStyle(
+    PresentationImageStyleCatalog catalog,
+  ) {
+    final id = imageStyleId;
+    final version = imageStyleVersion;
+    if (id == null && version == null) return null;
+    if (id == null || version == null) {
+      throw ArgumentError(
+        'Image style ID and version must be supplied together.',
+      );
+    }
+
+    return catalog.resolve(id: id, version: version);
+  }
 }
 
 List<String> _stringList(Object? value) => switch (value) {

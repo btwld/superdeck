@@ -11,6 +11,7 @@ void main() {
 
     test('maps each phase to its human-readable label', () {
       expect(GenerationPhase.generatingOutline.label, 'Planning the outline…');
+      expect(GenerationPhase.generatingImages.label, 'Creating slide artwork…');
       expect(GenerationPhase.composingSlides.label, 'Composing the slides…');
       expect(GenerationPhase.finalizing.label, 'Finalizing…');
       expect(
@@ -18,6 +19,17 @@ void main() {
         'Rendering thumbnails…',
       );
       expect(GenerationPhase.idle.label, 'Working…');
+    });
+
+    test('reports bounded generated-artwork progress', () {
+      expect(
+        const GenerationProgress(
+          GenerationPhase.generatingImages,
+          completedItems: 2,
+          totalItems: 3,
+        ).label,
+        'Creating slide artwork 2 of 3…',
+      );
     });
   });
 

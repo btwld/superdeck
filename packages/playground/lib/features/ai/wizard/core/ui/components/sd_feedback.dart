@@ -5,27 +5,16 @@ import 'package:remix/remix.dart';
 /// Spinner sizes, mapped to concrete pixel diameters.
 enum SdSpinnerSize { size1, size2, size3 }
 
-/// Surface badge style built on hero_ui tokens.
-RemixBadgeStyle _sdBadgeStyle() {
-  return RemixBadgeStyle(
-    container: BoxStyler()
-        .paddingX(8.0)
-        .paddingY(3.0)
-        .borderRadiusAll(const Radius.circular(6.0)),
-    text: TextStyler(style: $labelSmall.mix()),
-  ).backgroundColor($surfaceSecondary()).foregroundColor($foreground());
-}
-
 /// Surface (accent-soft) callout style built on hero_ui tokens.
-RemixCalloutStyle _sdCalloutStyle() {
-  return RemixCalloutStyle(
-    container: FlexBoxStyler(
-      direction: Axis.horizontal,
-      crossAxisAlignment: CrossAxisAlignment.center,
-    ).paddingY(12.0).paddingX(16.0).spacing(8.0),
-    text: TextStyler(style: $paragraphSmall.mix()),
-    icon: IconStyler(size: 20.0),
-  )
+RemixCalloutStyler _sdCalloutStyle() {
+  return RemixCalloutStyler(
+        container: FlexBoxStyler(
+          direction: Axis.horizontal,
+          crossAxisAlignment: CrossAxisAlignment.center,
+        ).paddingY(12.0).paddingX(16.0).spacing(8.0),
+        text: TextStyler(style: $paragraphSmall.mix()),
+        icon: IconStyler(size: 20.0),
+      )
       .backgroundColor($accentSoft())
       .borderRadiusAll(const Radius.circular(8.0))
       .borderAll(color: $border(), width: 1.0)
@@ -34,13 +23,14 @@ RemixCalloutStyle _sdCalloutStyle() {
 }
 
 /// Accent spinner style built on hero_ui tokens.
-RemixSpinnerStyle _sdSpinnerStyle(SdSpinnerSize size) {
+RemixSpinnerStyler _sdSpinnerStyle(SdSpinnerSize size) {
   final (double px, double stroke) = switch (size) {
     SdSpinnerSize.size1 => (16.0, 1.5),
     SdSpinnerSize.size2 => (20.0, 2.0),
     SdSpinnerSize.size3 => (24.0, 2.5),
   };
-  return RemixSpinnerStyle(
+
+  return RemixSpinnerStyler(
     size: px,
     strokeWidth: stroke,
     indicatorColor: $accent(),
@@ -60,36 +50,6 @@ class SdSpinner extends StatelessWidget {
   }
 }
 
-/// Pre-styled badge for chips, tags, and labels.
-///
-/// Usage: `SdBadge(label: 'New')`
-class SdBadge extends StatelessWidget {
-  const SdBadge({super.key, required this.label, this.style});
-
-  final String label;
-  final RemixBadgeStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return RemixBadge(label: label, style: _sdBadgeStyle().merge(style));
-  }
-}
-
-/// Pre-styled divider line.
-///
-/// Usage: `SdDivider()`
-class SdDivider extends StatelessWidget {
-  const SdDivider({super.key, this.label, this.style});
-
-  final String? label;
-  final BoxStyler? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return HeroDivider(label: label, style: style);
-  }
-}
-
 /// Pre-styled callout for status messages and alerts.
 ///
 /// Usage: `SdCallout(text: 'Information message')`
@@ -99,7 +59,7 @@ class SdCallout extends StatelessWidget {
   final String? text;
   final IconData? icon;
   final Widget? child;
-  final RemixCalloutStyle? style;
+  final RemixCalloutStyler? style;
 
   @override
   Widget build(BuildContext context) {

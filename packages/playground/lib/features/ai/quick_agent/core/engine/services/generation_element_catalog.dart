@@ -110,14 +110,6 @@ final _builtIns = <GenerationElementDescriptor>[
     sourceArgument: 'src',
   ),
   GenerationElementDescriptor(
-    name: 'qrcode',
-    description: 'A QR handoff for user-supplied text or URL.',
-    arguments:
-        'text (required), size?, errorCorrection?, backgroundColor?, foregroundColor?',
-    argumentSchema: QrCodeDto.schema,
-    sourceArgument: 'text',
-  ),
-  GenerationElementDescriptor(
     name: 'webview',
     description: 'A user-supplied absolute HTTP(S) page.',
     arguments:

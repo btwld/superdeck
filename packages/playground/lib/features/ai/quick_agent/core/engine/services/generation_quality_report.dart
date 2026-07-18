@@ -18,7 +18,7 @@ final class GenerationQualityIssue {
     required this.rule,
     required this.message,
     this.slideKey,
-    this.severity = GenerationValidationSeverity.diagnostic,
+    this.severity = GenerationValidationSeverity.blocking,
     this.sourceCode,
   });
 
@@ -90,6 +90,7 @@ final class GenerationQualityReport {
     PresentationThemeCatalog? themeCatalog,
     PresentationTypographyCatalog? typographyCatalog,
     Duration captureElapsed = Duration.zero,
+    Set<String> knownGeneratedAssetKeys = const {},
   }) {
     final issues = <GenerationQualityIssue>[];
     final themes = themeCatalog ?? PresentationThemeCatalog.withDefaults();
@@ -137,6 +138,7 @@ final class GenerationQualityReport {
       typographyCatalog: typography,
       themeCatalog: themes,
       request: request,
+      knownGeneratedAssetKeys: knownGeneratedAssetKeys,
     )) {
       issues.add(
         GenerationQualityIssue(
@@ -192,10 +194,17 @@ final class GenerationQualityReport {
         issues.add(
           GenerationQualityIssue(
             rule: 'slide.content_density',
-            slideKey: slide.key,
             message:
                 'Slide "${slide.key}" has $characters visible characters; '
                 '$density allows at most $maximum.',
+            slideKey: slide.key,
+            severity:
+                isHardContentDensityOverage(
+                  visibleCharacters: characters,
+                  characterLimit: maximum,
+                )
+                ? .blocking
+                : .diagnostic,
           ),
         );
       }
@@ -338,7 +347,7 @@ final class GenerationQualityReport {
     );
   }
 
-  bool get passed => issues.isEmpty;
+  bool get passed => issues.every((issue) => issue.severity != .blocking);
 
   Map<String, Object?> toJson() => {
     'passed': passed,
@@ -383,7 +392,7 @@ Iterable<String> _generatedElementTypes(Slide slide) sync* {
     for (final block in section.blocks) {
       if (block case final WidgetBlock widget) {
         yield switch (widget.name) {
-          'image' || 'qrcode' || 'webview' || 'dartpad' => widget.name,
+          'image' || 'webview' || 'dartpad' => widget.name,
           _ => 'custom',
         };
       }

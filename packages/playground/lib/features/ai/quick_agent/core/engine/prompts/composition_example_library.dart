@@ -85,7 +85,6 @@ const _templateForComposition = <String, String>{
   'imageRight': 'imageSplit',
   'imageFullBleed': 'imageFullBleed',
   'metric': 'metric',
-  'qrcode': 'qrcode',
   'webview': 'webview',
   'dartpad': 'dartpad',
   'custom': 'custom',

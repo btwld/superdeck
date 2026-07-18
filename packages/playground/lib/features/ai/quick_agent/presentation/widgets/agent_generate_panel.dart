@@ -67,7 +67,7 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
   Widget build(BuildContext context) {
     return Center(
       child: HeroCard(
-        style: RemixCardStyle().maxWidth(520).paddingAll(24),
+        style: RemixCardStyler().maxWidth(520).paddingAll(24),
         child: ColumnBox(
           style: FlexBoxStyler()
               .mainAxisSize(.min)
@@ -77,13 +77,15 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
             _Header(onClose: () => Navigator.of(context).maybePop()),
             HeroTextField(
               fullWidth: true,
+              style: RemixTextFieldStyler().backgroundColor(
+                $surfaceSecondary(),
+              ),
               controller: _controller,
               focusNode: _focusNode,
-              minLines: 1,
-              maxLines: 10,
-              style: RemixTextFieldStyle().backgroundColor($surfaceSecondary()),
               hintText:
                   'Describe your presentation — topic, audience, tone, length…',
+              maxLines: 10,
+              minLines: 1,
             ),
             RowBox(
               style: FlexBoxStyler().spacing(12),
@@ -95,16 +97,17 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
                       .style($labelSmall.mix()),
                 ),
                 Expanded(
-                  child: HeroSlider(
-                    min: 5,
-                    max: 20,
-                    snapDivisions: 15,
-                    showOutput: false,
-                    semanticLabel: 'Slide count',
-                    value: _slideCount.toDouble(),
-                    onChanged: (value) {
-                      setState(() => _slideCount = value.round());
-                    },
+                  child: Semantics(
+                    label: 'Slide count',
+                    child: HeroSlider(
+                      value: _slideCount.toDouble(),
+                      onChanged: (value) {
+                        setState(() => _slideCount = value.round());
+                      },
+                      min: 5,
+                      max: 20,
+                      snapDivisions: 15,
+                    ),
                   ),
                 ),
               ],
@@ -130,11 +133,12 @@ class _AgentGeneratePanelState extends State<_AgentGeneratePanel> {
                   listenable: widget.command,
                   builder: (context, _) {
                     final generating = widget.command.running;
+
                     return HeroButton(
                       label: 'Generate',
-                      iconLeft: CupertinoIcons.sparkles,
-                      onPressed: generating ? null : _generate,
+                      leadingIcon: CupertinoIcons.sparkles,
                       loading: generating,
+                      onPressed: generating ? null : _generate,
                     );
                   },
                 ),

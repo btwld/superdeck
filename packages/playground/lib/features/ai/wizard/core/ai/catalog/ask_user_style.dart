@@ -6,7 +6,6 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:ack_json_schema_builder/ack_json_schema_builder.dart';
 import 'package:genui/genui.dart';
-import 'package:remix/remix.dart';
 
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../schemas/genui_action_schema.dart';
@@ -82,8 +81,6 @@ CatalogItem askUserStyleFor(PresentationThemeCatalog themeCatalog) {
   );
 }
 
-final askUserStyle = askUserStyleFor(PresentationThemeCatalog.withDefaults());
-
 AskUserStyleType parseAskUserStyle(
   Object? data, {
   required PresentationThemeCatalog themeCatalog,
@@ -151,29 +148,26 @@ class _AskUserStyleContentState extends State<_AskUserStyleContent> {
       return const SdBody('No presentation themes configured');
     }
 
-    final optionsRow = FlexBoxStyler()
-        .spacing(16)
-        .wrap(WidgetModifierConfig.intrinsicHeight());
-
-    return optionsRow(
-      children: options.asMap().entries.map((entry) {
-        final index = entry.key;
-        final theme = entry.value;
-        final isSelected = _selectedStyleIndex == index;
-
-        return Expanded(
-          child: StyleOptionCard(
-            theme: theme,
-            selected: isSelected,
-            onTap: () {
-              setState(() {
-                _selectedStyleIndex = index;
-                _selectedTheme = theme;
-              });
-            },
-          ),
-        );
-      }).toList(),
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: .stretch,
+        spacing: 16,
+        children: [
+          for (final (index, theme) in options.indexed)
+            Expanded(
+              child: StyleOptionCard(
+                theme: theme,
+                selected: _selectedStyleIndex == index,
+                onTap: () {
+                  setState(() {
+                    _selectedStyleIndex = index;
+                    _selectedTheme = theme;
+                  });
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -205,6 +199,5 @@ Map<String, dynamic> buildThemeSelectionContext(
     WizardContextKeys.themeId: theme.id,
     WizardContextKeys.title: theme.title,
     WizardContextKeys.description: theme.description,
-    WizardContextKeys.message: theme.title,
   };
 }

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
 
-/// Pre-styled solid (primary) button.
+enum SdButtonVariant { primary, outline, ghost }
+
+/// Application-owned button with a consistent Wizard action hierarchy.
 class SdButton extends StatelessWidget {
   const SdButton({
     super.key,
@@ -13,6 +15,7 @@ class SdButton extends StatelessWidget {
     this.loading = false,
     this.semanticLabel,
     this.style,
+    this.variant = SdButtonVariant.primary,
   });
 
   final String label;
@@ -23,22 +26,29 @@ class SdButton extends StatelessWidget {
 
   /// Semantic label for accessibility. Defaults to [label] if not provided.
   final String? semanticLabel;
-  final RemixButtonStyle? style;
+  final RemixButtonStyler? style;
+  final SdButtonVariant variant;
+
+  HeroButtonVariant get _heroVariant => switch (variant) {
+    .primary => HeroButtonVariant.primary,
+    .outline => .outline,
+    .ghost => .ghost,
+  };
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      enabled: enabled && !loading,
       button: true,
       label: semanticLabel ?? label,
-      enabled: enabled && !loading,
       child: HeroButton(
-        label: label,
-        onPressed: onPressed,
-        iconLeft: icon,
-        enabled: enabled,
-        loading: loading,
-        variant: HeroButtonVariant.primary,
+        variant: _heroVariant,
         style: style,
+        label: label,
+        leadingIcon: icon,
+        loading: loading,
+        enabled: enabled,
+        onPressed: onPressed,
       ),
     );
   }
@@ -59,7 +69,7 @@ class SdIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool loading;
   final String? semanticLabel;
-  final RemixIconButtonStyle? style;
+  final RemixIconButtonStyler? style;
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:genui/genui.dart' as genui;
 
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
@@ -85,6 +86,7 @@ final class GenUiConversationSession {
   final SuperdeckTransportFactory _transportFactory;
   final SuperdeckAgentClientFactory _agentClientFactory;
   final PresentationThemeCatalog _themeCatalog;
+  final String? _apiKey;
 
   genui.SurfaceController? _controller;
   SuperdeckA2uiTransport? _transport;
@@ -100,6 +102,7 @@ final class GenUiConversationSession {
   GenUiConversationSession({
     required AiConversationProfile profile,
     required ConversationSessionHandlers handlers,
+    String? apiKey,
     SuperdeckTransportFactory? transportFactory,
     SuperdeckAgentClientFactory agentClientFactory =
         DartanticSuperdeckAgentClient.new,
@@ -107,7 +110,8 @@ final class GenUiConversationSession {
        _handlers = handlers,
        _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
        _agentClientFactory = agentClientFactory,
-       _themeCatalog = profile.themeCatalog;
+       _themeCatalog = profile.themeCatalog,
+       _apiKey = apiKey;
 
   String _buildSystemPrompt(String systemInstruction) {
     final fragments = [
@@ -121,7 +125,6 @@ final class GenUiConversationSession {
         '${genui.PromptBuilder.defaultImportancePrefix}When creating a surface, '
             'the `catalogId` field MUST be exactly "$catalogId". '
             'Never use any other value.',
-      genui.PromptFragments.acknowledgeUser(),
       genui.PromptFragments.requireAtLeastOneSubmitElement(
         prefix: genui.PromptBuilder.defaultImportancePrefix,
       ),
@@ -130,67 +133,16 @@ final class GenUiConversationSession {
       ),
     ];
 
-    if (_profile.tools.isEmpty) {
-      return genui.PromptBuilder.chat(
-        catalog: _profile.catalog,
-        systemPromptFragments: fragments,
-      ).systemPromptJoined();
-    }
-
     return genui.PromptBuilder.custom(
       catalog: _profile.catalog,
-      allowedOperations: genui.SurfaceOperations.createOnly(dataModel: false),
+      allowedOperations: genui.SurfaceOperations.createAndUpdate(
+        dataModel: false,
+      ),
       systemPromptFragments: fragments,
-      technicalPossibilities: const genui.TechnicalPossibilities(
-        toolCall: true,
+      technicalPossibilities: genui.TechnicalPossibilities(
+        toolCall: _profile.tools.isNotEmpty,
       ),
     ).systemPromptJoined();
-  }
-
-  genui.SurfaceController? get controller => _controller;
-
-  bool get hasActiveSession {
-    return !_disposed && _controller != null && _transport != null;
-  }
-
-  Future<ConversationStartResult> ensureStarted({required String modelName}) {
-    if (_disposed) {
-      return Future.value(const ConversationStartResult.cancelled());
-    }
-    if (_controller != null) {
-      return Future.value(const ConversationStartResult.started());
-    }
-
-    final starting = _startingConversation;
-    if (starting != null) return starting;
-
-    late final Future<ConversationStartResult> future;
-    future = _start(modelName: modelName).whenComplete(() {
-      if (identical(_startingConversation, future)) {
-        _startingConversation = null;
-      }
-    });
-    _startingConversation = future;
-    return future;
-  }
-
-  Future<void> sendRequest(genui.ChatMessage message) {
-    final epoch = _sessionEpoch;
-    final queued = _requestQueue
-        .catchError(_handleRequestQueueError)
-        .then((_) => _sendRequest(message, sessionEpoch: epoch));
-    _requestQueue = queued;
-    return queued;
-  }
-
-  void restart() {
-    _disposeSession();
-  }
-
-  void dispose() {
-    if (_disposed) return;
-    _disposed = true;
-    _disposeSession();
   }
 
   Future<ConversationStartResult> _start({required String modelName}) async {
@@ -269,6 +221,7 @@ final class GenUiConversationSession {
   }
 
   String? _readApiKey() {
+    if (_apiKey case final apiKey?) return apiKey;
     try {
       return EnvConfig.geminiApiKey;
     } on StateError {
@@ -388,6 +341,56 @@ final class GenUiConversationSession {
     final str = error.toString();
     return str.replaceAll(RegExp(r'[A-Za-z0-9_-]{20,}'), '[REDACTED]');
   }
+
+  genui.SurfaceController? get controller => _controller;
+
+  bool get hasActiveSession {
+    return !_disposed && _controller != null && _transport != null;
+  }
+
+  @visibleForTesting
+  String buildSystemPromptForTesting(String systemInstruction) =>
+      _buildSystemPrompt(systemInstruction);
+
+  Future<ConversationStartResult> ensureStarted({required String modelName}) {
+    if (_disposed) {
+      return Future.value(const ConversationStartResult.cancelled());
+    }
+    if (_controller != null) {
+      return Future.value(const ConversationStartResult.started());
+    }
+
+    final starting = _startingConversation;
+    if (starting != null) return starting;
+
+    late final Future<ConversationStartResult> future;
+    future = _start(modelName: modelName).whenComplete(() {
+      if (identical(_startingConversation, future)) {
+        _startingConversation = null;
+      }
+    });
+    _startingConversation = future;
+    return future;
+  }
+
+  Future<void> sendRequest(genui.ChatMessage message) {
+    final epoch = _sessionEpoch;
+    final queued = _requestQueue
+        .catchError(_handleRequestQueueError)
+        .then((_) => _sendRequest(message, sessionEpoch: epoch));
+    _requestQueue = queued;
+    return queued;
+  }
+
+  void restart() {
+    _disposeSession();
+  }
+
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _disposeSession();
+  }
 }
 
 /// Compact, catalog-derived Wizard guidance. Renderer recipes deliberately stay
@@ -400,9 +403,8 @@ String buildWizardThemeCatalogPrompt(PresentationThemeCatalog themeCatalog) {
   return '''
 ## Registered presentation themes
 
-Use only these exact IDs in `AskUserStyle.themeIds` and
-`SummaryCard.items[].themeId`. The application owns all palette, typography,
-spacing, component, and treatment tokens.
+Use only these exact IDs in `AskUserStyle.themeIds`. The application owns all
+palette, typography, spacing, component, and treatment tokens.
 
 ${const JsonEncoder.withIndent('  ').convert(candidates)}
 ''';

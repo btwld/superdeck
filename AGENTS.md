@@ -23,7 +23,6 @@ packages/
   builder/    # Code generators and build_runner integration
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
-.planning/    # Internal development docs (not published)
 ```
 
 ### Key Package Responsibilities
@@ -80,6 +79,10 @@ The playground reads `GOOGLE_AI_API_KEY` from the ignored repository-root
 `.env` file through Flutter's compile-time define-file option. Without that
 flag, the Wizard intentionally shows a configuration error before accepting
 input.
+
+Wizard image generation is enabled by default for local/debug demos and is
+opt-in for release builds. Validate the image-enabled smoke flow before adding
+`--dart-define=SUPERDECK_WIZARD_IMAGE_GENERATION=true` to a release launch.
 
 When running an app to reproduce or diagnose a UI/runtime issue, launch it with
 `fvm flutter run` and keep that process attached for the entire reproduction.
@@ -179,6 +182,22 @@ lib/src/
 ### Reactive State
 The project uses Signals for reactive state management. `DeckController` is the central state manager for presentations.
 
+### AI Generation Models
+
+Use the current stable Gemini model split for the Playground deck-generation
+pipeline:
+
+- `gemini-3.5-flash` for the single global outline/planning request
+- `gemini-3.1-flash-lite` for concurrent narrative-section composition and
+  targeted outline/slide repair
+
+Keep model thinking at the lowest supported setting for this latency-sensitive
+workflow. Do not silently switch back to an older model, a preview model, or
+one request per slide. Any model or reasoning-setting change must be validated
+with the opt-in live 10-slide generation smoke test and its saved timing,
+validation, render, and quality artifacts. Target 20 seconds and treat 30
+seconds as the maximum acceptable generation time before local rendering.
+
 ### Block System
 Slides use `@tag` directives in Markdown to define layout and content:
 - `@section` - Groups child blocks into a horizontal section
@@ -192,7 +211,6 @@ Styles are defined in Dart through `SlideStyler`, `DeckOptions.baseStyle`, and `
 ## Documentation Locations
 
 - **User docs**: `docs/` (getting-started, guides, reference)
-- **Internal planning**: `.planning/` (architecture decisions, feature specs)
 - **Package READMEs**: Each package has its own README
 
 ## Quick Reference

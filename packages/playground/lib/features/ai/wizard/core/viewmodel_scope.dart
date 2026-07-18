@@ -63,9 +63,3 @@ class _ViewModelInherited<T> extends InheritedWidget {
   @override
   bool updateShouldNotify(_ViewModelInherited<T> oldWidget) => false;
 }
-
-/// Extension to mirror Provider's context.read API.
-extension ViewModelScopeExtension on BuildContext {
-  /// Retrieves the ViewModel of type [T] without listening to changes.
-  T read<T>() => ViewModelScope.of<T>(this);
-}

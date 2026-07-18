@@ -16,6 +16,7 @@ import 'package:playground/core/data/data_sources/memory_asset_cache_store.dart'
 import 'package:playground/core/data/data_sources/memory_deck_loader.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
+import 'package:playground/core/domain/generated_image_asset.dart';
 import 'package:playground/core/domain/stores/deck_customization_store.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
@@ -27,8 +28,11 @@ import 'package:playground/features/ai/quick_agent/core/engine/services/generati
 import 'package:playground/features/ai/quick_agent/core/engine/services/generated_slide_validator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_quality_report.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
+import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/theme_json_serializer.dart';
 import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
+import 'package:playground/features/ai/image_generation/image_generator.dart';
+import 'package:playground/features/ai/wizard/presentation/wizard_generation_controller.dart';
 import 'package:superdeck/src/utils/syntax_highlighter.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
@@ -39,7 +43,9 @@ const _selectedFixture = String.fromEnvironment(
   'LIVE_FIXTURE',
   defaultValue: 'all',
 );
+const _liveRunCount = int.fromEnvironment('LIVE_RUNS', defaultValue: 1);
 const _artifactPath = String.fromEnvironment('LIVE_ARTIFACT');
+const _includeDebugLayout = bool.fromEnvironment('LIVE_DEBUG_LAYOUT');
 const _renderThemeQualification = bool.fromEnvironment(
   'LIVE_THEME_QUALIFICATION',
 );
@@ -50,14 +56,23 @@ const _largeDeckFixtures = [
   'decision_data_15',
   'visual_product_20',
 ];
+const _focusedFixtures = ['superdeck_demo_10', 'playful_giraffes_10'];
 final _themeCatalog = PresentationThemeCatalog.withDefaults();
 final _typographyCatalog = PresentationTypographyCatalog.withDefaults();
+final _loadedCaptureFontFamilies = <String>{};
 
 typedef _CaptureResult = ({
   List<File> pngs,
   int replayedSlideCount,
   Set<String> resolvedFontFamilies,
   Duration elapsed,
+});
+
+typedef _CompletedLiveRun = ({
+  String fixture,
+  int runNumber,
+  Directory output,
+  File contactSheet,
 });
 
 void main() {
@@ -150,10 +165,26 @@ void main() {
         );
         final client = _FakeCheckpointModelClient();
         final traces = <GenerationTraceEvent>[];
-        final result = await DeckGeneratorService(
+        final service = DeckGeneratorService(
           apiKey: 'deterministic-fake-key',
           modelClientFactory: (_) => client,
-        ).generate(request, onTrace: traces.add);
+        );
+        final planningStopwatch = Stopwatch()..start();
+        final planning = await service.plan(request, onTrace: traces.add);
+        planningStopwatch.stop();
+        expect(planning.success, isTrue, reason: planning.error);
+        final approvedPlan = planning.plan!;
+        final compositionStopwatch = Stopwatch()..start();
+        final result = await service.generateFromPlan(
+          request,
+          approvedPlan,
+          onTrace: traces.add,
+        );
+        compositionStopwatch.stop();
+        expect(
+          planningStopwatch.elapsed + compositionStopwatch.elapsed,
+          lessThanOrEqualTo(WizardGenerationController.generationBudget),
+        );
 
         expect(
           result.success,
@@ -170,46 +201,49 @@ void main() {
         expect(result.plan!.slides, hasLength(10));
         expect(result.plan!.theme.id, 'technical-paper');
         expect(result.plan!.theme.version, 1);
-        expect(client.requests, hasLength(11));
+        expect(client.requests, hasLength(4));
         expect(
           client.requests.map(
-            (modelRequest) => modelRequest.generationConfig!.thinkingConfig,
+            (modelRequest) =>
+                modelRequest.generationConfig!.thinkingConfig!.thinkingBudget,
           ),
-          everyElement(isNull),
+          everyElement(0),
         );
+        expect(client.requests.map((modelRequest) => modelRequest.model), [
+          'models/gemini-3.5-flash',
+          'models/gemini-3.1-flash-lite',
+          'models/gemini-3.1-flash-lite',
+          'models/gemini-3.1-flash-lite',
+        ]);
 
-        final slideRequests = traces
+        final sectionRequests = traces
             .where(
               (event) =>
                   event.kind == GenerationTraceKind.request &&
                   event.phase == GenerationTracePhase.slide,
             )
             .toList(growable: false);
-        expect(slideRequests, hasLength(10));
-        final ledgers = <List<Map<String, Object?>>>[];
-        for (final (index, event) in slideRequests.indexed) {
-          final ledger = _parseDesignLedger(event.prompt!);
-          ledgers.add(ledger);
-          final expectedStart = index > 3 ? index - 3 : 0;
+        expect(sectionRequests, hasLength(3));
+        expect(sectionRequests.map((event) => event.slideIndex), [1, 4, 8]);
+        const expectedSectionKeys = [
+          ['opening', 'signals', 'synthesis'],
+          ['choices', 'alignment', 'practice', 'principle'],
+          ['verification', 'action', 'close'],
+        ];
+        final sectionPlanKeys = [
+          for (final event in sectionRequests)
+            _parseSectionPlanKeys(event.prompt!),
+        ];
+        for (final (index, event) in sectionRequests.indexed) {
           expect(
-            ledger.map((entry) => entry['key']),
-            result.plan!.slides
-                .sublist(expectedStart, index)
-                .map((slide) => slide.key),
-            reason: 'slide ${index + 1} design ledger',
+            sectionPlanKeys[index],
+            expectedSectionKeys[index],
+            reason: 'section ${index + 1} ordered plan',
           );
           expect(
-            ledger.every(
-              (entry) => entry.keys.toSet().difference(const {
-                'key',
-                'sectionKey',
-                'composition',
-                'treatment',
-                'density',
-              }).isEmpty,
-            ),
-            isTrue,
-            reason: 'slide ${index + 1} compact design ledger',
+            event.prompt,
+            contains('## Canonical shape examples'),
+            reason: 'section ${index + 1} canonical examples',
           );
         }
 
@@ -226,6 +260,18 @@ void main() {
           await File(
             p.join(output.path, 'request.json'),
           ).writeAsString(encoder.convert(request.toMap()));
+          await File(
+            p.join(output.path, 'approved_outline.json'),
+          ).writeAsString(encoder.convert(approvedPlan));
+          await File(p.join(output.path, 'timing.json')).writeAsString(
+            encoder.convert({
+              'planningMs': planningStopwatch.elapsedMilliseconds,
+              'compositionMs': compositionStopwatch.elapsedMilliseconds,
+              'combinedGenerationMs':
+                  planningStopwatch.elapsedMilliseconds +
+                  compositionStopwatch.elapsedMilliseconds,
+            }),
+          );
           await File(
             p.join(output.path, 'deck.json'),
           ).writeAsString(encoder.convert(deckJson));
@@ -277,7 +323,7 @@ void main() {
           const encoder = JsonEncoder.withIndent('  ');
           await File(p.join(output.path, 'checkpoint.json')).writeAsString(
             encoder.convert({
-              'designLedgers': ledgers,
+              'sectionPlanKeys': sectionPlanKeys,
               'resolvedStyle': styleSnapshot,
               'qualityReport': report.toJson(),
               'contactSheet': p.basename(contactSheet.path),
@@ -344,21 +390,30 @@ void main() {
               for (final rawSlide in deckJson['slides']! as List)
                 Map<String, dynamic>.from(rawSlide as Map),
             ],
+            generatedImages: await _readGeneratedImages(output),
           );
         }))!;
         final auditErrors = <String>[
           if (jsonEncode(artifact.themeReference) !=
               jsonEncode(serializeDeckThemeReference(artifact.plan.theme)))
             'deck.json theme does not match deck_plan.json theme.',
-          ...validateDeckPlan(artifact.plan, request: artifact.request),
+          ...validateDeckPlanIssues(
+            artifact.plan,
+            request: artifact.request,
+            knownGeneratedAssetKeys: {
+              for (final asset in artifact.generatedImages) asset.assetKey,
+            },
+          ).blockingIssues.map((issue) => issue.message),
           for (final (index, rawSlide) in artifact.rawSlides.indexed)
-            ...validateGeneratedSlide(
+            ...validateGeneratedSlideIssues(
               expectedKey: artifact.plan.slides[index].key,
               rawSlide: rawSlide,
               planSlide: artifact.plan.slides[index],
               request: artifact.request,
               elementCatalog: GenerationElementCatalog.builtIn(),
-            ).map((error) => 'Slide ${index + 1}: $error'),
+            ).blockingIssues.map(
+              (issue) => 'Slide ${index + 1}: ${issue.message}',
+            ),
         ];
         expect(
           auditErrors,
@@ -373,6 +428,7 @@ void main() {
           markdown: artifact.markdown,
           theme: artifact.theme,
           expectedSlideCount: artifact.slideCount,
+          generatedImages: artifact.generatedImages,
         );
         // ignore: avoid_print
         print('Writing contact sheet from ${capture.pngs.length} captures');
@@ -386,113 +442,202 @@ void main() {
     return;
   }
 
+  if (_liveRunCount < 1 || _liveRunCount > 10) {
+    throw ArgumentError.value(
+      _liveRunCount,
+      'LIVE_RUNS',
+      'Use a value from 1 to 10.',
+    );
+  }
+
+  final completedRuns = <_CompletedLiveRun>[];
+  tearDownAll(() async {
+    if (completedRuns.length < 2) return;
+    final review = await _writeMultiRunReview(
+      selectedFixture: _selectedFixture,
+      requestedRuns: _liveRunCount,
+      runs: completedRuns,
+    );
+    // ignore: avoid_print
+    print('Multi-run review artifacts: ${review.path}');
+  });
+
   for (final fixture in _selectedFixtures()) {
-    group('live generation: $fixture', () {
-      late Directory output;
-      late String markdown;
-      late ResolvedPresentationTheme theme;
-      late DeckPlanType plan;
-      late DeckGenerationRequest request;
-      late List<Slide> slides;
-      var traces = <GenerationTraceEvent>[];
-      var expectedSlideCount = 0;
-      var generationReady = false;
+    for (var runIndex = 0; runIndex < _liveRunCount; runIndex++) {
+      final runNumber = runIndex + 1;
+      group('live generation: $fixture [$runNumber/$_liveRunCount]', () {
+        late Directory output;
+        late String markdown;
+        late ResolvedPresentationTheme theme;
+        late DeckPlanType plan;
+        late DeckGenerationRequest request;
+        late List<Slide> slides;
+        List<GeneratedImageAsset> generatedImages = const [];
+        var traces = <GenerationTraceEvent>[];
+        var expectedSlideCount = 0;
+        var generationReady = false;
 
-      test(
-        'generates and writes model artifacts',
-        () async {
-          final brief = await File(
-            'test_live/ai_generation/fixtures/$fixture.txt',
-          ).readAsString();
-          final service = DeckGeneratorService(apiKey: _apiKey);
-          request = _requestForFixture(fixture, brief);
-          final result = await service.generate(request, onTrace: traces.add);
-          output = await _createRunDirectory(fixture);
+        test(
+          'generates and writes model artifacts',
+          () async {
+            final brief = await File(
+              'test_live/ai_generation/fixtures/$fixture.txt',
+            ).readAsString();
+            final service = DeckGeneratorService(
+              apiKey: _apiKey,
+              imageGenerator: DartanticImageGenerator(
+                apiKey: _apiKey,
+                modelName: geminiImageGenerationModel,
+              ),
+            );
+            request = _requestForFixture(fixture, brief);
+            final planningStopwatch = Stopwatch()..start();
+            final planning = await service.plan(request, onTrace: traces.add);
+            planningStopwatch.stop();
+            expect(planning.success, isTrue, reason: planning.error);
+            final approvedPlan = planning.plan!;
+            final compositionStopwatch = Stopwatch()..start();
+            final result = await service.generateFromPlan(
+              request,
+              approvedPlan,
+              onTrace: traces.add,
+            );
+            compositionStopwatch.stop();
+            output = await _createRunDirectory(fixture);
+            await File(p.join(output.path, 'timing.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert({
+                'planningMs': planningStopwatch.elapsedMilliseconds,
+                'compositionMs': compositionStopwatch.elapsedMilliseconds,
+                'combinedGenerationMs':
+                    planningStopwatch.elapsedMilliseconds +
+                    compositionStopwatch.elapsedMilliseconds,
+                'withinThirtySecondTarget':
+                    planningStopwatch.elapsed + compositionStopwatch.elapsed <=
+                    WizardGenerationController.generationBudget,
+              }),
+            );
+            await File(p.join(output.path, 'brief.txt')).writeAsString(brief);
+            await File(p.join(output.path, 'request.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert(request.toMap()),
+            );
+            await File(
+              p.join(output.path, 'approved_outline.json'),
+            ).writeAsString(
+              const JsonEncoder.withIndent('  ').convert(approvedPlan),
+            );
+            await File(p.join(output.path, 'trace.json')).writeAsString(
+              const JsonEncoder.withIndent(
+                '  ',
+              ).convert(traces.map((event) => event.toJson()).toList()),
+            );
+            await _writeTraceArtifacts(output, traces, plan: result.plan);
 
-          await File(p.join(output.path, 'brief.txt')).writeAsString(brief);
-          await File(p.join(output.path, 'request.json')).writeAsString(
-            const JsonEncoder.withIndent('  ').convert(request.toMap()),
-          );
-          await File(p.join(output.path, 'trace.json')).writeAsString(
-            const JsonEncoder.withIndent(
-              '  ',
-            ).convert(traces.map((event) => event.toJson()).toList()),
-          );
-          await _writeTraceArtifacts(output, traces, plan: result.plan);
+            expect(
+              planningStopwatch.elapsed + compositionStopwatch.elapsed,
+              lessThanOrEqualTo(WizardGenerationController.generationBudget),
+              reason: 'Split generation exceeded the 30-second booth budget.',
+            );
 
-          expect(result.success, isTrue, reason: result.error);
-          expect(result.slides, isNotEmpty);
-          plan = result.plan!;
-          slides = result.slides;
-          final deckJson = {
-            'theme': serializeDeckThemeReference(result.plan!.theme),
-            'slides': result.slides.map((slide) => slide.toMap()).toList(),
-          };
-          await File(
-            p.join(output.path, 'deck.json'),
-          ).writeAsString(const JsonEncoder.withIndent('  ').convert(deckJson));
-          markdown = const SlideSerializer().serialize(result.slides);
-          theme = result.theme!;
-          expectedSlideCount = result.slideCount;
-          await File(p.join(output.path, 'slides.md')).writeAsString(markdown);
-          await File(p.join(output.path, 'validation.json')).writeAsString(
-            const JsonEncoder.withIndent('  ').convert({
-              'success': result.success,
-              'slideCount': result.slideCount,
-              'validationEvents': traces
-                  .where(
-                    (event) => event.kind == GenerationTraceKind.validation,
-                  )
-                  .map((event) => event.toJson())
-                  .toList(),
-            }),
-          );
+            expect(result.success, isTrue, reason: result.error);
+            expect(result.slides, isNotEmpty);
+            plan = result.plan!;
+            slides = result.slides;
+            generatedImages = result.generatedImages;
+            await _writeGeneratedImages(output, generatedImages);
+            if (request.imageStyleId != null) {
+              expect(
+                generatedImages.where((asset) => asset.bytes != null),
+                isNotEmpty,
+                reason: 'Image-enabled smoke produced no usable artwork.',
+              );
+            }
+            final deckJson = {
+              'theme': serializeDeckThemeReference(result.plan!.theme),
+              'slides': result.slides.map((slide) => slide.toMap()).toList(),
+            };
+            await File(p.join(output.path, 'deck.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert(deckJson),
+            );
+            markdown = const SlideSerializer().serialize(result.slides);
+            theme = result.theme!;
+            expectedSlideCount = result.slideCount;
+            await File(
+              p.join(output.path, 'slides.md'),
+            ).writeAsString(markdown);
+            await File(p.join(output.path, 'validation.json')).writeAsString(
+              const JsonEncoder.withIndent('  ').convert({
+                'success': result.success,
+                'slideCount': result.slideCount,
+                'validationEvents': traces
+                    .where(
+                      (event) => event.kind == GenerationTraceKind.validation,
+                    )
+                    .map((event) => event.toJson())
+                    .toList(),
+              }),
+            );
 
-          generationReady = true;
-        },
-        skip: _apiKey.isEmpty,
-        timeout: const Timeout(Duration(minutes: 15)),
-      );
+            generationReady = true;
+          },
+          skip: _apiKey.isEmpty,
+          timeout: const Timeout(Duration(minutes: 15)),
+        );
 
-      testWidgets(
-        'captures PNGs and contact sheet',
-        (tester) async {
-          if (!generationReady) return;
-          final capture = await _captureSlides(
-            tester: tester,
-            output: output,
-            markdown: markdown,
-            theme: theme,
-            expectedSlideCount: expectedSlideCount,
-          );
-          await tester.runAsync(() => _writeContactSheet(output, capture.pngs));
-          final report = GenerationQualityReport.evaluate(
-            request: request,
-            plan: plan,
-            slides: slides,
-            traces: traces,
-            replayedSlideCount: capture.replayedSlideCount,
-            capturedSlideCount: capture.pngs.length,
-            resolvedFontFamilies: capture.resolvedFontFamilies,
-            captureElapsed: capture.elapsed,
-          );
-          await tester.runAsync(
-            () =>
-                File(p.join(output.path, 'quality_report.json')).writeAsString(
-                  const JsonEncoder.withIndent('  ').convert(report.toJson()),
-                ),
-          );
-          expect(capture.pngs, hasLength(expectedSlideCount));
-          expect(
-            report.passed,
-            isTrue,
-            reason: const JsonEncoder.withIndent('  ').convert(report.toJson()),
-          );
-        },
-        skip: _apiKey.isEmpty,
-        timeout: const Timeout(Duration(minutes: 5)),
-      );
-    });
+        testWidgets(
+          'captures PNGs and contact sheet',
+          (tester) async {
+            if (!generationReady) return;
+            final capture = await _captureSlides(
+              tester: tester,
+              output: output,
+              markdown: markdown,
+              theme: theme,
+              expectedSlideCount: expectedSlideCount,
+              generatedImages: generatedImages,
+            );
+            final contactSheet = (await tester.runAsync(
+              () => _writeContactSheet(output, capture.pngs),
+            ))!;
+            final report = GenerationQualityReport.evaluate(
+              request: request,
+              plan: plan,
+              slides: slides,
+              traces: traces,
+              replayedSlideCount: capture.replayedSlideCount,
+              capturedSlideCount: capture.pngs.length,
+              resolvedFontFamilies: capture.resolvedFontFamilies,
+              captureElapsed: capture.elapsed,
+              knownGeneratedAssetKeys: {
+                for (final asset in generatedImages)
+                  if (asset.bytes != null) asset.assetKey,
+              },
+            );
+            await tester.runAsync(
+              () => File(p.join(output.path, 'quality_report.json'))
+                  .writeAsString(
+                    const JsonEncoder.withIndent('  ').convert(report.toJson()),
+                  ),
+            );
+            completedRuns.add((
+              fixture: fixture,
+              runNumber: runNumber,
+              output: output,
+              contactSheet: contactSheet,
+            ));
+            expect(capture.pngs, hasLength(expectedSlideCount));
+            expect(
+              report.passed,
+              isTrue,
+              reason: const JsonEncoder.withIndent(
+                '  ',
+              ).convert(report.toJson()),
+            );
+          },
+          skip: _apiKey.isEmpty,
+          timeout: const Timeout(Duration(minutes: 5)),
+        );
+      });
+    }
   }
 }
 
@@ -581,11 +726,6 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
           purpose: 'Ground the platform story in a developer workspace',
         ),
         GroundedGenerationElement(
-          type: 'qrcode',
-          source: 'https://example.com/developer-platform',
-          purpose: 'Let the audience open the developer platform',
-        ),
-        GroundedGenerationElement(
           type: 'webview',
           source: 'https://example.com',
           purpose: 'Demonstrate the live product surface',
@@ -606,6 +746,46 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
       designDirection: 'Editorial, dark, restrained, and cinematic',
       headlineFont: 'Playfair Display',
       bodyFont: 'Inter',
+      imageStyleId: 'minimalist',
+      imageStyleVersion: 1,
+      maxGeneratedImages: 3,
+    ),
+    'superdeck_demo_10' => DeckGenerationRequest(
+      userIntent: brief,
+      slideCount: 10,
+      audience: 'Conference booth visitors and product builders',
+      approach: 'Fast visual product story with a clear reveal',
+      themeId: 'bold-product',
+      emphasis: const [
+        'GenUI-guided choices',
+        'story beats before slide writing',
+        'visible generated artwork and final quality',
+      ],
+      designDirection: 'Bold, modern, energetic, and product-forward',
+      headlineFont: 'Montserrat',
+      bodyFont: 'DM Sans',
+      imageStyleId: 'gradient',
+      imageStyleVersion: 1,
+      maxGeneratedImages: 3,
+    ),
+    'playful_giraffes_10' => DeckGenerationRequest(
+      userIntent: brief,
+      slideCount: 10,
+      audience: 'Families, children, and playful demo visitors',
+      approach:
+          'Whimsical storybook event recap with a clear beginning and end',
+      themeId: 'playful-learning',
+      emphasis: const [
+        'preserve every supplied story fact exactly',
+        'make each giraffe scene expressive and easy to understand',
+        'clearly distinguish the completed party from the proposed next party',
+      ],
+      designDirection: 'Sunny, whimsical, colorful, and storybook-like',
+      headlineFont: 'Lobster',
+      bodyFont: 'Open Sans',
+      imageStyleId: 'watercolor',
+      imageStyleVersion: 1,
+      maxGeneratedImages: 3,
     ),
     'decision_data_15' => DeckGenerationRequest(
       userIntent: brief,
@@ -642,11 +822,6 @@ DeckGenerationRequest _requestForFixture(String fixture, String brief) {
           source: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71',
           purpose: 'Show a polished analytics product surface',
         ),
-        GroundedGenerationElement(
-          type: 'qrcode',
-          source: 'https://superdeck-dev.web.app',
-          purpose: 'Let the audience open the live SuperDeck experience',
-        ),
       ],
     ),
     _ => throw ArgumentError.value(fixture, 'fixture', 'Unknown fixture'),
@@ -658,7 +833,8 @@ List<String> _selectedFixtures() => switch (_selectedFixture) {
   'large_deck_matrix' => _largeDeckFixtures,
   final fixture
       when _smokeFixtures.contains(fixture) ||
-          _largeDeckFixtures.contains(fixture) =>
+          _largeDeckFixtures.contains(fixture) ||
+          _focusedFixtures.contains(fixture) =>
     [fixture],
   _ => throw ArgumentError.value(
     _selectedFixture,
@@ -727,23 +903,69 @@ Future<void> _writeTraceArtifacts(
   );
 }
 
-List<Map<String, Object?>> _parseDesignLedger(String prompt) {
-  const startMarker = '## Recent design ledger\n';
-  const endMarker = '\n\n## Current slide plan';
+Future<void> _writeGeneratedImages(
+  Directory output,
+  List<GeneratedImageAsset> assets,
+) async {
+  if (assets.isEmpty) return;
+  final directory = await Directory(
+    p.join(output.path, 'generated_images'),
+  ).create();
+  for (final asset in assets) {
+    final bytes = asset.bytes;
+    if (bytes == null || bytes.isEmpty) continue;
+    await File(p.join(directory.path, asset.assetKey)).writeAsBytes(bytes);
+  }
+  await File(p.join(directory.path, 'outcomes.json')).writeAsString(
+    const JsonEncoder.withIndent('  ').convert([
+      for (final asset in assets)
+        {
+          'assetKey': asset.assetKey,
+          'success': asset.bytes != null,
+          if (asset.error != null) 'error': asset.error,
+        },
+    ]),
+  );
+}
+
+Future<List<GeneratedImageAsset>> _readGeneratedImages(Directory output) async {
+  final directory = Directory(p.join(output.path, 'generated_images'));
+  final outcomesFile = File(p.join(directory.path, 'outcomes.json'));
+  if (!await outcomesFile.exists()) return const [];
+
+  final outcomes = jsonDecode(await outcomesFile.readAsString()) as List;
+  final assets = <GeneratedImageAsset>[];
+  for (final outcome in outcomes.whereType<Map>()) {
+    final assetKey = outcome['assetKey'];
+    if (assetKey is! String || outcome['success'] != true) continue;
+    final file = File(p.join(directory.path, assetKey));
+    if (!await file.exists()) continue;
+    assets.add(
+      GeneratedImageAsset.success(
+        assetKey: assetKey,
+        bytes: await file.readAsBytes(),
+      ),
+    );
+  }
+  return assets;
+}
+
+List<String> _parseSectionPlanKeys(String prompt) {
+  const startMarker = '## Ordered slide plans\n';
+  const endMarker = '\n\n## Boundary context';
   final start = prompt.indexOf(startMarker);
   final end = prompt.indexOf(endMarker, start + startMarker.length);
   if (start < 0 || end < 0) {
-    throw FormatException('Slide prompt does not contain a design ledger.');
+    throw FormatException('Section prompt does not contain ordered plans.');
   }
   final payload = prompt.substring(start + startMarker.length, end).trim();
-  if (payload.startsWith('None')) return const [];
   final decoded = jsonDecode(payload);
   if (decoded is! List) {
-    throw FormatException('Design ledger is not a JSON list.');
+    throw FormatException('Ordered section plans are not a JSON list.');
   }
   return [
     for (final entry in decoded)
-      if (entry is Map) Map<String, Object?>.from(entry),
+      if (entry is Map && entry['key'] is String) entry['key']! as String,
   ];
 }
 
@@ -811,6 +1033,7 @@ Future<_CaptureResult> _captureSlides({
   required String markdown,
   required ResolvedPresentationTheme theme,
   required int expectedSlideCount,
+  List<GeneratedImageAsset> generatedImages = const [],
 }) async {
   final startedAt = DateTime.now();
   // ignore: avoid_print
@@ -834,10 +1057,17 @@ Future<_CaptureResult> _captureSlides({
   // ignore: avoid_print
   print('Creating in-memory deck');
   final loader = MemoryDeckLoader();
+  final assetCache = MemoryAssetCacheStore();
+  for (final asset in generatedImages) {
+    final bytes = asset.bytes;
+    if (bytes != null && bytes.isNotEmpty) {
+      await assetCache.write(asset.assetKey, bytes);
+    }
+  }
   final controller = DeckController(
     deckLoader: loader,
     options: DeckOptions(),
-    assetCacheStore: MemoryAssetCacheStore(),
+    assetCacheStore: assetCache,
   );
   final customization = DeckCustomizationStore(controller);
   addTearDown(customization.dispose);
@@ -883,6 +1113,7 @@ Future<_CaptureResult> _captureSlides({
               quality: SlideCaptureQuality.good,
               slide: configuration,
               context: context,
+              includeDebugLayout: _includeDebugLayout,
             )
             .timeout(const Duration(seconds: 45));
         final file = File(
@@ -982,6 +1213,7 @@ bool _isNetworkSource(String source) {
 
 Future<Set<String>> _loadCaptureFonts(ResolvedPresentationTheme theme) async {
   final families = {theme.headlineFamily, theme.bodyFamily};
+  if (_loadedCaptureFontFamilies.containsAll(families)) return families;
   final fontStyles = <TextStyle>[];
   for (final family in families) {
     final descriptor = _typographyCatalog.resolve(family);
@@ -1006,6 +1238,7 @@ Future<Set<String>> _loadCaptureFonts(ResolvedPresentationTheme theme) async {
     await GoogleFonts.pendingFonts(
       fontStyles,
     ).timeout(const Duration(seconds: 30));
+    _loadedCaptureFontFamilies.addAll(families);
   } on TimeoutException {
     throw StateError(
       'Timed out resolving live capture fonts: ${families.join(', ')}.',
@@ -1047,6 +1280,129 @@ Future<File> _writeContactSheet(Directory output, List<File> files) async {
   return file;
 }
 
+Future<Directory> _writeMultiRunReview({
+  required String selectedFixture,
+  required int requestedRuns,
+  required List<_CompletedLiveRun> runs,
+}) async {
+  final safeFixture = selectedFixture.replaceAll(
+    RegExp(r'[^a-zA-Z0-9_-]'),
+    '_',
+  );
+  final output = await _createRunDirectory('review_$safeFixture');
+  final entries = <Map<String, Object?>>[];
+  final generationTimes = <int>[];
+  var passedRuns = 0;
+  var diagnosticCount = 0;
+
+  for (final run in runs) {
+    final timing = await _readJsonObject(
+      File(p.join(run.output.path, 'timing.json')),
+    );
+    final quality = await _readJsonObject(
+      File(p.join(run.output.path, 'quality_report.json')),
+    );
+    final generationMs = timing['combinedGenerationMs'] as int?;
+    if (generationMs != null) generationTimes.add(generationMs);
+    if (quality['passed'] == true) passedRuns++;
+    final issues = quality['issues'];
+    if (issues is List) diagnosticCount += issues.length;
+
+    entries.add({
+      'fixture': run.fixture,
+      'runNumber': run.runNumber,
+      'artifactDirectory': p.basename(run.output.path),
+      'contactSheet': p.basename(run.contactSheet.path),
+      'timing': timing,
+      'quality': {
+        'passed': quality['passed'],
+        'issues': quality['issues'],
+        'counts': quality['counts'],
+        'plan': quality['plan'],
+        'distributions': quality['distributions'],
+        'modelRequests': quality['modelRequests'],
+      },
+    });
+  }
+
+  final board = await _writeReviewBoard(output, runs);
+  final averageGenerationMs = generationTimes.isEmpty
+      ? null
+      : generationTimes.reduce((a, b) => a + b) ~/ generationTimes.length;
+  await File(p.join(output.path, 'manifest.json')).writeAsString(
+    const JsonEncoder.withIndent('  ').convert({
+      'selectedFixture': selectedFixture,
+      'requestedRunsPerFixture': requestedRuns,
+      'completedRuns': runs.length,
+      'reviewBoard': p.basename(board.path),
+      'aggregate': {
+        'passedRuns': passedRuns,
+        'diagnosticIssueCount': diagnosticCount,
+        'averageGenerationMs': averageGenerationMs,
+        'minimumGenerationMs': generationTimes.isEmpty
+            ? null
+            : generationTimes.reduce((a, b) => a < b ? a : b),
+        'maximumGenerationMs': generationTimes.isEmpty
+            ? null
+            : generationTimes.reduce((a, b) => a > b ? a : b),
+        'allWithinThirtySecondTarget': entries.every(
+          (entry) =>
+              ((entry['timing'] as Map)['withinThirtySecondTarget'] as bool?) ??
+              false,
+        ),
+      },
+      'runs': entries,
+    }),
+  );
+  return output;
+}
+
+Future<Map<String, Object?>> _readJsonObject(File file) async {
+  final decoded = jsonDecode(await file.readAsString());
+  if (decoded is! Map) {
+    throw StateError('Expected a JSON object in ${file.path}.');
+  }
+  return Map<String, Object?>.from(decoded);
+}
+
+Future<File> _writeReviewBoard(
+  Directory output,
+  List<_CompletedLiveRun> runs,
+) async {
+  final sheets = <image.Image>[];
+  for (final run in runs) {
+    final decoded = image.decodePng(await run.contactSheet.readAsBytes());
+    if (decoded != null) sheets.add(image.copyResize(decoded, width: 480));
+  }
+  if (sheets.isEmpty) {
+    throw StateError('Cannot create a review board without contact sheets.');
+  }
+
+  final columns = sheets.length < 3 ? sheets.length : 3;
+  final rows = (sheets.length + columns - 1) ~/ columns;
+  final cellWidth = sheets.first.width;
+  final cellHeight = sheets
+      .map((sheet) => sheet.height)
+      .reduce((a, b) => a > b ? a : b);
+  final board = image.Image(
+    width: cellWidth * columns,
+    height: cellHeight * rows,
+  );
+  image.fill(board, color: image.ColorRgb8(24, 24, 27));
+  for (var index = 0; index < sheets.length; index++) {
+    image.compositeImage(
+      board,
+      sheets[index],
+      dstX: (index % columns) * cellWidth,
+      dstY: (index ~/ columns) * cellHeight,
+    );
+  }
+
+  final file = File(p.join(output.path, 'review_board.png'));
+  await file.writeAsBytes(image.encodePng(board));
+  return file;
+}
+
 Future<void> _expectThemeGolden(String themeId, File actualFile) async {
   final expectedFile = File(
     p.join('test_live', 'ai_generation', 'goldens', '$themeId.png'),
@@ -1084,7 +1440,8 @@ final class _FakeCheckpointModelClient implements GenerationModelClient {
   _FakeCheckpointModelClient()
     : _responses = [
         _checkpointResponse(_checkpointPlanDraft()),
-        for (final slide in _checkpointSlides()) _checkpointResponse(slide),
+        for (final slides in _checkpointSectionSlides())
+          _checkpointResponse({'slides': slides}),
       ];
 
   final List<google_ai.GenerateContentResponse> _responses;
@@ -1353,6 +1710,11 @@ List<Map<String, Object?>> _checkpointSlides() => [
     ],
   ),
 ];
+
+List<List<Map<String, Object?>>> _checkpointSectionSlides() {
+  final slides = _checkpointSlides();
+  return [slides.sublist(0, 3), slides.sublist(3, 7), slides.sublist(7)];
+}
 
 Map<String, Object?> _checkpointSlide({
   required String key,

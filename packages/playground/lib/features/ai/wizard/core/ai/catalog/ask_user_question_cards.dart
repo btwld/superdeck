@@ -3,10 +3,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'package:hero_ui/hero_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:remix/remix.dart';
 
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
-import '../prompts/image_style_prompts.dart';
 import '../../ui/ui.dart';
 import '../../utils/color_utils.dart';
 import '../../utils/font_utils.dart';
@@ -15,39 +16,48 @@ import '../../utils/font_utils.dart';
 
 /// Returns body text style for selected state.
 TextStyler? selectedBodyStyle(bool selected) =>
-    selected ? TextStyler().color($accent()) : null;
+    selected ? TextStyler().color($foreground()).fontWeight(.w600) : null;
 
 /// Returns caption text style for selected state.
 TextStyler? selectedCaptionStyle(bool selected) =>
-    selected ? TextStyler().color($accent()) : null;
+    selected ? TextStyler().color($muted()) : null;
 
 // ─────────────────────────────────── CARD WIDGETS ───────────────────────────────────
 
 /// Radio option card with title and optional description.
 class RadioOptionCard extends StatelessWidget {
-  final String title;
-  final String? description;
-  final bool selected;
-  final VoidCallback? onTap;
-
   const RadioOptionCard({
     super.key,
     required this.title,
     this.description,
+    this.icon = LucideIcons.presentation,
     required this.selected,
     this.onTap,
   });
+
+  final String title;
+  final String? description;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final content = FlexBoxStyler()
         .column()
-        .spacing(4)
+        .spacing(8)
         .crossAxisAlignment(CrossAxisAlignment.start);
 
+    final iconColor = selected
+        ? $accent.resolve(context)
+        : $muted.resolve(context);
+    final iconBackground = selected
+        ? $accentSoft.resolve(context)
+        : $surfaceTertiary.resolve(context);
+
     return Semantics(
-      inMutuallyExclusiveGroup: true,
       selected: selected,
+      inMutuallyExclusiveGroup: true,
       label: 'Option: $title${description != null ? ', $description' : ''}',
       child: Pressable(
         onPress: onTap,
@@ -56,6 +66,16 @@ class RadioOptionCard extends StatelessWidget {
           style: FlexBoxStyler().minHeight(SdTokens.cardMinHeight),
           child: content(
             children: [
+              Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: iconBackground,
+                  borderRadius: .circular(10),
+                ),
+                width: 38,
+                height: 38,
+                child: Icon(icon, size: 20, color: iconColor),
+              ),
               SdBody(title, style: selectedBodyStyle(selected)),
               if (description != null && description!.isNotEmpty)
                 SdCaption(description!, style: selectedCaptionStyle(selected)),
@@ -105,7 +125,7 @@ class CheckboxOptionCard extends StatelessWidget {
   }
 }
 
-/// Style option card with color swatches and font previews.
+/// Style option card with a composed palette and typography preview.
 class StyleOptionCard extends StatelessWidget {
   const StyleOptionCard({
     super.key,
@@ -122,19 +142,12 @@ class StyleOptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final content = FlexBoxStyler()
         .column()
-        .mainAxisSize(MainAxisSize.min)
-        .spacing(4)
-        .crossAxisAlignment(CrossAxisAlignment.start);
-
-    final colorRow = FlexBoxStyler().paddingY(5).row();
-
-    final recipe = theme.recipe;
+        .crossAxisAlignment(CrossAxisAlignment.stretch)
+        .spacing(12)
+        .mainAxisSize(MainAxisSize.min);
 
     final bodyStyle = selectedBodyStyle(selected);
     final captionStyle = selectedCaptionStyle(selected);
-
-    final headlineFontLoaded = tryGetGoogleFontFamily(recipe.headlineFamily);
-    final bodyFontLoaded = tryGetGoogleFontFamily(recipe.bodyFamily);
 
     return Semantics(
       selected: selected,
@@ -147,34 +160,9 @@ class StyleOptionCard extends StatelessWidget {
           style: FlexBoxStyler().minHeight(SdTokens.cardMinHeight),
           child: content(
             children: [
+              _ThemeSamplePreview(theme: theme),
               SdBody(theme.title, style: bodyStyle),
               SdCaption(theme.description, style: captionStyle),
-              colorRow(
-                children: recipe.palette.previewColors
-                    .map(
-                      (color) => SdColorCircle(
-                        color: hexToColor(color),
-                        interactive: true,
-                      ),
-                    )
-                    .toList(),
-              ),
-              SdBody(
-                recipe.headlineFamily,
-                style: headlineFontLoaded != null
-                    ? TextStyler()
-                          .fontFamily(headlineFontLoaded)
-                          .merge(bodyStyle)
-                    : bodyStyle,
-              ),
-              SdCaption(
-                recipe.bodyFamily,
-                style: bodyFontLoaded != null
-                    ? TextStyler()
-                          .fontFamily(bodyFontLoaded)
-                          .merge(captionStyle)
-                    : captionStyle,
-              ),
             ],
           ),
         ),
@@ -183,9 +171,78 @@ class StyleOptionCard extends StatelessWidget {
   }
 }
 
+class _ThemeSamplePreview extends StatelessWidget {
+  const _ThemeSamplePreview({required this.theme});
+
+  final PresentationThemeDescriptor theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final recipe = theme.recipe;
+    final palette = recipe.palette;
+    final headlineFamily = tryGetGoogleFontFamily(recipe.headlineFamily);
+    final bodyFamily = tryGetGoogleFontFamily(recipe.bodyFamily);
+    final background = hexToColor(palette.background);
+    final surface = hexToColor(palette.surface);
+    final heading = hexToColor(palette.heading);
+    final body = hexToColor(palette.body);
+    final accent = hexToColor(palette.accent);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: background,
+        border: .all(color: surface, width: 2),
+        borderRadius: .circular(12),
+      ),
+      width: .infinity,
+      height: 148,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: .circular(999),
+            ),
+            width: 38,
+            height: 4,
+          ),
+          const Spacer(),
+          Text(
+            'Build what’s next',
+            style: TextStyle(
+              color: heading,
+              fontSize: 22,
+              fontWeight: .w700,
+              height: 1.05,
+              fontFamily: headlineFamily,
+            ),
+            overflow: .ellipsis,
+            maxLines: 2,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'A clear story, beautifully presented.',
+            style: TextStyle(
+              color: body,
+              fontSize: 12,
+              fontWeight: .w400,
+              height: 1.25,
+              fontFamily: bodyFamily,
+            ),
+            overflow: .ellipsis,
+            maxLines: 2,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Image style option card with generated preview image.
 class ImageStyleOptionCard extends StatelessWidget {
-  final ImageStyle style;
+  final PresentationImageStyleDescriptor style;
   final Uint8List? imageBytes;
   final bool isLoading;
   final bool hasFailed;
@@ -236,25 +293,19 @@ class ImageStyleOptionCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 8,
         children: [
-          Icon(
-            Icons.broken_image_outlined,
-            color: $muted.resolve(context),
-            size: 32,
-          ),
+          Icon(LucideIcons.imageOff, size: 32, color: $muted.resolve(context)),
           GestureDetector(
             onTap: onRetry,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 4,
               children: [
-                Icon(Icons.refresh, size: 16, color: $accent.resolve(context)),
-                Text(
-                  'Retry',
-                  style: $paragraphSmall
-                      .mix()
-                      .resolve(context)
-                      .copyWith(color: $accent.resolve(context)),
+                Icon(
+                  LucideIcons.refreshCw,
+                  size: 16,
+                  color: $accent.resolve(context),
                 ),
+                SdCaption('Retry', style: TextStyler().color($accent())),
               ],
             ),
           ),
@@ -266,11 +317,7 @@ class ImageStyleOptionCard extends StatelessWidget {
   Widget _buildPlaceholder(BuildContext context) {
     return Box(
       style: BoxStyler().color($surfaceSecondary()).alignment(Alignment.center),
-      child: Icon(
-        Icons.image_outlined,
-        color: $muted.resolve(context),
-        size: 40,
-      ),
+      child: Icon(LucideIcons.image, size: 40, color: $muted.resolve(context)),
     );
   }
 
@@ -304,7 +351,17 @@ class ImageStyleOptionCard extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: SdBody(style.title, style: selectedBodyStyle(selected)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4,
+                  children: [
+                    SdBody(style.title, style: selectedBodyStyle(selected)),
+                    SdCaption(
+                      style.description,
+                      style: selectedCaptionStyle(selected),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

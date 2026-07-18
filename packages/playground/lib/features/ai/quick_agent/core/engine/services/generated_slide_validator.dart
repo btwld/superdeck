@@ -18,6 +18,11 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
   required DeckPlanSlideType planSlide,
 }) {
   final normalized = Map<String, dynamic>.of(rawSlide);
+  final rawOptions = rawSlide['options'];
+  normalized['options'] = {
+    if (rawOptions is Map) ...Map<String, dynamic>.from(rawOptions),
+    'style': planSlide.treatment,
+  };
   final rawSections = rawSlide['sections'];
   if (rawSections is! List) return normalized;
   normalized['sections'] = [
@@ -29,11 +34,10 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
             'blocks': [
               for (final rawBlock in rawBlocks)
                 if (rawBlock is Map)
-                  _planPermitsH1(planSlide)
-                      ? Map<String, dynamic>.from(rawBlock)
-                      : _normalizeBlockHeading(
-                          Map<String, dynamic>.from(rawBlock),
-                        )
+                  _normalizeBlockForPlan(
+                    Map<String, dynamic>.from(rawBlock),
+                    planSlide,
+                  )
                 else
                   rawBlock,
             ],
@@ -41,7 +45,63 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
       else
         rawSection,
   ];
-  return _normalizeImplicitVerticalAlignment(normalized, planSlide);
+
+  return _normalizeImageSplitFlex(
+    _normalizeImplicitVerticalAlignment(normalized, planSlide),
+    planSlide,
+  );
+}
+
+Map<String, dynamic> _normalizeImageSplitFlex(
+  Map<String, dynamic> slide,
+  DeckPlanSlideType planSlide,
+) {
+  if (planSlide.composition != 'imageLeft' &&
+      planSlide.composition != 'imageRight') {
+    return slide;
+  }
+  final sections = slide['sections'];
+  if (sections is! List || sections.length != 1) return slide;
+  final section = sections.single;
+  if (section is! Map) return slide;
+  final blocks = section['blocks'];
+  if (blocks is! List || blocks.length != 2) return slide;
+  final hasImage = blocks.whereType<Map>().any(
+    (block) => block['type'] == WidgetBlock.key && block['name'] == 'image',
+  );
+  final hasContent = blocks.whereType<Map>().any(
+    (block) => block['type'] == ContentBlock.key,
+  );
+  if (!hasImage || !hasContent) return slide;
+  for (final block in blocks.whereType<Map>()) {
+    block['flex'] = 1;
+  }
+  return slide;
+}
+
+Map<String, dynamic> _normalizeBlockForPlan(
+  Map<String, dynamic> block,
+  DeckPlanSlideType planSlide,
+) {
+  var normalized = _planPermitsH1(planSlide)
+      ? block
+      : _normalizeBlockHeading(block);
+  if (planSlide.composition == 'title') {
+    normalized = _flattenTitleListMarkers(normalized);
+  }
+
+  return normalized;
+}
+
+Map<String, dynamic> _flattenTitleListMarkers(Map<String, dynamic> block) {
+  if (block['type'] != ContentBlock.key || block['content'] is! String) {
+    return block;
+  }
+  block['content'] = (block['content'] as String).replaceAllMapped(
+    RegExp(r'^(\s*)(?:[-+*]|\d+[.)])\s+', multiLine: true),
+    (match) => match.group(1)!,
+  );
+  return block;
 }
 
 /// Removes optional speaker comments whenever their content is invalid.
@@ -97,7 +157,24 @@ Map<String, dynamic> _normalizeImplicitVerticalAlignment(
       ).hasMatch(titleBlock['content'] as String)) {
     return slide;
   }
-  titleBlock.putIfAbsent('align', () => 'bottomLeft');
+  final titleContent = titleBlock['content'] as String;
+  final hasSupportingCopy = titleContent
+      .split('\n')
+      .any(
+        (line) => line.trim().isNotEmpty && !line.trimLeft().startsWith('#'),
+      );
+  final titleFlex = titleSection['flex'];
+  final bodyFlex = bodySection['flex'];
+  if (hasSupportingCopy &&
+      (titleFlex == null || titleFlex == 1) &&
+      (bodyFlex == null || bodyFlex == 3)) {
+    titleSection['flex'] = 1;
+    bodySection['flex'] = 2;
+  }
+  titleBlock.putIfAbsent(
+    'align',
+    () => hasSupportingCopy ? 'topLeft' : 'bottomLeft',
+  );
   for (final bodyBlock in bodyBlocks.whereType<Map>()) {
     if (bodyBlock['type'] == ContentBlock.key) {
       bodyBlock.putIfAbsent('align', () => 'topLeft');
@@ -247,15 +324,19 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
     location: GenerationValidationLocation.visibleContent,
     slideKey: planSlide.key,
   );
+  final compositionGuidance = errors.scoped(
+    category: GenerationValidationCategory.quality,
+    severity: .diagnostic,
+  );
   if (slide.sections.length > 2) {
-    errors.add(
+    compositionGuidance.add(
       'Composition "${planSlide.composition}" supports at most 2 sections; '
       'found ${slide.sections.length}. Simplify the slide instead of stacking '
       'another content row.',
     );
   }
   if (planSlide.composition == 'title' && slide.sections.length != 1) {
-    errors.add(
+    compositionGuidance.add(
       'Composition "title" must use exactly 1 section so the display heading '
       'has enough vertical room; found ${slide.sections.length}. Put the H1 '
       'and optional short support copy in one content block.',
@@ -327,6 +408,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       .scoped(
         code: GenerationValidationCode.numericGrounding,
         category: GenerationValidationCategory.factual,
+        severity: .diagnostic,
       )
       .addAll(
         _validateNumericClaimGrounding(
@@ -339,6 +421,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       .scoped(
         code: GenerationValidationCode.numericMeaning,
         category: GenerationValidationCategory.factual,
+        severity: .diagnostic,
       )
       .addAll(
         _validateNumericClaimContext(
@@ -347,18 +430,18 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
           label: 'Visible content',
         ),
       );
+  final visibleCommitment = _validateCommitmentGrounding(
+    [markdown],
+    request,
+    label: 'Visible content',
+  );
   errors
       .scoped(
         code: GenerationValidationCode.commitmentGrounding,
         category: GenerationValidationCategory.factual,
+        severity: visibleCommitment.severity,
       )
-      .addAll(
-        _validateCommitmentGrounding(
-          [markdown],
-          request,
-          label: 'Visible content',
-        ),
-      );
+      .addAll(visibleCommitment.messages);
   if (slide.comments.isNotEmpty) {
     final commentErrors = errors.scoped(
       location: GenerationValidationLocation.speakerComments,
@@ -379,6 +462,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.numericGrounding,
           category: GenerationValidationCategory.factual,
+          severity: .diagnostic,
         )
         .addAll(
           _validateNumericClaimGrounding(
@@ -391,6 +475,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.numericMeaning,
           category: GenerationValidationCategory.factual,
+          severity: .diagnostic,
         )
         .addAll(
           _validateNumericClaimContext(
@@ -399,23 +484,24 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
             label: 'Speaker comments',
           ),
         );
+    final commentCommitment = _validateCommitmentGrounding(
+      slide.comments,
+      request,
+      label: 'Speaker comments',
+    );
     commentErrors
         .scoped(
           code: GenerationValidationCode.commitmentGrounding,
           category: GenerationValidationCategory.factual,
+          severity: commentCommitment.severity,
         )
-        .addAll(
-          _validateCommitmentGrounding(
-            slide.comments,
-            request,
-            label: 'Speaker comments',
-          ),
-        );
+        .addAll(commentCommitment.messages);
   }
   errors
       .scoped(
         code: GenerationValidationCode.contentDensity,
         category: GenerationValidationCategory.quality,
+        severity: .diagnostic,
       )
       .addAll(
         _validateDisplayHeadings(
@@ -435,6 +521,13 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
         .scoped(
           code: GenerationValidationCode.contentDensity,
           category: GenerationValidationCategory.quality,
+          severity:
+              isHardContentDensityOverage(
+                visibleCharacters: visibleCharacters,
+                characterLimit: characterLimit,
+              )
+              ? .blocking
+              : .diagnostic,
         )
         .add(
           'Slide exceeds the ${planSlide.density} content budget of '
@@ -449,13 +542,13 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
     multiLine: true,
   ).hasMatch(markdown);
   if (composition == 'title' && (hasTable || hasList || hasBlockquote)) {
-    errors.add(
+    compositionGuidance.add(
       'Composition "title" must stay minimal: use display headings and at '
       'most one short supporting paragraph, without lists, tables, or quotes.',
     );
   }
   if (composition != 'table' && hasTable) {
-    errors.add(
+    compositionGuidance.add(
       'Markdown tables require composition "table"; the plan selected '
       '"$composition".',
     );
@@ -469,48 +562,54 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
       break;
     case 'table':
       if (!hasTable) {
-        errors.add('Composition "table" requires a Markdown table.');
+        compositionGuidance.add(
+          'Composition "table" requires a Markdown table.',
+        );
       }
     case 'twoColumn':
       if (!slide.sections.any((section) => section.blocks.length == 2)) {
-        errors.add('Composition "twoColumn" requires a two-block section.');
+        compositionGuidance.add(
+          'Composition "twoColumn" requires a two-block section.',
+        );
       }
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "twoColumn" requires substantive content beyond a title.',
         );
       }
     case 'threeColumn':
       if (!slide.sections.any((section) => section.blocks.length == 3)) {
-        errors.add('Composition "threeColumn" requires a three-block section.');
+        compositionGuidance.add(
+          'Composition "threeColumn" requires a three-block section.',
+        );
       }
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "threeColumn" requires substantive content beyond a title.',
         );
       }
     case 'quote':
       if (!RegExp(r'^\s*>\s*\S+', multiLine: true).hasMatch(markdown)) {
-        errors.add('Composition "quote" requires a Markdown blockquote.');
+        compositionGuidance.add(
+          'Composition "quote" requires a Markdown blockquote.',
+        );
       }
     case 'metric':
       if (!RegExp(r'\d').hasMatch(markdown)) {
-        errors.add('Composition "metric" requires at least one numeric value.');
+        compositionGuidance.add(
+          'Composition "metric" requires at least one numeric value.',
+        );
       }
     case 'imageLeft':
     case 'imageRight':
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "$composition" requires substantive text beside the image.',
         );
       }
-    case 'qrcode':
-      if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add('Composition "qrcode" requires a clear text handoff.');
-      }
     default:
       if (!_hasSubstantiveContent(contentBlocks)) {
-        errors.add(
+        compositionGuidance.add(
           'Composition "$composition" requires substantive content beyond a title.',
         );
       }
@@ -541,10 +640,7 @@ List<String> _validateHandoffPurpose(
 }
 
 bool _requiresVisibleHandoffPurpose(String type) =>
-    type == 'qrcode' ||
-    type == 'webview' ||
-    type == 'dartpad' ||
-    type == 'custom';
+    type == 'webview' || type == 'dartpad' || type == 'custom';
 
 List<String> _validateNumericClaimContext(
   Iterable<String> values,
@@ -555,6 +651,7 @@ List<String> _validateNumericClaimContext(
   final mismatches = findNumericContextMismatches(
     values: values,
     userIntent: request.userIntent,
+    allowSlideContextFallback: label == 'Visible content',
   );
   if (mismatches.isEmpty) return const [];
   final verb = label == 'Speaker comments' ? 'change' : 'changes';
@@ -565,23 +662,40 @@ List<String> _validateNumericClaimContext(
   ];
 }
 
-List<String> _validateCommitmentGrounding(
+({List<String> messages, GenerationValidationSeverity severity})
+_validateCommitmentGrounding(
   Iterable<String> values,
   DeckGenerationRequest? request, {
   required String label,
 }) {
-  if (request == null) return const [];
+  if (request == null) {
+    return (
+      messages: const [],
+      severity: GenerationValidationSeverity.diagnostic,
+    );
+  }
   final unsupported = findUnsupportedCommitmentPhrases(
     values: values,
     userIntent: request.userIntent,
   );
-  if (unsupported.isEmpty) return const [];
+  if (unsupported.isEmpty) {
+    return (
+      messages: const [],
+      severity: GenerationValidationSeverity.diagnostic,
+    );
+  }
   final verb = label == 'Speaker comments' ? 'introduce' : 'introduces';
-  return [
-    '$label $verb unsupported commitment claim(s): '
-        '${unsupported.join(', ')}. Remove them unless userIntent supplied '
-        'the exact claim.',
-  ];
+
+  return (
+    messages: [
+      '$label $verb unsupported commitment claim(s): '
+          '${unsupported.join(', ')}. Remove them unless userIntent supplied '
+          'the exact claim.',
+    ],
+    severity: hasBlockingCommitmentClaim(unsupported)
+        ? GenerationValidationSeverity.blocking
+        : GenerationValidationSeverity.diagnostic,
+  );
 }
 
 List<String> _validateNumericClaimGrounding(
@@ -757,12 +871,6 @@ List<String> _validateMarkdownTables(String markdown) {
   }
   if (tableLines.any((line) => columnCount(line) != columns)) {
     errors.add('Markdown table rows must have a consistent column count.');
-  }
-  final cells = tableLines.expand(
-    (line) => line.split('|').map((cell) => cell.trim()),
-  );
-  if (cells.any((cell) => cell.length > 60)) {
-    errors.add('Markdown table cells must contain at most 60 characters.');
   }
   return errors;
 }

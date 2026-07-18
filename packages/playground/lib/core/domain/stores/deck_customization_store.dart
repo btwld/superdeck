@@ -166,6 +166,7 @@ class DeckCustomizationStore extends ChangeNotifier {
   }
 
   void _pushOptions() {
+    final debug = _controller.options.value.debug;
     _controller.options.value = _themeFactory.build(
       palette: GeneratedThemePalette(
         background: _background,
@@ -187,6 +188,7 @@ class DeckCustomizationStore extends ChangeNotifier {
       ),
       density: _density,
       runtime: _runtime,
+      debug: debug,
     );
   }
 

@@ -118,6 +118,23 @@ void main() {
     );
   });
 
+  test('does not drop a valid table for a long cell', () {
+    final errors = validateGeneratedSlide(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content':
+            '| Approach | Result |\n'
+            '|---|---|\n'
+            '| Narrative planning | '
+            'A deliberately descriptive comparison that remains valid copy |',
+      }),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+    );
+
+    expect(errors, isEmpty);
+  });
+
   test('rejects slide separators but allows them inside fenced code', () {
     final catalog = GenerationElementCatalog.builtIn();
     final unsafeErrors = validateGeneratedSlide(
@@ -288,8 +305,58 @@ void main() {
     );
   });
 
+  test('keeps a moderate density overage as a quality diagnostic', () {
+    final issues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content': '# Opening\n\n${List.filled(38, 'specific').join(' ')}',
+      }),
+      planSlide: _planSlide(composition: 'title', density: 'spacious'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+    );
+    final densityIssue = issues.singleWhere(
+      (issue) => issue.message.contains('content budget'),
+    );
+
+    expect(densityIssue.severity, GenerationValidationSeverity.diagnostic);
+    expect(densityIssue.isBlocking, isFalse);
+  });
+
+  test('keeps a missing quote treatment as non-blocking guidance', () {
+    final issues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: {
+        'key': 'test-slide',
+        'options': {'title': 'Protecting homes', 'style': 'content'},
+        'sections': [
+          {
+            'type': 'section',
+            'blocks': [
+              {
+                'type': 'block',
+                'content':
+                    '## Protecting homes\n\n'
+                    'Resilience starts before the next storm arrives.',
+              },
+            ],
+          },
+        ],
+      },
+      planSlide: _planSlide(composition: 'quote'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+    );
+    final quoteIssue = issues.singleWhere(
+      (issue) => issue.message.contains('requires a Markdown blockquote'),
+    );
+
+    expect(quoteIssue.category, GenerationValidationCategory.quality);
+    expect(quoteIssue.severity, GenerationValidationSeverity.diagnostic);
+    expect(issues.blockingIssues, isEmpty);
+  });
+
   test('rejects a display heading that is too long for a title row', () {
-    final errors = validateGeneratedSlide(
+    final issues = validateGeneratedSlideIssues(
       expectedKey: 'test-slide',
       rawSlide: _slideWithBlock({
         'type': 'block',
@@ -300,6 +367,7 @@ void main() {
       planSlide: _planSlide(composition: 'content'),
       elementCatalog: GenerationElementCatalog.builtIn(),
     );
+    final errors = issues.map((issue) => issue.message).toList();
 
     expect(
       errors,
@@ -308,6 +376,34 @@ void main() {
         'yesterday’s problems" has 9 words; use at most 8.',
       ),
     );
+    expect(
+      issues.singleWhere((issue) => issue.message.contains('has 9 words')),
+      isA<GenerationValidationIssue>().having(
+        (issue) => issue.severity,
+        'severity',
+        GenerationValidationSeverity.diagnostic,
+      ),
+    );
+  });
+
+  test('does not treat one-time editorial copy as a numeric claim', () {
+    final issues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content':
+            '## Continuous learning\n\nDiscovery is not a one-time event.',
+      }),
+      planSlide: _planSlide(composition: 'content'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+      request: const DeckGenerationRequest(
+        userIntent: 'Explain continuous product discovery.',
+        slideCount: 1,
+      ),
+    );
+
+    expect(issues.where((issue) => issue.code == .numericGrounding), isEmpty);
+    expect(issues.where((issue) => issue.code == .numericMeaning), isEmpty);
   });
 
   test('reserves H1 for display treatments and numeric metrics', () {
@@ -357,6 +453,49 @@ void main() {
     );
   });
 
+  test('mechanically applies the exact planned treatment', () {
+    final raw = _slideWithBlock({
+      'type': 'block',
+      'content': '## Planned section statement',
+    });
+    raw['options'] = {'title': 'Planned section', 'style': 'theme-id'};
+
+    final normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: raw,
+      planSlide: _planSlide(composition: 'titleLeft', treatment: 'section'),
+    );
+
+    expect(normalized['options'], {
+      'title': 'Planned section',
+      'style': 'section',
+    });
+    expect(raw['options'], containsPair('style', 'theme-id'));
+  });
+
+  test('mechanically flattens list markers in a title composition', () {
+    final raw = _slideWithBlock({
+      'type': 'block',
+      'content':
+          '# The Roadmap Theater\n\n'
+          '- **Scope:** 12-month horizon\n'
+          '- **Load:** 43 promised initiatives',
+    });
+
+    final normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: raw,
+      planSlide: _planSlide(composition: 'title'),
+    );
+    final content =
+        ((((normalized['sections'] as List).single as Map)['blocks'] as List)
+                    .single
+                as Map)['content']
+            as String;
+
+    expect(content, contains('**Scope:** 12-month horizon'));
+    expect(content, isNot(contains('- **Scope:**')));
+    expect(content, isNot(contains('- **Load:**')));
+  });
+
   test('anchors implicit title and body rows in a vertical composition', () {
     final raw = {
       'key': 'test-slide',
@@ -397,6 +536,80 @@ void main() {
       isNot(contains('align')),
       reason: 'Normalization must not mutate the traceable raw draft.',
     );
+  });
+
+  test('top-aligns a title row that also contains supporting copy', () {
+    final raw = {
+      'key': 'test-slide',
+      'options': {'title': 'Grow With Us', 'style': 'data'},
+      'sections': [
+        {
+          'type': 'section',
+          'blocks': [
+            {
+              'type': 'block',
+              'content':
+                  '## Grow With Us\n\n'
+                  'Sponsor support determines the next planting season.',
+            },
+          ],
+        },
+        {
+          'type': 'section',
+          'blocks': [
+            {'type': 'block', 'content': '### Families\n\nJoin a workday.'},
+            {'type': 'block', 'content': '### Staff\n\nNominate a site.'},
+            {'type': 'block', 'content': '### Sponsors\n\nFund materials.'},
+          ],
+        },
+      ],
+    };
+
+    final normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: raw,
+      planSlide: _planSlide(composition: 'threeColumn'),
+    );
+    final sections = normalized['sections']! as List;
+    final titleBlock =
+        ((sections.first as Map)['blocks']! as List).single as Map;
+
+    expect(titleBlock['align'], 'topLeft');
+    expect((sections.first as Map)['flex'], 1);
+    expect((sections.last as Map)['flex'], 2);
+  });
+
+  test('balances image split columns to preserve text height', () {
+    final raw = {
+      'key': 'test-slide',
+      'options': {'title': 'Making Meadow Magic', 'style': 'visual'},
+      'sections': [
+        {
+          'type': 'section',
+          'blocks': [
+            {
+              'type': 'widget',
+              'name': 'image',
+              'args': {'src': 'assets/meadow.png'},
+              'flex': 3,
+            },
+            {
+              'type': 'block',
+              'content': '## Making Meadow Magic\n\n- One\n- Two\n- Three',
+              'flex': 2,
+            },
+          ],
+        },
+      ],
+    };
+
+    final normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: raw,
+      planSlide: _planSlide(composition: 'imageLeft', treatment: 'visual'),
+    );
+    final blocks =
+        (((normalized['sections'] as List).single as Map)['blocks'] as List);
+
+    expect(blocks.map((block) => (block as Map)['flex']), everyElement(1));
   });
 
   test('drops invalid optional comments while preserving visible content', () {
@@ -615,9 +828,32 @@ void main() {
       contains(
         'Visible content uses numeric claim(s) 100%, 90 that are not present '
         'in userIntent. Remove them or label the containing copy as a '
-        'projection, estimate, assumption, calculation, or scenario.',
+        'projection, estimate, assumption, calculation, scenario, or planned '
+        'target.',
       ),
     );
+    final numericIssues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content': '## Beta proof\n\n100% retention over 90 days.',
+      }),
+      planSlide: _planSlide(composition: 'content'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+      request: request,
+    ).where((issue) => issue.code == GenerationValidationCode.numericGrounding);
+    expect(numericIssues, isNotEmpty);
+    expect(
+      numericIssues,
+      everyElement(
+        isA<GenerationValidationIssue>().having(
+          (issue) => issue.severity,
+          'severity',
+          GenerationValidationSeverity.diagnostic,
+        ),
+      ),
+    );
+    expect(numericIssues.where((issue) => issue.isBlocking), isEmpty);
     expect(
       allowed.where(
         (error) => error.contains('Visible content uses numeric claim(s)'),
@@ -758,6 +994,20 @@ void main() {
         slideCount: 1,
       ),
     );
+    final planComplianceIssues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content':
+            '## Planning drift\n\nStatic roadmaps reward plan compliance over evidence.',
+      }),
+      planSlide: _planSlide(composition: 'content'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+      request: const DeckGenerationRequest(
+        userIntent: 'Explain why static roadmaps drift from evidence.',
+        slideCount: 1,
+      ),
+    );
 
     expect(
       errors,
@@ -790,6 +1040,12 @@ void main() {
     expect(
       complianceErrors.singleWhere((error) => error.contains('soc2')),
       allOf(contains('unsupported commitment claim(s)'), contains('soc2')),
+    );
+    expect(
+      planComplianceIssues
+          .where((issue) => issue.code == .commitmentGrounding)
+          .every((issue) => !issue.isBlocking),
+      isTrue,
     );
   });
 
@@ -939,7 +1195,7 @@ void main() {
     );
   });
 
-  test('rejects a supplied metric reused with a different meaning', () {
+  test('reports a supplied metric reused with a different meaning', () {
     const request = DeckGenerationRequest(
       userIntent: 'Teams spent 42% less weekly synthesis time.',
       slideCount: 1,
@@ -954,6 +1210,28 @@ void main() {
       elementCatalog: GenerationElementCatalog.builtIn(),
       request: request,
     );
+    final changedMeaningIssues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content': '## Reclaiming 42% of the work week',
+      }),
+      planSlide: _planSlide(composition: 'content'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+      request: request,
+    ).where((issue) => issue.code == GenerationValidationCode.numericMeaning);
+    expect(changedMeaningIssues, isNotEmpty);
+    expect(
+      changedMeaningIssues,
+      everyElement(
+        isA<GenerationValidationIssue>().having(
+          (issue) => issue.severity,
+          'severity',
+          GenerationValidationSeverity.diagnostic,
+        ),
+      ),
+    );
+    expect(changedMeaningIssues.where((issue) => issue.isBlocking), isEmpty);
     final inventedCausalMeaning = validateGeneratedSlide(
       expectedKey: 'test-slide',
       rawSlide: _slideWithBlock({
@@ -1184,6 +1462,58 @@ void main() {
     );
   });
 
+  test('uses supporting context elsewhere on the same metric slide', () {
+    final issues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content': '# 31%\n\n## Shipped features reach their adoption target',
+      }),
+      planSlide: _planSlide(composition: 'metric', treatment: 'data'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+      request: const DeckGenerationRequest(
+        userIntent: 'Only 31% of shipped features reach their adoption target.',
+        slideCount: 1,
+      ),
+    );
+
+    expect(
+      issues.where(
+        (issue) => issue.code == GenerationValidationCode.numericMeaning,
+      ),
+      isEmpty,
+    );
+  });
+
+  test('keeps broad editorial commitments diagnostic', () {
+    final issues = validateGeneratedSlideIssues(
+      expectedKey: 'test-slide',
+      rawSlide: _slideWithBlock({
+        'type': 'block',
+        'content':
+            '## Prioritize evidence\n\nReview decisions against concrete signals.',
+      }),
+      planSlide: _planSlide(composition: 'content'),
+      elementCatalog: GenerationElementCatalog.builtIn(),
+      request: const DeckGenerationRequest(
+        userIntent: 'Explain an evidence-led decision process.',
+        slideCount: 1,
+      ),
+    );
+    final commitmentIssues = issues
+        .where(
+          (issue) => issue.code == GenerationValidationCode.commitmentGrounding,
+        )
+        .toList();
+
+    expect(commitmentIssues, hasLength(1));
+    expect(
+      commitmentIssues.single.severity,
+      GenerationValidationSeverity.diagnostic,
+    );
+    expect(commitmentIssues.where((issue) => issue.isBlocking), isEmpty);
+  });
+
   test(
     'rejects unqualified implementation details and invented pricing tiers',
     () {
@@ -1253,68 +1583,15 @@ void main() {
     },
   );
 
-  test(
-    'preserves the supplied qrcode destination identity in visible copy',
-    () {
-      Map<String, dynamic> qrcodeSlide(String content) => {
-        'key': 'test-slide',
-        'options': {'title': 'Continue', 'style': 'closing'},
-        'sections': [
-          {
-            'type': 'section',
-            'blocks': [
-              {'type': 'block', 'content': content},
-              {
-                'type': 'widget',
-                'name': 'qrcode',
-                'args': {'text': 'https://superdeck-dev.web.app'},
-              },
-            ],
-          },
-        ],
-      };
+  test('does not expose qrcode to AI generation', () {
+    final catalog = GenerationElementCatalog.builtIn();
 
-      final plan = _planSlide(
-        composition: 'qrcode',
-        treatment: 'closing',
-        elements: const [
-          {
-            'type': 'qrcode',
-            'source': 'https://superdeck-dev.web.app',
-            'purpose': 'Let the audience open the live SuperDeck experience',
-          },
-        ],
-      );
-      final rejected = validateGeneratedSlide(
-        expectedKey: 'test-slide',
-        rawSlide: qrcodeSlide(
-          '## Continue\n\nScan to explore the live Signal Canvas experience.',
-        ),
-        planSlide: plan,
-        elementCatalog: GenerationElementCatalog.builtIn(),
-      );
-      final preserved = validateGeneratedSlide(
-        expectedKey: 'test-slide',
-        rawSlide: qrcodeSlide(
-          '## Continue\n\nScan to open the live SuperDeck experience.',
-        ),
-        planSlide: plan,
-        elementCatalog: GenerationElementCatalog.builtIn(),
-      );
-
-      expect(
-        rejected,
-        contains(
-          'Visible qrcode handoff omits grounded purpose term(s): superdeck. '
-          'Preserve the supplied destination or experience identity.',
-        ),
-      );
-      expect(
-        preserved.where((candidate) => candidate.contains('handoff omits')),
-        isEmpty,
-      );
-    },
-  );
+    expect(catalog.names, isNot(contains('qrcode')));
+    expect(
+      catalog.validate('qrcode', {'text': 'https://example.com'}),
+      contains('Widget "qrcode" is not registered for generation.'),
+    );
+  });
 }
 
 Map<String, dynamic> _slideWithBlock(Map<String, Object?> block) => {

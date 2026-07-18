@@ -3,8 +3,6 @@
 A playground app for experimenting with Mix, Remix, and Hero UI, built on a
 layered architecture using **Provider + Command + ChangeNotifier**.
 
-See [`.planning/architecture.md`](.planning/architecture.md) for the full design.
-
 ## Layers (folders, single package)
 
 ```
@@ -39,6 +37,11 @@ lib/
 fvm flutter run -d macos -t lib/main.dart --dart-define-from-file=../../.env
 ```
 
+Add `--dart-define=SUPERDECK_DEBUG_LAYOUT=true` to show the slide layout
+overlay: magenta sections, cyan block allocations, orange margin edges, and
+green padding/content edges. The flag is preserved when Playground themes or
+typography settings change.
+
 Set `GOOGLE_AI_API_KEY` in the ignored repository-root `.env` file. Flutter
 does not load `.env` automatically; the define-file flag injects it at build
 time. The Wizard shows a configuration error immediately when the key is
@@ -46,12 +49,14 @@ missing.
 
 ## AI generation smoke lab
 
-Generation uses a plan-first pipeline: one model request creates the shared
-narrative/style plan, then the Flash slide model composes and validates each
-slide sequentially with previous/next context. Neither request configures a
-thinking budget. Both default to the existing `gemini-3-flash-preview`
-configuration, keeping live prompt iteration fast while model selection remains
-injectable for comparisons.
+Generation uses a plan-first pipeline. `gemini-3.5-flash` creates the shared
+narrative/style plan, then `gemini-3.1-flash-lite` composes each narrative
+section concurrently. Every call uses the lowest thinking-budget compatibility
+setting exposed by the pinned client. Gemini structured output constrains each
+response to JSON and a response schema; Dart still performs semantic,
+grounding, layout, density, and canonical parsing checks before accepting it.
+Invalid slides remain isolated failures so valid slides and later sections can
+continue.
 
 Live AI checks are opt-in and live outside `test/`, so normal test runs never
 spend API quota. Run all three versioned briefs with:
@@ -62,7 +67,28 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
 ```
 
 Set `--dart-define=LIVE_FIXTURE=narrative`, `comparison_table`, or
-`visual_elements` to run one fast fixture. Run the larger quality matrix with:
+`visual_elements` to run one fast fixture.
+
+Use `--dart-define=LIVE_FIXTURE=superdeck_demo_10` for the booth product story
+or `--dart-define=LIVE_FIXTURE=playful_giraffes_10` for the fictional Great
+Giraffe Garden Party with exact story beats and three watercolor illustrations.
+
+Repeat a fixture to evaluate consistency across independent generations:
+
+```bash
+fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
+  --dart-define-from-file=../../.env \
+  --dart-define=LIVE_FIXTURE=playful_giraffes_10 \
+  --dart-define=LIVE_RUNS=3 \
+  --reporter expanded
+```
+
+`LIVE_RUNS` accepts 1–10. Two or more completed runs also produce a consolidated
+`review_*` artifact directory containing `review_board.png` and `manifest.json`
+with each run's artifact path, timing, validation diagnostics, composition
+distribution, and model-request counts.
+
+Run the larger quality matrix with:
 
 ```bash
 fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
@@ -74,10 +100,10 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
 The matrix generates editorial 10-slide, technical/data 15-slide, and bold
 product 20-slide decks with three exact font pairings. Each run writes an ignored
 artifact bundle under `test_live/ai_generation/artifacts/` containing the typed
-request, brief, deck plan, per-slide prompts and responses, canonical JSON,
+request, brief, deck plan, section prompts and responses, canonical JSON,
 Markdown, validation/timing metadata, slide PNGs, a contact sheet, and a
 machine-readable `quality_report.json`. Metadata records total, outline, and
-slide request counts separately. Captures load the actual selected Google font
+composition request counts separately. Captures load the actual selected Google font
 families; they do not register Roboto bytes under aliases.
 
 Run the deterministic ten-slide fake-model checkpoint without an API key:
@@ -88,12 +114,14 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
   --reporter expanded
 ```
 
-It verifies a zero-repair 11-call plan-to-slide run, each compact design ledger,
-the resolved theme/font/style snapshot, Markdown replay, ten full-size captures,
-a contact sheet, and the machine quality report. Run the reviewed featured-theme
-goldens separately with `--dart-define=LIVE_THEME_QUALIFICATION=true`; those
-render 30 slides with actual fonts and compare three exact contact-sheet
-baselines under `test_live/ai_generation/goldens/`.
+It verifies a zero-repair four-call run (one outline plus three concurrent
+narrative sections), the ordered section plans and canonical layout examples,
+the exact Flash/Lite model split and thinking configuration, resolved
+theme/font/style snapshot, Markdown replay, ten full-size captures, a contact
+sheet, and the machine quality report. Run the reviewed featured-theme goldens
+separately with `--dart-define=LIVE_THEME_QUALIFICATION=true`; those render 30
+slides with actual fonts and compare three exact contact-sheet baselines under
+`test_live/ai_generation/goldens/`.
 
 Replay and recapture a saved artifact without making another model request:
 
@@ -102,6 +130,10 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
   --dart-define=LIVE_ARTIFACT=test_live/ai_generation/artifacts/<artifact-directory> \
   --reporter expanded
 ```
+
+Add `--dart-define=LIVE_DEBUG_LAYOUT=true` to include the section, block,
+margin, and padding guides in the recaptured slide PNGs and contact sheet.
+Normal captures remain clean by default.
 
 In debug builds, open `/debug/generation` to exercise the same production
 pipeline interactively with the three fixtures.

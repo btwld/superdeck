@@ -1,8 +1,13 @@
 part of 'deck_generator_service.dart';
 
+const _maxTargetedOutlineSlidesPerPass = 2;
+
 bool _onlySlideScopedPlanIssues(List<GenerationValidationIssue> issues) {
   final blocking = issues.blockingIssues;
+  final affectedSlideKeys = {for (final issue in blocking) ?issue.slideKey};
+
   return blocking.isNotEmpty &&
+      affectedSlideKeys.length <= _maxTargetedOutlineSlidesPerPass &&
       blocking.every(
         (issue) => issue.locallyRepairable && issue.slideKey != null,
       );
@@ -20,6 +25,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       validateDeckPlanIssues(
         repairedPlan,
         typographyCatalog: typographyCatalog,
+        imageStyleCatalog: imageStyleCatalog,
         themeCatalog: themeCatalog,
         request: request,
       ),
@@ -31,7 +37,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       );
       if (index < 0) continue;
       final original = repairedPlan.slides[index];
-      var repairBase = Map<String, Object?>.of(original);
+      var repairBase = serializeDeckPlanSlideDraft(original);
       var constraints = List<GenerationValidationIssue>.of(entry.value);
 
       for (
@@ -39,6 +45,13 @@ extension _DeckPlanRepair on DeckGeneratorService {
         localAttempt <= maxOutlineSlideValidationAttempts;
         localAttempt++
       ) {
+        if (!executor.hasRepairCapacity) {
+          debugLog.log(
+            'DECK_GEN',
+            'Outline slide repair skipped: run repair budget exhausted.',
+          );
+          break;
+        }
         final candidate = await _generateOutlineSlideRepair(
           executor: executor,
           originalPrompt: originalPrompt,
@@ -50,7 +63,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
           slideIndex: index,
         );
         if (candidate == null) continue;
-        repairBase = Map<String, Object?>.of(candidate);
+        repairBase = serializeDeckPlanSlideDraft(candidate);
 
         final invariantErrors = _outlineSlideInvariantErrors(
           original: original,
@@ -80,6 +93,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
         final candidateIssues = validateDeckPlanIssues(
           candidatePlan,
           typographyCatalog: typographyCatalog,
+          imageStyleCatalog: imageStyleCatalog,
           themeCatalog: themeCatalog,
           request: request,
         );
@@ -107,7 +121,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
     required int slideIndex,
   }) async {
     final adapted = GoogleSchemaAdapter().adapt(
-      deckPlanSlideSchema.toJsonSchemaBuilder(),
+      deckPlanDraftSlideSchema.toJsonSchemaBuilder(),
     );
     if (adapted.schema == null) return null;
     final systemPrompt = _promptProvider.buildOutlineSlideRepairPrompt(
@@ -117,7 +131,10 @@ extension _DeckPlanRepair on DeckGeneratorService {
       invalidSlide: invalidSlide,
     );
     final modelRequest = google_ai.GenerateContentRequest(
-      model: outlineModelName,
+      model: outlineRepairModelName,
+      systemInstruction: google_ai.Content(
+        parts: [google_ai.Part(text: systemPrompt)],
+      ),
       contents: [
         google_ai.Content(
           role: 'user',
@@ -127,9 +144,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adapted.schema,
-      ),
-      systemInstruction: google_ai.Content(
-        parts: [google_ai.Part(text: systemPrompt)],
+        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
     );
 
@@ -141,7 +156,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
     final response = await executor.execute(
       request: modelRequest,
       phase: GenerationTracePhase.outline,
-      model: outlineModelName,
+      model: outlineRepairModelName,
       prompt: systemPrompt,
       semanticAttempt: localAttempt,
       isRepair: true,
@@ -152,7 +167,21 @@ extension _DeckPlanRepair on DeckGeneratorService {
     final json = _parseJsonResponse(response, 'outline slide ${current.key}');
     if (json == null) return null;
     try {
-      return DeckPlanSlideType.parse(json);
+      final parsed = deckPlanDraftSlideSchema.parse(json);
+      if (parsed == null) return null;
+      final slides = [
+        for (final slide in plan.slides) serializeDeckPlanSlideDraft(slide),
+      ];
+      slides[slideIndex] = Map<String, Object?>.of(parsed);
+
+      return DeckPlanSlideType.parse(
+        enrichDeckPlanDraftSlide(
+          slides[slideIndex],
+          index: slideIndex,
+          slides: slides,
+          density: current.density,
+        ),
+      );
     } catch (error) {
       debugLog.error(
         'DECK_GEN',
@@ -197,7 +226,7 @@ List<String> _outlineSlideInvariantErrors({
   required DeckPlanSlideType candidate,
 }) {
   final errors = <String>[];
-  void requireSame(String field, Object? before, Object? after) {
+  void requireSame(String field, Object before, Object after) {
     if (jsonEncode(before) != jsonEncode(after)) {
       errors.add(
         'Repair changed immutable field `$field`; restore its exact original '
@@ -212,7 +241,11 @@ List<String> _outlineSlideInvariantErrors({
   requireSame('composition', original.composition, candidate.composition);
   requireSame('treatment', original.treatment, candidate.treatment);
   requireSame('density', original.density, candidate.density);
-  requireSame('elements', original.elements, candidate.elements);
+  requireSame(
+    'elements',
+    original.elements ?? const <DeckPlanElementType>[],
+    candidate.elements ?? const <DeckPlanElementType>[],
+  );
   return errors;
 }
 
