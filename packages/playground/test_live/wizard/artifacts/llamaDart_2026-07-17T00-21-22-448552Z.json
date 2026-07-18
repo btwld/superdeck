@@ -1,0 +1,86 @@
+{
+  "provider": "llamaDart",
+  "model": "local/gemma-3-270m-it",
+  "modelPreparationMs": 3929,
+  "turnCount": 6,
+  "totalTurnMs": 9724,
+  "averageTurnMs": 1620,
+  "valid": true,
+  "error": null,
+  "turns": [
+    {
+      "step": "audience",
+      "component": "AskUserRadio",
+      "elapsedMs": 3894
+    },
+    {
+      "step": "approach",
+      "component": "AskUserRadio",
+      "elapsedMs": 3281
+    },
+    {
+      "step": "emphasis",
+      "component": "AskUserCheckbox",
+      "elapsedMs": 1822
+    },
+    {
+      "step": "slideCount",
+      "component": "AskUserSlider",
+      "elapsedMs": 52
+    },
+    {
+      "step": "theme",
+      "component": "AskUserStyle",
+      "elapsedMs": 624
+    },
+    {
+      "step": "imageStyle",
+      "component": "AskUserImageStyle",
+      "elapsedMs": 51
+    }
+  ],
+  "modelRequests": [
+    {
+      "promptChars": 339,
+      "historyMessages": 1,
+      "elapsedMs": 3808,
+      "output": "{\"version\":\"v0.9\",\"createSurface\":{\"surfaceId\":\"wizard\",\"catalogId\":\"com.superdeck.ai.chat\",\"sendDataModel\":false}}\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserRadio\",\"question\":\"Who should this presentation speak to?\",\"description\":\"Choose the best audience for A playful guide to how giraffes live, learn, and help their ecosystems.\",\"options\":[{\"title\":\"Giraffes: A Living, Learning\",\"description\":\"A playful guide to how giraffes live, learn,\",\"icon\":\"audience\"},{\"title\":\"Giraffes: A Living, Learning\",\"description\":\"A playful guide to how giraffes live, learn,\",\"icon\":\"story\"},{\"title\":\"Giraffes: A Living, Learning\",\"description\":\"A playful guide to how giraffes live, learn,\",\"icon\":\"sparkles\"}],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}",
+      "error": null
+    },
+    {
+      "promptChars": 350,
+      "historyMessages": 3,
+      "elapsedMs": 3224,
+      "output": "{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserRadio\",\"question\":\"How should we tell this story?\",\"description\":\"Choose a delivery style for Curious families.\",\"options\":[{\"title\":\"Giraffe Life: A Simple Guide\",\"description\":\"A fun and engaging overview of the life of a\",\"icon\":\"audience\"},{\"title\":\"The Importance of Giraffes\",\"description\":\"A concise explanation of the ecological role\",\"icon\":\"story\"},{\"title\":\"Giraffe Conservation: A Call\",\"description\":\"A call to action and a plea for conservation\",\"icon\":\"sparkles\"}],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}",
+      "error": null
+    },
+    {
+      "promptChars": 416,
+      "historyMessages": 5,
+      "elapsedMs": 1816,
+      "output": "{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserCheckbox\",\"question\":\"What should stand out?\",\"description\":\"Choose one to three focus areas.\",\"items\":[\"The beauty of a giraffe's neck\",\"How giraffes use their leaves to make food\",\"The importance of biodiversity in the savanna\",\"Giraffes' role in the ecosystem\"],\"minSelections\":1,\"maxSelections\":3,\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}",
+      "error": null
+    },
+    {
+      "promptChars": 509,
+      "historyMessages": 7,
+      "elapsedMs": 0,
+      "output": "{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserSlider\",\"question\":\"How many slides do you need?\",\"description\":\"Choose a pace that fits the story.\",\"minValue\":5,\"maxValue\":20,\"defaultValue\":10,\"unit\":\"slides\",\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}",
+      "error": null
+    },
+    {
+      "promptChars": 453,
+      "historyMessages": 9,
+      "elapsedMs": 604,
+      "output": "{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserStyle\",\"question\":\"Choose a visual direction\",\"description\":\"Pick the design system that fits the story.\",\"themeIds\":[\"editorial-midnight\",\"technical-paper\",\"bold-product\"],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}",
+      "error": null
+    },
+    {
+      "promptChars": 503,
+      "historyMessages": 11,
+      "elapsedMs": 0,
+      "output": "{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserImageStyle\",\"question\":\"Choose an artwork direction\",\"description\":\"Compare three visual treatments for the same idea.\",\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}",
+      "error": null
+    }
+  ]
+}

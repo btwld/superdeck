@@ -1,0 +1,85 @@
+{
+  "provider": "gemini",
+  "model": "models/gemini-3.1-flash-lite",
+  "turnCount": 6,
+  "totalTurnMs": 9050,
+  "averageTurnMs": 1508,
+  "valid": true,
+  "error": null,
+  "turns": [
+    {
+      "step": "audience",
+      "component": "AskUserRadio",
+      "elapsedMs": 2207
+    },
+    {
+      "step": "approach",
+      "component": "AskUserRadio",
+      "elapsedMs": 1623
+    },
+    {
+      "step": "emphasis",
+      "component": "AskUserCheckbox",
+      "elapsedMs": 1300
+    },
+    {
+      "step": "slideCount",
+      "component": "AskUserSlider",
+      "elapsedMs": 1466
+    },
+    {
+      "step": "theme",
+      "component": "AskUserStyle",
+      "elapsedMs": 1201
+    },
+    {
+      "step": "imageStyle",
+      "component": "AskUserImageStyle",
+      "elapsedMs": 1253
+    }
+  ],
+  "modelRequests": [
+    {
+      "promptChars": 339,
+      "historyMessages": 1,
+      "elapsedMs": 2158,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"createSurface\": {\n    \"surfaceId\": \"wizard\",\n    \"catalogId\": \"com.superdeck.ai.chat\",\n    \"sendDataModel\": true\n  }\n}\n```\n```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserRadio\",\n        \"question\": \"Who is your target audience?\",\n        \"description\": \"Select the group that best describes your viewers.\",\n        \"options\": [\n          {\n            \"title\": \"Young Learners\",\n            \"description\": \"Elementary school students curious about nature\",\n            \"icon\": \"education\"\n          },\n          {\n            \"title\": \"Family Museum Visitors\",\n            \"description\": \"General audience looking for engaging, fun facts\",\n            \"icon\": \"story\"\n          },\n          {\n            \"title\": \"Conservation Enthusiasts\",\n            \"description\": \"Nature lovers interested in ecosystem impact\",\n            \"icon\": \"global\"\n          }\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 350,
+      "historyMessages": 3,
+      "elapsedMs": 1582,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserRadio\",\n        \"question\": \"What is the best approach for this audience?\",\n        \"description\": \"Choose the storytelling style that will best engage curious families.\",\n        \"options\": [\n          {\n            \"title\": \"Interactive Adventure\",\n            \"description\": \"A gamified, discovery-focused journey through the savanna\",\n            \"icon\": \"sparkles\"\n          },\n          {\n            \"title\": \"Visual Storytelling\",\n            \"description\": \"Focusing on high-impact imagery and charming life-cycle narratives\",\n            \"icon\": \"story\"\n          },\n          {\n            \"title\": \"Fact-Filled Exploration\",\n            \"description\": \"An engaging 'Did you know?' style breakdown of giraffe behaviors\",\n            \"icon\": \"presentation\"\n          }\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 416,
+      "historyMessages": 5,
+      "elapsedMs": 1250,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserCheckbox\",\n        \"question\": \"What topics should we emphasize?\",\n        \"description\": \"Select the key areas of interest for your visual guide (1-3 topics).\",\n        \"items\": [\n          \"Giraffe Family Life and Social Bonds\",\n          \"Unique Physical Adaptations\",\n          \"How Giraffes Shape Their Ecosystems\",\n          \"Current Conservation Heroes\"\n        ],\n        \"minSelections\": 1,\n        \"maxSelections\": 3,\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 509,
+      "historyMessages": 7,
+      "elapsedMs": 1440,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserSlider\",\n        \"question\": \"How many slides do you need?\",\n        \"description\": \"Choose the length of your presentation based on your narrative depth.\",\n        \"minValue\": 5,\n        \"maxValue\": 20,\n        \"defaultValue\": 10,\n        \"unit\": \"slides\",\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 453,
+      "historyMessages": 9,
+      "elapsedMs": 1165,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserStyle\",\n        \"question\": \"Choose a visual style\",\n        \"description\": \"Select the theme that best matches the playful and engaging tone of your giraffe guide.\",\n        \"themeIds\": [\n          \"playful-learning\",\n          \"organic-sage\",\n          \"warm-editorial\"\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 503,
+      "historyMessages": 11,
+      "elapsedMs": 1198,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserImageStyle\",\n        \"question\": \"Choose an artwork direction\",\n        \"description\": \"Select the visual treatment that best complements your story.\",\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    }
+  ]
+}

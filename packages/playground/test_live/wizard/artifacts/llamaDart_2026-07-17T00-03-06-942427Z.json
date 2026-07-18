@@ -1,0 +1,20 @@
+{
+  "provider": "llamaDart",
+  "model": "local/gemma-3-1b-it",
+  "modelPreparationMs": 50795,
+  "turnCount": 0,
+  "totalTurnMs": 0,
+  "averageTurnMs": null,
+  "valid": false,
+  "error": "Bad state: Sorry, something went wrong. Please try again.",
+  "turns": [],
+  "modelRequests": [
+    {
+      "promptChars": 339,
+      "historyMessages": 1,
+      "elapsedMs": 4473,
+      "output": "Okay, I understand the task. Let's proceed with the A2UI message generation.\n\n```json\n{\n  \"title\": \"A playful guide to how giraffes live, learn, and help their ecosystems\",\n  \"description\": \"Discover the amazing world of giraffes – their unique behaviors, how they learn, and their vital role in their environments.\",\n  \"tags\": [\n    \"education\",\n    \"animals\",\n    \"nature\",\n    \"wildlife\",\n    \"playful\"\n  ],\n  \"action\": {\n    \"name\": \"introduction\",\n    \"context\": {\n      \"key\": \"giraffes_basics\",\n      \"value\": {\n        \"path\": \"/data/giraffes_basics\",\n        \"literalString\": \"Giraffes are fascinating creatures! Let's explore their unique life.\"\n      }\n    }\n  }\n}\n```\n\nI have generated the A2UI message for the \"introduction\" surface.  The `action` is set to `introduction`.  I am ready for the next step.",
+      "error": null
+    }
+  ]
+}

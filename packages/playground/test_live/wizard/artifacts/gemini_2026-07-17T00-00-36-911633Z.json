@@ -1,0 +1,38 @@
+{
+  "provider": "gemini",
+  "model": "models/gemini-3.1-flash-lite",
+  "modelPreparationMs": 0,
+  "turnCount": 2,
+  "totalTurnMs": 2014,
+  "averageTurnMs": 1007,
+  "valid": false,
+  "error": "TimeoutException: Timed out waiting for AskUserCheckbox.",
+  "turns": [
+    {
+      "step": "audience",
+      "component": "AskUserRadio",
+      "elapsedMs": 2010
+    },
+    {
+      "step": "approach",
+      "component": "AskUserRadio",
+      "elapsedMs": 4
+    }
+  ],
+  "modelRequests": [
+    {
+      "promptChars": 339,
+      "historyMessages": 1,
+      "elapsedMs": 1958,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"createSurface\": {\n    \"surfaceId\": \"wizard\",\n    \"catalogId\": \"com.superdeck.ai.chat\",\n    \"sendDataModel\": true\n  }\n}\n```\n```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserRadio\",\n        \"question\": \"Who is your target audience?\",\n        \"description\": \"Select the group that will be exploring the life of giraffes.\",\n        \"options\": [\n          {\n            \"title\": \"Primary School Students\",\n            \"description\": \"Young learners eager for fun facts and engaging visuals\",\n            \"icon\": \"education\"\n          },\n          {\n            \"title\": \"Wildlife Enthusiasts\",\n            \"description\": \"Nature lovers interested in biology and ecological impacts\",\n            \"icon\": \"story\"\n          },\n          {\n            \"title\": \"Community Groups\",\n            \"description\": \"Casual learners looking for an entertaining and informative overview\",\n            \"icon\": \"global\"\n          }\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\"\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 350,
+      "historyMessages": 3,
+      "elapsedMs": 5083,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"id\": \"root\",\n        \"component\": \"AskUserRadio\",\n        \"question\": \"How should we present this journey?\",\n        \"description\": \"Choose an approach that best fits the playful, family-friendly tone.\",\n        \"options\": [\n          {\n            \"title\": \"Interactive Storytelling\",\n            \"description\": \"Follow a day in the life of a giraffe through a narrative lens\",\n            \"icon\": \"story\"\n          },\n          {\n            \"title\": \"Exploratory Fun Facts\",\n            \"description\": \"Discover surprising quirks and behaviors with engaging visuals\",\n            \"icon\": \"sparkles\"\n          },\n          {\n            \"title\": \"Guided Ecosystem Adventure\",\n            \"description\": \"See how giraffes support the wider savanna community\",\n            \"icon\": \"layers\"\n          }\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\"\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    }
+  ]
+}

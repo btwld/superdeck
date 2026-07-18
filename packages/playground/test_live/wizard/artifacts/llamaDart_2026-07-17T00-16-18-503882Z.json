@@ -1,0 +1,128 @@
+{
+  "provider": "llamaDart",
+  "model": "local/gemma-3-270m-it",
+  "modelPreparationMs": 4271,
+  "turnCount": 6,
+  "totalTurnMs": 19379,
+  "averageTurnMs": 3229,
+  "valid": true,
+  "error": null,
+  "turns": [
+    {
+      "step": "audience",
+      "component": "AskUserRadio",
+      "elapsedMs": 7316
+    },
+    {
+      "step": "approach",
+      "component": "AskUserRadio",
+      "elapsedMs": 6927
+    },
+    {
+      "step": "emphasis",
+      "component": "AskUserCheckbox",
+      "elapsedMs": 3884
+    },
+    {
+      "step": "slideCount",
+      "component": "AskUserSlider",
+      "elapsedMs": 52
+    },
+    {
+      "step": "theme",
+      "component": "AskUserStyle",
+      "elapsedMs": 1148
+    },
+    {
+      "step": "imageStyle",
+      "component": "AskUserImageStyle",
+      "elapsedMs": 52
+    }
+  ],
+  "modelRequests": [
+    {
+      "promptChars": 339,
+      "historyMessages": 1,
+      "elapsedMs": 4182,
+      "output": "```json\n{\"version\":\"v0.9\",\"createSurface\":{\"surfaceId\":\"wizard\",\"catalogId\":\"com.superdeck.ai.chat\",\"sendDataModel\":false}}\n```\n```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserRadio\",\"question\":\"Who should this presentation speak to?\",\"description\":\"Choose the best audience for A playful guide to how giraffes live, learn, and help their ecosystems.\",\"options\":[{\"title\":\"Giraffes: A Living, Learning\",\"description\":\"A playful guide to how giraffes live, learn,\",\"icon\":\"audience\"},{\"title\":\"Giraffes: A Living, Learning\",\"description\":\"A playful guide to how giraffes live, learn,\",\"icon\":\"story\"},{\"title\":\"Giraffes: A Living, Learning\",\"description\":\"A playful guide to how giraffes live, learn,\",\"icon\":\"sparkles\"}],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 461,
+      "historyMessages": 3,
+      "elapsedMs": 3028,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserRadio\",\"question\":\"Who should this presentation speak to?\",\"description\":\"Choose the best audience for A playful guide to how giraffes live, learn, and help their ecosystems.\",\"options\":[{\"title\":\"Giraffes: A Living, Learning\",\"description\":\"A playful guide to how giraffes live, learn,\",\"icon\":\"audience\"},{\"title\":\"The Importance of Giraffes\",\"description\":\"A brief overview of the importance of giraf'\",\"icon\":\"story\"},{\"title\":\"Giraffes and Their Ecosystem\",\"description\":\"A discussion on the impact of giraffes on a\",\"icon\":\"sparkles\"}],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 350,
+      "historyMessages": 5,
+      "elapsedMs": 3578,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserRadio\",\"question\":\"How should we tell this story?\",\"description\":\"Choose a delivery style for Curious families.\",\"options\":[{\"title\":\"Giraffe Life: A Simple Guide\",\"description\":\"A fun and engaging overview of giraffes' day\",\"icon\":\"audience\"},{\"title\":\"The Amazing Giraffe: A Tale\",\"description\":\"A heartwarming story about the giraffe's joy\",\"icon\":\"story\"},{\"title\":\"Giraffe Ecology: A Deep Dive\",\"description\":\"A comprehensive look at the giraffes' role, \",\"icon\":\"sparkles\"}],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 453,
+      "historyMessages": 7,
+      "elapsedMs": 3315,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserRadio\",\"question\":\"How should we tell this story?\",\"description\":\"Choose a delivery style for Curious families.\",\"options\":[{\"title\":\"Giraffe Life: A Simple Guide\",\"description\":\"A fun and engaging overview of the life of a\",\"icon\":\"audience\"},{\"title\":\"The Importance of Giraffes\",\"description\":\"A concise explanation of the ecological role\",\"icon\":\"story\"},{\"title\":\"Giraffe Conservation: A Call\",\"description\":\"A call to action and a plea for conservation\",\"icon\":\"sparkles\"}],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 416,
+      "historyMessages": 9,
+      "elapsedMs": 2042,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserCheckbox\",\"question\":\"What should stand out?\",\"description\":\"Choose one to three focus areas.\",\"items\":[\"The beauty of the African savanna\",\"The importance of biodiversity in a changing]\",\"How giraffes communicate through their songs\",\"The impact of climate change on giraffe's lif\"],\"minSelections\":1,\"maxSelections\":3,\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 501,
+      "historyMessages": 11,
+      "elapsedMs": 1824,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserCheckbox\",\"question\":\"What should stand out?\",\"description\":\"Choose one to three focus areas.\",\"items\":[\"The beauty of the African savanna\",\"How giraffes communicate through song\",\"The importance of biodiversity in the wild\",\"The impact of deforestation on giraffe's home\"],\"minSelections\":1,\"maxSelections\":3,\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 509,
+      "historyMessages": 13,
+      "elapsedMs": 1,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserSlider\",\"question\":\"How many slides do you need?\",\"description\":\"Choose a pace that fits the story.\",\"minValue\":5,\"maxValue\":20,\"defaultValue\":10,\"unit\":\"slides\",\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 573,
+      "historyMessages": 15,
+      "elapsedMs": 0,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserSlider\",\"question\":\"How many slides do you need?\",\"description\":\"Choose a pace that fits the story.\",\"minValue\":5,\"maxValue\":20,\"defaultValue\":10,\"unit\":\"slides\",\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 453,
+      "historyMessages": 17,
+      "elapsedMs": 570,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserStyle\",\"question\":\"Choose a visual direction\",\"description\":\"Pick the design system that fits the story.\",\"themeIds\":[\"editorial-midnight\",\"technical-paper\",\"bold-product\"],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 579,
+      "historyMessages": 19,
+      "elapsedMs": 572,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserStyle\",\"question\":\"Choose a visual direction\",\"description\":\"Pick the design system that fits the story.\",\"themeIds\":[\"editorial-midnight\",\"technical-paper\",\"bold-product\"],\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 503,
+      "historyMessages": 21,
+      "elapsedMs": 0,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserImageStyle\",\"question\":\"Choose an artwork direction\",\"description\":\"Compare three visual treatments for the same idea.\",\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    },
+    {
+      "promptChars": 617,
+      "historyMessages": 23,
+      "elapsedMs": 2,
+      "output": "```json\n{\"version\":\"v0.9\",\"updateComponents\":{\"surfaceId\":\"wizard\",\"components\":[{\"id\":\"root\",\"component\":\"AskUserImageStyle\",\"question\":\"Choose an artwork direction\",\"description\":\"Compare three visual treatments for the same idea.\",\"action\":{\"name\":\"submit_answer\",\"context\":[]}}]}}\n```\n",
+      "error": null
+    }
+  ]
+}

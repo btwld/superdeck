@@ -1,0 +1,86 @@
+{
+  "provider": "gemini",
+  "model": "models/gemini-3.1-flash-lite",
+  "modelPreparationMs": 0,
+  "turnCount": 6,
+  "totalTurnMs": 11915,
+  "averageTurnMs": 1985,
+  "valid": true,
+  "error": null,
+  "turns": [
+    {
+      "step": "audience",
+      "component": "AskUserRadio",
+      "elapsedMs": 1825
+    },
+    {
+      "step": "approach",
+      "component": "AskUserRadio",
+      "elapsedMs": 4238
+    },
+    {
+      "step": "emphasis",
+      "component": "AskUserCheckbox",
+      "elapsedMs": 1876
+    },
+    {
+      "step": "slideCount",
+      "component": "AskUserSlider",
+      "elapsedMs": 1364
+    },
+    {
+      "step": "theme",
+      "component": "AskUserStyle",
+      "elapsedMs": 1463
+    },
+    {
+      "step": "imageStyle",
+      "component": "AskUserImageStyle",
+      "elapsedMs": 1149
+    }
+  ],
+  "modelRequests": [
+    {
+      "promptChars": 339,
+      "historyMessages": 1,
+      "elapsedMs": 1776,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"createSurface\": {\n    \"surfaceId\": \"wizard\",\n    \"catalogId\": \"com.superdeck.ai.chat\",\n    \"sendDataModel\": true\n  }\n}\n```\n```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"component\": \"AskUserRadio\",\n        \"id\": \"root\",\n        \"question\": \"Who is your target audience?\",\n        \"description\": \"Select the group that best describes your viewers for this playful guide.\",\n        \"options\": [\n          {\n            \"title\": \"Primary School Students\",\n            \"description\": \"Young learners eager for fun facts and engaging visuals\",\n            \"icon\": \"education\"\n          },\n          {\n            \"title\": \"Nature Enthusiasts\",\n            \"description\": \"Adults interested in wildlife conservation and ecosystem dynamics\",\n            \"icon\": \"story\"\n          },\n          {\n            \"title\": \"Families & General Public\",\n            \"description\": \"Broad audiences looking for an accessible and entertaining experience\",\n            \"icon\": \"global\"\n          }\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 350,
+      "historyMessages": 3,
+      "elapsedMs": 4184,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"component\": \"AskUserRadio\",\n        \"id\": \"root\",\n        \"question\": \"What is the best approach for this audience?\",\n        \"description\": \"Choose a narrative style that will resonate with families exploring the world of giraffes.\",\n        \"options\": [\n          {\n            \"title\": \"Interactive Storytelling\",\n            \"description\": \"An engaging journey following a day in the life of a giraffe calf\",\n            \"icon\": \"story\"\n          },\n          {\n            \"title\": \"Visual Discovery\",\n            \"description\": \"A vibrant showcase focusing on fascinating anatomy and wild behaviors\",\n            \"icon\": \"sparkles\"\n          },\n          {\n            \"title\": \"Educational Gamification\",\n            \"description\": \"A fun, quiz-based tour highlighting cool facts and ecological importance\",\n            \"icon\": \"goal\"\n          }\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 416,
+      "historyMessages": 5,
+      "elapsedMs": 1830,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"component\": \"AskUserCheckbox\",\n        \"id\": \"root\",\n        \"question\": \"What topics should we emphasize?\",\n        \"description\": \"Select the key areas that will make our visual story most compelling (1-3 topics).\",\n        \"items\": [\n          \"Unique physical adaptations (like their hearts and necks)\",\n          \"Social dynamics and learning behaviors in the wild\",\n          \"The critical role they play in African savanna ecosystems\",\n          \"Conservation efforts and protecting their future\"\n        ],\n        \"minSelections\": 1,\n        \"maxSelections\": 3,\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 509,
+      "historyMessages": 7,
+      "elapsedMs": 1328,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"component\": \"AskUserSlider\",\n        \"id\": \"root\",\n        \"question\": \"How many slides do you need?\",\n        \"description\": \"Choose a length that allows enough space for your visuals and facts.\",\n        \"minValue\": 5,\n        \"maxValue\": 20,\n        \"defaultValue\": 10,\n        \"unit\": \"slides\",\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 453,
+      "historyMessages": 9,
+      "elapsedMs": 1424,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"component\": \"AskUserStyle\",\n        \"id\": \"root\",\n        \"question\": \"Choose a visual style\",\n        \"description\": \"Pick the design system that best fits the playful and educational tone of your guide.\",\n        \"themeIds\": [\n          \"playful-learning\",\n          \"organic-sage\",\n          \"warm-editorial\"\n        ],\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    },
+    {
+      "promptChars": 503,
+      "historyMessages": 11,
+      "elapsedMs": 1130,
+      "output": "```json\n{\n  \"version\": \"v0.9\",\n  \"updateComponents\": {\n    \"surfaceId\": \"wizard\",\n    \"components\": [\n      {\n        \"component\": \"AskUserImageStyle\",\n        \"id\": \"root\",\n        \"question\": \"Choose an artwork direction\",\n        \"description\": \"Select the visual treatment that best brings your story about giraffes to life.\",\n        \"action\": {\n          \"name\": \"submit_answer\",\n          \"context\": []\n        }\n      }\n    ]\n  }\n}\n```",
+      "error": null
+    }
+  ]
+}
