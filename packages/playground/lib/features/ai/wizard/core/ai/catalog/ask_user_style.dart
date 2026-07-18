@@ -81,8 +81,6 @@ CatalogItem askUserStyleFor(PresentationThemeCatalog themeCatalog) {
   );
 }
 
-final askUserStyle = askUserStyleFor(PresentationThemeCatalog.withDefaults());
-
 AskUserStyleType parseAskUserStyle(
   Object? data, {
   required PresentationThemeCatalog themeCatalog,

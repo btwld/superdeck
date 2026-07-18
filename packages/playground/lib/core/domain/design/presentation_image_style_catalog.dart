@@ -12,37 +12,14 @@ final class PresentationImageStyleDescriptor {
   final int version;
   final String title;
   final String description;
-  final Set<String> selectionTags;
-  final Set<String> mediaTags;
-  final Set<String> compatibilityTags;
   final String treatment;
   const PresentationImageStyleDescriptor({
     required this.id,
     required this.version,
     required this.title,
     required this.description,
-    required this.selectionTags,
-    required this.mediaTags,
-    required this.compatibilityTags,
     required this.treatment,
   });
-
-  /// Compact selection metadata safe to include in model prompts.
-  Map<String, Object?> toModelCandidate() {
-    final tags = <String>{
-      ...selectionTags,
-      ...mediaTags,
-      ...compatibilityTags,
-    }.toList()..sort();
-
-    return {
-      'id': id,
-      'version': version,
-      'title': title,
-      'description': description,
-      'tags': tags,
-    };
-  }
 
   /// Combines a concrete subject with this locally owned treatment.
   String buildPrompt(String subject) {
@@ -88,11 +65,6 @@ final class PresentationImageStyleCatalog {
   factory PresentationImageStyleCatalog.withDefaults() =>
       defaultPresentationImageStyleCatalog;
 
-  /// Latest descriptor for every ID, preserving declared catalog order.
-  List<PresentationImageStyleDescriptor> get currentStyles => .unmodifiable(
-    styles.where((style) => identical(current(style.id), style)),
-  );
-
   PresentationImageStyleDescriptor? current(String id) =>
       _currentById[id.trim()];
 
@@ -130,11 +102,6 @@ void _validateDescriptor(PresentationImageStyleDescriptor style) {
       'Image style "${style.id}" requires a title, description, and treatment.',
     );
   }
-  if (style.selectionTags.isEmpty || style.mediaTags.isEmpty) {
-    throw ArgumentError(
-      'Image style "${style.id}" requires selection and media tags.',
-    );
-  }
 }
 
 String _versionKey(String id, int version) => '${id.trim()}@$version';
@@ -146,9 +113,6 @@ final defaultPresentationImageStyleCatalog = PresentationImageStyleCatalog(
       version: 1,
       title: 'Watercolor',
       description: 'Soft, expressive artwork with organic painted texture',
-      selectionTags: {'soft', 'artistic', 'organic', 'dreamy'},
-      mediaTags: {'illustration', 'painted', 'textured'},
-      compatibilityTags: {'editorial', 'playful', 'storytelling'},
       treatment:
           'rendered in a soft watercolor painting style with flowing organic '
           'shapes, gentle color bleeding, muted pastel tones, and subtle paper '
@@ -159,9 +123,6 @@ final defaultPresentationImageStyleCatalog = PresentationImageStyleCatalog(
       version: 1,
       title: 'Minimalist',
       description: 'Clean, modern artwork with precise geometric simplicity',
-      selectionTags: {'clean', 'modern', 'professional', 'restrained'},
-      mediaTags: {'illustration', 'geometric', 'negative-space'},
-      compatibilityTags: {'minimal', 'technical', 'editorial'},
       treatment:
           'rendered in a clean minimalist style with simple geometric shapes, '
           'generous negative space, a limited color palette, precise edges, '
@@ -172,9 +133,6 @@ final defaultPresentationImageStyleCatalog = PresentationImageStyleCatalog(
       version: 1,
       title: 'Gradient',
       description: 'Dynamic contemporary artwork with rich color transitions',
-      selectionTags: {'dynamic', 'contemporary', 'vibrant'},
-      mediaTags: {'abstract', 'gradient', 'mesh'},
-      compatibilityTags: {'bold', 'technical', 'product'},
       treatment:
           'rendered with smooth flowing gradients and rich color transitions, '
           'a vibrant harmonious palette, and subtle mesh effects that create '
@@ -185,9 +143,6 @@ final defaultPresentationImageStyleCatalog = PresentationImageStyleCatalog(
       version: 1,
       title: 'Retro',
       description: 'Playful artwork with a warm 1960s and 1970s print feel',
-      selectionTags: {'nostalgic', 'playful', 'vintage'},
-      mediaTags: {'illustration', 'print', 'halftone'},
-      compatibilityTags: {'retro', 'bold', 'storytelling'},
       treatment:
           'rendered in a retro print illustration style with bold outlines, '
           'halftone dots, warm muted colors, and a lightly faded finish',
@@ -197,9 +152,6 @@ final defaultPresentationImageStyleCatalog = PresentationImageStyleCatalog(
       version: 1,
       title: 'Geometric',
       description: 'Structured technical artwork using angular forms and grids',
-      selectionTags: {'technical', 'structured', 'bold'},
-      mediaTags: {'abstract', 'geometric', 'grid'},
-      compatibilityTags: {'technical', 'data', 'bold'},
       treatment:
           'rendered as a geometric abstract composition with clean angular '
           'shapes, precise lines, a structured grid, bold contrast, and '
@@ -210,9 +162,6 @@ final defaultPresentationImageStyleCatalog = PresentationImageStyleCatalog(
       version: 1,
       title: 'Flat Design',
       description: 'Friendly approachable artwork using simple vector forms',
-      selectionTags: {'friendly', 'approachable', 'corporate'},
-      mediaTags: {'illustration', 'vector', 'flat'},
-      compatibilityTags: {'playful', 'learning', 'product'},
       treatment:
           'rendered as a flat vector illustration with solid colors, clean '
           'shapes, simple forms, no gradients, and an approachable palette',

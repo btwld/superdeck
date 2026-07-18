@@ -57,17 +57,3 @@ final class GeneratedDeckResultApplier {
     _appliedAssetKeys = Set.unmodifiable(nextAssetKeys);
   }
 }
-
-/// Loads one accepted generation result into the shared document and renderer.
-Future<void> applyGeneratedDeckResult({
-  required DeckGenerationResult result,
-  required DeckDocumentStore documentStore,
-  MemoryDeckLoader? deckLoader,
-  AssetCacheStore? assetCacheStore,
-  required DeckCustomizationStore customizationStore,
-}) => GeneratedDeckResultApplier(
-  documentStore: documentStore,
-  deckLoader: deckLoader,
-  assetCacheStore: assetCacheStore,
-  customizationStore: customizationStore,
-).apply(result);

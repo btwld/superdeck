@@ -17,9 +17,7 @@ part 'deck_schemas.g.dart';
 // THEME REFERENCE SCHEMAS
 // ============================================================================
 
-const deckDesignDirections = presentationThemeDirections;
 const deckDensityProfiles = presentationThemeDensityProfiles;
-const deckTypeScales = presentationThemeTypeScales;
 
 @AckType(name: 'DeckBrandColors')
 final deckBrandColorsSchema = Ack.object({

@@ -74,13 +74,11 @@ class DeckLengthSelector extends StatelessWidget {
     required this.min,
     required this.max,
     required this.onChanged,
-    this.unit = 'slides',
   });
 
   final int value;
   final int min;
   final int max;
-  final String unit;
   final ValueChanged<int> onChanged;
 
   List<int> get _choices => [
@@ -243,14 +241,12 @@ class _AskUserSliderContentState extends State<_AskUserSliderContent> {
   Widget _buildSlider() {
     final minValue = widget.data.minValue;
     final maxValue = widget.data.maxValue;
-    final unit = widget.data.unit ?? '';
 
     return DeckLengthSelector(
       value: _sliderValue,
       min: minValue,
       max: maxValue,
       onChanged: (value) => setState(() => _sliderValue = value),
-      unit: unit,
     );
   }
 

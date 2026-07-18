@@ -61,10 +61,6 @@ CatalogItem askUserImageStyleFor(
   );
 }
 
-final askUserImageStyle = askUserImageStyleFor(
-  PresentationImageStyleCatalog.withDefaults(),
-);
-
 class _AskUserImageStyleContent extends StatefulWidget {
   const _AskUserImageStyleContent({
     required this.data,

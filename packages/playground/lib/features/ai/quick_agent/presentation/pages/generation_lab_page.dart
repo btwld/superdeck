@@ -43,7 +43,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   final _planningTraces = <GenerationTraceEvent>[];
   final _compositionTraces = <GenerationTraceEvent>[];
 
-  late final DeckGeneratorService _service;
+  late final DeckGeneratorService? _service;
   _GenerationPreset _preset = _presets.first;
   GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
   DeckPlanType? _plan;
@@ -54,20 +54,23 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   _GenerationLabStage? _runningStage;
   bool _cancelled = false;
 
-  bool get _isConfigured => widget.isConfigured ?? EnvConfig.hasGeminiApiKey;
+  bool get _isConfigured =>
+      (widget.isConfigured ?? (_service != null)) && _service != null;
 
   @override
   void initState() {
     super.initState();
     _service =
         widget.generationService ??
-        DeckGeneratorService(
-          apiKey: EnvConfig.geminiApiKey,
-          imageGenerator: DartanticImageGenerator(
-            apiKey: EnvConfig.geminiApiKey,
-            modelName: geminiImageGenerationModel,
-          ),
-        );
+        (widget.isConfigured != false && EnvConfig.hasGeminiApiKey
+            ? DeckGeneratorService(
+                apiKey: EnvConfig.geminiApiKey,
+                imageGenerator: DartanticImageGenerator(
+                  apiKey: EnvConfig.geminiApiKey,
+                  modelName: geminiImageGenerationModel,
+                ),
+              )
+            : null);
   }
 
   void _selectPreset(_GenerationPreset preset) {
@@ -86,7 +89,8 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   }
 
   Future<void> _generateStoryBeats() async {
-    if (_runningStage != null || !_isConfigured) return;
+    final service = _service;
+    if (_runningStage != null || !_isConfigured || service == null) return;
     setState(() {
       _cancelled = false;
       _runningStage = .planning;
@@ -101,20 +105,32 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
     });
 
     final timer = Stopwatch()..start();
-    final planning = await _service.plan(
-      _preset.request,
-      onProgress: (progress) {
-        if (mounted) setState(() => _progress = progress);
-      },
-      onTrace: (event) {
-        if (!_cancelled) _planningTraces.add(event);
-      },
-      isCancelled: () => _cancelled || !mounted,
-    );
+    final DeckPlanningResult planning;
+    try {
+      planning = await service.plan(
+        _preset.request,
+        onProgress: (progress) {
+          if (mounted && !_cancelled) {
+            setState(() => _progress = progress);
+          }
+        },
+        onTrace: (event) {
+          if (!_cancelled) _planningTraces.add(event);
+        },
+        isCancelled: () => _cancelled || !mounted,
+      );
+    } on Object catch (error) {
+      timer.stop();
+      _finishWithError(.planning, timer.elapsed, error);
+
+      return;
+    }
     timer.stop();
-    if (!mounted || _cancelled) return;
+    if (_finishCancelled(.planning, timer.elapsed)) return;
+    if (!mounted) return;
     setState(() {
       _runningStage = null;
+      _cancelled = false;
       _planningDuration = timer.elapsed;
       _progress = const GenerationProgress(GenerationPhase.idle);
       _plan = planning.plan;
@@ -124,7 +140,13 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
 
   Future<void> _buildSlides() async {
     final plan = _plan;
-    if (_runningStage != null || !_isConfigured || plan == null) return;
+    final service = _service;
+    if (_runningStage != null ||
+        !_isConfigured ||
+        plan == null ||
+        service == null) {
+      return;
+    }
     setState(() {
       _cancelled = false;
       _runningStage = .composing;
@@ -136,26 +158,44 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
     });
 
     final timer = Stopwatch()..start();
-    final result = await _service.generateFromPlan(
-      _preset.request,
-      plan,
-      onProgress: (progress) {
-        if (mounted) setState(() => _progress = progress);
-      },
-      onTrace: (event) {
-        if (!_cancelled) _compositionTraces.add(event);
-      },
-      isCancelled: () => _cancelled || !mounted,
-    );
-    timer.stop();
-    if (!mounted || _cancelled) return;
-    if (result.slides.isNotEmpty && result.theme != null) {
-      await _applyResult(result);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+    final DeckGenerationResult result;
+    try {
+      result = await service.generateFromPlan(
+        _preset.request,
+        plan,
+        onProgress: (progress) {
+          if (mounted && !_cancelled) {
+            setState(() => _progress = progress);
+          }
+        },
+        onTrace: (event) {
+          if (!_cancelled) _compositionTraces.add(event);
+        },
+        isCancelled: () => _cancelled || !mounted,
+      );
+    } on Object catch (error) {
+      timer.stop();
+      _finishWithError(.composing, timer.elapsed, error);
+
+      return;
     }
+    timer.stop();
+    if (_finishCancelled(.composing, timer.elapsed)) return;
+    try {
+      if (result.slides.isNotEmpty && result.theme != null) {
+        await _applyResult(result);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    } on Object catch (error) {
+      _finishWithError(.composing, timer.elapsed, error);
+
+      return;
+    }
+    if (_finishCancelled(.composing, timer.elapsed)) return;
     if (!mounted) return;
     setState(() {
       _runningStage = null;
+      _cancelled = false;
       _compositionDuration = timer.elapsed;
       _progress = const GenerationProgress(GenerationPhase.idle);
       _result = result;
@@ -175,6 +215,45 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
     }
     customization.applyGeneratedStyle(result.theme!.toGeneratedDeckStyle());
     deckLoader.updateMarkdown(const SlideSerializer().serialize(result.slides));
+  }
+
+  bool _finishCancelled(_GenerationLabStage stage, Duration duration) {
+    if (!mounted) return true;
+    if (!_cancelled) return false;
+    setState(() {
+      _runningStage = null;
+      _cancelled = false;
+      _progress = const GenerationProgress(GenerationPhase.idle);
+      switch (stage) {
+        case .planning:
+          _planningDuration = duration;
+        case .composing:
+          _compositionDuration = duration;
+      }
+    });
+
+    return true;
+  }
+
+  void _finishWithError(
+    _GenerationLabStage stage,
+    Duration duration,
+    Object error,
+  ) {
+    if (!mounted) return;
+    setState(() {
+      _runningStage = null;
+      _cancelled = false;
+      _progress = const GenerationProgress(GenerationPhase.idle);
+      switch (stage) {
+        case .planning:
+          _planningDuration = duration;
+          _error = 'Story planning failed: $error';
+        case .composing:
+          _compositionDuration = duration;
+          _error = 'Slide composition failed: $error';
+      }
+    });
   }
 
   @override
@@ -249,9 +328,11 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
               ),
               if (running)
                 TextButton.icon(
-                  onPressed: () => setState(() => _cancelled = true),
+                  onPressed: _cancelled
+                      ? null
+                      : () => setState(() => _cancelled = true),
                   icon: const Icon(Icons.close),
-                  label: const Text('Cancel'),
+                  label: Text(_cancelled ? 'Cancelling…' : 'Cancel'),
                 ),
             ],
           ),

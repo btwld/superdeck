@@ -18,6 +18,7 @@ import '../ui/tokens/colors.dart';
 import '../ui/widgets/cache_image_widget.dart';
 import '../ui/widgets/provider.dart';
 import '../utils/constants.dart';
+import 'capture_limiter.dart';
 import 'render_config.dart';
 import 'slide_capture_readiness.dart';
 
@@ -35,13 +36,10 @@ enum SlideCaptureQuality {
 class SlideCaptureService {
   SlideCaptureService();
 
-  /// Queue of slide keys currently being generated.
-  /// Instance-level to prevent interference between service instances.
-  final _generationQueue = <String>{};
+  final _captureLimiter = CaptureLimiter(_maxConcurrentGenerations);
 
   /// Maximum concurrent generations to prevent memory pressure.
   static const _maxConcurrentGenerations = 3;
-  static const _kQueuePollInterval = Duration(milliseconds: 50);
   static const _kRenderSettleDelay = Duration(milliseconds: 32);
   static const _kMaxRenderPasses = 30;
   static const _kRequiredStablePasses = 2;
@@ -53,16 +51,8 @@ class SlideCaptureService {
     required BuildContext context,
     bool includeDebugLayout = false,
   }) async {
-    final queueKey = shortHash(
-      '${slide.key}${quality.name}$includeDebugLayout',
-    );
+    await _captureLimiter.acquire();
     try {
-      while (_generationQueue.length >= _maxConcurrentGenerations) {
-        await Future.delayed(_kQueuePollInterval);
-      }
-
-      _generationQueue.add(queueKey);
-
       var staticRenderingSlide = slide.copyWith(
         debug: includeDebugLayout,
         isStaticRendering: true,
@@ -125,7 +115,7 @@ class SlideCaptureService {
       log('Error generating image: $e', stackTrace: stackTrace);
       rethrow;
     } finally {
-      _generationQueue.remove(queueKey);
+      _captureLimiter.release();
     }
   }
 

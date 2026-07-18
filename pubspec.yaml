@@ -15,10 +15,16 @@ dev_dependencies:
   # requires cli_util 0.4.x. 7.8.1 is the latest compatible workspace release.
   melos: 7.8.1
 
-# ack_generator 1.x requires analyzer <9, while mix_generator 2.1.x declares
-# analyzer >=9. Both generators are exercised by build_runner below.
+# ack_generator 1.x requires Analyzer 8's element2 API, while mix_generator
+# 2.2 requires Analyzer 9 where that API was removed. Keep the proven 2.1
+# generator on Analyzer 8 while the runtime Mix packages use 2.2 beta.
 dependency_overrides:
   analyzer: 8.4.1
+  # Hero UI's Remix 1.0 migration commit still points at development Git
+  # branches. Resolve its runtime dependencies to the published betas used by
+  # this workspace until that upstream migration is released.
+  mix_annotations: 2.2.0-beta.0
+  remix: 1.0.0-beta.1
 
 lint_staged:
   '**.dart': fvm dart fix --apply && dcm fix

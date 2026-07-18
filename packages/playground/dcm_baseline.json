@@ -168,11 +168,6 @@
           "bfee52d03478ce0c30b1ae2015bc758f"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/prompts/font_styles.dart": {
-        "newline-before-return": [
-          "bbef19786c08a56d47025fc80a748f53"
-        ]
-      },
       "lib/features/ai/quick_agent/core/engine/prompts/generation_prompt_provider.dart": {
         "prefer-shorthands-with-static-fields": [
           "6debe9693098b85f1b7030aec538457d"

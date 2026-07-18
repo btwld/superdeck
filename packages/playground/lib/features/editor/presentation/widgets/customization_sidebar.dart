@@ -115,7 +115,7 @@ class _LevelAccordion extends StatelessWidget {
       value: level,
       title: title,
       trailingIcon: CupertinoIcons.plus,
-      style: RemixAccordionStyle()
+      style: RemixAccordionStyler()
           .titleColor($foreground())
           .titleStyle($labelMedium.mix())
           .trailingIconColor($muted())
@@ -235,13 +235,12 @@ class _FontWeightSlider extends StatelessWidget {
           ],
         ),
         HeroSlider(
-          min: 100,
-          max: 900,
-          snapDivisions: 8,
-          showOutput: false,
           value: weight.toDouble(),
           onChanged: (value) =>
               store.setWeight(level, (value / 100).round() * 100),
+          min: 100,
+          max: 900,
+          snapDivisions: 8,
         ),
       ],
     );
@@ -267,12 +266,13 @@ class _FontFamilySelect extends StatelessWidget {
       children: [
         const ControlLabel('Family'),
         HeroSelect<String>(
-          fullWidth: true,
-          placeholder: 'Font',
-          items: items,
-          icon: CupertinoIcons.textformat,
-          selectedValue: family,
           style: .new().trigger(.new().spacing(12)),
+          trigger: HeroSelectTrigger(
+            placeholder: 'Font',
+            icon: CupertinoIcons.textformat,
+          ),
+          items: items,
+          selectedValue: family,
           onChanged: (value) {
             if (value != null) store.setFamily(level, value);
           },

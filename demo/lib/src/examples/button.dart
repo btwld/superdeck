@@ -19,7 +19,7 @@ class ButtonExample extends StatelessWidget {
     );
   }
 
-  RemixButtonStyle get baseStyle => RemixButtonStyle()
+  RemixButtonStyler get baseStyle => RemixButtonStyler()
       .labelColor(Colors.white)
       .paddingAll(10)
       .labelFontWeight(FontWeight.w500)
@@ -29,20 +29,20 @@ class ButtonExample extends StatelessWidget {
       .borderRadiusAll(Radius.circular(6))
       .scale(1)
       .onDisabled(
-        RemixButtonStyle()
+        RemixButtonStyler()
             .color(Colors.grey.shade200)
             .labelColor(Colors.grey.shade500),
       )
-      .onHovered(RemixButtonStyle().scale(0.95))
+      .onHovered(RemixButtonStyler().scale(0.95))
       .onPressed(
-        RemixButtonStyle().scale(0.9).animate(AnimationConfig.easeOut(100.ms)),
+        RemixButtonStyler().scale(0.9).animate(AnimationConfig.easeOut(100.ms)),
       )
       .animate(AnimationConfig.easeOut(200.ms));
 
-  RemixButtonStyle get solidStyle =>
+  RemixButtonStyler get solidStyle =>
       baseStyle.color(Colors.blueAccent.shade700);
 
-  RemixButtonStyle get outlineStyle => baseStyle
+  RemixButtonStyler get outlineStyle => baseStyle
       .borderAll(color: Colors.blueAccent.shade700.withValues(alpha: 0.7))
       .color(Colors.blueAccent.shade100.withValues(alpha: 0.15))
       .labelColor(Colors.blueAccent.shade700);

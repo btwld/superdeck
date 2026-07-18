@@ -21,8 +21,8 @@ export 'ask_user_style.dart';
 /// - [askUserRadio] - Radio button single selection
 /// - [askUserCheckbox] - Checkbox multiple selection
 /// - [askUserSlider] - Slider numeric input
-/// - [askUserStyle] - Catalog-backed presentation theme selection
-/// - [askUserImageStyle] - Application-owned generated artwork directions
+/// - [askUserStyleFor] - Catalog-backed presentation theme selection
+/// - [askUserImageStyleFor] - Application-owned generated artwork directions
 Catalog chatCatalogFor(
   PresentationThemeCatalog themeCatalog, {
   required PresentationImageStyleCatalog imageStyleCatalog,
@@ -35,8 +35,3 @@ Catalog chatCatalogFor(
     askUserImageStyleFor(imageStyleCatalog),
   ], catalogId: 'com.superdeck.ai.chat');
 }
-
-final chatCatalog = chatCatalogFor(
-  PresentationThemeCatalog.withDefaults(),
-  imageStyleCatalog: PresentationImageStyleCatalog.withDefaults(),
-);

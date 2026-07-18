@@ -45,8 +45,8 @@ class ColorControl extends StatelessWidget {
           format: colorToHex,
           parse: _parseOpaque,
           onChanged: onChanged,
-          style: RemixTextFieldStyle().backgroundColor($surfaceSecondary()),
           leading: _ColorDot(color: color),
+          style: RemixTextFieldStyler().backgroundColor($surfaceSecondary()),
           textInputAction: TextInputAction.done,
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F#]')),

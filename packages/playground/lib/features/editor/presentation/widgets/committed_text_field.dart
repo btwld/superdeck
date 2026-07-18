@@ -33,7 +33,7 @@ class CommittedTextField<T> extends StatefulWidget {
   final T? Function(String text) parse;
   final ValueChanged<T> onChanged;
   final Widget? leading;
-  final RemixTextFieldStyle? style;
+  final RemixTextFieldStyler? style;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final List<TextInputFormatter>? inputFormatters;

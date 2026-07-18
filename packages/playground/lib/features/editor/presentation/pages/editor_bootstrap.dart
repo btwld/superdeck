@@ -106,7 +106,7 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
           const SizedBox(height: 16),
           HeroButton(
             label: 'Try again',
-            iconLeft: Icons.refresh,
+            leadingIcon: Icons.refresh,
             onPressed: _retry,
           ),
         ],

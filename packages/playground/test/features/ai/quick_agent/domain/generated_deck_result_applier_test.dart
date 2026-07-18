@@ -38,8 +38,14 @@ void main() {
       final published = loader.load().first.then(
         (_) => cache.resolve(assetKey),
       );
-      await applyGeneratedDeckResult(
-        result: DeckGenerationResult.success(
+      final applier = GeneratedDeckResultApplier(
+        documentStore: documentStore,
+        deckLoader: loader,
+        assetCacheStore: cache,
+        customizationStore: customizationStore,
+      );
+      await applier.apply(
+        DeckGenerationResult.success(
           slides: [_generatedSlide(assetKey)],
           plan: _plan(assetKey),
           theme: _resolvedTheme(),
@@ -47,10 +53,6 @@ void main() {
             GeneratedImageAsset.success(assetKey: assetKey, bytes: [1, 2, 3]),
           ],
         ),
-        documentStore: documentStore,
-        deckLoader: loader,
-        assetCacheStore: cache,
-        customizationStore: customizationStore,
       );
 
       expect(await published, isNotNull);

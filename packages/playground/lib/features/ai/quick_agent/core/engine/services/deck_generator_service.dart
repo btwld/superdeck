@@ -50,13 +50,6 @@ final class SlideGenerationFailure {
   });
 
   String get message => issues.messages.join(' ');
-
-  Map<String, Object?> toJson() => {
-    'slideIndex': slideIndex,
-    'slideKey': slideKey,
-    'retryable': retryable,
-    'issues': [for (final issue in issues) issue.toJson()],
-  };
 }
 
 /// Result of deck generation.

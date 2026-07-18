@@ -18,7 +18,9 @@ void main() {
     final themeCatalog = PresentationThemeCatalog.withDefaults();
     final imageStyleCatalog = PresentationImageStyleCatalog.withDefaults();
     final theme = themeCatalog.currentThemes.first;
-    final imageStyle = imageStyleCatalog.currentStyles.first;
+    final imageStyle = imageStyleCatalog.current(
+      featuredPresentationImageStyleIds.first,
+    )!;
 
     await tester.pumpWidget(
       MaterialApp(

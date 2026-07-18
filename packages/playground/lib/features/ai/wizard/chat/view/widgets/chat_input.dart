@@ -33,20 +33,20 @@ class ChatInput extends StatelessWidget {
         .fontWeight(FontWeight.w600);
 
     return HeroTextField(
-      enabled: enabled,
-      autofocus: autofocus,
-      controller: controller,
-      focusNode: focusNode,
-      hintText: hintText,
-      trailing: trailingStyle('Press Enter'),
-      textInputAction: TextInputAction.send,
-      onSubmitted: enabled ? onSubmitted : null,
-      semanticLabel: 'Chat message input',
-      style: RemixTextFieldStyle()
+      style: RemixTextFieldStyler()
           .padding(.horizontal(16).vertical(14))
           .backgroundColor($surfaceSecondary())
           .border(.color($border()))
           .borderRadiusAll(const .circular(14)),
+      controller: controller,
+      focusNode: focusNode,
+      hintText: hintText,
+      textInputAction: TextInputAction.send,
+      enabled: enabled,
+      autofocus: autofocus,
+      onSubmitted: enabled ? onSubmitted : null,
+      trailing: trailingStyle('Press Enter'),
+      semanticLabel: 'Chat message input',
     );
   }
 }

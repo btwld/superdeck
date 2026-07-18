@@ -1,27 +1,65 @@
 PODS:
+  - device_info_plus (0.0.1):
+    - FlutterMacOS
+  - file_saver (0.3.1):
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - irondash_engine_context (0.0.1):
     - FlutterMacOS
+  - screen_retriever_macos (0.0.1):
+    - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
   - super_native_extensions (0.0.1):
+    - FlutterMacOS
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - window_manager (0.5.0):
     - FlutterMacOS
 
 DEPENDENCIES:
+  - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
+  - file_saver (from `Flutter/ephemeral/.symlinks/plugins/file_saver/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - irondash_engine_context (from `Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos`)
+  - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
+  - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
   - super_native_extensions (from `Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos`)
+  - webview_flutter_wkwebview (from `Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin`)
+  - window_manager (from `Flutter/ephemeral/.symlinks/plugins/window_manager/macos`)
 
 EXTERNAL SOURCES:
+  device_info_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
+  file_saver:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_saver/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   irondash_engine_context:
     :path: Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos
+  screen_retriever_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos
+  sqflite_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin
   super_native_extensions:
     :path: Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos
+  webview_flutter_wkwebview:
+    :path: Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin
+  window_manager:
+    :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
 
 SPEC CHECKSUMS:
+  device_info_plus: 4fb280989f669696856f8b129e4a5e3cd6c48f76
+  file_saver: 0b49fcd0f67d6e24737b757ee1eb1d3d8ca392fb
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   irondash_engine_context: 893c7d96d20ce361d7e996f39d360c4c2f9869ba
+  screen_retriever_macos: c5508cc3c66ff0d4db650480cf0ab691e220d933
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   super_native_extensions: c2795d6d9aedf4a79fae25cb6160b71b50549189
+  webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
+  window_manager: b729e31d38fb04905235df9ea896128991cad99e
 
 PODFILE CHECKSUM: 9ebaf0ce3d369aaa26a9ea0e159195ed94724cf3
 

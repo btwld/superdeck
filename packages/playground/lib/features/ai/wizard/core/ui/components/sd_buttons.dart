@@ -26,7 +26,7 @@ class SdButton extends StatelessWidget {
 
   /// Semantic label for accessibility. Defaults to [label] if not provided.
   final String? semanticLabel;
-  final RemixButtonStyle? style;
+  final RemixButtonStyler? style;
   final SdButtonVariant variant;
 
   HeroButtonVariant get _heroVariant => switch (variant) {
@@ -42,13 +42,13 @@ class SdButton extends StatelessWidget {
       button: true,
       label: semanticLabel ?? label,
       child: HeroButton(
-        label: label,
         variant: _heroVariant,
-        iconLeft: icon,
+        style: style,
+        label: label,
+        leadingIcon: icon,
         loading: loading,
         enabled: enabled,
         onPressed: onPressed,
-        style: style,
       ),
     );
   }
@@ -69,7 +69,7 @@ class SdIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool loading;
   final String? semanticLabel;
-  final RemixIconButtonStyle? style;
+  final RemixIconButtonStyler? style;
 
   @override
   Widget build(BuildContext context) {
