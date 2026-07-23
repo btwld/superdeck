@@ -105,7 +105,7 @@ frontmatter are already parsed before plugin transforms run.
 ```dart
 final exitCode = await SuperDeckRunner(
   plugins: [
-    MermaidBuildPlugin(),
+    TextAssetPlugin(),
   ],
 ).run(args);
 ```
@@ -177,7 +177,5 @@ escape the build output directory.
 
 - `superdeck_pdf` exposes `PdfPlugin`, `PdfExportOptions`, and `PdfSaver` for
   PDF export.
-- `superdeck_mermaid` exposes `MermaidBuildPlugin` and `MermaidGenerator`
-  for build-time Mermaid diagram rendering.
 
 See the [plugin guide](/guides/plugins) for installation and authoring examples.

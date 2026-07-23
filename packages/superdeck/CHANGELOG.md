@@ -1,5 +1,11 @@
 ## Unreleased
 
+- **Breaking:** render supported Mermaid fences directly with
+  `flutter_mermaid` instead of the removed browser-backed build plugin.
+  Mermaid diagrams no longer require generated image assets, cache management,
+  or custom runner registration; invalid and unsupported syntax is reported
+  inline at runtime. Diagrams use a transparent background and follow the
+  app's light or dark theme.
 - Add clamped gaps between sibling blocks with section `spacing`.
 - Replace manual `Stack`/`Positioned` geometry with constraint-driven
   `Column`/`Row`/`Expanded` layout. Slide-container insets and constraints now

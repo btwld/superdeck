@@ -15,11 +15,7 @@ class SyntaxHighlight {
 
   static final List<String> _mainSupportedLanguages = ['dart', 'json', 'yaml'];
 
-  static final List<String> _secondarySupportedLangs = [
-    'markdown',
-    'python',
-    'mermaid',
-  ];
+  static final List<String> _secondarySupportedLangs = ['markdown', 'python'];
 
   static Future<void> initialize() {
     if (_isInitialized) return Future.value();

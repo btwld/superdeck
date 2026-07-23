@@ -435,7 +435,9 @@ The north-star metric improved after onboarding changes.
 SuperDeck uses GitHub-flavored Markdown plus custom builders:
 
 - Headings, paragraphs, emphasis, lists, task lists, tables, blockquotes, links.
-- Code blocks with highlighting for `dart`, `json`, `yaml`, `markdown`, `python`, and `mermaid`; unknown languages fall back to Dart highlighting.
+- Code blocks with highlighting for `dart`, `json`, `yaml`, `markdown`, and
+  `python`; unknown languages fall back to Dart highlighting.
+- Fenced `mermaid` blocks render supported diagrams directly in Flutter.
 - GitHub alerts:
 
 ```markdown
