@@ -196,12 +196,6 @@ jobs:
           cd demo/e2e
           npx playwright install --with-deps chromium webkit
 
-      - name: Run Mermaid browser integration
-        timeout-minutes: 5
-        run: |
-          cd packages/plugins/mermaid
-          SUPERDECK_RUN_BROWSER_TESTS=1 fvm dart test test/integration/mermaid_build_plugin_integration_test.dart
-
       - name: Run Playwright smoke tests
         timeout-minutes: 5
         run: |

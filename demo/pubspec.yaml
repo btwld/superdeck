@@ -31,7 +31,6 @@ dev_dependencies:
   ack_generator: 1.0.1
   superdeck_builder: ^1.0.0
   superdeck_cli: ^1.0.0
-  superdeck_mermaid: ^1.0.0
   superdeck_pdf: ^1.0.0
 flutter:
   uses-material-design: true

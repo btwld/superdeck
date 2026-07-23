@@ -26,6 +26,7 @@ dependencies:
   mix_annotations: ^2.2.0-beta.0
   remix: ^1.0.0-beta.1
   flutter_markdown_plus: ^1.0.5
+  flutter_mermaid: ^0.1.0
   superdeck_core: ^1.0.0
   markdown: ^7.3.0
   web: ^1.1.0

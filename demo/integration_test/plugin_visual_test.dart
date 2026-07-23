@@ -2,15 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
-import 'package:superdeck_mermaid/superdeck_mermaid.dart';
 import 'package:superdeck_pdf/superdeck_pdf.dart';
 
 import 'helpers/test_helpers.dart';
@@ -21,59 +17,22 @@ void main() {
   group('plugin visual coverage', () {
     setUpAll(TestApp.initialize);
 
-    testWidgets('Mermaid build plugin renders in the deck runtime', (
+    testWidgets('built-in Mermaid renderer paints in the deck runtime', (
       tester,
     ) async {
       _setReviewViewport(tester);
-      final fixtureRoot =
-          'build/integration_fixtures/plugin_visual/'
-          'mermaid_${DateTime.now().microsecondsSinceEpoch}';
-      final fixtureDir = Directory(fixtureRoot);
-      await fixtureDir.create(recursive: true);
-
-      final workspace = DeckWorkspace(
-        projectDir: Directory.current.path,
-        slidesPath: '$fixtureRoot/slides.md',
-        outputDir: '$fixtureRoot/.superdeck',
-      );
-
-      final builder = DeckBuilder(
-        workspace: workspace,
-        store: DeckBuildStore(workspace: workspace),
-        plugins: [MermaidBuildPlugin(generator: _FakeMermaidGenerator())],
-      );
-      FileDeckLoader? loader;
-      addTearDown(() async {
-        await tester.unmountTestApp();
-        await loader?.dispose();
-        await builder.dispose();
-        if (await fixtureDir.exists()) {
-          await fixtureDir.delete(recursive: true);
-        }
-      });
-
-      await workspace.slidesFile.writeAsString('''
-# Plugin Diagram
+      final controller = await tester.pumpTestAppWithSlides([
+        makeSlide('mermaid-runtime', '''
+# Runtime Diagram
 
 ```mermaid
 graph TD
-  Markdown[slides.md] --> Plugin[MermaidBuildPlugin]
-  Plugin --> Asset[PNG asset]
-  Asset --> Runtime[SuperDeck runtime]
+  Draft[Draft slides] --> Review{Ready?}
+  Review -->|Yes| Present[Present]
+  Review -->|No| Draft
 ```
-''');
-      await builder.build();
-      final generatedImage = await _singleGeneratedMermaidImage(workspace);
-      await _expectPngDimensions(generatedImage, width: 640, height: 360);
-      await _expectPngHasTransparency(generatedImage);
-
-      final fileLoader = FileDeckLoader(workspace: workspace);
-      loader = fileLoader;
-
-      final controller = await tester.pumpTestAppWithLoader(
-        fileLoader,
-        workspace: workspace,
-      );
+'''),
+      ]);
 
       expect(controller.presentation.totalSlides.value, 1);
       assertPresentationHealthy(tester, controller);
@@ -194,68 +153,6 @@ void _setReviewViewport(WidgetTester tester) {
   });
 }
 
-class _FakeMermaidGenerator extends MermaidGenerator {
-  @override
-  Future<Uint8List> render(String syntax) async {
-    return _diagramPngBytes();
-  }
-
-  @override
-  Future<void> dispose() async {}
-}
-
-Future<File> _singleGeneratedMermaidImage(DeckWorkspace workspace) async {
-  final mermaidDir = Directory('${workspace.outputDir}/mermaid');
-  final images = await mermaidDir
-      .list()
-      .where((entity) => entity is File && entity.path.endsWith('.png'))
-      .cast<File>()
-      .toList();
-
-  expect(images, hasLength(1));
-
-  return images.single;
-}
-
-Future<void> _expectPngDimensions(
-  File file, {
-  required int width,
-  required int height,
-}) async {
-  final codec = await ui.instantiateImageCodec(await file.readAsBytes());
-  final frame = await codec.getNextFrame();
-  final image = frame.image;
-
-  try {
-    expect(image.width, width);
-    expect(image.height, height);
-  } finally {
-    image.dispose();
-    codec.dispose();
-  }
-}
-
-Future<void> _expectPngHasTransparency(File file) async {
-  final codec = await ui.instantiateImageCodec(await file.readAsBytes());
-  final frame = await codec.getNextFrame();
-  final image = frame.image;
-
-  try {
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    expect(bytes, isNotNull);
-
-    final pixels = bytes!.buffer.asUint8List();
-    final hasTransparentPixel = Iterable<int>.generate(
-      pixels.length ~/ 4,
-    ).any((pixel) => pixels[pixel * 4 + 3] < 255);
-
-    expect(hasTransparentPixel, isTrue);
-  } finally {
-    image.dispose();
-    codec.dispose();
-  }
-}
-
 Future<void> _writePdfExportForReview(
   Directory? outputDir,
   Uint8List? pdf, {
@@ -289,82 +186,4 @@ void _writePdfExportArtifactIfRequested(Uint8List pdf) {
   final file = File(outputPath);
   file.parent.createSync(recursive: true);
   file.writeAsBytesSync(pdf, flush: true);
-}
-
-Future<Uint8List> _diagramPngBytes() async {
-  const width = 640.0;
-  const height = 360.0;
-  const strokeWidth = 2.0;
-  const arrowHeadLength = 12.0;
-  const arrowHeadRise = 8.0;
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, width, height));
-
-  final nodePaint = Paint()..color = const Color(0xffececff);
-  final strokePaint = Paint()
-    ..color = const Color(0xff9370db)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = strokeWidth;
-  final arrowPaint = Paint()
-    ..color = const Color(0xff333333)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = strokeWidth
-    ..strokeCap = StrokeCap.round;
-
-  void drawNode(Rect rect, String label) {
-    canvas
-      ..drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(18)),
-        nodePaint,
-      )
-      ..drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(18)),
-        strokePaint,
-      );
-
-    final painter = TextPainter(
-      text: TextSpan(
-        text: label,
-        style: const TextStyle(
-          color: Color(0xff333333),
-          fontSize: 23,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: rect.width - 28);
-
-    painter.paint(
-      canvas,
-      Offset(
-        rect.left + (rect.width - painter.width) / 2,
-        rect.top + (rect.height - painter.height) / 2,
-      ),
-    );
-  }
-
-  void drawArrow(Offset start, Offset end) {
-    canvas.drawLine(start, end, arrowPaint);
-    final head = Path()
-      ..moveTo(end.dx, end.dy)
-      ..lineTo(end.dx - arrowHeadLength, end.dy - arrowHeadRise)
-      ..moveTo(end.dx, end.dy)
-      ..lineTo(end.dx - arrowHeadLength, end.dy + arrowHeadRise);
-    canvas.drawPath(head, arrowPaint);
-  }
-
-  drawNode(const Rect.fromLTWH(40, 130, 160, 92), 'slides.md');
-  drawNode(const Rect.fromLTWH(240, 130, 160, 92), 'Mermaid\nplugin');
-  drawNode(const Rect.fromLTWH(440, 130, 160, 92), 'PNG asset');
-  drawArrow(const Offset(200, 176), const Offset(240, 176));
-  drawArrow(const Offset(400, 176), const Offset(440, 176));
-
-  final picture = recorder.endRecording();
-  final image = await picture.toImage(width.toInt(), height.toInt());
-  final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-  image.dispose();
-  picture.dispose();
-
-  return byteData!.buffer.asUint8List();
 }

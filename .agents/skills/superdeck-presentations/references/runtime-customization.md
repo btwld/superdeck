@@ -379,7 +379,8 @@ Bare image keys with no scheme and no path separators, such as `slide-intro.png`
 
 ## Plugins
 
-Use custom widgets for slide content that renders directly in Flutter. Use plugins when the capability needs shell actions or build-time transforms.
+Use custom widgets for slide content that renders directly in Flutter. Use
+plugins when the capability needs shell actions or build-time transforms.
 
 Runtime plugin example: PDF export.
 
@@ -392,26 +393,22 @@ SuperDeckApp(
 )
 ```
 
-Build plugin example: Mermaid diagrams. Register `MermaidBuildPlugin` in a custom runner and run builds through that runner:
+Mermaid diagrams render directly from fenced `mermaid` blocks. They do not
+require a plugin, custom runner, browser, generated image, or cache:
 
-```dart
-import 'dart:io';
-import 'package:superdeck_cli/runner.dart';
-import 'package:superdeck_mermaid/superdeck_mermaid.dart';
-
-Future<void> main(List<String> args) async {
-  final exitCode = await SuperDeckRunner(
-    plugins: [MermaidBuildPlugin()],
-  ).run(args);
-  exit(exitCode);
-}
+````markdown
+```mermaid
+flowchart LR
+  Draft[Draft] --> Review{Ready?}
+  Review -->|Yes| Present[Present]
+  Review -->|No| Draft
 ```
+````
 
-```bash
-dart run tool/superdeck.dart build --watch
-```
-
-Plain fenced `mermaid` blocks are just code blocks unless the Mermaid build plugin transforms them into image assets.
+Supported diagrams are flowcharts, sequence diagrams, pie charts, Gantt
+charts, timelines, Kanban boards, radar charts, and XY charts. Unsupported or
+invalid syntax displays an inline error in the slide. The diagram background is
+transparent, and its colors follow the app's light or dark Flutter theme.
 
 ## DartPad Sharing
 

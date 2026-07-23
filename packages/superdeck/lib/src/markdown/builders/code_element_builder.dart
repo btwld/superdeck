@@ -10,6 +10,7 @@ import '../../ui/widgets/overflow_clip.dart';
 import '../../utils/syntax_highlighter.dart';
 import '../markdown_helpers.dart';
 import '../markdown_hero_mixin.dart';
+import 'mermaid_code_block.dart';
 
 class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
   final StyleSpec<MarkdownCodeblockSpec> styleSpec;
@@ -99,6 +100,9 @@ class CodeElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     final attributeHero = element.attributes['hero'];
     final tagAndContent = getTagAndContent(element.textContent);
     final heroTag = attributeHero ?? tagAndContent.tag;
+    if (language == 'mermaid') {
+      return MermaidCodeBlock(code: tagAndContent.content);
+    }
 
     return StyleSpecBuilder<MarkdownCodeblockSpec>(
       styleSpec: styleSpec,

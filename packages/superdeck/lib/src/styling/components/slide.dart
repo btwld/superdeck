@@ -148,6 +148,7 @@ final class SlideSpec with _$SlideSpec {
       strong: strong,
       del: del,
       code: code?.spec.textStyle,
+      codeblockDecoration: const BoxDecoration(color: Color(0x00000000)),
       textScaler: textScaleFactor,
       blockSpacing: blockSpacing ?? 0,
       listBullet: list?.spec.bullet?.spec.style,

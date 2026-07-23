@@ -619,6 +619,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.4"
+  flutter_mermaid:
+    dependency: transitive
+    description:
+      name: flutter_mermaid
+      sha256: "8830adaacf36559da5811fa08234a821b4199398507447529b975ca0c1dea6c7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -1400,14 +1408,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
-  puppeteer:
-    dependency: transitive
-    description:
-      name: puppeteer
-      sha256: "1e77a7c4206172d6205849eef04a88d374f6eb7213652fbe500c404df9975155"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.25.1"
   qr:
     dependency: transitive
     description:
