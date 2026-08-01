@@ -19,6 +19,13 @@ const playgroundFontFamilies = <String>[
   'Space Grotesk',
   'Lora',
   'DM Sans',
+  'Montserrat',
+  'Poppins',
+  'Oswald',
+  'Lobster',
+  'Open Sans',
+  'Lato',
+  'Source Serif 4',
 ];
 
 enum TextLevel { h1, h2, h3, h4, h5, h6, p }
@@ -36,6 +43,55 @@ class TextLevelStyle {
   double size;
   int weight;
   String family;
+}
+
+/// Immutable typography value captured at an AI session boundary.
+@immutable
+final class TextLevelStyleSnapshot {
+  const TextLevelStyleSnapshot({
+    required this.color,
+    required this.size,
+    required this.weight,
+    required this.family,
+  });
+
+  final Color color;
+  final double size;
+  final int weight;
+  final String family;
+
+  TextLevelStyleSnapshot copyWith({Color? color, String? family}) {
+    return TextLevelStyleSnapshot(
+      color: color ?? this.color,
+      size: size,
+      weight: weight,
+      family: family ?? this.family,
+    );
+  }
+}
+
+/// Deep immutable copy of all deck-wide manual customization state.
+@immutable
+final class DeckCustomizationSnapshot {
+  DeckCustomizationSnapshot({
+    required this.background,
+    required Map<TextLevel, TextLevelStyleSnapshot> levels,
+  }) : _levels = Map<TextLevel, TextLevelStyleSnapshot>.unmodifiable(levels);
+
+  final Color background;
+  final Map<TextLevel, TextLevelStyleSnapshot> _levels;
+
+  TextLevelStyleSnapshot level(TextLevel level) => _levels[level]!;
+
+  DeckCustomizationSnapshot copyWith({
+    Color? background,
+    Map<TextLevel, TextLevelStyleSnapshot>? levels,
+  }) {
+    return DeckCustomizationSnapshot(
+      background: background ?? this.background,
+      levels: levels ?? _levels,
+    );
+  }
 }
 
 /// Owns the playground's deck-wide customization state and pushes a fresh
@@ -115,6 +171,35 @@ class DeckCustomizationStore extends ChangeNotifier {
   }
 
   TextLevelStyle level(TextLevel level) => _levels[level]!;
+
+  DeckCustomizationSnapshot captureSnapshot() {
+    return DeckCustomizationSnapshot(
+      background: _background,
+      levels: {
+        for (final entry in _levels.entries)
+          entry.key: TextLevelStyleSnapshot(
+            color: entry.value.color,
+            size: entry.value.size,
+            weight: entry.value.weight,
+            family: entry.value.family,
+          ),
+      },
+    );
+  }
+
+  void restoreSnapshot(DeckCustomizationSnapshot snapshot) {
+    _background = snapshot.background;
+    for (final level in TextLevel.values) {
+      final source = snapshot.level(level);
+      final target = _levels[level]!;
+      target
+        ..color = source.color
+        ..size = source.size
+        ..weight = source.weight
+        ..family = source.family;
+    }
+    _apply();
+  }
 
   void setColor(TextLevel level, Color color) {
     final target = _levels[level]!;

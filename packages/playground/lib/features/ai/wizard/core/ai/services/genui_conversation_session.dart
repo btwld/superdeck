@@ -84,15 +84,18 @@ final class GenUiConversationSession {
     SuperdeckTransportFactory? transportFactory,
     SuperdeckAgentClientFactory agentClientFactory =
         DartanticSuperdeckAgentClient.new,
+    String Function()? apiKeyProvider,
   }) : _profile = profile,
        _handlers = handlers,
        _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
-       _agentClientFactory = agentClientFactory;
+       _agentClientFactory = agentClientFactory,
+       _apiKeyProvider = apiKeyProvider;
 
   final AiConversationProfile _profile;
   final ConversationSessionHandlers _handlers;
   final SuperdeckTransportFactory _transportFactory;
   final SuperdeckAgentClientFactory _agentClientFactory;
+  final String Function()? _apiKeyProvider;
 
   genui.SurfaceController? _controller;
   SuperdeckA2uiTransport? _transport;
@@ -228,7 +231,7 @@ final class GenUiConversationSession {
 
   String? _readApiKey() {
     try {
-      return EnvConfig.geminiApiKey;
+      return _apiKeyProvider?.call() ?? EnvConfig.geminiApiKey;
     } on StateError {
       return null;
     }

@@ -20,11 +20,13 @@ final class AiConversationViewModel implements Disposable {
     @visibleForTesting SuperdeckTransportFactory? transportFactory,
     SuperdeckAgentClientFactory agentClientFactory =
         DartanticSuperdeckAgentClient.new,
+    @visibleForTesting String Function()? apiKeyProvider,
   }) {
     _session = GenUiConversationSession(
       profile: profile,
       transportFactory: transportFactory,
       agentClientFactory: agentClientFactory,
+      apiKeyProvider: apiKeyProvider,
       handlers: ConversationSessionHandlers(
         onRequestStarted: _handleRequestStarted,
         onRequestFinished: _handleRequestFinished,
@@ -51,6 +53,10 @@ final class AiConversationViewModel implements Disposable {
   String _streamingAiResponse = '';
   int? _streamingAiMessageIndex;
   var _disposed = false;
+
+  /// Optional route boundary for catalog submissions that are otherwise
+  /// intentionally unawaited by the shared wizard runtime.
+  void Function(Future<void> request)? onUiRequest;
 
   genui.SurfaceController? get controller => _controller.value;
 
@@ -175,7 +181,9 @@ final class AiConversationViewModel implements Disposable {
       debugLog.userAction('UI_ACTION', parsed?.context ?? {'raw': rawJson});
     }
 
-    unawaited(_enqueueRequest(message));
+    final request = _enqueueRequest(message);
+    onUiRequest?.call(request);
+    unawaited(request);
   }
 
   void _handleTextResponse(String value) {

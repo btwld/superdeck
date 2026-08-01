@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Tooltip;
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
@@ -6,9 +7,11 @@ import 'package:provider/provider.dart';
 import 'package:remix/remix.dart';
 
 import '../../../../core/domain/stores/deck_customization_store.dart';
+import '../../../ai/deck_editor/routes/routes.dart';
 import '../../../ai/quick_agent/domain/commands/generate_deck_command.dart';
 import '../../../ai/quick_agent/presentation/widgets/agent_generate_panel.dart';
 import '../../../ai/wizard/presentation/wizard_view.dart';
+import '../../domain/stores/deck_document_store.dart';
 import '../../domain/stores/editor_store.dart';
 import 'color_control.dart';
 import 'committed_text_field.dart';
@@ -326,8 +329,34 @@ class _Toolbar extends StatelessWidget {
       style: FlexBoxStyler().spacing(8),
       children: [
         const Spacer(),
-        // TODO(ai): re-introduce the remaining AI entry points (deck-edit,
-        // wizard) once those features are ported.
+        Tooltip(
+          message: 'Edit with AI',
+          child: SizedBox(
+            width: 48,
+            child: HeroIconButton(
+              key: const Key('edit-with-ai'),
+              size: .lg,
+              variant: .secondary,
+              icon: CupertinoIcons.pencil_outline,
+              onPressed: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                final documentStore = context.read<DeckDocumentStore>();
+                final editorStore = context.read<EditorStore>();
+                final customization = context.read<DeckCustomizationStore>();
+                context.push(
+                  '/ai/edit',
+                  extra: DeckEditRouteArgs(
+                    documentStore: documentStore,
+                    editorStore: editorStore,
+                    baselineMarkdown: documentStore.markdown,
+                    baselineCustomization: customization.captureSnapshot(),
+                    baselineSlideIndex: editorStore.activeSlideIndex,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
         SizedBox(
           width: 48,
           child: HeroIconButton(

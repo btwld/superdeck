@@ -1,146 +1,191 @@
-# AI Deck-CRUD Tool Subsystem — Architecture & Requirements
+# AI Deck Editing — Implemented Architecture
 
-> **Status:** Designed and ported during the `superdeck_ai → playground` migration, but
-> **never wired into the running app** (reachable only from tests). It has been **removed**
-> from the codebase to eliminate dead code; this document is the spec to **reimplement it in a
-> dedicated PR**. The previous implementation is recoverable from git history (the commit
-> immediately before the removal commit on `feat/playground-framework-support-v1`).
+> **Status:** Implemented in the playground. This document describes the live
+> architecture. `plan.md` contains the design and acceptance rationale that led
+> to this implementation.
 
-## 1. Purpose & intent
+## Purpose
 
-Let the AI **edit the current, in-memory deck** via GenUI tool-calls during a conversation —
-an "edit my deck with AI" surface — as distinct from the existing **wizard**, which only does
-*initial* generation. The model can create / read / update / delete / move slides, update the
-deck style, and read a slide back **with a rendered screenshot** so it can "see" the result and
-iterate.
+The playground has a dedicated, ephemeral “Edit deck with AI” session. It is
+separate from the one-shot generation wizard. During the session, the model can
+inspect and mutate the exact Markdown document owned by `TextEditorController`,
+apply deck-wide customization, and capture a rendered slide for visual feedback.
 
-It is the tool-calling counterpart to the generation pipeline: generation produces a deck;
-these tools let the model *mutate* the deck it already produced (or the user is editing).
+The feature is in-memory and web-safe. It does not persist a chat session, slide
+IDs, or document state across refreshes.
 
-## 2. Architecture (as designed)
+## Runtime architecture
 
-```
-model (Gemini, tool-calling)
-  │  calls a tool by name with JSON args
-  ▼
-DeckToolsAdapter            maps each op → genui DynamicAiTool
-  │  (name, description, parameters: Ack schema → JSON Schema, invokeFunction)
-  ▼
-DeckToolsService            the operation surface (serialized mutation queue)
-  │  validate (deck_mutation_helpers) → mutate List<Slide>
-  ▼
-DeckStore (InMemoryDeckStore)
-  │  read: SlidesProvider() → live List<Slide>
-  │  write: SlideSerializer.serialize(slides) → MemoryDeckLoader.updateMarkdown(md)
-  ▼
-DeckController.slides recomputes ──▶ editor + preview update (reactive loop closed)
-  │
-  └─ each op returns a DeckSnapshot token (totalSlides + per-slide summary + style)
-     back to the model so it always has current state.
+```text
+/ editor route (remains mounted)
+  └─ TextEditorController — canonical Markdown document
+       └─ MemoryDeckLoader → DeckController.slides → live preview
+
+/ai/edit pushed route
+  └─ DeckEditSessionController
+       ├─ EditorDeckStore
+       │    ├─ DeckMarkdownCodec
+       │    ├─ TextEditorController.replaceMarkdown
+       │    └─ reactive DeckController preview barrier
+       ├─ DeckToolsService — one error-recovering FIFO queue
+       │    ├─ five slide operations
+       │    ├─ DeckStyleApplier
+       │    └─ DeckSlideReader
+       ├─ DeckToolsAdapter — seven dartantic.Tool objects
+       └─ AiConversationViewModel
+            └─ GenUiConversationSession → SuperdeckA2uiTransport
 ```
 
-**Components** (all previously under `packages/playground/lib/features/ai/`):
+`AiConversationProfile.tools` is the only tool wiring seam. The deck-edit
+profile carries seven Dartantic tools; the wizard profile carries none. The
+shared session and transport forward the profile tools to the injected
+Dartantic agent client.
 
-| Component | Role |
-|---|---|
-| `core/tools/deck_tools_service.dart` | The 7 operations + a **serialized mutation queue** (writes run one-at-a-time); reads bypass the queue. Injection seams: `DeckStore`, `BuildContextProvider`, `SlideCaptureFn`, `ReadSlideConfigurationBuilder`. |
-| `core/tools/deck_store.dart` | `DeckStore` interface (`readRequired()`, `writeCanonical({slides, style})`) + `DeckDocument` value (`slides`, `style`). |
-| `core/tools/in_memory_deck_store.dart` | In-memory impl: reads the live `List<Slide>` via a `SlidesProvider` callback; writes by serializing to Markdown (`SlideSerializer`) and pushing into `MemoryDeckLoader` — closing the reactive loop. Web-safe. |
-| `core/tools/deck_tools_schemas.dart` (+ `.g.dart`) | Ack `@AckType` request/result schemas — the **typed tool contract**. |
-| `core/tools/deck_mutation_helpers.dart` | Pure helpers: index validation, unique-key checks, list insert/replace/remove/move, `buildDeckSnapshot`. |
-| `core/tools/deck_tools_adapter.dart` | Maps each op → a genui `DynamicAiTool<Map<String,dynamic>>` (params via `ackSchema.toJsonSchemaBuilder()`, `invokeFunction` → service → encode result). |
-| `core/tools/errors.dart` | `DeckToolException` + `DeckToolErrorCode` constants. |
-| `core/superdeck_slide_configurations.dart` | `buildRuntimeSlideConfigurations(...)` — builds `SlideConfiguration`s for the `readSlide` screenshot. |
-| `presentation/thumbnail_preview_service.dart` | Batch slide→thumbnail capture (same capture dependency). |
-| `core/utils/deck_style_service.dart` | Global `Signal<DeckStyleType?>` intended as a style broadcast. |
+## Canonical document boundary
 
-## 3. The tool contract
+The editor Markdown is the source of truth. `DeckController.slides` is the
+rendered observation of that document, not the input to the next mutation.
 
-| Tool | Args | Result |
+`DeckMarkdownCodec` owns the shared conversion pipeline:
+
+- Decode: `MarkdownParser` + `SectionParser` + `CommentParser`.
+- Encode: `SlideSerializer`.
+
+Every queued mutation:
+
+1. Decodes `TextEditorController.markdown` when it reaches the queue front.
+2. Resolves and validates indices against that live document.
+3. Replaces the editor document synchronously with canonical Markdown.
+4. Waits on the reactive `DeckController` signal path until the preview
+   serializes to the same canonical Markdown.
+5. Builds its result from the observed post-write document.
+
+The barrier has a bounded timeout and reports `deck_write_failed`; it does not
+use fixed sleeps. A failed queue item is isolated so later items still run.
+
+## Tool contract
+
+The profile exposes exactly these zero-based tools:
+
+| Tool | Arguments | Result |
 |---|---|---|
-| `getDeck` | — | `DeckSnapshot { totalSlides, slides:[{index,key,title?}], style? }` |
-| `createSlide` | `{ schema: Slide, atIndex?: int }` | `SlideMutationResult { slide, deck }` |
-| `updateSlide` | `{ index: int, schema: Slide }` | `SlideMutationResult` |
-| `deleteSlide` | `{ index: int }` | `DeckSnapshot` |
-| `moveSlide` | `{ fromIndex: int, toIndex: int }` | `SlideMoveResult { slide, deck }` |
-| `updateStyle` | `{ style: DeckStyle }` | `StyleUpdateResult { style, deck }` |
-| `readSlide` *(service-only; never exposed as a tool — see G3)* | `{ index: int }` | `ReadSlideResult { slide(+base64 thumbnail), deck }` |
+| `getDeck` | `{}` | `{ totalSlides, slides: [{ index, title? }] }` |
+| `createSlide` | `{ slide, atIndex? }` | `{ index, slide, deck }` |
+| `updateSlide` | `{ index, slide }` | `{ index, slide, deck }` |
+| `deleteSlide` | `{ index }` | `deck` |
+| `moveSlide` | `{ fromIndex, toIndex }` | `{ fromIndex, toIndex, deck }` |
+| `readSlide` | `{ index }` | `{ index, title?, slide, thumbnailBase64, deck }` |
+| `updateStyle` | `{ style }` | `{ style, deck }` |
 
-Slide / style payloads reuse the generation schemas (`deck_schemas.dart`); args are Ack-validated.
+All seven operations use one FIFO queue, including reads, style, and capture.
+`moveSlide.toIndex` is the final index. Omitting `createSlide.atIndex` appends.
 
-## 4. GenUI tool-calling integration seam
+## Keyless slide boundary
 
-`GoogleGenerativeAiContentGenerator(... additionalTools: List<AiTool>)`
-(genui_google_generative_ai). A tool is a `DynamicAiTool<Map<String,dynamic>>` with
-`name`, `description`, `parameters` (a `json_schema_builder` `Schema`, produced by
-`ackSchema.toJsonSchemaBuilder()`), and `invokeFunction: (args) async => Map`.
+The model-facing slide schema is a strict Ack object composed from the current
+core schemas:
 
-Today `GenUiConversationViewModel.buildConversation()` passes `additionalTools: []`. Wiring is a
-single line — `additionalTools: [...DeckToolsAdapter(service).tools]` — gated on the dependency
-chain in §5.
+```dart
+Ack.object({
+  'options': slideOptionsSchema.optional(),
+  'comments': Ack.list(Ack.string()).optional(),
+  'sections': Ack.list(sectionBlockSchema),
+}, additionalProperties: false)
+```
 
-## 5. Requirements for the reimplementation
+It deliberately rejects `key`. A private transient key exists only long enough
+to construct a core `Slide`. Tool results remove the runtime key again. The
+contract retains full core options, section fields, content blocks, widget
+names, and arbitrary widget arguments.
 
-**Functional**
-- FR1 — Expose the 6 mutation tools **and `readSlide`** as live GenUI tools in a **dedicated
-  "edit deck with AI" conversation surface** (separate from the generation wizard).
-- FR2 — Mutations run through the serialized queue and flow `service → InMemoryDeckStore →
-  SlideSerializer → MemoryDeckLoader → DeckController.slides`, reactively updating editor + preview.
-- FR3 — `readSlide` returns a base64 PNG via `SlideCaptureService` so the model can see a slide.
-- FR4 — Every op returns a `DeckSnapshot` so the model always has current deck state.
+The Ack schemas are converted with `toJsonSchemaBuilder()` for provider-facing
+tool definitions and parsed again inside `onCall`, allowing validation failures
+to use the stable tool error shape.
 
-**Non-functional**
-- NFR1 — **In-memory + web-safe** (no `dart:io`). The old disk `DeckDocumentStore` was never
-  built — do not reintroduce it.
-- NFR2 — Editor markdown stays clean (bare image refs); all writes go through `SlideSerializer`.
-- NFR3 — Ack-validated args + typed results; tool params via `toJsonSchemaBuilder()`.
+## Errors
 
-**Wiring requirements**
-- `ChatViewModel` / `GenUiConversationViewModel` must accept a `DeckToolsService` and pass its
-  adapter tools to `additionalTools`.
-- `InMemoryDeckStore` built with the **live** `MemoryDeckLoader` and a
-  `SlidesProvider = () => deckController.slides.value.map((c) => c.slide).toList()`.
-- A `BuildContextProvider` returning a mounted `BuildContext` for `readSlide` capture.
+Expected failures return:
 
-## 6. Known gaps to fix when reimplementing
+```json
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "..."
+  }
+}
+```
 
-- **G1 — Store consistency (capture).** The old `buildRuntimeSlideConfigurations` built a
-  *throwaway* `DeckController` **without** the shared `MemoryAssetCacheStore`, so `readSlide`/
-  thumbnail captures couldn't resolve AI-generated images. Fix: capture using the **live**
-  controller's `SlideConfiguration`s (which now carry `assetCacheStore` after the image-store
-  refactor), or pass the shared store explicitly.
-- **G2 — Style plumbing.** `DeckStyleService` was a standalone global written only by
-  `updateStyle` and read by nobody (always null at runtime). Integrate style updates into the
-  existing `DeckCustomizationStore` / `DeckController.options` instead of a disconnected singleton.
-- **G3 — `readSlide` not exposed.** The service had `readSlide` but the adapter's `tools` list
-  omitted it. Add `_readSlideTool`.
-- **G4 — Vestigial disk errors.** `DeckToolErrorCode.deckFileNotFound` and the `path:` params are
-  leftovers from an unbuilt disk store — drop them.
-- **G5 — No UX surface.** The wizard is for initial generation; an explicit "edit with AI" chat
-  surface needs to be designed and mounted.
-- **G6 — Never constructed.** The whole dependency chain (`InMemoryDeckStore` → `DeckToolsService`
-  → `DeckToolsAdapter` → `additionalTools`) was absent; wire it in `main.dart` / the chat VM.
+Supported codes are `validation_failed`, `slide_index_out_of_range`,
+`deck_parse_failed`, `deck_write_failed`, `capture_failed`,
+`context_unavailable`, and `internal_error`. Unexpected exceptions are reduced
+to a generic message so raw provider errors, stack traces, and secrets do not
+reach the model.
 
-## 7. Reuse — building blocks already in the codebase
+## Style and capture
 
-- `SlideSerializer` (`packages/builder/lib/src/parsers/slide_serializer.dart`) — Slide→Markdown.
-- `MemoryDeckLoader.updateMarkdown` (`packages/playground/lib/utils/memory_deck_loader.dart`) — reactive in-memory load.
-- `DeckController.slides` — live deck; `SlideConfiguration` now carries `assetCacheStore` (capture-ready).
-- `SlideCaptureService` (`packages/superdeck/lib/src/capture/slide_capture_service.dart`) — offscreen capture.
-- `ack` + `ack_json_schema_builder` — schema → JSON Schema for tool params.
-- `genui` `DynamicAiTool`/`AiTool` + `GoogleGenerativeAiContentGenerator.additionalTools` — the seam.
+`DeckCustomizationStore` owns a deep immutable
+`DeckCustomizationSnapshot`. Restoring it applies every background and text
+field, pushes one `DeckOptions` value, and notifies once.
 
-## 8. Files removed (recoverable from git history)
+`DeckStyleApplier` is feature-local. It parses the existing `DeckStyleType`,
+validates all hex colors, applies heading values to h1–h6 and body values to
+paragraph text, and preserves sizes and weights. It uses the declared Google
+Fonts family names rather than enum IDs. The manual font picker contains every
+AI-selectable headline and body family.
 
-lib: `core/tools/` (deck_tools_service, deck_tools_adapter, deck_store, in_memory_deck_store,
-deck_mutation_helpers, deck_tools_schemas[.g], errors), `core/utils/deck_style_service.dart`,
-`presentation/thumbnail_preview_service.dart`, `core/superdeck_slide_configurations.dart`.
+`DeckSlideReader` copies the live `SlideConfiguration` list once, selects and
+describes the same item from that immutable snapshot, and captures it with
+`SlideCaptureQuality.thumbnail`. Because it uses the live configuration, the
+shared asset cache remains attached. Capture is injectable for deterministic
+tests; production uses `SlideCaptureService.capture`.
 
-tests: `test/features/ai/core/tools/*`, `core/utils/deck_style_service_test.dart`,
-`presentation/thumbnail_preview_service_test.dart`.
+## Session boundary
 
-## 9. Decision log
+The editor toolbar captures, synchronously before navigation:
 
-- The unwired subsystem was removed to keep the migration free of dead code. Reimplementation is
-  deferred to a dedicated PR using this document as the spec. Recover the prior code from the
-  commit before the removal if it's a useful starting point.
+- Exact raw Markdown.
+- Deep customization snapshot.
+- Active slide index.
+- Live `TextEditorController` and `EditorStore` references.
+
+It then pushes `/ai/edit`; the editor route and controller remain mounted
+beneath it. Missing route args (including browser refresh/direct navigation)
+redirect to `/`.
+
+The route disables chat and exit actions until entry synchronization succeeds.
+Its own `requestInFlight` flag wraps the entire awaited `sendMessage` future, so
+prompt loading, session startup, transport streaming, and tool execution share
+one busy boundary.
+
+- **Apply:** closes tool admission, keeps the already-live edits, restores the
+  entry slide index clamped to the edited deck, and pops.
+- **Discard:** closes tool admission, restores exact raw Markdown through the
+  same preview barrier, restores customization and the exact entry index, then
+  pops.
+- **Restore failure:** remains on the route with Retry / Keep Changes.
+- **Back:** uses `PopScope`; dirty sessions must choose Apply or Discard, and no
+  pop is admitted while a request is in flight.
+
+## Key implementation files
+
+- `core/data/mappers/deck_markdown_codec.dart`
+- `features/ai/deck_editor/domain/deck_tools_service.dart`
+- `features/ai/deck_editor/data/editor_deck_store.dart`
+- `features/ai/deck_editor/ai/deck_tool_schemas.dart`
+- `features/ai/deck_editor/ai/deck_tools_adapter.dart`
+- `features/ai/deck_editor/ai/deck_style_applier.dart`
+- `features/ai/deck_editor/data/deck_slide_reader.dart`
+- `features/ai/deck_editor/presentation/deck_edit_session_controller.dart`
+- `features/ai/deck_editor/presentation/deck_edit_screen.dart`
+- `features/ai/deck_editor/routes/routes.dart`
+
+## Verification coverage
+
+The test suite covers codec parity and typed parse errors, exact editor reads,
+strict keyless schemas, all index boundaries, queue ordering/recovery, real
+loader/controller write observation, arbitrary args, all adapter errors,
+profile tool forwarding, prompt loading, deep style restoration, live capture
+identity/quality/errors, pushed route lifetime, readiness, Apply/Discard,
+active-index restoration, dirty Back, full-request busy gating, invalid route
+entry, wizard regression, and end-to-end Apply and Discard paths after two
+mutations and capture.
