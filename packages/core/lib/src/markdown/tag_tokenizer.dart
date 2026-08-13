@@ -2,6 +2,7 @@ import 'package:yaml/yaml.dart';
 
 import '../deck/deck_format_exception.dart';
 import '../utils/yaml_utils.dart';
+import 'markdown_fences.dart';
 
 class TagToken {
   final String name;
@@ -27,29 +28,9 @@ class TagTokenizer {
   const TagTokenizer();
 
   static final _tagPattern = RegExp(r'^\s*@([\w-]+)', multiLine: true);
-  static final _codeBlockPattern = RegExp(
-    r'^(`{3,}|~{3,}).*?^\1',
-    multiLine: true,
-    dotAll: true,
-  );
-  static final _fenceOpenPattern = RegExp(r'^(`{3,}|~{3,})', multiLine: true);
 
   List<TagToken> tokenize(String text) {
-    // Find all closed code block ranges to exclude from tag matching.
-    final codeBlockRanges = <_Range>[];
-    for (final match in _codeBlockPattern.allMatches(text)) {
-      codeBlockRanges.add(_Range(match.start, match.end));
-    }
-
-    // Also protect unclosed fences: any fence open not covered by a closed
-    // range extends to the end of the document.
-    for (final match in _fenceOpenPattern.allMatches(text)) {
-      if (!_isInsideCodeBlock(match.start, codeBlockRanges)) {
-        codeBlockRanges.add(_Range(match.start, text.length));
-        // Only the first unclosed fence matters; subsequent ones are inside it.
-        break;
-      }
-    }
+    final codeBlockRanges = fencedCodeRanges(text);
 
     final tokens = <TagToken>[];
 
@@ -57,8 +38,7 @@ class TagTokenizer {
       final tagName = match.group(1)!;
       final startIndex = match.start;
 
-      // Skip if this match is inside a code block
-      if (_isInsideCodeBlock(startIndex, codeBlockRanges)) {
+      if (isInsideFencedCode(startIndex, codeBlockRanges)) {
         continue;
       }
 
@@ -185,15 +165,6 @@ class TagTokenizer {
       );
     }
   }
-
-  bool _isInsideCodeBlock(int position, List<_Range> codeBlockRanges) {
-    for (final range in codeBlockRanges) {
-      if (position >= range.start && position < range.end) {
-        return true;
-      }
-    }
-    return false;
-  }
 }
 
 class _BraceExtraction {
@@ -208,11 +179,4 @@ class _BraceExtraction {
   });
 
   int get endIndex => closeIndex + 1;
-}
-
-class _Range {
-  final int start;
-  final int end;
-
-  const _Range(this.start, this.end);
 }

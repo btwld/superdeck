@@ -377,4 +377,100 @@ Content for the second slide
       },
     );
   });
+
+  group('fenced code does not split slides', () {
+    test('--- inside a backtick fence stays on one slide', () {
+      const markdown = '''
+# Code
+
+```
+---
+not a separator
+```
+''';
+      final slides = markdownParser.parse(markdown);
+      expect(slides, hasLength(1));
+      expect(slides.single.content, contains('---'));
+      expect(slides.single.content, contains('not a separator'));
+    });
+
+    test('--- inside a tilde fence stays on one slide', () {
+      const markdown = '''
+# Code
+
+~~~
+---
+not a separator
+~~~
+''';
+      final slides = markdownParser.parse(markdown);
+      expect(slides, hasLength(1));
+      expect(slides.single.content, contains('---'));
+    });
+
+    test('--- inside a language + {.hero} fence stays on one slide', () {
+      const markdown = '''
+# Hero fence
+
+```dart {.hero}
+---
+@override
+void main() {}
+```
+''';
+      final slides = markdownParser.parse(markdown);
+      expect(slides, hasLength(1));
+      expect(slides.single.content, contains('@override'));
+      expect(slides.single.content, contains('---'));
+    });
+
+    test('--- inside an unclosed fence stays on one slide', () {
+      const markdown = '''
+# Open fence
+
+```
+---
+still the same slide
+''';
+      final slides = markdownParser.parse(markdown);
+      expect(slides, hasLength(1));
+      expect(slides.single.content, contains('still the same slide'));
+    });
+
+    test('```{.code} closer lets a following --- split slides', () {
+      const markdown = '''
+### Code Blocks
+
+```dart
+void main() {}
+```{.code}
+
+---
+
+## Custom Widgets
+''';
+      final slides = markdownParser.parse(markdown);
+      expect(slides, hasLength(2));
+      expect(slides[0].content, contains('### Code Blocks'));
+      expect(slides[1].content, contains('## Custom Widgets'));
+    });
+
+    test('--- after a closed fence still splits slides', () {
+      const markdown = '''
+# One
+
+```
+code
+```
+
+---
+
+# Two
+''';
+      final slides = markdownParser.parse(markdown);
+      expect(slides, hasLength(2));
+      expect(slides[0].content, contains('# One'));
+      expect(slides[1].content, contains('# Two'));
+    });
+  });
 }

@@ -1,6 +1,7 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'comment_parser.dart';
+import 'directive_names.dart';
 
 /// Serializes [Slide] models back into SuperDeck-flavored Markdown.
 ///
@@ -19,13 +20,8 @@ import 'comment_parser.dart';
 class SlideSerializer {
   const SlideSerializer();
 
-  /// Tag names that cannot be used as `@<name>` widget shorthand because they
-  /// are reserved directives handled specially by the parser.
-  static const _reservedTags = {'section', 'block', 'widget', 'column'};
-
   static final _identifierPattern = RegExp(r'^[\w-]+$');
   static final _directiveLinePattern = RegExp(r'^\s*@[\w-]+');
-  static final _fencePattern = RegExp(r'^(`{3,}|~{3,})');
 
   /// Serializes a list of [slides] into a single Markdown document.
   String serialize(List<Slide> slides) {
@@ -166,7 +162,7 @@ class SlideSerializer {
       case WidgetBlock():
         final useShorthand =
             _identifierPattern.hasMatch(block.name) &&
-            !_reservedTags.contains(block.name);
+            !reservedDirectiveNames.contains(block.name);
         final tag = useShorthand ? block.name : 'widget';
         final options = _blockOptions(block);
         if (!useShorthand) options['name'] = block.name;
@@ -263,7 +259,9 @@ class SlideSerializer {
   /// canonical output reads `top: 12` instead of `top: 12.0`. Both re-parse to
   /// the same normalized value.
   String _numValue(num value) {
-    if (value is double && value.isFinite && value == value.truncateToDouble()) {
+    if (value is double &&
+        value.isFinite &&
+        value == value.truncateToDouble()) {
       return value.truncate().toString();
     }
     return value.toString();
@@ -317,24 +315,13 @@ class SlideSerializer {
   /// `_@foo`; the parser restores it via `_updateIgnoredTags`.
   String _escapeContent(String content) {
     if (content.isEmpty) return content;
+    final fenced = fencedCodeLines(content);
     final lines = content.split('\n');
     final result = <String>[];
-    int? fenceLength;
 
-    for (final line in lines) {
-      final fenceMatch = _fencePattern.firstMatch(line);
-      if (fenceMatch != null) {
-        final length = fenceMatch.group(1)!.length;
-        if (fenceLength == null) {
-          fenceLength = length;
-        } else if (length >= fenceLength) {
-          fenceLength = null;
-        }
-        result.add(line);
-        continue;
-      }
-
-      if (fenceLength == null && _directiveLinePattern.hasMatch(line)) {
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (!fenced.contains(i) && _directiveLinePattern.hasMatch(line)) {
         final atIndex = line.indexOf('@');
         result.add('${line.substring(0, atIndex)}_${line.substring(atIndex)}');
       } else {

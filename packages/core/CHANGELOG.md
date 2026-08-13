@@ -21,6 +21,13 @@
 - Reject explicitly authored `null` inset edges with their full field path
   (for example, `padding.left`) while continuing to normalize omitted edges to
   zero.
+- Add `fencedCodeLines`, the shared rule deciding which lines sit inside
+  fenced code so `---` splits and `@` directives stay hidden there. Slide
+  splitting, directive tokenization, and Markdown serialization now resolve
+  fences through it instead of three separate regexes.
+- Fix `TagTokenizer` skipping directives only in fences that start at column
+  zero and close with exactly the opening run length. Indented fences and
+  closing fences longer than their opener are now recognized.
 
 ## 1.0.0
 

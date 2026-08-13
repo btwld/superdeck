@@ -33,9 +33,6 @@ String _uniquifyKey(
 class MarkdownParser {
   const MarkdownParser();
 
-  // Regex to match code fence: 3+ backticks at start, optionally followed by language
-  static final _codeFencePattern = RegExp(r'^(`{3,})(\s*\S*)?$');
-
   static final _yamlKeyPattern = RegExp(r'^[A-Za-z_][\w-]*\s*:');
 
   /// Leading characters that mark a line as markdown body (heading, directive,
@@ -46,8 +43,8 @@ class MarkdownParser {
   ///
   /// A slide is bounded by `---` separator lines. A slide may begin with an
   /// optional YAML frontmatter block delimited by a `---` pair at its start.
-  /// Code blocks (fenced by ```) are respected, so `---` inside a code block
-  /// won't be treated as a separator.
+  /// Fenced code (backtick or tilde, including info strings) is decided by
+  /// [fencedCodeLines], so `---` inside a fence is never a separator.
   static List<String> _splitSlides(String content) {
     content = content.trim();
     if (content.isEmpty) return [];
@@ -92,24 +89,11 @@ class MarkdownParser {
 
   /// Returns the indices of `---` lines that sit outside fenced code blocks.
   static Set<int> _findSeparatorLines(List<String> lines) {
+    final fenced = fencedCodeLines(lines.join('\n'));
     final separators = <int>{};
-    int? codeFenceLength;
 
     for (var i = 0; i < lines.length; i++) {
-      final trimmed = lines[i].trim();
-      final fenceMatch = _codeFencePattern.firstMatch(trimmed);
-      if (fenceMatch != null) {
-        final backticks = fenceMatch.group(1)!.length;
-        if (codeFenceLength == null) {
-          codeFenceLength = backticks;
-        } else if (backticks >= codeFenceLength) {
-          codeFenceLength = null;
-        }
-        continue;
-      }
-
-      if (codeFenceLength != null) continue;
-      if (trimmed == '---') separators.add(i);
+      if (!fenced.contains(i) && lines[i].trim() == '---') separators.add(i);
     }
 
     return separators;
