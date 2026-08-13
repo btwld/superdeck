@@ -1,8 +1,7 @@
 # AI Deck Editing — Implemented Architecture
 
 > **Status:** Implemented in the playground. This document describes the live
-> architecture. `plan.md` contains the design and acceptance rationale that led
-> to this implementation.
+> architecture and is the single owner of that description.
 
 ## Purpose
 
