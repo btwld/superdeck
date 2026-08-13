@@ -1,16 +1,18 @@
 import 'dart:async';
 
-import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
+
+import '../mappers/deck_markdown_codec.dart';
 
 /// A [DeckLoader] that parses markdown in-memory for live preview.
 class MemoryDeckLoader extends DeckLoader {
+  /// Shared with the deck-edit tools so the preview and the tools can never
+  /// decode the same markdown differently.
+  static const _codec = DeckMarkdownCodec();
+
   final _controller = StreamController<SlidesEvent>.broadcast();
   bool _disposed = false;
   String? _lastLoadedMarkdown;
-
-  @override
-  Stream<SlidesEvent> load() => _controller.stream;
 
   /// Parses the given markdown and emits a [SlidesLoadedEvent].
   void updateMarkdown(String markdown) {
@@ -18,21 +20,15 @@ class MemoryDeckLoader extends DeckLoader {
     _lastLoadedMarkdown = markdown;
 
     try {
-      final rawSlides = const MarkdownParser().parse(markdown);
-      final slides = [
-        for (final raw in rawSlides)
-          Slide(
-            key: raw.key,
-            options: .parse(raw.frontmatter),
-            sections: const SectionParser().parse(raw.content),
-            comments: const CommentParser().parse(raw.content),
-          ),
-      ];
+      final slides = _codec.decode(markdown);
       _controller.add(SlidesLoadedEvent(slides));
     } catch (e) {
       _controller.add(SlidesErrorEvent('$e', error: e));
     }
   }
+
+  @override
+  Stream<SlidesEvent> load() => _controller.stream;
 
   @override
   Future<void> reload() async {}
