@@ -27,6 +27,8 @@ extension type InputOptionType(Map<String, Object?> _data)
   String get title => _data['title'] as String;
 
   String? get description => _data['description'] as String?;
+
+  WizardOptionIcon? get icon => _data['icon'] as WizardOptionIcon?;
 }
 
 /// Extension type for AskUserRadio

@@ -28,6 +28,7 @@ class FakeSlideCaptureService extends SlideCaptureService {
     SlideCaptureQuality quality = SlideCaptureQuality.thumbnail,
     required SlideConfiguration slide,
     required BuildContext context,
+    bool includeDebugLayout = false,
   }) async {
     captureCalls++;
     capturedKeys.add(slide.key);

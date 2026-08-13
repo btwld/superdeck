@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
+import 'package:superdeck/src/builtins/widgets.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 class _InMemoryCacheStore implements AssetCacheStore {
@@ -27,6 +30,27 @@ class _InMemoryCacheStore implements AssetCacheStore {
   }
 }
 
+class _DataUriCacheStore implements AssetCacheStore {
+  final List<int> bytes;
+
+  _DataUriCacheStore(this.bytes);
+
+  var resolveCount = 0;
+
+  @override
+  Future<Uri?> resolve(String assetKey) async {
+    resolveCount++;
+    return Uri.dataFromBytes(bytes, mimeType: 'image/png');
+  }
+
+  @override
+  Future<Uri?> write(String assetKey, List<int> bytes) async =>
+      Uri.dataFromBytes(bytes, mimeType: 'image/png');
+
+  @override
+  Future<void> delete(String assetKey) async {}
+}
+
 WidgetFactory _delayedWidgetFactory({
   required Duration delay,
   required Completer<void> settled,
@@ -45,13 +69,34 @@ class _DelayedWidget extends StatefulWidget {
 }
 
 class _DelayedWidgetState extends State<_DelayedWidget> {
+  SlideCaptureReadinessHandle? _readiness;
+  var _isReady = false;
   late final Future<void> _future = Future<void>.delayed(widget.delay).then((
     _,
   ) {
+    _isReady = true;
+    _readiness?.complete();
     if (!widget.settled.isCompleted) {
       widget.settled.complete();
     }
   });
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isReady && _readiness == null) {
+      _readiness = SlideCaptureReadiness.track(
+        context,
+        label: 'delayed-test-widget',
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _readiness?.complete();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +113,35 @@ class _DelayedWidgetState extends State<_DelayedWidget> {
       },
     );
   }
+}
+
+class _NeverReadyWidget extends StatefulWidget {
+  const _NeverReadyWidget();
+
+  @override
+  State<_NeverReadyWidget> createState() => _NeverReadyWidgetState();
+}
+
+class _NeverReadyWidgetState extends State<_NeverReadyWidget> {
+  SlideCaptureReadinessHandle? _readiness;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _readiness ??= SlideCaptureReadiness.track(
+      context,
+      label: 'never-ready-test-widget',
+    );
+  }
+
+  @override
+  void dispose() {
+    _readiness?.complete();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.expand();
 }
 
 SlideConfiguration _slide(String key, String content) {
@@ -102,6 +176,7 @@ SlideConfiguration _slideWithParts(String key, String content) {
 SlideConfiguration _delayedSlide({
   required Duration delay,
   required Completer<void> settled,
+  String widgetName = 'delayed',
 }) {
   return SlideConfiguration(
     slideIndex: 0,
@@ -109,12 +184,80 @@ SlideConfiguration _delayedSlide({
     slide: Slide(
       key: 'delayed',
       sections: [
-        SectionBlock([WidgetBlock(name: 'delayed', args: const {})]),
+        SectionBlock([WidgetBlock(name: widgetName, args: const {})]),
       ],
     ),
-    widgets: {'delayed': _delayedWidgetFactory(delay: delay, settled: settled)},
+    widgets: {
+      widgetName: _delayedWidgetFactory(delay: delay, settled: settled),
+    },
     thumbnailKey: 'thumbnail_delayed.png',
   );
+}
+
+SlideConfiguration _neverReadySlide() {
+  return SlideConfiguration(
+    slideIndex: 0,
+    style: SlideStyler(),
+    slide: Slide(
+      key: 'never-ready',
+      sections: [
+        SectionBlock([WidgetBlock(name: 'never-ready', args: const {})]),
+      ],
+    ),
+    widgets: {'never-ready': (_) => const _NeverReadyWidget()},
+    thumbnailKey: 'thumbnail_never_ready.png',
+  );
+}
+
+SlideConfiguration _generatedImageSlide(AssetCacheStore assetCacheStore) {
+  return SlideConfiguration(
+    slideIndex: 0,
+    style: SlideStyler(),
+    slide: Slide(
+      key: 'generated-image',
+      sections: [
+        SectionBlock([
+          WidgetBlock(
+            name: 'image',
+            args: const {'src': 'generated-image.png', 'fit': 'cover'},
+          ),
+        ]),
+      ],
+    ),
+    widgets: builtInWidgets,
+    assetCacheStore: assetCacheStore,
+    thumbnailKey: 'thumbnail_generated_image.png',
+  );
+}
+
+Future<List<int>> _solidMagentaPng() async {
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawColor(const Color(0xFFFF00FF), BlendMode.src);
+  final image = await recorder.endRecording().toImage(64, 64);
+  final data = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+  return data!.buffer.asUint8List();
+}
+
+Future<bool> _containsMagentaPixel(List<int> pngBytes) async {
+  final codec = await ui.instantiateImageCodec(Uint8List.fromList(pngBytes));
+  final frame = await codec.getNextFrame();
+  final data = await frame.image.toByteData(
+    format: ui.ImageByteFormat.rawStraightRgba,
+  );
+  frame.image.dispose();
+  codec.dispose();
+  final pixels = data!.buffer.asUint8List();
+  for (var offset = 0; offset < pixels.length; offset += 4) {
+    if (pixels[offset] > 240 &&
+        pixels[offset + 1] < 16 &&
+        pixels[offset + 2] > 240 &&
+        pixels[offset + 3] > 240) {
+      return true;
+    }
+  }
+  return false;
 }
 
 Future<BuildContext> _pumpContext(WidgetTester tester) async {
@@ -163,6 +306,115 @@ void main() {
         );
 
         expect(bytes, isNotEmpty);
+      });
+    });
+
+    testWidgets('only includes debug layout guides when requested', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final slide = _slide('debug-layout', '# Layout guides');
+      final capture = SlideCaptureService();
+
+      await tester.runAsync(() async {
+        final cleanBytes = await capture.capture(
+          quality: SlideCaptureQuality.good,
+          slide: slide,
+          context: context,
+        );
+        final debugBytes = await capture.capture(
+          quality: SlideCaptureQuality.good,
+          slide: slide,
+          context: context,
+          includeDebugLayout: true,
+        );
+
+        expect(cleanBytes, isNot(equals(debugBytes)));
+      });
+    });
+
+    testWidgets('waits longer for asynchronous image widget content', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final settled = Completer<void>();
+      final slide = _delayedSlide(
+        delay: const Duration(milliseconds: 400),
+        settled: settled,
+        widgetName: 'image',
+      );
+
+      await tester.runAsync(() async {
+        final bytes = await SlideCaptureService().capture(
+          slide: slide,
+          context: context,
+        );
+
+        expect(bytes, isNotEmpty);
+        expect(settled.isCompleted, isTrue);
+      });
+    });
+
+    testWidgets('does not impose a fixed delay on an already-ready image', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final settled = Completer<void>();
+      final slide = _delayedSlide(
+        delay: Duration.zero,
+        settled: settled,
+        widgetName: 'image',
+      );
+
+      await tester.runAsync(() async {
+        final stopwatch = Stopwatch()..start();
+        final bytes = await SlideCaptureService().capture(
+          slide: slide,
+          context: context,
+        );
+        stopwatch.stop();
+
+        expect(bytes, isNotEmpty);
+        expect(settled.isCompleted, isTrue);
+        expect(stopwatch.elapsed, lessThan(const Duration(milliseconds: 350)));
+      });
+    });
+
+    testWidgets('paints a cache-resolved generated image into the capture', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+
+      await tester.runAsync(() async {
+        final sourceBytes = await _solidMagentaPng();
+        expect(await _containsMagentaPixel(sourceBytes), isTrue);
+        final store = _DataUriCacheStore(sourceBytes);
+        final bytes = await SlideCaptureService().capture(
+          quality: SlideCaptureQuality.good,
+          slide: _generatedImageSlide(store),
+          context: context,
+        );
+
+        expect(store.resolveCount, 1);
+        expect(await _containsMagentaPixel(bytes), isTrue);
+      });
+    });
+
+    testWidgets('bounds capture when registered readiness never completes', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+
+      await tester.runAsync(() async {
+        final stopwatch = Stopwatch()..start();
+        final bytes = await SlideCaptureService().capture(
+          slide: _neverReadySlide(),
+          context: context,
+        );
+        stopwatch.stop();
+
+        expect(bytes, isNotEmpty);
+        expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
       });
     });
 

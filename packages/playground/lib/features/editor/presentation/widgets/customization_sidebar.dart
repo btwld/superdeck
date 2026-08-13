@@ -56,41 +56,7 @@ class _CustomizationSidebarState extends State<CustomizationSidebar> {
             child: const HeroDivider(),
           ),
           Expanded(
-            child: HeroTabs(
-              initialId: _SidebarTab.wizard.name,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  HeroTabBar(
-                    children: [
-                      HeroTab(label: 'Wizard', tabId: _SidebarTab.wizard.name),
-                      HeroTab(label: 'Editor', tabId: _SidebarTab.editor.name),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: HeroTabPanel(
-                            tabId: _SidebarTab.wizard.name,
-                            child: const WizardView(),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: HeroTabPanel(
-                            tabId: _SidebarTab.editor.name,
-                            child: _EditorTab(
-                              accordionController: _accordionController,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: _EditorTab(accordionController: _accordionController),
           ),
         ],
       ),
@@ -153,7 +119,7 @@ class _LevelAccordion extends StatelessWidget {
       value: level,
       title: title,
       trailingIcon: CupertinoIcons.plus,
-      style: RemixAccordionStyle()
+      style: RemixAccordionStyler()
           .titleColor($foreground())
           .titleStyle($labelMedium.mix())
           .trailingIconColor($muted())
@@ -273,13 +239,12 @@ class _FontWeightSlider extends StatelessWidget {
           ],
         ),
         HeroSlider(
-          min: 100,
-          max: 900,
-          snapDivisions: 8,
-          showOutput: false,
           value: weight.toDouble(),
           onChanged: (value) =>
               store.setWeight(level, (value / 100).round() * 100),
+          min: 100,
+          max: 900,
+          snapDivisions: 8,
         ),
       ],
     );
@@ -305,12 +270,13 @@ class _FontFamilySelect extends StatelessWidget {
       children: [
         const ControlLabel('Family'),
         HeroSelect<String>(
-          fullWidth: true,
-          placeholder: 'Font',
-          items: items,
-          icon: CupertinoIcons.textformat,
-          selectedValue: family,
           style: .new().trigger(.new().spacing(12)),
+          trigger: HeroSelectTrigger(
+            placeholder: 'Font',
+            icon: CupertinoIcons.textformat,
+          ),
+          items: items,
+          selectedValue: family,
           onChanged: (value) {
             if (value != null) store.setFamily(level, value);
           },
@@ -383,6 +349,3 @@ class _Toolbar extends StatelessWidget {
     );
   }
 }
-
-/// The two views the customization sidebar can show.
-enum _SidebarTab { wizard, editor }

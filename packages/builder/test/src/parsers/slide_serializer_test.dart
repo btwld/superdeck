@@ -396,11 +396,9 @@ void main() {
     );
 
     for (final name in ['coffee', 'polar_bear', 'zebra']) {
-      final deckFile = File(
-        '../playground/assets/ai_examples/${name}_deck.json',
-      );
+      final deckFile = File('test/fixtures/real_decks/$name.json');
       test(
-        'AI example deck: $name',
+        'fixture deck: $name',
         () {
           final json =
               jsonDecode(deckFile.readAsStringSync()) as Map<String, Object?>;

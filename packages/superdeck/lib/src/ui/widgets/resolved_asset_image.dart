@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
+import '../../capture/slide_capture_readiness.dart';
 import 'cache_image_widget.dart';
 
 /// Renders an image whose source is a bare asset key by resolving it through an
@@ -36,19 +37,36 @@ class ResolvedAssetImage extends StatefulWidget {
 
 class _ResolvedAssetImageState extends State<ResolvedAssetImage> {
   late Future<Uri?> _resolved;
+  SlideCaptureReadinessHandle? _readiness;
+  var _resolutionComplete = false;
+  var _resolutionGeneration = 0;
 
   @override
   void initState() {
     super.initState();
-    _resolved = _resolve();
+    _startResolution();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _trackResolution();
   }
 
   @override
   void didUpdateWidget(ResolvedAssetImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.assetKey != widget.assetKey || oldWidget.store != widget.store) {
-      _resolved = _resolve();
+    if (oldWidget.assetKey != widget.assetKey ||
+        oldWidget.store != widget.store) {
+      _startResolution();
+      _trackResolution();
     }
+  }
+
+  @override
+  void dispose() {
+    _completeReadiness();
+    super.dispose();
   }
 
   Future<Uri?> _resolve() async {
@@ -57,6 +75,31 @@ class _ResolvedAssetImageState extends State<ResolvedAssetImage> {
     } catch (_) {
       return null;
     }
+  }
+
+  void _startResolution() {
+    _completeReadiness();
+    _resolutionComplete = false;
+    final generation = ++_resolutionGeneration;
+    _resolved = _resolve();
+    _resolved.whenComplete(() {
+      if (generation != _resolutionGeneration) return;
+      _resolutionComplete = true;
+      _completeReadiness();
+    });
+  }
+
+  void _trackResolution() {
+    if (_resolutionComplete || _readiness != null) return;
+    _readiness = SlideCaptureReadiness.track(
+      context,
+      label: 'asset:${widget.assetKey}',
+    );
+  }
+
+  void _completeReadiness() {
+    _readiness?.complete();
+    _readiness = null;
   }
 
   @override

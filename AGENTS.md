@@ -23,7 +23,6 @@ packages/
   builder/    # Code generators and build_runner integration
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
-.planning/    # Internal development docs (not published)
 ```
 
 ### Key Package Responsibilities
@@ -35,45 +34,68 @@ docs/         # User-facing documentation (MDX format)
 
 ## Environment Setup
 
-This project uses FVM (Flutter Version Management) configured via `.fvmrc` (pinned to Flutter `3.44.0`):
+This project uses FVM (Flutter Version Management) configured via `.fvmrc` (pinned to Flutter `3.44.6`):
 
 ```bash
 fvm use --force
-dart pub global activate melos
-melos bootstrap
+fvm dart run melos bootstrap
 ```
 
 Always work inside the FVM-provided SDK (`.fvm/flutter_sdk`) to avoid toolchain drift.
 
-**Required SDK versions**: Dart >=3.12.0, Flutter >=3.44.0
+**Required SDK versions**: Dart >=3.12.0, Flutter >=3.44.6
 
 ## Common Commands
 
 ### Analysis & Linting
 ```bash
-melos run analyze          # Run dart analyze + DCM analysis
-melos run analyze:all      # Full analysis including unused code/files
-melos run fix              # Apply dart fix + DCM autofixes
-melos run custom_lint_analyze  # Run custom lint rules
+fvm dart run melos run analyze          # Run dart analyze + DCM analysis
+fvm dart run melos run analyze:all      # Full analysis including unused code/files
+fvm dart run melos run fix              # Apply dart fix + DCM autofixes
+fvm dart run melos run custom_lint_analyze  # Run custom lint rules
 ```
 
 ### Code Generation
 ```bash
-melos run build_runner:build   # Generate code (run before tests)
-melos run build_runner:watch   # Watch mode for development
-melos run build_runner:clean   # Clean generated files
+fvm dart run melos run build_runner:build   # Generate code (run before tests)
+fvm dart run melos run build_runner:watch   # Watch mode for development
+fvm dart run melos run build_runner:clean   # Clean generated files
 ```
 
 ### Testing
 ```bash
-melos run test             # Run all tests
-melos run test:coverage    # Run tests with coverage
+fvm dart run melos run test             # Run all tests
+fvm dart run melos run test:coverage    # Run tests with coverage
 fvm flutter test <path>    # Run specific test file
 ```
 
+### Running Apps & Live Debugging
+```bash
+cd packages/playground
+fvm flutter run -d macos -t lib/main.dart --dart-define-from-file=../../.env
+```
+
+The playground reads `GOOGLE_AI_API_KEY` from the ignored repository-root
+`.env` file through Flutter's compile-time define-file option. Without that
+flag, the Wizard intentionally shows a configuration error before accepting
+input.
+
+Wizard image generation is enabled by default for local/debug demos and is
+opt-in for release builds. Validate the image-enabled smoke flow before adding
+`--dart-define=SUPERDECK_WIZARD_IMAGE_GENERATION=true` to a release launch.
+
+When running an app to reproduce or diagnose a UI/runtime issue, launch it with
+`fvm flutter run` and keep that process attached for the entire reproduction.
+Continue reading its output after each UI interaction so Dart exceptions,
+Flutter framework errors, plugin failures, and native macOS logs are captured as
+they happen. Do not use `open <path>.app` as the primary debugging launch: it
+detaches the app from the observable Flutter process and hides the logs needed
+to identify the root cause. Opening a compiled `.app` directly is appropriate
+only for a distribution smoke test where live diagnostics are not required.
+
 ### Cleaning
 ```bash
-melos run clean            # Clean all Flutter build artifacts
+fvm dart run melos run clean            # Clean all Flutter build artifacts
 ```
 
 ## Coding Standards
@@ -160,6 +182,22 @@ lib/src/
 ### Reactive State
 The project uses Signals for reactive state management. `DeckController` is the central state manager for presentations.
 
+### AI Generation Models
+
+Use the current stable Gemini model split for the Playground deck-generation
+pipeline:
+
+- `gemini-3.5-flash` for the single global outline/planning request
+- `gemini-3.1-flash-lite` for concurrent narrative-section composition and
+  targeted outline/slide repair
+
+Keep model thinking at the lowest supported setting for this latency-sensitive
+workflow. Do not silently switch back to an older model, a preview model, or
+one request per slide. Any model or reasoning-setting change must be validated
+with the opt-in live 10-slide generation smoke test and its saved timing,
+validation, render, and quality artifacts. Target 20 seconds and treat 30
+seconds as the maximum acceptable generation time before local rendering.
+
 ### Block System
 Slides use `@tag` directives in Markdown to define layout and content:
 - `@section` - Groups child blocks into a horizontal section
@@ -173,16 +211,15 @@ Styles are defined in Dart through `SlideStyler`, `DeckOptions.baseStyle`, and `
 ## Documentation Locations
 
 - **User docs**: `docs/` (getting-started, guides, reference)
-- **Internal planning**: `.planning/` (architecture decisions, feature specs)
 - **Package READMEs**: Each package has its own README
 
 ## Quick Reference
 
 | Task | Command |
 |------|---------|
-| Bootstrap workspace | `melos bootstrap` |
-| Run all analysis | `melos run analyze` |
-| Generate code | `melos run build_runner:build` |
-| Run tests | `melos run test` |
-| Apply fixes | `melos run fix` |
-| Clean workspace | `melos run clean` |
+| Bootstrap workspace | `fvm dart run melos bootstrap` |
+| Run all analysis | `fvm dart run melos run analyze` |
+| Generate code | `fvm dart run melos run build_runner:build` |
+| Run tests | `fvm dart run melos run test` |
+| Apply fixes | `fvm dart run melos run fix` |
+| Clean workspace | `fvm dart run melos run clean` |

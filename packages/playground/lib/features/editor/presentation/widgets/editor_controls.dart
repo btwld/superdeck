@@ -32,26 +32,26 @@ class EditorControls extends StatelessWidget {
           .shape(.stadium().side(.color($border()))),
       children: [
         HeroToggleButton(
-          icon: Icons.grid_view_rounded,
-          label: 'Preview',
           variant: .ghost,
           style: .new().variant(
             HeroToggleButtonVariant.ghost,
-            RemixToggleStyle().backgroundColor($overlay()),
+            RemixToggleStyler().backgroundColor($overlay()),
           ),
           selected: showPreviewSidebar,
           onChanged: onTogglePreviewSidebar,
+          label: 'Preview',
+          icon: Icons.grid_view_rounded,
         ),
         HeroToggleButton(
-          label: 'Customization',
-          icon: Icons.tune_rounded,
           variant: .ghost,
           style: .new().variant(
             HeroToggleButtonVariant.ghost,
-            RemixToggleStyle().backgroundColor($overlay()),
+            RemixToggleStyler().backgroundColor($overlay()),
           ),
           selected: showCustomizationSidebar,
           onChanged: onToggleCustomizationSidebar,
+          label: 'Customization',
+          icon: Icons.tune_rounded,
         ),
       ],
     );

@@ -1,6 +1,6 @@
 ---
 title: Plugin guide
-description: Learn how SuperDeck plugins work, how to use the PDF and Mermaid plugins, and how to create your own plugin.
+description: Learn how SuperDeck plugins work, how to use the PDF plugin, and how to create your own plugin.
 ---
 
 # Plugin guide
@@ -77,79 +77,6 @@ SuperDeckApp(
 
 Set `fileName` when the default platform save flow should use a different
 download or save-dialog name.
-
-## Use the Mermaid plugin
-
-`superdeck_mermaid` is a build plugin. It finds fenced Mermaid code blocks,
-renders them to PNG files under the active SuperDeck build output directory,
-and replaces the fence with a Markdown image reference before the deck is saved.
-
-Add it to the project that runs the SuperDeck build:
-
-```yaml
-dev_dependencies:
-  superdeck_cli: ^1.0.0
-  superdeck_mermaid: ^1.0.0
-```
-
-Create a custom runner, for example `tool/superdeck.dart`:
-
-```dart
-import 'dart:io';
-
-import 'package:superdeck_cli/runner.dart';
-import 'package:superdeck_mermaid/superdeck_mermaid.dart';
-
-Future<void> main(List<String> args) async {
-  final exitCode = await SuperDeckRunner(
-    plugins: [
-      MermaidBuildPlugin(),
-    ],
-  ).run(args);
-
-  exit(exitCode);
-}
-```
-
-Run builds through the custom runner:
-
-```bash
-dart run tool/superdeck.dart build --watch
-```
-
-Then author Mermaid in `slides.md`:
-
-````markdown
-@block
-
-```mermaid
-flowchart TD
-  A[Write slides] --> B[Run SuperDeck build]
-  B --> C[Render deck]
-```
-````
-
-Customize Mermaid rendering by passing configuration to the plugin:
-
-```dart
-SuperDeckRunner(
-  plugins: [
-    MermaidBuildPlugin(
-      configuration: {
-        'theme': 'forest',
-        'viewportWidth': 1280,
-        'viewportHeight': 780,
-      },
-    ),
-  ],
-);
-```
-
-See the [Mermaid diagrams guide](/guides/mermaid-diagrams) for supported
-diagram syntax and authoring examples.
-
-When a custom `MermaidGenerator` is passed to `MermaidBuildPlugin`, the plugin
-disposes that generator from its own `dispose()` method.
 
 ## Create a runtime plugin
 
@@ -311,7 +238,7 @@ publish a small Dart or Flutter package:
 
 - Use a Flutter package when the plugin exports runtime plugins or widgets.
 - Use a Dart package when the plugin only exports build plugins.
-- Export one small public API, such as `PdfPlugin` or `MermaidBuildPlugin`.
+- Export one small public API, such as `PdfPlugin` or `TextAssetPlugin`.
 - Keep heavy dependencies in the optional plugin package, not in base
   `superdeck`.
 - Include tests for the public plugin class and the behavior it contributes.
@@ -338,9 +265,6 @@ publish a small Dart or Flutter package:
   plugins when the failure comes from slide content.
 - **Markdown output is malformed**: Print or test the transformed
   `ContentBlock.content` before debugging the Flutter runtime.
-- **Mermaid rendering fails**: Validate the Mermaid syntax first, then run the
-  build with `--verbose`. The generator needs a browser that `puppeteer` can
-  launch in the build environment.
 
 ## Related reference
 

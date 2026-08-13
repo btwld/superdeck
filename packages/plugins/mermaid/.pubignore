@@ -1,4 +1,0 @@
-pubspec_overrides.yaml
-.dart_tool/
-build/
-coverage/

@@ -1,5 +1,11 @@
 ## Unreleased
 
+- **Breaking:** render supported Mermaid fences directly with
+  `flutter_mermaid` instead of the removed browser-backed build plugin.
+  Mermaid diagrams no longer require generated image assets, cache management,
+  or custom runner registration; invalid and unsupported syntax is reported
+  inline at runtime. Diagrams use a transparent background and follow the
+  app's light or dark theme.
 - Add clamped gaps between sibling blocks with section `spacing`.
 - Replace manual `Stack`/`Positioned` geometry with constraint-driven
   `Column`/`Row`/`Expanded` layout. Slide-container insets and constraints now
@@ -64,6 +70,9 @@
   project root at runtime.
 - Improve missing build output diagnostics with checked paths and desktop app
   guidance.
+- Add bounded asynchronous capture readiness so built-in images and custom
+  widgets can signal when their capture-safe visual state is ready, replacing
+  image-specific fixed render delays.
 
 ## 1.0.0
 

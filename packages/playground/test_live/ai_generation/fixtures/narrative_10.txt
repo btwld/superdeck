@@ -1,0 +1,13 @@
+Create a realistic strategy presentation about replacing quarterly roadmap
+theater with a continuous product operating system. The deck should help senior
+product and engineering leaders see why annual commitments become stale, how
+small outcome teams can work from evidence, and what changes in planning,
+funding, discovery, delivery, and review.
+
+Use a credible fictional company with concrete details: six product teams,
+roughly 180 engineers, a twelve-month roadmap with 43 promised initiatives, and
+only 31% of shipped features reaching their adoption target. Build a clear
+three-act narrative: the cost of the old model, the operating-system shift, and
+a practical 90-day adoption path. Include a few memorable metrics, one useful
+comparison, and an executive close with a specific decision. Avoid generic
+consulting filler and do not invent external sources or URLs.

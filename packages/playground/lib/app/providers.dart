@@ -9,6 +9,8 @@ import '../core/domain/stores/deck_customization_store.dart';
 import '../features/editor/data/mac_os_deck_file_repository.dart';
 import '../features/editor/domain/files/deck_file_repository.dart';
 
+const _debugDeckLayout = bool.fromEnvironment('SUPERDECK_DEBUG_LAYOUT');
+
 /// App-root dependency injection: the deck globals shared across features.
 ///
 /// `DeckController` and `DeckCustomizationStore` are created eagerly
@@ -47,13 +49,13 @@ class AppProviders extends StatelessWidget {
           dispose: (_, repository) => repository.dispose(),
         ),
         Provider<DeckController>(
-          lazy: false,
           create: (ctx) => DeckController(
             deckLoader: ctx.read<MemoryDeckLoader>(),
-            options: DeckOptions(),
+            options: DeckOptions(debug: _debugDeckLayout),
             assetCacheStore: ctx.read<MemoryAssetCacheStore>(),
           ),
           dispose: (_, controller) => controller.dispose(),
+          lazy: false,
         ),
         ChangeNotifierProvider<DeckCustomizationStore>(
           lazy: false,

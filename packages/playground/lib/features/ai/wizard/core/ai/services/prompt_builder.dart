@@ -1,22 +1,47 @@
+import '../../../../../../core/domain/design/presentation_image_style_catalog.dart';
+import '../../../../quick_agent/core/engine/services/deck_generation_request.dart';
 import '../wizard_context.dart';
 
 /// Builds a deck generation prompt from wizard context data.
 ///
-/// Extracts user selections from the 8-step wizard workflow and formats
-/// them into a structured prompt for the AI generation service.
-String buildPromptFromWizardContext(WizardContext context) {
-  final buffer = StringBuffer();
+/// Extracts exact user selections from the Wizard workflow without
+/// flattening contractual fields into layout instructions.
+DeckGenerationRequest buildPromptFromWizardContext(
+  WizardContext context, {
+  PresentationImageStyleCatalog? imageStyleCatalog,
+}) {
+  final request = DeckGenerationRequest(
+    userIntent: _sanitize(context.topic).isEmpty
+        ? 'Create a coherent presentation.'
+        : _sanitize(context.topic),
+    slideCount: _wizardSlideCount(context.slideCount),
+    audience: _sanitizedOrNull(context.audience),
+    approach: _sanitizedOrNull(context.approach),
+    emphasis:
+        context.emphasis
+            ?.map(_sanitize)
+            .where((item) => item.isNotEmpty)
+            .toList() ??
+        const [],
+    themeId: _sanitizedOrNull(context.themeId),
+    designDirection: _sanitizedOrNull(context.style),
+    density: _sanitizedOrNull(context.density),
+    colors:
+        context.colors
+            ?.map(_sanitize)
+            .where((item) => item.isNotEmpty)
+            .toList() ??
+        const [],
+    headlineFont: _sanitizedOrNull(context.headlineFont),
+    bodyFont: _sanitizedOrNull(context.bodyFont),
+    imageStyleId: _sanitizedOrNull(context.imageStyleId),
+    imageStyleVersion: context.imageStyleVersion,
+  );
+  request.resolveImageStyle(
+    imageStyleCatalog ?? PresentationImageStyleCatalog.withDefaults(),
+  );
 
-  buffer.writeln('Generate a presentation with the following specifications:');
-  buffer.writeln();
-
-  _writeBasicFields(buffer, context);
-  _writeColorPalette(buffer, context);
-  _writeFontConfiguration(buffer, context);
-  _writeImageStyleDirection(buffer, context);
-  _writeLayoutGuidance(buffer);
-
-  return buffer.toString();
+  return request;
 }
 
 /// Maximum length for user-provided text fields.
@@ -43,75 +68,12 @@ String _sanitize(Object? value) {
   return text;
 }
 
-void _writeBasicFields(StringBuffer buffer, WizardContext context) {
-  if (context.topic != null) {
-    buffer.writeln('Topic: ${_sanitize(context.topic)}');
-  }
-  if (context.audience != null) {
-    buffer.writeln('Target Audience: ${_sanitize(context.audience)}');
-  }
-  if (context.approach != null) {
-    buffer.writeln('Presentation Approach: ${_sanitize(context.approach)}');
-  }
-  if (context.emphasis != null && context.emphasis!.isNotEmpty) {
-    final sanitized = context.emphasis!.map((e) => _sanitize(e)).join(', ');
-    buffer.writeln('Key Areas to Emphasize: $sanitized');
-  }
-  if (context.slideCount != null) {
-    final count = context.slideCount!;
-    if (count > 0 && count <= 50) {
-      buffer.writeln('Number of Slides: $count');
-    }
-  }
-  if (context.style != null) {
-    buffer.writeln('Visual Style: ${_sanitize(context.style)}');
-  }
+String? _sanitizedOrNull(Object? value) {
+  final sanitized = _sanitize(value);
+  return sanitized.isEmpty ? null : sanitized;
 }
 
-void _writeColorPalette(StringBuffer buffer, WizardContext context) {
-  final colors = context.colors;
-  if (colors != null && colors.isNotEmpty) {
-    buffer.writeln();
-    buffer.writeln('Color Palette:');
-    buffer.writeln('  - Background: ${_sanitize(colors[0])}');
-    if (colors.length > 1) {
-      buffer.writeln('  - Heading text: ${_sanitize(colors[1])}');
-    }
-    if (colors.length > 2) {
-      buffer.writeln('  - Body text: ${_sanitize(colors[2])}');
-    }
-  }
-}
-
-void _writeFontConfiguration(StringBuffer buffer, WizardContext context) {
-  if (context.headlineFont != null) {
-    buffer.writeln('Headline Font: ${_sanitize(context.headlineFont)}');
-  }
-  if (context.bodyFont != null) {
-    buffer.writeln('Body Font: ${_sanitize(context.bodyFont)}');
-  }
-}
-
-void _writeImageStyleDirection(StringBuffer buffer, WizardContext context) {
-  if (context.imageStyleName != null) {
-    buffer.writeln();
-    buffer.writeln('Visual Direction: ${_sanitize(context.imageStyleName)}');
-    if (context.imageStyleDescription != null) {
-      buffer.writeln(
-        'Visual Style Description: ${_sanitize(context.imageStyleDescription)}',
-      );
-    }
-  }
-}
-
-void _writeLayoutGuidance(StringBuffer buffer) {
-  buffer.writeln();
-  buffer.writeln(
-    'Layout Guidance: Use sections as rows and blocks as columns. Use 1-2 '
-    'blocks per section (never 4+). Put all bullets in a single block. Use '
-    'two sections (title + body) for most slides. Center-align only titles; '
-    'left-align body content. Do not use widget blocks or empty blocks. '
-    'Keep slide titles short (3-5 words max) to prevent text cutoff; use '
-    'smaller heading sizes (### or ####) for longer titles.',
-  );
+int _wizardSlideCount(int? value) {
+  if (value == null || value < 5 || value > 20) return 10;
+  return value;
 }

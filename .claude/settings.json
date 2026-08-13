@@ -19,7 +19,6 @@
       "Bash(sort:*)",
       "Bash(wc:*)",
       "Bash(dcm:*)",
-      "Read(//Users/leofarias/.pub-cache/**)",
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_console_messages"
     ]

@@ -21,7 +21,7 @@ class SdCheckbox extends StatelessWidget {
 
   /// Semantic label for accessibility.
   final String? semanticLabel;
-  final RemixCheckboxStyle? style;
+  final RemixCheckboxStyler? style;
 
   @override
   Widget build(BuildContext context) {
@@ -33,171 +33,6 @@ class SdCheckbox extends StatelessWidget {
       semanticLabel: semanticLabel,
       style: style,
     );
-  }
-}
-
-/// Pre-styled switch.
-class SdSwitch extends StatelessWidget {
-  const SdSwitch({
-    super.key,
-    required this.selected,
-    required this.onChanged,
-    this.enabled = true,
-    this.semanticLabel,
-    this.style,
-  });
-
-  final bool selected;
-  final ValueChanged<bool> onChanged;
-  final bool enabled;
-
-  /// Semantic label for accessibility.
-  final String? semanticLabel;
-  final RemixSwitchStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return HeroSwitch(
-      selected: selected,
-      onChanged: onChanged,
-      enabled: enabled,
-      semanticLabel: semanticLabel,
-      style: style,
-    );
-  }
-}
-
-/// Pre-styled slider.
-class SdSlider extends StatelessWidget {
-  const SdSlider({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    this.min = 0.0,
-    this.max = 1.0,
-    this.enabled = true,
-    this.snapDivisions,
-    this.semanticLabel,
-    this.style,
-  });
-
-  final double value;
-  final ValueChanged<double> onChanged;
-  final double min;
-  final double max;
-  final bool enabled;
-  final int? snapDivisions;
-
-  /// Semantic label for accessibility.
-  final String? semanticLabel;
-  final RemixSliderStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return HeroSlider(
-      value: value,
-      onChanged: onChanged,
-      min: min,
-      max: max,
-      enabled: enabled,
-      snapDivisions: snapDivisions,
-      showOutput: false,
-      semanticLabel: semanticLabel,
-      style: style,
-    );
-  }
-}
-
-/// Pre-styled radio button.
-///
-/// Must be used within an [SdRadioGroup].
-class SdRadio<T> extends StatelessWidget {
-  const SdRadio({super.key, required this.value, this.enabled = true, this.style});
-
-  final T value;
-  final bool enabled;
-  final RemixRadioStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return HeroRadio<T>(value: value, enabled: enabled, style: style);
-  }
-}
-
-/// Radio group that manages selection state for [SdRadio] children.
-class SdRadioGroup<T> extends StatelessWidget {
-  const SdRadioGroup({
-    super.key,
-    required this.groupValue,
-    required this.onChanged,
-    required this.child,
-  });
-
-  final T? groupValue;
-  final ValueChanged<T?> onChanged;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return HeroRadioGroup<T>(
-      groupValue: groupValue,
-      onChanged: onChanged,
-      child: child,
-    );
-  }
-}
-
-/// Pre-styled select dropdown.
-class SdSelect<T> extends StatelessWidget {
-  const SdSelect({
-    super.key,
-    required this.items,
-    this.placeholder = 'Select...',
-    this.icon,
-    this.selectedValue,
-    this.onChanged,
-    this.enabled = true,
-    this.style,
-  });
-
-  final List<SdSelectItem<T>> items;
-  final String placeholder;
-  final IconData? icon;
-  final T? selectedValue;
-  final ValueChanged<T?>? onChanged;
-  final bool enabled;
-  final RemixSelectStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: HeroSelect<T>(
-        placeholder: placeholder,
-        icon: icon,
-        items: items.map((item) => item._toHeroSelectItem()).toList(),
-        selectedValue: selectedValue,
-        onChanged: onChanged,
-        enabled: enabled,
-        style: style,
-      ),
-    );
-  }
-}
-
-/// Pre-styled select item for use with [SdSelect].
-class SdSelectItem<T> {
-  const SdSelectItem({
-    required this.value,
-    required this.label,
-    this.enabled = true,
-  });
-
-  final T value;
-  final String label;
-  final bool enabled;
-
-  HeroSelectItem<T> _toHeroSelectItem() {
-    return HeroSelectItem<T>(value: value, label: label, enabled: enabled);
   }
 }
 
@@ -244,7 +79,7 @@ class SdTextField extends StatelessWidget {
 
   /// Semantic label for accessibility (screen readers, browser automation).
   final String? semanticLabel;
-  final RemixTextFieldStyle? style;
+  final RemixTextFieldStyler? style;
 
   @override
   Widget build(BuildContext context) {

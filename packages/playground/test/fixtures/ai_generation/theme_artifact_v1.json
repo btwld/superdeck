@@ -1,0 +1,13 @@
+{
+  "theme": {
+    "id": "technical-paper",
+    "version": 1,
+    "density": "compact"
+  },
+  "expected": {
+    "title": "Technical Paper",
+    "headlineFamily": "Space Grotesk",
+    "bodyFamily": "Open Sans",
+    "background": "#F5F7FA"
+  }
+}

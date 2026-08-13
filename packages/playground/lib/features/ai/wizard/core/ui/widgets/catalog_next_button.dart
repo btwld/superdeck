@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+
 import '../ui.dart';
 
 class CatalogNextButton extends StatelessWidget {
@@ -12,9 +14,10 @@ class CatalogNextButton extends StatelessWidget {
       alignment: Alignment.centerRight,
       child: Padding(
         padding: const EdgeInsets.only(top: 16),
-        child: SdIconButton(
-          icon: Icons.arrow_forward_rounded,
+        child: SdButton(
+          label: 'Continue',
           onPressed: onPressed,
+          icon: LucideIcons.arrowRight,
           semanticLabel: 'Next step',
         ),
       ),

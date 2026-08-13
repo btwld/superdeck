@@ -1,0 +1,14 @@
+Prepare an executive decision deck for a fictional regional grocery company
+choosing between building, buying, or partnering for a personalized promotions
+platform. The audience is an investment committee that needs a recommendation,
+not a technology tutorial.
+
+Ground the story in a consistent business case: 220 stores, 4.8 million loyalty
+members, $3.2 billion annual revenue, a 2.1% digital coupon conversion rate, and
+a target of 3.4% within 18 months. Compare the three options across time to
+value, five-year cost, data control, implementation risk, operating talent, and
+expected conversion lift. Include readable tables and a small number of
+decision-grade metrics. Explain assumptions, sensitivity, major risks, staged
+investment, and the recommended partner-first path with an option to internalize
+the decisioning layer later. Use only the facts in this brief; label projections
+as projections. End with the exact approvals needed from the committee.

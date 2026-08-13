@@ -23,19 +23,19 @@ class SDIconButton extends StatelessWidget {
     );
   }
 
-  RemixIconButtonStyle get _style => RemixIconButtonStyle()
+  RemixIconButtonStyler get _style => RemixIconButtonStyler()
       .paddingAll(10)
       .iconSize(21)
       .shapeCircle()
       .scale(1)
       .shadowOnly(color: Colors.white.withValues(alpha: 0.001))
       .onHovered(
-        RemixIconButtonStyle().shadowOnly(
+        RemixIconButtonStyler().shadowOnly(
           color: Colors.white.withValues(alpha: 0.05),
         ),
       )
       .onPressed(
-        RemixIconButtonStyle().shadowOnly(
+        RemixIconButtonStyler().shadowOnly(
           color: Colors.white.withValues(alpha: 0.1),
         ),
       )

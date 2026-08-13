@@ -24,7 +24,7 @@ class SDButton extends StatelessWidget {
     );
   }
 
-  RemixButtonStyle get _style => RemixButtonStyle()
+  RemixButtonStyler get _style => RemixButtonStyler()
       .paddingAll(10)
       .iconSize(21)
       .labelFontWeight(FontWeight.w500)
@@ -33,12 +33,12 @@ class SDButton extends StatelessWidget {
       .scale(1)
       .shadowOnly(color: Colors.white.withValues(alpha: 0.001))
       .onHovered(
-        RemixButtonStyle().shadowOnly(
+        RemixButtonStyler().shadowOnly(
           color: Colors.white.withValues(alpha: 0.05),
         ),
       )
       .onPressed(
-        RemixButtonStyle().shadowOnly(
+        RemixButtonStyler().shadowOnly(
           color: Colors.white.withValues(alpha: 0.1),
         ),
       )

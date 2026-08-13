@@ -20,6 +20,15 @@ class GoogleSchemaAdapterResult {
 }
 
 class GoogleSchemaAdapter {
+  GoogleSchemaAdapter({this.forwardArrayBounds = true});
+
+  /// Whether JSON Schema array bounds are forwarded to Google.
+  ///
+  /// Gemini accepts these fields on smaller schemas, but rejects the complete
+  /// nested slide schema as too complex when they are present. Callers may omit
+  /// only these provider hints while retaining the same application validator.
+  final bool forwardArrayBounds;
+
   final _errors = <GoogleSchemaAdapterError>[];
 
   GoogleSchemaAdapterResult adapt(dsb.Schema schema) {
@@ -30,6 +39,10 @@ class GoogleSchemaAdapter {
 
   google_ai.Schema? _adapt(Map<String, Object?> schema, List<String> path) {
     _checkUnsupportedKeywords(schema, path);
+
+    if (schema['anyOf'] case final List rawBranches) {
+      return _adaptAnyOf(schema, rawBranches, path);
+    }
 
     final type = _schemaType(schema, path);
     if (type == null) return null;
@@ -48,6 +61,51 @@ class GoogleSchemaAdapter {
       ),
       _ => _unsupportedType(type, path),
     };
+  }
+
+  google_ai.Schema? _adaptAnyOf(
+    Map<String, Object?> schema,
+    List<Object?> rawBranches,
+    List<String> path,
+  ) {
+    final branches = <google_ai.Schema>[];
+    for (final (index, branch) in rawBranches.indexed) {
+      if (branch is! Map<String, Object?>) {
+        _errors.add(
+          GoogleSchemaAdapterError(
+            'AnyOf branch must be a schema object.',
+            path: [...path, 'anyOf', '$index'],
+          ),
+        );
+        continue;
+      }
+      final adapted = _adapt(branch, [...path, 'anyOf', '$index']);
+      if (adapted != null) branches.add(adapted);
+    }
+    if (branches.isEmpty) {
+      _errors.add(
+        GoogleSchemaAdapterError(
+          'AnyOf must contain at least one supported schema.',
+          path: path,
+        ),
+      );
+      return null;
+    }
+    final type = branches.first.type;
+    if (branches.any((branch) => branch.type != type)) {
+      _errors.add(
+        GoogleSchemaAdapterError(
+          'Google anyOf branches must share one top-level type.',
+          path: path,
+        ),
+      );
+      return null;
+    }
+    return google_ai.Schema(
+      type: type,
+      anyOf: branches,
+      description: _description(schema),
+    );
   }
 
   String? _schemaType(Map<String, Object?> schema, List<String> path) {
@@ -110,6 +168,7 @@ class GoogleSchemaAdapter {
       properties: properties,
       required: _stringList(schema['required']),
       description: _description(schema),
+      propertyOrdering: properties.keys.toList(growable: false),
     );
   }
 
@@ -135,6 +194,8 @@ class GoogleSchemaAdapter {
       type: google_ai.Type.array,
       items: adaptedItems,
       description: _description(schema),
+      minItems: forwardArrayBounds ? _integerBound(schema['minItems']) : 0,
+      maxItems: forwardArrayBounds ? _integerBound(schema['maxItems']) : 0,
     );
   }
 
@@ -144,6 +205,9 @@ class GoogleSchemaAdapter {
       format: schema['format'] as String? ?? '',
       enum$: _stringList(schema['enum']),
       description: _description(schema),
+      minLength: _integerBound(schema['minLength']),
+      maxLength: _integerBound(schema['maxLength']),
+      pattern: schema['pattern'] as String? ?? '',
     );
   }
 
@@ -195,6 +259,12 @@ class GoogleSchemaAdapter {
     _ => null,
   };
 
+  int _integerBound(Object? value) => switch (value) {
+    int value when value >= 0 => value,
+    num value when value >= 0 => value.toInt(),
+    _ => 0,
+  };
+
   google_ai.Schema? _unsupportedType(String type, List<String> path) {
     _errors.add(
       GoogleSchemaAdapterError('Unsupported schema type "$type".', path: path),
@@ -220,7 +290,6 @@ class GoogleSchemaAdapter {
       '\$id',
       '\$schema',
       'allOf',
-      'anyOf',
       'oneOf',
       'not',
       'if',
@@ -241,11 +310,6 @@ class GoogleSchemaAdapter {
       'minContains',
       'maxContains',
       'uniqueItems',
-      'minItems',
-      'maxItems',
-      'minLength',
-      'maxLength',
-      'pattern',
       'multipleOf',
     };
 

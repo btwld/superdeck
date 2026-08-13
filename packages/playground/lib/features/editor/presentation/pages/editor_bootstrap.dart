@@ -6,6 +6,7 @@ import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/data/data_sources/memory_deck_loader.dart';
+import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../../core/result.dart';
 import '../../../ai/quick_agent/domain/commands/generate_deck_command.dart';
 import '../../domain/files/deck_file.dart';
@@ -30,19 +31,11 @@ class EditorBootstrap extends StatefulWidget {
 
 class _EditorBootstrapState extends State<EditorBootstrap> {
   late final DeckFileRepository _repository;
-  late Future<Result<DeckFileSnapshot>> _initialDeck;
   late final AppLifecycleListener _lifecycleListener;
+  late Future<Result<DeckFileSnapshot>> _initialDeck;
 
   DeckDocumentStore? _documentStore;
   DeckFileSession? _fileSession;
-
-  Future<AppExitResponse> _handleExitRequested() async {
-    final session = _fileSession;
-    if (session == null) return AppExitResponse.exit;
-    return await session.flushPendingSave()
-        ? AppExitResponse.exit
-        : AppExitResponse.cancel;
-  }
 
   @override
   void initState() {
@@ -52,6 +45,94 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
     _lifecycleListener = AppLifecycleListener(
       onExitRequested: _handleExitRequested,
     );
+  }
+
+  Future<AppExitResponse> _handleExitRequested() async {
+    final session = _fileSession;
+    if (session == null) return AppExitResponse.exit;
+    return await session.flushPendingSave()
+        ? AppExitResponse.exit
+        : AppExitResponse.cancel;
+  }
+
+  Widget _buildEditor(DeckFileSnapshot snapshot) {
+    final documentStore = _documentStore ??= DeckDocumentStore(
+      markdown: snapshot.markdown,
+    );
+    final fileSession = _fileSession ??= DeckFileSession(
+      initialSnapshot: snapshot,
+      repository: _repository,
+      documentStore: documentStore,
+    );
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<DeckDocumentStore>.value(value: documentStore),
+        ChangeNotifierProvider<DeckFileSession>.value(value: fileSession),
+        ChangeNotifierProvider(create: (_) => EditorStore()),
+        Provider<TextEditorController>(
+          lazy: false,
+          create: (ctx) => TextEditorController(
+            editorStore: ctx.read<EditorStore>(),
+            deckLoader: ctx.read<MemoryDeckLoader>(),
+            documentStore: ctx.read<DeckDocumentStore>(),
+          ),
+          dispose: (_, controller) => controller.dispose(),
+        ),
+        ListenableProvider<GenerateDeckCommand>(
+          create: (ctx) => GenerateDeckCommand(
+            documentStore: ctx.read<DeckDocumentStore>(),
+            customizationStore: ctx.read<DeckCustomizationStore>(),
+            deckLoader: ctx.read<MemoryDeckLoader>(),
+            assetCacheStore: ctx.read(),
+          ),
+          dispose: (_, command) => command.dispose(),
+        ),
+      ],
+      child: const EditorPage(),
+    );
+  }
+
+  Widget _buildFailure(Object error) {
+    return _BootstrapMessage(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Could not open the decks folder.\n$error',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: $muted.resolve(context)),
+          ),
+          const SizedBox(height: 16),
+          HeroButton(
+            label: 'Try again',
+            leadingIcon: Icons.refresh,
+            onPressed: _retry,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<Result<DeckFileSnapshot>> _loadInitialDeck() {
+    return _repository.loadInitialDeck(starterMarkdown: kStarterDeckMarkdown);
+  }
+
+  void _retry() {
+    setState(() {
+      _initialDeck = _loadInitialDeck();
+    });
+  }
+
+  Future<void> _releaseUnclaimedInitialDeck() async {
+    try {
+      final result = await _initialDeck;
+      if (result case Ok(:final value)) {
+        await _repository.releaseDeck(value.reference);
+      }
+    } catch (_) {
+      // Bootstrap errors do not retain a usable bookmark.
+    }
   }
 
   @override
@@ -99,82 +180,6 @@ class _EditorBootstrapState extends State<EditorBootstrap> {
         }
       },
     );
-  }
-
-  Widget _buildEditor(DeckFileSnapshot snapshot) {
-    final documentStore = _documentStore ??= DeckDocumentStore(
-      markdown: snapshot.markdown,
-    );
-    final fileSession = _fileSession ??= DeckFileSession(
-      initialSnapshot: snapshot,
-      repository: _repository,
-      documentStore: documentStore,
-    );
-
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<DeckDocumentStore>.value(value: documentStore),
-        ChangeNotifierProvider<DeckFileSession>.value(value: fileSession),
-        ChangeNotifierProvider(create: (_) => EditorStore()),
-        Provider<TextEditorController>(
-          lazy: false,
-          create: (ctx) => TextEditorController(
-            editorStore: ctx.read<EditorStore>(),
-            deckLoader: ctx.read<MemoryDeckLoader>(),
-            documentStore: ctx.read<DeckDocumentStore>(),
-          ),
-          dispose: (_, controller) => controller.dispose(),
-        ),
-        ListenableProvider<GenerateDeckCommand>(
-          create: (ctx) =>
-              GenerateDeckCommand(documentStore: ctx.read<DeckDocumentStore>()),
-          dispose: (_, command) => command.dispose(),
-        ),
-      ],
-      child: const EditorPage(),
-    );
-  }
-
-  Widget _buildFailure(Object error) {
-    return _BootstrapMessage(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Could not open the decks folder.\n$error',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: $muted.resolve(context)),
-          ),
-          const SizedBox(height: 16),
-          HeroButton(
-            label: 'Try again',
-            iconLeft: Icons.refresh,
-            onPressed: _retry,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<Result<DeckFileSnapshot>> _loadInitialDeck() {
-    return _repository.loadInitialDeck(starterMarkdown: kStarterDeckMarkdown);
-  }
-
-  void _retry() {
-    setState(() {
-      _initialDeck = _loadInitialDeck();
-    });
-  }
-
-  Future<void> _releaseUnclaimedInitialDeck() async {
-    try {
-      final result = await _initialDeck;
-      if (result case Ok(:final value)) {
-        await _repository.releaseDeck(value.reference);
-      }
-    } catch (_) {
-      // Bootstrap errors do not retain a usable bookmark.
-    }
   }
 }
 

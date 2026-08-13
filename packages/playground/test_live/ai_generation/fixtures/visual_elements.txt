@@ -1,0 +1,1 @@
+Create a 5-slide launch briefing for a developer platform. Use this supplied image on one split-layout slide: https://images.unsplash.com/photo-1516321318423-f06f85e504b3. End with a QR handoff using exactly https://example.com/developer-platform. Include one fullscreen WebView using exactly https://example.com. Use a bold dark visual system and keep text concise.

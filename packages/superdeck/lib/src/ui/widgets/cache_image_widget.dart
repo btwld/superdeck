@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
 
+import '../../capture/slide_capture_readiness.dart';
 import '../../utils/constants.dart';
 import 'error_widgets.dart';
 
@@ -35,7 +36,7 @@ ImageProvider getImageProvider(Uri uri) {
   }
 }
 
-class CachedImage extends StatelessWidget {
+class CachedImage extends StatefulWidget {
   final Uri uri;
 
   final Size? targetSize; // ignore: unused-code
@@ -50,15 +51,59 @@ class CachedImage extends StatelessWidget {
   });
 
   @override
+  State<CachedImage> createState() => _CachedImageState();
+}
+
+class _CachedImageState extends State<CachedImage> {
+  SlideCaptureReadinessHandle? _readiness;
+  Uri? _trackedUri;
+
+  @override
+  void didUpdateWidget(CachedImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.uri != widget.uri) {
+      _completeReadiness();
+      _trackedUri = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _completeReadiness();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final imageProvider = getImageProvider(uri);
+    _ensureReadiness(context);
+    final imageProvider = getImageProvider(widget.uri);
 
     return StyledImage(
       image: imageProvider,
-      styleSpec: styleSpec,
+      styleSpec: widget.styleSpec,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        if (frame != null) _completeReadiness();
+        return child;
+      },
       errorBuilder: (context, error, stackTrace) {
-        return ErrorWidgets.simple('Error loading image: $uri');
+        _completeReadiness();
+        return ErrorWidgets.simple('Error loading image: ${widget.uri}');
       },
     );
+  }
+
+  void _ensureReadiness(BuildContext context) {
+    if (_trackedUri == widget.uri && _readiness != null) return;
+    _completeReadiness();
+    _trackedUri = widget.uri;
+    _readiness = SlideCaptureReadiness.track(
+      context,
+      label: 'image:${widget.uri}',
+    );
+  }
+
+  void _completeReadiness() {
+    _readiness?.complete();
+    _readiness = null;
   }
 }

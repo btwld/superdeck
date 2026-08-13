@@ -10,14 +10,12 @@ final _actionContextValueSchema = Ack.object({
   'literalNumber': Ack.double().optional().describe('Literal number value'),
   'literalBoolean': Ack.boolean().optional().describe('Literal boolean value'),
 }).describe('Context value - use path or one of the literal types');
-final actionContextValueSchema = _actionContextValueSchema;
 
 @AckType(name: 'ActionContextEntry')
 final _actionContextEntrySchema = Ack.object({
   'key': Ack.string().describe('Context key'),
   'value': _actionContextValueSchema,
 }).describe('Context entry with key and value');
-final actionContextEntrySchema = _actionContextEntrySchema;
 
 /// Shared GenUI action schema for catalog components.
 ///

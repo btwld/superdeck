@@ -7,18 +7,15 @@ import 'package:syntax_highlight/syntax_highlight.dart';
 class SyntaxHighlight {
   SyntaxHighlight._();
 
-  static late HighlighterTheme _theme;
+  static late HighlighterTheme _darkTheme;
+  static late HighlighterTheme _lightTheme;
   static bool _isInitialized = false;
   static bool _warnedUninitialized = false;
   static Future<void>? _initializeFuture;
 
   static final List<String> _mainSupportedLanguages = ['dart', 'json', 'yaml'];
 
-  static final List<String> _secondarySupportedLangs = [
-    'markdown',
-    'python',
-    'mermaid',
-  ];
+  static final List<String> _secondarySupportedLangs = ['markdown', 'python'];
 
   static Future<void> initialize() {
     if (_isInitialized) return Future.value();
@@ -29,7 +26,12 @@ class SyntaxHighlight {
   static Future<void> _initialize() async {
     try {
       await Highlighter.initialize(_mainSupportedLanguages);
-      _theme = await HighlighterTheme.loadDarkTheme();
+      final themes = await Future.wait([
+        HighlighterTheme.loadDarkTheme(),
+        HighlighterTheme.loadLightTheme(),
+      ]);
+      _darkTheme = themes.first;
+      _lightTheme = themes.last;
 
       // Load the markdown grammar and add it to the highlighter.
       for (var language in _secondarySupportedLangs) {
@@ -46,7 +48,11 @@ class SyntaxHighlight {
     }
   }
 
-  static List<TextSpan> render(String source, String? language) {
+  static List<TextSpan> render(
+    String source,
+    String? language, {
+    Color? backgroundColor,
+  }) {
     if (!_isInitialized) {
       if (!_warnedUninitialized) {
         debugPrint(
@@ -71,11 +77,18 @@ class SyntaxHighlight {
     }
 
     try {
+      final brightness =
+          backgroundColor != null && backgroundColor.computeLuminance() > 0.5
+          ? Brightness.light
+          : Brightness.dark;
       final highlighter = Highlighter(
         language: effectiveLanguage,
-        theme: _theme,
+        theme: brightness == Brightness.light ? _lightTheme : _darkTheme,
       );
-      final code = highlighter.highlight(source);
+      var code = highlighter.highlight(source);
+      if (backgroundColor != null) {
+        code = _ensureSpanContrast(code, backgroundColor);
+      }
       return splitTextSpansByLines([code]);
     } catch (e, stackTrace) {
       // Log the failure for debugging, but gracefully return plain text
@@ -86,6 +99,49 @@ class SyntaxHighlight {
       return [TextSpan(text: source)];
     }
   }
+}
+
+TextSpan _ensureSpanContrast(TextSpan span, Color background) {
+  final style = span.style;
+  final color = style?.color;
+  final adjustedStyle = color == null
+      ? style
+      : style?.copyWith(color: _ensureColorContrast(color, background));
+
+  return TextSpan(
+    text: span.text,
+    style: adjustedStyle,
+    children: span.children
+        ?.whereType<TextSpan>()
+        .map((child) => _ensureSpanContrast(child, background))
+        .toList(growable: false),
+  );
+}
+
+Color _ensureColorContrast(Color foreground, Color background) {
+  if (_contrastRatio(foreground, background) >= 4.5) return foreground;
+  final target = background.computeLuminance() > 0.5
+      ? const Color(0xFF000000)
+      : const Color(0xFFFFFFFF);
+  for (var step = 1; step <= 20; step++) {
+    final candidate = Color.lerp(foreground, target, step / 20)!;
+    if (_contrastRatio(candidate, background) >= 4.5) return candidate;
+  }
+
+  return target;
+}
+
+double _contrastRatio(Color first, Color second) {
+  final firstLuminance = first.computeLuminance();
+  final secondLuminance = second.computeLuminance();
+  final lighter = firstLuminance > secondLuminance
+      ? firstLuminance
+      : secondLuminance;
+  final darker = firstLuminance > secondLuminance
+      ? secondLuminance
+      : firstLuminance;
+
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 /// Splits a list of TextSpans into separate lines based on line breaks.

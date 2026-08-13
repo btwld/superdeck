@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -51,6 +52,20 @@ void main() {
 
       expect(result, 'recovered');
       expect(calls, 3);
+    });
+
+    test('reports each one-based transport attempt', () async {
+      final attempts = <int>[];
+      final policy = RetryPolicy(maxAttempts: 3, delayFn: (_) async {});
+
+      final result = await policy.runWithAttempt((attempt) async {
+        attempts.add(attempt);
+        if (attempt < 3) throw TimeoutException('retry');
+        return 'recovered';
+      });
+
+      expect(result, 'recovered');
+      expect(attempts, [1, 2, 3]);
     });
 
     test('does not retry non-retryable errors', () async {
@@ -134,7 +149,11 @@ void main() {
   });
 
   group('defaultRetryDecider', () {
-    test('retries only on 503 markers', () {
+    test('retries timeouts and 503 markers', () {
+      expect(
+        RetryPolicy.defaultRetryDecider(TimeoutException('request timed out')),
+        isTrue,
+      );
       expect(RetryPolicy.defaultRetryDecider(Exception('503')), isTrue);
       expect(RetryPolicy.defaultRetryDecider(Exception('500')), isFalse);
     });

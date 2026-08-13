@@ -1,39 +1,89 @@
-part of 'deck_generator_service.dart';
+import 'package:superdeck_core/superdeck_core.dart' show WidgetBlock;
 
-@visibleForTesting
+import '../schemas/outline_schema.dart';
+import 'generation_element_catalog.dart';
+
 List<Map<String, dynamic>> sanitizeGeneratedSlides(
   List<Map<String, dynamic>> slides,
 ) {
   return slides.map(_sanitizeSlide).nonNulls.toList();
 }
 
-@visibleForTesting
-String? validateGeneratedSlideCount({
-  required int expectedSlideCount,
-  required int actualSlideCount,
+Map<String, dynamic> hydrateGeneratedElementSources({
+  required Map<String, dynamic> slide,
+  required DeckPlanSlideType planSlide,
+  required GenerationElementCatalog elementCatalog,
 }) {
-  final minimumSlideCount = minimumUsableSlideCount(expectedSlideCount);
-  if (minimumSlideCount <= 0 || actualSlideCount >= minimumSlideCount) {
-    return null;
-  }
+  final hydrated = Map<String, dynamic>.of(slide);
+  final rawSections = slide['sections'];
+  if (rawSections is! List) return hydrated;
 
-  final slideNoun = actualSlideCount == 1 ? 'slide' : 'slides';
-  return 'Generated only $actualSlideCount usable $slideNoun; expected at least '
-      '$minimumSlideCount of $expectedSlideCount requested slides. '
-      'Please try again.';
+  hydrated['sections'] = [
+    for (final rawSection in rawSections)
+      if (rawSection is Map)
+        _hydrateSectionElementSources(
+          rawSection,
+          planSlide: planSlide,
+          elementCatalog: elementCatalog,
+        )
+      else
+        rawSection,
+  ];
+  return hydrated;
 }
 
-@visibleForTesting
-int minimumUsableSlideCount(int expectedSlideCount) {
-  if (expectedSlideCount <= 1) {
-    return expectedSlideCount;
-  }
+Map<String, dynamic> _hydrateSectionElementSources(
+  Map<dynamic, dynamic> rawSection, {
+  required DeckPlanSlideType planSlide,
+  required GenerationElementCatalog elementCatalog,
+}) {
+  final section = Map<String, dynamic>.from(rawSection);
+  final rawBlocks = rawSection['blocks'];
+  if (rawBlocks is! List) return section;
+  section['blocks'] = [
+    for (final rawBlock in rawBlocks)
+      if (rawBlock is Map)
+        _hydrateBlockElementSource(
+          rawBlock,
+          planSlide: planSlide,
+          elementCatalog: elementCatalog,
+        )
+      else
+        rawBlock,
+  ];
+  return section;
+}
 
-  final seventyFivePercent = (expectedSlideCount * 3 + 3) ~/ 4;
-  return seventyFivePercent < 2 ? 2 : seventyFivePercent;
+Map<String, dynamic> _hydrateBlockElementSource(
+  Map<dynamic, dynamic> rawBlock, {
+  required DeckPlanSlideType planSlide,
+  required GenerationElementCatalog elementCatalog,
+}) {
+  final block = Map<String, dynamic>.from(rawBlock);
+  if (block['type'] != WidgetBlock.key) return block;
+  final name = block['name']?.toString();
+  if (name == null) return block;
+
+  final plannedElement = planSlide.elements?.where((element) {
+    final plannedName = element.type == 'custom'
+        ? element.widgetName
+        : element.type;
+    return plannedName == name;
+  }).firstOrNull;
+  final rawArgs = block['args'];
+  final args = rawArgs is Map
+      ? Map<String, Object?>.from(rawArgs)
+      : <String, Object?>{};
+  block['args'] = elementCatalog.normalizeDraftArguments(
+    name,
+    args,
+    plannedElement?.source,
+  );
+  return block;
 }
 
 Map<String, dynamic>? _sanitizeSlide(Map<String, dynamic> slide) {
+  final sanitizedSlide = Map<String, dynamic>.of(slide);
   final sections = <Map<String, dynamic>>[];
   final rawSections = slide['sections'];
   if (rawSections is List) {
@@ -49,11 +99,11 @@ Map<String, dynamic>? _sanitizeSlide(Map<String, dynamic> slide) {
     return null;
   }
 
-  slide['sections'] = sections;
-  return slide;
+  sanitizedSlide['sections'] = sections;
+  return sanitizedSlide;
 }
 
-Map<String, dynamic>? _sanitizeSection(dynamic rawSection) {
+Map<String, dynamic>? _sanitizeSection(Object? rawSection) {
   if (rawSection is! Map) {
     return null;
   }
@@ -80,7 +130,7 @@ Map<String, dynamic>? _sanitizeSection(dynamic rawSection) {
   return section;
 }
 
-Map<String, dynamic>? _sanitizeBlock(dynamic rawBlock) {
+Map<String, dynamic>? _sanitizeBlock(Object? rawBlock) {
   if (rawBlock is! Map) {
     return null;
   }
@@ -90,11 +140,14 @@ Map<String, dynamic>? _sanitizeBlock(dynamic rawBlock) {
   final type = rawType.isEmpty ? 'block' : rawType;
 
   if (type == 'block') {
-    final content = block['content']?.toString().trim() ?? '';
+    final content = _normalizeGeneratedMarkdown(
+      block['content']?.toString().trim() ?? '',
+    );
     if (content.isEmpty) {
       return null;
     }
     block['type'] = 'block';
+    block['content'] = content;
     block.remove('name');
     return block;
   }
@@ -106,14 +159,32 @@ Map<String, dynamic>? _sanitizeBlock(dynamic rawBlock) {
     }
     block['type'] = 'widget';
     block.remove('content');
+    final draftArgs = block.remove('args');
+    if (draftArgs is Map) {
+      for (final entry in draftArgs.entries) {
+        block.putIfAbsent(entry.key.toString(), () => entry.value);
+      }
+    }
     return block;
   }
 
-  final content = block['content']?.toString().trim() ?? '';
+  final content = _normalizeGeneratedMarkdown(
+    block['content']?.toString().trim() ?? '',
+  );
   if (content.isEmpty) {
     return null;
   }
   block['type'] = 'block';
+  block['content'] = content;
   block.remove('name');
   return block;
+}
+
+String _normalizeGeneratedMarkdown(String content) {
+  if (content.contains('\n') ||
+      !content.contains(r'\n') ||
+      !RegExp(r'^\s*(?:#{1,6}\s|[-*+]\s|>\s|\|)').hasMatch(content)) {
+    return content;
+  }
+  return content.replaceAll(r'\n', '\n');
 }

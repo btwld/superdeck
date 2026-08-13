@@ -8,7 +8,7 @@ import 'package:signals/signals_flutter.dart';
 import 'package:superdeck/superdeck.dart';
 
 import '../../../../core/domain/stores/deck_customization_store.dart';
-import '../../wizard/chat/view/widgets/chat_genui_panels.dart';
+import 'chat/deck_chat_panels.dart';
 import '../../wizard/chat/view/widgets/chat_input.dart';
 import '../routes/routes.dart';
 import '../data/deck_slide_reader.dart';
@@ -229,7 +229,7 @@ class _DeckEditScreenState extends State<DeckEditScreen> {
                 ],
               ),
             Expanded(
-              child: AiSurfacesPanel(
+              child: DeckChatPanel(
                 controller: viewModel.controller,
                 surfaceIds: viewModel.surfaceIds,
                 isThinking: viewModel.isThinking,

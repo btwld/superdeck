@@ -5,6 +5,7 @@ export 'package:superdeck_core/superdeck_core.dart'
     show DeckLoader, DeckPlugin, DeckWorkspace;
 
 export 'src/capture/slide_capture_service.dart';
+export 'src/capture/slide_capture_readiness.dart';
 export 'src/rendering/slides/slide_constants.dart';
 export 'src/rendering/slides/slide_parts.dart';
 export 'src/rendering/slides/slide_render_view.dart';
@@ -41,3 +42,7 @@ export 'src/deck/loaders/file_deck_loader.dart';
 export 'src/deck/slide_configuration.dart';
 export 'src/deck/slide_template.dart';
 export 'src/deck/widget_factory.dart';
+export 'src/builtins/dartpad_widget.dart' show DartPadDto;
+export 'src/builtins/image_widget.dart' show ImageDto;
+export 'src/builtins/qr_code_widget.dart' show QrCodeDto;
+export 'src/builtins/webview_widget.dart' show WebViewDto;

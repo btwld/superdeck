@@ -80,6 +80,8 @@ SlideStyler _createDefaultSlideStyle() {
   }
 
   return SlideStyler(
+    blockSpacing: 12,
+
     h1: TextStyler()
         .style(
           TextStyleMix(

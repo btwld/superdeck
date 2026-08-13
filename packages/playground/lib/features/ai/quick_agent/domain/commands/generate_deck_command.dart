@@ -1,12 +1,15 @@
-import 'package:superdeck_builder/superdeck_builder.dart';
-
 import '../../../../../core/command.dart';
+import '../../../../../core/data/data_sources/memory_deck_loader.dart';
+import '../../../../../core/data/data_sources/memory_asset_cache_store.dart';
 import '../../../../../core/result.dart';
 import '../../../../editor/domain/stores/deck_document_store.dart';
+import '../../../../../core/domain/stores/deck_customization_store.dart';
 import '../../core/debug_logger.dart';
+import '../../core/engine/services/deck_generation_request.dart';
 import '../../core/engine/services/deck_generator_service.dart';
 import '../../core/engine/services/generation_progress.dart';
 import '../../core/env_config.dart';
+import '../generated_deck_result_applier.dart';
 
 /// Failure raised by [GenerateDeckCommand]. Its [toString] is the user-facing
 /// message (no `Exception:` prefix), so the panel can surface it directly.
@@ -26,20 +29,46 @@ class GenerationException implements Exception {
 /// intermediate progress, which the base command's binary running state doesn't
 /// model. On success it serializes the slides to Markdown and replaces the
 /// shared [DeckDocumentStore].
-class GenerateDeckCommand extends Command1<void, String> {
-  GenerateDeckCommand({required DeckDocumentStore documentStore})
-    : _documentStore = documentStore;
+class GenerateDeckCommand extends Command1<void, DeckGenerationRequest> {
+  final GeneratedDeckResultApplier _resultApplier;
 
-  final DeckDocumentStore _documentStore;
+  final DeckGeneratorService? _service;
+  GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
 
-  GenerationPhase _phase = GenerationPhase.idle;
+  String? _completionNotice;
+  bool _cancelled = false;
+  bool _disposed = false;
+  GenerateDeckCommand({
+    required DeckDocumentStore documentStore,
+    required DeckCustomizationStore customizationStore,
+    MemoryDeckLoader? deckLoader,
+    MemoryAssetCacheStore? assetCacheStore,
+    DeckGeneratorService? service,
+  }) : _resultApplier = GeneratedDeckResultApplier(
+         documentStore: documentStore,
+         deckLoader: deckLoader,
+         assetCacheStore: assetCacheStore,
+         customizationStore: customizationStore,
+       ),
+       _service = service;
+
+  void _onProgress(GenerationProgress progress) {
+    if (_cancelled) return;
+    _progress = progress;
+    notifyListeners();
+  }
 
   /// The pipeline stage currently running (outline → deck).
-  GenerationPhase get phase => _phase;
+  GenerationPhase get phase => _progress.phase;
+
+  GenerationProgress get progress => _progress;
+
+  /// Non-blocking detail for a completed partial generation.
+  String? get completionNotice => _completionNotice;
 
   @override
-  Future<Result<void>> action(String prompt) async {
-    if (!EnvConfig.hasGeminiApiKey) {
+  Future<Result<void>> action(DeckGenerationRequest request) async {
+    if (_service == null && !EnvConfig.hasGeminiApiKey) {
       return const Result.error(
         GenerationException(
           'No Gemini API key configured. '
@@ -48,14 +77,21 @@ class GenerateDeckCommand extends Command1<void, String> {
       );
     }
 
-    _phase = GenerationPhase.generatingOutline;
+    _cancelled = false;
+    _completionNotice = null;
+    _progress = const GenerationProgress(GenerationPhase.generatingOutline);
     notifyListeners();
 
     try {
-      final service = DeckGeneratorService(apiKey: EnvConfig.geminiApiKey);
-      final result = await service.generate(prompt, onProgress: _onProgress);
+      final service =
+          _service ?? DeckGeneratorService(apiKey: EnvConfig.geminiApiKey);
+      final result = await service.generate(
+        request,
+        onProgress: _onProgress,
+        isCancelled: () => _cancelled,
+      );
 
-      if (!result.success) {
+      if (!result.success && !result.isPartial) {
         return Result.error(
           GenerationException(result.error ?? 'Unknown generation error.'),
         );
@@ -65,12 +101,23 @@ class GenerateDeckCommand extends Command1<void, String> {
           GenerationException('No slides were generated. Please try again.'),
         );
       }
+      if (_cancelled) {
+        return const Result.error(GenerationException('Generation cancelled.'));
+      }
 
-      final markdown = const SlideSerializer().serialize(result.slides);
-      _documentStore.replaceMarkdown(markdown);
+      await _resultApplier.apply(result);
+      if (result.isPartial) {
+        _completionNotice = result.error;
+      } else if (result.hasImageFailures) {
+        _completionNotice =
+            'Created ${result.generatedImageCount} of '
+            '${result.generatedImages.length} planned artworks; '
+            '${result.failedImageCount} used a text-first fallback.';
+      }
       debugLog.log(
         'GENERATE_DECK',
-        'Loaded ${result.slides.length} slides into editor.',
+        'Loaded ${result.slides.length} slides into editor'
+            '${result.isPartial ? ' with ${result.slideFailures.length} unresolved' : ''}.',
       );
 
       return const Result.ok(null);
@@ -84,13 +131,26 @@ class GenerateDeckCommand extends Command1<void, String> {
         GenerationException('An unexpected error occurred: $e'),
       );
     } finally {
-      _phase = GenerationPhase.idle;
+      _progress = const GenerationProgress(GenerationPhase.idle);
       notifyListeners();
     }
   }
 
-  void _onProgress(GenerationPhase newPhase) {
-    _phase = newPhase;
-    notifyListeners();
+  @override
+  void clearResult() {
+    _completionNotice = null;
+    super.clearResult();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _cancelled = true;
+    _disposed = true;
+    super.dispose();
   }
 }

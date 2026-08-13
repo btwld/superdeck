@@ -5,7 +5,7 @@ import 'package:superdeck/superdeck.dart';
 
 import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../wizard/core/ai/services/ai_conversation_profile.dart';
-import '../../wizard/core/ai/services/ai_conversation_viewmodel.dart';
+import 'deck_edit_conversation_viewmodel.dart';
 import '../ai/deck_edit_conversation_profile.dart';
 import '../ai/deck_style_applier.dart';
 import '../ai/deck_tools_adapter.dart';
@@ -16,7 +16,7 @@ import '../domain/deck_tools_service.dart';
 import '../routes/routes.dart';
 
 typedef DeckEditConversationFactory =
-    AiConversationViewModel Function(AiConversationProfile profile);
+    DeckEditConversationViewModel Function(AiConversationProfile profile);
 
 /// Route-owned state machine for one ephemeral AI deck-editing session.
 final class DeckEditSessionController extends ChangeNotifier {
@@ -57,7 +57,7 @@ final class DeckEditSessionController extends ChangeNotifier {
 
   late final EditorDeckStore _deckStore;
   late final DeckToolsService _tools;
-  late final AiConversationViewModel viewModel;
+  late final DeckEditConversationViewModel viewModel;
 
   bool _ready = false;
   bool _requestInFlight = false;
@@ -73,9 +73,9 @@ final class DeckEditSessionController extends ChangeNotifier {
   String? get entryError => _entryError;
   String? get restoreError => _restoreError;
 
-  static AiConversationViewModel _defaultConversationFactory(
+  static DeckEditConversationViewModel _defaultConversationFactory(
     AiConversationProfile profile,
-  ) => AiConversationViewModel(profile: profile);
+  ) => DeckEditConversationViewModel(profile: profile);
 
   Future<void> initialize() async {
     if (_disposed || _requestInFlight) return;

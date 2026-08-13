@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:genui/genui.dart' as genui;
 
+import '../../../../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../debug_logger.dart';
 import '../../env_config.dart';
 import '../prompts/prompt_registry.dart';
@@ -78,24 +81,12 @@ final class _SessionBindings {
 }
 
 final class GenUiConversationSession {
-  GenUiConversationSession({
-    required AiConversationProfile profile,
-    required ConversationSessionHandlers handlers,
-    SuperdeckTransportFactory? transportFactory,
-    SuperdeckAgentClientFactory agentClientFactory =
-        DartanticSuperdeckAgentClient.new,
-    String Function()? apiKeyProvider,
-  }) : _profile = profile,
-       _handlers = handlers,
-       _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
-       _agentClientFactory = agentClientFactory,
-       _apiKeyProvider = apiKeyProvider;
-
   final AiConversationProfile _profile;
   final ConversationSessionHandlers _handlers;
   final SuperdeckTransportFactory _transportFactory;
   final SuperdeckAgentClientFactory _agentClientFactory;
-  final String Function()? _apiKeyProvider;
+  final PresentationThemeCatalog _themeCatalog;
+  final String? _apiKey;
 
   genui.SurfaceController? _controller;
   SuperdeckA2uiTransport? _transport;
@@ -108,50 +99,50 @@ final class GenUiConversationSession {
   var _sessionEpoch = 0;
   var _disposed = false;
 
-  genui.SurfaceController? get controller => _controller;
+  GenUiConversationSession({
+    required AiConversationProfile profile,
+    required ConversationSessionHandlers handlers,
+    String? apiKey,
+    SuperdeckTransportFactory? transportFactory,
+    SuperdeckAgentClientFactory agentClientFactory =
+        DartanticSuperdeckAgentClient.new,
+  }) : _profile = profile,
+       _handlers = handlers,
+       _transportFactory = transportFactory ?? SuperdeckA2uiTransport.new,
+       _agentClientFactory = agentClientFactory,
+       _themeCatalog = profile.themeCatalog,
+       _apiKey = apiKey;
 
-  bool get hasActiveSession {
-    return !_disposed && _controller != null && _transport != null;
-  }
+  String _buildSystemPrompt(String systemInstruction) {
+    final fragments = [
+      systemInstruction,
+      buildWizardThemeCatalogPrompt(_themeCatalog),
+      // The A2UI prompt tells the model to use "the catalog ID provided in
+      // system instructions", but never states the actual value — so the model
+      // hallucinates ids like "a2ui" and surface rendering fails with
+      // "Catalog with id ... not found". Provide the real id explicitly.
+      if (_profile.catalog.catalogId case final catalogId?)
+        '${genui.PromptBuilder.defaultImportancePrefix}When creating a surface, '
+            'the `catalogId` field MUST be exactly "$catalogId". '
+            'Never use any other value.',
+      genui.PromptFragments.requireAtLeastOneSubmitElement(
+        prefix: genui.PromptBuilder.defaultImportancePrefix,
+      ),
+      genui.PromptFragments.uiGenerationRestriction(
+        prefix: genui.PromptBuilder.defaultImportancePrefix,
+      ),
+    ];
 
-  Future<ConversationStartResult> ensureStarted({required String modelName}) {
-    if (_disposed) {
-      return Future.value(const ConversationStartResult.cancelled());
-    }
-    if (_controller != null) {
-      return Future.value(const ConversationStartResult.started());
-    }
-
-    final starting = _startingConversation;
-    if (starting != null) return starting;
-
-    late final Future<ConversationStartResult> future;
-    future = _start(modelName: modelName).whenComplete(() {
-      if (identical(_startingConversation, future)) {
-        _startingConversation = null;
-      }
-    });
-    _startingConversation = future;
-    return future;
-  }
-
-  Future<void> sendRequest(genui.ChatMessage message) {
-    final epoch = _sessionEpoch;
-    final queued = _requestQueue
-        .catchError(_handleRequestQueueError)
-        .then((_) => _sendRequest(message, sessionEpoch: epoch));
-    _requestQueue = queued;
-    return queued;
-  }
-
-  void restart() {
-    _disposeSession();
-  }
-
-  void dispose() {
-    if (_disposed) return;
-    _disposed = true;
-    _disposeSession();
+    return genui.PromptBuilder.custom(
+      catalog: _profile.catalog,
+      allowedOperations: genui.SurfaceOperations.createAndUpdate(
+        dataModel: false,
+      ),
+      systemPromptFragments: fragments,
+      technicalPossibilities: genui.TechnicalPossibilities(
+        toolCall: _profile.tools.isNotEmpty,
+      ),
+    ).systemPromptJoined();
   }
 
   Future<ConversationStartResult> _start({required String modelName}) async {
@@ -230,8 +221,9 @@ final class GenUiConversationSession {
   }
 
   String? _readApiKey() {
+    if (_apiKey case final apiKey?) return apiKey;
     try {
-      return _apiKeyProvider?.call() ?? EnvConfig.geminiApiKey;
+      return EnvConfig.geminiApiKey;
     } on StateError {
       return null;
     }
@@ -252,43 +244,6 @@ final class GenUiConversationSession {
       }
       return null;
     }
-  }
-
-  String _buildSystemPrompt(String systemInstruction) {
-    final fragments = [
-      systemInstruction,
-      // The A2UI prompt tells the model to use "the catalog ID provided in
-      // system instructions", but never states the actual value — so the model
-      // hallucinates ids like "a2ui" and surface rendering fails with
-      // "Catalog with id ... not found". Provide the real id explicitly.
-      if (_profile.catalog.catalogId case final catalogId?)
-        '${genui.PromptBuilder.defaultImportancePrefix}When creating a surface, '
-            'the `catalogId` field MUST be exactly "$catalogId". '
-            'Never use any other value.',
-      genui.PromptFragments.acknowledgeUser(),
-      genui.PromptFragments.requireAtLeastOneSubmitElement(
-        prefix: genui.PromptBuilder.defaultImportancePrefix,
-      ),
-      genui.PromptFragments.uiGenerationRestriction(
-        prefix: genui.PromptBuilder.defaultImportancePrefix,
-      ),
-    ];
-
-    if (_profile.tools.isEmpty) {
-      return genui.PromptBuilder.chat(
-        catalog: _profile.catalog,
-        systemPromptFragments: fragments,
-      ).systemPromptJoined();
-    }
-
-    return genui.PromptBuilder.custom(
-      catalog: _profile.catalog,
-      allowedOperations: genui.SurfaceOperations.createOnly(dataModel: false),
-      systemPromptFragments: fragments,
-      technicalPossibilities: const genui.TechnicalPossibilities(
-        toolCall: true,
-      ),
-    ).systemPromptJoined();
   }
 
   _SessionBindings _bindSession({
@@ -386,4 +341,71 @@ final class GenUiConversationSession {
     final str = error.toString();
     return str.replaceAll(RegExp(r'[A-Za-z0-9_-]{20,}'), '[REDACTED]');
   }
+
+  genui.SurfaceController? get controller => _controller;
+
+  bool get hasActiveSession {
+    return !_disposed && _controller != null && _transport != null;
+  }
+
+  @visibleForTesting
+  String buildSystemPromptForTesting(String systemInstruction) =>
+      _buildSystemPrompt(systemInstruction);
+
+  Future<ConversationStartResult> ensureStarted({required String modelName}) {
+    if (_disposed) {
+      return Future.value(const ConversationStartResult.cancelled());
+    }
+    if (_controller != null) {
+      return Future.value(const ConversationStartResult.started());
+    }
+
+    final starting = _startingConversation;
+    if (starting != null) return starting;
+
+    late final Future<ConversationStartResult> future;
+    future = _start(modelName: modelName).whenComplete(() {
+      if (identical(_startingConversation, future)) {
+        _startingConversation = null;
+      }
+    });
+    _startingConversation = future;
+    return future;
+  }
+
+  Future<void> sendRequest(genui.ChatMessage message) {
+    final epoch = _sessionEpoch;
+    final queued = _requestQueue
+        .catchError(_handleRequestQueueError)
+        .then((_) => _sendRequest(message, sessionEpoch: epoch));
+    _requestQueue = queued;
+    return queued;
+  }
+
+  void restart() {
+    _disposeSession();
+  }
+
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _disposeSession();
+  }
+}
+
+/// Compact, catalog-derived Wizard guidance. Renderer recipes deliberately stay
+/// out of the model prompt and are resolved by the cards after selection.
+String buildWizardThemeCatalogPrompt(PresentationThemeCatalog themeCatalog) {
+  final candidates = themeCatalog.currentThemes
+      .map((theme) => theme.toModelCandidate())
+      .toList(growable: false);
+
+  return '''
+## Registered presentation themes
+
+Use only these exact IDs in `AskUserStyle.themeIds`. The application owns all
+palette, typography, spacing, component, and treatment tokens.
+
+${const JsonEncoder.withIndent('  ').convert(candidates)}
+''';
 }

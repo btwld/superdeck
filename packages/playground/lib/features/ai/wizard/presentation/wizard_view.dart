@@ -1,34 +1,27 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:signals/signals_flutter.dart';
+import 'package:provider/provider.dart' as prov show Provider;
 
-import '../chat/chat_conversation_profile.dart';
 import '../chat/view/widgets/chat_input.dart';
 import '../chat/view/widgets/chat_genui_panels.dart';
 import '../chat/view/widgets/empty_state.dart';
 import '../core/ai/services/ai_conversation_viewmodel.dart';
+import '../core/ai/services/prompt_builder.dart';
 import '../core/viewmodel_scope.dart';
+import 'wizard_generation_controller.dart';
+import 'wizard_selection_review.dart';
 
-/// Single-column conversational wizard, hosted inside the editor's customization
-/// sidebar.
+/// Single-column conversational Wizard hosted by its standalone playground page.
 ///
-/// Owns an [AiConversationViewModel] (via [ViewModelScope]) driving the GenUI
-/// catalog: the model asks one question at a time, each rendered as a catalog
-/// surface. The terminal summary card routes generation through
-/// `GenerateDeckCommand`, which loads the resulting markdown into the editor.
+/// Renders the GenUI Wizard supplied by the nearest application-owned
+/// [ViewModelScope]. The application takes over for review, planning, and
+/// composition while preserving the accepted setup choices.
 class WizardView extends StatelessWidget {
   const WizardView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // The wizard's chat/catalog UI is built on hero_ui tokens, which the
-    // surrounding app already registers via HeroTheme — no extra scope needed.
-    return ViewModelScope<AiConversationViewModel>(
-      create: () => AiConversationViewModel(profile: chatConversationProfile()),
-      child: const _WizardBody(),
-    );
-  }
+  Widget build(BuildContext context) => const _WizardBody();
 }
 
 class _WizardBody extends StatefulWidget {
@@ -49,6 +42,14 @@ class _WizardBodyState extends State<_WizardBody> {
     _focusNode = FocusNode();
   }
 
+  void _submit(String value) {
+    if (value.trim().isEmpty) return;
+    unawaited(
+      ViewModelScope.of<AiConversationViewModel>(context).sendMessage(value),
+    );
+    _controller.clear();
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -56,57 +57,72 @@ class _WizardBodyState extends State<_WizardBody> {
     super.dispose();
   }
 
-  void _submit(String value) {
-    if (value.trim().isEmpty) return;
-    unawaited(context.read<AiConversationViewModel>().sendMessage(value));
-    _controller.clear();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<AiConversationViewModel>();
+    final viewModel = ViewModelScope.of<AiConversationViewModel>(context);
 
-    return SignalBuilder(
-      builder: (context) {
-        final started = viewModel.hasConversationStarted.value;
-        final messages = viewModel.messages.value;
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) {
+        final surfaceController = viewModel.controller;
+        final started = surfaceController != null;
         final isThinking = viewModel.isThinking.value;
+
+        if (viewModel.wizardState.isReviewReady) {
+          return WizardSelectionReview(
+            wizardContext: viewModel.wizardState.context,
+            imageStyleCatalog: viewModel.imageStyleCatalog,
+            themeCatalog: viewModel.themeCatalog,
+            onCreateOutline: () {
+              final request = buildPromptFromWizardContext(
+                viewModel.wizardState.context,
+                imageStyleCatalog: viewModel.imageStyleCatalog,
+              );
+              unawaited(
+                prov.Provider.of<WizardGenerationController>(
+                  context,
+                  listen: false,
+                ).createOutline(request),
+              );
+            },
+            onStartOver: viewModel.restartConversation,
+            showArtwork: viewModel.imageStyleEnabled,
+          );
+        }
 
         final input = ChatInput(
           controller: _controller,
           focusNode: _focusNode,
+          autofocus: !started,
           enabled: !isThinking,
           onSubmitted: _submit,
+          hintText: !started
+              ? 'Describe your presentation topic…'
+              : 'Add a detail or ask for a change…',
         );
 
         // Before the first message: show the empty state with the topic prompt.
         // It centers when it fits and scrolls when the sidebar is too short.
-        if (!started && messages.isEmpty) {
-          return Column(
-            children: [
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) => SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: EmptyState(onSuggestionTap: _submit),
-                    ),
-                  ),
+        if (!started) {
+          return LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: EmptyState(
+                  input: input,
+                  errorMessage: viewModel.errorMessage,
                 ),
               ),
-              input,
-            ],
+            ),
           );
         }
 
         // Conversation in progress: render the current surface + input inline.
         return AiSurfacesPanel(
-          controller: viewModel.controller,
-          surfaceIds: viewModel.surfaceIds,
-          isThinking: viewModel.isThinking,
-          messages: viewModel.messages,
+          controller: surfaceController,
+          surfaceIds: viewModel.surfaceIds.value,
+          isThinking: isThinking,
+          errorMessage: viewModel.errorMessage,
           inputWidget: input,
         );
       },

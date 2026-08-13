@@ -12,5 +12,8 @@ import '../presentation/pages/editor_bootstrap.dart';
 /// auto-save), `EditorStore` (nav state), `TextEditorController` (the
 /// super_editor adapter), and `GenerateDeckCommand` (AI generation).
 List<RouteBase> editorRoutes() => [
-  GoRoute(path: '/', builder: (context, state) => const EditorBootstrap()),
+  GoRoute(
+    path: '/editor',
+    builder: (context, state) => const EditorBootstrap(),
+  ),
 ];
