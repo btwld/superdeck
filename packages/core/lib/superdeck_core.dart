@@ -18,7 +18,9 @@ export 'src/deck/slide_contract.dart';
 export 'src/deck/slide_model.dart';
 // Markdown
 export 'src/markdown/hero_tag_helpers.dart';
-export 'src/markdown/markdown_fences.dart';
+// Only the line-oriented view is shared across packages; the offset-based
+// range API has a single in-package consumer (TagTokenizer).
+export 'src/markdown/markdown_fences.dart' show fencedCodeLines;
 export 'src/markdown/markdown_syntaxes.dart';
 export 'src/markdown/tag_tokenizer.dart';
 // Plugins

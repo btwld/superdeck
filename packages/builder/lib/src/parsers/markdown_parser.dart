@@ -44,7 +44,7 @@ class MarkdownParser {
   /// A slide is bounded by `---` separator lines. A slide may begin with an
   /// optional YAML frontmatter block delimited by a `---` pair at its start.
   /// Fenced code (backtick or tilde, including info strings) is decided by
-  /// [fencedCodeRanges], so `---` inside a fence is never a separator.
+  /// [fencedCodeLines], so `---` inside a fence is never a separator.
   static List<String> _splitSlides(String content) {
     content = content.trim();
     if (content.isEmpty) return [];
@@ -89,16 +89,11 @@ class MarkdownParser {
 
   /// Returns the indices of `---` lines that sit outside fenced code blocks.
   static Set<int> _findSeparatorLines(List<String> lines) {
-    final text = lines.join('\n');
-    final fences = fencedCodeRanges(text);
+    final fenced = fencedCodeLines(lines.join('\n'));
     final separators = <int>{};
-    var offset = 0;
 
     for (var i = 0; i < lines.length; i++) {
-      if (!isInsideFencedCode(offset, fences) && lines[i].trim() == '---') {
-        separators.add(i);
-      }
-      offset += lines[i].length + 1;
+      if (!fenced.contains(i) && lines[i].trim() == '---') separators.add(i);
     }
 
     return separators;

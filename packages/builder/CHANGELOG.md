@@ -11,6 +11,14 @@
 - Add build-plugin `beginBuild` and `finishBuild` lifecycle hooks.
 - Make `DeckBuilder.dispose()` wait for queued builds before disposing plugins
   and reject new builds after disposal.
+- Fix slide splitting treating `---` as a separator inside tilde fences and
+  inside fences carrying an info string (for example, ` ```dart {.hero}`).
+  A fence closed with an info string such as ` ```{.code}` still closes.
+- Fix Markdown serialization letting a `~~~` line close a ` ``` ` fence, which
+  escaped `@` directives that were really inside code.
+- Share one reserved directive-name set between `@column` rejection and
+  widget-shorthand escaping, so a `WidgetBlock` named `section`, `block`,
+  `widget`, or `column` always serializes as `@widget`.
 
 ## 1.0.0
 

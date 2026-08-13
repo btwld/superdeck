@@ -315,20 +315,18 @@ class SlideSerializer {
   /// `_@foo`; the parser restores it via `_updateIgnoredTags`.
   String _escapeContent(String content) {
     if (content.isEmpty) return content;
-    final fences = fencedCodeRanges(content);
+    final fenced = fencedCodeLines(content);
     final lines = content.split('\n');
     final result = <String>[];
-    var offset = 0;
 
-    for (final line in lines) {
-      if (!isInsideFencedCode(offset, fences) &&
-          _directiveLinePattern.hasMatch(line)) {
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (!fenced.contains(i) && _directiveLinePattern.hasMatch(line)) {
         final atIndex = line.indexOf('@');
         result.add('${line.substring(0, atIndex)}_${line.substring(atIndex)}');
       } else {
         result.add(line);
       }
-      offset += line.length + 1;
     }
 
     return result.join('\n');
