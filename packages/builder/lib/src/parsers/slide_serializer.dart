@@ -25,7 +25,6 @@ class SlideSerializer {
 
   static final _identifierPattern = RegExp(r'^[\w-]+$');
   static final _directiveLinePattern = RegExp(r'^\s*@[\w-]+');
-  static final _fencePattern = RegExp(r'^(`{3,}|~{3,})');
 
   /// Serializes a list of [slides] into a single Markdown document.
   String serialize(List<Slide> slides) {
@@ -263,7 +262,9 @@ class SlideSerializer {
   /// canonical output reads `top: 12` instead of `top: 12.0`. Both re-parse to
   /// the same normalized value.
   String _numValue(num value) {
-    if (value is double && value.isFinite && value == value.truncateToDouble()) {
+    if (value is double &&
+        value.isFinite &&
+        value == value.truncateToDouble()) {
       return value.truncate().toString();
     }
     return value.toString();
@@ -317,29 +318,20 @@ class SlideSerializer {
   /// `_@foo`; the parser restores it via `_updateIgnoredTags`.
   String _escapeContent(String content) {
     if (content.isEmpty) return content;
+    final fences = fencedCodeRanges(content);
     final lines = content.split('\n');
     final result = <String>[];
-    int? fenceLength;
+    var offset = 0;
 
     for (final line in lines) {
-      final fenceMatch = _fencePattern.firstMatch(line);
-      if (fenceMatch != null) {
-        final length = fenceMatch.group(1)!.length;
-        if (fenceLength == null) {
-          fenceLength = length;
-        } else if (length >= fenceLength) {
-          fenceLength = null;
-        }
-        result.add(line);
-        continue;
-      }
-
-      if (fenceLength == null && _directiveLinePattern.hasMatch(line)) {
+      if (!isInsideFencedCode(offset, fences) &&
+          _directiveLinePattern.hasMatch(line)) {
         final atIndex = line.indexOf('@');
         result.add('${line.substring(0, atIndex)}_${line.substring(atIndex)}');
       } else {
         result.add(line);
       }
+      offset += line.length + 1;
     }
 
     return result.join('\n');

@@ -389,6 +389,55 @@ not closed''';
         expect(result, hasLength(1));
         expect(result.first.name, 'visible');
       });
+
+      test('ignores tags inside a language + {.hero} fence', () {
+        const text = '''
+```dart {.hero}
+@override
+void main() {}
+```
+@visible''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens, hasLength(1));
+        expect(tokens.single.name, 'visible');
+      });
+
+      test('ignores tags inside an indented fence', () {
+        const text = '''
+   ```
+   @ignored
+   ```
+@visible''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens, hasLength(1));
+        expect(tokens.single.name, 'visible');
+      });
+
+      test('```{.code} closer unhides the following tag', () {
+        const text = '''
+```dart
+@ignored
+```{.code}
+@visible''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens.map((token) => token.name), ['visible']);
+      });
+
+      test('a tilde line does not close a backtick fence', () {
+        const text = '''
+```
+@ignored
+~~~
+@still-ignored
+```
+@visible''';
+        final tokens = tokenizer.tokenize(text);
+
+        expect(tokens.map((token) => token.name), ['visible']);
+      });
     });
 
     group('error handling', () {

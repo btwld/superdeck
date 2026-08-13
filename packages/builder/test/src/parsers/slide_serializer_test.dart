@@ -228,6 +228,22 @@ void main() {
       );
     });
 
+    test('tilde fenced code containing --- and @ is preserved', () {
+      expectRoundTrip(
+        parseDeck(
+          '# Code\n\n~~~\n@override\nvoid main() {}\n---\nnot a separator\n~~~',
+        ),
+      );
+    });
+
+    test('hero info-string fence containing --- and @ is preserved', () {
+      expectRoundTrip(
+        parseDeck(
+          '# Code\n\n```dart {.hero}\n@override\n---\nvoid main() {}\n```',
+        ),
+      );
+    });
+
     test('serialize then re-serialize is stable (idempotent)', () {
       final slides = parseDeck(
         '@section {\n  flex: 2\n}\n@block {\n  align: center\n}\n# Title',

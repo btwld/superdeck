@@ -18,6 +18,7 @@ export 'src/deck/slide_contract.dart';
 export 'src/deck/slide_model.dart';
 // Markdown
 export 'src/markdown/hero_tag_helpers.dart';
+export 'src/markdown/markdown_fences.dart';
 export 'src/markdown/markdown_syntaxes.dart';
 export 'src/markdown/tag_tokenizer.dart';
 // Plugins
