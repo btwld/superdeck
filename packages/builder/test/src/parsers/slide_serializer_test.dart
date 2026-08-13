@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:superdeck_builder/src/parsers/directive_names.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
@@ -200,6 +201,42 @@ void main() {
           '@image {\n  src: photo.png\n  fit: cover\n  align: center\n}',
         ),
       );
+    });
+
+    test('reserved widget names emit @widget and reparse as widgets', () {
+      for (final name in reservedDirectiveNames) {
+        final slides = [
+          Slide(
+            key: 'reserved-$name',
+            sections: [
+              SectionBlock([WidgetBlock(name: name)]),
+            ],
+          ),
+        ];
+        final markdown = const SlideSerializer().serialize(slides);
+        expect(markdown, contains('@widget'), reason: name);
+        expect(markdown, contains('name: $name'), reason: name);
+        if (name != WidgetBlock.key) {
+          expect(
+            RegExp('^@$name\\b', multiLine: true).hasMatch(markdown),
+            isFalse,
+            reason: 'must not emit @$name shorthand',
+          );
+        }
+
+        final block =
+            parseDeck(markdown).single.sections.single.blocks.single
+                as WidgetBlock;
+        expect(block.name, name, reason: name);
+      }
+    });
+
+    test('non-reserved widget names keep @name shorthand', () {
+      final markdown = const SlideSerializer().serialize(
+        parseDeck('@image { src: photo.png }'),
+      );
+      expect(markdown, contains('@image'));
+      expect(markdown, isNot(contains('@widget')));
     });
 
     test('scrollable block', () {

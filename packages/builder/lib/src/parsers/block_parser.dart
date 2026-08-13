@@ -1,5 +1,7 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
+import 'directive_names.dart';
+
 class ParsedBlock {
   final String type;
   final int startIndex;
@@ -44,9 +46,9 @@ class BlockParser {
     final tokens = const TagTokenizer().tokenize(text);
 
     return tokens.map((token) {
-      if (token.name == 'column') {
+      if (token.name == deprecatedColumnDirective) {
         throw DeckFormatException(
-          'Unsupported @column directive. Use @block instead.',
+          'Unsupported @$deprecatedColumnDirective directive. Use @block instead.',
           text,
           token.startIndex,
         );

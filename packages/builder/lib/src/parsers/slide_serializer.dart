@@ -1,6 +1,7 @@
 import 'package:superdeck_core/superdeck_core.dart';
 
 import 'comment_parser.dart';
+import 'directive_names.dart';
 
 /// Serializes [Slide] models back into SuperDeck-flavored Markdown.
 ///
@@ -18,10 +19,6 @@ import 'comment_parser.dart';
 /// host applies those out-of-band via `DeckOptions`.
 class SlideSerializer {
   const SlideSerializer();
-
-  /// Tag names that cannot be used as `@<name>` widget shorthand because they
-  /// are reserved directives handled specially by the parser.
-  static const _reservedTags = {'section', 'block', 'widget', 'column'};
 
   static final _identifierPattern = RegExp(r'^[\w-]+$');
   static final _directiveLinePattern = RegExp(r'^\s*@[\w-]+');
@@ -165,7 +162,7 @@ class SlideSerializer {
       case WidgetBlock():
         final useShorthand =
             _identifierPattern.hasMatch(block.name) &&
-            !_reservedTags.contains(block.name);
+            !reservedDirectiveNames.contains(block.name);
         final tag = useShorthand ? block.name : 'widget';
         final options = _blockOptions(block);
         if (!useShorthand) options['name'] = block.name;
