@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as path;
-import 'package:superdeck_cli/runner.dart';
+import 'package:superdeck_cli/superdeck_cli.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 

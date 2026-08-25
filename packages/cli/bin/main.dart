@@ -3,7 +3,7 @@
 import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
-import 'package:superdeck_cli/runner.dart';
+import 'package:superdeck_cli/superdeck_cli.dart';
 import 'package:superdeck_cli/src/utils/constants.dart';
 
 /// Main entry point for the SuperDeck CLI when run as a global command
