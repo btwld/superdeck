@@ -17,14 +17,14 @@ import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 
 part 'ask_user_checkbox.ack.dart';
-part 'ask_user_checkbox.g.dart';
+part 'ask_user_checkbox.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for AskUserCheckbox component.
 ///
 /// Displays a question with checkbox items for multiple selection.
-@AckType(name: 'AskUserCheckbox')
+@AckInfer(name: 'AskUserCheckbox')
 final _askUserCheckboxSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(

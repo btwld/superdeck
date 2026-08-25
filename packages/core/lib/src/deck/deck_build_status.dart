@@ -2,7 +2,7 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 
 part 'deck_build_status.ack.dart';
-part 'deck_build_status.g.dart';
+part 'deck_build_status.ack.g.dart';
 
 enum DeckBuildPhase { unknown, building, success, failure }
 

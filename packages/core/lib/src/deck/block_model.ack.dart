@@ -4,7 +4,7 @@
 part of 'block_model.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 final _contentBlockObject = Ack.object({

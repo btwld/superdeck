@@ -2,7 +2,7 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 
 part 'block_insets.ack.dart';
-part 'block_insets.g.dart';
+part 'block_insets.ack.g.dart';
 
 String _authoringMessage(String field) =>
     '$field must use a finite non-negative scalar, a non-empty object with '

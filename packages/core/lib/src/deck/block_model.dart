@@ -4,7 +4,7 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'block_insets.dart';
 
 part 'block_model.ack.dart';
-part 'block_model.g.dart';
+part 'block_model.ack.g.dart';
 
 /// Positive flex weight shared by the canonical block/section schemas and the
 /// AI-generation projection in `slide_contract.dart`.

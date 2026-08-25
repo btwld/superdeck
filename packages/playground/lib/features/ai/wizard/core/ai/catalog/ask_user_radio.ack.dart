@@ -4,12 +4,12 @@
 part of 'ask_user_radio.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `_inputOptionSchema`.
 /// Option with title and optional description
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class InputOption {
   InputOption({required this.title, this.description, this.icon});
 
@@ -97,7 +97,7 @@ final class InputOption {
 
 /// Immutable model generated from `_askUserRadioSchema`.
 /// A question with radio button options. User selects one option.
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class AskUserRadio {
   AskUserRadio({
     required this.question,

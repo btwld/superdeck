@@ -4,12 +4,12 @@
 part of 'ask_user_slider.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `_askUserSliderSchema`.
 /// A question with a counter and quick choices between min and max.
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class AskUserSlider {
   AskUserSlider({
     required this.question,

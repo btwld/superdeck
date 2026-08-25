@@ -17,12 +17,12 @@ import 'typed_catalog_item.dart';
 import 'wizard_option_icon.dart';
 
 part 'ask_user_radio.ack.dart';
-part 'ask_user_radio.g.dart';
+part 'ask_user_radio.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for a radio option with title and optional description.
-@AckType(name: 'InputOption')
+@AckInfer(name: 'InputOption')
 final _inputOptionSchema = Ack.object({
   'title': Ack.string().describe('Option title displayed to user'),
   'description': Ack.string().optional().describe('Optional description text'),
@@ -34,7 +34,7 @@ final _inputOptionSchema = Ack.object({
 /// Schema for AskUserRadio component.
 ///
 /// Displays a question with radio button options for single selection.
-@AckType(name: 'AskUserRadio')
+@AckInfer(name: 'AskUserRadio')
 final _askUserRadioSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(

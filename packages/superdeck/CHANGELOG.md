@@ -1,4 +1,4 @@
-## 2.0.0
+## 1.0.0
 
 - **Breaking:** remove `dart_mappable` from runtime deck configuration models.
   `SlideTemplate`, `SlideConfiguration`, and `DeckOptions` now expose normal
@@ -78,8 +78,6 @@
 - Add bounded asynchronous capture readiness so built-in images and custom
   widgets can signal when their capture-safe visual state is ready, replacing
   image-specific fixed render delays.
-
-## 1.0.0
 
 - First stable release of `superdeck`.
 - Roll back experimental setext-heading hero parsing; ATX headers continue to use the shared helper.

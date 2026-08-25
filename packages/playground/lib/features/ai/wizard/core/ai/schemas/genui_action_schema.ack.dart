@@ -4,12 +4,12 @@
 part of 'genui_action_schema.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `_actionContextValueSchema`.
 /// Context value - use path or one of the literal types
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class ActionContextValue {
   ActionContextValue({
     this.path,
@@ -114,7 +114,7 @@ final class ActionContextValue {
 
 /// Immutable model generated from `_actionContextEntrySchema`.
 /// Context entry with key and value
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class ActionContextEntry {
   ActionContextEntry({required this.key, required this.value});
 
@@ -182,7 +182,7 @@ final class ActionContextEntry {
 
 /// Immutable model generated from `actionSchema`.
 /// GenUI action with name and context binding
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class GenUiAction {
   GenUiAction({required this.name, List<ActionContextEntry>? context})
     : context = switch (context) {

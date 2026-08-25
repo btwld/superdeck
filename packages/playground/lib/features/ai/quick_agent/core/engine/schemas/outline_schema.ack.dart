@@ -4,12 +4,12 @@
 part of 'outline_schema.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `deckPlanSectionSchema`.
 /// A narrative section or act in the deck blueprint
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckPlanSection {
   DeckPlanSection({
     required this.key,
@@ -126,7 +126,7 @@ final class DeckPlanSection {
 
 /// Immutable model generated from `deckPlanElementSchema`.
 /// An element requirement for later slide composition
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckPlanElement {
   DeckPlanElement({
     required this.type,
@@ -242,7 +242,7 @@ final class DeckPlanElement {
 
 /// Immutable model generated from `deckPlanSlideSchema`.
 /// A single slide in the presentation deck plan
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckPlanSlide {
   DeckPlanSlide({
     required this.key,
@@ -481,7 +481,7 @@ final class DeckPlanSlide {
 
 /// Immutable model generated from `deckPlanSchema`.
 /// Presentation deck plan with narrative, theme, and composition intent
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckPlan {
   DeckPlan({
     required this.topic,

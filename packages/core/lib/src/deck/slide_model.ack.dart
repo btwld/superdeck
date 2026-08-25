@@ -4,7 +4,7 @@
 part of 'slide_model.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 final _slideObject = Ack.object({

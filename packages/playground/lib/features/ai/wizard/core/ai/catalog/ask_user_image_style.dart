@@ -19,11 +19,11 @@ import 'typed_catalog_item.dart';
 import 'user_action_dispatch.dart';
 
 part 'ask_user_image_style.ack.dart';
-part 'ask_user_image_style.g.dart';
+part 'ask_user_image_style.ack.g.dart';
 
 /// The model owns only the question copy. The application owns the exact
 /// preview subject, styles, generation, and versioned selection payload.
-@AckType(name: 'AskUserImageStyle')
+@AckInfer(name: 'AskUserImageStyle')
 final _askUserImageStyleSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(

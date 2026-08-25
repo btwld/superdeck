@@ -4,11 +4,11 @@
 part of 'ack_metric_card.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `ackMetricCardArgsSchema`.
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class AckMetricCardArgs {
   AckMetricCardArgs({
     required this.label,

@@ -4,7 +4,7 @@
 part of 'deck_workspace.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 final _deckWorkspaceObject = Ack.object({

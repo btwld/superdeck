@@ -4,12 +4,12 @@
 part of 'ask_user_image_style.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `_askUserImageStyleSchema`.
 /// An application-owned generated image-style selection step.
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class AskUserImageStyle {
   AskUserImageStyle({
     required this.question,

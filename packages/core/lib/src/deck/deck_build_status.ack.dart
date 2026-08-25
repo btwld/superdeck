@@ -4,7 +4,7 @@
 part of 'deck_build_status.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 final _deckBuildErrorObject = Ack.object({

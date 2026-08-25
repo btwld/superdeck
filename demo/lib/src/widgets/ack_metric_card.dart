@@ -3,9 +3,9 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'package:flutter/material.dart';
 
 part 'ack_metric_card.ack.dart';
-part 'ack_metric_card.g.dart';
+part 'ack_metric_card.ack.g.dart';
 
-@AckType(name: 'AckMetricCardArgs')
+@AckInfer(name: 'AckMetricCardArgs')
 final ackMetricCardArgsSchema = Ack.object({
   'label': Ack.string().notEmpty(),
   'value': Ack.string().notEmpty(),

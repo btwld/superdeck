@@ -1,6 +1,6 @@
 name: superdeck
 description: A Flutter presentation framework that renders slides written in Markdown.
-version: 2.0.0
+version: 1.0.0
 homepage: https://github.com/btwld/superdeck
 documentation: https://docs.page/btwld/superdeck
 
@@ -26,7 +26,7 @@ dependencies:
   remix: ^1.0.0-beta.1
   flutter_markdown_plus: ^1.0.5
   flutter_mermaid: ^0.1.0
-  superdeck_core: ^2.0.0
+  superdeck_core: ^1.0.0
   markdown: ^7.3.0
   web: ^1.1.0
   webview_flutter: ^4.10.0
@@ -46,7 +46,8 @@ dev_dependencies:
   build_runner: ^2.5.4
   mix_generator: 2.2.0-beta.0
   path_provider_platform_interface: ^2.1.2
-  superdeck_builder: ^2.0.0
+  webview_flutter_platform_interface: ^2.15.1
+  superdeck_builder: ^1.0.0
 
 flutter:
   uses-material-design: true

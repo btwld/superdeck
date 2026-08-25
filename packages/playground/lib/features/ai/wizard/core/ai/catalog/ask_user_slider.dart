@@ -16,14 +16,14 @@ import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 
 part 'ask_user_slider.ack.dart';
-part 'ask_user_slider.g.dart';
+part 'ask_user_slider.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for AskUserSlider component.
 ///
 /// Displays a question with a focused numeric selector.
-@AckType(name: 'AskUserSlider')
+@AckInfer(name: 'AskUserSlider')
 final _askUserSliderSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(

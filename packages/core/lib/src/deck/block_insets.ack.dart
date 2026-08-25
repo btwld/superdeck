@@ -4,7 +4,7 @@
 part of 'block_insets.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 final _blockInsetsObject = Ack.object({

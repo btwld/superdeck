@@ -4,7 +4,7 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'block_model.dart';
 
 part 'slide_model.ack.dart';
-part 'slide_model.g.dart';
+part 'slide_model.ack.g.dart';
 
 /// Represents a single slide in a presentation.
 ///

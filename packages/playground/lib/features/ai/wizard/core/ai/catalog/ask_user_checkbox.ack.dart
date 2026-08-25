@@ -4,12 +4,12 @@
 part of 'ask_user_checkbox.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `_askUserCheckboxSchema`.
 /// A question with checkbox items. User selects one or more items.
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class AskUserCheckbox {
   AskUserCheckbox({
     required this.question,

@@ -20,14 +20,14 @@ import 'typed_catalog_item.dart';
 import 'user_action_dispatch.dart';
 
 part 'ask_user_style.ack.dart';
-part 'ask_user_style.g.dart';
+part 'ask_user_style.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for AskUserStyle component.
 ///
 /// Displays exact catalog-backed presentation themes for selection.
-@AckType(name: 'AskUserStyle')
+@AckInfer(name: 'AskUserStyle')
 final _askUserStyleSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(

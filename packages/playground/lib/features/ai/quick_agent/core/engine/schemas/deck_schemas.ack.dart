@@ -4,12 +4,12 @@
 part of 'deck_schemas.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `deckBrandColorsSchema`.
 /// Only exact palette roles supplied by the user
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckBrandColors {
   DeckBrandColors({
     this.background,
@@ -142,7 +142,7 @@ final class DeckBrandColors {
 
 /// Immutable model generated from `deckBrandFontsSchema`.
 /// Only exact registered font families supplied by the user
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckBrandFonts {
   DeckBrandFonts({this.headline, this.body});
 
@@ -209,7 +209,7 @@ final class DeckBrandFonts {
 
 /// Immutable model generated from `deckBrandOverrideSchema`.
 /// Validated user-only overrides layered on the selected theme
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckBrandOverride {
   DeckBrandOverride({this.colors, this.fonts});
 
@@ -296,7 +296,7 @@ final class DeckBrandOverride {
 
 /// Immutable model generated from `deckThemeReferenceSchema`.
 /// Canonical versioned presentation-theme reference
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class DeckThemeReference {
   DeckThemeReference({
     required this.id,

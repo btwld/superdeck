@@ -5,7 +5,7 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'package:path/path.dart' as p;
 
 part 'deck_workspace.ack.dart';
-part 'deck_workspace.g.dart';
+part 'deck_workspace.ack.g.dart';
 
 StringSchema _safeWorkspacePathSchema() => Ack.string().refine(
   _isRelativeWithoutTraversal,

@@ -5,7 +5,7 @@ import 'package:superdeck_core/superdeck_core.dart' show HexColorValidation;
 import '../../../../../../../core/domain/design/presentation_theme_catalog.dart';
 
 part 'deck_schemas.ack.dart';
-part 'deck_schemas.g.dart';
+part 'deck_schemas.ack.g.dart';
 
 /// Schema definitions for SuperDeck presentation generation.
 ///
@@ -20,7 +20,7 @@ part 'deck_schemas.g.dart';
 
 const deckDensityProfiles = presentationThemeDensityProfiles;
 
-@AckType(name: 'DeckBrandColors')
+@AckInfer(name: 'DeckBrandColors')
 final deckBrandColorsSchema = Ack.object({
   'background': Ack.string().hexColor().optional(),
   'surface': Ack.string().hexColor().optional(),
@@ -31,19 +31,19 @@ final deckBrandColorsSchema = Ack.object({
   'accentContrast': Ack.string().hexColor().optional(),
 }).describe('Only exact palette roles supplied by the user');
 
-@AckType(name: 'DeckBrandFonts')
+@AckInfer(name: 'DeckBrandFonts')
 final deckBrandFontsSchema = Ack.object({
   'headline': Ack.string().optional(),
   'body': Ack.string().optional(),
 }).describe('Only exact registered font families supplied by the user');
 
-@AckType(name: 'DeckBrandOverride')
+@AckInfer(name: 'DeckBrandOverride')
 final deckBrandOverrideSchema = Ack.object({
   'colors': deckBrandColorsSchema.optional(),
   'fonts': deckBrandFontsSchema.optional(),
 }).describe('Validated user-only overrides layered on the selected theme');
 
-@AckType(name: 'DeckThemeReference')
+@AckInfer(name: 'DeckThemeReference')
 final deckThemeReferenceSchema = Ack.object({
   'id': Ack.string().notEmpty().describe('Stable catalog theme ID'),
   'version': Ack.integer().positive().describe(

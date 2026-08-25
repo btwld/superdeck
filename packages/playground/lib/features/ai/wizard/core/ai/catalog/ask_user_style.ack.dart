@@ -4,12 +4,12 @@
 part of 'ask_user_style.dart';
 
 // **************************************************************************
-// AckSchemaGenerator
+// AckModelGenerator
 // **************************************************************************
 
 /// Immutable model generated from `_askUserStyleSchema`.
 /// A question with exact catalog-backed presentation theme options.
-@AckType.jsonSerializable
+@AckInfer.jsonSerializable
 final class AskUserStyle {
   AskUserStyle({
     required this.question,
