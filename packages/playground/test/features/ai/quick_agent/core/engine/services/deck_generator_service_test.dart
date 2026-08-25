@@ -1261,8 +1261,8 @@ void main() {
       'evidence',
       'closing',
     ]);
-    expect(recovered.slides.first.toMap(), partial.slides.first.toMap());
-    expect(recovered.slides.last.toMap(), partial.slides.last.toMap());
+    expect(recovered.slides.first.toJson(), partial.slides.first.toJson());
+    expect(recovered.slides.last.toJson(), partial.slides.last.toJson());
     expect(retryClient.requests, hasLength(1));
     expect(retryClient.requests.single.model, 'models/gemini-3.1-flash-lite');
     expect(

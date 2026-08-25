@@ -83,7 +83,7 @@ class FileDeckLoader extends DeckLoader {
         );
         return;
       }
-      final status = DeckBuildStatus.fromMap(
+      final status = DeckBuildStatus.fromJson(
         Map<String, dynamic>.from(decoded),
       );
 

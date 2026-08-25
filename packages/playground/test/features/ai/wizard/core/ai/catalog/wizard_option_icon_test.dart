@@ -4,7 +4,7 @@ import 'package:playground/features/ai/wizard/core/ai/catalog/wizard_option_icon
 
 void main() {
   test('radio option icons are constrained to the Wizard vocabulary', () {
-    final option = InputOptionType.parse({
+    final option = InputOption.parse({
       'title': 'Business leaders',
       'icon': 'business',
     });
@@ -12,7 +12,7 @@ void main() {
     expect(option.icon, WizardOptionIcon.business);
     expect(WizardOptionIcon.values, hasLength(12));
     expect(
-      () => InputOptionType.parse({
+      () => InputOption.parse({
         'title': 'Unknown option',
         'icon': 'material-home',
       }),

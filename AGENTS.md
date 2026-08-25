@@ -119,7 +119,7 @@ fvm dart run melos run clean            # Clean all Flutter build artifacts
 8. `build` method (last)
 
 ### Generated Files
-- Files matching `*.g.dart`, `*.mapper.dart` are auto-generated
+- Files matching `*.g.dart` and `*.ack.dart` are auto-generated
 - Regenerate with `melos run build_runner:build` before testing
 - Commit generated files when they change and keep them synchronized with source updates
 
@@ -170,10 +170,9 @@ lib/src/
 
 ## Key Dependencies
 
-- **dart_mappable**: Model serialization and discriminated unions
 - **mix/remix**: UI styling framework used throughout
 - **signals/signals_flutter**: Reactive state management
-- **ack**: Schema validation for YAML configuration
+- **ack**: Schema validation plus generated JSON models and discriminated unions
 - **markdown**: Markdown parsing
 - **go_router**: Navigation/routing
 

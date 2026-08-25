@@ -4,6 +4,7 @@ import 'package:superdeck_core/superdeck_core.dart' show HexColorValidation;
 
 import '../../../../../../../core/domain/design/presentation_theme_catalog.dart';
 
+part 'deck_schemas.ack.dart';
 part 'deck_schemas.g.dart';
 
 /// Schema definitions for SuperDeck presentation generation.

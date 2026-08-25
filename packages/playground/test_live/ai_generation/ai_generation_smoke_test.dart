@@ -253,7 +253,7 @@ void main() {
         final markdown = const SlideSerializer().serialize(result.slides);
         final deckJson = {
           'theme': serializeDeckThemeReference(result.plan!.theme),
-          'slides': result.slides.map((slide) => slide.toMap()).toList(),
+          'slides': result.slides.map((slide) => slide.toJson()).toList(),
         };
         await tester.runAsync(() async {
           const encoder = JsonEncoder.withIndent('  ');
@@ -384,7 +384,7 @@ void main() {
             ),
             themeReference: themeReference,
             slideCount: (deckJson['slides'] as List).length,
-            plan: DeckPlanType.parse(planJson),
+            plan: DeckPlan.parse(planJson),
             request: DeckGenerationRequest.fromMap(requestJson),
             rawSlides: [
               for (final rawSlide in deckJson['slides']! as List)
@@ -469,7 +469,7 @@ void main() {
         late Directory output;
         late String markdown;
         late ResolvedPresentationTheme theme;
-        late DeckPlanType plan;
+        late DeckPlan plan;
         late DeckGenerationRequest request;
         late List<Slide> slides;
         List<GeneratedImageAsset> generatedImages = const [];
@@ -553,7 +553,7 @@ void main() {
             }
             final deckJson = {
               'theme': serializeDeckThemeReference(result.plan!.theme),
-              'slides': result.slides.map((slide) => slide.toMap()).toList(),
+              'slides': result.slides.map((slide) => slide.toJson()).toList(),
             };
             await File(p.join(output.path, 'deck.json')).writeAsString(
               const JsonEncoder.withIndent('  ').convert(deckJson),
@@ -853,7 +853,7 @@ Future<Directory> _createRunDirectory(String fixture) async {
 Future<void> _writeTraceArtifacts(
   Directory output,
   List<GenerationTraceEvent> traces, {
-  DeckPlanType? plan,
+  DeckPlan? plan,
 }) async {
   if (plan != null) {
     await File(

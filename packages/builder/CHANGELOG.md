@@ -1,4 +1,7 @@
-## Unreleased
+## 2.0.0
+
+- **Breaking:** consume the Ack 2.0 JSON APIs from `superdeck_core` and require
+  `superdeck_core` 2.0.0.
 
 - Round-trip the `layout` slide frontmatter option in Markdown serialization.
 - Parse and round-trip section `spacing` plus all supported block `padding`

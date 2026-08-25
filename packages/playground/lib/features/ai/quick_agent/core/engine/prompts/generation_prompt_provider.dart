@@ -22,27 +22,27 @@ abstract interface class GenerationPromptProvider {
   });
 
   String buildSlidePrompt({
-    required DeckPlanType plan,
-    required DeckPlanSlideType current,
+    required DeckPlan plan,
+    required DeckPlanSlide current,
     required Map<String, Object?>? previousSlide,
-    required DeckPlanSlideType? next,
+    required DeckPlanSlide? next,
     required GenerationElementCatalog elementCatalog,
     List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidSlide,
   });
 
   String buildSectionPrompt({
-    required DeckPlanType plan,
-    required DeckPlanSectionType section,
-    required List<DeckPlanSlideType> slides,
-    required DeckPlanSlideType? previous,
-    required DeckPlanSlideType? next,
+    required DeckPlan plan,
+    required DeckPlanSection section,
+    required List<DeckPlanSlide> slides,
+    required DeckPlanSlide? previous,
+    required DeckPlanSlide? next,
     required GenerationElementCatalog elementCatalog,
   });
 
   String buildOutlineSlideRepairPrompt({
-    required DeckPlanType plan,
-    required DeckPlanSlideType current,
+    required DeckPlan plan,
+    required DeckPlanSlide current,
     required List<GenerationValidationIssue> validationIssues,
     Map<String, Object?>? invalidSlide,
   });
@@ -140,10 +140,10 @@ ${jsonEncode(themeCandidates.map((theme) => theme.toModelCandidate()).toList())}
 
   @override
   String buildSlidePrompt({
-    required DeckPlanType plan,
-    required DeckPlanSlideType current,
+    required DeckPlan plan,
+    required DeckPlanSlide current,
     required Map<String, Object?>? previousSlide,
-    required DeckPlanSlideType? next,
+    required DeckPlanSlide? next,
     required GenerationElementCatalog elementCatalog,
     List<GenerationValidationIssue> validationIssues = const [],
     Map<String, Object?>? invalidSlide,
@@ -179,11 +179,11 @@ ${jsonEncode(themeCandidates.map((theme) => theme.toModelCandidate()).toList())}
 
   @override
   String buildSectionPrompt({
-    required DeckPlanType plan,
-    required DeckPlanSectionType section,
-    required List<DeckPlanSlideType> slides,
-    required DeckPlanSlideType? previous,
-    required DeckPlanSlideType? next,
+    required DeckPlan plan,
+    required DeckPlanSection section,
+    required List<DeckPlanSlide> slides,
+    required DeckPlanSlide? previous,
+    required DeckPlanSlide? next,
     required GenerationElementCatalog elementCatalog,
   }) {
     if (slides.isEmpty) {
@@ -246,16 +246,16 @@ Theme: ${encoder.convert(serializeDeckThemeForSlidePrompt(plan.theme))}
 
 ## Current narrative section
 
-${encoder.convert(Map<String, Object?>.from(section))}
+${encoder.convert(section.toJson())}
 
 ## Ordered slide plans
 
-${encoder.convert(slides.map(Map<String, Object?>.from).toList())}
+${encoder.convert(slides.map((slide) => slide.toJson()).toList())}
 
 ## Boundary context
 
-Previous plan item: ${previous == null ? 'None.' : encoder.convert(Map<String, Object?>.from(previous))}
-Next plan item: ${next == null ? 'None.' : encoder.convert(Map<String, Object?>.from(next))}
+Previous plan item: ${previous == null ? 'None.' : encoder.convert(previous.toJson())}
+Next plan item: ${next == null ? 'None.' : encoder.convert(next.toJson())}
 
 ## Per-slide visible-content budgets
 
@@ -294,8 +294,8 @@ plan item without borrowing facts or elements from another slide.
 
   @override
   String buildOutlineSlideRepairPrompt({
-    required DeckPlanType plan,
-    required DeckPlanSlideType current,
+    required DeckPlan plan,
+    required DeckPlanSlide current,
     required List<GenerationValidationIssue> validationIssues,
     Map<String, Object?>? invalidSlide,
   }) {
@@ -308,6 +308,7 @@ plan item without borrowing facts or elements from another slide.
     );
     final previous = index > 0 ? plan.slides[index - 1] : null;
     final next = index + 1 < plan.slides.length ? plan.slides[index + 1] : null;
+
     return '''
 You repair exactly one slide inside an already structured presentation plan.
 Return one complete deck-plan slide JSON object matching the response schema.
@@ -347,13 +348,13 @@ only `title`, `purpose`, `assertion`, `contentUnits`, `contentBrief`, and
 
 Topic: ${plan.topic}
 Story: ${plan.story}
-Section: ${encoder.convert(Map<String, Object?>.from(section))}
-Previous slide: ${previous == null ? 'None' : encoder.convert(Map<String, Object?>.from(previous))}
-Next slide: ${next == null ? 'None' : encoder.convert(Map<String, Object?>.from(next))}
+Section: ${encoder.convert(section.toJson())}
+Previous slide: ${previous == null ? 'None' : encoder.convert(previous.toJson())}
+Next slide: ${next == null ? 'None' : encoder.convert(next.toJson())}
 
 ## Repair base
 
-${encoder.convert(invalidSlide ?? Map<String, Object?>.from(current))}
+${encoder.convert(invalidSlide ?? current.toJson())}
 
 ## Validation errors
 
@@ -365,9 +366,9 @@ Return only the corrected single-slide plan object.
 }
 
 String buildSingleSlideRepairPrompt({
-  required DeckPlanSlideType current,
+  required DeckPlanSlide current,
   required Map<String, Object?>? previousSlide,
-  required DeckPlanSlideType? next,
+  required DeckPlanSlide? next,
   required List<GenerationValidationIssue> validationIssues,
   required Map<String, Object?>? invalidSlide,
   required GenerationElementCatalog elementCatalog,
@@ -424,14 +425,14 @@ Hard invariants:
   status, security/compliance claims, availability, or commercial commitments
 
 ## Current slide plan
-${encoder.convert(Map<String, Object?>.from(current))}
+${encoder.convert(current.toJson())}
 
 ## Neighbor context
 Previous accepted slide:
 ${previousSlide == null ? 'None.' : encoder.convert(previousSlide)}
 
 Next plan item:
-${next == null ? 'None.' : encoder.convert(Map<String, Object?>.from(next))}
+${next == null ? 'None.' : encoder.convert(next.toJson())}
 
 ## Invalid draft
 ${invalidSlide == null ? 'No parseable draft was returned.' : encoder.convert(invalidSlide)}
@@ -511,10 +512,10 @@ steps, future targets, or another feature.
 String buildSingleSlidePrompt({
   required String basePrompt,
   required String fieldGuidance,
-  required DeckPlanType plan,
-  required DeckPlanSlideType current,
+  required DeckPlan plan,
+  required DeckPlanSlide current,
   required Map<String, Object?>? previousSlide,
-  required DeckPlanSlideType? next,
+  required DeckPlanSlide? next,
   required GenerationElementCatalog elementCatalog,
   required Map<String, Object?> compositionExample,
   List<GenerationValidationIssue> validationIssues = const [],
@@ -670,13 +671,13 @@ Deck story: ${plan.story}
 Deck theme reference: ${encoder.convert(serializeDeckThemeForSlidePrompt(plan.theme))}
 
 ## Current narrative section
-${encoder.convert(Map<String, Object?>.from(currentSection))}
+${encoder.convert(currentSection.toJson())}
 
 ## Recent design ledger
 ${recentLedger.isEmpty ? 'None (this is the first planned slide).' : encoder.convert(recentLedger)}
 
 ## Current slide plan
-${encoder.convert(Map<String, Object?>.from(current))}
+${encoder.convert(current.toJson())}
 $numericCopyContract
 
 ## Neighbor context
@@ -684,7 +685,7 @@ Previous canonical slide:
 ${previousContext == null ? 'None (this is the first slide).' : encoder.convert(previousContext)}
 
 Next plan item:
-${next == null ? 'None (this is the final slide).' : encoder.convert(Map<String, Object?>.from(next))}
+${next == null ? 'None (this is the final slide).' : encoder.convert(next.toJson())}
 
 ## Available elements
 $elementContext

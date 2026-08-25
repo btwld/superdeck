@@ -15,7 +15,7 @@ import 'source_grounding.dart';
 /// marker to H2 is deterministic and avoids spending another model request.
 Map<String, dynamic> normalizeGeneratedSlideForPlan({
   required Map<String, dynamic> rawSlide,
-  required DeckPlanSlideType planSlide,
+  required DeckPlanSlide planSlide,
 }) {
   final normalized = Map<String, dynamic>.of(rawSlide);
   final rawOptions = rawSlide['options'];
@@ -54,7 +54,7 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
 
 Map<String, dynamic> _normalizeImageSplitFlex(
   Map<String, dynamic> slide,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
 ) {
   if (planSlide.composition != 'imageLeft' &&
       planSlide.composition != 'imageRight') {
@@ -81,7 +81,7 @@ Map<String, dynamic> _normalizeImageSplitFlex(
 
 Map<String, dynamic> _normalizeBlockForPlan(
   Map<String, dynamic> block,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
 ) {
   var normalized = _planPermitsH1(planSlide)
       ? block
@@ -128,7 +128,7 @@ Map<String, dynamic> removeInvalidOptionalSpeakerComments({
 
 Map<String, dynamic> _normalizeImplicitVerticalAlignment(
   Map<String, dynamic> slide,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
 ) {
   const supportedCompositions = {
     'content',
@@ -207,7 +207,7 @@ List<String> validateGeneratedSlide({
   required String expectedKey,
   required Map<String, dynamic> rawSlide,
   required GenerationElementCatalog elementCatalog,
-  DeckPlanSlideType? planSlide,
+  DeckPlanSlide? planSlide,
   DeckGenerationRequest? request,
 }) => validateGeneratedSlideIssues(
   expectedKey: expectedKey,
@@ -222,7 +222,7 @@ List<GenerationValidationIssue> validateGeneratedSlideIssues({
   required String expectedKey,
   required Map<String, dynamic> rawSlide,
   required GenerationElementCatalog elementCatalog,
-  DeckPlanSlideType? planSlide,
+  DeckPlanSlide? planSlide,
   DeckGenerationRequest? request,
 }) {
   final issues = GenerationValidationCollector(
@@ -316,7 +316,7 @@ List<String> _validateRawDraftStructure(Map<String, dynamic> rawSlide) {
 
 List<GenerationValidationIssue> _validatePlanFulfillment(
   Slide slide,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
   DeckGenerationRequest? request,
 ) {
   final errors = GenerationValidationCollector(
@@ -366,7 +366,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
   }
 
   final expectedWidgetCounts = <String, int>{};
-  for (final element in planSlide.elements ?? const <DeckPlanElementType>[]) {
+  for (final element in planSlide.elements ?? const <DeckPlanElement>[]) {
     final name = element.type == 'custom' ? element.widgetName : element.type;
     if (name == null || name.trim().isEmpty) continue;
     expectedWidgetCounts.update(name, (count) => count + 1, ifAbsent: () => 1);
@@ -617,12 +617,9 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
   return errors.issues.uniqueIssues;
 }
 
-List<String> _validateHandoffPurpose(
-  String markdown,
-  DeckPlanSlideType planSlide,
-) {
+List<String> _validateHandoffPurpose(String markdown, DeckPlanSlide planSlide) {
   final errors = <String>[];
-  for (final element in planSlide.elements ?? const <DeckPlanElementType>[]) {
+  for (final element in planSlide.elements ?? const <DeckPlanElement>[]) {
     if (!_requiresVisibleHandoffPurpose(element.type)) continue;
     final missingTerms = findMissingGroundedPurposeTerms(
       purpose: element.purpose,
@@ -720,7 +717,7 @@ List<String> _validateNumericClaimGrounding(
 
 List<String> _validateVisibleSourceGrounding(
   Iterable<String> values,
-  DeckPlanSlideType planSlide, {
+  DeckPlanSlide planSlide, {
   required String label,
 }) {
   final allowedDomains = extractReferencedDomains([
@@ -730,7 +727,7 @@ List<String> _validateVisibleSourceGrounding(
     ...planSlide.contentUnits,
     planSlide.contentBrief,
     planSlide.continuity,
-    for (final element in planSlide.elements ?? const <DeckPlanElementType>[])
+    for (final element in planSlide.elements ?? const <DeckPlanElement>[])
       ?element.source,
   ]);
   final ungrounded = extractReferencedDomains([
@@ -776,7 +773,7 @@ List<String> _validateDisplayHeadings(
   return errors;
 }
 
-bool _planPermitsH1(DeckPlanSlideType planSlide) =>
+bool _planPermitsH1(DeckPlanSlide planSlide) =>
     _permitsH1(planSlide.composition);
 
 bool _permitsH1(String composition) =>

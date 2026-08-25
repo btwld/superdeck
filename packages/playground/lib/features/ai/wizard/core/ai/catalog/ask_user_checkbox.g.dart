@@ -1,44 +1,45 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// dart format width=80
-
-// **************************************************************************
-// AckSchemaGenerator
-// **************************************************************************
 
 part of 'ask_user_checkbox.dart';
 
-List<T> _$ackListCast<T>(Object? value) => (value as List).cast<T>();
+// **************************************************************************
+// AckJsonSerializableGenerator
+// **************************************************************************
 
-/// Extension type for AskUserCheckbox
-extension type AskUserCheckboxType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static AskUserCheckboxType parse(Object? data) {
-    return _askUserCheckboxSchema.parseAs(
-      data,
-      (validated) => AskUserCheckboxType(validated as Map<String, Object?>),
+AskUserCheckbox _$AskUserCheckboxFromJson(Map<String, dynamic> json) =>
+    AskUserCheckbox(
+      question: AskUserCheckbox._ackFromRuntimeQuestion(json['question']),
+      description: AskUserCheckbox._ackFromRuntimeDescription(
+        json['description'],
+      ),
+      items: AskUserCheckbox._ackFromRuntimeItems(json['items']),
+      selectedItems: AskUserCheckbox._ackFromRuntimeSelectedItems(
+        json['selectedItems'],
+      ),
+      minSelections: AskUserCheckbox._ackFromRuntimeMinSelections(
+        json['minSelections'],
+      ),
+      maxSelections: AskUserCheckbox._ackFromRuntimeMaxSelections(
+        json['maxSelections'],
+      ),
+      action: AskUserCheckbox._ackFromRuntimeAction(json['action']),
     );
-  }
 
-  static SchemaResult<AskUserCheckboxType> safeParse(Object? data) {
-    return _askUserCheckboxSchema.safeParseAs(
-      data,
-      (validated) => AskUserCheckboxType(validated as Map<String, Object?>),
-    );
-  }
-
-  String get question => _data['question'] as String;
-
-  String? get description => _data['description'] as String?;
-
-  List<String> get items => _$ackListCast<String>(_data['items']);
-
-  List<String>? get selectedItems => _data['selectedItems'] != null
-      ? _$ackListCast<String>(_data['selectedItems'])
-      : null;
-
-  int? get minSelections => _data['minSelections'] as int?;
-
-  int? get maxSelections => _data['maxSelections'] as int?;
-
-  ActionType get action => ActionType(_data['action'] as Map<String, Object?>);
-}
+Map<String, dynamic> _$AskUserCheckboxToJson(AskUserCheckbox instance) =>
+    <String, dynamic>{
+      'question': AskUserCheckbox._ackToRuntimeQuestion(instance.question),
+      'description': ?AskUserCheckbox._ackToRuntimeDescription(
+        instance.description,
+      ),
+      'items': AskUserCheckbox._ackToRuntimeItems(instance.items),
+      'selectedItems': ?AskUserCheckbox._ackToRuntimeSelectedItems(
+        instance.selectedItems,
+      ),
+      'minSelections': ?AskUserCheckbox._ackToRuntimeMinSelections(
+        instance.minSelections,
+      ),
+      'maxSelections': ?AskUserCheckbox._ackToRuntimeMaxSelections(
+        instance.maxSelections,
+      ),
+      'action': AskUserCheckbox._ackToRuntimeAction(instance.action),
+    };

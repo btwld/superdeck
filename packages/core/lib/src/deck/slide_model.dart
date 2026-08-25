@@ -1,30 +1,17 @@
 import 'package:ack/ack.dart';
-import 'package:dart_mappable/dart_mappable.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 
 import 'block_model.dart';
 
-part 'slide_model.mapper.dart';
-
-final slideOptionsSchema = Ack.object({
-  'title': Ack.string().optional(),
-  'style': Ack.string().optional(),
-  'layout': SlideLayout.schema.optional(),
-  'template': Ack.string().optional(),
-}, additionalProperties: true);
-
-final slideSchema = Ack.object({
-  'key': Ack.string(),
-  'options': slideOptionsSchema.optional(),
-  'sections': Ack.list(sectionBlockSchema).optional(),
-  'comments': Ack.list(Ack.string()).optional(),
-}, additionalProperties: true);
+part 'slide_model.ack.dart';
+part 'slide_model.g.dart';
 
 /// Represents a single slide in a presentation.
 ///
 /// A slide contains sections of content blocks, optional configuration options,
 /// and any speaker notes or comments. Each slide is uniquely identified by a key.
-@MappableClass(ignoreNull: true)
-class Slide with SlideMappable {
+@AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
+class Slide with _$SlideAck {
   /// Unique identifier for this slide, typically generated from content hash.
   final String key;
 
@@ -43,15 +30,12 @@ class Slide with SlideMappable {
   }) : sections = List.unmodifiable(sections),
        comments = List.unmodifiable(comments);
 
-  static final fromMap = SlideMapper.fromMap;
-
-  static final schema = slideSchema;
+  static final fromJson = SlideSchema.fromJson;
 
   /// Validates [map] against the schema and constructs a [Slide].
-  static Slide parse(Map<String, Object?> map) => fromMap(schema.parse(map)!);
+  static Slide parse(Map<String, Object?> map) => SlideSchema.parse(map);
 }
 
-@MappableEnum()
 enum SlideLayout {
   normal,
   fullscreen;
@@ -64,8 +48,11 @@ enum SlideLayout {
 /// Configuration options for a slide.
 ///
 /// Provides metadata and styling information for individual slides.
-@MappableClass(hook: UnmappedPropertiesHook('args'), ignoreNull: true)
-class SlideOptions with SlideOptionsMappable {
+@AckModel(
+  additionalProperties: AckAdditionalPropertiesMode.capture,
+  additionalPropertiesField: 'args',
+)
+class SlideOptions with _$SlideOptionsAck {
   static const _knownFields = {'title', 'style', 'layout', 'template'};
 
   final String? title;
@@ -100,11 +87,9 @@ class SlideOptions with SlideOptionsMappable {
          ),
        );
 
-  static final fromMap = SlideOptionsMapper.fromMap;
-
-  static final schema = slideOptionsSchema;
+  static final fromJson = SlideOptionsSchema.fromJson;
 
   /// Validates [map] against the schema and constructs [SlideOptions].
   static SlideOptions parse(Map<String, Object?> map) =>
-      fromMap(schema.parse(map)!);
+      SlideOptionsSchema.parse(map);
 }

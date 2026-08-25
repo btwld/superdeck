@@ -2,6 +2,7 @@ import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 import 'package:flutter/material.dart';
 
+part 'ack_metric_card.ack.dart';
 part 'ack_metric_card.g.dart';
 
 @AckType(name: 'AckMetricCardArgs')
@@ -13,10 +14,10 @@ final ackMetricCardArgsSchema = Ack.object({
 });
 
 class AckMetricCard extends StatelessWidget {
-  final AckMetricCardArgsType data;
+  final AckMetricCardArgs data;
 
   AckMetricCard(Map<String, Object?> args, {super.key})
-    : data = AckMetricCardArgsType.parse(args);
+    : data = AckMetricCardArgs.parse(args);
 
   Color _toneColor(String? tone) {
     return switch (tone) {

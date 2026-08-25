@@ -274,8 +274,9 @@ class ImageStyleOptionCard extends StatelessWidget {
     if (imageBytes != null) {
       return Image.memory(
         imageBytes!,
-        fit: BoxFit.cover,
         errorBuilder: (ctx, error, stackTrace) => _buildPlaceholder(ctx),
+        semanticLabel: '${style.title} image style preview',
+        fit: BoxFit.cover,
       );
     }
 

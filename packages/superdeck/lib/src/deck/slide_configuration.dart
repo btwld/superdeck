@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:dart_mappable/dart_mappable.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
 import '../rendering/slides/slide_parts.dart';
@@ -7,14 +6,11 @@ import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
 import 'widget_factory.dart';
 
-part 'slide_configuration.mapper.dart';
-
 String buildThumbnailKey(String slideKey) {
   return 'thumbnail_$slideKey.png';
 }
 
-@MappableClass()
-class SlideConfiguration with SlideConfigurationMappable {
+class SlideConfiguration {
   final int slideIndex;
   final SlideStyler style;
   final Slide slide;
@@ -42,6 +38,30 @@ class SlideConfiguration with SlideConfigurationMappable {
     this.isStaticRendering = false,
     this.assetCacheStore,
   });
+
+  SlideConfiguration copyWith({
+    int? slideIndex,
+    SlideStyler? style,
+    Slide? slide,
+    bool? debug,
+    SlideParts? parts,
+    Map<String, WidgetFactory>? widgets,
+    String? thumbnailKey,
+    bool? isStaticRendering,
+    AssetCacheStore? assetCacheStore,
+  }) {
+    return SlideConfiguration(
+      slideIndex: slideIndex ?? this.slideIndex,
+      style: style ?? this.style,
+      slide: slide ?? this.slide,
+      debug: debug ?? this.debug,
+      parts: parts ?? this.parts,
+      widgets: widgets ?? this.widgets,
+      thumbnailKey: thumbnailKey ?? this.thumbnailKey,
+      isStaticRendering: isStaticRendering ?? this.isStaticRendering,
+      assetCacheStore: assetCacheStore ?? this.assetCacheStore,
+    );
+  }
 
   SlideOptions get options => slide.options ?? SlideOptions();
 
@@ -84,4 +104,12 @@ class SlideConfiguration with SlideConfigurationMappable {
     isStaticRendering,
     assetCacheStore,
   );
+
+  @override
+  String toString() {
+    return 'SlideConfiguration(slideIndex: $slideIndex, style: $style, '
+        'slide: $slide, debug: $debug, parts: $parts, widgets: $widgets, '
+        'thumbnailKey: $thumbnailKey, isStaticRendering: $isStaticRendering, '
+        'assetCacheStore: $assetCacheStore)';
+  }
 }

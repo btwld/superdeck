@@ -1,3 +1,4 @@
+import 'package:ack/ack.dart';
 import 'package:superdeck_core/src/deck/deck_workspace.dart';
 import 'package:test/test.dart';
 
@@ -245,10 +246,10 @@ void main() {
       });
     });
 
-    group('toMap', () {
+    group('toJson', () {
       test('serializes default values', () {
         final config = DeckWorkspace();
-        final map = config.toMap();
+        final map = config.toJson();
 
         expect(map['projectDir'], '.');
         expect(map['slidesPath'], 'slides.md');
@@ -257,7 +258,7 @@ void main() {
 
       test('serializes updated values alongside defaults', () {
         final config = DeckWorkspace(projectDir: '/project');
-        final map = config.toMap();
+        final map = config.toJson();
 
         expect(map['projectDir'], '/project');
         expect(map['slidesPath'], 'slides.md');
@@ -270,7 +271,7 @@ void main() {
           slidesPath: 'slides.md',
           outputDir: 'output',
         );
-        final map = config.toMap();
+        final map = config.toJson();
 
         expect(map['projectDir'], '/project');
         expect(map['slidesPath'], 'slides.md');
@@ -278,29 +279,28 @@ void main() {
       });
     });
 
-    group('fromMap', () {
+    group('fromJson', () {
       test('deserializes empty map', () {
-        final config = DeckWorkspace.fromMap({});
+        final config = DeckWorkspace.fromJson({});
 
         expect(config.projectDir, '.');
         expect(config.slidesPath, 'slides.md');
         expect(config.outputDir, '.superdeck');
       });
 
-      test('deserializes null values using constructor defaults', () {
-        final config = DeckWorkspace.fromMap({
-          'projectDir': null,
-          'slidesPath': null,
-          'outputDir': null,
-        });
-
-        expect(config.projectDir, '.');
-        expect(config.slidesPath, 'slides.md');
-        expect(config.outputDir, '.superdeck');
+      test('rejects explicit null values', () {
+        expect(
+          () => DeckWorkspace.fromJson({
+            'projectDir': null,
+            'slidesPath': null,
+            'outputDir': null,
+          }),
+          throwsA(isA<AckException>()),
+        );
       });
 
       test('deserializes partial map', () {
-        final config = DeckWorkspace.fromMap({
+        final config = DeckWorkspace.fromJson({
           'projectDir': '/project',
           'slidesPath': 'deck.md',
         });
@@ -311,7 +311,7 @@ void main() {
       });
 
       test('deserializes full map', () {
-        final config = DeckWorkspace.fromMap({
+        final config = DeckWorkspace.fromJson({
           'projectDir': '/project',
           'slidesPath': 'slides.md',
           'outputDir': 'output',
@@ -324,14 +324,14 @@ void main() {
     });
 
     group('round-trip serialization', () {
-      test('preserves data through toMap/fromMap', () {
+      test('preserves data through toJson/fromJson', () {
         final original = DeckWorkspace(
           projectDir: '/roundtrip',
           slidesPath: 'rt.md',
           outputDir: 'rt-out',
         );
 
-        final restored = DeckWorkspace.fromMap(original.toMap());
+        final restored = DeckWorkspace.fromJson(original.toJson());
 
         expect(restored, original);
       });
@@ -342,7 +342,7 @@ void main() {
           outputDir: 'out',
         );
 
-        final restored = DeckWorkspace.fromMap(original.toMap());
+        final restored = DeckWorkspace.fromJson(original.toJson());
 
         expect(restored.projectDir, '/partial');
         expect(restored.outputDir, 'out');
@@ -385,18 +385,18 @@ void main() {
         });
 
         expect(config.slidesPath, 'parsed.md');
-        expect(config.toMap().containsKey('extra'), isFalse);
+        expect(config.toJson().containsKey('extra'), isFalse);
       });
     });
 
     group('schema', () {
       test('validates empty map', () {
-        final result = DeckWorkspace.schema.safeParse({});
+        final result = DeckWorkspaceSchema.wireSchema.safeParse({});
         expect(result.isOk, isTrue);
       });
 
       test('validates all string fields', () {
-        final result = DeckWorkspace.schema.safeParse({
+        final result = DeckWorkspaceSchema.wireSchema.safeParse({
           'projectDir': '/project',
           'slidesPath': 'slides.md',
           'outputDir': 'output',
@@ -405,7 +405,7 @@ void main() {
       });
 
       test('validates partial map', () {
-        final result = DeckWorkspace.schema.safeParse({
+        final result = DeckWorkspaceSchema.wireSchema.safeParse({
           'projectDir': '/only-project',
         });
         expect(result.isOk, isTrue);
@@ -413,13 +413,15 @@ void main() {
 
       test('fails when optional fields are explicitly null', () {
         for (final field in ['projectDir', 'slidesPath', 'outputDir']) {
-          final result = DeckWorkspace.schema.safeParse({field: null});
+          final result = DeckWorkspaceSchema.wireSchema.safeParse({
+            field: null,
+          });
           expect(result.isOk, isFalse);
         }
       });
 
       test('allows unknown keys while validating known fields', () {
-        final result = DeckWorkspace.schema.safeParse({
+        final result = DeckWorkspaceSchema.wireSchema.safeParse({
           'projectDir': '/project',
           'extra': {'nested': true},
         });
@@ -431,63 +433,65 @@ void main() {
         for (final field in ['slidesPath', 'outputDir']) {
           group(field, () {
             test('accepts simple relative path', () {
-              final result = DeckWorkspace.schema.safeParse({
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
                 field: 'my_file.md',
               });
               expect(result.isOk, isTrue);
             });
 
             test('accepts nested relative path', () {
-              final result = DeckWorkspace.schema.safeParse({
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
                 field: 'sub/dir/file.md',
               });
               expect(result.isOk, isTrue);
             });
 
             test('accepts filename containing ".."', () {
-              final result = DeckWorkspace.schema.safeParse({
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
                 field: 'my..file.md',
               });
               expect(result.isOk, isTrue);
             });
 
             test('accepts dot-prefixed relative path', () {
-              final result = DeckWorkspace.schema.safeParse({
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
                 field: '.superdeck',
               });
               expect(result.isOk, isTrue);
             });
 
             test('rejects absolute path', () {
-              final result = DeckWorkspace.schema.safeParse({
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
                 field: '/etc/passwd',
               });
               expect(result.isOk, isFalse);
             });
 
             test('rejects ".." traversal segment', () {
-              final result = DeckWorkspace.schema.safeParse({
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
                 field: '../outside',
               });
               expect(result.isOk, isFalse);
             });
 
             test('rejects nested ".." traversal segment', () {
-              final result = DeckWorkspace.schema.safeParse({
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
                 field: 'sub/../../outside',
               });
               expect(result.isOk, isFalse);
             });
 
             test('rejects bare ".." path', () {
-              final result = DeckWorkspace.schema.safeParse({field: '..'});
+              final result = DeckWorkspaceSchema.wireSchema.safeParse({
+                field: '..',
+              });
               expect(result.isOk, isFalse);
             });
           });
         }
 
         test('projectDir still allows absolute paths', () {
-          final result = DeckWorkspace.schema.safeParse({
+          final result = DeckWorkspaceSchema.wireSchema.safeParse({
             'projectDir': '/absolute/project',
           });
           expect(result.isOk, isTrue);

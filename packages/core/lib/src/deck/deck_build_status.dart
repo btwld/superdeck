@@ -1,51 +1,40 @@
-import 'package:dart_mappable/dart_mappable.dart';
+import 'package:ack/ack.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 
-part 'deck_build_status.mapper.dart';
+part 'deck_build_status.ack.dart';
+part 'deck_build_status.g.dart';
 
-@MappableEnum()
 enum DeckBuildPhase { unknown, building, success, failure }
 
-@MappableClass()
-final class DeckBuildError with DeckBuildErrorMappable {
+@AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
+final class DeckBuildError with _$DeckBuildErrorAck {
   final String message;
 
   const DeckBuildError({required this.message});
 
-  static final fromMap = DeckBuildErrorMapper.fromMap;
+  static final fromJson = DeckBuildErrorSchema.fromJson;
 
-  static DeckBuildError? fromObject(Object? value) {
-    if (value is! Map) return null;
-    try {
-      return DeckBuildErrorMapper.fromMap(Map<String, dynamic>.from(value));
-    } on Object {
-      return null;
-    }
-  }
+  static DeckBuildError? fromObject(Object? value) =>
+      DeckBuildErrorSchema.safeParse(value).getOrNull();
 }
 
-@MappableClass()
-final class DeckBuildStatus with DeckBuildStatusMappable {
-  @MappableField(key: 'status')
+@AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
+final class DeckBuildStatus with _$DeckBuildStatusAck {
+  @JsonKey(name: 'status')
   final DeckBuildPhase phase;
   final DateTime timestamp;
   final int? slideCount;
   final DeckBuildError? error;
 
-  const DeckBuildStatus({
+  DeckBuildStatus({
     required this.phase,
-    required this.timestamp,
+    required DateTime timestamp,
     this.slideCount,
     this.error,
-  });
+  }) : timestamp = timestamp.toUtc();
 
-  static final fromMap = DeckBuildStatusMapper.fromMap;
+  static final fromJson = DeckBuildStatusSchema.fromJson;
 
-  static DeckBuildStatus? fromObject(Object? value) {
-    if (value is! Map) return null;
-    try {
-      return DeckBuildStatusMapper.fromMap(Map<String, dynamic>.from(value));
-    } on Object {
-      return null;
-    }
-  }
+  static DeckBuildStatus? fromObject(Object? value) =>
+      DeckBuildStatusSchema.safeParse(value).getOrNull();
 }

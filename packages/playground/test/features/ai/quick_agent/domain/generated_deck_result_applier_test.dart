@@ -118,7 +118,7 @@ Slide _generatedSlide(String assetKey) => Slide.parse({
   ],
 });
 
-DeckPlanType _plan(String assetKey) => DeckPlanType.parse({
+DeckPlan _plan(String assetKey) => DeckPlan.parse({
   'topic': 'Generated artwork',
   'story': 'One image supports one clear point.',
   'theme': {'id': 'technical-paper', 'version': 1, 'density': 'balanced'},

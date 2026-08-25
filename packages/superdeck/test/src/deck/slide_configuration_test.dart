@@ -7,6 +7,23 @@ Widget _sameWidget(Map<String, Object?> args) => const SizedBox.shrink();
 
 void main() {
   group('SlideConfiguration', () {
+    test('copyWith updates values and retains nullable fields on null', () {
+      final parts = SlideParts();
+      final original = SlideConfiguration(
+        slideIndex: 0,
+        style: SlideStyler(),
+        slide: Slide(key: 'slide-1'),
+        parts: parts,
+        thumbnailKey: 'thumbnail_slide-1.png',
+      );
+
+      final copy = original.copyWith(slideIndex: 1, parts: null);
+
+      expect(copy.slideIndex, 1);
+      expect(copy.parts, same(parts));
+      expect(copy.slide, same(original.slide));
+    });
+
     test('configs sharing the same widgets map instance are equal', () {
       final widgets = <String, WidgetFactory>{'same': _sameWidget};
       final slide = Slide(key: 'slide-1');
@@ -26,6 +43,7 @@ void main() {
       );
 
       expect(a, equals(b));
+      expect(a.hashCode, b.hashCode);
     });
 
     test('configs with same-content widget maps are not equal', () {

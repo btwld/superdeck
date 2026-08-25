@@ -1605,12 +1605,12 @@ Map<String, dynamic> _slideWithBlock(Map<String, Object?> block) => {
   ],
 };
 
-DeckPlanSlideType _planSlide({
+DeckPlanSlide _planSlide({
   required String composition,
   String density = 'balanced',
   String? treatment,
   List<Map<String, Object?>> elements = const [],
-}) => DeckPlanSlideType.parse({
+}) => DeckPlanSlide.parse({
   'key': 'test-slide',
   'title': 'Test slide',
   'purpose': 'Exercise the generated slide contract.',

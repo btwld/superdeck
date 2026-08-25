@@ -169,7 +169,7 @@ const _pageRequest = DeckGenerationRequest(
 final class _PageGenerationService extends DeckGeneratorService {
   _PageGenerationService() : super(apiKey: 'test-key');
 
-  final DeckPlanType _plan = _pagePlan();
+  final DeckPlan _plan = _pagePlan();
 
   @override
   Future<DeckPlanningResult> plan(
@@ -182,7 +182,7 @@ final class _PageGenerationService extends DeckGeneratorService {
   @override
   Future<DeckGenerationResult> generateFromPlan(
     DeckGenerationRequest request,
-    DeckPlanType approvedPlan, {
+    DeckPlan approvedPlan, {
     onProgress,
     onTrace,
     isCancelled,
@@ -213,11 +213,11 @@ final class _PageGenerationService extends DeckGeneratorService {
   );
 }
 
-DeckPlanType _pagePlan() {
+DeckPlan _pagePlan() {
   final themes = PresentationThemeCatalog.withDefaults();
   final typography = PresentationTypographyCatalog.withDefaults();
   final descriptor = themes.current('technical-paper')!;
-  return DeckPlanType.parse({
+  return DeckPlan.parse({
     'topic': _pageRequest.userIntent,
     'story': 'Small interventions build city-scale resilience.',
     'theme': buildDeckThemeReference(

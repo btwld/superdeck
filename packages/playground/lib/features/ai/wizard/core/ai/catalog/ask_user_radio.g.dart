@@ -1,60 +1,37 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// dart format width=80
-
-// **************************************************************************
-// AckSchemaGenerator
-// **************************************************************************
 
 part of 'ask_user_radio.dart';
 
-/// Extension type for InputOption
-extension type InputOptionType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static InputOptionType parse(Object? data) {
-    return _inputOptionSchema.parseAs(
-      data,
-      (validated) => InputOptionType(validated as Map<String, Object?>),
-    );
-  }
+// **************************************************************************
+// AckJsonSerializableGenerator
+// **************************************************************************
 
-  static SchemaResult<InputOptionType> safeParse(Object? data) {
-    return _inputOptionSchema.safeParseAs(
-      data,
-      (validated) => InputOptionType(validated as Map<String, Object?>),
-    );
-  }
+InputOption _$InputOptionFromJson(Map<String, dynamic> json) => InputOption(
+  title: InputOption._ackFromRuntimeTitle(json['title']),
+  description: InputOption._ackFromRuntimeDescription(json['description']),
+  icon: InputOption._ackFromRuntimeIcon(json['icon']),
+);
 
-  String get title => _data['title'] as String;
+Map<String, dynamic> _$InputOptionToJson(
+  InputOption instance,
+) => <String, dynamic>{
+  'title': InputOption._ackToRuntimeTitle(instance.title),
+  'description': ?InputOption._ackToRuntimeDescription(instance.description),
+  'icon': ?InputOption._ackToRuntimeIcon(instance.icon),
+};
 
-  String? get description => _data['description'] as String?;
+AskUserRadio _$AskUserRadioFromJson(Map<String, dynamic> json) => AskUserRadio(
+  question: AskUserRadio._ackFromRuntimeQuestion(json['question']),
+  description: AskUserRadio._ackFromRuntimeDescription(json['description']),
+  options: AskUserRadio._ackFromRuntimeOptions(json['options']),
+  action: AskUserRadio._ackFromRuntimeAction(json['action']),
+);
 
-  WizardOptionIcon? get icon => _data['icon'] as WizardOptionIcon?;
-}
-
-/// Extension type for AskUserRadio
-extension type AskUserRadioType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static AskUserRadioType parse(Object? data) {
-    return _askUserRadioSchema.parseAs(
-      data,
-      (validated) => AskUserRadioType(validated as Map<String, Object?>),
-    );
-  }
-
-  static SchemaResult<AskUserRadioType> safeParse(Object? data) {
-    return _askUserRadioSchema.safeParseAs(
-      data,
-      (validated) => AskUserRadioType(validated as Map<String, Object?>),
-    );
-  }
-
-  String get question => _data['question'] as String;
-
-  String? get description => _data['description'] as String?;
-
-  List<InputOptionType> get options => (_data['options'] as List)
-      .map((e) => InputOptionType(e as Map<String, Object?>))
-      .toList();
-
-  ActionType get action => ActionType(_data['action'] as Map<String, Object?>);
-}
+Map<String, dynamic> _$AskUserRadioToJson(
+  AskUserRadio instance,
+) => <String, dynamic>{
+  'question': AskUserRadio._ackToRuntimeQuestion(instance.question),
+  'description': ?AskUserRadio._ackToRuntimeDescription(instance.description),
+  'options': AskUserRadio._ackToRuntimeOptions(instance.options),
+  'action': AskUserRadio._ackToRuntimeAction(instance.action),
+};

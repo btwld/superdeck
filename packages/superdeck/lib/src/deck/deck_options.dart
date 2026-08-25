@@ -1,15 +1,15 @@
-import 'package:flutter/widgets.dart';
-import 'package:dart_mappable/dart_mappable.dart';
+import 'package:collection/collection.dart';
 
 import '../rendering/slides/slide_parts.dart';
 import '../styling/components/slide.dart';
 import 'slide_template.dart';
 import 'widget_factory.dart';
 
-part 'deck_options.mapper.dart';
+class DeckOptions {
+  static const _stylesEquality = MapEquality<String, SlideStyler>();
+  static const _widgetsEquality = MapEquality<String, WidgetFactory>();
+  static const _templatesEquality = MapEquality<String, SlideTemplate>();
 
-@MappableClass()
-class DeckOptions with DeckOptionsMappable {
   final SlideStyler? baseStyle;
   final Map<String, SlideStyler> styles;
   final Map<String, WidgetFactory> widgets;
@@ -36,4 +36,56 @@ class DeckOptions with DeckOptionsMappable {
   }) : styles = Map.unmodifiable(styles),
        widgets = Map.unmodifiable(widgets),
        templates = Map.unmodifiable(templates);
+
+  DeckOptions copyWith({
+    SlideStyler? baseStyle,
+    Map<String, SlideStyler>? styles,
+    Map<String, WidgetFactory>? widgets,
+    SlideParts? parts,
+    bool? debug,
+    Map<String, SlideTemplate>? templates,
+    SlideTemplate? defaultTemplate,
+  }) {
+    return DeckOptions(
+      baseStyle: baseStyle ?? this.baseStyle,
+      styles: styles ?? this.styles,
+      widgets: widgets ?? this.widgets,
+      parts: parts ?? this.parts,
+      debug: debug ?? this.debug,
+      templates: templates ?? this.templates,
+      defaultTemplate: defaultTemplate ?? this.defaultTemplate,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is DeckOptions &&
+            runtimeType == other.runtimeType &&
+            baseStyle == other.baseStyle &&
+            _stylesEquality.equals(styles, other.styles) &&
+            _widgetsEquality.equals(widgets, other.widgets) &&
+            parts == other.parts &&
+            debug == other.debug &&
+            _templatesEquality.equals(templates, other.templates) &&
+            defaultTemplate == other.defaultTemplate;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    baseStyle,
+    _stylesEquality.hash(styles),
+    _widgetsEquality.hash(widgets),
+    parts,
+    debug,
+    _templatesEquality.hash(templates),
+    defaultTemplate,
+  );
+
+  @override
+  String toString() {
+    return 'DeckOptions(baseStyle: $baseStyle, styles: $styles, '
+        'widgets: $widgets, parts: $parts, debug: $debug, '
+        'templates: $templates, defaultTemplate: $defaultTemplate)';
+  }
 }

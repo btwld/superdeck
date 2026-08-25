@@ -6,6 +6,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -35,11 +39,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 2,
@@ -56,6 +56,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -85,13 +89,13 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "centerLeft",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -145,11 +149,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerLeft",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -166,6 +166,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -184,12 +187,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -267,10 +270,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -287,18 +287,22 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "center",
+            "flex": 5,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -317,23 +321,19 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 5,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -350,6 +350,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -368,10 +371,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -381,6 +381,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "topCenter",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -435,13 +439,13 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
+            }
+          },
+          {
+            "type": "block",
             "align": "topCenter",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
-          },
-          {
             "content": {
               "type": "document",
               "children": [
@@ -496,13 +500,13 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
+            }
+          },
+          {
+            "type": "block",
             "align": "topCenter",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
-          },
-          {
             "content": {
               "type": "document",
               "children": [
@@ -557,11 +561,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "topCenter",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -578,6 +578,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -596,12 +599,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -679,10 +682,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -699,6 +699,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -727,10 +730,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -747,6 +747,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -765,10 +768,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -778,6 +778,15 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "padding": {
+              "top": 0.0,
+              "right": 0.0,
+              "bottom": 0.0,
+              "left": 0.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -812,18 +821,18 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "padding": {
-              "top": 0.0,
-              "right": 0.0,
-              "bottom": 0.0,
-              "left": 0.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "padding": {
+              "top": 16.0,
+              "right": 16.0,
+              "bottom": 16.0,
+              "left": 16.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -858,18 +867,19 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "padding": {
-              "top": 16.0,
-              "right": 16.0,
-              "bottom": 16.0,
-              "left": 16.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "bottomRight",
+            "flex": 1,
+            "padding": {
+              "top": 24.0,
+              "right": 48.0,
+              "bottom": 24.0,
+              "left": 48.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -904,17 +914,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "bottomRight",
-            "flex": 1,
-            "padding": {
-              "top": 24.0,
-              "right": 48.0,
-              "bottom": 24.0,
-              "left": 48.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",
@@ -934,6 +934,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -952,10 +955,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -965,6 +965,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1003,12 +1006,18 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "margin": {
+              "top": 24.0,
+              "right": 24.0,
+              "bottom": 24.0,
+              "left": 24.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1047,18 +1056,18 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "margin": {
-              "top": 24.0,
-              "right": 24.0,
-              "bottom": 24.0,
-              "left": 24.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "padding": {
+              "top": 24.0,
+              "right": 48.0,
+              "bottom": 24.0,
+              "left": 48.0
+            },
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1097,16 +1106,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "padding": {
-              "top": 24.0,
-              "right": 48.0,
-              "bottom": 24.0,
-              "left": 48.0
-            },
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "center",
@@ -1124,6 +1124,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1142,10 +1145,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1155,7 +1155,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "flex": 1,
             "padding": {
               "top": 0.0,
@@ -1164,7 +1164,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "assets/concepta-icon.png",
             "fit": "contain",
             "width": 300,
@@ -1172,7 +1172,7 @@
             "scale": 1
           },
           {
-            "name": "image",
+            "type": "widget",
             "flex": 1,
             "padding": {
               "top": 0.0,
@@ -1181,7 +1181,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "assets/concepta-icon.png",
             "fit": "contain",
             "width": 300,
@@ -1204,6 +1204,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "centerRight",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1222,13 +1226,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "centerRight",
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1255,10 +1258,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1275,6 +1275,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1293,11 +1297,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1307,6 +1307,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1325,11 +1329,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 2,
@@ -1339,6 +1339,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1357,11 +1361,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1378,6 +1378,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1396,12 +1399,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1428,10 +1431,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1448,6 +1448,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1466,12 +1469,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1489,10 +1492,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1509,6 +1509,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1527,10 +1530,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1540,6 +1540,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1571,11 +1575,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -1585,6 +1585,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1611,17 +1614,14 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "ack-metric-card",
+            "type": "widget",
             "align": "center",
             "flex": 2,
             "scrollable": false,
-            "type": "widget",
+            "name": "ack-metric-card",
             "label": "Activation",
             "value": "72%",
             "caption": "Parsed through Ack-generated typed getters",
@@ -1642,6 +1642,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1660,12 +1663,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1692,29 +1695,26 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "mix-simple-box",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "mix-simple-box"
           }
         ],
         "flex": 1,
@@ -1731,6 +1731,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1749,12 +1752,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1772,29 +1775,26 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "mix-variants",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "mix-variants"
           }
         ],
         "flex": 1,
@@ -1811,6 +1811,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1829,12 +1832,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1852,29 +1855,26 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "remix-button",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "remix-button"
           }
         ],
         "flex": 1,
@@ -1891,6 +1891,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1909,12 +1912,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1932,29 +1935,26 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "mix-animation",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "mix-animation"
           }
         ],
         "flex": 1,
@@ -1971,6 +1971,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -1989,12 +1992,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2012,10 +2015,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2032,6 +2032,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": true,
             "content": {
               "type": "document",
               "children": [
@@ -2069,10 +2072,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": true,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2089,6 +2089,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2107,12 +2110,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2139,10 +2142,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2161,6 +2161,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2184,10 +2187,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2204,6 +2204,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2222,12 +2225,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2301,10 +2304,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2321,6 +2321,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2339,12 +2342,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 2,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2408,12 +2411,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 2,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2440,10 +2443,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2460,6 +2460,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2478,12 +2481,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2507,10 +2510,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2527,18 +2527,22 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "align": "center",
+            "flex": 3,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2613,23 +2617,19 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 3,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [],
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2646,6 +2646,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2664,12 +2667,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2715,10 +2718,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2737,6 +2737,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2779,11 +2783,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2803,6 +2803,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2831,11 +2835,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2854,6 +2854,10 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "align": "center",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2882,11 +2886,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "align": "center",
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,
@@ -2905,10 +2905,10 @@
       {
         "blocks": [
           {
-            "name": "webview",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget",
+            "name": "webview",
             "url": "https://www.fluttermix.com",
             "title": "Flutter Mix",
             "cacheKey": "fluttermix-normal"
@@ -2931,10 +2931,10 @@
       {
         "blocks": [
           {
-            "name": "webview",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget",
+            "name": "webview",
             "url": "https://www.fluttermix.com",
             "title": "Flutter Mix",
             "cacheKey": "fluttermix-fullscreen"
@@ -2954,6 +2954,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -2972,10 +2975,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "align": "bottomCenter",
@@ -2986,6 +2986,9 @@
       {
         "blocks": [
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3003,18 +3006,18 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
-            "name": "leoafarias",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "leoafarias"
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3032,12 +3035,12 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           },
           {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
             "content": {
               "type": "document",
               "children": [
@@ -3075,10 +3078,7 @@
               "linkReferences": {},
               "footnoteLabels": [],
               "footnoteReferences": {}
-            },
-            "flex": 1,
-            "scrollable": false,
-            "type": "block"
+            }
           }
         ],
         "flex": 1,

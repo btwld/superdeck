@@ -1,7 +1,8 @@
 import 'package:ack/ack.dart';
-import 'package:dart_mappable/dart_mappable.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 
-part 'block_insets.mapper.dart';
+part 'block_insets.ack.dart';
+part 'block_insets.g.dart';
 
 String _authoringMessage(String field) =>
     '$field must use a finite non-negative scalar, a non-empty object with '
@@ -11,22 +12,28 @@ String _authoringMessage(String field) =>
 const _symmetricKeys = {'horizontal', 'vertical'};
 const _edgeKeys = {'top', 'right', 'bottom', 'left'};
 
-final _insetValueSchema = Ack.number().min(0).finite();
+final _authoringInsetValueSchema = Ack.number().min(0).finite();
+
+AckSchema<num, double> _normalizedInsetValueSchema() =>
+    _authoringInsetValueSchema.codec<double>(
+      decode: (value) => value.toDouble(),
+      encode: (value) => value,
+    );
 
 final _symmetricInsetsSchema = Ack.object(
   {
-    'horizontal': _insetValueSchema.optional(),
-    'vertical': _insetValueSchema.optional(),
+    'horizontal': _authoringInsetValueSchema.optional(),
+    'vertical': _authoringInsetValueSchema.optional(),
   },
   additionalProperties: false,
 ).withConstraint(const _NonEmptyInsetsObjectConstraint());
 
 final _partialEdgeInsetsSchema = Ack.object(
   {
-    'top': _insetValueSchema.optional(),
-    'right': _insetValueSchema.optional(),
-    'bottom': _insetValueSchema.optional(),
-    'left': _insetValueSchema.optional(),
+    'top': _authoringInsetValueSchema.optional(),
+    'right': _authoringInsetValueSchema.optional(),
+    'bottom': _authoringInsetValueSchema.optional(),
+    'left': _authoringInsetValueSchema.optional(),
   },
   additionalProperties: false,
 ).withConstraint(const _NonEmptyInsetsObjectConstraint());
@@ -36,12 +43,31 @@ final _partialEdgeInsetsSchema = Ack.object(
 /// Used for both block `padding` and block `margin`. Authoring shorthand
 /// (scalar, symmetric, or partial physical edges) is normalized by
 /// [parseAuthoring]; compiled contracts only carry the normalized
-/// four-edge form validated by [schema].
-@MappableClass()
-final class BlockInsets with BlockInsetsMappable {
+/// four-edge form validated by [BlockInsetsSchema.schema].
+@AckModel()
+final class BlockInsets with _$BlockInsetsAck {
+  @AckField(
+    schema: _normalizedInsetValueSchema,
+    presence: AckFieldPresence.required,
+  )
   final double top;
+
+  @AckField(
+    schema: _normalizedInsetValueSchema,
+    presence: AckFieldPresence.required,
+  )
   final double right;
+
+  @AckField(
+    schema: _normalizedInsetValueSchema,
+    presence: AckFieldPresence.required,
+  )
   final double bottom;
+
+  @AckField(
+    schema: _normalizedInsetValueSchema,
+    presence: AckFieldPresence.required,
+  )
   final double left;
 
   BlockInsets({
@@ -65,22 +91,14 @@ final class BlockInsets with BlockInsetsMappable {
         left: horizontal,
       );
 
-  /// Normalized contract schema: a closed object with all four physical edges.
-  static final schema = Ack.object({
-    'top': _insetValueSchema,
-    'right': _insetValueSchema,
-    'bottom': _insetValueSchema,
-    'left': _insetValueSchema,
-  }, additionalProperties: false);
-
   /// Authoring schema: scalar, symmetric map, or physical-edge map.
   static final authoringSchema = Ack.anyOf([
-    _insetValueSchema,
+    _authoringInsetValueSchema,
     _symmetricInsetsSchema,
     _partialEdgeInsetsSchema,
   ]);
 
-  static final fromMap = BlockInsetsMapper.fromMap;
+  static final fromJson = BlockInsetsSchema.fromJson;
 
   /// Parses one supported authoring form and normalizes it to physical edges.
   ///

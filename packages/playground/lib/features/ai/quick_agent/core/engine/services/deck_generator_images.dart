@@ -5,7 +5,7 @@ typedef ImageGenerationProgressCallback =
 
 /// Rewritten composition plan and ordered image outcomes for one run.
 final class DeckImageGenerationResult {
-  final DeckPlanType plan;
+  final DeckPlan plan;
 
   final List<GeneratedImageAsset> assets;
   const DeckImageGenerationResult({required this.plan, required this.assets});
@@ -31,7 +31,7 @@ final class _PlannedImage {
 
 Future<DeckImageGenerationResult> _runImagePhase(
   DeckGeneratorService owner, {
-  required DeckPlanType plan,
+  required DeckPlan plan,
   required DeckGenerationRequest request,
   required GenerationProgressCallback? onProgress,
   required GenerationTraceEmitter trace,
@@ -90,7 +90,7 @@ Future<DeckImageGenerationResult> _runImagePhase(
 /// Generates planned artwork with bounded concurrency and returns a plan that
 /// references only successful assets. Failed visuals fall back to text layouts.
 Future<DeckImageGenerationResult> generateImagesForPlan({
-  required DeckPlanType plan,
+  required DeckPlan plan,
   required PresentationImageStyleDescriptor imageStyle,
   required ImageGenerator generator,
   required String runId,
@@ -171,7 +171,7 @@ Future<DeckImageGenerationResult> generateImagesForPlan({
 }
 
 List<_PlannedImage> _plannedImages(
-  DeckPlanType plan,
+  DeckPlan plan,
   String runId, {
   required String? backgroundColor,
   required Map<String, String> backgroundColorsByTreatment,
@@ -179,7 +179,7 @@ List<_PlannedImage> _plannedImages(
   final planned = <_PlannedImage>[];
   for (final (slideIndex, slide) in plan.slides.indexed) {
     for (final (elementIndex, element)
-        in (slide.elements ?? const <DeckPlanElementType>[]).indexed) {
+        in (slide.elements ?? const <DeckPlanElement>[]).indexed) {
       final subject = element.generationPrompt?.trim();
       if (element.type != 'image' || subject == null || subject.isEmpty) {
         continue;
@@ -222,8 +222,8 @@ String _imageBackgroundForTreatment(
   };
 }
 
-DeckPlanType _rewriteGeneratedImageSources(
-  DeckPlanType plan,
+DeckPlan _rewriteGeneratedImageSources(
+  DeckPlan plan,
   List<_PlannedImage> planned,
   List<GeneratedImageAsset> assets,
 ) {
@@ -251,7 +251,7 @@ DeckPlanType _rewriteGeneratedImageSources(
     }
   }
 
-  return DeckPlanType.parse(rewritten);
+  return DeckPlan.parse(rewritten);
 }
 
 String buildGeneratedAssetKey({

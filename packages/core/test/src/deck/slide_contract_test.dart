@@ -66,7 +66,7 @@ void main() {
       expect(options.args.containsKey('template'), isFalse);
     });
 
-    test('round-trips slide payloads through toMap', () {
+    test('round-trips slide payloads through toJson', () {
       final original = [
         Slide(
           key: 'rt-slide',
@@ -81,7 +81,7 @@ void main() {
       ];
 
       final restored = parseSlidesContract(
-        original.map((slide) => slide.toMap()).toList(),
+        original.map((slide) => slide.toJson()).toList(),
       );
 
       expect(restored, original);
@@ -135,7 +135,7 @@ void main() {
     test('json schema exports normalized four-edge insets only', () {
       for (final field in const ['padding', 'margin']) {
         final insetsSchema = _propertySchema(
-          ContentBlock.schema.toJsonSchema(),
+          ContentBlockSchema.wireSchema.toJsonSchema(),
           field,
         );
 
@@ -184,7 +184,7 @@ void main() {
       ];
 
       final restored = parseSlidesContract(
-        original.map((slide) => slide.toMap()).toList(),
+        original.map((slide) => slide.toJson()).toList(),
       );
 
       expect(restored, original);

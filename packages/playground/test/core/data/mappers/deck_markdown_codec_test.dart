@@ -105,6 +105,6 @@ custom: value
 List<Map<String, Object?>> _withoutKeys(List<Slide> slides) {
   return [
     for (final slide in slides)
-      Map<String, Object?>.from(slide.toMap())..remove('key'),
+      Map<String, Object?>.from(slide.toJson())..remove('key'),
   ];
 }

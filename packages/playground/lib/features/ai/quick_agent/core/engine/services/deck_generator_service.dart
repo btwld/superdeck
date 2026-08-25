@@ -65,7 +65,7 @@ class DeckGenerationResult {
   final ResolvedPresentationTheme? theme;
 
   /// The validated, mechanically normalized plan used to compose the deck.
-  final DeckPlanType? plan;
+  final DeckPlan? plan;
 
   /// Ordered slide slots that remain unresolved and can be retried.
   final List<SlideGenerationFailure> slideFailures;
@@ -91,7 +91,7 @@ class DeckGenerationResult {
 
   DeckGenerationResult.success({
     required List<Slide> slides,
-    required DeckPlanType plan,
+    required DeckPlan plan,
     required ResolvedPresentationTheme theme,
     List<GeneratedImageAsset> generatedImages = const [],
   }) : this._(
@@ -107,7 +107,7 @@ class DeckGenerationResult {
   DeckGenerationResult.partial({
     required List<Slide> slides,
     required List<SlideGenerationFailure> slideFailures,
-    required DeckPlanType plan,
+    required DeckPlan plan,
     required ResolvedPresentationTheme theme,
     List<GeneratedImageAsset> generatedImages = const [],
   }) : this._(
@@ -151,13 +151,13 @@ final class _SlideCompositionResult {
 final class DeckPlanningResult {
   final bool success;
 
-  final DeckPlanType? plan;
+  final DeckPlan? plan;
 
   final String? error;
 
   const DeckPlanningResult._({required this.success, this.plan, this.error});
 
-  const DeckPlanningResult.success(DeckPlanType plan)
+  const DeckPlanningResult.success(DeckPlan plan)
     : this._(success: true, plan: plan);
 
   const DeckPlanningResult.failure(String error)
@@ -429,7 +429,7 @@ class DeckGeneratorService {
   /// Composes slides from the exact plan approved by the user.
   Future<DeckGenerationResult> generateFromPlan(
     DeckGenerationRequest request,
-    DeckPlanType approvedPlan, {
+    DeckPlan approvedPlan, {
     GenerationProgressCallback? onProgress,
     GenerationTraceCallback? onTrace,
     bool Function()? isCancelled,
@@ -594,7 +594,7 @@ class DeckGeneratorService {
       onProgress?.call(const GenerationProgress(.composingSlides));
       final existingSlidesByKey = {
         for (final slide in partialResult.slides)
-          slide.key: Map<String, dynamic>.of(slide.toMap()),
+          slide.key: Map<String, dynamic>.of(slide.toJson()),
       };
       final retried = await _composeSlidesSequentially(
         executor,

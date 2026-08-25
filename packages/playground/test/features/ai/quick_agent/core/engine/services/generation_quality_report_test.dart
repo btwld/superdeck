@@ -179,7 +179,7 @@ void main() {
   });
 }
 
-DeckPlanType _plan() => DeckPlanType.parse({
+DeckPlan _plan() => DeckPlan.parse({
   'topic': 'Decision quality',
   'story': 'Move from context to evidence to a clear choice.',
   'theme': {'id': 'editorial-midnight', 'version': 1, 'density': 'spacious'},
@@ -280,7 +280,7 @@ List<GenerationTraceEvent> _traces() => [
   ),
 ];
 
-DeckPlanType _rhythmPlan() => DeckPlanType.parse({
+DeckPlan _rhythmPlan() => DeckPlan.parse({
   'topic': 'Decision rhythm',
   'story': 'Move through four clear steps.',
   'theme': {'id': 'editorial-midnight', 'version': 1, 'density': 'spacious'},

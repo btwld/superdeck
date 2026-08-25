@@ -1,4 +1,9 @@
-## Unreleased
+## 2.0.0
+
+- **Breaking:** replace `dart_mappable` models and mapper APIs with Ack 2.0
+  class-first models. Use the generated `*Schema` facades and model
+  `fromJson`/`toJson` methods; unknown-field handling is now explicit per
+  model, and generated `copyWith` treats `null` as unchanged.
 
 - Add `SlideLayout` and the `SlideOptions.layout` field to the slide contract.
 - Add optional section `spacing`, block `padding` and `margin`, and inherited

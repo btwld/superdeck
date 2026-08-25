@@ -35,5 +35,5 @@ enum WizardOptionIcon {
   };
 
   static WizardOptionIcon fallbackFor(int index) =>
-      values[index % values.length];
+      values.elementAt(index % values.length);
 }

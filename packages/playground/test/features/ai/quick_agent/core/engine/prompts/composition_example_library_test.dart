@@ -12,7 +12,7 @@ void main() {
     () async {
       final library = AssetCompositionExampleLibrary();
       await library.load();
-      final current = DeckPlanSlideType.parse(
+      final current = DeckPlanSlide.parse(
         _planSlide(
           composition: 'imageRight',
           elements: const [
@@ -54,7 +54,7 @@ void main() {
     await library.load();
     final data = _planSlide(composition: 'metric');
     data['contentUnits'] = ['19% faster experiment decisions'];
-    final current = DeckPlanSlideType.parse(data);
+    final current = DeckPlanSlide.parse(data);
 
     final example = library.buildFor(
       current: current,
@@ -79,7 +79,7 @@ void main() {
       );
 
       for (final composition in deckPlanCompositionIntents) {
-        final current = DeckPlanSlideType.parse(
+        final current = DeckPlanSlide.parse(
           _planSlide(
             composition: composition,
             elements: _elementsFor(composition),

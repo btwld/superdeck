@@ -17,7 +17,7 @@ int _defaultRepairBudget(int slideCount) {
   return proportionalBudget < 3 ? 3 : proportionalBudget;
 }
 
-Future<DeckPlanType?> _runOutlinePhase(
+Future<DeckPlan?> _runOutlinePhase(
   DeckGeneratorService owner, {
   required GenerationModelCallExecutor executor,
   required String prompt,
@@ -68,7 +68,7 @@ Future<_SlideCompositionResult?> _runSlideCompositionPhase(
   required GenerationModelCallExecutor executor,
   required String prompt,
   required DeckGenerationRequest request,
-  required DeckPlanType outline,
+  required DeckPlan outline,
   required GenerationProgressCallback? onProgress,
   required GenerationTraceEmitter trace,
   required bool Function()? isCancelled,
@@ -116,7 +116,7 @@ Future<_SlideCompositionResult?> _runSlideCompositionPhase(
 DeckGenerationResult _finalizeDeck(
   DeckGeneratorService owner, {
   required _SlideCompositionResult composition,
-  required DeckPlanType plan,
+  required DeckPlan plan,
   List<GeneratedImageAsset> generatedImages = const [],
   required DateTime pipelineStart,
   required GenerationProgressCallback? onProgress,

@@ -75,6 +75,15 @@ void main() {
           expect(copy.options?.title, 'New Title');
         });
 
+        test('null retains existing nullable options', () {
+          final options = SlideOptions(title: 'Existing');
+          final original = Slide(key: 'key', options: options);
+
+          final copy = original.copyWith(options: null);
+
+          expect(copy.options, same(options));
+        });
+
         test('copies with new sections', () {
           final original = Slide(key: 'key');
           final newSections = [
@@ -110,10 +119,10 @@ void main() {
         });
       });
 
-      group('toMap', () {
+      group('toJson', () {
         test('serializes minimal slide', () {
           final slide = Slide(key: 'minimal');
-          final map = slide.toMap();
+          final map = slide.toJson();
 
           expect(map['key'], 'minimal');
           expect(map['sections'], isEmpty);
@@ -130,7 +139,7 @@ void main() {
             key: 'with-opts',
             options: SlideOptions(title: 'My Title', style: 'dark'),
           );
-          final map = slide.toMap();
+          final map = slide.toJson();
 
           expect(map['options'], isA<Map>());
           expect((map['options'] as Map)['title'], 'My Title');
@@ -145,7 +154,7 @@ void main() {
               SectionBlock([ContentBlock('Second')]),
             ],
           );
-          final map = slide.toMap();
+          final map = slide.toJson();
 
           expect(map['sections'], isA<List>());
           expect((map['sections'] as List).length, 2);
@@ -153,16 +162,16 @@ void main() {
 
         test('serializes slide with comments', () {
           final slide = Slide(key: 'with-comments', comments: ['Note 1']);
-          final map = slide.toMap();
+          final map = slide.toJson();
 
           expect(map['comments'], ['Note 1']);
         });
       });
 
-      group('fromMap', () {
+      group('fromJson', () {
         test('deserializes minimal map', () {
           final map = {'key': 'from-map'};
-          final slide = Slide.fromMap(map);
+          final slide = Slide.fromJson(map);
 
           expect(slide.key, 'from-map');
           expect(slide.options, isNull);
@@ -175,7 +184,7 @@ void main() {
             'key': 'opts-key',
             'options': {'title': 'Parsed Title', 'style': 'light'},
           };
-          final slide = Slide.fromMap(map);
+          final slide = Slide.fromJson(map);
 
           expect(slide.options?.title, 'Parsed Title');
           expect(slide.options?.style, 'light');
@@ -193,7 +202,7 @@ void main() {
               },
             ],
           };
-          final slide = Slide.fromMap(map);
+          final slide = Slide.fromJson(map);
 
           expect(slide.sections.length, 1);
           expect(slide.sections[0].blocks.length, 1);
@@ -204,7 +213,7 @@ void main() {
             'key': 'comments-key',
             'comments': ['Comment 1', 'Comment 2'],
           };
-          final slide = Slide.fromMap(map);
+          final slide = Slide.fromJson(map);
 
           expect(slide.comments, ['Comment 1', 'Comment 2']);
         });
@@ -226,7 +235,7 @@ void main() {
       });
 
       group('round-trip serialization', () {
-        test('preserves data through toMap/fromMap', () {
+        test('preserves data through toJson/fromJson', () {
           final original = Slide(
             key: 'roundtrip',
             options: SlideOptions(title: 'RT Title', style: 'rt-style'),
@@ -236,7 +245,7 @@ void main() {
             comments: ['RT Comment'],
           );
 
-          final restored = Slide.fromMap(original.toMap());
+          final restored = Slide.fromJson(original.toJson());
 
           expect(restored.key, original.key);
           expect(restored.options?.title, original.options?.title);
@@ -326,12 +335,12 @@ void main() {
 
       group('schema', () {
         test('validates minimal slide', () {
-          final result = Slide.schema.safeParse({'key': 'valid'});
+          final result = SlideSchema.wireSchema.safeParse({'key': 'valid'});
           expect(result.isOk, isTrue);
         });
 
         test('validates slide with all fields', () {
-          final result = Slide.schema.safeParse({
+          final result = SlideSchema.wireSchema.safeParse({
             'key': 'full',
             'options': {'title': 'T'},
             'sections': [],
@@ -341,7 +350,7 @@ void main() {
         });
 
         test('fails validation when options is explicitly null', () {
-          final result = Slide.schema.safeParse({
+          final result = SlideSchema.wireSchema.safeParse({
             'key': 'full',
             'options': null,
           });
@@ -350,7 +359,7 @@ void main() {
 
         test('fails validation when options fields are explicitly null', () {
           for (final field in ['title', 'style', 'layout', 'template']) {
-            final result = Slide.schema.safeParse({
+            final result = SlideSchema.wireSchema.safeParse({
               'key': 'full',
               'options': {field: null},
             });
@@ -437,6 +446,27 @@ void main() {
           expect(copy.template, 'new-template');
         });
 
+        test('null retains existing nullable values', () {
+          final original = SlideOptions(
+            title: 'Title',
+            style: 'Style',
+            layout: SlideLayout.fullscreen,
+            template: 'template',
+          );
+
+          final copy = original.copyWith(
+            title: null,
+            style: null,
+            layout: null,
+            template: null,
+          );
+
+          expect(copy.title, original.title);
+          expect(copy.style, original.style);
+          expect(copy.layout, original.layout);
+          expect(copy.template, original.template);
+        });
+
         test('preserves values when not specified', () {
           final original = SlideOptions(
             title: 'T',
@@ -455,10 +485,10 @@ void main() {
         });
       });
 
-      group('toMap', () {
+      group('toJson', () {
         test('serializes empty options', () {
           final options = SlideOptions();
-          final map = options.toMap();
+          final map = options.toJson();
 
           expect(map.containsKey('title'), isFalse);
           expect(map.containsKey('style'), isFalse);
@@ -470,7 +500,7 @@ void main() {
             style: 'S',
             layout: SlideLayout.fullscreen,
           );
-          final map = options.toMap();
+          final map = options.toJson();
 
           expect(map['title'], 'T');
           expect(map['style'], 'S');
@@ -479,14 +509,14 @@ void main() {
 
         test('serializes template when present', () {
           final options = SlideOptions(template: 'my-template');
-          final map = options.toMap();
+          final map = options.toJson();
 
           expect(map['template'], 'my-template');
         });
 
         test('omits template when null', () {
           final options = SlideOptions(title: 'T');
-          final map = options.toMap();
+          final map = options.toJson();
 
           expect(map.containsKey('template'), isFalse);
         });
@@ -496,7 +526,7 @@ void main() {
             title: 'T',
             args: {'custom1': 'val1', 'custom2': 42},
           );
-          final map = options.toMap();
+          final map = options.toJson();
 
           expect(map['title'], 'T');
           expect(map['custom1'], 'val1');
@@ -517,7 +547,7 @@ void main() {
               'custom': 'value',
             },
           );
-          final map = options.toMap();
+          final map = options.toJson();
 
           expect(map['title'], 'Reserved title');
           expect(map['style'], 'reserved-style');
@@ -527,9 +557,9 @@ void main() {
         });
       });
 
-      group('fromMap', () {
+      group('fromJson', () {
         test('deserializes empty map', () {
-          final options = SlideOptions.fromMap({});
+          final options = SlideOptions.fromJson({});
 
           expect(options.title, isNull);
           expect(options.style, isNull);
@@ -542,7 +572,7 @@ void main() {
             'style': 'parsed-style',
             'layout': 'fullscreen',
           };
-          final options = SlideOptions.fromMap(map);
+          final options = SlideOptions.fromJson(map);
 
           expect(options.title, 'Parsed');
           expect(options.style, 'parsed-style');
@@ -551,14 +581,14 @@ void main() {
 
         test('deserializes template field', () {
           final map = {'template': 'parsed-template'};
-          final options = SlideOptions.fromMap(map);
+          final options = SlideOptions.fromJson(map);
 
           expect(options.template, 'parsed-template');
         });
 
         test('removes template from args', () {
           final map = {'template': 'tmpl', 'extra': 'val'};
-          final options = SlideOptions.fromMap(map);
+          final options = SlideOptions.fromJson(map);
 
           expect(options.template, 'tmpl');
           expect(options.args.containsKey('template'), isFalse);
@@ -571,7 +601,7 @@ void main() {
             'customKey': 'customValue',
             'anotherKey': 123,
           };
-          final options = SlideOptions.fromMap(map);
+          final options = SlideOptions.fromJson(map);
 
           expect(options.title, 'T');
           expect(options.args['customKey'], 'customValue');
@@ -580,7 +610,7 @@ void main() {
         });
 
         test('strips all reserved keys from args', () {
-          final options = SlideOptions.fromMap({
+          final options = SlideOptions.fromJson({
             'title': 'T',
             'style': 'S',
             'layout': 'normal',
@@ -598,7 +628,7 @@ void main() {
       });
 
       group('round-trip serialization', () {
-        test('preserves data through toMap/fromMap', () {
+        test('preserves data through toJson/fromJson', () {
           final original = SlideOptions(
             title: 'RT',
             style: 'rt-style',
@@ -606,7 +636,7 @@ void main() {
             args: {'k': 'v'},
           );
 
-          final restored = SlideOptions.fromMap(original.toMap());
+          final restored = SlideOptions.fromJson(original.toJson());
 
           expect(restored.title, original.title);
           expect(restored.style, original.style);
@@ -615,10 +645,10 @@ void main() {
           expect(restored.args['k'], original.args['k']);
         });
 
-        test('preserves template through toMap/fromMap', () {
+        test('preserves template through toJson/fromJson', () {
           final original = SlideOptions(title: 'RT', template: 'rt-template');
 
-          final restored = SlideOptions.fromMap(original.toMap());
+          final restored = SlideOptions.fromJson(original.toJson());
 
           expect(restored.template, original.template);
           expect(restored.args.containsKey('template'), isFalse);
@@ -710,12 +740,12 @@ void main() {
 
       group('schema', () {
         test('validates empty map', () {
-          final result = SlideOptions.schema.safeParse({});
+          final result = SlideOptionsSchema.wireSchema.safeParse({});
           expect(result.isOk, isTrue);
         });
 
         test('validates map with title and style', () {
-          final result = SlideOptions.schema.safeParse({
+          final result = SlideOptionsSchema.wireSchema.safeParse({
             'title': 'T',
             'style': 'S',
           });
@@ -723,7 +753,7 @@ void main() {
         });
 
         test('allows additional properties', () {
-          final result = SlideOptions.schema.safeParse({
+          final result = SlideOptionsSchema.wireSchema.safeParse({
             'title': 'T',
             'custom': 'value',
           });
@@ -731,7 +761,7 @@ void main() {
         });
 
         test('validates map with template field', () {
-          final result = SlideOptions.schema.safeParse({
+          final result = SlideOptionsSchema.wireSchema.safeParse({
             'title': 'T',
             'template': 'my-template',
           });
@@ -739,7 +769,7 @@ void main() {
         });
 
         test('validates map with only template field', () {
-          final result = SlideOptions.schema.safeParse({
+          final result = SlideOptionsSchema.wireSchema.safeParse({
             'template': 'standalone-template',
           });
           expect(result.isOk, isTrue);
@@ -747,24 +777,30 @@ void main() {
 
         test('validates normal and fullscreen layout values', () {
           expect(
-            SlideOptions.schema.safeParse({'layout': 'normal'}).isOk,
+            SlideOptionsSchema.wireSchema.safeParse({'layout': 'normal'}).isOk,
             isTrue,
           );
           expect(
-            SlideOptions.schema.safeParse({'layout': 'fullscreen'}).isOk,
+            SlideOptionsSchema.wireSchema.safeParse({
+              'layout': 'fullscreen',
+            }).isOk,
             isTrue,
           );
         });
 
         test('rejects invalid layout values', () {
-          final result = SlideOptions.schema.safeParse({'layout': 'wide'});
+          final result = SlideOptionsSchema.wireSchema.safeParse({
+            'layout': 'wide',
+          });
 
           expect(result.isOk, isFalse);
         });
 
         test('fails validation when optional fields are explicitly null', () {
           for (final field in ['title', 'style', 'layout', 'template']) {
-            final result = SlideOptions.schema.safeParse({field: null});
+            final result = SlideOptionsSchema.wireSchema.safeParse({
+              field: null,
+            });
             expect(result.isOk, isFalse);
           }
         });

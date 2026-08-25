@@ -15,6 +15,7 @@ import 'catalog_question_step.dart';
 import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 
+part 'ask_user_slider.ack.dart';
 part 'ask_user_slider.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
@@ -40,7 +41,7 @@ final _askUserSliderSchema = Ack.object({
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserSlider catalog component for numeric input questions.
-final askUserSlider = typedCatalogItem<AskUserSliderType>(
+final askUserSlider = typedCatalogItem<AskUserSlider>(
   name: 'AskUserSlider',
   dataSchema: componentSchema(_askUserSliderSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -59,7 +60,7 @@ final askUserSlider = typedCatalogItem<AskUserSliderType>(
       ]
     ''',
   ],
-  parse: AskUserSliderType.parse,
+  parse: AskUserSlider.parse,
   widgetBuilder: (context, data) =>
       _AskUserSliderContent(data: data, itemContext: context),
 );
@@ -195,7 +196,7 @@ class _DeckLengthPreset extends StatelessWidget {
 }
 
 class _AskUserSliderContent extends StatefulWidget {
-  final AskUserSliderType data;
+  final AskUserSlider data;
   final CatalogItemContext itemContext;
 
   const _AskUserSliderContent({required this.data, required this.itemContext});

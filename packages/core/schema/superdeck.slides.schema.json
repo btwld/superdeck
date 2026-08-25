@@ -5,6 +5,7 @@
     "additionalProperties": true,
     "properties": {
       "comments": {
+        "default": [],
         "items": {
           "type": "string"
         },
@@ -33,9 +34,11 @@
             "type": "string"
           }
         },
-        "type": "object"
+        "type": "object",
+        "x-transformed": true
       },
       "sections": {
+        "default": [],
         "items": {
           "additionalProperties": false,
           "properties": {
@@ -77,6 +80,7 @@
                         "type": "string"
                       },
                       "flex": {
+                        "default": 1,
                         "exclusiveMinimum": 0,
                         "type": "integer"
                       },
@@ -85,19 +89,23 @@
                         "properties": {
                           "bottom": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "left": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "right": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "top": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           }
                         },
                         "required": [
@@ -106,26 +114,31 @@
                           "bottom",
                           "left"
                         ],
-                        "type": "object"
+                        "type": "object",
+                        "x-transformed": true
                       },
                       "padding": {
                         "additionalProperties": false,
                         "properties": {
                           "bottom": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "left": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "right": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "top": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           }
                         },
                         "required": [
@@ -134,9 +147,11 @@
                           "bottom",
                           "left"
                         ],
-                        "type": "object"
+                        "type": "object",
+                        "x-transformed": true
                       },
                       "scrollable": {
+                        "default": false,
                         "type": "boolean"
                       },
                       "type": {
@@ -167,6 +182,7 @@
                         "type": "string"
                       },
                       "flex": {
+                        "default": 1,
                         "exclusiveMinimum": 0,
                         "type": "integer"
                       },
@@ -175,19 +191,23 @@
                         "properties": {
                           "bottom": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "left": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "right": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "top": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           }
                         },
                         "required": [
@@ -196,7 +216,8 @@
                           "bottom",
                           "left"
                         ],
-                        "type": "object"
+                        "type": "object",
+                        "x-transformed": true
                       },
                       "name": {
                         "type": "string"
@@ -206,19 +227,23 @@
                         "properties": {
                           "bottom": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "left": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "right": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           },
                           "top": {
                             "minimum": 0,
-                            "type": "number"
+                            "type": "number",
+                            "x-transformed": true
                           }
                         },
                         "required": [
@@ -227,9 +252,11 @@
                           "bottom",
                           "left"
                         ],
-                        "type": "object"
+                        "type": "object",
+                        "x-transformed": true
                       },
                       "scrollable": {
+                        "default": false,
                         "type": "boolean"
                       },
                       "type": {
@@ -243,24 +270,30 @@
                     ],
                     "type": "object"
                   }
-                ]
+                ],
+                "x-transformed": true
               },
               "type": "array"
             },
             "flex": {
+              "default": 1,
               "exclusiveMinimum": 0,
               "type": "integer"
             },
             "spacing": {
+              "default": 0.0,
               "minimum": 0,
-              "type": "number"
+              "type": "number",
+              "x-transformed": true
             },
             "type": {
               "const": "section",
+              "default": "section",
               "type": "string"
             }
           },
-          "type": "object"
+          "type": "object",
+          "x-transformed": true
         },
         "type": "array"
       }
@@ -268,7 +301,8 @@
     "required": [
       "key"
     ],
-    "type": "object"
+    "type": "object",
+    "x-transformed": true
   },
   "title": "Slides Contract",
   "type": "array"

@@ -80,7 +80,7 @@ void main() {
   });
 
   test('assembles bounded single-slide context deterministically', () {
-    final plan = DeckPlanType.parse({
+    final plan = DeckPlan.parse({
       'topic': 'Reliable systems',
       'story': 'Move from uncertainty to a reliable operating rhythm.',
       'theme': _themeReference,
@@ -187,7 +187,7 @@ void main() {
   test(
     'repairs metric identity from original grounded facts, not plan labels',
     () {
-      final plan = DeckPlanType.parse({
+      final plan = DeckPlan.parse({
         'topic': 'Planning',
         'story': 'Replace roadmap theater with continuous planning.',
         'theme': _themeReference,
@@ -251,7 +251,7 @@ void main() {
     () async {
       final provider = AssetGenerationPromptProvider();
       await provider.load();
-      final plan = DeckPlanType.parse({
+      final plan = DeckPlan.parse({
         'topic': 'Adoption',
         'story': 'Move from output to adoption.',
         'theme': _themeReference,
@@ -300,7 +300,7 @@ void main() {
   test('builds one compact ordered prompt for a narrative section', () async {
     final provider = AssetGenerationPromptProvider();
     await provider.load();
-    final plan = DeckPlanType.parse({
+    final plan = DeckPlan.parse({
       'topic': 'Adoption',
       'story': 'Move from evidence to a practical decision.',
       'theme': _themeReference,
@@ -368,7 +368,7 @@ void main() {
       final catalog = PresentationThemeCatalog.withDefaults();
       final provider = AssetGenerationPromptProvider();
       await provider.load();
-      final plan = DeckPlanType.parse({
+      final plan = DeckPlan.parse({
         'topic': 'Reliable systems',
         'story': 'Move from uncertainty to a reliable operating rhythm.',
         'theme': _themeReference,

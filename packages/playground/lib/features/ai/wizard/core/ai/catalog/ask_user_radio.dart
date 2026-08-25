@@ -16,6 +16,7 @@ import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 import 'wizard_option_icon.dart';
 
+part 'ask_user_radio.ack.dart';
 part 'ask_user_radio.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
@@ -48,7 +49,7 @@ final _askUserRadioSchema = Ack.object({
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserRadio catalog component for single-selection questions.
-final askUserRadio = typedCatalogItem<AskUserRadioType>(
+final askUserRadio = typedCatalogItem<AskUserRadio>(
   name: 'AskUserRadio',
   dataSchema: componentSchema(_askUserRadioSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -69,7 +70,7 @@ final askUserRadio = typedCatalogItem<AskUserRadioType>(
       ]
     ''',
   ],
-  parse: AskUserRadioType.parse,
+  parse: AskUserRadio.parse,
   widgetBuilder: (context, data) =>
       _AskUserRadioContent(data: data, itemContext: context),
 );
@@ -77,7 +78,7 @@ final askUserRadio = typedCatalogItem<AskUserRadioType>(
 // ─────────────────────────────────── WIDGET ───────────────────────────────────
 
 class _AskUserRadioContent extends StatefulWidget {
-  final AskUserRadioType data;
+  final AskUserRadio data;
   final CatalogItemContext itemContext;
 
   const _AskUserRadioContent({required this.data, required this.itemContext});

@@ -12,17 +12,26 @@ void main() {
   });
 
   group('DeckBuildError', () {
-    test('toMap/fromObject round-trip', () {
+    test('toJson/fromObject round-trip', () {
       const error = DeckBuildError(message: 'Build failed');
 
-      final parsed = DeckBuildError.fromObject(error.toMap());
+      final parsed = DeckBuildError.fromObject(error.toJson());
 
       expect(parsed, error);
+    });
+
+    test('discards unknown persisted fields', () {
+      final parsed = DeckBuildError.fromJson({
+        'message': 'Build failed',
+        'legacyCode': 42,
+      });
+
+      expect(parsed.toJson(), {'message': 'Build failed'});
     });
   });
 
   group('DeckBuildStatus', () {
-    test('toMap/fromObject round-trip', () {
+    test('toJson/fromObject round-trip', () {
       final timestamp = DateTime.parse('2026-03-10T12:00:00.000Z');
       final status = DeckBuildStatus(
         phase: DeckBuildPhase.success,
@@ -30,7 +39,7 @@ void main() {
         slideCount: 7,
       );
 
-      final parsed = DeckBuildStatus.fromObject(status.toMap());
+      final parsed = DeckBuildStatus.fromObject(status.toJson());
 
       expect(parsed, status);
     });
@@ -53,6 +62,16 @@ void main() {
 
       expect(missing, isNull);
       expect(invalid, isNull);
+    });
+
+    test('discards unknown persisted fields', () {
+      final parsed = DeckBuildStatus.fromJson({
+        'status': 'success',
+        'timestamp': '2026-03-10T12:00:00.000Z',
+        'legacyProgress': 100,
+      });
+
+      expect(parsed.toJson(), isNot(contains('legacyProgress')));
     });
   });
 }

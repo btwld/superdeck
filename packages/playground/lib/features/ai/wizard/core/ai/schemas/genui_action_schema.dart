@@ -1,6 +1,7 @@
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 
+part 'genui_action_schema.ack.dart';
 part 'genui_action_schema.g.dart';
 
 @AckType(name: 'ActionContextValue')
@@ -28,10 +29,10 @@ final _actionContextEntrySchema = Ack.object({
 /// 'action': actionSchema,
 ///
 /// // Parse action data:
-/// final action = ActionType.parse(data.action);
+/// final action = GenUiAction.parse(data.action);
 /// final name = action.name;
 /// ```
-@AckType(name: 'Action')
+@AckType(name: 'GenUiAction')
 final actionSchema = Ack.object({
   'name': Ack.string().describe('Action name to dispatch'),
   'context': Ack.list(

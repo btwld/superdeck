@@ -16,6 +16,7 @@ import 'catalog_question_step.dart';
 import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 
+part 'ask_user_checkbox.ack.dart';
 part 'ask_user_checkbox.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
@@ -47,7 +48,7 @@ final _askUserCheckboxSchema = Ack.object({
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserCheckbox catalog component for multiple-selection questions.
-final askUserCheckbox = typedCatalogItem<AskUserCheckboxType>(
+final askUserCheckbox = typedCatalogItem<AskUserCheckbox>(
   name: 'AskUserCheckbox',
   dataSchema: componentSchema(_askUserCheckboxSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -66,7 +67,7 @@ final askUserCheckbox = typedCatalogItem<AskUserCheckboxType>(
       ]
     ''',
   ],
-  parse: AskUserCheckboxType.parse,
+  parse: AskUserCheckbox.parse,
   widgetBuilder: (context, data) =>
       _AskUserCheckboxContent(data: data, itemContext: context),
 );
@@ -74,7 +75,7 @@ final askUserCheckbox = typedCatalogItem<AskUserCheckboxType>(
 // ─────────────────────────────────── WIDGET ───────────────────────────────────
 
 class _AskUserCheckboxContent extends StatefulWidget {
-  final AskUserCheckboxType data;
+  final AskUserCheckbox data;
   final CatalogItemContext itemContext;
 
   const _AskUserCheckboxContent({

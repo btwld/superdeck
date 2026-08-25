@@ -139,12 +139,12 @@ Finder _buildSlidesButton() => find.ancestor(
   matching: find.byWidgetPredicate((widget) => widget is OutlinedButton),
 );
 
-DeckPlanType _plan(DeckGenerationRequest request) {
+DeckPlan _plan(DeckGenerationRequest request) {
   final themes = PresentationThemeCatalog.withDefaults();
   final typography = PresentationTypographyCatalog.withDefaults();
   final descriptor = themes.current(request.themeId!)!;
 
-  return DeckPlanType.parse({
+  return DeckPlan.parse({
     'topic': 'SuperDeck',
     'story': 'A rough idea becomes a presentation-ready story.',
     'theme': buildDeckThemeReference(
@@ -184,7 +184,7 @@ DeckPlanType _plan(DeckGenerationRequest request) {
 final class _FakeGenerationLabService extends DeckGeneratorService {
   _FakeGenerationLabService(this.planned) : super(apiKey: 'test-key');
 
-  final DeckPlanType planned;
+  final DeckPlan planned;
   var planCalls = 0;
   var compositionCalls = 0;
 
@@ -202,7 +202,7 @@ final class _FakeGenerationLabService extends DeckGeneratorService {
   @override
   Future<DeckGenerationResult> generateFromPlan(
     DeckGenerationRequest request,
-    DeckPlanType approvedPlan, {
+    DeckPlan approvedPlan, {
     onProgress,
     onTrace,
     isCancelled,

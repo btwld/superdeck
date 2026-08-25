@@ -829,7 +829,7 @@ void main() {
             key: 'zero-padding',
             sections: [
               SectionBlock([
-                WidgetBlock.fromMap({
+                WidgetBlock.fromJson({
                   'type': 'widget',
                   'name': 'custom',
                   'padding': {'top': 0, 'right': 0, 'bottom': 0, 'left': 0},
@@ -881,7 +881,7 @@ void main() {
             key: 'asymmetric-padding',
             sections: [
               SectionBlock([
-                WidgetBlock.fromMap({
+                WidgetBlock.fromJson({
                   'type': 'widget',
                   'name': 'custom',
                   'padding': {'top': 30, 'right': 20, 'bottom': 40, 'left': 10},
@@ -913,7 +913,7 @@ void main() {
               key: 'preserved-variant-geometry',
               sections: [
                 SectionBlock([
-                  WidgetBlock.fromMap({
+                  WidgetBlock.fromJson({
                     'type': 'widget',
                     'name': 'chart',
                     'padding': {'top': 4, 'right': 4, 'bottom': 4, 'left': 4},
@@ -977,7 +977,7 @@ void main() {
               key: '$name-padding',
               sections: [
                 SectionBlock([
-                  WidgetBlock.fromMap({
+                  WidgetBlock.fromJson({
                     'type': 'widget',
                     'name': name,
                     'padding': {
@@ -1010,7 +1010,7 @@ void main() {
             key: 'asymmetric-margin',
             sections: [
               SectionBlock([
-                WidgetBlock.fromMap({
+                WidgetBlock.fromJson({
                   'type': 'widget',
                   'name': 'custom',
                   'margin': {'top': 10, 'right': 20, 'bottom': 30, 'left': 40},

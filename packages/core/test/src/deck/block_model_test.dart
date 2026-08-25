@@ -1,3 +1,4 @@
+import 'package:ack/ack.dart';
 import 'package:superdeck_core/src/deck/block_insets.dart';
 import 'package:superdeck_core/src/deck/block_model.dart';
 import 'package:test/test.dart';
@@ -15,12 +16,7 @@ Matcher _throwsInvalidFlex() {
 }
 
 Matcher _throwsMappedInvalidFlex() {
-  return throwsA(
-    predicate<Object>((error) {
-      final message = error.toString();
-      return message.contains('flex') && message.contains('greater than zero');
-    }, 'an error naming flex and requiring a value greater than zero'),
-  );
+  return throwsA(isA<AckException>());
 }
 
 Matcher _throwsInvalidSpacing() {
@@ -344,7 +340,7 @@ void main() {
           test('$field: $input normalizes to four physical edges', () {
             final block = Block.parseAuthoring({'type': 'block', field: input});
 
-            expect(block.toMap()[field], normalized);
+            expect(block.toJson()[field], normalized);
           });
         }
       }
@@ -367,7 +363,7 @@ void main() {
             {'top': 12, 'right': 24},
           ]) {
             expect(
-              ContentBlock.schema.safeParse({
+              ContentBlockSchema.wireSchema.safeParse({
                 'type': 'block',
                 field: input,
               }).isOk,
@@ -381,7 +377,7 @@ void main() {
       test('contract schema accepts normalized four-edge insets', () {
         for (final field in const ['padding', 'margin']) {
           expect(
-            ContentBlock.schema.safeParse({
+            ContentBlockSchema.wireSchema.safeParse({
               'type': 'block',
               field: {'top': 1, 'right': 2, 'bottom': 3, 'left': 4},
             }).isOk,
@@ -447,7 +443,7 @@ void main() {
             field: {'top': 12},
           });
 
-          expect(block.toMap()[field], {
+          expect(block.toJson()[field], {
             'top': 12.0,
             'right': 0.0,
             'bottom': 0.0,
@@ -473,13 +469,13 @@ void main() {
       });
 
       test('public constructors create normalized insets', () {
-        expect(BlockInsets.all(8).toMap(), {
+        expect(BlockInsets.all(8).toJson(), {
           'top': 8.0,
           'right': 8.0,
           'bottom': 8.0,
           'left': 8.0,
         });
-        expect(BlockInsets.symmetric(horizontal: 12, vertical: 6).toMap(), {
+        expect(BlockInsets.symmetric(horizontal: 12, vertical: 6).toJson(), {
           'top': 6.0,
           'right': 12.0,
           'bottom': 6.0,
@@ -505,14 +501,14 @@ void main() {
       });
 
       test('generated map and copy paths preserve invariants', () {
-        final insets = BlockInsets.fromMap({
+        final insets = BlockInsets.fromJson({
           'top': 1,
           'right': 2,
           'bottom': 3,
           'left': 4,
         });
 
-        expect(insets.toMap(), {
+        expect(insets.toJson(), {
           'top': 1.0,
           'right': 2.0,
           'bottom': 3.0,
@@ -590,9 +586,9 @@ void main() {
           expect(() => block.copyWith(flex: 0), _throwsInvalidFlex());
         });
 
-        test('fromMap rejects non-positive flex', () {
+        test('fromJson rejects non-positive flex', () {
           expect(
-            () => ContentBlock.fromMap({'type': 'block', 'flex': -1}),
+            () => ContentBlock.fromJson({'type': 'block', 'flex': -1}),
             _throwsMappedInvalidFlex(),
           );
         });
@@ -600,7 +596,7 @@ void main() {
         test('parse reports the flex field and accepted range', () {
           expect(
             () => ContentBlock.parse({'type': 'block', 'flex': 0}),
-            _throwsInvalidFlex(),
+            _throwsMappedInvalidFlex(),
           );
         });
       });
@@ -654,10 +650,10 @@ void main() {
         });
       });
 
-      group('toMap', () {
+      group('toJson', () {
         test('serializes minimal block', () {
           final block = ContentBlock('');
-          final map = block.toMap();
+          final map = block.toJson();
 
           expect(map['type'], 'block');
           expect(map['flex'], 1);
@@ -674,7 +670,7 @@ void main() {
             padding: BlockInsets.symmetric(horizontal: 12, vertical: 8),
             scrollable: true,
           );
-          final map = block.toMap();
+          final map = block.toJson();
 
           expect(map['type'], 'block');
           expect(map['content'], 'Content');
@@ -690,15 +686,33 @@ void main() {
         });
       });
 
-      group('fromMap', () {
+      group('fromJson', () {
         test('deserializes minimal map', () {
           final map = {'type': 'block'};
-          final block = ContentBlock.fromMap(map);
+          final block = ContentBlock.fromJson(map);
 
           expect(block.content, '');
           expect(block.flex, 1);
           expect(block.scrollable, false);
           expect(block.align, isNull);
+        });
+
+        test('direct branch accepts an omitted discriminator', () {
+          final block = ContentBlock.fromJson({'content': 'Direct'});
+
+          expect(block.content, 'Direct');
+          expect(block.toJson()['type'], ContentBlock.key);
+        });
+
+        test('discards unknown fields', () {
+          final block = ContentBlock.fromJson({
+            'type': 'block',
+            'content': 'Known',
+            'unknown': {'nested': true},
+          });
+
+          expect(block.content, 'Known');
+          expect(block.toJson(), isNot(contains('unknown')));
         });
 
         test('deserializes full map', () {
@@ -710,7 +724,7 @@ void main() {
             'padding': {'top': 1, 'right': 2, 'bottom': 3, 'left': 4},
             'scrollable': true,
           };
-          final block = ContentBlock.fromMap(map);
+          final block = ContentBlock.fromJson(map);
 
           expect(block.content, 'Content');
           expect(block.align, ContentAlignment.center);
@@ -724,27 +738,28 @@ void main() {
 
         test('deserializes new block type', () {
           final map = {'type': 'block', 'content': 'New format'};
-          final block = ContentBlock.fromMap(map);
+          final block = ContentBlock.fromJson(map);
 
           expect(block.content, 'New format');
           expect(block.type, 'block');
         });
 
-        test('handles numeric flex as double', () {
+        test('rejects non-integer numeric flex', () {
           final map = {'type': 'block', 'flex': 2.0};
-          final block = ContentBlock.fromMap(map);
-
-          expect(block.flex, 2);
+          expect(
+            () => ContentBlock.fromJson(map),
+            throwsA(isA<AckException>()),
+          );
         });
 
         test('throws on invalid alignment', () {
           final map = {'type': 'block', 'align': 'invalid'};
-          expect(() => ContentBlock.fromMap(map), throwsA(anything));
+          expect(() => ContentBlock.fromJson(map), throwsA(anything));
         });
       });
 
       group('round-trip serialization', () {
-        test('preserves data through toMap/fromMap', () {
+        test('preserves data through toJson/fromJson', () {
           final original = ContentBlock(
             'Test content',
             align: ContentAlignment.bottomRight,
@@ -753,7 +768,7 @@ void main() {
             scrollable: true,
           );
 
-          final restored = ContentBlock.fromMap(original.toMap());
+          final restored = ContentBlock.fromJson(original.toJson());
 
           expect(restored, original);
         });
@@ -786,7 +801,7 @@ void main() {
       group('schema', () {
         test('validates minimal block', () {
           // Note: 'content' is required to satisfy Google AI schema requirements
-          final result = ContentBlock.schema.safeParse({
+          final result = ContentBlockSchema.wireSchema.safeParse({
             'type': 'block',
             'content': '',
           });
@@ -794,7 +809,7 @@ void main() {
         });
 
         test('validates full block', () {
-          final result = ContentBlock.schema.safeParse({
+          final result = ContentBlockSchema.wireSchema.safeParse({
             'type': 'block',
             'content': 'Content',
             'align': 'center',
@@ -805,7 +820,7 @@ void main() {
         });
 
         test('rejects unsupported column type', () {
-          final result = ContentBlock.schema.safeParse({
+          final result = ContentBlockSchema.wireSchema.safeParse({
             'type': 'column',
             'content': 'Content',
           });
@@ -815,7 +830,7 @@ void main() {
 
         test('rejects non-positive flex', () {
           for (final flex in [0, -1]) {
-            final result = ContentBlock.schema.safeParse({
+            final result = ContentBlockSchema.wireSchema.safeParse({
               'type': 'block',
               'flex': flex,
             });
@@ -879,9 +894,9 @@ void main() {
           expect(() => section.copyWith(flex: 0), _throwsInvalidFlex());
         });
 
-        test('fromMap rejects non-positive flex', () {
+        test('fromJson rejects non-positive flex', () {
           expect(
-            () => SectionBlock.fromMap({'type': 'section', 'flex': -1}),
+            () => SectionBlock.fromJson({'type': 'section', 'flex': -1}),
             _throwsMappedInvalidFlex(),
           );
         });
@@ -889,7 +904,7 @@ void main() {
         test('parse reports the flex field and accepted range', () {
           expect(
             () => SectionBlock.parse({'type': 'section', 'flex': 0}),
-            _throwsInvalidFlex(),
+            _throwsMappedInvalidFlex(),
           );
         });
 
@@ -915,7 +930,7 @@ void main() {
           for (final spacing in [-1.0, double.nan, double.infinity]) {
             expect(
               () => SectionBlock.parse({'spacing': spacing}),
-              _throwsInvalidSpacing(),
+              throwsA(isA<AckException>()),
               reason: 'spacing: $spacing',
             );
           }
@@ -986,10 +1001,10 @@ void main() {
         });
       });
 
-      group('toMap', () {
+      group('toJson', () {
         test('serializes empty section', () {
           final section = SectionBlock([]);
-          final map = section.toMap();
+          final map = section.toJson();
 
           expect(map['type'], 'section');
           expect(map['blocks'], isEmpty);
@@ -999,7 +1014,7 @@ void main() {
 
         test('serializes section with blocks', () {
           final section = SectionBlock([ContentBlock('Test')], spacing: 20);
-          final map = section.toMap();
+          final map = section.toJson();
 
           expect(map['type'], 'section');
           expect(map['blocks'], isA<List>());
@@ -1009,10 +1024,10 @@ void main() {
         });
       });
 
-      group('fromMap', () {
+      group('fromJson', () {
         test('deserializes empty section', () {
           final map = {'type': 'section'};
-          final section = SectionBlock.fromMap(map);
+          final section = SectionBlock.fromJson(map);
 
           expect(section.blocks, isEmpty);
         });
@@ -1025,7 +1040,7 @@ void main() {
             ],
             'spacing': 18,
           };
-          final section = SectionBlock.fromMap(map);
+          final section = SectionBlock.fromJson(map);
 
           expect(section.blocks.length, 1);
           expect((section.blocks[0] as ContentBlock).content, 'Test');
@@ -1035,7 +1050,7 @@ void main() {
 
       group('schema', () {
         test('validates full section', () {
-          final result = SectionBlock.schema.safeParse({
+          final result = SectionBlockSchema.wireSchema.safeParse({
             'align': 'center',
             'flex': 2,
             'blocks': [
@@ -1047,7 +1062,7 @@ void main() {
         });
 
         test('rejects section-level scrollable', () {
-          final result = SectionBlock.schema.safeParse({
+          final result = SectionBlockSchema.wireSchema.safeParse({
             'scrollable': true,
             'blocks': [
               {'type': 'block', 'content': 'Test'},
@@ -1058,7 +1073,7 @@ void main() {
         });
 
         test('rejects unknown section-level fields', () {
-          final result = SectionBlock.schema.safeParse({
+          final result = SectionBlockSchema.wireSchema.safeParse({
             'customSectionArg': 'value',
             'blocks': [
               {'type': 'block', 'content': 'Test'},
@@ -1070,7 +1085,7 @@ void main() {
 
         test('accepts finite non-negative spacing', () {
           for (final spacing in [0, 12.5, 40]) {
-            final result = SectionBlock.schema.safeParse({
+            final result = SectionBlockSchema.wireSchema.safeParse({
               'spacing': spacing,
               'blocks': <Object?>[],
             });
@@ -1082,14 +1097,16 @@ void main() {
         test('rejects non-positive flex and invalid spacing', () {
           for (final flex in [0, -1]) {
             expect(
-              SectionBlock.schema.safeParse({'flex': flex}).isOk,
+              SectionBlockSchema.wireSchema.safeParse({'flex': flex}).isOk,
               isFalse,
               reason: 'flex: $flex',
             );
           }
           for (final spacing in [-1, double.nan, double.infinity]) {
             expect(
-              SectionBlock.schema.safeParse({'spacing': spacing}).isOk,
+              SectionBlockSchema.wireSchema.safeParse({
+                'spacing': spacing,
+              }).isOk,
               isFalse,
               reason: 'spacing: $spacing',
             );
@@ -1213,13 +1230,13 @@ void main() {
           expect(widget.args.containsKey('padding'), isFalse);
           expect(widget.args.containsKey('margin'), isFalse);
           expect(widget.args['custom'], 'value');
-          expect(widget.toMap()['padding'], {
+          expect(widget.toJson()['padding'], {
             'top': 8.0,
             'right': 12.0,
             'bottom': 8.0,
             'left': 12.0,
           });
-          expect(widget.toMap()['margin'], {
+          expect(widget.toJson()['margin'], {
             'top': 4.0,
             'right': 4.0,
             'bottom': 4.0,
@@ -1261,10 +1278,10 @@ void main() {
         });
       });
 
-      group('toMap', () {
+      group('toJson', () {
         test('serializes widget without args', () {
           final widget = WidgetBlock(name: 'Test');
-          final map = widget.toMap();
+          final map = widget.toJson();
 
           expect(map['type'], 'widget');
           expect(map['name'], 'Test');
@@ -1277,7 +1294,7 @@ void main() {
             name: 'Test',
             args: {'customKey': 'customValue', 'count': 5},
           );
-          final map = widget.toMap();
+          final map = widget.toJson();
 
           expect(map['customKey'], 'customValue');
           expect(map['count'], 5);
@@ -1291,7 +1308,7 @@ void main() {
             scrollable: true,
             args: {'custom': 'value'},
           );
-          final map = widget.toMap();
+          final map = widget.toJson();
 
           expect(map['type'], 'widget');
           expect(map['name'], 'ReservedName');
@@ -1302,7 +1319,7 @@ void main() {
         });
       });
 
-      group('fromMap', () {
+      group('fromJson', () {
         test('extracts known fields', () {
           final map = {
             'type': 'widget',
@@ -1311,7 +1328,7 @@ void main() {
             'scrollable': true,
             'align': 'center',
           };
-          final widget = WidgetBlock.fromMap(map);
+          final widget = WidgetBlock.fromJson(map);
 
           expect(widget.name, 'MyWidget');
           expect(widget.flex, 3);
@@ -1326,7 +1343,7 @@ void main() {
             'customKey': 'customValue',
             'otherKey': 123,
           };
-          final widget = WidgetBlock.fromMap(map);
+          final widget = WidgetBlock.fromJson(map);
 
           expect(widget.args['customKey'], 'customValue');
           expect(widget.args['otherKey'], 123);
@@ -1335,7 +1352,7 @@ void main() {
         });
 
         test('strips reserved fields from args', () {
-          final widget = WidgetBlock.fromMap({
+          final widget = WidgetBlock.fromJson({
             'type': 'widget',
             'name': 'MyWidget',
             'align': 'center',
@@ -1354,7 +1371,7 @@ void main() {
       });
 
       group('round-trip serialization', () {
-        test('preserves data through toMap/fromMap', () {
+        test('preserves data through toJson/fromJson', () {
           final original = WidgetBlock(
             name: 'TestWidget',
             args: {'config': 'value'},
@@ -1363,7 +1380,7 @@ void main() {
             scrollable: true,
           );
 
-          final restored = WidgetBlock.fromMap(original.toMap());
+          final restored = WidgetBlock.fromJson(original.toJson());
 
           expect(restored, original);
         });
@@ -1395,30 +1412,37 @@ void main() {
     });
 
     group('Block', () {
-      group('fromMap', () {
+      group('fromJson', () {
         test('creates ContentBlock from block type', () {
           final map = {'type': 'block', 'content': 'Test'};
-          final block = Block.fromMap(map);
+          final block = Block.fromJson(map);
 
           expect(block, isA<ContentBlock>());
           expect((block as ContentBlock).content, 'Test');
         });
 
+        test('sealed union requires its discriminator', () {
+          expect(
+            () => Block.fromJson({'content': 'Missing type'}),
+            throwsA(isA<AckException>()),
+          );
+        });
+
         test('rejects unsupported column type', () {
           final map = {'type': 'column', 'content': 'Test'};
 
-          expect(() => Block.fromMap(map), throwsA(anything));
+          expect(() => Block.fromJson(map), throwsA(anything));
         });
 
         test('rejects SectionBlock from section type', () {
           final map = {'type': 'section', 'blocks': []};
 
-          expect(() => Block.fromMap(map), throwsA(anything));
+          expect(() => Block.fromJson(map), throwsA(anything));
         });
 
         test('creates WidgetBlock from widget type', () {
           final map = {'type': 'widget', 'name': 'Test'};
-          final block = Block.fromMap(map);
+          final block = Block.fromJson(map);
 
           expect(block, isA<WidgetBlock>());
           expect((block as WidgetBlock).name, 'Test');
@@ -1426,7 +1450,7 @@ void main() {
 
         test('throws for unknown type', () {
           final map = {'type': 'unknown'};
-          expect(() => Block.fromMap(map), throwsA(anything));
+          expect(() => Block.fromJson(map), throwsA(anything));
         });
       });
 
@@ -1454,14 +1478,14 @@ void main() {
         test('reports the flex field and accepted range', () {
           expect(
             () => Block.parse({'type': 'widget', 'name': 'Test', 'flex': -1}),
-            _throwsInvalidFlex(),
+            _throwsMappedInvalidFlex(),
           );
         });
       });
 
       group('schema', () {
         test('validates content block', () {
-          final result = Block.schema.safeParse({
+          final result = BlockSchema.wireSchema.safeParse({
             'type': 'block',
             'content': 'Test',
           });
@@ -1469,7 +1493,7 @@ void main() {
         });
 
         test('validates widget block', () {
-          final result = Block.schema.safeParse({
+          final result = BlockSchema.wireSchema.safeParse({
             'type': 'widget',
             'name': 'Test',
           });
@@ -1485,8 +1509,8 @@ void main() {
           WidgetBlock(name: 'W', args: {'x': 1}),
         ]);
 
-        final map = original.toMap();
-        final restored = SectionBlock.fromMap(map);
+        final map = original.toJson();
+        final restored = SectionBlock.fromJson(map);
 
         expect(restored.blocks.length, 2);
         expect(restored.blocks[0], isA<ContentBlock>());
@@ -1494,7 +1518,7 @@ void main() {
       });
 
       test('schema rejects nested sections', () {
-        final result = SectionBlock.schema.safeParse({
+        final result = SectionBlockSchema.wireSchema.safeParse({
           'blocks': [
             {'type': 'section', 'blocks': []},
           ],

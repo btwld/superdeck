@@ -1,4 +1,9 @@
-## Unreleased
+## 2.0.0
+
+- **Breaking:** remove `dart_mappable` from runtime deck configuration models.
+  `SlideTemplate`, `SlideConfiguration`, and `DeckOptions` now expose normal
+  typed `copyWith`, equality, hash, and string behavior; `copyWith(null)` keeps
+  the current value.
 
 - **Breaking:** render supported Mermaid fences directly with
   `flutter_mermaid` instead of the removed browser-backed build plugin.

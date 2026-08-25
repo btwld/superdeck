@@ -1,40 +1,33 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// dart format width=80
-
-// **************************************************************************
-// AckSchemaGenerator
-// **************************************************************************
 
 part of 'ask_user_slider.dart';
 
-/// Extension type for AskUserSlider
-extension type AskUserSliderType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static AskUserSliderType parse(Object? data) {
-    return _askUserSliderSchema.parseAs(
-      data,
-      (validated) => AskUserSliderType(validated as Map<String, Object?>),
-    );
-  }
+// **************************************************************************
+// AckJsonSerializableGenerator
+// **************************************************************************
 
-  static SchemaResult<AskUserSliderType> safeParse(Object? data) {
-    return _askUserSliderSchema.safeParseAs(
-      data,
-      (validated) => AskUserSliderType(validated as Map<String, Object?>),
-    );
-  }
+AskUserSlider _$AskUserSliderFromJson(
+  Map<String, dynamic> json,
+) => AskUserSlider(
+  question: AskUserSlider._ackFromRuntimeQuestion(json['question']),
+  description: AskUserSlider._ackFromRuntimeDescription(json['description']),
+  minValue: AskUserSlider._ackFromRuntimeMinValue(json['minValue']),
+  maxValue: AskUserSlider._ackFromRuntimeMaxValue(json['maxValue']),
+  defaultValue: AskUserSlider._ackFromRuntimeDefaultValue(json['defaultValue']),
+  unit: AskUserSlider._ackFromRuntimeUnit(json['unit']),
+  action: AskUserSlider._ackFromRuntimeAction(json['action']),
+);
 
-  String get question => _data['question'] as String;
-
-  String? get description => _data['description'] as String?;
-
-  int get minValue => _data['minValue'] as int;
-
-  int get maxValue => _data['maxValue'] as int;
-
-  int get defaultValue => _data['defaultValue'] as int;
-
-  String? get unit => _data['unit'] as String?;
-
-  ActionType get action => ActionType(_data['action'] as Map<String, Object?>);
-}
+Map<String, dynamic> _$AskUserSliderToJson(
+  AskUserSlider instance,
+) => <String, dynamic>{
+  'question': AskUserSlider._ackToRuntimeQuestion(instance.question),
+  'description': ?AskUserSlider._ackToRuntimeDescription(instance.description),
+  'minValue': AskUserSlider._ackToRuntimeMinValue(instance.minValue),
+  'maxValue': AskUserSlider._ackToRuntimeMaxValue(instance.maxValue),
+  'defaultValue': AskUserSlider._ackToRuntimeDefaultValue(
+    instance.defaultValue,
+  ),
+  'unit': ?AskUserSlider._ackToRuntimeUnit(instance.unit),
+  'action': AskUserSlider._ackToRuntimeAction(instance.action),
+};

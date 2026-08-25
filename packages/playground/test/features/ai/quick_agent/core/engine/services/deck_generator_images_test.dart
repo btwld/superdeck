@@ -107,7 +107,7 @@ final class _SuccessfulImageGenerator implements ImageGenerator {
   }
 }
 
-DeckPlanType _plan() => DeckPlanType.parse({
+DeckPlan _plan() => DeckPlan.parse({
   'topic': 'Ocean systems',
   'story': 'Move from ocean risk to practical restoration.',
   'theme': {'id': 'technical-paper', 'version': 1, 'density': 'balanced'},

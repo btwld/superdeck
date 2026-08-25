@@ -11,7 +11,9 @@ void main() {
       expect(workspace.deckJson.path, contains('superdeck.json'));
       expect(DeckPlugin, isNotNull);
       expect(slidesContractSchema, isNotNull);
-      expect(parseSlidesContract([slide.toMap()]), hasLength(1));
+      expect(SlideSchema.wireSchema, isNotNull);
+      expect(Slide.fromJson(slide.toJson()), slide);
+      expect(parseSlidesContract([slide.toJson()]), hasLength(1));
       expect(padding.left, 8);
     });
   });

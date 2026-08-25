@@ -3,6 +3,7 @@ import 'package:ack_annotations/ack_annotations.dart';
 
 import 'deck_schemas.dart';
 
+part 'outline_schema.ack.dart';
 part 'outline_schema.g.dart';
 
 /// Schema definitions for presentation planning (Phase 1).

@@ -1,6 +1,6 @@
 name: superdeck_cli
 description: Command line interface for SuperDeck
-version: 1.0.0
+version: 2.0.0
 homepage: https://github.com/btwld/superdeck
 documentation: https://docs.page/btwld/superdeck
 
@@ -17,8 +17,8 @@ dependencies:
   path: ^1.9.0
   yaml_writer: ^2.0.1
   meta: ^1.16.0
-  superdeck_core: ^1.0.0
-  superdeck_builder: ^1.0.0
+  superdeck_core: ^2.0.0
+  superdeck_builder: ^2.0.0
   mason_logger: ^0.3.1
 
 dev_dependencies:

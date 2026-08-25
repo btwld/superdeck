@@ -1,4 +1,7 @@
-## Unreleased
+## 2.0.0
+
+- **Breaking:** require `superdeck` and `superdeck_core` 2.0.0 as part of the
+  coordinated Ack 2.0 migration.
 
 - Capture PDF slide images with good quality on all platforms.
 - Use `FileSaver.saveFile` for default PDF saves on web and Linux, and surface

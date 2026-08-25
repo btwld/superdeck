@@ -1,147 +1,109 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// dart format width=80
-
-// **************************************************************************
-// AckSchemaGenerator
-// **************************************************************************
 
 part of 'outline_schema.dart';
 
-List<T> _$ackListCast<T>(Object? value) => (value as List).cast<T>();
+// **************************************************************************
+// AckJsonSerializableGenerator
+// **************************************************************************
 
-/// Extension type for DeckPlanSection
-extension type DeckPlanSectionType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static DeckPlanSectionType parse(Object? data) {
-    return deckPlanSectionSchema.parseAs(
-      data,
-      (validated) => DeckPlanSectionType(validated as Map<String, Object?>),
+DeckPlanSection _$DeckPlanSectionFromJson(Map<String, dynamic> json) =>
+    DeckPlanSection(
+      key: DeckPlanSection._ackFromRuntimeKey(json['key']),
+      title: DeckPlanSection._ackFromRuntimeTitle(json['title']),
+      purpose: DeckPlanSection._ackFromRuntimePurpose(json['purpose']),
+      transition: DeckPlanSection._ackFromRuntimeTransition(json['transition']),
+      slideKeys: DeckPlanSection._ackFromRuntimeSlideKeys(json['slideKeys']),
     );
-  }
 
-  static SchemaResult<DeckPlanSectionType> safeParse(Object? data) {
-    return deckPlanSectionSchema.safeParseAs(
-      data,
-      (validated) => DeckPlanSectionType(validated as Map<String, Object?>),
+Map<String, dynamic> _$DeckPlanSectionToJson(
+  DeckPlanSection instance,
+) => <String, dynamic>{
+  'key': DeckPlanSection._ackToRuntimeKey(instance.key),
+  'title': DeckPlanSection._ackToRuntimeTitle(instance.title),
+  'purpose': DeckPlanSection._ackToRuntimePurpose(instance.purpose),
+  'transition': DeckPlanSection._ackToRuntimeTransition(instance.transition),
+  'slideKeys': DeckPlanSection._ackToRuntimeSlideKeys(instance.slideKeys),
+};
+
+DeckPlanElement _$DeckPlanElementFromJson(Map<String, dynamic> json) =>
+    DeckPlanElement(
+      type: DeckPlanElement._ackFromRuntimeType(json['type']),
+      purpose: DeckPlanElement._ackFromRuntimePurpose(json['purpose']),
+      source: DeckPlanElement._ackFromRuntimeSource(json['source']),
+      generationPrompt: DeckPlanElement._ackFromRuntimeGenerationPrompt(
+        json['generationPrompt'],
+      ),
+      widgetName: DeckPlanElement._ackFromRuntimeWidgetName(json['widgetName']),
     );
-  }
 
-  String get key => _data['key'] as String;
+Map<String, dynamic> _$DeckPlanElementToJson(
+  DeckPlanElement instance,
+) => <String, dynamic>{
+  'type': DeckPlanElement._ackToRuntimeType(instance.type),
+  'purpose': DeckPlanElement._ackToRuntimePurpose(instance.purpose),
+  'source': ?DeckPlanElement._ackToRuntimeSource(instance.source),
+  'generationPrompt': ?DeckPlanElement._ackToRuntimeGenerationPrompt(
+    instance.generationPrompt,
+  ),
+  'widgetName': ?DeckPlanElement._ackToRuntimeWidgetName(instance.widgetName),
+};
 
-  String get title => _data['title'] as String;
+DeckPlanSlide _$DeckPlanSlideFromJson(
+  Map<String, dynamic> json,
+) => DeckPlanSlide(
+  key: DeckPlanSlide._ackFromRuntimeKey(json['key']),
+  title: DeckPlanSlide._ackFromRuntimeTitle(json['title']),
+  purpose: DeckPlanSlide._ackFromRuntimePurpose(json['purpose']),
+  sectionKey: DeckPlanSlide._ackFromRuntimeSectionKey(json['sectionKey']),
+  assertion: DeckPlanSlide._ackFromRuntimeAssertion(json['assertion']),
+  contentUnits: DeckPlanSlide._ackFromRuntimeContentUnits(json['contentUnits']),
+  narrativeRole: DeckPlanSlide._ackFromRuntimeNarrativeRole(
+    json['narrativeRole'],
+  ),
+  contentBrief: DeckPlanSlide._ackFromRuntimeContentBrief(json['contentBrief']),
+  continuity: DeckPlanSlide._ackFromRuntimeContinuity(json['continuity']),
+  composition: DeckPlanSlide._ackFromRuntimeComposition(json['composition']),
+  treatment: DeckPlanSlide._ackFromRuntimeTreatment(json['treatment']),
+  density: DeckPlanSlide._ackFromRuntimeDensity(json['density']),
+  elements: DeckPlanSlide._ackFromRuntimeElements(json['elements']),
+);
 
-  String get purpose => _data['purpose'] as String;
+Map<String, dynamic> _$DeckPlanSlideToJson(
+  DeckPlanSlide instance,
+) => <String, dynamic>{
+  'key': DeckPlanSlide._ackToRuntimeKey(instance.key),
+  'title': DeckPlanSlide._ackToRuntimeTitle(instance.title),
+  'purpose': DeckPlanSlide._ackToRuntimePurpose(instance.purpose),
+  'sectionKey': DeckPlanSlide._ackToRuntimeSectionKey(instance.sectionKey),
+  'assertion': DeckPlanSlide._ackToRuntimeAssertion(instance.assertion),
+  'contentUnits': DeckPlanSlide._ackToRuntimeContentUnits(
+    instance.contentUnits,
+  ),
+  'narrativeRole': DeckPlanSlide._ackToRuntimeNarrativeRole(
+    instance.narrativeRole,
+  ),
+  'contentBrief': DeckPlanSlide._ackToRuntimeContentBrief(
+    instance.contentBrief,
+  ),
+  'continuity': DeckPlanSlide._ackToRuntimeContinuity(instance.continuity),
+  'composition': DeckPlanSlide._ackToRuntimeComposition(instance.composition),
+  'treatment': DeckPlanSlide._ackToRuntimeTreatment(instance.treatment),
+  'density': DeckPlanSlide._ackToRuntimeDensity(instance.density),
+  'elements': ?DeckPlanSlide._ackToRuntimeElements(instance.elements),
+};
 
-  String get transition => _data['transition'] as String;
+DeckPlan _$DeckPlanFromJson(Map<String, dynamic> json) => DeckPlan(
+  topic: DeckPlan._ackFromRuntimeTopic(json['topic']),
+  story: DeckPlan._ackFromRuntimeStory(json['story']),
+  theme: DeckPlan._ackFromRuntimeTheme(json['theme']),
+  sections: DeckPlan._ackFromRuntimeSections(json['sections']),
+  slides: DeckPlan._ackFromRuntimeSlides(json['slides']),
+);
 
-  List<String> get slideKeys => _$ackListCast<String>(_data['slideKeys']);
-}
-
-/// Extension type for DeckPlanElement
-extension type DeckPlanElementType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static DeckPlanElementType parse(Object? data) {
-    return deckPlanElementSchema.parseAs(
-      data,
-      (validated) => DeckPlanElementType(validated as Map<String, Object?>),
-    );
-  }
-
-  static SchemaResult<DeckPlanElementType> safeParse(Object? data) {
-    return deckPlanElementSchema.safeParseAs(
-      data,
-      (validated) => DeckPlanElementType(validated as Map<String, Object?>),
-    );
-  }
-
-  String get type => _data['type'] as String;
-
-  String get purpose => _data['purpose'] as String;
-
-  String? get source => _data['source'] as String?;
-
-  String? get generationPrompt => _data['generationPrompt'] as String?;
-
-  String? get widgetName => _data['widgetName'] as String?;
-}
-
-/// Extension type for DeckPlanSlide
-extension type DeckPlanSlideType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static DeckPlanSlideType parse(Object? data) {
-    return deckPlanSlideSchema.parseAs(
-      data,
-      (validated) => DeckPlanSlideType(validated as Map<String, Object?>),
-    );
-  }
-
-  static SchemaResult<DeckPlanSlideType> safeParse(Object? data) {
-    return deckPlanSlideSchema.safeParseAs(
-      data,
-      (validated) => DeckPlanSlideType(validated as Map<String, Object?>),
-    );
-  }
-
-  String get key => _data['key'] as String;
-
-  String get title => _data['title'] as String;
-
-  String get purpose => _data['purpose'] as String;
-
-  String get sectionKey => _data['sectionKey'] as String;
-
-  String get assertion => _data['assertion'] as String;
-
-  List<String> get contentUnits => _$ackListCast<String>(_data['contentUnits']);
-
-  String get narrativeRole => _data['narrativeRole'] as String;
-
-  String get contentBrief => _data['contentBrief'] as String;
-
-  String get continuity => _data['continuity'] as String;
-
-  String get composition => _data['composition'] as String;
-
-  String get treatment => _data['treatment'] as String;
-
-  String get density => _data['density'] as String;
-
-  List<DeckPlanElementType>? get elements => _data['elements'] != null
-      ? (_data['elements'] as List)
-            .map((e) => DeckPlanElementType(e as Map<String, Object?>))
-            .toList()
-      : null;
-}
-
-/// Extension type for DeckPlan
-extension type DeckPlanType(Map<String, Object?> _data)
-    implements Map<String, Object?> {
-  static DeckPlanType parse(Object? data) {
-    return deckPlanSchema.parseAs(
-      data,
-      (validated) => DeckPlanType(validated as Map<String, Object?>),
-    );
-  }
-
-  static SchemaResult<DeckPlanType> safeParse(Object? data) {
-    return deckPlanSchema.safeParseAs(
-      data,
-      (validated) => DeckPlanType(validated as Map<String, Object?>),
-    );
-  }
-
-  String get topic => _data['topic'] as String;
-
-  String get story => _data['story'] as String;
-
-  DeckThemeReferenceType get theme =>
-      DeckThemeReferenceType(_data['theme'] as Map<String, Object?>);
-
-  List<DeckPlanSectionType> get sections => (_data['sections'] as List)
-      .map((e) => DeckPlanSectionType(e as Map<String, Object?>))
-      .toList();
-
-  List<DeckPlanSlideType> get slides => (_data['slides'] as List)
-      .map((e) => DeckPlanSlideType(e as Map<String, Object?>))
-      .toList();
-}
+Map<String, dynamic> _$DeckPlanToJson(DeckPlan instance) => <String, dynamic>{
+  'topic': DeckPlan._ackToRuntimeTopic(instance.topic),
+  'story': DeckPlan._ackToRuntimeStory(instance.story),
+  'theme': DeckPlan._ackToRuntimeTheme(instance.theme),
+  'sections': DeckPlan._ackToRuntimeSections(instance.sections),
+  'slides': DeckPlan._ackToRuntimeSlides(instance.slides),
+};
