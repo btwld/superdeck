@@ -749,12 +749,7 @@ WidgetBlock _image(
 }) {
   return WidgetBlock(
     name: 'image',
-    args: {
-      'src': src,
-      'fit': fit,
-      'width': ?width,
-      'height': ?height,
-    },
+    args: {'src': src, 'fit': fit, 'width': ?width, 'height': ?height},
   );
 }
 

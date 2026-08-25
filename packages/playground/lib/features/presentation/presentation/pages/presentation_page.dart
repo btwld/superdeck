@@ -31,7 +31,9 @@ class _PresentationPageState extends State<PresentationPage> {
     // it once mounted to open on the slide the author was editing.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<DeckController>().presentation.goToSlide(widget.initialIndex);
+      context.read<DeckController>().presentation.goToSlide(
+        widget.initialIndex,
+      );
     });
   }
 

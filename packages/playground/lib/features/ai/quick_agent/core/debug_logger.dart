@@ -50,7 +50,6 @@ class DebugLogger {
     if (!kDebugMode) return;
     debugPrint('\n--- $title ---');
   }
-
 }
 
 /// Global shortcut for logging.

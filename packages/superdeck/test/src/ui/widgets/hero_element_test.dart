@@ -35,7 +35,10 @@ void main() {
         // Mirrors TextElementBuilder._buildStableFlight at a flight endpoint:
         // a bare Text.rich with no `style:` argument.
         return const Text.rich(
-          TextSpan(style: headingStyle, children: [TextSpan(text: text)]),
+          TextSpan(
+            style: headingStyle,
+            children: [TextSpan(text: text)],
+          ),
           key: shuttleKey,
         );
       },
@@ -48,9 +51,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(body: Center(child: heroWidget())),
-          routes: {
-            '/next': (_) => Scaffold(body: Center(child: heroWidget())),
-          },
+          routes: {'/next': (_) => Scaffold(body: Center(child: heroWidget()))},
         ),
       );
 
