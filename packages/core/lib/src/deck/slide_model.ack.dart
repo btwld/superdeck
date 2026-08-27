@@ -14,6 +14,8 @@ final _slideObject = Ack.object({
   'comments': Ack.list(Ack.string()).withDefault(const []),
 }, additionalProperties: true);
 
+final _slideWireSchema = Ack.preserveBoundary(_slideObject);
+
 final _slideSchema = _slideObject.codec<Slide>(
   decode: _$SlideFromRuntime,
   encode: _$SlideToRuntime,
@@ -23,7 +25,7 @@ abstract final class SlideSchema {
   static AckSchema<Map<String, Object?>, Slide> get schema => _slideSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _slideObject;
+      _slideWireSchema;
 
   static Slide parse(Object? value, {String? debugName}) =>
       _slideSchema.parse(value, debugName: debugName)!;
@@ -131,6 +133,8 @@ final _slideOptionsObject = Ack.object({
   'template': Ack.string().optional().nullable(),
 }, additionalProperties: true);
 
+final _slideOptionsWireSchema = Ack.preserveBoundary(_slideOptionsObject);
+
 final _slideOptionsSchema = _slideOptionsObject.codec<SlideOptions>(
   decode: _$SlideOptionsFromRuntime,
   encode: _$SlideOptionsToRuntime,
@@ -141,7 +145,7 @@ abstract final class SlideOptionsSchema {
       _slideOptionsSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _slideOptionsObject;
+      _slideOptionsWireSchema;
 
   static SlideOptions parse(Object? value, {String? debugName}) =>
       _slideOptionsSchema.parse(value, debugName: debugName)!;

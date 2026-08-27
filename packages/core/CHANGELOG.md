@@ -4,6 +4,8 @@
   class-first models. Use the generated `*Schema` facades and model
   `fromJson`/`toJson` methods; unknown-field handling is now explicit per
   model, and generated `copyWith` treats `null` as unchanged.
+- Preserve boundary maps and lists from generated `wireSchema` validation
+  instead of retaining values decoded by nested codecs.
 
 - Add `SlideLayout` and the `SlideOptions.layout` field to the slide contract.
 - Add optional section `spacing`, block `padding` and `margin`, and inherited

@@ -11,6 +11,8 @@ final _deckBuildErrorObject = Ack.object({
   'message': Ack.string(),
 }, additionalProperties: true);
 
+final _deckBuildErrorWireSchema = Ack.preserveBoundary(_deckBuildErrorObject);
+
 final _deckBuildErrorSchema = _deckBuildErrorObject.codec<DeckBuildError>(
   decode: _$DeckBuildErrorFromRuntime,
   encode: _$DeckBuildErrorToRuntime,
@@ -21,7 +23,7 @@ abstract final class DeckBuildErrorSchema {
       _deckBuildErrorSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _deckBuildErrorObject;
+      _deckBuildErrorWireSchema;
 
   static DeckBuildError parse(Object? value, {String? debugName}) =>
       _deckBuildErrorSchema.parse(value, debugName: debugName)!;
@@ -102,6 +104,8 @@ final _deckBuildStatusObject = Ack.object({
   'error': DeckBuildErrorSchema.schema.optional().nullable(),
 }, additionalProperties: true);
 
+final _deckBuildStatusWireSchema = Ack.preserveBoundary(_deckBuildStatusObject);
+
 final _deckBuildStatusSchema = _deckBuildStatusObject.codec<DeckBuildStatus>(
   decode: _$DeckBuildStatusFromRuntime,
   encode: _$DeckBuildStatusToRuntime,
@@ -112,7 +116,7 @@ abstract final class DeckBuildStatusSchema {
       _deckBuildStatusSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _deckBuildStatusObject;
+      _deckBuildStatusWireSchema;
 
   static DeckBuildStatus parse(Object? value, {String? debugName}) =>
       _deckBuildStatusSchema.parse(value, debugName: debugName)!;

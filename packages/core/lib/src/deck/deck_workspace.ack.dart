@@ -13,6 +13,8 @@ final _deckWorkspaceObject = Ack.object({
   'outputDir': _safeWorkspacePathSchema().optional(),
 }, additionalProperties: true);
 
+final _deckWorkspaceWireSchema = Ack.preserveBoundary(_deckWorkspaceObject);
+
 final _deckWorkspaceSchema = _deckWorkspaceObject.codec<DeckWorkspace>(
   decode: _$DeckWorkspaceFromRuntime,
   encode: _$DeckWorkspaceToRuntime,
@@ -23,7 +25,7 @@ abstract final class DeckWorkspaceSchema {
       _deckWorkspaceSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _deckWorkspaceObject;
+      _deckWorkspaceWireSchema;
 
   static DeckWorkspace parse(Object? value, {String? debugName}) =>
       _deckWorkspaceSchema.parse(value, debugName: debugName)!;

@@ -36,11 +36,7 @@ final readSlideArgumentsSchema = Ack.object({
 
 /// Validates and constructs a core slide with a private transient key.
 Slide parseKeylessSlide(Object? value) {
-  keylessSlideSchema.parse(value);
-  // Preserve the boundary JSON for the typed parse. Nested schema codecs may
-  // normalize values while validating, and feeding that result through the
-  // model codec again would decode those nested values twice.
-  final map = Map<String, Object?>.from(value! as Map);
+  final map = keylessSlideSchema.parse(value)!;
 
   return Slide.fromJson({
     'key': 'tool_${generateValueHash(jsonEncode(map))}',

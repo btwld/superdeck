@@ -1061,6 +1061,25 @@ void main() {
           expect(result.isOk, isTrue);
         });
 
+        test('preserves nested blocks as wire maps', () {
+          final section = SectionBlockSchema.wireSchema.parse({
+            'blocks': [
+              {'type': 'block', 'content': 'Test'},
+            ],
+          });
+
+          final blocks = section!['blocks']! as List<Object?>;
+          final block = blocks.single;
+          expect(
+            block,
+            isA<Map<String, Object?>>().having(
+              (value) => value['content'],
+              'content',
+              'Test',
+            ),
+          );
+        });
+
         test('rejects section-level scrollable', () {
           final result = SectionBlockSchema.wireSchema.safeParse({
             'scrollable': true,

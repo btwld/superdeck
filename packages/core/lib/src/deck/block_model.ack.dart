@@ -17,6 +17,8 @@ final _contentBlockObject = Ack.object({
   'content': Ack.string().optional(),
 }, additionalProperties: true);
 
+final _contentBlockWireSchema = Ack.preserveBoundary(_contentBlockObject);
+
 final _contentBlockSchema = _contentBlockObject.codec<ContentBlock>(
   decode: _$ContentBlockFromRuntime,
   encode: _$ContentBlockToRuntime,
@@ -27,7 +29,7 @@ abstract final class ContentBlockSchema {
       _contentBlockSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _contentBlockObject;
+      _contentBlockWireSchema;
 
   static ContentBlock parse(Object? value, {String? debugName}) =>
       _contentBlockSchema.parse(value, debugName: debugName)!;
@@ -151,6 +153,8 @@ final _widgetBlockObject = Ack.object({
   'name': Ack.string(),
 }, additionalProperties: true);
 
+final _widgetBlockWireSchema = Ack.preserveBoundary(_widgetBlockObject);
+
 final _widgetBlockSchema = _widgetBlockObject.codec<WidgetBlock>(
   decode: _$WidgetBlockFromRuntime,
   encode: _$WidgetBlockToRuntime,
@@ -161,7 +165,7 @@ abstract final class WidgetBlockSchema {
       _widgetBlockSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _widgetBlockObject;
+      _widgetBlockWireSchema;
 
   static WidgetBlock parse(Object? value, {String? debugName}) =>
       _widgetBlockSchema.parse(value, debugName: debugName)!;
@@ -316,6 +320,8 @@ final _blockObject = Ack.discriminated(
   schemas: {'block': _contentBlockObject, 'widget': _widgetBlockObject},
 );
 
+final _blockWireSchema = Ack.preserveBoundary(_blockObject);
+
 final _blockSchema = _blockObject.codec<Block>(
   decode: (value) => switch (value['type']) {
     'block' => _$ContentBlockFromRuntime(value),
@@ -332,7 +338,7 @@ abstract final class BlockSchema {
   static AckSchema<Map<String, Object?>, Block> get schema => _blockSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _blockObject;
+      _blockWireSchema;
 
   static Block parse(Object? value, {String? debugName}) =>
       _blockSchema.parse(value, debugName: debugName)!;
@@ -372,6 +378,8 @@ final _sectionBlockObject = Ack.object({
   'type': _sectionTypeSchema().withDefault('section'),
 });
 
+final _sectionBlockWireSchema = Ack.preserveBoundary(_sectionBlockObject);
+
 final _sectionBlockSchema = _sectionBlockObject.codec<SectionBlock>(
   decode: _$SectionBlockFromRuntime,
   encode: _$SectionBlockToRuntime,
@@ -382,7 +390,7 @@ abstract final class SectionBlockSchema {
       _sectionBlockSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _sectionBlockObject;
+      _sectionBlockWireSchema;
 
   static SectionBlock parse(Object? value, {String? debugName}) =>
       _sectionBlockSchema.parse(value, debugName: debugName)!;

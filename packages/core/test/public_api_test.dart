@@ -11,6 +11,7 @@ void main() {
       expect(workspace.deckJson.path, contains('superdeck.json'));
       expect(DeckPlugin, isNotNull);
       expect(slidesContractSchema, isNotNull);
+      expect(SectionBlockSchema.wireSchema, isNotNull);
       expect(SlideSchema.wireSchema, isNotNull);
       expect(Slide.fromJson(slide.toJson()), slide);
       expect(parseSlidesContract([slide.toJson()]), hasLength(1));

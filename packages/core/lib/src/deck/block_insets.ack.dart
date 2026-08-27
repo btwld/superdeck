@@ -14,6 +14,8 @@ final _blockInsetsObject = Ack.object({
   'left': _normalizedInsetValueSchema(),
 });
 
+final _blockInsetsWireSchema = Ack.preserveBoundary(_blockInsetsObject);
+
 final _blockInsetsSchema = _blockInsetsObject.codec<BlockInsets>(
   decode: _$BlockInsetsFromRuntime,
   encode: _$BlockInsetsToRuntime,
@@ -24,7 +26,7 @@ abstract final class BlockInsetsSchema {
       _blockInsetsSchema;
 
   static AckSchema<Map<String, Object?>, Map<String, Object?>> get wireSchema =>
-      _blockInsetsObject;
+      _blockInsetsWireSchema;
 
   static BlockInsets parse(Object? value, {String? debugName}) =>
       _blockInsetsSchema.parse(value, debugName: debugName)!;
