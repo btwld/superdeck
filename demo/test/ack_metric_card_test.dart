@@ -5,17 +5,16 @@ import 'package:superdeck_example/src/widgets/ack_metric_card.dart';
 
 void main() {
   testWidgets('AckMetricCard renders generated typed args', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: AckMetricCard({
-          'label': 'Activation',
-          'value': '72%',
-          'caption': 'Parsed through Ack-generated typed getters',
-          'tone': 'green',
-        }),
-      ),
-    );
+    final card = AckMetricCard({
+      'label': 'Activation',
+      'value': '72%',
+      'caption': 'Parsed through Ack-generated typed getters',
+      'tone': 'green',
+    });
 
+    await tester.pumpWidget(MaterialApp(home: card));
+
+    expect(card.data, isA<MetricCardArgs>());
     expect(find.text('ACTIVATION'), findsOneWidget);
     expect(find.text('72%'), findsOneWidget);
     expect(

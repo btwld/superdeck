@@ -1,4 +1,3 @@
-import 'package:ack/ack.dart';
 import 'package:superdeck_core/src/deck/block_model.dart';
 import 'package:superdeck_core/src/deck/slide_model.dart';
 import 'package:test/test.dart';
@@ -218,20 +217,16 @@ void main() {
           expect(slide.comments, ['Comment 1', 'Comment 2']);
         });
 
-        test(
-          'throws AckException when options optional fields are explicitly null',
-          () {
-            for (final field in ['title', 'style', 'layout', 'template']) {
-              expect(
-                () => Slide.parse({
-                  'key': 'invalid-options',
-                  'options': {field: null},
-                }),
-                throwsA(isA<AckException>()),
-              );
-            }
-          },
-        );
+        test('accepts explicit null for nullable option fields', () {
+          for (final field in ['title', 'style', 'layout', 'template']) {
+            final slide = Slide.parse({
+              'key': 'nullable-options',
+              'options': {field: null},
+            });
+
+            expect(slide.options, SlideOptions());
+          }
+        });
       });
 
       group('round-trip serialization', () {
@@ -349,22 +344,22 @@ void main() {
           expect(result.isOk, isTrue);
         });
 
-        test('fails validation when options is explicitly null', () {
+        test('accepts options when explicitly null', () {
           final result = SlideSchema.wireSchema.safeParse({
             'key': 'full',
             'options': null,
           });
-          expect(result.isOk, isFalse);
+          expect(result.isOk, isTrue);
         });
 
-        test('fails validation when options fields are explicitly null', () {
+        test('accepts nullable option fields when explicitly null', () {
           for (final field in ['title', 'style', 'layout', 'template']) {
             final result = SlideSchema.wireSchema.safeParse({
               'key': 'full',
               'options': {field: null},
             });
 
-            expect(result.isOk, isFalse);
+            expect(result.isOk, isTrue);
           }
         });
       });
@@ -796,12 +791,12 @@ void main() {
           expect(result.isOk, isFalse);
         });
 
-        test('fails validation when optional fields are explicitly null', () {
+        test('accepts nullable optional fields when explicitly null', () {
           for (final field in ['title', 'style', 'layout', 'template']) {
             final result = SlideOptionsSchema.wireSchema.safeParse({
               field: null,
             });
-            expect(result.isOk, isFalse);
+            expect(result.isOk, isTrue);
           }
         });
       });

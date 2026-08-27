@@ -7,21 +7,21 @@ part of 'ack_metric_card.dart';
 // AckModelGenerator
 // **************************************************************************
 
-/// Immutable model generated from `ackMetricCardArgsSchema`.
+/// Immutable model generated from `metricCardArgsSchema`.
 @AckInfer.jsonSerializable
-final class AckMetricCardArgs {
-  AckMetricCardArgs({
+final class MetricCardArgs {
+  MetricCardArgs({
     required this.label,
     required this.value,
     this.caption,
     this.tone,
   });
 
-  factory AckMetricCardArgs.parse(Object? input) {
+  factory MetricCardArgs.parse(Object? input) {
     return $ack.parse(input);
   }
 
-  factory AckMetricCardArgs.fromJson(Map<String, dynamic> json) {
+  factory MetricCardArgs.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
 
@@ -34,24 +34,24 @@ final class AckMetricCardArgs {
   final String? tone;
 
   static final $ack = AckModelAdapter(
-    schema: () => ackMetricCardArgsSchema,
-    fromRuntime: AckMetricCardArgs._fromAckRuntime,
+    schema: () => metricCardArgsSchema,
+    fromRuntime: MetricCardArgs._fromAckRuntime,
     toRuntime: (model) => model._toAckRuntime(),
   );
 
-  static SchemaResult<AckMetricCardArgs> safeParse(Object? input) =>
+  static SchemaResult<MetricCardArgs> safeParse(Object? input) =>
       $ack.safeParse(input);
 
   Map<String, dynamic> toJson() => Map<String, dynamic>.from($ack.encode(this));
 
   SchemaResult<Map<String, Object?>> safeToJson() => $ack.safeEncode(this);
 
-  AckMetricCardArgs copyWith({
+  MetricCardArgs copyWith({
     String? label,
     String? value,
     String? caption,
     String? tone,
-  }) => AckMetricCardArgs(
+  }) => MetricCardArgs(
     label: label ?? this.label,
     value: value ?? this.value,
     caption: caption ?? this.caption,
@@ -61,7 +61,7 @@ final class AckMetricCardArgs {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AckMetricCardArgs &&
+      (other is MetricCardArgs &&
           runtimeType == other.runtimeType &&
           deepEquals(label, other.label) &&
           deepEquals(value, other.value) &&
@@ -79,13 +79,13 @@ final class AckMetricCardArgs {
 
   @override
   String toString() =>
-      'AckMetricCardArgs(label: $label, value: $value, caption: $caption, tone: $tone)';
+      'MetricCardArgs(label: $label, value: $value, caption: $caption, tone: $tone)';
 
-  static AckMetricCardArgs _fromAckRuntime(Map<String, Object?> value) =>
-      _$AckMetricCardArgsFromJson(Map<String, dynamic>.from(value));
+  static MetricCardArgs _fromAckRuntime(Map<String, Object?> value) =>
+      _$MetricCardArgsFromJson(Map<String, dynamic>.from(value));
 
   Map<String, Object?> _toAckRuntime() => <String, Object?>{
-    ..._$AckMetricCardArgsToJson(this),
+    ..._$MetricCardArgsToJson(this),
   };
 
   static String _ackFromRuntimeLabel(Object? value) => value as String;

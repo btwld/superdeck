@@ -20,7 +20,7 @@ part 'deck_schemas.ack.g.dart';
 
 const deckDensityProfiles = presentationThemeDensityProfiles;
 
-@AckInfer(name: 'DeckBrandColors')
+@AckInfer()
 final deckBrandColorsSchema = Ack.object({
   'background': Ack.string().hexColor().optional(),
   'surface': Ack.string().hexColor().optional(),
@@ -31,19 +31,19 @@ final deckBrandColorsSchema = Ack.object({
   'accentContrast': Ack.string().hexColor().optional(),
 }).describe('Only exact palette roles supplied by the user');
 
-@AckInfer(name: 'DeckBrandFonts')
+@AckInfer()
 final deckBrandFontsSchema = Ack.object({
   'headline': Ack.string().optional(),
   'body': Ack.string().optional(),
 }).describe('Only exact registered font families supplied by the user');
 
-@AckInfer(name: 'DeckBrandOverride')
+@AckInfer()
 final deckBrandOverrideSchema = Ack.object({
   'colors': deckBrandColorsSchema.optional(),
   'fonts': deckBrandFontsSchema.optional(),
 }).describe('Validated user-only overrides layered on the selected theme');
 
-@AckInfer(name: 'DeckThemeReference')
+@AckInfer()
 final deckThemeReferenceSchema = Ack.object({
   'id': Ack.string().notEmpty().describe('Stable catalog theme ID'),
   'version': Ack.integer().positive().describe(

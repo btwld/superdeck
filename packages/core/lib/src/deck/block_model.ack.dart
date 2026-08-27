@@ -9,10 +9,10 @@ part of 'block_model.dart';
 
 final _contentBlockObject = Ack.object({
   'type': Ack.literal('block').optional(),
-  'align': Ack.enumValues(ContentAlignment.values).optional(),
+  'align': Ack.enumValues(ContentAlignment.values).optional().nullable(),
   'flex': positiveFlexSchema().withDefault(1),
-  'margin': BlockInsetsSchema.schema.optional(),
-  'padding': BlockInsetsSchema.schema.optional(),
+  'margin': BlockInsetsSchema.schema.optional().nullable(),
+  'padding': BlockInsetsSchema.schema.optional().nullable(),
   'scrollable': Ack.boolean().withDefault(false),
   'content': Ack.string().optional(),
 }, additionalProperties: true);
@@ -143,10 +143,10 @@ Object? _ackContentBlockToRuntimeContent(String value) => value;
 
 final _widgetBlockObject = Ack.object({
   'type': Ack.literal('widget').optional(),
-  'align': Ack.enumValues(ContentAlignment.values).optional(),
+  'align': Ack.enumValues(ContentAlignment.values).optional().nullable(),
   'flex': positiveFlexSchema().withDefault(1),
-  'margin': BlockInsetsSchema.schema.optional(),
-  'padding': BlockInsetsSchema.schema.optional(),
+  'margin': BlockInsetsSchema.schema.optional().nullable(),
+  'padding': BlockInsetsSchema.schema.optional().nullable(),
   'scrollable': Ack.boolean().withDefault(false),
   'name': Ack.string(),
 }, additionalProperties: true);
@@ -366,7 +366,7 @@ mixin _$BlockAck {
 
 final _sectionBlockObject = Ack.object({
   'blocks': Ack.list(BlockSchema.schema).optional(),
-  'align': Ack.enumValues(ContentAlignment.values).optional(),
+  'align': Ack.enumValues(ContentAlignment.values).optional().nullable(),
   'flex': positiveFlexSchema().withDefault(1),
   'spacing': nonNegativeSpacingSchema().withDefault(0),
   'type': _sectionTypeSchema().withDefault('section'),

@@ -61,7 +61,7 @@ const deckPlanTreatments = [
   'closing',
 ];
 
-@AckInfer(name: 'DeckPlanSection')
+@AckInfer()
 final deckPlanSectionSchema = Ack.object({
   'key': Ack.string().describe('Unique section or act identifier'),
   'title': Ack.string().describe('Short internal title for this story section'),
@@ -75,7 +75,7 @@ final deckPlanSectionSchema = Ack.object({
 }).describe('A narrative section or act in the deck blueprint');
 
 /// Optional generated-element requirement attached to a slide plan.
-@AckInfer(name: 'DeckPlanElement')
+@AckInfer()
 final deckPlanElementSchema = Ack.object({
   'type': Ack.enumString(
     deckPlanElementTypes,
@@ -99,7 +99,7 @@ final deckPlanElementSchema = Ack.object({
 /// - title: Working title (may be refined during slide composition)
 /// - purpose: What the slide will communicate
 /// - composition: Semantic layout intent for the slide composer
-@AckInfer(name: 'DeckPlanSlide')
+@AckInfer()
 final deckPlanSlideSchema = Ack.object({
   'key': Ack.string().describe(
     'Unique identifier for this slide (e.g., "intro", "slide-1", "conclusion")',
@@ -150,7 +150,7 @@ final deckPlanSlideSchema = Ack.object({
 ///
 /// Root schema for Phase 1 generation, containing the topic
 /// and ordered list of slide outlines.
-@AckInfer(name: 'DeckPlan')
+@AckInfer()
 final deckPlanSchema =
     Ack.object({
       'topic': Ack.string().describe('Main topic of the presentation'),

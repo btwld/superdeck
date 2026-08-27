@@ -9,7 +9,7 @@ part of 'slide_model.dart';
 
 final _slideObject = Ack.object({
   'key': Ack.string(),
-  'options': SlideOptionsSchema.schema.optional(),
+  'options': SlideOptionsSchema.schema.optional().nullable(),
   'sections': Ack.list(SectionBlockSchema.schema).withDefault(const []),
   'comments': Ack.list(Ack.string()).withDefault(const []),
 }, additionalProperties: true);
@@ -125,10 +125,10 @@ Object? _ackSlideToRuntimeComments(List<String> value) =>
     value.map((item) => item).toList(growable: false);
 
 final _slideOptionsObject = Ack.object({
-  'title': Ack.string().optional(),
-  'style': Ack.string().optional(),
-  'layout': Ack.enumValues(SlideLayout.values).optional(),
-  'template': Ack.string().optional(),
+  'title': Ack.string().optional().nullable(),
+  'style': Ack.string().optional().nullable(),
+  'layout': Ack.enumValues(SlideLayout.values).optional().nullable(),
+  'template': Ack.string().optional().nullable(),
 }, additionalProperties: true);
 
 final _slideOptionsSchema = _slideOptionsObject.codec<SlideOptions>(

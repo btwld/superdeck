@@ -98,8 +98,8 @@ Object? _ackDeckBuildErrorToRuntimeMessage(String value) => value;
 final _deckBuildStatusObject = Ack.object({
   'status': Ack.enumValues(DeckBuildPhase.values),
   'timestamp': Ack.datetime(),
-  'slideCount': Ack.integer().optional(),
-  'error': DeckBuildErrorSchema.schema.optional(),
+  'slideCount': Ack.integer().optional().nullable(),
+  'error': DeckBuildErrorSchema.schema.optional().nullable(),
 }, additionalProperties: true);
 
 final _deckBuildStatusSchema = _deckBuildStatusObject.codec<DeckBuildStatus>(

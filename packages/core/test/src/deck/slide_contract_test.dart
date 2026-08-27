@@ -8,8 +8,20 @@ Map<String, Object?> _propertySchema(
   Map<String, Object?> schema,
   String property,
 ) {
-  final properties = schema['properties'] as Map<String, Object?>;
+  final properties =
+      _nonNullSchema(schema)['properties'] as Map<String, Object?>;
   return Map<String, Object?>.from(properties[property] as Map);
+}
+
+Map<String, Object?> _nonNullSchema(Map<String, Object?> schema) {
+  final anyOf = schema['anyOf'];
+  if (anyOf is! List) return schema;
+  for (final candidate in anyOf.whereType<Map>()) {
+    if (candidate['type'] != 'null') {
+      return Map<String, Object?>.from(candidate);
+    }
+  }
+  return schema;
 }
 
 Map<String, Object?> _arrayItemSchema(
@@ -20,19 +32,10 @@ Map<String, Object?> _arrayItemSchema(
   return Map<String, Object?>.from(arraySchema['items'] as Map);
 }
 
-void _expectSchemaIsNotNullable(Map<String, Object?> schema) {
-  expect(schema['type'], isNot('null'));
-
+void _expectSchemaIsNullable(Map<String, Object?> schema) {
   final anyOf = schema['anyOf'] as List<dynamic>?;
-  if (anyOf == null) {
-    return;
-  }
-
-  final hasNullType = anyOf
-      .whereType<Map>()
-      .map((item) => item['type'])
-      .contains('null');
-  expect(hasNullType, isFalse);
+  expect(anyOf, isNotNull);
+  expect(anyOf!.whereType<Map>().map((item) => item['type']), contains('null'));
 }
 
 void main() {
@@ -102,7 +105,7 @@ void main() {
         slideOptionsSchema,
         'title',
       );
-      _expectSchemaIsNotNullable(slideOptionsTitleSchema);
+      _expectSchemaIsNullable(slideOptionsTitleSchema);
     });
 
     test('json schema exports closed section options', () {
@@ -134,10 +137,12 @@ void main() {
 
     test('json schema exports normalized four-edge insets only', () {
       for (final field in const ['padding', 'margin']) {
-        final insetsSchema = _propertySchema(
+        final nullableInsetsSchema = _propertySchema(
           ContentBlockSchema.wireSchema.toJsonSchema(),
           field,
         );
+        _expectSchemaIsNullable(nullableInsetsSchema);
+        final insetsSchema = _nonNullSchema(nullableInsetsSchema);
 
         expect(insetsSchema['type'], 'object', reason: field);
         expect(insetsSchema['additionalProperties'], isFalse, reason: field);
