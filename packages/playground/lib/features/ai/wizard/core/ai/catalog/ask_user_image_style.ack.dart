@@ -7,6 +7,10 @@ part of 'ask_user_image_style.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _AskUserImageStyleCopyWithUnset {
+  const _AskUserImageStyleCopyWithUnset();
+}
+
 /// Immutable model generated from `_askUserImageStyleSchema`.
 /// An application-owned generated image-style selection step.
 @AckInfer.jsonSerializable
@@ -24,6 +28,9 @@ final class AskUserImageStyle {
   factory AskUserImageStyle.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _AskUserImageStyleCopyWithUnset _ackCopyWithUnset =
+      _AskUserImageStyleCopyWithUnset();
 
   /// The question to display to the user
   final String question;
@@ -48,11 +55,13 @@ final class AskUserImageStyle {
 
   AskUserImageStyle copyWith({
     String? question,
-    String? description,
+    Object? description = _ackCopyWithUnset,
     GenUiAction? action,
   }) => AskUserImageStyle(
     question: question ?? this.question,
-    description: description ?? this.description,
+    description: identical(description, _ackCopyWithUnset)
+        ? this.description
+        : description as String?,
     action: action ?? this.action,
   );
 

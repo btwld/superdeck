@@ -7,6 +7,10 @@ part of 'ask_user_checkbox.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _AskUserCheckboxCopyWithUnset {
+  const _AskUserCheckboxCopyWithUnset();
+}
+
 /// Immutable model generated from `_askUserCheckboxSchema`.
 /// A question with checkbox items. User selects one or more items.
 @AckInfer.jsonSerializable
@@ -34,6 +38,9 @@ final class AskUserCheckbox {
   factory AskUserCheckbox.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _AskUserCheckboxCopyWithUnset _ackCopyWithUnset =
+      _AskUserCheckboxCopyWithUnset();
 
   /// The question to display to the user
   final String question;
@@ -70,19 +77,27 @@ final class AskUserCheckbox {
 
   AskUserCheckbox copyWith({
     String? question,
-    String? description,
+    Object? description = _ackCopyWithUnset,
     List<String>? items,
-    List<String>? selectedItems,
-    int? minSelections,
-    int? maxSelections,
+    Object? selectedItems = _ackCopyWithUnset,
+    Object? minSelections = _ackCopyWithUnset,
+    Object? maxSelections = _ackCopyWithUnset,
     GenUiAction? action,
   }) => AskUserCheckbox(
     question: question ?? this.question,
-    description: description ?? this.description,
+    description: identical(description, _ackCopyWithUnset)
+        ? this.description
+        : description as String?,
     items: items ?? this.items,
-    selectedItems: selectedItems ?? this.selectedItems,
-    minSelections: minSelections ?? this.minSelections,
-    maxSelections: maxSelections ?? this.maxSelections,
+    selectedItems: identical(selectedItems, _ackCopyWithUnset)
+        ? this.selectedItems
+        : selectedItems as List<String>?,
+    minSelections: identical(minSelections, _ackCopyWithUnset)
+        ? this.minSelections
+        : minSelections as int?,
+    maxSelections: identical(maxSelections, _ackCopyWithUnset)
+        ? this.maxSelections
+        : maxSelections as int?,
     action: action ?? this.action,
   );
 

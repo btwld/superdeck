@@ -11,7 +11,7 @@ part 'slide_model.ack.g.dart';
 /// A slide contains sections of content blocks, optional configuration options,
 /// and any speaker notes or comments. Each slide is uniquely identified by a key.
 @AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
-class Slide with _$SlideAck {
+final class Slide with _$SlideAck {
   /// Unique identifier for this slide, typically generated from content hash.
   final String key;
 
@@ -52,7 +52,7 @@ enum SlideLayout {
   additionalProperties: AckAdditionalPropertiesMode.capture,
   additionalPropertiesField: 'args',
 )
-class SlideOptions with _$SlideOptionsAck {
+final class SlideOptions with _$SlideOptionsAck {
   static const _knownFields = {'title', 'style', 'layout', 'template'};
 
   final String? title;

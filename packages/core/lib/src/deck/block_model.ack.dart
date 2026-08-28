@@ -64,22 +64,35 @@ Map<String, Object?> _$ContentBlockToRuntime(ContentBlock model) {
   return <String, Object?>{...result, 'type': 'block'};
 }
 
+final class _ContentBlockCopyWithUnset {
+  const _ContentBlockCopyWithUnset();
+}
+
 mixin _$ContentBlockAck {
+  static const _ContentBlockCopyWithUnset _ackCopyWithUnset =
+      _ContentBlockCopyWithUnset();
+
   ContentBlock copyWith({
-    String? content,
-    ContentAlignment? align,
+    Object? content = _ackCopyWithUnset,
+    Object? align = _ackCopyWithUnset,
     int? flex,
-    BlockInsets? margin,
-    BlockInsets? padding,
+    Object? margin = _ackCopyWithUnset,
+    Object? padding = _ackCopyWithUnset,
     bool? scrollable,
   }) {
     final self = this as ContentBlock;
     return ContentBlock(
-      content ?? self.content,
-      align: align ?? self.align,
+      identical(content, _ackCopyWithUnset) ? self.content : content as String?,
+      align: identical(align, _ackCopyWithUnset)
+          ? self.align
+          : align as ContentAlignment?,
       flex: flex ?? self.flex,
-      margin: margin ?? self.margin,
-      padding: padding ?? self.padding,
+      margin: identical(margin, _ackCopyWithUnset)
+          ? self.margin
+          : margin as BlockInsets?,
+      padding: identical(padding, _ackCopyWithUnset)
+          ? self.padding
+          : padding as BlockInsets?,
       scrollable: scrollable ?? self.scrollable,
     );
   }
@@ -230,24 +243,37 @@ Map<String, Object?> _$WidgetBlockToRuntime(WidgetBlock model) {
   };
 }
 
+final class _WidgetBlockCopyWithUnset {
+  const _WidgetBlockCopyWithUnset();
+}
+
 mixin _$WidgetBlockAck {
+  static const _WidgetBlockCopyWithUnset _ackCopyWithUnset =
+      _WidgetBlockCopyWithUnset();
+
   WidgetBlock copyWith({
     String? name,
     Map<String, Object?>? args,
-    ContentAlignment? align,
+    Object? align = _ackCopyWithUnset,
     int? flex,
-    BlockInsets? margin,
-    BlockInsets? padding,
+    Object? margin = _ackCopyWithUnset,
+    Object? padding = _ackCopyWithUnset,
     bool? scrollable,
   }) {
     final self = this as WidgetBlock;
     return WidgetBlock(
       name: name ?? self.name,
       args: args ?? self.args,
-      align: align ?? self.align,
+      align: identical(align, _ackCopyWithUnset)
+          ? self.align
+          : align as ContentAlignment?,
       flex: flex ?? self.flex,
-      margin: margin ?? self.margin,
-      padding: padding ?? self.padding,
+      margin: identical(margin, _ackCopyWithUnset)
+          ? self.margin
+          : margin as BlockInsets?,
+      padding: identical(padding, _ackCopyWithUnset)
+          ? self.padding
+          : padding as BlockInsets?,
       scrollable: scrollable ?? self.scrollable,
     );
   }
@@ -312,7 +338,9 @@ Object? _ackWidgetBlockToRuntimeScrollable(bool value) => value;
 String _ackWidgetBlockFromRuntimeName(Object? value) => value as String;
 Object? _ackWidgetBlockToRuntimeName(String value) => value;
 Map<String, Object?>? _ackWidgetBlockFromRuntimeArgs(Object? value) =>
-    value as Map<String, Object?>?;
+    value == null
+    ? null
+    : _ackClassImmutableCopyMap(value as Map<String, Object?>);
 Object? _ackWidgetBlockToRuntimeArgs(Map<String, Object?> value) => value;
 
 final _blockObject = Ack.discriminated(
@@ -423,18 +451,29 @@ SectionBlock _$SectionBlockFromRuntime(Map<String, Object?> value) =>
 Map<String, Object?> _$SectionBlockToRuntime(SectionBlock model) =>
     <String, Object?>{..._$SectionBlockToJson(model)};
 
+final class _SectionBlockCopyWithUnset {
+  const _SectionBlockCopyWithUnset();
+}
+
 mixin _$SectionBlockAck {
+  static const _SectionBlockCopyWithUnset _ackCopyWithUnset =
+      _SectionBlockCopyWithUnset();
+
   SectionBlock copyWith({
-    List<Block>? blocks,
-    ContentAlignment? align,
+    Object? blocks = _ackCopyWithUnset,
+    Object? align = _ackCopyWithUnset,
     int? flex,
     double? spacing,
     String? type,
   }) {
     final self = this as SectionBlock;
     return SectionBlock(
-      blocks ?? self.blocks,
-      align: align ?? self.align,
+      identical(blocks, _ackCopyWithUnset)
+          ? self.blocks
+          : blocks as List<Block>?,
+      align: identical(align, _ackCopyWithUnset)
+          ? self.align
+          : align as ContentAlignment?,
       flex: flex ?? self.flex,
       spacing: spacing ?? self.spacing,
       type: type ?? self.type,
@@ -484,7 +523,7 @@ mixin _$SectionBlockAck {
 
 List<Block>? _ackSectionBlockFromRuntimeBlocks(Object? value) => value == null
     ? null
-    : (value as List).map((item) => item as Block).toList();
+    : List<Block>.unmodifiable((value as List).map((item) => item as Block));
 Object? _ackSectionBlockToRuntimeBlocks(List<Block> value) =>
     value.map((item) => item).toList(growable: false);
 ContentAlignment? _ackSectionBlockFromRuntimeAlign(Object? value) =>
@@ -496,3 +535,19 @@ double? _ackSectionBlockFromRuntimeSpacing(Object? value) => value as double?;
 Object? _ackSectionBlockToRuntimeSpacing(double value) => value;
 String? _ackSectionBlockFromRuntimeType(Object? value) => value as String?;
 Object? _ackSectionBlockToRuntimeType(String value) => value;
+
+Object? _ackClassImmutableCopyValue(Object? value) => switch (value) {
+  List() => List.unmodifiable(value.map(_ackClassImmutableCopyValue)),
+  Set() => Set.unmodifiable(value.map(_ackClassImmutableCopyValue)),
+  Map() => Map.unmodifiable(
+    value.map((key, item) => MapEntry(key, _ackClassImmutableCopyValue(item))),
+  ),
+  _ => value,
+};
+
+Map<String, Object?> _ackClassImmutableCopyMap(Map<String, Object?> value) =>
+    Map<String, Object?>.unmodifiable(
+      value.map(
+        (key, item) => MapEntry(key, _ackClassImmutableCopyValue(item)),
+      ),
+    );

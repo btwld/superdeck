@@ -7,6 +7,10 @@ part of 'deck_schemas.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _DeckBrandColorsCopyWithUnset {
+  const _DeckBrandColorsCopyWithUnset();
+}
+
 /// Immutable model generated from `deckBrandColorsSchema`.
 /// Only exact palette roles supplied by the user
 @AckInfer.jsonSerializable
@@ -28,6 +32,9 @@ final class DeckBrandColors {
   factory DeckBrandColors.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _DeckBrandColorsCopyWithUnset _ackCopyWithUnset =
+      _DeckBrandColorsCopyWithUnset();
 
   final String? background;
 
@@ -57,21 +64,33 @@ final class DeckBrandColors {
   SchemaResult<Map<String, Object?>> safeToJson() => $ack.safeEncode(this);
 
   DeckBrandColors copyWith({
-    String? background,
-    String? surface,
-    String? surfaceAlt,
-    String? heading,
-    String? body,
-    String? accent,
-    String? accentContrast,
+    Object? background = _ackCopyWithUnset,
+    Object? surface = _ackCopyWithUnset,
+    Object? surfaceAlt = _ackCopyWithUnset,
+    Object? heading = _ackCopyWithUnset,
+    Object? body = _ackCopyWithUnset,
+    Object? accent = _ackCopyWithUnset,
+    Object? accentContrast = _ackCopyWithUnset,
   }) => DeckBrandColors(
-    background: background ?? this.background,
-    surface: surface ?? this.surface,
-    surfaceAlt: surfaceAlt ?? this.surfaceAlt,
-    heading: heading ?? this.heading,
-    body: body ?? this.body,
-    accent: accent ?? this.accent,
-    accentContrast: accentContrast ?? this.accentContrast,
+    background: identical(background, _ackCopyWithUnset)
+        ? this.background
+        : background as String?,
+    surface: identical(surface, _ackCopyWithUnset)
+        ? this.surface
+        : surface as String?,
+    surfaceAlt: identical(surfaceAlt, _ackCopyWithUnset)
+        ? this.surfaceAlt
+        : surfaceAlt as String?,
+    heading: identical(heading, _ackCopyWithUnset)
+        ? this.heading
+        : heading as String?,
+    body: identical(body, _ackCopyWithUnset) ? this.body : body as String?,
+    accent: identical(accent, _ackCopyWithUnset)
+        ? this.accent
+        : accent as String?,
+    accentContrast: identical(accentContrast, _ackCopyWithUnset)
+        ? this.accentContrast
+        : accentContrast as String?,
   );
 
   @override
@@ -140,6 +159,10 @@ final class DeckBrandColors {
   static Object? _ackToRuntimeAccentContrast(String? value) => value;
 }
 
+final class _DeckBrandFontsCopyWithUnset {
+  const _DeckBrandFontsCopyWithUnset();
+}
+
 /// Immutable model generated from `deckBrandFontsSchema`.
 /// Only exact registered font families supplied by the user
 @AckInfer.jsonSerializable
@@ -153,6 +176,9 @@ final class DeckBrandFonts {
   factory DeckBrandFonts.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _DeckBrandFontsCopyWithUnset _ackCopyWithUnset =
+      _DeckBrandFontsCopyWithUnset();
 
   final String? headline;
 
@@ -171,9 +197,14 @@ final class DeckBrandFonts {
 
   SchemaResult<Map<String, Object?>> safeToJson() => $ack.safeEncode(this);
 
-  DeckBrandFonts copyWith({String? headline, String? body}) => DeckBrandFonts(
-    headline: headline ?? this.headline,
-    body: body ?? this.body,
+  DeckBrandFonts copyWith({
+    Object? headline = _ackCopyWithUnset,
+    Object? body = _ackCopyWithUnset,
+  }) => DeckBrandFonts(
+    headline: identical(headline, _ackCopyWithUnset)
+        ? this.headline
+        : headline as String?,
+    body: identical(body, _ackCopyWithUnset) ? this.body : body as String?,
   );
 
   @override
@@ -207,6 +238,10 @@ final class DeckBrandFonts {
   static Object? _ackToRuntimeBody(String? value) => value;
 }
 
+final class _DeckBrandOverrideCopyWithUnset {
+  const _DeckBrandOverrideCopyWithUnset();
+}
+
 /// Immutable model generated from `deckBrandOverrideSchema`.
 /// Validated user-only overrides layered on the selected theme
 @AckInfer.jsonSerializable
@@ -220,6 +255,9 @@ final class DeckBrandOverride {
   factory DeckBrandOverride.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _DeckBrandOverrideCopyWithUnset _ackCopyWithUnset =
+      _DeckBrandOverrideCopyWithUnset();
 
   final DeckBrandColors? colors;
 
@@ -239,11 +277,15 @@ final class DeckBrandOverride {
   SchemaResult<Map<String, Object?>> safeToJson() => $ack.safeEncode(this);
 
   DeckBrandOverride copyWith({
-    DeckBrandColors? colors,
-    DeckBrandFonts? fonts,
+    Object? colors = _ackCopyWithUnset,
+    Object? fonts = _ackCopyWithUnset,
   }) => DeckBrandOverride(
-    colors: colors ?? this.colors,
-    fonts: fonts ?? this.fonts,
+    colors: identical(colors, _ackCopyWithUnset)
+        ? this.colors
+        : colors as DeckBrandColors?,
+    fonts: identical(fonts, _ackCopyWithUnset)
+        ? this.fonts
+        : fonts as DeckBrandFonts?,
   );
 
   @override
@@ -294,6 +336,10 @@ final class DeckBrandOverride {
   };
 }
 
+final class _DeckThemeReferenceCopyWithUnset {
+  const _DeckThemeReferenceCopyWithUnset();
+}
+
 /// Immutable model generated from `deckThemeReferenceSchema`.
 /// Canonical versioned presentation-theme reference
 @AckInfer.jsonSerializable
@@ -312,6 +358,9 @@ final class DeckThemeReference {
   factory DeckThemeReference.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _DeckThemeReferenceCopyWithUnset _ackCopyWithUnset =
+      _DeckThemeReferenceCopyWithUnset();
 
   /// Stable catalog theme ID
   final String id;
@@ -342,12 +391,14 @@ final class DeckThemeReference {
     String? id,
     int? version,
     String? density,
-    DeckBrandOverride? brandOverride,
+    Object? brandOverride = _ackCopyWithUnset,
   }) => DeckThemeReference(
     id: id ?? this.id,
     version: version ?? this.version,
     density: density ?? this.density,
-    brandOverride: brandOverride ?? this.brandOverride,
+    brandOverride: identical(brandOverride, _ackCopyWithUnset)
+        ? this.brandOverride
+        : brandOverride as DeckBrandOverride?,
   );
 
   @override

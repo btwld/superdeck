@@ -56,17 +56,25 @@ Map<String, Object?> _$SlideToRuntime(Slide model) => <String, Object?>{
   ..._$SlideToJson(model),
 };
 
+final class _SlideCopyWithUnset {
+  const _SlideCopyWithUnset();
+}
+
 mixin _$SlideAck {
+  static const _SlideCopyWithUnset _ackCopyWithUnset = _SlideCopyWithUnset();
+
   Slide copyWith({
     String? key,
-    SlideOptions? options,
+    Object? options = _ackCopyWithUnset,
     List<SectionBlock>? sections,
     List<String>? comments,
   }) {
     final self = this as Slide;
     return Slide(
       key: key ?? self.key,
-      options: options ?? self.options,
+      options: identical(options, _ackCopyWithUnset)
+          ? self.options
+          : options as SlideOptions?,
       sections: sections ?? self.sections,
       comments: comments ?? self.comments,
     );
@@ -117,12 +125,14 @@ SlideOptions? _ackSlideFromRuntimeOptions(Object? value) =>
 Object? _ackSlideToRuntimeOptions(SlideOptions? value) => value;
 List<SectionBlock>? _ackSlideFromRuntimeSections(Object? value) => value == null
     ? null
-    : (value as List).map((item) => item as SectionBlock).toList();
+    : List<SectionBlock>.unmodifiable(
+        (value as List).map((item) => item as SectionBlock),
+      );
 Object? _ackSlideToRuntimeSections(List<SectionBlock> value) =>
     value.map((item) => item).toList(growable: false);
 List<String>? _ackSlideFromRuntimeComments(Object? value) => value == null
     ? null
-    : (value as List).map((item) => item as String).toList();
+    : List<String>.unmodifiable((value as List).map((item) => item as String));
 Object? _ackSlideToRuntimeComments(List<String> value) =>
     value.map((item) => item).toList(growable: false);
 
@@ -193,20 +203,35 @@ Map<String, Object?> _$SlideOptionsToRuntime(SlideOptions model) {
   };
 }
 
+final class _SlideOptionsCopyWithUnset {
+  const _SlideOptionsCopyWithUnset();
+}
+
 mixin _$SlideOptionsAck {
+  static const _SlideOptionsCopyWithUnset _ackCopyWithUnset =
+      _SlideOptionsCopyWithUnset();
+
   SlideOptions copyWith({
-    String? title,
-    String? style,
-    SlideLayout? layout,
-    String? template,
+    Object? title = _ackCopyWithUnset,
+    Object? style = _ackCopyWithUnset,
+    Object? layout = _ackCopyWithUnset,
+    Object? template = _ackCopyWithUnset,
     Map<String, Object?>? args,
   }) {
     final self = this as SlideOptions;
     return SlideOptions(
-      title: title ?? self.title,
-      style: style ?? self.style,
-      layout: layout ?? self.layout,
-      template: template ?? self.template,
+      title: identical(title, _ackCopyWithUnset)
+          ? self.title
+          : title as String?,
+      style: identical(style, _ackCopyWithUnset)
+          ? self.style
+          : style as String?,
+      layout: identical(layout, _ackCopyWithUnset)
+          ? self.layout
+          : layout as SlideLayout?,
+      template: identical(template, _ackCopyWithUnset)
+          ? self.template
+          : template as String?,
       args: args ?? self.args,
     );
   }
@@ -262,5 +287,23 @@ Object? _ackSlideOptionsToRuntimeLayout(SlideLayout? value) => value;
 String? _ackSlideOptionsFromRuntimeTemplate(Object? value) => value as String?;
 Object? _ackSlideOptionsToRuntimeTemplate(String? value) => value;
 Map<String, Object?>? _ackSlideOptionsFromRuntimeArgs(Object? value) =>
-    value as Map<String, Object?>?;
+    value == null
+    ? null
+    : _ackClassImmutableCopyMap(value as Map<String, Object?>);
 Object? _ackSlideOptionsToRuntimeArgs(Map<String, Object?> value) => value;
+
+Object? _ackClassImmutableCopyValue(Object? value) => switch (value) {
+  List() => List.unmodifiable(value.map(_ackClassImmutableCopyValue)),
+  Set() => Set.unmodifiable(value.map(_ackClassImmutableCopyValue)),
+  Map() => Map.unmodifiable(
+    value.map((key, item) => MapEntry(key, _ackClassImmutableCopyValue(item))),
+  ),
+  _ => value,
+};
+
+Map<String, Object?> _ackClassImmutableCopyMap(Map<String, Object?> value) =>
+    Map<String, Object?>.unmodifiable(
+      value.map(
+        (key, item) => MapEntry(key, _ackClassImmutableCopyValue(item)),
+      ),
+    );

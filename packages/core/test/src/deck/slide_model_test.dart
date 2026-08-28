@@ -74,13 +74,13 @@ void main() {
           expect(copy.options?.title, 'New Title');
         });
 
-        test('null retains existing nullable options', () {
+        test('null clears existing nullable options', () {
           final options = SlideOptions(title: 'Existing');
           final original = Slide(key: 'key', options: options);
 
           final copy = original.copyWith(options: null);
 
-          expect(copy.options, same(options));
+          expect(copy.options, isNull);
         });
 
         test('copies with new sections', () {
@@ -441,7 +441,7 @@ void main() {
           expect(copy.template, 'new-template');
         });
 
-        test('null retains existing nullable values', () {
+        test('null clears existing nullable values', () {
           final original = SlideOptions(
             title: 'Title',
             style: 'Style',
@@ -456,10 +456,10 @@ void main() {
             template: null,
           );
 
-          expect(copy.title, original.title);
-          expect(copy.style, original.style);
-          expect(copy.layout, original.layout);
-          expect(copy.template, original.template);
+          expect(copy.title, isNull);
+          expect(copy.style, isNull);
+          expect(copy.layout, isNull);
+          expect(copy.template, isNull);
         });
 
         test('preserves values when not specified', () {

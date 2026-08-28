@@ -151,19 +151,30 @@ DeckBuildStatus _$DeckBuildStatusFromRuntime(Map<String, Object?> value) =>
 Map<String, Object?> _$DeckBuildStatusToRuntime(DeckBuildStatus model) =>
     <String, Object?>{..._$DeckBuildStatusToJson(model)};
 
+final class _DeckBuildStatusCopyWithUnset {
+  const _DeckBuildStatusCopyWithUnset();
+}
+
 mixin _$DeckBuildStatusAck {
+  static const _DeckBuildStatusCopyWithUnset _ackCopyWithUnset =
+      _DeckBuildStatusCopyWithUnset();
+
   DeckBuildStatus copyWith({
     DeckBuildPhase? phase,
     DateTime? timestamp,
-    int? slideCount,
-    DeckBuildError? error,
+    Object? slideCount = _ackCopyWithUnset,
+    Object? error = _ackCopyWithUnset,
   }) {
     final self = this as DeckBuildStatus;
     return DeckBuildStatus(
       phase: phase ?? self.phase,
       timestamp: timestamp ?? self.timestamp,
-      slideCount: slideCount ?? self.slideCount,
-      error: error ?? self.error,
+      slideCount: identical(slideCount, _ackCopyWithUnset)
+          ? self.slideCount
+          : slideCount as int?,
+      error: identical(error, _ackCopyWithUnset)
+          ? self.error
+          : error as DeckBuildError?,
     );
   }
 

@@ -7,6 +7,10 @@ part of 'ask_user_style.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _AskUserStyleCopyWithUnset {
+  const _AskUserStyleCopyWithUnset();
+}
+
 /// Immutable model generated from `_askUserStyleSchema`.
 /// A question with exact catalog-backed presentation theme options.
 @AckInfer.jsonSerializable
@@ -25,6 +29,9 @@ final class AskUserStyle {
   factory AskUserStyle.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _AskUserStyleCopyWithUnset _ackCopyWithUnset =
+      _AskUserStyleCopyWithUnset();
 
   /// The question to display to the user
   final String question;
@@ -52,12 +59,14 @@ final class AskUserStyle {
 
   AskUserStyle copyWith({
     String? question,
-    String? description,
+    Object? description = _ackCopyWithUnset,
     List<String>? themeIds,
     GenUiAction? action,
   }) => AskUserStyle(
     question: question ?? this.question,
-    description: description ?? this.description,
+    description: identical(description, _ackCopyWithUnset)
+        ? this.description
+        : description as String?,
     themeIds: themeIds ?? this.themeIds,
     action: action ?? this.action,
   );

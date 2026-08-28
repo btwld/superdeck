@@ -7,6 +7,10 @@ part of 'genui_action_schema.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _ActionContextValueCopyWithUnset {
+  const _ActionContextValueCopyWithUnset();
+}
+
 /// Immutable model generated from `_actionContextValueSchema`.
 /// Context value - use path or one of the literal types
 @AckInfer.jsonSerializable
@@ -25,6 +29,9 @@ final class ActionContextValue {
   factory ActionContextValue.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _ActionContextValueCopyWithUnset _ackCopyWithUnset =
+      _ActionContextValueCopyWithUnset();
 
   /// Data model path binding
   final String? path;
@@ -52,15 +59,21 @@ final class ActionContextValue {
   SchemaResult<Map<String, Object?>> safeToJson() => $ack.safeEncode(this);
 
   ActionContextValue copyWith({
-    String? path,
-    String? literalString,
-    double? literalNumber,
-    bool? literalBoolean,
+    Object? path = _ackCopyWithUnset,
+    Object? literalString = _ackCopyWithUnset,
+    Object? literalNumber = _ackCopyWithUnset,
+    Object? literalBoolean = _ackCopyWithUnset,
   }) => ActionContextValue(
-    path: path ?? this.path,
-    literalString: literalString ?? this.literalString,
-    literalNumber: literalNumber ?? this.literalNumber,
-    literalBoolean: literalBoolean ?? this.literalBoolean,
+    path: identical(path, _ackCopyWithUnset) ? this.path : path as String?,
+    literalString: identical(literalString, _ackCopyWithUnset)
+        ? this.literalString
+        : literalString as String?,
+    literalNumber: identical(literalNumber, _ackCopyWithUnset)
+        ? this.literalNumber
+        : literalNumber as double?,
+    literalBoolean: identical(literalBoolean, _ackCopyWithUnset)
+        ? this.literalBoolean
+        : literalBoolean as bool?,
   );
 
   @override
@@ -180,6 +193,10 @@ final class ActionContextEntry {
       ActionContextValue.$ack.toRuntime(value);
 }
 
+final class _GenUiActionCopyWithUnset {
+  const _GenUiActionCopyWithUnset();
+}
+
 /// Immutable model generated from `actionSchema`.
 /// GenUI action with name and context binding
 @AckInfer.jsonSerializable
@@ -200,6 +217,9 @@ final class GenUiAction {
     return $ack.parse(json);
   }
 
+  static const _GenUiActionCopyWithUnset _ackCopyWithUnset =
+      _GenUiActionCopyWithUnset();
+
   /// Action name to dispatch
   final String name;
 
@@ -219,8 +239,13 @@ final class GenUiAction {
 
   SchemaResult<Map<String, Object?>> safeToJson() => $ack.safeEncode(this);
 
-  GenUiAction copyWith({String? name, List<ActionContextEntry>? context}) =>
-      GenUiAction(name: name ?? this.name, context: context ?? this.context);
+  GenUiAction copyWith({String? name, Object? context = _ackCopyWithUnset}) =>
+      GenUiAction(
+        name: name ?? this.name,
+        context: identical(context, _ackCopyWithUnset)
+            ? this.context
+            : context as List<ActionContextEntry>?,
+      );
 
   @override
   bool operator ==(Object other) =>

@@ -7,6 +7,10 @@ part of 'ask_user_radio.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _InputOptionCopyWithUnset {
+  const _InputOptionCopyWithUnset();
+}
+
 /// Immutable model generated from `_inputOptionSchema`.
 /// Option with title and optional description
 @AckInfer.jsonSerializable
@@ -20,6 +24,9 @@ final class InputOption {
   factory InputOption.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _InputOptionCopyWithUnset _ackCopyWithUnset =
+      _InputOptionCopyWithUnset();
 
   /// Option title displayed to user
   final String title;
@@ -45,12 +52,16 @@ final class InputOption {
 
   InputOption copyWith({
     String? title,
-    String? description,
-    WizardOptionIcon? icon,
+    Object? description = _ackCopyWithUnset,
+    Object? icon = _ackCopyWithUnset,
   }) => InputOption(
     title: title ?? this.title,
-    description: description ?? this.description,
-    icon: icon ?? this.icon,
+    description: identical(description, _ackCopyWithUnset)
+        ? this.description
+        : description as String?,
+    icon: identical(icon, _ackCopyWithUnset)
+        ? this.icon
+        : icon as WizardOptionIcon?,
   );
 
   @override
@@ -95,6 +106,10 @@ final class InputOption {
   static Object? _ackToRuntimeIcon(WizardOptionIcon? value) => value;
 }
 
+final class _AskUserRadioCopyWithUnset {
+  const _AskUserRadioCopyWithUnset();
+}
+
 /// Immutable model generated from `_askUserRadioSchema`.
 /// A question with radio button options. User selects one option.
 @AckInfer.jsonSerializable
@@ -113,6 +128,9 @@ final class AskUserRadio {
   factory AskUserRadio.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _AskUserRadioCopyWithUnset _ackCopyWithUnset =
+      _AskUserRadioCopyWithUnset();
 
   /// The question to display to the user
   final String question;
@@ -140,12 +158,14 @@ final class AskUserRadio {
 
   AskUserRadio copyWith({
     String? question,
-    String? description,
+    Object? description = _ackCopyWithUnset,
     List<InputOption>? options,
     GenUiAction? action,
   }) => AskUserRadio(
     question: question ?? this.question,
-    description: description ?? this.description,
+    description: identical(description, _ackCopyWithUnset)
+        ? this.description
+        : description as String?,
     options: options ?? this.options,
     action: action ?? this.action,
   );

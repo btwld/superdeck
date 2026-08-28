@@ -7,6 +7,10 @@ part of 'ask_user_slider.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _AskUserSliderCopyWithUnset {
+  const _AskUserSliderCopyWithUnset();
+}
+
 /// Immutable model generated from `_askUserSliderSchema`.
 /// A question with a counter and quick choices between min and max.
 @AckInfer.jsonSerializable
@@ -28,6 +32,9 @@ final class AskUserSlider {
   factory AskUserSlider.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _AskUserSliderCopyWithUnset _ackCopyWithUnset =
+      _AskUserSliderCopyWithUnset();
 
   /// The question to display to the user
   final String question;
@@ -64,19 +71,21 @@ final class AskUserSlider {
 
   AskUserSlider copyWith({
     String? question,
-    String? description,
+    Object? description = _ackCopyWithUnset,
     int? minValue,
     int? maxValue,
     int? defaultValue,
-    String? unit,
+    Object? unit = _ackCopyWithUnset,
     GenUiAction? action,
   }) => AskUserSlider(
     question: question ?? this.question,
-    description: description ?? this.description,
+    description: identical(description, _ackCopyWithUnset)
+        ? this.description
+        : description as String?,
     minValue: minValue ?? this.minValue,
     maxValue: maxValue ?? this.maxValue,
     defaultValue: defaultValue ?? this.defaultValue,
-    unit: unit ?? this.unit,
+    unit: identical(unit, _ackCopyWithUnset) ? this.unit : unit as String?,
     action: action ?? this.action,
   );
 

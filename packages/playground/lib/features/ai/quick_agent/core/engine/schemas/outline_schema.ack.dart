@@ -124,6 +124,10 @@ final class DeckPlanSection {
       value.map((item) => item).toList(growable: false);
 }
 
+final class _DeckPlanElementCopyWithUnset {
+  const _DeckPlanElementCopyWithUnset();
+}
+
 /// Immutable model generated from `deckPlanElementSchema`.
 /// An element requirement for later slide composition
 @AckInfer.jsonSerializable
@@ -143,6 +147,9 @@ final class DeckPlanElement {
   factory DeckPlanElement.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _DeckPlanElementCopyWithUnset _ackCopyWithUnset =
+      _DeckPlanElementCopyWithUnset();
 
   /// Generation-capable element needed by the slide
   final String type;
@@ -175,15 +182,21 @@ final class DeckPlanElement {
   DeckPlanElement copyWith({
     String? type,
     String? purpose,
-    String? source,
-    String? generationPrompt,
-    String? widgetName,
+    Object? source = _ackCopyWithUnset,
+    Object? generationPrompt = _ackCopyWithUnset,
+    Object? widgetName = _ackCopyWithUnset,
   }) => DeckPlanElement(
     type: type ?? this.type,
     purpose: purpose ?? this.purpose,
-    source: source ?? this.source,
-    generationPrompt: generationPrompt ?? this.generationPrompt,
-    widgetName: widgetName ?? this.widgetName,
+    source: identical(source, _ackCopyWithUnset)
+        ? this.source
+        : source as String?,
+    generationPrompt: identical(generationPrompt, _ackCopyWithUnset)
+        ? this.generationPrompt
+        : generationPrompt as String?,
+    widgetName: identical(widgetName, _ackCopyWithUnset)
+        ? this.widgetName
+        : widgetName as String?,
   );
 
   @override
@@ -240,6 +253,10 @@ final class DeckPlanElement {
   static Object? _ackToRuntimeWidgetName(String? value) => value;
 }
 
+final class _DeckPlanSlideCopyWithUnset {
+  const _DeckPlanSlideCopyWithUnset();
+}
+
 /// Immutable model generated from `deckPlanSlideSchema`.
 /// A single slide in the presentation deck plan
 @AckInfer.jsonSerializable
@@ -275,6 +292,9 @@ final class DeckPlanSlide {
   factory DeckPlanSlide.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _DeckPlanSlideCopyWithUnset _ackCopyWithUnset =
+      _DeckPlanSlideCopyWithUnset();
 
   /// Unique identifier for this slide (e.g., "intro", "slide-1", "conclusion")
   final String key;
@@ -341,7 +361,7 @@ final class DeckPlanSlide {
     String? composition,
     String? treatment,
     String? density,
-    List<DeckPlanElement>? elements,
+    Object? elements = _ackCopyWithUnset,
   }) => DeckPlanSlide(
     key: key ?? this.key,
     title: title ?? this.title,
@@ -355,7 +375,9 @@ final class DeckPlanSlide {
     composition: composition ?? this.composition,
     treatment: treatment ?? this.treatment,
     density: density ?? this.density,
-    elements: elements ?? this.elements,
+    elements: identical(elements, _ackCopyWithUnset)
+        ? this.elements
+        : elements as List<DeckPlanElement>?,
   );
 
   @override

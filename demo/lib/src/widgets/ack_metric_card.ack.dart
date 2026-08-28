@@ -7,6 +7,10 @@ part of 'ack_metric_card.dart';
 // AckModelGenerator
 // **************************************************************************
 
+final class _MetricCardArgsCopyWithUnset {
+  const _MetricCardArgsCopyWithUnset();
+}
+
 /// Immutable model generated from `metricCardArgsSchema`.
 @AckInfer.jsonSerializable
 final class MetricCardArgs {
@@ -24,6 +28,9 @@ final class MetricCardArgs {
   factory MetricCardArgs.fromJson(Map<String, dynamic> json) {
     return $ack.parse(json);
   }
+
+  static const _MetricCardArgsCopyWithUnset _ackCopyWithUnset =
+      _MetricCardArgsCopyWithUnset();
 
   final String label;
 
@@ -49,13 +56,15 @@ final class MetricCardArgs {
   MetricCardArgs copyWith({
     String? label,
     String? value,
-    String? caption,
-    String? tone,
+    Object? caption = _ackCopyWithUnset,
+    Object? tone = _ackCopyWithUnset,
   }) => MetricCardArgs(
     label: label ?? this.label,
     value: value ?? this.value,
-    caption: caption ?? this.caption,
-    tone: tone ?? this.tone,
+    caption: identical(caption, _ackCopyWithUnset)
+        ? this.caption
+        : caption as String?,
+    tone: identical(tone, _ackCopyWithUnset) ? this.tone : tone as String?,
   );
 
   @override

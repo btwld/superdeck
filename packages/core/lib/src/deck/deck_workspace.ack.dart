@@ -60,17 +60,30 @@ DeckWorkspace _$DeckWorkspaceFromRuntime(Map<String, Object?> value) =>
 Map<String, Object?> _$DeckWorkspaceToRuntime(DeckWorkspace model) =>
     <String, Object?>{..._$DeckWorkspaceToJson(model)};
 
+final class _DeckWorkspaceCopyWithUnset {
+  const _DeckWorkspaceCopyWithUnset();
+}
+
 mixin _$DeckWorkspaceAck {
+  static const _DeckWorkspaceCopyWithUnset _ackCopyWithUnset =
+      _DeckWorkspaceCopyWithUnset();
+
   DeckWorkspace copyWith({
-    String? projectDir,
-    String? slidesPath,
-    String? outputDir,
+    Object? projectDir = _ackCopyWithUnset,
+    Object? slidesPath = _ackCopyWithUnset,
+    Object? outputDir = _ackCopyWithUnset,
   }) {
     final self = this as DeckWorkspace;
     return DeckWorkspace(
-      projectDir: projectDir ?? self.projectDir,
-      slidesPath: slidesPath ?? self.slidesPath,
-      outputDir: outputDir ?? self.outputDir,
+      projectDir: identical(projectDir, _ackCopyWithUnset)
+          ? self.projectDir
+          : projectDir as String?,
+      slidesPath: identical(slidesPath, _ackCopyWithUnset)
+          ? self.slidesPath
+          : slidesPath as String?,
+      outputDir: identical(outputDir, _ackCopyWithUnset)
+          ? self.outputDir
+          : outputDir as String?,
     );
   }
 
