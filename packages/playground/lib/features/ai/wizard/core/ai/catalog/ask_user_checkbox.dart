@@ -25,25 +25,81 @@ part 'ask_user_checkbox.ack.g.dart';
 ///
 /// Displays a question with checkbox items for multiple selection.
 @AckInfer(name: 'AskUserCheckbox')
-final _askUserCheckboxSchema = Ack.object({
-  'question': Ack.string().describe('The question to display to the user'),
-  'description': Ack.string().optional().describe(
-    'Additional context or instructions',
-  ),
-  'items': Ack.list(
-    Ack.string(),
-  ).describe('Checkbox items as strings for multiple selection'),
-  'selectedItems': Ack.list(
-    Ack.string(),
-  ).optional().describe('Initially selected items'),
-  'minSelections': Ack.integer().optional().describe(
-    'Minimum selections required, default 1',
-  ),
-  'maxSelections': Ack.integer().optional().describe(
-    'Maximum selections allowed',
-  ),
-  'action': actionSchema,
-}).describe('A question with checkbox items. User selects one or more items.');
+final _askUserCheckboxSchema =
+    Ack.object({
+          'question': Ack.string().describe(
+            'The question to display to the user',
+          ),
+          'description': Ack.string().optional().describe(
+            'Additional context or instructions',
+          ),
+          'items': Ack.list(Ack.string().minLength(1))
+              .nonEmpty()
+              .unique()
+              .describe(
+                'Unique, non-empty checkbox items for multiple selection',
+              ),
+          'selectedItems': Ack.list(
+            Ack.string(),
+          ).unique().optional().describe('Initially selected items'),
+          'minSelections': Ack.integer()
+              .min(0)
+              .optional()
+              .describe('Minimum selections required, default 1'),
+          'maxSelections': Ack.integer()
+              .min(0)
+              .optional()
+              .describe('Maximum selections allowed'),
+          'action': actionSchema,
+        })
+        .withConstraint(const _CheckboxSelectionConstraint())
+        .describe(
+          'A question with checkbox items. User selects one or more items.',
+        );
+
+final class _CheckboxSelectionConstraint
+    extends Constraint<Map<String, Object?>>
+    with Validator<Map<String, Object?>> {
+  const _CheckboxSelectionConstraint()
+    : super(
+        constraintKey: 'checkbox_selection_relationships',
+        description: 'Checkbox selections and bounds must match the items.',
+      );
+
+  @override
+  bool isValid(Map<String, Object?> value) {
+    final items = value['items']! as List<Object?>;
+    final selectedItems = value['selectedItems'] as List<Object?>?;
+    final minSelections = value['minSelections'] as int?;
+    final maxSelections = value['maxSelections'] as int?;
+
+    if (minSelections != null && minSelections > items.length) return false;
+    if (maxSelections != null && maxSelections > items.length) return false;
+    if (minSelections != null &&
+        maxSelections != null &&
+        minSelections > maxSelections) {
+      return false;
+    }
+    if (selectedItems != null &&
+        selectedItems.any((item) => !items.contains(item))) {
+      return false;
+    }
+    if (selectedItems != null &&
+        maxSelections != null &&
+        selectedItems.length > maxSelections) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  String buildMessage(Map<String, Object?> value) {
+    return 'Selections must belong to items; bounds must fit the item count, '
+        'minimum must not exceed maximum, and the initial selection must not '
+        'exceed the maximum.';
+  }
+}
 
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 

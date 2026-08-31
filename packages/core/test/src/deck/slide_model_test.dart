@@ -272,6 +272,13 @@ void main() {
           expect(slide.key, 'full');
           expect(slide.options?.title, 'Title');
         });
+
+        test('rejects unknown fields', () {
+          expect(
+            () => Slide.parse({'key': 'strict', 'unexpected': true}),
+            throwsA(anything),
+          );
+        });
       });
 
       group('equality', () {
@@ -398,6 +405,58 @@ void main() {
         );
       });
 
+      test('args snapshot nested source collections', () {
+        final nestedMap = <String, Object?>{'enabled': true};
+        final nestedList = <Object?>['first'];
+        final nestedSet = <Object?>{'alpha'};
+        final source = <String, Object?>{
+          'map': nestedMap,
+          'list': nestedList,
+          'set': nestedSet,
+        };
+        final options = SlideOptions(args: source);
+        final equalSnapshot = SlideOptions(
+          args: {
+            'map': {'enabled': true},
+            'list': ['first'],
+            'set': {'alpha'},
+          },
+        );
+        final originalHash = options.hashCode;
+
+        source['later'] = true;
+        nestedMap['enabled'] = false;
+        nestedList.add('second');
+        nestedSet.add('beta');
+
+        expect(options, equalSnapshot);
+        expect(options.hashCode, originalHash);
+        expect(options.args.containsKey('later'), isFalse);
+      });
+
+      test('args nested collections are unmodifiable', () {
+        final options = SlideOptions(
+          args: {
+            'map': {'enabled': true},
+            'list': ['first'],
+            'set': {'alpha'},
+          },
+        );
+
+        expect(
+          () => (options.args['map']! as Map<String, Object?>)['later'] = true,
+          throwsUnsupportedError,
+        );
+        expect(
+          () => (options.args['list']! as List<Object?>).add('second'),
+          throwsUnsupportedError,
+        );
+        expect(
+          () => (options.args['set']! as Set<Object?>).add('beta'),
+          throwsUnsupportedError,
+        );
+      });
+
       test('creates with template parameter', () {
         final options = SlideOptions(template: 'my-template');
 
@@ -432,6 +491,27 @@ void main() {
           final copy = original.copyWith(args: {'b': 2});
 
           expect(copy.args, {'b': 2});
+        });
+
+        test('snapshots replacement args deeply', () {
+          final nested = <String, Object?>{'value': 1};
+          final replacement = <String, Object?>{'nested': nested};
+          final copy = SlideOptions(
+            args: {'old': true},
+          ).copyWith(args: replacement);
+          final originalHash = copy.hashCode;
+
+          nested['value'] = 2;
+          replacement['later'] = true;
+
+          expect(copy.args, {
+            'nested': {'value': 1},
+          });
+          expect(copy.hashCode, originalHash);
+          expect(
+            () => (copy.args['nested']! as Map<String, Object?>)['value'] = 3,
+            throwsUnsupportedError,
+          );
         });
 
         test('copies with new template', () {

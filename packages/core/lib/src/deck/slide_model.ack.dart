@@ -12,7 +12,7 @@ final _slideObject = Ack.object({
   'options': SlideOptionsSchema.schema.optional().nullable(),
   'sections': Ack.list(SectionBlockSchema.schema).withDefault(const []),
   'comments': Ack.list(Ack.string()).withDefault(const []),
-}, additionalProperties: true);
+});
 
 final _slideWireSchema = Ack.preserveBoundary(_slideObject);
 
@@ -289,21 +289,5 @@ Object? _ackSlideOptionsToRuntimeTemplate(String? value) => value;
 Map<String, Object?>? _ackSlideOptionsFromRuntimeArgs(Object? value) =>
     value == null
     ? null
-    : _ackClassImmutableCopyMap(value as Map<String, Object?>);
+    : deepUnmodifiableJsonMap(value as Map<String, Object?>);
 Object? _ackSlideOptionsToRuntimeArgs(Map<String, Object?> value) => value;
-
-Object? _ackClassImmutableCopyValue(Object? value) => switch (value) {
-  List() => List.unmodifiable(value.map(_ackClassImmutableCopyValue)),
-  Set() => Set.unmodifiable(value.map(_ackClassImmutableCopyValue)),
-  Map() => Map.unmodifiable(
-    value.map((key, item) => MapEntry(key, _ackClassImmutableCopyValue(item))),
-  ),
-  _ => value,
-};
-
-Map<String, Object?> _ackClassImmutableCopyMap(Map<String, Object?> value) =>
-    Map<String, Object?>.unmodifiable(
-      value.map(
-        (key, item) => MapEntry(key, _ackClassImmutableCopyValue(item)),
-      ),
-    );

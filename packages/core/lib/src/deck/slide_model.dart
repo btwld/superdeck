@@ -10,7 +10,7 @@ part 'slide_model.ack.g.dart';
 ///
 /// A slide contains sections of content blocks, optional configuration options,
 /// and any speaker notes or comments. Each slide is uniquely identified by a key.
-@AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
+@AckModel()
 final class Slide with _$SlideAck {
   /// Unique identifier for this slide, typically generated from content hash.
   final String key;
@@ -49,8 +49,8 @@ enum SlideLayout {
 ///
 /// Provides metadata and styling information for individual slides.
 @AckModel(
-  additionalProperties: AckAdditionalPropertiesMode.capture,
-  additionalPropertiesField: 'args',
+  unknownProperties: AckUnknownPropertyPolicy.capture,
+  captureField: 'args',
 )
 final class SlideOptions with _$SlideOptionsAck {
   static const _knownFields = {'title', 'style', 'layout', 'template'};
@@ -81,7 +81,7 @@ final class SlideOptions with _$SlideOptionsAck {
     this.layout,
     this.template,
     Map<String, Object?> args = const {},
-  }) : args = Map.unmodifiable(
+  }) : args = deepUnmodifiableJsonMap(
          Map.fromEntries(
            args.entries.where((e) => !_knownFields.contains(e.key)),
          ),

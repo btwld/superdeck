@@ -40,9 +40,9 @@ final _askUserRadioSchema = Ack.object({
   'description': Ack.string().optional().describe(
     'Additional context or instructions',
   ),
-  'options': Ack.list(
-    _inputOptionSchema,
-  ).describe('Radio options with title and description for single selection'),
+  'options': Ack.list(_inputOptionSchema).nonEmpty().describe(
+    'Radio options with title and description for single selection',
+  ),
   'action': actionSchema,
 }).describe('A question with radio button options. User selects one option.');
 

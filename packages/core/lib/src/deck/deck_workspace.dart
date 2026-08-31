@@ -19,7 +19,7 @@ bool _isRelativeWithoutTraversal(String value) {
   return !p.split(value).contains('..');
 }
 
-@AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
+@AckModel()
 final class DeckWorkspace with _$DeckWorkspaceAck {
   final String projectDir;
 

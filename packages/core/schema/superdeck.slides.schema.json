@@ -2,7 +2,7 @@
   "$id": "https://superdeck.dev/schema/superdeck.slides.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "items": {
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "comments": {
         "default": [],
@@ -102,7 +102,7 @@
               "items": {
                 "anyOf": [
                   {
-                    "additionalProperties": true,
+                    "additionalProperties": false,
                     "properties": {
                       "align": {
                         "anyOf": [

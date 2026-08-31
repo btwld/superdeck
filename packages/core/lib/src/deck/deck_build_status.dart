@@ -6,7 +6,7 @@ part 'deck_build_status.ack.g.dart';
 
 enum DeckBuildPhase { unknown, building, success, failure }
 
-@AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
+@AckModel(unknownProperties: AckUnknownPropertyPolicy.discard)
 final class DeckBuildError with _$DeckBuildErrorAck {
   final String message;
 
@@ -18,7 +18,7 @@ final class DeckBuildError with _$DeckBuildErrorAck {
       DeckBuildErrorSchema.safeParse(value).getOrNull();
 }
 
-@AckModel(additionalProperties: AckAdditionalPropertiesMode.discard)
+@AckModel(unknownProperties: AckUnknownPropertyPolicy.discard)
 final class DeckBuildStatus with _$DeckBuildStatusAck {
   @JsonKey(name: 'status')
   final DeckBuildPhase phase;

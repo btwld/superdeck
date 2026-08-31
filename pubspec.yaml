@@ -16,6 +16,15 @@ dev_dependencies:
   melos: 7.8.1
 
 dependency_overrides:
+  ack:
+    path: ../../packages/ack
+  ack_annotations:
+    path: ../../packages/ack_annotations
+  ack_generator:
+    path: ../../packages/ack_generator
+  ack_json_schema_builder:
+    path: ../../packages/ack_json_schema_builder
+
   # Hero UI's Remix 1.0 migration commit still points at development Git
   # branches. Resolve its runtime dependencies to the published betas used by
   # this workspace until that upstream migration is released.

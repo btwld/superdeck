@@ -11,7 +11,7 @@ final _deckWorkspaceObject = Ack.object({
   'projectDir': Ack.string().optional(),
   'slidesPath': _safeWorkspacePathSchema().optional(),
   'outputDir': _safeWorkspacePathSchema().optional(),
-}, additionalProperties: true);
+});
 
 final _deckWorkspaceWireSchema = Ack.preserveBoundary(_deckWorkspaceObject);
 

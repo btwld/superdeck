@@ -155,7 +155,7 @@ final class SectionBlock with _$SectionBlockAck {
 /// This is the most common block type, used for text and markdown content.
 @AckModel(
   discriminatorValue: ContentBlock.key,
-  additionalProperties: AckAdditionalPropertiesMode.discard,
+  unknownProperties: AckUnknownPropertyPolicy.reject,
 )
 final class ContentBlock extends Block with _$ContentBlockAck {
   static const key = 'block';
@@ -232,8 +232,8 @@ enum ImageFit {
 
 @AckModel(
   discriminatorValue: WidgetBlock.key,
-  additionalProperties: AckAdditionalPropertiesMode.capture,
-  additionalPropertiesField: 'args',
+  unknownProperties: AckUnknownPropertyPolicy.capture,
+  captureField: 'args',
 )
 final class WidgetBlock extends Block with _$WidgetBlockAck {
   static const key = 'widget';
@@ -264,7 +264,7 @@ final class WidgetBlock extends Block with _$WidgetBlockAck {
   String get type => 'widget';
 
   static Map<String, Object?> _validateArgs(Map<String, Object?>? args) {
-    if (args == null) return const {};
+    if (args == null) return deepUnmodifiableJsonMap(const {});
 
     // Single pass: strip the 'type' discriminator key leaked by
     // UnmappedPropertiesHook during deserialization, and reject any
@@ -286,7 +286,7 @@ final class WidgetBlock extends Block with _$WidgetBlockAck {
         'args must not contain reserved keys: ${collisions.join(', ')}',
       );
     }
-    return Map.unmodifiable(filtered);
+    return deepUnmodifiableJsonMap(filtered);
   }
 
   static final fromJson = WidgetBlockSchema.fromJson;

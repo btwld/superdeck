@@ -48,7 +48,7 @@ final class AskUserCheckbox {
   /// Additional context or instructions
   final String? description;
 
-  /// Checkbox items as strings for multiple selection
+  /// Unique, non-empty checkbox items for multiple selection
   final List<String> items;
 
   /// Initially selected items

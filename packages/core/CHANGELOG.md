@@ -3,7 +3,8 @@
 - **Breaking:** replace `dart_mappable` models and mapper APIs with Ack 1.2
   class-first models. Use the generated `*Schema` facades and model
   `fromJson`/`toJson` methods; unknown-field handling is now explicit per
-  model, and generated `copyWith` treats `null` as unchanged.
+  model. Omitted generated `copyWith` arguments retain their current values,
+  while explicit `null` clears nullable fields.
 - Preserve boundary maps and lists from generated `wireSchema` validation
   instead of retaining values decoded by nested codecs.
 

@@ -378,14 +378,14 @@ void main() {
         }
       });
 
-      test('ignores unknown keys after validation', () {
-        final config = DeckWorkspace.parse({
-          'slidesPath': 'parsed.md',
-          'extra': {'keep': 'passthrough'},
-        });
-
-        expect(config.slidesPath, 'parsed.md');
-        expect(config.toJson().containsKey('extra'), isFalse);
+      test('rejects unknown keys', () {
+        expect(
+          () => DeckWorkspace.parse({
+            'slidesPath': 'parsed.md',
+            'extra': {'keep': 'passthrough'},
+          }),
+          throwsA(isA<Exception>()),
+        );
       });
     });
 
@@ -420,13 +420,13 @@ void main() {
         }
       });
 
-      test('allows unknown keys while validating known fields', () {
+      test('rejects unknown keys while validating known fields', () {
         final result = DeckWorkspaceSchema.wireSchema.safeParse({
           'projectDir': '/project',
           'extra': {'nested': true},
         });
 
-        expect(result.isOk, isTrue);
+        expect(result.isOk, isFalse);
       });
 
       group('path validation', () {

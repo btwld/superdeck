@@ -521,6 +521,19 @@ void main() {
         );
       });
 
+      test('compiled model rejects unknown inset fields', () {
+        expect(
+          () => BlockInsets.fromJson({
+            'top': 1,
+            'right': 2,
+            'bottom': 3,
+            'left': 4,
+            'unexpected': true,
+          }),
+          throwsA(isA<AckException>()),
+        );
+      });
+
       test('absent insets stay null; explicit zero stays representable', () {
         final inherited = Block.parseAuthoring({'type': 'block'});
         expect(inherited.margin, isNull);
@@ -704,15 +717,15 @@ void main() {
           expect(block.toJson()['type'], ContentBlock.key);
         });
 
-        test('discards unknown fields', () {
-          final block = ContentBlock.fromJson({
-            'type': 'block',
-            'content': 'Known',
-            'unknown': {'nested': true},
-          });
-
-          expect(block.content, 'Known');
-          expect(block.toJson(), isNot(contains('unknown')));
+        test('rejects unknown fields', () {
+          expect(
+            () => ContentBlock.fromJson({
+              'type': 'block',
+              'content': 'Known',
+              'unknown': {'nested': true},
+            }),
+            throwsA(isA<AckException>()),
+          );
         });
 
         test('deserializes full map', () {
@@ -1187,6 +1200,60 @@ void main() {
         expect(() => widget.args['newKey'] = 'fail', throwsUnsupportedError);
       });
 
+      test('args snapshot nested source collections', () {
+        final nestedMap = <String, Object?>{'enabled': true};
+        final nestedList = <Object?>['first'];
+        final nestedSet = <Object?>{'alpha'};
+        final source = <String, Object?>{
+          'map': nestedMap,
+          'list': nestedList,
+          'set': nestedSet,
+        };
+        final widget = WidgetBlock(name: 'Test', args: source);
+        final equalSnapshot = WidgetBlock(
+          name: 'Test',
+          args: {
+            'map': {'enabled': true},
+            'list': ['first'],
+            'set': {'alpha'},
+          },
+        );
+        final originalHash = widget.hashCode;
+
+        source['later'] = true;
+        nestedMap['enabled'] = false;
+        nestedList.add('second');
+        nestedSet.add('beta');
+
+        expect(widget, equalSnapshot);
+        expect(widget.hashCode, originalHash);
+        expect(widget.args.containsKey('later'), isFalse);
+      });
+
+      test('args nested collections are unmodifiable', () {
+        final widget = WidgetBlock(
+          name: 'Test',
+          args: {
+            'map': {'enabled': true},
+            'list': ['first'],
+            'set': {'alpha'},
+          },
+        );
+
+        expect(
+          () => (widget.args['map']! as Map<String, Object?>)['later'] = true,
+          throwsUnsupportedError,
+        );
+        expect(
+          () => (widget.args['list']! as List<Object?>).add('second'),
+          throwsUnsupportedError,
+        );
+        expect(
+          () => (widget.args['set']! as Set<Object?>).add('beta'),
+          throwsUnsupportedError,
+        );
+      });
+
       group('constructor validation', () {
         for (final flex in [0, -1]) {
           test('rejects flex $flex', () {
@@ -1277,6 +1344,28 @@ void main() {
           final copy = original.copyWith(args: {'b': 2});
 
           expect(copy.args, {'b': 2});
+        });
+
+        test('snapshots replacement args deeply', () {
+          final nested = <String, Object?>{'value': 1};
+          final replacement = <String, Object?>{'nested': nested};
+          final copy = WidgetBlock(
+            name: 'Test',
+            args: {'old': true},
+          ).copyWith(args: replacement);
+          final originalHash = copy.hashCode;
+
+          nested['value'] = 2;
+          replacement['later'] = true;
+
+          expect(copy.args, {
+            'nested': {'value': 1},
+          });
+          expect(copy.hashCode, originalHash);
+          expect(
+            () => (copy.args['nested']! as Map<String, Object?>)['value'] = 3,
+            throwsUnsupportedError,
+          );
         });
 
         test('preserves values when not specified', () {

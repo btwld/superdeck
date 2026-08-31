@@ -73,5 +73,15 @@ void main() {
 
       expect(parsed.toJson(), isNot(contains('legacyProgress')));
     });
+
+    test('wire schema retains fields discarded by the typed model', () {
+      final wire = DeckBuildStatusSchema.wireSchema.parse({
+        'status': 'success',
+        'timestamp': '2026-03-10T12:00:00.000Z',
+        'legacyProgress': 100,
+      });
+
+      expect(wire!['legacyProgress'], 100);
+    });
   });
 }

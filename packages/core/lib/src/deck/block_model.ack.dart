@@ -15,7 +15,7 @@ final _contentBlockObject = Ack.object({
   'padding': BlockInsetsSchema.schema.optional().nullable(),
   'scrollable': Ack.boolean().withDefault(false),
   'content': Ack.string().optional(),
-}, additionalProperties: true);
+});
 
 final _contentBlockWireSchema = Ack.preserveBoundary(_contentBlockObject);
 
@@ -340,7 +340,7 @@ Object? _ackWidgetBlockToRuntimeName(String value) => value;
 Map<String, Object?>? _ackWidgetBlockFromRuntimeArgs(Object? value) =>
     value == null
     ? null
-    : _ackClassImmutableCopyMap(value as Map<String, Object?>);
+    : deepUnmodifiableJsonMap(value as Map<String, Object?>);
 Object? _ackWidgetBlockToRuntimeArgs(Map<String, Object?> value) => value;
 
 final _blockObject = Ack.discriminated(
@@ -535,19 +535,3 @@ double? _ackSectionBlockFromRuntimeSpacing(Object? value) => value as double?;
 Object? _ackSectionBlockToRuntimeSpacing(double value) => value;
 String? _ackSectionBlockFromRuntimeType(Object? value) => value as String?;
 Object? _ackSectionBlockToRuntimeType(String value) => value;
-
-Object? _ackClassImmutableCopyValue(Object? value) => switch (value) {
-  List() => List.unmodifiable(value.map(_ackClassImmutableCopyValue)),
-  Set() => Set.unmodifiable(value.map(_ackClassImmutableCopyValue)),
-  Map() => Map.unmodifiable(
-    value.map((key, item) => MapEntry(key, _ackClassImmutableCopyValue(item))),
-  ),
-  _ => value,
-};
-
-Map<String, Object?> _ackClassImmutableCopyMap(Map<String, Object?> value) =>
-    Map<String, Object?>.unmodifiable(
-      value.map(
-        (key, item) => MapEntry(key, _ackClassImmutableCopyValue(item)),
-      ),
-    );
