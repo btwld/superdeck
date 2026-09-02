@@ -757,8 +757,15 @@ void main() {
           expect(block.type, 'block');
         });
 
-        test('rejects non-integer numeric flex', () {
+        test('normalizes an integral numeric flex', () {
           final map = {'type': 'block', 'flex': 2.0};
+
+          expect(ContentBlock.fromJson(map).flex, 2);
+        });
+
+        test('rejects a fractional numeric flex', () {
+          final map = {'type': 'block', 'flex': 2.5};
+
           expect(
             () => ContentBlock.fromJson(map),
             throwsA(isA<AckException>()),

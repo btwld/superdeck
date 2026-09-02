@@ -1527,18 +1527,6 @@ Map<String, Object?> _checkpointPlanDraft() {
     'titleLeft',
     'title',
   ];
-  const treatments = [
-    'hero',
-    'content',
-    'data',
-    'data',
-    'content',
-    'data',
-    'quote',
-    'content',
-    'section',
-    'closing',
-  ];
   const roles = [
     'opening',
     'problem',
@@ -1586,7 +1574,6 @@ Map<String, Object?> _checkpointPlanDraft() {
         {
           'key': slideKeys[index],
           'title': titles[index],
-          'purpose': 'Advance the evidence-led decision story.',
           'sectionKey': sectionKeys[index],
           'assertion': index == 2
               ? 'Teams spent 42% less weekly synthesis time.'
@@ -1598,11 +1585,7 @@ Map<String, Object?> _checkpointPlanDraft() {
                   'Practical implication for ${slideKeys[index]}.',
                 ],
           'narrativeRole': roles[index],
-          'contentBrief': 'Keep the slide concise and decision-oriented.',
-          'continuity': 'Connect this idea to the surrounding decision flow.',
           'composition': compositions[index],
-          'treatment': treatments[index],
-          'density': index % 3 == 0 ? 'spacious' : 'balanced',
           'elements': <Object?>[],
         },
     ],

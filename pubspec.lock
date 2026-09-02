@@ -10,32 +10,36 @@ packages:
     source: hosted
     version: "96.0.0"
   ack:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../../packages/ack"
-      relative: true
-    source: path
+      name: ack
+      sha256: aa3be1f6f337e3edcd550358201dec755046ff891694c4c2010dc6e0334bf702
+      url: "https://pub.dev"
+    source: hosted
     version: "1.2.0"
   ack_annotations:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../../packages/ack_annotations"
-      relative: true
-    source: path
+      name: ack_annotations
+      sha256: bc5acf1a899999c8d3a9d9d79fa90774554320a47415b30db147f082a526fb84
+      url: "https://pub.dev"
+    source: hosted
     version: "1.2.0"
   ack_generator:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../../packages/ack_generator"
-      relative: true
-    source: path
+      name: ack_generator
+      sha256: "82a917e4707f55cf3075ba3b03b09d703cf09354a3d5c8efb337f2b072cd4050"
+      url: "https://pub.dev"
+    source: hosted
     version: "1.2.0"
   ack_json_schema_builder:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../../packages/ack_json_schema_builder"
-      relative: true
-    source: path
+      name: ack_json_schema_builder
+      sha256: "3f1f86b9195e5bf17de6d7326d6c2fa214244d963da7c952f37bec7589c88ab2"
+      url: "https://pub.dev"
+    source: hosted
     version: "1.2.0"
   analyzer:
     dependency: transitive
