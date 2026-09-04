@@ -1,10 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:googleai_dart/googleai_dart.dart' as google_ai;
 import 'package:playground/features/ai/quick_agent/core/engine/services/error_classifier.dart';
 
 void main() {
   const classifier = ErrorClassifier();
 
   group('classify', () {
+    test('uses SDK status codes before incidental message patterns', () {
+      expect(
+        classifier.classify(
+          const google_ai.AuthenticationException(
+            message: 'A connection could not be authenticated.',
+          ),
+        ),
+        ErrorCategory.authentication,
+      );
+      expect(
+        classifier.classify(
+          const google_ai.ApiException(
+            statusCode: 504,
+            message: 'Deadline expired while processing 401 items.',
+          ),
+        ),
+        ErrorCategory.network,
+      );
+    });
+
     test('detects rate-limit / overload errors', () {
       expect(
         classifier.classify('Error 429: quota exceeded'),

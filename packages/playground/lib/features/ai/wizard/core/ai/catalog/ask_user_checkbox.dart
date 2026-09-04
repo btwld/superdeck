@@ -8,8 +8,6 @@ import 'package:remix/remix.dart';
 
 import '../schemas/genui_action_schema.dart';
 import 'user_action_dispatch.dart';
-import '../../debug_logger.dart';
-import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
@@ -20,6 +18,8 @@ part 'ask_user_checkbox.ack.dart';
 part 'ask_user_checkbox.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
+
+const _defaultMinSelections = 1;
 
 /// Schema for AskUserCheckbox component.
 ///
@@ -70,27 +70,17 @@ final class _CheckboxSelectionConstraint
   bool isValid(Map<String, Object?> value) {
     final items = value['items']! as List<Object?>;
     final selectedItems = value['selectedItems'] as List<Object?>?;
-    final minSelections = value['minSelections'] as int?;
-    final maxSelections = value['maxSelections'] as int?;
+    final minSelections =
+        value['minSelections'] as int? ?? _defaultMinSelections;
+    final maxSelections = value['maxSelections'] as int? ?? items.length;
 
-    if (minSelections != null && minSelections > items.length) return false;
-    if (maxSelections != null && maxSelections > items.length) return false;
-    if (minSelections != null &&
-        maxSelections != null &&
-        minSelections > maxSelections) {
-      return false;
-    }
-    if (selectedItems != null &&
-        selectedItems.any((item) => !items.contains(item))) {
-      return false;
-    }
-    if (selectedItems != null &&
-        maxSelections != null &&
-        selectedItems.length > maxSelections) {
+    if (maxSelections > items.length || minSelections > maxSelections) {
       return false;
     }
 
-    return true;
+    return selectedItems == null ||
+        (selectedItems.length <= maxSelections &&
+            selectedItems.every(items.contains));
   }
 
   @override
@@ -154,7 +144,7 @@ class _AskUserCheckboxContentState extends State<_AskUserCheckboxContent> {
   }
 
   bool get _canSubmit {
-    final minSelections = widget.data.minSelections ?? 1;
+    final minSelections = widget.data.minSelections ?? _defaultMinSelections;
     final maxSelections = widget.data.maxSelections;
     final count = _selectedChoices.length;
     if (count < minSelections) return false;
@@ -173,25 +163,9 @@ class _AskUserCheckboxContentState extends State<_AskUserCheckboxContent> {
     contextBuilder: _buildActionContext,
   );
 
-  @override
-  Widget build(BuildContext context) {
-    return CatalogQuestionStep(
-      question: widget.data.question,
-      description: widget.data.description,
-      body: _buildItems(),
-      canSubmit: _canSubmit,
-      onSubmit: _submitAction,
-    );
-  }
-
   Widget _buildItems() {
     final items = widget.data.items;
     final column = FlexBoxStyler().column().spacing(8);
-
-    if (items.isEmpty) {
-      debugLog.log('AskUserCheckbox', 'WARNING: checkbox input has no items.');
-      return const SdBody('No options available');
-    }
 
     return column(
       children: items.map((choice) {
@@ -210,6 +184,17 @@ class _AskUserCheckboxContentState extends State<_AskUserCheckboxContent> {
           },
         );
       }).toList(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CatalogQuestionStep(
+      question: widget.data.question,
+      description: widget.data.description,
+      body: _buildItems(),
+      canSubmit: _canSubmit,
+      onSubmit: _submitAction,
     );
   }
 }

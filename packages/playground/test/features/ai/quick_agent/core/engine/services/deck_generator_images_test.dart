@@ -12,9 +12,11 @@ void main() {
     () async {
       final generator = _TrackingImageGenerator();
       final progress = <(int, int)>[];
+      final plan = _plan();
+      final original = plan.toJson();
 
       final result = await generateImagesForPlan(
-        plan: _plan(),
+        plan: plan,
         imageStyle: PresentationImageStyleCatalog.withDefaults().resolve(
           id: 'watercolor',
           version: 1,
@@ -50,6 +52,11 @@ void main() {
       expect(failedSlide.elements, isEmpty);
       expect(failedSlide.composition, 'content');
       expect(failedSlide.treatment, 'content');
+      expect(result.plan.slides[1], plan.slides[1]);
+      expect(result.plan.theme, plan.theme);
+      expect(result.plan.sections, plan.sections);
+      expect(DeckPlan.parse(result.plan.toJson()), result.plan);
+      expect(plan.toJson(), original);
     },
   );
 

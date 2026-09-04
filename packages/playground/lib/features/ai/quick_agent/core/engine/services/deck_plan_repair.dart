@@ -85,11 +85,8 @@ extension _DeckPlanRepair on DeckGeneratorService {
           continue;
         }
 
-        final candidatePlan = _replacePlanSlide(
-          repairedPlan,
-          index: index,
-          slide: candidate,
-        );
+        final slides = repairedPlan.slides.toList()..[index] = candidate;
+        final candidatePlan = repairedPlan.copyWith(slides: slides);
         final candidateIssues = validateDeckPlanIssues(
           candidatePlan,
           typographyCatalog: typographyCatalog,
@@ -246,16 +243,4 @@ List<String> _outlineSlideInvariantErrors({
     candidate.elements ?? const <DeckPlanElement>[],
   );
   return errors;
-}
-
-DeckPlan _replacePlanSlide(
-  DeckPlan plan, {
-  required int index,
-  required DeckPlanSlide slide,
-}) {
-  final slides = [for (final existing in plan.slides) existing.toJson()];
-  slides[index] = slide.toJson();
-  final data = plan.toJson()..['slides'] = slides;
-
-  return DeckPlan.parse(data);
 }

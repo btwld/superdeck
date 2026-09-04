@@ -124,6 +124,10 @@ void main() {
         _checkboxData(items: const ['One'], maxSelections: 2),
       ),
       (
+        'maximum below the default minimum',
+        _checkboxData(items: const ['One'], maxSelections: 0),
+      ),
+      (
         'minimum above the maximum',
         _checkboxData(
           items: const ['One', 'Two'],

@@ -15,20 +15,23 @@ Matcher _throwsInvalidFlex() {
   );
 }
 
-Matcher _throwsMappedInvalidFlex() {
+Matcher _throwsMappedInvalidFlex() =>
+    _throwsConstraintError('#/flex', 'number_positive');
+
+Matcher _throwsConstraintError(String path, String constraintKey) {
   return throwsA(
     isA<AckException>().having(
       (exception) => exception.errors.expand(_flattenSchemaErrors),
       'validation errors',
       contains(
         isA<SchemaConstraintsError>()
-            .having((error) => error.path, 'path', '#/flex')
+            .having((error) => error.path, 'path', path)
             .having(
               (error) => error.constraints.map(
                 (constraint) => constraint.constraint.constraintKey,
               ),
               'constraint keys',
-              contains('number_positive'),
+              contains(constraintKey),
             ),
       ),
     ),
@@ -972,10 +975,14 @@ void main() {
         });
 
         test('parse reports the spacing field and accepted range', () {
-          for (final spacing in [-1.0, double.nan, double.infinity]) {
+          for (final (spacing, constraintKey) in [
+            (-1.0, 'number_min'),
+            (double.nan, 'number.isFinite'),
+            (double.infinity, 'number.isFinite'),
+          ]) {
             expect(
               () => SectionBlock.parse({'spacing': spacing}),
-              throwsA(isA<AckException>()),
+              _throwsConstraintError('#/spacing', constraintKey),
               reason: 'spacing: $spacing',
             );
           }

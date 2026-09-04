@@ -7,8 +7,6 @@ import 'package:genui/genui.dart';
 
 import '../schemas/genui_action_schema.dart';
 import 'user_action_dispatch.dart';
-import '../../debug_logger.dart';
-import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
@@ -111,11 +109,6 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
 
   Widget _buildOptions() {
     final options = widget.data.options;
-
-    if (options.isEmpty) {
-      debugLog.log('AskUserRadio', 'WARNING: radio input has no options.');
-      return const SdBody('No options available');
-    }
 
     return LayoutBuilder(
       builder: (context, constraints) {

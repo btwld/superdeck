@@ -14,6 +14,8 @@ StringSchema _safeWorkspacePathSchema() => Ack.string().refine(
       ' (absolute paths and parent-directory traversal are not allowed)',
 );
 
+/// Returns whether a relative path contains no parent-directory segments.
+/// Filenames containing `..` (e.g. `my..file.md`) remain valid.
 bool _isRelativeWithoutTraversal(String value) {
   if (p.isAbsolute(value)) return false;
   return !p.split(value).contains('..');
@@ -75,10 +77,6 @@ final class DeckWorkspace with _$DeckWorkspaceAck {
   static DeckWorkspace parse(Map<String, Object?> map) =>
       DeckWorkspaceSchema.parse(map);
 
-  /// Returns `true` when [value] is a relative path that does not contain
-  /// `..` as a path segment. Filenames that happen to contain `..` (e.g.
-  /// `my..file.md`) are allowed because `p.split` only yields `..` for an
-  /// actual traversal segment.
   static String _normalizeBundledPath(String path) {
     final normalized = p.posix.normalize(path.replaceAll('\\', '/'));
     return normalized.startsWith('./') ? normalized.substring(2) : normalized;

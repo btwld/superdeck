@@ -1,3 +1,5 @@
+import 'package:googleai_dart/googleai_dart.dart' as google_ai;
+
 /// Classified error categories for user-facing messages.
 enum ErrorCategory {
   /// Rate limiting, quota exhaustion, or service overload.
@@ -83,17 +85,23 @@ class ErrorClassifier {
 
   /// Classifies an error into a user-friendly category.
   ///
-  /// Examines the error's string representation (case-insensitive)
-  /// for known patterns. Returns [ErrorCategory.unknown] if no patterns match.
+  /// Uses structured SDK status codes when available, then falls back to
+  /// case-insensitive message patterns for other errors.
+  /// Returns [ErrorCategory.unknown] if neither identifies a category.
   ErrorCategory classify(Object error) {
+    final statusCategory = switch (error) {
+      google_ai.ApiException(statusCode: 401 || 403) =>
+        ErrorCategory.authentication,
+      google_ai.ApiException(statusCode: 408 || 504) => ErrorCategory.network,
+      google_ai.ApiException(statusCode: 429) => ErrorCategory.rateLimit,
+      _ => null,
+    };
+    if (statusCategory != null) return statusCategory;
+
     final errorString = error.toString().toLowerCase();
 
     for (final entry in _patterns.entries) {
-      for (final pattern in entry.value) {
-        if (errorString.contains(pattern)) {
-          return entry.key;
-        }
-      }
+      if (entry.value.any(errorString.contains)) return entry.key;
     }
 
     return ErrorCategory.unknown;
