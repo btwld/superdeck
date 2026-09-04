@@ -8,46 +8,93 @@ import 'package:remix/remix.dart';
 
 import '../schemas/genui_action_schema.dart';
 import 'user_action_dispatch.dart';
-import '../../debug_logger.dart';
-import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
 import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 
-part 'ask_user_checkbox.g.dart';
+part 'ask_user_checkbox.ack.dart';
+part 'ask_user_checkbox.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
+
+const _defaultMinSelections = 1;
 
 /// Schema for AskUserCheckbox component.
 ///
 /// Displays a question with checkbox items for multiple selection.
-@AckType(name: 'AskUserCheckbox')
-final _askUserCheckboxSchema = Ack.object({
-  'question': Ack.string().describe('The question to display to the user'),
-  'description': Ack.string().optional().describe(
-    'Additional context or instructions',
-  ),
-  'items': Ack.list(
-    Ack.string(),
-  ).describe('Checkbox items as strings for multiple selection'),
-  'selectedItems': Ack.list(
-    Ack.string(),
-  ).optional().describe('Initially selected items'),
-  'minSelections': Ack.integer().optional().describe(
-    'Minimum selections required, default 1',
-  ),
-  'maxSelections': Ack.integer().optional().describe(
-    'Maximum selections allowed',
-  ),
-  'action': actionSchema,
-}).describe('A question with checkbox items. User selects one or more items.');
+@AckInfer(name: 'AskUserCheckbox')
+final _askUserCheckboxSchema =
+    Ack.object({
+          'question': Ack.string().describe(
+            'The question to display to the user',
+          ),
+          'description': Ack.string().optional().describe(
+            'Additional context or instructions',
+          ),
+          'items': Ack.list(Ack.string().minLength(1))
+              .nonEmpty()
+              .unique()
+              .describe(
+                'Unique, non-empty checkbox items for multiple selection',
+              ),
+          'selectedItems': Ack.list(
+            Ack.string(),
+          ).unique().optional().describe('Initially selected items'),
+          'minSelections': Ack.integer()
+              .min(0)
+              .optional()
+              .describe('Minimum selections required, default 1'),
+          'maxSelections': Ack.integer()
+              .min(0)
+              .optional()
+              .describe('Maximum selections allowed'),
+          'action': actionSchema,
+        })
+        .withConstraint(const _CheckboxSelectionConstraint())
+        .describe(
+          'A question with checkbox items. User selects one or more items.',
+        );
+
+final class _CheckboxSelectionConstraint
+    extends Constraint<Map<String, Object?>>
+    with Validator<Map<String, Object?>> {
+  const _CheckboxSelectionConstraint()
+    : super(
+        constraintKey: 'checkbox_selection_relationships',
+        description: 'Checkbox selections and bounds must match the items.',
+      );
+
+  @override
+  bool isValid(Map<String, Object?> value) {
+    final items = value['items']! as List<Object?>;
+    final selectedItems = value['selectedItems'] as List<Object?>?;
+    final minSelections =
+        value['minSelections'] as int? ?? _defaultMinSelections;
+    final maxSelections = value['maxSelections'] as int? ?? items.length;
+
+    if (maxSelections > items.length || minSelections > maxSelections) {
+      return false;
+    }
+
+    return selectedItems == null ||
+        (selectedItems.length <= maxSelections &&
+            selectedItems.every(items.contains));
+  }
+
+  @override
+  String buildMessage(Map<String, Object?> value) {
+    return 'Selections must belong to items; bounds must fit the item count, '
+        'minimum must not exceed maximum, and the initial selection must not '
+        'exceed the maximum.';
+  }
+}
 
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserCheckbox catalog component for multiple-selection questions.
-final askUserCheckbox = typedCatalogItem<AskUserCheckboxType>(
+final askUserCheckbox = typedCatalogItem<AskUserCheckbox>(
   name: 'AskUserCheckbox',
   dataSchema: componentSchema(_askUserCheckboxSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -66,7 +113,7 @@ final askUserCheckbox = typedCatalogItem<AskUserCheckboxType>(
       ]
     ''',
   ],
-  parse: AskUserCheckboxType.parse,
+  parse: AskUserCheckbox.parse,
   widgetBuilder: (context, data) =>
       _AskUserCheckboxContent(data: data, itemContext: context),
 );
@@ -74,7 +121,7 @@ final askUserCheckbox = typedCatalogItem<AskUserCheckboxType>(
 // ─────────────────────────────────── WIDGET ───────────────────────────────────
 
 class _AskUserCheckboxContent extends StatefulWidget {
-  final AskUserCheckboxType data;
+  final AskUserCheckbox data;
   final CatalogItemContext itemContext;
 
   const _AskUserCheckboxContent({
@@ -97,7 +144,7 @@ class _AskUserCheckboxContentState extends State<_AskUserCheckboxContent> {
   }
 
   bool get _canSubmit {
-    final minSelections = widget.data.minSelections ?? 1;
+    final minSelections = widget.data.minSelections ?? _defaultMinSelections;
     final maxSelections = widget.data.maxSelections;
     final count = _selectedChoices.length;
     if (count < minSelections) return false;
@@ -116,25 +163,9 @@ class _AskUserCheckboxContentState extends State<_AskUserCheckboxContent> {
     contextBuilder: _buildActionContext,
   );
 
-  @override
-  Widget build(BuildContext context) {
-    return CatalogQuestionStep(
-      question: widget.data.question,
-      description: widget.data.description,
-      body: _buildItems(),
-      canSubmit: _canSubmit,
-      onSubmit: _submitAction,
-    );
-  }
-
   Widget _buildItems() {
     final items = widget.data.items;
     final column = FlexBoxStyler().column().spacing(8);
-
-    if (items.isEmpty) {
-      debugLog.log('AskUserCheckbox', 'WARNING: checkbox input has no items.');
-      return const SdBody('No options available');
-    }
 
     return column(
       children: items.map((choice) {
@@ -153,6 +184,17 @@ class _AskUserCheckboxContentState extends State<_AskUserCheckboxContent> {
           },
         );
       }).toList(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CatalogQuestionStep(
+      question: widget.data.question,
+      description: widget.data.description,
+      body: _buildItems(),
+      canSubmit: _canSubmit,
+      onSubmit: _submitAction,
     );
   }
 }

@@ -8,7 +8,7 @@ typedef CatalogActionContextBuilder = Map<String, dynamic> Function();
 /// Dispatches a user action event with merged catalog + component context.
 Future<void> dispatchCatalogAction({
   required CatalogItemContext itemContext,
-  required ActionType action,
+  required GenUiAction action,
   required Map<String, dynamic> actionContext,
 }) async {
   final resolvedContext = await resolveCatalogActionContext(
@@ -28,7 +28,7 @@ Future<void> dispatchCatalogAction({
 
 Future<JsonMap> resolveCatalogActionContext({
   required CatalogItemContext itemContext,
-  required ActionType action,
+  required GenUiAction action,
 }) {
   return resolveContext(
     itemContext.dataContext,
@@ -43,7 +43,7 @@ Future<JsonMap> resolveCatalogActionContext({
 void submitCatalogActionIfValid({
   required bool canSubmit,
   required CatalogItemContext itemContext,
-  required ActionType action,
+  required GenUiAction action,
   required CatalogActionContextBuilder contextBuilder,
 }) {
   if (!canSubmit) return;
@@ -56,14 +56,14 @@ void submitCatalogActionIfValid({
   );
 }
 
-JsonMap actionContextDefinitionFromAction(ActionType action) {
+JsonMap actionContextDefinitionFromAction(GenUiAction action) {
   final entries = action.context;
   if (entries == null) return {};
 
   return {for (final entry in entries) entry.key: _contextValue(entry.value)};
 }
 
-Object? _contextValue(ActionContextValueType value) {
+Object? _contextValue(ActionContextValue value) {
   if (value.path case final path?) {
     return {'path': path};
   }

@@ -411,7 +411,7 @@ List<Slide> makeSlides(int count) {
 
 /// Serializes slides to a JSON string suitable for `superdeck.json`.
 String buildSlideJson(List<Slide> slides) {
-  return jsonEncode(slides.map((s) => s.toMap()).toList());
+  return jsonEncode(slides.map((s) => s.toJson()).toList());
 }
 
 String _statusJson(String status, int seq, {String? errorJson}) {

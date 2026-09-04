@@ -1,4 +1,7 @@
-## Unreleased
+## 1.0.0
+
+- **Breaking:** consume the Ack 1.2 JSON APIs from `superdeck_core` and require
+  `superdeck_core` 1.0.0.
 
 - Round-trip the `layout` slide frontmatter option in Markdown serialization.
 - Parse and round-trip section `spacing` plus all supported block `padding`
@@ -19,7 +22,5 @@
 - Share one reserved directive-name set between `@column` rejection and
   widget-shorthand escaping, so a `WidgetBlock` named `section`, `block`,
   `widget`, or `column` always serializes as `@widget`.
-
-## 1.0.0
 
 - First stable release of superdeck_builder

@@ -46,7 +46,7 @@ class _GenerationLabPageState extends State<GenerationLabPage> {
   late final DeckGeneratorService? _service;
   _GenerationPreset _preset = _presets.first;
   GenerationProgress _progress = const GenerationProgress(GenerationPhase.idle);
-  DeckPlanType? _plan;
+  DeckPlan? _plan;
   DeckGenerationResult? _result;
   Duration? _planningDuration;
   Duration? _compositionDuration;
@@ -515,7 +515,7 @@ class _ColorSwatch extends StatelessWidget {
 class _StoryBeatReview extends StatelessWidget {
   const _StoryBeatReview({required this.plan});
 
-  final DeckPlanType plan;
+  final DeckPlan plan;
 
   @override
   Widget build(BuildContext context) {

@@ -39,7 +39,7 @@ final class WizardGenerationController extends ChangeNotifier {
 
   WizardGenerationPhase? _failedPhase;
   DeckGenerationRequest? _request;
-  DeckPlanType? _plan;
+  DeckPlan? _plan;
   DeckGenerationResult? _result;
   String? _errorMessage;
   GenerationProgress _progress = const GenerationProgress(.idle);
@@ -167,7 +167,7 @@ final class WizardGenerationController extends ChangeNotifier {
 
   WizardGenerationPhase? get failedPhase => _failedPhase;
 
-  DeckPlanType? get plan => _plan;
+  DeckPlan? get plan => _plan;
 
   int get planRevision => _planRevision;
 
@@ -180,7 +180,7 @@ final class WizardGenerationController extends ChangeNotifier {
   Duration get elapsed =>
       _elapsed +
       (_stageStartedAt == null
-          ? Duration.zero
+          ? .zero
           : DateTime.now().difference(_stageStartedAt!));
 
   bool get isBusy => _stage == .planning || _stage == .composing;
@@ -209,16 +209,14 @@ final class WizardGenerationController extends ChangeNotifier {
     if (nextTitle.isEmpty || nextAssertion.isEmpty) return false;
     if (index < 0 || index >= currentPlan.slides.length) return false;
 
-    final data = Map<String, Object?>.of(currentPlan);
-    final slides = [
-      for (final slide in currentPlan.slides) Map<String, Object?>.of(slide),
-    ];
+    final data = currentPlan.toJson();
+    final slides = [for (final slide in currentPlan.slides) slide.toJson()];
     slides[index]
       ..['title'] = nextTitle
       ..['assertion'] = nextAssertion;
     data['slides'] = slides;
 
-    final candidate = DeckPlanType.parse(data);
+    final candidate = DeckPlan.parse(data);
     final blockingIssues = validateDeckPlanIssues(
       candidate,
       typographyCatalog: _service.typographyCatalog,

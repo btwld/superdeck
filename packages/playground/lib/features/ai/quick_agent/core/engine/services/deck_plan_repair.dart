@@ -14,10 +14,10 @@ bool _onlySlideScopedPlanIssues(List<GenerationValidationIssue> issues) {
 }
 
 extension _DeckPlanRepair on DeckGeneratorService {
-  Future<DeckPlanType> _repairInvalidOutlineSlides({
+  Future<DeckPlan> _repairInvalidOutlineSlides({
     required GenerationModelCallExecutor executor,
     required String originalPrompt,
-    required DeckPlanType plan,
+    required DeckPlan plan,
     required DeckGenerationRequest request,
   }) async {
     var repairedPlan = plan;
@@ -85,11 +85,8 @@ extension _DeckPlanRepair on DeckGeneratorService {
           continue;
         }
 
-        final candidatePlan = _replacePlanSlide(
-          repairedPlan,
-          index: index,
-          slide: candidate,
-        );
+        final slides = repairedPlan.slides.toList()..[index] = candidate;
+        final candidatePlan = repairedPlan.copyWith(slides: slides);
         final candidateIssues = validateDeckPlanIssues(
           candidatePlan,
           typographyCatalog: typographyCatalog,
@@ -110,11 +107,11 @@ extension _DeckPlanRepair on DeckGeneratorService {
     return repairedPlan;
   }
 
-  Future<DeckPlanSlideType?> _generateOutlineSlideRepair({
+  Future<DeckPlanSlide?> _generateOutlineSlideRepair({
     required GenerationModelCallExecutor executor,
     required String originalPrompt,
-    required DeckPlanType plan,
-    required DeckPlanSlideType current,
+    required DeckPlan plan,
+    required DeckPlanSlide current,
     required List<GenerationValidationIssue> validationIssues,
     required Map<String, Object?> invalidSlide,
     required int localAttempt,
@@ -144,7 +141,6 @@ extension _DeckPlanRepair on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adapted.schema,
-        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
     );
 
@@ -174,7 +170,7 @@ extension _DeckPlanRepair on DeckGeneratorService {
       ];
       slides[slideIndex] = Map<String, Object?>.of(parsed);
 
-      return DeckPlanSlideType.parse(
+      return DeckPlanSlide.parse(
         enrichDeckPlanDraftSlide(
           slides[slideIndex],
           index: slideIndex,
@@ -222,8 +218,8 @@ void _appendUniqueIssues(
 }
 
 List<String> _outlineSlideInvariantErrors({
-  required DeckPlanSlideType original,
-  required DeckPlanSlideType candidate,
+  required DeckPlanSlide original,
+  required DeckPlanSlide candidate,
 }) {
   final errors = <String>[];
   void requireSame(String field, Object before, Object after) {
@@ -243,21 +239,8 @@ List<String> _outlineSlideInvariantErrors({
   requireSame('density', original.density, candidate.density);
   requireSame(
     'elements',
-    original.elements ?? const <DeckPlanElementType>[],
-    candidate.elements ?? const <DeckPlanElementType>[],
+    original.elements ?? const <DeckPlanElement>[],
+    candidate.elements ?? const <DeckPlanElement>[],
   );
   return errors;
-}
-
-DeckPlanType _replacePlanSlide(
-  DeckPlanType plan, {
-  required int index,
-  required DeckPlanSlideType slide,
-}) {
-  final slides = [
-    for (final existing in plan.slides) Map<String, Object?>.of(existing),
-  ];
-  slides[index] = Map<String, Object?>.of(slide);
-  final data = Map<String, Object?>.of(plan)..['slides'] = slides;
-  return DeckPlanType.parse(data);
 }

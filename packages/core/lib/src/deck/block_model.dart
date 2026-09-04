@@ -1,17 +1,26 @@
 import 'package:ack/ack.dart';
-import 'package:dart_mappable/dart_mappable.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 
 import 'block_insets.dart';
 
-part 'block_model.mapper.dart';
+part 'block_model.ack.dart';
+part 'block_model.ack.g.dart';
 
 /// Positive flex weight shared by the canonical block/section schemas and the
 /// AI-generation projection in `slide_contract.dart`.
-final positiveFlexSchema = Ack.integer().positive();
+IntegerSchema positiveFlexSchema() => Ack.integer().positive();
 
 /// Finite non-negative number shared by section `spacing` and the
 /// AI-generation projection in `slide_contract.dart`.
-final nonNegativeSpacingSchema = Ack.number().min(0).finite();
+AckSchema<num, double> nonNegativeSpacingSchema() => Ack.number()
+    .min(0)
+    .finite()
+    .codec<double>(
+      decode: (value) => value.toDouble(),
+      encode: (value) => value,
+    );
+
+StringSchema _sectionTypeSchema() => Ack.literal(SectionBlock.key);
 
 int _validateFlex(int flex) {
   if (flex > 0) return flex;
@@ -31,25 +40,13 @@ double _validateSpacing(double spacing) {
   );
 }
 
-void _validateFlexInput(Map<String, Object?> map) {
-  if (map['flex'] case final int flex) {
-    _validateFlex(flex);
-  }
-}
-
-void _validateSpacingInput(Map<String, Object?> map) {
-  if (map['spacing'] case final num spacing) {
-    _validateSpacing(spacing.toDouble());
-  }
-}
-
 Map<String, Object?> _normalizeAuthoringInsets(Map<String, Object?> map) {
   var normalized = map;
   for (final field in const ['margin', 'padding']) {
     final value = normalized[field];
     if (value == null) continue;
     final insets = BlockInsets.parseAuthoring(value, field: field);
-    normalized = {...normalized, field: insets.toMap()};
+    normalized = {...normalized, field: insets.toJson()};
   }
 
   return normalized;
@@ -59,17 +56,19 @@ Map<String, Object?> _normalizeAuthoringInsets(Map<String, Object?> map) {
 ///
 /// Blocks are leaf content units inside sections. They support alignment,
 /// flexible sizing, and scrolling.
-@MappableClass(discriminatorKey: 'type', ignoreNull: true)
-sealed class Block with BlockMappable {
-  final String type;
+@AckModel(discriminatorKey: 'type')
+sealed class Block with _$BlockAck {
+  String get type;
+
   final ContentAlignment? align;
+
+  @AckField(schema: positiveFlexSchema)
   final int flex;
   final BlockInsets? margin;
   final BlockInsets? padding;
   final bool scrollable;
 
   Block({
-    required this.type,
     this.align,
     int flex = 1,
     this.margin,
@@ -77,25 +76,12 @@ sealed class Block with BlockMappable {
     this.scrollable = false,
   }) : flex = _validateFlex(flex);
 
-  /// Base schema for all block types
-  static final schema = Ack.object({
-    'type': Ack.string(),
-    'align': ContentAlignment.schema.optional(),
-    'flex': positiveFlexSchema.optional(),
-    'margin': BlockInsets.schema.optional(),
-    'padding': BlockInsets.schema.optional(),
-    'scrollable': Ack.boolean().optional(),
-  }, additionalProperties: true);
-
   /// Parses a block from normalized contract data.
   ///
   /// Automatically determines the block type from the discriminator key.
   /// Insets must already be normalized physical edges; use [parseAuthoring]
   /// for Markdown directive input.
-  static Block parse(Map<String, Object?> map) {
-    _validateFlexInput(map);
-    return fromMap(discriminatedSchema.parse(map)!);
-  }
+  static Block parse(Map<String, Object?> map) => BlockSchema.parse(map);
 
   /// Parses a block from authored directive options.
   ///
@@ -105,30 +91,25 @@ sealed class Block with BlockMappable {
     return parse(_normalizeAuthoringInsets(map));
   }
 
-  /// Schema for discriminated union of block types.
-  ///
-  /// Note: SectionBlock is intentionally not included here as it is a container
-  /// for discriminated blocks, not a discriminated type itself.
-  static final discriminatedSchema = Ack.discriminated(
-    discriminatorKey: 'type',
-    schemas: {
-      ContentBlock.key: ContentBlock.schema,
-      WidgetBlock.key: WidgetBlock.schema,
-    },
-  );
-
-  static final fromMap = BlockMapper.fromMap;
+  static final fromJson = BlockSchema.fromJson;
 }
 
 /// A section that contains multiple child blocks arranged horizontally.
 ///
 /// Sections are used to create multi-column layouts within a slide.
-@MappableClass(ignoreNull: true)
-class SectionBlock with SectionBlockMappable {
+@AckModel()
+final class SectionBlock with _$SectionBlockAck {
+  @AckField(presence: AckFieldPresence.optional)
   final List<Block> blocks;
   final ContentAlignment? align;
+
+  @AckField(schema: positiveFlexSchema)
   final int flex;
+
+  @AckField(schema: nonNegativeSpacingSchema)
   final double spacing;
+
+  @AckField(schema: _sectionTypeSchema)
   final String type;
 
   static const key = 'section';
@@ -138,7 +119,7 @@ class SectionBlock with SectionBlockMappable {
     this.align,
     int flex = 1,
     double spacing = 0,
-    String type = key,
+    String type = 'section',
   }) : blocks = List.unmodifiable(blocks ?? const []),
        flex = _validateFlex(flex),
        spacing = _validateSpacing(spacing),
@@ -152,14 +133,11 @@ class SectionBlock with SectionBlockMappable {
     return block.align ?? align ?? ContentAlignment.centerLeft;
   }
 
-  static final fromMap = SectionBlockMapper.fromMap;
+  static final fromJson = SectionBlockSchema.fromJson;
 
   /// Parses a section block from a JSON map.
-  static SectionBlock parse(Map<String, Object?> map) {
-    _validateFlexInput(map);
-    _validateSpacingInput(map);
-    return fromMap(schema.parse(map)!);
-  }
+  static SectionBlock parse(Map<String, Object?> map) =>
+      SectionBlockSchema.parse(map);
 
   /// Creates a section block with a single text block.
   static SectionBlock text(String content) {
@@ -170,27 +148,19 @@ class SectionBlock with SectionBlockMappable {
     if (type == key) return type;
     throw ArgumentError.value(type, 'type', 'SectionBlock type must be "$key"');
   }
-
-  /// Validation schema for section blocks.
-  static final schema = Ack.object({
-    'type': Ack.literal(key).optional(),
-    'align': ContentAlignment.schema.optional(),
-    'flex': positiveFlexSchema.optional(),
-    'spacing': nonNegativeSpacingSchema.optional(),
-    'blocks': Ack.list(Block.discriminatedSchema).optional(),
-  }, additionalProperties: false);
 }
-
-/// Alias used by generated Ack model schemas for [SectionBlock] references.
-final sectionBlockSchema = SectionBlock.schema;
 
 /// A block that displays markdown content.
 ///
 /// This is the most common block type, used for text and markdown content.
-@MappableClass(discriminatorValue: ContentBlock.key)
-class ContentBlock extends Block with ContentBlockMappable {
+@AckModel(
+  discriminatorValue: ContentBlock.key,
+  unknownProperties: AckUnknownPropertyPolicy.reject,
+)
+final class ContentBlock extends Block with _$ContentBlockAck {
   static const key = 'block';
 
+  @AckField(presence: AckFieldPresence.optional)
   final String content;
 
   ContentBlock(
@@ -201,29 +171,18 @@ class ContentBlock extends Block with ContentBlockMappable {
     super.padding,
     super.scrollable,
   }) : content = content ?? '',
-       super(type: key);
+       super();
 
-  static final fromMap = ContentBlockMapper.fromMap;
+  @override
+  String get type => 'block';
 
-  /// Validation schema for content blocks.
-  static final schema = Ack.object({
-    'type': Ack.literal(key).optional(),
-    'align': ContentAlignment.schema.optional(),
-    'flex': positiveFlexSchema.optional(),
-    'margin': BlockInsets.schema.optional(),
-    'padding': BlockInsets.schema.optional(),
-    'scrollable': Ack.boolean().optional(),
-    'content': Ack.string().optional(),
-  }, additionalProperties: true);
+  static final fromJson = ContentBlockSchema.fromJson;
 
   /// Parses a content block from normalized contract data.
-  static ContentBlock parse(Map<String, Object?> map) {
-    _validateFlexInput(map);
-    return fromMap(schema.parse(map)!);
-  }
+  static ContentBlock parse(Map<String, Object?> map) =>
+      ContentBlockSchema.parse(map);
 }
 
-@MappableEnum()
 enum DartPadTheme {
   dark,
   light;
@@ -245,7 +204,6 @@ enum DartPadTheme {
   }
 }
 
-@MappableEnum()
 enum ImageFit {
   fill,
   contain,
@@ -272,11 +230,12 @@ enum ImageFit {
   }
 }
 
-@MappableClass(
+@AckModel(
   discriminatorValue: WidgetBlock.key,
-  hook: UnmappedPropertiesHook('args'),
+  unknownProperties: AckUnknownPropertyPolicy.capture,
+  captureField: 'args',
 )
-class WidgetBlock extends Block with WidgetBlockMappable {
+final class WidgetBlock extends Block with _$WidgetBlockAck {
   static const key = 'widget';
   static const _reservedKeys = {
     'name',
@@ -299,14 +258,17 @@ class WidgetBlock extends Block with WidgetBlockMappable {
     super.padding,
     super.scrollable,
   }) : args = _validateArgs(args),
-       super(type: key);
+       super();
+
+  @override
+  String get type => 'widget';
 
   static Map<String, Object?> _validateArgs(Map<String, Object?>? args) {
-    if (args == null) return const {};
+    if (args == null) return deepUnmodifiableJsonMap(const {});
 
-    // Single pass: strip the 'type' discriminator key leaked by
-    // UnmappedPropertiesHook during deserialization, and reject any
-    // other reserved keys that indicate a caller mistake.
+    // The discriminator belongs to the wire shape, not widget arguments.
+    // Strip it while rejecting other reserved keys that indicate a caller
+    // mistake.
     final filtered = <String, Object?>{};
     final collisions = <String>[];
 
@@ -324,28 +286,16 @@ class WidgetBlock extends Block with WidgetBlockMappable {
         'args must not contain reserved keys: ${collisions.join(', ')}',
       );
     }
-    return Map.unmodifiable(filtered);
+    return deepUnmodifiableJsonMap(filtered);
   }
 
-  static final fromMap = WidgetBlockMapper.fromMap;
-
-  static final schema = Ack.object({
-    'align': ContentAlignment.schema.optional(),
-    'flex': positiveFlexSchema.optional(),
-    'margin': BlockInsets.schema.optional(),
-    'padding': BlockInsets.schema.optional(),
-    'scrollable': Ack.boolean().optional(),
-    'name': Ack.string(),
-  }, additionalProperties: true);
+  static final fromJson = WidgetBlockSchema.fromJson;
 
   /// Parses a widget block from normalized contract data.
-  static WidgetBlock parse(Map<String, Object?> map) {
-    _validateFlexInput(map);
-    return fromMap(schema.parse(map)!);
-  }
+  static WidgetBlock parse(Map<String, Object?> map) =>
+      WidgetBlockSchema.parse(map);
 }
 
-@MappableEnum()
 enum ContentAlignment {
   topLeft,
   topCenter,

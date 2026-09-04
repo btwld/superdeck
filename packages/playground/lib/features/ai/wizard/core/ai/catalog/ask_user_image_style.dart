@@ -18,11 +18,12 @@ import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 import 'user_action_dispatch.dart';
 
-part 'ask_user_image_style.g.dart';
+part 'ask_user_image_style.ack.dart';
+part 'ask_user_image_style.ack.g.dart';
 
 /// The model owns only the question copy. The application owns the exact
 /// preview subject, styles, generation, and versioned selection payload.
-@AckType(name: 'AskUserImageStyle')
+@AckInfer(name: 'AskUserImageStyle')
 final _askUserImageStyleSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(
@@ -40,7 +41,7 @@ CatalogItem askUserImageStyleFor(
     }
   }
 
-  return typedCatalogItem<AskUserImageStyleType>(
+  return typedCatalogItem<AskUserImageStyle>(
     name: 'AskUserImageStyle',
     dataSchema: componentSchema(_askUserImageStyleSchema.toJsonSchemaBuilder()),
     exampleData: [
@@ -55,7 +56,7 @@ CatalogItem askUserImageStyleFor(
         },
       ]),
     ],
-    parse: AskUserImageStyleType.parse,
+    parse: AskUserImageStyle.parse,
     widgetBuilder: (context, data) =>
         _AskUserImageStyleContent(data: data, itemContext: context),
   );
@@ -67,7 +68,7 @@ class _AskUserImageStyleContent extends StatefulWidget {
     required this.itemContext,
   });
 
-  final AskUserImageStyleType data;
+  final AskUserImageStyle data;
   final CatalogItemContext itemContext;
 
   @override

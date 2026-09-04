@@ -1,4 +1,12 @@
-## Unreleased
+## 1.0.0
+
+- **Breaking:** replace `dart_mappable` models and mapper APIs with Ack 1.2
+  class-first models. Use the generated `*Schema` facades and model
+  `fromJson`/`toJson` methods; unknown-field handling is now explicit per
+  model. Omitted generated `copyWith` arguments retain their current values,
+  while explicit `null` clears nullable fields.
+- Preserve boundary maps and lists from generated `wireSchema` validation
+  instead of retaining values decoded by nested codecs.
 
 - Add `SlideLayout` and the `SlideOptions.layout` field to the slide contract.
 - Add optional section `spacing`, block `padding` and `margin`, and inherited
@@ -28,8 +36,6 @@
 - Fix `TagTokenizer` skipping directives only in fences that start at column
   zero and close with exactly the opening run length. Indented fences and
   closing fences longer than their opener are now recognized.
-
-## 1.0.0
 
 - First stable release of superdeck_core
 - Remove provisional setext hero syntax so core and Flutter stay scoped to ATX headings

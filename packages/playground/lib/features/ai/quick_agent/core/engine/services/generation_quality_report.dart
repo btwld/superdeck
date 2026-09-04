@@ -81,7 +81,7 @@ final class GenerationQualityReport {
 
   factory GenerationQualityReport.evaluate({
     required DeckGenerationRequest request,
-    required DeckPlanType plan,
+    required DeckPlan plan,
     required List<Slide> slides,
     required List<GenerationTraceEvent> traces,
     required int replayedSlideCount,

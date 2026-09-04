@@ -91,7 +91,7 @@ void main() {
       });
 
       test(
-        'copyWith(defaultTemplate: null) clears a previously set defaultTemplate',
+        'copyWith(defaultTemplate: null) clears the current defaultTemplate',
         () {
           const template = SlideTemplate();
           final options = DeckOptions(defaultTemplate: template);

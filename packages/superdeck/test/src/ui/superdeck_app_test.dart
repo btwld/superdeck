@@ -84,7 +84,7 @@ ByteData _utf8ByteData(String value) {
 
 void _mockBundledDeckAsset(DeckWorkspace workspace, List<Slide> slides) {
   final payload = jsonEncode(
-    slides.map((slide) => slide.toMap()).toList(growable: false),
+    slides.map((slide) => slide.toJson()).toList(growable: false),
   );
   rootBundle.evict(workspace.bundledDeckJsonPath);
 

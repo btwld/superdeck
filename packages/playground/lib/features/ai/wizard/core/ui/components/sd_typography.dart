@@ -14,7 +14,9 @@ class SdHeadline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultStyle = TextStyler().style($titleH5.mix()).color($foreground());
+    final defaultStyle = TextStyler()
+        .style($titleH5.mix())
+        .color($foreground());
     return defaultStyle.merge(style).call(text);
   }
 }
@@ -31,8 +33,9 @@ class SdTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultStyle =
-        TextStyler().style($paragraphLarge.mix()).color($foreground());
+    final defaultStyle = TextStyler()
+        .style($paragraphLarge.mix())
+        .color($foreground());
     return defaultStyle.merge(style).call(text);
   }
 }
@@ -49,8 +52,9 @@ class SdBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultStyle =
-        TextStyler().style($paragraphMedium.mix()).color($muted());
+    final defaultStyle = TextStyler()
+        .style($paragraphMedium.mix())
+        .color($muted());
     return defaultStyle.merge(style).call(text);
   }
 }
@@ -67,8 +71,9 @@ class SdCaption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultStyle =
-        TextStyler().style($paragraphSmall.mix()).color($muted());
+    final defaultStyle = TextStyler()
+        .style($paragraphSmall.mix())
+        .color($muted());
     return defaultStyle.merge(style).call(text);
   }
 }
@@ -85,8 +90,9 @@ class SdHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultStyle =
-        TextStyler().style($paragraphSmall.mix()).color($fieldPlaceholder());
+    final defaultStyle = TextStyler()
+        .style($paragraphSmall.mix())
+        .color($fieldPlaceholder());
     return defaultStyle.merge(style).call(text);
   }
 }

@@ -5,7 +5,7 @@ typedef ImageGenerationProgressCallback =
 
 /// Rewritten composition plan and ordered image outcomes for one run.
 final class DeckImageGenerationResult {
-  final DeckPlanType plan;
+  final DeckPlan plan;
 
   final List<GeneratedImageAsset> assets;
   const DeckImageGenerationResult({required this.plan, required this.assets});
@@ -31,7 +31,7 @@ final class _PlannedImage {
 
 Future<DeckImageGenerationResult> _runImagePhase(
   DeckGeneratorService owner, {
-  required DeckPlanType plan,
+  required DeckPlan plan,
   required DeckGenerationRequest request,
   required GenerationProgressCallback? onProgress,
   required GenerationTraceEmitter trace,
@@ -90,7 +90,7 @@ Future<DeckImageGenerationResult> _runImagePhase(
 /// Generates planned artwork with bounded concurrency and returns a plan that
 /// references only successful assets. Failed visuals fall back to text layouts.
 Future<DeckImageGenerationResult> generateImagesForPlan({
-  required DeckPlanType plan,
+  required DeckPlan plan,
   required PresentationImageStyleDescriptor imageStyle,
   required ImageGenerator generator,
   required String runId,
@@ -171,7 +171,7 @@ Future<DeckImageGenerationResult> generateImagesForPlan({
 }
 
 List<_PlannedImage> _plannedImages(
-  DeckPlanType plan,
+  DeckPlan plan,
   String runId, {
   required String? backgroundColor,
   required Map<String, String> backgroundColorsByTreatment,
@@ -179,7 +179,7 @@ List<_PlannedImage> _plannedImages(
   final planned = <_PlannedImage>[];
   for (final (slideIndex, slide) in plan.slides.indexed) {
     for (final (elementIndex, element)
-        in (slide.elements ?? const <DeckPlanElementType>[]).indexed) {
+        in (slide.elements ?? const <DeckPlanElement>[]).indexed) {
       final subject = element.generationPrompt?.trim();
       if (element.type != 'image' || subject == null || subject.isEmpty) {
         continue;
@@ -222,36 +222,36 @@ String _imageBackgroundForTreatment(
   };
 }
 
-DeckPlanType _rewriteGeneratedImageSources(
-  DeckPlanType plan,
+DeckPlan _rewriteGeneratedImageSources(
+  DeckPlan plan,
   List<_PlannedImage> planned,
   List<GeneratedImageAsset> assets,
 ) {
-  final rewritten = jsonDecode(jsonEncode(plan)) as Map<String, dynamic>;
-  final slides = rewritten['slides']! as List;
+  final slides = plan.slides.toList();
 
-  for (final (index, image) in planned.indexed.toList().reversed) {
-    final slide = slides[image.slideIndex] as Map;
-    final elements = slide['elements']! as List;
+  // Remove failed elements from the end so earlier element indexes stay valid.
+  for (var index = planned.length - 1; index >= 0; index--) {
+    final image = planned[index];
+    var slide = slides[image.slideIndex];
+    final elements = slide.elements!.toList();
     final asset = assets[index];
     if (asset.bytes case final bytes? when bytes.isNotEmpty) {
-      final element = elements[image.elementIndex] as Map;
-      element['source'] = image.assetKey;
-      element.remove('generationPrompt');
-      continue;
+      elements[image.elementIndex] = elements[image.elementIndex].copyWith(
+        source: image.assetKey,
+        generationPrompt: null,
+      );
+    } else {
+      elements.removeAt(image.elementIndex);
+      if (slide.composition == 'imageLeft' ||
+          slide.composition == 'imageRight' ||
+          slide.composition == 'imageFullBleed') {
+        slide = slide.copyWith(composition: 'content', treatment: 'content');
+      }
     }
-
-    elements.removeAt(image.elementIndex);
-    if (slide['composition'] case final String composition
-        when composition == 'imageLeft' ||
-            composition == 'imageRight' ||
-            composition == 'imageFullBleed') {
-      slide['composition'] = 'content';
-      slide['treatment'] = 'content';
-    }
+    slides[image.slideIndex] = slide.copyWith(elements: elements);
   }
 
-  return DeckPlanType.parse(rewritten);
+  return plan.copyWith(slides: slides);
 }
 
 String buildGeneratedAssetKey({

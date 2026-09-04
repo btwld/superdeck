@@ -93,7 +93,7 @@ final class _StubDeckGeneratorService extends DeckGeneratorService {
   }) async => result;
 }
 
-DeckPlanType _plan() => DeckPlanType.parse({
+DeckPlan _plan() => DeckPlan.parse({
   'topic': 'Partial deck',
   'story': 'Keep accepted work when one slide fails.',
   'theme': {'id': 'technical-paper', 'version': 1, 'density': 'balanced'},

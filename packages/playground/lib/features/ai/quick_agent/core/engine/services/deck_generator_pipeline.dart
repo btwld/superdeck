@@ -8,7 +8,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   /// Generates a lightweight presentation outline.
   ///
   /// Returns the outline JSON or null on failure.
-  Future<DeckPlanType?> _generateOutline(
+  Future<DeckPlan?> _generateOutline(
     GenerationModelCallExecutor executor,
     String prompt,
     GenerationTraceEmitter trace,
@@ -68,7 +68,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         generationConfig: google_ai.GenerationConfig(
           responseMimeType: 'application/json',
           responseSchema: adaptResult.schema,
-          thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
         ),
       );
 
@@ -194,7 +193,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   Future<_SlideCompositionResult?> _composeSlides(
     GenerationModelCallExecutor executor,
     String prompt,
-    DeckPlanType plan,
+    DeckPlan plan,
     DeckGenerationRequest request,
     GenerationTraceEmitter trace,
     GenerationProgressCallback? onProgress,
@@ -228,7 +227,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   Future<_SlideCompositionResult?> _composeSlidesBySection(
     GenerationModelCallExecutor executor,
     String prompt,
-    DeckPlanType plan,
+    DeckPlan plan,
     DeckGenerationRequest request,
     GenerationTraceEmitter trace,
     GenerationProgressCallback? onProgress,
@@ -287,8 +286,8 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   Future<_SlideCompositionResult> _composeSection({
     required GenerationModelCallExecutor executor,
     required String originalPrompt,
-    required DeckPlanType plan,
-    required DeckPlanSectionType section,
+    required DeckPlan plan,
+    required DeckPlanSection section,
     required int sectionIndex,
     required DeckGenerationRequest request,
     required GenerationTraceEmitter trace,
@@ -360,7 +359,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
-        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
     );
 
@@ -476,8 +474,8 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   }
 
   _SlideCompositionResult _failedSection({
-    required DeckPlanType plan,
-    required List<DeckPlanSlideType> slides,
+    required DeckPlan plan,
+    required List<DeckPlanSlide> slides,
     required GenerationTraceEmitter trace,
     required String message,
   }) {
@@ -524,7 +522,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   ({Map<String, dynamic>? canonical, List<GenerationValidationIssue> issues})
   _validateSectionSlide({
     required Map<String, dynamic> draft,
-    required DeckPlanSlideType planSlide,
+    required DeckPlanSlide planSlide,
     required DeckGenerationRequest request,
   }) {
     var normalized = hydrateGeneratedElementSources(
@@ -600,7 +598,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   Future<_SlideCompositionResult?> _composeSlidesSequentially(
     GenerationModelCallExecutor executor,
     String prompt,
-    DeckPlanType plan,
+    DeckPlan plan,
     DeckGenerationRequest request,
     GenerationTraceEmitter trace,
     GenerationProgressCallback? onProgress,
@@ -818,12 +816,11 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
   Future<Map<String, dynamic>?> _generateSingleSlide({
     required GenerationModelCallExecutor executor,
     required String originalPrompt,
-    required DeckPlanType plan,
-    required DeckPlanSlideType current,
+    required DeckPlan plan,
+    required DeckPlanSlide current,
     required Map<String, Object?>? previousSlide,
     // The final slide intentionally has no next-slide context.
-    // ignore: avoid-unnecessary-nullable-parameters
-    required DeckPlanSlideType? next,
+    required DeckPlanSlide? next,
     required List<GenerationValidationIssue> validationIssues,
     required Map<String, Object?>? invalidSlide,
     required int repairAttempt,
@@ -864,7 +861,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       'DECK_GEN',
       'Slide $slideIndex/$slideCount prompt (${systemPrompt.length} chars)',
     );
-    debugLog.log('DECK_GEN', 'Thinking budget disabled for fast composition');
+    debugLog.log('DECK_GEN', 'Thinking level set to minimal for composition');
 
     final request = google_ai.GenerateContentRequest(
       model: modelName,
@@ -880,7 +877,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
-        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
     );
 

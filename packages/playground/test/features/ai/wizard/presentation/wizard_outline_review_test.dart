@@ -170,7 +170,7 @@ void main() {
   });
 }
 
-DeckPlanType _plan() => DeckPlanType.parse({
+DeckPlan _plan() => DeckPlan.parse({
   'topic': 'Urban gardens',
   'story': 'Small interventions build city-scale resilience.',
   'theme': {'id': 'technical-paper', 'version': 1, 'density': 'balanced'},
@@ -202,8 +202,8 @@ DeckPlanType _plan() => DeckPlanType.parse({
   ],
 });
 
-DeckPlanType _planWithSlides(int count) {
-  final data = Map<String, Object?>.from(_plan());
+DeckPlan _planWithSlides(int count) {
+  final data = _plan().toJson();
   final section = Map<String, Object?>.from(
     (data['sections']! as List<Object?>).single! as Map<String, Object?>,
   );
@@ -218,5 +218,5 @@ DeckPlanType _planWithSlides(int count) {
   data['sections'] = [section];
   data['slides'] = slides;
 
-  return DeckPlanType.parse(data);
+  return DeckPlan.parse(data);
 }

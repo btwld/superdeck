@@ -112,7 +112,7 @@ void main() {
             as Map<String, Object?>;
     final themeJson = Map<String, Object?>.from(artifact['theme']! as Map);
     final expected = Map<String, Object?>.from(artifact['expected']! as Map);
-    final reference = DeckThemeReferenceType.parse(themeJson);
+    final reference = DeckThemeReference.parse(themeJson);
     final resolved = resolveDeckThemeReference(
       reference,
       themeCatalog: PresentationThemeCatalog.withDefaults(),

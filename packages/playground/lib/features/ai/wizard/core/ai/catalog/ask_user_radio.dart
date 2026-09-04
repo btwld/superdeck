@@ -7,8 +7,6 @@ import 'package:genui/genui.dart';
 
 import '../schemas/genui_action_schema.dart';
 import 'user_action_dispatch.dart';
-import '../../debug_logger.dart';
-import '../../ui/ui.dart';
 
 import 'ask_user_question_cards.dart';
 import 'catalog_question_step.dart';
@@ -16,12 +14,13 @@ import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 import 'wizard_option_icon.dart';
 
-part 'ask_user_radio.g.dart';
+part 'ask_user_radio.ack.dart';
+part 'ask_user_radio.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for a radio option with title and optional description.
-@AckType(name: 'InputOption')
+@AckInfer(name: 'InputOption')
 final _inputOptionSchema = Ack.object({
   'title': Ack.string().describe('Option title displayed to user'),
   'description': Ack.string().optional().describe('Optional description text'),
@@ -33,22 +32,22 @@ final _inputOptionSchema = Ack.object({
 /// Schema for AskUserRadio component.
 ///
 /// Displays a question with radio button options for single selection.
-@AckType(name: 'AskUserRadio')
+@AckInfer(name: 'AskUserRadio')
 final _askUserRadioSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(
     'Additional context or instructions',
   ),
-  'options': Ack.list(
-    _inputOptionSchema,
-  ).describe('Radio options with title and description for single selection'),
+  'options': Ack.list(_inputOptionSchema).nonEmpty().describe(
+    'Radio options with title and description for single selection',
+  ),
   'action': actionSchema,
 }).describe('A question with radio button options. User selects one option.');
 
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserRadio catalog component for single-selection questions.
-final askUserRadio = typedCatalogItem<AskUserRadioType>(
+final askUserRadio = typedCatalogItem<AskUserRadio>(
   name: 'AskUserRadio',
   dataSchema: componentSchema(_askUserRadioSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -69,7 +68,7 @@ final askUserRadio = typedCatalogItem<AskUserRadioType>(
       ]
     ''',
   ],
-  parse: AskUserRadioType.parse,
+  parse: AskUserRadio.parse,
   widgetBuilder: (context, data) =>
       _AskUserRadioContent(data: data, itemContext: context),
 );
@@ -77,7 +76,7 @@ final askUserRadio = typedCatalogItem<AskUserRadioType>(
 // ─────────────────────────────────── WIDGET ───────────────────────────────────
 
 class _AskUserRadioContent extends StatefulWidget {
-  final AskUserRadioType data;
+  final AskUserRadio data;
   final CatalogItemContext itemContext;
 
   const _AskUserRadioContent({required this.data, required this.itemContext});
@@ -110,11 +109,6 @@ class _AskUserRadioContentState extends State<_AskUserRadioContent> {
 
   Widget _buildOptions() {
     final options = widget.data.options;
-
-    if (options.isEmpty) {
-      debugLog.log('AskUserRadio', 'WARNING: radio input has no options.');
-      return const SdBody('No options available');
-    }
 
     return LayoutBuilder(
       builder: (context, constraints) {

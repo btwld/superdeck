@@ -20,7 +20,7 @@ class WizardOutlineReview extends StatefulWidget {
     required this.onApprove,
   });
 
-  final DeckPlanType plan;
+  final DeckPlan plan;
   final int planRevision;
   final UpdateOutlineSlide onSlideChanged;
   final VoidCallback onBack;
@@ -183,8 +183,8 @@ class _OutlineSection extends StatelessWidget {
     required this.planRevision,
   });
 
-  final DeckPlanSectionType section;
-  final List<({int index, DeckPlanSlideType slide})> slides;
+  final DeckPlanSection section;
+  final List<({int index, DeckPlanSlide slide})> slides;
   final String? editingSlideKey;
   final ValueChanged<String?> onEdit;
   final UpdateOutlineSlide onSlideChanged;
@@ -236,7 +236,7 @@ class _OutlineSlideEditor extends StatefulWidget {
   });
 
   final int index;
-  final DeckPlanSlideType slide;
+  final DeckPlanSlide slide;
   final bool editing;
   final ValueChanged<String?> onEdit;
   final UpdateOutlineSlide onChanged;

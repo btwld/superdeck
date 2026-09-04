@@ -69,8 +69,9 @@ class ImageElementBuilder extends MarkdownElementBuilder
     // A bare key (e.g. an AI-generated `slide-x-illustration.png`) is resolved
     // through the slide's asset cache when one is bound. Hero transitions are
     // not applied for cache-resolved images (they have no hero tag in practice).
-    final assetCacheStore =
-        InheritedData.maybeOf<SlideConfiguration>(context)?.assetCacheStore;
+    final assetCacheStore = InheritedData.maybeOf<SlideConfiguration>(
+      context,
+    )?.assetCacheStore;
     if (assetCacheStore != null && isBareAssetKey(uri)) {
       return ConstrainedBox(
         constraints: BoxConstraints.tight(totalSize),

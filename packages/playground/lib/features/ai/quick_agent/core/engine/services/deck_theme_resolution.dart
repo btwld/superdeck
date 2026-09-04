@@ -50,7 +50,7 @@ List<PresentationThemeDescriptor> themeCandidatesForRequest({
 }
 
 /// Parses a model-facing draft and attaches the canonical theme reference.
-DeckPlanType resolveDeckPlanDraft({
+DeckPlan resolveDeckPlanDraft({
   required Map<String, Object?> draft,
   required List<PresentationThemeDescriptor> candidates,
   required DeckGenerationRequest request,
@@ -85,7 +85,7 @@ DeckPlanType resolveDeckPlanDraft({
       .map((slide) => Map<String, Object?>.from(slide! as Map))
       .toList(growable: false);
 
-  return DeckPlanType.parse(
+  return DeckPlan.parse(
     Map<String, Object?>.of(parsed)
       ..['theme'] = reference
       ..['slides'] = [
@@ -111,7 +111,7 @@ Map<String, Object?> enrichDeckPlanDraftSlide(
   final role = slide['narrativeRole']! as String;
   final composition = slide['composition']! as String;
 
-  return Map<String, Object?>.of(slide)
+  return Map.of(slide)
     ..['purpose'] = assertion
     ..['contentBrief'] = contentUnits.join(' ')
     ..['continuity'] = _deriveContinuity(index, slides)
@@ -200,11 +200,11 @@ Map<String, Object?> buildDeckThemeReference({
 
 /// Resolves a generated canonical reference into renderer-ready theme values.
 ResolvedPresentationTheme resolveDeckThemeReference(
-  DeckThemeReferenceType theme, {
+  DeckThemeReference theme, {
   required PresentationThemeCatalog themeCatalog,
   required PresentationTypographyCatalog typographyCatalog,
 }) => resolveDeckThemeMap(
-  Map<String, Object?>.of(theme),
+  theme.toJson(),
   themeCatalog: themeCatalog,
   typographyCatalog: typographyCatalog,
 );
@@ -215,7 +215,7 @@ ResolvedPresentationTheme resolveDeckThemeMap(
   required PresentationThemeCatalog themeCatalog,
   required PresentationTypographyCatalog typographyCatalog,
 }) {
-  final parsed = DeckThemeReferenceType.parse(theme);
+  final parsed = DeckThemeReference.parse(theme);
   final override = parsed.brandOverride;
   final colors = override?.colors;
   final fonts = override?.fonts;

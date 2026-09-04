@@ -80,7 +80,7 @@ final class DeckToolsService {
   }
 
   Map<String, Object?> _keyless(Slide slide) {
-    return Map<String, Object?>.from(slide.toMap())..remove('key');
+    return slide.toJson()..remove('key');
   }
 
   Map<String, Object?> _snapshot(List<Slide> slides) {

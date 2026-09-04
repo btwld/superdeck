@@ -245,14 +245,14 @@ void main() {
   });
 }
 
-DeckPlanType _plan(
+DeckPlan _plan(
   DeckGenerationRequest request, {
   List<String> slideKeys = const ['opening'],
 }) {
   final themes = PresentationThemeCatalog.withDefaults();
   final typography = PresentationTypographyCatalog.withDefaults();
   final descriptor = themes.current(request.themeId!)!;
-  return DeckPlanType.parse({
+  return DeckPlan.parse({
     'topic': request.userIntent,
     'story': 'Small interventions build toward city-scale resilience.',
     'theme': buildDeckThemeReference(
@@ -297,10 +297,10 @@ final class _FakeWizardGenerationService extends DeckGeneratorService {
     this.partialComposition = false,
   }) : super(apiKey: 'test-key');
 
-  final DeckPlanType planned;
+  final DeckPlan planned;
   final String? compositionError;
   final bool partialComposition;
-  DeckPlanType? approvedPlan;
+  DeckPlan? approvedPlan;
   Completer<DeckPlanningResult>? pendingPlanning;
   Completer<DeckGenerationResult>? pendingComposition;
   String? planningError;
@@ -323,7 +323,7 @@ final class _FakeWizardGenerationService extends DeckGeneratorService {
   @override
   Future<DeckGenerationResult> generateFromPlan(
     DeckGenerationRequest request,
-    DeckPlanType approvedPlan, {
+    DeckPlan approvedPlan, {
     onProgress,
     onTrace,
     isCancelled,
@@ -381,7 +381,7 @@ final class _FakeWizardGenerationService extends DeckGeneratorService {
 
 DeckGenerationResult _successfulResult(
   DeckGeneratorService service,
-  DeckPlanType plan,
+  DeckPlan plan,
 ) => DeckGenerationResult.success(
   slides: [_generatedSlide('opening')],
   plan: plan,

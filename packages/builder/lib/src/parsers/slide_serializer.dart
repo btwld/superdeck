@@ -184,8 +184,8 @@ class SlideSerializer {
     final options = <String, Object?>{};
     if (block.flex != 1) options['flex'] = block.flex;
     if (block.align != null) options['align'] = block.align!.name;
-    if (block.padding != null) options['padding'] = block.padding!.toMap();
-    if (block.margin != null) options['margin'] = block.margin!.toMap();
+    if (block.padding != null) options['padding'] = block.padding!.toJson();
+    if (block.margin != null) options['margin'] = block.margin!.toJson();
     if (block.scrollable) options['scrollable'] = true;
     return options;
   }

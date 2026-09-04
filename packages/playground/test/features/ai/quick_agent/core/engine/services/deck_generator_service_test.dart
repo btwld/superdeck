@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
+import 'package:googleai_dart/googleai_dart.dart' as modern_google_ai;
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/features/ai/image_generation/image_generator.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
@@ -54,7 +55,7 @@ void main() {
     expect(planning.success, isTrue);
     expect(planning.plan, isNotNull);
     expect(planningClient.requests, hasLength(1));
-    expect(planningClient.requests.single.model, 'models/gemini-3.5-flash');
+    expect(planningClient.requests.single.model, 'models/gemini-3.7-flash');
     expect(planningClient.isClosed, isTrue);
 
     final compositionClient = _FakeGenerationModelClient([
@@ -78,7 +79,7 @@ void main() {
     expect(compositionClient.requests, hasLength(1));
     expect(
       compositionClient.requests.single.model,
-      'models/gemini-3.1-flash-lite',
+      'models/gemini-3.5-flash-lite',
     );
     expect(compositionClient.isClosed, isTrue);
   });
@@ -396,10 +397,10 @@ void main() {
     expect(result.slides, hasLength(2));
     expect(client.requests, hasLength(4));
     expect(client.requests.map((request) => request.model), [
-      'models/gemini-3.5-flash',
-      'models/gemini-3.1-flash-lite',
-      'models/gemini-3.1-flash-lite',
-      'models/gemini-3.1-flash-lite',
+      'models/gemini-3.7-flash',
+      'models/gemini-3.5-flash-lite',
+      'models/gemini-3.5-flash-lite',
+      'models/gemini-3.5-flash-lite',
     ]);
     final repairPrompt =
         client.requests[1].systemInstruction!.parts.single.text!;
@@ -877,8 +878,8 @@ void main() {
     expect(result.success, isTrue);
     expect(client.requests, hasLength(2));
     expect(client.requests.map((request) => request.model), [
-      'models/gemini-3.5-flash',
-      'models/gemini-3.1-flash-lite',
+      'models/gemini-3.7-flash',
+      'models/gemini-3.5-flash-lite',
     ]);
     final outlinePrompt =
         client.requests.first.systemInstruction!.parts.single.text;
@@ -919,16 +920,15 @@ void main() {
     expect(widgetSchema.properties, isNot(contains('text')));
     expect(
       client.requests.map(
-        (request) => request.generationConfig!.thinkingConfig,
+        (request) => adaptGenerationRequest(
+          request,
+        ).request.generationConfig!.thinkingConfig!.thinkingLevel,
       ),
-      everyElement(
-        isA<google_ai.ThinkingConfig>().having(
-          (config) => config.thinkingBudget,
-          'thinking budget',
-          0,
-        ),
-      ),
-      reason: 'Deck generation must explicitly disable thinking.',
+      [
+        modern_google_ai.ThinkingLevel.low,
+        modern_google_ai.ThinkingLevel.minimal,
+      ],
+      reason: 'Deck generation must use each model\'s lowest thinking level.',
     );
     expect(client.isClosed, isTrue);
     final requests = traces
@@ -980,9 +980,9 @@ void main() {
       ]);
       expect(client.requests, hasLength(3));
       expect(client.requests.map((request) => request.model), [
-        'models/gemini-3.5-flash',
-        'models/gemini-3.1-flash-lite',
-        'models/gemini-3.1-flash-lite',
+        'models/gemini-3.7-flash',
+        'models/gemini-3.5-flash-lite',
+        'models/gemini-3.5-flash-lite',
       ]);
       expect(
         progress
@@ -1261,10 +1261,10 @@ void main() {
       'evidence',
       'closing',
     ]);
-    expect(recovered.slides.first.toMap(), partial.slides.first.toMap());
-    expect(recovered.slides.last.toMap(), partial.slides.last.toMap());
+    expect(recovered.slides.first.toJson(), partial.slides.first.toJson());
+    expect(recovered.slides.last.toJson(), partial.slides.last.toJson());
     expect(retryClient.requests, hasLength(1));
-    expect(retryClient.requests.single.model, 'models/gemini-3.1-flash-lite');
+    expect(retryClient.requests.single.model, 'models/gemini-3.5-flash-lite');
     expect(
       retryClient.requests.single.systemInstruction!.parts.single.text,
       contains('Start here'),

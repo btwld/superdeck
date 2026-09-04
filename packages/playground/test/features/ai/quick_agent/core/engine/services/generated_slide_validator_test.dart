@@ -496,6 +496,34 @@ void main() {
     expect(content, isNot(contains('- **Load:**')));
   });
 
+  test('uses the planned title when a generated hero heading is too long', () {
+    final raw = _slideWithBlock({
+      'type': 'block',
+      'content':
+          '# SuperDeck transforms rough ideas into presentation-ready decks '
+          'through structured story architecture\n\n'
+          'A concise live demonstration.',
+    });
+
+    final normalized = normalizeGeneratedSlideForPlan(
+      rawSlide: raw,
+      planSlide: _planSlide(composition: 'title', title: 'SuperDeck Overview'),
+    );
+    final content =
+        ((((normalized['sections'] as List).single as Map)['blocks'] as List)
+                    .single
+                as Map)['content']
+            as String;
+
+    expect(content, '# SuperDeck Overview\n\nA concise live demonstration.');
+    expect(
+      ((((raw['sections'] as List).single as Map)['blocks'] as List).single
+          as Map)['content'],
+      startsWith('# SuperDeck transforms rough ideas'),
+      reason: 'Normalization must not mutate the traceable raw draft.',
+    );
+  });
+
   test('anchors implicit title and body rows in a vertical composition', () {
     final raw = {
       'key': 'test-slide',
@@ -1605,14 +1633,15 @@ Map<String, dynamic> _slideWithBlock(Map<String, Object?> block) => {
   ],
 };
 
-DeckPlanSlideType _planSlide({
+DeckPlanSlide _planSlide({
   required String composition,
   String density = 'balanced',
   String? treatment,
+  String title = 'Test slide',
   List<Map<String, Object?>> elements = const [],
-}) => DeckPlanSlideType.parse({
+}) => DeckPlanSlide.parse({
   'key': 'test-slide',
-  'title': 'Test slide',
+  'title': title,
   'purpose': 'Exercise the generated slide contract.',
   'sectionKey': 'main',
   'assertion': 'The planned assertion must be visible.',

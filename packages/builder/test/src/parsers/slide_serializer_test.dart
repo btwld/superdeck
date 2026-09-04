@@ -54,8 +54,8 @@ Map<String, Object?> canonicalBlock(Block block) {
       'type': 'block',
       'flex': block.flex,
       'align': block.align?.name,
-      'margin': block.toMap()['margin'],
-      'padding': block.toMap()['padding'],
+      'margin': block.toJson()['margin'],
+      'padding': block.toJson()['padding'],
       'scrollable': block.scrollable,
       'content': block.content.trim(),
     },
@@ -64,8 +64,8 @@ Map<String, Object?> canonicalBlock(Block block) {
       'name': block.name,
       'flex': block.flex,
       'align': block.align?.name,
-      'margin': block.toMap()['margin'],
-      'padding': block.toMap()['padding'],
+      'margin': block.toJson()['margin'],
+      'padding': block.toJson()['padding'],
       'scrollable': block.scrollable,
       'args': block.args,
     },
@@ -166,14 +166,14 @@ void main() {
       );
 
       final blocks = slides.single.sections.single.blocks;
-      expect(blocks[0].toMap()['padding'], {
+      expect(blocks[0].toJson()['padding'], {
         'top': 16.0,
         'right': 16.0,
         'bottom': 16.0,
         'left': 16.0,
       });
       expect((blocks[1] as WidgetBlock).args.containsKey('padding'), isFalse);
-      expect(blocks[1].toMap()['padding'], {
+      expect(blocks[1].toJson()['padding'], {
         'top': 12.0,
         'right': 24.0,
         'bottom': 12.0,
@@ -366,7 +366,7 @@ void main() {
       final slides = parseDeck('@block { margin: 8 }\n\nContent');
 
       final block = slides.single.sections.single.blocks.single;
-      expect(block.toMap()['margin'], {
+      expect(block.toJson()['margin'], {
         'top': 8.0,
         'right': 8.0,
         'bottom': 8.0,

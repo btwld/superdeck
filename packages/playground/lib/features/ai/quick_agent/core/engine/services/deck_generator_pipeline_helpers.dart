@@ -11,7 +11,7 @@ List<Map<String, dynamic>> sanitizeGeneratedSlides(
 
 Map<String, dynamic> hydrateGeneratedElementSources({
   required Map<String, dynamic> slide,
-  required DeckPlanSlideType planSlide,
+  required DeckPlanSlide planSlide,
   required GenerationElementCatalog elementCatalog,
 }) {
   final hydrated = Map<String, dynamic>.of(slide);
@@ -34,7 +34,7 @@ Map<String, dynamic> hydrateGeneratedElementSources({
 
 Map<String, dynamic> _hydrateSectionElementSources(
   Map<dynamic, dynamic> rawSection, {
-  required DeckPlanSlideType planSlide,
+  required DeckPlanSlide planSlide,
   required GenerationElementCatalog elementCatalog,
 }) {
   final section = Map<String, dynamic>.from(rawSection);
@@ -56,7 +56,7 @@ Map<String, dynamic> _hydrateSectionElementSources(
 
 Map<String, dynamic> _hydrateBlockElementSource(
   Map<dynamic, dynamic> rawBlock, {
-  required DeckPlanSlideType planSlide,
+  required DeckPlanSlide planSlide,
   required GenerationElementCatalog elementCatalog,
 }) {
   final block = Map<String, dynamic>.from(rawBlock);

@@ -6,11 +6,11 @@
       {
         "blocks": [
           {
-            "content": "# SuperDeck {.heading}\n# Build presentations with Flutter {.subheading}",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "# SuperDeck {.heading}\n# Build presentations with Flutter {.subheading}"
           }
         ],
         "flex": 2,
@@ -27,18 +27,18 @@
       {
         "blocks": [
           {
-            "content": "\n\n#### Leo Farias {.heading}\n#### @leoafarias {.subheading}\n",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n#### Leo Farias {.heading}\n#### @leoafarias {.subheading}\n"
           },
           {
-            "content": "- Founder/CEO/CTO\n- Open Source Contributor (fvm, mix, superdeck, others..)\n- Flutter & Dart GDE\n- Passionate about UI/UX/DX",
+            "type": "block",
             "align": "centerLeft",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "- Founder/CEO/CTO\n- Open Source Contributor (fvm, mix, superdeck, others..)\n- Flutter & Dart GDE\n- Passionate about UI/UX/DX"
           }
         ],
         "flex": 1,
@@ -55,16 +55,16 @@
       {
         "blocks": [
           {
-            "content": "## What is SuperDeck? {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## What is SuperDeck? {.heading}\n"
           },
           {
-            "content": "- Write slides in **Markdown**\n- Render with **Flutter**\n- Use **custom widgets** in your slides",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "- Write slides in **Markdown**\n- Render with **Flutter**\n- Use **custom widgets** in your slides"
           }
         ],
         "flex": 1,
@@ -81,23 +81,23 @@
       {
         "blocks": [
           {
-            "content": "",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           },
           {
-            "content": "\n### A developer-first presentation framework that combines the simplicity of Markdown with the power of Flutter. {.heading}\n",
+            "type": "block",
             "align": "center",
             "flex": 5,
             "scrollable": false,
-            "type": "block"
+            "content": "\n### A developer-first presentation framework that combines the simplicity of Markdown with the power of Flutter. {.heading}\n"
           },
           {
-            "content": "",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           }
         ],
         "flex": 1,
@@ -114,10 +114,10 @@
       {
         "blocks": [
           {
-            "content": "## Key Features {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Key Features {.heading}\n"
           }
         ],
         "flex": 1,
@@ -127,25 +127,25 @@
       {
         "blocks": [
           {
-            "content": "\n### Markdown {.feat-markdown}\n\n- Simple syntax\n- Code blocks\n- Version control friendly\n",
+            "type": "block",
             "align": "topCenter",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n### Markdown {.feat-markdown}\n\n- Simple syntax\n- Code blocks\n- Version control friendly\n"
           },
           {
-            "content": "\n### Flutter {.feat-flutter}\n\n- Custom widgets\n- Hot reload\n- Cross-platform\n",
+            "type": "block",
             "align": "topCenter",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n### Flutter {.feat-flutter}\n\n- Custom widgets\n- Hot reload\n- Cross-platform\n"
           },
           {
-            "content": "### Styling {.feat-styling}\n\n- Themes\n- Custom styles\n- Responsive layouts",
+            "type": "block",
             "align": "topCenter",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Styling {.feat-styling}\n\n- Themes\n- Custom styles\n- Responsive layouts"
           }
         ],
         "flex": 1,
@@ -162,16 +162,16 @@
       {
         "blocks": [
           {
-            "content": "### Markdown-First {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Markdown-First {.heading}\n"
           },
           {
-            "content": "Write your presentations in familiar Markdown syntax:\n\n- Headers and text formatting\n- Code blocks with syntax highlighting\n- Lists and blockquotes\n- Custom widgets via `@widget` syntax",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "Write your presentations in familiar Markdown syntax:\n\n- Headers and text formatting\n- Code blocks with syntax highlighting\n- Lists and blockquotes\n- Custom widgets via `@widget` syntax"
           }
         ],
         "flex": 1,
@@ -188,10 +188,10 @@
       {
         "blocks": [
           {
-            "content": "## Slide Layouts {.heading}\n\nSuperDeck supports flexible layouts using sections and columns.",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Slide Layouts {.heading}\n\nSuperDeck supports flexible layouts using sections and columns."
           }
         ],
         "flex": 1,
@@ -208,10 +208,10 @@
       {
         "blocks": [
           {
-            "content": "## Predictable Layout Primitives {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Predictable Layout Primitives {.heading}\n"
           }
         ],
         "flex": 1,
@@ -221,7 +221,7 @@
       {
         "blocks": [
           {
-            "content": "\n\n### Edge to edge\n`padding: 0`\n",
+            "type": "block",
             "flex": 1,
             "padding": {
               "top": 0.0,
@@ -230,10 +230,10 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### Edge to edge\n`padding: 0`\n"
           },
           {
-            "content": "\n\n### Uniform inset\n`padding: 16`\n",
+            "type": "block",
             "flex": 1,
             "padding": {
               "top": 16.0,
@@ -242,10 +242,10 @@
               "left": 16.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### Uniform inset\n`padding: 16`\n"
           },
           {
-            "content": "### Independent axes\n`48 × 24`",
+            "type": "block",
             "align": "bottomRight",
             "flex": 1,
             "padding": {
@@ -255,7 +255,7 @@
               "left": 48.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "### Independent axes\n`48 × 24`"
           }
         ],
         "align": "center",
@@ -275,10 +275,10 @@
       {
         "blocks": [
           {
-            "content": "## Spacing vs Margin vs Padding {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Spacing vs Margin vs Padding {.heading}\n"
           }
         ],
         "flex": 1,
@@ -288,13 +288,13 @@
       {
         "blocks": [
           {
-            "content": "\n\n### Spacing\n`spacing: 40` is the shared gap between sibling block frames.\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### Spacing\n`spacing: 40` is the shared gap between sibling block frames.\n"
           },
           {
-            "content": "\n\n### Margin\n`margin: 24` is consumed inside this block's frame, outside its border.\n",
+            "type": "block",
             "flex": 1,
             "margin": {
               "top": 24.0,
@@ -303,10 +303,10 @@
               "left": 24.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n### Margin\n`margin: 24` is consumed inside this block's frame, outside its border.\n"
           },
           {
-            "content": "### Padding\n`padding` sits between the border and this content.",
+            "type": "block",
             "flex": 1,
             "padding": {
               "top": 24.0,
@@ -315,7 +315,7 @@
               "left": 48.0
             },
             "scrollable": false,
-            "type": "block"
+            "content": "### Padding\n`padding` sits between the border and this content."
           }
         ],
         "align": "center",
@@ -333,10 +333,10 @@
       {
         "blocks": [
           {
-            "content": "## Image Framing Scale {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Image Framing Scale {.heading}\n"
           }
         ],
         "flex": 1,
@@ -346,7 +346,7 @@
       {
         "blocks": [
           {
-            "name": "image",
+            "type": "widget",
             "flex": 1,
             "padding": {
               "top": 0.0,
@@ -355,7 +355,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "assets/concepta-icon.png",
             "fit": "contain",
             "width": 300,
@@ -363,7 +363,7 @@
             "scale": 1
           },
           {
-            "name": "image",
+            "type": "widget",
             "flex": 1,
             "padding": {
               "top": 0.0,
@@ -372,7 +372,7 @@
               "left": 0.0
             },
             "scrollable": false,
-            "type": "widget",
+            "name": "image",
             "src": "assets/concepta-icon.png",
             "fit": "contain",
             "width": 300,
@@ -395,17 +395,17 @@
       {
         "blocks": [
           {
-            "content": "\n### Two Columns {.heading}\n",
+            "type": "block",
             "align": "centerRight",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n### Two Columns {.heading}\n"
           },
           {
-            "content": "```markdown\n@block {\n  flex: 2\n}\nLeft content here\n\n@block {\n  flex: 3\n}\nRight content here\n```",
+            "type": "block",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": "```markdown\n@block {\n  flex: 2\n}\nLeft content here\n\n@block {\n  flex: 3\n}\nRight content here\n```"
           }
         ],
         "flex": 1,
@@ -422,11 +422,11 @@
       {
         "blocks": [
           {
-            "content": "\n### Top Section\n",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n### Top Section\n"
           }
         ],
         "flex": 1,
@@ -436,11 +436,11 @@
       {
         "blocks": [
           {
-            "content": "\n### Middle Section (flex: 2)\n",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n### Middle Section (flex: 2)\n"
           }
         ],
         "flex": 2,
@@ -450,11 +450,11 @@
       {
         "blocks": [
           {
-            "content": "### Bottom Section",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Bottom Section"
           }
         ],
         "flex": 1,
@@ -471,16 +471,16 @@
       {
         "blocks": [
           {
-            "content": "### Code Blocks {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Code Blocks {.heading}\n"
           },
           {
-            "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': myWidgetFactory,\n        },\n      ),\n    ),\n  );\n}\n```{.code}",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "```dart\nimport 'package:superdeck/superdeck.dart';\n\nvoid main() {\n  runApp(\n    SuperDeckApp(\n      options: DeckOptions(\n        widgets: {\n          'my-widget': myWidgetFactory,\n        },\n      ),\n    ),\n  );\n}\n```{.code}"
           }
         ],
         "flex": 1,
@@ -497,16 +497,16 @@
       {
         "blocks": [
           {
-            "content": "## Custom Widgets {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Custom Widgets {.heading}\n"
           },
           {
-            "content": "Embed interactive Flutter widgets directly in your slides!",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "Embed interactive Flutter widgets directly in your slides!"
           }
         ],
         "flex": 1,
@@ -523,10 +523,10 @@
       {
         "blocks": [
           {
-            "content": "### Ack-Generated Widget Args {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Ack-Generated Widget Args {.heading}\n"
           }
         ],
         "flex": 1,
@@ -536,11 +536,11 @@
       {
         "blocks": [
           {
-            "content": "\n\nAck can validate custom widget arguments and generate typed getters over the same `Map<String, Object?>` payload.\n",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\nAck can validate custom widget arguments and generate typed getters over the same `Map<String, Object?>` payload.\n"
           }
         ],
         "flex": 1,
@@ -550,17 +550,17 @@
       {
         "blocks": [
           {
-            "content": "\n\n```markdown\n@ack-metric-card {\n  flex: 2\n  align: center\n  label: Activation\n  value: \"72%\"\n  caption: \"Parsed through Ack-generated typed getters\"\n  tone: green\n}\n```\n",
+            "type": "block",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n```markdown\n@ack-metric-card {\n  flex: 2\n  align: center\n  label: Activation\n  value: \"72%\"\n  caption: \"Parsed through Ack-generated typed getters\"\n  tone: green\n}\n```\n"
           },
           {
-            "name": "ack-metric-card",
+            "type": "widget",
             "align": "center",
             "flex": 2,
             "scrollable": false,
-            "type": "widget",
+            "name": "ack-metric-card",
             "label": "Activation",
             "value": "72%",
             "caption": "Parsed through Ack-generated typed getters",
@@ -581,29 +581,29 @@
       {
         "blocks": [
           {
-            "content": "### Mix Box Example {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Mix Box Example {.heading}\n"
           },
           {
-            "content": "\n\n```markdown\n@mix-simple-box\n```\n",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n```markdown\n@mix-simple-box\n```\n"
           },
           {
-            "content": "",
+            "type": "block",
             "align": "center",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           },
           {
-            "name": "mix-simple-box",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "mix-simple-box"
           }
         ],
         "flex": 1,
@@ -620,29 +620,29 @@
       {
         "blocks": [
           {
-            "content": "### Interactive Variants {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Interactive Variants {.heading}\n"
           },
           {
-            "content": "\n\nHover and press interactions using Mix variants.\n",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\nHover and press interactions using Mix variants.\n"
           },
           {
-            "content": "",
+            "type": "block",
             "align": "center",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           },
           {
-            "name": "mix-variants",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "mix-variants"
           }
         ],
         "flex": 1,
@@ -659,29 +659,29 @@
       {
         "blocks": [
           {
-            "content": "### Remix Buttons {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Remix Buttons {.heading}\n"
           },
           {
-            "content": "\n\nDesign system components with Remix.\n",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\nDesign system components with Remix.\n"
           },
           {
-            "content": "",
+            "type": "block",
             "align": "center",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           },
           {
-            "name": "remix-button",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "remix-button"
           }
         ],
         "flex": 1,
@@ -698,29 +698,29 @@
       {
         "blocks": [
           {
-            "content": "### Animations {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Animations {.heading}\n"
           },
           {
-            "content": "\n\nImplicit and keyframe animations with Mix.\n",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\nImplicit and keyframe animations with Mix.\n"
           },
           {
-            "content": "",
+            "type": "block",
             "align": "center",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           },
           {
-            "name": "mix-animation",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "mix-animation"
           }
         ],
         "flex": 1,
@@ -737,16 +737,16 @@
       {
         "blocks": [
           {
-            "content": "## Styling Options {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Styling Options {.heading}\n"
           },
           {
-            "content": "SuperDeck supports custom themes and per-slide styling.",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "SuperDeck supports custom themes and per-slide styling."
           }
         ],
         "flex": 1,
@@ -763,10 +763,10 @@
       {
         "blocks": [
           {
-            "content": "### Style Configuration\n\n```dart\nSuperDeckApp(\n  options: DeckOptions(\n    styles: {\n      'default': borderedStyle(),\n      'quote': quoteStyle(),\n    },\n  ),\n)\n```",
+            "type": "block",
             "flex": 1,
             "scrollable": true,
-            "type": "block"
+            "content": "### Style Configuration\n\n```dart\nSuperDeckApp(\n  options: DeckOptions(\n    styles: {\n      'default': borderedStyle(),\n      'quote': quoteStyle(),\n    },\n  ),\n)\n```"
           }
         ],
         "flex": 1,
@@ -783,16 +783,16 @@
       {
         "blocks": [
           {
-            "content": "### Per-Slide Styles\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Per-Slide Styles\n"
           },
           {
-            "content": "```markdown\n---\nstyle: quote\n---\n\n> Your quote here\n```",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "```markdown\n---\nstyle: quote\n---\n\n> Your quote here\n```"
           }
         ],
         "flex": 1,
@@ -811,10 +811,10 @@
       {
         "blocks": [
           {
-            "content": "> SuperDeck makes presentations feel like coding - simple, version-controlled, and powerful.",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "> SuperDeck makes presentations feel like coding - simple, version-controlled, and powerful."
           }
         ],
         "flex": 1,
@@ -831,16 +831,16 @@
       {
         "blocks": [
           {
-            "content": "## Architecture {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Architecture {.heading}\n"
           },
           {
-            "content": "1. Write slides in `slides.md`\n2. Run the CLI build command\n3. SuperDeck parses Markdown into slide data\n4. Flutter renders the presentation UI\n5. Runtime services generate previews as needed",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "1. Write slides in `slides.md`\n2. Run the CLI build command\n3. SuperDeck parses Markdown into slide data\n4. Flutter renders the presentation UI\n5. Runtime services generate previews as needed"
           }
         ],
         "flex": 1,
@@ -857,22 +857,22 @@
       {
         "blocks": [
           {
-            "content": "## Getting Started {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Getting Started {.heading}\n"
           },
           {
-            "content": "\n\n1. Add SuperDeck to your project\n2. Create `slides.md`\n3. Run the CLI\n4. Present!\n",
+            "type": "block",
             "flex": 2,
             "scrollable": false,
-            "type": "block"
+            "content": "\n\n1. Add SuperDeck to your project\n2. Create `slides.md`\n3. Run the CLI\n4. Present!\n"
           },
           {
-            "content": "```bash\n# Add dependency\nflutter pub add superdeck\n\n# Build slides\ndart run superdeck_cli:main build\n\n# Run presentation\nflutter run\n```",
+            "type": "block",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": "```bash\n# Add dependency\nflutter pub add superdeck\n\n# Build slides\ndart run superdeck_cli:main build\n\n# Run presentation\nflutter run\n```"
           }
         ],
         "flex": 1,
@@ -889,16 +889,16 @@
       {
         "blocks": [
           {
-            "content": "### Project Structure {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "### Project Structure {.heading}\n"
           },
           {
-            "content": "```\nmy_presentation/\n├── lib/\n│   └── main.dart\n├── slides.md\n└── pubspec.yaml\n```",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "```\nmy_presentation/\n├── lib/\n│   └── main.dart\n├── slides.md\n└── pubspec.yaml\n```"
           }
         ],
         "flex": 1,
@@ -915,23 +915,23 @@
       {
         "blocks": [
           {
-            "content": "",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           },
           {
-            "content": "\n### Why SuperDeck? {.heading}\n\n- Version control your presentations\n- Use your favorite editor\n- Leverage Flutter's ecosystem\n- Hot reload while editing\n- Cross-platform output\n",
+            "type": "block",
             "align": "center",
             "flex": 3,
             "scrollable": false,
-            "type": "block"
+            "content": "\n### Why SuperDeck? {.heading}\n\n- Version control your presentations\n- Use your favorite editor\n- Leverage Flutter's ecosystem\n- Hot reload while editing\n- Cross-platform output\n"
           },
           {
-            "content": "",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": ""
           }
         ],
         "flex": 1,
@@ -948,16 +948,16 @@
       {
         "blocks": [
           {
-            "content": "## Slide Templates {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "## Slide Templates {.heading}\n"
           },
           {
-            "content": "Templates bundle **chrome** (header, footer, background) with an **isolated style system** — like Keynote master slides.",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "Templates bundle **chrome** (header, footer, background) with an **isolated style system** — like Keynote master slides."
           }
         ],
         "flex": 1,
@@ -976,11 +976,11 @@
       {
         "blocks": [
           {
-            "content": "# Corporate Template {.heading}\n\nThis slide uses the `corporate` template with branded header and footer.",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "# Corporate Template {.heading}\n\nThis slide uses the `corporate` template with branded header and footer."
           }
         ],
         "flex": 1,
@@ -1000,11 +1000,11 @@
       {
         "blocks": [
           {
-            "content": "# Highlight Style {.heading}\n\nTemplates can have their own named style variants.",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "# Highlight Style {.heading}\n\nTemplates can have their own named style variants."
           }
         ],
         "flex": 1,
@@ -1023,11 +1023,11 @@
       {
         "blocks": [
           {
-            "content": "# Minimal Template {.heading}\n\nA clean, typography-focused template with no chrome distractions.",
+            "type": "block",
             "align": "center",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "# Minimal Template {.heading}\n\nA clean, typography-focused template with no chrome distractions."
           }
         ],
         "flex": 1,
@@ -1046,10 +1046,10 @@
       {
         "blocks": [
           {
-            "name": "webview",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget",
+            "name": "webview",
             "url": "https://www.fluttermix.com",
             "title": "Flutter Mix",
             "cacheKey": "fluttermix-normal"
@@ -1072,10 +1072,10 @@
       {
         "blocks": [
           {
-            "name": "webview",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget",
+            "name": "webview",
             "url": "https://www.fluttermix.com",
             "title": "Flutter Mix",
             "cacheKey": "fluttermix-fullscreen"
@@ -1095,10 +1095,10 @@
       {
         "blocks": [
           {
-            "content": "\n# Thank You {.heading}\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n# Thank You {.heading}\n"
           }
         ],
         "align": "bottomCenter",
@@ -1109,28 +1109,28 @@
       {
         "blocks": [
           {
-            "content": "\nLeo Farias\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\nLeo Farias\n"
           },
           {
-            "name": "leoafarias",
+            "type": "widget",
             "flex": 1,
             "scrollable": false,
-            "type": "widget"
+            "name": "leoafarias"
           },
           {
-            "content": "\n(GitHub, Twitter/X)\n",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "\n(GitHub, Twitter/X)\n"
           },
           {
-            "content": "#### Source Code\nhttps://github.com/btwld/superdeck",
+            "type": "block",
             "flex": 1,
             "scrollable": false,
-            "type": "block"
+            "content": "#### Source Code\nhttps://github.com/btwld/superdeck"
           }
         ],
         "flex": 1,

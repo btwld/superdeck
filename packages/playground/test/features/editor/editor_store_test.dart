@@ -28,8 +28,10 @@ void main() {
 
   group('previewSidebarWidth', () {
     test('defaults to the minimum width', () {
-      expect(newStore().previewSidebarWidth,
-          EditorStore.minPreviewSidebarWidth);
+      expect(
+        newStore().previewSidebarWidth,
+        EditorStore.minPreviewSidebarWidth,
+      );
     });
 
     test('clamps below the minimum', () {
@@ -69,22 +71,28 @@ void main() {
 
   group('customizationSidebarWidth', () {
     test('defaults to the maximum width', () {
-      expect(newStore().customizationSidebarWidth,
-          EditorStore.maxCustomizationSidebarWidth);
+      expect(
+        newStore().customizationSidebarWidth,
+        EditorStore.maxCustomizationSidebarWidth,
+      );
     });
 
     test('clamps below the minimum', () {
       final store = newStore();
       store.customizationSidebarWidth = 0;
-      expect(store.customizationSidebarWidth,
-          EditorStore.minCustomizationSidebarWidth);
+      expect(
+        store.customizationSidebarWidth,
+        EditorStore.minCustomizationSidebarWidth,
+      );
     });
 
     test('clamps above the maximum', () {
       final store = newStore();
       store.customizationSidebarWidth = 10000;
-      expect(store.customizationSidebarWidth,
-          EditorStore.maxCustomizationSidebarWidth);
+      expect(
+        store.customizationSidebarWidth,
+        EditorStore.maxCustomizationSidebarWidth,
+      );
     });
   });
 

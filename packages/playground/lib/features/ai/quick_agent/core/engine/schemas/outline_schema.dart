@@ -3,7 +3,8 @@ import 'package:ack_annotations/ack_annotations.dart';
 
 import 'deck_schemas.dart';
 
-part 'outline_schema.g.dart';
+part 'outline_schema.ack.dart';
+part 'outline_schema.ack.g.dart';
 
 /// Schema definitions for presentation planning (Phase 1).
 ///
@@ -60,7 +61,7 @@ const deckPlanTreatments = [
   'closing',
 ];
 
-@AckType(name: 'DeckPlanSection')
+@AckInfer()
 final deckPlanSectionSchema = Ack.object({
   'key': Ack.string().describe('Unique section or act identifier'),
   'title': Ack.string().describe('Short internal title for this story section'),
@@ -74,7 +75,7 @@ final deckPlanSectionSchema = Ack.object({
 }).describe('A narrative section or act in the deck blueprint');
 
 /// Optional generated-element requirement attached to a slide plan.
-@AckType(name: 'DeckPlanElement')
+@AckInfer()
 final deckPlanElementSchema = Ack.object({
   'type': Ack.enumString(
     deckPlanElementTypes,
@@ -98,7 +99,7 @@ final deckPlanElementSchema = Ack.object({
 /// - title: Working title (may be refined during slide composition)
 /// - purpose: What the slide will communicate
 /// - composition: Semantic layout intent for the slide composer
-@AckType(name: 'DeckPlanSlide')
+@AckInfer()
 final deckPlanSlideSchema = Ack.object({
   'key': Ack.string().describe(
     'Unique identifier for this slide (e.g., "intro", "slide-1", "conclusion")',
@@ -149,7 +150,7 @@ final deckPlanSlideSchema = Ack.object({
 ///
 /// Root schema for Phase 1 generation, containing the topic
 /// and ordered list of slide outlines.
-@AckType(name: 'DeckPlan')
+@AckInfer()
 final deckPlanSchema =
     Ack.object({
       'topic': Ack.string().describe('Main topic of the presentation'),

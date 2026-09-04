@@ -19,14 +19,15 @@ import 'presentation_theme_component_schema.dart';
 import 'typed_catalog_item.dart';
 import 'user_action_dispatch.dart';
 
-part 'ask_user_style.g.dart';
+part 'ask_user_style.ack.dart';
+part 'ask_user_style.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for AskUserStyle component.
 ///
 /// Displays exact catalog-backed presentation themes for selection.
-@AckType(name: 'AskUserStyle')
+@AckInfer(name: 'AskUserStyle')
 final _askUserStyleSchema = Ack.object({
   'question': Ack.string().describe('The question to display to the user'),
   'description': Ack.string().optional().describe(
@@ -48,7 +49,7 @@ CatalogItem askUserStyleFor(PresentationThemeCatalog themeCatalog) {
       .map((theme) => theme.id)
       .toList(growable: false);
 
-  return typedCatalogItem<AskUserStyleType>(
+  return typedCatalogItem<AskUserStyle>(
     name: 'AskUserStyle',
     dataSchema: componentSchema(
       schemaWithPresentationThemeIds(
@@ -81,11 +82,11 @@ CatalogItem askUserStyleFor(PresentationThemeCatalog themeCatalog) {
   );
 }
 
-AskUserStyleType parseAskUserStyle(
+AskUserStyle parseAskUserStyle(
   Object? data, {
   required PresentationThemeCatalog themeCatalog,
 }) {
-  final parsed = AskUserStyleType.parse(data);
+  final parsed = AskUserStyle.parse(data);
   final unknownIds = parsed.themeIds
       .where((themeId) => themeCatalog.current(themeId) == null)
       .toList(growable: false);
@@ -107,7 +108,7 @@ class _AskUserStyleContent extends StatefulWidget {
     required this.themeCatalog,
   });
 
-  final AskUserStyleType data;
+  final AskUserStyle data;
   final CatalogItemContext itemContext;
   final PresentationThemeCatalog themeCatalog;
 

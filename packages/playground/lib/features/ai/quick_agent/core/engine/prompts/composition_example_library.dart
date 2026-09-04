@@ -41,7 +41,7 @@ final class AssetCompositionExampleLibrary {
   }
 
   Map<String, Object?> buildFor({
-    required DeckPlanSlideType current,
+    required DeckPlanSlide current,
     required GenerationElementCatalog elementCatalog,
   }) {
     if (_templates.isEmpty) {
@@ -95,7 +95,7 @@ Map<String, Object?> _clone(Map<String, Object?> value) =>
 
 void _hydrateElement(
   Map<String, Object?> example, {
-  required DeckPlanElementType element,
+  required DeckPlanElement element,
   required GenerationElementCatalog elementCatalog,
 }) {
   final plannedName = element.type == 'custom'
@@ -144,7 +144,7 @@ void _reverseDominantRow(Map<String, Object?> example) {
   }
 }
 
-void _hydrateMetric(Map<String, Object?> example, DeckPlanSlideType current) {
+void _hydrateMetric(Map<String, Object?> example, DeckPlanSlide current) {
   final metric = extractAudienceNumericClaims([
     current.title,
     current.assertion,

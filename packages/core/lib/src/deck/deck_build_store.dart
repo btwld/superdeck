@@ -26,7 +26,7 @@ class DeckBuildStore {
         DeckBuildStatus(
           phase: DeckBuildPhase.unknown,
           timestamp: DateTime.now(),
-        ).toMap(),
+        ).toJson(),
       ),
     );
     await workspace.slidesFile.ensureExists(content: '');
@@ -38,7 +38,7 @@ class DeckBuildStore {
 
   Future<void> saveReferences(List<Slide> slides) async {
     final deckJson = prettyJson(
-      slides.map((slide) => slide.toMap()).toList(growable: false),
+      slides.map((slide) => slide.toJson()).toList(growable: false),
     );
     await workspace.deckJson.writeAsString(deckJson);
 
@@ -64,7 +64,7 @@ class DeckBuildStore {
           : null,
     );
 
-    await workspace.buildStatusJson.ensureWrite(prettyJson(status.toMap()));
+    await workspace.buildStatusJson.ensureWrite(prettyJson(status.toJson()));
   }
 
   Future<void> _saveFullDeckReference(List<Slide> slides) async {
@@ -73,7 +73,7 @@ class DeckBuildStore {
     );
 
     final slidesWithMarkdownJson = slides.map((slide) {
-      final slideMap = slide.toMap();
+      final slideMap = slide.toJson();
 
       final sections = slideMap['sections'] as List<dynamic>;
       final processedSections = sections.map((section) {

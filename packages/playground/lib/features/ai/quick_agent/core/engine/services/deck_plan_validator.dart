@@ -12,7 +12,7 @@ import 'theme_json_serializer.dart';
 
 /// Returns semantic errors that are not expressible in the deck-plan schema.
 List<String> validateDeckPlan(
-  DeckPlanType plan, {
+  DeckPlan plan, {
   int? expectedSlideCount,
   PresentationTypographyCatalog? typographyCatalog,
   PresentationImageStyleCatalog? imageStyleCatalog,
@@ -31,7 +31,7 @@ List<String> validateDeckPlan(
 
 /// Returns typed semantic issues for pipeline decisions and diagnostics.
 List<GenerationValidationIssue> validateDeckPlanIssues(
-  DeckPlanType plan, {
+  DeckPlan plan, {
   int? expectedSlideCount,
   PresentationTypographyCatalog? typographyCatalog,
   PresentationImageStyleCatalog? imageStyleCatalog,
@@ -183,7 +183,7 @@ List<GenerationValidationIssue> validateDeckPlanIssues(
 }
 
 void _validateGeneratedImageIntent(
-  DeckPlanType plan,
+  DeckPlan plan,
   DeckGenerationRequest? request,
   PresentationImageStyleCatalog imageStyleCatalog,
   GenerationValidationCollector errors,
@@ -200,7 +200,7 @@ void _validateGeneratedImageIntent(
       location: GenerationValidationLocation.planSlide,
       slideKey: slide.key,
     );
-    final elements = slide.elements ?? const <DeckPlanElementType>[];
+    final elements = slide.elements ?? const <DeckPlanElement>[];
     final imageCount = elements
         .where((element) => element.type == 'image')
         .length;
@@ -280,7 +280,7 @@ bool _hasResolvedImageStyle(
 }
 
 void _validateMetricIntent(
-  DeckPlanType plan,
+  DeckPlan plan,
   DeckGenerationRequest? request,
   GenerationValidationCollector errors,
 ) {
@@ -310,7 +310,7 @@ void _validateMetricIntent(
 }
 
 void _validateNumericClaimContext(
-  DeckPlanType plan,
+  DeckPlan plan,
   DeckGenerationRequest? request,
   GenerationValidationCollector errors,
 ) {
@@ -337,7 +337,7 @@ void _validateNumericClaimContext(
 }
 
 void _validateCommitmentGrounding(
-  DeckPlanType plan,
+  DeckPlan plan,
   DeckGenerationRequest? request,
   GenerationValidationCollector errors,
 ) {
@@ -392,7 +392,7 @@ void _validateCommitmentGrounding(
 }
 
 void _validateNumericClaimGrounding(
-  DeckPlanType plan,
+  DeckPlan plan,
   DeckGenerationRequest? request,
   GenerationValidationCollector errors,
 ) {
@@ -419,7 +419,7 @@ void _validateNumericClaimGrounding(
 }
 
 void _validateTreatmentIntent(
-  DeckPlanType plan,
+  DeckPlan plan,
   GenerationValidationCollector errors,
 ) {
   for (final slide in plan.slides) {
@@ -446,7 +446,7 @@ void _validateTreatmentIntent(
 }
 
 void _validateVisibleSourceGrounding(
-  DeckPlanType plan,
+  DeckPlan plan,
   DeckGenerationRequest? request,
   GenerationValidationCollector errors,
 ) {
@@ -474,16 +474,13 @@ void _validateVisibleSourceGrounding(
   }
 }
 
-List<String> _audienceFacingPlanCopy(DeckPlanSlideType slide) => [
+List<String> _audienceFacingPlanCopy(DeckPlanSlide slide) => [
   slide.title,
   slide.assertion,
   ...slide.contentUnits,
 ];
 
-void _validateSections(
-  DeckPlanType plan,
-  GenerationValidationCollector errors,
-) {
+void _validateSections(DeckPlan plan, GenerationValidationCollector errors) {
   if (plan.sections.isEmpty) {
     errors.add('Deck plan has no narrative sections.');
     return;
@@ -536,7 +533,7 @@ void _validateSections(
 }
 
 void _validateTheme(
-  DeckPlanType plan,
+  DeckPlan plan,
   PresentationThemeCatalog themeCatalog,
   PresentationTypographyCatalog typographyCatalog,
   DeckGenerationRequest? request,
@@ -584,12 +581,13 @@ void _validateTheme(
 }
 
 void _validateElementGrounding(
-  DeckPlanType plan,
+  DeckPlan plan,
   DeckGenerationRequest? request,
   Set<String> knownGeneratedAssetKeys,
   GenerationValidationCollector errors,
 ) {
   for (final slide in plan.slides) {
+    final elements = slide.elements ?? const <DeckPlanElement>[];
     final requiredType = switch (slide.composition) {
       'imageLeft' || 'imageRight' || 'imageFullBleed' => 'image',
       'webview' => 'webview',
@@ -598,9 +596,7 @@ void _validateElementGrounding(
       _ => null,
     };
     if (requiredType != null &&
-        !(slide.elements ?? const <DeckPlanElementType>[]).any(
-          (element) => element.type == requiredType,
-        )) {
+        !elements.any((element) => element.type == requiredType)) {
       final slideErrors = errors.scoped(
         location: GenerationValidationLocation.planSlide,
         slideKey: slide.key,
@@ -608,6 +604,26 @@ void _validateElementGrounding(
       slideErrors.add(
         'Slide "${slide.key}" uses composition "${slide.composition}" but '
         'does not plan the required $requiredType element.',
+      );
+    }
+
+    for (final element in elements) {
+      final hasCompatibleComposition = switch (element.type) {
+        'image' =>
+          slide.composition == 'imageLeft' ||
+              slide.composition == 'imageRight' ||
+              slide.composition == 'imageFullBleed',
+        'webview' || 'dartpad' || 'custom' => slide.composition == element.type,
+        _ => true,
+      };
+      if (hasCompatibleComposition) continue;
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+      );
+      slideErrors.add(
+        'Slide "${slide.key}" plans an ${element.type} element but uses '
+        'incompatible composition "${slide.composition}".',
       );
     }
   }
@@ -621,7 +637,7 @@ void _validateElementGrounding(
       location: GenerationValidationLocation.planSlide,
       slideKey: slide.key,
     );
-    for (final element in slide.elements ?? const <DeckPlanElementType>[]) {
+    for (final element in slide.elements ?? const <DeckPlanElement>[]) {
       final source = element.source;
       if (source == null || source.trim().isEmpty) continue;
       if (knownGeneratedAssetKeys.contains(source)) continue;
@@ -680,7 +696,7 @@ bool _isAudienceHandoffElement(String type) =>
     type == 'webview' || type == 'dartpad' || type == 'custom';
 
 void _validateDesignRhythm(
-  DeckPlanType plan,
+  DeckPlan plan,
   GenerationValidationCollector errors,
 ) {
   _rejectLongRuns(

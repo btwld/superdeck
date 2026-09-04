@@ -5,16 +5,11 @@ import 'block_model.dart';
 import 'slide_model.dart';
 
 /// Canonical top-level JSON contract for compiled slide payloads.
-final slidesContractSchema = Ack.list(Slide.schema);
+final slidesContractSchema = Ack.list(SlideSchema.schema);
 
 /// Parses a compiled slide payload from a raw JSON array.
-List<Slide> parseSlidesContract(Object? value) {
-  final validated = slidesContractSchema.parse(value)! as List<Object?>;
-  return validated
-      .cast<Map<String, Object?>>()
-      .map((slide) => Slide.fromMap(Map<String, dynamic>.from(slide)))
-      .toList(growable: false);
-}
+List<Slide> parseSlidesContract(Object? value) =>
+    slidesContractSchema.parse(value)!;
 
 /// Flattened slide projection for structured-output AI generation.
 ///
@@ -52,14 +47,14 @@ ObjectSchema buildAiSlideSchema({
   };
   final commonBlockProperties = <String, AckSchema<Object, Object>>{
     'align': ContentAlignment.schema.optional().describe('Content alignment'),
-    'flex': positiveFlexSchema.optional().describe(
+    'flex': positiveFlexSchema().optional().describe(
       'Flex weight for proportional sizing. Higher values take more space.',
     ),
-    'margin': BlockInsets.schema.optional().describe(
+    'margin': BlockInsetsSchema.wireSchema.optional().describe(
       'Space inside the block frame but outside its decoration, as normalized '
       'physical edges',
     ),
-    'padding': BlockInsets.schema.optional().describe(
+    'padding': BlockInsetsSchema.wireSchema.optional().describe(
       'Space between the block decoration and its content, as normalized '
       'physical edges',
     ),
@@ -96,10 +91,10 @@ ObjectSchema buildAiSlideSchema({
     'align': ContentAlignment.schema.optional().describe(
       'Content alignment within the section',
     ),
-    'flex': positiveFlexSchema.optional().describe(
+    'flex': positiveFlexSchema().optional().describe(
       'Flex weight for proportional sizing. Higher values take more space.',
     ),
-    'spacing': nonNegativeSpacingSchema.optional().describe(
+    'spacing': nonNegativeSpacingSchema().optional().describe(
       'Gap in logical pixels between sibling blocks',
     ),
     'blocks': Ack.list(
@@ -121,7 +116,7 @@ ObjectSchema buildAiSlideSchema({
         ? generationOptionsSchema.describe(
             'Required presentation metadata for generated slides',
           )
-        : SlideOptions.schema.optional().describe('Slide options'),
+        : SlideOptionsSchema.wireSchema.optional().describe('Slide options'),
     'comments': Ack.list(
       Ack.string().describe('A speaker note or talking point for this slide'),
     ).optional().describe('Speaker notes'),

@@ -2,9 +2,10 @@
   "$id": "https://superdeck.dev/schema/superdeck.slides.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "items": {
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "comments": {
+        "default": [],
         "items": {
           "type": "string"
         },
@@ -14,129 +15,206 @@
         "type": "string"
       },
       "options": {
-        "additionalProperties": true,
-        "properties": {
-          "layout": {
-            "enum": [
-              "normal",
-              "fullscreen"
-            ],
-            "type": "string"
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "properties": {
+              "layout": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "normal",
+                      "fullscreen"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "style": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "template": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "title": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "type": "object",
+            "x-transformed": true
           },
-          "style": {
-            "type": "string"
-          },
-          "template": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
+          {
+            "type": "null"
           }
-        },
-        "type": "object"
+        ]
       },
       "sections": {
+        "default": [],
         "items": {
           "additionalProperties": false,
           "properties": {
             "align": {
-              "enum": [
-                "topLeft",
-                "topCenter",
-                "topRight",
-                "centerLeft",
-                "center",
-                "centerRight",
-                "bottomLeft",
-                "bottomCenter",
-                "bottomRight"
-              ],
-              "type": "string"
+              "anyOf": [
+                {
+                  "enum": [
+                    "topLeft",
+                    "topCenter",
+                    "topRight",
+                    "centerLeft",
+                    "center",
+                    "centerRight",
+                    "bottomLeft",
+                    "bottomCenter",
+                    "bottomRight"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "blocks": {
               "items": {
                 "anyOf": [
                   {
-                    "additionalProperties": true,
+                    "additionalProperties": false,
                     "properties": {
                       "align": {
-                        "enum": [
-                          "topLeft",
-                          "topCenter",
-                          "topRight",
-                          "centerLeft",
-                          "center",
-                          "centerRight",
-                          "bottomLeft",
-                          "bottomCenter",
-                          "bottomRight"
-                        ],
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
+                              "center",
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
+                            ],
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "content": {
                         "type": "string"
                       },
                       "flex": {
+                        "default": 1,
                         "exclusiveMinimum": 0,
                         "type": "integer"
                       },
                       "margin": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "bottom": {
-                            "minimum": 0,
-                            "type": "number"
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "bottom": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "left": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "right": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "top": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              }
+                            },
+                            "required": [
+                              "top",
+                              "right",
+                              "bottom",
+                              "left"
+                            ],
+                            "type": "object",
+                            "x-transformed": true
                           },
-                          "left": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "right": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "top": {
-                            "minimum": 0,
-                            "type": "number"
+                          {
+                            "type": "null"
                           }
-                        },
-                        "required": [
-                          "top",
-                          "right",
-                          "bottom",
-                          "left"
-                        ],
-                        "type": "object"
+                        ]
                       },
                       "padding": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "bottom": {
-                            "minimum": 0,
-                            "type": "number"
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "bottom": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "left": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "right": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "top": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              }
+                            },
+                            "required": [
+                              "top",
+                              "right",
+                              "bottom",
+                              "left"
+                            ],
+                            "type": "object",
+                            "x-transformed": true
                           },
-                          "left": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "right": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "top": {
-                            "minimum": 0,
-                            "type": "number"
+                          {
+                            "type": "null"
                           }
-                        },
-                        "required": [
-                          "top",
-                          "right",
-                          "bottom",
-                          "left"
-                        ],
-                        "type": "object"
+                        ]
                       },
                       "scrollable": {
+                        "default": false,
                         "type": "boolean"
                       },
                       "type": {
@@ -153,83 +231,116 @@
                     "additionalProperties": true,
                     "properties": {
                       "align": {
-                        "enum": [
-                          "topLeft",
-                          "topCenter",
-                          "topRight",
-                          "centerLeft",
-                          "center",
-                          "centerRight",
-                          "bottomLeft",
-                          "bottomCenter",
-                          "bottomRight"
-                        ],
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "enum": [
+                              "topLeft",
+                              "topCenter",
+                              "topRight",
+                              "centerLeft",
+                              "center",
+                              "centerRight",
+                              "bottomLeft",
+                              "bottomCenter",
+                              "bottomRight"
+                            ],
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "flex": {
+                        "default": 1,
                         "exclusiveMinimum": 0,
                         "type": "integer"
                       },
                       "margin": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "bottom": {
-                            "minimum": 0,
-                            "type": "number"
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "bottom": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "left": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "right": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "top": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              }
+                            },
+                            "required": [
+                              "top",
+                              "right",
+                              "bottom",
+                              "left"
+                            ],
+                            "type": "object",
+                            "x-transformed": true
                           },
-                          "left": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "right": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "top": {
-                            "minimum": 0,
-                            "type": "number"
+                          {
+                            "type": "null"
                           }
-                        },
-                        "required": [
-                          "top",
-                          "right",
-                          "bottom",
-                          "left"
-                        ],
-                        "type": "object"
+                        ]
                       },
                       "name": {
                         "type": "string"
                       },
                       "padding": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "bottom": {
-                            "minimum": 0,
-                            "type": "number"
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "bottom": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "left": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "right": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              },
+                              "top": {
+                                "minimum": 0,
+                                "type": "number",
+                                "x-transformed": true
+                              }
+                            },
+                            "required": [
+                              "top",
+                              "right",
+                              "bottom",
+                              "left"
+                            ],
+                            "type": "object",
+                            "x-transformed": true
                           },
-                          "left": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "right": {
-                            "minimum": 0,
-                            "type": "number"
-                          },
-                          "top": {
-                            "minimum": 0,
-                            "type": "number"
+                          {
+                            "type": "null"
                           }
-                        },
-                        "required": [
-                          "top",
-                          "right",
-                          "bottom",
-                          "left"
-                        ],
-                        "type": "object"
+                        ]
                       },
                       "scrollable": {
+                        "default": false,
                         "type": "boolean"
                       },
                       "type": {
@@ -243,24 +354,30 @@
                     ],
                     "type": "object"
                   }
-                ]
+                ],
+                "x-transformed": true
               },
               "type": "array"
             },
             "flex": {
+              "default": 1,
               "exclusiveMinimum": 0,
               "type": "integer"
             },
             "spacing": {
+              "default": 0.0,
               "minimum": 0,
-              "type": "number"
+              "type": "number",
+              "x-transformed": true
             },
             "type": {
               "const": "section",
+              "default": "section",
               "type": "string"
             }
           },
-          "type": "object"
+          "type": "object",
+          "x-transformed": true
         },
         "type": "array"
       }
@@ -268,7 +385,8 @@
     "required": [
       "key"
     ],
-    "type": "object"
+    "type": "object",
+    "x-transformed": true
   },
   "title": "Slides Contract",
   "type": "array"

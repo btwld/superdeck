@@ -176,7 +176,7 @@ Right
 
       final sections = sectionParser.parse(markdown);
 
-      expect(sections.single.toMap()['spacing'], 40);
+      expect(sections.single.toJson()['spacing'], 40);
     });
 
     group('Column Attributes', () {

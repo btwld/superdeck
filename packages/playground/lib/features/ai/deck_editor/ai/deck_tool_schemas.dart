@@ -4,9 +4,9 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 /// Strict slide contract exposed to the model. Runtime-only keys are forbidden.
 final keylessSlideSchema = Ack.object({
-  'options': slideOptionsSchema.optional(),
+  'options': SlideOptionsSchema.wireSchema.optional(),
   'comments': Ack.list(Ack.string()).optional(),
-  'sections': Ack.list(sectionBlockSchema),
+  'sections': Ack.list(SectionBlockSchema.wireSchema),
 }, additionalProperties: false);
 
 final getDeckArgumentsSchema = Ack.object({}, additionalProperties: false);
@@ -36,10 +36,9 @@ final readSlideArgumentsSchema = Ack.object({
 
 /// Validates and constructs a core slide with a private transient key.
 Slide parseKeylessSlide(Object? value) {
-  final validated = keylessSlideSchema.parse(value)!;
-  final map = Map<String, Object?>.of(validated);
+  final map = keylessSlideSchema.parse(value)!;
 
-  return Slide.fromMap({
+  return Slide.fromJson({
     'key': 'tool_${generateValueHash(jsonEncode(map))}',
     ...map,
   });
@@ -47,7 +46,7 @@ Slide parseKeylessSlide(Object? value) {
 
 /// Serializes [slide] without exposing its runtime key.
 Map<String, Object?> slideToKeylessMap(Slide slide) {
-  return Map<String, Object?>.from(slide.toMap())..remove('key');
+  return slide.toJson()..remove('key');
 }
 
 /// Returns the style-free, key-free deck summary used in tool results.

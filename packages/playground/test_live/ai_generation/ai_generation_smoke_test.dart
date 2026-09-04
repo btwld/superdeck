@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
+import 'package:googleai_dart/googleai_dart.dart' as modern_google_ai;
 import 'package:image/image.dart' as image;
 import 'package:path/path.dart' as p;
 import 'package:playground/core/data/data_sources/memory_asset_cache_store.dart';
@@ -204,16 +205,22 @@ void main() {
         expect(client.requests, hasLength(4));
         expect(
           client.requests.map(
-            (modelRequest) =>
-                modelRequest.generationConfig!.thinkingConfig!.thinkingBudget,
+            (modelRequest) => adaptGenerationRequest(
+              modelRequest,
+            ).request.generationConfig!.thinkingConfig!.thinkingLevel,
           ),
-          everyElement(0),
+          [
+            modern_google_ai.ThinkingLevel.low,
+            modern_google_ai.ThinkingLevel.minimal,
+            modern_google_ai.ThinkingLevel.minimal,
+            modern_google_ai.ThinkingLevel.minimal,
+          ],
         );
         expect(client.requests.map((modelRequest) => modelRequest.model), [
-          'models/gemini-3.5-flash',
-          'models/gemini-3.1-flash-lite',
-          'models/gemini-3.1-flash-lite',
-          'models/gemini-3.1-flash-lite',
+          'models/gemini-3.7-flash',
+          'models/gemini-3.5-flash-lite',
+          'models/gemini-3.5-flash-lite',
+          'models/gemini-3.5-flash-lite',
         ]);
 
         final sectionRequests = traces
@@ -253,7 +260,7 @@ void main() {
         final markdown = const SlideSerializer().serialize(result.slides);
         final deckJson = {
           'theme': serializeDeckThemeReference(result.plan!.theme),
-          'slides': result.slides.map((slide) => slide.toMap()).toList(),
+          'slides': result.slides.map((slide) => slide.toJson()).toList(),
         };
         await tester.runAsync(() async {
           const encoder = JsonEncoder.withIndent('  ');
@@ -384,7 +391,7 @@ void main() {
             ),
             themeReference: themeReference,
             slideCount: (deckJson['slides'] as List).length,
-            plan: DeckPlanType.parse(planJson),
+            plan: DeckPlan.parse(planJson),
             request: DeckGenerationRequest.fromMap(requestJson),
             rawSlides: [
               for (final rawSlide in deckJson['slides']! as List)
@@ -469,7 +476,7 @@ void main() {
         late Directory output;
         late String markdown;
         late ResolvedPresentationTheme theme;
-        late DeckPlanType plan;
+        late DeckPlan plan;
         late DeckGenerationRequest request;
         late List<Slide> slides;
         List<GeneratedImageAsset> generatedImages = const [];
@@ -553,7 +560,7 @@ void main() {
             }
             final deckJson = {
               'theme': serializeDeckThemeReference(result.plan!.theme),
-              'slides': result.slides.map((slide) => slide.toMap()).toList(),
+              'slides': result.slides.map((slide) => slide.toJson()).toList(),
             };
             await File(p.join(output.path, 'deck.json')).writeAsString(
               const JsonEncoder.withIndent('  ').convert(deckJson),
@@ -853,7 +860,7 @@ Future<Directory> _createRunDirectory(String fixture) async {
 Future<void> _writeTraceArtifacts(
   Directory output,
   List<GenerationTraceEvent> traces, {
-  DeckPlanType? plan,
+  DeckPlan? plan,
 }) async {
   if (plan != null) {
     await File(
@@ -1527,18 +1534,6 @@ Map<String, Object?> _checkpointPlanDraft() {
     'titleLeft',
     'title',
   ];
-  const treatments = [
-    'hero',
-    'content',
-    'data',
-    'data',
-    'content',
-    'data',
-    'quote',
-    'content',
-    'section',
-    'closing',
-  ];
   const roles = [
     'opening',
     'problem',
@@ -1586,7 +1581,6 @@ Map<String, Object?> _checkpointPlanDraft() {
         {
           'key': slideKeys[index],
           'title': titles[index],
-          'purpose': 'Advance the evidence-led decision story.',
           'sectionKey': sectionKeys[index],
           'assertion': index == 2
               ? 'Teams spent 42% less weekly synthesis time.'
@@ -1598,11 +1592,7 @@ Map<String, Object?> _checkpointPlanDraft() {
                   'Practical implication for ${slideKeys[index]}.',
                 ],
           'narrativeRole': roles[index],
-          'contentBrief': 'Keep the slide concise and decision-oriented.',
-          'continuity': 'Connect this idea to the surrounding decision flow.',
           'composition': compositions[index],
-          'treatment': treatments[index],
-          'density': index % 3 == 0 ? 'spacious' : 'balanced',
           'elements': <Object?>[],
         },
     ],

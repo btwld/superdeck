@@ -8,14 +8,16 @@ import 'generation_element_catalog.dart';
 import 'generation_validation_issue.dart';
 import 'source_grounding.dart';
 
-/// Applies renderer-safe mechanical normalization without rewriting content.
+/// Applies renderer-safe mechanical normalization from the approved plan.
 ///
 /// Models occasionally introduce H1 while repairing another heading rule. The
 /// planned treatment already determines whether H1 is legal, so demoting that
 /// marker to H2 is deterministic and avoids spending another model request.
+/// Likewise, an overlong title H1 falls back to the approved concise title so
+/// the hero treatment cannot clip while rendering.
 Map<String, dynamic> normalizeGeneratedSlideForPlan({
   required Map<String, dynamic> rawSlide,
-  required DeckPlanSlideType planSlide,
+  required DeckPlanSlide planSlide,
 }) {
   final normalized = Map<String, dynamic>.of(rawSlide);
   final rawOptions = rawSlide['options'];
@@ -54,7 +56,7 @@ Map<String, dynamic> normalizeGeneratedSlideForPlan({
 
 Map<String, dynamic> _normalizeImageSplitFlex(
   Map<String, dynamic> slide,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
 ) {
   if (planSlide.composition != 'imageLeft' &&
       planSlide.composition != 'imageRight') {
@@ -81,26 +83,40 @@ Map<String, dynamic> _normalizeImageSplitFlex(
 
 Map<String, dynamic> _normalizeBlockForPlan(
   Map<String, dynamic> block,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
 ) {
   var normalized = _planPermitsH1(planSlide)
       ? block
       : _normalizeBlockHeading(block);
   if (planSlide.composition == 'title') {
-    normalized = _flattenTitleListMarkers(normalized);
+    normalized = _normalizeTitleBlock(normalized, planSlide);
   }
 
   return normalized;
 }
 
-Map<String, dynamic> _flattenTitleListMarkers(Map<String, dynamic> block) {
+Map<String, dynamic> _normalizeTitleBlock(
+  Map<String, dynamic> block,
+  DeckPlanSlide planSlide,
+) {
   if (block['type'] != ContentBlock.key || block['content'] is! String) {
     return block;
   }
-  block['content'] = (block['content'] as String).replaceAllMapped(
+  var content = (block['content'] as String).replaceAllMapped(
     RegExp(r'^(\s*)(?:[-+*]|\d+[.)])\s+', multiLine: true),
     (match) => match.group(1)!,
   );
+  final plannedTitle = planSlide.title.trim();
+  final plannedTitleWords = _displayHeadingWordCount(plannedTitle);
+  if (plannedTitleWords > 0 && plannedTitleWords <= 8) {
+    content = content.replaceAllMapped(
+      RegExp(r'^([ \t]*)#[ \t]+(.+?)[ \t]*$', multiLine: true),
+      (match) => _displayHeadingWordCount(match.group(2)!) > 8
+          ? '${match.group(1)!}# $plannedTitle'
+          : match.group(0)!,
+    );
+  }
+  block['content'] = content;
   return block;
 }
 
@@ -128,7 +144,7 @@ Map<String, dynamic> removeInvalidOptionalSpeakerComments({
 
 Map<String, dynamic> _normalizeImplicitVerticalAlignment(
   Map<String, dynamic> slide,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
 ) {
   const supportedCompositions = {
     'content',
@@ -207,7 +223,7 @@ List<String> validateGeneratedSlide({
   required String expectedKey,
   required Map<String, dynamic> rawSlide,
   required GenerationElementCatalog elementCatalog,
-  DeckPlanSlideType? planSlide,
+  DeckPlanSlide? planSlide,
   DeckGenerationRequest? request,
 }) => validateGeneratedSlideIssues(
   expectedKey: expectedKey,
@@ -222,7 +238,7 @@ List<GenerationValidationIssue> validateGeneratedSlideIssues({
   required String expectedKey,
   required Map<String, dynamic> rawSlide,
   required GenerationElementCatalog elementCatalog,
-  DeckPlanSlideType? planSlide,
+  DeckPlanSlide? planSlide,
   DeckGenerationRequest? request,
 }) {
   final issues = GenerationValidationCollector(
@@ -316,7 +332,7 @@ List<String> _validateRawDraftStructure(Map<String, dynamic> rawSlide) {
 
 List<GenerationValidationIssue> _validatePlanFulfillment(
   Slide slide,
-  DeckPlanSlideType planSlide,
+  DeckPlanSlide planSlide,
   DeckGenerationRequest? request,
 ) {
   final errors = GenerationValidationCollector(
@@ -366,7 +382,7 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
   }
 
   final expectedWidgetCounts = <String, int>{};
-  for (final element in planSlide.elements ?? const <DeckPlanElementType>[]) {
+  for (final element in planSlide.elements ?? const <DeckPlanElement>[]) {
     final name = element.type == 'custom' ? element.widgetName : element.type;
     if (name == null || name.trim().isEmpty) continue;
     expectedWidgetCounts.update(name, (count) => count + 1, ifAbsent: () => 1);
@@ -617,12 +633,9 @@ List<GenerationValidationIssue> _validatePlanFulfillment(
   return errors.issues.uniqueIssues;
 }
 
-List<String> _validateHandoffPurpose(
-  String markdown,
-  DeckPlanSlideType planSlide,
-) {
+List<String> _validateHandoffPurpose(String markdown, DeckPlanSlide planSlide) {
   final errors = <String>[];
-  for (final element in planSlide.elements ?? const <DeckPlanElementType>[]) {
+  for (final element in planSlide.elements ?? const <DeckPlanElement>[]) {
     if (!_requiresVisibleHandoffPurpose(element.type)) continue;
     final missingTerms = findMissingGroundedPurposeTerms(
       purpose: element.purpose,
@@ -720,7 +733,7 @@ List<String> _validateNumericClaimGrounding(
 
 List<String> _validateVisibleSourceGrounding(
   Iterable<String> values,
-  DeckPlanSlideType planSlide, {
+  DeckPlanSlide planSlide, {
   required String label,
 }) {
   final allowedDomains = extractReferencedDomains([
@@ -730,7 +743,7 @@ List<String> _validateVisibleSourceGrounding(
     ...planSlide.contentUnits,
     planSlide.contentBrief,
     planSlide.continuity,
-    for (final element in planSlide.elements ?? const <DeckPlanElementType>[])
+    for (final element in planSlide.elements ?? const <DeckPlanElement>[])
       ?element.source,
   ]);
   final ungrounded = extractReferencedDomains([
@@ -756,10 +769,7 @@ List<String> _validateDisplayHeadings(
       if (match == null) continue;
       final level = match.group(1)!.length;
       final heading = match.group(2)!;
-      final wordCount = RegExp(
-        r"[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*",
-        unicode: true,
-      ).allMatches(heading).length;
+      final wordCount = _displayHeadingWordCount(heading);
       if (wordCount > 8) {
         errors.add(
           'Display heading "$heading" has $wordCount words; use at most 8.',
@@ -776,7 +786,12 @@ List<String> _validateDisplayHeadings(
   return errors;
 }
 
-bool _planPermitsH1(DeckPlanSlideType planSlide) =>
+int _displayHeadingWordCount(String value) => RegExp(
+  r"[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*",
+  unicode: true,
+).allMatches(value).length;
+
+bool _planPermitsH1(DeckPlanSlide planSlide) =>
     _permitsH1(planSlide.composition);
 
 bool _permitsH1(String composition) =>

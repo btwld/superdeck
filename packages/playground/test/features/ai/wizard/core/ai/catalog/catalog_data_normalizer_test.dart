@@ -21,17 +21,21 @@ void main() {
     });
 
     test('recurses into nested maps', () {
-      final result = normalizeCatalogData({
-        'outer': {'literalNumber': 3},
-      }) as Map;
+      final result =
+          normalizeCatalogData({
+                'outer': {'literalNumber': 3},
+              })
+              as Map;
       expect((result['outer'] as Map)['literalNumber'], 3.0);
     });
 
     test('recurses into lists', () {
-      final result = normalizeCatalogData([
-        {'literalNumber': 1},
-        {'literalNumber': 2},
-      ]) as List;
+      final result =
+          normalizeCatalogData([
+                {'literalNumber': 1},
+                {'literalNumber': 2},
+              ])
+              as List;
       expect((result[0] as Map)['literalNumber'], 1.0);
       expect((result[1] as Map)['literalNumber'], 2.0);
     });

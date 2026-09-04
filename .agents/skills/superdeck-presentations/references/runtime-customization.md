@@ -174,7 +174,10 @@ class MetricCard extends StatelessWidget {
 
 ### Ack-Generated Args Wrappers
 
-Ack can also generate typed extension wrappers over a validated `Map<String, Object?>`. This helps when you want typed getters without maintaining a manual args class. It does not change SuperDeck's widget factory contract; the factory still receives `Map<String, Object?> args`.
+Ack can also generate immutable typed models from a top-level schema. This
+avoids maintaining a manual args class while preserving SuperDeck's widget
+factory contract: the factory still receives `Map<String, Object?> args` and
+the generated model validates it at the boundary.
 
 Use this pattern only when the target app already has Ack codegen configured, or when you are intentionally adding it:
 
@@ -191,9 +194,10 @@ import 'package:ack_annotations/ack_annotations.dart';
 import 'package:flutter/widgets.dart';
 import 'package:superdeck/superdeck.dart';
 
-part 'metric_card.g.dart';
+part 'metric_card.ack.dart';
+part 'metric_card.ack.g.dart';
 
-@AckType(name: 'MetricCardArgs')
+@AckInfer()
 final metricCardArgsSchema = Ack.object({
   'label': Ack.string().notEmpty(),
   'value': Ack.string().notEmpty(),
@@ -201,10 +205,10 @@ final metricCardArgsSchema = Ack.object({
 });
 
 class MetricCard extends StatelessWidget {
-  final MetricCardArgsType data;
+  final MetricCardArgs data;
 
   MetricCard(Map<String, Object?> args, {super.key})
-    : data = MetricCardArgsType.parse(args);
+    : data = MetricCardArgs.parse(args);
 
   @override
   Widget build(BuildContext context) {
@@ -221,8 +225,13 @@ dart run build_runner build --delete-conflicting-outputs
 
 Ack generation constraints that matter for SuperDeck widgets:
 
-- Annotate top-level schema variables or getters with `@AckType()`.
-- Generated extension types implement `Map<String, Object?>` and expose `parse`, `safeParse`, and typed getters.
+- Annotate top-level schema variables or getters with `@AckInfer()` and include
+  both generated part files.
+- Let Ack derive the model name when the schema declaration already expresses
+  it (`metricCardArgsSchema` generates `MetricCardArgs`). Use `name:` only when
+  the desired public type cannot be derived from the declaration.
+- Generated immutable models expose `parse`, `safeParse`, `fromJson`, `toJson`,
+  and typed fields.
 - Nested object fields should reference named top-level schemas when you need typed nested getters.
 - Do not expect `Ack.any()`/`Ack.anyOf()` or inline anonymous object branches to generate useful typed wrappers.
 - Keep `align`, `flex`, `margin`, `padding`, `scrollable`, and `name` out of

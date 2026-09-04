@@ -148,7 +148,7 @@ void main() {
   });
 
   test('rejects duplicate or empty slide keys after schema parsing', () {
-    final plan = DeckPlanType.parse({
+    final plan = DeckPlan.parse({
       'topic': 'Duplicate keys',
       'story': 'A short story.',
       'theme': _validTheme,
@@ -178,7 +178,7 @@ void main() {
   });
 
   test('rejects a plan that does not match the requested slide count', () {
-    final plan = DeckPlanType.parse({
+    final plan = DeckPlan.parse({
       'topic': 'Count contract',
       'story': 'Every requested slide must be planned.',
       'theme': _validTheme,
@@ -201,7 +201,7 @@ void main() {
   });
 
   test('validates a hierarchical ten-slide blueprint and design rhythm', () {
-    final plan = DeckPlanType.parse(_hierarchicalPlan());
+    final plan = DeckPlan.parse(_hierarchicalPlan());
 
     expect(plan.sections.map((section) => section.key), [
       'tension',
@@ -220,7 +220,7 @@ void main() {
 
   test('validates deterministic fifteen- and twenty-slide blueprints', () {
     for (final count in [15, 20]) {
-      final plan = DeckPlanType.parse(_scaledHierarchicalPlan(count));
+      final plan = DeckPlan.parse(_scaledHierarchicalPlan(count));
 
       expect(
         validateDeckPlan(plan, expectedSlideCount: count),
@@ -248,7 +248,7 @@ void main() {
       slides[index]['treatment'] = index < 4 ? 'content' : 'data';
     }
 
-    final errors = validateDeckPlan(DeckPlanType.parse(data));
+    final errors = validateDeckPlan(DeckPlan.parse(data));
 
     expect(errors.where((error) => error.contains('treatment')), isEmpty);
   });
@@ -261,7 +261,7 @@ void main() {
       slide['treatment'] = 'content';
     }
 
-    final issues = validateDeckPlanIssues(DeckPlanType.parse(data));
+    final issues = validateDeckPlanIssues(DeckPlan.parse(data));
     final rhythmIssues = issues
         .where((issue) => issue.code == GenerationValidationCode.designRhythm)
         .toList();
@@ -290,7 +290,7 @@ void main() {
     theme['version'] = 999;
     final finalSectionKeys = sections.last['slideKeys']! as List<String>;
     finalSectionKeys.removeLast();
-    final plan = DeckPlanType.parse(data);
+    final plan = DeckPlan.parse(data);
 
     final errors = validateDeckPlan(plan);
 
@@ -304,7 +304,7 @@ void main() {
   });
 
   test('rejects changes to exact requested theme and font selections', () {
-    final plan = DeckPlanType.parse(_hierarchicalPlan());
+    final plan = DeckPlan.parse(_hierarchicalPlan());
 
     final errors = validateDeckPlan(
       plan,
@@ -330,13 +330,36 @@ void main() {
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides[1]['composition'] = 'imageRight';
     slides[1]['elements'] = <Object?>[];
-    final plan = DeckPlanType.parse(data);
+    final plan = DeckPlan.parse(data);
 
     expect(
       validateDeckPlan(plan),
       contains(
         'Slide "cost" uses composition "imageRight" but does not plan '
         'the required image element.',
+      ),
+    );
+  });
+
+  test('rejects a planned element without a matching composition', () {
+    final data = _hierarchicalPlan();
+    final slides = data['slides']! as List<Map<String, Object?>>;
+    slides[1]
+      ..['composition'] = 'content'
+      ..['elements'] = [
+        {
+          'type': 'image',
+          'purpose': 'Make the operating tension tangible',
+          'source': 'assets/operating-tension.png',
+        },
+      ];
+    final plan = DeckPlan.parse(data);
+
+    expect(
+      validateDeckPlan(plan),
+      contains(
+        'Slide "cost" plans an image element but uses incompatible '
+        'composition "content".',
       ),
     );
   });
@@ -355,7 +378,7 @@ void main() {
               'an operations team tracing one critical signal through noise',
         },
       ];
-    final plan = DeckPlanType.parse(data);
+    final plan = DeckPlan.parse(data);
 
     final errors = validateDeckPlan(
       plan,
@@ -394,7 +417,7 @@ void main() {
           },
         ];
     }
-    final plan = DeckPlanType.parse(data);
+    final plan = DeckPlan.parse(data);
 
     final withoutStyle = validateDeckPlan(
       plan,
@@ -429,7 +452,7 @@ void main() {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides.last['contentUnits'] = ['Continue at signal-canvas.com/launch'];
-    final plan = DeckPlanType.parse(data);
+    final plan = DeckPlan.parse(data);
 
     final rejected = validateDeckPlan(
       plan,
@@ -471,7 +494,7 @@ void main() {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides.last['contentUnits'] = ['100% retention after 90 days'];
-    final unqualified = DeckPlanType.parse(data);
+    final unqualified = DeckPlan.parse(data);
 
     final rejected = validateDeckPlan(
       unqualified,
@@ -483,7 +506,7 @@ void main() {
     slides.last['contentUnits'] = [
       'Projected scenario: 100% retention after an estimated 90 days',
     ];
-    final qualified = DeckPlanType.parse(data);
+    final qualified = DeckPlan.parse(data);
     final allowed = validateDeckPlan(
       qualified,
       request: const DeckGenerationRequest(
@@ -529,7 +552,7 @@ void main() {
       'Planned target: 50% adoption after the proposed 90-day pilot',
     ];
     final plannedTarget = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent:
             'Describe a future pilot without claiming observed results.',
@@ -543,7 +566,7 @@ void main() {
 
     slides.last['contentUnits'] = ['6 design partners'];
     final normalizedNumberWords = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe the six design partners.',
         slideCount: 10,
@@ -560,7 +583,7 @@ void main() {
       '3 onboarding steps in Section 3 with no change to source systems',
     ];
     final structuralCounts = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe onboarding with no change to source systems.',
         slideCount: 10,
@@ -574,7 +597,7 @@ void main() {
     );
     slides.last['contentUnits'] = ['0% disruption to source systems'];
     final inventedZero = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe onboarding with no change to source systems.',
         slideCount: 10,
@@ -591,7 +614,7 @@ void main() {
     );
     slides.last['contentUnits'] = ['A zero-friction onboarding workflow'];
     final qualitativeZero = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe a smooth onboarding workflow.',
         slideCount: 10,
@@ -603,7 +626,7 @@ void main() {
     );
     slides.last['contentUnits'] = ['Planned direction for next quarter'];
     final calendarQuarter = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe a roadmap direction.',
         slideCount: 10,
@@ -615,7 +638,7 @@ void main() {
     );
     slides.last['contentUnits'] = ['A quarter of teams changed direction'];
     final fractionalQuarter = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe a roadmap direction.',
         slideCount: 10,
@@ -629,7 +652,7 @@ void main() {
     );
     slides.last['contentUnits'] = ['Setup completes in one afternoon'];
     final structuralSourceDoesNotGroundDuration = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Bring the evidence into one workspace.',
         slideCount: 10,
@@ -639,7 +662,7 @@ void main() {
       'Illustrative scenario: initial insight in one afternoon',
     ];
     final qualifiedDuration = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Bring the evidence into one workspace.',
         slideCount: 10,
@@ -660,7 +683,7 @@ void main() {
 
     slides.last['contentUnits'] = ['1 beta outcome'];
     final structuralSourceDoesNotGroundMetric = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Turn fragmented evidence into one workspace.',
         slideCount: 10,
@@ -683,7 +706,7 @@ void main() {
       ..['continuity'] = 'Transition after the 13 internal checkpoints.';
 
     final issues = validateDeckPlanIssues(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Close with a practical decision.',
         slideCount: 10,
@@ -705,7 +728,7 @@ void main() {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides.last['contentUnits'] = ['Start your free trial today'];
-    final plan = DeckPlanType.parse(data);
+    final plan = DeckPlan.parse(data);
 
     expect(
       validateDeckPlan(
@@ -723,7 +746,7 @@ void main() {
     slides.last['contentUnits'] = ['SOC2 Compliant governance'];
     expect(
       validateDeckPlan(
-        DeckPlanType.parse(data),
+        DeckPlan.parse(data),
         request: const DeckGenerationRequest(
           userIntent: 'Describe the governance model.',
           slideCount: 10,
@@ -739,7 +762,7 @@ void main() {
     slides.last['contentUnits'] = ['Prioritize evidence before commitments'];
 
     final issues = validateDeckPlanIssues(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Close with an evidence-led operating decision.',
         slideCount: 10,
@@ -772,7 +795,7 @@ void main() {
     ];
 
     final errors = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe a fictional product beta and adoption options.',
         slideCount: 10,
@@ -797,7 +820,7 @@ void main() {
 
     slides.last['contentUnits'] = ['Omitting real-time claims from this plan'];
     final negated = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe a fictional product beta.',
         slideCount: 10,
@@ -809,7 +832,7 @@ void main() {
       'Illustrative option: SSO, data residency, and automated workflows',
     ];
     final explicitlyHypothetical = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe possible enterprise governance directions.',
         slideCount: 10,
@@ -839,7 +862,7 @@ void main() {
     ];
 
     final errors = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent:
             'Present beta observations and discuss the evidence inbox without '
@@ -893,7 +916,7 @@ void main() {
     sections[1]['purpose'] = 'Introduce observations from six design partners.';
 
     final errors = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent:
             'Explain fragmented evidence and observations from six design '
@@ -917,7 +940,7 @@ void main() {
     ];
 
     final rejected = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent:
             'Cover the evidence inbox, API extensibility, onboarding, pricing '
@@ -947,7 +970,7 @@ void main() {
       'Proposed tier — Pro: Advanced linked insights',
     ];
     final qualified = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent:
             'Cover the evidence inbox, API extensibility, onboarding, pricing '
@@ -975,7 +998,7 @@ void main() {
       ];
 
       final errors = validateDeckPlan(
-        DeckPlanType.parse(data),
+        DeckPlan.parse(data),
         request: const DeckGenerationRequest(
           userIntent:
               'Cover pricing shape, core product capabilities, and system '
@@ -1003,7 +1026,7 @@ void main() {
         'The workflow was validated during the fictional beta.';
 
     final issues = validateDeckPlanIssues(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Describe a fictional beta using only supplied facts.',
         slideCount: 10,
@@ -1034,14 +1057,14 @@ void main() {
     slides.last['contentUnits'] = ['38+ design partners'];
 
     final exactOnly = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'The beta included 38 design partners.',
         slideCount: 10,
       ),
     );
     final explicitlyOpenEnded = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'The beta included 38+ design partners.',
         slideCount: 10,
@@ -1067,14 +1090,14 @@ void main() {
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides.last['contentUnits'] = ['Reclaiming 42% of the work week'];
     final changedMeaning = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Teams spent 42% less weekly synthesis time.',
         slideCount: 10,
       ),
     );
     final changedMeaningIssues = validateDeckPlanIssues(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Teams spent 42% less weekly synthesis time.',
         slideCount: 10,
@@ -1094,7 +1117,7 @@ void main() {
     expect(changedMeaningIssues.where((issue) => issue.isBlocking), isEmpty);
     slides.last['contentUnits'] = ['42% less weekly synthesis time'];
     final preservedMeaning = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Teams spent 42% less weekly synthesis time.',
         slideCount: 10,
@@ -1103,7 +1126,7 @@ void main() {
     slides.last['title'] = '42% productivity gain';
     slides.last['contentUnits'] = ['Less weekly synthesis time'];
     final standaloneMetric = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent: 'Teams spent 42% less weekly synthesis time.',
         slideCount: 10,
@@ -1114,7 +1137,7 @@ void main() {
       'No change to source systems',
     ];
     final normalizedWording = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent:
             'The beta delivered 19% faster experiment decisions and no '
@@ -1128,7 +1151,7 @@ void main() {
       'Six enterprise beta cohort',
     ];
     final changedCohortMeaning = validateDeckPlan(
-      DeckPlanType.parse(data),
+      DeckPlan.parse(data),
       request: const DeckGenerationRequest(
         userIntent:
             'Create one evidence workspace validated by six design partners.',
@@ -1173,7 +1196,7 @@ void main() {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;
     slides[6]['treatment'] = 'hero';
-    final plan = DeckPlanType.parse(data);
+    final plan = DeckPlan.parse(data);
     final issues = validateDeckPlanIssues(plan);
 
     expect(
@@ -1197,7 +1220,7 @@ void main() {
   });
 
   test('requires metric plans to name the grounded numeric fact', () {
-    final plan = DeckPlanType.parse(_hierarchicalPlan());
+    final plan = DeckPlan.parse(_hierarchicalPlan());
 
     expect(
       validateDeckPlan(

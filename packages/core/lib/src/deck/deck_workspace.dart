@@ -1,15 +1,34 @@
 import 'dart:io';
 
 import 'package:ack/ack.dart';
-import 'package:dart_mappable/dart_mappable.dart';
+import 'package:ack_annotations/ack_annotations.dart';
 import 'package:path/path.dart' as p;
 
-part 'deck_workspace.mapper.dart';
+part 'deck_workspace.ack.dart';
+part 'deck_workspace.ack.g.dart';
 
-@MappableClass()
-final class DeckWorkspace with DeckWorkspaceMappable {
+StringSchema _safeWorkspacePathSchema() => Ack.string().refine(
+  _isRelativeWithoutTraversal,
+  message:
+      'must be a relative path without ".." traversal segments'
+      ' (absolute paths and parent-directory traversal are not allowed)',
+);
+
+/// Returns whether a relative path contains no parent-directory segments.
+/// Filenames containing `..` (e.g. `my..file.md`) remain valid.
+bool _isRelativeWithoutTraversal(String value) {
+  if (p.isAbsolute(value)) return false;
+  return !p.split(value).contains('..');
+}
+
+@AckModel()
+final class DeckWorkspace with _$DeckWorkspaceAck {
   final String projectDir;
+
+  @AckField(schema: _safeWorkspacePathSchema)
   final String slidesPath;
+
+  @AckField(schema: _safeWorkspacePathSchema)
   final String outputDir;
 
   DeckWorkspace({String? projectDir, String? slidesPath, String? outputDir})
@@ -53,32 +72,10 @@ final class DeckWorkspace with DeckWorkspaceMappable {
 
   File get pubspecFile => File(p.join(projectDir, 'pubspec.yaml'));
 
-  static final fromMap = DeckWorkspaceMapper.fromMap;
+  static final fromJson = DeckWorkspaceSchema.fromJson;
 
   static DeckWorkspace parse(Map<String, Object?> map) =>
-      fromMap(Map<String, dynamic>.from(schema.parse(map)!));
-
-  static final _safePath = Ack.string().refine(
-    _isRelativeWithoutTraversal,
-    message:
-        'must be a relative path without ".." traversal segments'
-        ' (absolute paths and parent-directory traversal are not allowed)',
-  );
-
-  static final schema = Ack.object({
-    'projectDir': Ack.string().optional(),
-    'slidesPath': _safePath.optional(),
-    'outputDir': _safePath.optional(),
-  }).passthrough();
-
-  /// Returns `true` when [value] is a relative path that does not contain
-  /// `..` as a path segment. Filenames that happen to contain `..` (e.g.
-  /// `my..file.md`) are allowed because `p.split` only yields `..` for an
-  /// actual traversal segment.
-  static bool _isRelativeWithoutTraversal(String value) {
-    if (p.isAbsolute(value)) return false;
-    return !p.split(value).contains('..');
-  }
+      DeckWorkspaceSchema.parse(map);
 
   static String _normalizeBundledPath(String path) {
     final normalized = p.posix.normalize(path.replaceAll('\\', '/'));

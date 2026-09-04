@@ -5,7 +5,6 @@ analyzer:
   plugins:
     - custom_lint
   exclude:
-    - '**.mapper.dart'
     - '**/generated_plugin_registrant.dart'
     - '**/*.g.dart'
 linter:

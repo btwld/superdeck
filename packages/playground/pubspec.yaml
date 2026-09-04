@@ -41,9 +41,9 @@ dependencies:
   gpt_markdown: ^1.1.4
   dotprompt_dart: ^0.5.0
   path: ^1.9.0
-  ack: 1.0.1
-  ack_annotations: 1.0.1
-  ack_json_schema_builder: 1.0.1
+  ack: ^1.2.0
+  ack_annotations: ^1.2.0
+  ack_json_schema_builder: ^1.2.0
   dartantic_ai: ^3.1.0
   json_schema_builder: ^0.1.5
   # Filesystem persistence for the playground editor (desktop-only).
@@ -57,7 +57,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   dart_code_metrics_presets: ^2.19.0
   build_runner: ^2.5.4
-  ack_generator: 1.0.1
+  ack_generator: ^1.2.0
   # Test-only: mock path_provider so the native deck file store can be exercised
   # against a temp directory.
   path_provider_platform_interface: ^2.1.2

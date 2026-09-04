@@ -11,8 +11,8 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ack: 1.0.1
-  ack_annotations: 1.0.1
+  ack: ^1.2.0
+  ack_annotations: ^1.2.0
   google_fonts: ^8.1.0
   mesh: ^0.5.0
   mix: ^2.2.0-beta.0
@@ -28,7 +28,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.5.4
-  ack_generator: 1.0.1
+  ack_generator: ^1.2.0
   superdeck_builder: ^1.0.0
   superdeck_cli: ^1.0.0
   superdeck_pdf: ^1.0.0

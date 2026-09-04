@@ -1,9 +1,10 @@
 import 'package:ack/ack.dart';
 import 'package:ack_annotations/ack_annotations.dart';
 
-part 'genui_action_schema.g.dart';
+part 'genui_action_schema.ack.dart';
+part 'genui_action_schema.ack.g.dart';
 
-@AckType(name: 'ActionContextValue')
+@AckInfer(name: 'ActionContextValue')
 final _actionContextValueSchema = Ack.object({
   'path': Ack.string().optional().describe('Data model path binding'),
   'literalString': Ack.string().optional().describe('Literal string value'),
@@ -11,7 +12,7 @@ final _actionContextValueSchema = Ack.object({
   'literalBoolean': Ack.boolean().optional().describe('Literal boolean value'),
 }).describe('Context value - use path or one of the literal types');
 
-@AckType(name: 'ActionContextEntry')
+@AckInfer(name: 'ActionContextEntry')
 final _actionContextEntrySchema = Ack.object({
   'key': Ack.string().describe('Context key'),
   'value': _actionContextValueSchema,
@@ -20,7 +21,7 @@ final _actionContextEntrySchema = Ack.object({
 /// Shared GenUI action schema for catalog components.
 ///
 /// This schema defines the structure for user actions dispatched by GenUI
-/// components. It's defined with @AckType() for code generation support.
+/// components. It's defined with @AckInfer() for code generation support.
 ///
 /// Usage:
 /// ```dart
@@ -28,10 +29,10 @@ final _actionContextEntrySchema = Ack.object({
 /// 'action': actionSchema,
 ///
 /// // Parse action data:
-/// final action = ActionType.parse(data.action);
+/// final action = GenUiAction.parse(data.action);
 /// final name = action.name;
 /// ```
-@AckType(name: 'Action')
+@AckInfer(name: 'GenUiAction')
 final actionSchema = Ack.object({
   'name': Ack.string().describe('Action name to dispatch'),
   'context': Ack.list(

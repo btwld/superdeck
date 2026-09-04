@@ -15,32 +15,66 @@ import 'catalog_question_step.dart';
 import 'component_schema.dart';
 import 'typed_catalog_item.dart';
 
-part 'ask_user_slider.g.dart';
+part 'ask_user_slider.ack.dart';
+part 'ask_user_slider.ack.g.dart';
 
 // ─────────────────────────────────── SCHEMA ───────────────────────────────────
 
 /// Schema for AskUserSlider component.
 ///
 /// Displays a question with a focused numeric selector.
-@AckType(name: 'AskUserSlider')
-final _askUserSliderSchema = Ack.object({
-  'question': Ack.string().describe('The question to display to the user'),
-  'description': Ack.string().optional().describe(
-    'Additional context or instructions',
-  ),
-  'minValue': Ack.integer().describe('Minimum value'),
-  'maxValue': Ack.integer().describe('Maximum value'),
-  'defaultValue': Ack.integer().describe('Default/initial value'),
-  'unit': Ack.string().optional().describe(
-    'Unit label e.g. "slides", "minutes"',
-  ),
-  'action': actionSchema,
-}).describe('A question with a counter and quick choices between min and max.');
+@AckInfer(name: 'AskUserSlider')
+final _askUserSliderSchema =
+    Ack.object({
+          'question': Ack.string().describe(
+            'The question to display to the user',
+          ),
+          'description': Ack.string().optional().describe(
+            'Additional context or instructions',
+          ),
+          'minValue': Ack.integer().describe('Minimum value'),
+          'maxValue': Ack.integer().describe('Maximum value'),
+          'defaultValue': Ack.integer().describe('Default/initial value'),
+          'unit': Ack.string().optional().describe(
+            'Unit label e.g. "slides", "minutes"',
+          ),
+          'action': actionSchema,
+        })
+        .withConstraint(const _SliderRangeConstraint())
+        .describe(
+          'A question with a counter and quick choices between min and max.',
+        );
+
+final class _SliderRangeConstraint extends Constraint<Map<String, Object?>>
+    with Validator<Map<String, Object?>> {
+  const _SliderRangeConstraint()
+    : super(
+        constraintKey: 'slider_range_relationships',
+        description: 'Slider bounds and default value must form a valid range.',
+      );
+
+  @override
+  bool isValid(Map<String, Object?> value) {
+    final minValue = value['minValue']! as int;
+    final maxValue = value['maxValue']! as int;
+    final defaultValue = value['defaultValue']! as int;
+
+    return minValue <= maxValue &&
+        defaultValue >= minValue &&
+        defaultValue <= maxValue;
+  }
+
+  @override
+  String buildMessage(Map<String, Object?> value) {
+    return 'minValue must not exceed maxValue, and defaultValue must be '
+        'between them inclusively.';
+  }
+}
 
 // ─────────────────────────────────── CATALOG ITEM ───────────────────────────────────
 
 /// AskUserSlider catalog component for numeric input questions.
-final askUserSlider = typedCatalogItem<AskUserSliderType>(
+final askUserSlider = typedCatalogItem<AskUserSlider>(
   name: 'AskUserSlider',
   dataSchema: componentSchema(_askUserSliderSchema.toJsonSchemaBuilder()),
   exampleData: [
@@ -59,7 +93,7 @@ final askUserSlider = typedCatalogItem<AskUserSliderType>(
       ]
     ''',
   ],
-  parse: AskUserSliderType.parse,
+  parse: AskUserSlider.parse,
   widgetBuilder: (context, data) =>
       _AskUserSliderContent(data: data, itemContext: context),
 );
@@ -195,7 +229,7 @@ class _DeckLengthPreset extends StatelessWidget {
 }
 
 class _AskUserSliderContent extends StatefulWidget {
-  final AskUserSliderType data;
+  final AskUserSlider data;
   final CatalogItemContext itemContext;
 
   const _AskUserSliderContent({required this.data, required this.itemContext});

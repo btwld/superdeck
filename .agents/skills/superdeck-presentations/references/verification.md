@@ -113,7 +113,10 @@ Widget does not render:
 - Check that widget arguments do not collide with reserved block keys: `name`, `align`, `flex`, `margin`, `padding`, `scrollable`.
 - Remember that reserved block keys are consumed by SuperDeck and are not passed to custom widget args.
 - If using shorthand, verify the directive name exactly matches the registered widget name.
-- If using Ack-generated args wrappers, confirm the schema is a top-level `@AckType()` declaration, the `part` file is present, generator dependencies are installed, and `build_runner` has regenerated the `.g.dart` file.
+- If using Ack-generated args models, confirm the schema is a top-level
+  `@AckInfer()` declaration, both `.ack.dart` and `.ack.g.dart` part directives
+  are present, generator dependencies are installed, and `build_runner` has
+  regenerated both files.
 - Let the on-slide error guide factory parse/build failures.
 
 DartPad fails:

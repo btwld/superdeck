@@ -80,6 +80,15 @@ void main() {
         expect(copy.baseStyle, same(baseStyle));
       });
 
+      test('null clears the existing nullable baseStyle', () {
+        final baseStyle = SlideStyler();
+        final original = SlideTemplate(baseStyle: baseStyle);
+
+        final copy = original.copyWith(baseStyle: null);
+
+        expect(copy.baseStyle, isNull);
+      });
+
       test('preserves styles when not specified', () {
         final styles = <String, SlideStyler>{'a': SlideStyler()};
         final original = SlideTemplate(styles: styles);
