@@ -10,7 +10,14 @@ export default defineConfig({
   },
   reporter: 'list',
   projects: [
-    {name: 'chromium', use: {...devices['Desktop Chrome']}},
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Keep CanvasKit on WebGL when headless Chromium cannot use the GPU.
+        launchOptions: {args: ['--enable-unsafe-swiftshader']},
+      },
+    },
     {name: 'webkit', use: {...devices['Desktop Safari']}},
   ],
   use: {
