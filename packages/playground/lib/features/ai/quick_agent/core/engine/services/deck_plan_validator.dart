@@ -587,6 +587,7 @@ void _validateElementGrounding(
   GenerationValidationCollector errors,
 ) {
   for (final slide in plan.slides) {
+    final elements = slide.elements ?? const <DeckPlanElement>[];
     final requiredType = switch (slide.composition) {
       'imageLeft' || 'imageRight' || 'imageFullBleed' => 'image',
       'webview' => 'webview',
@@ -595,9 +596,7 @@ void _validateElementGrounding(
       _ => null,
     };
     if (requiredType != null &&
-        !(slide.elements ?? const <DeckPlanElement>[]).any(
-          (element) => element.type == requiredType,
-        )) {
+        !elements.any((element) => element.type == requiredType)) {
       final slideErrors = errors.scoped(
         location: GenerationValidationLocation.planSlide,
         slideKey: slide.key,
@@ -605,6 +604,26 @@ void _validateElementGrounding(
       slideErrors.add(
         'Slide "${slide.key}" uses composition "${slide.composition}" but '
         'does not plan the required $requiredType element.',
+      );
+    }
+
+    for (final element in elements) {
+      final hasCompatibleComposition = switch (element.type) {
+        'image' =>
+          slide.composition == 'imageLeft' ||
+              slide.composition == 'imageRight' ||
+              slide.composition == 'imageFullBleed',
+        'webview' || 'dartpad' || 'custom' => slide.composition == element.type,
+        _ => true,
+      };
+      if (hasCompatibleComposition) continue;
+      final slideErrors = errors.scoped(
+        location: GenerationValidationLocation.planSlide,
+        slideKey: slide.key,
+      );
+      slideErrors.add(
+        'Slide "${slide.key}" plans an ${element.type} element but uses '
+        'incompatible composition "${slide.composition}".',
       );
     }
   }

@@ -8,11 +8,13 @@ import 'generation_element_catalog.dart';
 import 'generation_validation_issue.dart';
 import 'source_grounding.dart';
 
-/// Applies renderer-safe mechanical normalization without rewriting content.
+/// Applies renderer-safe mechanical normalization from the approved plan.
 ///
 /// Models occasionally introduce H1 while repairing another heading rule. The
 /// planned treatment already determines whether H1 is legal, so demoting that
 /// marker to H2 is deterministic and avoids spending another model request.
+/// Likewise, an overlong title H1 falls back to the approved concise title so
+/// the hero treatment cannot clip while rendering.
 Map<String, dynamic> normalizeGeneratedSlideForPlan({
   required Map<String, dynamic> rawSlide,
   required DeckPlanSlide planSlide,
@@ -87,20 +89,34 @@ Map<String, dynamic> _normalizeBlockForPlan(
       ? block
       : _normalizeBlockHeading(block);
   if (planSlide.composition == 'title') {
-    normalized = _flattenTitleListMarkers(normalized);
+    normalized = _normalizeTitleBlock(normalized, planSlide);
   }
 
   return normalized;
 }
 
-Map<String, dynamic> _flattenTitleListMarkers(Map<String, dynamic> block) {
+Map<String, dynamic> _normalizeTitleBlock(
+  Map<String, dynamic> block,
+  DeckPlanSlide planSlide,
+) {
   if (block['type'] != ContentBlock.key || block['content'] is! String) {
     return block;
   }
-  block['content'] = (block['content'] as String).replaceAllMapped(
+  var content = (block['content'] as String).replaceAllMapped(
     RegExp(r'^(\s*)(?:[-+*]|\d+[.)])\s+', multiLine: true),
     (match) => match.group(1)!,
   );
+  final plannedTitle = planSlide.title.trim();
+  final plannedTitleWords = _displayHeadingWordCount(plannedTitle);
+  if (plannedTitleWords > 0 && plannedTitleWords <= 8) {
+    content = content.replaceAllMapped(
+      RegExp(r'^([ \t]*)#[ \t]+(.+?)[ \t]*$', multiLine: true),
+      (match) => _displayHeadingWordCount(match.group(2)!) > 8
+          ? '${match.group(1)!}# $plannedTitle'
+          : match.group(0)!,
+    );
+  }
+  block['content'] = content;
   return block;
 }
 
@@ -753,10 +769,7 @@ List<String> _validateDisplayHeadings(
       if (match == null) continue;
       final level = match.group(1)!.length;
       final heading = match.group(2)!;
-      final wordCount = RegExp(
-        r"[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*",
-        unicode: true,
-      ).allMatches(heading).length;
+      final wordCount = _displayHeadingWordCount(heading);
       if (wordCount > 8) {
         errors.add(
           'Display heading "$heading" has $wordCount words; use at most 8.',
@@ -772,6 +785,11 @@ List<String> _validateDisplayHeadings(
   }
   return errors;
 }
+
+int _displayHeadingWordCount(String value) => RegExp(
+  r"[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*",
+  unicode: true,
+).allMatches(value).length;
 
 bool _planPermitsH1(DeckPlanSlide planSlide) =>
     _permitsH1(planSlide.composition);

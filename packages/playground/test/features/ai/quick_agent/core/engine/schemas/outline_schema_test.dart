@@ -341,6 +341,29 @@ void main() {
     );
   });
 
+  test('rejects a planned element without a matching composition', () {
+    final data = _hierarchicalPlan();
+    final slides = data['slides']! as List<Map<String, Object?>>;
+    slides[1]
+      ..['composition'] = 'content'
+      ..['elements'] = [
+        {
+          'type': 'image',
+          'purpose': 'Make the operating tension tangible',
+          'source': 'assets/operating-tension.png',
+        },
+      ];
+    final plan = DeckPlan.parse(data);
+
+    expect(
+      validateDeckPlan(plan),
+      contains(
+        'Slide "cost" plans an image element but uses incompatible '
+        'composition "content".',
+      ),
+    );
+  });
+
   test('accepts generated image intent with an exact style reference', () {
     final data = _hierarchicalPlan();
     final slides = data['slides']! as List<Map<String, Object?>>;

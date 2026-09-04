@@ -186,8 +186,8 @@ The project uses Signals for reactive state management. `DeckController` is the 
 Use the current stable Gemini model split for the Playground deck-generation
 pipeline:
 
-- `gemini-3.5-flash` for the single global outline/planning request
-- `gemini-3.1-flash-lite` for concurrent narrative-section composition and
+- `gemini-3.7-flash` for the single global outline/planning request
+- `gemini-3.5-flash-lite` for concurrent narrative-section composition and
   targeted outline/slide repair
 
 Keep model thinking at the lowest supported setting for this latency-sensitive

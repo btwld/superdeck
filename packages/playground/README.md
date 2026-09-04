@@ -49,10 +49,10 @@ missing.
 
 ## AI generation smoke lab
 
-Generation uses a plan-first pipeline. `gemini-3.5-flash` creates the shared
-narrative/style plan, then `gemini-3.1-flash-lite` composes each narrative
-section concurrently. Every call uses the lowest thinking-budget compatibility
-setting exposed by the pinned client. Gemini structured output constrains each
+Generation uses a plan-first pipeline. `gemini-3.7-flash` creates the shared
+narrative/style plan, then `gemini-3.5-flash-lite` composes each narrative
+section concurrently. Every call uses the lowest thinking level supported by
+its model. Gemini structured output constrains each
 response to JSON and a response schema; Dart still performs semantic,
 grounding, layout, density, and canonical parsing checks before accepting it.
 Invalid slides remain isolated failures so valid slides and later sections can

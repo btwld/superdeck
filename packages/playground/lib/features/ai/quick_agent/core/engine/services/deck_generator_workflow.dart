@@ -6,7 +6,8 @@ void _logPipelineConfig(DeckGeneratorService owner, {required String prompt}) {
     'DECK_GEN',
     'Config: outlineModel=${owner.outlineModelName}, '
         'outlineRepairModel=${owner.outlineRepairModelName}, '
-        'slideModel=${owner.modelName}, thinkingBudget=0',
+        'slideModel=${owner.modelName}, '
+        'thinkingLevels=outline:low,repair:minimal,slides:minimal',
   );
   debugLog.log('DECK_GEN', 'Prompt (${prompt.length} chars):\n$prompt');
 }

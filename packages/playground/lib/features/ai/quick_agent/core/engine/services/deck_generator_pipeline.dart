@@ -68,7 +68,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
         generationConfig: google_ai.GenerationConfig(
           responseMimeType: 'application/json',
           responseSchema: adaptResult.schema,
-          thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
         ),
       );
 
@@ -360,7 +359,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
-        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
     );
 
@@ -863,7 +861,7 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       'DECK_GEN',
       'Slide $slideIndex/$slideCount prompt (${systemPrompt.length} chars)',
     );
-    debugLog.log('DECK_GEN', 'Thinking budget disabled for fast composition');
+    debugLog.log('DECK_GEN', 'Thinking level set to minimal for composition');
 
     final request = google_ai.GenerateContentRequest(
       model: modelName,
@@ -879,7 +877,6 @@ extension _DeckGeneratorPipeline on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adaptResult.schema,
-        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
     );
 

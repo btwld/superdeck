@@ -240,9 +240,9 @@ class DeckGeneratorService {
 
   DeckGeneratorService({
     required this.apiKey,
-    this.modelName = GeminiModelNames.gemini31FlashLite,
-    this.outlineModelName = GeminiModelNames.gemini35Flash,
-    this.outlineRepairModelName = GeminiModelNames.gemini31FlashLite,
+    this.modelName = GeminiModelNames.gemini35FlashLite,
+    this.outlineModelName = GeminiModelNames.gemini37Flash,
+    this.outlineRepairModelName = GeminiModelNames.gemini35FlashLite,
     this.sectionBatchThreshold = 5,
     this.requestTimeout = const Duration(seconds: 45),
     this.maxOutlineValidationAttempts = 2,

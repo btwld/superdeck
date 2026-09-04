@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_cloud_ai_generativelanguage_v1beta/generativelanguage.dart'
     as google_ai;
+import 'package:googleai_dart/googleai_dart.dart' as modern_google_ai;
 import 'package:image/image.dart' as image;
 import 'package:path/path.dart' as p;
 import 'package:playground/core/data/data_sources/memory_asset_cache_store.dart';
@@ -204,16 +205,22 @@ void main() {
         expect(client.requests, hasLength(4));
         expect(
           client.requests.map(
-            (modelRequest) =>
-                modelRequest.generationConfig!.thinkingConfig!.thinkingBudget,
+            (modelRequest) => adaptGenerationRequest(
+              modelRequest,
+            ).request.generationConfig!.thinkingConfig!.thinkingLevel,
           ),
-          everyElement(0),
+          [
+            modern_google_ai.ThinkingLevel.low,
+            modern_google_ai.ThinkingLevel.minimal,
+            modern_google_ai.ThinkingLevel.minimal,
+            modern_google_ai.ThinkingLevel.minimal,
+          ],
         );
         expect(client.requests.map((modelRequest) => modelRequest.model), [
-          'models/gemini-3.5-flash',
-          'models/gemini-3.1-flash-lite',
-          'models/gemini-3.1-flash-lite',
-          'models/gemini-3.1-flash-lite',
+          'models/gemini-3.7-flash',
+          'models/gemini-3.5-flash-lite',
+          'models/gemini-3.5-flash-lite',
+          'models/gemini-3.5-flash-lite',
         ]);
 
         final sectionRequests = traces

@@ -74,7 +74,7 @@ final class AiConversationViewModel extends ChangeNotifier
 
   /// The Wizard favors the current Flash Lite model for short, structured
   /// surface turns. There is intentionally no in-wizard model picker.
-  static const _modelName = GeminiModelNames.gemini31FlashLite;
+  static const _modelName = GeminiModelNames.gemini35FlashLite;
   static const _missingSurfaceError =
       'I couldn\'t prepare the next step. Add a detail below to try again.';
   final _controller = Signal<genui.SurfaceController?>(null);

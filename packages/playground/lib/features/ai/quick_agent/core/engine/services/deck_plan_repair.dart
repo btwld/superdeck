@@ -144,7 +144,6 @@ extension _DeckPlanRepair on DeckGeneratorService {
       generationConfig: google_ai.GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: adapted.schema,
-        thinkingConfig: google_ai.ThinkingConfig(thinkingBudget: 0),
       ),
     );
 
