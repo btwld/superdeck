@@ -7,20 +7,27 @@ Widget _sameWidget(Map<String, Object?> args) => const SizedBox.shrink();
 
 void main() {
   group('SlideConfiguration', () {
-    test('copyWith updates values and retains nullable fields on null', () {
+    test('copyWith updates values and clears nullable fields on null', () {
       final parts = SlideParts();
+      final assetCacheStore = _FakeAssetCacheStore();
       final original = SlideConfiguration(
         slideIndex: 0,
         style: SlideStyler(),
         slide: Slide(key: 'slide-1'),
         parts: parts,
         thumbnailKey: 'thumbnail_slide-1.png',
+        assetCacheStore: assetCacheStore,
       );
 
-      final copy = original.copyWith(slideIndex: 1, parts: null);
+      final copy = original.copyWith(
+        slideIndex: 1,
+        parts: null,
+        assetCacheStore: null,
+      );
 
       expect(copy.slideIndex, 1);
-      expect(copy.parts, same(parts));
+      expect(copy.parts, isNull);
+      expect(copy.assetCacheStore, isNull);
       expect(copy.slide, same(original.slide));
     });
 
@@ -66,4 +73,15 @@ void main() {
       expect(a, isNot(equals(b)));
     });
   });
+}
+
+final class _FakeAssetCacheStore implements AssetCacheStore {
+  @override
+  Future<void> delete(String assetKey) async {}
+
+  @override
+  Future<Uri?> resolve(String assetKey) async => null;
+
+  @override
+  Future<Uri?> write(String assetKey, List<int> bytes) async => null;
 }

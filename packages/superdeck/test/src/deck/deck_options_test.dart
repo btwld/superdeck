@@ -74,12 +74,12 @@ void main() {
         expect(copy.baseStyle, same(style));
       });
 
-      test('copyWith(baseStyle: null) retains a previously set baseStyle', () {
+      test('copyWith(baseStyle: null) clears a previously set baseStyle', () {
         final style = SlideStyler();
         final options = DeckOptions(baseStyle: style);
         final copy = options.copyWith(baseStyle: null);
 
-        expect(copy.baseStyle, same(style));
+        expect(copy.baseStyle, isNull);
       });
 
       test('copyWith() with no args preserves existing defaultTemplate', () {
@@ -91,13 +91,13 @@ void main() {
       });
 
       test(
-        'copyWith(defaultTemplate: null) retains the current defaultTemplate',
+        'copyWith(defaultTemplate: null) clears the current defaultTemplate',
         () {
           const template = SlideTemplate();
           final options = DeckOptions(defaultTemplate: template);
           final copy = options.copyWith(defaultTemplate: null);
 
-          expect(copy.defaultTemplate, same(template));
+          expect(copy.defaultTemplate, isNull);
         },
       );
     });

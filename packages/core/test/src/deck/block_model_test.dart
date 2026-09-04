@@ -16,7 +16,32 @@ Matcher _throwsInvalidFlex() {
 }
 
 Matcher _throwsMappedInvalidFlex() {
-  return throwsA(isA<AckException>());
+  return throwsA(
+    isA<AckException>().having(
+      (exception) => exception.errors.expand(_flattenSchemaErrors),
+      'validation errors',
+      contains(
+        isA<SchemaConstraintsError>()
+            .having((error) => error.path, 'path', '#/flex')
+            .having(
+              (error) => error.constraints.map(
+                (constraint) => constraint.constraint.constraintKey,
+              ),
+              'constraint keys',
+              contains('number_positive'),
+            ),
+      ),
+    ),
+  );
+}
+
+Iterable<SchemaError> _flattenSchemaErrors(SchemaError error) sync* {
+  yield error;
+  if (error case SchemaNestedError(errors: final nestedErrors)) {
+    for (final nestedError in nestedErrors) {
+      yield* _flattenSchemaErrors(nestedError);
+    }
+  }
 }
 
 Matcher _throwsInvalidSpacing() {

@@ -266,9 +266,9 @@ final class WidgetBlock extends Block with _$WidgetBlockAck {
   static Map<String, Object?> _validateArgs(Map<String, Object?>? args) {
     if (args == null) return deepUnmodifiableJsonMap(const {});
 
-    // Single pass: strip the 'type' discriminator key leaked by
-    // UnmappedPropertiesHook during deserialization, and reject any
-    // other reserved keys that indicate a caller mistake.
+    // The discriminator belongs to the wire shape, not widget arguments.
+    // Strip it while rejecting other reserved keys that indicate a caller
+    // mistake.
     final filtered = <String, Object?>{};
     final collisions = <String>[];
 

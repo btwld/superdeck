@@ -6,6 +6,8 @@ import '../styling/components/slide.dart';
 import '../ui/widgets/provider.dart';
 import 'widget_factory.dart';
 
+const _undefined = Object();
+
 String buildThumbnailKey(String slideKey) {
   return 'thumbnail_$slideKey.png';
 }
@@ -44,22 +46,24 @@ class SlideConfiguration {
     SlideStyler? style,
     Slide? slide,
     bool? debug,
-    SlideParts? parts,
+    Object? parts = _undefined,
     Map<String, WidgetFactory>? widgets,
     String? thumbnailKey,
     bool? isStaticRendering,
-    AssetCacheStore? assetCacheStore,
+    Object? assetCacheStore = _undefined,
   }) {
     return SlideConfiguration(
       slideIndex: slideIndex ?? this.slideIndex,
       style: style ?? this.style,
       slide: slide ?? this.slide,
       debug: debug ?? this.debug,
-      parts: parts ?? this.parts,
+      parts: identical(parts, _undefined) ? this.parts : parts as SlideParts?,
       widgets: widgets ?? this.widgets,
       thumbnailKey: thumbnailKey ?? this.thumbnailKey,
       isStaticRendering: isStaticRendering ?? this.isStaticRendering,
-      assetCacheStore: assetCacheStore ?? this.assetCacheStore,
+      assetCacheStore: identical(assetCacheStore, _undefined)
+          ? this.assetCacheStore
+          : assetCacheStore as AssetCacheStore?,
     );
   }
 

@@ -5,6 +5,8 @@ import '../styling/components/slide.dart';
 import 'slide_template.dart';
 import 'widget_factory.dart';
 
+const _undefined = Object();
+
 class DeckOptions {
   static const _stylesEquality = MapEquality<String, SlideStyler>();
   static const _widgetsEquality = MapEquality<String, WidgetFactory>();
@@ -38,22 +40,26 @@ class DeckOptions {
        templates = Map.unmodifiable(templates);
 
   DeckOptions copyWith({
-    SlideStyler? baseStyle,
+    Object? baseStyle = _undefined,
     Map<String, SlideStyler>? styles,
     Map<String, WidgetFactory>? widgets,
     SlideParts? parts,
     bool? debug,
     Map<String, SlideTemplate>? templates,
-    SlideTemplate? defaultTemplate,
+    Object? defaultTemplate = _undefined,
   }) {
     return DeckOptions(
-      baseStyle: baseStyle ?? this.baseStyle,
+      baseStyle: identical(baseStyle, _undefined)
+          ? this.baseStyle
+          : baseStyle as SlideStyler?,
       styles: styles ?? this.styles,
       widgets: widgets ?? this.widgets,
       parts: parts ?? this.parts,
       debug: debug ?? this.debug,
       templates: templates ?? this.templates,
-      defaultTemplate: defaultTemplate ?? this.defaultTemplate,
+      defaultTemplate: identical(defaultTemplate, _undefined)
+          ? this.defaultTemplate
+          : defaultTemplate as SlideTemplate?,
     );
   }
 

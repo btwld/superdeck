@@ -1,6 +1,8 @@
 import '../rendering/slides/slide_parts.dart';
 import '../styling/components/slide.dart';
 
+const _undefined = Object();
+
 /// A reusable slide template that bundles chrome (header, footer, background)
 /// with an isolated style system.
 ///
@@ -24,12 +26,14 @@ final class SlideTemplate {
 
   SlideTemplate copyWith({
     SlideParts? parts,
-    SlideStyler? baseStyle,
+    Object? baseStyle = _undefined,
     Map<String, SlideStyler>? styles,
   }) {
     return SlideTemplate(
       parts: parts ?? this.parts,
-      baseStyle: baseStyle ?? this.baseStyle,
+      baseStyle: identical(baseStyle, _undefined)
+          ? this.baseStyle
+          : baseStyle as SlideStyler?,
       styles: styles ?? this.styles,
     );
   }
