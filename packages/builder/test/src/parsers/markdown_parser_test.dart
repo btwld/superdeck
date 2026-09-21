@@ -378,6 +378,259 @@ Content for the second slide
     );
   });
 
+  group('front matter recognition', () {
+    test('a standalone bullet list is slide content', () {
+      const markdown = '''
+---
+- First bullet
+- Second bullet
+---
+
+# Second slide
+
+---
+
+# Third slide
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(3));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(slides[0].content, equals('- First bullet\n- Second bullet'));
+      expect(slides[1].content, equals('# Second slide'));
+      expect(slides[2].content, equals('# Third slide'));
+    });
+
+    test('prose above a mapping line is slide content', () {
+      const markdown = '''
+---
+This sentence introduces the slide
+Key: value
+---
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(slides.single.frontmatter, isEmpty);
+      expect(
+        slides.single.content,
+        equals('This sentence introduces the slide\nKey: value'),
+      );
+    });
+
+    test('prose below a mapping line is slide content', () {
+      const markdown = '''
+---
+title: Slide 1
+This sentence is not YAML
+---
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(slides.single.frontmatter, isEmpty);
+      expect(slides.single.content, contains('This sentence is not YAML'));
+    });
+
+    test('an indented sequence under a key is frontmatter', () {
+      const markdown = '''
+---
+title: Slide 1
+tags:
+  - dart
+  - flutter
+---
+Body
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(slides.single.frontmatter['tags'], equals(['dart', 'flutter']));
+      expect(slides.single.content, equals('Body'));
+    });
+
+    test('an indentless sequence under a key is frontmatter', () {
+      const markdown = '''
+---
+title: Slide 1
+tags:
+- dart
+- flutter
+---
+Body
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(slides.single.frontmatter['tags'], equals(['dart', 'flutter']));
+      expect(slides.single.content, equals('Body'));
+    });
+
+    test('a quoted key beside an unquoted key stays frontmatter', () {
+      const markdown = '''
+---
+title: Slide 1
+"my key": quoted value
+---
+Body
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(
+        slides.single.frontmatter,
+        equals({'title': 'Slide 1', 'my key': 'quoted value'}),
+      );
+      expect(slides.single.content, equals('Body'));
+    });
+
+    test('a quoted key alone is slide content', () {
+      // Characterization: the opening line of a block must be an unquoted
+      // key for the block to be read as front matter.
+      const markdown = '''
+---
+"my key": quoted value
+---
+Body
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(2));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(slides[0].content, equals('"my key": quoted value'));
+      expect(slides[1].content, equals('Body'));
+    });
+
+    test('a literal block value stays frontmatter', () {
+      const markdown = '''
+---
+description: |
+  line one
+  line two
+---
+Body
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(
+        slides.single.frontmatter['description'],
+        equals('line one\nline two'),
+      );
+      expect(slides.single.content, equals('Body'));
+    });
+
+    test('a folded block value stays frontmatter', () {
+      const markdown = '''
+---
+summary: >
+  folded one
+  folded two
+---
+Body
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(
+        slides.single.frontmatter['summary'],
+        equals('folded one folded two'),
+      );
+      expect(slides.single.content, equals('Body'));
+    });
+
+    test('a heading inside a literal block rules out frontmatter', () {
+      // Characterization of known legacy behaviour: `#`, `@`, `>` and `!` mark
+      // slide content wherever they open a line, including inside a block
+      // scalar. Mark such text with `@block` to keep it as content on purpose.
+      const markdown = '''
+---
+description: |
+  # not a heading
+---
+Body
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(2));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(slides[0].content, contains('# not a heading'));
+    });
+
+    test('an unmarked mapping-shaped line stays frontmatter', () {
+      // Known legacy behaviour: a single `Key: value` line is both valid YAML
+      // and plausible prose, and no predicate separates them. Authors mark it
+      // as content with `@block`.
+      const markdown = '''
+---
+Note: remember this
+---
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(1));
+      expect(
+        slides.single.frontmatter,
+        equals({'Note': 'remember this'}),
+      );
+      expect(slides.single.content, isEmpty);
+    });
+
+    test('@block keeps mapping-shaped text as content', () {
+      const markdown = '''
+---
+@block
+Note: remember this
+---
+
+# Second slide
+
+---
+
+# Third slide
+''';
+
+      final slides = markdownParser.parse(markdown);
+
+      expect(slides, hasLength(3));
+      expect(slides[0].frontmatter, isEmpty);
+      expect(slides[0].content, contains('Note: remember this'));
+      expect(slides[1].content, equals('# Second slide'));
+      expect(slides[2].content, equals('# Third slide'));
+    });
+
+    test('malformed YAML in a recognized block reports an error', () {
+      const markdown = '''
+---
+title: "unclosed
+---
+Body
+''';
+
+      expect(
+        () => markdownParser.parse(markdown),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('front matter'),
+          ),
+        ),
+      );
+    });
+  });
+
   group('fenced code does not split slides', () {
     test('--- inside a backtick fence stays on one slide', () {
       const markdown = '''

@@ -1,0 +1,96 @@
+---
+title: Front matter reference
+description: How SuperDeck decides that a block between --- lines is slide options rather than slide content
+---
+
+# Front matter reference
+
+A slide may open with a YAML mapping between two `---` lines. Everything after
+the closing `---` is the slide's content.
+
+```markdown
+---
+title: Product Vision
+layout: fullscreen
+owner: Platform Team
+---
+
+# Our plan for the year
+```
+
+Keys that SuperDeck does not define are still preserved, and are read through
+`slide.options.args['owner']`. See the
+[Markdown syntax reference](/reference/markdown-syntax#slide-front-matter) for
+the supported keys.
+
+## When a block is read as front matter
+
+A `---` line opens front matter only when every line up to the closing `---`
+belongs to a YAML mapping:
+
+- The first non-blank line is an unquoted key, such as `title: Deck`.
+- Later lines may be more mapping entries, including quoted keys such as
+  `"my key": value`.
+- Indented lines continue the value above them, so nested maps, block scalars
+  (`|` and `>`), and indented sequences all work.
+- A sequence under a key may be indented or indentless.
+
+```markdown
+---
+title: Release notes
+tags:
+  - dart
+  - flutter
+owners:
+- platform
+summary: |
+  Two lines of
+  literal text
+---
+```
+
+Anything else makes the whole block slide content, and the `---` lines become
+ordinary slide separators:
+
+- A bullet list with no key above it. `- First bullet` on its own is a list,
+  not front matter.
+- A prose line at the start of the block, or beside the mapping entries.
+- A line that opens with `#`, `@`, `>` or `!`. These mark slide content
+  wherever they appear, **including inside a block scalar**. Move such text
+  below the front matter, or mark it with `@block`.
+
+## Mapping-shaped prose
+
+A lone `Key: value` line between two `---` lines is both a valid one-entry YAML
+mapping and a plausible sentence. SuperDeck reads it as front matter:
+
+```markdown
+---
+Note: remember this
+---
+```
+
+The slide above has the option `Note` and no content. Mark the text with
+`@block` when you mean it as content:
+
+```markdown
+---
+@block
+Note: remember this
+---
+```
+
+## Errors
+
+A block that is recognized as front matter but does not parse as a YAML map
+fails the build, naming the slide's front matter. Unbalanced quotes are the
+usual cause:
+
+```markdown
+---
+title: "unclosed
+---
+```
+
+Front matter that parses to a sequence or a scalar instead of a map is reported
+the same way, rather than being silently dropped.

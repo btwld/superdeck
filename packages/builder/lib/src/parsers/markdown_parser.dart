@@ -35,6 +35,15 @@ class MarkdownParser {
 
   static final _yamlKeyPattern = RegExp(r'^[A-Za-z_][\w-]*\s*:');
 
+  /// Any mapping entry, including quoted and non-identifier keys.
+  ///
+  /// Only accepted once [_yamlKeyPattern] has opened the block, so prose that
+  /// happens to contain a colon cannot pass as YAML on its own.
+  static final _yamlEntryPattern = RegExp(r'^\S.*?:(\s|$)');
+
+  /// A block sequence item, with or without a value on the same line.
+  static final _yamlListItemPattern = RegExp(r'^-(\s|$)');
+
   /// Leading characters that mark a line as markdown body (heading, directive,
   /// blockquote, image/link) and therefore rule out YAML frontmatter.
   static const _markdownLeadChars = {'#', '@', '>', '!'};
@@ -102,27 +111,40 @@ class MarkdownParser {
   /// If [openIdx] opens a YAML frontmatter block, returns the index of the
   /// closing `---`. Returns null when no closing `---` is found, or when the
   /// lines between look like markdown content rather than YAML.
+  ///
+  /// Every line has to belong to a mapping. The first non-blank line opens the
+  /// block with an unquoted key; after that, indented lines continue a value,
+  /// and a non-indented line has to be another mapping entry or a sequence
+  /// item. A bullet list on its own, or any prose line, is slide content.
   static int? _findFrontmatterClose(
     List<String> lines,
     int openIdx,
     Set<int> separators,
   ) {
-    var hasContent = false;
-    var hasYamlMarker = false;
+    var hasKeyLine = false;
     for (var j = openIdx + 1; j < lines.length; j++) {
-      if (separators.contains(j)) {
-        // An empty pair (`---\n---`) is a valid (empty) frontmatter block.
-        // Otherwise require at least one YAML-shaped line.
-        return (!hasContent || hasYamlMarker) ? j : null;
-      }
-      final trimmed = lines[j].trim();
+      // An empty pair (`---\n---`) is a valid (empty) frontmatter block.
+      if (separators.contains(j)) return j;
+
+      final line = lines[j];
+      final trimmed = line.trim();
       if (trimmed.isEmpty) continue;
       // Distinctive markdown body indicators rule out frontmatter.
       if (_markdownLeadChars.contains(trimmed[0])) return null;
-      hasContent = true;
-      if (_yamlKeyPattern.hasMatch(trimmed) || trimmed.startsWith('- ')) {
-        hasYamlMarker = true;
+      if (_yamlKeyPattern.hasMatch(trimmed)) {
+        hasKeyLine = true;
+        continue;
       }
+      // Nothing else can open the block.
+      if (!hasKeyLine) return null;
+      final isIndented = line.startsWith(' ') || line.startsWith('\t');
+      if (isIndented ||
+          _yamlListItemPattern.hasMatch(trimmed) ||
+          _yamlEntryPattern.hasMatch(trimmed)) {
+        continue;
+      }
+
+      return null;
     }
     // Reached EOF without a closing `---`.
     return null;
