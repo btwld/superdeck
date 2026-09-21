@@ -36,8 +36,16 @@ change cannot verify a secret it cannot see.
 ## The other gap: the playground's DCM baseline
 
 `packages/playground/dcm_baseline.json` (written 2026-07-15 with DCM 1.38.0)
-suppresses **630 findings** — 30 warnings and 600 style issues. `melos run
-analyze` is green because of it.
+suppresses findings that `melos run analyze` would otherwise fail on.
+
+Removing the editor emptied a third of it: 187 suppressed findings across 21
+files named code that no longer exists. Those entries were deleted — a stale
+entry cannot hide a current finding, so pruning them is safe and it stops the
+file from looking like more debt than it is. **468 suppressed findings remain**,
+all naming live files.
+
+Measured on 2026-09-21 by moving the baseline aside (630 findings at that
+point, before the prune, on the tree that still had the editor):
 
 Measured on 2026-09-21 by moving the baseline aside:
 
