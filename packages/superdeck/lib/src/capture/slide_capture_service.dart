@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show MaterialApp, Scaffold, Theme;
+import 'package:flutter/material.dart' show Scaffold, Theme;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mix/mix.dart';
@@ -241,14 +241,15 @@ class SlideCaptureService {
           config.context,
           MediaQuery(
             data: MediaQuery.of(config.context),
-            child: MaterialApp(
-              theme: Theme.of(config.context),
-              debugShowCheckedModeBanner: false,
-
-              home: Scaffold(
-                body: MixScope(
-                  tokens: {...?mixScope?.tokens, ...SDColors.colorMap},
-                  child: widget,
+            child: Localizations.override(
+              context: config.context,
+              child: Theme(
+                data: Theme.of(config.context),
+                child: Scaffold(
+                  body: MixScope(
+                    tokens: {...?mixScope?.tokens, ...SDColors.colorMap},
+                    child: widget,
+                  ),
                 ),
               ),
             ),

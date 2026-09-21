@@ -123,8 +123,16 @@ async function openMenu(page: Page) {
 }
 
 async function expectSlideCounter(page: Page, slideNumber: number) {
+  // The semantics tree is rebuilt after a navigation, so a read can land
+  // before any label exists. Keep polling instead of failing on that frame.
   await expect
-    .poll(async () => (await readSlideCounter(page)).current)
+    .poll(async () => {
+      try {
+        return (await readSlideCounter(page)).current;
+      } catch {
+        return null;
+      }
+    })
     .toBe(slideNumber);
 }
 
@@ -183,6 +191,39 @@ test('menu navigation advances slide', async ({page}) => {
   }
 
   await expectSlideCounter(page, 1);
+});
+
+test('the address bar follows the active slide', async ({page}) => {
+  await openApp(page);
+  await openMenu(page);
+  const {total} = await readSlideCounter(page);
+  test.skip(total < 2, 'the demo deck has a single slide');
+
+  await clickSemanticsButton(page, 'Next slide');
+  await expectSlideCounter(page, 2);
+  expect(page.url()).toContain('/slides/1');
+
+  await page.goBack();
+  await expectSlideCounter(page, 1);
+});
+
+test('an out-of-range slide link is corrected in place', async ({page}) => {
+  await openApp(page);
+  await openMenu(page);
+  const {total} = await readSlideCounter(page);
+
+  await page.evaluate(() => {
+    window.location.hash = '#/slides/99';
+  });
+  await page.waitForTimeout(750);
+
+  // The deck corrects the impossible slide to its last one, and the address
+  // bar stops naming a slide the deck does not have. The history depth is
+  // deliberately not asserted: for a link the page changed in place, the
+  // engine rewrites that entry itself, so `replace` and `go` leave the same
+  // history and an assertion on it would pass either way.
+  await expectSlideCounter(page, total);
+  expect(page.url()).not.toContain('/slides/99');
 });
 
 test('panel controls support mouse interactions', async ({page}) => {

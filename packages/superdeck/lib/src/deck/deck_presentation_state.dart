@@ -31,7 +31,7 @@ final class DeckPresentationState {
         path: '/slides/:index',
         pageBuilder: (context, state) {
           final index = _parseIndex(state.pathParameters['index']);
-          _writeClampedIndex(index);
+
           return CustomTransitionPage(
             key: ValueKey<String>('slide-$index'),
             child: SlidePageContent(index: index),
@@ -50,14 +50,18 @@ final class DeckPresentationState {
   }) : _thumbnailService = thumbnailService,
        _transitionDuration = transitionDuration,
        _slides = slides {
-    router.routeInformationProvider.addListener(_syncCurrentIndexFromRouter);
+    router.routeInformationProvider.addListener(
+      _syncCurrentIndexFromRouteInformation,
+    );
+    // Browser history/hash transitions become authoritative when GoRouter's
+    // delegate has parsed them. WebKit does not consistently publish those
+    // transitions back through the raw route-information provider.
+    router.routerDelegate.addListener(_syncCurrentIndexFromDelegate);
+    // Runs once here, so the first route is read explicitly rather than
+    // waiting for a navigation, and again whenever the deck changes size.
     _indexClampEffect = effect(() {
       _slides.value.length; // explicit trigger on slide count change
-      final currentIdx = _currentIndex.peek();
-      final clamped = _clampIndex(currentIdx, _slides.value.length);
-      if (currentIdx != clamped) {
-        _currentIndex.value = clamped;
-      }
+      _syncCurrentIndexFromRouteInformation();
     });
     // Thumbnail cleanup follows the slide collection, not thumbnail warmup,
     // so obsolete handles are released even when the deck becomes empty.
@@ -171,7 +175,10 @@ final class DeckPresentationState {
     _disposed = true;
     _indexClampEffect?.call();
     _thumbnailPruneEffect?.call();
-    router.routeInformationProvider.removeListener(_syncCurrentIndexFromRouter);
+    router.routeInformationProvider.removeListener(
+      _syncCurrentIndexFromRouteInformation,
+    );
+    router.routerDelegate.removeListener(_syncCurrentIndexFromDelegate);
     router.dispose();
     for (final thumbnail in _thumbnails.value.values) {
       thumbnail.dispose();
@@ -204,17 +211,38 @@ final class DeckPresentationState {
     _thumbnails.value = cache;
   }
 
-  void _syncCurrentIndexFromRouter() {
-    if (_disposed) return;
-    final path = router.routeInformationProvider.value.uri.path;
-    const prefix = '/slides/';
-    if (!path.startsWith(prefix)) return;
-    _writeClampedIndex(_parseIndex(path.substring(prefix.length)));
+  /// Makes the route the single authority for the active slide.
+  ///
+  /// The route decides [currentIndex]. A route outside a loaded deck is
+  /// corrected once, by replacing it with the nearest slide that exists;
+  /// `replace` keeps that correction out of the browser history on web, which
+  /// `go` would add. While the deck is empty the route is left alone, so a
+  /// deep link opened before the deck loads still lands on its slide.
+  void _syncCurrentIndexFromDelegate() {
+    _syncCurrentIndexFromPath(
+      router.routerDelegate.currentConfiguration.uri.path,
+    );
   }
 
-  void _writeClampedIndex(int index) {
-    final clamped = _clampIndex(index, _slides.value.length);
-    if (_currentIndex.value != clamped) {
+  void _syncCurrentIndexFromRouteInformation() {
+    _syncCurrentIndexFromPath(router.routeInformationProvider.value.uri.path);
+  }
+
+  void _syncCurrentIndexFromPath(String path) {
+    if (_disposed) return;
+    const prefix = '/slides/';
+    if (!path.startsWith(prefix)) return;
+
+    final total = _slides.peek().length;
+    final routeIndex = _parseIndex(path.substring(prefix.length));
+    final clamped = _clampIndex(routeIndex, total);
+    if (total > 0 && clamped != routeIndex) {
+      // The replacement reports a new route, which syncs the index below.
+      router.replace('$prefix$clamped');
+
+      return;
+    }
+    if (_currentIndex.peek() != clamped) {
       _currentIndex.value = clamped;
     }
   }

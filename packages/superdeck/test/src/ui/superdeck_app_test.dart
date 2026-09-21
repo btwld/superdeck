@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/deck/default_deck_setup.dart';
+import 'package:superdeck/src/deck/slide_page_content.dart';
 import 'package:superdeck/src/ui/app_shell.dart';
 import 'package:superdeck/src/ui/panels/bottom_bar.dart';
 import 'package:superdeck/src/ui/tokens/colors.dart';
@@ -537,6 +539,222 @@ void main() {
 
       expect(errors, hasLength(1));
       expect(errors.single.exception, isA<StateError>());
+    });
+  });
+
+  group('route authority', () {
+    List<Slide> deckOf(int count) => List.generate(
+      count,
+      (index) => Slide(
+        key: 'slide-$index',
+        sections: [
+          SectionBlock([ContentBlock('Test slide $index content')]),
+        ],
+      ),
+    );
+
+    String routePath(DeckController controller) =>
+        controller.presentation.router.routeInformationProvider.value.uri.path;
+
+    List<int> mountedIndexes(WidgetTester tester) => tester
+        .widgetList<SlidePageContent>(find.byType(SlidePageContent))
+        .map((content) => content.index)
+        .toList(growable: false);
+
+    /// Rebuilds everything above the router without touching navigation.
+    ///
+    /// The size change is small enough to keep the shell's layout intact.
+    Future<void> rebuildUnrelated(WidgetTester tester) async {
+      const base = Size(2400, 1800);
+      tester.view.physicalSize = tester.view.physicalSize == base
+          ? const Size(2424, 1824)
+          : base;
+      await tester.pump();
+      await tester.pump();
+    }
+
+    /// Navigates the way the deck's own controls do, then lets the
+    /// transition's delay elapse. Awaiting `goToSlide` here would hang.
+    Future<void> goToSlide(
+      WidgetTester tester,
+      DeckController controller,
+      int index,
+    ) async {
+      unawaited(controller.presentation.goToSlide(index));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+    }
+
+    Future<DeckController> pumpDeck(
+      WidgetTester tester,
+      MockDeckLoader loader, {
+      int slideCount = 5,
+    }) async {
+      final controller = DeckController(
+        deckLoader: loader,
+        options: DeckOptions(),
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(() async {
+        controller.dispose();
+        await loader.dispose();
+      });
+
+      await tester.pumpWidget(_AppShellHarness(controller: controller));
+      if (slideCount > 0) {
+        loader.emitEvent(SlidesLoadedEvent(deckOf(slideCount)));
+      }
+      await tester.pump();
+      await tester.pump();
+
+      return controller;
+    }
+
+    testWidgets('a deck that shrinks and grows keeps one active slide', (
+      tester,
+    ) async {
+      addTearDown(tester.view.reset);
+      final loader = MockDeckLoader()..disableAutoLoad();
+      final controller = await pumpDeck(tester, loader);
+      final presentation = controller.presentation;
+
+      await goToSlide(tester, controller, 4);
+      await rebuildUnrelated(tester);
+
+      expect(routePath(controller), '/slides/4');
+      expect(mountedIndexes(tester), [4]);
+      expect(presentation.currentIndex.value, 4);
+      expect(presentation.canGoNext.value, isFalse);
+
+      loader.emitEvent(SlidesLoadedEvent(deckOf(2)));
+      await tester.pump();
+      await tester.pump();
+      await rebuildUnrelated(tester);
+
+      expect(routePath(controller), '/slides/1');
+      expect(mountedIndexes(tester), [1]);
+      expect(presentation.currentIndex.value, 1);
+      expect(presentation.canGoNext.value, isFalse);
+
+      loader.emitEvent(SlidesLoadedEvent(deckOf(5)));
+      await tester.pump();
+      await tester.pump();
+      await rebuildUnrelated(tester);
+
+      expect(routePath(controller), '/slides/1');
+      expect(mountedIndexes(tester), [1]);
+      expect(presentation.currentIndex.value, 1);
+      expect(presentation.canGoNext.value, isTrue);
+    });
+
+    testWidgets('an emptied deck keeps the route until slides return', (
+      tester,
+    ) async {
+      addTearDown(tester.view.reset);
+      final loader = MockDeckLoader()..disableAutoLoad();
+      final controller = await pumpDeck(tester, loader);
+      final presentation = controller.presentation;
+
+      await goToSlide(tester, controller, 3);
+
+      loader.emitEvent(SlidesLoadedEvent(const []));
+      await tester.pump();
+      await tester.pump();
+      await rebuildUnrelated(tester);
+
+      expect(routePath(controller), '/slides/3');
+
+      loader.emitEvent(SlidesLoadedEvent(deckOf(5)));
+      await tester.pump();
+      await tester.pump();
+
+      expect(routePath(controller), '/slides/3');
+      expect(mountedIndexes(tester), [3]);
+      expect(presentation.currentIndex.value, 3);
+    });
+
+    testWidgets('a deep link opened before the deck loads survives', (
+      tester,
+    ) async {
+      addTearDown(tester.view.reset);
+      final loader = MockDeckLoader()..disableAutoLoad();
+      final controller = await pumpDeck(tester, loader, slideCount: 0);
+      final presentation = controller.presentation;
+
+      presentation.router.go('/slides/3');
+      await tester.pump();
+      await tester.pump();
+      await rebuildUnrelated(tester);
+
+      expect(routePath(controller), '/slides/3');
+
+      loader.emitEvent(SlidesLoadedEvent(deckOf(5)));
+      await tester.pump();
+      await tester.pump();
+
+      expect(routePath(controller), '/slides/3');
+      expect(mountedIndexes(tester), [3]);
+      expect(presentation.currentIndex.value, 3);
+      expect(presentation.canGoNext.value, isTrue);
+    });
+
+    testWidgets('an out-of-range route lands on the last slide', (
+      tester,
+    ) async {
+      addTearDown(tester.view.reset);
+      final loader = MockDeckLoader()..disableAutoLoad();
+      final controller = await pumpDeck(tester, loader);
+      final presentation = controller.presentation;
+
+      presentation.router.go('/slides/99');
+      await tester.pump();
+      await tester.pump();
+      await rebuildUnrelated(tester);
+
+      expect(routePath(controller), '/slides/4');
+      expect(mountedIndexes(tester), [4]);
+      expect(presentation.currentIndex.value, 4);
+      expect(presentation.canGoNext.value, isFalse);
+    });
+
+    testWidgets('controller navigation reports the route to the platform', (
+      tester,
+    ) async {
+      final platformCalls = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.navigation,
+        (call) async {
+          platformCalls.add(call);
+          return null;
+        },
+      );
+      addTearDown(() {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.navigation,
+          null,
+        );
+      });
+
+      final loader = MockDeckLoader()..disableAutoLoad();
+      final controller = await pumpDeck(tester, loader);
+
+      platformCalls.clear();
+      await goToSlide(tester, controller, 1);
+      await tester.pump();
+
+      final updates = platformCalls.where(
+        (call) => call.method == 'routeInformationUpdated',
+      );
+      expect(
+        updates,
+        contains(
+          isA<MethodCall>().having(
+            (call) => call.arguments,
+            'arguments',
+            containsPair('uri', '/slides/1'),
+          ),
+        ),
+      );
     });
   });
 

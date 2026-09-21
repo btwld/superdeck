@@ -9,8 +9,9 @@ import 'deck_controller.dart';
 
 /// Widget for rendering slide page content
 ///
-/// Handles loading states, errors, and syncing route index with DeckController.
-/// Separated from routing concerns to avoid tight coupling.
+/// Handles loading states and errors for the slide the route names. It reads
+/// the index and never writes it: `DeckPresentationState` keeps the route and
+/// the active slide in step.
 class SlidePageContent extends StatelessWidget {
   final int index;
 
@@ -45,6 +46,9 @@ class SlidePageContent extends StatelessWidget {
           return const _NoSlidesScreen();
         }
 
+        // A render guard only. The route is the authority for the active
+        // slide and corrects itself, but the frame before that correction
+        // lands still has to draw something.
         final safeIndex = index.clamp(0, slides.length - 1);
         return Semantics(
           label: 'Slide ${safeIndex + 1}',
