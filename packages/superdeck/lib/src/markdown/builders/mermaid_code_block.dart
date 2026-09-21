@@ -3,6 +3,7 @@ import 'package:mermaid_core/mermaid_core.dart' as mermaid;
 import 'package:mermaid_flutter/mermaid_flutter.dart';
 
 import '../../capture/slide_capture_readiness.dart';
+import '../mermaid/mermaid_source_check.dart';
 import '../../ui/widgets/error_widgets.dart';
 
 /// Renders a ```` ```mermaid ```` fence as a painted diagram.
@@ -79,10 +80,33 @@ class _MermaidCodeBlockState extends State<MermaidCodeBlock> {
     super.dispose();
   }
 
+  /// The reason this source cannot be drawn completely, if there is one.
+  ///
+  /// Checked here rather than left to the renderer, because the renderer
+  /// accepts two inputs it cannot draw faithfully.
+  Object? _sourceRejection(String source) {
+    try {
+      checkMermaidSource(source);
+
+      return null;
+    } on mermaid.MermaidParseException catch (error) {
+      return error;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _track();
     _completeAfterFrame();
+
+    if (_sourceRejection(widget.code.trim()) case final rejection?) {
+      _fail(rejection);
+
+      return ErrorWidgets.detailed(
+        'Unable to render Mermaid diagram',
+        '$rejection',
+      );
+    }
 
     return FittedBox(
       fit: BoxFit.scaleDown,

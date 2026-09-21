@@ -191,7 +191,8 @@ graph TD
         resolution: const Size(800, 600),
       );
 
-      expect(find.byType(MermaidDiagram), findsOneWidget);
+      // Rejected before the renderer sees it, so nothing is drawn at all.
+      expect(find.byType(MermaidDiagram), findsNothing);
       expect(
         find.textContaining('Unable to render Mermaid diagram'),
         findsOneWidget,
