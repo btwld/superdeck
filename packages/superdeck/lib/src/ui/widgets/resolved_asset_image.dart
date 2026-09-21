@@ -97,6 +97,10 @@ class _ResolvedAssetImageState extends State<ResolvedAssetImage> {
     );
   }
 
+  /// Ends the wait for the resolution step only.
+  ///
+  /// A key that misses the cache is not a failure: the [CachedImage] below
+  /// renders [widget.fallback] and reports whether that produced a frame.
   void _completeReadiness() {
     _readiness?.complete();
     _readiness = null;

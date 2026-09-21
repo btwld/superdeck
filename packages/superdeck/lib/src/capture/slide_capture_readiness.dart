@@ -1,12 +1,21 @@
 import 'package:flutter/widgets.dart';
 
+/// One asynchronous visual that finished without rendering.
+typedef SlideCaptureFailure = ({String? label, String reason});
+
 /// Coordinates asynchronous widget readiness during isolated slide capture.
 ///
 /// Custom widgets that load data or assets can call [track] and complete the
 /// returned handle when their capture-safe visual state is ready. Capture waits
 /// for all registered handles, subject to its bounded settle limit.
+///
+/// A dependency that gives up reports [SlideCaptureReadinessHandle.fail]
+/// instead, which ends the wait and records the reason in [failures]. Readiness
+/// alone therefore means *finished*; callers that need *rendered* check
+/// [failures] too.
 final class SlideCaptureReadiness {
   final _pending = <int, String?>{};
+  final _failures = <SlideCaptureFailure>[];
   var _nextId = 0;
 
   /// Registers pending capture work from the nearest readiness scope.
@@ -26,11 +35,23 @@ final class SlideCaptureReadiness {
     final id = _nextId++;
     _pending[id] = label;
 
-    return SlideCaptureReadinessHandle._(() => _pending.remove(id));
+    return SlideCaptureReadinessHandle._(
+      onComplete: () => _pending.remove(id),
+      onFail: (reason) {
+        _pending.remove(id);
+        _failures.add((label: label, reason: reason));
+      },
+    );
   }
 
   /// Whether every registered asynchronous visual is ready to capture.
   bool get isReady => _pending.isEmpty;
+
+  /// Asynchronous visuals that finished without rendering.
+  ///
+  /// They are kept for the lifetime of this readiness scope: a dependency that
+  /// failed once does not come back on its own.
+  List<SlideCaptureFailure> get failures => List.unmodifiable(_failures);
 
   /// Number of asynchronous visuals still pending.
   int get pendingCount => _pending.length;
@@ -46,19 +67,36 @@ final class SlideCaptureReadiness {
 /// Idempotent completion handle for one asynchronous capture dependency.
 final class SlideCaptureReadinessHandle {
   VoidCallback? _onComplete;
+  void Function(String reason)? _onFail;
 
-  SlideCaptureReadinessHandle._(this._onComplete);
+  SlideCaptureReadinessHandle._({
+    required VoidCallback onComplete,
+    required void Function(String reason) onFail,
+  }) : _onComplete = onComplete,
+       _onFail = onFail;
 
-  SlideCaptureReadinessHandle._completed() : _onComplete = null;
+  SlideCaptureReadinessHandle._completed();
 
-  /// Whether this dependency has already signaled readiness.
-  bool get isCompleted => _onComplete == null;
+  /// Whether this dependency has already reported an outcome.
+  bool get isCompleted => _onComplete == null && _onFail == null;
 
   /// Signals readiness once; subsequent calls are no-ops.
   void complete() {
     final callback = _onComplete;
     _onComplete = null;
+    _onFail = null;
     callback?.call();
+  }
+
+  /// Reports that this dependency finished without its visual.
+  ///
+  /// The wait ends the same way [complete] ends it. [reason] is shown to
+  /// whoever asked for the capture, so it names what is missing.
+  void fail(String reason) {
+    final callback = _onFail;
+    _onComplete = null;
+    _onFail = null;
+    callback?.call(reason);
   }
 }
 
