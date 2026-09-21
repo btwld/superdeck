@@ -35,8 +35,10 @@ including:
 
 Diagram families are ported by hand from Mermaid's own grammars, so a diagram
 that renders on mermaid.js can still be rejected here, and layout is not
-pixel-identical. Anything that is rejected says so on the slide, with the line
-it failed on — nothing is dropped silently.
+pixel-identical. Rejected input says so on the slide with the failing line.
+SuperDeck also guards the two known flowchart cases where version 0.3.0 would
+otherwise accept invalid syntax and draw an incomplete diagram, but this is not
+a claim of full mermaid.js conformance.
 
 ## Flowcharts
 
@@ -186,5 +188,6 @@ When a diagram shows an error:
 
 The official Mermaid live editor is the reference implementation. A diagram
 that works there usually works here, but the Dart port is a hand-written
-re-implementation: when the two disagree, the slide shows the error rather
-than a half-drawn diagram.
+re-implementation. Keep diagrams within the documented subset and treat a
+renderer disagreement as a compatibility issue to report, even if neither
+renderer returns an error.

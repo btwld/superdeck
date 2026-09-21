@@ -56,7 +56,7 @@ void main() {
       );
     });
 
-    test('accepts every flowchart shape, style and directive form', () {
+    test('accepts representative flowchart shapes, styles and directives', () {
       const sources = [
         'flowchart TB\n  subgraph one\n    A --> B\n  end\n  B --> C\n',
         'flowchart TD\n  A([round]) --> B[[sub]] --> C[(db)]\n'
