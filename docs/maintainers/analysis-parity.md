@@ -44,10 +44,8 @@ entry cannot hide a current finding, so pruning them is safe and it stops the
 file from looking like more debt than it is. **468 suppressed findings remain**,
 all naming live files.
 
-Measured on 2026-09-21 by moving the baseline aside (630 findings at that
-point, before the prune, on the tree that still had the editor):
-
-Measured on 2026-09-21 by moving the baseline aside:
+Measured on 2026-09-21 by moving the baseline aside (630 findings before the
+prune, on the tree that still had the editor):
 
 | Finding | Count |
 | --- | --- |

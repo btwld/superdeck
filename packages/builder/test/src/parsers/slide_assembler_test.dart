@@ -5,7 +5,7 @@ import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 import 'package:test/test.dart';
 
-/// The assembly the CLI build and the editor preview share.
+/// The assembly the CLI build and the playground deck codec share.
 ///
 /// The two used to hold identical copies of these four calls. These tests fix
 /// what the shared function produces, over the decks the repository actually

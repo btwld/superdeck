@@ -8,11 +8,11 @@ import 'section_parser.dart';
 ///
 /// This is the whole of stage 1 and 2 parsing: split the document into slides,
 /// read each slide's front matter into options, and parse its content into
-/// sections and comments. The CLI build and the editor's preview codec both
+/// sections and comments. The CLI build and the playground's deck codec both
 /// call it, so a deck cannot parse one way on disk and another way on screen.
 ///
 /// Callers add their own concerns around it: the build applies its plugins,
-/// and the editor wraps failures in a [DeckFormatException] it can show.
+/// and the playground wraps failures in a [DeckFormatException] it can show.
 ///
 /// Throws [FormatException] for front matter that is recognized but invalid.
 List<Slide> assembleSlides(String markdown) {

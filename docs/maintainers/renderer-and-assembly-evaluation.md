@@ -6,7 +6,7 @@ where the product has changed").
 
 ## 1. Shared slide assembly — evaluated, consolidated
 
-**Question.** The CLI build and the editor's preview codec each assembled
+**Question.** The CLI build and the playground's deck codec each assembled
 slides from `MarkdownParser`, `SlideOptions`, `SectionParser` and
 `CommentParser`. Extract one function, or leave them apart?
 
@@ -30,8 +30,8 @@ rebuilding `demo/slides.md` after that change produced a byte-identical
 **Decision.** Parity is proven, so consolidate: `assembleSlides(String)` now
 lives in `packages/builder/lib/src/parsers/slide_assembler.dart` and both
 callers use it. The differences above stayed with their callers, which is
-where they belong — plugins are a build concern, and the editor's exception
-type is an editor concern.
+where they belong — plugins are a build concern, and the playground's
+`DeckFormatException` is an application-facing concern.
 
 **Deliberately not done.** No pipeline framework, no shared "deck service", no
 move of filesystem work or build status. The report asked for one small pure
