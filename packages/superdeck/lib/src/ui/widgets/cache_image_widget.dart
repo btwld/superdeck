@@ -86,7 +86,7 @@ class _CachedImageState extends State<CachedImage> {
         return child;
       },
       errorBuilder: (context, error, stackTrace) {
-        _completeReadiness();
+        _failReadiness('$error');
         return ErrorWidgets.simple('Error loading image: ${widget.uri}');
       },
     );
@@ -104,6 +104,15 @@ class _CachedImageState extends State<CachedImage> {
 
   void _completeReadiness() {
     _readiness?.complete();
+    _readiness = null;
+  }
+
+  /// Ends the wait for an image that will not arrive.
+  ///
+  /// A capture that needs every visual, such as a PDF export, stops here
+  /// instead of writing a page with a broken image on it.
+  void _failReadiness(String reason) {
+    _readiness?.fail(reason);
     _readiness = null;
   }
 }
