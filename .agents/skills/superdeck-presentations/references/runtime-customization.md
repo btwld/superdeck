@@ -403,7 +403,9 @@ SuperDeckApp(
 ```
 
 Mermaid diagrams render directly from fenced `mermaid` blocks. They do not
-require a plugin, custom runner, browser, generated image, or cache:
+require a plugin, custom runner, browser, generated image, or cache. Flowchart,
+sequence, class, state, ER, journey, chart, timeline and Git-graph families all
+render; a diagram that cannot be parsed shows the failing line on the slide:
 
 ````markdown
 ```mermaid

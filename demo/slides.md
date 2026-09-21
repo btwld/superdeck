@@ -556,6 +556,32 @@ layout: fullscreen
 }
 
 ---
+title: Mermaid diagrams
+---
+
+## Diagrams render on the slide
+
+@section
+
+@block
+
+```mermaid
+flowchart LR
+  Draft[Draft slides] --> Review{Ready?}
+  Review -->|Yes| Present[Present]
+  Review -->|No| Draft
+```
+
+@block
+
+```mermaid
+classDiagram
+  Deck "1" o-- "many" Slide
+  Slide : +String key
+  Slide : +render()
+```
+
+---
 
 @section{
   align: bottomCenter

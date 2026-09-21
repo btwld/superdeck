@@ -2948,6 +2948,117 @@
     "comments": []
   },
   {
+    "key": "7iMG66ab",
+    "options": {
+      "title": "Mermaid diagrams"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "h2",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Diagrams render on the slide"
+                    }
+                  ],
+                  "generatedId": "diagrams-render-on-the-slide"
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            }
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "pre",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "attributes": {
+                        "class": "language-mermaid"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "flowchart LR\n  Draft[Draft slides] --&gt; Review{Ready?}\n  Review --&gt;|Yes| Present[Present]\n  Review --&gt;|No| Draft\n"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            }
+          },
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": {
+              "type": "document",
+              "children": [
+                {
+                  "type": "element",
+                  "tag": "pre",
+                  "children": [
+                    {
+                      "type": "element",
+                      "tag": "code",
+                      "attributes": {
+                        "class": "language-mermaid"
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "classDiagram\n  Deck &quot;1&quot; o-- &quot;many&quot; Slide\n  Slide : +String key\n  Slide : +render()\n"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "linkReferences": {},
+              "footnoteLabels": [],
+              "footnoteReferences": {}
+            }
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
     "key": "MKokn2KA",
     "options": {},
     "sections": [

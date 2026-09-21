@@ -1089,6 +1089,47 @@
     "comments": []
   },
   {
+    "key": "7iMG66ab",
+    "options": {
+      "title": "Mermaid diagrams"
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": "## Diagrams render on the slide\n"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      },
+      {
+        "blocks": [
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": "\n\n```mermaid\nflowchart LR\n  Draft[Draft slides] --> Review{Ready?}\n  Review -->|Yes| Present[Present]\n  Review -->|No| Draft\n```\n"
+          },
+          {
+            "type": "block",
+            "flex": 1,
+            "scrollable": false,
+            "content": "```mermaid\nclassDiagram\n  Deck \"1\" o-- \"many\" Slide\n  Slide : +String key\n  Slide : +render()\n```"
+          }
+        ],
+        "flex": 1,
+        "spacing": 0.0,
+        "type": "section"
+      }
+    ],
+    "comments": []
+  },
+  {
     "key": "MKokn2KA",
     "options": {},
     "sections": [
