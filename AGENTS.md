@@ -21,7 +21,7 @@ packages/
   superdeck/  # Flutter widgets and presentation components
   cli/        # superdeck CLI tool (setup, build/watch, version)
   builder/    # Deck parsing, serialization, and build/watch pipeline (Dart-only)
-  playground/ # Flutter authoring app, editor, and AI generation
+  playground/ # SuperDeck Wizard: AI deck generation, presenting, saving
   plugins/pdf/ # PDF export plugin
 demo/         # Sample presentation app
 docs/         # User-facing documentation (MDX format)
@@ -33,7 +33,7 @@ docs/         # User-facing documentation (MDX format)
 - **superdeck**: Flutter widgets, DeckController, navigation, thumbnail/capture services, theme system
 - **cli**: CLI commands for project setup and building slides
 - **builder**: Markdown deck parsing, serialization, build/watch orchestration, and build plugins
-- **playground**: Deck authoring, editor/file sessions, AI generation, and theme customization
+- **playground**: AI deck generation (the Wizard), present mode, and the saved-deck library
 - **plugins/pdf**: PDF capture and export UI
 
 ## Environment Setup

@@ -1,5 +1,7 @@
 name: playground
-description: A playground app for experimenting with Mix, Remix, and Hero UI.
+description: >-
+  The SuperDeck Wizard: generate a deck with AI, present it, and save it to
+  disk with its artwork and theme.
 publish_to: none
 
 environment:

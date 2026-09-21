@@ -1,7 +1,35 @@
 # playground
 
-A playground app for experimenting with Mix, Remix, and Hero UI, built on a
-layered architecture using **Provider + Command + ChangeNotifier**.
+The SuperDeck Wizard. One flow: describe a presentation, review the outline it
+plans, approve it, present the deck, and save it. Package name kept as
+`playground` for now.
+
+There is no file-backed editor here any more. The app does not open arbitrary
+Markdown, watch files, or auto-save; a deck is written only when the reader
+asks for it.
+
+## What a saved deck is
+
+Three files that travel together in your SuperDeck folder:
+
+```
+My talk.md          the Markdown the generation produced
+My talk.assets/     the artwork it refers to by bare filename
+My talk.deck.json   name, timestamp, asset list, and the theme selection
+```
+
+The manifest stores the theme's catalog id, version and density, not resolved
+colours, so a deck reopened later is recognised rather than guessed at. A deck
+whose manifest is missing or unreadable still opens; it opens without its
+theme.
+
+**Moving, copying or sharing a deck has to include its asset directory**, or
+its images stop resolving. Saving the same deck twice keeps both copies
+("My talk", then "My talk 2") — a save never replaces a deck you already have.
+
+Saving is macOS-only for now: it needs a folder you pick once, which the app
+remembers. Generating and presenting work anywhere; the save action is simply
+absent where decks cannot be stored.
 
 ## Layers (folders, single package)
 
@@ -12,12 +40,12 @@ lib/
   core/           # shared cross-feature domain + data
     result.dart   # Result<T>
     command.dart  # Command / Command0 / Command1
-    domain/       # models, stores, repositories (abstract)
-    data/         # repositories (impl), data_sources, mappers
+    domain/       # stores (document, customization), design catalogs
+    data/         # data_sources (asset stores, deck loader), mappers
   features/
-    ai/           # domain / data / presentation / routes
-    editor/       # domain / data / presentation / routes
-    presentation/ # domain / data / presentation / routes
+    ai/           # the Wizard, the generation engine, image generation
+    library/      # saved decks: domain / data / presentation / routes
+    presentation/ # present mode
 ```
 
 **Dependency rule:** `presentation → domain ← data`. Domain depends on nothing.
