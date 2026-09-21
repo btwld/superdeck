@@ -562,13 +562,27 @@ void main() {
         .toList(growable: false);
 
     /// Rebuilds everything above the router without touching navigation.
+    ///
+    /// The size change is small enough to keep the shell's layout intact.
     Future<void> rebuildUnrelated(WidgetTester tester) async {
-      tester.view.physicalSize =
-          tester.view.physicalSize == const Size(1200, 800)
-          ? const Size(1400, 900)
-          : const Size(1200, 800);
+      const base = Size(2400, 1800);
+      tester.view.physicalSize = tester.view.physicalSize == base
+          ? const Size(2424, 1824)
+          : base;
       await tester.pump();
       await tester.pump();
+    }
+
+    /// Navigates the way the deck's own controls do, then lets the
+    /// transition's delay elapse. Awaiting `goToSlide` here would hang.
+    Future<void> goToSlide(
+      WidgetTester tester,
+      DeckController controller,
+      int index,
+    ) async {
+      unawaited(controller.presentation.goToSlide(index));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
     }
 
     Future<DeckController> pumpDeck(
@@ -604,9 +618,7 @@ void main() {
       final controller = await pumpDeck(tester, loader);
       final presentation = controller.presentation;
 
-      unawaited(presentation.goToSlide(4));
-      await tester.pump();
-      await tester.pump();
+      await goToSlide(tester, controller, 4);
       await rebuildUnrelated(tester);
 
       expect(routePath(controller), '/slides/4');
@@ -643,9 +655,7 @@ void main() {
       final controller = await pumpDeck(tester, loader);
       final presentation = controller.presentation;
 
-      unawaited(presentation.goToSlide(3));
-      await tester.pump();
-      await tester.pump();
+      await goToSlide(tester, controller, 3);
 
       loader.emitEvent(SlidesLoadedEvent(const []));
       await tester.pump();

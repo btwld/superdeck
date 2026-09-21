@@ -88,6 +88,9 @@ Future<BuildContext> _pumpContext(WidgetTester tester) async {
   return key.currentContext!;
 }
 
+String _routePath(DeckPresentationState state) =>
+    state.router.routeInformationProvider.value.uri.path;
+
 void main() {
   group('DeckPresentationState', () {
     testWidgets('manual generation removes stale thumbnails', (tester) async {
@@ -193,6 +196,70 @@ void main() {
       expect(slide1.disposed, isTrue);
       expect(state.getThumbnail('slide-0'), isNull);
       expect(state.getThumbnail('slide-1'), isNull);
+    });
+
+    testWidgets('the initial route sets the active slide', (tester) async {
+      final slides = signal<List<SlideConfiguration>>(createTestSlides(3));
+      addTearDown(slides.dispose);
+      final state = DeckPresentationState(
+        thumbnailService: _RecordingThumbnailService(),
+        slides: slides,
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(state.dispose);
+
+      expect(_routePath(state), '/slides/0');
+      expect(state.currentIndex.value, 0);
+    });
+
+    testWidgets('a shrunk deck replaces the out-of-range route', (
+      tester,
+    ) async {
+      final slides = signal<List<SlideConfiguration>>(createTestSlides(5));
+      addTearDown(slides.dispose);
+      final state = DeckPresentationState(
+        thumbnailService: _RecordingThumbnailService(),
+        slides: slides,
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(state.dispose);
+
+      state.router.go('/slides/4');
+      await tester.pump();
+      expect(state.currentIndex.value, 4);
+
+      slides.value = createTestSlides(2);
+      await tester.pump();
+
+      expect(_routePath(state), '/slides/1');
+      expect(state.currentIndex.value, 1);
+      expect(state.canGoNext.value, isFalse);
+    });
+
+    testWidgets('an empty deck leaves the route for the slides to come', (
+      tester,
+    ) async {
+      final slides = signal<List<SlideConfiguration>>(
+        const <SlideConfiguration>[],
+      );
+      addTearDown(slides.dispose);
+      final state = DeckPresentationState(
+        thumbnailService: _RecordingThumbnailService(),
+        slides: slides,
+        transitionDuration: Duration.zero,
+      );
+      addTearDown(state.dispose);
+
+      state.router.go('/slides/3');
+      await tester.pump();
+
+      expect(_routePath(state), '/slides/3');
+
+      slides.value = createTestSlides(5);
+      await tester.pump();
+
+      expect(_routePath(state), '/slides/3');
+      expect(state.currentIndex.value, 3);
     });
 
     testWidgets('a superseded transition keeps the latest transition open', (
