@@ -1,7 +1,7 @@
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-/// Converts between an editor Markdown document and the canonical slide model.
+/// Converts between a deck Markdown document and the canonical slide model.
 class DeckMarkdownCodec {
   const DeckMarkdownCodec();
 

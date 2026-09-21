@@ -163,16 +163,9 @@ Add `--dart-define=LIVE_DEBUG_LAYOUT=true` to include the section, block,
 margin, and padding guides in the recaptured slide PNGs and contact sheet.
 Normal captures remain clean by default.
 
-In debug builds, open `/debug/generation` to exercise the same production
-pipeline interactively with the three fixtures.
-
 ## Deck files
 
 On first launch, choose a parent directory for deck storage. The app creates a
 `SuperDeck` folder inside it and remembers access with a macOS security-scoped
-bookmark. New decks are Markdown files in that folder; **Open** can load a
-Markdown deck from another location.
-
-If the active file is deleted or moved outside the app, the current Markdown
-stays in memory. Create a new deck to recover it before opening another deck or
-quitting.
+bookmark. The saved-deck library lists the decks in that folder and opens them
+read-only for presenting. The Wizard does not open arbitrary Markdown files.

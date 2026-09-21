@@ -26,7 +26,7 @@ import 'wizard_generation_status.dart';
 import 'wizard_outline_review.dart';
 import 'wizard_view.dart';
 
-/// Isolated host for exercising the conversational Wizard without the editor.
+/// Host for the conversational Wizard, the app's only authoring flow.
 ///
 /// Generated Markdown is kept in memory so opening this screen never requests a
 /// deck-storage folder. The production integration can provide its own document

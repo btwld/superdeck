@@ -23,7 +23,7 @@ final class PresentationFontDescriptor {
   final Set<int> weights;
 }
 
-/// Single source of truth for AI generation, Wizard previews, and editor fonts.
+/// Single source of truth for AI generation, Wizard previews, and deck fonts.
 final class PresentationTypographyCatalog {
   PresentationTypographyCatalog._(Iterable<PresentationFontDescriptor> fonts)
     : fonts = List.unmodifiable(fonts) {
