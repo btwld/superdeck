@@ -62,10 +62,10 @@ void main() {
     expect(find.byType(WizardView), findsOneWidget);
     expect(find.text('What is the presentation about?'), findsOneWidget);
     expect(find.text('Describe your presentation topic…'), findsOneWidget);
-    expect(find.byTooltip('Generation lab'), findsOneWidget);
+    expect(find.byTooltip('Saved decks'), findsOneWidget);
   });
 
-  testWidgets('debug action opens the generation lab route', (tester) async {
+  testWidgets('the header action opens the saved decks', (tester) async {
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -76,9 +76,9 @@ void main() {
           ),
         ),
         GoRoute(
-          path: '/debug/generation',
+          path: '/decks',
           builder: (context, state) =>
-              const Scaffold(body: Text('Generation lab route')),
+              const Scaffold(body: Text('Saved decks route')),
         ),
       ],
     );
@@ -94,10 +94,10 @@ void main() {
     );
     await tester.pump();
 
-    await tester.tap(find.byTooltip('Generation lab'));
+    await tester.tap(find.byTooltip('Saved decks'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Generation lab route'), findsOneWidget);
+    expect(find.text('Saved decks route'), findsOneWidget);
   });
 
   testWidgets('approved outline loads the deck before Present navigation', (

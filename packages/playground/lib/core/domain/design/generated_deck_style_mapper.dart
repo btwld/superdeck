@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/domain/design/presentation_theme_catalog.dart';
-import '../../../../core/domain/stores/deck_customization_store.dart';
+import '../stores/deck_customization_store.dart';
+import 'presentation_theme_catalog.dart';
 
 extension GeneratedDeckStyleMapping on ResolvedPresentationTheme {
   GeneratedDeckStyle toGeneratedDeckStyle() => .new(

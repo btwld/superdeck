@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
-import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
+import 'package:playground/core/domain/design/generated_deck_style_mapper.dart';
 
 void main() {
   test('maps generated palette and typography into renderer style', () {
