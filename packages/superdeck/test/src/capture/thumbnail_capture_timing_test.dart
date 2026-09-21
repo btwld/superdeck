@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck/src/builtins/widgets.dart';
@@ -307,6 +307,37 @@ void main() {
 
         expect(bytes, isNotEmpty);
       });
+    });
+
+    testWidgets('offscreen capture does not report application routes', (
+      tester,
+    ) async {
+      final context = await _pumpContext(tester);
+      final navigationCalls = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.navigation,
+        (call) async {
+          navigationCalls.add(call);
+          return null;
+        },
+      );
+      addTearDown(() {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.navigation,
+          null,
+        );
+      });
+
+      await tester.runAsync(() async {
+        final bytes = await SlideCaptureService().capture(
+          slide: _slide('history-isolation', '# History isolation'),
+          context: context,
+        );
+
+        expect(bytes, isNotEmpty);
+      });
+
+      expect(navigationCalls, isEmpty);
     });
 
     testWidgets('only includes debug layout guides when requested', (

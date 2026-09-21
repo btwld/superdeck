@@ -716,6 +716,46 @@ void main() {
       expect(presentation.currentIndex.value, 4);
       expect(presentation.canGoNext.value, isFalse);
     });
+
+    testWidgets('controller navigation reports the route to the platform', (
+      tester,
+    ) async {
+      final platformCalls = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.navigation,
+        (call) async {
+          platformCalls.add(call);
+          return null;
+        },
+      );
+      addTearDown(() {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.navigation,
+          null,
+        );
+      });
+
+      final loader = MockDeckLoader()..disableAutoLoad();
+      final controller = await pumpDeck(tester, loader);
+
+      platformCalls.clear();
+      await goToSlide(tester, controller, 1);
+      await tester.pump();
+
+      final updates = platformCalls.where(
+        (call) => call.method == 'routeInformationUpdated',
+      );
+      expect(
+        updates,
+        contains(
+          isA<MethodCall>().having(
+            (call) => call.arguments,
+            'arguments',
+            containsPair('uri', '/slides/1'),
+          ),
+        ),
+      );
+    });
   });
 
   group('AppShell thumbnail warmup', () {
