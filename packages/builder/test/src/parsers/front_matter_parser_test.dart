@@ -114,6 +114,43 @@ Content after complex YAML.
       expect(result.contents, equals('Content after complex YAML.'));
     });
 
+    test('Reports front matter that is not a map', () {
+      const input = '''
+---
+- one
+- two
+---
+
+Content after a sequence.
+''';
+
+      expect(
+        () => parser.parse(input),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('front matter'),
+          ),
+        ),
+      );
+    });
+
+    test('Reports invalid YAML syntax', () {
+      const input = '''
+---
+title: "unclosed
+---
+
+Content after invalid YAML.
+''';
+
+      expect(
+        () => parser.parse(input),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
     test('Handles whitespace correctly', () {
       const input = '''
 ---

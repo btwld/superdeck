@@ -58,6 +58,11 @@ FrontMatter parseFrontMatter(String input) {
 class FrontmatterParser {
   const FrontmatterParser();
 
+  /// Reads the front matter block of one slide.
+  ///
+  /// [MarkdownParser] only keeps a block that is shaped like a YAML mapping,
+  /// so a block that fails to parse, or that parses to anything other than a
+  /// map, is a mistake in the slide rather than content. Both are reported.
   ExtractedFrontmatter parse(String content) {
     final result = parseFrontMatter(content);
 
@@ -67,10 +72,10 @@ class FrontmatterParser {
 
     if (yamlString.isNotEmpty) {
       try {
-        yamlMap = convertYamlToMap(yamlString);
+        yamlMap = parseYamlMap(yamlString, sourceLabel: 'slide front matter');
       } catch (e) {
         throw FormatException(
-          'Invalid YAML frontmatter in slide. '
+          'Invalid YAML front matter in slide. '
           'Check for syntax errors in your slide configuration. '
           'Error: $e',
         );
