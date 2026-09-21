@@ -1,5 +1,7 @@
 name: playground
-description: A playground app for experimenting with Mix, Remix, and Hero UI.
+description: >-
+  The SuperDeck Wizard: generate a deck with AI, present it, and save it to
+  disk with its artwork and theme.
 publish_to: none
 
 environment:
@@ -22,7 +24,6 @@ dependencies:
   # UI
   mix: ^2.2.0-beta.0
   remix: ^1.0.0-beta.1
-  super_editor: 0.3.0-dev.52
   google_fonts: ^8.1.0
   lucide_icons_flutter: ^3.1.15
   hero_ui:
@@ -46,7 +47,7 @@ dependencies:
   ack_json_schema_builder: ^1.2.0
   dartantic_ai: ^3.1.0
   json_schema_builder: ^0.1.5
-  # Filesystem persistence for the playground editor (desktop-only).
+  # Filesystem persistence for saved decks (desktop-only).
   path_provider: ^2.1.4
 
 dev_dependencies:

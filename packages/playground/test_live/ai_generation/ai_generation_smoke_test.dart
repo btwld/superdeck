@@ -31,7 +31,7 @@ import 'package:playground/features/ai/quick_agent/core/engine/services/generati
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_trace.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/theme_json_serializer.dart';
-import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
+import 'package:playground/core/domain/design/generated_deck_style_mapper.dart';
 import 'package:playground/features/ai/image_generation/image_generator.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_generation_controller.dart';
 import 'package:superdeck/src/utils/syntax_highlighter.dart';

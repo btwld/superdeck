@@ -5,13 +5,13 @@ import '../presentation/pages/presentation_page.dart';
 
 const _transitionDuration = Duration(milliseconds: 250);
 
-/// The presentation feature's routes. `/present/:index` is pushed on top of the
-/// editor (which stays mounted beneath it), so the deck globals at the app root
-/// remain available to the SuperDeck shell rendered here.
+/// The presentation feature's routes. `/present/:index` is pushed over the
+/// Wizard or saved-deck library, while deck globals at the app root remain
+/// available to the SuperDeck shell rendered here.
 ///
 /// The route fades in and out via a [CustomTransitionPage] rather than the
 /// platform's default push transition. The `:index` path parameter seeds present
-/// mode on the slide the author was editing.
+/// mode on the slide the reader chose to present.
 List<RouteBase> presentationRoutes() => [
   GoRoute(
     path: '/present/:index',

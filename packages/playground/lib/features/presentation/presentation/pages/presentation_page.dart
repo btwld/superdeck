@@ -11,9 +11,10 @@ import 'package:superdeck/superdeck.dart';
 /// action bar, menu, and scaled slide — all driven off the shared
 /// [DeckController]. Navigation, the menu, and thumbnails are the shell's own.
 ///
-/// The playground pushes this over the editor (unlike standalone SuperDeck,
-/// which is the whole app), so a close button is overlaid to return.
-/// [initialIndex], from the route, seeds the slide the author was editing.
+/// The playground pushes this over the Wizard or saved-deck library (unlike
+/// standalone SuperDeck, which is the whole app), so a close button is
+/// overlaid to return. [initialIndex], from the route, seeds the slide the
+/// reader chose to present.
 class PresentationPage extends StatefulWidget {
   const PresentationPage({super.key, this.initialIndex = 0});
 
@@ -28,7 +29,7 @@ class _PresentationPageState extends State<PresentationPage> {
   void initState() {
     super.initState();
     // The shell reads the current slide off DeckController.presentation, so seed
-    // it once mounted to open on the slide the author was editing.
+    // it once mounted to open on the slide the reader chose to present.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<DeckController>().presentation.goToSlide(

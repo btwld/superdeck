@@ -30,6 +30,10 @@ class WizardGenerationStatus extends StatelessWidget {
     this.onRetryFailed,
     this.onEditOutline,
     this.onStartOver,
+    this.onSave,
+    this.onOpenSavedDecks,
+    this.saveLabel = 'Save deck',
+    this.isSaving = false,
   });
 
   final WizardGenerationStatusKind kind;
@@ -50,6 +54,19 @@ class WizardGenerationStatus extends StatelessWidget {
   final VoidCallback? onRetryFailed;
   final VoidCallback? onEditOutline;
   final VoidCallback? onStartOver;
+
+  /// Writes this deck to the SuperDeck folder. Absent when the platform has
+  /// nowhere to write it.
+  final VoidCallback? onSave;
+
+  /// Opens the list of decks already saved.
+  final VoidCallback? onOpenSavedDecks;
+
+  /// Reflects whether this deck has been saved yet, so a second save reads as
+  /// another copy rather than an undo.
+  final String saveLabel;
+
+  final bool isSaving;
 
   @override
   Widget build(BuildContext context) {
@@ -206,6 +223,20 @@ class WizardGenerationStatus extends StatelessWidget {
                           '${failedSlideCount == 1 ? 'slide' : 'slides'}',
                       onPressed: onRetryFailed,
                       icon: LucideIcons.refreshCw,
+                      variant: .outline,
+                    ),
+                  if (onOpenSavedDecks != null)
+                    SdButton(
+                      label: 'Saved decks',
+                      onPressed: onOpenSavedDecks,
+                      icon: LucideIcons.folderOpen,
+                      variant: .ghost,
+                    ),
+                  if (onSave != null)
+                    SdButton(
+                      label: isSaving ? 'Saving…' : saveLabel,
+                      onPressed: isSaving ? null : onSave,
+                      icon: LucideIcons.save,
                       variant: .outline,
                     ),
                   SdButton(

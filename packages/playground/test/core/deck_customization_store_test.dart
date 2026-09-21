@@ -6,7 +6,7 @@ import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
 import 'package:playground/core/data/data_sources/memory_deck_loader.dart';
 import 'package:playground/core/domain/stores/deck_customization_store.dart';
-import 'package:playground/features/ai/quick_agent/domain/generated_deck_style_mapper.dart';
+import 'package:playground/core/domain/design/generated_deck_style_mapper.dart';
 import 'package:superdeck/src/styling/block_variant.dart'
     show BlockVariantScope;
 import 'package:superdeck/superdeck.dart';
