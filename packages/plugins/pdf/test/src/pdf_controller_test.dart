@@ -82,7 +82,10 @@ final _testPngBytes = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGP4DwQACfsD/fteaysAAAAASUVORK5CYII=',
 );
 
-Widget _buildExportHarness(PdfController controller) {
+Widget _buildExportHarness(
+  PdfController controller, {
+  Widget Function(SlideConfiguration slide)? slideBuilder,
+}) {
   return MaterialApp(
     home: Scaffold(
       body: PageView(
@@ -91,12 +94,47 @@ Widget _buildExportHarness(PdfController controller) {
           for (final slide in controller.slides)
             RepaintBoundary(
               key: controller.getSlideKey(slide),
-              child: const SizedBox.expand(),
+              child: controller
+                  .getSlideReadiness(slide)
+                  .bind(slideBuilder?.call(slide) ?? const SizedBox.expand()),
             ),
         ],
       ),
     ),
   );
+}
+
+/// Stands in for an image on a slide: it registers with the readiness scope
+/// above it and finishes only when the test says so.
+class _ReadinessProbe extends StatefulWidget {
+  const _ReadinessProbe({required this.label, required this.onHandle});
+
+  final String label;
+  final void Function(SlideCaptureReadinessHandle handle) onHandle;
+
+  @override
+  State<_ReadinessProbe> createState() => _ReadinessProbeState();
+}
+
+class _ReadinessProbeState extends State<_ReadinessProbe> {
+  SlideCaptureReadinessHandle? _handle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final handle = SlideCaptureReadiness.track(context, label: widget.label);
+    _handle = handle;
+    widget.onHandle(handle);
+  }
+
+  @override
+  void dispose() {
+    _handle?.complete();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.expand();
 }
 
 Future<Object?> _runExportAndPump(
@@ -385,6 +423,286 @@ void main() {
         expect(savedPdf, isNotNull);
         expect(savedPdf, isNotEmpty);
         expect(String.fromCharCodes(savedPdf!.take(4)), '%PDF');
+      });
+    });
+
+    group('Slide readiness', () {
+      /// Pumps both clocks so polling waits and widget frames both advance.
+      Future<void> drive(
+        WidgetTester tester, {
+        int frames = 20,
+        bool Function()? until,
+        VoidCallback? onFrame,
+      }) async {
+        for (var i = 0; i < frames; i++) {
+          if (until?.call() ?? false) return;
+          onFrame?.call();
+          await tester.pump(const Duration(milliseconds: 20));
+          await Future<void>.delayed(const Duration(milliseconds: 5));
+        }
+      }
+
+      testWidgets('content still loading is not captured early', (
+        tester,
+      ) async {
+        final handles = <String, SlideCaptureReadinessHandle>{};
+        final capture = FakeSlideCaptureService(_testPngBytes);
+        final exportController = PdfController(
+          slides: [testSlides.first],
+          slideCaptureService: capture,
+          waitDuration: Duration.zero,
+          options: PdfExportOptions(pdfSaver: (_) async => true),
+        );
+        addTearDown(exportController.dispose);
+
+        await tester.pumpWidget(
+          _buildExportHarness(
+            exportController,
+            slideBuilder: (slide) => _ReadinessProbe(
+              label: 'image:${slide.key}',
+              onHandle: (handle) => handles[slide.key] = handle,
+            ),
+          ),
+        );
+        await tester.pump();
+
+        await tester.runAsync(() async {
+          var completed = false;
+          final export = exportController.export().whenComplete(() {
+            completed = true;
+          });
+
+          await drive(tester);
+          expect(
+            capture.captureFromKeyCalls,
+            0,
+            reason: 'the slide was captured while its image was loading',
+          );
+          expect(completed, isFalse);
+
+          handles[testSlides.first.key]!.complete();
+          await drive(tester, frames: 60, until: () => completed);
+          await export;
+        });
+
+        expect(exportController.exportStatus.value, PdfExportStatus.complete);
+        expect(capture.captureFromKeyCalls, 1);
+      });
+
+      testWidgets('every slide is waited for, not only the first', (
+        tester,
+      ) async {
+        final handles = <String, SlideCaptureReadinessHandle>{};
+        final capture = FakeSlideCaptureService(_testPngBytes);
+        final exportController = PdfController(
+          slides: testSlides,
+          slideCaptureService: capture,
+          waitDuration: Duration.zero,
+          options: PdfExportOptions(pdfSaver: (_) async => true),
+        );
+        addTearDown(exportController.dispose);
+
+        await tester.pumpWidget(
+          _buildExportHarness(
+            exportController,
+            slideBuilder: (slide) => _ReadinessProbe(
+              label: 'image:${slide.key}',
+              onHandle: (handle) => handles[slide.key] = handle,
+            ),
+          ),
+        );
+        await tester.pump();
+
+        await tester.runAsync(() async {
+          var completed = false;
+          final export = exportController.export().whenComplete(() {
+            completed = true;
+          });
+
+          // A page the view builds during the export registers before its
+          // boundary is captured, so every slide has to be released in turn.
+          // A page rebuilt while the export runs registers again, which is
+          // why the release below keeps completing what appears.
+          for (var i = 0; i < testSlides.length; i++) {
+            final key = testSlides[i].key;
+            void releasePending() {
+              final handle = handles[key];
+              if (handle != null && !handle.isCompleted) handle.complete();
+            }
+
+            await drive(
+              tester,
+              frames: 100,
+              until: () =>
+                  exportController.exportStatus.value ==
+                      PdfExportStatus.capturing &&
+                  capture.captureFromKeyCalls == i &&
+                  handles[key]?.isCompleted == false,
+            );
+            expect(
+              capture.captureFromKeyCalls,
+              i,
+              reason: 'slide ${i + 1} was captured before it was ready',
+            );
+
+            await drive(
+              tester,
+              frames: 100,
+              onFrame: releasePending,
+              until: () => capture.captureFromKeyCalls == i + 1,
+            );
+          }
+
+          await drive(tester, frames: 100, until: () => completed);
+          await export;
+        });
+
+        expect(exportController.exportStatus.value, PdfExportStatus.complete);
+        expect(capture.captureFromKeyCalls, testSlides.length);
+      });
+
+      testWidgets('a visual that never finishes stops the export', (
+        tester,
+      ) async {
+        final capture = FakeSlideCaptureService(_testPngBytes);
+        final exportController = PdfController(
+          slides: [testSlides.first],
+          slideCaptureService: capture,
+          waitDuration: Duration.zero,
+          slideReadinessTimeout: const Duration(milliseconds: 100),
+          options: PdfExportOptions(pdfSaver: (_) async => true),
+        );
+        addTearDown(exportController.dispose);
+
+        await tester.pumpWidget(
+          _buildExportHarness(
+            exportController,
+            slideBuilder: (slide) =>
+                _ReadinessProbe(label: 'image:hero.png', onHandle: (_) {}),
+          ),
+        );
+        await tester.pump();
+
+        final error = await _runExportAndPump(tester, exportController);
+
+        expect(error, isNull);
+        expect(exportController.exportStatus.value, PdfExportStatus.failed);
+        expect(exportController.exportError.value, contains('Slide 1 of 1'));
+        expect(exportController.exportError.value, contains('image:hero.png'));
+        expect(capture.captureFromKeyCalls, 0);
+      });
+
+      testWidgets('a failed image stops the export and names it', (
+        tester,
+      ) async {
+        final capture = FakeSlideCaptureService(_testPngBytes);
+        final exportController = PdfController(
+          slides: [testSlides.first],
+          slideCaptureService: capture,
+          waitDuration: Duration.zero,
+          options: PdfExportOptions(pdfSaver: (_) async => true),
+        );
+        addTearDown(exportController.dispose);
+
+        await tester.pumpWidget(
+          _buildExportHarness(
+            exportController,
+            slideBuilder: (slide) => _ReadinessProbe(
+              label: 'image:hero.png',
+              onHandle: (handle) => handle.fail('404 while loading hero.png'),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        final error = await _runExportAndPump(tester, exportController);
+
+        expect(error, isNull);
+        expect(exportController.exportStatus.value, PdfExportStatus.failed);
+        expect(exportController.exportError.value, contains('image:hero.png'));
+        expect(exportController.exportError.value, contains('404'));
+        expect(capture.captureFromKeyCalls, 0);
+      });
+
+      testWidgets('cancelling during the wait returns the export to idle', (
+        tester,
+      ) async {
+        final capture = FakeSlideCaptureService(_testPngBytes);
+        final exportController = PdfController(
+          slides: [testSlides.first],
+          slideCaptureService: capture,
+          waitDuration: Duration.zero,
+          options: PdfExportOptions(pdfSaver: (_) async => true),
+        );
+        addTearDown(exportController.dispose);
+
+        await tester.pumpWidget(
+          _buildExportHarness(
+            exportController,
+            slideBuilder: (slide) =>
+                _ReadinessProbe(label: 'image:hero.png', onHandle: (_) {}),
+          ),
+        );
+        await tester.pump();
+
+        await tester.runAsync(() async {
+          var completed = false;
+          final export = exportController.export().whenComplete(() {
+            completed = true;
+          });
+
+          await drive(tester);
+          exportController.cancel();
+          await drive(tester, frames: 60, until: () => completed);
+          await export;
+        });
+
+        expect(exportController.exportStatus.value, PdfExportStatus.idle);
+        expect(capture.captureFromKeyCalls, 0);
+      });
+
+      testWidgets('disposing during the wait ends the export quietly', (
+        tester,
+      ) async {
+        final capture = FakeSlideCaptureService(_testPngBytes);
+        final exportController = PdfController(
+          slides: [testSlides.first],
+          slideCaptureService: capture,
+          waitDuration: Duration.zero,
+          options: PdfExportOptions(pdfSaver: (_) async => true),
+        );
+
+        await tester.pumpWidget(
+          _buildExportHarness(
+            exportController,
+            slideBuilder: (slide) =>
+                _ReadinessProbe(label: 'image:hero.png', onHandle: (_) {}),
+          ),
+        );
+        await tester.pump();
+
+        await tester.runAsync(() async {
+          Object? asyncError;
+          var completed = false;
+          final export = exportController
+              .export()
+              .catchError((Object error, StackTrace _) {
+                asyncError = error;
+              })
+              .whenComplete(() {
+                completed = true;
+              });
+
+          await drive(tester);
+          exportController.dispose();
+          await drive(tester, frames: 60, until: () => completed);
+          await export;
+
+          expect(asyncError, isNull);
+        });
+
+        expect(capture.captureFromKeyCalls, 0);
+        expect(tester.takeException(), isNull);
       });
     });
 

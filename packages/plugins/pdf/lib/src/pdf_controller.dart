@@ -43,26 +43,34 @@ class PdfController {
   static const _kPrepareAnimationDuration = Duration(milliseconds: 50);
   static const _kCaptureAnimationDuration = Duration(milliseconds: 1);
   static const _kRenderAttachmentTimeout = Duration(seconds: 5);
+  static const _kSlideReadinessTimeout = Duration(seconds: 10);
 
   /// Creates a controller that exports [slides] with [slideCaptureService].
   ///
-  /// The controller waits [waitDuration] between export stages and gives each
-  /// render boundary up to [renderAttachmentTimeout] to attach.
+  /// The controller waits [waitDuration] between export stages, gives each
+  /// render boundary up to [renderAttachmentTimeout] to attach, and each
+  /// slide's asynchronous visuals up to [slideReadinessTimeout] to finish.
   PdfController({
     required this.slides,
     required this.slideCaptureService,
     PdfExportOptions options = const PdfExportOptions(),
     Duration waitDuration = const Duration(milliseconds: 100),
     Duration renderAttachmentTimeout = _kRenderAttachmentTimeout,
+    Duration slideReadinessTimeout = _kSlideReadinessTimeout,
   }) : _options = options,
        _waitDuration = waitDuration,
-       _renderAttachmentTimeout = renderAttachmentTimeout {
+       _renderAttachmentTimeout = renderAttachmentTimeout,
+       _slideReadinessTimeout = slideReadinessTimeout {
     _pageController = PageController(initialPage: 0);
     _slideKeys = {for (var slide in slides) slide.key: GlobalKey()};
+    _slideReadiness = {
+      for (var slide in slides) slide.key: SlideCaptureReadiness(),
+    };
   }
 
   late final PageController _pageController;
   late final Map<String, GlobalKey> _slideKeys;
+  late final Map<String, SlideCaptureReadiness> _slideReadiness;
   final PdfExportOptions _options;
   final List<Uint8List> _images = [];
   bool _disposed = false;
@@ -106,6 +114,7 @@ class PdfController {
 
   final Duration _waitDuration;
   final Duration _renderAttachmentTimeout;
+  final Duration _slideReadinessTimeout;
 
   /// Whether this controller has been disposed.
   bool get disposed => _disposed; // ignore: unused-code
@@ -115,6 +124,13 @@ class PdfController {
 
   /// The [GlobalKey] for [slide].
   GlobalKey getSlideKey(SlideConfiguration slide) => _slideKeys[slide.key]!;
+
+  /// The readiness scope for [slide].
+  ///
+  /// The export surface binds it around the slide, so images and other
+  /// asynchronous visuals register there and the capture can wait for them.
+  SlideCaptureReadiness getSlideReadiness(SlideConfiguration slide) =>
+      _slideReadiness[slide.key]!;
 
   /// Waits until [key]'s render boundary is attached.
   @visibleForTesting
@@ -168,6 +184,46 @@ class PdfController {
       'PageController not attached within $_renderAttachmentTimeout',
     );
   }
+
+  /// Waits until every asynchronous visual on [slide] has finished.
+  ///
+  /// The preparation pass renders each slide once, but content can still be
+  /// loading, and a slide the page view rebuilt after that pass starts over.
+  /// Throws when the wait runs out, or when a visual reported that it will
+  /// never arrive; either way the export stops instead of writing a page that
+  /// is missing content.
+  Future<void> _waitForSlideReadiness(int index) async {
+    final slide = slides[index];
+    final readiness = _slideReadiness[slide.key]!;
+    var elapsed = Duration.zero;
+
+    while (!readiness.isReady) {
+      _checkExportAllowed();
+      if (readiness.failures.isNotEmpty) break;
+      if (elapsed >= _slideReadinessTimeout) {
+        throw StateError(
+          '${_describeSlide(index)} was not ready within '
+          '$_slideReadinessTimeout. Still waiting for: '
+          '${readiness.pendingLabels.join(', ')}.',
+        );
+      }
+      await Future.delayed(_kPollInterval);
+      elapsed += _kPollInterval;
+    }
+
+    _checkExportAllowed();
+    if (readiness.failures.isNotEmpty) {
+      final failures = readiness.failures
+          .map((failure) => '${failure.label ?? 'visual'} (${failure.reason})')
+          .join(', ');
+      throw StateError('${_describeSlide(index)} could not render $failures.');
+    }
+    // One more frame, so what the wait released is painted before capture.
+    await WidgetsBinding.instance.endOfFrame;
+  }
+
+  String _describeSlide(int index) =>
+      'Slide ${index + 1} of ${slides.length} ("${slides[index].key}")';
 
   /// Captures [key] with retry logic.
   Future<Uint8List> _captureImageWithRetry(GlobalKey key) async {
@@ -232,6 +288,8 @@ class PdfController {
 
         _checkExportAllowed();
         await _waitForRenderBoundaryPaint(key);
+        _checkExportAllowed();
+        await _waitForSlideReadiness(i);
         _checkExportAllowed();
 
         final image = await _captureImageWithRetry(key);

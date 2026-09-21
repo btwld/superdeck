@@ -159,7 +159,9 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
 
                     return RepaintBoundary(
                       key: _exportController.getSlideKey(slide),
-                      child: _PdfSlideCaptureView(slide: slide),
+                      child: _exportController
+                          .getSlideReadiness(slide)
+                          .bind(_PdfSlideCaptureView(slide: slide)),
                     );
                   },
                 ),
