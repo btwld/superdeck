@@ -50,12 +50,18 @@ final class DeckPresentationState {
   }) : _thumbnailService = thumbnailService,
        _transitionDuration = transitionDuration,
        _slides = slides {
-    router.routeInformationProvider.addListener(_syncCurrentIndexFromRouter);
+    router.routeInformationProvider.addListener(
+      _syncCurrentIndexFromRouteInformation,
+    );
+    // Browser history/hash transitions become authoritative when GoRouter's
+    // delegate has parsed them. WebKit does not consistently publish those
+    // transitions back through the raw route-information provider.
+    router.routerDelegate.addListener(_syncCurrentIndexFromDelegate);
     // Runs once here, so the first route is read explicitly rather than
     // waiting for a navigation, and again whenever the deck changes size.
     _indexClampEffect = effect(() {
       _slides.value.length; // explicit trigger on slide count change
-      _syncCurrentIndexFromRouter();
+      _syncCurrentIndexFromRouteInformation();
     });
     // Thumbnail cleanup follows the slide collection, not thumbnail warmup,
     // so obsolete handles are released even when the deck becomes empty.
@@ -169,7 +175,10 @@ final class DeckPresentationState {
     _disposed = true;
     _indexClampEffect?.call();
     _thumbnailPruneEffect?.call();
-    router.routeInformationProvider.removeListener(_syncCurrentIndexFromRouter);
+    router.routeInformationProvider.removeListener(
+      _syncCurrentIndexFromRouteInformation,
+    );
+    router.routerDelegate.removeListener(_syncCurrentIndexFromDelegate);
     router.dispose();
     for (final thumbnail in _thumbnails.value.values) {
       thumbnail.dispose();
@@ -209,9 +218,18 @@ final class DeckPresentationState {
   /// `replace` keeps that correction out of the browser history on web, which
   /// `go` would add. While the deck is empty the route is left alone, so a
   /// deep link opened before the deck loads still lands on its slide.
-  void _syncCurrentIndexFromRouter() {
+  void _syncCurrentIndexFromDelegate() {
+    _syncCurrentIndexFromPath(
+      router.routerDelegate.currentConfiguration.uri.path,
+    );
+  }
+
+  void _syncCurrentIndexFromRouteInformation() {
+    _syncCurrentIndexFromPath(router.routeInformationProvider.value.uri.path);
+  }
+
+  void _syncCurrentIndexFromPath(String path) {
     if (_disposed) return;
-    final path = router.routeInformationProvider.value.uri.path;
     const prefix = '/slides/';
     if (!path.startsWith(prefix)) return;
 
