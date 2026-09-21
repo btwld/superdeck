@@ -110,6 +110,10 @@
         {
           "title": "Markdown syntax",
           "href": "/reference/markdown-syntax"
+        },
+        {
+          "title": "Front matter",
+          "href": "/reference/front-matter"
         }
       ]
     },
