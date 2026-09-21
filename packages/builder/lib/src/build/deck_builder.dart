@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../parsers/comment_parser.dart';
-import '../parsers/markdown_parser.dart';
-import '../parsers/section_parser.dart';
+import '../parsers/slide_assembler.dart';
 import 'build_event.dart';
 import 'deck_build_plugin.dart';
 
@@ -136,18 +134,7 @@ class DeckBuilder {
     await _beginBuildPlugins();
 
     final markdownRaw = await store.readDeckMarkdown();
-    final rawSlides = MarkdownParser().parse(markdownRaw);
-
-    final parsedSlides = [
-      for (final raw in rawSlides)
-        Slide(
-          key: raw.key,
-          options: SlideOptions.parse(raw.frontmatter),
-          sections: SectionParser().parse(raw.content),
-          comments: CommentParser().parse(raw.content),
-        ),
-    ];
-    final slides = await _applyBuildPlugins(parsedSlides);
+    final slides = await _applyBuildPlugins(assembleSlides(markdownRaw));
 
     await store.saveReferences(slides);
     await _finishBuildPlugins();

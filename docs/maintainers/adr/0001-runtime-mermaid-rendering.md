@@ -303,8 +303,20 @@ Implemented on `feat/superdeck-mermaid-core`, not as a spike:
 - **No Node or mermaid.js in the product.** mermaid.js 12.0.0 was used once,
   locally, to record the reference behaviour in §4.2. The export-time
   JavaScript fallback (option 3) is closed for this delivery.
-- **No web payload measurement yet.** The release web bundle delta is still
-  unmeasured; see the blockers list in the delivery report.
+- **Web payload, measured.** Demo release web build, same machine and SDK,
+  before and after the swap:
+
+  | | before | after | delta |
+  | --- | --- | --- | --- |
+  | `main.dart.js` | 3.36 MB | 5.10 MB | **+1.74 MB** |
+  | `main.dart.js` gzipped | 1.01 MB | 1.63 MB | **+0.62 MB** |
+  | whole `build/web` | 47.7 MB | 49.5 MB | +1.7 MB |
+
+  The tree shaker cannot drop unused diagram families, because
+  `Mermaid.render()` switches over all 28 — as predicted in §4.5. At
+  **+0.62 MB compressed** this is inside the 1.5 MB exit criterion agreed
+  below, so the decision stands; it is the price of the restored families and
+  it is worth re-measuring on every `mermaid_core` bump.
 
 ## 7. Reconsideration triggers
 
@@ -337,8 +349,9 @@ Implemented on `feat/superdeck-mermaid-core`, not as a spike:
 
 ## 9. Still open
 
-- The release web bundle delta from retaining 28 diagram implementations is
-  unmeasured. Measure before the next web release; the exit threshold agreed
-  above was 1.5 MB compressed.
 - The vendored parser is a fork of one file. Re-check it on every
   `mermaid_core` bump, and delete it when upstream rejects both inputs.
+- Web payload is +0.62 MB compressed (§6). Inside the agreed threshold, but
+  re-measure on every bump; if a future release pushes it past 1.5 MB, the
+  options are deferred loading of the diagram code or dropping the dependency
+  for web only.
