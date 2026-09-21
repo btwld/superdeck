@@ -10,5 +10,6 @@ export 'src/build/deck_builder.dart';
 
 export 'src/parsers/comment_parser.dart';
 export 'src/parsers/markdown_parser.dart';
+export 'src/parsers/slide_assembler.dart';
 export 'src/parsers/section_parser.dart';
 export 'src/parsers/slide_serializer.dart';

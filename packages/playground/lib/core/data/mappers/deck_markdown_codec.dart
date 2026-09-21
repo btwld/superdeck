@@ -5,20 +5,10 @@ import 'package:superdeck_core/superdeck_core.dart';
 class DeckMarkdownCodec {
   const DeckMarkdownCodec();
 
-  /// Parses [markdown] with the same pipeline used by the live preview loader.
+  /// Parses [markdown] with the same assembly the CLI build uses.
   List<Slide> decode(String markdown) {
     try {
-      final rawSlides = const MarkdownParser().parse(markdown);
-
-      return [
-        for (final raw in rawSlides)
-          Slide(
-            key: raw.key,
-            options: SlideOptions.parse(raw.frontmatter),
-            sections: const SectionParser().parse(raw.content),
-            comments: const CommentParser().parse(raw.content),
-          ),
-      ];
+      return assembleSlides(markdown);
     } catch (error, stackTrace) {
       Error.throwWithStackTrace(
         DeckFormatException(
