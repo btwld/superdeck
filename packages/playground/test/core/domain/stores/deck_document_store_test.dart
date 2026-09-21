@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:playground/features/editor/domain/stores/deck_document_store.dart';
+import 'package:playground/core/domain/stores/deck_document_store.dart';
 
 void main() {
   test('exposes its initial Markdown', () {

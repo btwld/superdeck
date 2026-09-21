@@ -1,17 +1,15 @@
 import 'package:flutter/foundation.dart';
 
-/// The editor's sole logical Markdown document.
+/// The playground's sole logical Markdown document.
 ///
-/// Consumers may replace the whole document from any source (the text editor,
-/// AI generation, a file reload, or a deck switch). Identical content is
-/// intentionally ignored so attribution-only editor changes cannot trigger a
-/// persistence or preview feedback loop.
+/// Generation publishes whole documents into it, and the preview and the saved
+/// deck both read from it. Identical content is intentionally ignored so a
+/// republished but unchanged document cannot trigger a preview feedback loop.
 class DeckDocumentStore extends ChangeNotifier {
   int _revision = 0;
+  String _markdown;
 
   DeckDocumentStore({required String markdown}) : _markdown = markdown;
-
-  String _markdown;
 
   /// The current full Markdown document.
   String get markdown => _markdown;

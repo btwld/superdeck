@@ -15,7 +15,6 @@ import 'package:playground/features/ai/wizard/presentation/wizard_view.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_theme_resolution.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_generation_controller.dart';
-import 'package:playground/features/editor/presentation/pages/editor_page.dart';
 import 'package:provider/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -39,7 +38,6 @@ void main() {
 
     expect(find.byType(WizardPage), findsOneWidget);
     expect(find.byType(WizardView), findsNothing);
-    expect(find.byType(EditorPage), findsNothing);
     expect(find.text('Google AI API key is not configured'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());
@@ -62,7 +60,6 @@ void main() {
     await tester.pump();
 
     expect(find.byType(WizardView), findsOneWidget);
-    expect(find.byType(EditorPage), findsNothing);
     expect(find.text('What is the presentation about?'), findsOneWidget);
     expect(find.text('Describe your presentation topic…'), findsOneWidget);
     expect(find.byTooltip('Generation lab'), findsOneWidget);

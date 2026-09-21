@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 
-import '../../../features/editor/domain/files/deck_file.dart';
+import 'deck_file.dart';
 
 /// A user-selected directory that remains accessible across app launches.
 final class SecurityScopedDirectoryReference {

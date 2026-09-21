@@ -5,7 +5,7 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../../../core/data/data_sources/memory_deck_loader.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
-import '../../../editor/domain/stores/deck_document_store.dart';
+import '../../../../core/domain/stores/deck_document_store.dart';
 import '../core/engine/services/deck_generator_service.dart';
 import 'generated_deck_style_mapper.dart';
 

@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../../core/data/data_sources/memory_asset_cache_store.dart';
-import '../../../editor/domain/stores/deck_document_store.dart';
+import '../../../../core/domain/stores/deck_document_store.dart';
 import '../../quick_agent/core/engine/services/deck_generator_service.dart';
 import '../../quick_agent/core/env_config.dart';
 import '../../quick_agent/domain/generated_deck_result_applier.dart';

@@ -12,7 +12,7 @@ import 'package:playground/core/domain/stores/deck_customization_store.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/quick_agent/domain/generated_deck_result_applier.dart';
-import 'package:playground/features/editor/domain/stores/deck_document_store.dart';
+import 'package:playground/core/domain/stores/deck_document_store.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
