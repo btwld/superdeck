@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:flutter_mermaid/flutter_mermaid.dart';
+import 'package:mermaid_flutter/mermaid_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:superdeck/superdeck.dart' show SlideParts;
+import 'package:superdeck/superdeck.dart'
+    show SlideCaptureReadiness, SlideParts;
 import 'package:superdeck/src/markdown/builders/mermaid_code_block.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -26,7 +27,13 @@ graph TD
       final diagram = tester.widget<MermaidDiagram>(
         find.byType(MermaidDiagram),
       );
-      expect(diagram.style?.backgroundColor, 0x00000000);
+      expect(diagram.theme.background.value, 0x00000000);
+      expect(
+        diagram.keepLastGoodSceneOnError,
+        isFalse,
+        reason: 'a slide must not export a stale diagram',
+      );
+      expect(diagram.semanticNodes, isTrue);
     });
 
     testWidgets('uses legible Mermaid colors with a dark app theme', (
@@ -50,9 +57,14 @@ graph LR
       final diagram = tester.widget<MermaidDiagram>(
         find.byType(MermaidDiagram),
       );
-      expect(diagram.style?.themeMode, MermaidThemeMode.dark);
-      expect(diagram.style?.backgroundColor, 0x00000000);
-      expect(diagram.style?.defaultEdgeStyle.labelColor, 0xFFE0E0E0);
+      final dark = ThemeData.dark().colorScheme;
+      expect(diagram.theme.background.value, 0x00000000);
+      expect(
+        diagram.theme.primaryColor.value,
+        dark.primaryContainer.toARGB32(),
+        reason: 'diagram fills follow the app colour scheme',
+      );
+      expect(diagram.theme.primaryTextColor.value, dark.onPrimaryContainer.toARGB32());
     });
 
     testWidgets('keeps non-Mermaid fences on the code rendering path', (
@@ -140,6 +152,10 @@ graph TD
             of: mermaidFinder,
             matching: find.byType(CustomPaint),
           );
+          final fittedFinder = find.ancestor(
+            of: mermaidFinder,
+            matching: find.byType(FittedBox),
+          );
 
           expect(mermaidFinder, findsOneWidget);
           expect(paintFinder, findsOneWidget);
@@ -148,31 +164,96 @@ graph TD
             findsNothing,
           );
 
-          final diagramSize = tester.getSize(mermaidFinder);
+          // The diagram keeps its natural scene size and is scaled down to
+          // the width its Markdown block was given. Height flows like the
+          // rest of the block's content.
+          final shownSize = tester.getSize(fittedFinder.first);
           final paintSize = tester.getSize(paintFinder);
-          expect(diagramSize.width, greaterThan(0));
-          expect(diagramSize.width, lessThanOrEqualTo(resolution.width));
+          expect(shownSize.width, greaterThan(0));
+          expect(shownSize.width, lessThanOrEqualTo(resolution.width));
           expect(paintSize.width, greaterThan(0));
           expect(paintSize.height, greaterThan(0));
-          expect(paintSize.width, lessThanOrEqualTo(diagramSize.width));
           expect(tester.takeException(), isNull);
         });
       }
     }
 
-    testWidgets('shows an inline error for unsupported diagram syntax', (
+    testWidgets('shows an inline error for a diagram it cannot parse', (
       tester,
     ) async {
       await SlideTestHarness.pumpSlide(
         tester,
         _slideWithFence('''
-classDiagram
-  class Animal
+graph TD
+  A[Start] --> B[End]
+  this line is prose, not a statement
 '''),
         resolution: const Size(800, 600),
       );
 
-      expect(find.byType(MermaidDiagram), findsOneWidget);
+      // Rejected before the renderer sees it, so nothing is drawn at all.
+      expect(find.byType(MermaidDiagram), findsNothing);
+      expect(
+        find.textContaining('Unable to render Mermaid diagram'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a rendered diagram releases the capture wait', (tester) async {
+      final readiness = SlideCaptureReadiness();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: readiness.bind(
+              const MermaidCodeBlock(code: 'graph TD\n  A --> B\n'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(readiness.isReady, isTrue);
+      expect(readiness.failures, isEmpty);
+    });
+
+    testWidgets('a diagram that cannot render fails the capture wait', (
+      tester,
+    ) async {
+      final readiness = SlideCaptureReadiness();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: readiness.bind(
+              const MermaidCodeBlock(
+                code: 'graph TD\n  A --> B\n  this is prose\n',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Export stops on this slide instead of writing a page without it.
+      expect(readiness.isReady, isTrue);
+      expect(readiness.failures, hasLength(1));
+      expect(readiness.failures.single.label, startsWith('mermaid:'));
+    });
+
+    testWidgets('names an unknown diagram type instead of drawing nothing', (
+      tester,
+    ) async {
+      await SlideTestHarness.pumpSlide(
+        tester,
+        _slideWithFence('''
+notADiagramType
+  A --> B
+'''),
+        resolution: const Size(800, 600),
+      );
+
       expect(
         find.textContaining('Unable to render Mermaid diagram'),
         findsOneWidget,
@@ -198,6 +279,35 @@ ${source.trim()}
 }
 
 const _supportedDiagrams = <String, String>{
+  'class diagram': '''
+classDiagram
+  Animal <|-- Duck
+  Animal : +int age
+  Animal : +isMammal()
+  class Duck {
+    +String beakColor
+    +swim()
+  }
+''',
+  'state diagram': '''
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> Review: submit
+  Review --> Draft: changes
+  Review --> [*]: approve
+''',
+  'entity relationship diagram': '''
+erDiagram
+  DECK ||--o{ SLIDE : contains
+  SLIDE ||--o{ BLOCK : holds
+''',
+  'user journey': '''
+journey
+  title Preparing a talk
+  section Draft
+    Outline the story: 4: Speaker
+    Write the slides: 3: Speaker
+''',
   'flowchart': '''
 graph TD
   A[Start] --> B{Ready?}

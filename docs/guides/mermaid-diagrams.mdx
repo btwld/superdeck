@@ -24,19 +24,21 @@ of the Flutter widget tree for thumbnails, screenshots, and PDF export.
 
 ## Supported diagram types
 
-SuperDeck supports:
+SuperDeck renders every diagram family the Dart Mermaid port supports,
+including:
 
-- flowcharts
-- sequence diagrams
-- pie charts
-- Gantt charts
-- timelines
-- Kanban boards
-- radar charts
-- XY charts
+- flowcharts and sequence diagrams
+- class, state, entity-relationship and user-journey diagrams
+- pie, Gantt, XY, radar and quadrant charts
+- timelines, Kanban boards, mind maps and Git graphs
+- C4, architecture, requirement, packet, sankey, block and treemap diagrams
 
-Class, state, journey, entity-relationship, mind map, Git graph, and other
-Mermaid diagram families are not supported.
+Diagram families are ported by hand from Mermaid's own grammars, so a diagram
+that renders on mermaid.js can still be rejected here, and layout is not
+pixel-identical. Rejected input says so on the slide with the failing line.
+SuperDeck also guards the two known flowchart cases where version 0.3.0 would
+otherwise accept invalid syntax and draw an incomplete diagram, but this is not
+a claim of full mermaid.js conformance.
 
 ## Flowcharts
 
@@ -128,26 +130,54 @@ xychart-beta
   line [70, 82, 95]
 ```
 
+## Class, state, ER and journey diagrams
+
+````markdown
+```mermaid
+classDiagram
+  Deck "1" o-- "many" Slide
+  Slide : +String key
+  Slide : +render()
+```
+````
+
+```mermaid
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> Review: submit
+  Review --> Draft: changes
+  Review --> [*]: approve
+```
+
 ## Layout and appearance
 
-Diagrams adapt to the width assigned to their Markdown block and keep their
-natural calculated height. SuperDeck makes the renderer background transparent
-so the slide background remains visible. Diagram colors follow the app's light
-or dark Flutter theme.
+Diagrams scale down to the width assigned to their Markdown block and keep
+their natural aspect ratio. SuperDeck makes the renderer background
+transparent so the slide background remains visible, and derives diagram
+colours from the app's Material colour scheme, so a diagram follows the deck's
+light or dark theme.
+
+Diagram nodes are exposed to screen readers and browser automation, so a slide
+with a diagram is not an unlabelled picture.
+
+`%%{init: ...}%%` directives and YAML frontmatter configuration are read, so
+per-diagram theme and layout options work, including `look: handDrawn` and the
+ELK layout engine.
 
 For dense diagrams, give the block more horizontal space or simplify the
 source. A diagram inside a narrow multi-column section has less room than the
 same diagram in a full-width section.
 
-The previous JavaScript configuration map, browser launch options, Mermaid
-`init` directives, custom CSS, and PNG viewport settings do not apply to the
-runtime renderer.
+The build plugin's JavaScript configuration map, browser launch options,
+custom CSS, and PNG viewport settings have no runtime counterpart.
 
 ## Errors and troubleshooting
 
-Mermaid parsing now happens in the Flutter app rather than during
-`superdeck build`. Invalid syntax or an unsupported diagram type displays an
-inline error card on the slide and in static exports.
+Mermaid parsing happens in the Flutter app rather than during
+`superdeck build`. Invalid syntax or an unknown diagram type displays an
+inline error card on the slide naming the line that failed, and the same
+failure stops a PDF export rather than writing a page with the diagram
+missing.
 
 When a diagram shows an error:
 
@@ -156,6 +186,8 @@ When a diagram shows an error:
 3. Compare the syntax with the examples on this page.
 4. Check the presentation at the same block size used by the final slide.
 
-The official Mermaid live editor supports more syntax than SuperDeck's runtime
-renderer, so success there does not guarantee that a diagram works in
-SuperDeck.
+The official Mermaid live editor is the reference implementation. A diagram
+that works there usually works here, but the Dart port is a hand-written
+re-implementation. Keep diagrams within the documented subset and treat a
+renderer disagreement as a compatibility issue to report, even if neither
+renderer returns an error.
