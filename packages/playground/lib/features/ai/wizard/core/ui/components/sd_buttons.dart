@@ -53,37 +53,3 @@ class SdButton extends StatelessWidget {
     );
   }
 }
-
-/// Pre-styled surface icon button.
-class SdIconButton extends StatelessWidget {
-  const SdIconButton({
-    super.key,
-    required this.icon,
-    required this.onPressed,
-    this.loading = false,
-    this.semanticLabel,
-    this.style,
-  });
-
-  final IconData icon;
-  final VoidCallback? onPressed;
-  final bool loading;
-  final String? semanticLabel;
-  final RemixIconButtonStyler? style;
-
-  @override
-  Widget build(BuildContext context) {
-    final button = HeroIconButton(
-      icon: icon,
-      onPressed: onPressed,
-      loading: loading,
-      variant: HeroButtonVariant.secondary,
-      style: style,
-    );
-
-    if (semanticLabel != null) {
-      return Semantics(button: true, label: semanticLabel, child: button);
-    }
-    return button;
-  }
-}

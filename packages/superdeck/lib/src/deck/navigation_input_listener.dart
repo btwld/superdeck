@@ -60,8 +60,6 @@ class _NavigationInputListenerState extends State<NavigationInputListener> {
         presentation.nextSlide();
       case PreviousSlideEvent():
         presentation.previousSlide();
-      case GoToSlideEvent(:final index):
-        presentation.goToSlide(index);
     }
   }
 

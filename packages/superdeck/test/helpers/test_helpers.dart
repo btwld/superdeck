@@ -35,27 +35,6 @@ List<SlideConfiguration> createTestSlides(int count) {
   );
 }
 
-/// Creates a test slide configuration with custom content.
-SlideConfiguration createTestSlide({
-  required int index,
-  String? content,
-  SlideStyler? style,
-  String? thumbnailKey,
-}) {
-  final slideKey = 'slide-$index';
-  return SlideConfiguration(
-    slideIndex: index,
-    style: style ?? SlideStyler(),
-    slide: Slide(
-      key: slideKey,
-      sections: [
-        SectionBlock([ContentBlock(content ?? 'Test slide $index content')]),
-      ],
-    ),
-    thumbnailKey: thumbnailKey ?? buildThumbnailKey(slideKey),
-  );
-}
-
 /// Creates a test slide payload with the given slides.
 List<Slide> createTestSlidesPayload({List<Slide>? slides}) {
   return slides ??
@@ -70,52 +49,9 @@ List<Slide> createTestSlidesPayload({List<Slide>? slides}) {
       );
 }
 
-/// Pumps a widget and settles all animations.
-Future<void> pumpAndSettleWidget(
-  WidgetTester tester,
-  Widget widget, {
-  Duration? duration,
-}) async {
-  await tester.pumpWidget(widget);
-  if (duration != null) {
-    await tester.pumpAndSettle(duration);
-  } else {
-    await tester.pumpAndSettle();
-  }
-}
-
-/// Finds a widget by its key.
-Finder findByKey(String key) => find.byKey(Key(key));
-
-/// Finds a widget by its text content.
-Finder findByText(String text) => find.text(text);
-
-/// Verifies that a widget exists and is visible.
-void expectWidgetVisible(Finder finder) {
-  expect(finder, findsOneWidget);
-}
-
-/// Verifies that a widget does not exist.
-void expectWidgetNotFound(Finder finder) {
-  expect(finder, findsNothing);
-}
-
 int _testSlideId = 0;
 
 String _nextKey(String prefix) => '$prefix-${_testSlideId++}';
-
-/// Creates a Slide from a list of sections for inline test setup.
-Slide createSlideFromSections(
-  List<SectionBlock> sections, {
-  String? key,
-  SlideOptions? options,
-}) {
-  return Slide(
-    key: key ?? _nextKey('test-slide'),
-    sections: sections,
-    options: options,
-  );
-}
 
 /// Creates a simple single-section slide with given blocks.
 Slide createSlideFromBlocks(
@@ -126,21 +62,6 @@ Slide createSlideFromBlocks(
   return Slide(
     key: key ?? _nextKey('test-slide'),
     sections: [SectionBlock(blocks, flex: sectionFlex)],
-  );
-}
-
-/// Creates a content block with common defaults.
-ContentBlock createContentBlock(
-  String content, {
-  int flex = 1,
-  ContentAlignment? align,
-  bool scrollable = false,
-}) {
-  return ContentBlock(
-    content,
-    flex: flex,
-    align: align,
-    scrollable: scrollable,
   );
 }
 

@@ -28,7 +28,7 @@ const defaultPresentationThemeIds = [
   'retro-poster',
 ];
 
-/// Stable representative trio used by static Wizard examples and smoke tests.
+/// Stable representative trio used by the theme-selection and live smoke tests.
 const featuredPresentationThemeIds = [
   'editorial-midnight',
   'technical-paper',

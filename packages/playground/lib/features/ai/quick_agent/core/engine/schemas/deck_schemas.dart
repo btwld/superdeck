@@ -9,7 +9,7 @@ part 'deck_schemas.ack.g.dart';
 
 /// Schema definitions for SuperDeck presentation generation.
 ///
-/// The slide portion comes from `superdeck_core`'s [aiSlideSchema], the
+/// The slide portion comes from `superdeck_core`'s `buildAiSlideSchema`, the
 /// AI-compatible projection of the canonical slide contract — Playground owns
 /// only the generation theme contract and prompt guidance. Schemas are compatible with
 /// Google Generative AI via `.toJsonSchemaBuilder()`.

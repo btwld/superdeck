@@ -7,21 +7,6 @@ double calculateContrastRatio(String foreground, String background) {
   return calculatePresentationContrast(foreground, background);
 }
 
-/// Returns the more readable of black or white for [background].
-///
-/// Generated accent colors are arbitrary, but the foreground placed on an
-/// accent is a derived palette value. Choosing the higher-contrast monochrome
-/// foreground is deterministic and always provides WCAG AA contrast for normal
-/// text, avoiding an unreliable model round trip for color arithmetic.
-String mostReadableMonochromeForeground(String background) {
-  const black = '#000000';
-  const white = '#FFFFFF';
-  return calculateContrastRatio(black, background) >=
-          calculateContrastRatio(white, background)
-      ? black
-      : white;
-}
-
 /// Maximum visible Markdown characters for a density and composition shape.
 ///
 /// Density expresses desired pacing, while composition caps reflect the actual

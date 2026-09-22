@@ -595,15 +595,6 @@ Iterable<String> _sentenceLikeSnippets(String value) sync* {
 
 bool _isAsciiDigit(int codeUnit) => codeUnit >= 0x30 && codeUnit <= 0x39;
 
-/// Maps each supplied numeric token to nearby words that preserve its meaning.
-Map<String, Set<String>> extractNumericFactAnchors(String value) {
-  final anchors = <String, Set<String>>{};
-  for (final entry in _extractNumericFactAnchorGroups(value).entries) {
-    anchors[entry.key] = {for (final group in entry.value) ...group};
-  }
-  return anchors;
-}
-
 Map<String, List<Set<String>>> _extractNumericFactAnchorGroups(String value) {
   final anchors = <String, List<Set<String>>>{};
   for (final context in _numericFactContexts(value)) {

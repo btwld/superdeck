@@ -35,12 +35,3 @@ Future<Directory> createTempDirAsync() async {
   });
   return tempDir;
 }
-
-/// Verifies that a UUID conforms to the v4 format.
-Matcher isValidUuidV4() {
-  return matches(
-    RegExp(
-      r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
-    ),
-  );
-}

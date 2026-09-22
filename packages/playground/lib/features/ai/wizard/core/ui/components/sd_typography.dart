@@ -77,22 +77,3 @@ class SdCaption extends StatelessWidget {
     return defaultStyle.merge(style).call(text);
   }
 }
-
-/// Subtle hint text.
-///
-/// Usage: `SdHint('Enter your name')`
-/// Override: `SdHint('Hint', style: TextStyler().fontStyle(FontStyle.italic))`
-class SdHint extends StatelessWidget {
-  const SdHint(this.text, {super.key, this.style});
-
-  final String text;
-  final TextStyler? style;
-
-  @override
-  Widget build(BuildContext context) {
-    final defaultStyle = TextStyler()
-        .style($paragraphSmall.mix())
-        .color($fieldPlaceholder());
-    return defaultStyle.merge(style).call(text);
-  }
-}
