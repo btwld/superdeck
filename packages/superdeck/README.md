@@ -29,7 +29,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SuperDeckApp.initialize();
 
-  runApp(const SuperDeckApp(options: DeckOptions()));
+  runApp(SuperDeckApp(options: DeckOptions()));
 }
 ```
 

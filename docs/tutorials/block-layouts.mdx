@@ -190,16 +190,16 @@ observes the existing Markdown render; it does not change wrapping constraints.
 It intentionally does not rebuild or intrinsically measure arbitrary custom
 widgets, and static capture remains diagnostic-free.
 
-## Next-major migration
+## Migrating to 1.0
 
-Two inputs change semantics in the next major release:
+Two inputs change semantics in 1.0:
 
 - `flex` must be a positive integer. Replace zero or negative values.
 - Section alignment now applies to children without explicit block alignment.
   Add an explicit child alignment where the old no-op behavior must remain.
 
 After adopting `spacing`, `padding`, or `margin`, rebuild
-`.superdeck/superdeck.json`. Downgrading to 1.x requires removing the new
-authoring properties and rebuilding the contract with the 1.x toolchain.
+`.superdeck/superdeck.json`. Downgrading to 0.x requires removing the new
+authoring properties and rebuilding the contract with the 0.x toolchain.
 
 Next: [Block types reference](/reference/block-types)
