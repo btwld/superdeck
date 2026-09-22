@@ -137,52 +137,52 @@ class PdfController {
   Future<void> waitForRenderBoundaryPaint(GlobalKey key) =>
       _waitForRenderBoundaryPaint(key);
 
-  /// Waits for [key]'s render boundary to attach.
-  Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
+  /// Polls [isDone] until it holds, or returns `false` once [timeout] passes.
+  ///
+  /// Stops the export as soon as it is cancelled or the controller disposed.
+  Future<bool> _pollUntil(bool Function() isDone, Duration timeout) async {
     var elapsed = Duration.zero;
-    var hasSeenContext = false;
-
-    while (elapsed < _renderAttachmentTimeout) {
+    while (true) {
       _checkExportAllowed();
-
-      if (key.currentContext != null) {
-        hasSeenContext = true;
-      }
-
-      final repaintBoundary = key.currentContext?.findRenderObject();
-      if (repaintBoundary != null && repaintBoundary.attached) {
-        await WidgetsBinding.instance.endOfFrame;
-        return;
-      }
+      if (isDone()) return true;
+      if (elapsed >= timeout) return false;
       await Future.delayed(_kPollInterval);
       elapsed += _kPollInterval;
     }
+  }
 
-    throw StateError(
-      hasSeenContext
-          ? 'RenderObject not attached within $_renderAttachmentTimeout'
-          : 'RenderObject context not available within $_renderAttachmentTimeout',
-    );
+  /// Waits for [key]'s render boundary to attach.
+  Future<void> _waitForRenderBoundaryPaint(GlobalKey key) async {
+    var hasSeenContext = false;
+    final attached = await _pollUntil(() {
+      final context = key.currentContext;
+      if (context == null) return false;
+      hasSeenContext = true;
+      return context.findRenderObject()?.attached ?? false;
+    }, _renderAttachmentTimeout);
+
+    if (!attached) {
+      throw StateError(
+        hasSeenContext
+            ? 'RenderObject not attached within $_renderAttachmentTimeout'
+            : 'RenderObject context not available within $_renderAttachmentTimeout',
+      );
+    }
+    await WidgetsBinding.instance.endOfFrame;
   }
 
   Future<void> _waitForPageControllerAttachment() async {
-    var elapsed = Duration.zero;
-
-    while (elapsed < _renderAttachmentTimeout) {
-      _checkExportAllowed();
-
-      if (_pageController.hasClients) {
-        await WidgetsBinding.instance.endOfFrame;
-        return;
-      }
-
-      await Future.delayed(_kPollInterval);
-      elapsed += _kPollInterval;
-    }
-
-    throw StateError(
-      'PageController not attached within $_renderAttachmentTimeout',
+    final attached = await _pollUntil(
+      () => _pageController.hasClients,
+      _renderAttachmentTimeout,
     );
+
+    if (!attached) {
+      throw StateError(
+        'PageController not attached within $_renderAttachmentTimeout',
+      );
+    }
+    await WidgetsBinding.instance.endOfFrame;
   }
 
   /// Waits until every asynchronous visual on [slide] has finished.
@@ -195,23 +195,18 @@ class PdfController {
   Future<void> _waitForSlideReadiness(int index) async {
     final slide = slides[index];
     final readiness = _slideReadiness[slide.key]!;
-    var elapsed = Duration.zero;
+    final settled = await _pollUntil(
+      () => readiness.isReady || readiness.failures.isNotEmpty,
+      _slideReadinessTimeout,
+    );
 
-    while (!readiness.isReady) {
-      _checkExportAllowed();
-      if (readiness.failures.isNotEmpty) break;
-      if (elapsed >= _slideReadinessTimeout) {
-        throw StateError(
-          '${_describeSlide(index)} was not ready within '
-          '$_slideReadinessTimeout. Still waiting for: '
-          '${readiness.pendingLabels.join(', ')}.',
-        );
-      }
-      await Future.delayed(_kPollInterval);
-      elapsed += _kPollInterval;
+    if (!settled) {
+      throw StateError(
+        '${_describeSlide(index)} was not ready within '
+        '$_slideReadinessTimeout. Still waiting for: '
+        '${readiness.pendingLabels.join(', ')}.',
+      );
     }
-
-    _checkExportAllowed();
     if (readiness.failures.isNotEmpty) {
       final failures = readiness.failures
           .map((failure) => '${failure.label ?? 'visual'} (${failure.reason})')
