@@ -33,7 +33,6 @@ dependencies:
   webview_flutter: ^4.10.0
   webview_flutter_web: ^0.2.3
   google_fonts: ^8.1.0
-  meta: ^1.16.0
   qr_flutter: ^4.1.0
   signals: ^7.1.0
   signals_flutter: ^7.1.0
@@ -41,7 +40,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  mocktail: ^1.0.4
   flutter_lints: ^6.0.0
   dart_code_metrics_presets: ^2.19.0
   build_runner: ^2.5.4
@@ -53,5 +51,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/
     - assets/grammars/
