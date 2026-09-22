@@ -211,13 +211,6 @@ final class DeckPresentationState {
     _thumbnails.value = cache;
   }
 
-  /// Makes the route the single authority for the active slide.
-  ///
-  /// The route decides [currentIndex]. A route outside a loaded deck is
-  /// corrected once, by replacing it with the nearest slide that exists;
-  /// `replace` keeps that correction out of the browser history on web, which
-  /// `go` would add. While the deck is empty the route is left alone, so a
-  /// deep link opened before the deck loads still lands on its slide.
   void _syncCurrentIndexFromDelegate() {
     _syncCurrentIndexFromPath(
       router.routerDelegate.currentConfiguration.uri.path,
@@ -228,6 +221,13 @@ final class DeckPresentationState {
     _syncCurrentIndexFromPath(router.routeInformationProvider.value.uri.path);
   }
 
+  /// Makes the route the single authority for the active slide.
+  ///
+  /// The route decides [currentIndex]. A route outside a loaded deck is
+  /// corrected once, by replacing it with the nearest slide that exists;
+  /// `replace` keeps that correction out of the browser history on web, which
+  /// `go` would add. While the deck is empty the route is left alone, so a
+  /// deep link opened before the deck loads still lands on its slide.
   void _syncCurrentIndexFromPath(String path) {
     if (_disposed) return;
     const prefix = '/slides/';
