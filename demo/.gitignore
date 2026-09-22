@@ -49,5 +49,4 @@ app.*.map.json
 .fvm/
 
 .env
-lib/env/env.g.dart
 .superdeck/assets/*
