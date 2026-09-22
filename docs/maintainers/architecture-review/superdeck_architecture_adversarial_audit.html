@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SuperDeck — Adversarial architecture audit</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#1d2833;background:#f5f7f8}
+*{box-sizing:border-box}body{margin:0}header{background:#172f40;color:#fff;padding:28px max(24px,calc((100vw - 1080px)/2));border-bottom:5px solid #67899b}
+header p{margin:0;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase}.layout{max-width:1080px;margin:auto;padding:36px 24px 70px}
+main{background:#fff;padding:38px;border:1px solid #d9e0e5;border-radius:4px}h1{font-size:2.1rem;line-height:1.15;margin:0 0 20px}
+h2{margin-top:38px;padding-top:22px;border-top:1px solid #dfe5e9;font-size:1.4rem}h3{margin-top:26px}p,li{line-height:1.65}
+code{background:#eff3f6;padding:2px 4px}strong{color:#102b3a}table{border-collapse:collapse;width:100%;font-size:.9rem}
+th{text-align:left;background:#edf2f5}th,td{padding:10px 12px;vertical-align:top;border-bottom:1px solid #dce3e8}
+.callout{border-left:4px solid #67899b;background:#f1f5f7;padding:12px 16px;margin:20px 0}
+@media(max-width:700px){.layout{padding:18px 12px}main{padding:22px 18px}h1{font-size:1.7rem}.table{overflow-x:auto}}
+</style>
+</head>
+<body>
+<header><p>SuperDeck / Architecture review / Audit addendum</p></header>
+<div class="layout"><main>
+<h1>SuperDeck architecture plan: adversarial audit</h1>
+<p><strong>Decision: keep the main direction, but revise the execution plan before treating it as implementation-ready.</strong> The strongest work remains publication correctness, memory-loader completion, asset identity, and PDF lifecycle safety.</p>
+<p><strong>Repository:</strong> <code>conceptadev/superdeck</code><br>
+<strong>Reviewed baseline:</strong> <code>main@d160766c862a4ea7670a41c98f085bfae33a24f7</code><br>
+<strong>Status:</strong> source and plan audit; new application regressions were not executed.</p>
+
+<div class="callout"><strong>Purpose.</strong> This is a correction addendum to the earlier architecture review, action plan, and backlog. It checks the plan against the deep-module guidance and repository conventions. It does not turn the 36 planning items into 36 confirmed defects.</div>
+
+<h2>What remains justified</h2>
+<h3>Active-deck publication</h3>
+<p>The Wizard releases the saved deck before invoking the generated-result applier. Keep the publication finding and protect the saved-A/failed-B transition with a regression. The intended rule is to prepare the replacement completely, publish it only while it still owns the operation, and otherwise leave the previous deck coherent.</p>
+
+<h3>Memory loader</h3>
+<p><code>MemoryDeckLoader.reload()</code> is empty while runtime reload enters loading state. Fix the contract mismatch directly. Add replay handoff tests so subscription cannot lose, duplicate, or reorder current state.</p>
+
+<h3>PDF lifecycle</h3>
+<p>Keep focused cleanup, cancellation, and stale-callback work. Narrow the architecture claim: the public PDF plugin interface is already small. A private capture-host extraction is conditional internal consolidation, not a required new application-facing abstraction.</p>
+
+<h2>Corrections to the plan</h2>
+<ol>
+<li><strong>Describe the method accurately.</strong> The earlier work was informed by <code>improve-codebase-architecture</code> and <code>codebase-design</code>, but did not execute the complete tool-driven sub-agent and grilling process. Behavioral verification remains pending.</li>
+<li><strong>Do not make proposed modules mandatory.</strong> A new owner is justified only when it removes a proven caller obligation and concentrates a behavior rule.</li>
+<li><strong>Remove soft scheduling dependencies.</strong> Publication handoff, refresh ownership, stale PDF callbacks, and writer serialization can be fixed independently unless implementation evidence shows a real prerequisite.</li>
+<li><strong>Tighten acceptance tests.</strong> Observe publication during notifications, test replay during subscriber attachment, and test old-asset lifetime while replacement cleanup runs.</li>
+<li><strong>Use scope-sensitive merge gates.</strong> Checks required by changed behavior must pass, or the maintainer must explicitly accept a documented limited exception. Existing green CI is baseline evidence only.</li>
+<li><strong>Separate fixes, structural proposals, and product decisions.</strong> Do not treat one backlog as one mandatory refactor program.</li>
+</ol>
+
+<h2>Work tracks</h2>
+<table>
+<thead><tr><th>Track</th><th>Examples</th><th>Rule</th></tr></thead>
+<tbody>
+<tr><td>Focused regressions and fixes</td><td>Publication handoff, reload completion, refresh ownership, asset identity, PDF cleanup/callbacks, writer exclusivity</td><td>Write the regression, then make the smallest passing correction.</td></tr>
+<tr><td>Conditional structural changes</td><td>Neutral publication owner, broader render revision, private PDF capture host</td><td>Proceed only when focused fixes still leave material caller obligations.</td></tr>
+<tr><td>Platform and release decisions</td><td>macOS/Xcode support, export limits, interruption guarantees, DCM, client credential policy</td><td>Require an explicit maintainer decision; do not silently broaden scope.</td></tr>
+</tbody>
+</table>
+
+<h2>Revised first milestone</h2>
+<ol>
+<li>Establish the pinned baseline.</li>
+<li>Add saved-A/failed-B publication regression and minimal fix.</li>
+<li>Add memory-reload terminal-result regression and minimal fix.</li>
+<li>Add PDF terminal-cleanup and stale-callback regressions and minimal fixes.</li>
+<li>Reassess whether remaining coordination justifies larger module shapes.</li>
+<li>Record structural decisions with the changes that implement them.</li>
+</ol>
+
+<h2>Artifact-structure check</h2>
+<p>The supplied artifacts contain 36 work items, 9 proposed PR groups, 30 regression rows, and 44 source-register entries. The structural check found no duplicate task/regression IDs, unknown task references, dependency cycles, unassigned regression rows, duplicate HTML element IDs, or broken internal fragment links in the two checked HTML reports.</p>
+<p>These checks do not prove runtime correctness, test coverage, dependency necessity, or priority correctness. See <code>superdeck_architecture_audit_checks.json</code>.</p>
+
+<h2>Evidence and source paths</h2>
+<ul>
+<li>Matt Pocock: <code>improve-codebase-architecture</code> and <code>codebase-design</code> skills.</li>
+<li>Repository guidance: <code>AGENTS.md</code>.</li>
+<li>PDF interface and lifecycle: <code>packages/plugins/pdf/lib/superdeck_pdf.dart</code>, <code>pdf_plugin.dart</code>, and <code>pdf_controller.dart</code>.</li>
+<li>Publication handoff: <code>packages/playground/lib/features/ai/wizard/presentation/wizard_page.dart</code>.</li>
+<li>Document and loader state: <code>deck_document_store.dart</code>, <code>memory_deck_loader.dart</code>, and <code>deck_session_state.dart</code>.</li>
+<li>Recorded decisions: <code>docs/maintainers/renderer-and-assembly-evaluation.md</code>.</li>
+</ul>
+
+<h2>Final disposition</h2>
+<p>The architecture direction survives the adversarial review. Blanket approval of the original 36-item execution plan does not. Require executed evidence for each behavior an implementation claims and prefer the smallest change that removes a proven caller obligation.</p>
+</main></div>
+</body></html>
