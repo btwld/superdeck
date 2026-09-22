@@ -51,8 +51,7 @@ jobs:
 
       # Runs what maintainers run: `dart analyze --fatal-infos` over every
       # package, after code generation so generated files exist. DCM is the
-      # other half of `melos run analyze` and is not run here yet; see
-      # docs/maintainers/analysis-parity.md.
+      # other half of `melos run analyze` and is not run here yet.
       - name: Analyze
         run: melos run analyze:dart --no-select
 
