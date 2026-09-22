@@ -28,9 +28,9 @@ import 'wizard_view.dart';
 
 /// Host for the conversational Wizard, the app's only authoring flow.
 ///
-/// Generated Markdown is kept in memory so opening this screen never requests a
-/// deck-storage folder. The production integration can provide its own document
-/// destination when the Wizard is embedded outside the playground.
+/// Generated Markdown is kept in memory: results are applied straight to the
+/// in-memory document and preview stores, and a deck-storage folder is only
+/// requested later, when the reader chooses to save.
 class WizardPage extends StatelessWidget {
   const WizardPage({
     this.isConfigured,

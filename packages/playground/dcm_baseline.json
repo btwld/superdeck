@@ -19,13 +19,6 @@
           "c889ed10350adc5484399a841b281d8d"
         ]
       },
-      "lib/core/command.dart": {
-        "member-ordering": [
-          "c13cc7d233532d01d38e6c853835c222",
-          "bbff11a98f162c65b2eba65457aa3054",
-          "d130e52202b79d8a1e23b22525299046"
-        ]
-      },
       "lib/core/data/data_sources/memory_asset_cache_store.dart": {
         "newline-before-return": [
           "dbdc5c1de5fd5775af210f68a7bdf4b2",
@@ -132,13 +125,6 @@
         "member-ordering": [
           "85eca8e6b45775b517ebcc6aab8021d0",
           "00c8c3a7775b4bd83b4c7627c1029a39"
-        ]
-      },
-      "lib/core/utils/color_utils.dart": {
-        "newline-before-return": [
-          "ac84b6615d6391fc8cb6a100c0b2aad0",
-          "3a959d00242e1a6e9483824930ad5858",
-          "108ceff8715a5f73a480064664b89bb7"
         ]
       },
       "lib/features/ai/quick_agent/core/debug_logger.dart": {

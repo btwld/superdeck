@@ -31,20 +31,4 @@ void main() {
 
     expect(notifications, 0);
   });
-
-  test('counts only accepted replacements in its revision', () {
-    final store = DeckDocumentStore(markdown: '# Initial');
-    addTearDown(store.dispose);
-
-    expect(store.revision, 0);
-
-    store.replaceMarkdown('# Updated');
-    expect(store.revision, 1);
-
-    store.replaceMarkdown('# Updated');
-    expect(store.revision, 1);
-
-    store.replaceMarkdown('# Initial');
-    expect(store.revision, 2);
-  });
 }

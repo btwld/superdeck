@@ -23,8 +23,8 @@ final class GeneratedDeckApplication {
 
   /// Failure raised while removing artwork that the published deck replaced.
   ///
-  /// The deck is published when this is set. Hosts report it separately from a
-  /// generation failure.
+  /// The deck is published when this is set. The host reports it separately
+  /// from a generation failure.
   final Object? cleanupError;
 
   const GeneratedDeckApplication({required this.published, this.cleanupError});
@@ -35,8 +35,8 @@ final class GeneratedDeckApplication {
 final class GeneratedDeckResultApplier {
   final DeckDocumentStore _documentStore;
 
-  final MemoryDeckLoader? _deckLoader;
-  final AssetCacheStore? _assetCacheStore;
+  final MemoryDeckLoader _deckLoader;
+  final AssetCacheStore _assetCacheStore;
   final DeckCustomizationStore _customizationStore;
   Set<String> _appliedAssetKeys = const {};
 
@@ -45,8 +45,8 @@ final class GeneratedDeckResultApplier {
   Future<void> _queue = Future<void>.value();
   GeneratedDeckResultApplier({
     required DeckDocumentStore documentStore,
-    MemoryDeckLoader? deckLoader,
-    AssetCacheStore? assetCacheStore,
+    required MemoryDeckLoader deckLoader,
+    required AssetCacheStore assetCacheStore,
     required DeckCustomizationStore customizationStore,
   }) : _documentStore = documentStore,
        _deckLoader = deckLoader,
@@ -56,11 +56,10 @@ final class GeneratedDeckResultApplier {
   /// Deletes only the artwork this attempt staged, and keeps every asset key
   /// that an earlier attempt already committed.
   Future<void> _discardStagedAssets(Set<String> stagedAssetKeys) async {
-    final cache = _assetCacheStore;
-    if (cache == null || stagedAssetKeys.isEmpty) return;
+    if (stagedAssetKeys.isEmpty) return;
     for (final assetKey in stagedAssetKeys) {
       try {
-        await cache.delete(assetKey);
+        await _assetCacheStore.delete(assetKey);
       } catch (_) {
         // An abandoned asset that cannot be deleted must not mask the reason
         // the application stopped.
@@ -75,7 +74,6 @@ final class GeneratedDeckResultApplier {
     const abandoned = GeneratedDeckApplication(published: false);
     if (!isValid()) return abandoned;
 
-    final cache = _assetCacheStore;
     final nextAssetKeys = <String>{};
     final stagedAssetKeys = <String>{};
 
@@ -83,12 +81,7 @@ final class GeneratedDeckResultApplier {
       for (final asset in result.generatedImages) {
         final bytes = asset.bytes;
         if (bytes == null || bytes.isEmpty) continue;
-        if (cache == null) {
-          throw StateError(
-            'Generated artwork cannot be loaded without an asset cache.',
-          );
-        }
-        await cache.write(asset.assetKey, bytes);
+        await _assetCacheStore.write(asset.assetKey, bytes);
         nextAssetKeys.add(asset.assetKey);
         if (!_appliedAssetKeys.contains(asset.assetKey)) {
           stagedAssetKeys.add(asset.assetKey);
@@ -109,7 +102,7 @@ final class GeneratedDeckResultApplier {
 
     final markdown = const SlideSerializer().serialize(result.slides);
     _documentStore.replaceMarkdown(markdown);
-    _deckLoader?.updateMarkdown(markdown);
+    _deckLoader.updateMarkdown(markdown);
     if (result.theme case final theme?) {
       _customizationStore.applyGeneratedStyle(theme.toGeneratedDeckStyle());
     }
@@ -125,15 +118,13 @@ final class GeneratedDeckResultApplier {
   /// Returns the first deletion failure, which the host reports separately
   /// from a generation failure because the deck is already published.
   Future<Object?> _removeObsoleteAssets(Set<String> nextAssetKeys) async {
-    final cache = _assetCacheStore;
     final obsoleteAssetKeys = _appliedAssetKeys.difference(nextAssetKeys);
     _appliedAssetKeys = Set.unmodifiable(nextAssetKeys);
-    if (cache == null) return null;
 
     Object? cleanupError;
     for (final assetKey in obsoleteAssetKeys) {
       try {
-        await cache.delete(assetKey);
+        await _assetCacheStore.delete(assetKey);
       } catch (error) {
         cleanupError ??= error;
       }

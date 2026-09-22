@@ -22,8 +22,8 @@ const _debugDeckLayout = bool.fromEnvironment('SUPERDECK_DEBUG_LAYOUT');
 /// publishes its first Markdown — otherwise the loader's broadcast event would
 /// be dropped.
 ///
-/// Slides are read straight off `DeckController.slides` (a signal) in the UI —
-/// no bridge store.
+/// `PresentationPage` hands `DeckController` straight to SuperDeck's own
+/// `DeckPresenter`, which reads slides internally — no bridge store.
 class AppProviders extends StatelessWidget {
   const AppProviders({required this.child, this.deckLibrary, super.key});
 
@@ -46,9 +46,7 @@ class AppProviders extends StatelessWidget {
           dispose: (_, loader) => loader.dispose(),
         ),
         Provider<MemoryAssetCacheStore>(create: (_) => MemoryAssetCacheStore()),
-        ChangeNotifierProvider(
-          create: (_) => DeckDocumentStore(markdown: ''),
-        ),
+        ChangeNotifierProvider(create: (_) => DeckDocumentStore(markdown: '')),
         Provider<DeckLibrary>(
           create: (_) => deckLibrary ?? MacOsDeckLibrary(),
           dispose: (_, library) => library.dispose(),

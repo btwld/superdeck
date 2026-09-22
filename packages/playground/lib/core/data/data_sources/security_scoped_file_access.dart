@@ -1,7 +1,5 @@
 import 'package:flutter/services.dart';
 
-import 'deck_file.dart';
-
 /// A user-selected directory that remains accessible across app launches.
 final class SecurityScopedDirectoryReference {
   const SecurityScopedDirectoryReference({
@@ -38,19 +36,6 @@ class SecurityScopedFileAccess {
 
   final MethodChannel _channel;
 
-  /// Opens the native panel and returns its path plus persistent access data.
-  Future<DeckFileReference?> pickDeckFile() async {
-    final result = await _channel.invokeMapMethod<String, Object?>(
-      'pickDeckFile',
-    );
-    if (result == null) return null;
-    final reference = _referenceValues(result, operation: 'selection');
-    return DeckFileReference(
-      path: reference.path,
-      bookmark: reference.bookmark,
-    );
-  }
-
   /// Prompts for the parent directory where the `SuperDeck` folder will live.
   Future<SecurityScopedDirectoryReference?> pickDecksDirectory() async {
     final result = await _channel.invokeMapMethod<String, Object?>(
@@ -65,22 +50,6 @@ class SecurityScopedFileAccess {
       path: reference.path,
       bookmark: reference.bookmark,
     );
-  }
-
-  /// Starts access and returns the current path/bookmark after resolution.
-  Future<DeckFileReference> startAccessing(DeckFileReference reference) async {
-    final bookmark = reference.bookmark;
-    if (bookmark == null) return reference;
-
-    final result = await _channel.invokeMapMethod<String, Object?>(
-      'startAccessing',
-      bookmark,
-    );
-    if (result == null) {
-      throw StateError('Native bookmark resolution returned no data.');
-    }
-    final active = _referenceValues(result, operation: 'resolution');
-    return DeckFileReference(path: active.path, bookmark: active.bookmark);
   }
 
   /// Starts persistent access to a previously selected decks directory.
@@ -116,13 +85,6 @@ class SecurityScopedFileAccess {
       throw StateError('Native bookmark $operation returned invalid data.');
     }
     return (path: path, bookmark: refreshedBookmark);
-  }
-
-  /// Stops access previously started for [reference].
-  Future<void> stopAccessing(DeckFileReference reference) async {
-    final bookmark = reference.bookmark;
-    if (bookmark == null) return;
-    await _channel.invokeMethod<void>('stopAccessing', bookmark);
   }
 
   /// Stops access to a directory activated by [startAccessingDirectory].

@@ -4,9 +4,8 @@ The SuperDeck Wizard. One flow: describe a presentation, review the outline it
 plans, approve it, present the deck, and save it. Package name kept as
 `playground` for now.
 
-There is no file-backed editor here any more. The app does not open arbitrary
-Markdown, watch files, or auto-save; a deck is written only when the reader
-asks for it.
+Generated decks live in memory. The app does not open arbitrary Markdown,
+watch files, or auto-save; a deck is written only when the reader asks for it.
 
 ## What a saved deck is
 
@@ -39,7 +38,6 @@ lib/
   app/            # router.dart + providers.dart (app-root DI)
   core/           # shared cross-feature domain + data
     result.dart   # Result<T>
-    command.dart  # Command / Command0 / Command1
     domain/       # stores (document, customization), design catalogs
     data/         # data_sources (asset stores, deck loader), mappers
   features/
@@ -55,7 +53,6 @@ lib/
 | Need | Pattern | Lives in |
 |------|---------|----------|
 | Text input, focus, animation, scroll | Ephemeral `StatefulWidget` | the widget |
-| Async action (loading/error/success) | `Command0<T>` / `Command1<T, A>` | `domain/commands/` |
 | Shared state within a feature | `ChangeNotifier` store | `features/<name>/domain/stores/` |
 | Shared state across features | `ChangeNotifier` store | `core/domain/stores/` |
 

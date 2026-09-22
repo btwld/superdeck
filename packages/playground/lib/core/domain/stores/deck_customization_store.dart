@@ -12,10 +12,6 @@ import '../design/presentation_typography_catalog.dart';
 const _defaultBackground = Color(0xFF000000);
 const _defaultForeground = Color(0xFFFFFFFF);
 
-/// Curated font families surfaced in the playground's customization sidebar.
-final playgroundFontFamilies =
-    PresentationTypographyCatalog.withDefaults().familyNames;
-
 /// Renderer-ready style selected by the generation pipeline.
 final class GeneratedDeckStyle {
   final Color background;
@@ -69,8 +65,7 @@ class TextLevelStyle {
 /// Owns the playground's deck-wide customization state and pushes a fresh
 /// [DeckOptions] into the [DeckController] on every change.
 ///
-/// Ported from the signal-based original to a plain [ChangeNotifier]: each
-/// mutation updates a field, rebuilds the [DeckOptions], writes it to the
+/// Each mutation updates a field, rebuilds the [DeckOptions], writes it to the
 /// controller, and notifies. All state is in-memory; reloading resets to the
 /// seeded defaults.
 class DeckCustomizationStore extends ChangeNotifier {
@@ -292,50 +287,7 @@ class DeckCustomizationStore extends ChangeNotifier {
 
   Color get background => _background;
 
-  set background(Color value) {
-    if (_background == value) return;
-    _background = value;
-    _apply();
-  }
-
   TextLevelStyle level(TextLevel level) => _levels[level]!;
-
-  void setColor(TextLevel level, Color color) {
-    final target = _levels[level]!;
-    if (target.color == color) return;
-    target.color = color;
-    _apply();
-  }
-
-  void setSize(TextLevel level, double size) {
-    final target = _levels[level]!;
-    if (target.size == size) return;
-    target.size = size;
-    _apply();
-  }
-
-  void setWeight(TextLevel level, int weight) {
-    final target = _levels[level]!;
-    final role = level == TextLevel.p
-        ? PresentationFontRole.body
-        : PresentationFontRole.headline;
-    final descriptor = _requireFont(target.family, role);
-    final supportedWeight = _nearestSupportedWeight(descriptor, weight);
-    if (target.weight == supportedWeight) return;
-    target.weight = supportedWeight;
-    _apply();
-  }
-
-  void setFamily(TextLevel level, String family) {
-    final target = _levels[level]!;
-    final role = level == TextLevel.p
-        ? PresentationFontRole.body
-        : PresentationFontRole.headline;
-    final descriptor = _requireFont(family, role);
-    if (target.family == descriptor.family) return;
-    target.family = descriptor.family;
-    _apply();
-  }
 
   /// Applies one generated visual system and pushes one coherent option update.
   void applyGeneratedStyle(GeneratedDeckStyle style) {
