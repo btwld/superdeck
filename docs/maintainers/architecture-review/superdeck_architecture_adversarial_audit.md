@@ -96,7 +96,7 @@ Remove the unused counter later, as its own cleanup, or replace it with the iden
 
 ### First implementation slice
 
-Start with coherent active-deck publication and saving. The first regressions are the three scenarios above, plus failed or abandoned application of a generated result. The aim is that a publish or a save names one deck and writes or shows only that deck.
+Start with coherent active-deck publication and saving. The recommended first slice is those ownership guarantees, not a class merger. The first regressions are the three scenarios above, plus failed or abandoned application of a generated result. The aim is that a publish or a save names one deck and writes or shows only that deck.
 
 Keep the generation pipeline, asset staging, the library persistence adapter, the renderer, and the PDF plugin interface unless one of those regressions requires a change. Fix memory reload on its own next. Address PDF terminal cleanup without treating controller replacement as the reason for a larger redesign.
 
