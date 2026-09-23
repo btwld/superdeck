@@ -107,31 +107,3 @@ SlideStyler borderedStyle() {
     ),
   );
 }
-
-/// Large white title for the hero-out slide.
-SlideStyler heroFromStyle() {
-  return SlideStyler(
-    h1: TextStyler().style(
-      TextStyleMix(
-        fontSize: 96,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-        height: 1.1,
-      ),
-    ),
-  );
-}
-
-/// Smaller red title for the hero-in slide.
-SlideStyler heroToStyle() {
-  return SlideStyler(
-    h1: TextStyler().style(
-      TextStyleMix(
-        fontSize: 36,
-        fontWeight: FontWeight.w400,
-        color: const Color(0xFFFF4D4D),
-        height: 1.2,
-      ),
-    ),
-  );
-}
