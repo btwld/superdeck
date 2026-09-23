@@ -5,8 +5,6 @@ class MainFlutterWindow: NSWindow {
   private static let initialContentSize = NSSize(width: 1440, height: 900)
   private static let minimumContentSize = NSSize(width: 1200, height: 700)
 
-  private let bookmarkManager = SecurityScopedBookmarkManager()
-
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
@@ -29,16 +27,6 @@ class MainFlutterWindow: NSWindow {
       self.contentLayoutRect.height < Self.minimumContentSize.height {
       self.setContentSize(Self.initialContentSize)
       self.center()
-    }
-
-    let registrar = flutterViewController.registrar(
-      forPlugin: "SecurityScopedBookmarks")
-    let bookmarkChannel = FlutterMethodChannel(
-      name: "dev.superdeck.playground/security_scoped_bookmarks",
-      binaryMessenger: registrar.messenger)
-    let bookmarkManager = self.bookmarkManager
-    bookmarkChannel.setMethodCallHandler { call, result in
-      bookmarkManager.handle(call, result: result)
     }
 
     RegisterGeneratedPlugins(registry: flutterViewController)

@@ -11,7 +11,7 @@ import 'package:superdeck/superdeck.dart';
 /// action bar, menu, and scaled slide — all driven off the shared
 /// [DeckController]. Navigation, the menu, and thumbnails are the shell's own.
 ///
-/// The playground pushes this over the Wizard or saved-deck library (unlike
+/// The playground pushes this over the Wizard (unlike
 /// standalone SuperDeck, which is the whole app), so a close button is
 /// overlaid to return. [initialIndex], from the route, seeds the slide the
 /// reader chose to present.

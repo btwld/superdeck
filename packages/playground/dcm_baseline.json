@@ -33,22 +33,6 @@
           "99914b932bd37a50b983c5e7c90ae93b"
         ]
       },
-      "lib/core/data/data_sources/security_scoped_file_access.dart": {
-        "member-ordering": [
-          "be8c26dcc636a143b78001de86957301",
-          "4d906b08741be42f24bff407f0b17938",
-          "1430c4571c14f58ecac407876fdacbe2",
-          "74d2d4912fc7084d7933cf07e59a738d",
-          "ce91d284738a04ce3ae951f7c61efa8d"
-        ],
-        "newline-before-return": [
-          "a7b69a9b65d6bb7620e797ff51b1f2a2",
-          "c9db1f09a26ca1c96a59cea77cf29a8e",
-          "004d60a501680fe4a801c1f382091a6c",
-          "9d1bed3be3f428ef16a7bc10fb4f04d1",
-          "eefb853f7fffca0c5b6d150b8eaa69df"
-        ]
-      },
       "lib/core/domain/design/generated_deck_theme_factory.dart": {
         "prefer-shorthands-with-enums": [
           "f3d70c6aa77da74309195ab874fff66d",
@@ -119,12 +103,6 @@
         ],
         "avoid-throw-in-catch-block": [
           "959b7175f88493905e3c324c2bf6f97d"
-        ]
-      },
-      "lib/core/result.dart": {
-        "member-ordering": [
-          "85eca8e6b45775b517ebcc6aab8021d0",
-          "00c8c3a7775b4bd83b4c7627c1029a39"
         ]
       },
       "lib/features/ai/generation/core/debug_logger.dart": {
@@ -843,11 +821,6 @@
       "lib/features/ai/wizard/core/ui/widgets/catalog_next_button.dart": {
         "prefer-shorthands-with-constructors": [
           "7619ac479ac9f2834cfe7d877347194d"
-        ]
-      },
-      "lib/features/ai/wizard/core/ui/widgets/header.dart": {
-        "arguments-ordering": [
-          "801979137471c1e5fb1750d69c099bcf"
         ]
       },
       "lib/features/ai/wizard/core/utils/color_utils.dart": {
