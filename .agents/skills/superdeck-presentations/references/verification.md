@@ -1,6 +1,6 @@
 # Verification
 
-Use this reference before claiming a SuperDeck deck, runtime change, or skill update is complete.
+Use this reference before claiming a SuperDeck deck or runtime change works.
 
 ## For Presentation Authoring
 
@@ -36,9 +36,9 @@ Visually inspect slides when changing layout, alignment, images, custom widgets,
 Follow the repo's FVM/Melos workflow:
 
 ```bash
-melos run build_runner:build
-melos run analyze
-melos run test
+fvm dart run melos run build_runner:build
+fvm dart run melos run analyze
+fvm dart run melos run test
 ```
 
 Use targeted tests when the change is scoped:
@@ -61,24 +61,8 @@ Run builder/parser tests for syntax, slide splitting, comments, directives, or s
 Regenerate generated files after model/schema changes:
 
 ```bash
-melos run build_runner:build
+fvm dart run melos run build_runner:build
 ```
-
-## For Skill Updates
-
-Validate the skill folder:
-
-```bash
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .agents/skills/superdeck-presentations
-```
-
-Also check for stale template markers:
-
-```bash
-rg -n "TO[D]O|FIX[M]E|\\[TO[D]O" .agents/skills/superdeck-presentations
-```
-
-Confirm the trigger description mentions the concrete contexts that should load this skill: `slides.md`, SuperDeck Markdown, block layout, widgets, assets/images, `DeckOptions`, styles/templates, slide parts, CLI builds, and plugins.
 
 ## Common Failure Checks
 

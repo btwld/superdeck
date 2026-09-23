@@ -11,8 +11,6 @@ Prefer frontmatter for every slide:
 ```markdown
 ---
 title: Product Vision
-style: hero
-template: keynote
 owner: Platform Team
 ---
 
@@ -271,33 +269,10 @@ Arguments:
 
 DartPad renders through SuperDeck's internal `WebViewWrapper`. Verify the target platform supports WebViews and can reach `https://dartpad.dev`.
 
-Share a DartPad snippet through a GitHub Gist:
-
-1. Create a GitHub Gist containing a `main.dart` file.
-2. Copy the gist ID from the gist URL, without the username.
-3. Test it with `https://dartpad.dev/?id=<gist-id>`.
-4. Put that same gist ID in the SuperDeck block:
-
-```markdown
-@dartpad {
-  id: "5c0e154dd50af4a9ac856908061291bc"
-  theme: dark
-  embed: true
-  run: true
-}
-```
-
-Use `run: false` when you want the audience to read or edit before executing. Use `theme: dark` for dark slide styles and `theme: light` for lighter decks. Avoid relying on DartPad's old in-app share/update flow; current sharing is gist-based.
-
-Runtime behavior to remember:
-
-- SuperDeck builds `https://dartpad.dev/?id=<id>&theme=<theme>&embed=<embed>&run=<run>` from the `@dartpad` args.
-- The WebView uses unrestricted JavaScript because DartPad needs it.
-- The wrapper blocks navigation away from the original host, so links to other domains will not navigate inside the embedded view.
-- The WebView is hidden until the page finishes loading, then fades in after a short delay.
-- The wrapper overlays refresh and clear-editor controls.
-- A controller is cached per block by default, or by `cacheKey` when supplied, so returning to a slide does not reload the same URL. A key cannot be shared by two live widgets at once.
-- Changing the DartPad URL reloads the WebView.
+Share a snippet by creating a GitHub Gist with `main.dart`, passing its gist ID
+as `id`, and testing `https://dartpad.dev/?id=<gist-id>` before presenting.
+Use `run: false` when the audience should edit before executing. The embedded
+view needs network access and prevents navigation away from `dartpad.dev`.
 
 ### WebView
 
@@ -472,72 +447,46 @@ Do not duplicate the same Hero tag on one slide. Flutter Hero transitions requir
 
 Do not rely on classes beginning with `--`; they are rejected. The class marker is stripped from rendered content and is not a Mix style selector.
 
-## Authoring Patterns
+## Composition Example
 
-Title slide:
-
-```markdown
----
-title: Launch Plan
-style: hero
----
-
-@block { align: center }
-
-# Launch Plan
-## Q3 execution narrative
-```
-
-Text plus visual:
+This slide combines vertical rows, asymmetric columns, a shared gutter, and
+independent content insets. Register the example `panels` style in
+`DeckOptions.styles` before using it; the runtime reference shows how it also
+removes default image padding with `BlockVariant('image')`.
 
 ```markdown
 ---
-title: Why Now
+title: Why now
+style: panels
 ---
 
-@block { flex: 2 }
-## Market pressure
-- Buyers expect immediate insight
-- Competitors are bundling workflows
-- Internal data quality is now sufficient
+@section { flex: 1 }
+@block {
+  padding: { horizontal: 24, vertical: 12 }
+}
+## Why now
+
+@section {
+  flex: 4
+  spacing: 24
+  align: center
+}
+
+@block {
+  flex: 2
+  padding: 24
+}
+### Market pressure
+Buyers expect immediate insight from every workflow.
 
 @image {
   src: assets/market-map.png
-  fit: contain
+  fit: cover
   flex: 3
+  margin: { top: 8, bottom: 8 }
 }
 ```
 
-Three columns:
-
-```markdown
-@section
-
-@block
-### Problem
-Fragmented workflows
-
-@block
-### Move
-Unified deck authoring
-
-@block
-### Proof
-Live Flutter components
-```
-
-Vertical rows:
-
-```markdown
-@section { flex: 1 }
-@block { align: center }
-## Executive summary
-
-@section { flex: 4 }
-@block
-Main content
-
-@section { flex: 1 }
-@block { align: bottomRight }
-Footer note
-```
+For a complete designed deck using these primitives, see
+`demo/layout_showcase/slides.md` and its matching
+`demo/lib/src/layout_showcase/showcase_style.dart`.
