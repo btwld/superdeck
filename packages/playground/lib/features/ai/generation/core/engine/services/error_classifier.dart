@@ -83,6 +83,15 @@ class ErrorClassifier {
     ErrorCategory.safetyFilter: ['blocked', 'safety', 'harmful'],
   };
 
+  static final _statusNumber = RegExp(r'^\d+$');
+
+  /// Status numbers such as `429` match only as whole numbers, so digits
+  /// inside an ID, a timestamp, or a duration cannot pick a category.
+  static bool _matches(String text, String pattern) =>
+      _statusNumber.hasMatch(pattern)
+      ? RegExp('\\b$pattern\\b').hasMatch(text)
+      : text.contains(pattern);
+
   /// Classifies an error into a user-friendly category.
   ///
   /// Uses structured SDK status codes when available, then falls back to
@@ -98,10 +107,17 @@ class ErrorClassifier {
     };
     if (statusCategory != null) return statusCategory;
 
-    final errorString = error.toString().toLowerCase();
+    // An SDK error's toString() also carries its request URL, a timestamp
+    // request ID, and the latency; only its message describes the failure.
+    final text = switch (error) {
+      google_ai.GoogleAIException(:final message) => message,
+      _ => error.toString(),
+    }.toLowerCase();
 
     for (final entry in _patterns.entries) {
-      if (entry.value.any(errorString.contains)) return entry.key;
+      if (entry.value.any((pattern) => _matches(text, pattern))) {
+        return entry.key;
+      }
     }
 
     return ErrorCategory.unknown;

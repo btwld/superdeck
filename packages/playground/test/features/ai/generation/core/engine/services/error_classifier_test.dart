@@ -94,6 +94,68 @@ void main() {
       );
     });
 
+    test('matches status numbers only as whole numbers', () {
+      expect(
+        classifier.classify('retried after 14290 ms'),
+        ErrorCategory.unknown,
+      );
+      expect(classifier.classify('job 1403 failed'), ErrorCategory.unknown);
+    });
+
+    group('ignores the request metadata an SDK error carries', () {
+      // googleai_dart appends the request URL, a millisecond-timestamp request
+      // ID, and the latency to toString(); their digits must not pick a
+      // category.
+      google_ai.ApiException apiError(int statusCode, String message) =>
+          google_ai.ApiException(
+            statusCode: statusCode,
+            message: message,
+            requestMetadata: google_ai.RequestMetadata(
+              method: 'POST',
+              url: Uri.parse(
+                'https://generativelanguage.googleapis.com/v1beta/models/'
+                'gemini:generateContent',
+              ),
+              headers: const {},
+              correlationId: 'req_1790401403429',
+              timestamp: DateTime(2026),
+            ),
+            responseMetadata: google_ai.ResponseMetadata(
+              statusCode: statusCode,
+              headers: const {},
+              bodyExcerpt: '',
+              latency: const Duration(milliseconds: 403),
+            ),
+          );
+
+      test('a safety block stays a safety block', () {
+        expect(
+          classifier.classify(
+            apiError(400, 'Response blocked by safety filters.'),
+          ),
+          ErrorCategory.safetyFilter,
+        );
+      });
+
+      test('an unavailable service stays unknown', () {
+        expect(
+          classifier.classify(
+            apiError(503, 'The service is currently unavailable.'),
+          ),
+          ErrorCategory.unknown,
+        );
+      });
+
+      test('an invalid key is still recognised from the message', () {
+        expect(
+          classifier.classify(
+            apiError(400, 'API key not valid. Please pass a valid API key.'),
+          ),
+          ErrorCategory.authentication,
+        );
+      });
+    });
+
     test('applies patterns in priority order (rate limit before auth)', () {
       // Contains both a quota and a 403 marker; rate limit is checked first.
       expect(
