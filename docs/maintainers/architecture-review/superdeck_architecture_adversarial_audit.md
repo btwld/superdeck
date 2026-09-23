@@ -1,5 +1,7 @@
 # SuperDeck architecture audit
 
+> **Status:** The saved-deck library this audit examines is replaced by deck export in [#124](https://github.com/conceptadev/superdeck/pull/124). Its publication, saving, and ownership findings no longer apply. The memory-reload fix moved to #124, and the PDF terminal cleanup ships with this branch.
+
 **Decision:** Investigate publication and saving first, then memory reload, then PDF terminal cleanup. Shared-module placement and late-subscriber replay stay open. This branch records those limits. It does not authorize a class merger.
 
 **Repository:** `conceptadev/superdeck`  
