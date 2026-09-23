@@ -38,7 +38,7 @@ docs/         # User-facing documentation (MDX format)
 
 ## Environment Setup
 
-This project uses FVM (Flutter Version Management) configured via `.fvmrc` (pinned to Flutter `3.44.6`):
+This project uses FVM (Flutter Version Management) configured via `.fvmrc` (pinned to Flutter `3.47.5`):
 
 ```bash
 fvm use --force

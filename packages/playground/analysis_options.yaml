@@ -60,3 +60,7 @@ dcm:
           - build-method
     - prefer-named-boolean-parameters:
         ignore-single: true
+analyzer:
+  exclude:
+    - build/**
+    - macos/**

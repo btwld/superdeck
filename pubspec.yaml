@@ -20,6 +20,8 @@ dependency_overrides:
   # this workspace until that upstream migration is released.
   mix_annotations: 2.2.0-beta.0
   remix: 1.0.0-beta.1
+  # Remix beta.1 uses positioning and slider APIs removed in naked_ui 1.0.1.
+  naked_ui: 1.0.0-beta.4
 
 melos:
   sdkPath: .fvm/flutter_sdk
