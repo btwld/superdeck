@@ -64,6 +64,22 @@ Regenerate generated files after model/schema changes:
 fvm dart run melos run build_runner:build
 ```
 
+## Local macOS runtime verification
+
+For the Playground, launch from `packages/playground` with the root define file:
+
+```bash
+fvm flutter run -d macos -t lib/main.dart --dart-define-from-file=../../.env
+```
+
+Keep `flutter run` attached and read its output after interactions so framework, plugin, and native errors remain visible. Without the define file, the Wizard intentionally reports missing AI configuration. Do not print its secrets in diagnostics.
+
+The package test command does not cover desktop integration, browser smoke, or live generation. Use `test:integration:macos` for demo desktop flows and `test:e2e:web` for Chromium/WebKit; consult root `AGENTS.md` for the separate Playground generation checkpoints. A successful build alone does not establish runtime behavior.
+
+For browser smoke tests, explicitly activate Flutter's `Enable accessibility` placeholder before querying semantic controls. The pinned engine does not enable semantics from the old `enable-flutter-web-semantics` URL flag. The placeholder sits outside the viewport, so the Playwright harness dispatches its click event directly.
+
+For Hero changes, exercise forward and backward navigation between slides sharing tags and inspect content both during and after flight. Relevant regressions live in `test/src/markdown/hero_transition_test.dart` and `test/src/ui/widgets/text_hero_flight_test.dart` under `packages/superdeck`.
+
 ## Common Failure Checks
 
 Build cannot find slides:

@@ -8,6 +8,17 @@ metadata:
 ---
 # Testing Flutter Applications
 
+## SuperDeck workspace
+
+Use the pinned SDK through `fvm`; follow the root `AGENTS.md` for code generation before tests. Select checks by the behavior under test:
+
+- `fvm dart run melos run test` runs package unit/widget tests, excluding `ci-excluded` suites.
+- `fvm dart run melos run test:integration:macos` exercises the demo on the local macOS desktop; `test:integration` targets Linux.
+- `fvm dart run melos run test:e2e:web` builds the demo and runs Chromium/WebKit smoke tests.
+- `test:all` combines package tests and Linux integration tests; it does not cover browsers or live AI generation.
+
+Playground generation checkpoints live in `packages/playground/test_live`, outside those Melos suites. Use the deterministic fake checkpoint for provider-free validation; consult `AGENTS.md` for the opt-in live test and define-file requirements. Match new regression tests to the existing Signals/controllers and feature folders rather than introducing ViewModels solely for these examples.
+
 ## Contents
 - [Core Testing Strategies](#core-testing-strategies)
 - [Architectural Testing Guidelines](#architectural-testing-guidelines)

@@ -8,6 +8,10 @@ metadata:
 ---
 # Managing State in Flutter
 
+## SuperDeck state conventions
+
+Preserve the existing Signals-based state model: `DeckController` manages presentations, and the Playground conversation view model uses Signals. Inspect the feature's current dependency injection and reactive subscriptions before editing. Provider may supply existing dependencies; its presence does not require migrating reactive state to `ChangeNotifier`. The MVVM/Provider examples below are alternatives for projects that already use that pattern, not a migration instruction for SuperDeck.
+
 ## Contents
 - [Core Concepts](#core-concepts)
 - [Architecture and Data Flow](#architecture-and-data-flow)

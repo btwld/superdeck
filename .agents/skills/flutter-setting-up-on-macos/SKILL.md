@@ -8,6 +8,10 @@ metadata:
 ---
 # Setting Up a macOS Environment for Flutter Development
 
+## Existing SuperDeck checkout
+
+Use `fvm flutter` and `fvm dart` with the SDK pinned in `.fvmrc`, rather than a global Flutter installation. Inspect `fvm flutter doctor -v` and `xcode-select -p` before changing machine tooling. Install or change Xcode/CocoaPods only when a diagnosed build requirement calls for it; do not upgrade a working toolchain as a routine setup step. The root `AGENTS.md` contains the workspace bootstrap and macOS launch commands.
+
 ## Contents
 - [Prerequisites](#prerequisites)
 - [Tooling Configuration](#tooling-configuration)
