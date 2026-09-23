@@ -210,5 +210,126 @@ void main() {
 
       semanticsHandle.dispose();
     });
+
+    group('keeps the active thumbnail in view', () {
+      Future<void> pumpPanel(
+        WidgetTester tester, {
+        required int activeIndex,
+        Axis direction = Axis.vertical,
+      }) {
+        final horizontal = direction == Axis.horizontal;
+
+        return tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Align(
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  width: horizontal ? 400 : 200,
+                  height: horizontal ? 200 : 400,
+                  child: ThumbnailPanel(
+                    itemBuilder: (index, selected) => SizedBox(
+                      key: ValueKey<String>('thumb-$index'),
+                      height: 100,
+                      width: 100,
+                    ),
+                    itemCount: 50,
+                    activeIndex: activeIndex,
+                    onItemTap: (_) {},
+                    scrollDirection: direction,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      Rect viewport(WidgetTester tester) =>
+          tester.getRect(find.byType(ThumbnailPanel));
+
+      bool fullyVisible(WidgetTester tester, int index) {
+        final item = find.byKey(ValueKey<String>('thumb-$index'));
+        if (item.evaluate().isEmpty) return false;
+        final rect = tester.getRect(item);
+        final view = viewport(tester);
+
+        return rect.top >= view.top - 0.5 &&
+            rect.bottom <= view.bottom + 0.5 &&
+            rect.left >= view.left - 0.5 &&
+            rect.right <= view.right + 0.5;
+      }
+
+      for (final direction in Axis.values) {
+        testWidgets('jumps forward to a far slide ($direction)', (
+          tester,
+        ) async {
+          await pumpPanel(tester, activeIndex: 0, direction: direction);
+          await tester.pumpAndSettle();
+          expect(fullyVisible(tester, 40), isFalse);
+
+          await pumpPanel(tester, activeIndex: 40, direction: direction);
+          await tester.pumpAndSettle();
+
+          expect(fullyVisible(tester, 40), isTrue);
+        });
+
+        testWidgets('jumps back to an earlier slide ($direction)', (
+          tester,
+        ) async {
+          await pumpPanel(tester, activeIndex: 0, direction: direction);
+          await tester.pumpAndSettle();
+          await pumpPanel(tester, activeIndex: 40, direction: direction);
+          await tester.pumpAndSettle();
+          expect(fullyVisible(tester, 5), isFalse);
+
+          await pumpPanel(tester, activeIndex: 5, direction: direction);
+          await tester.pumpAndSettle();
+
+          expect(fullyVisible(tester, 5), isTrue);
+        });
+
+        testWidgets(
+          'reveals the next slide when stepping forward ($direction)',
+          (tester) async {
+            await pumpPanel(tester, activeIndex: 0, direction: direction);
+            await tester.pumpAndSettle();
+            var index = 0;
+            while (fullyVisible(tester, index + 1)) {
+              index++;
+            }
+            expect(fullyVisible(tester, index + 1), isFalse);
+
+            await pumpPanel(
+              tester,
+              activeIndex: index + 1,
+              direction: direction,
+            );
+            await tester.pumpAndSettle();
+
+            expect(fullyVisible(tester, index + 1), isTrue);
+          },
+        );
+
+        testWidgets(
+          'does not scroll for a slide already in view ($direction)',
+          (tester) async {
+            await pumpPanel(tester, activeIndex: 0, direction: direction);
+            await tester.pumpAndSettle();
+            final before = tester.getRect(
+              find.byKey(const ValueKey('thumb-0')),
+            );
+
+            await pumpPanel(tester, activeIndex: 1, direction: direction);
+            await tester.pumpAndSettle();
+
+            expect(
+              tester.getRect(find.byKey(const ValueKey('thumb-0'))),
+              before,
+            );
+          },
+        );
+      }
+    });
   });
 }
