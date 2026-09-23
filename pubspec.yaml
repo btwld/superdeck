@@ -11,8 +11,7 @@ workspace:
   - packages/plugins/*
 
 dev_dependencies:
-  # Melos 7.8.2+ requires cli_util 0.5.x, while custom_lint 0.8.1
-  # requires cli_util 0.4.x. 7.8.1 is the latest compatible workspace release.
+  # Keep in sync with `melos-version` in .github/workflows/*.yml.
   melos: 7.8.1
 
 dependency_overrides:
