@@ -32,6 +32,7 @@ class WizardGenerationStatus extends StatelessWidget {
     this.onStartOver,
     this.onSave,
     this.onOpenSavedDecks,
+    this.onShowGeneratedDeck,
     this.saveLabel = 'Save deck',
     this.isSaving = false,
   });
@@ -61,6 +62,9 @@ class WizardGenerationStatus extends StatelessWidget {
 
   /// Opens the list of decks already saved.
   final VoidCallback? onOpenSavedDecks;
+
+  /// Publishes the retained generation over the saved deck currently showing.
+  final VoidCallback? onShowGeneratedDeck;
 
   /// Reflects whether this deck has been saved yet, so a second save reads as
   /// another copy rather than an undo.
@@ -237,6 +241,13 @@ class WizardGenerationStatus extends StatelessWidget {
                       label: isSaving ? 'Saving…' : saveLabel,
                       onPressed: isSaving ? null : onSave,
                       icon: LucideIcons.save,
+                      variant: .outline,
+                    ),
+                  if (onShowGeneratedDeck != null)
+                    SdButton(
+                      label: 'Show generated deck',
+                      onPressed: onShowGeneratedDeck,
+                      icon: LucideIcons.presentation,
                       variant: .outline,
                     ),
                   SdButton(

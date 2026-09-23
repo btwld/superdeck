@@ -38,6 +38,7 @@ final class WizardGenerationController extends ChangeNotifier {
 
   final DeckGeneratorService _service;
   final ApplyWizardDeckResult _applyResult;
+  final int Function() _deckSelectionEpoch;
 
   WizardGenerationStage _stage = .setup;
 
@@ -57,8 +58,10 @@ final class WizardGenerationController extends ChangeNotifier {
   WizardGenerationController({
     required DeckGeneratorService service,
     required ApplyWizardDeckResult applyResult,
+    int Function()? deckSelectionEpoch,
   }) : _service = service,
-       _applyResult = applyResult;
+       _applyResult = applyResult,
+       _deckSelectionEpoch = deckSelectionEpoch ?? (() => 0);
 
   Future<void> _createOutline(
     DeckGenerationRequest request, {
@@ -152,15 +155,22 @@ final class WizardGenerationController extends ChangeNotifier {
     _notify();
   }
 
+  bool _mayAutoPublish(int selectionEpoch) =>
+      _deckSelectionEpoch() == selectionEpoch;
+
   Future<void> _completeComposition(
     int operation,
     DeckGenerationResult generated,
+    int selectionEpoch,
   ) async {
     final GeneratedDeckApplication application;
     try {
       application = await _applyResult(
         generated,
-        isValid: () => !_isOperationCancelled(operation) && !_disposed,
+        isValid: () =>
+            !_isOperationCancelled(operation) &&
+            !_disposed &&
+            _mayAutoPublish(selectionEpoch),
       );
     } catch (error) {
       if (_isOperationCancelled(operation) || _disposed) return;
@@ -172,9 +182,18 @@ final class WizardGenerationController extends ChangeNotifier {
       return;
     }
     if (_isOperationCancelled(operation) || _disposed) return;
-    // The applier stops when a newer run replaced this one, so the run that
-    // owns the state keeps it.
-    if (!application.published) return;
+    // Opening a saved deck withdraws automatic publication. The result stays
+    // available for an explicit acceptance that publishes that generation alone.
+    if (!application.published) {
+      if (!_mayAutoPublish(selectionEpoch)) {
+        _result = generated;
+        _stage = .completed;
+        _progress = const GenerationProgress(.idle);
+        _notify();
+      }
+
+      return;
+    }
     if (application.cleanupError != null) {
       _applyNotice =
           'Some artwork from the previous deck could not be removed.';
@@ -275,6 +294,7 @@ final class WizardGenerationController extends ChangeNotifier {
     }
 
     final operation = ++_operationEpoch;
+    final selectionEpoch = _deckSelectionEpoch();
     _result = null;
     _errorMessage = null;
     _failedPhase = null;
@@ -308,7 +328,7 @@ final class WizardGenerationController extends ChangeNotifier {
       return;
     }
 
-    await _completeComposition(operation, generated);
+    await _completeComposition(operation, generated, selectionEpoch);
   }
 
   Future<void> retryFailedSlides() async {
@@ -323,6 +343,7 @@ final class WizardGenerationController extends ChangeNotifier {
     }
 
     final operation = ++_operationEpoch;
+    final selectionEpoch = _deckSelectionEpoch();
     _errorMessage = null;
     _failedPhase = null;
     _applyNotice = null;
@@ -358,7 +379,36 @@ final class WizardGenerationController extends ChangeNotifier {
       return;
     }
 
-    await _completeComposition(operation, generated);
+    await _completeComposition(operation, generated, selectionEpoch);
+  }
+
+  /// Publishes the retained generation as the only active deck.
+  ///
+  /// Selecting a saved deck removes an in-flight run's right to publish on
+  /// completion. This is the later, explicit acceptance of that same result.
+  Future<void> acceptRetainedGeneration() async {
+    final generated = _result;
+    if (generated == null || isBusy || _disposed) return;
+    final GeneratedDeckApplication application;
+    try {
+      application = await _applyResult(generated, isValid: () => !_disposed);
+    } catch (error) {
+      if (_disposed) return;
+      _fail(
+        .composition,
+        'Slides were generated but could not be loaded: $error',
+      );
+
+      return;
+    }
+    if (_disposed || !application.published) return;
+    if (application.cleanupError != null) {
+      _applyNotice =
+          'Some artwork from the previous deck could not be removed.';
+    }
+    _stage = .completed;
+    _progress = const GenerationProgress(.idle);
+    _notify();
   }
 
   Future<void> retry() async {

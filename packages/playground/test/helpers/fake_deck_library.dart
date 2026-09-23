@@ -18,6 +18,13 @@ class FakeDeckLibrary implements DeckLibrary {
   Exception? openError;
   Exception? listError;
   int saveCount = 0;
+  int openCount = 0;
+
+  /// Held by tests that need [save], [open], or [list] to finish in an
+  /// order the controller does not choose.
+  Future<void> Function()? beforeSave;
+  Future<void> Function()? beforeOpen;
+  Future<void> Function()? beforeList;
 
   @override
   Future<Result<DeckSaveOutcome>> save({
@@ -27,6 +34,8 @@ class FakeDeckLibrary implements DeckLibrary {
     SavedDeckTheme? theme,
   }) async {
     saveCount++;
+    final saveHook = beforeSave;
+    if (saveHook != null) await saveHook();
     final error = saveError;
     if (error != null) return Result.error(error);
 
@@ -65,6 +74,8 @@ class FakeDeckLibrary implements DeckLibrary {
 
   @override
   Future<Result<List<SavedDeckRef>>> list() async {
+    final listHook = beforeList;
+    if (listHook != null) await listHook();
     final error = listError;
 
     return error != null ? Result.error(error) : Result.ok(List.of(saved));
@@ -72,6 +83,9 @@ class FakeDeckLibrary implements DeckLibrary {
 
   @override
   Future<Result<SavedDeck>> open(SavedDeckRef ref) async {
+    openCount++;
+    final openHook = beforeOpen;
+    if (openHook != null) await openHook();
     final error = openError;
     if (error != null) return Result.error(error);
     final content = markdown[ref.reference.path];
