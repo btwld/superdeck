@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:remix/remix.dart';
 
-/// Shared chat input widget used by both sidebar and inline views.
+/// Shared chat input widget used by both the empty-state and in-conversation
+/// views.
 ///
 /// Provides consistent behavior: disabled while thinking, unified hint text,
 /// and proper TextInputAction.send for enter-to-submit.

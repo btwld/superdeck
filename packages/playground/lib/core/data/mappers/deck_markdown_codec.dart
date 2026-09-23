@@ -20,8 +20,4 @@ class DeckMarkdownCodec {
       );
     }
   }
-
-  /// Serializes [slides] to canonical SuperDeck Markdown.
-  String encode(List<Slide> slides) =>
-      const SlideSerializer().serialize(slides);
 }

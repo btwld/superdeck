@@ -201,7 +201,7 @@ A reasonable constraint is that these focused fixes do not require Dart type cha
 
 ## 6. Left in place
 
-This review does not reopen the Markdown renderer, shared slide assembly, the state-management approach, the AI provider and model split, or the persistence format. `docs/maintainers/renderer-and-assembly-evaluation.md` and `docs/maintainers/adr/0001-runtime-mermaid-rendering.md` already record the renderer and Mermaid decisions.
+This review does not reopen the Markdown renderer, shared slide assembly, the state-management approach, the AI provider and model split, or the persistence format. Those are settled: slide content stays on `flutter_markdown_plus`, both callers share `assembleSlides`, and Mermaid renders at runtime through `mermaid_core`.
 
 The library persistence adapter, asset staging, and the PDF plugin's public barrel stay as they are unless a regression in sections 1–3 requires a change.
 
@@ -212,7 +212,7 @@ The library persistence adapter, asset staging, and the PDF plugin's public barr
 - Repository guidance: `AGENTS.md`
 - Wizard handoff and save: `packages/playground/lib/features/ai/wizard/presentation/wizard_page.dart`
 - Wizard completion and outline edit: `packages/playground/lib/features/ai/wizard/presentation/wizard_generation_controller.dart`
-- Generated-result applier: `packages/playground/lib/features/ai/quick_agent/domain/generated_deck_result_applier.dart`
+- Generated-result applier: `packages/playground/lib/features/ai/generation/domain/generated_deck_result_applier.dart`
 - Library controller: `packages/playground/lib/features/library/domain/deck_library_controller.dart`
 - Saved-deck open page: `packages/playground/lib/features/library/presentation/saved_decks_page.dart`
 - macOS library read: `packages/playground/lib/features/library/data/mac_os_deck_library.dart`
@@ -227,7 +227,7 @@ The library persistence adapter, asset staging, and the PDF plugin's public barr
 - PDF plugin: `packages/plugins/pdf/lib/src/pdf_plugin.dart`
 - PDF dialog: `packages/plugins/pdf/lib/src/pdf_export_screen.dart`
 - PDF controller: `packages/plugins/pdf/lib/src/pdf_controller.dart`
-- Generation service and parts: `packages/playground/lib/features/ai/quick_agent/core/engine/services/`
+- Generation service and parts: `packages/playground/lib/features/ai/generation/core/engine/services/`
 
 ## Disposition
 

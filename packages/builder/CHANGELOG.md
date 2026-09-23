@@ -11,6 +11,8 @@
   (comma-separated entries, one key per line); scalar-only options stay
   inline. Serializer output is idempotent.
 - **Breaking:** reject non-positive flex values during Markdown compilation.
+- **Breaking:** remove `SlideSerializer.serializeSlide`; it had no production
+  use. Use `SlideSerializer.serialize` for a list of slides.
 - Add build-plugin `beginBuild` and `finishBuild` lifecycle hooks.
 - Make `DeckBuilder.dispose()` wait for queued builds before disposing plugins
   and reject new builds after disposal.

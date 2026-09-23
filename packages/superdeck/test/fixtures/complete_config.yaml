@@ -1,8 +1,0 @@
-transition:
-  type: fade_in
-  duration: 500
-  curve: ease_in_out
-  delay: 300
-background: background.jpg
-style: custom
-  

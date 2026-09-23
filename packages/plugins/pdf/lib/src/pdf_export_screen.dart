@@ -107,11 +107,8 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
   Future<void> _handleExport() async {
     final started = _exportController;
     await started.export();
-    if (!mounted ||
-        !identical(started, _exportController) ||
-        started.disposed) {
-      return;
-    }
+    // This dialog disposes a controller only when it replaces it or unmounts.
+    if (!mounted || !identical(started, _exportController)) return;
 
     if (started.exportStatus.value != PdfExportStatus.failed) {
       _close();

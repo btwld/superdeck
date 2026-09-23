@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
+import 'package:superdeck_builder/superdeck_builder.dart';
 
-import '../../../../core/data/mappers/deck_markdown_codec.dart';
 import '../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
 import '../../../../core/data/data_sources/deck_library_asset_store.dart';
@@ -14,9 +14,9 @@ import '../../../library/domain/deck_library.dart';
 import '../../../library/domain/deck_library_controller.dart';
 import '../../../library/domain/saved_deck.dart';
 import '../../../library/presentation/save_deck_dialog.dart';
-import '../../quick_agent/core/engine/services/deck_generator_service.dart';
-import '../../quick_agent/domain/generated_deck_result_applier.dart';
-import '../../quick_agent/core/env_config.dart';
+import '../../generation/core/engine/services/deck_generator_service.dart';
+import '../../generation/core/env_config.dart';
+import '../../generation/domain/generated_deck_result_applier.dart';
 import '../../image_generation/image_generator.dart';
 import '../../image_generation/image_style_preview_coordinator.dart';
 import '../chat/chat_conversation_profile.dart';
@@ -40,7 +40,7 @@ Future<bool> saveRetainedWizardDeck({
 
   return library.save(
     name: name,
-    markdown: const DeckMarkdownCodec().encode(result.slides),
+    markdown: const SlideSerializer().serialize(result.slides),
     images: result.generatedImages,
     theme: theme == null
         ? null
@@ -54,9 +54,9 @@ Future<bool> saveRetainedWizardDeck({
 
 /// Host for the conversational Wizard, the app's only authoring flow.
 ///
-/// Generated Markdown is kept in memory so opening this screen never requests a
-/// deck-storage folder. The production integration can provide its own document
-/// destination when the Wizard is embedded outside the playground.
+/// Generated Markdown is kept in memory: results are applied straight to the
+/// in-memory document and preview stores, and a deck-storage folder is only
+/// requested later, when the reader chooses to save.
 class WizardPage extends StatelessWidget {
   const WizardPage({
     this.isConfigured,
@@ -205,7 +205,7 @@ class _WizardExperienceState extends State<_WizardExperience> {
     final document = context.watch<DeckDocumentStore>();
     final generatedMarkdown = controller.result == null
         ? null
-        : const DeckMarkdownCodec().encode(controller.result!.slides);
+        : const SlideSerializer().serialize(controller.result!.slides);
     final overlay = switch (controller.stage) {
       .setup => null,
       .planning || .composing => _CenteredScrollable(

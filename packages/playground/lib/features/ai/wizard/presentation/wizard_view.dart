@@ -102,7 +102,8 @@ class _WizardBodyState extends State<_WizardBody> {
         );
 
         // Before the first message: show the empty state with the topic prompt.
-        // It centers when it fits and scrolls when the sidebar is too short.
+        // It centers when it fits and scrolls when the available height is too
+        // short.
         if (!started) {
           return LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(

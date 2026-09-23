@@ -9,7 +9,9 @@ void main() {
     expect(catalog.resolve('Playfair Display')?.id, 'playfair-display');
     expect(catalog.resolve('definitely invented'), isNull);
     expect(
-      catalog.forRole(PresentationFontRole.body).map((font) => font.family),
+      catalog.fonts
+          .where((font) => font.roles.contains(PresentationFontRole.body))
+          .map((font) => font.family),
       containsAll(['Inter', 'Source Serif 4', 'DM Sans']),
     );
   });

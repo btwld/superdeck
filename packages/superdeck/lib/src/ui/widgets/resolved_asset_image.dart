@@ -116,11 +116,7 @@ class _ResolvedAssetImageState extends State<ResolvedAssetImage> {
           return SizedBox.fromSize(size: widget.targetSize);
         }
         final uri = snapshot.data ?? widget.fallback;
-        return CachedImage(
-          uri: uri,
-          targetSize: widget.targetSize,
-          styleSpec: widget.styleSpec,
-        );
+        return CachedImage(uri: uri, styleSpec: widget.styleSpec);
       },
     );
   }

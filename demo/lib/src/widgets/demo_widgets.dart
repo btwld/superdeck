@@ -26,7 +26,7 @@ import 'ack_metric_card.dart';
 /// }
 /// ```
 ///
-/// The QR code widget is now a built-in widget available as `@qrcode`.
+/// QR codes use the built-in `@qrcode` widget.
 Map<String, WidgetFactory> get demoWidgets => {
   'mix-simple-box': (_) => _DemoWrapper(
     child: Transform.scale(scale: 3.0, child: mix_simple_box.Example()),

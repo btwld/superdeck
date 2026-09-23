@@ -19,13 +19,6 @@
           "c889ed10350adc5484399a841b281d8d"
         ]
       },
-      "lib/core/command.dart": {
-        "member-ordering": [
-          "c13cc7d233532d01d38e6c853835c222",
-          "bbff11a98f162c65b2eba65457aa3054",
-          "d130e52202b79d8a1e23b22525299046"
-        ]
-      },
       "lib/core/data/data_sources/memory_asset_cache_store.dart": {
         "newline-before-return": [
           "dbdc5c1de5fd5775af210f68a7bdf4b2",
@@ -134,14 +127,7 @@
           "00c8c3a7775b4bd83b4c7627c1029a39"
         ]
       },
-      "lib/core/utils/color_utils.dart": {
-        "newline-before-return": [
-          "ac84b6615d6391fc8cb6a100c0b2aad0",
-          "3a959d00242e1a6e9483824930ad5858",
-          "108ceff8715a5f73a480064664b89bb7"
-        ]
-      },
-      "lib/features/ai/quick_agent/core/debug_logger.dart": {
+      "lib/features/ai/generation/core/debug_logger.dart": {
         "member-ordering": [
           "c9e8d09211e0b5eaac505b8ea7fb89e6"
         ],
@@ -155,7 +141,7 @@
           "c596ee1b5e0ebabc0f8379090abe193c"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/prompts/composition_example_library.dart": {
+      "lib/features/ai/generation/core/engine/prompts/composition_example_library.dart": {
         "member-ordering": [
           "7af8781494750ee27e697cd084ffa06e"
         ],
@@ -168,7 +154,7 @@
           "bfee52d03478ce0c30b1ae2015bc758f"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/prompts/generation_prompt_provider.dart": {
+      "lib/features/ai/generation/core/engine/prompts/generation_prompt_provider.dart": {
         "prefer-shorthands-with-static-fields": [
           "6debe9693098b85f1b7030aec538457d"
         ],
@@ -195,7 +181,7 @@
           "d30004f9ab953749716b83f7accf68d8"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/prompts/prompt_registry.dart": {
+      "lib/features/ai/generation/core/engine/prompts/prompt_registry.dart": {
         "member-ordering": [
           "09cc316b8b2f1586b294afe3cd657dfb",
           "e05e31fa115c901db6534be2c491cbd8",
@@ -218,7 +204,7 @@
           "0668cd491890191c84d4244d4552fa91"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_generation_request.dart": {
+      "lib/features/ai/generation/core/engine/services/deck_generation_request.dart": {
         "member-ordering": [
           "dd5fb45f127330e41528848263ee30d2",
           "8b0dcee6e21c872a5495109d65261c87",
@@ -230,7 +216,7 @@
           "a4f5c9920c2235bcf03341de5d2e2d58"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_generator_pipeline.dart": {
+      "lib/features/ai/generation/core/engine/services/deck_generator_pipeline.dart": {
         "newline-before-return": [
           "bbef19786c08a56d47025fc80a748f53",
           "005d49e327abc6887bba7647199f4c41",
@@ -258,7 +244,7 @@
           "698a8a56a2fb9a1a9d5ef1dda2d5989a"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_generator_pipeline_helpers.dart": {
+      "lib/features/ai/generation/core/engine/services/deck_generator_pipeline_helpers.dart": {
         "newline-before-return": [
           "37f174f893dbd1037d85918476d1ea24",
           "159fb2fb3c31f528814f62ecf60487da",
@@ -268,7 +254,7 @@
           "f23fa8c148ddb010a1ef0db563d595da"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_generator_service.dart": {
+      "lib/features/ai/generation/core/engine/services/deck_generator_service.dart": {
         "prefer-shorthands-with-static-fields": [
           "b32d9275721f7438582b42bf815a6d85"
         ],
@@ -280,7 +266,7 @@
           "f9b3329ab821e075b201a604ea000621"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_generator_workflow.dart": {
+      "lib/features/ai/generation/core/engine/services/deck_generator_workflow.dart": {
         "prefer-shorthands-with-enums": [
           "e0702dd3f4b0189360f889335f47c078",
           "3d5d2e3c3d76cb3d3bbc677082bff044",
@@ -304,7 +290,7 @@
           "bfee52d03478ce0c30b1ae2015bc758f"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_plan_repair.dart": {
+      "lib/features/ai/generation/core/engine/services/deck_plan_repair.dart": {
         "newline-before-return": [
           "005d49e327abc6887bba7647199f4c41",
           "bbef19786c08a56d47025fc80a748f53",
@@ -327,7 +313,7 @@
           "3d5d2e3c3d76cb3d3bbc677082bff044"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/deck_plan_validator.dart": {
+      "lib/features/ai/generation/core/engine/services/deck_plan_validator.dart": {
         "prefer-shorthands-with-enums": [
           "c9dc47c9fe3fd49df082e47b2aaf7fd2",
           "ebcb05238a3f0eb7b46ced43963886f5",
@@ -352,7 +338,7 @@
           "2e913be2539392ddf88e8ee8b320b20e"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/design_quality_metrics.dart": {
+      "lib/features/ai/generation/core/engine/services/design_quality_metrics.dart": {
         "newline-before-return": [
           "882da0c35bc3a6bb638ea2521b141495",
           "aecc7a118b1650fe049e3deafabb2974",
@@ -362,7 +348,7 @@
           "6ea2ef7311b482724a9b7b0bc0dd85c6"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/error_classifier.dart": {
+      "lib/features/ai/generation/core/engine/services/error_classifier.dart": {
         "member-ordering": [
           "3acce24f1b36cbe21619ebd3112d9289"
         ],
@@ -376,7 +362,7 @@
           "beb069993c7bf588df4bc9ad0b9ae18a"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/generated_slide_validator.dart": {
+      "lib/features/ai/generation/core/engine/services/generated_slide_validator.dart": {
         "avoid-inferrable-type-arguments": [
           "91fb37915e0b137471ffed358a98df47",
           "bfee52d03478ce0c30b1ae2015bc758f"
@@ -416,7 +402,7 @@
           "58dfc4fe116e9efe1e0ae5e54c92fd67"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/generation_element_catalog.dart": {
+      "lib/features/ai/generation/core/engine/services/generation_element_catalog.dart": {
         "member-ordering": [
           "fd95321f1ed8a76e53ca4a25c53f0642",
           "e4e67a4cc9fc7eb46a4cb121a91f0810",
@@ -436,12 +422,12 @@
           "addd37a8065b52cea0ed98d80d259435"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/generation_model_client.dart": {
+      "lib/features/ai/generation/core/engine/services/generation_model_client.dart": {
         "member-ordering": [
           "4981409a7f3ab044ec5b677457aa58d7"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/generation_progress.dart": {
+      "lib/features/ai/generation/core/engine/services/generation_progress.dart": {
         "prefer-shorthands-with-enums": [
           "e26fb406d5089a687500bbd71144d876",
           "bbfc1d5b729389800243cd8eacf3d25a",
@@ -453,7 +439,7 @@
           "eb3984d433df779e562f5b8284d5909e"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/generation_quality_report.dart": {
+      "lib/features/ai/generation/core/engine/services/generation_quality_report.dart": {
         "member-ordering": [
           "3ff13792b3f83562e15a0cf94eff2c08",
           "93ac312546071a4932c9cb72821b311a",
@@ -484,7 +470,7 @@
           "2e913be2539392ddf88e8ee8b320b20e"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/generation_trace.dart": {
+      "lib/features/ai/generation/core/engine/services/generation_trace.dart": {
         "prefer-null-aware-elements": [
           "c66904102d6d77800b117d207228b251",
           "fd8b6032d202e81c1896005759922c08",
@@ -493,7 +479,7 @@
           "920a92511bb8dac13caaa7e770fb8a72"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/google_schema_adapter.dart": {
+      "lib/features/ai/generation/core/engine/services/google_schema_adapter.dart": {
         "member-ordering": [
           "93ac312546071a4932c9cb72821b311a",
           "51cc5f257902301cca542637defeb0a4",
@@ -536,7 +522,7 @@
           "c6ad57ad6dd31cc333d959e18d3b3358"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/retry_policy.dart": {
+      "lib/features/ai/generation/core/engine/services/retry_policy.dart": {
         "member-ordering": [
           "b24769fd1b2d68dd809f5b9f4a9e02f7",
           "19562df09e962929d946a1b8ee35e347",
@@ -553,7 +539,7 @@
           "5420701ded68ecea0dfa74dfeadad4b4"
         ]
       },
-      "lib/features/ai/quick_agent/core/engine/services/source_grounding.dart": {
+      "lib/features/ai/generation/core/engine/services/source_grounding.dart": {
         "newline-before-return": [
           "1b5e7b2454b1233e4bba6f24f4ea8a70",
           "566bac91bf51eff670cec6d89acb2e53",

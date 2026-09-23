@@ -1,1 +1,1 @@
-export '../../quick_agent/core/env_config.dart';
+export '../../generation/core/env_config.dart';

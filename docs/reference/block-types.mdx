@@ -381,15 +381,15 @@ overflow axis. The probe preserves Markdown wrapping. It does not intrinsically
 measure or rebuild arbitrary custom widgets, and static capture does not display
 or log diagnostics.
 
-## Next-major compatibility
+## 1.0 compatibility
 
 - Replace every zero or negative `flex` with a positive integer.
 - Review section-level `align`: it now becomes the inherited default for child
   blocks without explicit alignment.
 - Old generated contracts remain readable because new fields are optional.
-  Downgrading to 1.x requires removing `spacing`/`padding`/`margin`/image
+  Downgrading to 0.x requires removing `spacing`/`padding`/`margin`/image
   `scale` from authoring and rebuilding `.superdeck/superdeck.json` with the
-  1.x toolchain.
+  0.x toolchain.
 
 ## Best practices
 

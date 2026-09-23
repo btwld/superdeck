@@ -50,7 +50,10 @@ void main() {
         PresentationThemeCatalog.withDefaults(),
       );
 
-      for (final themeId in defaultPresentationThemeIds) {
+      for (final themeId
+          in PresentationThemeCatalog.withDefaults().currentThemes.map(
+            (theme) => theme.id,
+          )) {
         expect(prompt, contains(themeId));
       }
       expect(prompt, contains('description'));

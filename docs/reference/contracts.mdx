@@ -164,15 +164,15 @@ invalid. Omitted authored edges normalize to zero; an explicitly authored
 
 ## Contract evolution and downgrade
 
-`spacing`, `padding`, and `margin` are optional/defaulted, so the next-major
-runtime reads existing 1.x contracts. A 1.x runtime is not required to read
+`spacing`, `padding`, and `margin` are optional/defaulted, so the 1.0
+runtime reads existing 0.x contracts. A 0.x runtime is not required to read
 contracts authored with these new fields.
 
 Before upgrading, replace non-positive flex values and review every section
 alignment because section alignment now affects children without explicit block
 alignment. After using any new authoring property, regenerate the contract.
-To downgrade, remove the new properties, restore 1.x-compatible alignment/flex
-input, and rebuild `.superdeck/superdeck.json` with the 1.x toolchain.
+To downgrade, remove the new properties, restore 0.x-compatible alignment/flex
+input, and rebuild `.superdeck/superdeck.json` with the 0.x toolchain.
 
 ## Machine-readable schema
 

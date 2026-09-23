@@ -12,7 +12,6 @@ void main() {
       expect(AsyncThumbnail, isNotNull);
       expect(ThumbnailService, isNotNull);
       expect(superDeckSlideSize, isNotNull);
-      expect(superDeckAspectRatio, isNotNull);
       expect(DeckLoader, isNotNull);
       expect(DeckWorkspace, isNotNull);
       expect(FileDeckLoader, isNotNull);

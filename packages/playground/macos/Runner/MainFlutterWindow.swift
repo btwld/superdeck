@@ -22,10 +22,8 @@ class MainFlutterWindow: NSWindow {
     self.styleMask.insert(.fullSizeContentView)
     self.isMovableByWindowBackground = true
 
-    // Both editor sidebars are visible by default. The template's 800-point
-    // window leaves the central editor with almost no width, so start at a
-    // useful desktop size and prevent the window from shrinking back into that
-    // unusable layout.
+    // Start at a useful desktop size instead of the template's 800-point
+    // window, and keep the window from shrinking below it.
     self.contentMinSize = Self.minimumContentSize
     if self.contentLayoutRect.width < Self.minimumContentSize.width ||
       self.contentLayoutRect.height < Self.minimumContentSize.height {

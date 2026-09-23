@@ -225,7 +225,6 @@ void main() {
 
       final image = tester.widget<CachedImage>(find.byType(CachedImage));
       expect(image.uri.scheme, 'data');
-      expect(image.targetSize, size);
 
       final explicitSize = tester.widget<SizedBox>(
         find

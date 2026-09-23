@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_theme_resolution.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/generation_validation_issue.dart';
-import 'package:playground/features/ai/quick_agent/domain/generated_deck_result_applier.dart';
+import 'package:playground/features/ai/generation/core/engine/schemas/outline_schema.dart';
+import 'package:playground/features/ai/generation/core/engine/services/deck_generation_request.dart';
+import 'package:playground/features/ai/generation/core/engine/services/deck_generator_service.dart';
+import 'package:playground/features/ai/generation/core/engine/services/deck_theme_resolution.dart';
+import 'package:playground/features/ai/generation/core/engine/services/generation_validation_issue.dart';
+import 'package:playground/features/ai/generation/domain/generated_deck_result_applier.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_generation_controller.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
@@ -79,9 +79,14 @@ void main() {
       await controller.generateSlides();
 
       expect(controller.stage, WizardGenerationStage.failed);
-      expect(controller.failedPhase, WizardGenerationPhase.composition);
       expect(controller.errorMessage, 'Composition failed.');
       expect(controller.plan, isNotNull);
+
+      // Retrying a composition failure re-runs composition instead of
+      // regenerating the outline, so it fails the same way again.
+      await controller.retry();
+      expect(controller.stage, WizardGenerationStage.failed);
+      expect(controller.errorMessage, 'Composition failed.');
 
       controller.returnToOutline();
       expect(controller.stage, WizardGenerationStage.outlineReview);

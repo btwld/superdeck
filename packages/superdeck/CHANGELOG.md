@@ -1,12 +1,15 @@
 ## 1.0.0
 
+- **Breaking:** remove `superDeckAspectRatio`; it had no production use. Use
+  `superDeckSlideSize` for slide geometry.
+
 - **Breaking:** remove `dart_mappable` from runtime deck configuration models.
   `SlideTemplate`, `SlideConfiguration`, and `DeckOptions` now expose normal
   `copyWith`, equality, hash, and string behavior while preserving explicit
   `null` clearing for nullable fields.
 
 - **Breaking:** render supported Mermaid fences directly with
-  `flutter_mermaid` instead of the removed browser-backed build plugin.
+  `mermaid_core` instead of the removed browser-backed build plugin.
   Mermaid diagrams no longer require generated image assets, cache management,
   or custom runner registration; invalid and unsupported syntax is reported
   inline at runtime. Diagrams use a transparent background and follow the
@@ -30,7 +33,7 @@
   foreground decoration, clipping, variants, and animation — widget modifiers,
   constraints, transforms, and box alignment are unrepresentable for the
   framework-owned block frame. Raw variant lists reject non-`BlockStyler`
-  values eagerly and are snapshotted to preserve that invariant; low-level
+  values eagerly and are snapshotted to preserve that invariant;
   low-level `SlideStyler.create` input is reduced to the same allow-list at the
   render boundary.
 - Add image paint scaling with aligned clipping and an unchanged `scale: 1`
@@ -61,8 +64,8 @@
 - Stylers gain the full generated fluent API: per-field setter methods
   (`SlideStyler().h1(...)`, `.strong(...)`), field factories, and widget-state
   variant helpers (`onHovered`, `onFocused`, ...).
-- Deprecate `MarkdownTextSpec`/`MarkdownTextStyle`: they are not wired into
-  rendering. Use `SlideStyler` / Mix `TextStyler` (`p`, `h1`–`h6`, `strong`,
+- **Breaking:** remove `MarkdownTextSpec`/`MarkdownTextStyle`: they were not
+  wired into rendering. Use `SlideStyler` / Mix `TextStyler` (`p`, `h1`–`h6`, `strong`,
   `em`, `del`, `link`) instead.
 - Add `BlockVariant` for opt-in, name-based `WidgetBlock` styling in Dart
   stylesheets.

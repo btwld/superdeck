@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:dartantic_ai/dartantic_ai.dart';
 
 import '../../../core/domain/generated_image_asset.dart';
-import '../quick_agent/core/engine/services/error_classifier.dart';
+import '../generation/core/engine/services/error_classifier.dart';
 
 const geminiImagePreviewModel = 'gemini-3.1-flash-lite-image';
 const geminiImageGenerationModel = 'gemini-3.1-flash-image';

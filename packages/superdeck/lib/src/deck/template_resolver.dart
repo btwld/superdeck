@@ -14,14 +14,7 @@ class TemplateResolutionResult {
   /// The chrome parts (header, footer, background) for the slide.
   final SlideParts parts;
 
-  /// Whether a template was used in the resolution.
-  final bool usingTemplate; // ignore: unused-code
-
-  const TemplateResolutionResult({
-    required this.style,
-    required this.parts,
-    required this.usingTemplate,
-  });
+  const TemplateResolutionResult({required this.style, required this.parts});
 }
 
 /// Resolves slide templates and styles from [DeckOptions].
@@ -125,7 +118,6 @@ class TemplateResolver {
     return TemplateResolutionResult(
       style: mergedStyle,
       parts: _resolveParts(template.parts, layout),
-      usingTemplate: true,
     );
   }
 
@@ -151,7 +143,6 @@ class TemplateResolver {
     return TemplateResolutionResult(
       style: mergedStyle,
       parts: _resolveParts(_options.parts, layout),
-      usingTemplate: false,
     );
   }
 

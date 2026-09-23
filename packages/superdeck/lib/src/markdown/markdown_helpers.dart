@@ -36,20 +36,11 @@ class LerpStringResult {
     required this.text, // fully visible prefix
     this.fadingChar, // single grapheme (may be null)
     this.fadeOpacity = 0.0, // 0..1 opacity for fadingChar
-    this.isFadingOut = false, // phase flag
-    this.ghostSuffix = '', // zero-opacity suffix to pin layout
   });
 
   final String text;
   final String? fadingChar;
   final double fadeOpacity;
-  final bool isFadingOut; // ignore: unused-code
-
-  /// Remainder drawn with alpha=0 to keep wrapping stable.
-  /// By rendering the full final string with invisible characters, we reserve
-  /// the correct line-wrapping layout even during transitions, preventing the
-  /// "last word flicker" bug where text position shifts as characters fade in.
-  final String ghostSuffix; // ignore: unused-code
 
   bool get hasFadingChar => fadingChar != null && fadeOpacity > 0.0;
 }
@@ -58,11 +49,10 @@ class LerpStringResult {
 ///
 /// - First half (t<0.5): fade out the start suffix (left→right)
 /// - Second half (t>0.5): fade in the end suffix (left→right)
-/// - Always returns:
-///   * `text` (committed prefix),
-///   * optional `fadingChar` + `fadeOpacity`,
-///   * `ghostSuffix` (alpha=0) so total width is stable per phase.
-///
+/// - Always returns `text` (committed prefix) plus an optional `fadingChar`
+///   and `fadeOpacity`. Internally, the remainder of the source string past
+///   the fading grapheme is tracked so that a whitespace fading grapheme can
+///   be committed immediately without losing animation time.
 LerpStringResult lerpStringWithFade(String start, String end, double t) {
   t = t.clamp(0.0, 1.0);
 
@@ -89,7 +79,6 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
   String committed = prefix;
   String? fadingChar;
   double fadeOpacity = 0.0;
-  bool isFadingOut = false;
   List<String> ghostSuffixG = const <String>[];
 
   if (t < 0.5 && startSuffix.isNotEmpty) {
@@ -104,7 +93,6 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
     if (remaining < startSuffix.length) {
       fadingChar = startSuffix[remaining];
       fadeOpacity = frac; // 0..1
-      isFadingOut = true;
       // Reserve width for the rest of the start string after the fading grapheme.
       ghostSuffixG = startSuffix.skip(remaining + 1).toList();
     } else {
@@ -123,7 +111,6 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
     if (added < endSuffix.length && frac > 0.0) {
       fadingChar = endSuffix[added];
       fadeOpacity = frac; // 0..1
-      isFadingOut = false;
       // Reserve width for what remains in the end string after the fading grapheme.
       ghostSuffixG = endSuffix.skip(added + 1).toList();
     } else {
@@ -135,7 +122,6 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
     // Middle: nothing committed beyond prefix; show first end grapheme at 0 opacity.
     fadingChar = endSuffix.first;
     fadeOpacity = 0.0;
-    isFadingOut = false;
     ghostSuffixG = endSuffix.skip(1).toList();
   }
 
@@ -165,7 +151,5 @@ LerpStringResult lerpStringWithFade(String start, String end, double t) {
     text: committed,
     fadingChar: fadingChar,
     fadeOpacity: fadeOpacity.clamp(0.0, 1.0),
-    isFadingOut: isFadingOut,
-    ghostSuffix: ghostSuffixG.join(),
   );
 }

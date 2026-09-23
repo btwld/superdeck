@@ -373,16 +373,6 @@ void main() {
         }
       }
 
-      test('authoring schema accepts the three authoring forms', () {
-        for (final input in accepted.keys) {
-          expect(
-            BlockInsets.authoringSchema.safeParse(input).isOk,
-            isTrue,
-            reason: 'insets: $input',
-          );
-        }
-      });
-
       test('contract schema rejects authoring shorthand', () {
         for (final field in const ['padding', 'margin']) {
           for (final input in [
@@ -479,22 +469,6 @@ void main() {
           });
         });
       }
-
-      test('authoring schema rejects invalid forms', () {
-        for (final input in [
-          ...structurallyInvalid,
-          -1,
-          {'left': -1},
-          double.nan,
-          double.infinity,
-        ]) {
-          expect(
-            BlockInsets.authoringSchema.safeParse(input).isOk,
-            isFalse,
-            reason: 'insets: $input',
-          );
-        }
-      });
 
       test('public constructors create normalized insets', () {
         expect(BlockInsets.all(8).toJson(), {

@@ -23,15 +23,6 @@ class MarkdownRenderScope extends InheritedWidget {
   final MarkdownStyleSheet styleSheet;
   final md.ExtensionSet extensionSet;
 
-  // ignore: unused-code
-  static MarkdownRenderScope of(BuildContext context) {
-    final scope = maybeOf(context);
-    if (scope == null) {
-      throw FlutterError('MarkdownRenderScope not found in the widget tree.');
-    }
-    return scope;
-  }
-
   static MarkdownRenderScope? maybeOf(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<MarkdownRenderScope>();
   }

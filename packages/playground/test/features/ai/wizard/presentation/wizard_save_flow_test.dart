@@ -4,11 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:playground/app/providers.dart';
+import 'package:playground/core/data/data_sources/deck_library_asset_store.dart';
 import 'package:playground/core/domain/generated_image_asset.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/schemas/outline_schema.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generation_request.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_generator_service.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/deck_theme_resolution.dart';
+import 'package:playground/features/ai/generation/core/engine/schemas/outline_schema.dart';
+import 'package:playground/features/ai/generation/core/engine/services/deck_generation_request.dart';
+import 'package:playground/features/ai/generation/core/engine/services/deck_generator_service.dart';
+import 'package:playground/features/ai/generation/core/engine/services/deck_theme_resolution.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
 import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_generation_controller.dart';
@@ -36,7 +37,13 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  Future<({WizardGenerationController wizard, DeckLibraryController library})>
+  Future<
+    ({
+      WizardGenerationController wizard,
+      DeckLibraryController library,
+      DeckLibraryAssetStore assets,
+    })
+  >
   pumpCompletedDeck(WidgetTester tester, FakeDeckLibrary library) async {
     final router = GoRouter(
       routes: [
@@ -85,6 +92,7 @@ void main() {
     return (
       wizard: wizard,
       library: Provider.of<DeckLibraryController>(wizardContext, listen: false),
+      assets: Provider.of<DeckLibraryAssetStore>(wizardContext, listen: false),
     );
   }
 
@@ -131,7 +139,11 @@ void main() {
       {'id': 'technical-paper', 'version': 1, 'density': 'balanced'},
       reason: 'the saved deck carries canonical, versioned theme metadata',
     );
-    expect(scope.library.openDeck?.name, 'Urban gardens 2026');
+    expect(
+      (await scope.assets.resolve('hero.png'))?.scheme,
+      'file',
+      reason: 'the saved deck now answers for artwork',
+    );
     expect(
       find.textContaining('Saved "Urban gardens 2026"'),
       findsOneWidget,
@@ -183,7 +195,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(GestureDetector, 'Save deck').last);
     await tester.pumpAndSettle();
-    expect(scope.library.openDeck, isNotNull);
+    expect((await scope.assets.resolve('hero.png'))?.scheme, 'file');
 
     // Generating again publishes a new deck into the same runtime.
     await scope.wizard.createOutline(_request);
@@ -192,8 +204,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      scope.library.openDeck,
-      isNull,
+      (await scope.assets.resolve('hero.png'))?.scheme,
+      'data',
       reason: 'the new deck owns the runtime, so the saved deck must not '
           'answer for artwork any more',
     );

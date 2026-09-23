@@ -204,10 +204,6 @@ void main() {
         expect(controller.pageController.initialPage, 0);
       });
 
-      test('disposed is false initially', () {
-        expect(controller.disposed, false);
-      });
-
       test('progress starts at zero', () {
         expect(controller.progress.value, 0.0);
       });
@@ -288,7 +284,7 @@ void main() {
       ) async {
         final exportController = createExportController(
           pdfSaver: (pdf) {
-            return savePdfWithFileSaverForTesting(
+            return savePdfWithFileSaver(
               pdf: pdf,
               fileName: 'slides',
               isWeb: true,
@@ -710,7 +706,7 @@ void main() {
       test('uses saveFile instead of saveAs on Linux', () async {
         final calls = <String>[];
 
-        final saved = await savePdfWithFileSaverForTesting(
+        final saved = await savePdfWithFileSaver(
           pdf: Uint8List.fromList([1, 2, 3]),
           fileName: 'slides',
           isWeb: false,
