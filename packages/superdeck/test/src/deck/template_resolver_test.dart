@@ -17,7 +17,6 @@ void main() {
 
           final result = resolver.resolve(null);
 
-          expect(result.usingTemplate, isFalse);
           expect(result.parts, options.parts);
           expect(result.style, defaultSlideStyle.merge(baseStyle).merge(null));
         },
@@ -31,7 +30,6 @@ void main() {
 
           final result = resolver.resolve(null);
 
-          expect(result.usingTemplate, isFalse);
           expect(result.style, defaultSlideStyle.merge(null).merge(null));
           expect(result.parts, options.parts);
         },
@@ -47,7 +45,6 @@ void main() {
 
           final result = resolver.resolve(slideOptions);
 
-          expect(result.usingTemplate, isFalse);
           expect(result.style, defaultSlideStyle.merge(null).merge(namedStyle));
         },
       );
@@ -202,7 +199,6 @@ void main() {
 
         final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isTrue);
         expect(result.parts, template.parts);
         expect(
           result.style,
@@ -218,7 +214,6 @@ void main() {
 
         final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isTrue);
         expect(result.style, defaultSlideStyle.merge(null).merge(null));
       });
 
@@ -231,7 +226,6 @@ void main() {
 
         final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isTrue);
         expect(
           result.style,
           defaultSlideStyle.merge(null).merge(templateStyle),
@@ -341,7 +335,6 @@ void main() {
 
         final result = resolver.resolve(null);
 
-        expect(result.usingTemplate, isTrue);
         expect(result.parts, defaultTemplate.parts);
         expect(
           result.style,
@@ -367,7 +360,6 @@ void main() {
 
         final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isTrue);
         expect(result.parts, explicitTemplate.parts);
         expect(
           result.style,
@@ -383,7 +375,6 @@ void main() {
 
         final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isTrue);
         expect(result.parts, defaultTemplate.parts);
       });
 
@@ -399,7 +390,6 @@ void main() {
 
         final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isFalse);
         expect(result.parts, options.parts);
         expect(result.style, defaultSlideStyle.merge(baseStyle).merge(null));
       });
@@ -416,7 +406,6 @@ void main() {
 
         final result = resolver.resolve(slideOptions);
 
-        expect(result.usingTemplate, isFalse);
         expect(result.style, defaultSlideStyle.merge(null).merge(deckStyle));
       });
 
@@ -521,60 +510,30 @@ void main() {
         },
       );
 
-      test('options.baseStyle is not applied when a named template is used', () {
-        final optionsBaseStyle = SlideStyler();
-        final templateBase = SlideStyler();
-        final template = SlideTemplate(baseStyle: templateBase);
-        final options = DeckOptions(
-          baseStyle: optionsBaseStyle,
-          templates: {'t': template},
-        );
-        final resolver = TemplateResolver(options);
-        final slideOptions = SlideOptions(template: 't');
+      test(
+        'options.baseStyle is not applied when a named template is used',
+        () {
+          final optionsBaseStyle = SlideStyler();
+          final templateBase = SlideStyler();
+          final template = SlideTemplate(baseStyle: templateBase);
+          final options = DeckOptions(
+            baseStyle: optionsBaseStyle,
+            templates: {'t': template},
+          );
+          final resolver = TemplateResolver(options);
+          final slideOptions = SlideOptions(template: 't');
 
-        final result = resolver.resolve(slideOptions);
+          final result = resolver.resolve(slideOptions);
 
-        // Template path: usingTemplate=true, parts from template (not options)
-        expect(result.usingTemplate, isTrue);
-        expect(result.parts, template.parts);
+          expect(result.parts, template.parts);
 
-        // Without template: options.parts would be used
-        final noTemplateResult = TemplateResolver(
-          DeckOptions(baseStyle: optionsBaseStyle),
-        ).resolve(null);
-        expect(noTemplateResult.usingTemplate, isFalse);
-        expect(noTemplateResult.parts, options.parts);
-      });
-    });
-
-    group('usingTemplate flag', () {
-      test('is false when no template and no defaultTemplate', () {
-        final options = DeckOptions();
-        final resolver = TemplateResolver(options);
-
-        final result = resolver.resolve(null);
-
-        expect(result.usingTemplate, isFalse);
-      });
-
-      test('is true when explicit template is resolved', () {
-        final options = DeckOptions(templates: {'t': SlideTemplate()});
-        final resolver = TemplateResolver(options);
-        final slideOptions = SlideOptions(template: 't');
-
-        final result = resolver.resolve(slideOptions);
-
-        expect(result.usingTemplate, isTrue);
-      });
-
-      test('is true when defaultTemplate is used', () {
-        final options = DeckOptions(defaultTemplate: SlideTemplate());
-        final resolver = TemplateResolver(options);
-
-        final result = resolver.resolve(null);
-
-        expect(result.usingTemplate, isTrue);
-      });
+          // Without template: options.parts would be used
+          final noTemplateResult = TemplateResolver(
+            DeckOptions(baseStyle: optionsBaseStyle),
+          ).resolve(null);
+          expect(noTemplateResult.parts, options.parts);
+        },
+      );
     });
 
     group('Parts resolution', () {
@@ -617,9 +576,7 @@ void main() {
       void expectFullscreenChrome(
         TemplateResolutionResult result, {
         required Widget background,
-        required bool usingTemplate,
       }) {
-        expect(result.usingTemplate, usingTemplate);
         expect(result.parts.header, isNull);
         expect(result.parts.footer, isNull);
         expect(result.parts.background, same(background));
@@ -635,7 +592,6 @@ void main() {
           SlideOptions(layout: SlideLayout.normal),
         );
 
-        expect(normal.usingTemplate, omitted.usingTemplate);
         expect(normal.parts, same(omitted.parts));
         expect(normal.style, omitted.style);
       });
@@ -652,7 +608,6 @@ void main() {
           expectFullscreenChrome(
             resolver.resolve(SlideOptions(layout: SlideLayout.fullscreen)),
             background: background,
-            usingTemplate: false,
           );
         },
       );
@@ -672,7 +627,6 @@ void main() {
               SlideOptions(template: 'cover', layout: SlideLayout.fullscreen),
             ),
             background: background,
-            usingTemplate: true,
           );
         },
       );
@@ -691,7 +645,6 @@ void main() {
           expectFullscreenChrome(
             resolver.resolve(SlideOptions(layout: SlideLayout.fullscreen)),
             background: background,
-            usingTemplate: true,
           );
         },
       );
@@ -711,7 +664,6 @@ void main() {
               SlideOptions(template: 'none', layout: SlideLayout.fullscreen),
             ),
             background: background,
-            usingTemplate: false,
           );
         },
       );

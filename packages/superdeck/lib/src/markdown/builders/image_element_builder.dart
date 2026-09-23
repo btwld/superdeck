@@ -90,11 +90,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
       builder: (builderContext, spec) {
         Widget imageWidget = ConstrainedBox(
           constraints: BoxConstraints.tight(totalSize),
-          child: CachedImage(
-            uri: uri,
-            targetSize: totalSize,
-            styleSpec: styleSpec,
-          ),
+          child: CachedImage(uri: uri, styleSpec: styleSpec),
         );
 
         return applyHeroIfNeeded<ImageElement>(
@@ -116,7 +112,6 @@ class ImageElementBuilder extends MarkdownElementBuilder
               constraints: BoxConstraints.tight(interpolatedSize),
               child: CachedImage(
                 uri: displayUri,
-                targetSize: interpolatedSize,
                 styleSpec: StyleSpec(spec: interpolatedSpec),
               ),
             );

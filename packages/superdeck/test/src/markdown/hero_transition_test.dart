@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:superdeck/src/deck/slide_configuration.dart';
 import 'package:superdeck/src/rendering/slides/slide_view.dart';
-import 'package:superdeck/src/ui/widgets/cache_image_widget.dart';
 import 'package:superdeck/src/ui/widgets/hero_element.dart';
 import 'package:superdeck/src/ui/widgets/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -95,19 +94,6 @@ void main() {
     await tester.pump(_transitionDuration ~/ 2);
 
     expect(tester.takeException(), isNull);
-    final targetSizes = tester
-        .widgetList<CachedImage>(find.byType(CachedImage))
-        .map((image) => image.targetSize)
-        .whereType<Size>();
-    final shuttleSize = targetSizes.singleWhere(
-      (size) =>
-          size.width > toData.size.width &&
-          size.width < fromData.size.width &&
-          size.height > toData.size.height &&
-          size.height < fromData.size.height,
-    );
-    expect(shuttleSize.width.isFinite, isTrue);
-    expect(shuttleSize.height.isFinite, isTrue);
 
     await tester.pumpAndSettle();
 

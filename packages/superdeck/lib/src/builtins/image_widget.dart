@@ -174,11 +174,7 @@ class ImageWidget extends StatelessWidget {
           targetSize: data.size,
           styleSpec: styleSpec,
         ),
-      null => CachedImage(
-        uri: _data.src,
-        targetSize: data.size,
-        styleSpec: styleSpec,
-      ),
+      null => CachedImage(uri: _data.src, styleSpec: styleSpec),
     };
 
     final hasExplicitSize = _data.width != null || _data.height != null;

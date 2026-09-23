@@ -116,9 +116,6 @@ class PdfController {
   final Duration _renderAttachmentTimeout;
   final Duration _slideReadinessTimeout;
 
-  /// Whether this controller has been disposed.
-  bool get disposed => _disposed; // ignore: unused-code
-
   /// The page controller used during export.
   PageController get pageController => _pageController;
 
@@ -374,7 +371,7 @@ class PdfController {
 Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
   final saver = FileSaver.instance;
 
-  return savePdfWithFileSaverForTesting(
+  return savePdfWithFileSaver(
     pdf: pdf,
     fileName: fileName,
     isWeb: kIsWeb,
@@ -412,10 +409,9 @@ Future<bool> _defaultPdfSaver(Uint8List pdf, {required String fileName}) async {
 
 /// Saves PDF bytes through [FileSaver] platform operations.
 ///
-/// This is public only for package tests; callers should use
-/// [PdfExportOptions.pdfSaver] to customize saving behavior.
-@visibleForTesting
-Future<bool> savePdfWithFileSaverForTesting({
+/// This is the default [PdfSaver] used when [PdfExportOptions.pdfSaver] is
+/// not set; callers can supply that option to customize saving behavior.
+Future<bool> savePdfWithFileSaver({
   required Uint8List pdf,
   required String fileName,
   required bool isWeb,
