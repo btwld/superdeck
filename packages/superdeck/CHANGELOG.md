@@ -5,6 +5,9 @@
   `irondash_engine_context`, so macOS and iOS builds need no CocoaPods and
   Android builds avoid that plugin's 16 KB page-size crash. Highlighted output
   is unchanged.
+- Drop the `scrollable_positioned_list` dependency. The thumbnail panel keeps
+  the active slide in view with a plain `ListView` and no longer rebuilds while
+  it scrolls.
 - **Breaking:** remove `superDeckAspectRatio`; it had no production use. Use
   `superDeckSlideSize` for slide geometry.
 
