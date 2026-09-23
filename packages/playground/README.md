@@ -1,34 +1,26 @@
 # playground
 
 The SuperDeck Wizard. One flow: describe a presentation, review the outline it
-plans, approve it, present the deck, and save it. Package name kept as
+plans, approve it, present the deck, and export it. Package name kept as
 `playground` for now.
 
-Generated decks live in memory. The app does not open arbitrary Markdown,
-watch files, or auto-save; a deck is written only when the reader asks for it.
+The deck lives in memory for the run. The app does not open Markdown files or
+keep a library of decks; a deck leaves the app only when the reader exports it.
 
-## What a saved deck is
+## Exporting a deck
 
-Three files that travel together in your SuperDeck folder:
+**Export deck** saves a zip through the platform's save dialog:
 
 ```
-My talk.md          the Markdown the generation produced
-My talk.assets/     the artwork it refers to by bare filename
-My talk.deck.json   name, timestamp, asset list, and the theme selection
+slides.md   the Markdown the generation produced
+assets/     its generated artwork
 ```
 
-The manifest stores the theme's catalog id, version and density, not resolved
-colours, so a deck reopened later is recognised rather than guessed at. A deck
-whose manifest is missing or unreadable still opens; it opens without its
-theme.
-
-**Moving, copying or sharing a deck has to include its asset directory**, or
-its images stop resolving. Saving the same deck twice keeps both copies
-("My talk", then "My talk 2") — a save never replaces a deck you already have.
-
-Saving is macOS-only for now: it needs a folder you pick once, which the app
-remembers. Generating and presenting work anywhere; the save action is simply
-absent where decks cannot be stored.
+`slides.md` refers to each image as `assets/<file>`, so the unzipped folder is
+a SuperDeck project: build it with the CLI and present it from any SuperDeck
+app. Declare `assets/` in that app's `pubspec.yaml` to bundle the images for
+release and web builds. The export carries the Markdown and artwork, not the
+generated theme.
 
 ## Layers (folders, single package)
 
@@ -37,12 +29,11 @@ lib/
   main.dart
   app/            # router.dart + providers.dart (app-root DI)
   core/           # shared cross-feature domain + data
-    result.dart   # Result<T>
-    domain/       # stores (document, customization), design catalogs
+    domain/       # customization store, design catalogs
     data/         # data_sources (asset stores, deck loader), mappers
   features/
     ai/           # the Wizard, the generation engine, image generation
-    library/      # saved decks: domain / data / presentation / routes
+    export/       # the deck as a SuperDeck project zip
     presentation/ # present mode
 ```
 
@@ -159,10 +150,3 @@ fvm flutter test test_live/ai_generation/ai_generation_smoke_test.dart \
 Add `--dart-define=LIVE_DEBUG_LAYOUT=true` to include the section, block,
 margin, and padding guides in the recaptured slide PNGs and contact sheet.
 Normal captures remain clean by default.
-
-## Deck files
-
-On first launch, choose a parent directory for deck storage. The app creates a
-`SuperDeck` folder inside it and remembers access with a macOS security-scoped
-bookmark. The saved-deck library lists the decks in that folder and opens them
-read-only for presenting. The Wizard does not open arbitrary Markdown files.
