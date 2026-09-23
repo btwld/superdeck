@@ -47,7 +47,7 @@ jobs:
       - name: Setup Melos
         uses: bluefireteam/melos-action@v3
         with:
-          melos-version: 7.8.1
+          melos-version: 8.9.0
 
       - name: Install dependencies
         run: fvm flutter pub get
