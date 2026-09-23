@@ -39,13 +39,10 @@ ImageProvider getImageProvider(Uri uri) {
 class CachedImage extends StatefulWidget {
   final Uri uri;
 
-  final Size? targetSize; // ignore: unused-code
-
   final StyleSpec<ImageSpec> styleSpec;
 
   const CachedImage({
     super.key,
-    this.targetSize,
     required this.uri,
     this.styleSpec = const StyleSpec(spec: ImageSpec()),
   });

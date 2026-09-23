@@ -19,10 +19,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  Future<DeckLibraryController> pumpPage(
-    WidgetTester tester,
-    FakeDeckLibrary library,
-  ) async {
+  Future<({DeckLibraryController controller, DeckDocumentStore document})>
+  pumpPage(WidgetTester tester, FakeDeckLibrary library) async {
     final memory = MemoryAssetCacheStore();
     final assets = DeckLibraryAssetStore(library: library, fallback: memory);
     final document = DeckDocumentStore(markdown: '');
@@ -75,7 +73,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    return controller;
+    return (controller: controller, document: document);
   }
 
   testWidgets('offers nothing to present before a deck is saved', (
@@ -90,7 +88,7 @@ void main() {
   testWidgets('lists saved decks and presents the one chosen', (tester) async {
     final library = FakeDeckLibrary();
     await library.save(name: 'Quarterly review', markdown: '# Q3\n');
-    final controller = await pumpPage(tester, library);
+    final scope = await pumpPage(tester, library);
 
     expect(find.text('Quarterly review'), findsOneWidget);
     expect(find.textContaining(RegExp(r'Saved \d{4}-')), findsOneWidget);
@@ -99,7 +97,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('presenting'), findsOneWidget);
-    expect(controller.openDeck?.name, 'Quarterly review');
+    expect(scope.document.markdown, '# Q3\n');
   });
 
   testWidgets('a library it cannot read says so instead of looking empty', (

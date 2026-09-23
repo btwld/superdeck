@@ -6,8 +6,7 @@ import '../mappers/deck_markdown_codec.dart';
 
 /// A [DeckLoader] that parses markdown in-memory for live preview.
 class MemoryDeckLoader extends DeckLoader {
-  /// Shared with the deck-edit tools so the preview and the tools can never
-  /// decode the same markdown differently.
+  /// Decodes markdown for the live in-memory preview.
   static const _codec = DeckMarkdownCodec();
 
   final _controller = StreamController<SlidesEvent>.broadcast();

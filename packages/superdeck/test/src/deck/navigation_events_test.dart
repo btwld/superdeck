@@ -15,17 +15,6 @@ void main() {
       final event = PreviousSlideEvent();
       expect(event, isA<NavigationEvent>());
     });
-
-    test('GoToSlideEvent stores index', () {
-      final event = GoToSlideEvent(5);
-      expect(event, isA<NavigationEvent>());
-      expect(event.index, 5);
-    });
-
-    test('GoToSlideEvent stores zero index', () {
-      final event = GoToSlideEvent(0);
-      expect(event.index, 0);
-    });
   });
 
   group('KeyboardNavigationHandler', () {

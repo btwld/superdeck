@@ -1,41 +1,23 @@
 /// A persistent reference to a deck file.
 ///
-/// [bookmark] is opaque macOS security-scoped bookmark data. Files created in
-/// the selected SuperDeck directory inherit its active access scope and do not
-/// need individual bookmarks.
+/// Files created in the selected SuperDeck directory inherit its active
+/// access scope, so this only needs to track the deck's resolved path.
 final class DeckFileReference {
   /// Last resolved absolute path of the deck.
   final String path;
 
-  /// Opaque persistent access data, or `null` when directory access covers it.
-  final String? bookmark;
-
-  const DeckFileReference({required this.path, this.bookmark});
+  const DeckFileReference({required this.path});
 
   @override
   bool operator ==(Object other) {
-    return other is DeckFileReference &&
-        other.path == path &&
-        other.bookmark == bookmark;
+    return other is DeckFileReference && other.path == path;
   }
 
   @override
-  String toString() =>
-      'DeckFileReference(path: $path, bookmark: ${bookmark != null})';
+  String toString() => 'DeckFileReference(path: $path)';
 
   @override
-  int get hashCode => Object.hash(path, bookmark);
-}
-
-/// Thrown when a new deck's normalised filename already exists.
-final class DeckNameCollisionException implements Exception {
-  /// The `<name>.md` filename that collided.
-  final String fileName;
-
-  const DeckNameCollisionException(this.fileName);
-
-  @override
-  String toString() => 'A deck named "$fileName" already exists.';
+  int get hashCode => path.hashCode;
 }
 
 /// Thrown when a deck cannot be read.

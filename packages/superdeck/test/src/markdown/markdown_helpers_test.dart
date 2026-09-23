@@ -234,7 +234,6 @@ void main() {
         // At midpoint, first character of end suffix starts fading in (at opacity 0)
         expect(result.fadingChar, equals('p'));
         expect(result.fadeOpacity, equals(0.0));
-        expect(result.isFadingOut, isFalse);
       });
 
       test('at t=1.0 returns end string fully visible', () {
@@ -260,7 +259,6 @@ void main() {
         final result = lerpStringWithFade('ABC', 'XYZ', 0.25);
 
         expect(result.hasFadingChar, isTrue);
-        expect(result.isFadingOut, isTrue);
         expect(result.fadeOpacity, greaterThan(0.0));
         expect(result.fadeOpacity, lessThan(1.0));
       });
@@ -296,7 +294,6 @@ void main() {
         final result = lerpStringWithFade('ABC', 'XYZ', 0.75);
 
         expect(result.hasFadingChar, isTrue);
-        expect(result.isFadingOut, isFalse);
         expect(result.fadeOpacity, greaterThan(0.0));
         expect(result.fadeOpacity, lessThan(1.0));
       });
@@ -336,7 +333,6 @@ void main() {
           reason: 'Next non-space grapheme should start fading immediately',
         );
         expect(result.hasFadingChar, isTrue);
-        expect(result.ghostSuffix, equals('I'));
       });
     });
 

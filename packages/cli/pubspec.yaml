@@ -1,7 +1,7 @@
 name: superdeck_cli
 description: Command line interface for SuperDeck
 version: 1.0.0
-homepage: https://github.com/btwld/superdeck
+homepage: https://github.com/conceptadev/superdeck
 documentation: https://docs.page/btwld/superdeck
 
 executables:

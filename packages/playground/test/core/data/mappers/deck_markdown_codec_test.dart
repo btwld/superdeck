@@ -42,18 +42,6 @@ custom: preserved
     expect(slide.comments, ['Speaker note']);
   });
 
-  test('encodes with the canonical SlideSerializer', () {
-    final slides = [
-      Slide(
-        key: 'transient',
-        options: SlideOptions(title: 'Canonical'),
-        sections: [SectionBlock.text('# Canonical')],
-      ),
-    ];
-
-    expect(codec.encode(slides), const SlideSerializer().serialize(slides));
-  });
-
   test('throws a typed deck format error for invalid Markdown', () {
     const markdown = '''
 ---
@@ -135,8 +123,8 @@ title: "unclosed
 Body
 ''';
 
-    /// The editor and the builder run one parser, so both must agree on the
-    /// slide boundaries and on which text stayed content.
+    /// The preview loader and the builder run one parser, so both must agree
+    /// on the slide boundaries and on which text stayed content.
     void expectParity(String markdown) {
       final raw = const MarkdownParser().parse(markdown);
       final decoded = codec.decode(markdown);
@@ -152,7 +140,6 @@ Body
 
       expect(slides, hasLength(3));
       expect(slides.first.options?.args ?? {}, isEmpty);
-      expect(codec.encode(slides), contains('- First bullet'));
       expectParity(bulletList);
     });
 
@@ -160,7 +147,6 @@ Body
       final slides = codec.decode(proseAboveMapping);
 
       expect(slides, hasLength(1));
-      expect(codec.encode(slides), contains('Key: value'));
       expectParity(proseAboveMapping);
     });
 
@@ -178,7 +164,6 @@ Body
       final slides = codec.decode(markedNote);
 
       expect(slides, hasLength(3));
-      expect(codec.encode(slides), contains('Note: remember this'));
       expectParity(markedNote);
     });
 
@@ -201,37 +186,4 @@ Body
       );
     });
   });
-
-  test('decode-encode-decode preserves structural slide data', () {
-    const markdown = '''
----
-title: Round trip
-template: cover
-custom: value
----
-
-@section {
-  flex: 2
-  align: center
-}
-@chart {
-  kind: bar
-  values: [1, 2, 3]
-}
-
-<!-- Keep this note -->
-''';
-
-    final decoded = codec.decode(markdown);
-    final reparsed = codec.decode(codec.encode(decoded));
-
-    expect(_withoutKeys(reparsed), _withoutKeys(decoded));
-  });
-}
-
-List<Map<String, Object?>> _withoutKeys(List<Slide> slides) {
-  return [
-    for (final slide in slides)
-      Map<String, Object?>.from(slide.toJson())..remove('key'),
-  ];
 }

@@ -46,8 +46,6 @@ final class PresentationTextStyles {
 
 /// Maps one resolved renderer-owned recipe to presentation-scale styling.
 final class GeneratedDeckThemeFactory {
-  static const treatmentNames = presentationThemeTreatmentNames;
-
   const GeneratedDeckThemeFactory();
 
   DeckOptions build({

@@ -2,8 +2,6 @@ analyzer:
   errors:
     invalid_annotation_target: ignore
     body_might_complete_normally_nullable: ignore
-  plugins:
-    - custom_lint
   exclude:
     - '**/generated_plugin_registrant.dart'
     - '**/*.g.dart'

@@ -12,13 +12,13 @@ class HeaderPart extends StatelessWidget implements PreferredSizeWidget {
     final slide = SlideConfiguration.of(context);
 
     final index = slide.slideIndex;
+    final title = slide.options.title;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(slide.options.title ?? 'Generative UI with Flutter'),
-          const SizedBox(width: 20),
+          if (title != null) ...[Text(title), const SizedBox(width: 20)],
           Text('${index + 1}'),
         ],
       ),

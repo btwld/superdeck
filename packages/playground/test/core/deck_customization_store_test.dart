@@ -31,55 +31,6 @@ void main() {
     expect(controller.options.value.baseStyle, isNotNull);
   });
 
-  test('preserves the deck debug flag through theme updates', () {
-    final controller = DeckController(
-      deckLoader: MemoryDeckLoader(),
-      options: DeckOptions(debug: true),
-    );
-    addTearDown(controller.dispose);
-
-    final store = DeckCustomizationStore(controller);
-    addTearDown(store.dispose);
-
-    expect(controller.options.value.debug, isTrue);
-
-    store.setSize(TextLevel.h1, 64);
-
-    expect(controller.options.value.debug, isTrue);
-  });
-
-  test('mutations push new options and notify once', () {
-    final controller = newController();
-    addTearDown(controller.dispose);
-    final store = DeckCustomizationStore(controller);
-    addTearDown(store.dispose);
-
-    final seeded = controller.options.value;
-    var notifications = 0;
-    store.addListener(() => notifications++);
-
-    store.setSize(TextLevel.h1, 64);
-
-    expect(store.level(TextLevel.h1).size, 64);
-    expect(notifications, 1);
-    expect(identical(controller.options.value, seeded), isFalse);
-  });
-
-  test('no-op mutation does not notify', () {
-    final controller = newController();
-    addTearDown(controller.dispose);
-    final store = DeckCustomizationStore(controller);
-    addTearDown(store.dispose);
-
-    final current = store.level(TextLevel.h1).size;
-    var notifications = 0;
-    store.addListener(() => notifications++);
-
-    store.setSize(TextLevel.h1, current);
-
-    expect(notifications, 0);
-  });
-
   test('applies a generated palette and font system in one update', () {
     final controller = newController();
     addTearDown(controller.dispose);

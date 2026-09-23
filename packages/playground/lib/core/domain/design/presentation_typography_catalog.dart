@@ -49,9 +49,6 @@ final class PresentationTypographyCatalog {
   bool supports(String value, PresentationFontRole role) =>
       resolve(value)?.roles.contains(role) ?? false;
 
-  List<PresentationFontDescriptor> forRole(PresentationFontRole role) =>
-      fonts.where((font) => font.roles.contains(role)).toList(growable: false);
-
   List<String> get familyNames =>
       fonts.map((font) => font.family).toList(growable: false);
 

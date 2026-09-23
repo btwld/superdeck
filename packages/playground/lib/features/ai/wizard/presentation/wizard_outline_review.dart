@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../quick_agent/core/engine/schemas/outline_schema.dart';
+import '../../generation/core/engine/schemas/outline_schema.dart';
 import '../core/ui/ui.dart';
 
 typedef UpdateOutlineSlide =

@@ -6,7 +6,9 @@
   - `packages/core`: Markdown parsing, schemas, validation (Dart-only)
   - `packages/superdeck`: Flutter runtime/widgets
   - `packages/cli`: `superdeck` CLI commands
-  - `packages/builder`: code generation/build integration
+  - `packages/builder`: deck parsing, serialization, and the build/watch pipeline
+  - `packages/playground`: the Wizard app for AI deck generation, presenting, and saving
+  - `packages/plugins/pdf`: PDF export
   - `demo/`: reference app and slide content used by CI smoke/integration flows
 
 ## First-time setup (required)
@@ -30,7 +32,7 @@ fvm dart run melos bootstrap
 ## Agent workflow expectations
 1. Keep changes surgical and package-scoped.
 2. Run `fvm dart run melos run build_runner:build` before tests when touching code that can affect generated output.
-3. Commit generated files when they change (`*.g.dart`, `*.mapper.dart`).
+3. Commit generated files when they change (`*.g.dart`, `*.ack.dart`).
 4. Prefer relative imports in Dart files.
 5. Follow existing style: two-space indentation, `snake_case.dart` filenames.
 
@@ -44,12 +46,6 @@ fvm dart run melos bootstrap
     fvm use --force
     fvm dart run melos bootstrap
     ```
-
-- **CI failure while building demo assets (`fvm dart run superdeck_cli:main build`)**
-  - Observed error:
-    - `Invalid YAML frontmatter in slide ... Error on line 1, column 1: Unexpected character.`
-    - Triggering content starts with `@section {`.
-  - Workaround: fix invalid slide frontmatter/config in demo slide content before rerunning CI.
 
 ## CI notes
 - Main validation workflow: `.github/workflows/test.yml`

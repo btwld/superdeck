@@ -21,6 +21,12 @@
 - Add `aiSlideSchema`, a flattened structured-output projection of the slide
   contract for AI generation (JSON-Schema unions are not consumable by
   structured-output adapters).
+- **Breaking:** remove the top-level `aiSlideSchema` field; call
+  `buildAiSlideSchema()` instead.
+- **Breaking:** remove `DeckWorkspace.projectDirectory`; it had no production
+  use.
+- **Breaking:** remove `BlockInsets.authoringSchema`; use
+  `BlockInsets.parseAuthoring` to validate and normalize authoring input.
 - **Breaking:** require positive integer flex values in schemas and public Dart
   constructors; zero and negative flex values are no longer accepted.
 - **Breaking:** remove `Block.resolvedAlign` and

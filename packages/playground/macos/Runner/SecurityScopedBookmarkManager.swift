@@ -1,6 +1,5 @@
 import Cocoa
 import FlutterMacOS
-import UniformTypeIdentifiers
 
 private enum SecurityScopedBookmarkError: LocalizedError {
   case invalidArgument(String)
@@ -31,8 +30,6 @@ final class SecurityScopedBookmarkManager {
   func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     do {
       switch call.method {
-      case "pickDeckFile":
-        result(try pickDeckFile())
       case "pickDecksDirectory":
         result(try pickDecksDirectory())
       case "startAccessing":
@@ -56,24 +53,6 @@ final class SecurityScopedBookmarkManager {
           message: error.localizedDescription,
           details: nil))
     }
-  }
-
-  private func pickDeckFile() throws -> [String: String]? {
-    let panel = NSOpenPanel()
-    panel.title = "Open deck"
-    panel.allowsMultipleSelection = false
-    panel.canChooseDirectories = false
-    panel.canChooseFiles = true
-
-    if #available(macOS 11.0, *) {
-      if let markdown = UTType(filenameExtension: "md") {
-        panel.allowedContentTypes = [markdown]
-      }
-    } else {
-      panel.allowedFileTypes = ["md"]
-    }
-
-    return try selectURL(with: panel)
   }
 
   private func pickDecksDirectory() throws -> [String: String]? {

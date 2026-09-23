@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
-import 'package:playground/features/ai/quick_agent/core/engine/services/generation_progress.dart';
+import 'package:playground/features/ai/generation/core/engine/services/generation_progress.dart';
 import 'package:playground/features/ai/wizard/chat/view/widgets/chat_input.dart';
 import 'package:playground/features/ai/wizard/chat/view/widgets/chat_genui_panels.dart';
 import 'package:playground/features/ai/wizard/chat/view/widgets/empty_state.dart';

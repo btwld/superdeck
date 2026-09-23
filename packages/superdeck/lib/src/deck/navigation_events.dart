@@ -7,12 +7,6 @@ class NextSlideEvent extends NavigationEvent {}
 
 class PreviousSlideEvent extends NavigationEvent {}
 
-class GoToSlideEvent extends NavigationEvent {
-  final int index;
-
-  GoToSlideEvent(this.index); // ignore: unused-code
-}
-
 /// Maps Meta+arrow keyboard shortcuts to navigation events.
 ///
 /// Returns `null` for keys that don't trigger navigation.

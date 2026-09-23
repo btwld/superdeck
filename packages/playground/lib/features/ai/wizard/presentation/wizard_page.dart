@@ -13,9 +13,9 @@ import '../../../library/domain/deck_library.dart';
 import '../../../library/domain/deck_library_controller.dart';
 import '../../../library/domain/saved_deck.dart';
 import '../../../library/presentation/save_deck_dialog.dart';
-import '../../quick_agent/core/engine/services/deck_generator_service.dart';
-import '../../quick_agent/core/env_config.dart';
-import '../../quick_agent/domain/generated_deck_result_applier.dart';
+import '../../generation/core/engine/services/deck_generator_service.dart';
+import '../../generation/core/env_config.dart';
+import '../../generation/domain/generated_deck_result_applier.dart';
 import '../../image_generation/image_generator.dart';
 import '../../image_generation/image_style_preview_coordinator.dart';
 import '../chat/chat_conversation_profile.dart';
@@ -28,9 +28,9 @@ import 'wizard_view.dart';
 
 /// Host for the conversational Wizard, the app's only authoring flow.
 ///
-/// Generated Markdown is kept in memory so opening this screen never requests a
-/// deck-storage folder. The production integration can provide its own document
-/// destination when the Wizard is embedded outside the playground.
+/// Generated Markdown is kept in memory: results are applied straight to the
+/// in-memory document and preview stores, and a deck-storage folder is only
+/// requested later, when the reader chooses to save.
 class WizardPage extends StatelessWidget {
   const WizardPage({
     this.isConfigured,
