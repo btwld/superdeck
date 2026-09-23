@@ -114,6 +114,10 @@
         {
           "title": "Front matter",
           "href": "/reference/front-matter"
+        },
+        {
+          "title": "Navigation reference",
+          "href": "/reference/navigation"
         }
       ]
     },

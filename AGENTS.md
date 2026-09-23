@@ -185,6 +185,7 @@ lib/src/
 - Use `snake_case` for repo-owned non-standard filenames
 - Prefer `.yaml` for repo-owned configuration and fixture files
 - Keep ecosystem-standard names as-is, including `README.md`, `CHANGELOG.md`, generated platform files, and existing GitHub workflow `.yml` files
+- Vendor forked third-party code under a `vendor/` directory with an upstream attribution header (source, commit, license), a `LICENSE` file beside it, and local patches clearly marked, following `packages/superdeck/lib/src/markdown/mermaid/vendor/`
 
 ## Testing Guidelines
 

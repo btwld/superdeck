@@ -109,7 +109,7 @@ final index = slide.slideIndex;
 final args = slide.options.args;
 ```
 
-Use Flutter's `LayoutBuilder` for sizing. SuperDeck does not export a public `MeasureSize` API.
+Use Flutter's `LayoutBuilder` for sizing. SuperDeck does not export a public widget-size measurement API.
 
 If a widget factory is missing, SuperDeck renders `Widget not found: <name>`. If the factory throws, SuperDeck renders error details on the slide.
 

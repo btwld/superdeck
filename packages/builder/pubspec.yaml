@@ -1,7 +1,7 @@
 name: superdeck_builder
 description: The build logic for SuperDeck presentations
 version: 1.0.0
-homepage: https://github.com/btwld/superdeck
+homepage: https://github.com/conceptadev/superdeck
 documentation: https://docs.page/btwld/superdeck
 
 environment:
