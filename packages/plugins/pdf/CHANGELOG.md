@@ -4,6 +4,8 @@
   coordinated Ack 1.2 migration.
 
 - Capture PDF slide images with good quality on all platforms.
+- Run one PDF export at a time, and release captured slide images when an
+  export fails, is cancelled, or the export dialog closes.
 - Use `FileSaver.saveFile` for default PDF saves on web and Linux, and surface
   unexpected save failures as export failures.
 
