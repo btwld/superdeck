@@ -3,22 +3,20 @@
     {
       "children": [
         {
-          "color": "ff000088",
-          "children": []
-        },
-        {
           "text": "import",
           "color": "ff0000ff"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "'dart:async'",
           "color": "ffa31515"
         },
         {
-          "text": ";"
+          "text": ";",
+          "color": "ff000088"
         }
       ]
     },
@@ -40,17 +38,16 @@
           "color": "ff0000ff"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "Counter",
           "color": "ff267f99"
         },
         {
-          "children": []
-        },
-        {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "{",
@@ -61,28 +58,32 @@
     {
       "children": [
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ff000088"
         },
         {
           "text": "int",
           "color": "ff267f99"
         },
         {
-          "text": " _value "
+          "text": " _value ",
+          "color": "ff000088"
         },
         {
           "text": "=",
           "color": "ff000000"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "0",
           "color": "ff098156"
         },
         {
-          "text": ";"
+          "text": ";",
+          "color": "ff000088"
         }
       ]
     },
@@ -92,31 +93,32 @@
     {
       "children": [
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ff000088"
         },
         {
           "text": "Future",
           "color": "ff267f99"
         },
         {
-          "text": "<"
+          "text": "<",
+          "color": "ff000088"
         },
         {
           "text": "void",
           "color": "ff0000ff"
         },
         {
-          "text": ">"
+          "text": ">",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "increment",
           "color": "ff795e26"
-        },
-        {
-          "children": []
         },
         {
           "text": "(",
@@ -131,21 +133,20 @@
           "color": "ff267f99"
         },
         {
-          "text": " by "
+          "text": " by ",
+          "color": "ff000088"
         },
         {
           "text": "=",
           "color": "ff000000"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "1",
           "color": "ff098156"
-        },
-        {
-          "children": []
         },
         {
           "text": "}",
@@ -156,17 +157,16 @@
           "color": "ff866f47"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "async",
           "color": "ffaf00db"
         },
         {
-          "children": []
-        },
-        {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "{",
@@ -177,20 +177,24 @@
     {
       "children": [
         {
-          "text": "    _value "
+          "text": "    _value ",
+          "color": "ff000088"
         },
         {
           "text": "+=",
           "color": "ff000000"
         },
         {
-          "text": " by"
+          "text": " by",
+          "color": "ff000088"
         },
         {
-          "text": ";"
+          "text": ";",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "// bump",
@@ -201,7 +205,8 @@
     {
       "children": [
         {
-          "text": "    "
+          "text": "    ",
+          "color": "ff000088"
         },
         {
           "text": "print",
@@ -228,17 +233,16 @@
           "color": "ff9a5bae"
         },
         {
-          "text": ";"
-        },
-        {
-          "children": []
+          "text": ";",
+          "color": "ff000088"
         }
       ]
     },
     {
       "children": [
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ff000088"
         },
         {
           "text": "}",
@@ -261,10 +265,6 @@
   "dart/dark": [
     {
       "children": [
-        {
-          "color": "ffb9eeff",
-          "children": []
-        },
         {
           "text": "import",
           "color": "ff569cd6"
@@ -301,17 +301,16 @@
           "color": "ff569cd6"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "Counter",
           "color": "ff4ec9b0"
         },
         {
-          "children": []
-        },
-        {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "{",
@@ -322,21 +321,24 @@
     {
       "children": [
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ffb9eeff"
         },
         {
           "text": "int",
           "color": "ff4ec9b0"
         },
         {
-          "text": " _value "
+          "text": " _value ",
+          "color": "ffb9eeff"
         },
         {
           "text": "=",
           "color": "ffd4d4d4"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "0",
@@ -354,7 +356,8 @@
     {
       "children": [
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ffb9eeff"
         },
         {
           "text": "Future",
@@ -373,14 +376,12 @@
           "color": "ffd4d4d4"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "increment",
           "color": "ffdcdcaa"
-        },
-        {
-          "children": []
         },
         {
           "text": "(",
@@ -395,21 +396,20 @@
           "color": "ff4ec9b0"
         },
         {
-          "text": " by "
+          "text": " by ",
+          "color": "ffb9eeff"
         },
         {
           "text": "=",
           "color": "ffd4d4d4"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "1",
           "color": "ffb5cea8"
-        },
-        {
-          "children": []
         },
         {
           "text": "}",
@@ -420,17 +420,16 @@
           "color": "ffdfb976"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "async",
           "color": "ffc586c0"
         },
         {
-          "children": []
-        },
-        {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "{",
@@ -441,21 +440,24 @@
     {
       "children": [
         {
-          "text": "    _value "
+          "text": "    _value ",
+          "color": "ffb9eeff"
         },
         {
           "text": "+=",
           "color": "ffd4d4d4"
         },
         {
-          "text": " by"
+          "text": " by",
+          "color": "ffb9eeff"
         },
         {
           "text": ";",
           "color": "ffd4d4d4"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "// bump",
@@ -466,7 +468,8 @@
     {
       "children": [
         {
-          "text": "    "
+          "text": "    ",
+          "color": "ffb9eeff"
         },
         {
           "text": "print",
@@ -495,16 +498,14 @@
         {
           "text": ";",
           "color": "ffd4d4d4"
-        },
-        {
-          "children": []
         }
       ]
     },
     {
       "children": [
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ffb9eeff"
         },
         {
           "text": "}",
@@ -528,11 +529,8 @@
     {
       "children": [
         {
-          "color": "ff000088",
-          "children": []
-        },
-        {
-          "text": "{"
+          "text": "{",
+          "color": "ff000088"
         },
         {
           "text": "\"",
@@ -547,10 +545,12 @@
           "color": "ff0451a5"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "\"",
@@ -565,10 +565,12 @@
           "color": "ffa31515"
         },
         {
-          "text": ","
+          "text": ",",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "\"",
@@ -583,20 +585,24 @@
           "color": "ff0451a5"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "1",
           "color": "ffcd3131"
         },
         {
-          "text": ","
+          "text": ",",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "\"",
@@ -611,13 +617,16 @@
           "color": "ff0451a5"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
-          "text": "["
+          "text": "[",
+          "color": "ff000088"
         },
         {
           "text": "\"",
@@ -632,30 +641,36 @@
           "color": "ffa31515"
         },
         {
-          "text": ","
+          "text": ",",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "true",
           "color": "ff0000ff"
         },
         {
-          "text": ","
+          "text": ",",
+          "color": "ff000088"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "null",
           "color": "ff0000ff"
         },
         {
-          "text": "]"
+          "text": "]",
+          "color": "ff000088"
         },
         {
-          "text": "}"
+          "text": "}",
+          "color": "ff000088"
         }
       ]
     },
@@ -666,10 +681,6 @@
   "json/dark": [
     {
       "children": [
-        {
-          "color": "ffb9eeff",
-          "children": []
-        },
         {
           "text": "{",
           "color": "ffd4d4d4"
@@ -824,10 +835,6 @@
     {
       "children": [
         {
-          "color": "ff000088",
-          "children": []
-        },
-        {
           "text": "# Deck options",
           "color": "ff008000"
         }
@@ -840,10 +847,12 @@
           "color": "ff800000"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         },
         {
-          "text": " Launch"
+          "text": " Launch",
+          "color": "ff000088"
         }
       ]
     },
@@ -854,10 +863,12 @@
           "color": "ff800000"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         },
         {
-          "text": " dark"
+          "text": " dark",
+          "color": "ff000088"
         }
       ]
     },
@@ -868,20 +879,24 @@
           "color": "ff800000"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         }
       ]
     },
     {
       "children": [
         {
-          "text": "  - name"
+          "text": "  - name",
+          "color": "ff000088"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         },
         {
-          "text": " intro"
+          "text": " intro",
+          "color": "ff000088"
         }
       ]
     },
@@ -892,10 +907,12 @@
           "color": "ff800000"
         },
         {
-          "text": ":"
+          "text": ":",
+          "color": "ff000088"
         },
         {
-          "text": " 2"
+          "text": " 2",
+          "color": "ff000088"
         }
       ]
     },
@@ -906,10 +923,6 @@
   "yaml/dark": [
     {
       "children": [
-        {
-          "color": "ffb9eeff",
-          "children": []
-        },
         {
           "text": "# Deck options",
           "color": "ff608b4e"
@@ -927,7 +940,8 @@
           "color": "ffd4d4d4"
         },
         {
-          "text": " Launch"
+          "text": " Launch",
+          "color": "ffb9eeff"
         }
       ]
     },
@@ -942,7 +956,8 @@
           "color": "ffd4d4d4"
         },
         {
-          "text": " dark"
+          "text": " dark",
+          "color": "ffb9eeff"
         }
       ]
     },
@@ -961,14 +976,16 @@
     {
       "children": [
         {
-          "text": "  - name"
+          "text": "  - name",
+          "color": "ffb9eeff"
         },
         {
           "text": ":",
           "color": "ffd4d4d4"
         },
         {
-          "text": " intro"
+          "text": " intro",
+          "color": "ffb9eeff"
         }
       ]
     },
@@ -983,7 +1000,8 @@
           "color": "ffd4d4d4"
         },
         {
-          "text": " 2"
+          "text": " 2",
+          "color": "ffb9eeff"
         }
       ]
     },
@@ -995,14 +1013,12 @@
     {
       "children": [
         {
-          "color": "ff000088",
-          "children": []
+          "text": "#",
+          "color": "ff000088"
         },
         {
-          "text": "#"
-        },
-        {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "Heading",
@@ -1017,14 +1033,17 @@
     {
       "children": [
         {
-          "text": "Some "
+          "text": "Some ",
+          "color": "ff000088"
         },
         {
           "text": "*emphasis*",
+          "color": "ff000088",
           "style": "italic"
         },
         {
-          "text": ", "
+          "text": ", ",
+          "color": "ff000088"
         },
         {
           "text": "**strong**",
@@ -1032,13 +1051,16 @@
           "weight": 700
         },
         {
-          "text": ", and "
+          "text": ", and ",
+          "color": "ff000088"
         },
         {
-          "text": "`code`"
+          "text": "`code`",
+          "color": "ff000088"
         },
         {
-          "text": "."
+          "text": ".",
+          "color": "ff000088"
         }
       ]
     },
@@ -1048,17 +1070,20 @@
     {
       "children": [
         {
-          "text": "- "
+          "text": "- ",
+          "color": "ff000088"
         },
         {
-          "text": "item one"
+          "text": "item one",
+          "color": "ff000088"
         }
       ]
     },
     {
       "children": [
         {
-          "text": "- "
+          "text": "- ",
+          "color": "ff000088"
         },
         {
           "text": "[",
@@ -1069,9 +1094,6 @@
           "color": "ffa31515"
         },
         {
-          "children": []
-        },
-        {
           "text": "]",
           "color": "ff407aa7"
         },
@@ -1080,10 +1102,8 @@
           "color": "ff407aa7"
         },
         {
-          "text": "https://superdeck.dev"
-        },
-        {
-          "children": []
+          "text": "https://superdeck.dev",
+          "color": "ff000088"
         },
         {
           "text": ")",
@@ -1099,15 +1119,12 @@
     {
       "children": [
         {
-          "color": "ffb9eeff",
-          "children": []
-        },
-        {
           "text": "#",
           "color": "ffd4d4d4"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "Heading",
@@ -1122,14 +1139,17 @@
     {
       "children": [
         {
-          "text": "Some "
+          "text": "Some ",
+          "color": "ffb9eeff"
         },
         {
           "text": "*emphasis*",
+          "color": "ffb9eeff",
           "style": "italic"
         },
         {
-          "text": ", "
+          "text": ", ",
+          "color": "ffb9eeff"
         },
         {
           "text": "**strong**",
@@ -1137,14 +1157,16 @@
           "weight": 700
         },
         {
-          "text": ", and "
+          "text": ", and ",
+          "color": "ffb9eeff"
         },
         {
           "text": "`code`",
           "color": "ffd4d4d4"
         },
         {
-          "text": "."
+          "text": ".",
+          "color": "ffb9eeff"
         }
       ]
     },
@@ -1158,7 +1180,8 @@
           "color": "ffd4d4d4"
         },
         {
-          "text": "item one"
+          "text": "item one",
+          "color": "ffb9eeff"
         }
       ]
     },
@@ -1177,9 +1200,6 @@
           "color": "ffce9178"
         },
         {
-          "children": []
-        },
-        {
           "text": "]",
           "color": "ff5caeef"
         },
@@ -1188,10 +1208,8 @@
           "color": "ff5caeef"
         },
         {
-          "text": "https://superdeck.dev"
-        },
-        {
-          "children": []
+          "text": "https://superdeck.dev",
+          "color": "ffb9eeff"
         },
         {
           "text": ")",
@@ -1207,39 +1225,36 @@
     {
       "children": [
         {
-          "color": "ff000088",
-          "children": []
-        },
-        {
           "text": "def",
           "color": "ff0000ff"
         },
         {
-          "children": []
-        },
-        {
-          "text": " greet"
+          "text": " greet",
+          "color": "ff000088"
         },
         {
           "text": "(",
           "color": "ff407aa7"
         },
         {
-          "text": "name: str"
+          "text": "name: str",
+          "color": "ff000088"
         },
         {
           "text": ")",
           "color": "ff407aa7"
         },
         {
-          "text": " -> str:"
+          "text": " -> str:",
+          "color": "ff000088"
         }
       ]
     },
     {
       "children": [
         {
-          "text": "    "
+          "text": "    ",
+          "color": "ff000088"
         },
         {
           "text": "\"\"\"Say hello.\"\"\"",
@@ -1250,21 +1265,24 @@
     {
       "children": [
         {
-          "text": "    "
+          "text": "    ",
+          "color": "ff000088"
         },
         {
           "text": "return",
           "color": "ffaf00db"
         },
         {
-          "text": " f"
+          "text": " f",
+          "color": "ff000088"
         },
         {
           "text": "\"Hello, {name}!\"",
           "color": "ffa31515"
         },
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ff000088"
         },
         {
           "text": "# done",
@@ -1280,39 +1298,36 @@
     {
       "children": [
         {
-          "color": "ffb9eeff",
-          "children": []
-        },
-        {
           "text": "def",
           "color": "ff569cd6"
         },
         {
-          "children": []
-        },
-        {
-          "text": " greet"
+          "text": " greet",
+          "color": "ffb9eeff"
         },
         {
           "text": "(",
           "color": "ff5caeef"
         },
         {
-          "text": "name: str"
+          "text": "name: str",
+          "color": "ffb9eeff"
         },
         {
           "text": ")",
           "color": "ff5caeef"
         },
         {
-          "text": " -> str:"
+          "text": " -> str:",
+          "color": "ffb9eeff"
         }
       ]
     },
     {
       "children": [
         {
-          "text": "    "
+          "text": "    ",
+          "color": "ffb9eeff"
         },
         {
           "text": "\"\"\"Say hello.\"\"\"",
@@ -1323,21 +1338,24 @@
     {
       "children": [
         {
-          "text": "    "
+          "text": "    ",
+          "color": "ffb9eeff"
         },
         {
           "text": "return",
           "color": "ffc586c0"
         },
         {
-          "text": " f"
+          "text": " f",
+          "color": "ffb9eeff"
         },
         {
           "text": "\"Hello, {name}!\"",
           "color": "ffce9178"
         },
         {
-          "text": "  "
+          "text": "  ",
+          "color": "ffb9eeff"
         },
         {
           "text": "# done",
@@ -1353,18 +1371,12 @@
     {
       "children": [
         {
-          "color": "ff000088",
-          "children": []
-        },
-        {
-          "text": "fn "
+          "text": "fn ",
+          "color": "ff000088"
         },
         {
           "text": "main",
           "color": "ff795e26"
-        },
-        {
-          "children": []
         },
         {
           "text": "(",
@@ -1375,24 +1387,24 @@
           "color": "ff407aa7"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "{",
           "color": "ff407aa7"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "println",
           "color": "ff795e26"
         },
         {
-          "children": []
-        },
-        {
-          "text": "!"
+          "text": "!",
+          "color": "ff000088"
         },
         {
           "text": "(",
@@ -1407,13 +1419,12 @@
           "color": "ff866f47"
         },
         {
-          "text": ";"
+          "text": ";",
+          "color": "ff000088"
         },
         {
-          "children": []
-        },
-        {
-          "text": " "
+          "text": " ",
+          "color": "ff000088"
         },
         {
           "text": "}",
@@ -1429,18 +1440,12 @@
     {
       "children": [
         {
-          "color": "ffb9eeff",
-          "children": []
-        },
-        {
-          "text": "fn "
+          "text": "fn ",
+          "color": "ffb9eeff"
         },
         {
           "text": "main",
           "color": "ffdcdcaa"
-        },
-        {
-          "children": []
         },
         {
           "text": "(",
@@ -1451,24 +1456,24 @@
           "color": "ff5caeef"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "{",
           "color": "ff5caeef"
         },
         {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "println",
           "color": "ffdcdcaa"
         },
         {
-          "children": []
-        },
-        {
-          "text": "!"
+          "text": "!",
+          "color": "ffb9eeff"
         },
         {
           "text": "(",
@@ -1487,10 +1492,8 @@
           "color": "ffd4d4d4"
         },
         {
-          "children": []
-        },
-        {
-          "text": " "
+          "text": " ",
+          "color": "ffb9eeff"
         },
         {
           "text": "}",

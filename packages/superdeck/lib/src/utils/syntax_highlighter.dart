@@ -148,43 +148,25 @@ double _contrastRatio(Color first, Color second) {
 /// Splits a list of TextSpans into separate lines based on line breaks.
 /// Each returned TextSpan represents one line with preserved styling.
 List<TextSpan> splitTextSpansByLines(List<TextSpan> spans) {
-  // This will hold lists of TextSpans, each list representing a line.
-  List<List<TextSpan>> lines = [[]];
-
-  /// Recursively processes a TextSpan and splits it into lines.
-  void processSpan(TextSpan span) {
-    if (span.children != null && span.children!.isNotEmpty) {
-      // If the span has children, create a new span with the same style.
-      final newSpan = TextSpan(style: span.style, children: const []);
-      // Add this new span to the current line.
-      lines.last.add(newSpan);
-      // Recursively process each child.
-      for (var child in span.children!) {
-        if (child is TextSpan) {
-          processSpan(child);
-        }
-      }
-    } else if (span.text != null) {
-      // Split the text by line breaks.
-      List<String> parts = span.text!.split('\n');
-      for (int i = 0; i < parts.length; i++) {
-        if (i > 0) {
-          // For each new line after the first, add a new empty list.
-          lines.add([]);
-        }
+  final lines = <List<TextSpan>>[[]];
+  void processSpan(TextSpan span, [TextStyle? inherited]) {
+    final style = inherited?.merge(span.style) ?? span.style;
+    final parts = span.text?.split('\n');
+    if (parts != null) {
+      for (var i = 0; i < parts.length; i++) {
+        if (i > 0) lines.add([]);
         if (parts[i].isNotEmpty) {
-          // Add the text part to the current line with the same style.
-          lines.last.add(TextSpan(text: parts[i], style: span.style));
+          lines.last.add(TextSpan(text: parts[i], style: style));
         }
       }
     }
+    for (final child in span.children ?? const <InlineSpan>[]) {
+      if (child is TextSpan) processSpan(child, style);
+    }
   }
 
-  // Process each top-level TextSpan.
-  for (var span in spans) {
+  for (final span in spans) {
     processSpan(span);
   }
-
-  // Convert each line's list of TextSpans into a single TextSpan.
-  return lines.map((lineSpans) => TextSpan(children: lineSpans)).toList();
+  return lines.map((line) => TextSpan(children: line)).toList();
 }
