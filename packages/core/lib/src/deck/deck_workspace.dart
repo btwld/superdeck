@@ -49,8 +49,6 @@ final class DeckWorkspace with _$DeckWorkspaceAck {
     }
   }
 
-  Directory get projectDirectory => Directory(p.normalize(projectDir));
-
   Directory get superdeckDir =>
       Directory(p.normalize(p.join(projectDir, outputDir)));
 

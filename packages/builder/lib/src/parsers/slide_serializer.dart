@@ -33,13 +33,6 @@ class SlideSerializer {
     return '${buffer.toString().trim()}\n';
   }
 
-  /// Serializes a single [slide] (without a trailing newline).
-  String serializeSlide(Slide slide) {
-    final buffer = StringBuffer();
-    _writeSlide(buffer, slide);
-    return buffer.toString().trim();
-  }
-
   void _writeSlide(StringBuffer buffer, Slide slide) {
     // The opening `---` doubles as the slide separator. When the slide has
     // frontmatter, the matching close `---` follows the YAML body.

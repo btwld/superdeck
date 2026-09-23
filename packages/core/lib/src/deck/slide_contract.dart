@@ -11,7 +11,7 @@ final slidesContractSchema = Ack.list(SlideSchema.schema);
 List<Slide> parseSlidesContract(Object? value) =>
     slidesContractSchema.parse(value)!;
 
-/// Flattened slide projection for structured-output AI generation.
+/// Builds a flattened slide projection for structured-output AI generation.
 ///
 /// The discriminated content/widget union is retained for providers that
 /// support same-type `anyOf` branches. Every field vocabulary (alignment,
@@ -19,10 +19,6 @@ List<Slide> parseSlidesContract(Object? value) =>
 /// canonical schemas, so a contract change here reaches AI generation
 /// automatically. Data generated against this projection must still decode
 /// through [Slide.parse] / [parseSlidesContract].
-final aiSlideSchema = buildAiSlideSchema();
-
-/// Builds the canonical AI slide projection with optional widget argument
-/// fields supplied by an application generation catalog.
 ///
 /// Set [nestWidgetArguments] for model-facing draft payloads so widget-only
 /// fields cannot collide with content-block fields such as `content`. Those

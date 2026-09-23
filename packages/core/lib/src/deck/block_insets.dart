@@ -20,24 +20,6 @@ AckSchema<num, double> _normalizedInsetValueSchema() =>
       encode: (value) => value,
     );
 
-final _symmetricInsetsSchema = Ack.object(
-  {
-    'horizontal': _authoringInsetValueSchema.optional(),
-    'vertical': _authoringInsetValueSchema.optional(),
-  },
-  additionalProperties: false,
-).withConstraint(const _NonEmptyInsetsObjectConstraint());
-
-final _partialEdgeInsetsSchema = Ack.object(
-  {
-    'top': _authoringInsetValueSchema.optional(),
-    'right': _authoringInsetValueSchema.optional(),
-    'bottom': _authoringInsetValueSchema.optional(),
-    'left': _authoringInsetValueSchema.optional(),
-  },
-  additionalProperties: false,
-).withConstraint(const _NonEmptyInsetsObjectConstraint());
-
 /// Four normalized physical inset edges for a slide block.
 ///
 /// Used for both block `padding` and block `margin`. Authoring shorthand
@@ -90,13 +72,6 @@ final class BlockInsets with _$BlockInsetsAck {
         bottom: vertical,
         left: horizontal,
       );
-
-  /// Authoring schema: scalar, symmetric map, or physical-edge map.
-  static final authoringSchema = Ack.anyOf([
-    _authoringInsetValueSchema,
-    _symmetricInsetsSchema,
-    _partialEdgeInsetsSchema,
-  ]);
 
   static final fromJson = BlockInsetsSchema.fromJson;
 
@@ -162,25 +137,4 @@ final class BlockInsets with _$BlockInsetsAck {
       'Inset edges must be finite non-negative numbers.',
     );
   }
-}
-
-final class _NonEmptyInsetsObjectConstraint
-    extends Constraint<Map<String, Object?>>
-    with Validator<Map<String, Object?>>, JsonSchemaSpec<Map<String, Object?>> {
-  const _NonEmptyInsetsObjectConstraint()
-    : super(
-        constraintKey: 'insets_non_empty_object',
-        description: 'Inset objects must contain at least one property.',
-      );
-
-  @override
-  String buildMessage(Map<String, Object?> value) {
-    return 'Inset objects must contain at least one property.';
-  }
-
-  @override
-  bool isValid(Map<String, Object?> value) => value.isNotEmpty;
-
-  @override
-  Map<String, Object?> toJsonSchema() => const {'minProperties': 1};
 }

@@ -1,5 +1,8 @@
 ## 1.0.0
 
+- **Breaking:** remove `superDeckAspectRatio`; it had no production use. Use
+  `superDeckSlideSize` for slide geometry.
+
 - **Breaking:** remove `dart_mappable` from runtime deck configuration models.
   `SlideTemplate`, `SlideConfiguration`, and `DeckOptions` now expose normal
   `copyWith`, equality, hash, and string behavior while preserving explicit

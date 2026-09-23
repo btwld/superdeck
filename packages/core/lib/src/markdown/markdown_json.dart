@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'package:markdown/markdown.dart' as md;
 
-/// Helper for converting Markdown into Dart map or JSON representations.
+/// Helper for converting Markdown into a Dart map representation.
 ///
 /// Configure an instance with the desired [extensionSet], [blockSyntaxes],
-/// and [inlineSyntaxes], then call [toMap] or [toJson].
+/// and [inlineSyntaxes], then call [toMap].
 ///
 /// ```dart
 /// const converter = MarkdownAstConverter(
@@ -13,7 +11,6 @@ import 'package:markdown/markdown.dart' as md;
 /// );
 ///
 /// final ast = converter.toMap('# Hello', includeMetadata: true);
-/// final json = converter.toJson('# Hello', prettyPrint: true);
 /// ```
 class MarkdownAstConverter {
   const MarkdownAstConverter({
@@ -61,29 +58,6 @@ class MarkdownAstConverter {
     }
 
     return result;
-  }
-
-  /// Returns a JSON representation of the Markdown AST.
-  // ignore: unused-code
-  String toJson(
-    String markdown, {
-    bool prettyPrint = false,
-    bool includeMetadata = false,
-    md.ExtensionSet? extensionSet,
-    List<md.BlockSyntax>? blockSyntaxes,
-    List<md.InlineSyntax>? inlineSyntaxes,
-  }) {
-    final map = toMap(
-      markdown,
-      includeMetadata: includeMetadata,
-      extensionSet: extensionSet,
-      blockSyntaxes: blockSyntaxes,
-      inlineSyntaxes: inlineSyntaxes,
-    );
-
-    return prettyPrint
-        ? const JsonEncoder.withIndent('  ').convert(map)
-        : json.encode(map);
   }
 }
 

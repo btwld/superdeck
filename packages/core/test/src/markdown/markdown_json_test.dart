@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:markdown/markdown.dart' as md;
 import 'package:superdeck_core/src/markdown/markdown_json.dart';
 import 'package:test/test.dart';
@@ -22,36 +20,20 @@ void main() {
 
       expect(viaClass, equals(viaOverride));
     });
-
-    test('toJson respects prettyPrint and metadata flags', () {
-      const markdown = '[link]: https://example.com\n\nSee [link].';
-      final converter = MarkdownAstConverter();
-
-      final compact = converter.toJson(markdown);
-      final pretty = converter.toJson(markdown, prettyPrint: true);
-      final withMetadata = converter.toJson(markdown, includeMetadata: true);
-
-      expect(pretty.contains('\n'), isTrue);
-      expect(compact.length, lessThan(pretty.length));
-      expect(withMetadata.contains('linkReferences'), isTrue);
-    });
   });
 
-  group('MarkdownAstConverter.toJson', () {
+  group('MarkdownAstConverter feature conversion', () {
     group('basic conversion', () {
-      test('converts simple heading to JSON', () {
-        final json = _converter.toJson('# Hello');
-        expect(json, isNotEmpty);
+      test('converts simple heading', () {
+        final parsed = _converter.toMap('# Hello');
 
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
         expect(parsed['type'], equals('document'));
         expect(parsed['children'], isList);
         expect(parsed['children'], isNotEmpty);
       });
 
       test('converts heading and paragraph', () {
-        final json = _converter.toJson('# Hello\n\nWorld');
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
+        final parsed = _converter.toMap('# Hello\n\nWorld');
 
         expect(parsed['type'], equals('document'));
         final children = parsed['children'] as List;
@@ -59,16 +41,14 @@ void main() {
       });
 
       test('handles empty document', () {
-        final json = _converter.toJson('');
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
+        final parsed = _converter.toMap('');
 
         expect(parsed['type'], equals('document'));
         expect(parsed['children'], isEmpty);
       });
 
       test('handles whitespace-only document', () {
-        final json = _converter.toJson('   \n\n  ');
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
+        final parsed = _converter.toMap('   \n\n  ');
 
         expect(parsed['type'], equals('document'));
         // Whitespace-only content should result in empty children
@@ -76,34 +56,9 @@ void main() {
       });
     });
 
-    group('pretty print formatting', () {
-      test('formats JSON with indentation when prettyPrint is true', () {
-        final json = _converter.toJson('# Test', prettyPrint: true);
-
-        expect(json, contains('\n'));
-        expect(json, contains('  ')); // 2-space indent
-      });
-
-      test('formats JSON compactly when prettyPrint is false', () {
-        final json = _converter.toJson('# Test', prettyPrint: false);
-
-        // Compact JSON should not have newlines (except possibly in strings)
-        final parsed = jsonDecode(json);
-        expect(parsed, isNotNull);
-      });
-
-      test('uses compact format by default', () {
-        final jsonDefault = _converter.toJson('# Test');
-        final jsonExplicit = _converter.toJson('# Test', prettyPrint: false);
-
-        expect(jsonDefault, equals(jsonExplicit));
-      });
-    });
-
     group('ExtensionSet support', () {
       test('handles default markdown without extensionSet', () {
-        final json = _converter.toJson('# Test\n\n**bold**');
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
+        final parsed = _converter.toMap('# Test\n\n**bold**');
 
         final children = parsed['children'] as List;
         expect(children.length, equals(2)); // h1 and p
@@ -118,41 +73,37 @@ void main() {
       });
 
       test('supports ExtensionSet.none', () {
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           '# Test\n\n```dart\ncode\n```',
           extensionSet: md.ExtensionSet.none,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
 
         expect(parsed['children'], isNotEmpty);
       });
 
       test('supports ExtensionSet.commonMark', () {
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           '# Test\n\n```dart\ncode\n```',
           extensionSet: md.ExtensionSet.commonMark,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
 
         expect(parsed['children'], isNotEmpty);
       });
 
       test('supports ExtensionSet.gitHubWeb', () {
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           '# Test\n\n```dart\ncode\n```',
           extensionSet: md.ExtensionSet.gitHubWeb,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
 
         expect(parsed['children'], isNotEmpty);
       });
 
       test('supports ExtensionSet.gitHubFlavored', () {
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           '# Test\n\n```dart\ncode\n```',
           extensionSet: md.ExtensionSet.gitHubFlavored,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
 
         expect(parsed['children'], isNotEmpty);
       });
@@ -165,11 +116,10 @@ void main() {
 |----------|----------|
 | Cell 1   | Cell 2   |
 ''';
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
         final children = parsed['children'] as List;
 
         // Should contain a table element
@@ -290,11 +240,10 @@ void main() {
 - [ ] Unchecked task
 - [x] Checked task
 ''';
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
 
         expect(parsed['children'], isNotEmpty);
       });
@@ -330,11 +279,10 @@ void main() {
       });
 
       test('converts strikethrough text', () {
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           '~~strikethrough~~',
           extensionSet: md.ExtensionSet.gitHubWeb,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
 
         expect(parsed['children'], isNotEmpty);
       });
@@ -388,11 +336,10 @@ void main() {
 > [!NOTE]
 > This is a note
 ''';
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
 
         expect(parsed['children'], isNotEmpty);
       });
@@ -500,11 +447,10 @@ void main() {
 }
 ```
 ''';
-        final json = _converter.toJson(
+        final parsed = _converter.toMap(
           markdown,
           extensionSet: md.ExtensionSet.gitHubWeb,
         );
-        final parsed = jsonDecode(json) as Map<String, dynamic>;
         final children = parsed['children'] as List;
 
         // Should contain a code block element
@@ -1150,8 +1096,7 @@ First[^1] and second[^2] and third[^note].
   group('edge cases', () {
     test('handles CRLF line endings', () {
       final markdown = '# Heading\r\n\r\nParagraph\r\n';
-      final json = _converter.toJson(markdown);
-      final parsed = jsonDecode(json) as Map<String, dynamic>;
+      final parsed = _converter.toMap(markdown);
 
       expect(parsed['type'], equals('document'));
       expect(parsed['children'], isNotEmpty);
@@ -1159,8 +1104,7 @@ First[^1] and second[^2] and third[^note].
 
     test('handles mixed line endings', () {
       final markdown = '# Heading\n\nParagraph\r\n\nAnother\r\n';
-      final json = _converter.toJson(markdown);
-      final parsed = jsonDecode(json) as Map<String, dynamic>;
+      final parsed = _converter.toMap(markdown);
 
       expect(parsed['type'], equals('document'));
       expect(parsed['children'], isNotEmpty);
@@ -1169,31 +1113,28 @@ First[^1] and second[^2] and third[^note].
     test('handles very long text content', () {
       final longText = 'A' * 10000;
       final markdown = '# $longText';
-      final json = _converter.toJson(markdown);
+      final parsed = _converter.toMap(markdown);
 
-      expect(json, isNotEmpty);
+      expect(parsed, isNotEmpty);
     });
 
     test('handles special markdown characters in text', () {
       final markdown = r'Text with \* escaped \_ characters';
-      final json = _converter.toJson(markdown);
-      final parsed = jsonDecode(json) as Map<String, dynamic>;
+      final parsed = _converter.toMap(markdown);
 
       expect(parsed['children'], isNotEmpty);
     });
 
     test('handles inline code with backticks', () {
       final markdown = 'Text with `inline code` here';
-      final json = _converter.toJson(markdown);
-      final parsed = jsonDecode(json) as Map<String, dynamic>;
+      final parsed = _converter.toMap(markdown);
 
       expect(parsed['children'], isNotEmpty);
     });
 
     test('handles links with special characters', () {
       final markdown = '[Link](https://example.com?foo=bar&baz=qux)';
-      final json = _converter.toJson(markdown);
-      final parsed = jsonDecode(json) as Map<String, dynamic>;
+      final parsed = _converter.toMap(markdown);
 
       expect(parsed['children'], isNotEmpty);
     });
@@ -1290,25 +1231,6 @@ void main() {
       expect(map['type'], equals('document'));
       expect(map['children'], isNotEmpty);
       expect(map['linkReferences'], isNotNull);
-
-      final json = _converter.toJson(
-        markdown,
-        extensionSet: md.ExtensionSet.gitHubWeb,
-        prettyPrint: true,
-      );
-
-      expect(json, contains('\n'));
-      final parsed = jsonDecode(json);
-      expect(parsed, isNotNull);
-    });
-
-    test('toMap and toJson produce equivalent results', () {
-      final markdown = '# Test\n\nParagraph';
-      final map = _converter.toMap(markdown);
-      final jsonString = _converter.toJson(markdown);
-      final parsedMap = jsonDecode(jsonString);
-
-      expect(map, equals(parsedMap));
     });
 
     test('extensionSet affects parsing behavior', () {
