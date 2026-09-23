@@ -6,6 +6,7 @@ import 'package:mix/mix.dart';
 import '../../rendering/blocks/block_provider.dart';
 import '../../styling/components/slide.dart';
 import '../../ui/widgets/hero_element.dart';
+import '../../ui/widgets/text_hero_flight.dart';
 import '../markdown_helpers.dart';
 import '../markdown_hero_mixin.dart';
 import '../markdown_inline_spans.dart';
@@ -23,8 +24,7 @@ String _transformLineBreaks(String text) =>
 /// - Transforms `<br>` to `\n`
 /// - Uses a layout-stable flight painter to avoid last-word flicker
 ///
-/// Hero flight animation still uses the plain flattened string so existing
-/// text-interpolation semantics stay stable.
+/// Flights preserve resolved inline styles and endpoint line breaks.
 class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
   final StyleSpec<TextSpec> styleSpec;
 
@@ -37,11 +37,12 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
     TextStyle? preferredStyle,
     TextStyle? parentStyle,
   ) {
-    // For header elements (h1–h6), the parser attaches 'hero' to attributes.
-    final heroTag = element.attributes['hero'];
+    // Headers carry an attribute; paragraphs retain the marker in their text.
+    final taggedContent = getTagAndContent(element.textContent);
+    final heroTag = element.attributes['hero'] ?? taggedContent.tag;
 
     // Flattened content for hero flight + empty checks.
-    final textContent = element.textContent;
+    final textContent = taggedContent.content;
     return StyleSpecBuilder<TextSpec>(
       styleSpec: styleSpec,
       builder: (builderContext, spec) {
@@ -64,7 +65,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
           child: child,
           heroTag: heroTag,
           heroData: TextElement(text: transformed, spec: spec),
-          buildFlight: _buildStableFlight,
+          flightShuttleBuilder: buildTextHeroFlight,
         );
       },
     );
@@ -94,7 +95,7 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
           child: child,
           heroTag: tag,
           heroData: TextElement(text: transformed, spec: spec),
-          buildFlight: _buildStableFlight,
+          flightShuttleBuilder: buildTextHeroFlight,
         );
       },
     );
@@ -154,94 +155,6 @@ class TextElementBuilder extends MarkdownElementBuilder with MarkdownHeroMixin {
       textHeightBehavior: textSpec.textHeightBehavior,
       selectionColor: textSpec.selectionColor,
       semanticsLabel: textSpec.semanticsLabel,
-    );
-  }
-
-  /// Shared flight painter for both headers and plain text.
-  ///
-  /// Strategy:
-  /// 1) Normalize text with directives *before* diffing.
-  /// 2) Paint exactly three spans:
-  ///    - committed prefix (opaque),
-  ///    - single fading grapheme (variable opacity),
-  ///    - ghost suffix (alpha=0) to pin wrapping and prevent flicker.
-  Widget _buildStableFlight(
-    BuildContext context,
-    TextElement from,
-    TextElement to,
-    double t,
-  ) {
-    final spec = from.spec.lerp(to.spec, t);
-
-    String applyDirectives(String v) => spec.textDirectives?.apply(v) ?? v;
-
-    // Normalize first, then interpolate.
-    final startN = applyDirectives(from.text);
-    final endN = applyDirectives(to.text);
-
-    final lerp = lerpStringWithFade(startN, endN, t);
-
-    final baseStyle = (spec.style ?? const TextStyle());
-    final baseColor = baseStyle.color ?? const Color(0xFF000000);
-
-    final children = <InlineSpan>[];
-
-    // 1) Committed prefix (fully visible)
-    final committed = lerp.text;
-    if (committed.isNotEmpty) {
-      children.add(TextSpan(text: committed));
-    }
-
-    // 2) Fading grapheme (single character; variable opacity)
-    final hasFade = lerp.fadingChar != null;
-    final fadeAlpha = lerp.fadeOpacity.clamp(0.0, 1.0);
-    if (hasFade) {
-      // Keep an epsilon > 0 to avoid a 1-frame visual artifact when alpha jumps from 0.
-      // When opacity transitions from exactly 0.0 to a small value, Flutter may render
-      // the character for one frame before the opacity change takes effect, creating a
-      // brief "flash". This threshold prevents that by ensuring near-zero values are
-      // treated as fully transparent.
-      final visibleAlpha = fadeAlpha > 0.01 ? fadeAlpha : 0.0;
-      children.add(
-        TextSpan(
-          text: lerp.fadingChar!,
-          style: baseStyle.copyWith(
-            color: baseColor.withValues(alpha: visibleAlpha),
-          ),
-        ),
-      );
-    }
-
-    // 3) Ghost suffix (alpha=0) to stabilize shaping & wrapping.
-    //    Choose the active source based on phase: start (<0.5) vs end (>=0.5).
-    final committedG = committed.characters.length;
-    final visibleCountG = committedG + (hasFade ? 1 : 0);
-    final active = (t < 0.5) ? startN : endN;
-    final ghostSuffix = active.characters.skip(visibleCountG).toString();
-
-    if (ghostSuffix.isNotEmpty) {
-      children.add(
-        TextSpan(
-          text: ghostSuffix,
-          style: baseStyle.copyWith(color: baseColor.withValues(alpha: 0.0)),
-        ),
-      );
-    }
-
-    return Text.rich(
-      TextSpan(style: baseStyle, children: children),
-      strutStyle: spec.strutStyle,
-      textAlign: spec.textAlign,
-      textDirection: spec.textDirection,
-      locale: spec.locale,
-      softWrap: spec.softWrap,
-      overflow: spec.overflow,
-      textScaler: spec.textScaler,
-      maxLines: spec.maxLines,
-      textWidthBasis: spec.textWidthBasis,
-      textHeightBehavior: spec.textHeightBehavior,
-      selectionColor: spec.selectionColor,
-      semanticsLabel: spec.semanticsLabel,
     );
   }
 }

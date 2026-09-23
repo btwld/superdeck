@@ -47,7 +47,7 @@ class LerpStringResult {
 
 /// Grapheme-safe, layout-stable string interpolation with a ghost suffix.
 ///
-/// - First half (t<0.5): fade out the start suffix (left→right)
+/// - First half (t<0.5): fade out the start suffix (right→left)
 /// - Second half (t>0.5): fade in the end suffix (left→right)
 /// - Always returns `text` (committed prefix) plus an optional `fadingChar`
 ///   and `fadeOpacity`. Internally, the remainder of the source string past

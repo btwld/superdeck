@@ -14,7 +14,8 @@ mixin MarkdownHeroMixin on MarkdownElementBuilder {
     required Widget child,
     required String? heroTag,
     required T heroData,
-    required Widget Function(BuildContext, T, T, double) buildFlight,
+    Widget Function(BuildContext, T, T, double)? buildFlight,
+    HeroFlightShuttleBuilder? flightShuttleBuilder,
   }) {
     final shouldAnimate =
         heroTag != null && !SlideConfiguration.of(context).isStaticRendering;
@@ -27,6 +28,7 @@ mixin MarkdownHeroMixin on MarkdownElementBuilder {
         tag: heroTag,
         child: child,
         buildFlight: buildFlight,
+        flightShuttleBuilder: flightShuttleBuilder,
       ),
     );
   }
