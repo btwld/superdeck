@@ -523,7 +523,8 @@ Body
       expect(slides, hasLength(1));
       expect(
         slides.single.frontmatter['description'],
-        equals('line one\nline two'),
+        // YAML's default clip chomping keeps one trailing line break.
+        equals('line one\nline two\n'),
       );
       expect(slides.single.content, equals('Body'));
     });
@@ -543,7 +544,7 @@ Body
       expect(slides, hasLength(1));
       expect(
         slides.single.frontmatter['summary'],
-        equals('folded one folded two'),
+        equals('folded one folded two\n'),
       );
       expect(slides.single.content, equals('Body'));
     });

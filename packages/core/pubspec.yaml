@@ -12,7 +12,7 @@ resolution: workspace
 
 # Add regular dependencies here.
 dependencies:
-  yaml: ^3.1.2
+  yaml: ^3.1.4
   collection: ^1.18.0
   path: ^1.9.0
   ack: ^1.2.0
@@ -23,6 +23,6 @@ dependencies:
 dev_dependencies:
   lints: ^6.1.0
   test: ^1.24.0
-  dart_code_metrics_presets: ^2.19.0
+  dart_code_metrics_presets: ^2.33.0
   build_runner: ^2.5.4
   ack_generator: ^1.2.0
