@@ -1,27 +1,27 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:playground/app/providers.dart';
-import 'package:playground/core/data/data_sources/deck_library_asset_store.dart';
+import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
+import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
 import 'package:playground/core/domain/generated_image_asset.dart';
 import 'package:playground/features/ai/generation/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/generation/core/engine/services/deck_generation_request.dart';
 import 'package:playground/features/ai/generation/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/generation/core/engine/services/deck_theme_resolution.dart';
-import 'package:playground/core/domain/design/presentation_theme_catalog.dart';
-import 'package:playground/core/domain/design/presentation_typography_catalog.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_generation_controller.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_page.dart';
 import 'package:playground/features/ai/wizard/presentation/wizard_view.dart';
-import 'package:playground/features/library/domain/deck_library_controller.dart';
+import 'package:playground/features/export/data/deck_export_saver.dart';
+import 'package:playground/features/export/domain/deck_export.dart';
 import 'package:provider/provider.dart';
 import 'package:superdeck_core/superdeck_core.dart';
 
-import '../../../../helpers/fake_deck_library.dart';
-
-/// A 1x1 PNG, so the artwork a save carries is real bytes.
+/// A 1x1 PNG, so the artwork an export carries is real bytes.
 final _png = <int>[
   137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, //
   0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 0, 0, 0, 181, 28, 12, 2,
@@ -37,30 +37,23 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  Future<
-    ({
-      WizardGenerationController wizard,
-      DeckLibraryController library,
-      DeckLibraryAssetStore assets,
-    })
-  >
-  pumpCompletedDeck(WidgetTester tester, FakeDeckLibrary library) async {
+  Future<WizardGenerationController> pumpCompletedDeck(
+    WidgetTester tester,
+    DeckExportSaver exportSaver,
+  ) async {
     final router = GoRouter(
       routes: [
         GoRoute(
           path: '/',
           builder: (context, state) => WizardPage(
             isConfigured: true,
-            generationService: _SaveFlowGenerationService(),
+            generationService: _ExportFlowGenerationService(),
+            exportSaver: exportSaver,
           ),
         ),
         GoRoute(
           path: '/present/:index',
           builder: (context, state) => const Scaffold(body: Text('presenting')),
-        ),
-        GoRoute(
-          path: '/decks',
-          builder: (context, state) => const Scaffold(body: Text('decks')),
         ),
       ],
     );
@@ -71,15 +64,14 @@ void main() {
         routerConfig: router,
         builder: (context, child) => HeroTheme(
           data: HeroThemeData.light(),
-          child: AppProviders(deckLibrary: library, child: child!),
+          child: AppProviders(child: child!),
         ),
       ),
     );
     await tester.pump();
 
-    final wizardContext = tester.element(find.byType(WizardView));
     final wizard = Provider.of<WizardGenerationController>(
-      wizardContext,
+      tester.element(find.byType(WizardView)),
       listen: false,
     );
     await wizard.createOutline(_request);
@@ -89,145 +81,79 @@ void main() {
 
     expect(find.text('Your presentation is ready'), findsOneWidget);
 
-    return (
-      wizard: wizard,
-      library: Provider.of<DeckLibraryController>(wizardContext, listen: false),
-      assets: Provider.of<DeckLibraryAssetStore>(wizardContext, listen: false),
-    );
+    return wizard;
   }
 
-  testWidgets('saving a finished deck writes its markdown, artwork and theme', (
+  testWidgets('exporting a finished deck writes its markdown and artwork', (
     tester,
   ) async {
-    final library = FakeDeckLibrary();
+    final exports = <DeckExport>[];
+    await pumpCompletedDeck(tester, (export) async {
+      exports.add(export);
 
-    final scope = await pumpCompletedDeck(tester, library);
+      return true;
+    });
 
-    await tester.tap(find.text('Save deck'));
+    await tester.tap(find.text('Export deck'));
     await tester.pumpAndSettle();
 
-    // The dialog offers the deck's own topic and saves nothing until confirmed.
-    expect(find.text('Save this deck'), findsOneWidget);
+    final export = exports.single;
+    expect(export.name, 'Opening');
+    final markdown = utf8.decode(export.files['slides.md']!);
+    expect(markdown, contains('Urban gardens strengthen cities.'));
     expect(
-      find.text('Urban gardens'),
-      findsWidgets,
-      reason: 'the dialog offers the deck topic as its name',
+      markdown,
+      contains('src: assets/hero.png'),
+      reason: 'the slides point at artwork shipped beside them',
     );
-    expect(library.saveCount, 0);
+    expect(export.files['assets/hero.png'], _png);
+    expect(find.text('Exported "Opening".'), findsOneWidget);
+  });
 
-    await tester.enterText(
-      find.byType(EditableText).last,
-      'Urban gardens 2026',
-    );
-    await tester.tap(find.widgetWithText(GestureDetector, 'Save deck').last);
+  testWidgets('cancelling the save dialog reports nothing', (tester) async {
+    await pumpCompletedDeck(tester, (_) async => false);
+
+    await tester.tap(find.text('Export deck'));
     await tester.pumpAndSettle();
 
-    expect(library.saveCount, 1);
-    final path = library.saved.single.reference.path;
+    expect(find.textContaining('Exported'), findsNothing);
+    expect(find.text('Export deck'), findsOneWidget);
+  });
+
+  testWidgets('a failed export says why', (tester) async {
+    await pumpCompletedDeck(tester, (_) async => throw StateError('disk full'));
+
+    await tester.tap(find.text('Export deck'));
+    await tester.pumpAndSettle();
+
     expect(
-      library.markdown[path],
-      contains('Urban gardens strengthen cities.'),
-      reason: 'the saved deck carries the generated Markdown',
-    );
-    expect(
-      library.assets[path]?['hero.png'],
-      _png,
-      reason: 'the saved deck carries the generated artwork',
-    );
-    expect(
-      library.themes[path]?.toJson(),
-      {'id': 'technical-paper', 'version': 1, 'density': 'balanced'},
-      reason: 'the saved deck carries canonical, versioned theme metadata',
-    );
-    expect(
-      (await scope.assets.resolve('hero.png'))?.scheme,
-      'file',
-      reason: 'the saved deck now answers for artwork',
-    );
-    expect(
-      find.textContaining('Saved "Urban gardens 2026"'),
+      find.textContaining('The deck could not be exported'),
       findsOneWidget,
     );
+    expect(find.textContaining('disk full'), findsOneWidget);
   });
 
-  testWidgets('cancelling the dialog writes nothing', (tester) async {
-    final library = FakeDeckLibrary();
-    await pumpCompletedDeck(tester, library);
-
-    await tester.tap(find.text('Save deck'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(GestureDetector, 'Cancel').last);
-    await tester.pumpAndSettle();
-
-    expect(library.saveCount, 0);
-    expect(library.saved, isEmpty);
-  });
-
-  testWidgets('a second save offers another copy rather than an overwrite', (
+  testWidgets('a new generation drops the previous export notice', (
     tester,
   ) async {
-    final library = FakeDeckLibrary();
-    await pumpCompletedDeck(tester, library);
-
-    await tester.tap(find.text('Save deck'));
+    final wizard = await pumpCompletedDeck(tester, (_) async => true);
+    await tester.tap(find.text('Export deck'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(GestureDetector, 'Save deck').last);
-    await tester.pumpAndSettle();
+    expect(find.text('Exported "Opening".'), findsOneWidget);
 
-    expect(find.text('Save another copy'), findsOneWidget);
-
-    await tester.tap(find.text('Save another copy'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(GestureDetector, 'Save deck').last);
-    await tester.pumpAndSettle();
-
-    expect(library.saveCount, 2);
-    expect(library.saved.map((ref) => ref.name).toSet(), hasLength(2));
-  });
-
-  testWidgets('a new generation releases the saved deck it was showing', (
-    tester,
-  ) async {
-    final library = FakeDeckLibrary();
-    final scope = await pumpCompletedDeck(tester, library);
-
-    await tester.tap(find.text('Save deck'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(GestureDetector, 'Save deck').last);
-    await tester.pumpAndSettle();
-    expect((await scope.assets.resolve('hero.png'))?.scheme, 'file');
-
-    // Generating again publishes a new deck into the same runtime.
-    await scope.wizard.createOutline(_request);
+    await wizard.createOutline(_request);
     await tester.pump();
     await tester.tap(find.text('Approve & build'));
     await tester.pumpAndSettle();
 
-    expect(
-      (await scope.assets.resolve('hero.png'))?.scheme,
-      'data',
-      reason: 'the new deck owns the runtime, so the saved deck must not '
-          'answer for artwork any more',
-    );
-    expect(find.text('Save deck'), findsOneWidget);
-  });
-
-  testWidgets('a library that cannot save offers no save action', (
-    tester,
-  ) async {
-    final library = FakeDeckLibrary()..canSave = false;
-
-    await pumpCompletedDeck(tester, library);
-
-    expect(find.text('Save deck'), findsNothing);
-    expect(find.text('Present deck'), findsOneWidget);
+    expect(find.textContaining('Exported'), findsNothing);
   });
 }
 
-final class _SaveFlowGenerationService extends DeckGeneratorService {
-  _SaveFlowGenerationService() : super(apiKey: 'test-key');
+final class _ExportFlowGenerationService extends DeckGeneratorService {
+  _ExportFlowGenerationService() : super(apiKey: 'test-key');
 
-  final DeckPlan _plan = _saveFlowPlan();
+  final DeckPlan _plan = _exportFlowPlan();
 
   @override
   Future<DeckPlanningResult> plan(
@@ -279,7 +205,7 @@ final class _SaveFlowGenerationService extends DeckGeneratorService {
   );
 }
 
-DeckPlan _saveFlowPlan() {
+DeckPlan _exportFlowPlan() {
   final themes = PresentationThemeCatalog.withDefaults();
   final typography = PresentationTypographyCatalog.withDefaults();
   final descriptor = themes.current('technical-paper')!;

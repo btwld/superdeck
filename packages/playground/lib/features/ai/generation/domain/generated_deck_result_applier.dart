@@ -5,7 +5,6 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../../../core/data/data_sources/memory_deck_loader.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
-import '../../../../core/domain/stores/deck_document_store.dart';
 import '../core/engine/services/deck_generator_service.dart';
 import '../../../../core/domain/design/generated_deck_style_mapper.dart';
 
@@ -33,23 +32,19 @@ final class GeneratedDeckApplication {
 /// Applies generated decks for one host and evicts artwork from the deck it
 /// replaces only after the replacement has been published successfully.
 final class GeneratedDeckResultApplier {
-  final DeckDocumentStore _documentStore;
-
   final MemoryDeckLoader _deckLoader;
   final AssetCacheStore _assetCacheStore;
   final DeckCustomizationStore _customizationStore;
   Set<String> _appliedAssetKeys = const {};
 
   /// Serializes application, so two results for one host cannot interleave
-  /// their artwork writes and their document publication.
+  /// their artwork writes and their publication.
   Future<void> _queue = Future<void>.value();
   GeneratedDeckResultApplier({
-    required DeckDocumentStore documentStore,
     required MemoryDeckLoader deckLoader,
     required AssetCacheStore assetCacheStore,
     required DeckCustomizationStore customizationStore,
-  }) : _documentStore = documentStore,
-       _deckLoader = deckLoader,
+  }) : _deckLoader = deckLoader,
        _assetCacheStore = assetCacheStore,
        _customizationStore = customizationStore;
 
@@ -101,7 +96,6 @@ final class GeneratedDeckResultApplier {
     }
 
     final markdown = const SlideSerializer().serialize(result.slides);
-    _documentStore.replaceMarkdown(markdown);
     _deckLoader.updateMarkdown(markdown);
     if (result.theme case final theme?) {
       _customizationStore.applyGeneratedStyle(theme.toGeneratedDeckStyle());

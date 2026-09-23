@@ -12,7 +12,6 @@ import 'package:playground/core/domain/stores/deck_customization_store.dart';
 import 'package:playground/features/ai/generation/core/engine/schemas/outline_schema.dart';
 import 'package:playground/features/ai/generation/core/engine/services/deck_generator_service.dart';
 import 'package:playground/features/ai/generation/domain/generated_deck_result_applier.dart';
-import 'package:playground/core/domain/stores/deck_document_store.dart';
 import 'package:superdeck/superdeck.dart';
 import 'package:superdeck_builder/superdeck_builder.dart';
 import 'package:superdeck_core/superdeck_core.dart';
@@ -27,7 +26,6 @@ void main() {
       const assetKey = 'wizard-test-slide-01-opening.png';
       final cache = MemoryAssetCacheStore();
       final loader = MemoryDeckLoader();
-      final documentStore = DeckDocumentStore(markdown: '');
       final deckController = DeckController(
         deckLoader: loader,
         options: DeckOptions(),
@@ -37,13 +35,11 @@ void main() {
       addTearDown(customizationStore.dispose);
       addTearDown(deckController.dispose);
       addTearDown(loader.dispose);
-      addTearDown(documentStore.dispose);
 
       final published = loader.load().first.then(
         (_) => cache.resolve(assetKey),
       );
       final applier = GeneratedDeckResultApplier(
-        documentStore: documentStore,
         deckLoader: loader,
         assetCacheStore: cache,
         customizationStore: customizationStore,
@@ -63,7 +59,12 @@ void main() {
       expect(application.published, isTrue);
       expect(application.cleanupError, isNull);
       expect(await published, isNotNull);
-      expect(documentStore.markdown, contains(assetKey));
+      expect(
+        const SlideSerializer().serialize(
+          deckController.session.loadedSlides.value!,
+        ),
+        contains(assetKey),
+      );
     },
   );
 
@@ -72,7 +73,6 @@ void main() {
     const nextAssetKey = 'wizard-next-slide-01-opening.png';
     final cache = MemoryAssetCacheStore();
     final loader = MemoryDeckLoader();
-    final documentStore = DeckDocumentStore(markdown: '');
     final deckController = DeckController(
       deckLoader: loader,
       options: DeckOptions(),
@@ -80,7 +80,6 @@ void main() {
     );
     final customizationStore = DeckCustomizationStore(deckController);
     final applier = GeneratedDeckResultApplier(
-      documentStore: documentStore,
       deckLoader: loader,
       assetCacheStore: cache,
       customizationStore: customizationStore,
@@ -88,7 +87,6 @@ void main() {
     addTearDown(customizationStore.dispose);
     addTearDown(deckController.dispose);
     addTearDown(loader.dispose);
-    addTearDown(documentStore.dispose);
 
     await applier.apply(_result(oldAssetKey), isValid: _always);
     expect(await cache.resolve(oldAssetKey), isNotNull);
@@ -108,7 +106,7 @@ void main() {
     await host.applier.apply(_result(committedAssetKey), isValid: _always);
     expect(await cache.resolve(committedAssetKey), isNotNull);
 
-    final publishedMarkdown = host.documentStore.markdown;
+    final publishedMarkdown = await host.publishedMarkdown;
     final publishedTheme = host.appliedTheme;
     final previewEvents = <SlidesEvent>[];
     final subscription = host._loader.load().listen(previewEvents.add);
@@ -120,14 +118,14 @@ void main() {
       isValid: () => valid,
     );
     await cache.writeStarted.future;
-    // The document moves on while the artwork write is still in flight.
+    // The run moves on while the artwork write is still in flight.
     valid = false;
     cache.releaseWrite();
 
     expect((await application).published, isFalse);
     expect(await cache.resolve(stagedAssetKey), isNull);
     expect(await cache.resolve(committedAssetKey), isNotNull);
-    expect(host.documentStore.markdown, publishedMarkdown);
+    expect(await host.publishedMarkdown, publishedMarkdown);
     expect(host.appliedTheme, publishedTheme);
     expect(previewEvents, isEmpty);
   });
@@ -144,7 +142,7 @@ void main() {
       addTearDown(host.dispose);
 
       await host.applier.apply(_result(committedKey), isValid: _always);
-      final publishedMarkdown = host.documentStore.markdown;
+      final publishedMarkdown = await host.publishedMarkdown;
       final publishedTheme = host.appliedTheme;
       final previewEvents = <SlidesEvent>[];
       final subscription = host._loader.load().listen(previewEvents.add);
@@ -174,7 +172,7 @@ void main() {
         ),
       );
 
-      expect(host.documentStore.markdown, publishedMarkdown);
+      expect(await host.publishedMarkdown, publishedMarkdown);
       expect(host.appliedTheme, publishedTheme);
       expect(previewEvents, isEmpty);
       expect(await cache.resolve(committedKey), isNotNull);
@@ -187,7 +185,7 @@ void main() {
       );
 
       expect(application.published, isTrue);
-      expect(host.documentStore.markdown, contains(nextKey));
+      expect(await host.publishedMarkdown, contains(nextKey));
       expect(host.appliedTheme, isNot(publishedTheme));
       expect(previewEvents.whereType<SlidesLoadedEvent>(), hasLength(1));
       expect(await cache.resolve(nextKey), isNotNull);
@@ -234,7 +232,7 @@ void main() {
 
     expect(application.published, isTrue);
     expect(application.cleanupError, isNotNull);
-    expect(host.documentStore.markdown, contains(nextAssetKey));
+    expect(await host.publishedMarkdown, contains(nextAssetKey));
     expect(await cache.resolve(nextAssetKey), isNotNull);
   });
 
@@ -261,34 +259,31 @@ void main() {
     expect((await first).published, isTrue);
     expect((await second).published, isTrue);
     expect(cache.writes, [firstAssetKey, secondAssetKey]);
-    expect(host.documentStore.markdown, contains(secondAssetKey));
+    expect(await host.publishedMarkdown, contains(secondAssetKey));
     expect(await cache.resolve(firstAssetKey), isNull);
   });
 
-  test(
-    'publishes the document, preview, theme, and artwork together',
-    () async {
-      const assetKey = 'wizard-published-slide-01-opening.png';
-      final cache = _BlockingAssetCacheStore();
-      final host = _ApplierHost(cache);
-      addTearDown(host.dispose);
+  test('publishes the preview, theme, and artwork together', () async {
+    const assetKey = 'wizard-published-slide-01-opening.png';
+    final cache = _BlockingAssetCacheStore();
+    final host = _ApplierHost(cache);
+    addTearDown(host.dispose);
 
-      final previewMarkdown = host.previewMarkdown;
-      final themeBefore = host.appliedTheme;
+    final previewMarkdown = host.previewMarkdown;
+    final themeBefore = host.appliedTheme;
 
-      final application = await host.applier.apply(
-        _result(assetKey),
-        isValid: _always,
-      );
+    final application = await host.applier.apply(
+      _result(assetKey),
+      isValid: _always,
+    );
 
-      expect(application.published, isTrue);
-      expect(host.documentStore.markdown, contains(assetKey));
-      expect(await previewMarkdown, contains(assetKey));
-      expect(host.appliedTheme, isNot(themeBefore));
-      expect(host.appliedTheme.headlineFamily, 'Space Grotesk');
-      expect(await cache.resolve(assetKey), isNotNull);
-    },
-  );
+    expect(application.published, isTrue);
+    expect(await host.publishedMarkdown, contains(assetKey));
+    expect(await previewMarkdown, contains(assetKey));
+    expect(host.appliedTheme, isNot(themeBefore));
+    expect(host.appliedTheme.headlineFamily, 'Space Grotesk');
+    expect(await cache.resolve(assetKey), isNotNull);
+  });
 }
 
 bool _always() => true;
@@ -296,8 +291,7 @@ bool _always() => true;
 /// Owns the stores one applier writes into.
 final class _ApplierHost {
   _ApplierHost(AssetCacheStore cache)
-    : documentStore = DeckDocumentStore(markdown: ''),
-      _loader = MemoryDeckLoader(),
+    : _loader = MemoryDeckLoader(),
       _cache = cache {
     _deckController = DeckController(
       deckLoader: _loader,
@@ -306,14 +300,12 @@ final class _ApplierHost {
     );
     customizationStore = DeckCustomizationStore(_deckController);
     applier = GeneratedDeckResultApplier(
-      documentStore: documentStore,
       deckLoader: _loader,
       assetCacheStore: _cache,
       customizationStore: customizationStore,
     );
   }
 
-  final DeckDocumentStore documentStore;
   final MemoryDeckLoader _loader;
   final AssetCacheStore _cache;
   late final DeckController _deckController;
@@ -327,6 +319,16 @@ final class _ApplierHost {
     headlineFamily: customizationStore.level(TextLevel.h1).family,
   );
 
+  /// The deck the renderer shows now, as markdown.
+  Future<String> get publishedMarkdown async {
+    // Loader events reach the session in a later microtask.
+    await Future<void>.delayed(Duration.zero);
+
+    return const SlideSerializer().serialize(
+      _deckController.session.loadedSlides.value ?? const [],
+    );
+  }
+
   /// The markdown the preview loader receives next.
   Future<String> get previewMarkdown => _loader
       .load()
@@ -339,7 +341,6 @@ final class _ApplierHost {
     customizationStore.dispose();
     _deckController.dispose();
     unawaited(_loader.dispose());
-    documentStore.dispose();
   }
 }
 

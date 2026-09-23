@@ -5,14 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/data/data_sources/memory_asset_cache_store.dart';
 import '../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
-import '../../../../core/data/data_sources/deck_library_asset_store.dart';
-import '../../../../core/domain/stores/deck_document_store.dart';
-import '../../../library/domain/deck_library.dart';
-import '../../../library/domain/deck_library_controller.dart';
-import '../../../library/domain/saved_deck.dart';
-import '../../../library/presentation/save_deck_dialog.dart';
+import '../../../export/data/deck_export_saver.dart';
+import '../../../export/domain/deck_export.dart';
 import '../../generation/core/engine/services/deck_generator_service.dart';
 import '../../generation/core/env_config.dart';
 import '../../generation/domain/generated_deck_result_applier.dart';
@@ -28,15 +25,15 @@ import 'wizard_view.dart';
 
 /// Host for the conversational Wizard, the app's only authoring flow.
 ///
-/// Generated Markdown is kept in memory: results are applied straight to the
-/// in-memory document and preview stores, and a deck-storage folder is only
-/// requested later, when the reader chooses to save.
+/// Generated decks stay in memory; exporting writes one out as a SuperDeck
+/// project.
 class WizardPage extends StatelessWidget {
   const WizardPage({
     this.isConfigured,
     this.generationService,
     this.imageGenerator,
     this.imageGenerationEnabled,
+    this.exportSaver = saveDeckExportAsZip,
     super.key,
   });
 
@@ -51,6 +48,9 @@ class WizardPage extends StatelessWidget {
 
   /// Overrides the debug-on, release-opt-in image rollout policy.
   final bool? imageGenerationEnabled;
+
+  /// Writes an exported deck. Tests replace the platform save dialog.
+  final DeckExportSaver exportSaver;
 
   @override
   Widget build(BuildContext context) {
@@ -89,12 +89,8 @@ class WizardPage extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) {
             final resultApplier = GeneratedDeckResultApplier(
-              documentStore: Provider.of<DeckDocumentStore>(
-                context,
-                listen: false,
-              ),
               deckLoader: Provider.of(context, listen: false),
-              assetCacheStore: Provider.of<DeckLibraryAssetStore>(
+              assetCacheStore: Provider.of<MemoryAssetCacheStore>(
                 context,
                 listen: false,
               ),
@@ -104,11 +100,6 @@ class WizardPage extends StatelessWidget {
               ),
             );
 
-            final library = Provider.of<DeckLibraryController>(
-              context,
-              listen: false,
-            );
-
             return WizardGenerationController(
               service:
                   generationService ??
@@ -116,14 +107,7 @@ class WizardPage extends StatelessWidget {
                     apiKey: EnvConfig.geminiApiKey,
                     imageGenerator: finalImageGenerator,
                   ),
-              applyResult: (result, {required isValid}) {
-                // A generated deck owns the runtime from here. The saved deck
-                // that was open must stop answering for artwork, or a new
-                // image could resolve to the old deck's file of the same name.
-                library.releaseOpenDeck();
-
-                return resultApplier.apply(result, isValid: isValid);
-              },
+              applyResult: resultApplier.apply,
             );
           },
         ),
@@ -139,7 +123,7 @@ class WizardPage extends StatelessWidget {
               imageStyleEnabled: imagesEnabled,
             );
           },
-          child: const _WizardExperience(),
+          child: _WizardExperience(exportSaver: exportSaver),
         ),
       ),
     );
@@ -147,45 +131,48 @@ class WizardPage extends StatelessWidget {
 }
 
 class _WizardExperience extends StatefulWidget {
-  const _WizardExperience();
+  const _WizardExperience({required this.exportSaver});
+
+  final DeckExportSaver exportSaver;
 
   @override
   State<_WizardExperience> createState() => _WizardExperienceState();
 }
 
 class _WizardExperienceState extends State<_WizardExperience> {
-  /// Saves the deck the Wizard just produced, under a name the reader picks.
-  ///
-  /// Nothing is written until the dialog is confirmed, and a deck that is
-  /// saved twice becomes two decks rather than one overwritten one.
-  Future<void> _save(WizardGenerationController controller) async {
-    final result = controller.result;
-    if (result == null) return;
-    final library = context.read<DeckLibraryController>();
-    final name = await SaveDeckDialog.show(
-      context,
-      name: controller.plan?.topic ?? 'Untitled deck',
-    );
-    if (name == null || !mounted) return;
+  bool _isExporting = false;
 
-    await library.save(
-      name: name,
+  /// What the last export did, for the result it exported.
+  ({DeckGenerationResult result, String message})? _exportNotice;
+
+  /// Writes the deck the Wizard just produced to wherever the reader picks.
+  Future<void> _export(DeckGenerationResult result) async {
+    final export = DeckExport.fromDeck(
+      slides: result.slides,
       images: result.generatedImages,
-      theme: switch (result.theme) {
-        final theme? => SavedDeckTheme(
-          id: theme.descriptor.id,
-          version: theme.descriptor.version,
-          density: theme.density,
-        ),
-        _ => null,
-      },
     );
+    setState(() => _isExporting = true);
+    String? message;
+    try {
+      final saved = await widget.exportSaver(export);
+      if (saved) message = 'Exported "${export.name}".';
+    } catch (error) {
+      message = 'The deck could not be exported: $error';
+    }
+    if (!mounted) return;
+    setState(() {
+      _isExporting = false;
+      if (message != null) _exportNotice = (result: result, message: message);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<WizardGenerationController>();
-    final library = context.watch<DeckLibraryController>();
+    final result = controller.result;
+    final exportNotice = identical(_exportNotice?.result, result)
+        ? _exportNotice?.message
+        : null;
     final overlay = switch (controller.stage) {
       .setup => null,
       .planning || .composing => _CenteredScrollable(
@@ -226,8 +213,7 @@ class _WizardExperienceState extends State<_WizardExperience> {
         child: WizardGenerationStatus(
           kind: .completed,
           noticeMessage:
-              library.errorMessage ??
-              _saveNotice(library.lastSave) ??
+              exportNotice ??
               _completionNotice(controller.result, controller.applyNotice),
           slideCount: controller.result?.slides.length,
           failedSlideCount: controller.result?.slideFailures.length ?? 0,
@@ -245,68 +231,39 @@ class _WizardExperienceState extends State<_WizardExperience> {
               context,
             ).restartConversation();
           },
-          onSave: library.canSave ? () => unawaited(_save(controller)) : null,
-          onOpenSavedDecks: () => context.push('/decks'),
-          saveLabel: library.lastSave == null
-              ? 'Save deck'
-              : 'Save another copy',
-          isSaving: library.isBusy,
+          onExport: result == null ? null : () => unawaited(_export(result)),
+          isExporting: _isExporting,
         ),
       ),
     };
 
     return Scaffold(
       body: SafeArea(
-        child: Stack(
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) => Center(
-                child: SizedBox(
-                  width: constraints.constrainWidth(1080),
-                  height: constraints.maxHeight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Stack(
-                      fit: .expand,
-                      children: [
-                        Offstage(
-                          offstage: controller.stage != .setup,
-                          child: const WizardView(),
-                        ),
-                        ?overlay,
-                      ],
+        child: LayoutBuilder(
+          builder: (context, constraints) => Center(
+            child: SizedBox(
+              width: constraints.constrainWidth(1080),
+              height: constraints.maxHeight,
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Stack(
+                  fit: .expand,
+                  children: [
+                    Offstage(
+                      offstage: controller.stage != .setup,
+                      child: const WizardView(),
                     ),
-                  ),
+                    ?overlay,
+                  ],
                 ),
               ),
             ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: IconButton(
-                onPressed: () => context.push('/decks'),
-                tooltip: 'Saved decks',
-                icon: const Icon(Icons.folder_outlined),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
       backgroundColor: $background.resolve(context),
     );
   }
-}
-
-/// Names what a save wrote, including artwork that could not come along.
-String? _saveNotice(DeckSaveOutcome? outcome) {
-  if (outcome == null) return null;
-  if (outcome.isComplete) {
-    return 'Saved "${outcome.ref.name}" to your SuperDeck folder.';
-  }
-  final missing = outcome.missingAssetKeys.length;
-
-  return 'Saved "${outcome.ref.name}", without $missing '
-      '${missing == 1 ? 'image' : 'images'} that had no artwork to write.';
 }
 
 String? _completionNotice(DeckGenerationResult? result, String? applyNotice) {

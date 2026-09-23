@@ -62,42 +62,6 @@ void main() {
     expect(find.byType(WizardView), findsOneWidget);
     expect(find.text('What is the presentation about?'), findsOneWidget);
     expect(find.text('Describe your presentation topic…'), findsOneWidget);
-    expect(find.byTooltip('Saved decks'), findsOneWidget);
-  });
-
-  testWidgets('the header action opens the saved decks', (tester) async {
-    final router = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => WizardPage(
-            isConfigured: true,
-            generationService: DeckGeneratorService(apiKey: 'test-key'),
-          ),
-        ),
-        GoRoute(
-          path: '/decks',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Saved decks route')),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-    await tester.pumpWidget(
-      MaterialApp.router(
-        routerConfig: router,
-        builder: (context, child) => HeroTheme(
-          data: HeroThemeData.light(),
-          child: AppProviders(child: child!),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    await tester.tap(find.byTooltip('Saved decks'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Saved decks route'), findsOneWidget);
   });
 
   testWidgets('approved outline loads the deck before Present navigation', (
