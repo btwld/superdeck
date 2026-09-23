@@ -56,15 +56,6 @@ class LerpStringResult {
 LerpStringResult lerpStringWithFade(String start, String end, double t) {
   t = t.clamp(0.0, 1.0);
 
-  // Allow transition previews without the character-by-character text effect.
-  const animateText = bool.fromEnvironment(
-    'SUPERDECK_ANIMATE_HERO_TEXT',
-    defaultValue: true,
-  );
-  if (!animateText) {
-    return LerpStringResult(text: t < 0.5 ? start : end);
-  }
-
   // Split by grapheme, not code-units.
   final startG = start.characters.toList();
   final endG = end.characters.toList();

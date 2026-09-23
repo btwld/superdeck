@@ -17,6 +17,10 @@ import '../../helpers/slide_test_harness.dart';
 const _heroText = 'Constraint driven Hero';
 const _imageUri = 'https://example.com/hero.png';
 const _transitionDuration = Duration(seconds: 1);
+const _animateHeroText = bool.fromEnvironment(
+  'SUPERDECK_ANIMATE_HERO_TEXT',
+  defaultValue: true,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -320,14 +324,18 @@ void main() {
       expect(_visibleRichText(outgoing), startsWith('Good'));
       expect(
         _visibleRichText(outgoing).length,
-        lessThan(outgoing.text.toPlainText().length),
+        _animateHeroText
+            ? lessThan(outgoing.text.toPlainText().length)
+            : outgoing.text.toPlainText().length,
       );
       await tester.pump(_transitionDuration * 0.5);
       final incoming = tester.widget<RichText>(_anyShuttleFinder());
       expect(_visibleRichText(incoming), startsWith('A narrower'));
       expect(
         _visibleRichText(incoming).length,
-        lessThan(incoming.text.toPlainText().length),
+        _animateHeroText
+            ? lessThan(incoming.text.toPlainText().length)
+            : incoming.text.toPlainText().length,
       );
       await tester.pumpAndSettle();
       expect(_anyShuttleFinder(), findsNothing);
@@ -360,7 +368,10 @@ void main() {
     final outgoing = tester.widget<RichText>(_anyShuttleFinder());
     expect(outgoing.text.toPlainText(), source);
     expect(_visibleRichText(outgoing), startsWith('final '));
-    expect(_visibleRichText(outgoing), isNot(contains('print')));
+    expect(
+      _visibleRichText(outgoing),
+      _animateHeroText ? isNot(contains('print')) : source,
+    );
     await tester.pump(_transitionDuration * 0.1);
     final panels = find.byWidgetPredicate(
       (widget) =>
@@ -376,7 +387,10 @@ void main() {
     final incoming = tester.widget<RichText>(_anyShuttleFinder());
     expect(incoming.text.toPlainText(), destination);
     expect(_visibleRichText(incoming), startsWith('final slides'));
-    expect(_visibleRichText(incoming).length, lessThan(destination.length));
+    expect(
+      _visibleRichText(incoming).length,
+      _animateHeroText ? lessThan(destination.length) : destination.length,
+    );
     expect(tester.takeException(), isNull);
     await tester.pumpAndSettle();
     tester.state<NavigatorState>(find.byType(Navigator)).pop();

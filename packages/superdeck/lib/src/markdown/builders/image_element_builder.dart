@@ -112,6 +112,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
             final blend = Curves.easeInOut.transform(t);
 
             return SizedBox.fromSize(
+              size: interpolatedSize,
               child: fromUri == to.uri
                   ? image(fromUri)
                   : Stack(
@@ -123,7 +124,6 @@ class ImageElementBuilder extends MarkdownElementBuilder
                         Opacity(opacity: blend, child: image(to.uri)),
                       ],
                     ),
-              size: interpolatedSize,
             );
           },
         );

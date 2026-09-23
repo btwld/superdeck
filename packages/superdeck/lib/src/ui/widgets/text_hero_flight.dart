@@ -344,15 +344,16 @@ class _ParagraphLayout {
       child: Transform(
         transform: transform,
         child: _TextBlend(
-          child: _fixedParagraph(text),
           opacity: opacity,
           blendMode: .plus,
+          child: _fixedParagraph(text),
         ),
       ),
     );
   }
 
   Widget _fixedParagraph(RichText richText) => SizedBox.fromSize(
+    size: size,
     child: OverflowBox(
       alignment: Alignment.topLeft,
       minWidth: constraints.minWidth,
@@ -361,7 +362,6 @@ class _ParagraphLayout {
       maxHeight: constraints.maxHeight,
       child: richText,
     ),
-    size: size,
   );
 
   bool matches(_ParagraphLayout other) =>
@@ -391,6 +391,7 @@ class _ParagraphLayout {
       fit: .contain,
       alignment: Alignment.lerp(alignment, to.alignment, t)!,
       child: SizedBox.fromSize(
+        size: Size.lerp(size, to.size, t),
         child: _TextBlend(
           child: Stack(
             clipBehavior: .none,
@@ -400,7 +401,6 @@ class _ParagraphLayout {
             ],
           ),
         ),
-        size: Size.lerp(size, to.size, t),
       ),
     );
   }
@@ -429,12 +429,12 @@ class _ParagraphLayout {
       child: !framed
           ? paragraph
           : SizedBox.fromSize(
+              size: frameSize,
               child: Stack(
                 children: [
                   Positioned(left: offset.dx, top: offset.dy, child: paragraph),
                 ],
               ),
-              size: frameSize,
             ),
     );
   }
