@@ -8,6 +8,10 @@ metadata:
 ---
 # Architecting Flutter Applications
 
+## SuperDeck architecture
+
+Follow the root `AGENTS.md`: organize `lib/src/` by feature/domain, colocate models with their domain, and mirror source paths under `test/`. Preserve the Dart-only core/builder boundary and existing Signals/controllers. The conceptual layers below do not require top-level type/layer folders or a new service, repository, and ViewModel for every change; introduce abstractions when the feature needs them.
+
 ## Contents
 - [Core Architectural Principles](#core-architectural-principles)
 - [Structuring the Layers](#structuring-the-layers)

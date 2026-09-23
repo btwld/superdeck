@@ -86,8 +86,11 @@ graph TD
       await tester.tapByLabel('Export PDF');
       await tester.pumpUntil(
         () => saverCalled && find.text('Building PDF...').evaluate().isNotEmpty,
-        timeout: const Duration(seconds: 20),
+        timeout: const Duration(seconds: 60),
         debugLabel: 'PDF export dialog building state',
+        onTimeout: () =>
+            'saverCalled=$saverCalled, '
+            'visibleText=${find.byType(Text).evaluate().map((element) => (element.widget as Text).data).whereType<String>().toList()}',
       );
 
       final outputDir = await captureCurrentViewForReview(

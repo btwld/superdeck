@@ -65,7 +65,7 @@ class AsyncThumbnail {
       _cachedProvider = getImageProvider(uri);
       _status.value = AsyncFileStatus.done;
       _error.value = null;
-    } catch (error, _) {
+    } catch (error) {
       // Guard after async - don't update signals if disposed
       if (_disposed) return;
 

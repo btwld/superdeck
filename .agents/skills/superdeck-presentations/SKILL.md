@@ -1,91 +1,29 @@
 ---
 name: superdeck-presentations
-description: Create, review, or edit SuperDeck presentations and presentation apps. Use when working with `slides.md`, SuperDeck Markdown syntax, fullscreen slides, `@section`/`@block`/`@widget` layout, built-in widgets such as `@image`, `@dartpad`, `@webview`, and `@qrcode`, custom Flutter widgets, `DeckOptions`, `BlockVariant`, slide parts, templates, styles, images/assets, CLI builds, plugins, or validation of SuperDeck deck behavior.
+description: Create, review, or edit SuperDeck Markdown presentations and Flutter presentation apps. Use for slides.md layouts, images, custom widgets, DeckOptions styling and templates, or verifying a rendered deck.
 ---
 
 # SuperDeck Presentations
 
-## Overview
+Use Markdown to compose slides and Dart to configure presentation styles, parts, widgets, and templates. Inspect the existing deck and app before changing either.
 
-Use this skill to build accurate SuperDeck presentations: Markdown slide content, Flutter runtime wiring, assets, custom widgets, styling, templates, and verification.
+## Read for the task
 
-## Reference Routing
+- [Authoring](references/authoring.md): `slides.md` syntax, layout, images, Markdown, and built-in widgets.
+- [Runtime customization](references/runtime-customization.md): app setup, `DeckOptions`, styles, templates, parts, custom widgets, assets, and plugins.
+- [Verification](references/verification.md): build and visual checks before claiming a deck works.
 
-Load only the reference needed for the task:
+## Layout and styling model
 
-- Read `references/authoring.md` when creating or reviewing `slides.md`, block syntax, layouts, slide notes, built-in widgets, Markdown images, alerts, code, or hero markers.
-- Read `references/runtime-customization.md` when wiring a Flutter app, registering custom widgets, configuring `DeckOptions`, slide parts, styles, templates, assets, or plugins.
-- Read `references/verification.md` before claiming a deck/app works, when choosing commands, or when diagnosing build/render issues.
-
-## Workflow
-
-1. Inspect the existing `slides.md`, `lib/main.dart`, `pubspec.yaml`, and any registered widgets/parts/templates before editing.
-2. Decide whether the task is authoring-only, runtime customization, plugin/build setup, or verification/debugging; load the matching reference.
-3. Prefer the repository's documented syntax and implementation behavior over generic presentation assumptions.
-4. Keep slides readable in Markdown: use frontmatter for metadata, `@section` for vertical rows, child blocks/widgets for horizontal columns, and `flex` ratios for sizing.
-5. Verify with a real SuperDeck build or targeted tests before reporting success.
-
-## Ground Truths
-
-- SuperDeck renders a 1280x720 logical slide into a 16:9 scaled viewport.
-- A slide contains vertical sections. Each `@section` starts a new vertical row; blocks inside that section are laid out horizontally.
-- `@block` renders Markdown. `@widget` and any unrecognized `@name` render a `WidgetBlock`.
-- Images have two authoring paths. Prefer standalone Markdown `![alt](src)` when the image belongs in the Markdown content flow; use `@image { src: ... }` when the image needs block-level layout control such as `fit`, fixed size, `flex`, `align`, `scrollable`, or `data:` source support.
-- Markdown class markers such as `{.heading}` or `{.title}` drive Hero transitions for supported Markdown elements; the class does not need a `hero-` prefix. Use the same tag on matching elements across adjacent slides, and do not duplicate the same tag on one slide.
-- `@column` is intentionally unsupported; use `@block`.
+- Slides use a logical 1280 × 720 canvas. `@section` rows stack vertically; their child blocks and widgets form horizontal columns. Positive integer `flex` values divide height between sections and width between children.
+- Use standalone Markdown images in content flow and `@image` for a dedicated visual with `fit`, dimensions, or block layout controls. `scale` changes painting within the image frame, not its layout size.
 - Effective content alignment is `block align → section align → centerLeft`.
-  Use section alignment as a shared default and child alignment for exceptions.
-- `flex` is a positive integer. Section flex controls vertical height; child
-  block flex controls horizontal width.
-- Section `spacing` creates finite, non-negative gaps only between sibling
-  blocks and affects horizontal space allocation. Block `margin` is consumed
-  inside that block's allocated frame, outside its decoration/border — it
-  reduces only that block's own usable area, never creates a shared gutter,
-  and never changes flex ratios (unlike CSS margins; use section `spacing` for
-  gutters). Block `padding` is consumed inside the decorated container,
-  between the border and the content. Both accept scalar, symmetric, or
-  physical-edge forms. Omitted object edges normalize to zero; explicit `null`
-  edges are invalid. An absent override inherits the resolved style value for
-  that inset; an explicit `0` removes it. A present override
-  replaces only the matching inset after variants resolve while preserving
-  other style data (decoration, clipping, animation).
-- `SlideStyler.blockContainer` accepts `BlockStyler`, a constrained Mix styler
-  supporting only `padding`, `margin`, `decoration`, `foregroundDecoration`,
-  `clipBehavior`, context/`BlockVariant` variants, and animation. It cannot
-  express widget modifiers, width/height/constraints, transforms, or box
-  alignment; use `BoxStyler` for other style slots (`slideContainer`, code
-  block containers, alert containers).
+- Section `spacing` creates gutters between child blocks. Block `margin` reduces space inside that block's allocated frame, outside its decoration; `padding` is inside the decoration. Use section `spacing` for shared gutters.
+- `SlideStyler` controls headings, paragraphs, inline emphasis and links, and slide styling. Its `blockContainer` takes `BlockStyler`; `BlockVariant('name')` selects an exact, case-sensitive widget-block name, including built-ins such as `@image`, never Markdown `@block` content.
 - `scrollable` is valid on `@block` and widget blocks, not on `@section`.
-- `layout: fullscreen` removes resolved header/footer chrome while retaining the slide's resolved background and style. `normal` is the default.
-- Built-ins `image`, `dartpad`, `webview`, and `qrcode` are always registered and can be overridden by user widgets with the same name.
-- `@image scale` is a finite number greater than zero. It changes painting, not
-  layout, and clips using the effective alignment and image/content frame.
-- `@dartpad` and `@webview` use the same deck-scoped WebView controller cache. A `cacheKey` enables sequential reuse across remounts, never concurrent sharing by two live blocks.
-- Custom widgets must be registered in `DeckOptions.widgets`; use shorthand `@widgetName { ... }` in `slides.md` for registered widget names.
-- `BlockVariant('name')` is a Dart/Mix stylesheet selector for all `WidgetBlock`s with that exact, case-sensitive name. It affects the matching container and its widget subtree, not `@block` content.
-- Styles, templates, widgets, slide parts, and plugins are configured in Dart through `DeckOptions`/`SuperDeckApp`, not through a separate `styles.yaml`.
-- The CLI reads `slides.md`, writes `.superdeck/superdeck.json`, and ensures `.superdeck/` is listed in Flutter assets unless `--skip-pubspec` is used.
-- `DeckOptions(debug: true)` diagnoses non-scrollable Markdown and custom
-  widget overflow without changing Markdown wrapping or rebuilding content;
-  static capture omits diagnostics.
+- Frontmatter `style` and `template` select named styles and templates registered in Dart. `layout: fullscreen` removes header and footer while preserving the resolved background and style.
+- Register custom widgets in `DeckOptions.widgets` before using their names as Markdown directives.
 
-## Source Map
+## Examples and source of truth
 
-Use these files to resolve disputes or update this skill:
-
-- `docs/guides/markdown-authoring.mdx`
-- `docs/reference/markdown-syntax.mdx`
-- `docs/reference/block-types.mdx`
-- `docs/reference/deck-options.mdx`
-- `docs/guides/custom-widgets.mdx`
-- `docs/guides/slide-parts.mdx`
-- `docs/guides/cli-reference.mdx`
-- `packages/builder/lib/src/parsers/markdown_parser.dart`
-- `packages/builder/lib/src/parsers/section_parser.dart`
-- `packages/core/lib/src/deck/block_model.dart`
-- `packages/superdeck/lib/src/rendering/slides/slide_view.dart`
-- `packages/superdeck/lib/src/rendering/blocks/block_widget.dart`
-- `packages/superdeck/lib/src/styling/block_variant.dart`
-- `packages/superdeck/lib/src/builtins/`
-- `packages/superdeck/lib/src/ui/widgets/webview_wrapper.dart`
-- `packages/playground/lib/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart`
+For a complete visual example, see [the layout showcase deck](../../../demo/layout_showcase/slides.md) and [its Dart styles](../../../demo/lib/src/layout_showcase/showcase_style.dart). For exact syntax and behavior, consult `docs/tutorials/block-layouts.mdx`, `docs/reference/deck-options.mdx`, and the parser/rendering code.

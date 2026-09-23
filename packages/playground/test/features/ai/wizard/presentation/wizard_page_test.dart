@@ -44,6 +44,36 @@ void main() {
     await tester.pump();
   });
 
+  testWidgets('missing API key message uses the dark theme foreground', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) =>
+            HeroTheme(data: HeroThemeData.dark(), child: child!),
+        home: const WizardPage(isConfigured: false),
+      ),
+    );
+
+    final title = find.text('Google AI API key is not configured');
+    final details = find.textContaining('Add GOOGLE_AI_API_KEY');
+    final foreground = $foreground.resolve(tester.element(title));
+    final background = tester
+        .widget<Scaffold>(find.byType(Scaffold))
+        .backgroundColor!;
+
+    expect(
+      foreground.computeLuminance(),
+      greaterThan(background.computeLuminance()),
+    );
+    expect(tester.widget<Text>(title).style?.color, foreground);
+    expect(tester.widget<Text>(details).style?.color, foreground);
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.error_outline)).color,
+      foreground,
+    );
+  });
+
   testWidgets('configured page opens the isolated Wizard', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

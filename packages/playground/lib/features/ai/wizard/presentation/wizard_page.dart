@@ -312,27 +312,34 @@ class _MissingApiKeyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = $foreground.resolve(context);
+
     return Scaffold(
       backgroundColor: $background.resolve(context),
-      body: const SafeArea(
+      body: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(32),
+            padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error_outline, size: 40),
-                SizedBox(height: 16),
+                Icon(Icons.error_outline, size: 40, color: foreground),
+                const SizedBox(height: 16),
                 Text(
                   'Google AI API key is not configured',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Add GOOGLE_AI_API_KEY to the repository .env file, then '
                   'launch with --dart-define-from-file=../../.env.',
                   textAlign: TextAlign.center,
+                  style: TextStyle(color: foreground),
                 ),
               ],
             ),

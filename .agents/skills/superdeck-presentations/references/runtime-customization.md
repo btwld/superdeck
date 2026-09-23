@@ -37,35 +37,10 @@ flutter run
 
 ## DeckOptions
 
-`DeckOptions` configures the runtime:
-
-```dart
-DeckOptions(
-  baseStyle: myBaseStyle,
-  styles: {
-    'quote': quoteStyle(),
-  },
-  widgets: {
-    'metricCard': MetricCard.new,
-  },
-  parts: const SlideParts(
-    header: DeckHeader(),
-    footer: DeckFooter(),
-    background: DeckBackground(),
-  ),
-  templates: {
-    'brand': SlideTemplate(
-      parts: SlideParts(header: BrandHeader()),
-      baseStyle: brandStyle,
-      styles: {'cover': coverStyle},
-    ),
-  },
-  defaultTemplate: SlideTemplate(parts: SlideParts(footer: BrandFooter())),
-  debug: true,
-)
-```
-
-There is no `styles.yaml`; styles and templates are Dart code.
+`DeckOptions` holds base and named styles, custom widgets, slide parts,
+templates, and the optional layout-debug flag. Styles and templates are Dart
+code; there is no `styles.yaml`. The examples below show each concern where it
+is used.
 
 ## Custom Widgets
 
@@ -98,7 +73,9 @@ SuperDeckApp(
 );
 ```
 
-For non-trivial widgets, parse arguments into a typed shape and validate early. `Ack` is available from `package:superdeck_core/superdeck_core.dart`.
+For non-trivial widgets, validate arguments and parse them into a typed shape.
+`Ack` is available from `package:superdeck_core/superdeck_core.dart`; see
+`docs/guides/custom-widgets.mdx` for a schema example.
 
 Widget blocks can read slide context:
 
@@ -115,159 +92,15 @@ If a widget factory is missing, SuperDeck renders `Widget not found: <name>`. If
 
 Built-ins `image`, `dartpad`, `webview`, and `qrcode` are registered first. User widgets with the same name override a built-in only when that name is used by the slide.
 
-### Recommended Custom Widget Pattern
-
-Use a typed args object for anything beyond trivial text. This keeps slide authoring errors readable because SuperDeck catches factory exceptions and renders them on the slide.
-
-```dart
-import 'package:flutter/widgets.dart';
-import 'package:superdeck/superdeck.dart';
-import 'package:superdeck_core/superdeck_core.dart';
-
-class MetricCardArgs {
-  const MetricCardArgs({
-    required this.label,
-    required this.value,
-    this.trend,
-  });
-
-  final String label;
-  final String value;
-  final String? trend;
-
-  static final schema = Ack.object({
-    'label': Ack.string().notEmpty(),
-    'value': Ack.string().notEmpty(),
-    'trend': Ack.string().optional(),
-  });
-
-  static MetricCardArgs parse(Map<String, Object?> args) {
-    schema.parse(args);
-    return MetricCardArgs(
-      label: args['label'] as String,
-      value: args['value'] as String,
-      trend: args['trend'] as String?,
-    );
-  }
-}
-
-class MetricCard extends StatelessWidget {
-  final MetricCardArgs data;
-
-  MetricCard(Map<String, Object?> args, {super.key})
-    : data = MetricCardArgs.parse(args);
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: Center(child: Text('${data.label}: ${data.value}')),
-        );
-      },
-    );
-  }
-}
-```
-
 ### Ack-Generated Args Wrappers
 
-Ack can also generate immutable typed models from a top-level schema. This
-avoids maintaining a manual args class while preserving SuperDeck's widget
-factory contract: the factory still receives `Map<String, Object?> args` and
-the generated model validates it at the boundary.
-
-Use this pattern only when the target app already has Ack codegen configured, or when you are intentionally adding it:
-
-```bash
-dart pub add ack ack_annotations
-dart pub add --dev ack_generator build_runner
-```
-
-Keep Ack package versions aligned with the app's existing dependency policy. In the SuperDeck repo, match the pinned Ack versions in the package you are editing; playground schemas show the pattern in `packages/playground/lib/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart`.
-
-```dart
-import 'package:ack/ack.dart';
-import 'package:ack_annotations/ack_annotations.dart';
-import 'package:flutter/widgets.dart';
-import 'package:superdeck/superdeck.dart';
-
-part 'metric_card.ack.dart';
-part 'metric_card.ack.g.dart';
-
-@AckInfer()
-final metricCardArgsSchema = Ack.object({
-  'label': Ack.string().notEmpty(),
-  'value': Ack.string().notEmpty(),
-  'trend': Ack.string().optional(),
-});
-
-class MetricCard extends StatelessWidget {
-  final MetricCardArgs data;
-
-  MetricCard(Map<String, Object?> args, {super.key})
-    : data = MetricCardArgs.parse(args);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('${data.label}: ${data.value}'));
-  }
-}
-```
-
-Generate the wrapper after schema changes:
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
-
-Ack generation constraints that matter for SuperDeck widgets:
-
-- Annotate top-level schema variables or getters with `@AckInfer()` and include
-  both generated part files.
-- Let Ack derive the model name when the schema declaration already expresses
-  it (`metricCardArgsSchema` generates `MetricCardArgs`). Use `name:` only when
-  the desired public type cannot be derived from the declaration.
-- Generated immutable models expose `parse`, `safeParse`, `fromJson`, `toJson`,
-  and typed fields.
-- Nested object fields should reference named top-level schemas when you need typed nested getters.
-- Do not expect `Ack.any()`/`Ack.anyOf()` or inline anonymous object branches to generate useful typed wrappers.
-- Keep `align`, `flex`, `margin`, `padding`, `scrollable`, and `name` out of
-  widget-specific schemas because SuperDeck consumes those reserved block keys
-  before calling the factory.
-
-Register it:
-
-```dart
-SuperDeckApp(
-  options: DeckOptions(
-    widgets: {
-      'metricCard': MetricCard.new,
-    },
-  ),
-);
-```
-
-Use it:
-
-```markdown
-@metricCard {
-  label: Activation
-  value: "72%"
-  trend: up
-  align: center
-}
-```
-
-Notes:
-
-- `align`, `flex`, `margin`, `padding`, `scrollable`, and `name` are reserved
-  block keys; do not expect them inside `args`.
-- Widget names can include letters, digits, underscores, and hyphens because directive tags match `@[\w-]+`.
-- A custom widget can override a built-in by registering `image`, `dartpad`, `webview`, or `qrcode`, but do that only intentionally.
-- Use `SlideConfiguration.of(context)` for slide metadata and `LayoutBuilder` for block size.
+When an app already uses Ack codegen, a top-level `@AckInfer()` schema can
+generate a typed args model. Keep both `.ack.dart` and `.ack.g.dart` part
+directives, run `build_runner`, and parse the model in the widget constructor.
+The factory still receives `Map<String, Object?>`; SuperDeck consumes `name`,
+`align`, `flex`, `margin`, `padding`, and `scrollable` before calling it. Match
+the app's pinned Ack versions. For a maintained schema example, see
+`packages/playground/lib/features/ai/quick_agent/core/engine/schemas/deck_schemas.dart`.
 
 ## Slide Parts
 
@@ -321,49 +154,55 @@ Unknown templates or styles throw `ArgumentError` during configuration build, so
 
 Template styles are isolated. A slide using `template: brand` and `style: cover` looks up `cover` in `SlideTemplate.styles`, not `DeckOptions.styles`.
 
-### `blockContainer` and `BlockStyler`
+### Typography, Block Frames, and Named Widgets
 
-`SlideStyler.blockContainer` is a `BlockStyler`, not a `BoxStyler`. `BlockStyler`
-is a constrained Mix styler exposing only `padding`, `margin` (plus Mix
-spacing convenience methods), `decoration`, `foregroundDecoration`,
-`clipBehavior`, context/`BlockVariant` variants, and animation. It cannot
-express widget modifiers, width/height/constraints, transforms, or box
-alignment — block/section `align` owns content placement, and section
-`spacing` plus flex own geometry. Use `BoxStyler` for other style slots
-(`slideContainer`, code block containers, alert containers); those are
-unaffected by this constraint.
-
-### Named Widget Block Styles
-
-Use `BlockVariant` to target every widget block with an exact, case-sensitive name. The selector resolves around the matching block container and its descendants, so container padding/margin and widget subtree styles see the same active variant.
+Use `SlideStyler` for typography, `BoxStyler` for the slide's outer frame, and
+`BlockStyler` for block padding, margin, decoration, clipping, and variants.
+Block size and content placement belong to Markdown `flex` and `align`, rather
+than the block style. This `panels` style matches the composition example in
+the authoring reference:
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:mix/mix.dart';
 import 'package:superdeck/superdeck.dart';
 
-const webviewBlock = BlockVariant('webview');
-
 final options = DeckOptions(
   baseStyle: SlideStyler(
-    blockContainer: BlockStyler(
-      padding: EdgeInsetsGeometryMix.all(40),
-    ).variants([
-      VariantStyle(
-        webviewBlock,
-        BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
-      ),
-    ]),
+    h1: TextStyler().style(TextStyleMix(fontSize: 64)),
+    slideContainer: BoxStyler(
+      padding: EdgeInsetsGeometryMix.symmetric(horizontal: 48, vertical: 28),
+    ),
   ),
+  styles: {
+    'panels': SlideStyler(
+      blockContainer: BlockStyler(
+        padding: EdgeInsetsGeometryMix.all(24),
+        decoration: BoxDecorationMix(
+          color: const Color(0xFF202431),
+          borderRadius: BorderRadiusMix.circular(20),
+        ),
+      ).variants([
+        VariantStyle(
+          const BlockVariant('image'),
+          BlockStyler(padding: EdgeInsetsGeometryMix.all(0)),
+        ),
+      ]),
+    ),
+  },
 );
 ```
 
-`BlockVariant('webview')` matches `@webview` and `@widget { name: "webview" }`; `BlockVariant('chart')` matches `@chart`. It does not select Markdown `@block` content, arbitrary `NamedVariant` values, or individual instances. SuperDeck already applies a zero-padding, zero-margin `BlockVariant('webview')` rule by default, so WebView blocks are edge-to-edge unless the style overrides it.
+`BlockVariant('image')` selects every `@image` widget block (and an explicit
+`@widget` named `image`), including its widget subtree. It does not select
+Markdown `@block` content or a single block instance. Names are exact and
+case-sensitive. SuperDeck already removes padding and margin from `@webview`
+by default; add a custom variant only when you want a different treatment.
 
-A Markdown block-level `margin` or `padding` value applies after these Mix
-variants resolve. It replaces only the matching inset; the other inset,
-decoration, border, animation, and the active selector remain intact. An
-absent (`null`) override inherits the resolved style value; an explicit `0`
-removes it.
+Markdown block-level `margin` and `padding` override the matching resolved
+style inset after variants. Omit the property to inherit the style, or set
+`0` to remove that inset; the decoration and other style properties remain.
+For a larger example, see `demo/lib/src/layout_showcase/showcase_style.dart`.
 
 ## Images and Assets
 
@@ -402,11 +241,10 @@ SuperDeckApp(
 )
 ```
 
-Mermaid diagrams render directly from fenced `mermaid` blocks. They do not
-require a plugin, custom runner, browser, generated image, or cache. The native
-port includes flowchart, sequence, class, state, ER, journey, chart, timeline
-and Git-graph families; syntax outside the port's supported subset can differ
-from mermaid.js, and a rejected diagram shows the failing line on the slide:
+Mermaid diagrams render directly from fenced `mermaid` blocks, without a
+plugin or build-time image. Supported families and syntax are documented in
+`docs/guides/mermaid-diagrams.mdx`; a rejected diagram shows the failing line
+on the slide:
 
 ````markdown
 ```mermaid
@@ -417,57 +255,17 @@ flowchart LR
 ```
 ````
 
-Supported diagrams are flowcharts, sequence diagrams, pie charts, Gantt
-charts, timelines, Kanban boards, radar charts, and XY charts. Unsupported or
-invalid syntax displays an inline error in the slide. The diagram background is
-transparent, and its colors follow the app's light or dark Flutter theme.
+The diagram background is transparent, and its colors follow the app's light
+or dark Flutter theme.
 
-## DartPad Sharing
+## Embedded WebViews
 
-SuperDeck's `@dartpad` widget accepts the DartPad gist ID, not a full URL. The runtime builds a URL like:
-
-```text
-https://dartpad.dev/?id=<id>&theme=<theme>&embed=<embed>&run=<run>
-```
-
-To create a shareable DartPad for a deck:
-
-1. Create a GitHub Gist with a `main.dart` file.
-2. Copy the gist ID from the gist URL.
-3. Verify `https://dartpad.dev/?id=<gist-id>` loads the snippet.
-4. Use that gist ID in `slides.md`:
-
-```markdown
-@dartpad {
-  id: "5c0e154dd50af4a9ac856908061291bc"
-  theme: dark
-  embed: true
-  run: true
-}
-```
-
-Use `run: false` for exercises where the audience should edit before running.
-
-## WebView Runtime
-
-`@dartpad` and `@webview` render through `WebViewWrapper`. Live controllers are cached at deck scope by the block runtime key or an explicit `cacheKey`; reuse is sequential, not concurrent. Static rendering produces a placeholder instead of creating a controller.
-
-Behavior:
-
-- Creates a `webview_flutter` `WebViewController`.
-- Enables `JavaScriptMode.unrestricted` because DartPad requires JavaScript.
-- Loads the generated DartPad URL from `DartPadDto.toUrl()` or the validated `@webview` URL.
-- Allows navigation only to the source host by default; `@webview.allowedHosts` can extend the list. Flutter web cannot enforce this policy because its iframe implementation does not expose navigation callbacks.
-- Hides the WebView initially, then fades it in after `onPageFinished` plus a 500 ms delay.
-- Reuses a cached controller when remounting the same key and URL, and reloads when the URL changes.
-- Displays overlay icon buttons for refresh and clearing the CodeMirror editor.
-
-Platform notes:
-
-- The package depends on `webview_flutter` and `webview_flutter_web`.
-- `superdeck setup` patches macOS network entitlements when a macOS runner exists; run it for desktop decks using DartPad or WebView.
-- Embedded DartPad needs network access to `dartpad.dev`; embedded pages need network access to their configured URL.
-- Because navigation is host-restricted on native targets, use surrounding slide content for external links instead of expecting WebView navigation to arbitrary domains.
+`@dartpad` and `@webview` share a deck-scoped controller cache. An optional
+`cacheKey` allows sequential reuse across remounts; two live blocks never
+share one controller. Static capture uses a placeholder. Native WebViews
+restrict navigation to the source host or `allowedHosts`; Flutter web's iframe
+cannot enforce that restriction. Run `superdeck setup` for macOS network
+entitlements, and verify network access on the presentation target.
 
 ## Deployment Notes
 

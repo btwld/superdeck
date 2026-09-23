@@ -63,6 +63,30 @@ class SdCallout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (text case final message? when child == null && style == null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: $accentSoft.resolve(context),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: $border.resolve(context)),
+        ),
+        child: Row(
+          spacing: 8,
+          children: [
+            if (icon case final icon?)
+              Icon(icon, size: 20, color: $accent.resolve(context)),
+            Expanded(
+              child: TextStyler()
+                  .style($paragraphSmall.mix())
+                  .color($foreground())
+                  .call(message),
+            ),
+          ],
+        ),
+      );
+    }
+
     return RemixCallout(
       text: text,
       icon: icon,

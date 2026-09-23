@@ -1,6 +1,6 @@
 # Verification
 
-Use this reference before claiming a SuperDeck deck, runtime change, or skill update is complete.
+Use this reference before claiming a SuperDeck deck or runtime change works.
 
 ## For Presentation Authoring
 
@@ -36,9 +36,9 @@ Visually inspect slides when changing layout, alignment, images, custom widgets,
 Follow the repo's FVM/Melos workflow:
 
 ```bash
-melos run build_runner:build
-melos run analyze
-melos run test
+fvm dart run melos run build_runner:build
+fvm dart run melos run analyze
+fvm dart run melos run test
 ```
 
 Use targeted tests when the change is scoped:
@@ -61,24 +61,24 @@ Run builder/parser tests for syntax, slide splitting, comments, directives, or s
 Regenerate generated files after model/schema changes:
 
 ```bash
-melos run build_runner:build
+fvm dart run melos run build_runner:build
 ```
 
-## For Skill Updates
+## Local macOS runtime verification
 
-Validate the skill folder:
+For the Playground, launch from `packages/playground` with the root define file:
 
 ```bash
-python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .agents/skills/superdeck-presentations
+fvm flutter run -d macos -t lib/main.dart --dart-define-from-file=../../.env
 ```
 
-Also check for stale template markers:
+Keep `flutter run` attached and read its output after interactions so framework, plugin, and native errors remain visible. Without the define file, the Wizard intentionally reports missing AI configuration. Do not print its secrets in diagnostics.
 
-```bash
-rg -n "TO[D]O|FIX[M]E|\\[TO[D]O" .agents/skills/superdeck-presentations
-```
+The package test command does not cover desktop integration, browser smoke, or live generation. Use `test:integration:macos` for demo desktop flows and `test:e2e:web` for Chromium/WebKit; consult root `AGENTS.md` for the separate Playground generation checkpoints. A successful build alone does not establish runtime behavior.
 
-Confirm the trigger description mentions the concrete contexts that should load this skill: `slides.md`, SuperDeck Markdown, block layout, widgets, assets/images, `DeckOptions`, styles/templates, slide parts, CLI builds, and plugins.
+For browser smoke tests, explicitly activate Flutter's `Enable accessibility` placeholder before querying semantic controls. The pinned engine does not enable semantics from the old `enable-flutter-web-semantics` URL flag. The placeholder sits outside the viewport, so the Playwright harness dispatches its click event directly.
+
+For Hero changes, exercise forward and backward navigation between slides sharing tags and inspect content both during and after flight. Relevant regressions live in `test/src/markdown/hero_transition_test.dart` and `test/src/ui/widgets/text_hero_flight_test.dart` under `packages/superdeck`.
 
 ## Common Failure Checks
 
