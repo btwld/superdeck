@@ -98,7 +98,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final export = exports.single;
-    expect(export.name, 'Opening');
+    expect(export.name, 'Urban gardens', reason: 'named after the deck topic');
     final markdown = utf8.decode(export.files['slides.md']!);
     expect(markdown, contains('Urban gardens strengthen cities.'));
     expect(
@@ -107,7 +107,7 @@ void main() {
       reason: 'the slides point at artwork shipped beside them',
     );
     expect(export.files['assets/hero.png'], _png);
-    expect(find.text('Exported "Opening".'), findsOneWidget);
+    expect(find.text('Exported "Urban gardens".'), findsOneWidget);
   });
 
   testWidgets('cancelling the save dialog reports nothing', (tester) async {
@@ -139,7 +139,7 @@ void main() {
     final wizard = await pumpCompletedDeck(tester, (_) async => true);
     await tester.tap(find.text('Export deck'));
     await tester.pumpAndSettle();
-    expect(find.text('Exported "Opening".'), findsOneWidget);
+    expect(find.text('Exported "Urban gardens".'), findsOneWidget);
 
     await wizard.createOutline(_request);
     await tester.pump();

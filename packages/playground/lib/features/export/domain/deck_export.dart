@@ -28,11 +28,13 @@ final class DeckExport {
 
   /// Builds the export for [slides] and the [images] generated for them.
   ///
-  /// Images without bytes are left out; their slides no longer reference
-  /// them.
+  /// The export is named after [title], or the first slide's title without
+  /// one. Images without bytes are left out; their slides no longer
+  /// reference them.
   factory DeckExport.fromDeck({
     required List<Slide> slides,
     required List<GeneratedImageAsset> images,
+    String? title,
   }) {
     var markdown = const SlideSerializer().serialize(slides);
     final assets = <String, List<int>>{};
@@ -49,14 +51,20 @@ final class DeckExport {
     }
 
     return DeckExport._(
-      name: _nameFor(slides),
+      name:
+          _fileStem(title) ??
+          _fileStem(_firstSlideTitle(slides)) ??
+          _fallbackName,
       files: {_markdownPath: utf8.encode(markdown), ...assets},
     );
   }
 
-  /// The first slide's title, made safe to use as a file name.
-  static String _nameFor(List<Slide> slides) {
-    final title = slides.isEmpty ? null : slides.first.options?.title;
+  static String? _firstSlideTitle(List<Slide> slides) =>
+      slides.isEmpty ? null : slides.first.options?.title;
+
+  /// [title] made safe to use as a file name, or `null` when nothing usable
+  /// is left.
+  static String? _fileStem(String? title) {
     final stem = (title ?? '')
         .replaceAll(RegExp(r'[\x00-\x1f/\\:]'), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
@@ -64,7 +72,7 @@ final class DeckExport {
         .replaceAll(RegExp(r'^\.+'), '')
         .trim();
 
-    return stem.isEmpty ? _fallbackName : stem;
+    return stem.isEmpty ? null : stem;
   }
 
   /// Encodes [files] as a zip archive.

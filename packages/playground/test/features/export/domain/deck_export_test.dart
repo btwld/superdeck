@@ -68,8 +68,22 @@ void main() {
       expect(markdown, isNot(contains('assets/$_chartKey')));
     });
 
-    test('names the export after the first slide title', () {
-      final export = DeckExport.fromDeck(slides: slides, images: const []);
+    test('names the export after the given title', () {
+      final export = DeckExport.fromDeck(
+        slides: slides,
+        images: const [],
+        title: 'City food: a primer',
+      );
+
+      expect(export.name, 'City food a primer');
+    });
+
+    test('falls back to the first slide title', () {
+      final export = DeckExport.fromDeck(
+        slides: slides,
+        images: const [],
+        title: '  ',
+      );
 
       expect(export.name, 'Urban gardens');
     });

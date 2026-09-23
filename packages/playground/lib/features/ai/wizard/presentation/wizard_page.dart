@@ -150,6 +150,7 @@ class _WizardExperienceState extends State<_WizardExperience> {
     final export = DeckExport.fromDeck(
       slides: result.slides,
       images: result.generatedImages,
+      title: result.plan?.topic,
     );
     setState(() => _isExporting = true);
     String? message;
