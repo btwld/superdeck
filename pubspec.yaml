@@ -12,7 +12,7 @@ workspace:
 
 dev_dependencies:
   # Keep in sync with `melos-version` in .github/workflows/*.yml.
-  melos: 7.8.1
+  melos: 8.9.0
 
 dependency_overrides:
   # Hero UI's Remix 1.0 migration commit still points at development Git
