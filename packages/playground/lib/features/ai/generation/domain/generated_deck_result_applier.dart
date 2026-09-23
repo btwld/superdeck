@@ -69,9 +69,8 @@ final class GeneratedDeckResultApplier {
 
   Future<GeneratedDeckApplication> _apply(
     DeckGenerationResult result,
-    GeneratedDeckApplicationGuard isValid, {
-    void Function()? onAccepted,
-  }) async {
+    GeneratedDeckApplicationGuard isValid,
+  ) async {
     const abandoned = GeneratedDeckApplication(published: false);
     if (!isValid()) return abandoned;
 
@@ -100,11 +99,6 @@ final class GeneratedDeckResultApplier {
 
       return abandoned;
     }
-
-    // The saved-deck binding changes only once this attempt is accepted.
-    // A rejection, an abandoned write, or a throw leaves the previous deck
-    // answering for its own artwork.
-    onAccepted?.call();
 
     final markdown = const SlideSerializer().serialize(result.slides);
     _documentStore.replaceMarkdown(markdown);
@@ -146,16 +140,13 @@ final class GeneratedDeckResultApplier {
   Future<GeneratedDeckApplication> apply(
     DeckGenerationResult result, {
     required GeneratedDeckApplicationGuard isValid,
-    void Function()? onAccepted,
   }) {
     final application = Completer<GeneratedDeckApplication>();
     // The queue only sequences the work. Failures reach the caller through
     // the completer, so one failed application cannot block the next one.
     _queue = _queue.then((_) async {
       try {
-        application.complete(
-          await _apply(result, isValid, onAccepted: onAccepted),
-        );
+        application.complete(await _apply(result, isValid));
       } catch (error, stackTrace) {
         application.completeError(error, stackTrace);
       }
@@ -163,15 +154,4 @@ final class GeneratedDeckResultApplier {
 
     return application.future;
   }
-}
-
-/// Publishes [result] and releases the open saved deck only if that
-/// publication is accepted.
-Future<GeneratedDeckApplication> applyGeneratedDeckResult({
-  required GeneratedDeckResultApplier applier,
-  required DeckGenerationResult result,
-  required GeneratedDeckApplicationGuard isValid,
-  required void Function() releaseSavedDeck,
-}) {
-  return applier.apply(result, isValid: isValid, onAccepted: releaseSavedDeck);
 }

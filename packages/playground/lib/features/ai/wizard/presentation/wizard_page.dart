@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_ui/hero_ui.dart';
 import 'package:provider/provider.dart';
-import 'package:superdeck_builder/superdeck_builder.dart';
 
 import '../../../../core/domain/design/presentation_image_style_catalog.dart';
 import '../../../../core/domain/stores/deck_customization_store.dart';
@@ -26,31 +25,6 @@ import 'wizard_generation_controller.dart';
 import 'wizard_generation_status.dart';
 import 'wizard_outline_review.dart';
 import 'wizard_view.dart';
-
-/// Saves [result] as its own deck: its Markdown, artwork, and theme.
-///
-/// The runtime document is not the source. Opening another saved deck leaves
-/// the Wizard holding this result, and the save still writes this result alone.
-Future<bool> saveRetainedWizardDeck({
-  required DeckLibraryController library,
-  required DeckGenerationResult result,
-  required String name,
-}) {
-  final theme = result.theme;
-
-  return library.save(
-    name: name,
-    markdown: const SlideSerializer().serialize(result.slides),
-    images: result.generatedImages,
-    theme: theme == null
-        ? null
-        : SavedDeckTheme(
-            id: theme.descriptor.id,
-            version: theme.descriptor.version,
-            density: theme.density,
-          ),
-  );
-}
 
 /// Host for the conversational Wizard, the app's only authoring flow.
 ///
@@ -143,14 +117,13 @@ class WizardPage extends StatelessWidget {
                     imageGenerator: finalImageGenerator,
                   ),
               applyResult: (result, {required isValid}) {
-                return applyGeneratedDeckResult(
-                  applier: resultApplier,
-                  result: result,
-                  isValid: isValid,
-                  releaseSavedDeck: library.releaseOpenDeck,
-                );
+                // A generated deck owns the runtime from here. The saved deck
+                // that was open must stop answering for artwork, or a new
+                // image could resolve to the old deck's file of the same name.
+                library.releaseOpenDeck();
+
+                return resultApplier.apply(result, isValid: isValid);
               },
-              deckSelectionEpoch: () => library.deckSelectionEpoch,
             );
           },
         ),
@@ -195,17 +168,24 @@ class _WizardExperienceState extends State<_WizardExperience> {
     );
     if (name == null || !mounted) return;
 
-    await saveRetainedWizardDeck(library: library, result: result, name: name);
+    await library.save(
+      name: name,
+      images: result.generatedImages,
+      theme: switch (result.theme) {
+        final theme? => SavedDeckTheme(
+          id: theme.descriptor.id,
+          version: theme.descriptor.version,
+          density: theme.density,
+        ),
+        _ => null,
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<WizardGenerationController>();
     final library = context.watch<DeckLibraryController>();
-    final document = context.watch<DeckDocumentStore>();
-    final generatedMarkdown = controller.result == null
-        ? null
-        : const SlideSerializer().serialize(controller.result!.slides);
     final overlay = switch (controller.stage) {
       .setup => null,
       .planning || .composing => _CenteredScrollable(
@@ -267,12 +247,6 @@ class _WizardExperienceState extends State<_WizardExperience> {
           },
           onSave: library.canSave ? () => unawaited(_save(controller)) : null,
           onOpenSavedDecks: () => context.push('/decks'),
-          onShowGeneratedDeck:
-              library.openDeck != null &&
-                  generatedMarkdown != null &&
-                  document.markdown != generatedMarkdown
-              ? () => unawaited(controller.acceptRetainedGeneration())
-              : null,
           saveLabel: library.lastSave == null
               ? 'Save deck'
               : 'Save another copy',

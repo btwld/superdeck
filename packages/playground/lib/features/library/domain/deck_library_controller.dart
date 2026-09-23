@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/data/data_sources/deck_library_asset_store.dart';
 import '../../../core/data/data_sources/memory_deck_loader.dart';
-import '../../../core/data/mappers/deck_markdown_codec.dart';
 import '../../../core/domain/design/generated_deck_style_mapper.dart';
 import '../../../core/domain/design/presentation_theme_catalog.dart';
 import '../../../core/domain/design/presentation_typography_catalog.dart';
@@ -27,18 +26,10 @@ class DeckLibraryController extends ChangeNotifier {
   final PresentationThemeCatalog _themeCatalog;
   final PresentationTypographyCatalog _typographyCatalog;
 
-  static const _codec = DeckMarkdownCodec();
-
   List<SavedDeckRef> _decks = const [];
-  SavedDeckRef? _openDeck;
   DeckSaveOutcome? _lastSave;
   String? _errorMessage;
-  int _mutationGeneration = 0;
-  int _listGeneration = 0;
-  int _completedMutations = 0;
-  int _inFlight = 0;
-  int _deckSelectionEpoch = 0;
-  bool _mutationInFlight = false;
+  bool _isBusy = false;
 
   DeckLibraryController({
     required DeckLibrary library,
@@ -57,24 +48,9 @@ class DeckLibraryController extends ChangeNotifier {
        _typographyCatalog =
            typographyCatalog ?? PresentationTypographyCatalog.withDefaults();
 
-  void _beginOperation() {
-    _inFlight++;
+  void _setBusy({required bool busy}) {
+    _isBusy = busy;
     notifyListeners();
-  }
-
-  void _endOperation() {
-    _inFlight--;
-    notifyListeners();
-  }
-
-  bool _isLatestMutation(int generation) => generation == _mutationGeneration;
-
-  bool _isLatestList(int generation) => generation == _listGeneration;
-
-  bool _refreshIsStale(int generation, int seenMutations) {
-    return !_isLatestList(generation) ||
-        _mutationInFlight ||
-        seenMutations != _completedMutations;
   }
 
   /// Restores the appearance a deck was saved with.
@@ -103,162 +79,100 @@ class DeckLibraryController extends ChangeNotifier {
   /// Saved decks, newest first.
   List<SavedDeckRef> get decks => _decks;
 
-  /// The saved deck being presented, or `null` for a generated one.
-  SavedDeckRef? get openDeck => _openDeck;
-
-  /// Advances when a saved deck is committed to the runtime.
-  ///
-  /// A generation captures this before it can publish. Opening another deck
-  /// withdraws that automatic publication; the retained result can still be
-  /// accepted explicitly.
-  int get deckSelectionEpoch => _deckSelectionEpoch;
-
   /// What the last save wrote, for the notice the Wizard shows.
   DeckSaveOutcome? get lastSave => _lastSave;
 
   /// A user-facing reason the last save or open did not finish.
   String? get errorMessage => _errorMessage;
 
-  /// Whether a save, open, or refresh is running.
-  bool get isBusy => _inFlight > 0;
+  /// Whether a save or open is running.
+  bool get isBusy => _isBusy;
 
   /// Whether decks can be stored at all on this platform.
   bool get canSave => _library.canSave;
 
-  /// Writes one deck named [name].
+  /// Writes the current document as a new deck named [name].
   ///
-  /// [markdown] is the document to persist. When it is omitted, the current
-  /// runtime document is saved. [images] and [theme] belong to that same deck.
-  /// An explicit [markdown] also becomes the deck on screen, so a save cannot
-  /// store one deck's text beside another's artwork.
+  /// [images] carries the artwork of the generation that produced the
+  /// document, and [theme] the selection it was generated with.
   Future<bool> save({
     required String name,
-    String? markdown,
     List<GeneratedImageAsset> images = const [],
     SavedDeckTheme? theme,
   }) async {
-    if (_mutationInFlight) return false;
-    _mutationInFlight = true;
-    final mutation = ++_mutationGeneration;
-    // A refresh that started earlier, or that finishes while this save is
-    // still writing, must not replace the deck this save commits.
-    _listGeneration++;
-    final persisted = markdown ?? _documentStore.markdown;
-    _beginOperation();
+    if (_isBusy) return false;
+    _errorMessage = null;
+    _setBusy(busy: true);
     try {
       final result = await _library.save(
         name: name,
-        markdown: persisted,
+        markdown: _documentStore.markdown,
         images: images,
         theme: theme,
       );
-      final current = _isLatestMutation(mutation);
       switch (result) {
         case Ok(:final value):
-          if (current) {
-            _lastSave = value;
-            // The saved copy, not the run's memory, now owns this artwork.
-            _openDeck = value.ref;
-            _assetStore.bindTo(value.ref);
-            _decks = [value.ref, ..._decks.where((ref) => ref != value.ref)];
-            _errorMessage = null;
-            if (markdown != null) {
-              _documentStore.replaceMarkdown(persisted);
-              _deckLoader.updateMarkdown(persisted);
-              if (theme != null) _errorMessage = _applyTheme(theme);
-            }
-            _completedMutations++;
-          }
+          _lastSave = value;
+          // The saved copy, not the run's memory, now owns this artwork.
+          _assetStore.bindTo(value.ref);
+          _decks = [value.ref, ..._decks.where((ref) => ref != value.ref)];
 
           return true;
         case Failure(:final error):
-          if (current) {
-            _errorMessage = '$error';
-            _completedMutations++;
-          }
+          _errorMessage = '$error';
 
           return false;
       }
     } finally {
-      _mutationInFlight = false;
-      _endOperation();
+      _setBusy(busy: false);
     }
   }
 
   /// Reloads the list of saved decks.
-  ///
-  /// Refresh may overlap a save or an open. It does not clear [isBusy] while
-  /// that other operation is still running, and a stale completion does not
-  /// replace a newer deck list or error.
   Future<void> refresh() async {
-    final generation = ++_listGeneration;
-    final seenMutations = _completedMutations;
-    _beginOperation();
+    _errorMessage = null;
+    _setBusy(busy: true);
     try {
       switch (await _library.list()) {
         case Ok(:final value):
-          if (_refreshIsStale(generation, seenMutations)) return;
           _decks = value;
-          _errorMessage = null;
         case Failure(:final error):
-          if (_refreshIsStale(generation, seenMutations)) return;
           _errorMessage = '$error';
       }
     } finally {
-      _endOperation();
+      _setBusy(busy: false);
     }
   }
 
   /// Publishes the saved deck at [ref] for presentation.
   ///
   /// The deck is read-only: it is loaded into the preview and the renderer,
-  /// with its own artwork and the theme it was saved with. Document, artwork
-  /// binding, theme, and slides change together, and only after the Markdown
-  /// decodes.
+  /// with its own artwork and the theme it was saved with.
   Future<bool> open(SavedDeckRef ref) async {
-    if (_mutationInFlight) return false;
-    _mutationInFlight = true;
-    final mutation = ++_mutationGeneration;
-    _listGeneration++;
-    _beginOperation();
+    if (_isBusy) return false;
+    _errorMessage = null;
+    _setBusy(busy: true);
     try {
       switch (await _library.open(ref)) {
         case Ok(:final value):
-          if (!_isLatestMutation(mutation)) return false;
-          try {
-            _codec.decode(value.markdown);
-          } catch (error) {
-            _errorMessage = '$error';
-            _completedMutations++;
-
-            return false;
-          }
-          if (!_isLatestMutation(mutation)) return false;
-          _openDeck = value.ref;
           _assetStore.bindTo(value.ref);
           _documentStore.replaceMarkdown(value.markdown);
           _deckLoader.updateMarkdown(value.markdown);
           _errorMessage = _applyTheme(value.theme);
-          _deckSelectionEpoch++;
-          _completedMutations++;
 
           return true;
         case Failure(:final error):
-          if (!_isLatestMutation(mutation)) return false;
           _errorMessage = '$error';
-          _completedMutations++;
 
           return false;
       }
     } finally {
-      _mutationInFlight = false;
-      _endOperation();
+      _setBusy(busy: false);
     }
   }
 
   /// Forgets the open saved deck, so a new generation owns the runtime again.
   void releaseOpenDeck() {
-    _openDeck = null;
     _lastSave = null;
     _assetStore.bindTo(null);
     notifyListeners();
