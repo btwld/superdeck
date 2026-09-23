@@ -13,6 +13,7 @@ class PdfExportDialogScreen extends StatefulWidget {
     required this.slides,
     this.options = const PdfExportOptions(),
     this.onClose,
+    this.slideCaptureService,
   });
 
   /// Slides to capture into the PDF.
@@ -23,6 +24,10 @@ class PdfExportDialogScreen extends StatefulWidget {
 
   /// Callback used when the export surface is hosted by a shell modal.
   final VoidCallback? onClose;
+
+  /// Capture service for this dialog. The production path uses the default
+  /// slide capture service.
+  final SlideCaptureService? slideCaptureService;
 
   @override
   State<PdfExportDialogScreen> createState() => _PdfExportDialogScreenState();
@@ -81,7 +86,7 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
   void _setupExportController() {
     _exportController = PdfController(
       slides: widget.slides,
-      slideCaptureService: SlideCaptureService(),
+      slideCaptureService: widget.slideCaptureService ?? SlideCaptureService(),
       options: widget.options,
     );
 
@@ -100,10 +105,15 @@ class _PdfExportDialogScreenState extends State<PdfExportDialogScreen> {
   }
 
   Future<void> _handleExport() async {
-    await _exportController.export();
-    if (!mounted) return;
+    final started = _exportController;
+    await started.export();
+    if (!mounted ||
+        !identical(started, _exportController) ||
+        started.disposed) {
+      return;
+    }
 
-    if (_exportController.exportStatus.value != PdfExportStatus.failed) {
+    if (started.exportStatus.value != PdfExportStatus.failed) {
       _close();
     }
   }
