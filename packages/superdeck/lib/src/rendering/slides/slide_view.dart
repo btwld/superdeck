@@ -4,8 +4,10 @@ import 'package:superdeck_core/superdeck_core.dart';
 
 import '../../deck/slide_configuration.dart';
 import '../../styling/components/slide.dart';
+import '../../ui/widgets/provider.dart';
 import '../../utils/constants.dart';
 import '../blocks/block_widget.dart';
+import '../blocks/image_hero_positions.dart';
 import '../layout_debug_overlay.dart';
 
 class SlideView extends StatelessWidget {
@@ -137,7 +139,12 @@ class SlideView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             _renderPreferredSize(header, headerHeight),
-                            Expanded(child: _renderSections(slide)),
+                            Expanded(
+                              child: InheritedData(
+                                data: ImageHeroPositions(slide.slide),
+                                child: _renderSections(slide),
+                              ),
+                            ),
                             _renderPreferredSize(footer, footerHeight),
                           ],
                         );

@@ -18,6 +18,7 @@ class BlockConfiguration {
     required this.size,
     required this.align,
     required this.runtimeKey,
+    this.imageHeroStart = 0,
   });
 
   final SlideSpec spec;
@@ -27,17 +28,22 @@ class BlockConfiguration {
   /// Slide-local identity derived from slide key + section/block indices.
   final String runtimeKey;
 
+  /// Ordinal of this block's first image within the slide.
+  final int imageHeroStart;
+
   @override
   bool operator ==(Object other) {
     return other is BlockConfiguration &&
         other.spec == spec &&
         other.size == size &&
         other.align == align &&
-        other.runtimeKey == runtimeKey;
+        other.runtimeKey == runtimeKey &&
+        other.imageHeroStart == imageHeroStart;
   }
 
   @override
-  int get hashCode => Object.hash(spec, size, align, runtimeKey);
+  int get hashCode =>
+      Object.hash(spec, size, align, runtimeKey, imageHeroStart);
 
   static BlockConfiguration of(BuildContext context) {
     final data = InheritedData.maybeOf<BlockConfiguration>(context);

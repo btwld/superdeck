@@ -4,9 +4,11 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:mix/mix.dart';
 import '../../deck/slide_configuration.dart';
 import '../../rendering/blocks/block_provider.dart';
+import '../../rendering/blocks/image_hero_positions.dart';
 import '../../ui/widgets/cache_image_widget.dart';
 import '../../ui/widgets/error_widgets.dart';
 import '../../ui/widgets/hero_element.dart';
+import '../../ui/widgets/image_hero_flight.dart';
 import '../../ui/widgets/provider.dart';
 import '../../ui/widgets/resolved_asset_image.dart';
 import '../../utils/uri_validator.dart';
@@ -23,6 +25,7 @@ bool isBareAssetKey(Uri uri) =>
 class ImageElementBuilder extends MarkdownElementBuilder
     with MarkdownHeroMixin {
   final StyleSpec<ImageSpec> styleSpec;
+  int _nextImageIndex = 0;
 
   ImageElementBuilder([this.styleSpec = const StyleSpec(spec: ImageSpec())]);
 
@@ -61,19 +64,26 @@ class ImageElementBuilder extends MarkdownElementBuilder
       return ErrorWidgets.simple('Invalid image source: ${e.toString()}');
     }
 
-    final heroTag = element.attributes['hero'];
+    final block = BlockConfiguration.of(context);
+    final isStandalone =
+        element.attributes['data-superdeck-block-image'] == 'true';
+    final heroTag =
+        element.attributes['hero'] ??
+        (isStandalone
+            ? automaticImageHeroTag(block.imageHeroStart + _nextImageIndex)
+            : null);
+    if (isStandalone) _nextImageIndex++;
 
     // Access BlockConfiguration from the context parameter (available because isBlockElement() is true)
-    final totalSize = BlockConfiguration.of(context).size;
+    final totalSize = block.size;
 
     // A bare key (e.g. an AI-generated `slide-x-illustration.png`) is resolved
-    // through the slide's asset cache when one is bound. Hero transitions are
-    // not applied for cache-resolved images (they have no hero tag in practice).
+    // through the slide's asset cache when one is bound.
     final assetCacheStore = InheritedData.maybeOf<SlideConfiguration>(
       context,
     )?.assetCacheStore;
     if (assetCacheStore != null && isBareAssetKey(uri)) {
-      return ConstrainedBox(
+      final image = ConstrainedBox(
         constraints: BoxConstraints.tight(totalSize),
         child: ResolvedAssetImage(
           assetKey: uri.path,
@@ -83,11 +93,23 @@ class ImageElementBuilder extends MarkdownElementBuilder
           styleSpec: styleSpec,
         ),
       );
+      return applyHeroIfNeeded<ImageElement>(
+        context: context,
+        child: image,
+        heroTag: heroTag,
+        heroData: ImageElement(
+          spec: styleSpec.spec,
+          uri: uri,
+          size: totalSize,
+          flightImage: image,
+        ),
+        buildFlight: buildImageHeroFlight,
+      );
     }
 
     return StyleSpecBuilder<ImageSpec>(
       builder: (builderContext, spec) {
-        Widget imageWidget = ConstrainedBox(
+        final imageWidget = ConstrainedBox(
           constraints: BoxConstraints.tight(totalSize),
           child: CachedImage(uri: uri, styleSpec: styleSpec),
         );
@@ -97,35 +119,7 @@ class ImageElementBuilder extends MarkdownElementBuilder
           child: imageWidget,
           heroTag: heroTag,
           heroData: ImageElement(spec: spec, uri: uri, size: totalSize),
-          buildFlight: (flightContext, from, to, t) {
-            final fromSize = from.size;
-            final fromSpec = from.spec;
-            final fromUri = from.uri;
-
-            final interpolatedSize = Size.lerp(fromSize, to.size, t)!;
-            final interpolatedSpec = fromSpec.lerp(to.spec, t);
-            Widget image(Uri uri) => CachedImage(
-              key: ValueKey(uri),
-              uri: uri,
-              styleSpec: StyleSpec(spec: interpolatedSpec),
-            );
-            final blend = Curves.easeInOut.transform(t);
-
-            return SizedBox.fromSize(
-              size: interpolatedSize,
-              child: fromUri == to.uri
-                  ? image(fromUri)
-                  : Stack(
-                      fit: .expand,
-                      children: [
-                        // Mount both providers for the entire flight, including at
-                        // zero opacity, so changing alpha never starts a new load.
-                        Opacity(opacity: 1 - blend, child: image(fromUri)),
-                        Opacity(opacity: blend, child: image(to.uri)),
-                      ],
-                    ),
-            );
-          },
+          buildFlight: buildImageHeroFlight,
         );
       },
       styleSpec: styleSpec,

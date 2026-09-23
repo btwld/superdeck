@@ -49,7 +49,8 @@ class ImageBlockSyntax extends md.BlockSyntax {
     // Create a top-level <img> element (NOT wrapped in <p>)
     final element = md.Element.empty('img')
       ..attributes['src'] = src
-      ..attributes['alt'] = alt;
+      ..attributes['alt'] = alt
+      ..attributes['data-superdeck-block-image'] = 'true';
 
     if (title != null) {
       element.attributes['title'] = title;
