@@ -1,8 +1,5 @@
-import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/widgets.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ThumbnailPanel extends StatefulWidget {
   const ThumbnailPanel({
@@ -26,34 +23,53 @@ class ThumbnailPanel extends StatefulWidget {
 }
 
 class _ThumbnailPanelState extends State<ThumbnailPanel> {
-  final _duration = const Duration(milliseconds: 300);
+  static const _padding = 20.0;
+  static const _duration = Duration(milliseconds: 300);
+  static const _curve = Curves.easeInOutCubic;
+
+  /// Where a thumbnail ahead of the view lands, as a fraction of the viewport,
+  /// so the thumbnails after it stay in view.
+  static const _forwardAlignment = 0.7;
+
   final _pageStorageBucket = PageStorageBucket();
-  late final ItemScrollController _itemScrollController;
-  late final ItemPositionsListener _itemPositionsListener;
-  late List<ItemPosition> _visibleItems;
+  final _scrollController = ScrollController();
 
-  @override
-  void initState() {
-    super.initState();
-    _itemScrollController = ItemScrollController();
-    _itemPositionsListener = ItemPositionsListener.create();
-    _visibleItems = [];
-    _itemPositionsListener.itemPositions.addListener(_listener);
-  }
+  /// Scrolls just far enough to show the thumbnail at [index] in full.
+  ///
+  /// Every thumbnail has the same extent, so the list's scroll extent is exact
+  /// and a thumbnail's offset follows from its index, even when it is not
+  /// built yet.
+  void _scrollToActiveSlide(int index) {
+    if (!_scrollController.hasClients || widget.itemCount == 0) return;
+    final position = _scrollController.position;
+    if (position.maxScrollExtent <= 0) return;
 
-  void _listener() {
-    final newVisibleItems = _itemPositionsListener.itemPositions.value.toList();
+    final viewport = position.viewportDimension;
+    final extent =
+        (position.maxScrollExtent + viewport - 2 * _padding) / widget.itemCount;
+    final itemStart = _padding + index * extent;
+    final itemEnd = itemStart + extent;
+    final viewStart = position.pixels;
+    final viewEnd = viewStart + viewport;
+    if (itemStart >= viewStart && itemEnd <= viewEnd) return;
 
-    if (listEquals(newVisibleItems, _visibleItems)) return;
+    final double target;
+    if (itemEnd <= viewStart) {
+      target = itemStart;
+    } else if (itemStart >= viewEnd) {
+      target = itemStart - viewport * _forwardAlignment;
+    } else if (itemEnd > viewEnd) {
+      // Cut off at the trailing edge: align its end with the view's end.
+      target = itemEnd - viewport;
+    } else {
+      target = itemStart;
+    }
 
-    // Schedule setState after the current build frame to avoid build-time calls
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !listEquals(newVisibleItems, _visibleItems)) {
-        setState(() {
-          _visibleItems = newVisibleItems;
-        });
-      }
-    });
+    _scrollController.animateTo(
+      target.clamp(position.minScrollExtent, position.maxScrollExtent),
+      duration: _duration,
+      curve: _curve,
+    );
   }
 
   @override
@@ -67,45 +83,11 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
     }
   }
 
-  void _scrollToActiveSlide(int index) {
-    final visibleItems = _visibleItems;
-    double alignment;
-
-    if (visibleItems.isEmpty) return;
-
-    final visibleItem = visibleItems.firstWhereOrNull((e) => e.index == index);
-
-    if (visibleItem == null) {
-      final isBeginning = visibleItems.first.index > index;
-
-      alignment = isBeginning ? 0 : 0.7;
-    } else {
-      if (visibleItem.itemTrailingEdge > 1) {
-        final totalSpace =
-            visibleItem.itemTrailingEdge - visibleItem.itemLeadingEdge;
-        alignment = 1 - totalSpace;
-      } else if (visibleItem.itemLeadingEdge < 0) {
-        alignment = 0;
-      } else {
-        alignment = visibleItem.itemLeadingEdge;
-      }
-    }
-
-    _itemScrollController.scrollTo(
-      index: index,
-      alignment: alignment,
-      duration: _duration,
-      curve: _curve,
-    );
-  }
-
   @override
   void dispose() {
-    _itemPositionsListener.itemPositions.removeListener(_listener);
+    _scrollController.dispose();
     super.dispose();
   }
-
-  final _curve = Curves.easeInOutCubic;
 
   @override
   Widget build(BuildContext context) {
@@ -113,15 +95,14 @@ class _ThumbnailPanelState extends State<ThumbnailPanel> {
       bucket: _pageStorageBucket,
       child: Container(
         color: Colors.black,
-        child: ScrollablePositionedList.builder(
+        child: ListView.builder(
           key: PageStorageKey<String>(
             'thumbnail-panel-${widget.scrollDirection.name}',
           ),
+          controller: _scrollController,
           scrollDirection: widget.scrollDirection,
+          padding: const EdgeInsets.all(_padding),
           itemCount: widget.itemCount,
-          itemPositionsListener: _itemPositionsListener,
-          itemScrollController: _itemScrollController,
-          padding: const EdgeInsets.all(20),
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
