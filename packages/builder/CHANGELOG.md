@@ -1,5 +1,8 @@
 ## 1.0.0
 
+- Front matter `|` and `>` block values keep YAML's single trailing line break
+  (clip chomping), including when the block is the last front matter entry.
+  `yaml` 3.1.4 fixed dropping it there. Use `|-` or `>-` to strip it.
 - **Breaking:** consume the Ack 1.2 JSON APIs from `superdeck_core` and require
   `superdeck_core` 1.0.0.
 
