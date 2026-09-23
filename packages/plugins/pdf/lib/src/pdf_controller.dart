@@ -75,6 +75,7 @@ class PdfController {
   final List<Uint8List> _images = [];
   bool _disposed = false;
   bool _cancelled = false;
+  bool _exportInFlight = false;
 
   final _exportStatus = signal<PdfExportStatus>(PdfExportStatus.idle);
   final _capturedCount = signal<int>(0);
@@ -253,7 +254,13 @@ class PdfController {
   }
 
   /// Captures each slide and writes the resulting PDF.
+  ///
+  /// An export that is already running, or a controller that has been
+  /// disposed, is left untouched. Captured image bytes are released when the
+  /// run fails, is cancelled, or the controller is disposed.
   Future<void> export() async {
+    if (_disposed || _exportInFlight) return;
+    _exportInFlight = true;
     _cancelled = false;
     _capturedCount.value = 0;
     _exportError.value = null;
@@ -307,14 +314,18 @@ class PdfController {
 
       if (!_disposed) _exportStatus.value = PdfExportStatus.complete;
     } on _ExportCancelledException catch (e) {
+      _images.clear();
       if (!_disposed) _exportStatus.value = PdfExportStatus.idle;
       log(e.toString());
     } catch (e) {
+      _images.clear();
       if (!_disposed) {
         _exportError.value = 'Export failed: $e';
         _exportStatus.value = PdfExportStatus.failed;
       }
       log('Export failed: $e');
+    } finally {
+      _exportInFlight = false;
     }
   }
 
@@ -355,6 +366,7 @@ class PdfController {
   /// Releases page-controller and signal resources owned by this controller.
   void dispose() {
     cancel();
+    _images.clear();
     _disposed = true;
     _pageController.dispose();
 
