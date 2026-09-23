@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:syntax_highlight/syntax_highlight.dart';
+
+import '../markdown/syntax_highlight/vendor/highlighter.dart';
 
 class SyntaxHighlight {
   SyntaxHighlight._();

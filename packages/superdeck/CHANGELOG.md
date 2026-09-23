@@ -1,5 +1,10 @@
 ## 1.0.0
 
+- Drop the `syntax_highlight` dependency and vendor its highlighter. Apps no
+  longer pull in `super_clipboard`, `super_native_extensions`, or
+  `irondash_engine_context`, so macOS and iOS builds need no CocoaPods and
+  Android builds avoid that plugin's 16 KB page-size crash. Highlighted output
+  is unchanged.
 - **Breaking:** remove `superDeckAspectRatio`; it had no production use. Use
   `superDeckSlideSize` for slide geometry.
 
