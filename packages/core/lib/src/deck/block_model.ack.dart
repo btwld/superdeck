@@ -253,7 +253,7 @@ mixin _$WidgetBlockAck {
 
   WidgetBlock copyWith({
     String? name,
-    Map<String, Object?>? args,
+    Object? args = _ackCopyWithUnset,
     Object? align = _ackCopyWithUnset,
     int? flex,
     Object? margin = _ackCopyWithUnset,
@@ -263,7 +263,9 @@ mixin _$WidgetBlockAck {
     final self = this as WidgetBlock;
     return WidgetBlock(
       name: name ?? self.name,
-      args: args ?? self.args,
+      args: identical(args, _ackCopyWithUnset)
+          ? self.args
+          : args as Map<String, Object?>?,
       align: identical(align, _ackCopyWithUnset)
           ? self.align
           : align as ContentAlignment?,

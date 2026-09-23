@@ -28,28 +28,20 @@ AckSchema<num, double> _normalizedInsetValueSchema() =>
 /// four-edge form validated by [BlockInsetsSchema.schema].
 @AckModel()
 final class BlockInsets with _$BlockInsetsAck {
-  @AckField(
-    schema: _normalizedInsetValueSchema,
-    presence: AckFieldPresence.required,
-  )
+  @Required()
+  @AckField(schema: _normalizedInsetValueSchema)
   final double top;
 
-  @AckField(
-    schema: _normalizedInsetValueSchema,
-    presence: AckFieldPresence.required,
-  )
+  @Required()
+  @AckField(schema: _normalizedInsetValueSchema)
   final double right;
 
-  @AckField(
-    schema: _normalizedInsetValueSchema,
-    presence: AckFieldPresence.required,
-  )
+  @Required()
+  @AckField(schema: _normalizedInsetValueSchema)
   final double bottom;
 
-  @AckField(
-    schema: _normalizedInsetValueSchema,
-    presence: AckFieldPresence.required,
-  )
+  @Required()
+  @AckField(schema: _normalizedInsetValueSchema)
   final double left;
 
   BlockInsets({

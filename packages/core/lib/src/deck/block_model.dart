@@ -99,7 +99,7 @@ sealed class Block with _$BlockAck {
 /// Sections are used to create multi-column layouts within a slide.
 @AckModel()
 final class SectionBlock with _$SectionBlockAck {
-  @AckField(presence: AckFieldPresence.optional)
+  @Optional()
   final List<Block> blocks;
   final ContentAlignment? align;
 
@@ -160,7 +160,7 @@ final class SectionBlock with _$SectionBlockAck {
 final class ContentBlock extends Block with _$ContentBlockAck {
   static const key = 'block';
 
-  @AckField(presence: AckFieldPresence.optional)
+  @Optional()
   final String content;
 
   ContentBlock(
